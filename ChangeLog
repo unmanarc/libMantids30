@@ -1,3 +1,12 @@
+Version 2.0.0 (Major Overhauling)
+- Sockets without shared pointers
+- Namespaces
+- Macro Groups Reordering
+- FileFormats Group (initial hive7 commit)
+- Separated Helpers
+- In-Memory Authentication
+- RPC Rewritten
+
 Version 1.0.2
 - Relauch
 
