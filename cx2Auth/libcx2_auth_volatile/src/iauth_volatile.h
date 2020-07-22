@@ -42,7 +42,7 @@ class IAuth_Volatile : public IAuth
 {
 public:
     // Open authentication system:
-    IAuth_Volatile(const std::string & appName);
+    IAuth_Volatile(const std::string & appName = "");
 
     bool initScheme() override;
 
