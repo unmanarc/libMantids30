@@ -6,3 +6,8 @@ ServerBase::ServerBase()
 {
 
 }
+
+bool ServerBase::sendAnswer(Request &response)
+{
+    return false;
+}
