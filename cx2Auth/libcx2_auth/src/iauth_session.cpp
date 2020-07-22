@@ -49,6 +49,20 @@ void IAuth_Session::registerPersistentAuthentication(const std::string & account
     }
 }
 
+void IAuth_Session::registerPersistentAuthentication(uint32_t passIndex, const AuthReason &reason)
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    authMatrix[passIndex].lastAuthReason = reason;
+    authMatrix[passIndex].setCurrentTime();
+
+    if (reason == AUTH_REASON_AUTHENTICATED)
+    {
+        updateLastActivity();
+        firstActivity = lastActivity;
+    }
+}
+
 void IAuth_Session::updateLastActivity()
 {
     lastActivity = time(nullptr);

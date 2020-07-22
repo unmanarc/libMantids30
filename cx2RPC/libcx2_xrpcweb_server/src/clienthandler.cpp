@@ -114,7 +114,15 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
             Authorization::DataStructs::AuthReason authReason;
 
             if ((authReason=temporaryAuthentication(request.getAuthentication(passIdx),session)) == Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
+            {
                 extraTmpIndexes.insert(passIdx);
+
+                if (deleteSession)
+                {
+                    // No persistent session, so make this AUTH persistent for this temporary session...
+                    session->registerPersistentAuthentication(passIdx,Authorization::DataStructs::AUTH_REASON_AUTHENTICATED);
+                }
+            }
             else
             {
                 extraInfoOut["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);

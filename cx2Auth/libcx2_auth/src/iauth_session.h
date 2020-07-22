@@ -70,16 +70,22 @@ public:
      * @return
      */
     DataStructs::AuthReason isAuthenticated(uint32_t passIndex = 0);
+
     /**
-     * @brief authenticate Validate account password
+     * @brief registerPersistentAuthentication
      * @param accountName
-     * @param password
+     * @param accountDomain
      * @param passIndex
-     * @param authMode
-     * @param cramSalt
-     * @return
+     * @param reason
      */
     void registerPersistentAuthentication(const std::string &accountName, const std::string &accountDomain, uint32_t passIndex, const DataStructs::AuthReason &reason);
+
+    /**
+     * @brief registerPersistentAuthentication
+     * @param passIndex
+     * @param reason
+     */
+    void registerPersistentAuthentication(uint32_t passIndex, const DataStructs::AuthReason &reason);
     /**
      * @brief updateLastActivity Set las activity to current time
      */
