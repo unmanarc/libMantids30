@@ -203,11 +203,11 @@ bool StreamSocket::readBlock(void *data, const uint32_t &datalen, uint32_t * byt
 
 int StreamSocket::iShutdown(int mode)
 {
+    /*
     if (   (mode == SHUT_RDWR && shutdown_proto_rd == false && shutdown_proto_wr == false)
         || (mode == SHUT_RD && shutdown_proto_rd == false)
         || (mode == SHUT_WR && shutdown_proto_wr == false) )
     {
-
         switch (mode)
         {
         case SHUT_WR:
@@ -229,7 +229,7 @@ int StreamSocket::iShutdown(int mode)
 
     // Double shutdown?
     throw std::runtime_error("Double shutdown on Socket Base Stream");
-
+*/
     return -1;
 }
 

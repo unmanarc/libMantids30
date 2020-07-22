@@ -240,9 +240,9 @@ string Socket_TLS::getTLSPeerCN()
 
 int Socket_TLS::iShutdown(int mode)
 {
-    if (shutdown_proto_rd == true || shutdown_proto_wr == true)
+    if (shutdown_proto_rd || shutdown_proto_wr)
     {
-        throw std::runtime_error("Double shutdown on Socket TLS");
+        //        throw std::runtime_error("Double shutdown on Socket TLS");
         return -1;
     }
 

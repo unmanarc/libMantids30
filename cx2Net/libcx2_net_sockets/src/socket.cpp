@@ -107,7 +107,7 @@ bool Socket::connectTo(const char *, const uint16_t &, const uint32_t &)
 }
 
 void Socket::tryConnect(const char *hostname, const uint16_t &port,
-                         const uint32_t &timeout)
+                        const uint32_t &timeout)
 {
     while (!connectTo(hostname, port, timeout))
     {
@@ -192,8 +192,8 @@ int Socket::partialWrite(const void *data, const uint32_t &datalen)
 int Socket::iShutdown(int mode)
 {
     if (   (mode == SHUT_RDWR && shutdown_proto_rd == false && shutdown_proto_wr == false)
-        || (mode == SHUT_RD && shutdown_proto_rd == false)
-        || (mode == SHUT_WR && shutdown_proto_wr == false) )
+           || (mode == SHUT_RD && shutdown_proto_rd == false)
+           || (mode == SHUT_WR && shutdown_proto_wr == false) )
     {
 
         switch (mode)
@@ -356,34 +356,48 @@ int Socket::shutdownSocket(int mode)
     int i;
     if ((i=iShutdown(mode))!=0) return i;
 
-    if (   (mode == SHUT_RDWR && shutdown_rd == false && shutdown_wr == false)
-        || (mode == SHUT_RD && shutdown_rd == false)
-        || (mode == SHUT_WR && shutdown_wr == false) )
+    if ( mode == SHUT_RDWR && (shutdown_rd && shutdown_wr) )
     {
-
-        switch (mode)
-        {
-        case SHUT_WR:
-            shutdown_wr = true;
-            break;
-        case SHUT_RD:
-            shutdown_rd = true;
-            break;
-        case SHUT_RDWR:
-            shutdown_rd = true;
-            shutdown_wr = true;
-            break;
-        default:
-            break;
-        }
-
-        return shutdown(sockfd, mode);
+        // Double shutdown handling...
+        return -1;
+    }
+    else if ( mode == SHUT_RDWR && (shutdown_rd && !shutdown_wr) )
+    {
+        // Double shutdown handling...
+        mode = SHUT_WR;
+        shutdown_rd = true;
+    }
+    else if ( mode == SHUT_RDWR && (!shutdown_rd && shutdown_wr) )
+    {
+        // Double shutdown handling...
+        mode = SHUT_RD;
+        shutdown_wr = true;
+    }
+    else if ( mode == SHUT_WR && (shutdown_wr) )
+    {
+        // Double shutdown handling...
+        return -1;
+    }
+    else if ( mode == SHUT_WR && (!shutdown_wr) )
+    {
+        shutdown_wr = true;
+    }
+    else if ( mode == SHUT_RD && (shutdown_rd) )
+    {
+        // Double shutdown handling...
+        return -1;
+    }
+    else if ( mode == SHUT_RD && (!shutdown_rd) )
+    {
+        shutdown_rd = true;
     }
 
-    // Double shutdown?
-    throw std::runtime_error("Double shutdown on Socket");
+    return shutdown(sockfd, mode);
 
-    return -1;
+    // Double shutdown?
+//    throw std::runtime_error("Double shutdown on Socket");
+
+  //  return -1;
 }
 
 bool Socket::setBlockingMode(bool blocking)
