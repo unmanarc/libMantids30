@@ -5,51 +5,51 @@ using namespace CX2;
 
 void FullAuth::AddFullAuthMethods(XRPC::MethodsManager *methods)
 {
-    methods->addRPCMethod("accountChangePassword", {"admin"}, &accountChangePassword,nullptr);
-    methods->addRPCMethod("accountRemove", {"admin"}, &accountRemove,nullptr);
-    methods->addRPCMethod("accountDisable", {"admin"}, &accountDisable,nullptr);
-    methods->addRPCMethod("accountConfirm", {"admin"}, &accountConfirm,nullptr);
-    methods->addRPCMethod("accountChangeDescription", {"admin"}, &accountChangeDescription,nullptr);
-    methods->addRPCMethod("accountChangeEmail", {"admin"}, &accountChangeEmail,nullptr);
-    methods->addRPCMethod("accountChangeExtraData", {"admin"}, &accountChangeExtraData,nullptr);
-    methods->addRPCMethod("accountChangeExpiration", {"admin"}, &accountChangeExpiration,nullptr);
+    methods->addRPCMethod("accountChangePassword", {"admin"}, {&accountChangePassword,nullptr});
+    methods->addRPCMethod("accountRemove", {"admin"}, {&accountRemove,nullptr});
+    methods->addRPCMethod("accountDisable", {"admin"}, {&accountDisable,nullptr});
+    methods->addRPCMethod("accountConfirm", {"admin"}, {&accountConfirm,nullptr});
+    methods->addRPCMethod("accountChangeDescription", {"admin"}, {&accountChangeDescription,nullptr});
+    methods->addRPCMethod("accountChangeEmail", {"admin"}, {&accountChangeEmail,nullptr});
+    methods->addRPCMethod("accountChangeExtraData", {"admin"}, {&accountChangeExtraData,nullptr});
+    methods->addRPCMethod("accountChangeExpiration", {"admin"}, {&accountChangeExpiration,nullptr});
 
-    methods->addRPCMethod("isAccountDisabled", {"admin"}, &isAccountDisabled,nullptr);
-    methods->addRPCMethod("isAccountConfirmed", {"admin"}, &isAccountConfirmed,nullptr);
-    methods->addRPCMethod("isAccountSuperUser", {"admin"}, &isAccountSuperUser,nullptr);
-    methods->addRPCMethod("accountDescription", {"admin"}, &accountDescription,nullptr);
-    methods->addRPCMethod("accountEmail", {"admin"}, &accountEmail,nullptr);
-    methods->addRPCMethod("accountExtraData", {"admin"}, &accountExtraData,nullptr);
-    methods->addRPCMethod("accountExpirationDate", {"admin"}, &accountExpirationDate,nullptr);
-    methods->addRPCMethod("isAccountExpired", {"admin"}, &isAccountExpired,nullptr);
-    methods->addRPCMethod("accountValidateAttribute", {"admin"}, &accountValidateAttribute,nullptr);
-    methods->addRPCMethod("accountsList", {"admin"}, &accountsList,nullptr);
-    methods->addRPCMethod("accountGroups", {"admin"}, &accountGroups,nullptr);
-    methods->addRPCMethod("accountDirectAttribs", {"admin"}, &accountDirectAttribs,nullptr);
-    methods->addRPCMethod("accountUsableAttribs", {"admin"}, &accountUsableAttribs,nullptr);
+    methods->addRPCMethod("isAccountDisabled", {"admin"}, {&isAccountDisabled,nullptr});
+    methods->addRPCMethod("isAccountConfirmed", {"admin"}, {&isAccountConfirmed,nullptr});
+    methods->addRPCMethod("isAccountSuperUser", {"admin"}, {&isAccountSuperUser,nullptr});
+    methods->addRPCMethod("accountDescription", {"admin"}, {&accountDescription,nullptr});
+    methods->addRPCMethod("accountEmail", {"admin"}, {&accountEmail,nullptr});
+    methods->addRPCMethod("accountExtraData", {"admin"}, {&accountExtraData,nullptr});
+    methods->addRPCMethod("accountExpirationDate", {"admin"}, {&accountExpirationDate,nullptr});
+    methods->addRPCMethod("isAccountExpired", {"admin"}, {&isAccountExpired,nullptr});
+    methods->addRPCMethod("accountValidateAttribute", {"admin"}, {&accountValidateAttribute,nullptr});
+    methods->addRPCMethod("accountsList", {"admin"}, {&accountsList,nullptr});
+    methods->addRPCMethod("accountGroups", {"admin"}, {&accountGroups,nullptr});
+    methods->addRPCMethod("accountDirectAttribs", {"admin"}, {&accountDirectAttribs,nullptr});
+    methods->addRPCMethod("accountUsableAttribs", {"admin"}, {&accountUsableAttribs,nullptr});
 
-    methods->addRPCMethod("attribAdd", {"admin"}, &attribAdd,nullptr);
-    methods->addRPCMethod("attribRemove", {"admin"}, &attribRemove,nullptr);
-    methods->addRPCMethod("attribGroupAdd", {"admin"}, &attribGroupAdd,nullptr);
-    methods->addRPCMethod("attribGroupRemove", {"admin"}, &attribGroupRemove,nullptr);
-    methods->addRPCMethod("attribAccountAdd", {"admin"}, &attribAccountAdd,nullptr);
-    methods->addRPCMethod("attribAccountRemove", {"admin"}, &attribAccountRemove,nullptr);
-    methods->addRPCMethod("attribChangeDescription", {"admin"}, &attribChangeDescription,nullptr);
-    methods->addRPCMethod("attribsList", {"admin"}, &attribsList,nullptr);
-    methods->addRPCMethod("attribGroups", {"admin"}, &attribGroups,nullptr);
-    methods->addRPCMethod("attribAccounts", {"admin"}, &attribAccounts,nullptr);
+    methods->addRPCMethod("attribAdd", {"admin"}, {&attribAdd,nullptr});
+    methods->addRPCMethod("attribRemove", {"admin"}, {&attribRemove,nullptr});
+    methods->addRPCMethod("attribGroupAdd", {"admin"}, {&attribGroupAdd,nullptr});
+    methods->addRPCMethod("attribGroupRemove", {"admin"}, {&attribGroupRemove,nullptr});
+    methods->addRPCMethod("attribAccountAdd", {"admin"}, {&attribAccountAdd,nullptr});
+    methods->addRPCMethod("attribAccountRemove", {"admin"}, {&attribAccountRemove,nullptr});
+    methods->addRPCMethod("attribChangeDescription", {"admin"}, {&attribChangeDescription,nullptr});
+    methods->addRPCMethod("attribsList", {"admin"}, {&attribsList,nullptr});
+    methods->addRPCMethod("attribGroups", {"admin"}, {&attribGroups,nullptr});
+    methods->addRPCMethod("attribAccounts", {"admin"}, {&attribAccounts,nullptr});
 
-    methods->addRPCMethod("groupAdd", {"admin"}, &groupAdd,nullptr);
-    methods->addRPCMethod("groupRemove", {"admin"}, &groupRemove,nullptr);
-    methods->addRPCMethod("groupExist", {"admin"}, &groupExist,nullptr);
-    methods->addRPCMethod("groupAccountAdd", {"admin"}, &groupAccountAdd,nullptr);
-    methods->addRPCMethod("groupAccountRemove", {"admin"}, &groupAccountRemove,nullptr);
-    methods->addRPCMethod("groupChangeDescription", {"admin"}, &groupChangeDescription,nullptr);
-    methods->addRPCMethod("groupValidateAttribute", {"admin"}, &groupValidateAttribute,nullptr);
-    methods->addRPCMethod("groupDescription", {"admin"}, &groupDescription,nullptr);
-    methods->addRPCMethod("groupsList", {"admin"}, &groupsList,nullptr);
-    methods->addRPCMethod("groupAttribs", {"admin"}, &groupAttribs,nullptr);
-    methods->addRPCMethod("groupAccounts", {"admin"}, &groupAccounts,nullptr);
+    methods->addRPCMethod("groupAdd", {"admin"}, {&groupAdd,nullptr});
+    methods->addRPCMethod("groupRemove", {"admin"}, {&groupRemove,nullptr});
+    methods->addRPCMethod("groupExist", {"admin"}, {&groupExist,nullptr});
+    methods->addRPCMethod("groupAccountAdd", {"admin"}, {&groupAccountAdd,nullptr});
+    methods->addRPCMethod("groupAccountRemove", {"admin"}, {&groupAccountRemove,nullptr});
+    methods->addRPCMethod("groupChangeDescription", {"admin"}, {&groupChangeDescription,nullptr});
+    methods->addRPCMethod("groupValidateAttribute", {"admin"}, {&groupValidateAttribute,nullptr});
+    methods->addRPCMethod("groupDescription", {"admin"}, {&groupDescription,nullptr});
+    methods->addRPCMethod("groupsList", {"admin"}, {&groupsList,nullptr});
+    methods->addRPCMethod("groupAttribs", {"admin"}, {&groupAttribs,nullptr});
+    methods->addRPCMethod("groupAccounts", {"admin"}, {&groupAccounts,nullptr});
 }
 
 //

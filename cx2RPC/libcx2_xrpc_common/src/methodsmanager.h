@@ -32,11 +32,13 @@ struct sRPCParameters
 struct sRPCMethod
 {
     /**
+     * @brief Function pointer.
+     */
+    Json::Value (*rpcMethod)(void * obj, CX2::Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session * session, const Json::Value & parameters, const Json::Value & extraInfo, Json::Value * extraInfoOut);
+    /**
      * @brief obj object to pass
      */
     void * obj;
-    std::list<std::string> reqAttribs;
-    Json::Value (*rpcMethod)(void * obj, CX2::Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session * session, const Json::Value & parameters, const Json::Value & extraInfo, Json::Value * extraInfoOut);
 };
 
 class MethodsManager
@@ -65,10 +67,11 @@ public:
     /**
      * @brief addRPCMethod
      * @param methodName
-     * @param obj
+     * @param reqAttribs
+     * @param rpcMethod
      * @return
      */
-    bool addRPCMethod(const std::string & methodName, const std::list<std::string> & reqAttribs, Json::Value (*rpcMethod)(void *,Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session *, const Json::Value &,const Json::Value &, Json::Value *), void * obj);
+    bool addRPCMethod(const std::string & methodName, const std::set<std::string> & reqAttribs, const sRPCMethod & rpcMethod);
     /**
      * @brief runRPCMethod2
      * @param methodName

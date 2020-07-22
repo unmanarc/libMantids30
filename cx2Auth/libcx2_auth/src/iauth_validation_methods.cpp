@@ -6,6 +6,7 @@ using namespace CX2::Authorization;
 
 IAuth_Methods_Attributes::IAuth_Methods_Attributes()
 {
+    requireAllMethodsToBeAuthenticated = true;
 }
 
 void IAuth_Methods_Attributes::addMethodAttributes(const std::string &methodName, const std::set<std::string> &attribs)
@@ -82,5 +83,18 @@ std::set<uint32_t> IAuth_Methods_Attributes::getMethodPassIndexes(const std::str
             r.insert(passIndex);
         }
     }
+
+    if (requireAllMethodsToBeAuthenticated) r.insert(0);
+
     return r;
+}
+
+bool IAuth_Methods_Attributes::getRequireAllMethodsToBeAuthenticated() const
+{
+    return requireAllMethodsToBeAuthenticated;
+}
+
+void IAuth_Methods_Attributes::setRequireAllMethodsToBeAuthenticated(bool value)
+{
+    requireAllMethodsToBeAuthenticated = value;
 }

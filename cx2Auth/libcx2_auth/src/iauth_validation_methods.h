@@ -13,6 +13,9 @@ class IAuth_Methods_Attributes
 {
 public:
     IAuth_Methods_Attributes();
+
+
+
     /**
      * @brief addMethodAttributes
      * @param methodName
@@ -34,6 +37,9 @@ public:
      */
     bool validateMethod(IAuth *auth, Session::IAuth_Session * authSession, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, std::set<uint32_t> * passIndexesLeft, std::set<std::string> *attribsLeft );
 
+    bool getRequireAllMethodsToBeAuthenticated() const;
+    void setRequireAllMethodsToBeAuthenticated(bool value);
+
 private:
     std::set<uint32_t> getAttribPassIndexes(const std::string &attribName);
     std::set<std::string> getMethodAttribs(const std::string & methodName);
@@ -44,6 +50,7 @@ private:
     // Method requite ->
     std::multimap<std::string,std::string> methodAttribs;
 
+    bool requireAllMethodsToBeAuthenticated;
 };
 
 }}}

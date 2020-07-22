@@ -32,19 +32,18 @@ bool MethodsManager::pushRPCMethodIntoQueue(sRPCParameters *params, const std::s
     return threadPool->pushTask(executeRPCTask,params,timeout,priority,key);
 }
 
-bool MethodsManager::addRPCMethod(const std::string &methodName, const std::list<std::string> &reqAttribs, Json::Value (*rpcMethod)(void *, Authorization::IAuth *, Authorization::Session::IAuth_Session *, const Json::Value &, const Json::Value &, Json::Value *), void *obj)
+
+bool MethodsManager::addRPCMethod(const std::string &methodName, const std::set<std::string> &reqAttribs, const sRPCMethod &rpcMethod)
 {
     Threads::Sync::Lock_RW lock(smutexMethods);
     if (methods.find(methodName) == methods.end() )
     {
-        // Define the method:
-        sRPCMethod method;
-        method.reqAttribs = reqAttribs;
-        method.obj = obj;
-        method.rpcMethod = rpcMethod;
-
         // Put the method.
-        methods[methodName] = method;
+        methods[methodName] = rpcMethod;
+
+        // Configure methodsAttribs with this info.
+        methodsAttribs.addMethodAttributes(methodName,reqAttribs);
+
         return true;
     }
     return false;
