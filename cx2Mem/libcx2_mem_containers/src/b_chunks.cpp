@@ -10,8 +10,11 @@ B_Chunks::B_Chunks()
 
     mmapContainer = nullptr;
     maxChunkSize = 64*KB_MULT; // 64Kb.
-    maxChunks = 256*KB_MULT; // 256K chunks (not more)
-    maxContainerSizeUntilGoingToFS = 32*MB_MULT; // 32Mb.
+    maxChunks = 256*KB_MULT; // 256K chunks (16Gb of RAM)
+
+    // Don't go to FS by default.
+    maxContainerSizeUntilGoingToFS = 0;
+    //maxContainerSizeUntilGoingToFS = 32*MB_MULT; // 32Mb.
 
     B_Chunks::clear2();
 }
