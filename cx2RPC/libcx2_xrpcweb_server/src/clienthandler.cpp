@@ -94,7 +94,7 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
         }
     }
 
-    if ( session && request.getRpcMode() == "EXEC" )
+    if ( request.getRpcMode() == "EXEC" )
     {
         // Open a temporary session if there is no persistent session opened
         if (!session)
