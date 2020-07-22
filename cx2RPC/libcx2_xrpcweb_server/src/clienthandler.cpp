@@ -133,7 +133,6 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
         auto authorizer = authDomains->openDomain(session->getAuthDomain());
         if (authorizer)
         {
-            Json::Value payloadOut;
             Json::Value reasons;
             auto i = methodsManager->validateRPCMethodPerms( authorizer,  session, request.getMethodName(), extraTmpIndexes, &reasons);
             authDomains->closeDomain(session->getAuthDomain());
