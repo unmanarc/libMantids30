@@ -25,7 +25,7 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
 {
     bool destroySession = false, closeSession = false, deleteSession = false;
     std::string sessionId;
-    Network::Parsers::HttpRetCode httpResponseCode = Network::Parsers::HTTP_RET_200_OK;
+    Network::Parsers::HttpRetCode httpResponseCode = Network::Parsers::HTTP_RET_404_NOT_FOUND;
     // TODO: max post size?
     Json::Value extraInfoOut, payloadOut;
     XRPC::Request request, response;
@@ -135,6 +135,7 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
             case XRPC::VALIDATION_OK:
             {
                 response.setRetCode(methodsManager->runRPCMethod(authDomains, sessionId, session, request.getMethodName(), request.getPayload(), request.getExtraInfo(), &payloadOut, &extraInfoOut ));
+                httpResponseCode = Network::Parsers::HTTP_RET_200_OK;
             }break;
             case XRPC::VALIDATION_NOTAUTHORIZED:
             {
