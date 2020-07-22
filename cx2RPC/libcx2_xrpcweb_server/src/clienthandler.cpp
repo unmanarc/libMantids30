@@ -34,9 +34,9 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
 
     // GET VARS
     request.setRpcMode(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("mode"));
-    request.setReqId( stoull ( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("reqId") ) );
-    request.setRetCode( stoi( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("retCode") ) );
-    request.setMethodName(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("method"));
+    request.setReqId( strtoull ( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("reqId").c_str(),nullptr,10 ) );
+    request.setRetCode( strtol( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("retCode").c_str(),nullptr,10 ) );
+    request.setMethodName(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("method") );
 
     // POST VARS
     request.setSessionID(getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("sessionId"));
