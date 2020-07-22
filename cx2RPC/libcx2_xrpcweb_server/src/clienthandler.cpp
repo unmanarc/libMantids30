@@ -22,12 +22,15 @@ void ClientHandler::setAuthenticators(Authorization::IAuth_Domains *authenticato
 
 Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
 {
+    bool destroySession = false, closeSession = false, deleteSession = false;
+    std::string sessionId;
     Network::Parsers::HttpRetCode httpResponseCode = Network::Parsers::HTTP_RET_200_OK;
     // TODO: max post size?
     Json::Value extraInfoOut, payloadOut;
     XRPC::Request request, response;
     Memory::Streams::Streamable * out = getFullResponse().contentData->getStreamableOuput();
 
+    response.setRetCode(XRPC::METHOD_RET_CODE_METHODNOTFOUND);
 
     // GET VARS
     request.setRpcMode(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("mode"));
@@ -44,130 +47,137 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
     if (!request.setExtraInfo(getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("extraInfo")))
         return Network::Parsers::HTTP_RET_400_BAD_REQUEST;
 
-
     // RESPONSE DEFAULTS
     response.setRpcMode(request.getRpcMode());
     response.setMethodName(request.getMethodName());
     response.setRpcMode(request.getRpcMode());
     response.setReqId(request.getReqId());
 
+
+    // OPEN THE SESSION HERE:
     Authorization::Session::IAuth_Session * session = sessionsManagger->openSession(request.getSessionID());
-
     if (session)
-        response.setSessionID(session->getSessionId());
-
-    if (!session)
     {
-        // Sessions not found.
-        if (request.getRpcMode() == "AUTH")
+        sessionId = session->getSessionId();
+        response.setSessionID(session->getSessionId());
+        closeSession = true;
+    }
+
+    // Not session found and persistent session has been requested.
+    if (!session && request.getRpcMode() == "AUTH")
+    {
+        // Authenticate...
+        for (const uint32_t & passIdx : request.getAuthenticationsIdxs())
         {
-            // Authenticate...
-            for (const uint32_t & passIdx : request.getAuthenticationsIdxs())
+            Authorization::DataStructs::AuthReason authReason;
+            session = persistentAuthentication( getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("user"),
+                                                getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("domain"),
+                                                request.getAuthentication(passIdx),
+                                                session, &authReason);
+            extraInfoOut["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);
+            extraInfoOut["auth"][std::to_string(passIdx)]["reasonVal"] = static_cast<Json::UInt>(authReason);
+        }
+
+        if (session)
+        {
+            sessionId = session->getSessionId();
+            response.setSessionID(session->getSessionId());
+            response.setRetCode(XRPC::METHOD_RET_CODE_SUCCESS);
+            httpResponseCode = Network::Parsers::HTTP_RET_200_OK;
+            sessionsManagger->closeSession(request.getSessionID());
+        }
+        else
+        {
+            httpResponseCode = Network::Parsers::HTTP_RET_401_UNAUTHORIZED;
+            response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDAUTH);
+        }
+    }
+
+    if ( session && request.getRpcMode() == "EXEC" )
+    {
+        // Open a temporary session if there is no persistent session opened
+        if (!session)
+        {
+            ////////////////////////////////////
+            // Create Temporary Session
+            ////////////////////////////////////
+            session = new Authorization::Session::IAuth_Session;
+            session->setAuthUser(getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("user"));
+            session->setAuthDomain(getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("domain"));
+            deleteSession = true;
+        }
+
+        std::set<uint32_t> extraTmpIndexes;
+        for (const uint32_t & passIdx : request.getAuthenticationsIdxs())
+        {
+            Authorization::DataStructs::AuthReason authReason;
+
+            if ((authReason=temporaryAuthentication(request.getAuthentication(passIdx),session)) == Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
+                extraTmpIndexes.insert(passIdx);
+            else
             {
-                Authorization::DataStructs::AuthReason authReason;
-                session = persistentAuthentication( getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("user"),
-                                                    getVars(Network::Parsers::HTTP_VARS_POST)->getStringValue("domain"),
-                                                    request.getAuthentication(passIdx),
-                                                    session, &authReason);
                 extraInfoOut["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);
                 extraInfoOut["auth"][std::to_string(passIdx)]["reasonVal"] = static_cast<Json::UInt>(authReason);
             }
-            if (session)
+        }
+
+        auto authorizer = authDomains->openDomain(session->getAuthDomain());
+        if (authorizer)
+        {
+            Json::Value payloadOut;
+            Json::Value reasons;
+            auto i = methodsManager->validateRPCMethodPerms( authorizer,  session, request.getMethodName(), extraTmpIndexes, &reasons);
+            authDomains->closeDomain(session->getAuthDomain());
+
+            switch (i)
             {
-                response.setSessionID(session->getSessionId());
-                response.setRetCode(XRPC::METHOD_RET_CODE_SUCCESS);
-            }
-            else
+            case XRPC::VALIDATION_OK:
+            {
+                response.setRetCode(methodsManager->runRPCMethod(authDomains, sessionId, session, request.getMethodName(), request.getPayload(), request.getExtraInfo(), &payloadOut, &extraInfoOut ));
+            }break;
+            case XRPC::VALIDATION_NOTAUTHORIZED:
+            {
+                // not enough permissions.
+                extraInfoOut["auth_reasons"] = reasons;
                 response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDAUTH);
-
-            if (!session)
                 httpResponseCode = Network::Parsers::HTTP_RET_401_UNAUTHORIZED;
-            else
-                sessionsManagger->closeSession(request.getSessionID());
+            }break;
+            case XRPC::VALIDATION_METHODNOTFOUND:
+            default:
+            {
+                // not enough permissions.
+                response.setRetCode(XRPC::METHOD_RET_CODE_METHODNOTFOUND);
+                httpResponseCode = Network::Parsers::HTTP_RET_404_NOT_FOUND;
+            }break;
+            }
         }
         else
         {
-            // trying to do something else?
-            response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDAUTH);
-            httpResponseCode = Network::Parsers::HTTP_RET_401_UNAUTHORIZED;
+            response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDDOMAIN);
+            httpResponseCode = Network::Parsers::HTTP_RET_403_FORBIDDEN;
         }
+
+        if (deleteSession)
+        {
+            ////////////////////////////////////
+            // Temporary session mgmt
+            ////////////////////////////////////
+            delete session;
+            session = nullptr;
+        }
+
     }
-    else
+
+    // QUIT: Should be authenticated in a persistent fashion...
+    if ( session && request.getRpcMode() == "QUIT" )
     {
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //                                                      Session established!
-        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        bool destroySession = false;
-        std::string sessionId = session->getSessionId();
-        response.setSessionID(sessionId);
-
-        if ( request.getRpcMode() == "EXEC" )
-        {
-            std::set<uint32_t> extraTmpIndexes;
-            for (const uint32_t & passIdx : request.getAuthenticationsIdxs())
-            {
-                Authorization::DataStructs::AuthReason authReason;
-
-                if ((authReason=temporaryAuthentication(request.getAuthentication(passIdx),session)) == Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
-                    extraTmpIndexes.insert(passIdx);
-                else
-                {
-                    extraInfoOut["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);
-                    extraInfoOut["auth"][std::to_string(passIdx)]["reasonVal"] = static_cast<Json::UInt>(authReason);
-                }
-            }
-
-            auto authorizer = authDomains->openDomain(session->getAuthDomain());
-            if (authorizer)
-            {
-                Json::Value payloadOut;
-                Json::Value reasons;
-                auto i = methodsManager->validateRPCMethodPerms( authorizer,  session, request.getMethodName(), extraTmpIndexes, &reasons);
-                authDomains->closeDomain(session->getAuthDomain());
-
-                switch (i)
-                {
-                case XRPC::VALIDATION_OK:
-                {
-                    response.setRetCode(methodsManager->runRPCMethod(authDomains, sessionId, session, request.getMethodName(), request.getPayload(), request.getExtraInfo(), &payloadOut, &extraInfoOut ));
-                }break;
-                case XRPC::VALIDATION_NOTAUTHORIZED:
-                {
-                    // not enough permissions.
-                    extraInfoOut["auth_reasons"] = reasons;
-                    response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDAUTH);
-                    httpResponseCode = Network::Parsers::HTTP_RET_401_UNAUTHORIZED;
-                }break;
-                case XRPC::VALIDATION_METHODNOTFOUND:
-                default:
-                {
-                    // not enough permissions.
-                    response.setRetCode(XRPC::METHOD_RET_CODE_METHODNOTFOUND);
-                    httpResponseCode = Network::Parsers::HTTP_RET_404_NOT_FOUND;
-                }break;
-                }
-            }
-            else
-            {
-                response.setRetCode(XRPC::METHOD_RET_CODE_INVALIDDOMAIN);
-                httpResponseCode = Network::Parsers::HTTP_RET_403_FORBIDDEN;
-            }
-        }
-        if (request.getRpcMode() == "QUIT")
-        {
-            response.setRetCode(XRPC::METHOD_RET_CODE_SUCCESS);
-            destroySession = true;
-        }
-        else
-        {
-            response.setRetCode(XRPC::METHOD_RET_CODE_METHODNOTFOUND);
-            httpResponseCode = Network::Parsers::HTTP_RET_400_BAD_REQUEST;
-        }
-
-        // Close the openned session.
-        sessionsManagger->closeSession(sessionId);
-        if (destroySession) sessionsManagger->destroySession(sessionId);
+        response.setRetCode(XRPC::METHOD_RET_CODE_SUCCESS);
+        destroySession = true;
     }
+
+    // Close the openned session.
+    if (closeSession) sessionsManagger->closeSession(sessionId);
+    if (destroySession) sessionsManagger->destroySession(sessionId);
 
     // Setup the response...
     response.setExtraInfo(extraInfoOut);
@@ -222,7 +232,6 @@ Authorization::DataStructs::AuthReason ClientHandler::temporaryAuthentication(co
 
     std::string userName = session->getAuthUser();
     std::string domainName = session->getAuthDomain();
-
 
     auto auth = authDomains->openDomain(domainName);
     if (!auth)
