@@ -454,7 +454,7 @@ time_t IAuth_FS::accountExpirationDate(const std::string &accountName)
         {
             Files::Vars::File f(getActivationFilePath(accountName));
             if (f.load())
-                r = stoull(f.getVarValue("expiration"));
+                r = strtoull(f.getVarValue("expiration").c_str(), nullptr, 10);
         }
     }
     

@@ -145,7 +145,7 @@ bool JSONEval::compile(std::string expr)
         {
             if ( boost::starts_with(atomicExpr, "_SUBEXPR_") )
             {
-                size_t subexpr_pos = stoul(atomicExpr.substr(9));
+                size_t subexpr_pos = strtoul(atomicExpr.substr(9).c_str(),nullptr,10);
                 if (subexpr_pos>=subExpressions.size())
                 {
                     lastError = "Invalid Sub Expression #";

@@ -84,11 +84,11 @@ struct sPasswordData
 
         hash = mget(mp,"HASH");
         CX2::Helpers::Encoders::fromHex(mget(mp,"SALT"),ssalt,4);
-        expiration = stoull(mget(mp,"EXPIRATION"));
-        forceExpiration = stoul(mget(mp,"FORCE_EXPIRATION"))?true:false;
-        gAuthSteps = stoul(mget(mp,"GAUTH_STEPS"));
+        expiration = strtoull(mget(mp,"EXPIRATION").c_str(), nullptr, 10);
+        forceExpiration = strtoul(mget(mp,"FORCE_EXPIRATION").c_str(), nullptr, 10)?true:false;
+        gAuthSteps = strtoul(mget(mp,"GAUTH_STEPS").c_str(), nullptr, 10);
 
-        switch (stoul(mget( mp, "PMODE" )))
+        switch (strtoul(mget( mp, "PMODE" ).c_str(), nullptr, 10))
         {
         case 500: passwordMode = PASS_MODE_NOTFOUND;
             break;

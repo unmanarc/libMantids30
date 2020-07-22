@@ -1,5 +1,5 @@
 #include "a_int16.h"
-#include <stdexcept>      // std::invalid_argument
+#include <stdlib.h>
 
 using namespace CX2::Memory::Vars;
 
@@ -33,21 +33,10 @@ bool A_INT16::fromString(const std::string &value)
         this->value = 0;
         return true;
     }
+    this->value = (int16_t)strtol(value.c_str(),nullptr,10);
+    if (value!="0" && this->value==0) return false;
 
-    size_t pos ;
-    try
-    {
-        this->value = static_cast<int16_t>(std::stoi( value, &pos, 10 ));
-        return true;
-    }
-    catch( std::invalid_argument * )
-    {
-        return false;
-    }
-    catch ( std::out_of_range * )
-    {
-        return false;
-    }
+    return true;
 }
 
 Abstract *A_INT16::protectedCopy()

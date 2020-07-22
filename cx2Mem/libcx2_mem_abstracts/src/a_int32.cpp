@@ -1,5 +1,4 @@
 #include "a_int32.h"
-#include <stdexcept>      // std::invalid_argument
 
 using namespace CX2::Memory::Vars;
 
@@ -35,20 +34,10 @@ bool A_INT32::fromString(const std::string &value)
         return true;
     }
 
-    size_t pos ;
-    try
-    {
-        this->value = std::stoi( value, &pos, 10 ) ;
-        return true;
-    }
-    catch( std::invalid_argument * )
-    {
-        return false;
-    }
-    catch ( std::out_of_range * )
-    {
-        return false;
-    }
+    this->value = strtol(value.c_str(),nullptr,10);
+    if (value!="0" && this->value==0) return false;
+
+    return true;
 }
 
 Abstract *A_INT32::protectedCopy()

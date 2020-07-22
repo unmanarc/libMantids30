@@ -33,20 +33,10 @@ bool A_UINT8::fromString(const std::string &value)
         return true;
     }
 
-    size_t pos ;
-    try
-    {
-        this->value = static_cast<uint8_t>(std::stoul( value, &pos, 10 ));
-        return true;
-    }
-    catch( std::invalid_argument * )
-    {
-        return false;
-    }
-    catch ( std::out_of_range * )
-    {
-        return false;
-    }
+    this->value = static_cast<uint8_t>(strtoul( value.c_str(), nullptr, 10 ));
+    if (value!="0" && this->value==0) return false;
+
+    return true;
 }
 
 Abstract *A_UINT8::protectedCopy()

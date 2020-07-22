@@ -32,20 +32,10 @@ bool A_UINT64::fromString(const std::string &value)
         return true;
     }
 
-    size_t pos ;
-    try
-    {
-        this->value = std::stoull( value, &pos, 10 ) ;
-        return true;
-    }
-    catch( std::invalid_argument * )
-    {
-        return false;
-    }
-    catch ( std::out_of_range * )
-    {
-        return false;
-    }
+    this->value = strtoull( value.c_str(), nullptr, 10 );
+    if (value!="0" && this->value==0) return false;
+
+    return true;
 }
 
 Abstract *A_UINT64::protectedCopy()

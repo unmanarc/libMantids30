@@ -1,6 +1,7 @@
 #include "clienthandler.h"
 #include <cx2_xrpc_common/retcodes.h>
 #include <cx2_xrpc_common/request.h>
+#include <stdlib.h>
 
 using namespace CX2::RPC::XRPCWeb;
 using namespace CX2;
@@ -34,8 +35,8 @@ Network::Parsers::HttpRetCode ClientHandler::processclientRequest()
 
     // GET VARS
     request.setRpcMode(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("mode"));
-    request.setReqId( stoull ( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("reqId") ) );
-    request.setRetCode( stoi( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("retCode") ) );
+    request.setReqId( strtoull( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("reqId").c_str(), nullptr, 10 ) );
+    request.setRetCode( strtol( getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("retCode").c_str(), nullptr, 10 ) );
     request.setMethodName(getVars(Network::Parsers::HTTP_VARS_GET)->getStringValue("method"));
 
     // POST VARS

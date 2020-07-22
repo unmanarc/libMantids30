@@ -24,10 +24,10 @@ bool AtomicExpressionSide::calcMode()
     if (expr.empty()) mode=EXPR_MODE_NULL;
     else if ( expr.at(0)=='$') mode=EXPR_MODE_JSONPATH;
     else if ( expr.find_first_not_of("0123456789") == string::npos ) mode=EXPR_MODE_NUMERIC;
-    else if ( boost::starts_with(expr,"_STATIC_") && staticTexts->size() > stoul(expr.substr(8)))
+    else if ( boost::starts_with(expr,"_STATIC_") && staticTexts->size() > strtoul(expr.substr(8).c_str(),nullptr,10))
     {
         mode=EXPR_MODE_STATIC_STRING;
-        staticIndex = stoul(expr.substr(8));
+        staticIndex = strtoul(expr.substr(8).c_str(),nullptr,10);
     }
     else
     {
@@ -72,11 +72,11 @@ set<string> AtomicExpressionSide::resolve(const Json::Value &v, bool resolveRege
     case EXPR_MODE_STATIC_STRING:
         if (resolveRegex)
         {
-            recompileRegex((*staticTexts)[stoul(expr.substr(8))], ignoreCase);
+            recompileRegex((*staticTexts)[strtoul(expr.substr(8).c_str(),nullptr,10)], ignoreCase);
             return {};
         }
         else
-            return { (*staticTexts)[stoul(expr.substr(8))] };
+            return { (*staticTexts)[strtoul(expr.substr(8).c_str(),nullptr,10)] };
     case EXPR_MODE_NUMERIC:
         if (resolveRegex)
         {

@@ -86,7 +86,7 @@ Memory::Streams::Parsing::ParseStatus Request::parse()
     }break;
     case E_REQ_METHOD_REQID:
     {
-        reqId = stoull(getParsedData()->toString());
+        reqId = strtoull(getParsedData()->toString().c_str(),nullptr,10);
         curProcVal = E_REQ_METHOD_SESSIONID;
     }break;
     case E_REQ_METHOD_SESSIONID:
@@ -96,7 +96,7 @@ Memory::Streams::Parsing::ParseStatus Request::parse()
     }break;
     case E_REQ_METHOD_RETCODE:
     {
-        retcode = stoi(getParsedData()->toString());
+        retcode = strtol(getParsedData()->toString().c_str(),nullptr,10);
         return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
     }break;
     }
@@ -280,7 +280,7 @@ bool Request::setAuthentications(const std::string &sAuthentications)
         {
             if ( jAuthentications[idx].isMember("pass") )
             {
-                addAuthentication(std::stoul(idx), jAuthentications[idx]["pass"].asString());
+                addAuthentication(strtoul(idx.c_str(),nullptr,10), jAuthentications[idx]["pass"].asString());
             }
         }
     }
