@@ -12,7 +12,7 @@ HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) 
     initSubParser(&_serverCodeResponse);
     initSubParser(&_serverHeaders);
     initSubParser(&_serverContentData);
-    setInternalProductVersion("CX2::HTTPv1","(+http://www.unmanarc.com/cx2)");
+    setInternalProductVersion("CX2::HTTP","(+https://github.com/unmanarc/cxFramework2)");
 }
 
 HTTPServerParams HTTPv1_Base::server()
