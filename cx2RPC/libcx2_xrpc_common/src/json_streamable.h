@@ -28,10 +28,14 @@ public:
 
     void setMaxSize(const uint64_t &value);
 
+    bool getFormatted() const;
+    void setFormatted(bool value);
+
 private:
     uint64_t maxSize;
     std::string strValue;
     Json::Value root;
+    bool formatted;
 };
 
 }}}

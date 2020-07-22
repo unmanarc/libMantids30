@@ -10,6 +10,7 @@ Server::Server()
 {
     obj = nullptr;
     sessionsManager.startGC( SessionsManager::threadGC, &sessionsManager );
+    useFormattedJSONOutput = true;
 }
 
 Server::~Server()
@@ -49,6 +50,7 @@ bool Server::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * s, 
     webHandler.setMethodsManager(webserver->getMethodManagers());
     webHandler.setAuthenticators(webserver->getAuthenticator());
     webHandler.setSessionsManagger(webserver->getSessionsManager());
+    webHandler.setUseFormattedJSONOutput(webserver->getUseFormattedJSONOutput());
 
     // Handle the webservice.
     Memory::Streams::Parsing::ParseErrorMSG err;
@@ -71,6 +73,16 @@ void Server::_callbackOnTimedOut(void * obj, Network::Streams::StreamSocket *s, 
     s->writeString("Connection: close\r\n");
     s->writeString("\r\n");
     s->writeString("<center><h1>503 Service Temporarily Unavailable</h1></center><hr>\r\n");
+}
+
+bool Server::getUseFormattedJSONOutput() const
+{
+    return useFormattedJSONOutput;
+}
+
+void Server::setUseFormattedJSONOutput(bool value)
+{
+    useFormattedJSONOutput = value;
 }
 
 SessionsManager *Server::getSessionsManager()

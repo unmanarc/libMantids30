@@ -9,6 +9,7 @@ JSON_Streamable::JSON_Streamable()
 {
     // No max size (original...)
     maxSize = std::numeric_limits<uint64_t>::max();
+    setFormatted(false);
 }
 
 std::string JSON_Streamable::jsonToString(const Json::Value &value)
@@ -26,7 +27,10 @@ std::string JSON_Streamable::jsonToString(const Json::Value &value)
 bool JSON_Streamable::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrStatUpd)
 {
     Memory::Streams::Status cur;
-    strValue = jsonToString(root);
+    if (!formatted)
+        strValue = jsonToString(root);
+    else
+        strValue = root.toStyledString();
     return (cur = out->writeFullStream(strValue.c_str(), strValue.size(), wrStatUpd)).succeed;
 }
 
@@ -93,4 +97,14 @@ void JSON_Streamable::setValue(const Json::Value &value)
 void JSON_Streamable::setMaxSize(const uint64_t &value)
 {
     maxSize = value;
+}
+
+bool JSON_Streamable::getFormatted() const
+{
+    return formatted;
+}
+
+void JSON_Streamable::setFormatted(bool value)
+{
+    formatted = value;
 }

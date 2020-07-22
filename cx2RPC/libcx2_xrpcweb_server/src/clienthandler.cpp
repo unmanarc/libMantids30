@@ -9,6 +9,7 @@ using namespace std;
 ClientHandler::ClientHandler(void *parent, Memory::Streams::Streamable *sock) : Network::Parsers::HTTPv1_Server(sock)
 {
     // TODO: logs?
+    useFormattedJSONOutput = true;
 }
 
 ClientHandler::~ClientHandler()
@@ -249,9 +250,20 @@ void ClientHandler::sendAnswer(RPC::XRPC::Request *response, Memory::Streams::St
 {
     Memory::Streams::Status stat;
     Memory::Streams::JSON_Streamable outJStreamable;
+    outJStreamable.setFormatted(useFormattedJSONOutput);
     Json::Value * outValue = outJStreamable.getValue();
     *outValue = response->toJSON();
     outJStreamable.streamTo(out,stat);
+}
+
+bool ClientHandler::getUseFormattedJSONOutput() const
+{
+    return useFormattedJSONOutput;
+}
+
+void ClientHandler::setUseFormattedJSONOutput(bool value)
+{
+    useFormattedJSONOutput = value;
 }
 
 void ClientHandler::setMethodsManager(XRPC::MethodsManager *value)

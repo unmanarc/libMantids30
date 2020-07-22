@@ -30,6 +30,9 @@ public:
     void setRemoteIP(const std::string &value);
     void setSessionsManagger(SessionsManager *value);
 
+    bool getUseFormattedJSONOutput() const;
+    void setUseFormattedJSONOutput(bool value);
+
 protected:
     /**
      * @brief processClientRequest Process web client request
@@ -47,6 +50,8 @@ private:
     Authorization::IAuth_Domains * authDomains;
     SessionsManager * sessionsManagger;
     std::string remoteIP;
+    bool useFormattedJSONOutput;
+
 };
 
 }}}

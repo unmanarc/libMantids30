@@ -31,6 +31,9 @@ public:
 
     SessionsManager * getSessionsManager();
 
+    bool getUseFormattedJSONOutput() const;
+    void setUseFormattedJSONOutput(bool value);
+
 private:
     Network::Streams::ThreadedAcceptors::MultiThreaded_Acceptor multiThreadedAcceptor;
     Network::Streams::ThreadedAcceptors::PoolThreaded_Acceptor poolThreadedAcceptor;
@@ -54,6 +57,8 @@ private:
     XRPC::MethodsManager *methodManagers;
 
     SessionsManager sessionsManager;
+    bool useFormattedJSONOutput;
+
 };
 
 }}}
