@@ -17,7 +17,7 @@ struct sPasswordBasicData
 {
     sPasswordBasicData()
     {
-        expiration = 0;
+        expiration = std::numeric_limits<time_t>::max();
         forceExpiration = false;
         passwordMode = PASS_MODE_PLAIN;
         memset(ssalt,0,4);

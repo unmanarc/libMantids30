@@ -65,7 +65,7 @@ public:
     bool accountChangeDescription(const std::string & accountName, const std::string & description) override;
     bool accountChangeEmail(const std::string & accountName, const std::string & email) override;
     bool accountChangeExtraData(const std::string & accountName, const std::string & extraData) override;
-    bool accountChangeExpiration(const std::string & accountName, time_t expiration = 0) override;
+    bool accountChangeExpiration(const std::string & accountName, time_t expiration = std::numeric_limits<time_t>::max()) override;
     bool isAccountDisabled(const std::string & accountName) override;
     bool isAccountConfirmed(const std::string & accountName) override;
     bool isAccountSuperUser(const std::string & accountName) override;

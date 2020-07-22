@@ -34,7 +34,7 @@ public:
                                 const std::string & email = "",
                                 const std::string & accountDescription = "",
                                 const std::string & extraData = "",
-                                time_t expirationDate = 0,
+                                time_t expirationDate = std::numeric_limits<time_t>::max(),
                                 bool enabled = true,
                                 bool confirmed = true,
                                 bool superuser = false)=0;
@@ -46,7 +46,7 @@ public:
     virtual bool accountChangeDescription(const std::string & accountName, const std::string & description)=0;
     virtual bool accountChangeEmail(const std::string & accountName, const std::string & email)=0;
     virtual bool accountChangeExtraData(const std::string & accountName, const std::string & extraData)=0;
-    virtual bool accountChangeExpiration(const std::string & accountName, time_t expiration = 0)=0;
+    virtual bool accountChangeExpiration(const std::string & accountName, time_t expiration = std::numeric_limits<time_t>::max())=0;
     virtual bool isAccountDisabled(const std::string & accountName)=0;
     virtual bool isAccountConfirmed(const std::string & accountName)=0;
     virtual bool isAccountSuperUser(const std::string & accountName)=0;

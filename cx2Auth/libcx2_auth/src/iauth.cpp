@@ -74,7 +74,7 @@ sPasswordBasicData IAuth::accountPasswordBasicData(const std::string &accountNam
 bool IAuth::isAccountExpired(const std::string &accountName)
 {
     time_t tAccountExpirationDate = accountExpirationDate(accountName);
-    if (!tAccountExpirationDate) return false;
+//    if (!tAccountExpirationDate) return false;
     return tAccountExpirationDate<time(nullptr);
 }
 
