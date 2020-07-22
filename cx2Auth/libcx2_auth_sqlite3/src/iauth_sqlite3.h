@@ -21,7 +21,7 @@ public:
                     const std::string & email = "",
                     const std::string & accountDescription = "",
                     const std::string & extraData = "",
-                    time_t expirationDate = 0,
+                    time_t expirationDate = std::numeric_limits<time_t>::max(),
                     bool enabled = true,
                     bool confirmed = true,
                     bool superuser = false) override;
