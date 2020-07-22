@@ -1,4 +1,6 @@
 #include "request.h"
+#include "retcodes.h"
+
 using namespace CX2::RPC::XRPC;
 using namespace CX2;
 
@@ -225,6 +227,36 @@ Json::Value Request::toJSON()
     r["extraInfo"] = *extraInfo.getValue();
     r["reqId"] = (Json::UInt64)reqId;
     r["retCode"] = retcode;
+
+    switch (retcode)
+    {
+    case METHOD_RET_CODE_SUCCESS:
+        r["retMSG"] = "SUCCESS";
+        break;
+    case METHOD_RET_CODE_INVALIDDOMAIN:
+        r["retMSG"] = "INVALIDDOMAIN";
+        break;
+    case METHOD_RET_CODE_UNAUTHENTICATED:
+        r["retMSG"] = "UNAUTHENTICATED";
+        break;
+    case METHOD_RET_CODE_INVALIDLOCALAUTH:
+        r["retMSG"] = "INVALIDLOCALAUTH";
+        break;
+    case METHOD_RET_CODE_TIMEDOUT:
+        r["retMSG"] = "TIMEDOUT";
+        break;
+    case METHOD_RET_CODE_INVALIDAUTH:
+        r["retMSG"] = "INVALIDAUTH";
+        break;
+    case METHOD_RET_CODE_SERVERMEMORYFULL:
+        r["retMSG"] = "SERVERMEMORYFULL";
+        break;
+    case METHOD_RET_CODE_METHODNOTFOUND:
+        r["retMSG"] = "METHODNOTFOUND";
+        break;
+    default:
+        r["retMSG"] = "UNKNOWN";
+    }
     r["sessionId"] = sessionID;
 
     for (const auto & i : authentications)
