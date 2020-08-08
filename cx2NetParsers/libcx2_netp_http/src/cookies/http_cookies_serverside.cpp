@@ -9,7 +9,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTP_Cookies_ServerSide::HTTP_Cookies_ServerSide()
@@ -25,17 +25,17 @@ void HTTP_Cookies_ServerSide::putOnHeaders(MIME_Sub_Header *headers) const
 {
     for (const auto & cookie :cookiesMap )
     {
-        headers->add("Set-Cookie",((HTTP_Cookie_Value *)cookie.second)->toSetCookieString(cookie.first));
+        headers->add("Set-Cookie",((HTTP_Cookie *)cookie.second)->toSetCookieString(cookie.first));
     }
 }
 
 string HTTP_Cookies_ServerSide::getCookieValueByName(const string &cookieName)
 {
-    HTTP_Cookie_Value * cookieValue = getCookieByName(cookieName);
+    HTTP_Cookie * cookieValue = getCookieByName(cookieName);
     return !cookieValue?"":cookieValue->getValue();
 }
 
-HTTP_Cookie_Value * HTTP_Cookies_ServerSide::getCookieByName(const string &cookieName)
+HTTP_Cookie * HTTP_Cookies_ServerSide::getCookieByName(const string &cookieName)
 {
     if (cookiesMap.find(cookieName) == cookiesMap.end()) return nullptr;
     return cookiesMap[cookieName];
@@ -44,7 +44,7 @@ HTTP_Cookie_Value * HTTP_Cookies_ServerSide::getCookieByName(const string &cooki
 bool HTTP_Cookies_ServerSide::parseCookie(const string &cookie_str)
 {
     std::string cookieName;
-    HTTP_Cookie_Value * cookieValue = new HTTP_Cookie_Value;
+    HTTP_Cookie * cookieValue = new HTTP_Cookie;
     cookieValue->fromSetCookieString(cookie_str,&cookieName);
     if (cookieName.empty() || cookiesMap.find(cookieName) != cookiesMap.end())
     {
@@ -58,11 +58,11 @@ bool HTTP_Cookies_ServerSide::parseCookie(const string &cookie_str)
     }
 }
 
-bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_Cookie_Value &cookieValue)
+bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_Cookie &cookieValue)
 {
     if (cookiesMap.find(cookieName) != cookiesMap.end()) return false;
 
-    HTTP_Cookie_Value * val = new HTTP_Cookie_Value;
+    HTTP_Cookie * val = new HTTP_Cookie;
     *val = cookieValue;
 
     cookiesMap[cookieName] = val;
@@ -72,7 +72,11 @@ bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_
 
 void HTTP_Cookies_ServerSide::addClearCookie(const string &cookieName)
 {
-    HTTP_Cookie_Value c;
-    cookiesMap.erase(cookieName);
+    HTTP_Cookie c;
+    if (cookiesMap.find(cookieName) != cookiesMap.end())
+    {
+        delete cookiesMap[cookieName];
+        cookiesMap.erase(cookieName);
+    }
     addCookieVal(cookieName,c);
 }

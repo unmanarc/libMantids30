@@ -55,6 +55,8 @@ public:
     void overrideReadTimeout(int32_t tout = -1);
     void overrideWriteTimeout(int32_t tout = -1);
 
+    virtual bool isSecure() override;
+
 protected:
 
 private:

@@ -9,7 +9,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTP_Request::HTTP_Request()

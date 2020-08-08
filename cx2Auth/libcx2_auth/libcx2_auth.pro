@@ -2,14 +2,14 @@ QT       -= core gui
 
 SOURCES +=  src/iauth_domains.cpp \
     src/iauth.cpp \
+    src/iauth_methods_attributes.cpp \
     src/iauth_session.cpp \
-    src/iauth_validation_methods.cpp \
     src/iauth_validation_account.cpp
 HEADERS += \
     src/iauth.h \
     src/iauth_domains.h \
+    src/iauth_methods_attributes.h \
     src/iauth_session.h \
-    src/iauth_validation_methods.h \
     src/iauth_validation_account.h \
     src/datastructs/ds_auth_modes.h \
     src/datastructs/ds_auth_reasons.h \

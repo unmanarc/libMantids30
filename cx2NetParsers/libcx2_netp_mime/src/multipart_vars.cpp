@@ -4,7 +4,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 MultiPart_Vars::MultiPart_Vars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value, false)

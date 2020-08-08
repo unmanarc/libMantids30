@@ -1,6 +1,6 @@
 #include "linerecv.h"
 
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 
 LineRecv::LineRecv(Memory::Streams::Streamable *sobject) : Memory::Streams::Parsing::Parser(sobject,false)
 {

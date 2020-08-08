@@ -7,6 +7,7 @@ struct sAcceptorTaskData
 {
     ~sAcceptorTaskData()
     {
+        isSecure = false;
         memset(remotePair,0,INET6_ADDRSTRLEN+1);
         if (clientSocket)
         {
@@ -16,8 +17,8 @@ struct sAcceptorTaskData
         }
     }
 
-    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *);
-    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *);
+    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *,bool);
+    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *,bool);
     void *objOnConnect, *objOnInitFail;
 
     std::string key;
@@ -25,6 +26,7 @@ struct sAcceptorTaskData
     void * obj;
     Streams::StreamSocket * clientSocket;
     char remotePair[INET6_ADDRSTRLEN+2];
+    bool isSecure;
     char pad;
 };
 
@@ -56,19 +58,19 @@ PoolThreaded_Acceptor::PoolThreaded_Acceptor()
     setQueuesKeyRatio(0.5);
 }
 
-void PoolThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *obj)
+void PoolThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void PoolThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *obj)
+void PoolThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void PoolThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *), void *obj)
+void PoolThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimedOut;
     this->objOnTimedOut = obj;
@@ -97,12 +99,14 @@ void PoolThreaded_Acceptor::run()
             taskData->objOnConnect = objOnConnect;
             taskData->objOnInitFail = objOnInitFail;
             taskData->clientSocket = clientSocket;
+            taskData->isSecure = acceptorSocket->isSecure();
 
             taskData->key = taskData->remotePair;
 
             if (!pool->pushTask( &acceptorTask, taskData, timeoutMS, queuesKeyRatio, taskData->key))
             {
-                if (callbackOnTimedOut!=nullptr) callbackOnTimedOut(objOnTimedOut,clientSocket,taskData->remotePair);
+                if (callbackOnTimedOut!=nullptr)
+                    callbackOnTimedOut(objOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
                 delete taskData;
             }
         }
@@ -180,7 +184,7 @@ void PoolThreaded_Acceptor::acceptorTask(void *data)
         // Start
         if (taskData->callbackOnConnect)
         {
-            if (!taskData->callbackOnConnect(taskData->objOnConnect, taskData->clientSocket, taskData->remotePair))
+            if (!taskData->callbackOnConnect(taskData->objOnConnect, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
             {
                 taskData->clientSocket = nullptr;
             }
@@ -190,7 +194,7 @@ void PoolThreaded_Acceptor::acceptorTask(void *data)
     {
         if (taskData->callbackOnInitFail)
         {
-            if (!taskData->callbackOnInitFail(taskData->objOnInitFail, taskData->clientSocket, taskData->remotePair))
+            if (!taskData->callbackOnInitFail(taskData->objOnInitFail, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
             {
                 taskData->clientSocket = nullptr;
             }

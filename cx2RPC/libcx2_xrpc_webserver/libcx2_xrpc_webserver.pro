@@ -1,13 +1,15 @@
 QT       -= core gui
 
 SOURCES += \
-    src/clienthandler.cpp \
-    src/server.cpp \
-    src/sessionsmanager.cpp
+    src/resourcesfilter.cpp \
+    src/sessionsmanager.cpp \
+    src/webclienthandler.cpp \
+    src/webserver.cpp
 HEADERS += \
-    src/clienthandler.h \
-    src/server.h \
-    src/sessionsmanager.h
+    src/resourcesfilter.h \
+    src/sessionsmanager.h \
+    src/webclienthandler.h \
+    src/webserver.h
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
@@ -21,7 +23,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-TARGET = cx2_xrpcweb_server
+TARGET = cx2_xrpc_webserver
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib

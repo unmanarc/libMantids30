@@ -2,7 +2,7 @@
 
 #include <cx2_mem_streamencoders/streamdecoder_url.h>
 
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 URLVarContent_SubParser::URLVarContent_SubParser()

@@ -369,6 +369,11 @@ void Socket_TCP::overrideWriteTimeout(int32_t tout)
 {
     ovrWriteTimeout = tout;
 }
+
+bool Socket_TCP::isSecure()
+{
+    return false;
+}
 /*
 bool Socket_TCP::postConnectSubInitialization()
 {

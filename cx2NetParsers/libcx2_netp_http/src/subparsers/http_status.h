@@ -5,7 +5,7 @@
 #include "http_version.h"
 #include "http_retcodes.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 
 struct sResponseCode

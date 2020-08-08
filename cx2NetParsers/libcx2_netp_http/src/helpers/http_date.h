@@ -4,7 +4,7 @@
 #include <time.h>
 #include <string>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_Date
 {

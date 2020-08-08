@@ -1,7 +1,7 @@
 #ifndef HTTP_RETCODES_H
 #define HTTP_RETCODES_H
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 enum HttpRetCode {
     HTTP_RET_100_CONTINUE = 0,

@@ -4,7 +4,7 @@
 #include <limits>
 
 // TODO: CHECK THIS CLASS
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTP_Content::HTTP_Content()

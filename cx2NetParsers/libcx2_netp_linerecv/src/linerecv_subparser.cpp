@@ -1,6 +1,6 @@
 #include "linerecv_subparser.h"
 
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 LineRecv_SubParser::LineRecv_SubParser()

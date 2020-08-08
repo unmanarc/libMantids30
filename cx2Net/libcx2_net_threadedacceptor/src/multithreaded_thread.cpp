@@ -43,13 +43,13 @@ void MultiThreaded_Accepted_Thread::stopSocket()
     clientSocket->shutdownSocket();
 }
 
-void MultiThreaded_Accepted_Thread::setCallbackOnConnect(bool(*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *obj)
+void MultiThreaded_Accepted_Thread::setCallbackOnConnect(bool(*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void MultiThreaded_Accepted_Thread::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *obj)
+void MultiThreaded_Accepted_Thread::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
@@ -69,7 +69,7 @@ void MultiThreaded_Accepted_Thread::postInitConnection()
         // Start
         if (callbackOnConnect)
         {
-            if (!this->callbackOnConnect(objOnConnect, clientSocket, remotePair))
+            if (!this->callbackOnConnect(objOnConnect, clientSocket, remotePair,isSecure))
             {
                 clientSocket = nullptr;
             }
@@ -79,7 +79,7 @@ void MultiThreaded_Accepted_Thread::postInitConnection()
     {
         if (callbackOnInitFail)
         {
-            if (!this->callbackOnInitFail(objOnInitFail, clientSocket, remotePair))
+            if (!this->callbackOnInitFail(objOnInitFail, clientSocket, remotePair,isSecure))
             {
                 clientSocket = nullptr;
             }
@@ -102,4 +102,14 @@ void MultiThreaded_Accepted_Thread::thread_streamclient(MultiThreaded_Accepted_T
 {
     threadClient->postInitConnection();
     ((MultiThreaded_Acceptor *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
+}
+
+bool MultiThreaded_Accepted_Thread::getIsSecure() const
+{
+    return isSecure;
+}
+
+void MultiThreaded_Accepted_Thread::setIsSecure(bool value)
+{
+    isSecure = value;
 }

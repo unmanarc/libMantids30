@@ -1,0 +1,41 @@
+#ifndef HTTP_SECURITY_HSTS_H
+#define HTTP_SECURITY_HSTS_H
+
+#include <string>
+namespace CX2 { namespace Network { namespace HTTP {
+
+class HTTP_Security_HSTS
+{
+public:
+    HTTP_Security_HSTS();
+    HTTP_Security_HSTS(uint32_t maxAge, bool includeSubDomains = false, bool preload = false);
+
+    bool getActivated() const;
+    void setActivated(bool value);
+
+    /**
+     * @brief getPreload Get if using preload option
+     * @return
+     */
+    bool getPreload() const;
+    /**
+     * @brief setPreload Preload will include this domain in the preload list (see https://hstspreload.org/)
+     * @param value
+     */
+    void setPreload(bool value);
+
+
+    bool getIncludeSubDomains() const;
+    void setIncludeSubDomains(bool value);
+
+    std::string toValue();
+    bool fromValue(const std::string & sValue);
+
+private:
+    bool activated,preload,includeSubDomains;
+    uint32_t maxAge;
+};
+
+}}}
+#endif // HTTP_SECURITY_HSTS_H
+

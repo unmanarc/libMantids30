@@ -1,11 +1,16 @@
 #include "mime_sub_header.h"
-#include <boost/algorithm/string/split.hpp>
+
+#include <boost/regex.hpp>
+#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <cx2_hlp_functions/random.h>
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
+using namespace std;
 
 MIME_Sub_Header::MIME_Sub_Header()
 {
@@ -148,12 +153,99 @@ Memory::Streams::Parsing::ParseStatus MIME_Sub_Header::parse()
 
 void MIME_Sub_Header::parseSubValues(HeaderOption * opt, const std::string &strName, int state)
 {
-    const char * cStrName = strName.c_str();
-
-    opt->setOrigValue(strName);
-
     // hello weo; doaie; fa = "hello world;" hehe; asd=399; aik=""
-    int usingQuotes = 0;
+    std::vector<std::string> vStaticTexts;
+    std::string sVarValues = strName;
+    // TODO: find a way to do this easier...
+    std::string secureReplace = CX2::Helpers::Random::createRandomString(16);
+    opt->setOrigValue(sVarValues);
+
+    boost::trim(sVarValues);
+
+    boost::match_flag_type flags = boost::match_default;
+
+    // PRECOMPILE _STATIC_TEXT
+    boost::regex exStaticText("\"(?<STATIC_TEXT>[^\"]*)\"");
+    boost::match_results<string::const_iterator> whatStaticText;
+    for (string::const_iterator start = sVarValues.begin(), end =  sVarValues.end();
+         boost::regex_search(start, end, whatStaticText, exStaticText, flags);
+         start = sVarValues.begin(), end =  sVarValues.end())
+    {
+        uint64_t pos = vStaticTexts.size();
+        char _staticmsg[128];
+        _staticmsg[127]=0;
+        snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),pos);
+        vStaticTexts.push_back(string(whatStaticText[1].first, whatStaticText[1].second));
+        boost::replace_all(sVarValues,"\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"" ,_staticmsg);
+    }
+
+    vector<string> vValues;
+    split(vValues,sVarValues,is_any_of(";"),token_compress_on);
+
+    bool first = true;
+
+    for (const std::string & value : vValues)
+    {
+        if (boost::contains(value,"="))
+        {
+            std::string sVarName = value.substr(0,value.find("="));
+            std::string sVarValue = value.substr(value.find("=")+1);
+
+            boost::trim(sVarName);
+            boost::trim(sVarValue);
+
+            // replace back...
+            for (uint64_t i=0; i<vStaticTexts.size();i++)
+            {
+                char _staticmsg[128];
+                _staticmsg[127]=0;
+                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
+
+                boost::replace_all(sVarName,_staticmsg, vStaticTexts[i]);
+                boost::replace_all(sVarValue,_staticmsg, vStaticTexts[i]);
+            }
+
+            opt->addSubVar(sVarName,sVarValue);
+        }
+        else
+        {
+            std::string sv = boost::trim_copy(value);
+
+            // replace back...
+            for (uint64_t i=0; i<vStaticTexts.size();i++)
+            {
+                char _staticmsg[128];
+                _staticmsg[127]=0;
+                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
+
+                boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
+            }
+
+            //if (!(first && vValues.size()==1))
+            opt->addSubVar(sv,"");
+        }
+
+        if (first)
+        {
+            std::string sv = boost::trim_copy(value);
+
+            // replace back...
+            for (uint64_t i=0; i<vStaticTexts.size();i++)
+            {
+                char _staticmsg[128];
+                _staticmsg[127]=0;
+                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
+
+                boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
+            }
+
+            opt->setValue( sv );
+            first=false;
+        }
+
+    }
+
+    /*    int usingQuotes = 0;
     size_t prevPos = 0;
     std::string curSubVarName, curSubVarValue;
 
@@ -231,7 +323,7 @@ void MIME_Sub_Header::parseSubValues(HeaderOption * opt, const std::string &strN
         default:
             break;
         }
-    }
+    }*/
 }
 
 void MIME_Sub_Header::parseOptionValue(std::string optionValue)
@@ -283,13 +375,25 @@ void MIME_Sub_Header::setMaxSubOptionCount(const size_t &value)
 std::string HeaderOption::getString()
 {
     std::string r;
-    r = origName + ": " + value;
-    
-    if (!subVar.empty())
+
+    r = origName + ": ";
+
+    bool prev = false;
+    for (const auto & i : subVar)
     {
-        r+="; ";
-        for (const auto & i : subVar)
-            r+= i.first + "=\"" + i.second + "\"; ";
+        if (prev)
+        {
+            r+="; ";
+        }
+        prev=true;
+        if (i.second.empty())
+        {
+            r+= i.first;
+        }
+        else
+        {
+            r+= i.first + "=\"" + i.second + "\"";
+        }
     }
     return r;
 
@@ -301,7 +405,7 @@ bool HeaderOption::isPermited7bitCharset(const std::string &varX)
     // No strange chars on our vars...
     for (size_t i=0;i<varX.size();i++)
     {
-        if (varX[i]<33 || varX[i]>126) return false;
+        if (varX[i]<32 || varX[i]>126) return false;
     }
     return true;
 }
@@ -309,6 +413,7 @@ bool HeaderOption::isPermited7bitCharset(const std::string &varX)
 
 void HeaderOption::addSubVar(const std::string &varName, const std::string &varValue)
 {
+    if (varName.empty() && varValue.empty()) return;
     if (subVar.size()>=maxSubOptionsCount) return;
     if (varName.size()+varValue.size()+curHeaderOptSize>maxHeaderOptSize) return;
     if (!isPermited7bitCharset(varName)) return;

@@ -11,7 +11,7 @@
 #include "mime_sub_endpboundary.h"
 
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 enum MultiPartState
 {

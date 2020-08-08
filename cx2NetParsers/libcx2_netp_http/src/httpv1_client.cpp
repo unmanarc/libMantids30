@@ -5,7 +5,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTPv1_Client::HTTPv1_Client(Memory::Streams::Streamable *sobject) : HTTPv1_Base(true,sobject)
@@ -40,6 +40,18 @@ bool HTTPv1_Client::changeToNextParser()
     {
         // Process headers here:
         /////////////////////////////////////////////////////////////////////////
+        // Parse Xframeopts...
+        secXFrameOpts.fromValue(_serverHeaders.getOptionRawStringByName("X-Frame-Options"));
+        // Parse XSS Protection.
+        secXSSProtection.fromValue(_serverHeaders.getOptionRawStringByName("X-XSS-Protection"));
+        // Parse HSTS Configuration.
+        secHSTS.fromValue(_serverHeaders.getOptionRawStringByName("Strict-Transport-Security"));
+        // TODO: check if using HSTS
+        // TODO: get the preload list.
+
+        // Parse content-type...
+        serverContentType = _serverHeaders.getOptionRawStringByName("Content-Type");
+        securityNoSniffContentType = iequals(_serverHeaders.getOptionRawStringByName("X-Content-Type-Options"),"nosniff");
         // Parse server cookies...
         parseHeaders2ServerCookies();
         // Parse the transmition mode requested and act according it.
@@ -95,6 +107,31 @@ bool HTTPv1_Client::streamClientHeaders(Memory::Streams::Status &wrStat)
 
     // Stream it..
     return _clientHeaders.stream(wrStat);
+}
+
+HTTP_Security_HSTS HTTPv1_Client::getSecHSTS() const
+{
+    return secHSTS;
+}
+
+HTTP_Security_XSSProtection HTTPv1_Client::getSecXSSProtection() const
+{
+    return secXSSProtection;
+}
+
+HTTP_Security_XFrameOpts HTTPv1_Client::getSecXFrameOpts() const
+{
+    return secXFrameOpts;
+}
+
+bool HTTPv1_Client::getSecurityNoSniffContentType() const
+{
+    return securityNoSniffContentType;
+}
+
+std::string HTTPv1_Client::getServerContentType() const
+{
+    return serverContentType;
 }
 
 HTTP_Cookies_ServerSide * HTTPv1_Client::getServerCookies()

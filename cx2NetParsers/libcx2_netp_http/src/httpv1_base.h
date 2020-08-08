@@ -16,7 +16,7 @@
 #define VNET_HTTP_VERSION_MAJOR 0
 #define VNET_HTTP_VERSION_MINOR 1
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 struct HTTPServerParams
 {

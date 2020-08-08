@@ -1,6 +1,6 @@
 #include "httpv1_base.h"
 
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) : Memory::Streams::Parsing::Parser(sobject,clientMode)

@@ -6,7 +6,7 @@
 #include "http_request.h"
 #include "http_content.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 struct sWebFullRequest
 {

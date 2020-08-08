@@ -55,7 +55,7 @@ bool MultiThreaded_Acceptor::processClient(Streams::StreamSocket *clientSocket, 
         {
             if (callbackOnTimedOut)
             {
-                callbackOnTimedOut(objOnTimedOut, clientSocket, clientThread->getRemotePair());
+                callbackOnTimedOut(objOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->getIsSecure());
             }
             delete clientThread;
             return true;
@@ -182,6 +182,7 @@ bool MultiThreaded_Acceptor::acceptClient()
         clientThread->setCallbackOnConnect(this->callbackOnConnect, objOnConnect);
         clientThread->setCallbackOnInitFail(this->callbackOnInitFail, objOnInitFail);
         clientThread->setParent(this);
+        clientThread->setIsSecure(clientSocket->isSecure());
         return processClient(clientSocket,clientThread);
     }
     return false; // no more connections. (abandon)
@@ -227,19 +228,19 @@ void MultiThreaded_Acceptor::stop()
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *obj)
+void MultiThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void MultiThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *obj)
+void MultiThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void MultiThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *), void *obj)
+void MultiThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimedOut;
     this->objOnTimedOut = obj;

@@ -3,7 +3,7 @@
 
 #include <cx2_mem_streams/streamable.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_HLP_Chunked_Retriever : public Memory::Streams::Streamable
 {

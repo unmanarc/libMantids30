@@ -1,7 +1,7 @@
 #include "http_date.h"
 
 #include <string.h>
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTP_Date::HTTP_Date()

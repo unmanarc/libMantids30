@@ -12,7 +12,7 @@ Random::Random()
 string Random::createRandomString(string::basic_string::size_type length)
 {
     // TODO: check randomness for crypto!
-    char baseChars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.";
+    char baseChars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string randomStr;
     std::mt19937 rg{std::random_device{}()};
     std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(baseChars)-2);

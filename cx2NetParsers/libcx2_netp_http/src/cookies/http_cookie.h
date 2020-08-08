@@ -4,12 +4,18 @@
 #include <string>
 #include "http_date.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
-class HTTP_Cookie_Value
+enum eHTTP_Cookie_SameSitePolicy {
+    HTTP_COOKIE_SAMESITE_NONE = 0,
+    HTTP_COOKIE_SAMESITE_LAX = 1,
+    HTTP_COOKIE_SAMESITE_STRICT = 2
+};
+
+class HTTP_Cookie
 {
 public:
-    HTTP_Cookie_Value();
+    HTTP_Cookie();
 
     std::string toSetCookieString(const std::string & cookieName);
     bool fromSetCookieString(const std::string & setCookieValue, std::string * cookieName);
@@ -37,8 +43,9 @@ public:
     bool isSecure() const;
     void setSecure(bool value);
 
-    std::string getSameSite() const;
-    void isSameSite(const std::string &value);
+
+    eHTTP_Cookie_SameSitePolicy getSameSite() const;
+    void setSameSite(const eHTTP_Cookie_SameSitePolicy &value);
 
 private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
@@ -50,7 +57,7 @@ private:
     std::string domain;
     std::string path;
     bool secure,httpOnly;
-    std::string sameSite;
+    eHTTP_Cookie_SameSitePolicy sameSite;
 };
 
 }}}

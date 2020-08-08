@@ -1,9 +1,10 @@
 QT       -= core gui
 
-SOURCES += \
-    src/server.cpp
-HEADERS += \
-    src/server.h
+SOURCES +=  \
+    fastrpc.cpp
+HEADERS +=  \
+    fastrpc.h
+
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
@@ -17,7 +18,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-TARGET = cx2_xrpc_server
+TARGET = cx2_xrpc_fast
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib

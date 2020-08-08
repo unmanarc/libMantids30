@@ -43,15 +43,15 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj);
     /**
      * Set callback when timed out (max concurrent clients reached and timed out) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj);
     /**
      * Set callback when maximum connections per IP reached (this callback is called from acceptor thread, you should use it very quick)
      */
@@ -117,9 +117,9 @@ private:
     std::map<std::string, uint32_t> connectionsPerIP;
 
     // Callbacks:
-    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *);
-    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *);
-    void (*callbackOnTimedOut)(void *,Streams::StreamSocket *, const char *);
+    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *, bool);
+    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *, bool);
+    void (*callbackOnTimedOut)(void *,Streams::StreamSocket *, const char *, bool);
     void (*callbackOnMaxConnectionsPerIP)(void *,Streams::StreamSocket *, const char *);
 
     void *objOnConnect, *objOnInitFail, *objOnTimedOut, *objOnMaxConnectionsPerIP;

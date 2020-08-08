@@ -7,7 +7,7 @@
 #include <cx2_netp_urlvars/url_vars.h>
 #include <cx2_netp_mime/multipart_vars.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 
 enum HTTP_Content_Transmition_Mode {

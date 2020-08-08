@@ -213,6 +213,8 @@ public:
      */
     virtual int iShutdown(int mode = SHUT_RDWR);
 
+    virtual bool isSecure() { return false; };
+
 private:
     static void socketSystemInitialization();
     void initVars();
@@ -246,6 +248,7 @@ protected:
      * @brief listenMode The socket is in listen mode.
      */
     bool listenMode;
+
 
     /**
      * @brief sockfd Socket descriptor

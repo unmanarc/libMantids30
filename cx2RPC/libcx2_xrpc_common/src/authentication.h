@@ -3,7 +3,7 @@
 
 #include <string>
 #include <json/json.h>
-namespace CX2 { namespace RPC { namespace XRPC {
+namespace CX2 { namespace RPC {
 
 class Authentication
 {
@@ -24,6 +24,6 @@ private:
     std::string userName,userPass, domainName;
     uint32_t passIndex;
 };
-}}}
+}}
 
 #endif // AUTHENTICATION_H

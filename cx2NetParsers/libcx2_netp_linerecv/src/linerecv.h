@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 #include "linerecv_subparser.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class LineRecv : public Memory::Streams::Parsing::Parser
 {

@@ -6,7 +6,7 @@
 
 #include <cx2_netp_mime/mime_sub_header.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_Cookies_ClientSide
 {

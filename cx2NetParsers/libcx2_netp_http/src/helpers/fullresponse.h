@@ -5,17 +5,29 @@
 #include "http_content.h"
 #include "http_status.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+#include "http_security_xframeopts.h"
+#include "http_security_xssprotection.h"
+#include "http_security_hsts.h"
+
+namespace CX2 { namespace Network { namespace HTTP {
 
 struct sWebFullResponse
 {
     // Proceced information:
-    HTTP_Cookies_ServerSide * SET_COOKIES;
+    HTTP_Cookies_ServerSide * setCookies;
+
+    // Security Parameters:
+    HTTP_Security_XFrameOpts * secXFrameOpts;
+    HTTP_Security_XSSProtection * secXSSProtection;
+    HTTP_Security_HSTS * secHSTS;
 
     // Original Values:
     MIME_Sub_Header * headers; //
     HTTP_Status * status; //
     HTTP_Content * contentData; //
+
+    std::string contentType;
+    bool bNoSniff;
 };
 
 }}}

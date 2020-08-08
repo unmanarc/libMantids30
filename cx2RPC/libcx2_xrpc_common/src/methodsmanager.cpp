@@ -2,34 +2,14 @@
 
 #include "request.h"
 #include "retcodes.h"
-#include "serverbase.h"
 
 #include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::RPC::XRPC;
+using namespace CX2::RPC;
 using namespace CX2;
 
-MethodsManager::MethodsManager(uint32_t threadsCount, uint32_t taskQueues)
+MethodsManager::MethodsManager()
 {
-    threadPool = new CX2::Threads::Pool::ThreadPool(threadsCount, taskQueues);
-    timeout = 2000; // 2sec.
-    threadPool->start();
-}
-
-MethodsManager::~MethodsManager()
-{
-    delete threadPool;
-}
-
-void MethodsManager::stop()
-{
-    threadPool->stop();
-}
-
-bool MethodsManager::pushRPCMethodIntoQueue(sRPCParameters *params, const std::string &key, const float &priority)
-{
-    params->rpcMethodsCaller = this;
-    return threadPool->pushTask(executeRPCTask,params,timeout,priority,key);
 }
 
 
@@ -49,7 +29,7 @@ bool MethodsManager::addRPCMethod(const std::string &methodName, const std::set<
     return false;
 }
 
-int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain, const std::string & domainName,CX2::Authorization::Session::IAuth_Session * session, const std::string & methodName, const Json::Value & payload, const Json::Value & extraInfo, Json::Value *payloadOut, Json::Value *extraInfoOut)
+int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain, const std::string & domainName,CX2::Authorization::Session::IAuth_Session * session, const std::string & methodName, const Json::Value & payload,  Json::Value *payloadOut)
 {
     // not authenticated...
     if (session->isAuthenticated()!=Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
@@ -64,7 +44,7 @@ int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain,
         CX2::Authorization::IAuth * auth;
         if ((auth=authDomain->openDomain(domainName))!=nullptr)
         {
-            *payloadOut = methods[methodName].rpcMethod(methods[methodName].obj, auth, session,payload,extraInfo,extraInfoOut);
+            *payloadOut = methods[methodName].rpcMethod(methods[methodName].obj, auth, session,payload);
             authDomain->closeDomain(domainName);
             return METHOD_RET_CODE_SUCCESS;
         }
@@ -106,32 +86,6 @@ CX2::Authorization::Validation::IAuth_Methods_Attributes *MethodsManager::getMet
     return &methodsAttribs;
 }
 
-void MethodsManager::executeRPCTask(void *taskData)
-{
-    sRPCParameters * data = (sRPCParameters *)(taskData);
-    Request answer;
-    answer.setReqId(data->requestId);
-    answer.setMethodName(data->methodName);
-    answer.setRpcMode("EXEC");
-
-    Json::Value rPayload, rExtraInfo;
-    int rcode;
-    rcode = ((MethodsManager *)(data->rpcMethodsCaller))->runRPCMethod(data->authDomains,
-                                                                            data->domainName,
-                                                                            data->session,
-                                                                            data->methodName,
-                                                                            data->payload,
-                                                                            data->extraInfo,
-                                                                            &rPayload,
-                                                                            &rExtraInfo);
-    answer.setPayload(rPayload);
-    answer.setExtraInfo(rExtraInfo);
-    answer.setRetCode(rcode);
-
-    ((ServerBase *)(data->connectionSender))->sendAnswer(answer);
-    delete data;
-}
-
 Json::Value MethodsManager::toValue(const std::set<std::string> &t)
 {
     Json::Value x;
@@ -148,9 +102,4 @@ Json::Value MethodsManager::toValue(const std::set<uint32_t> &t)
     for (const uint32_t & i : t)
         x[v++] = i;
     return x;
-}
-
-void MethodsManager::setTimeout(const uint32_t &value)
-{
-    timeout = value;
 }

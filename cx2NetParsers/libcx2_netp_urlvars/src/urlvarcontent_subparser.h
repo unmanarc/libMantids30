@@ -3,7 +3,7 @@
 
 #include <cx2_mem_streamparser/substreamparser.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class URLVarContent_SubParser : public Memory::Streams::Parsing::SubParser
 {

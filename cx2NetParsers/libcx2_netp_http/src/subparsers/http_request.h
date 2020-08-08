@@ -8,7 +8,7 @@
 #include "http_version.h"
 
 #include <cx2_netp_urlvars/url_vars.h>
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_Request : public Memory::Streams::Parsing::SubParser
 {

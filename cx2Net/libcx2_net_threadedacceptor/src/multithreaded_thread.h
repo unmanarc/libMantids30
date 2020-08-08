@@ -36,11 +36,11 @@ public:
     /**
      * Set callback when connection is fully established
      */
-    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *objOnConnected);
+    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *objOnConnected);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS)
      */
-    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *objOnConnected);
+    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *objOnConnected);
     /**
      * Call callback
      * to be used from the client thread.
@@ -57,15 +57,18 @@ public:
      */
     const char * getRemotePair();
 
+    bool getIsSecure() const;
+    void setIsSecure(bool value);
+
 private:
     static void thread_streamclient(MultiThreaded_Accepted_Thread * threadClient, void * threadedAcceptedControl);
 
-
     Streams::StreamSocket * clientSocket;
-    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *);
-    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *);
+    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *, bool);
+    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *, bool);
 
     char remotePair[INET6_ADDRSTRLEN+2];
+    bool isSecure;
 
     void *objOnConnect, *objOnInitFail;
     void * parent;

@@ -4,7 +4,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_Version
 {

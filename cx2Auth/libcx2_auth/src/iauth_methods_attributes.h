@@ -14,8 +14,6 @@ class IAuth_Methods_Attributes
 public:
     IAuth_Methods_Attributes();
 
-
-
     /**
      * @brief addMethodAttributes
      * @param methodName

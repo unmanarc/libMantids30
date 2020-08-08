@@ -1,7 +1,7 @@
 #ifndef RETCODES_H
 #define RETCODES_H
 
-namespace CX2 { namespace RPC { namespace XRPC {
+namespace CX2 { namespace RPC {
 
 enum eRetCodes {
     METHOD_RET_CODE_SUCCESS = 0,
@@ -14,7 +14,6 @@ enum eRetCodes {
     METHOD_RET_CODE_METHODNOTFOUND = -9999
 };
 
-
-}}}
+}}
 
 #endif // RETCODES_H

@@ -38,15 +38,15 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *,bool), void *obj);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *,bool), void *obj);
     /**
      * Set callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *), void *obj);
+    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj);
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
@@ -108,9 +108,9 @@ private:
     CX2::Threads::Pool::ThreadPool * pool;
     Streams::StreamSocket * acceptorSocket;
 
-    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *);
-    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *);
-    void (*callbackOnTimedOut)(void *,Streams::StreamSocket *, const char *);
+    bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *,bool);
+    bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *,bool);
+    void (*callbackOnTimedOut)(void *,Streams::StreamSocket *, const char *,bool);
 
     void *objOnConnect, *objOnInitFail, *objOnTimedOut;
 

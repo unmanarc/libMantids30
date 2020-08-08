@@ -3,7 +3,7 @@
 using namespace CX2::RPC::Templates;
 using namespace CX2;
 
-void FullAuth::AddFullAuthMethods(XRPC::MethodsManager *methods)
+void FullAuth::AddFullAuthMethods(MethodsManager *methods)
 {
     methods->addRPCMethod("accountChangePassword", {"admin"}, {&accountChangePassword,nullptr});
     methods->addRPCMethod("accountRemove", {"admin"}, {&accountRemove,nullptr});
@@ -52,10 +52,7 @@ void FullAuth::AddFullAuthMethods(XRPC::MethodsManager *methods)
     methods->addRPCMethod("groupAccounts", {"admin"}, {&groupAccounts,nullptr});
 }
 
-//
-
-
-Json::Value FullAuth::accountChangePassword(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountChangePassword(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -68,7 +65,7 @@ Json::Value FullAuth::accountChangePassword(void *, CX2::Authorization::IAuth *a
     return payloadOut;
 }
 
-Json::Value FullAuth::accountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -76,7 +73,7 @@ Json::Value FullAuth::accountRemove(void *, CX2::Authorization::IAuth *auth,CX2:
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDisable(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountDisable(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -84,7 +81,7 @@ Json::Value FullAuth::accountDisable(void *, CX2::Authorization::IAuth *auth,CX2
     return payloadOut;
 }
 
-Json::Value FullAuth::accountConfirm(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountConfirm(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -92,7 +89,7 @@ Json::Value FullAuth::accountConfirm(void *, CX2::Authorization::IAuth *auth,CX2
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -100,7 +97,7 @@ Json::Value FullAuth::accountChangeDescription(void *, CX2::Authorization::IAuth
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeEmail(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountChangeEmail(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -108,7 +105,7 @@ Json::Value FullAuth::accountChangeEmail(void *, CX2::Authorization::IAuth *auth
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeExtraData(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountChangeExtraData(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -116,7 +113,7 @@ Json::Value FullAuth::accountChangeExtraData(void *, CX2::Authorization::IAuth *
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeExpiration(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountChangeExpiration(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -124,7 +121,7 @@ Json::Value FullAuth::accountChangeExpiration(void *, CX2::Authorization::IAuth 
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountDisabled(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::isAccountDisabled(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -132,7 +129,7 @@ Json::Value FullAuth::isAccountDisabled(void *, CX2::Authorization::IAuth *auth,
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountConfirmed(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::isAccountConfirmed(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -140,7 +137,7 @@ Json::Value FullAuth::isAccountConfirmed(void *, CX2::Authorization::IAuth *auth
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountSuperUser(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::isAccountSuperUser(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -148,7 +145,7 @@ Json::Value FullAuth::isAccountSuperUser(void *, CX2::Authorization::IAuth *auth
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -156,7 +153,7 @@ Json::Value FullAuth::accountDescription(void *, CX2::Authorization::IAuth *auth
     return payloadOut;
 }
 
-Json::Value FullAuth::accountEmail(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountEmail(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -164,7 +161,7 @@ Json::Value FullAuth::accountEmail(void *, CX2::Authorization::IAuth *auth,CX2::
     return payloadOut;
 }
 
-Json::Value FullAuth::accountExtraData(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountExtraData(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -172,7 +169,7 @@ Json::Value FullAuth::accountExtraData(void *, CX2::Authorization::IAuth *auth,C
     return payloadOut;
 }
 
-Json::Value FullAuth::accountExpirationDate(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountExpirationDate(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -180,7 +177,7 @@ Json::Value FullAuth::accountExpirationDate(void *, CX2::Authorization::IAuth *a
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountExpired(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::isAccountExpired(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -188,7 +185,7 @@ Json::Value FullAuth::isAccountExpired(void *, CX2::Authorization::IAuth *auth,C
     return payloadOut;
 }
 
-Json::Value FullAuth::accountValidateAttribute(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountValidateAttribute(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -196,7 +193,7 @@ Json::Value FullAuth::accountValidateAttribute(void *, CX2::Authorization::IAuth
     return payloadOut;
 }
 
-Json::Value FullAuth::accountsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -204,7 +201,7 @@ Json::Value FullAuth::accountsList(void *, CX2::Authorization::IAuth *auth,CX2::
     return payloadOut;
 }
 
-Json::Value FullAuth::accountGroups(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountGroups(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -212,7 +209,7 @@ Json::Value FullAuth::accountGroups(void *, CX2::Authorization::IAuth *auth,CX2:
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDirectAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountDirectAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -220,7 +217,7 @@ Json::Value FullAuth::accountDirectAttribs(void *, CX2::Authorization::IAuth *au
     return payloadOut;
 }
 
-Json::Value FullAuth::accountUsableAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::accountUsableAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -228,7 +225,7 @@ Json::Value FullAuth::accountUsableAttribs(void *, CX2::Authorization::IAuth *au
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -236,7 +233,7 @@ Json::Value FullAuth::attribAdd(void *, CX2::Authorization::IAuth *auth,CX2::Aut
     return payloadOut;
 }
 
-Json::Value FullAuth::attribRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -244,7 +241,7 @@ Json::Value FullAuth::attribRemove(void *, CX2::Authorization::IAuth *auth,CX2::
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroupAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribGroupAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -252,7 +249,7 @@ Json::Value FullAuth::attribGroupAdd(void *, CX2::Authorization::IAuth *auth,CX2
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroupRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribGroupRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -260,7 +257,7 @@ Json::Value FullAuth::attribGroupRemove(void *, CX2::Authorization::IAuth *auth,
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccountAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribAccountAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -268,7 +265,7 @@ Json::Value FullAuth::attribAccountAdd(void *, CX2::Authorization::IAuth *auth,C
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribAccountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -276,7 +273,7 @@ Json::Value FullAuth::attribAccountRemove(void *, CX2::Authorization::IAuth *aut
     return payloadOut;
 }
 
-Json::Value FullAuth::attribChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -284,7 +281,7 @@ Json::Value FullAuth::attribChangeDescription(void *, CX2::Authorization::IAuth 
     return payloadOut;
 }
 
-Json::Value FullAuth::attribsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -292,7 +289,7 @@ Json::Value FullAuth::attribsList(void *, CX2::Authorization::IAuth *auth,CX2::A
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroups(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribGroups(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -300,7 +297,7 @@ Json::Value FullAuth::attribGroups(void *, CX2::Authorization::IAuth *auth,CX2::
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccounts(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::attribAccounts(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -308,7 +305,7 @@ Json::Value FullAuth::attribAccounts(void *, CX2::Authorization::IAuth *auth,CX2
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -316,7 +313,7 @@ Json::Value FullAuth::groupAdd(void *, CX2::Authorization::IAuth *auth,CX2::Auth
     return payloadOut;
 }
 
-Json::Value FullAuth::groupRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -324,7 +321,7 @@ Json::Value FullAuth::groupRemove(void *, CX2::Authorization::IAuth *auth,CX2::A
     return payloadOut;
 }
 
-Json::Value FullAuth::groupExist(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupExist(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -332,7 +329,7 @@ Json::Value FullAuth::groupExist(void *, CX2::Authorization::IAuth *auth,CX2::Au
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccountAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupAccountAdd(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -340,7 +337,7 @@ Json::Value FullAuth::groupAccountAdd(void *, CX2::Authorization::IAuth *auth,CX
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupAccountRemove(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -348,7 +345,7 @@ Json::Value FullAuth::groupAccountRemove(void *, CX2::Authorization::IAuth *auth
     return payloadOut;
 }
 
-Json::Value FullAuth::groupChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupChangeDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -356,7 +353,7 @@ Json::Value FullAuth::groupChangeDescription(void *, CX2::Authorization::IAuth *
     return payloadOut;
 }
 
-Json::Value FullAuth::groupValidateAttribute(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupValidateAttribute(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -364,7 +361,7 @@ Json::Value FullAuth::groupValidateAttribute(void *, CX2::Authorization::IAuth *
     return payloadOut;
 }
 
-Json::Value FullAuth::groupDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupDescription(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -372,7 +369,7 @@ Json::Value FullAuth::groupDescription(void *, CX2::Authorization::IAuth *auth,C
     return payloadOut;
 }
 
-Json::Value FullAuth::groupsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupsList(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -380,7 +377,7 @@ Json::Value FullAuth::groupsList(void *, CX2::Authorization::IAuth *auth,CX2::Au
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupAttribs(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 
@@ -388,7 +385,7 @@ Json::Value FullAuth::groupAttribs(void *, CX2::Authorization::IAuth *auth,CX2::
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccounts(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload, const Json::Value &extraInfo, Json::Value *extraInfoOut)
+Json::Value FullAuth::groupAccounts(void *, CX2::Authorization::IAuth *auth,CX2::Authorization::Session::IAuth_Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
 

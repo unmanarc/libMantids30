@@ -6,7 +6,7 @@
 
 #include <cx2_mem_streams/streamable.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class MIME_PartMessage
 {

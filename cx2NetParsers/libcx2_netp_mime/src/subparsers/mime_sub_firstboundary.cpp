@@ -1,5 +1,5 @@
 #include "mime_sub_firstboundary.h"
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()

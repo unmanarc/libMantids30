@@ -1,7 +1,7 @@
 #include "http_hlp_chunked_retriever.h"
 #include <stdio.h>
 #include <string.h>
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTP_HLP_Chunked_Retriever::HTTP_HLP_Chunked_Retriever(Memory::Streams::Streamable *dst)

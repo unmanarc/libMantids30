@@ -1,4 +1,4 @@
-#include "iauth_validation_methods.h"
+#include "iauth_methods_attributes.h"
 
 using namespace CX2::Authorization::Validation;
 using namespace CX2::Authorization::DataStructs;

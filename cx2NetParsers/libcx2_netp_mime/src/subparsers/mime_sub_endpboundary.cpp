@@ -1,5 +1,5 @@
 #include "mime_sub_endpboundary.h"
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 MIME_Sub_EndPBoundary::MIME_Sub_EndPBoundary()

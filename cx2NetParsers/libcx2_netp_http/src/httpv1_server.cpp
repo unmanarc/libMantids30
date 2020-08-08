@@ -8,7 +8,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 using namespace CX2;
 
 HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base(false, sobject)
@@ -18,7 +18,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequest);
 }
 
-sWebFullRequest HTTPv1_Server::getFullRequest()
+sWebFullRequest HTTPv1_Server::requestData()
 {
     sWebFullRequest fullReq;
 
@@ -31,8 +31,8 @@ sWebFullRequest HTTPv1_Server::getFullRequest()
         fullReq.USER_AGENT = _clientHeaders.getOptionRawStringByName("User-Agent");
     }
 
-    fullReq.VARS_GET = getVars(HTTP_VARS_GET);
-    fullReq.VARS_POST = getVars(HTTP_VARS_POST);
+    fullReq.VARS_GET = getRequestVars(HTTP_VARS_GET);
+    fullReq.VARS_POST = getRequestVars(HTTP_VARS_POST);
     fullReq.VARS_COOKIES = _clientHeaders.getOptionByName("Cookie");
 
     fullReq.CLIENT_IP = remotePairAddress;
@@ -46,14 +46,19 @@ sWebFullRequest HTTPv1_Server::getFullRequest()
     return fullReq;
 }
 
-sWebFullResponse HTTPv1_Server::getFullResponse()
+sWebFullResponse HTTPv1_Server::responseData()
 {
     sWebFullResponse fullR;
 
     fullR.contentData = &_serverContentData;
     fullR.headers = &_serverHeaders;
     fullR.status = &_serverCodeResponse;
-    fullR.SET_COOKIES = &setCookies;
+    fullR.setCookies = &setCookies;
+    fullR.secXFrameOpts = &secXFrameOpts;
+    fullR.secXSSProtection = &secXSSProtection;
+    fullR.secHSTS = &secHSTS;
+    fullR.bNoSniff = bNoSniff;
+    fullR.contentType = contentType;
 
     return fullR;
 }
@@ -63,12 +68,12 @@ void HTTPv1_Server::setRemotePairAddress(const char *value)
     strncpy(remotePairAddress,value,sizeof(remotePairAddress)-1);
 }
 
-HTTP_ContainerType HTTPv1_Server::getClientDataType()
+HTTP_ContainerType HTTPv1_Server::getRequestDataType()
 {
     return _clientContentData.getContainerType();
 }
 
-Memory::Vars::Vars *HTTPv1_Server::getVars(const VarSource &source)
+Memory::Vars::Vars *HTTPv1_Server::getRequestVars(const VarSource &source)
 {
     switch (source)
     {
@@ -80,9 +85,9 @@ Memory::Vars::Vars *HTTPv1_Server::getVars(const VarSource &source)
     return nullptr;
 }
 
-void HTTPv1_Server::setServerName(const string &serverName)
+void HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
-    _serverHeaders.replace("Server", serverName);
+    _serverHeaders.replace("Server", sServerName);
 }
 
 bool HTTPv1_Server::processClientURI()
@@ -95,7 +100,7 @@ bool HTTPv1_Server::processClientOptions()
     return true;
 }
 
-HttpRetCode HTTPv1_Server::processclientRequest()
+HttpRetCode HTTPv1_Server::processClientRequest()
 {
     return HTTP_RET_200_OK;
 }
@@ -110,6 +115,8 @@ bool HTTPv1_Server::changeToNextParser()
 
 bool HTTPv1_Server::changeToNextParserOnClientHeaders()
 {
+    // This function is used when the client options arrives, so we need to parse it.
+
     // Internal checks when options are parsed (ex. check if host exist on http/1.1)
     parseHostOptions();
     prepareServerVersionOnOptions();
@@ -120,8 +127,6 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
     {
         uint64_t contentLength = _clientHeaders.getOptionAsUINT64("Content-Length");
         string contentType = _clientHeaders.getOptionValueStringByName("Content-Type");
-       // string cookies = _clientHeaders.getOptionValueStringByName("Cookie");
-
         /////////////////////////////////////////////////////////////////////////////////////
         // Content-Length...
         if (contentLength)
@@ -148,10 +153,8 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
             }
             else
                 _clientContentData.setContainerType(HTTP_CONTAINERTYPE_BIN);
-            /////////////////////////////////////////////////////////////////////////////////////           
+            /////////////////////////////////////////////////////////////////////////////////////
         }
-        // Client cookies:
-        //clientCookies.parseFromHeaders(cookies);
         // Auth:
         // TODO: deal with http based authorization.
 
@@ -219,6 +222,24 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
     _serverHeaders.remove("Set-Cookie");
     setCookies.putOnHeaders(&_serverHeaders);
 
+    // Security Options...
+
+    _serverHeaders.replace("X-XSS-Protection", secXSSProtection.toValue());
+
+    if (!secXFrameOpts.isNotActivated())
+        _serverHeaders.replace("X-Frame-Options", secXFrameOpts.toValue());
+
+    // TODO: check if this is a secure connection.. (Over TLS?)
+    if (!secHSTS.getActivated())
+        _serverHeaders.replace("Strict-Transport-Security", secHSTS.toValue());
+
+        // Content Type...
+    if (!contentType.empty())
+    {
+        _serverHeaders.replace("Content-Type", contentType);
+        if (bNoSniff) _serverHeaders.replace("X-Content-Type-Options", "nosniff");
+    }
+
     return _serverHeaders.stream(wrStat);
 }
 
@@ -276,9 +297,9 @@ bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
     wrStat.bytesWritten = 0;
 
     // Process client petition here.
-    if (!badAnswer) _serverCodeResponse.setRetCode(processclientRequest());
+    if (!badAnswer) _serverCodeResponse.setRetCode(processClientRequest());
 
-  //  printf("@%p attending %s\n", this, _clientRequest.getURI().c_str()); fflush(stdout);
+    //  printf("@%p attending %s\n", this, _clientRequest.getURI().c_str()); fflush(stdout);
 
     // Answer is the last... close the connection after it.
     currentParser = nullptr;
@@ -298,68 +319,148 @@ bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
     return true;
 }
 
-HTTP_Cookies_ServerSide *HTTPv1_Server::getSetCookies()
+bool HTTPv1_Server::getIsSecure() const
 {
-    return &setCookies;
+    return isSecure;
 }
 
-Memory::Streams::Status HTTPv1_Server::getAnsBytes() const
+void HTTPv1_Server::setIsSecure(bool value)
+{
+    isSecure = value;
+}
+
+HTTP_Security_HSTS HTTPv1_Server::getResponseSecurityHSTS() const
+{
+    return secHSTS;
+}
+
+void HTTPv1_Server::setResponseSecurityHSTS(const HTTP_Security_HSTS &value)
+{
+    secHSTS = value;
+}
+
+HTTP_Security_XSSProtection HTTPv1_Server::getResponseSecurityXSSProtection() const
+{
+    return secXSSProtection;
+}
+
+void HTTPv1_Server::setResponseSecurityXSSProtection(const HTTP_Security_XSSProtection &value)
+{
+    secXSSProtection = value;
+}
+
+HTTP_Security_XFrameOpts HTTPv1_Server::getResponseSecurityXFrameOpts() const
+{
+    return secXFrameOpts;
+}
+
+void HTTPv1_Server::setResponseSecurityXFrameOpts(const HTTP_Security_XFrameOpts &value)
+{
+    secXFrameOpts = value;
+}
+
+Memory::Streams::Status HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return ansBytes;
 }
 
-bool HTTPv1_Server::setServerCookie(const string &cookieName, const string &cookieValue)
+bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const string &cookieValue, const uint32_t &uMaxAge)
 {
-    HTTP_Cookie_Value val;
+    HTTP_Cookie val;
     val.setValue(cookieValue);
-    return setServerCookie(cookieName,val);
+    val.setSecure(true);
+    val.setHttpOnly(true);
+    val.setExpirationInSeconds(uMaxAge);
+    val.setMaxAge(uMaxAge);
+    val.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
+    return setResponseCookie(cookieName,val);
 }
 
-bool HTTPv1_Server::setServerCookie(const string &cookieName, const HTTP_Cookie_Value &cookieValue)
+bool HTTPv1_Server::setResponseInsecureCookie(const string &sCookieName, const string &sCookieValue)
 {
-    return setCookies.addCookieVal(cookieName,cookieValue);
+    HTTP_Cookie val;
+    val.setValue(sCookieValue);
+    return setResponseCookie(sCookieName,val);
 }
 
-string HTTPv1_Server::getClientCookie(const string &cookieName)
+bool HTTPv1_Server::setResponseCookie(const string &sCookieName, const HTTP_Cookie &sCookieValue)
+{
+    return setCookies.addCookieVal(sCookieName,sCookieValue);
+}
+
+Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamable *source)
+{
+    Memory::Streams::Status stat;
+
+    if (!_serverContentData.getStreamableOuput())
+    {
+        stat.succeed = false;
+        return stat;
+    }
+
+    source->streamTo( _serverContentData.getStreamableOuput(), stat);
+    return stat;
+}
+
+Network::HTTP::HttpRetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
+{
+    _serverHeaders.replace("Location", location);
+    if (temporary)
+        return Network::HTTP::HTTP_RET_307_TEMPORARY_REDIRECT;
+    else
+        return Network::HTTP::HTTP_RET_308_PERMANENT_REDIRECT;
+}
+
+void HTTPv1_Server::setResponseContentType(const string &contentType, bool bNoSniff)
+{
+    this->contentType = contentType;
+    this->bNoSniff = bNoSniff;
+}
+
+string HTTPv1_Server::getRequestCookie(const string &sCookieName)
 {
     HeaderOption * cookiesSubVars = _clientHeaders.getOptionByName("Cookie");
     if (!cookiesSubVars) return "";
     // TODO: mayus
-    return cookiesSubVars->getSubVar(cookieName);
+    return cookiesSubVars->getSubVar(sCookieName);
 }
 
-uint16_t HTTPv1_Server::getVirtualPort() const
+string HTTPv1_Server::getRequestContentType()
+{
+    return _clientHeaders.getOptionRawStringByName("Content-Type");
+}
+
+uint16_t HTTPv1_Server::getRequestVirtualPort() const
 {
     return virtualPort;
 }
 
-void HTTPv1_Server::setAnswerOutput(Memory::Streams::Streamable *outStream, bool deleteOutStream)
+void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::Streamable *dsOut, bool bDeleteAfter)
 {
-    _serverContentData.setStreamableOutput(outStream,deleteOutStream);
+    _serverContentData.setStreamableOutput(dsOut,bDeleteAfter);
 }
 
-void HTTPv1_Server::setRequestInput(Memory::Streams::Streamable *outStream, bool deleteOutStream)
+void HTTPv1_Server::setRequestDataContainer(Memory::Streams::Streamable *dsIn, bool bDeleteAfter)
 {
-    _clientContentData.setStreamableOutput(outStream,deleteOutStream);
+    _clientContentData.setStreamableOutput(dsIn,bDeleteAfter);
 }
 
-
-Memory::Streams::Streamable *HTTPv1_Server::output()
+Memory::Streams::Streamable *HTTPv1_Server::getResponseDataStreamer()
 {
     return _serverContentData.getStreamableOuput();
 }
 
-Memory::Streams::Streamable *HTTPv1_Server::input()
+Memory::Streams::Streamable *HTTPv1_Server::getRequestDataContainer()
 {
     return _clientContentData.getStreamableOuput();
 }
 
-string HTTPv1_Server::getURI()
+string HTTPv1_Server::getRequestURI()
 {
     return _clientRequest.getURI();
 }
 
-string HTTPv1_Server::getVirtualHost() const
+string HTTPv1_Server::getRequestVirtualHost() const
 {
     return virtualHost;
 }

@@ -2,18 +2,14 @@ QT       -= core gui
 
 SOURCES +=   src/authentication.cpp \
     src/json_streamable.cpp \
-    src/handshake.cpp \
     src/methodsmanager.cpp \
-    src/request.cpp \
-    src/serverbase.cpp
+    src/request.cpp
 
 HEADERS += src/authentication.h \
     src/json_streamable.h \
-    src/handshake.h \
     src/methodsmanager.h \
     src/request.h \
     src/retcodes.h \
-    src/serverbase.h \
     src/validation.h \
     src/validation_codes.h
 isEmpty(PREFIX) {

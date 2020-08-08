@@ -7,7 +7,7 @@
 
 #include "urlvarcontent_subparser.h"
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 enum URLVStat
 {

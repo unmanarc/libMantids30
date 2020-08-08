@@ -8,13 +8,11 @@
 
 #include <cx2_auth/iauth_domains.h>
 #include <cx2_auth/iauth_validation_methods.h>
-
-#include <cx2_thr_threadpool/threadpool.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 
 #include "validation_codes.h"
 
-namespace CX2 { namespace RPC { namespace XRPC {
+namespace CX2 { namespace RPC {
     
 struct sRPCParameters
 {
@@ -25,7 +23,7 @@ struct sRPCParameters
     CX2::Authorization::Session::IAuth_Session *session;
     std::string methodName;
     Json::Value payload;
-    Json::Value extraInfo;
+//    Json::Value extraInfo;
     uint64_t requestId;
 };
 
@@ -34,7 +32,7 @@ struct sRPCMethod
     /**
      * @brief Function pointer.
      */
-    Json::Value (*rpcMethod)(void * obj, CX2::Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session * session, const Json::Value & parameters, const Json::Value & extraInfo, Json::Value * extraInfoOut);
+    Json::Value (*rpcMethod)(void * obj, CX2::Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session * session, const Json::Value & parameters);
     /**
      * @brief obj object to pass
      */
@@ -44,24 +42,7 @@ struct sRPCMethod
 class MethodsManager
 {
 public:
-    MethodsManager(uint32_t threadsCount = 52, uint32_t taskQueues = 36);
-    ~MethodsManager();
-
-    void stop();
-
-    /**
-     * @brief setTimeout Timeout in milliseconds to desist to put the execution task
-     * @param value milliseconds
-     */
-    void setTimeout(const uint32_t &value);
-    /**
-     * @brief pushRPCMethodIntoQueue push a received order in the task queue
-     * @param params RPC parameters
-     * @param key Key to be prioritized
-     * @param priority priority (0-1] to use n-queues
-     * @return true if inserted, false if failed (saturated)
-     */
-    bool pushRPCMethodIntoQueue( sRPCParameters * params, const std::string & key, const float & priority=0.5 );
+    MethodsManager();
 
     //////////////////////////////////////////////////
     /**
@@ -80,7 +61,7 @@ public:
      * @param answer
      * @return 0 if succeed, -4 if method not found.
      */
-    int runRPCMethod(Authorization::IAuth_Domains *, const std::string &domainName, CX2::Authorization::Session::IAuth_Session *auth, const std::string & methodName, const Json::Value & payload, const Json::Value & extraInfo, Json::Value *payloadOut, Json::Value *extraInfoOut);
+    int runRPCMethod(Authorization::IAuth_Domains *, const std::string &domainName, CX2::Authorization::Session::IAuth_Session *auth, const std::string & methodName, const Json::Value & payload, Json::Value *payloadOut);
     /**
      * @brief validateRPCMethod
      * @param auth
@@ -99,9 +80,6 @@ public:
 
 
 private:
-    static void executeRPCTask(void * taskData);
-
-
     Json::Value toValue(const std::set<std::string> &t);
     Json::Value toValue(const std::set<uint32_t> &t);
 
@@ -111,13 +89,10 @@ private:
 
     CX2::Authorization::Validation::IAuth_Methods_Attributes methodsAttribs;
 
-    CX2::Threads::Pool::ThreadPool * threadPool;
     // lock for methods manipulation...
     Threads::Sync::Mutex_Shared smutexMethods;
-
-    std::atomic<uint32_t> timeout;
 };
 
-}}}
+}}
 
 #endif // SERVER_METHODS_H

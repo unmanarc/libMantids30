@@ -4,7 +4,7 @@
 #include <string>
 #include <cx2_mem_streamparser/substreamparser.h>
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class MIME_Sub_FirstBoundary : public Memory::Streams::Parsing::SubParser
 {

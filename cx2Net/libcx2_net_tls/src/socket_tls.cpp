@@ -261,6 +261,8 @@ int Socket_TLS::iShutdown(int mode)
     }
 }
 
+bool Socket_TLS::isSecure() { return true; }
+
 std::string Socket_TLS::getCertificateAuthorityPath() const
 {
     return ca_file;

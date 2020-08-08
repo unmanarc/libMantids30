@@ -5,7 +5,7 @@
 #include <cx2_thr_mutex_map/map.h>
 #include <cx2_thr_threads/garbagecollector.h>
 
-namespace CX2 { namespace RPC { namespace XRPCWeb {
+namespace CX2 { namespace RPC { namespace Web {
 
 class WebSession : public Threads::Safe::Map_Element
 {
@@ -30,13 +30,14 @@ public:
     uint32_t getSessionExpirationTime() const;
     void setSessionExpirationTime(const uint32_t &value);
 
-    std::string addSession(Authorization::Session::IAuth_Session * session);
-    bool destroySession(const std::string & sessionID);
-    Authorization::Session::IAuth_Session * openSession(const std::string & sessionID);
-    bool closeSession(const std::string & sessionID);
-
     uint32_t getMaxSessionsPerUser() const;
     void setMaxSessionsPerUser(const uint32_t &value);
+
+    std::string addSession(Authorization::Session::IAuth_Session * session);
+    bool destroySession(const std::string & sessionID);
+    Authorization::Session::IAuth_Session * openSession(const std::string & sessionID, uint64_t *maxAge);
+    bool closeSession(const std::string & sessionID);
+
 
 private:
     std::map<std::pair<std::string,std::string>,uint32_t> sessionPerUser;

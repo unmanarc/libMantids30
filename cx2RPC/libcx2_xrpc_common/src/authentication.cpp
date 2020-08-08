@@ -1,6 +1,6 @@
 #include "authentication.h"
 
-using namespace CX2::RPC::XRPC;
+using namespace CX2::RPC;
 using namespace CX2;
 
 Authentication::Authentication()

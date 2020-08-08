@@ -141,6 +141,9 @@ public:
 
     int iShutdown(int mode) override;
 
+    bool isSecure() override;
+
+
 protected:
     /**
      * function for TLS client protocol initialization after the connection starts (client-mode)...

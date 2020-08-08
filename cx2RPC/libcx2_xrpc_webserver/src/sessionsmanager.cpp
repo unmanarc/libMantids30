@@ -2,13 +2,14 @@
 #include <thread>
 #include <cx2_hlp_functions/random.h>
 
-using namespace CX2::RPC::XRPCWeb;
+using namespace CX2::RPC::Web;
 using namespace CX2;
 
 SessionsManager::SessionsManager()
 {
-    maxSessionsPerUser = 1000;
-    gcWaitTime = 1;
+    setGcWaitTime(1); // 1 sec.
+    setSessionExpirationTime(600); // 10 min
+    setMaxSessionsPerUser(100); // 100 sessions
 }
 
 SessionsManager::~SessionsManager()
@@ -22,11 +23,16 @@ void SessionsManager::gc()
     for (const auto & key : i)
     {
         WebSession * s = (WebSession *)sessions.openElement(key);
-        if (s->session->isLastActivityExpired(sessionExpirationTime))
+        if (s && s->session->isLastActivityExpired(sessionExpirationTime))
         {
             sessions.closeElement( key );
             sessions.destroyElement( key );
         }
+        else if (s)
+        {
+            sessions.closeElement( key );
+        }
+
     }
 }
 
@@ -100,11 +106,17 @@ bool SessionsManager::destroySession(const std::string &sessionID)
     return false;
 }
 
-Authorization::Session::IAuth_Session *SessionsManager::openSession(const std::string &sessionID)
+Authorization::Session::IAuth_Session *SessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
 {
     WebSession *xs;
     if ((xs=(WebSession *)sessions.openElement(sessionID))!=nullptr)
+    {
+        if (xs->session->isLastActivityExpired(sessionExpirationTime))
+            *maxAge = 0;
+        else
+            *maxAge = (xs->session->getLastActivity()+sessionExpirationTime)-time(nullptr);
         return xs->session;
+    }
     return nullptr;
 }
 

@@ -11,7 +11,7 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 // ??
 /**
  * @brief The HeaderOption struct

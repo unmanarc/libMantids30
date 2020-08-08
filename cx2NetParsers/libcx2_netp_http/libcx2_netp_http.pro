@@ -1,27 +1,32 @@
 QT       -= core gui
 
-SOURCES += \ 
+SOURCES += \
+    src/cookies/http_cookie.cpp \
     src/helpers/http_hlp_chunked_retriever.cpp \
     src/containers/http_version.cpp \
+    src/security/http_security_hsts.cpp \
+    src/security/http_security_xframeopts.cpp \
+    src/security/http_security_xssprotection.cpp \
     src/subparsers/http_content.cpp \
     src/subparsers/http_request.cpp \
     src/subparsers/http_status.cpp \
     src/httpv1_base.cpp \
     src/httpv1_server.cpp \
     src/httpv1_client.cpp \
-#    src/subparsers/http_headers.cpp \
     src/helpers/http_date.cpp \
     src/cookies/http_cookies_clientside.cpp \
-    src/cookies/http_cookies_serverside.cpp \
-    src/cookies/http_cookie_value.cpp
+    src/cookies/http_cookies_serverside.cpp
 
 HEADERS += \
+    src/cookies/http_cookie.h \
     src/helpers/http_hlp_chunked_retriever.h \
     src/defs/http_retcodes.h \
     src/containers/http_version.h \
+    src/security/http_security_hsts.h \
+    src/security/http_security_xframeopts.h \
+    src/security/http_security_xssprotection.h \
     src/subparsers/http_content.h \
     src/subparsers/http_request.h \
-#    src/subparsers/http_headers.h \
     src/subparsers/http_status.h \
     src/httpv1_base.h \
     src/httpv1_server.h \
@@ -29,7 +34,6 @@ HEADERS += \
     src/helpers/http_date.h \
     src/cookies/http_cookies_clientside.h \
     src/cookies/http_cookies_serverside.h \
-    src/cookies/http_cookie_value.h \
     src/helpers/fullrequest.h \
     src/helpers/fullresponse.h
 
@@ -58,6 +62,9 @@ INCLUDEPATH += src/cookies
 
 QMAKE_INCDIR += src/defs
 INCLUDEPATH += src/defs
+
+QMAKE_INCDIR += src/security
+INCLUDEPATH += src/security
 
 # C++ standard.
 include(../../cflags.pri)

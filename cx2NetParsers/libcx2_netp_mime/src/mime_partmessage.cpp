@@ -1,6 +1,6 @@
 #include "mime_partmessage.h"
 
-using namespace CX2::Network::Parsers;
+using namespace CX2::Network::HTTP;
 
 
 MIME_PartMessage::MIME_PartMessage()

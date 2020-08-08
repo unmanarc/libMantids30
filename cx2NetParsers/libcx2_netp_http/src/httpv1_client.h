@@ -4,6 +4,9 @@
 #include "httpv1_base.h"
 #include "http_cookies_clientside.h"
 #include "http_cookies_serverside.h"
+#include "security/http_security_xframeopts.h"
+#include "security/http_security_xssprotection.h"
+#include "security/http_security_hsts.h"
 
 // TODO: https://en.wikipedia.org/wiki/Media_type
 // TODO: cuando el request para doh5 este listo, pre-procesar primero el request y luego recibir los datos.
@@ -11,7 +14,7 @@
 // TODO: reuse the connection?...
 // TODO: header: :scheme:https (begins with :)
 
-namespace CX2 { namespace Network { namespace Parsers {
+namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
 {
@@ -55,6 +58,31 @@ public:
      * @return server cookies container.
      */
     HTTP_Cookies_ServerSide * getServerCookies();
+    /**
+     * @brief getServerContentType Get Server Content Type
+     * @return Content Type
+     */
+    std::string getServerContentType() const;
+    /**
+     * @brief getSecurityNoSniffContentType Get if No-Sniff option was sent
+     * @return
+     */
+    bool getSecurityNoSniffContentType() const;
+    /**
+     * @brief getSecXFrameOpts Get Security XFrame Options
+     * @return
+     */
+    HTTP_Security_XFrameOpts getSecXFrameOpts() const;
+    /**
+     * @brief getSecXSSProtection Get XSS Protection Header from server
+     * @return
+     */
+    HTTP_Security_XSSProtection getSecXSSProtection() const;
+    /**
+     * @brief getSecHSTS Get HSTS Policy...
+     * @return
+     */
+    HTTP_Security_HSTS getSecHSTS() const;
 
 protected:
     bool initProtocol() override;
@@ -86,6 +114,12 @@ private:
 
     HTTP_Cookies_ClientSide clientCookies;
     HTTP_Cookies_ServerSide serverCookies;
+    HTTP_Security_XFrameOpts secXFrameOpts;
+    HTTP_Security_HSTS secHSTS;
+    HTTP_Security_XSSProtection secXSSProtection;
+
+    std::string serverContentType;
+    bool securityNoSniffContentType;
 };
 
 }}}
