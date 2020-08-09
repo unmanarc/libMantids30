@@ -1,6 +1,6 @@
 #include "http_urlvars.h"
 
-#include <cx2_mem_streamencoders/streamencoder_url.h>
+#include "streamencoder_url.h"
 #include <boost/algorithm/string.hpp>
 
 using namespace boost;

@@ -1,6 +1,6 @@
 #include "http_urlvarcontent_subparser.h"
 
-#include <cx2_mem_streamencoders/streamdecoder_url.h>
+#include "streamdecoder_url.h"
 
 using namespace CX2::Network::HTTP;
 using namespace CX2;

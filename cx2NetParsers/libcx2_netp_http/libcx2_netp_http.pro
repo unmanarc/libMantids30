@@ -17,7 +17,9 @@ SOURCES += \
     src/cookies/http_cookies_clientside.cpp \
     src/cookies/http_cookies_serverside.cpp \
     src/urlvars/http_urlvarcontent_subparser.cpp \
-    src/urlvars/http_urlvars.cpp
+    src/urlvars/http_urlvars.cpp \
+    src/urlvars/streamdecoder_url.cpp \
+    src/urlvars/streamencoder_url.cpp
 
 HEADERS += \
     src/cookies/http_cookie.h \
@@ -39,7 +41,9 @@ HEADERS += \
     src/helpers/fullrequest.h \
     src/helpers/fullresponse.h \
     src/urlvars/http_urlvarcontent_subparser.h \
-    src/urlvars/http_urlvars.h
+    src/urlvars/http_urlvars.h \
+    src/urlvars/streamdecoder_url.h \
+    src/urlvars/streamencoder_url.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
