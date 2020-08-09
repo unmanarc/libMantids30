@@ -1,7 +1,7 @@
 #ifndef LINERECV_SUBPARSER_H
 #define LINERECV_SUBPARSER_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 
 namespace CX2 { namespace Network { namespace Line2Line {
 

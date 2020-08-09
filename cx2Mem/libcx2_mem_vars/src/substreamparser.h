@@ -1,8 +1,8 @@
 ﻿#ifndef INTERNALPARSER_H
 #define INTERNALPARSER_H
 
-#include <cx2_mem_containers/b_chunks.h>
-#include <cx2_mem_containers/b_ref.h>
+#include "b_chunks.h"
+#include "b_ref.h"
 
 namespace CX2 { namespace Memory { namespace Streams { namespace Parsing {
 

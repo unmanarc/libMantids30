@@ -5,7 +5,7 @@
 #include "streamsocketreader.h"
 #include "streamsocketwriter.h"
 #include <utility>
-#include <cx2_mem_streams/streamable.h>
+#include <cx2_mem_vars/streamable.h>
 
 namespace CX2 { namespace Network { namespace Streams {
 

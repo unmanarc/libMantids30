@@ -1,8 +1,8 @@
 #ifndef HTTP_URL_REQUEST_H
 #define HTTP_URL_REQUEST_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
-#include <cx2_mem_containers/b_base.h>
+#include <cx2_mem_vars/substreamparser.h>
+#include <cx2_mem_vars/b_base.h>
 
 #include <string>
 #include "http_version.h"

@@ -1,5 +1,5 @@
 #include "streamparser.h"
-#include <cx2_mem_containers/b_ref.h>
+#include "b_ref.h"
 
 using namespace CX2::Memory::Streams;
 using namespace CX2::Memory::Streams::Parsing;

@@ -1,7 +1,7 @@
 #ifndef HTTP1BASE_H
 #define HTTP1BASE_H
 
-#include <cx2_mem_streamparser/streamparser.h>
+#include <cx2_mem_vars/streamparser.h>
 #include <netinet/in.h>
 #include "linerecv_subparser.h"
 

@@ -2,24 +2,13 @@ QT       -= core gui
 CONFIG += c++11
 
 SOURCES += \
-    src/b_base.cpp \
-    src/b_mmap.cpp \
-    src/b_chunks.cpp \
-    src/b_mem.cpp \
-    src/b_ref.cpp \
-    \ # src/common.cpp #\
-    src/nullcontainer.cpp
-#    src/b_file.cpp
-HEADERS +=\
-    src/b_chunk.h \
-    src/b_base.h \
-    src/b_mmap.h \
-    src/b_chunks.h \
-    src/b_mem.h \
-    src/b_ref.h \
-    src/b_filereference.h \ #\
-    src/nullcontainer.h
-#    src/b_file.h
+    src/map.cpp \
+    src/map_element.cpp \
+    src/queue.cpp
+HEADERS += \
+    src/map.h \
+    src/map_element.h \
+    src/queue.h
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
@@ -34,7 +23,7 @@ INCLUDEPATH += src
 include(../../cflags.pri)
 
 # LIB DEFS:
-TARGET = cx2_mem_containers
+TARGET = cx2_thr_safecontainers
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib

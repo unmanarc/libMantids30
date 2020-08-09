@@ -4,7 +4,7 @@
 #include "mime_sub_content.h"
 #include "mime_sub_header.h"
 
-#include <cx2_mem_streams/streamable.h>
+#include <cx2_mem_vars/streamable.h>
 
 namespace CX2 { namespace Network { namespace MIME {
 

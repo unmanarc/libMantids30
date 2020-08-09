@@ -1,7 +1,7 @@
 #ifndef VARSCONTAINER_H
 #define VARSCONTAINER_H
 
-#include <cx2_mem_containers/b_base.h>
+#include "b_base.h"
 #include <string>
 #include <list>
 #include <set>

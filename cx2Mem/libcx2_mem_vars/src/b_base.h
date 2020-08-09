@@ -4,7 +4,7 @@
 
 #include "b_chunk.h"
 
-#include <cx2_mem_streams/streamable.h>
+#include "streamable.h"
 #include <cx2_hlp_functions/mem.h>
 
 #include <limits.h>

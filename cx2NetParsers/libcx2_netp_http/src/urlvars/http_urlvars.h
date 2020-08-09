@@ -1,7 +1,7 @@
 #ifndef HTTPURLFORMATTEDVARS_H
 #define HTTPURLFORMATTEDVARS_H
 
-#include <cx2_mem_streamparser/streamparser.h>
+#include <cx2_mem_vars/streamparser.h>
 #include <cx2_mem_vars/vars.h>
 #include <map>
 

@@ -2,7 +2,7 @@
 #define XRPC_SESSIONS_MANAGER_H
 
 #include <cx2_auth/iauth_session.h>
-#include <cx2_thr_mutex_map/map.h>
+#include <cx2_thr_safecontainers/map.h>
 #include <cx2_thr_threads/garbagecollector.h>
 
 namespace CX2 { namespace RPC { namespace Web {

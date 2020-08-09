@@ -2,9 +2,8 @@
 #define INTERNALMAINPARSER_H
 
 #include "substreamparser.h"
-#include <cx2_mem_containers/b_chunks.h>
-#include <cx2_mem_streams/streamable.h>
-
+#include "b_chunks.h"
+#include "streamable.h"
 
 namespace CX2 { namespace Memory { namespace Streams { namespace Parsing {
 
@@ -88,7 +87,6 @@ private:
      * @return -1 if error, and n>0 : n length of data processed by parser, which should be equal to count.
      */
     std::pair<bool,uint64_t> parseData(const void * buf, size_t count, size_t *ttl, bool * finished);
-
 };
 
 

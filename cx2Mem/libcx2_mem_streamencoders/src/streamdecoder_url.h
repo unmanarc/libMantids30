@@ -1,7 +1,7 @@
 #ifndef STREAMDECURL_H
 #define STREAMDECURL_H
 
-#include <cx2_mem_streams/streamable.h>
+#include <cx2_mem_vars/streamable.h>
 
 namespace CX2 { namespace Memory { namespace Streams { namespace Decoders {
 

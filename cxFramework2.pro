@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 
-
 SUBDIRS += cx2Helpers
 SUBDIRS += cx2Threads
 SUBDIRS += cx2FileFormats

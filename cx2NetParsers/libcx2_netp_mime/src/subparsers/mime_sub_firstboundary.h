@@ -2,7 +2,7 @@
 #define MIME_SUB_ENDPOINT_H
 
 #include <string>
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 
 namespace CX2 { namespace Network { namespace MIME {
 

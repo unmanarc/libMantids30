@@ -3,8 +3,8 @@
 
 #include "http_urlvars.h"
 
-#include <cx2_mem_streamparser/substreamparser.h>
-#include <cx2_mem_containers/b_base.h>
+#include <cx2_mem_vars/substreamparser.h>
+#include <cx2_mem_vars/b_base.h>
 #include <cx2_netp_mime/mime_vars.h>
 
 namespace CX2 { namespace Network { namespace HTTP {

@@ -1,7 +1,7 @@
 #ifndef HTTP_SUB_URLVARPARSER_H
 #define HTTP_SUB_URLVARPARSER_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 
 namespace CX2 { namespace Network { namespace HTTP {
 

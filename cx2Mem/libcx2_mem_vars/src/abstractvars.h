@@ -1,7 +1,7 @@
 #ifndef ABSTRACTVARS_H
 #define ABSTRACTVARS_H
 
-#include <cx2_mem_abstracts/abstract.h>
+#include "abstract.h"
 #include <map>
 #include <list>
 

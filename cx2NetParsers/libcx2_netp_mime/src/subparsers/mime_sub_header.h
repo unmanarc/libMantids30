@@ -1,7 +1,7 @@
 #ifndef MIME_SUB_HEADER_H
 #define MIME_SUB_HEADER_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 
 #include <string>
 #include <map>

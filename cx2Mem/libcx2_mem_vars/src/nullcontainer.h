@@ -1,7 +1,7 @@
 #ifndef NULLCONTAINER_H
 #define NULLCONTAINER_H
 
-#include <cx2_mem_streams/streamable.h>
+#include "streamable.h"
 
 namespace CX2 { namespace Memory { namespace Containers {
 

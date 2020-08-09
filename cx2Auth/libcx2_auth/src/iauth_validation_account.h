@@ -7,7 +7,7 @@
 #include "ds_auth_passmodes.h"
 #include "ds_auth_passworddata.h"
 
-#include <cx2_thr_mutex_map/map_element.h>
+#include <cx2_thr_safecontainers/map_element.h>
 
 namespace CX2 { namespace Authorization { namespace Validation {
 

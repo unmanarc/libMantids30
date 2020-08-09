@@ -1,7 +1,7 @@
 #ifndef JSON_STREAMABLEOBJECT_H
 #define JSON_STREAMABLEOBJECT_H
 
-#include <cx2_mem_streams/streamable.h>
+#include <cx2_mem_vars/streamable.h>
 #include <json/json.h>
 
 namespace CX2 { namespace Memory { namespace Streams {

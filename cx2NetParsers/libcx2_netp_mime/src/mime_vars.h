@@ -4,7 +4,7 @@
 #include <map>
 
 #include <cx2_mem_vars/vars.h>
-#include <cx2_mem_streamparser/streamparser.h>
+#include <cx2_mem_vars/streamparser.h>
 
 #include "mime_partmessage.h"
 #include "mime_sub_firstboundary.h"

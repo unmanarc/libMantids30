@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include <map>
-#include <cx2_mem_abstracts/abstract.h>
+#include <cx2_mem_vars/abstract.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 
 #include "programvalues.h"

@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include <cx2_mem_abstracts/a_bool.h>
+#include <cx2_mem_vars/a_bool.h>
 #include <cx2_thr_mutex/lock_shared.h>
 
 using namespace std;

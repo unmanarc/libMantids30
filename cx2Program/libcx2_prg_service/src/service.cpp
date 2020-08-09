@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include <cx2_mem_abstracts/abstract.h>
+#include <cx2_mem_vars/abstract.h>
 
 using namespace std;
 

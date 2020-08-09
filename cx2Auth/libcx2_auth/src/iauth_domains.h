@@ -1,8 +1,9 @@
 #ifndef IAUTH_DOMAINS_H
 #define IAUTH_DOMAINS_H
 
-#include <cx2_thr_mutex_map/map.h>
+#include <cx2_thr_safecontainers/map.h>
 #include "iauth.h"
+
 namespace CX2 { namespace Authorization {
 
 class IAuth_Domains

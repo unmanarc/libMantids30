@@ -7,7 +7,7 @@
 #include <cx2_thr_mutex/mutex_shared.h>
 #include <cx2_thr_mutex/mutex.h>
 #include <cx2_net_sockets/streamsocket.h>
-#include <cx2_thr_mutex_map/map.h>
+#include <cx2_thr_safecontainers/map.h>
 
 namespace CX2 { namespace RPC { namespace Fast {
 

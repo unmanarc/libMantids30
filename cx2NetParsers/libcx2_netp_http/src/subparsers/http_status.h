@@ -1,7 +1,7 @@
 #ifndef HTTP_CODE_RESPONSE_H
 #define HTTP_CODE_RESPONSE_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 #include "http_version.h"
 #include "http_retcodes.h"
 

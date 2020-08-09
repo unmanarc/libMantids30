@@ -1,7 +1,7 @@
 #ifndef HTTP_HLP_CHUNKED_RETRIEVER_H
 #define HTTP_HLP_CHUNKED_RETRIEVER_H
 
-#include <cx2_mem_streams/streamable.h>
+#include <cx2_mem_vars/streamable.h>
 
 namespace CX2 { namespace Network { namespace HTTP {
 

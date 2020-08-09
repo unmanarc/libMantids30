@@ -1,7 +1,7 @@
 #ifndef MIME_SUB_ENDPBOUNDARY_H
 #define MIME_SUB_ENDPBOUNDARY_H
 
-#include <cx2_mem_streamparser/substreamparser.h>
+#include <cx2_mem_vars/substreamparser.h>
 
 namespace CX2 { namespace Network { namespace MIME {
 
