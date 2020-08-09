@@ -1,17 +1,15 @@
-#include "multithreaded_thread.h"
+#include "socket_acceptor_thread.h"
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include <string.h>
 
-#include "multithreaded_acceptor.h"
+#include "socket_acceptor_multithreaded.h"
 
+using namespace CX2::Network::Sockets::Acceptors;
 
-using namespace CX2::Network::Streams::ThreadedAcceptors;
-
-
-MultiThreaded_Accepted_Thread::MultiThreaded_Accepted_Thread()
+Socket_Acceptor_Thread::Socket_Acceptor_Thread()
 {
     memset(remotePair,0,INET6_ADDRSTRLEN+2);
 
@@ -24,7 +22,7 @@ MultiThreaded_Accepted_Thread::MultiThreaded_Accepted_Thread()
     clientSocket = nullptr;
 }
 
-MultiThreaded_Accepted_Thread::~MultiThreaded_Accepted_Thread()
+Socket_Acceptor_Thread::~Socket_Acceptor_Thread()
 {
     if (clientSocket)
     {
@@ -33,35 +31,35 @@ MultiThreaded_Accepted_Thread::~MultiThreaded_Accepted_Thread()
     }
 }
 
-void MultiThreaded_Accepted_Thread::start()
+void Socket_Acceptor_Thread::start()
 {
-    std::thread(thread_streamclient,this,(MultiThreaded_Acceptor *)parent).detach();
+    std::thread(thread_streamclient,this,(Socket_Acceptor_MultiThreaded *)parent).detach();
 }
 
-void MultiThreaded_Accepted_Thread::stopSocket()
+void Socket_Acceptor_Thread::stopSocket()
 {
     clientSocket->shutdownSocket();
 }
 
-void MultiThreaded_Accepted_Thread::setCallbackOnConnect(bool(*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_Thread::setCallbackOnConnect(bool(*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void MultiThreaded_Accepted_Thread::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_Thread::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
 
-void MultiThreaded_Accepted_Thread::setParent(void *parent)
+void Socket_Acceptor_Thread::setParent(void *parent)
 {
     this->parent = parent;
 }
 
-void MultiThreaded_Accepted_Thread::postInitConnection()
+void Socket_Acceptor_Thread::postInitConnection()
 {
     // Accept (internal protocol)
     if (clientSocket->postAcceptSubInitialization())
@@ -87,29 +85,29 @@ void MultiThreaded_Accepted_Thread::postInitConnection()
     }
 }
 
-void MultiThreaded_Accepted_Thread::setClientSocket(Streams::StreamSocket * _clientSocket)
+void Socket_Acceptor_Thread::setClientSocket(Streams::StreamSocket * _clientSocket)
 {
     clientSocket = _clientSocket;
     clientSocket->getRemotePair(remotePair);
 }
 
-const char *MultiThreaded_Accepted_Thread::getRemotePair()
+const char *Socket_Acceptor_Thread::getRemotePair()
 {
     return remotePair;
 }
 
-void MultiThreaded_Accepted_Thread::thread_streamclient(MultiThreaded_Accepted_Thread *threadClient, void *threadedAcceptedControl)
+void Socket_Acceptor_Thread::thread_streamclient(Socket_Acceptor_Thread *threadClient, void *threadedAcceptedControl)
 {
     threadClient->postInitConnection();
-    ((MultiThreaded_Acceptor *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
+    ((Socket_Acceptor_MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
 }
 
-bool MultiThreaded_Accepted_Thread::getIsSecure() const
+bool Socket_Acceptor_Thread::getIsSecure() const
 {
     return isSecure;
 }
 
-void MultiThreaded_Accepted_Thread::setIsSecure(bool value)
+void Socket_Acceptor_Thread::setIsSecure(bool value)
 {
     isSecure = value;
 }

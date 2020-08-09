@@ -14,7 +14,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-#include <cx2_net_ifcfg/netifconfig.h>
+#include "netifconfig.h"
 
 using namespace CX2::Network::Interfaces;
 

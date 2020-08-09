@@ -1,11 +1,11 @@
 QT       -= core gui
 
 SOURCES += \
-    src/chainprotocols/socketchain_aes.cpp \
-    src/chainprotocols/socketchain_tls.cpp
+    src/virtualnetworkinterface.cpp \
+    src/netifconfig.cpp
 HEADERS += \
-    src/chainprotocols/socketchain_aes.h \
-    src/chainprotocols/socketchain_tls.h
+    src/virtualnetworkinterface.h \
+    src/netifconfig.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -20,7 +20,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-TARGET = cx2_net_chains_tls
+TARGET = cx2_net_interfaces
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib
@@ -36,3 +36,6 @@ QMAKE_PKGCONFIG_CFLAGS = -I$$PREFIX/include/
 QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 
 include(../../version.pri)
+
+HEADERS += \
+    netifconfig.h

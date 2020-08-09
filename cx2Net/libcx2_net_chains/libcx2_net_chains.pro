@@ -1,11 +1,15 @@
 QT       -= core gui
 
 SOURCES += \
+    src/chainprotocols/socketchain_aes.cpp \
+    src/chainprotocols/socketchain_tls.cpp \
     src/chainprotocols/socketchain_xor.cpp \
     src/chainsockets.cpp \
     src/socketchainbase.cpp \
     src/socketchainendpointbase.cpp
 HEADERS += \
+    src/chainprotocols/socketchain_aes.h \
+    src/chainprotocols/socketchain_tls.h \
     src/chainprotocols/socketchain_xor.h \
     src/chainsockets.h \
     src/socketchainbase.h \

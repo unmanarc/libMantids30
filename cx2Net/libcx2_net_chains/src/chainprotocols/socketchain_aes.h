@@ -2,7 +2,7 @@
 #define SOCKETCHAIN_AES_H
 
 #include <cx2_net_sockets/streamsocket.h>
-#include <cx2_net_chains/socketchainbase.h>
+#include "socketchainbase.h"
 #include <openssl/evp.h>
 #include <string.h>
 #include <random>

@@ -1,6 +1,6 @@
 #include "socket_tls.h"
 
-#include <cx2_net_sockets/streamsocket.h>
+#include "streamsocket.h"
 
 #include <openssl/rand.h>
 #include <openssl/err.h>

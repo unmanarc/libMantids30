@@ -6,27 +6,26 @@
 #include <thread>
 #include <condition_variable>
 
-#include "multithreaded_thread.h"
-#include <cx2_net_sockets/streamsocket.h>
+#include "socket_acceptor_thread.h"
+#include "streamsocket.h"
 
-namespace CX2 { namespace Network { namespace Streams { namespace ThreadedAcceptors {
-
+namespace CX2 { namespace Network { namespace Sockets { namespace Acceptors {
 
 /**
  * @brief The MultiThreadedAcceptor class Accept streams on thread from a listening socket.
  */
-class MultiThreaded_Acceptor
+class Socket_Acceptor_MultiThreaded
 {
 public:
     /**
      * Constructor
      */
-    MultiThreaded_Acceptor();
+    Socket_Acceptor_MultiThreaded();
     /**
      * Destructor
      * WARN: when you finalize this class, the listening socket is closed. please open another one (don't reuse it)
      */
-    ~MultiThreaded_Acceptor();
+    ~Socket_Acceptor_MultiThreaded();
     /**
      * @brief startThreaded Start accepting connections in a new thread (will wait for finalization in destructor)
      */
@@ -69,7 +68,7 @@ public:
     /**
      * Finalize/Catch the client thread element (when it finishes).
      */
-    bool finalizeThreadElement(MultiThreaded_Accepted_Thread * x);
+    bool finalizeThreadElement(Socket_Acceptor_Thread * x);
     /**
      * @brief getMaxConcurrentClients Get maximum number of concurrent client threads are accepted
      * @return maximum current clients accepted
@@ -102,9 +101,9 @@ public:
     void setMaxConnectionsPerIP(const uint32_t &value);
 
 private:
-    static void thread_streamaccept(MultiThreaded_Acceptor * threadMasterControl);
+    static void thread_streamaccept(Socket_Acceptor_MultiThreaded * threadMasterControl);
 
-    bool processClient(Streams::StreamSocket * clientSocket, MultiThreaded_Accepted_Thread * clientThread);
+    bool processClient(Streams::StreamSocket * clientSocket, Socket_Acceptor_Thread * clientThread);
 
     uint32_t incrementIPUsage(const std::string & ipAddr);
     void decrementIPUsage(const std::string & ipAddr);
@@ -113,7 +112,7 @@ private:
 
     bool initialized, finalized;
     Streams::StreamSocket * acceptorSocket;
-    std::list<MultiThreaded_Accepted_Thread *> threadList;
+    std::list<Socket_Acceptor_Thread *> threadList;
     std::map<std::string, uint32_t> connectionsPerIP;
 
     // Callbacks:

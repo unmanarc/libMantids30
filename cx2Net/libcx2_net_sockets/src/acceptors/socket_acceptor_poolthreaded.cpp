@@ -1,7 +1,7 @@
-#include "poolthreaded_acceptor.h"
+#include "socket_acceptor_poolthreaded.h"
 #include <string.h>
 
-namespace CX2 { namespace Network { namespace Streams { namespace ThreadedAcceptors {
+namespace CX2 { namespace Network { namespace Sockets { namespace Acceptors {
 
 struct sAcceptorTaskData
 {
@@ -33,10 +33,10 @@ struct sAcceptorTaskData
 }}}}
 
 using namespace CX2::Network;
-using namespace CX2::Network::Streams::ThreadedAcceptors;
+using namespace CX2::Network::Sockets::Acceptors;
 
 
-PoolThreaded_Acceptor::PoolThreaded_Acceptor()
+Socket_Acceptor_PoolThreaded::Socket_Acceptor_PoolThreaded()
 {
     this->pool = nullptr;
     this->acceptorSocket = nullptr;
@@ -58,32 +58,32 @@ PoolThreaded_Acceptor::PoolThreaded_Acceptor()
     setQueuesKeyRatio(0.5);
 }
 
-void PoolThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
+void Socket_Acceptor_PoolThreaded::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void PoolThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
+void Socket_Acceptor_PoolThreaded::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void PoolThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
+void Socket_Acceptor_PoolThreaded::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimedOut;
     this->objOnTimedOut = obj;
 }
 
 
-PoolThreaded_Acceptor::~PoolThreaded_Acceptor()
+Socket_Acceptor_PoolThreaded::~Socket_Acceptor_PoolThreaded()
 {
     if (this->pool) delete this->pool;
     if (this->acceptorSocket) delete acceptorSocket;
 }
 
-void PoolThreaded_Acceptor::run()
+void Socket_Acceptor_PoolThreaded::run()
 {
     this->pool = new CX2::Threads::Pool::ThreadPool(threadsCount,taskQueues);
     pool->start();
@@ -116,67 +116,67 @@ void PoolThreaded_Acceptor::run()
     delete acceptorSocket;
 }
 
-void PoolThreaded_Acceptor::stop()
+void Socket_Acceptor_PoolThreaded::stop()
 {
     acceptorSocket->shutdownSocket();
 }
 
-uint32_t PoolThreaded_Acceptor::getTimeoutMS() const
+uint32_t Socket_Acceptor_PoolThreaded::getTimeoutMS() const
 {
     return timeoutMS;
 }
 
-void PoolThreaded_Acceptor::setTimeoutMS(const uint32_t &value)
+void Socket_Acceptor_PoolThreaded::setTimeoutMS(const uint32_t &value)
 {
     timeoutMS = value;
 }
 
-uint32_t PoolThreaded_Acceptor::getThreadsCount() const
+uint32_t Socket_Acceptor_PoolThreaded::getThreadsCount() const
 {
     return threadsCount;
 }
 
-void PoolThreaded_Acceptor::setThreadsCount(const uint32_t &value)
+void Socket_Acceptor_PoolThreaded::setThreadsCount(const uint32_t &value)
 {
     threadsCount = value;
 }
 
-uint32_t PoolThreaded_Acceptor::getTaskQueues() const
+uint32_t Socket_Acceptor_PoolThreaded::getTaskQueues() const
 {
     return taskQueues;
 }
 
-void PoolThreaded_Acceptor::setTaskQueues(const uint32_t &value)
+void Socket_Acceptor_PoolThreaded::setTaskQueues(const uint32_t &value)
 {
     taskQueues = value;
 }
 
-float PoolThreaded_Acceptor::getQueuesKeyRatio() const
+float Socket_Acceptor_PoolThreaded::getQueuesKeyRatio() const
 {
     return queuesKeyRatio;
 }
 
-void PoolThreaded_Acceptor::setQueuesKeyRatio(float value)
+void Socket_Acceptor_PoolThreaded::setQueuesKeyRatio(float value)
 {
     queuesKeyRatio = value;
 }
 
-void PoolThreaded_Acceptor::setAcceptorSocket(Streams::StreamSocket *value)
+void Socket_Acceptor_PoolThreaded::setAcceptorSocket(Streams::StreamSocket *value)
 {
     acceptorSocket = value;
 }
 
-void PoolThreaded_Acceptor::runner(void *data)
+void Socket_Acceptor_PoolThreaded::runner(void *data)
 {
-    ((PoolThreaded_Acceptor *)data)->run();
+    ((Socket_Acceptor_PoolThreaded *)data)->run();
 }
 
-void PoolThreaded_Acceptor::stopper(void *data)
+void Socket_Acceptor_PoolThreaded::stopper(void *data)
 {
-    ((PoolThreaded_Acceptor *)data)->stop();
+    ((Socket_Acceptor_PoolThreaded *)data)->stop();
 }
 
-void PoolThreaded_Acceptor::acceptorTask(void *data)
+void Socket_Acceptor_PoolThreaded::acceptorTask(void *data)
 {
     sAcceptorTaskData * taskData = ((sAcceptorTaskData *)data);
     if (taskData->clientSocket->postAcceptSubInitialization())

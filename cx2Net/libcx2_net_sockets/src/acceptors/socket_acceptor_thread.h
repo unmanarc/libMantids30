@@ -2,24 +2,24 @@
 #define VSTREAMTHREAD_H
 
 #include <thread>
-#include <cx2_net_sockets/streamsocket.h>
+#include "streamsocket.h"
 
-namespace CX2 { namespace Network { namespace Streams { namespace ThreadedAcceptors {
+namespace CX2 { namespace Network { namespace Sockets { namespace Acceptors {
 
 /**
  * Class for managing the client on his thread.
  */
-class MultiThreaded_Accepted_Thread
+class Socket_Acceptor_Thread
 {
 public:
     /**
      * constructor
      */
-    MultiThreaded_Accepted_Thread();
+    Socket_Acceptor_Thread();
     /**
      * destructor
      */
-    ~MultiThreaded_Accepted_Thread();
+    ~Socket_Acceptor_Thread();
     /**
      * Start the thread of the client.
      */
@@ -61,7 +61,7 @@ public:
     void setIsSecure(bool value);
 
 private:
-    static void thread_streamclient(MultiThreaded_Accepted_Thread * threadClient, void * threadedAcceptedControl);
+    static void thread_streamclient(Socket_Acceptor_Thread * threadClient, void * threadedAcceptedControl);
 
     Streams::StreamSocket * clientSocket;
     bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *, bool);

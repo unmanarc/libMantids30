@@ -1,8 +1,8 @@
 #ifndef SOCKETCHAIN_TLS_H
 #define SOCKETCHAIN_TLS_H
 
-#include <cx2_net_tls/socket_tls.h>
-#include <cx2_net_chains/socketchainbase.h>
+#include <cx2_net_sockets/socket_tls.h>
+#include "socketchainbase.h"
 
 namespace CX2 { namespace Network { namespace Chains { namespace Protocols {
 

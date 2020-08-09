@@ -1,7 +1,7 @@
 #ifndef SOCKET_TCP_SSL_H
 #define SOCKET_TCP_SSL_H
 
-#include <cx2_net_sockets/socket_tcp.h>
+#include "socket_tcp.h"
 #include <unistd.h>
 #include <memory>
 #include <string>

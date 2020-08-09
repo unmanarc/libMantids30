@@ -5,8 +5,8 @@
 #include "resourcesfilter.h"
 
 #include <cx2_net_sockets/streamsocket.h>
-#include <cx2_net_threadedacceptor/poolthreaded_acceptor.h>
-#include <cx2_net_threadedacceptor/multithreaded_acceptor.h>
+#include <cx2_net_sockets/socket_acceptor_poolthreaded.h>
+#include <cx2_net_sockets/socket_acceptor_multithreaded.h>
 #include <cx2_auth/iauth_domains.h>
 #include <cx2_xrpc_common/methodsmanager.h>
 
@@ -42,8 +42,8 @@ public:
     bool setResourcesLocalPath(const std::string &value);
 
 private:
-    Network::Streams::ThreadedAcceptors::MultiThreaded_Acceptor multiThreadedAcceptor;
-    Network::Streams::ThreadedAcceptors::PoolThreaded_Acceptor poolThreadedAcceptor;
+    Network::Sockets::Acceptors::Socket_Acceptor_MultiThreaded multiThreadedAcceptor;
+    Network::Sockets::Acceptors::Socket_Acceptor_PoolThreaded poolThreadedAcceptor;
 
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)

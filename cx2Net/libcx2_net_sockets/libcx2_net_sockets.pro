@@ -1,11 +1,15 @@
 QT       -= core gui
 
 SOURCES += \
+    src/acceptors/socket_acceptor_multithreaded.cpp \
+    src/acceptors/socket_acceptor_poolthreaded.cpp \
+    src/acceptors/socket_acceptor_thread.cpp \
     src/bridge/streamsocketsbridge.cpp \
     src/bridge/streamsocketsbridge_thread.cpp \
     src/datagrams/datagramsocket.cpp \
     src/socket.cpp \
     src/socket_tcp.cpp \
+    src/socket_tls.cpp \
     src/socket_udp.cpp \
     src/socket_unix.cpp \
     src/streams/bufferedstreamreader.cpp \
@@ -14,11 +18,15 @@ SOURCES += \
     src/streams/streamsocketwriter.cpp
 
 HEADERS += \
+    src/acceptors/socket_acceptor_multithreaded.h \
+    src/acceptors/socket_acceptor_poolthreaded.h \
+    src/acceptors/socket_acceptor_thread.h \
     src/bridge/streamsocketsbridge.h \
     src/bridge/streamsocketsbridge_thread.h \
     src/datagrams/datagramsocket.h \
     src/socket.h \
     src/socket_tcp.h \
+    src/socket_tls.h \
     src/socket_udp.h \
     src/socket_unix.h \
     src/streams/bufferedstreamreader.h \
@@ -56,6 +64,9 @@ QMAKE_INCDIR += src/datagrams
 
 INCLUDEPATH += src/win32
 QMAKE_INCDIR += src/win32
+
+INCLUDEPATH += src/acceptors
+QMAKE_INCDIR += src/acceptors
 
 TARGET = cx2_net_sockets
 TEMPLATE = lib

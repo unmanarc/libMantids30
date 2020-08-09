@@ -1,12 +1,12 @@
-#include "multithreaded_acceptor.h"
+#include "socket_acceptor_multithreaded.h"
 #include <algorithm>
 #include <string.h>
 
-using namespace CX2::Network::Streams::ThreadedAcceptors;
+using namespace CX2::Network::Sockets::Acceptors;
 using Ms = std::chrono::milliseconds;
 
 
-void MultiThreaded_Acceptor::init()
+void Socket_Acceptor_MultiThreaded::init()
 {
     maxConnectionsPerIP = 16;
     maxConcurrentClients = 4096; // 4096 maximum concurrent connections (too many connections will cause too many threads, check your ulimit)
@@ -26,25 +26,25 @@ void MultiThreaded_Acceptor::init()
     objOnMaxConnectionsPerIP = nullptr;
 }
 
-uint32_t MultiThreaded_Acceptor::getMaxConnectionsPerIP()
+uint32_t Socket_Acceptor_MultiThreaded::getMaxConnectionsPerIP()
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     return maxConnectionsPerIP;
 }
 
-void MultiThreaded_Acceptor::setMaxConnectionsPerIP(const uint32_t &value)
+void Socket_Acceptor_MultiThreaded::setMaxConnectionsPerIP(const uint32_t &value)
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     maxConnectionsPerIP = value;
 }
 
-void MultiThreaded_Acceptor::thread_streamaccept(MultiThreaded_Acceptor *threadMasterControl)
+void Socket_Acceptor_MultiThreaded::thread_streamaccept(Socket_Acceptor_MultiThreaded *threadMasterControl)
 {
     // Accept until it fails:
     while (threadMasterControl->acceptClient()) {}
 }
 
-bool MultiThreaded_Acceptor::processClient(Streams::StreamSocket *clientSocket, MultiThreaded_Accepted_Thread *clientThread)
+bool Socket_Acceptor_MultiThreaded::processClient(Streams::StreamSocket *clientSocket, Socket_Acceptor_Thread *clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(mutex_clients);
@@ -84,7 +84,7 @@ bool MultiThreaded_Acceptor::processClient(Streams::StreamSocket *clientSocket, 
     return true;
 }
 
-uint32_t MultiThreaded_Acceptor::incrementIPUsage(const std::string &ipAddr)
+uint32_t Socket_Acceptor_MultiThreaded::incrementIPUsage(const std::string &ipAddr)
 {
     if (connectionsPerIP.find(ipAddr) == connectionsPerIP.end())
         connectionsPerIP[ipAddr] = 1;
@@ -96,7 +96,7 @@ uint32_t MultiThreaded_Acceptor::incrementIPUsage(const std::string &ipAddr)
     return connectionsPerIP[ipAddr];
 }
 
-void MultiThreaded_Acceptor::decrementIPUsage(const std::string &ipAddr)
+void Socket_Acceptor_MultiThreaded::decrementIPUsage(const std::string &ipAddr)
 {
     if (connectionsPerIP.find(ipAddr) == connectionsPerIP.end())
         throw std::runtime_error("decrement ip usage, but never incremented before");
@@ -104,13 +104,13 @@ void MultiThreaded_Acceptor::decrementIPUsage(const std::string &ipAddr)
     else connectionsPerIP[ipAddr]--;
 }
 
-uint32_t MultiThreaded_Acceptor::getMaxWaitMSTime()
+uint32_t Socket_Acceptor_MultiThreaded::getMaxWaitMSTime()
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     return maxWaitMSTime;
 }
 
-void MultiThreaded_Acceptor::setMaxWaitMSTime(const uint32_t &value)
+void Socket_Acceptor_MultiThreaded::setMaxWaitMSTime(const uint32_t &value)
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     maxWaitMSTime = value;
@@ -118,13 +118,13 @@ void MultiThreaded_Acceptor::setMaxWaitMSTime(const uint32_t &value)
     cond_clients_notfull.notify_all();
 }
 
-uint32_t MultiThreaded_Acceptor::getMaxConcurrentClients()
+uint32_t Socket_Acceptor_MultiThreaded::getMaxConcurrentClients()
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     return maxConcurrentClients;
 }
 
-void MultiThreaded_Acceptor::setMaxConcurrentClients(const uint32_t &value)
+void Socket_Acceptor_MultiThreaded::setMaxConcurrentClients(const uint32_t &value)
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     maxConcurrentClients = value;
@@ -132,12 +132,12 @@ void MultiThreaded_Acceptor::setMaxConcurrentClients(const uint32_t &value)
     cond_clients_notfull.notify_all();
 }
 
-MultiThreaded_Acceptor::MultiThreaded_Acceptor()
+Socket_Acceptor_MultiThreaded::Socket_Acceptor_MultiThreaded()
 {
     init();
 }
 
-MultiThreaded_Acceptor::~MultiThreaded_Acceptor()
+Socket_Acceptor_MultiThreaded::~Socket_Acceptor_MultiThreaded()
 {
     stop();
 
@@ -164,7 +164,7 @@ MultiThreaded_Acceptor::~MultiThreaded_Acceptor()
     {
         std::unique_lock<std::mutex> lock(mutex_clients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<MultiThreaded_Accepted_Thread *>::iterator it=threadList.begin(); it != threadList.end(); ++it)
+        for (std::list<Socket_Acceptor_Thread *>::iterator it=threadList.begin(); it != threadList.end(); ++it)
             (*it)->stopSocket();
         // unlock until there is no threads left.
         while ( !threadList.empty() )
@@ -172,12 +172,12 @@ MultiThreaded_Acceptor::~MultiThreaded_Acceptor()
     }
 }
 
-bool MultiThreaded_Acceptor::acceptClient()
+bool Socket_Acceptor_MultiThreaded::acceptClient()
 {    
     Streams::StreamSocket * clientSocket = acceptorSocket->acceptConnection();
     if (clientSocket)
     {
-        MultiThreaded_Accepted_Thread * clientThread = new MultiThreaded_Accepted_Thread;
+        Socket_Acceptor_Thread * clientThread = new Socket_Acceptor_Thread;
         clientThread->setClientSocket(clientSocket);
         clientThread->setCallbackOnConnect(this->callbackOnConnect, objOnConnect);
         clientThread->setCallbackOnInitFail(this->callbackOnInitFail, objOnInitFail);
@@ -188,7 +188,7 @@ bool MultiThreaded_Acceptor::acceptClient()
     return false; // no more connections. (abandon)
 }
 
-bool MultiThreaded_Acceptor::finalizeThreadElement(MultiThreaded_Accepted_Thread *x)
+bool Socket_Acceptor_MultiThreaded::finalizeThreadElement(Socket_Acceptor_Thread *x)
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     if (std::find(threadList.begin(), threadList.end(), x) != threadList.end())
@@ -204,14 +204,14 @@ bool MultiThreaded_Acceptor::finalizeThreadElement(MultiThreaded_Accepted_Thread
     return false;
 }
 
-void MultiThreaded_Acceptor::setAcceptorSocket(Streams::StreamSocket * acceptorSocket)
+void Socket_Acceptor_MultiThreaded::setAcceptorSocket(Streams::StreamSocket * acceptorSocket)
 {
     this->acceptorSocket = acceptorSocket;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // NEVER DELETE THIS CLASS AFTER THE START, JUST STOP AND WILL BE DELETED
-void MultiThreaded_Acceptor::startThreaded()
+void Socket_Acceptor_MultiThreaded::startThreaded()
 {
     if (!acceptorSocket)
         throw std::runtime_error("Acceptor Socket not defined in MultiThreadedAcceptor");
@@ -222,37 +222,37 @@ void MultiThreaded_Acceptor::startThreaded()
     acceptorThread = std::thread(thread_streamaccept,this);
 }
 
-void MultiThreaded_Acceptor::stop()
+void Socket_Acceptor_MultiThreaded::stop()
 {
     if (acceptorSocket)
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded_Acceptor::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_MultiThreaded::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void MultiThreaded_Acceptor::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_MultiThreaded::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void MultiThreaded_Acceptor::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_MultiThreaded::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimedOut;
     this->objOnTimedOut = obj;
 }
 
-void MultiThreaded_Acceptor::setCallbackOnMaxConnectionsPerIP(void (*_callbackOnMaxConnectionsPerIP)(void *, Streams::StreamSocket *, const char *), void *obj)
+void Socket_Acceptor_MultiThreaded::setCallbackOnMaxConnectionsPerIP(void (*_callbackOnMaxConnectionsPerIP)(void *, Streams::StreamSocket *, const char *), void *obj)
 {
     this->callbackOnMaxConnectionsPerIP = _callbackOnMaxConnectionsPerIP;
     this->objOnMaxConnectionsPerIP = obj;
 }
 
-bool MultiThreaded_Acceptor::startBlocking()
+bool Socket_Acceptor_MultiThreaded::startBlocking()
 {
     if (!acceptorSocket)
         throw std::runtime_error("Acceptor Socket not defined in MultiThreadedAcceptor");

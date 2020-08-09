@@ -1,31 +1,30 @@
 #ifndef POOLTHREADEDACCEPTOR_H
 #define POOLTHREADEDACCEPTOR_H
 
-#include <cx2_net_sockets/streamsocket.h>
+#include "streamsocket.h"
 #include <cx2_thr_threads/threaded.h>
 #include <cx2_thr_threads/threadpool.h>
 
 // TODO: statistics
-namespace CX2 { namespace Network { namespace Streams { namespace ThreadedAcceptors {
 
-
+namespace CX2 { namespace Network { namespace Sockets { namespace Acceptors {
 /**
- * @brief The PoolThreaded_Acceptor class
+ * @brief The Socket_Acceptor_PoolThreaded class
  */
-class PoolThreaded_Acceptor : public CX2::Threads::Threaded
+class Socket_Acceptor_PoolThreaded : public CX2::Threads::Threaded
 {
 public:
     /**
-     * @brief PoolThreaded_Acceptor Constructor
+     * @brief Socket_Acceptor_PoolThreaded Constructor
      * @param acceptorSocket Pre-initialized acceptor socket
      * @param _CallbackTask Callback for succeed inserted task
      * @param _CallbackFailed  Callback when task insertion failed (saturation)
      * @param obj Object to be passed to callbacks
      */
-    PoolThreaded_Acceptor();
+    Socket_Acceptor_PoolThreaded();
 
     // Destructor:
-    ~PoolThreaded_Acceptor() override;
+    ~Socket_Acceptor_PoolThreaded() override;
 
     /**
      * @brief run Don't call this function, call start(). This is a virtual function for the processor thread.
