@@ -3,7 +3,7 @@
 
 #include <json/json.h>
 
-#include <cx2_thr_threadpool/threadpool.h>
+#include <cx2_thr_threads/threadpool.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 #include <cx2_thr_mutex/mutex.h>
 #include <cx2_net_sockets/streamsocket.h>

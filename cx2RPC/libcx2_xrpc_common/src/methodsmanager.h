@@ -7,7 +7,7 @@
 #include <json/json.h>
 
 #include <cx2_auth/iauth_domains.h>
-#include <cx2_auth/iauth_validation_methods.h>
+#include <cx2_auth/iauth_methods_attributes.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 
 #include "validation_codes.h"

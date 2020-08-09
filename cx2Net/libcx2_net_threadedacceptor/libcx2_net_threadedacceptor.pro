@@ -2,10 +2,12 @@ QT       -= core gui
 
 SOURCES += \
     src/multithreaded_acceptor.cpp \
-    src/multithreaded_thread.cpp
+    src/multithreaded_thread.cpp \
+    src/poolthreaded_acceptor.cpp    
 HEADERS += \
     src/multithreaded_acceptor.h \
-    src/multithreaded_thread.h
+    src/multithreaded_thread.h \
+    src/poolthreaded_acceptor.h    
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

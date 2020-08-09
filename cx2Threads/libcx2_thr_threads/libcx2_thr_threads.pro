@@ -3,9 +3,11 @@ CONFIG += c++11
 
 SOURCES += \ 
     src/threaded.cpp \
+    src/threadpool.cpp \
     src/garbagecollector.cpp
 HEADERS += \ 
     src/threaded.h \
+    src/threadpool.h \
     src/garbagecollector.h
 
 isEmpty(PREFIX) {

@@ -5,7 +5,7 @@
 #include "resourcesfilter.h"
 
 #include <cx2_net_sockets/streamsocket.h>
-#include <cx2_net_poolthreadedacceptor/poolthreaded_acceptor.h>
+#include <cx2_net_threadedacceptor/poolthreaded_acceptor.h>
 #include <cx2_net_threadedacceptor/multithreaded_acceptor.h>
 #include <cx2_auth/iauth_domains.h>
 #include <cx2_xrpc_common/methodsmanager.h>

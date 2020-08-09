@@ -17,11 +17,6 @@ SUBDIRS+=libcx2_net_threadedacceptor
 libcx2_net_threadedacceptor.subdir    = libcx2_net_threadedacceptor
 libcx2_net_threadedacceptor.depends   = libcx2_net_sockets
 
-SUBDIRS+=libcx2_net_poolthreadedacceptor
-# Project folders:
-libcx2_net_poolthreadedacceptor.subdir    = libcx2_net_poolthreadedacceptor
-libcx2_net_poolthreadedacceptor.depends   = libcx2_net_sockets
-
 # Network Interface configuration
 SUBDIRS+=libcx2_net_ifcfg
 # Project folders:

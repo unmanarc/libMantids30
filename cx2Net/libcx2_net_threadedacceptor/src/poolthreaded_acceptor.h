@@ -3,7 +3,7 @@
 
 #include <cx2_net_sockets/streamsocket.h>
 #include <cx2_thr_threads/threaded.h>
-#include <cx2_thr_threadpool/threadpool.h>
+#include <cx2_thr_threads/threadpool.h>
 
 // TODO: statistics
 namespace CX2 { namespace Network { namespace Streams { namespace ThreadedAcceptors {
