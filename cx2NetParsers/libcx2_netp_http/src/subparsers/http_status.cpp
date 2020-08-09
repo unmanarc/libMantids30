@@ -11,7 +11,7 @@ using namespace boost::algorithm;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 
-const sResponseCode HTTP_Status::responseCodes[] = {
+const sHTTP_ResponseCode HTTP_Status::responseCodes[] = {
 {100,"Continue"},
 {101,"Switching Protocol"},
 {200,"OK"},
@@ -117,7 +117,7 @@ void HTTP_Status::setRetCodeValue(unsigned short value)
     responseCode = value;
 }
 
-void HTTP_Status::setRetCode(HttpRetCode code)
+void HTTP_Status::setRetCode(eHTTP_RetCode code)
 {
     if (code != HTTP_RET_999_NOT_SET)
     {

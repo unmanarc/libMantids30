@@ -1,13 +1,13 @@
-#include "multipart_vars.h"
+#include "mime_vars.h"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::HTTP;
+using namespace CX2::Network::MIME;
 using namespace CX2;
 
-MultiPart_Vars::MultiPart_Vars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value, false)
+MIME_Vars::MIME_Vars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value, false)
 {
     initSubParser(&subFirstBoundary);
     initSubParser(&subEndPBoundary);
@@ -27,13 +27,13 @@ MultiPart_Vars::MultiPart_Vars(Memory::Streams::Streamable *value) : Memory::Str
     currentState = MP_STATE_FIRST_BOUNDARY;
 }
 
-MultiPart_Vars::~MultiPart_Vars()
+MIME_Vars::~MIME_Vars()
 {
     if (currentPart) delete currentPart;
     for (MIME_PartMessage * i : parts) delete i;
 }
 
-bool MultiPart_Vars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrStat)
+bool MIME_Vars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrStat)
 {
     Memory::Streams::Status cur;
     // first boundary:
@@ -49,7 +49,7 @@ bool MultiPart_Vars::streamTo(Memory::Streams::Streamable *out, Memory::Streams:
     return true;
 }
 
-uint32_t MultiPart_Vars::varCount(const std::string &varName)
+uint32_t MIME_Vars::varCount(const std::string &varName)
 {
     uint32_t ix=0;
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
@@ -57,14 +57,14 @@ uint32_t MultiPart_Vars::varCount(const std::string &varName)
     return ix;
 }
 
-Memory::Containers::B_Base *MultiPart_Vars::getValue(const std::string &varName)
+Memory::Containers::B_Base *MIME_Vars::getValue(const std::string &varName)
 {
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i) return (((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
     return nullptr;
 }
 
-std::list<Memory::Containers::B_Base *> MultiPart_Vars::getValues(const std::string &varName)
+std::list<Memory::Containers::B_Base *> MIME_Vars::getValues(const std::string &varName)
 {
     std::list<Memory::Containers::B_Base *> values;
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
@@ -72,24 +72,24 @@ std::list<Memory::Containers::B_Base *> MultiPart_Vars::getValues(const std::str
     return values;
 }
 
-std::set<std::string> MultiPart_Vars::getKeysList()
+std::set<std::string> MIME_Vars::getKeysList()
 {
     std::set<std::string> r;
     for ( const auto & i : partsByName ) r.insert(i.first);
     return r;
 }
 
-bool MultiPart_Vars::isEmpty()
+bool MIME_Vars::isEmpty()
 {
     return partsByName.empty();
 }
 
-void MultiPart_Vars::iSetMaxVarContentSize()
+void MIME_Vars::iSetMaxVarContentSize()
 {
     currentPart->getContent()->setMaxContentSize(maxVarContentSize);
 }
 
-void MultiPart_Vars::renewCurrentPart()
+void MIME_Vars::renewCurrentPart()
 {
     currentPart = new MIME_PartMessage;
 
@@ -107,71 +107,71 @@ void MultiPart_Vars::renewCurrentPart()
     currentPart->getHeader()->setMaxSubOptionSize(maxHeaderSubOptionsSize);
 }
 
-size_t MultiPart_Vars::getMaxHeaderOptionSize() const
+size_t MIME_Vars::getMaxHeaderOptionSize() const
 {
     return maxHeaderOptionSize;
 }
 
-void MultiPart_Vars::setMaxHeaderOptionSize(const size_t &value)
+void MIME_Vars::setMaxHeaderOptionSize(const size_t &value)
 {
     maxHeaderOptionSize = value;
     currentPart->getHeader()->setMaxOptionSize(maxHeaderOptionSize);
 }
 
-size_t MultiPart_Vars::getMaxHeaderOptionsCount() const
+size_t MIME_Vars::getMaxHeaderOptionsCount() const
 {
     return maxHeaderOptionsCount;
 }
 
-void MultiPart_Vars::setMaxHeaderOptionsCount(const size_t &value)
+void MIME_Vars::setMaxHeaderOptionsCount(const size_t &value)
 {
     maxHeaderOptionsCount = value;
     currentPart->getHeader()->setMaxOptions(maxHeaderOptionsCount);
 }
 
-size_t MultiPart_Vars::getMaxHeaderSubOptionsSize() const
+size_t MIME_Vars::getMaxHeaderSubOptionsSize() const
 {
     return maxHeaderSubOptionsSize;
 }
 
-void MultiPart_Vars::setMaxHeaderSubOptionsSize(const size_t &value)
+void MIME_Vars::setMaxHeaderSubOptionsSize(const size_t &value)
 {
     maxHeaderSubOptionsSize = value;
     currentPart->getHeader()->setMaxSubOptionSize(maxHeaderSubOptionsSize);
 }
 
-size_t MultiPart_Vars::getMaxHeaderSubOptionsCount() const
+size_t MIME_Vars::getMaxHeaderSubOptionsCount() const
 {
     return maxHeaderSubOptionsCount;
 }
 
-void MultiPart_Vars::setMaxHeaderSubOptionsCount(const size_t &value)
+void MIME_Vars::setMaxHeaderSubOptionsCount(const size_t &value)
 {
     maxHeaderSubOptionsCount = value;
     currentPart->getHeader()->setMaxSubOptionCount(maxHeaderSubOptionsCount);
 }
 
-size_t MultiPart_Vars::getMaxParts() const
+size_t MIME_Vars::getMaxParts() const
 {
     return maxParts;
 }
 
-void MultiPart_Vars::setMaxParts(const size_t &value)
+void MIME_Vars::setMaxParts(const size_t &value)
 {
     maxParts = value;
 }
 
-void MultiPart_Vars::makeDataSizeExceptionForPart(const std::string &partName, const uint64_t &size)
+void MIME_Vars::makeDataSizeExceptionForPart(const std::string &partName, const uint64_t &size)
 {
     dataSizeExceptions[partName] = size;
 }
 
-void MultiPart_Vars::writeVarToFS(const std::string &varName, const std::string &fileName)
+void MIME_Vars::writeVarToFS(const std::string &varName, const std::string &fileName)
 {
     varToFS[varName] = fileName;
 }
 
-bool MultiPart_Vars::changeToNextParser()
+bool MIME_Vars::changeToNextParser()
 {
     switch (currentState)
     {
@@ -229,7 +229,7 @@ bool MultiPart_Vars::changeToNextParser()
     return true;
 }
 
-void MultiPart_Vars::addMultiPartMessage(MIME_PartMessage *part)
+void MIME_Vars::addMultiPartMessage(MIME_PartMessage *part)
 {
     parts.push_back(part);
     // Insert by name:
@@ -237,14 +237,14 @@ void MultiPart_Vars::addMultiPartMessage(MIME_PartMessage *part)
     if (varName!="") partsByName.insert(std::pair<std::string,MIME_PartMessage*>(boost::to_upper_copy(varName),part));
 }
 
-std::string MultiPart_Vars::getMultiPartMessageName(MIME_PartMessage *part)
+std::string MIME_Vars::getMultiPartMessageName(MIME_PartMessage *part)
 {
-    HeaderOption * opt = part->getHeader()->getOptionByName("content-disposition");
+    MIME_HeaderOption * opt = part->getHeader()->getOptionByName("content-disposition");
     if (opt) return opt->getSubVar("name");
     return "";
 }
 
-std::list<MIME_PartMessage *> MultiPart_Vars::getMultiPartMessagesByName(const std::string &varName)
+std::list<MIME_PartMessage *> MIME_Vars::getMultiPartMessagesByName(const std::string &varName)
 {
     std::list<MIME_PartMessage *> values;
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
@@ -252,39 +252,39 @@ std::list<MIME_PartMessage *> MultiPart_Vars::getMultiPartMessagesByName(const s
     return values;
 }
 
-MIME_PartMessage *MultiPart_Vars::getFirstMessageByName(const std::string &varName)
+MIME_PartMessage *MIME_Vars::getFirstMessageByName(const std::string &varName)
 {
     if (partsByName.find(boost::to_upper_copy(varName)) == partsByName.end()) return nullptr;
     return partsByName.find(boost::to_upper_copy(varName))->second;
 }
 
-std::string MultiPart_Vars::getMultiPartType() const
+std::string MIME_Vars::getMultiPartType() const
 {
     return multiPartType;
 }
 
-void MultiPart_Vars::setMultiPartType(const std::string &value)
+void MIME_Vars::setMultiPartType(const std::string &value)
 {
     multiPartType = value;
 }
 
-std::string MultiPart_Vars::getMultiPartBoundary() const
+std::string MIME_Vars::getMultiPartBoundary() const
 {
     return multiPartBoundary;
 }
 
-void MultiPart_Vars::setMultiPartBoundary(const std::string &value)
+void MIME_Vars::setMultiPartBoundary(const std::string &value)
 {
     multiPartBoundary = value;
     subFirstBoundary.setBoundary(multiPartBoundary);
 }
 
-bool MultiPart_Vars::initProtocol()
+bool MIME_Vars::initProtocol()
 {
     return true;
 }
 
-void MultiPart_Vars::endProtocol()
+void MIME_Vars::endProtocol()
 {
 
 }

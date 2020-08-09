@@ -7,7 +7,8 @@
 #include <string>
 #include "http_version.h"
 
-#include <cx2_netp_urlvars/url_vars.h>
+#include "http_urlvars.h"
+
 namespace CX2 { namespace Network { namespace HTTP {
 
 class HTTP_Request : public Memory::Streams::Parsing::SubParser
@@ -75,7 +76,7 @@ private:
     std::string requestURIParameters;
 
     HTTP_Version httpVersion;
-    URL_Vars getVars;
+    HTTP_URLVars getVars;
 };
 
 }}}

@@ -1,4 +1,4 @@
-#include "url_vars.h"
+#include "http_urlvars.h"
 
 #include <cx2_mem_streamencoders/streamencoder_url.h>
 #include <boost/algorithm/string.hpp>
@@ -8,7 +8,7 @@ using namespace boost::algorithm;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 
-URL_Vars::URL_Vars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value,false)
+HTTP_URLVars::HTTP_URLVars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value,false)
 {
     initSubParser(&_urlVarParser);
 
@@ -22,17 +22,17 @@ URL_Vars::URL_Vars(Memory::Streams::Streamable *value) : Memory::Streams::Parsin
     currentParser = &_urlVarParser;
 }
 
-URL_Vars::~URL_Vars()
+HTTP_URLVars::~HTTP_URLVars()
 {
     for (auto & i : vars) delete i.second;
 }
 
-bool URL_Vars::isEmpty()
+bool HTTP_URLVars::isEmpty()
 {
     return vars.empty();
 }
 
-bool URL_Vars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrsStat)
+bool HTTP_URLVars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrsStat)
 {
     Memory::Streams::Status cur;
     bool firstVar = true;
@@ -74,7 +74,7 @@ bool URL_Vars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Statu
     return true;
 }
 
-uint32_t URL_Vars::varCount(const std::string &varName)
+uint32_t HTTP_URLVars::varCount(const std::string &varName)
 {
     uint32_t i=0;
     auto range = vars.equal_range(boost::to_upper_copy(varName));
@@ -82,14 +82,14 @@ uint32_t URL_Vars::varCount(const std::string &varName)
     return i;
 }
 
-Memory::Containers::B_Base *URL_Vars::getValue(const std::string &varName)
+Memory::Containers::B_Base *HTTP_URLVars::getValue(const std::string &varName)
 {
     auto range = vars.equal_range(boost::to_upper_copy(varName));
     for (auto iterator = range.first; iterator != range.second;) return iterator->second;
     return nullptr;
 }
 
-std::list<Memory::Containers::B_Base *> URL_Vars::getValues(const std::string &varName)
+std::list<Memory::Containers::B_Base *> HTTP_URLVars::getValues(const std::string &varName)
 {
     std::list<Memory::Containers::B_Base *> r;
     auto range = vars.equal_range(boost::to_upper_copy(varName));
@@ -97,23 +97,23 @@ std::list<Memory::Containers::B_Base *> URL_Vars::getValues(const std::string &v
     return r;
 }
 
-std::set<std::string> URL_Vars::getKeysList()
+std::set<std::string> HTTP_URLVars::getKeysList()
 {
     std::set<std::string> r;
     for ( const auto & i : vars ) r.insert(i.first);
     return r;
 }
 
-bool URL_Vars::initProtocol()
+bool HTTP_URLVars::initProtocol()
 {
     return true;
 }
 
-void URL_Vars::endProtocol()
+void HTTP_URLVars::endProtocol()
 {
 }
 
-bool URL_Vars::changeToNextParser()
+bool HTTP_URLVars::changeToNextParser()
 {
     switch(currentStat)
     {
@@ -147,7 +147,7 @@ bool URL_Vars::changeToNextParser()
     return true;
 }
 
-void URL_Vars::insertVar(const std::string &varName, Memory::Containers::B_Chunks *data)
+void HTTP_URLVars::insertVar(const std::string &varName, Memory::Containers::B_Chunks *data)
 {
     //vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(currentVarName, _urlVarParser.flushRetrievedContentAsBC()));
     if (!varName.empty())
@@ -157,12 +157,12 @@ void URL_Vars::insertVar(const std::string &varName, Memory::Containers::B_Chunk
 }
 
 
-void URL_Vars::iSetMaxVarContentSize()
+void HTTP_URLVars::iSetMaxVarContentSize()
 {
     if (currentStat == URLV_STAT_WAITING_CONTENT) _urlVarParser.setMaxObjectSize(maxVarContentSize);
 }
 
-void URL_Vars::iSetMaxVarNameSize()
+void HTTP_URLVars::iSetMaxVarNameSize()
 {
     if (currentStat == URLV_STAT_WAITING_NAME) _urlVarParser.setMaxObjectSize(maxVarNameSize);
 }

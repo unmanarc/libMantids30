@@ -18,18 +18,18 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-struct HTTPServerParams
+struct HTTP_ResponseParams
 {
     HTTP_Status * status;
     HTTP_Content * content;
-    MIME_Sub_Header * headers;
+    MIME::MIME_Sub_Header * headers;
 };
 
-struct HTTPClientParams
+struct HTTP_RequestParams
 {
     HTTP_Request * request;
     HTTP_Content * content;
-    MIME_Sub_Header * headers;
+    MIME::MIME_Sub_Header * headers;
 };
 
 
@@ -39,9 +39,9 @@ public:
     HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject);
     virtual ~HTTPv1_Base()  override {}
 
-    // httpElements:
-    HTTPServerParams server();
-    HTTPClientParams client();
+    // Parameters:
+    HTTP_ResponseParams response();
+    HTTP_RequestParams request();
 
 protected:
     virtual bool initProtocol() override;
@@ -56,7 +56,7 @@ protected:
     /**
      * @brief headers - Options Values.
      */
-    MIME_Sub_Header _clientHeaders;
+    MIME::MIME_Sub_Header _clientHeaders;
     /**
      * @brief content - Content Data.
      */
@@ -68,7 +68,7 @@ protected:
     /**
      * @brief headers - Options Values.
      */
-    MIME_Sub_Header _serverHeaders;
+    MIME::MIME_Sub_Header _serverHeaders;
     /**
      * @brief content - Content Data.
      */

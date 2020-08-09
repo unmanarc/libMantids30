@@ -24,9 +24,9 @@ void WebClientHandler::setAuthenticators(Authorization::IAuth_Domains *authentic
     authDomains = authenticator;
 }
 
-HttpRetCode WebClientHandler::processClientRequest()
+eHTTP_RetCode WebClientHandler::processClientRequest()
 {
-    HttpRetCode ret  = HTTP_RET_404_NOT_FOUND;
+    eHTTP_RetCode ret  = HTTP_RET_404_NOT_FOUND;
     if (getRequestURI() == "/api") return processRPCRequest();
 
     std::string reqFullPath = resourcesLocalPath + getRequestURI();
@@ -88,12 +88,12 @@ HttpRetCode WebClientHandler::processClientRequest()
     return ret;
 }
 
-HttpRetCode WebClientHandler::processRPCRequest()
+eHTTP_RetCode WebClientHandler::processRPCRequest()
 {
     bool bDestroySession = false, bCloseSessionHandler = false, bDeleteSession = false;
     Json::Reader reader;
     std::string sSessionId, sMethodName, sRPCMode;
-    HttpRetCode eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
+    eHTTP_RetCode eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
     Json::Value jPayloadIn;
     Request request;
 

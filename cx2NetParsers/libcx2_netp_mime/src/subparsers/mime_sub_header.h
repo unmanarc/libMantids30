@@ -11,15 +11,15 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace MIME {
 // ??
 /**
  * @brief The HeaderOption struct
  */
-class HeaderOption
+class MIME_HeaderOption
 {
 public:
-    HeaderOption()
+    MIME_HeaderOption()
     {
         maxHeaderOptSize=8*KB_MULT;
         curHeaderOptSize=0;
@@ -100,13 +100,13 @@ public:
      * @param varName value name.
      * @return list of HeaderOption's
      */
-    std::list<HeaderOption *> getOptionsByName(const std::string & varName) const;
+    std::list<MIME_HeaderOption *> getOptionsByName(const std::string & varName) const;
     /**
      * @brief getOptionByName Get the first value
      * @param varName
      * @return nullptr if not exist.
      */
-    HeaderOption * getOptionByName(const std::string & varName) const;
+    MIME_HeaderOption * getOptionByName(const std::string & varName) const;
     /**
      * @brief getOptionRawStringByName Get Option STD String By Name (raw, as came from the input)
      * @param varName variable name.
@@ -129,7 +129,7 @@ public:
     uint64_t getOptionAsUINT64(const std::string & varName, uint16_t base = 10, bool * optExist = nullptr) const;
     //////////////////////////////////////////////////
 
-    void addHeaderOption(HeaderOption *opt);
+    void addHeaderOption(MIME_HeaderOption *opt);
 
     //////////////////////////////////////////////////
     // Security:
@@ -146,12 +146,12 @@ protected:
     Memory::Streams::Parsing::ParseStatus parse() override;
 
 private:
-    void parseSubValues(HeaderOption *opt, const std::string & strName, int state=0);
+    void parseSubValues(MIME_HeaderOption *opt, const std::string & strName, int state=0);
 
-    HeaderOption * lastOpt;
+    MIME_HeaderOption * lastOpt;
     void parseOptionValue(std::string optionValue);
 
-    std::multimap<std::string,HeaderOption *> headers;
+    std::multimap<std::string,MIME_HeaderOption *> headers;
     size_t maxOptions;
     size_t maxSubOptionCount, maxSubOptionSize;
 };

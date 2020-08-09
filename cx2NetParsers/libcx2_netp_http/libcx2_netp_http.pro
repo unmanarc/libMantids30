@@ -15,7 +15,9 @@ SOURCES += \
     src/httpv1_client.cpp \
     src/helpers/http_date.cpp \
     src/cookies/http_cookies_clientside.cpp \
-    src/cookies/http_cookies_serverside.cpp
+    src/cookies/http_cookies_serverside.cpp \
+    src/urlvars/http_urlvarcontent_subparser.cpp \
+    src/urlvars/http_urlvars.cpp
 
 HEADERS += \
     src/cookies/http_cookie.h \
@@ -35,7 +37,9 @@ HEADERS += \
     src/cookies/http_cookies_clientside.h \
     src/cookies/http_cookies_serverside.h \
     src/helpers/fullrequest.h \
-    src/helpers/fullresponse.h
+    src/helpers/fullresponse.h \
+    src/urlvars/http_urlvarcontent_subparser.h \
+    src/urlvars/http_urlvars.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -65,6 +69,9 @@ INCLUDEPATH += src/defs
 
 QMAKE_INCDIR += src/security
 INCLUDEPATH += src/security
+
+QMAKE_INCDIR += src/urlvars
+INCLUDEPATH += src/urlvars
 
 # C++ standard.
 include(../../cflags.pri)

@@ -13,7 +13,7 @@ class HTTP_Cookies_ClientSide
 public:
     HTTP_Cookies_ClientSide();
 
-    void putOnHeaders(MIME_Sub_Header * headers) const;
+    void putOnHeaders(MIME::MIME_Sub_Header * headers) const;
     /**
      * @brief parseFromHeaders Parse cookies from string
      * @param cookies_str string to parse

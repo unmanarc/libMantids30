@@ -21,7 +21,7 @@ HTTP_Cookies_ServerSide::~HTTP_Cookies_ServerSide()
     for (auto & cookie : cookiesMap) delete cookie.second;
 }
 
-void HTTP_Cookies_ServerSide::putOnHeaders(MIME_Sub_Header *headers) const
+void HTTP_Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
     for (const auto & cookie :cookiesMap )
     {

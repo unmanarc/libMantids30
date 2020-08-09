@@ -18,9 +18,9 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequest);
 }
 
-sWebFullRequest HTTPv1_Server::requestData()
+sHTTP_RequestData HTTPv1_Server::requestData()
 {
-    sWebFullRequest fullReq;
+    sHTTP_RequestData fullReq;
 
     if (_clientHeaders.exist("Authorization"))
     {
@@ -46,9 +46,9 @@ sWebFullRequest HTTPv1_Server::requestData()
     return fullReq;
 }
 
-sWebFullResponse HTTPv1_Server::responseData()
+sHTTP_ResponseData HTTPv1_Server::responseData()
 {
-    sWebFullResponse fullR;
+    sHTTP_ResponseData fullR;
 
     fullR.contentData = &_serverContentData;
     fullR.headers = &_serverHeaders;
@@ -68,12 +68,12 @@ void HTTPv1_Server::setRemotePairAddress(const char *value)
     strncpy(remotePairAddress,value,sizeof(remotePairAddress)-1);
 }
 
-HTTP_ContainerType HTTPv1_Server::getRequestDataType()
+eHTTP_ContainerType HTTPv1_Server::getRequestDataType()
 {
     return _clientContentData.getContainerType();
 }
 
-Memory::Vars::Vars *HTTPv1_Server::getRequestVars(const VarSource &source)
+Memory::Vars::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &source)
 {
     switch (source)
     {
@@ -100,7 +100,7 @@ bool HTTPv1_Server::processClientOptions()
     return true;
 }
 
-HttpRetCode HTTPv1_Server::processClientRequest()
+eHTTP_RetCode HTTPv1_Server::processClientRequest()
 {
     return HTTP_RET_200_OK;
 }
@@ -402,7 +402,7 @@ Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamabl
     return stat;
 }
 
-Network::HTTP::HttpRetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
+Network::HTTP::eHTTP_RetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
 {
     _serverHeaders.replace("Location", location);
     if (temporary)
@@ -419,7 +419,7 @@ void HTTPv1_Server::setResponseContentType(const string &contentType, bool bNoSn
 
 string HTTPv1_Server::getRequestCookie(const string &sCookieName)
 {
-    HeaderOption * cookiesSubVars = _clientHeaders.getOptionByName("Cookie");
+    MIME::MIME_HeaderOption * cookiesSubVars = _clientHeaders.getOptionByName("Cookie");
     if (!cookiesSubVars) return "";
     // TODO: mayus
     return cookiesSubVars->getSubVar(sCookieName);

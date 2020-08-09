@@ -11,9 +11,9 @@
 #include "mime_sub_endpboundary.h"
 
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace MIME {
 
-enum MultiPartState
+enum eMIME_VarStat
 {
     MP_STATE_FIRST_BOUNDARY,
     MP_STATE_ENDPOINT,
@@ -21,11 +21,11 @@ enum MultiPartState
     MP_STATE_CONTENT
 };
 
-class MultiPart_Vars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
+class MIME_Vars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
 {
 public:
-    MultiPart_Vars(Memory::Streams::Streamable *value= nullptr);
-    ~MultiPart_Vars() override;
+    MIME_Vars(Memory::Streams::Streamable *value= nullptr);
+    ~MIME_Vars() override;
 
     bool streamTo(Memory::Streams::Streamable * out, Memory::Streams::Status & wrStat) override;
 
@@ -93,7 +93,7 @@ private:
     std::list<MIME_PartMessage *> parts;
     std::multimap<std::string,MIME_PartMessage *> partsByName;
 
-    MultiPartState currentState;
+    eMIME_VarStat currentState;
     MIME_PartMessage * currentPart;
     MIME_Sub_FirstBoundary subFirstBoundary;
     MIME_Sub_EndPBoundary subEndPBoundary;

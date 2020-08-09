@@ -17,7 +17,7 @@ public:
     HTTP_Cookies_ServerSide();
     ~HTTP_Cookies_ServerSide();
 
-    void putOnHeaders(MIME_Sub_Header * headers) const;
+    void putOnHeaders(MIME::MIME_Sub_Header * headers) const;
 
     std::string getCookieValueByName(const std::string & cookieName);
     HTTP_Cookie *getCookieByName(const std::string & cookieName);

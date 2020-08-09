@@ -3,7 +3,7 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-enum HttpRetCode {
+enum eHTTP_RetCode {
     HTTP_RET_100_CONTINUE = 0,
     HTTP_RET_101_SWITCHING_PROTOCOL = 1,
     HTTP_RET_200_OK = 2,

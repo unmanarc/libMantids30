@@ -8,9 +8,9 @@
 namespace CX2 { namespace Network { namespace HTTP {
 
 
-struct sResponseCode
+struct sHTTP_ResponseCode
 {
-    sResponseCode(const uint16_t &code,const char *responseMessage)
+    sHTTP_ResponseCode(const uint16_t &code,const char *responseMessage)
     {
         this->code = code;
         this->responseMessage = responseMessage;
@@ -41,7 +41,7 @@ public:
     /**
      * @brief setResponseCode2 Set response code and message from a fixed list.
      */
-    void setRetCode(HttpRetCode code);
+    void setRetCode(eHTTP_RetCode code);
     /**
      * @brief getResponseMessage - Get HTTP Response Code Message (Ex. Not found)
      * @return response code message
@@ -62,7 +62,7 @@ private:
     unsigned short responseCode;
     std::string responseMessage;
 
-    static const sResponseCode responseCodes[];
+    static const sHTTP_ResponseCode responseCodes[];
 
 
 };

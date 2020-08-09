@@ -1,14 +1,14 @@
 #include "mime_sub_header.h"
-
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+
 #include <cx2_hlp_functions/random.h>
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::HTTP;
+using namespace CX2::Network::MIME;
 using namespace CX2;
 using namespace std;
 
@@ -68,10 +68,10 @@ void MIME_Sub_Header::replace(const std::string &optionName, const std::string &
 // TODO: sanitize inputs when client...
 void MIME_Sub_Header::add(const std::string &optionName, const std::string &optionValue, int state)
 {
-    HeaderOption * optP;
+    MIME_HeaderOption * optP;
     if (state == 0)
     {
-        optP = new HeaderOption;
+        optP = new MIME_HeaderOption;
         if (headers.size()==maxOptions)
         {
             delete optP;
@@ -81,7 +81,7 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
         optP->setOrigName(optionName);
         parseSubValues(optP,optionValue,state);
 
-        headers.insert(std::pair<std::string,HeaderOption *>(boost::to_upper_copy(optionName),optP));
+        headers.insert(std::pair<std::string,MIME_HeaderOption *>(boost::to_upper_copy(optionName),optP));
         lastOpt = optP;
     }
     else if (state == 1 && lastOpt)
@@ -91,21 +91,21 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
     }
 }
 
-void MIME_Sub_Header::addHeaderOption(HeaderOption *opt)
+void MIME_Sub_Header::addHeaderOption(MIME_HeaderOption *opt)
 {
     if (headers.size()==maxOptions) return; // Can't exceed.
-    headers.insert(std::pair<std::string,HeaderOption *>(opt->getUpperName(),opt));
+    headers.insert(std::pair<std::string,MIME_HeaderOption *>(opt->getUpperName(),opt));
 }
 
-std::list<HeaderOption *> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
+std::list<MIME_HeaderOption *> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
 {
-    std::list<HeaderOption *> values;
+    std::list<MIME_HeaderOption *> values;
     auto range = headers.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i) values.push_back(i->second);
     return values;
 }
 
-HeaderOption *MIME_Sub_Header::getOptionByName(const std::string &varName) const
+MIME_HeaderOption *MIME_Sub_Header::getOptionByName(const std::string &varName) const
 {
     if (headers.find(boost::to_upper_copy(varName)) == headers.end()) return nullptr;
     return headers.find(boost::to_upper_copy(varName))->second;
@@ -113,13 +113,13 @@ HeaderOption *MIME_Sub_Header::getOptionByName(const std::string &varName) const
 
 std::string MIME_Sub_Header::getOptionRawStringByName(const std::string &varName) const
 {
-    HeaderOption * opt  = getOptionByName(varName);
+    MIME_HeaderOption * opt  = getOptionByName(varName);
     return opt?opt->getOrigValue():"";
 }
 
 std::string MIME_Sub_Header::getOptionValueStringByName(const std::string &varName) const
 {
-    HeaderOption * opt  = getOptionByName(varName);
+    MIME_HeaderOption * opt  = getOptionByName(varName);
     return opt?opt->getValue():"";
 }
 
@@ -128,7 +128,7 @@ uint64_t MIME_Sub_Header::getOptionAsUINT64(const std::string &varName, uint16_t
     uint64_t r=0;
     bool lOptExist;
     if (!optExist) optExist = &lOptExist;
-    HeaderOption * opt  = getOptionByName(varName);
+    MIME_HeaderOption * opt  = getOptionByName(varName);
     *optExist = opt!=nullptr?true:false;
     if (*optExist) r = strtoull(opt->getValue().c_str(),nullptr,base);
     return r;
@@ -151,7 +151,7 @@ Memory::Streams::Parsing::ParseStatus MIME_Sub_Header::parse()
     return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
 }
 
-void MIME_Sub_Header::parseSubValues(HeaderOption * opt, const std::string &strName, int state)
+void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string &strName, int state)
 {
     // hello weo; doaie; fa = "hello world;" hehe; asd=399; aik=""
     std::vector<std::string> vStaticTexts;
@@ -372,7 +372,7 @@ void MIME_Sub_Header::setMaxSubOptionCount(const size_t &value)
     maxSubOptionCount = value;
 }
 
-std::string HeaderOption::getString()
+std::string MIME_HeaderOption::getString()
 {
     std::string r;
 
@@ -400,7 +400,7 @@ std::string HeaderOption::getString()
 }
 
 
-bool HeaderOption::isPermited7bitCharset(const std::string &varX)
+bool MIME_HeaderOption::isPermited7bitCharset(const std::string &varX)
 {
     // No strange chars on our vars...
     for (size_t i=0;i<varX.size();i++)
@@ -411,7 +411,7 @@ bool HeaderOption::isPermited7bitCharset(const std::string &varX)
 }
 
 
-void HeaderOption::addSubVar(const std::string &varName, const std::string &varValue)
+void MIME_HeaderOption::addSubVar(const std::string &varName, const std::string &varValue)
 {
     if (varName.empty() && varValue.empty()) return;
     if (subVar.size()>=maxSubOptionsCount) return;
@@ -422,48 +422,48 @@ void HeaderOption::addSubVar(const std::string &varName, const std::string &varV
     subVar[varName] = varValue;
 }
 
-std::string HeaderOption::getUpperName() const
+std::string MIME_HeaderOption::getUpperName() const
 {
     return boost::to_upper_copy(origName);
 }
 
-std::string HeaderOption::getOrigName() const
+std::string MIME_HeaderOption::getOrigName() const
 {
     return origName;
 }
 
-void HeaderOption::setOrigName(const std::string &value)
+void MIME_HeaderOption::setOrigName(const std::string &value)
 {
     origName = value;
 }
 
-std::string HeaderOption::getValue() const
+std::string MIME_HeaderOption::getValue() const
 {
     return value;
 }
 
-void HeaderOption::setValue(const std::string &value)
+void MIME_HeaderOption::setValue(const std::string &value)
 {
     this->value = value;
     boost::trim(this->value);
 }
 
-std::string HeaderOption::getOrigValue() const
+std::string MIME_HeaderOption::getOrigValue() const
 {
     return origValue;
 }
 
-void HeaderOption::setOrigValue(const std::string &value)
+void MIME_HeaderOption::setOrigValue(const std::string &value)
 {
     origValue = value;
 }
 
-uint64_t HeaderOption::getMaxSubOptions() const
+uint64_t MIME_HeaderOption::getMaxSubOptions() const
 {
     return maxSubOptionsCount;
 }
 
-void HeaderOption::setMaxSubOptions(const uint64_t &value)
+void MIME_HeaderOption::setMaxSubOptions(const uint64_t &value)
 {
     maxSubOptionsCount = value;
 }

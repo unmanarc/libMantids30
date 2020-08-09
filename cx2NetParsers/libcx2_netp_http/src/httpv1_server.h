@@ -13,7 +13,7 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-enum VarSource
+enum HTTP_VarSource
 {
     HTTP_VARS_POST,
     HTTP_VARS_GET
@@ -26,12 +26,12 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // REQUEST:
-    sWebFullRequest requestData();
+    sHTTP_RequestData requestData();
     /**
      * @brief getRequestDataType Get Client Data Decodification Type
      * @return BIN/MIME/URL Options
      */
-    HTTP_ContainerType getRequestDataType();
+    eHTTP_ContainerType getRequestDataType();
     /**
      * @brief setRequestDataContainer Set Container for request input
      * @param outStream container
@@ -48,7 +48,7 @@ public:
      * @param source POST/GET option
      * @return
      */
-    Memory::Vars::Vars * getRequestVars(const VarSource &source);
+    Memory::Vars::Vars * getRequestVars(const HTTP_VarSource &source);
     /**
      * @brief getRequestVirtualHost Requested Virtual Host
      * @return virtual hostname string.
@@ -78,7 +78,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
-    sWebFullResponse responseData();
+    sHTTP_ResponseData responseData();
     /**
      * @brief setServerTokens Set Server Header
      * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
@@ -131,7 +131,7 @@ public:
      * @brief setResponseRedirect Redirect site to another URL
      * @param location URL string
      */
-    HttpRetCode setResponseRedirect(const std::string & location, bool temporary = true);
+    eHTTP_RetCode setResponseRedirect(const std::string & location, bool temporary = true);
     /**
      * @brief setResponseContentType Set Response Content Type
      * @param contentType Content Type (eg. application/json, text/html)
@@ -177,7 +177,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual HttpRetCode processClientRequest();
+    virtual eHTTP_RetCode processClientRequest();
 
     void * getThis() override { return this; }
     bool changeToNextParser() override;

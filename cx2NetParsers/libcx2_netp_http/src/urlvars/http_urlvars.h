@@ -5,21 +5,21 @@
 #include <cx2_mem_vars/vars.h>
 #include <map>
 
-#include "urlvarcontent_subparser.h"
+#include "http_urlvarcontent_subparser.h"
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-enum URLVStat
+enum eHTTP_URLVarStat
 {
     URLV_STAT_WAITING_NAME,
     URLV_STAT_WAITING_CONTENT
 };
 
-class URL_Vars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
+class HTTP_URLVars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
 {
 public:
-    URL_Vars(Memory::Streams::Streamable *value = nullptr);
-    ~URL_Vars() override;
+    HTTP_URLVars(Memory::Streams::Streamable *value = nullptr);
+    ~HTTP_URLVars() override;
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
@@ -43,12 +43,12 @@ protected:
 private:
     void insertVar(const std::string & varName, Memory::Containers::B_Chunks * data);
 
-    URLVStat currentStat;
+    eHTTP_URLVarStat currentStat;
 
     std::string currentVarName;
     std::multimap<std::string, Memory::Containers::B_Chunks *> vars;
 
-    URLVarContent_SubParser _urlVarParser;
+    HTTP_URLVarContent_SubParser _urlVarParser;
 };
 }}}
 #endif // HTTPURLFORMATTEDVARS_H

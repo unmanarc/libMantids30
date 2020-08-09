@@ -3,7 +3,7 @@
 
 #include <cx2_mem_streamparser/substreamparser.h>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace MIME {
 
 
 #define ENDP_STAT_UNINITIALIZED -1

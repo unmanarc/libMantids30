@@ -39,11 +39,11 @@ protected:
      * @brief processClientRequest Process web client request
      * @return http responce code.
      */
-    Network::HTTP::HttpRetCode processClientRequest() override;
+    Network::HTTP::eHTTP_RetCode processClientRequest() override;
 
 private:
 
-    Network::HTTP::HttpRetCode processRPCRequest();
+    Network::HTTP::eHTTP_RetCode processRPCRequest();
 
     std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Authorization::Session::IAuth_Session * session, Authorization::DataStructs::AuthReason *authReason);
     Authorization::DataStructs::AuthReason temporaryAuthentication(const Authentication &authData, Authorization::Session::IAuth_Session *session);

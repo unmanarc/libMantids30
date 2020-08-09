@@ -1,5 +1,5 @@
 #include "mime_sub_content.h"
-using namespace CX2::Network::HTTP;
+using namespace CX2::Network::MIME;
 using namespace CX2;
 
 MIME_Sub_Content::MIME_Sub_Content()

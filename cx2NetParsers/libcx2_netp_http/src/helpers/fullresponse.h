@@ -11,7 +11,7 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-struct sWebFullResponse
+struct sHTTP_ResponseData
 {
     // Proceced information:
     HTTP_Cookies_ServerSide * setCookies;
@@ -22,7 +22,7 @@ struct sWebFullResponse
     HTTP_Security_HSTS * secHSTS;
 
     // Original Values:
-    MIME_Sub_Header * headers; //
+    MIME::MIME_Sub_Header * headers; //
     HTTP_Status * status; //
     HTTP_Content * contentData; //
 

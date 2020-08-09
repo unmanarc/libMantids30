@@ -16,7 +16,7 @@ HTTP_Cookies_ClientSide::HTTP_Cookies_ClientSide()
 {
 }
 
-void HTTP_Cookies_ClientSide::putOnHeaders(MIME_Sub_Header *headers) const
+void HTTP_Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
     headers->add("Cookie",toString());
 }

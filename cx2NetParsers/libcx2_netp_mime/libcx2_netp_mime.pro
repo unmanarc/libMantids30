@@ -1,19 +1,19 @@
 QT       -= core gui
 
-SOURCES += \ 
+SOURCES += \
+    src/mime_vars.cpp \
     src/subparsers/mime_sub_header.cpp \
     src/subparsers/mime_sub_content.cpp \
     src/mime_partmessage.cpp \
     src/subparsers/mime_sub_firstboundary.cpp \
-    src/subparsers/mime_sub_endpboundary.cpp \
-    src/multipart_vars.cpp
-HEADERS += \ 
+    src/subparsers/mime_sub_endpboundary.cpp
+HEADERS += \
+    src/mime_vars.h \
     src/subparsers/mime_sub_header.h \
     src/subparsers/mime_sub_content.h \
     src/mime_partmessage.h \
     src/subparsers/mime_sub_firstboundary.h \
-    src/subparsers/mime_sub_endpboundary.h \
-    src/multipart_vars.h
+    src/subparsers/mime_sub_endpboundary.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

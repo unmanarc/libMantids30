@@ -1,11 +1,11 @@
-#include "urlvarcontent_subparser.h"
+#include "http_urlvarcontent_subparser.h"
 
 #include <cx2_mem_streamencoders/streamdecoder_url.h>
 
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 
-URLVarContent_SubParser::URLVarContent_SubParser()
+HTTP_URLVarContent_SubParser::HTTP_URLVarContent_SubParser()
 {
     setParseMode(Memory::Streams::Parsing::PARSE_MODE_MULTIDELIMITER);
     setParseMultiDelimiter({"=","&"});
@@ -13,18 +13,18 @@ URLVarContent_SubParser::URLVarContent_SubParser()
     pData = new Memory::Containers::B_Chunks;
 }
 
-URLVarContent_SubParser::~URLVarContent_SubParser()
+HTTP_URLVarContent_SubParser::~HTTP_URLVarContent_SubParser()
 {
     if (pData) delete pData;
 }
 
-bool URLVarContent_SubParser::stream(Memory::Streams::Status &)
+bool HTTP_URLVarContent_SubParser::stream(Memory::Streams::Status &)
 {
     // NOT IMPLEMENTED.
     return false;
 }
 
-void URLVarContent_SubParser::setVarType(bool varName)
+void HTTP_URLVarContent_SubParser::setVarType(bool varName)
 {
     if (varName)
         setParseMultiDelimiter({"=","&"}); // Parsing name...
@@ -32,19 +32,19 @@ void URLVarContent_SubParser::setVarType(bool varName)
         setParseMultiDelimiter({"&"}); // Parsing value...
 }
 
-void URLVarContent_SubParser::setMaxObjectSize(const uint32_t &size)
+void HTTP_URLVarContent_SubParser::setMaxObjectSize(const uint32_t &size)
 {
     setParseDataTargetSize(size);
 }
 
-Memory::Containers::B_Chunks *URLVarContent_SubParser::flushRetrievedContentAsBC()
+Memory::Containers::B_Chunks *HTTP_URLVarContent_SubParser::flushRetrievedContentAsBC()
 {
     Memory::Containers::B_Chunks * r = pData;
     pData = new Memory::Containers::B_Chunks;
     return r;
 }
 
-std::string URLVarContent_SubParser::flushRetrievedContentAsString()
+std::string HTTP_URLVarContent_SubParser::flushRetrievedContentAsString()
 {
     std::string r = pData->toString();
     delete pData;
@@ -52,7 +52,7 @@ std::string URLVarContent_SubParser::flushRetrievedContentAsString()
     return r;
 }
 
-Memory::Streams::Parsing::ParseStatus URLVarContent_SubParser::parse()
+Memory::Streams::Parsing::ParseStatus HTTP_URLVarContent_SubParser::parse()
 {
     pData->clear();
     if (!getParsedData()->size()) return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
@@ -65,7 +65,7 @@ Memory::Streams::Parsing::ParseStatus URLVarContent_SubParser::parse()
     return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
-Memory::Containers::B_Chunks *URLVarContent_SubParser::getPData()
+Memory::Containers::B_Chunks *HTTP_URLVarContent_SubParser::getPData()
 {
     return pData;
 }

@@ -122,22 +122,18 @@ uint32_t HTTP_Content::parseHttpChunkSize()
         return parsedSize;
 }
 
-HTTP_Content_Transmition_Mode HTTP_Content::getTransmitionMode() const
+eHTTP_Content_Transmition_Mode HTTP_Content::getTransmitionMode() const
 {
     return transmitionMode;
 }
 
-URL_Vars *HTTP_Content::getUrlVars()
+HTTP_URLVars *HTTP_Content::getUrlVars()
 {
     return &urlVars;
 }
 
-MultiPart_Vars *HTTP_Content::getMultiPartVars()
-{
-    return &multiPartVars;
-}
 
-HTTP_ContainerType HTTP_Content::getContainerType() const
+eHTTP_ContainerType HTTP_Content::getContainerType() const
 {
     return containerType;
 }
@@ -155,7 +151,12 @@ Memory::Vars::Vars *HTTP_Content::postVars()
     return &urlVars;
 }
 
-void HTTP_Content::setContainerType(const HTTP_ContainerType &value)
+Network::MIME::MIME_Vars *HTTP_Content::getMultiPartVars()
+{
+    return &multiPartVars;
+}
+
+void HTTP_Content::setContainerType(const eHTTP_ContainerType &value)
 {
     containerType = value;
     if (isDefaultStreamableOutput())
@@ -199,7 +200,7 @@ bool HTTP_Content::stream(Memory::Streams::Status & wrStat)
     return true;
 }
 
-void HTTP_Content::setTransmitionMode(const HTTP_Content_Transmition_Mode &value)
+void HTTP_Content::setTransmitionMode(const eHTTP_Content_Transmition_Mode &value)
 {
     transmitionMode = value;
 

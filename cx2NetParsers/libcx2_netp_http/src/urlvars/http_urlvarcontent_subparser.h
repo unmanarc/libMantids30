@@ -5,11 +5,11 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-class URLVarContent_SubParser : public Memory::Streams::Parsing::SubParser
+class HTTP_URLVarContent_SubParser : public Memory::Streams::Parsing::SubParser
 {
 public:
-    URLVarContent_SubParser();
-    ~URLVarContent_SubParser() override;
+    HTTP_URLVarContent_SubParser();
+    ~HTTP_URLVarContent_SubParser() override;
 
     bool stream(Memory::Streams::Status &) override;
 

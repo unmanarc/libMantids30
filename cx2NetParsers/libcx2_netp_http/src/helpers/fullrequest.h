@@ -8,7 +8,7 @@
 
 namespace CX2 { namespace Network { namespace HTTP {
 
-struct sWebFullRequest
+struct sHTTP_RequestData
 {
     // Host Information:
     const char * CLIENT_IP;
@@ -24,10 +24,10 @@ struct sWebFullRequest
 
     // Proceced information:
     Memory::Vars::Vars *VARS_GET, *VARS_POST;
-    HeaderOption * VARS_COOKIES;
+    MIME::MIME_HeaderOption * VARS_COOKIES;
 
     // Original Values:
-    MIME_Sub_Header * clientHeaders; // User agent, ...
+    MIME::MIME_Sub_Header * clientHeaders; // User agent, ...
     HTTP_Request * clientRequest; // method type, and other options...
     HTTP_Content * clientContentData; // content data...
 };

@@ -36,7 +36,6 @@ public:
     bool getUseFormattedJSONOutput() const;
     void setUseFormattedJSONOutput(bool value);
 
-
     ResourcesFilter *getResourceFilter() const;
 
     std::string getResourcesLocalPath() const;

@@ -15,18 +15,18 @@ HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) 
     setInternalProductVersion("CX2::HTTP","(+https://github.com/unmanarc/cxFramework2)");
 }
 
-HTTPServerParams HTTPv1_Base::server()
+HTTP_ResponseParams HTTPv1_Base::response()
 {
-    HTTPServerParams ret;
+    HTTP_ResponseParams ret;
     ret.status = &_serverCodeResponse;
     ret.content = &_serverContentData;
     ret.headers = &_serverHeaders;
     return ret;
 }
 
-HTTPClientParams HTTPv1_Base::client()
+HTTP_RequestParams HTTPv1_Base::request()
 {
-    HTTPClientParams ret;
+    HTTP_RequestParams ret;
     ret.content = &_clientContentData;
     ret.headers = &_clientHeaders;
     ret.request = &_clientRequest;

@@ -64,8 +64,8 @@ bool HTTPv1_Client::changeToNextParser()
 
 void HTTPv1_Client::parseHeaders2ServerCookies()
 {
-    std::list<HeaderOption *> setCookies = _serverHeaders.getOptionsByName("");
-    for (HeaderOption * serverCookie : setCookies)
+    std::list<MIME::MIME_HeaderOption *> setCookies = _serverHeaders.getOptionsByName("");
+    for (MIME::MIME_HeaderOption * serverCookie : setCookies)
         serverCookies.parseCookie(serverCookie->getOrigValue());
 }
 
