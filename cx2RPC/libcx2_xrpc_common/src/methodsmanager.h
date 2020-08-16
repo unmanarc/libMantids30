@@ -23,7 +23,6 @@ struct sRPCParameters
     CX2::Authorization::Session::IAuth_Session *session;
     std::string methodName;
     Json::Value payload;
-//    Json::Value extraInfo;
     uint64_t requestId;
 };
 

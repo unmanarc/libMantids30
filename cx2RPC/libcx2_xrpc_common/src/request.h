@@ -13,47 +13,46 @@ class Request
 {
 public:
     Request();
-//    Json::Value toJSON();
 
+    /**
+     * @brief print Print the request to console
+     */
     void print();
-
-//    bool setExtraInfo(const std::string & extraInfo);
-//    bool setPayload(const std::string & payload);
+    /**
+     * @brief setAuthentications Set the authentication string.
+     * @param sAuthentications string in JSON Format.
+     * @return if the string have been correctly parsed, returns true, else false.
+     */
     bool setAuthentications(const std::string & sAuthentications);
-
- //   void setExtraInfo(const Json::Value & extraInfo);
-    //void setPayload(const Json::Value & payload);
-
-//    Json::Value getPayload();
-
+    /**
+     * @brief clear Clear authentications
+     */
     void clear();
-
+    /**
+     * @brief addAuthentication Manually add an authentication
+     * @param auth Authentication object.
+     */
     void addAuthentication(const Authentication & auth);
+    /**
+     * @brief addAuthentication Add an authentication as passIndex+Password
+     * @param passIndex Authentication Password Index
+     * @param pass Password
+     */
     void addAuthentication(uint32_t passIndex, const std::string &pass);
-
+    /**
+     * @brief getAuthenticationsIdxs Get authentications Password Indexes.
+     * @return set of password indexes.
+     */
     std::set<uint32_t> getAuthenticationsIdxs();
+    /**
+     * @brief getAuthentication Get authentication object given a password index.
+     * @param idx Authentication Password Index.
+     * @return Authentication Object.
+     */
     Authentication getAuthentication( const uint32_t & idx );
 
-/*    uint64_t getReqId();
-    void setReqId(const uint64_t &value);
-
-    int getRetCode();
-    void setRetCode(int value);
-
-*/
-/*    std::string getUserName() const;
-    void setUserName(const std::string &value);
-
-    std::string getDomainName() const;
-    void setDomainName(const std::string &value);
-*/
 
 private:
-    //Memory::Streams::JSON_Streamable payload;
-   // std::string userName, domainName; // methodName, rpcMode
-  //  uint64_t reqId;
-
-    //int retcode;
     std::map<uint32_t,Authentication> authentications;
 };
 

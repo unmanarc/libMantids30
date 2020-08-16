@@ -5,6 +5,9 @@
 #include <json/json.h>
 namespace CX2 { namespace RPC {
 
+/**
+ * @brief The Authentication class
+ */
 class Authentication
 {
 public:
