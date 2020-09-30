@@ -23,6 +23,7 @@ public:
 
     std::string getVersion() const;
     void setVersion(const std::string &value);
+    void setVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string & subText);
 
     std::string getDescription() const;
     void setDescription(const std::string &value);
