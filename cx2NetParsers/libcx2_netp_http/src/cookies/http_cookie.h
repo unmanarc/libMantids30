@@ -22,6 +22,7 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////////
     time_t getExpiration() const;
+    void setToExpire();
     void setExpiration(const time_t& exp);
     void setExpirationInSeconds(const uint32_t& seconds);
 

@@ -99,6 +99,11 @@ time_t HTTP_Cookie::getExpiration() const
     return expires.getRawTime();
 }
 
+void HTTP_Cookie::setToExpire()
+{
+    setExpiration(0);
+}
+
 void HTTP_Cookie::setExpiration(const time_t &exp)
 {
     expires.setRawTime(exp);
