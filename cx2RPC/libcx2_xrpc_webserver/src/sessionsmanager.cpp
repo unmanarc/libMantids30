@@ -106,7 +106,7 @@ bool SessionsManager::destroySession(const std::string &sessionID)
     return false;
 }
 
-Authorization::Session::IAuth_Session *SessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
+WebSession *SessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
 {
     WebSession *xs;
     if ((xs=(WebSession *)sessions.openElement(sessionID))!=nullptr)
@@ -115,7 +115,7 @@ Authorization::Session::IAuth_Session *SessionsManager::openSession(const std::s
             *maxAge = 0;
         else
             *maxAge = (xs->session->getLastActivity()+sessionExpirationTime)-time(nullptr);
-        return xs->session;
+        return xs;
     }
     return nullptr;
 }
