@@ -275,8 +275,18 @@ Memory::Streams::Streamable *HTTP_Content::getStreamableOuput()
 
 void HTTP_Content::setStreamableOutput(Memory::Streams::Streamable *outDataContainer, bool deleteOutStream)
 {
+    // This stream has been setted up before...
+    // Delete the previous stream/data before replacing...
+    preemptiveDestroyStreamableOuput();
+
     this->deleteOutStream = deleteOutStream;
     this->outStream = outDataContainer;
+
+    if (this->outStream == nullptr)
+    {
+        // Point to empty container...
+        outStream = &binDataContainer;
+    }
 }
 
 uint64_t HTTP_Content::getStreamSize()
