@@ -50,7 +50,7 @@ public:
     /**
      * Set callback when timed out (max concurrent clients reached and timed out) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj);
+    void setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj);
     /**
      * Set callback when maximum connections per IP reached (this callback is called from acceptor thread, you should use it very quick)
      */

@@ -7,14 +7,14 @@ struct sAcceptorTaskData
 {
     ~sAcceptorTaskData()
     {
-        isSecure = false;
-        memset(remotePair,0,INET6_ADDRSTRLEN+1);
         if (clientSocket)
         {
             clientSocket->shutdownSocket();
             delete clientSocket;
             clientSocket = nullptr;
         }
+        isSecure = false;
+        memset(remotePair,0,INET6_ADDRSTRLEN+1);
     }
 
     bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *,bool);
@@ -70,9 +70,9 @@ void Socket_Acceptor_PoolThreaded::setCallbackOnInitFail(bool (*_callbackOnInitF
     this->objOnInitFail = obj;
 }
 
-void Socket_Acceptor_PoolThreaded::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
+void Socket_Acceptor_PoolThreaded::setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj)
 {
-    this->callbackOnTimedOut = _callbackOnTimedOut;
+    this->callbackOnTimedOut = _callbackOnTimeOut;
     this->objOnTimedOut = obj;
 }
 

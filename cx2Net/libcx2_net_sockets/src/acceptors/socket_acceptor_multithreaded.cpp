@@ -240,9 +240,9 @@ void Socket_Acceptor_MultiThreaded::setCallbackOnInitFail(bool (*_callbackOnInit
     this->objOnInitFail = obj;
 }
 
-void Socket_Acceptor_MultiThreaded::setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
+void Socket_Acceptor_MultiThreaded::setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Streams::StreamSocket *, const char *, bool), void *obj)
 {
-    this->callbackOnTimedOut = _callbackOnTimedOut;
+    this->callbackOnTimedOut = _callbackOnTimeOut;
     this->objOnTimedOut = obj;
 }
 

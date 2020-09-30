@@ -45,7 +45,7 @@ public:
     /**
      * Set callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimedOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj);
+    void setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Streams::StreamSocket *, const char *,bool), void *obj);
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
