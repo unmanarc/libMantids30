@@ -11,6 +11,10 @@ namespace CX2 { namespace RPC { namespace Web {
 
 struct sFilterEvaluation
 {
+    sFilterEvaluation()
+    {
+        accept = true;
+    }
     bool accept;
     std::string location;
 };
