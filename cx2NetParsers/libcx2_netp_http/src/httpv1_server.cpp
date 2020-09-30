@@ -5,6 +5,9 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <cx2_mem_vars/b_mmap.h>
+
+
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
@@ -16,6 +19,84 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     badAnswer = false;
     remotePairAddress[0]=0;
     currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequest);
+
+    // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
+    mimeTypes[".aac"] = "audio/aac";
+    mimeTypes[".abw"] = "application/x-abiword";
+    mimeTypes[".arc"] = "application/x-freearc";
+    mimeTypes[".avi"] = "video/x-msvideo";
+    mimeTypes[".azw"] = "application/vnd.amazon.ebook";
+    mimeTypes[".bin"] = "application/octet-stream";
+    mimeTypes[".bmp"] = "image/bmp";
+    mimeTypes[".bz"] = "application/x-bzip";
+    mimeTypes[".bz2"] = "application/x-bzip2";
+    mimeTypes[".csh"] = "application/x-csh";
+    mimeTypes[".css"] = "text/css";
+    mimeTypes[".csv"] = "text/csv";
+    mimeTypes[".doc"] = "application/msword";
+    mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    mimeTypes[".eot"] = "application/vnd.ms-fontobject";
+    mimeTypes[".epub"] = "application/epub+zip";
+    mimeTypes[".gz"] = "application/gzip";
+    mimeTypes[".gif"] = "image/gif";
+    mimeTypes[".htm"] = "text/html";
+    mimeTypes[".html"] = "text/html";
+    mimeTypes[".ico"] = "image/vnd.microsoft.icon";
+    mimeTypes[".ics"] = "text/calendar";
+    mimeTypes[".jar"] = "application/java-archive";
+    mimeTypes[".jpeg"] = "image/jpeg";
+    mimeTypes[".jpg"] = "image/jpeg";
+    mimeTypes[".js"] = "application/javascript";
+    mimeTypes[".json"] = "application/json";
+    mimeTypes[".jsonld"] = "application/ld+json";
+    mimeTypes[".mid"] = "audio/midi";
+    mimeTypes[".midi"] = "audio/x-midi";
+    mimeTypes[".mjs"] = "text/javascript";
+    mimeTypes[".mp3"] = "audio/mpeg";
+    mimeTypes[".mp4"] = "video/mp4";
+    mimeTypes[".mpeg"] = "video/mpeg";
+    mimeTypes[".mpkg"] = "application/vnd.apple.installer+xml";
+    mimeTypes[".odp"] = "application/vnd.oasis.opendocument.presentation";
+    mimeTypes[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+    mimeTypes[".odt"] = "application/vnd.oasis.opendocument.text";
+    mimeTypes[".oga"] = "audio/ogg";
+    mimeTypes[".ogv"] = "video/ogg";
+    mimeTypes[".ogx"] = "application/ogg";
+    mimeTypes[".opus"] = "audio/opus";
+    mimeTypes[".otf"] = "font/otf";
+    mimeTypes[".png"] = "image/png";
+    mimeTypes[".pdf"] = "application/pdf";
+    mimeTypes[".php"] = "application/x-httpd-php";
+    mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+    mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    mimeTypes[".rar"] = "application/vnd.rar";
+    mimeTypes[".rtf"] = "application/rtf";
+    mimeTypes[".sh"] = "application/x-sh";
+    mimeTypes[".svg"] = "image/svg+xml";
+    mimeTypes[".swf"] = "application/x-shockwave-flash";
+    mimeTypes[".tar"] = "application/x-tar";
+    mimeTypes[".tif"] = "image/tiff";
+    mimeTypes[".ts"] = "video/mp2t";
+    mimeTypes[".ttf"] = "font/ttf";
+    mimeTypes[".txt"] = "text/plain";
+    mimeTypes[".vsd"] = "application/vnd.visio";
+    mimeTypes[".wav"] = "audio/wav";
+    mimeTypes[".weba"] = "audio/webm";
+    mimeTypes[".webm"] = "video/webm";
+    mimeTypes[".webp"] = "image/webp";
+    mimeTypes[".woff"] = "font/woff";
+    mimeTypes[".woff2"] = "font/woff2";
+    mimeTypes[".xhtml"] = "application/xhtml+xml";
+    mimeTypes[".xls"] = "application/vnd.ms-excel";
+    mimeTypes[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    mimeTypes[".xml"] = "application/xml";
+    mimeTypes[".xul"] = "application/vnd.mozilla.xul+xml";
+    mimeTypes[".zip"] = "application/zip";
+    mimeTypes[".3gp"] = "video/3gpp</code><br>";
+    mimeTypes[".3g2"] = "video/3gpp2</code><br>";
+    mimeTypes[".7z"] = "application/x-7z-compressed";
+
+    includeServerDate = true;
 }
 
 sHTTP_RequestData HTTPv1_Server::requestData()
@@ -88,6 +169,91 @@ Memory::Vars::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &source)
 void HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
     _serverHeaders.replace("Server", sServerName);
+}
+
+bool HTTPv1_Server::setResponseFileFromURI(const string &sServerDir,string *sRealRelativePath, string *sRealFullPath)
+{
+    bool ret = false;
+    char *cFullPath, *cServerDir;
+    size_t cServerDirSize = 0;
+
+    *sRealRelativePath="";
+    *sRealFullPath="";
+
+    // Check Server Dir Real Path:
+    if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+    {
+        return false;
+    }
+
+    string sFullPath = cServerDir + getRequestURI();
+    cServerDirSize = strlen(cServerDir);
+
+    // Detect transversal:
+    if ((cFullPath=realpath(sFullPath.c_str(), nullptr))!=nullptr)
+    {
+        if (strlen(cFullPath)<cServerDirSize || memcmp(cServerDir,cFullPath,cServerDirSize)!=0)
+        {
+            // Transversal directory attempt TODO: report.
+        }
+        else
+        {
+            // No transversal detected.
+            CX2::Memory::Containers::B_MMAP * bFile = new CX2::Memory::Containers::B_MMAP;
+            if (bFile->referenceFile(cFullPath,true,false))
+            {
+                // File Found / Readable.
+                *sRealFullPath = sFullPath;
+                *sRealRelativePath = cFullPath+cServerDirSize;
+                setResponseDataStreamer(bFile,true);
+                setResponseContentTypeByFileExtension(*sRealRelativePath);
+
+                struct stat attrib;
+                if (!stat(sFullPath.c_str(), &attrib))
+                {
+                    HTTP_Date fileModificationDate;
+                    fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
+                    if (includeServerDate)
+                        _serverHeaders.add("Last-Modified", fileModificationDate.toString());
+                }
+
+                ret = true;
+            }
+            else
+            {
+                // File not found / Readable...
+                delete bFile;
+                return false;
+            }
+        }
+    }
+
+    if (cFullPath) free(cFullPath);
+
+    return ret;
+}
+
+bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
+{
+    const char * cFileExtension = strrchr(sFilePath.c_str(),'.');
+
+    if (!cFileExtension || cFileExtension[1]==0)
+        return false;
+
+    currentFileExtension = boost::to_lower_copy(std::string(cFileExtension));
+
+    if (mimeTypes.find(currentFileExtension) != mimeTypes.end())
+    {
+        setResponseContentType(mimeTypes[currentFileExtension],true);
+        return true;
+    }
+    setResponseContentType("",false);
+    return false;
+}
+
+void HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const string &type)
+{
+    mimeTypes[ext] = type;
 }
 
 bool HTTPv1_Server::processClientURI()
@@ -218,6 +384,11 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
         _serverHeaders.replace("Content-Length", std::to_string(strsize));
     }
 
+    HTTP_Date currentDate;
+    currentDate.setCurrentTime();
+    if (includeServerDate)
+        _serverHeaders.add("Date", currentDate.toString());
+
     // Establish the cookies
     _serverHeaders.remove("Set-Cookie");
     setCookies.putOnHeaders(&_serverHeaders);
@@ -230,10 +401,10 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
         _serverHeaders.replace("X-Frame-Options", secXFrameOpts.toValue());
 
     // TODO: check if this is a secure connection.. (Over TLS?)
-    if (!secHSTS.getActivated())
+    if (secHSTS.getActivated())
         _serverHeaders.replace("Strict-Transport-Security", secHSTS.toValue());
 
-        // Content Type...
+    // Content Type...
     if (!contentType.empty())
     {
         _serverHeaders.replace("Content-Type", contentType);
@@ -319,6 +490,21 @@ bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
     return true;
 }
 
+std::string HTTPv1_Server::getContentType() const
+{
+    return contentType;
+}
+
+std::string HTTPv1_Server::getCurrentFileExtension() const
+{
+    return currentFileExtension;
+}
+
+void HTTPv1_Server::setResponseIncludeServerDate(bool value)
+{
+    includeServerDate = value;
+}
+
 bool HTTPv1_Server::getIsSecure() const
 {
     return isSecure;
@@ -362,6 +548,17 @@ void HTTPv1_Server::setResponseSecurityXFrameOpts(const HTTP_Security_XFrameOpts
 Memory::Streams::Status HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return ansBytes;
+}
+
+bool HTTPv1_Server::setResponseDeleteSecureCookie(const string &cookieName)
+{
+    HTTP_Cookie val;
+    val.setValue("");
+    val.setSecure(true);
+    val.setHttpOnly(true);
+    val.setToExpire();
+    val.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
+    return setResponseCookie(cookieName,val);
 }
 
 bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const string &cookieValue, const uint32_t &uMaxAge)
@@ -428,6 +625,11 @@ string HTTPv1_Server::getRequestCookie(const string &sCookieName)
 string HTTPv1_Server::getRequestContentType()
 {
     return _clientHeaders.getOptionRawStringByName("Content-Type");
+}
+
+string HTTPv1_Server::getClientHeaderOption(const string &optionName)
+{
+    return _clientHeaders.getOptionRawStringByName(optionName);
 }
 
 uint16_t HTTPv1_Server::getRequestVirtualPort() const

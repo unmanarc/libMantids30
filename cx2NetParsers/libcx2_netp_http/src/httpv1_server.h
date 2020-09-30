@@ -76,6 +76,13 @@ public:
      */
     std::string getRequestContentType();
 
+    /**
+     * @brief getClientHeaderOption Get Client Header Option Value By Option Name.
+     * @param optionName Option Name
+     * @return Option Value
+     */
+    std::string getClientHeaderOption(const std::string & optionName);
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
     sHTTP_ResponseData responseData();
@@ -85,8 +92,27 @@ public:
      */
     void setResponseServerName(const std::string &sServerName);
     /**
+     * @brief setResponseFileFromURI Set the container as MMAP from file
+     * @param sServerDir
+     * @param sRealRelativePath
+     * @param sRealFullPath
+     * @return
+     */
+    bool setResponseFileFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath);
+    /**
+     * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
+     * @param sFilePath filename string
+     */
+    bool setResponseContentTypeByFileExtension(const std::string & sFilePath);
+    /**
+     * @brief addFileExtensionMimeType Add/Replace File Extension to Mime Content Type Association (no Thread-Safe, must be done before start the server)
+     * @param ext extension (important!!: should be in lowercase)
+     * @param content type
+     */
+    void addResponseContentTypeFileExtension(const std::string & ext, const std::string & type);
+    /**
      * @brief setResponseDataStreamer Set the container used for transmiting data.
-     * @param outStream stream used
+     * @param outStream stream used (or nullptr to default empty streamer)
      * @param deleteOutStream delete the container after usage.
      */
     void setResponseDataStreamer(Memory::Streams::Streamable * dsOut, bool bDeleteAfter = false);
@@ -100,6 +126,12 @@ public:
      * @return
      */
     Memory::Streams::Status getResponseTransmissionStatus() const;
+    /**
+     * @brief setResponseDeleteSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
+     * @param cookieName
+     * @return
+     */
+    bool setResponseDeleteSecureCookie(const std::string &cookieName);
     /**
      * @brief setResponseSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite)
      * @param cookieName
@@ -139,6 +171,18 @@ public:
      */
     void setResponseContentType(const std::string & contentType, bool bNoSniff = true);
 
+    /**
+     * @brief getCurrentFileExtension Get Current File Extension
+     * @return File Extension
+     */
+    std::string getCurrentFileExtension() const;
+
+    /**
+     * @brief getContentType Get the generated content type (eg. text/html)
+     * @return content type string in lowercase.
+     */
+    std::string getContentType() const;
+
     // SECURITY OPTIONS:
     HTTP_Security_XFrameOpts getResponseSecurityXFrameOpts() const;
     void setResponseSecurityXFrameOpts(const HTTP_Security_XFrameOpts &value);
@@ -148,6 +192,9 @@ public:
 
     HTTP_Security_HSTS getResponseSecurityHSTS() const;
     void setResponseSecurityHSTS(const HTTP_Security_HSTS &value);
+
+    void setResponseIncludeServerDate(bool value);
+
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OTHER FUNCTIONS:
@@ -159,6 +206,9 @@ public:
 
     bool getIsSecure() const;
     void setIsSecure(bool value);
+
+
+
 
 protected:
     /**
@@ -206,7 +256,9 @@ private:
     uint16_t virtualPort;
     std::string virtualHost;
     std::string contentType;
-    bool bNoSniff, isSecure;
+    std::string currentFileExtension;
+    bool bNoSniff, isSecure, includeServerDate;
+    std::map<std::string,std::string> mimeTypes;
 };
 
 }}}
