@@ -146,7 +146,7 @@ protected:
     Memory::Streams::Parsing::ParseStatus parse() override;
 
 private:
-    void parseSubValues(MIME_HeaderOption *opt, const std::string & strName, int state=0);
+    void parseSubValues(MIME_HeaderOption *opt, const std::string & strName);
 
     MIME_HeaderOption * lastOpt;
     void parseOptionValue(std::string optionValue);

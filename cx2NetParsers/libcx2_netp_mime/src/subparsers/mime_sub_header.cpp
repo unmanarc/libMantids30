@@ -79,7 +79,7 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
         }
 
         optP->setOrigName(optionName);
-        parseSubValues(optP,optionValue,state);
+        parseSubValues(optP,optionValue);
 
         headers.insert(std::pair<std::string,MIME_HeaderOption *>(boost::to_upper_copy(optionName),optP));
         lastOpt = optP;
@@ -87,7 +87,7 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
     else if (state == 1 && lastOpt)
     {
         optP = lastOpt;
-        parseSubValues(optP,optionValue,state);
+        parseSubValues(optP,optionValue);
     }
 }
 
@@ -151,7 +151,7 @@ Memory::Streams::Parsing::ParseStatus MIME_Sub_Header::parse()
     return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
 }
 
-void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string &strName, int state)
+void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string &strName)
 {
     // hello weo; doaie; fa = "hello world;" hehe; asd=399; aik=""
     std::vector<std::string> vStaticTexts;
@@ -376,8 +376,8 @@ std::string MIME_HeaderOption::getString()
 {
     std::string r;
 
-    r = origName + ": ";
-
+    r = origName + ": " + origValue;
+/*
     bool prev = false;
     for (const auto & i : subVar)
     {
@@ -394,7 +394,7 @@ std::string MIME_HeaderOption::getString()
         {
             r+= i.first + "=\"" + i.second + "\"";
         }
-    }
+    }*/
     return r;
 
 }
