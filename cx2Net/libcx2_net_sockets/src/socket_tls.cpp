@@ -157,7 +157,6 @@ bool Socket_TLS::tlsInitContext()
             SSL_CTX_set_client_CA_list( sslContext, list );
             // It takes ownership. (list now belongs to sslContext)
         }
-        return false;
     }
 
     if (!crt_file.empty() && (SSL_CTX_use_certificate_file(sslContext, crt_file.c_str(), SSL_FILETYPE_PEM) != 1))
@@ -165,7 +164,7 @@ bool Socket_TLS::tlsInitContext()
         sslErrors.push_back("SSL_CTX_use_certificate_file Failed for local Certificate.");
         return false;
     }
-    if (!key_file.empty() && (SSL_CTX_use_PrivateKey_file(sslContext, crt_file.c_str(), SSL_FILETYPE_PEM) != 1))
+    if (!key_file.empty() && (SSL_CTX_use_PrivateKey_file(sslContext, key_file.c_str(), SSL_FILETYPE_PEM) != 1))
     {
         sslErrors.push_back("SSL_CTX_use_PrivateKey_file Failed for private key.");
         return false;
@@ -240,6 +239,7 @@ string Socket_TLS::getTLSPeerCN()
 
 int Socket_TLS::iShutdown(int mode)
 {
+    if (!sslHandle) return -2;
     if (shutdown_proto_rd || shutdown_proto_wr)
     {
         //        throw std::runtime_error("Double shutdown on Socket TLS");
@@ -357,7 +357,7 @@ CX2::Network::Streams::StreamSocket * Socket_TLS::acceptConnection()
     return tlsSock;
 }
 
-int Socket_TLS::partialRead(void *data, uint32_t datalen)
+int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 {
     if (!sslHandle) return -1;
 
@@ -385,10 +385,11 @@ int Socket_TLS::partialRead(void *data, uint32_t datalen)
     }
 }
 
-int Socket_TLS::partialWrite(void *data, uint32_t datalen)
+int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 {
     if (!sslHandle) return -1;
 
+    // TODO: sigpipe here?
     int sentBytes = SSL_write(sslHandle, data, datalen);
     if (sentBytes > 0)
     {
