@@ -715,7 +715,7 @@ uint64_t B_Base::copyToSOUsingCleanVector(Streamable &bc, std::vector<BinaryCont
     for (size_t i=0; i<copyChunks.size();i++)
     {
         Memory::Streams::Status cur;
-        if ( !(cur = bc.write(copyChunks[i].rodata,copyChunks[i].rosize,wrStatUpd)).succeed || cur.bytesWritten!=copyChunks[i].size)
+        if ( !(cur = bc.write(copyChunks[i].rodata,copyChunks[i].rosize,wrStatUpd)).succeed || cur.bytesWritten!=copyChunks[i].rosize)
         {
             acum+=cur;
             return acum.bytesWritten;
