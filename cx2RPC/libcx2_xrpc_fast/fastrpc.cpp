@@ -77,7 +77,9 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
     {
         return -3;
     }
-    if (1)
+
+    ////////////////////////////////////////////////////////////
+    if (true)
     {
         std::unique_lock<std::mutex> lk(connection->mtAnswers);
         if ( connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
@@ -101,6 +103,8 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
             eventUnexpectedAnswerReceived(connection, payloadBytes );
         }
     }
+
+    delete [] payloadBytes;
 
     return 0;
 }
@@ -141,6 +145,9 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
     params->done = mtDone;
     params->mtSocket = mtSocket;
     params->streamBack = stream;
+    params->caller = this;
+    params->maxMessageSize = maxMessageSize;
+
     bool parsingSuccessful = reader.parse( payloadBytes, params->payload );
     delete [] payloadBytes;
 
