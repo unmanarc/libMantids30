@@ -22,9 +22,10 @@ SOURCES += \
     src/b_mem.cpp \
     src/b_mmap.cpp \
     src/b_ref.cpp \
+    src/filemap.cpp \
     src/nullcontainer.cpp \
     src/streamable.cpp \
-    src/streamable_file.cpp \
+    src/streamablefile.cpp \
     src/streamparser.cpp \
     src/substreamparser.cpp \
     src/vars.cpp \
@@ -49,13 +50,13 @@ HEADERS += \
     src/b_base.h \
     src/b_chunk.h \
     src/b_chunks.h \
-    src/b_filereference.h \
     src/b_mem.h \
     src/b_mmap.h \
     src/b_ref.h \
+    src/filemap.h \
     src/nullcontainer.h \
     src/streamable.h \
-    src/streamable_file.h \
+    src/streamablefile.h \
     src/streamparser.h \
     src/substreamparser.h \
     src/vars.h \
@@ -65,9 +66,23 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
+!win32 {
+    SOURCES +=
+    HEADERS +=
+}
+win32 {
+    SOURCES += src/win32/w32compat.cpp
+    HEADERS += src/win32/w32compat.h
+}
+
+win32:LIBS+= -L$$PREFIX/lib -lcx2_thr_mutex2 -lcx2_thr_safecontainers2 -lcx2_hlp_functions2 -lws2_32
+
 # includes dir
 QMAKE_INCDIR += $$PREFIX/include
 INCLUDEPATH += $$PREFIX/include
+
+INCLUDEPATH += src/win32
+QMAKE_INCDIR += src/win32
 
 QMAKE_INCDIR += src
 INCLUDEPATH += src

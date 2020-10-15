@@ -1,14 +1,14 @@
-#include "streamable_file.h"
+#include "streamablefile.h"
 
 using namespace CX2::Memory::Streams;
 
-Streamable_File::Streamable_File(int _rd_fd, int _wr_fd)
+StreamableFile::StreamableFile(int _rd_fd, int _wr_fd)
 {
     rd_fd = _rd_fd;
     wr_fd = _wr_fd;
 }
 
-bool Streamable_File::streamTo(Memory::Streams::Streamable *out, Status &wrStatUpd)
+bool StreamableFile::streamTo(Memory::Streams::Streamable *out, Status &wrStatUpd)
 {
     Status cur;
     for (;;)
@@ -42,7 +42,7 @@ bool Streamable_File::streamTo(Memory::Streams::Streamable *out, Status &wrStatU
     }
 }
 
-Status Streamable_File::write(const void *buf, const size_t &count, Status &wrStatUpd)
+Status StreamableFile::write(const void *buf, const size_t &count, Status &wrStatUpd)
 {
     Status cur;
     ssize_t x=0;

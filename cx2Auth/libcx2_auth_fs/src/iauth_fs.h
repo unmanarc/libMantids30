@@ -11,7 +11,11 @@ class IAuth_FS : public IAuth
 {
 public:
     // Open authentication system:
-    IAuth_FS(const std::string & appName);
+#ifdef WIN32
+    IAuth_FS(const std::string & appName, const std::string & dirPath);
+#else
+    IAuth_FS(const std::string & appName, const std::string & dirPath = "");
+#endif
 
     bool initScheme() override;
 

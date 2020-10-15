@@ -8,6 +8,13 @@
 #include <cx2_file_vars/varsfile.h>
 
 using namespace CX2::Authorization;
+#ifdef WIN32
+// TODO: set dir permissions
+static int mkdir(const char *pathname, mode_t mode)
+{
+    return mkdir(pathname);
+}
+#endif
 
 bool IAuth_FS::_pGroupExist(const std::string &groupName)
 {

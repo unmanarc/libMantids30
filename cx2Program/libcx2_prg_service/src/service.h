@@ -17,18 +17,20 @@ static CX2::Application::Arguments::GlobalArguments globalArgs;
 *               /var/run/<program_name>/
 */
 
-
+class Application
+{
+public:
 /**
  * @brief _shutdown function called for program shutdown (close here your descriptors, connections, etc)
  */
-void _shutdown();
+virtual void _shutdown()=0;
 /**
  * @brief _initvars Function called for variables initialization
  * @param argc
  * @param argv
  * @param globalArguments
  */
-void _initvars(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments);
+virtual void _initvars(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments)=0;
 /**
  * @brief _config Function called for config parsing / program initialization
  * @param argc
@@ -36,7 +38,7 @@ void _initvars(int argc, char *argv[], CX2::Application::Arguments::GlobalArgume
  * @param globalArguments
  * @return
  */
-bool _config(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments);
+virtual bool _config(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments)=0;
 /**
  * @brief _start function called for program start
  * @param argc
@@ -44,6 +46,13 @@ bool _config(int argc, char *argv[], CX2::Application::Arguments::GlobalArgument
  * @param globalArguments
  * @return
  */
-int _start(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments);
+virtual int _start(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments * globalArguments)=0;
+
+};
+
+int StartApplication(int argc, char *argv[], Application * _app);
+
+
+
 
 #endif // SERVICE_H

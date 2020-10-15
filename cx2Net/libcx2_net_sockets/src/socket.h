@@ -1,8 +1,15 @@
 #ifndef SOCKET_H
 #define SOCKET_H
 
+#ifndef WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
+#else
+#include <ws2tcpip.h>
+#define SHUT_RD SD_RECEIVE
+#define SHUT_WR SD_SEND
+#define SHUT_RDWR SD_BOTH
+#endif
 
 #include <stdint.h>
 #include <unistd.h>
@@ -18,7 +25,6 @@ enum SocketMode
     STREAM_SOCKET,
     UNINITIALIZED_SOCKET
 };
-
 
 /**
  * Socket base class

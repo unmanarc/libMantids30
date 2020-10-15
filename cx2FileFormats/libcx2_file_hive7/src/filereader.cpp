@@ -1,5 +1,11 @@
 #include "filereader.h"
+
+#ifndef _WIN32
 #include <byteswap.h>
+#else
+#define bswap_64(x) _byteswap_uint64(x)
+#endif
+
 #include <limits>
 
 using namespace CX2::Files::Hive7;

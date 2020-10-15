@@ -9,8 +9,12 @@ class IAuth_SQLite3 : public IAuth
 {
 public:
     // Open authentication system:
-    IAuth_SQLite3(const std::string & appName, const std::string & filePath = "");
 
+#ifdef WIN32
+    IAuth_SQLite3(const std::string & appName, const std::string & filePath);
+#else
+    IAuth_SQLite3(const std::string & appName, const std::string & filePath = "");
+#endif
     bool initScheme() override;
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -73,6 +77,9 @@ public:
     std::set<std::string> groupAttribs(const std::string & groupName, bool lock = true) override;
     std::set<std::string> groupAccounts(const std::string & groupName, bool lock = true) override;
 
+    std::list<std::string> getSqlErrorList() const;
+    void clearSQLErrorList();
+
 protected:
     bool accountValidateDirectAttribute(const std::string & accountName, const std::string & attribName) override;
     DataStructs::sPasswordData retrievePassword(const std::string &accountName, uint32_t passIndex, bool *found) override;
@@ -82,6 +89,7 @@ private:
     bool _pSQLExecQuery(const std::string &query);
     bool _pSQLExecQueryF(const std::string &query, int _va_size, ...);
 
+    std::list<std::string> sqlErrorList;
     std::string filePath;
     sqlite3 *ppDb;
 };

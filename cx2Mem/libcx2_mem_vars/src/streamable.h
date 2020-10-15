@@ -89,6 +89,12 @@ public:
 protected:
     bool setFailedWriteState(const uint16_t &value = 1);
     uint16_t failedWriteState;
+
+#ifdef _WIN32
+private:
+    static int vasprintf(char **strp, const char *fmt, va_list ap);
+#endif
+
 };
 
 }}}

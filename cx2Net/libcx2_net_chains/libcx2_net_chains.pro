@@ -19,6 +19,9 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
+win32:LIBS+= -L$$PREFIX/lib -lcx2_net_sockets2 -lssl -lcrypto -lws2_32
+
+#-lcx2_thr_threads2 -lcx2_thr_mutex2 -lcx2_mem_vars2  -ljsoncpp
 # includes dir
 QMAKE_INCDIR += $$PREFIX/include
 QMAKE_INCDIR += src

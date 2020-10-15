@@ -1,5 +1,11 @@
 #include "a_ipv6.h"
+
+#ifdef _WIN32
+#include "w32compat.h"
+#else
 #include <arpa/inet.h>
+#endif
+
 #include <string.h>
 #include <cx2_thr_mutex/lock_shared.h>
 
@@ -24,7 +30,11 @@ in6_addr A_IPV6::getValue()
 bool A_IPV6::setValue(const in6_addr &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
+#ifndef WIN32
     this->value.__in6_u = value.__in6_u;
+#else
+    this->value.u = value.u;
+#endif
     return true;
 }
 

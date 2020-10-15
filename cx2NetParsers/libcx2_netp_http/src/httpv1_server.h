@@ -11,6 +11,10 @@
 
 // TODO: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
 
+#ifndef INET6_ADDRSTRLEN
+#define INET6_ADDRSTRLEN 46
+#endif
+
 namespace CX2 { namespace Network { namespace HTTP {
 
 enum HTTP_VarSource

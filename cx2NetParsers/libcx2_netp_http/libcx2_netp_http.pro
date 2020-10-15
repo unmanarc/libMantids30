@@ -80,6 +80,8 @@ INCLUDEPATH += src/urlvars
 # C++ standard.
 include(../../cflags.pri)
 
+win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2 -lcx2_netp_mime2 -lcx2_hlp_functions2
+
 TARGET = cx2_netp_http
 TEMPLATE = lib
 # INSTALLATION:

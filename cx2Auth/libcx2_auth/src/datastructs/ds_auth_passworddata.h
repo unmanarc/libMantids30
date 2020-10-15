@@ -6,6 +6,8 @@
 #include <map>
 
 #include <string.h>
+#include <time.h>
+
 #include <cx2_hlp_functions/encoders.h>
 
 #include "ds_auth_passmodes.h"

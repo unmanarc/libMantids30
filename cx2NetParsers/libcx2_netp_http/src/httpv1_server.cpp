@@ -7,6 +7,13 @@
 
 #include <cx2_mem_vars/b_mmap.h>
 
+#include <sys/stat.h>
+
+#ifdef WIN32
+#include <stdlib.h>
+// TODO: check if _fullpath mitigate transversal.
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#endif
 
 using namespace std;
 using namespace boost;
@@ -212,7 +219,11 @@ bool HTTPv1_Server::setResponseFileFromURI(const string &sServerDir,string *sRea
                 if (!stat(sFullPath.c_str(), &attrib))
                 {
                     HTTP_Date fileModificationDate;
+#ifdef WIN32
+                    fileModificationDate.setRawTime(attrib.st_mtime);
+#else
                     fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
+#endif
                     if (includeServerDate)
                         _serverHeaders.add("Last-Modified", fileModificationDate.toString());
                 }

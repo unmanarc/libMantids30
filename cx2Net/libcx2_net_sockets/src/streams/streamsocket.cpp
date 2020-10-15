@@ -4,8 +4,9 @@
 #include <sys/socket.h>
 #else
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #include "socket_tcp.h"
+
 #endif
 #include <string.h>
 #include <unistd.h>
@@ -99,10 +100,10 @@ std::pair<StreamSocket *,StreamSocket *> StreamSocket::GetSocketPair()
 #else
     // Emulate via TCP. (EXPERIMENTAL)
 
-    Socket_TCP * llsock = new Socket_TCP, * lsock, * rsock = new Socket_TCP;
+    Sockets::Socket_TCP * llsock = new Sockets::Socket_TCP, * lsock = nullptr, * rsock = new Sockets::Socket_TCP;
     llsock->listenOn(0,"127.0.0.1",true);
     rsock->connectTo("127.0.0.1",lsock->getPort());
-    lsock = llsock->acceptConnection();
+    lsock = (Sockets::Socket_TCP *)llsock->acceptConnection();
     llsock->closeSocket();
     delete llsock;
 

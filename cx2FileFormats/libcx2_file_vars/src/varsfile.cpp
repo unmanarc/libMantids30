@@ -7,7 +7,7 @@ using namespace CX2::Files::Vars;
 File::File(const std::string &filePath)
 {
     this->filePath = filePath;
-    lastError = NO_ERROR;
+    lastError = FILE_NO_ERROR;
 }
 
 bool File::load()

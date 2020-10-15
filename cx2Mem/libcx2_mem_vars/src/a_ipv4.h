@@ -2,7 +2,12 @@
 #define ABSVAR_IPV4_H
 
 #include "abstract.h"
+#ifdef _WIN32
+#include <winsock2.h>
+#else
 #include <netinet/in.h>
+#endif
+
 #include <cx2_thr_mutex/mutex_shared.h>
 
 namespace CX2 { namespace Memory { namespace Vars {

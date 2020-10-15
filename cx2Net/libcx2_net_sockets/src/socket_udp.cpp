@@ -3,10 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <stdexcept>
+
 #ifdef _WIN32
-#include "win32compat/win32netcompat.h"
+#include <cx2_mem_vars/w32compat.h>
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>

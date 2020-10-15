@@ -1,6 +1,7 @@
 #include "socket_acceptor_multithreaded.h"
 #include <algorithm>
 #include <string.h>
+#include <stdexcept>
 
 using namespace CX2::Network::Sockets::Acceptors;
 using Ms = std::chrono::milliseconds;

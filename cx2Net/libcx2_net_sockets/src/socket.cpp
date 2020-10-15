@@ -6,21 +6,23 @@
 #include <fcntl.h>
 #include <sys/types.h>
 
+#include <stdexcept>
+
 #ifdef _WIN32
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #endif
 
+using namespace CX2::Network::Sockets;
+
 #ifdef _WIN32
 // Init winsock when the program begins...
 bool Socket::winSockInitialized = Socket::win32Init();
 #endif
-
-using namespace CX2::Network::Sockets;
 
 bool Socket::socketInitialized = false;
 bool Socket::badSocket = false;
@@ -71,6 +73,7 @@ Socket &Socket::operator=(Socket)
 bool Socket::win32Init()
 {
     socketSystemInitialization();
+    return true;
 }
 #endif
 
@@ -90,7 +93,7 @@ void Socket::setRecvBuffer(int buffsize)
 
     if (!isActive()) return;
 #ifdef _WIN32
-    setsockopt(nanoSocket->sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
 #else
     setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &buffsize, sizeof(buffsize));
 #endif
@@ -126,7 +129,7 @@ int Socket::closeSocket()
 {
     if (!isActive()) return 0;
 #ifdef _WIN32
-    int i = closesocket(nanoSocket->sockfd);
+    int i = closesocket(sockfd);
 #else
     int i = close(sockfd);
 #endif
@@ -176,7 +179,7 @@ int Socket::partialWrite(const void *data, const uint32_t &datalen)
     if (!useWrite)
     {
 #ifdef _WIN32
-        ssize_t sendLen = send(nanoSocket->sockfd, (char *) data, datalen, 0);
+        ssize_t sendLen = send(sockfd, (char *) data, datalen, 0);
 #else
         ssize_t sendLen = send(sockfd, (char *) data, datalen, MSG_NOSIGNAL);
 #endif
@@ -265,12 +268,20 @@ void Socket::setRemotePort(unsigned short value)
 
 int Socket::getSockOpt(int level, int optname, void *optval, socklen_t *optlen)
 {
+#ifdef WIN32
+    return getsockopt(sockfd, level, optname, (char *)optval, optlen);
+#else
     return getsockopt(sockfd, level, optname, optval, optlen);
+#endif
 }
 
 int Socket::setSockOpt(int level, int optname, const void *optval, socklen_t optlen)
 {
+#ifdef WIN32
+    return setsockopt(sockfd,  level, optname, (char *)optval, optlen);
+#else
     return setsockopt(sockfd,  level, optname, optval, optlen);
+#endif
 }
 
 bool Socket::setReadTimeout(unsigned int _timeout)
@@ -283,7 +294,7 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 
 #ifdef _WIN32
     DWORD tout = _timeout*1000;
-    if ((setsockopt(nanoSocket->sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, sizeof(DWORD))) == -1)
+    if ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, sizeof(DWORD))) == -1)
 #else
     struct timeval timeout;
     timeout.tv_sec = _timeout;
@@ -303,7 +314,7 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
     if (listenMode) return true;
 #ifdef _WIN32
     int tout = _timeout*1000;
-    if ((setsockopt(nanoSocket->sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tout, sizeof(int))) == -1)
+    if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tout, sizeof(int))) == -1)
 #else
     struct timeval timeout;
     timeout.tv_sec = _timeout;
@@ -405,7 +416,7 @@ bool Socket::setBlockingMode(bool blocking)
 #ifdef _WIN32
     int iResult;
     unsigned long int iMode = (!blocking)?1:0;
-    iResult = ioctlsocket(nanoSocket->sockfd, FIONBIO, &iMode);
+    iResult = ioctlsocket(sockfd, FIONBIO, &iMode);
     return (iResult == NO_ERROR);
 #else
     long arg;

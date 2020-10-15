@@ -8,7 +8,7 @@
 #ifdef _WIN32
 #pragma comment(lib, "crypt32.lib")
 #include <windows.h>
-#include <Wincrypt.h>
+#include <wincrypt.h>
 #endif
 
 using namespace CX2::Network::Chains::Protocols;
@@ -235,7 +235,7 @@ void SocketChain_AES::genRandomBytes(char *bytes, size_t size)
     HCRYPTPROV hCryptProv;
     if(CryptAcquireContext(&hCryptProv,nullptr,nullptr,PROV_RSA_FULL,0))
     {
-        if(!CryptGenRandom(hCryptProv, size, bytes))
+        if(!CryptGenRandom(hCryptProv, size, (BYTE *)bytes))
         {
             genRandomWeakBytes(bytes,size);
         }

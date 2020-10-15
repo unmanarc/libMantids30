@@ -2,6 +2,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include <stdlib.h>
+#endif
+
 using namespace CX2::Memory::Streams;
 
 Streamable::Streamable()
@@ -111,3 +115,33 @@ bool Streamable::setFailedWriteState(const uint16_t &value)
     failedWriteState = value;
     return value==0;
 }
+
+#ifdef _WIN32
+int Streamable::vasprintf(char **strp, const char *fmt, va_list ap)
+{
+    char *cBuffer;
+    int dNeededLength, iBytesWritten;
+
+    // Account how much memory we are going to need:
+    if ((dNeededLength =_vscprintf(fmt, ap)) == -1)
+        return -1;
+
+    // Allocate the required buffer with extra-byte:
+    if ((cBuffer = (char *)malloc((size_t)dNeededLength + 2)) == nullptr)
+        return -1;
+
+    // fill the buffer with the printf function:
+    if ((iBytesWritten = vsprintf_s(cBuffer, dNeededLength + 1, fmt, ap)) == -1)
+    {
+        // Free the buffer and return error...
+        free(cBuffer);
+        return -1;
+    }
+
+    // Fill the return address with our malloc addr
+    *strp = cBuffer;
+
+    // Return the count of written bytes.
+    return iBytesWritten;
+}
+#endif

@@ -2,7 +2,10 @@
 #define SOCKET_UDP_H
 
 #include "datagramsocket.h"
+
+#ifndef _WIN32
 #include <netdb.h>
+#endif
 
 namespace CX2 { namespace Network { namespace Sockets {
 

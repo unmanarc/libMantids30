@@ -3,7 +3,13 @@
 // STD:
 #include <stdio.h>
 #include <signal.h>
+
+#ifndef WIN32
 #include <syslog.h>
+#else
+#include <windows.h>
+#endif
+
 #include <fcntl.h>
 // STL:
 #include <iostream>
@@ -17,28 +23,55 @@
 
 using namespace std;
 
+void catch_sigterm();
+
+#ifndef WIN32
 // LOCK:
 static int lockfd = -1;
 static string pidFile;
 
-void catch_sigterm();
 static void daemonize();
 void pidCheck();
 void exitRoutine(int, siginfo_t *, void *);
 
+#else
 
-int main(int argc, char *argv[])
+#define	LOG_PID		0x01
+#define	LOG_LOCAL5	(21<<3)
+#define	LOG_EMERG	0
+#define	LOG_ALERT	1
+#define	LOG_CRIT	2
+#define	LOG_ERR		3
+#define	LOG_WARNING	4
+#define	LOG_NOTICE	5
+#define	LOG_INFO	6
+#define	LOG_DEBUG	7
+
+// TODO: IMPLEMENT THIS FUNCTIONS IN WIN32...
+void openlog(const char *ident, int option, int facility) {}
+int syslog(int type, char *bufp) { return -1; }
+int syslog(int type, char *bufp, int len) { return -1; }
+void closelog() {}
+
+#endif
+
+static Application *appPTR = nullptr;
+
+int StartApplication(int argc, char *argv[], Application *_app)
 {
+    appPTR = _app;
     // Get program name from program path.
     globalArgs.initProgramName(argv[0]);
 
     // Local default cmd options...
+#ifndef WIN32
     globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", CX2::Memory::Vars::ABSTRACT_BOOL );
+#endif
     globalArgs.addCommandLineOption("Other Options"  , 'v', "verbose", "Set verbosity level."   , "0", CX2::Memory::Vars::ABSTRACT_UINT8 );
     globalArgs.addCommandLineOption("Other Options"  , 'h', "help"   , "Show information usage.", "0", CX2::Memory::Vars::ABSTRACT_BOOL  );
 
     // Init vars...
-    _initvars(argc,argv, &globalArgs);
+    appPTR->_initvars(argc,argv, &globalArgs);
     // Print program description:
     globalArgs.printProgramHeader();
     // Parse program options.
@@ -56,19 +89,22 @@ int main(int argc, char *argv[])
     }
 
     // Load/Prepare the configuration based in command line arguments.
-    if (!_config(argc,argv,&globalArgs))
+    if (!appPTR->_config(argc,argv,&globalArgs))
     {
         cout << "ERR: Failed to Load Configuration." << endl << flush;
         return -1;
     }
 
     int r = 0;
+
+#ifndef WIN32
     if (!globalArgs.getCommandLineOptionBooleanValue(globalArgs.getDefaultDaemonOption()))
     {
+#endif
         // Allow this application to be killed and setup an exit routine.
         catch_sigterm();
 
-        r = _start(argc,argv,&globalArgs);
+        r = appPTR->_start(argc,argv,&globalArgs);
         if (!globalArgs.isInifiniteWaitAtEnd())
             return r;
         else
@@ -76,6 +112,7 @@ int main(int argc, char *argv[])
             cout << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
             for (;;) { sleep(3600); }
         }
+#ifndef WIN32
     }
     else
     {
@@ -92,7 +129,7 @@ int main(int argc, char *argv[])
         // Allow this application to be killed and setup an exit routine.
         catch_sigterm();
 
-        r = _start(argc,argv,&globalArgs);
+        r = appPTR->_start(argc,argv,&globalArgs);
 
         if (!globalArgs.isInifiniteWaitAtEnd())
         {
@@ -107,8 +144,11 @@ int main(int argc, char *argv[])
             for (;;) { sleep(3600); }
         }
     }
+#endif
 }
 
+
+#ifndef WIN32
 static void child_handler(int signum)
 {
     switch (signum)
@@ -234,7 +274,7 @@ void pidCheck()
 void exitRoutine(int , siginfo_t *, void *)
 {
     fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-    _shutdown();
+    if (appPTR) appPTR->_shutdown();
     fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
 
     fflush(stdout);
@@ -243,9 +283,60 @@ void exitRoutine(int , siginfo_t *, void *)
 
     _exit(0);
 }
+#endif
+
+
+#ifdef WIN32
+
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+    switch (fdwCtrlType)
+    {
+        // Handle the CTRL-C signal.
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+        fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        if (appPTR) appPTR->_shutdown();
+        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        return TRUE;
+        // Pass other signals to the next handler.
+    case CTRL_BREAK_EVENT:
+        return FALSE;
+    case CTRL_LOGOFF_EVENT:
+        return FALSE;
+    case CTRL_SHUTDOWN_EVENT:
+        return FALSE;
+    default:
+        return FALSE;
+    }
+}
+/*
+void exitHandler(int s)
+{
+    switch (s) {
+    case SIGTERM:
+    case SIGABRT:
+    case SIGINT:
+        fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        _shutdown();
+        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        break;
+    }
+
+}*/
+#endif
+
+
 
 void catch_sigterm()
 {
+#ifdef WIN32
+    SetConsoleCtrlHandler( CtrlHandler, TRUE );
+/*
+    signal(SIGINT, exitHandler);
+    signal(SIGTERM, exitHandler);
+    signal(SIGABRT, exitHandler);*/
+#else
     static struct sigaction _sigact;
 
     memset(&_sigact, 0, sizeof(_sigact));
@@ -256,6 +347,7 @@ void catch_sigterm()
     sigaction(SIGKILL, &_sigact, nullptr);
     sigaction(SIGINT, &_sigact, nullptr);
     sigaction(SIGHUP, &_sigact, nullptr);
+#endif
 }
 
 

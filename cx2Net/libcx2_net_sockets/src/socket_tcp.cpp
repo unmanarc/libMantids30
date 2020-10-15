@@ -1,9 +1,9 @@
 #include "socket_tcp.h"
 
 #ifdef _WIN32
-#include "win32compat/win32netcompat.h"
+#include <cx2_mem_vars/w32compat.h>
 #include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -189,7 +189,7 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
     return cursocket;
 }
 
-bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, const uint32_t &timeout)
+bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
 {
     int res2,valopt;
 
@@ -273,7 +273,12 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, const uint3
 
 bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool useIPv4, const int32_t & recvbuffer,const int32_t & backlog)
 {
+#ifdef WIN32
+    BOOL bOn = TRUE;
+#else
     int on=1;
+#endif
+
 
     sockfd = socket(useIPv4?AF_INET:AF_INET6, SOCK_STREAM, 0);
     if (!isActive())
@@ -284,7 +289,13 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
 
     if (recvbuffer) setRecvBuffer(recvbuffer);
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, static_cast<void *>(&on),sizeof(on)) < 0)
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+#ifdef WIN32
+                   (char *)(&bOn),sizeof(bOn)
+#else
+                   static_cast<void *>(&on),sizeof(on)
+#endif
+                   ) < 0)
     {
         lastError = "setsockopt(SO_REUSEADDR) failed";
         closeSocket();
@@ -332,7 +343,6 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
         closeSocket();
         return false;
     }
-
 
     listenMode = true;
 

@@ -6,10 +6,10 @@
 
 namespace CX2 { namespace Memory { namespace Streams {
 
-class Streamable_File : public Memory::Streams::Streamable
+class StreamableFile : public Memory::Streams::Streamable
 {
 public:
-    Streamable_File(int _rd_fd = STDIN_FILENO, int _wr_fd = STDOUT_FILENO);
+    StreamableFile(int _rd_fd = STDIN_FILENO, int _wr_fd = STDOUT_FILENO);
     /**
      * Retrieve Stream to another Streamable.
      * @param objDst pointer to the destination object.
@@ -20,7 +20,6 @@ public:
 
 private:
     int rd_fd,wr_fd;
-
 };
 
 }}}

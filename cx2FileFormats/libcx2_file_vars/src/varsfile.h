@@ -12,7 +12,7 @@ enum eFileError
     INVALID_FILE_FORMAT,
     INVALID_VARNAME_FORMAT,
     CANT_OPEN_FILE,
-    NO_ERROR
+    FILE_NO_ERROR
 };
 
 /**

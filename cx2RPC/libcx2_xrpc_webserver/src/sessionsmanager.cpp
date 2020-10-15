@@ -2,6 +2,8 @@
 #include <thread>
 #include <cx2_hlp_functions/random.h>
 
+#include <stdexcept>
+
 using namespace CX2::RPC::Web;
 using namespace CX2;
 

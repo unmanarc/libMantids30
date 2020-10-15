@@ -2,6 +2,8 @@
 #include <cx2_netp_http/httpv1_server.h>
 #include "webclienthandler.h"
 
+#include <stdexcept>
+
 using namespace CX2::RPC::Web;
 using namespace CX2::RPC;
 using namespace CX2;

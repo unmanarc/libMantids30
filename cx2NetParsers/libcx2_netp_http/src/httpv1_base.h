@@ -9,7 +9,7 @@
 #include "http_status.h"
 #include <cx2_netp_mime/mime_sub_header.h>
 
-#include <netinet/in.h>
+//#include <netinet/in.h>
 
 #define VNET_PROD_NAME "vProtonHTTP"
 

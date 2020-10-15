@@ -1,7 +1,11 @@
 #include "socket_acceptor_thread.h"
 
+#ifndef WIN32
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#else
+#include <ws2tcpip.h>
+#endif
 
 #include <string.h>
 

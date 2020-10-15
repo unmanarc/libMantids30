@@ -11,7 +11,6 @@ SOURCES += \
     src/socket_tcp.cpp \
     src/socket_tls.cpp \
     src/socket_udp.cpp \
-    src/socket_unix.cpp \
     src/streams/bufferedstreamreader.cpp \
     src/streams/streamsocket.cpp \
     src/streams/streamsocketreader.cpp \
@@ -34,17 +33,16 @@ HEADERS += \
     src/streams/streamsocketreader.h \
     src/streams/streamsocketwriter.h
 
+# Windows 17063 comes with unix sockets, but we are not supporting it yet.
+!win32:SOURCES+=src/socket_unix.cpp
+!win32:HEADERS+=src/socket_unix.h
+
+win32:LIBS+= -L$$PREFIX/lib -lcx2_thr_threads2 -lcx2_mem_vars2 -lssl -lcrypto -lws2_32
+
+# -lcx2_thr_mutex2 -lcx2_thr_safecontainers2 -lcx2_hlp_functions2
+
 isEmpty(PREFIX) {
     PREFIX = /usr/local
-}
-
-!win32 {
-    SOURCES +=
-    HEADERS +=
-}
-win32 {
-    SOURCES += src/win32/w32compat.cpp
-    HEADERS += src/win32/w32compat.h
 }
 
 # includes dir
@@ -61,9 +59,6 @@ QMAKE_INCDIR += src/streams
 
 INCLUDEPATH += src/datagrams
 QMAKE_INCDIR += src/datagrams
-
-INCLUDEPATH += src/win32
-QMAKE_INCDIR += src/win32
 
 INCLUDEPATH += src/acceptors
 QMAKE_INCDIR += src/acceptors

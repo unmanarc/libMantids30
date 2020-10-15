@@ -22,19 +22,10 @@ B_MMAP::~B_MMAP()
 bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool createFile)
 {
     B_MMAP::clear2();
-    BCFileReference bcr;
-
-    if (filePath == "")
-    {
-        bcr.currentFileName = getRandomFileName();
-    }
-    else
-    {
-        bcr.currentFileName = filePath;
-    }
+    FileMap bcr;
 
     // Open the file:
-    if (!bcr.openFile(bcr.currentFileName, readOnly, createFile))
+    if (!bcr.openFile( filePath.size()? filePath : getRandomFileName(), readOnly, createFile))
     {
         // Failed to open the referenced file.
 
@@ -48,20 +39,17 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
     }
 
     // Destroy current memory and assign reference values:
-    mem.reference(bcr.mmapAddr,bcr.fileOpenSize);
+    mem.reference(bcr.getMmapAddr(),bcr.getFileOpenSize());
 
     // Copy file descriptor and other things.
     fileReference = bcr;
-
-    // prevent bcr from destroying the descriptor on exit:
-    bcr.fd = -1;
 
     return true;
 }
 
 void B_MMAP::setRemoveOnDestroy(bool value)
 {
-    fileReference.removeOnDestroy = value;
+    fileReference.setRemoveOnDestroy(value);
 }
 
 uint64_t B_MMAP::size() const
@@ -92,7 +80,7 @@ std::pair<bool, uint64_t> B_MMAP::truncate2(const uint64_t &bytes)
 
 std::string B_MMAP::getCurrentFileName() const
 {
-    return fileReference.currentFileName;
+    return fileReference.getCurrentFileName();
 }
 
 std::pair<bool, uint64_t> B_MMAP::append2(const void *buf, const uint64_t &len, bool prependMode)
@@ -119,7 +107,7 @@ std::pair<bool, uint64_t> B_MMAP::displace2(const uint64_t &roBytesToDisplace)
 {
     uint64_t bytesToDisplace = roBytesToDisplace;
 
-    if (bytesToDisplace>fileReference.fileOpenSize)
+    if (bytesToDisplace>fileReference.getFileOpenSize())
         return std::make_pair(false,(uint64_t)0);
     if (!fileReference.mmapDisplace(bytesToDisplace))
         return std::make_pair(false,(uint64_t)0);
@@ -155,8 +143,8 @@ bool B_MMAP::compare2(const void *buf, const uint64_t &count, bool caseSensitive
 
 void B_MMAP::reMapMemoryContainer()
 {
-    setContainerBytes(fileReference.fileOpenSize);
-    mem.reference(fileReference.mmapAddr,size());
+    setContainerBytes(fileReference.getFileOpenSize());
+    mem.reference(fileReference.getMmapAddr(),size());
 }
 
 std::string B_MMAP::getRandomFileName()
@@ -175,7 +163,7 @@ std::string B_MMAP::getRandomFileName()
 bool B_MMAP::createEmptyFile(const std::string &)
 {
     // Creates file here.
-    BCFileReference bcr;
+//    FileMap bcr;
     // TODO:
     /*
     if (!access(fileName.c_str(), F_OK)) return false;

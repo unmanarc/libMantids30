@@ -1,12 +1,13 @@
 #include "applog.h"
 #ifdef _WIN32
+#include <ws2tcpip.h>
 #include <shlobj.h>
 #else
+#include <arpa/inet.h>
 #include <pwd.h>
 #include <syslog.h>
 #endif
 
-#include <arpa/inet.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -470,7 +471,7 @@ bool AppLog::isUsingSqliteLog()
 void AppLog::printColorBold(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    PrintColorWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN,str);
+    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN,str);
 #else
     fprintf(fp,"\033[1m%s\033[0m", str);
 #endif
@@ -479,7 +480,7 @@ void AppLog::printColorBold(FILE *fp, const char *str)
 void AppLog::printColorBlue(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    PrintColorWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_BLUE,str);
+    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_BLUE,str);
 #else
     fprintf(fp,"\033[1;34m%s\033[0m", str);
 #endif
@@ -488,7 +489,7 @@ void AppLog::printColorBlue(FILE *fp, const char *str)
 void AppLog::printColorGreen(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    PrintColorWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_GREEN,str);
+    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_GREEN,str);
 #else
     fprintf(fp,"\033[1;32m%s\033[0m", str);
 #endif
@@ -497,7 +498,7 @@ void AppLog::printColorGreen(FILE *fp, const char *str)
 void AppLog::printColorRed(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    PrintColorWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED,str);
+    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED,str);
 #else
     fprintf(fp,"\033[1;31m%s\033[0m", str);
 #endif
@@ -506,7 +507,7 @@ void AppLog::printColorRed(FILE *fp, const char *str)
 void AppLog::printColorPurple(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    PrintColorWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE,str);
+    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE,str);
 #else
     fprintf(fp,"\033[1;35m%s\033[0m", str);
 #endif

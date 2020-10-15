@@ -109,20 +109,24 @@ public:
     std::string getDefaultHelpOption() const;
     void setDefaultHelpOption(const std::string &value);
 
+#ifndef WIN32
+
     /**
      * @brief getDefaultDaemonOption Get Default option to deamon compatible (Eg. daemon for --daemon)
      * @return default daemon option
      */
     std::string getDefaultDaemonOption() const;
     void setDefaultDaemonOption(const std::string &value);
-
+#endif
 
 // INTERNAL FUNCTIONS:
     bool parseCommandLineOptions(int argc, char *argv[]);
 
 private:
-    std::string sDefaultHelpOption, sDefaultDaemonOption;
-
+    std::string sDefaultHelpOption;
+#ifndef WIN32
+    std::string sDefaultDaemonOption;
+#endif
     std::list<sProgCMDOpts *> getAllCMDOptions();
     uint32_t getMaxOptNameSize(std::list<sProgCMDOpts *> options);
     std::string getLine(const uint32_t &size);

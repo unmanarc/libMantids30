@@ -2,7 +2,10 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifndef WIN32
 #include <pwd.h>
+#endif
+
 using namespace CX2::Authorization;
 
 IAuth_SQLite3::IAuth_SQLite3(const std::string &appName, const std::string &filePath)
@@ -17,8 +20,11 @@ bool IAuth_SQLite3::initScheme()
 {
     bool ret = true;
     // create the scheme to handle the accounts.
+#ifdef WIN32
+    std::string etcAppAuthFile = filePath;
+    ret = true;
+#else
     std::string etcAppDir = "/etc/" + appName;
-
     if (getuid()==0 && access(etcAppDir.c_str(), W_OK))
     {
         // We are root, but directory does not exist.
@@ -56,14 +62,14 @@ bool IAuth_SQLite3::initScheme()
             if (ret) etcAppAuthFile = homeAppConfigDir + "/auth.db";
         }
     }
-
+#endif
     if (ret)
     {
         int rc;
         rc = sqlite3_open(etcAppAuthFile.c_str(), &ppDb);
         if (rc)
         {
-            fprintf(stderr, " SQL Error: Unable to create/open log file (%s) - %s\n", etcAppAuthFile.c_str(), sqlite3_errmsg(ppDb));
+            sqlErrorList.push_back("Unable to create/open log file (" + etcAppAuthFile + ") - " + std::string(sqlite3_errmsg(ppDb)) );
             ret = false;
         }
         else
@@ -166,7 +172,7 @@ bool IAuth_SQLite3::_pSQLExecQuery(const std::string &query)
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
         sqlite3_finalize(stmt);
-        //fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(ppDb));
+        sqlErrorList.push_back("SQL error: " + std::string(sqlite3_errmsg(ppDb)) );
         return false;
     }
     sqlite3_reset(stmt);
@@ -195,7 +201,7 @@ bool IAuth_SQLite3::_pSQLExecQueryF(const std::string &query, int _va_size, ...)
     if (sqlite3_step(stmt) != SQLITE_DONE)
     {
         sqlite3_finalize(stmt);
-        //fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(ppDb));
+        sqlErrorList.push_back("SQL error: " + std::string(sqlite3_errmsg(ppDb)) );
         return false;
     }
     sqlite3_reset(stmt);
@@ -203,4 +209,14 @@ bool IAuth_SQLite3::_pSQLExecQueryF(const std::string &query, int _va_size, ...)
     sqlite3_finalize(stmt);
 
     return true;
+}
+
+std::list<std::string> IAuth_SQLite3::getSqlErrorList() const
+{
+    return sqlErrorList;
+}
+
+void IAuth_SQLite3::clearSQLErrorList()
+{
+    sqlErrorList.clear();
 }

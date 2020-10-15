@@ -1,9 +1,9 @@
 QT       -= core gui
 
-SOURCES += \
+!win32:SOURCES += \
     src/virtualnetworkinterface.cpp \
     src/netifconfig.cpp
-HEADERS += \
+!win32:HEADERS += \
     src/virtualnetworkinterface.h \
     src/netifconfig.h
 

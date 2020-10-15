@@ -3,10 +3,16 @@
 
 #include <string>
 
+
+#ifndef WIN32
 #include <netinet/in.h>
 #include <net/if.h>
-
 #include <linux/if_ether.h>
+#else
+
+#endif
+
+
 
 namespace CX2 { namespace Network { namespace Interfaces {
 

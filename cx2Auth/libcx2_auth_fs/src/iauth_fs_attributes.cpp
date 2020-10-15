@@ -8,6 +8,15 @@
 #include <boost/filesystem.hpp>
 using namespace CX2::Authorization;
 
+#ifdef WIN32
+// TODO: set dir permissions
+static int mkdir(const char *pathname, mode_t mode)
+{
+    return mkdir(pathname);
+}
+#endif
+
+
 bool IAuth_FS::_pAttribDir(const std::string &attribName, std::string &attribDirOut)
 {
     if (access(workingAuthDir.c_str(), W_OK)) return false;

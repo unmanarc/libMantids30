@@ -32,6 +32,8 @@ INCLUDEPATH += src/cookies
 QMAKE_INCDIR += src/defs
 INCLUDEPATH += src/defs
 
+win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2
+
 # C++ standard.
 include(../../cflags.pri)
 

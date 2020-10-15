@@ -8,6 +8,8 @@
 #include <atomic>
 
 #include <unistd.h>
+#include <stdexcept>
+
 
 #include "map_element.h"
 

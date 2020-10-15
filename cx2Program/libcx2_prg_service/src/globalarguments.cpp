@@ -15,7 +15,9 @@ using namespace CX2::Memory::Vars;
 
 GlobalArguments::GlobalArguments()
 {
+#ifndef WIN32
     sDefaultDaemonOption = "daemon";
+#endif
     sDefaultHelpOption = "help";
     inifiniteWaitAtEnd = false;
 }
@@ -253,16 +255,17 @@ void GlobalArguments::setDefaultHelpOption(const std::string &value)
     sDefaultHelpOption = value;
 }
 
+
+#ifndef WIN32
 std::string GlobalArguments::getDefaultDaemonOption() const
 {
     return sDefaultDaemonOption;
 }
-
 void GlobalArguments::setDefaultDaemonOption(const std::string &value)
 {
     sDefaultDaemonOption = value;
 }
-
+#endif
 std::list<sProgCMDOpts *> GlobalArguments::getAllCMDOptions()
 {
     std::list<sProgCMDOpts *> x;

@@ -5,7 +5,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifndef WIN32
 #include <pwd.h>
+#else
+#include <windows.h>
+#endif
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -14,15 +18,18 @@
 
 using namespace CX2::Authorization;
 
-IAuth_FS::IAuth_FS(const std::string &appName)
+IAuth_FS::IAuth_FS(const std::string &appName, const std::string &dirPath)
 {
     this->appName = appName;
-//    if (initScheme()) initAccounts();
+    this->workingAuthDir = dirPath;
+    //    if (initScheme()) initAccounts();
 }
 
 bool IAuth_FS::initScheme()
 {
     bool r = true;
+
+#ifndef WIN32
     // create the scheme to handle the accounts.
     std::string etcAppDir = "/etc/" + appName;
 
@@ -65,7 +72,10 @@ bool IAuth_FS::initScheme()
         // Now we are ready to handle this.
         workingAuthDir = homeVAuthDir;
     }
-
+#else
+    if (access(workingAuthDir.c_str(),W_OK)) r = !mkdir(workingAuthDir.c_str());
+    else r = false;
+#endif
     return r;
 }
 
@@ -93,7 +103,13 @@ std::set<std::string> IAuth_FS::_pListDir(const std::string &dirPath)
     {
         while ((ent = readdir (dir)) != nullptr)
         {
+#ifdef WIN32
+            DWORD dwAttrib;
+            if (  (dwAttrib=GetFileAttributesA( (dirPath + std::string("\\") + ent->d_name).c_str() )) != INVALID_FILE_ATTRIBUTES &&
+                  !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY) && (dwAttrib & FILE_ATTRIBUTE_ARCHIVE))
+#else
             if (ent->d_type == DT_REG)
+#endif
                 x.insert(CX2::Helpers::Encoders::fromURL(ent->d_name));
         }
         closedir (dir);

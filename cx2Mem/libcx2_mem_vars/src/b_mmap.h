@@ -2,11 +2,10 @@
 #define BINARYCONTAINER_MMAP_H
 
 #include "b_base.h"
-#include "b_filereference.h"
+#include "filemap.h"
 #include "b_mem.h"
 
 namespace CX2 { namespace Memory { namespace Containers {
-
 
 class B_MMAP: public B_Base
 {
@@ -41,7 +40,6 @@ public:
      * @return
      */
     std::pair<bool,uint64_t> findChar(const int & c, const uint64_t &offset = 0, uint64_t searchSpace = 0, bool caseSensitive = false) override;
-
 
 protected:
     /**
@@ -118,7 +116,7 @@ private:
 
 
     // File:
-    BCFileReference fileReference;
+    FileMap fileReference;
     B_MEM mem;
 };
 

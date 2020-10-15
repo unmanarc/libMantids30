@@ -60,7 +60,7 @@ public:
 protected:
 
 private:
-    bool tcpConnect(const struct sockaddr *addr, socklen_t addrlen, const uint32_t & timeout);
+    bool tcpConnect(const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
     int32_t ovrReadTimeout,ovrWriteTimeout;
 };

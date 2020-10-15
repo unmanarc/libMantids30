@@ -1,5 +1,10 @@
 #include "a_ipv4.h"
+
+#ifdef _WIN32
+#include "w32compat.h"
+#else
 #include <arpa/inet.h>
+#endif
 #include <cx2_thr_mutex/lock_shared.h>
 
 using namespace CX2::Memory::Vars;

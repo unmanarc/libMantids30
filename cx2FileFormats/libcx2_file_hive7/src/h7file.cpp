@@ -1,7 +1,11 @@
 #include "h7file.h"
 #include <stdio.h>
 
+#ifndef _WIN32
 #include <byteswap.h>
+#else
+#define bswap_64(x) _byteswap_uint64(x)
+#endif
 
 // File Header
 #define MAGIC_BANNER_SIZE 6

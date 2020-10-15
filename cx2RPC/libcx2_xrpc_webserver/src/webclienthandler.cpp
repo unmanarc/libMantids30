@@ -6,6 +6,13 @@
 #include <streambuf>
 #include <boost/algorithm/string/replace.hpp>
 
+#ifdef WIN32
+#include <stdlib.h>
+// TODO: check if _fullpath mitigate transversal.
+#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#endif
+
+
 using namespace CX2::Network::HTTP;
 using namespace CX2::Memory;
 using namespace CX2::RPC::Web;
