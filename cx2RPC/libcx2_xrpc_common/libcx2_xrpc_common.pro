@@ -17,6 +17,7 @@ isEmpty(PREFIX) {
 }
 
 win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lcx2_mem_vars2 -lcx2_thr_threads2 -lcx2_thr_mutex2 -lcx2_auth2
+!win32:LIBS+= -ljsoncpp
 
 
 # includes dir
