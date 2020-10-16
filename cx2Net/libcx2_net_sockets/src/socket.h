@@ -169,16 +169,16 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout);
+    bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
     /**
-     * @brief connectTo Connect to remote host using a local bind address (eg. multi-homed network)
+     * @brief connectFrom Connect to remote host using a local bind address (eg. multi-homed network)
      * @param localBindAddress address to bind, if empty, use default.
      * @param remoteHost remote hostname to connect to
      * @param port 16-bit unsigned integer with the remote port
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    virtual bool connectTo(const char * localBindAddress, const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
+    virtual bool connectFrom(const char * localBindAddress, const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
     /**
      * Try connect until it succeeds.
      */

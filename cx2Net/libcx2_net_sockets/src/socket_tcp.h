@@ -34,7 +34,7 @@ public:
      * @param timeout timeout in seconds to desist the connection. (default 30)
      * @return true if successfully connected
      */
-    bool connectTo(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.

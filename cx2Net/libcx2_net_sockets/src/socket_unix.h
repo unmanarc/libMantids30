@@ -31,7 +31,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char *,const char * path, const uint16_t &, const uint32_t & timeout = 30) override;
+    bool connectFrom(const char *,const char * path, const uint16_t &, const uint32_t & timeout = 30) override;
     /**
      * Accept a new connection on a listening socket.
      * @return returns a socket with the new connection.

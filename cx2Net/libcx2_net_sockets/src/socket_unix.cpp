@@ -59,7 +59,7 @@ bool Socket_UNIX::listenOn(const char *path, const int32_t &recvbuffer, const in
     return listenOn(0,path,recvbuffer,backlog);
 }
 
-bool Socket_UNIX::connectTo(const char *, const char * path, const uint16_t &, const uint32_t & timeout)
+bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &, const uint32_t & timeout)
 {
     if (isActive()) closeSocket(); // close first
 

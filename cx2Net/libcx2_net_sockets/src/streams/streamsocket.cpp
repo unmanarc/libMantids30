@@ -78,13 +78,13 @@ Memory::Streams::Status StreamSocket::write(const void *buf, const size_t &count
 
 std::pair<StreamSocket *,StreamSocket *> StreamSocket::GetSocketPair()
 {
-    int sockets[2];
     std::pair<StreamSocket *,StreamSocket *> p;
 
     p.first = nullptr;
     p.second = nullptr;
 
 #ifndef _WIN32
+    int sockets[2];
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) < 0)
     {
         // ERROR:...
@@ -254,7 +254,7 @@ bool StreamSocket::listenOn(const uint16_t &, const char *, const int32_t &, con
     return false;
 }
 
-bool StreamSocket::connectTo(const char *, const char* , const uint16_t &, const uint32_t &)
+bool StreamSocket::connectFrom(const char *, const char* , const uint16_t &, const uint32_t &)
 {
 	return false;
 }

@@ -65,7 +65,7 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
     return true;
 }
 
-bool Socket_UDP::connectTo(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
+bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     if (isActive()) closeSocket(); // close and release first
 

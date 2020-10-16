@@ -156,9 +156,11 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     {
     case 0:
         return true;
+#ifndef WIN32
     case EAI_ADDRFAMILY:
         lastError = "The specified network host does not have any network addresses in the requested address family.";
         return false;
+#endif
     case EAI_AGAIN:
         lastError = "The name server returned a temporary failure indication.  Try again later.";
         return false;
@@ -186,9 +188,11 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     case EAI_SOCKTYPE:
         lastError = "The requested socket type is not supported.";
         return false;
+#ifndef WIN32
     case EAI_SYSTEM:
         lastError = "System Error duing name resolution.";
         return false;
+#endif
     default:
         lastError = "Unknown name resolution error.";
         break;
@@ -266,10 +270,10 @@ bool Socket::isConnected()
 
 bool Socket::connectTo(const char *remoteHost, const uint16_t &remotePort, const uint32_t &timeout)
 {
-    return connectTo(nullptr,remoteHost,remotePort,timeout);
+    return connectFrom(nullptr,remoteHost,remotePort,timeout);
 }
 
-bool Socket::connectTo(const char *localBindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
+bool Socket::connectFrom(const char *, const char *, const uint16_t &, const uint32_t &)
 {
     return false;
 }
@@ -283,7 +287,7 @@ void Socket::tryConnect(const char *remoteHost, const uint16_t &port,
     }
 }
 
-bool Socket::listenOn(const uint16_t &port, const char *listenOnAddr, const int32_t &recvbuffer, const int32_t &backlog)
+bool Socket::listenOn(const uint16_t &, const char *, const int32_t &, const int32_t &)
 {
     return false;
 }

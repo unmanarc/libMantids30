@@ -33,7 +33,7 @@ Socket_TCP::~Socket_TCP()
 {
 }
 
-bool Socket_TCP::connectTo(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
+bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     addrinfo *res = nullptr;
     lastError = "";
