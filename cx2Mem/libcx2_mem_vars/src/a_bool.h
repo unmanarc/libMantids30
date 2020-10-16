@@ -1,5 +1,5 @@
-#ifndef ABSVAR_BOOL_H
-#define ABSVAR_BOOL_H
+#ifndef A_BOOL_H
+#define A_BOOL_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -28,4 +28,4 @@ private:
     std::atomic<bool> value;
 };
 }}}
-#endif // ABSVAR_BOOL_H
+#endif // A_BOOL_H

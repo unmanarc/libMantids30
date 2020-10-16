@@ -1,5 +1,5 @@
-#ifndef ABSVAR_STRING_H
-#define ABSVAR_STRING_H
+#ifndef A_STRING_H
+#define A_STRING_H
 
 #include "abstract.h"
 #include <cx2_thr_mutex/mutex_shared.h>
@@ -31,4 +31,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_STRING_H
+#endif // A_STRING_H

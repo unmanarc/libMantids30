@@ -1,5 +1,5 @@
-#ifndef ABSVAR_IPV6_H
-#define ABSVAR_IPV6_H
+#ifndef A_IPV6_H
+#define A_IPV6_H
 
 #include "abstract.h"
 #ifdef _WIN32
@@ -38,4 +38,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_IPV6_H
+#endif // A_IPV6_H

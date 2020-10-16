@@ -1,5 +1,5 @@
-#ifndef ABSVAR_STRINGLIST_H
-#define ABSVAR_STRINGLIST_H
+#ifndef A_STRINGLIST_H
+#define A_STRINGLIST_H
 
 #include "abstract.h"
 #include <list>
@@ -32,4 +32,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_STRINGLIST_H
+#endif // A_STRINGLIST_H

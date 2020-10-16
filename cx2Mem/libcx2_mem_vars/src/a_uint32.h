@@ -1,5 +1,5 @@
-#ifndef ABSVAR_UINT32_H
-#define ABSVAR_UINT32_H
+#ifndef A_UINT32_H
+#define A_UINT32_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -31,4 +31,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_UINT32_H
+#endif // A_UINT32_H

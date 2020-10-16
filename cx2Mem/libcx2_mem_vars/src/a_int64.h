@@ -1,5 +1,5 @@
-#ifndef ABSVAR_INT64_H
-#define ABSVAR_INT64_H
+#ifndef A_INT64_H
+#define A_INT64_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -31,4 +31,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_INT64_H
+#endif // A_INT64_H

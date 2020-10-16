@@ -1,5 +1,5 @@
-#ifndef ABSVAR_DOUBLE_H
-#define ABSVAR_DOUBLE_H
+#ifndef A_DOUBLE_H
+#define A_DOUBLE_H
 #include "abstract.h"
 
 #include <atomic>
@@ -30,4 +30,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_DOUBLE_H
+#endif // A_DOUBLE_H

@@ -1,5 +1,5 @@
-#ifndef ABSVAR_INT8_H
-#define ABSVAR_INT8_H
+#ifndef A_INT8_H
+#define A_INT8_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -31,4 +31,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_INT8_H
+#endif // A_INT8_H

@@ -1,5 +1,5 @@
-#ifndef ABSVAR_IPV4_H
-#define ABSVAR_IPV4_H
+#ifndef A_IPV4_H
+#define A_IPV4_H
 
 #include "abstract.h"
 #ifdef _WIN32
@@ -37,4 +37,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_IPV4_H
+#endif // A_IPV4_H

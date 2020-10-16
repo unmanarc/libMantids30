@@ -1,5 +1,5 @@
-#ifndef ABSVAR_INT16_H
-#define ABSVAR_INT16_H
+#ifndef A_INT16_H
+#define A_INT16_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -30,4 +30,4 @@ private:
 };
 }}}
 
-#endif // ABSVAR_INT16_H
+#endif // A_INT16_H

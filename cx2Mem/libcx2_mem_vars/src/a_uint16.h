@@ -1,5 +1,5 @@
-#ifndef ABSVAR_UINT16_H
-#define ABSVAR_UINT16_H
+#ifndef A_UINT16_H
+#define A_UINT16_H
 
 #include "abstract.h"
 #include <stdint.h>
@@ -31,4 +31,4 @@ private:
 
 }}}
 
-#endif // ABSVAR_UINT16_H
+#endif // A_UINT16_H

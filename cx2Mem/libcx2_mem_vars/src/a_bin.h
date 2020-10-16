@@ -1,5 +1,5 @@
-#ifndef ABSVAR_BIN_H
-#define ABSVAR_BIN_H
+#ifndef A_BIN_H
+#define A_BIN_H
 
 #include "abstract.h"
 #include <cx2_thr_mutex/mutex_shared.h>
@@ -45,4 +45,4 @@ private:
 };
 }}}
 
-#endif // ABSVAR_BIN_H
+#endif // A_BIN_H
