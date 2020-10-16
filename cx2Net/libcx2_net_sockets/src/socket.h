@@ -163,16 +163,16 @@ public:
     /**
      * Connect to remote host
      * This is a virtual function
-     * @param hostname remote hostname to connect to
+     * @param remoteHost remote hostname to connect to
      * @param port 16-bit unsigned integer with the remote port
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    virtual bool connectTo(const char * hostname, const  uint16_t & port, const uint32_t & timeout);
+    virtual bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout);
     /**
      * Try connect until it succeeds.
      */
-    void tryConnect(const char * hostname, const uint16_t & port, const uint32_t & timeout);
+    void tryConnect(const char * remoteHost, const uint16_t & port, const uint32_t & timeout);
     /**
      * Bind and Listen on an specific port and address (does not require to bind)
      * @param listenOnAddress address to listen on. (use :: for ipv6 or 0.0.0.0 if ipv4)

@@ -109,10 +109,10 @@ bool Socket::connectTo(const char *, const uint16_t &, const uint32_t &)
     return false;
 }
 
-void Socket::tryConnect(const char *hostname, const uint16_t &port,
+void Socket::tryConnect(const char *remoteHost, const uint16_t &port,
                         const uint32_t &timeout)
 {
-    while (!connectTo(hostname, port, timeout))
+    while (!connectTo(remoteHost, port, timeout))
     {
         // Try to reconnect if fail...
     }

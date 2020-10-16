@@ -28,10 +28,9 @@ Socket_TCP::Socket_TCP()
 
 Socket_TCP::~Socket_TCP()
 {
-//    printf("deleting socket %p\n", this); fflush(stdout);
 }
 
-bool Socket_TCP::connectTo(const char * hostname, const uint16_t &port, const uint32_t &timeout)
+bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     char serverPort[32];
     int rc;
@@ -48,7 +47,7 @@ bool Socket_TCP::connectTo(const char * hostname, const uint16_t &port, const ui
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_family   = AF_UNSPEC;
 
-    rc = inet_pton(AF_INET, hostname, &serveraddr);
+    rc = inet_pton(AF_INET, remoteHost, &serveraddr);
     if (rc == 1)
     {
         hints.ai_family = AF_INET;
@@ -56,7 +55,7 @@ bool Socket_TCP::connectTo(const char * hostname, const uint16_t &port, const ui
     }
     else
     {
-        rc = inet_pton(AF_INET6, hostname, &serveraddr);
+        rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
         if (rc == 1)
         {
             hints.ai_family = AF_INET6;
@@ -66,11 +65,11 @@ bool Socket_TCP::connectTo(const char * hostname, const uint16_t &port, const ui
 
     snprintf(serverPort,32,"%u",port);
 
-    rc = getaddrinfo(hostname, serverPort, &hints, &res);
+    rc = getaddrinfo(remoteHost, serverPort, &hints, &res);
     if (rc != 0)
     {
         // Host not found.
-        lastError = "Error resolving hostname";
+        lastError = "Error resolving Remote Host";
         return false;
     }
 

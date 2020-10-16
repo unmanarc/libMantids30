@@ -103,7 +103,7 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, bool u
     return true;
 }
 
-bool Socket_UDP::connectTo(const char * hostname, const uint16_t & port, const uint32_t & timeout)
+bool Socket_UDP::connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout)
 {
     if (isActive()) closeSocket(); // close and release first
 
@@ -125,7 +125,7 @@ bool Socket_UDP::connectTo(const char * hostname, const uint16_t & port, const u
     hints.ai_socktype = SOCK_DGRAM;
 
     // Translate the hostname to network address (as ipv4)
-    rc = inet_pton(AF_INET, hostname, &serveraddr);
+    rc = inet_pton(AF_INET, remoteHost, &serveraddr);
     if (rc == 1)
     {
         // Use IPv4.
@@ -135,7 +135,7 @@ bool Socket_UDP::connectTo(const char * hostname, const uint16_t & port, const u
     else
     {
         // Try to translate on IPv6.
-        rc = inet_pton(AF_INET6, hostname, &serveraddr);
+        rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
         if (rc == 1)
         {
             // Use IPv6.
@@ -145,11 +145,11 @@ bool Socket_UDP::connectTo(const char * hostname, const uint16_t & port, const u
     }
 
     // Check the host existance.
-    rc = getaddrinfo(hostname, servport, &hints, &res);
+    rc = getaddrinfo(remoteHost, servport, &hints, &res);
     if (rc != 0)
     {
         // Host not found.
-        lastError = "Error resolving hostname";
+        lastError = "Error resolving Remote Host";
         return false;
     }
 

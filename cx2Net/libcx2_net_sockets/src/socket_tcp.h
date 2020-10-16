@@ -29,12 +29,12 @@ public:
     bool listenOn(const uint16_t & port, const char * listenOnAddr = "::", bool useIPv4 =false, const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Connect to remote host using a TCP socket.
-     * @param hostname remote hostname to connect to, can be the hostname or the ip address
+     * @param remoteHost remote hostname to connect to, can be the hostname or the ip address
      * @param port 16-bit unsigned integer with the remote port
      * @param timeout timeout in seconds to desist the connection. (default 30)
      * @return true if successfully connected
      */
-    bool connectTo(const char * hostname, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.

@@ -54,7 +54,7 @@ bool Socket_UNIX::listenOn(const uint16_t &port, const char *listenOnAddr, bool 
    return true;
 }
 
-bool Socket_UNIX::connectTo(const char * hostname, const uint16_t &, const uint32_t & timeout)
+bool Socket_UNIX::connectTo(const char * path, const uint16_t &, const uint32_t & timeout)
 {
     if (isActive()) closeSocket(); // close first
 
@@ -69,7 +69,7 @@ bool Socket_UNIX::connectTo(const char * hostname, const uint16_t &, const uint3
     }
 
     address.sun_family = AF_UNIX;
-    strcpy(address.sun_path, hostname);
+    strcpy(address.sun_path, path);
     len = sizeof(address);
 
     // Set the timeout here.

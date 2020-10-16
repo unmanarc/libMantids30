@@ -34,12 +34,12 @@ public:
     /**
      * Setup parameters of UDP remote pair.
      * This connect function does not connect at all. It only set the socket and the parameters to send the information.
-     * @param hostname remote hostname to connect to
+     * @param remoteHost remote hostname to connect to
      * @param port 16-bit unsigned integer with the remote port
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * hostname, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Write a datagram on the socket
      * Only datagrams below 65507 bytes are valid to be sent here.

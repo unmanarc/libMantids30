@@ -31,7 +31,7 @@ public:
     // This methods are virtual and should be implemented in sub-classes.
     // TODO: virtual redefinition?
     virtual bool listenOn(const uint16_t & port, const char * listenOnAddr, bool useIPv4 = true, const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
-    virtual bool connectTo(const char * hostname, const uint16_t &port, const uint32_t &timeout) override;
+    virtual bool connectTo(const char * remoteHost, const uint16_t &port, const uint32_t &timeout) override;
     virtual StreamSocket * acceptConnection();
 
     /**
