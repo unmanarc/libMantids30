@@ -29,7 +29,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * hostname, const uint16_t &, const uint32_t & timeout = 0) override;
+    bool connectTo(const char * hostname, const uint16_t &, const uint32_t & timeout = 30) override;
     /**
      * Accept a new connection on a listening socket.
      * @return returns a socket with the new connection.

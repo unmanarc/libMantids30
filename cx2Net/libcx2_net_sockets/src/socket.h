@@ -174,7 +174,7 @@ public:
      */
     void tryConnect(const char * hostname, const uint16_t & port, const uint32_t & timeout);
     /**
-     * Listen on an specific port and address
+     * Bind and Listen on an specific port and address (does not require to bind)
      * @param listenOnAddress address to listen on. (use :: for ipv6 or 0.0.0.0 if ipv4)
      * @param port 16-bit unsigned integer with the listening port (0-65535)
      * @return true if we can bind the port.

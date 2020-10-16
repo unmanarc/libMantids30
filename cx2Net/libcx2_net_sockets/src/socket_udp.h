@@ -39,7 +39,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * hostname, const uint16_t & port, const uint32_t & timeout = 0) override;
+    bool connectTo(const char * hostname, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Write a datagram on the socket
      * Only datagrams below 65507 bytes are valid to be sent here.
