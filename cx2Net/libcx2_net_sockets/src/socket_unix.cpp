@@ -14,7 +14,7 @@ Socket_UNIX::Socket_UNIX()
 {
 }
 
-bool Socket_UNIX::listenOn(const uint16_t &port, const char *listenOnAddr, bool , const int32_t &recvbuffer, const int32_t &backlog)
+bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &recvbuffer, const int32_t &backlog)
 {
    if (isActive()) closeSocket(); // close first
 
@@ -22,7 +22,7 @@ bool Socket_UNIX::listenOn(const uint16_t &port, const char *listenOnAddr, bool 
    sockaddr_un server_address;
    int         server_len;
 
-   unlink(listenOnAddr);
+   unlink(path);
 
    sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
    if (!isActive())
@@ -34,7 +34,7 @@ bool Socket_UNIX::listenOn(const uint16_t &port, const char *listenOnAddr, bool 
    if (recvbuffer) setRecvBuffer(recvbuffer);
 
    server_address.sun_family = AF_UNIX;
-   strncpy(server_address.sun_path, listenOnAddr, sizeof(server_address.sun_path)-1);
+   strncpy(server_address.sun_path, path, sizeof(server_address.sun_path)-1);
    server_len = sizeof(server_address);
 
    if (bind(sockfd,(struct sockaddr *)&server_address,server_len) < 0)
@@ -54,7 +54,12 @@ bool Socket_UNIX::listenOn(const uint16_t &port, const char *listenOnAddr, bool 
    return true;
 }
 
-bool Socket_UNIX::connectTo(const char * path, const uint16_t &, const uint32_t & timeout)
+bool Socket_UNIX::listenOn(const char *path, const int32_t &recvbuffer, const int32_t &backlog)
+{
+    return listenOn(0,path,recvbuffer,backlog);
+}
+
+bool Socket_UNIX::connectTo(const char *, const char * path, const uint16_t &, const uint32_t & timeout)
 {
     if (isActive()) closeSocket(); // close first
 

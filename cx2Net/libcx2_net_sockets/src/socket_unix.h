@@ -16,12 +16,14 @@ public:
 	 */
     Socket_UNIX();
     /**
-     * Listen on an specific path and address
-     * @param listenOnAddress listening path
-     * @param port unused parameter.
-     * @return true if we can bind to that path.
+     * @brief listenOn Listen on an specific path and address
+     * @param path Unix Path
+     * @param recvbuffer size in bytes of recv buffer.
+     * @param backlog connection backlog of unattended incomming connections.
+     * @return true if listening
      */
-    bool listenOn(const uint16_t & port, const char * listenOnAddr, bool useIPv4 = true, const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool listenOn(const char * path, const int32_t & recvbuffer = 0, const int32_t &backlog = 10);
+    bool listenOn(const uint16_t &, const char * path, const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Connect to remote host using an UNIX socket.
      * @param path local path to connect to.
@@ -29,7 +31,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * path, const uint16_t &, const uint32_t & timeout = 30) override;
+    bool connectTo(const char *,const char * path, const uint16_t &, const uint32_t & timeout = 30) override;
     /**
      * Accept a new connection on a listening socket.
      * @return returns a socket with the new connection.

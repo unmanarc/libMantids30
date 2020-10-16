@@ -1,17 +1,20 @@
 #include "socket_tcp.h"
 
+#include <sys/types.h>
+
 #ifdef _WIN32
 #include <cx2_mem_vars/w32compat.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
+
 #include <sys/socket.h>
+#include <netdb.h>
+
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
-#include <netdb.h>
 #endif
 
-#include <sys/types.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -30,46 +33,13 @@ Socket_TCP::~Socket_TCP()
 {
 }
 
-bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const uint32_t &timeout)
+bool Socket_TCP::connectTo(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
-    char serverPort[32];
-    int rc;
-    struct in6_addr serveraddr;
-    struct addrinfo hints, *res=nullptr;
-
-    memset(&hints, 0x00, sizeof(hints));
-
-#ifdef _WIN32
-    hints.ai_flags    = 0;
-#else
-    hints.ai_flags    = AI_NUMERICSERV;
-#endif
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_family   = AF_UNSPEC;
-
-    rc = inet_pton(AF_INET, remoteHost, &serveraddr);
-    if (rc == 1)
+    addrinfo *res = nullptr;
+    lastError = "";
+    if (!getAddrInfo(remoteHost,port,SOCK_STREAM,(void **)&res))
     {
-        hints.ai_family = AF_INET;
-        hints.ai_flags |= AI_NUMERICHOST;
-    }
-    else
-    {
-        rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
-        if (rc == 1)
-        {
-            hints.ai_family = AF_INET6;
-            hints.ai_flags |= AI_NUMERICHOST;
-        }
-    }
-
-    snprintf(serverPort,32,"%u",port);
-
-    rc = getaddrinfo(remoteHost, serverPort, &hints, &res);
-    if (rc != 0)
-    {
-        // Host not found.
-        lastError = "Error resolving Remote Host";
+        // Bad name resolution...
         return false;
     }
 
@@ -85,13 +55,21 @@ bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const 
             break;
         }
 
+        if (!bindTo(bindAddress))
+        {
+            break;
+        }
+
         // Set the read timeout here. (to zero)
         setReadTimeout(0);
 
         sockaddr * curAddr = resiter->ai_addr;
         struct sockaddr_in * curAddrIn = ((sockaddr_in *)curAddr);
 
-        if (tcpConnect(curAddr, resiter->ai_addrlen,timeout))
+        if (    ( (resiter->ai_addr->sa_family == AF_INET) ||                // IPv4 always have the permission to go.
+                  (resiter->ai_addr->sa_family == AF_INET6 && useIPv6))   // Check if ipv6 have our permission to go.
+                && tcpConnect(curAddr, resiter->ai_addrlen,timeout)
+                )
         {
 
             if (ovrReadTimeout!=-1) setReadTimeout(ovrReadTimeout);
@@ -100,18 +78,18 @@ bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const 
             // Set remote pairs...
             switch (curAddr->sa_family)
             {
-            case AF_INET:
-            {
-                char ipAddr4[INET_ADDRSTRLEN+1]="";
-                inet_ntop(AF_INET, &(curAddrIn->sin_addr), ipAddr4, INET_ADDRSTRLEN);
-                setRemotePair(ipAddr4);
-            } break;
             case AF_INET6:
             {
                 char ipAddr6[INET6_ADDRSTRLEN+1]="";
                 inet_ntop(AF_INET6, &(curAddrIn->sin_addr), ipAddr6, INET6_ADDRSTRLEN);
                 setRemotePair(ipAddr6);
-            } break;
+            }break;
+            case AF_INET:
+            {
+                char ipAddr4[INET_ADDRSTRLEN+1]="";
+                inet_ntop(AF_INET, &(curAddrIn->sin_addr), ipAddr4, INET_ADDRSTRLEN);
+                setRemotePair(ipAddr4);
+            }break;
             default:
                 break;
             }
@@ -125,8 +103,8 @@ bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const 
             }
             else
             {
-            	// should disconnect here.
-            	shutdownSocket();
+                // should disconnect here.
+                shutdownSocket();
                 // drop the socket descriptor. we don't need it anymore.
                 closeSocket();
             }
@@ -144,7 +122,8 @@ bool Socket_TCP::connectTo(const char * remoteHost, const uint16_t &port, const 
 
     if (!connected)
     {
-        lastError = "connect() failed";
+        if (lastError == "")
+            lastError = "connect() failed";
         return false;
     }
 
@@ -270,7 +249,7 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
     return false;
 }
 
-bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool useIPv4, const int32_t & recvbuffer,const int32_t & backlog)
+bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, const int32_t & recvbuffer,const int32_t & backlog)
 {
 #ifdef WIN32
     BOOL bOn = TRUE;
@@ -278,8 +257,7 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
     int on=1;
 #endif
 
-
-    sockfd = socket(useIPv4?AF_INET:AF_INET6, SOCK_STREAM, 0);
+    sockfd = socket(useIPv6?AF_INET6:AF_INET, SOCK_STREAM, 0);
     if (!isActive())
     {
         lastError = "socket() failed";
@@ -289,11 +267,11 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
     if (recvbuffer) setRecvBuffer(recvbuffer);
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-#ifdef WIN32
+               #ifdef WIN32
                    (char *)(&bOn),sizeof(bOn)
-#else
+               #else
                    static_cast<void *>(&on),sizeof(on)
-#endif
+               #endif
                    ) < 0)
     {
         lastError = "setsockopt(SO_REUSEADDR) failed";
@@ -301,39 +279,9 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
         return false;
     }
 
-    if (useIPv4)
+    if (!bindTo(listenOnAddr,port))
     {
-        struct sockaddr_in serveraddr;
-        memset(&serveraddr, 0, sizeof(serveraddr));
-
-        serveraddr.sin_family = AF_INET;
-        serveraddr.sin_port   = htons(port);
-
-        inet_pton(AF_INET, listenOnAddr, &serveraddr.sin_addr);
-
-        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
-        {
-            lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
-    }
-    else
-    {
-        struct sockaddr_in6 serveraddr;
-        memset(&serveraddr, 0, sizeof(serveraddr));
-
-        serveraddr.sin6_family = AF_INET6;
-        serveraddr.sin6_port   = htons(port);
-
-        inet_pton(AF_INET6, listenOnAddr, &serveraddr.sin6_addr);
-
-        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
-        {
-            lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
+        return false;
     }
 
     if (listen(sockfd, backlog) < 0)
@@ -347,6 +295,7 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, bool
 
     return true;
 }
+
 
 bool Socket_TCP::postAcceptSubInitialization()
 {
@@ -386,6 +335,6 @@ bool Socket_TCP::isSecure()
 /*
 bool Socket_TCP::postConnectSubInitialization()
 {
-	return true;
+    return true;
 }
 */

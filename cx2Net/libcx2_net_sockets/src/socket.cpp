@@ -9,12 +9,23 @@
 #include <stdexcept>
 
 #ifdef _WIN32
+#include <cx2_mem_vars/w32compat.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
+/*
+#include <sys/types.h>
+#include <netdb.h>
+
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <netinet/ip.h>
+#include <netinet/ip.h>*/
+
+#include <sys/socket.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+
 #endif
 
 using namespace CX2::Network::Sockets;
@@ -29,6 +40,8 @@ bool Socket::badSocket = false;
 
 void Socket::initVars()
 {
+    useIPv6 = false;
+
     listenMode = false;
     readTimeout = 0;
     writeTimeout = 0;
@@ -45,6 +58,151 @@ void Socket::initVars()
 
 
     memset(remotePair, 0, sizeof(remotePair));
+}
+
+bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
+{
+    if (bindAddress == nullptr)
+        return true;
+
+    if (!useIPv6)
+    {
+        struct sockaddr_in serveraddr;
+        memset(&serveraddr, 0, sizeof(serveraddr));
+
+        serveraddr.sin_family = AF_INET;
+        serveraddr.sin_port   = htons(port);
+
+        if (bindAddress[0] == '*' && bindAddress[1] == 0)
+            inet_pton(AF_INET, "0.0.0.0", &serveraddr.sin_addr);
+        else
+            inet_pton(AF_INET, bindAddress, &serveraddr.sin_addr);
+
+        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
+        {
+            lastError = "bind() failed";
+            closeSocket();
+            return false;
+        }
+    }
+    else
+    {
+        struct sockaddr_in6 serveraddr;
+        memset(&serveraddr, 0, sizeof(serveraddr));
+
+        serveraddr.sin6_family = AF_INET6;
+        serveraddr.sin6_port   = htons(port);
+
+        if (bindAddress[0] == '*' && bindAddress[1] == 0)
+            inet_pton(AF_INET6, "::", &serveraddr.sin6_addr);
+        else
+            inet_pton(AF_INET6, bindAddress, &serveraddr.sin6_addr);
+
+        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
+        {
+            lastError = "bind() failed";
+            closeSocket();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void **res)
+{
+    addrinfo hints;
+    int rc;
+
+    memset(&hints, 0x00, sizeof(hints));
+
+#ifdef _WIN32
+    hints.ai_flags    = 0;
+#else
+    hints.ai_flags    = AI_NUMERICSERV;
+#endif
+    hints.ai_socktype = ai_socktype;
+    hints.ai_family   = AF_UNSPEC;
+
+    if (useIPv6)
+    {
+        struct in6_addr serveraddr;
+        rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
+        if (rc == 1)
+        {
+            hints.ai_family = AF_INET6;
+            hints.ai_flags |= AI_NUMERICHOST;
+        }
+    }
+    else
+    {
+        struct in_addr serveraddr;
+        rc = inet_pton(AF_INET, remoteHost, &serveraddr);
+        if (rc == 1)
+        {
+            hints.ai_family = AF_INET;
+            hints.ai_flags |= AI_NUMERICHOST;
+        }
+    }
+
+    char serverPort[8];
+    snprintf(serverPort,8,"%u",remotePort);
+
+    rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **)res);
+
+    switch (rc)
+    {
+    case 0:
+        return true;
+    case EAI_ADDRFAMILY:
+        lastError = "The specified network host does not have any network addresses in the requested address family.";
+        return false;
+    case EAI_AGAIN:
+        lastError = "The name server returned a temporary failure indication.  Try again later.";
+        return false;
+    case EAI_BADFLAGS:
+        lastError = "hints.ai_flags contains invalid flags; or, hints.ai_flags included AI_CANONNAME and name was NULL.";
+        return false;
+    case EAI_FAIL:
+        lastError = "The name server returned a permanent failure indication.";
+        return false;
+    case EAI_FAMILY:
+        lastError = "The requested address family is not supported.";
+        return false;
+    case EAI_MEMORY:
+        lastError = "Out of memory during name resolution.";
+        return false;
+    case EAI_NODATA:
+        lastError = "The specified network host exists, but does not have any network addresses defined.";
+        return false;
+    case EAI_NONAME:
+        lastError = "The node or service is not known; or both node and service are NULL; or AI_NUMERICSERV was specified in  hints.ai_flags and service was not a numeric port-number string.";
+        return false;
+    case EAI_SERVICE:
+        lastError = "The requested service is not available for the requested socket type.";
+        return false;
+    case EAI_SOCKTYPE:
+        lastError = "The requested socket type is not supported.";
+        return false;
+    case EAI_SYSTEM:
+        lastError = "System Error duing name resolution.";
+        return false;
+    default:
+        lastError = "Unknown name resolution error.";
+        break;
+    }
+
+    return false;
+}
+
+bool Socket::getUseIPv6() const
+{
+    return useIPv6;
+}
+
+void Socket::setUseIPv6(bool value)
+{
+    useIPv6 = value;
 }
 
 Socket::Socket()
@@ -104,7 +262,12 @@ bool Socket::isConnected()
     return false;
 }
 
-bool Socket::connectTo(const char *, const uint16_t &, const uint32_t &)
+bool Socket::connectTo(const char *remoteHost, const uint16_t &remotePort, const uint32_t &timeout)
+{
+    return connectTo(nullptr,remoteHost,remotePort,timeout);
+}
+
+bool Socket::connectTo(const char *localBindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     return false;
 }
@@ -118,9 +281,7 @@ void Socket::tryConnect(const char *remoteHost, const uint16_t &port,
     }
 }
 
-
-
-bool Socket::listenOn(const uint16_t &port, const char *listenOnAddr, bool useIPv4, const int32_t &recvbuffer, const int32_t &backlog)
+bool Socket::listenOn(const uint16_t &port, const char *listenOnAddr, const int32_t &recvbuffer, const int32_t &backlog)
 {
     return false;
 }
@@ -137,7 +298,7 @@ int Socket::closeSocket()
     return i;
 }
 
-const char * Socket::getLastError() const
+std::string Socket::getLastError() const
 {
     return lastError;
 }
@@ -406,9 +567,9 @@ int Socket::shutdownSocket(int mode)
     return shutdown(sockfd, mode);
 
     // Double shutdown?
-//    throw std::runtime_error("Double shutdown on Socket");
+    //    throw std::runtime_error("Double shutdown on Socket");
 
-  //  return -1;
+    //  return -1;
 }
 
 bool Socket::setBlockingMode(bool blocking)

@@ -30,7 +30,7 @@ public:
      * @param port 16-bit unsigned integer with the listening UDP port (0-65535)
      * @return true if we can bind the port.
      */
-    bool listenOn(const uint16_t & port, const char * listenOnAddr = "::", bool useIPv4 =false, const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Setup parameters of UDP remote pair.
      * This connect function does not connect at all. It only set the socket and the parameters to send the information.
@@ -39,7 +39,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectTo(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Write a datagram on the socket
      * Only datagrams below 65507 bytes are valid to be sent here.
@@ -72,6 +72,7 @@ public:
     uint32_t getMinReadSize();
 
 private:
+    void freeAddrInfo();
     addrinfo *res;
 };
 

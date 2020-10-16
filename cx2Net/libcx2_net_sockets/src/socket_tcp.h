@@ -22,11 +22,11 @@ public:
     virtual ~Socket_TCP();
     /**
      * Listen on an specific TCP port and address
-     * @param listenOnAddress address to listen on. (use :: for ipv6 or 0.0.0.0 if ipv4)
+     * @param listenOnAddress address to listen on. (use * for any address)
      * @param port 16-bit unsigned integer with the listening TCP port (1-65535), 0 means random available port.
      * @return true if the operation succeeded.
      */
-    bool listenOn(const uint16_t & port, const char * listenOnAddr = "::", bool useIPv4 =false, const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Connect to remote host using a TCP socket.
      * @param remoteHost remote hostname to connect to, can be the hostname or the ip address
@@ -34,7 +34,7 @@ public:
      * @param timeout timeout in seconds to desist the connection. (default 30)
      * @return true if successfully connected
      */
-    bool connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectTo(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
     /**
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.

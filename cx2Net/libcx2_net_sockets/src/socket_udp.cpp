@@ -25,9 +25,7 @@ Socket_UDP::Socket_UDP()
 
 Socket_UDP::~Socket_UDP()
 {
-    if (res)
-        freeaddrinfo(res);
-    res = nullptr;
+    freeAddrInfo();
 }
 
 bool Socket_UDP::isConnected()
@@ -35,13 +33,13 @@ bool Socket_UDP::isConnected()
     return true;
 }
 
-bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, bool useIPv4, const int32_t &recvbuffer, const int32_t &backlog)
+bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const int32_t &recvbuffer, const int32_t &backlog)
 {
     int on = 1;
 
     if (isActive()) closeSocket(); // close and release first
     // Socket initialization.
-    sockfd = socket(useIPv4?AF_INET:AF_INET6, SOCK_DGRAM, 0);
+    sockfd = socket(useIPv6?AF_INET6:AF_INET, SOCK_DGRAM, 0);
     if (!isActive())
     {
         lastError = "socket() failed";
@@ -56,45 +54,9 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, bool u
         return false;
     }
 
-    if (useIPv4)
+    if (!bindTo(listenOnAddr,port))
     {
-        struct sockaddr_in serveraddr;
-
-        // Initialize memory structures
-        memset(&serveraddr, 0, sizeof(serveraddr));
-        serveraddr.sin_family = AF_INET;
-        serveraddr.sin_port = htons(port);
-
-        // Server hostname to network address
-        inet_pton(AF_INET, listenOnAddr, &serveraddr.sin_addr);
-
-        // Bind on socket.
-        if (bind(sockfd, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0)
-        {
-            lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
-    }
-    else
-    {
-        struct sockaddr_in6 serveraddr;
-
-        // Initialize memory structures
-        memset(&serveraddr, 0, sizeof(serveraddr));
-        serveraddr.sin6_family = AF_INET6;
-        serveraddr.sin6_port = htons(port);
-
-        // Server hostname to network address
-        inet_pton(AF_INET6, listenOnAddr, &serveraddr.sin6_addr);
-
-        // Bind on socket.
-        if (bind(sockfd, (struct sockaddr *) &serveraddr, sizeof(serveraddr)) < 0)
-        {
-            lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
+        return false;
     }
 
     listenMode = true;
@@ -103,53 +65,16 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, bool u
     return true;
 }
 
-bool Socket_UDP::connectTo(const char * remoteHost, const uint16_t & port, const uint32_t & timeout)
+bool Socket_UDP::connectTo(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     if (isActive()) closeSocket(); // close and release first
 
-    char servport[32];
-    snprintf(servport, 32, "%u", port);
+    // Clean up any previously resolved addrinfo.
+    freeAddrInfo();
 
-    int rc;
-    struct in6_addr serveraddr;
-    struct addrinfo hints;
-
-    // Initialize the memory.
-    memset(&hints, 0x00, sizeof(hints));
-#ifdef _WIN32
-    hints.ai_flags = 0;
-#else
-    hints.ai_flags = AI_NUMERICSERV;
-#endif
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-
-    // Translate the hostname to network address (as ipv4)
-    rc = inet_pton(AF_INET, remoteHost, &serveraddr);
-    if (rc == 1)
+    if (!getAddrInfo(remoteHost,port,SOCK_DGRAM,(void **)&res))
     {
-        // Use IPv4.
-        hints.ai_family = AF_INET;
-        hints.ai_flags |= AI_NUMERICHOST;
-    }
-    else
-    {
-        // Try to translate on IPv6.
-        rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
-        if (rc == 1)
-        {
-            // Use IPv6.
-            hints.ai_family = AF_INET6;
-            hints.ai_flags |= AI_NUMERICHOST;
-        }
-    }
-
-    // Check the host existance.
-    rc = getaddrinfo(remoteHost, servport, &hints, &res);
-    if (rc != 0)
-    {
-        // Host not found.
-        lastError = "Error resolving Remote Host";
+        // Bad name resolution...
         return false;
     }
 
@@ -158,6 +83,11 @@ bool Socket_UDP::connectTo(const char * remoteHost, const uint16_t & port, const
     if (!isActive())
     {
         lastError = "socket() failed";
+        return false;
+    }
+
+    if (!bindTo(bindAddress))
+    {
         return false;
     }
 
@@ -195,6 +125,13 @@ bool Socket_UDP::writeBlock(const void *data, const uint32_t & datalen)
 uint32_t Socket_UDP::getMinReadSize()
 {
     return (SOCKADDR_IN_SIZE + sizeof(int));
+}
+
+void Socket_UDP::freeAddrInfo()
+{
+    if (res)
+        freeaddrinfo(res);
+    res = nullptr;
 }
 
 bool Socket_UDP::readBlock(void *, const uint32_t &)

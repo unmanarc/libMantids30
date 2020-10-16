@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #include <memory>
+#include <string>
 #include <atomic>
 
 namespace CX2 { namespace Network { namespace Sockets {
@@ -113,7 +114,7 @@ public:
      * Get last error message
      * @param last error message pointer. (static mem)
      */
-    const char * getLastError() const;
+    std::string getLastError() const;
     /**
      * Get remote pair address
      * @param address pair address char * (should contain at least 64 bytes)
@@ -168,7 +169,16 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    virtual bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout);
+    bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout);
+    /**
+     * @brief connectTo Connect to remote host using a local bind address (eg. multi-homed network)
+     * @param localBindAddress address to bind, if empty, use default.
+     * @param remoteHost remote hostname to connect to
+     * @param port 16-bit unsigned integer with the remote port
+     * @param timeout timeout in seconds to desist the connection.
+     * @return true if successfully connected
+     */
+    virtual bool connectTo(const char * localBindAddress, const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
     /**
      * Try connect until it succeeds.
      */
@@ -179,7 +189,8 @@ public:
      * @param port 16-bit unsigned integer with the listening port (0-65535)
      * @return true if we can bind the port.
      */
-    virtual bool listenOn(const uint16_t & port, const char * listenOnAddr, bool useIPv4 = true, const int32_t & recvbuffer = 0, const int32_t &backlog = 10);
+    virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10);
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Connection Finalization...
@@ -221,19 +232,35 @@ public:
 
     virtual bool isSecure() { return false; };
 
+    /**
+     * @brief getUseIPv6 Get if using IPv6 Functions
+     * @return true if using IPv6
+     */
+    bool getUseIPv6() const;
+    /**
+     * @brief setUseIPv6 Set socket to use IPv6 (default: false), must be called before connect/listen functions.
+     * note: some protocols like unix sockets does not use ipv6 at all.
+     * @param value true if want to use IPv6
+     */
+    void setUseIPv6(bool value);
+
 private:
     static void socketSystemInitialization();
     void initVars();
 
 protected:
+    bool bindTo(const char * bindAddress = nullptr, const uint16_t &port = 0);
+    bool getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void ** res);
+
+    bool useIPv6;
     /**
      * if true, Use write instead send and read instead recv.
      */
     bool useWrite;
     /**
-     * pointer to the last error message.
+     * last error message.
      */
-    const char * lastError;
+    std::string lastError;
     /**
      * buffer with the remote pair address.
      */

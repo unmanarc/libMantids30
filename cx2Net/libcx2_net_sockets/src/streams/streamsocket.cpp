@@ -249,12 +249,12 @@ bool StreamSocket::isConnected()
     return true;
 }
 
-bool StreamSocket::listenOn(const uint16_t &, const char *, bool , const int32_t &, const int32_t &)
+bool StreamSocket::listenOn(const uint16_t &, const char *, const int32_t &, const int32_t &)
 {
     return false;
 }
 
-bool StreamSocket::connectTo(const char* , const uint16_t &, const uint32_t &)
+bool StreamSocket::connectTo(const char *, const char* , const uint16_t &, const uint32_t &)
 {
 	return false;
 }
