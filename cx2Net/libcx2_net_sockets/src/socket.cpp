@@ -73,7 +73,9 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
         serveraddr.sin_family = AF_INET;
         serveraddr.sin_port   = htons(port);
 
-        if (bindAddress[0] == '*' && bindAddress[1] == 0)
+        // Accept * or :: as a generic listen address
+        if (    (bindAddress[0] == '*' && bindAddress[1] == 0) ||
+                (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0) )
             inet_pton(AF_INET, "0.0.0.0", &serveraddr.sin_addr);
         else
             inet_pton(AF_INET, bindAddress, &serveraddr.sin_addr);
