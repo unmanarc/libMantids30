@@ -5,11 +5,12 @@ SOURCES +=     src/lock_rd.cpp \
     src/lock_rw.cpp \
     src/mutex.cpp \
     src/mutex_shared.cpp
-HEADERS += \     src/lock_rd.h \
+HEADERS += src/lock_rd.h \
     src/lock_rw.h \
     src/lock_shared.h \
     src/mutex.h \
     src/mutex_shared.h
+
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }

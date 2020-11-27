@@ -6,8 +6,7 @@ SOURCES +=  \
     src/atomicexpressionside.cpp \
     src/jsoneval.cpp
 
-HEADERS += \ \
-    src/atomicexpression.h \
+HEADERS += src/atomicexpression.h \
     src/atomicexpressionside.h \
     src/jsoneval.h
 
