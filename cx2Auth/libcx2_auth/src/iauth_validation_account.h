@@ -29,12 +29,7 @@ protected:
     DataStructs::AuthReason validatePassword(const DataStructs::sPasswordData & storedPassword, const std::string & passwordInput, const std::string &cramSalt, DataStructs::AuthMode authMode);
 
 private:
-    static std::string calcSHA256(const std::string & password);
-    static std::string calcSHA512(const std::string & password);
 
-    // SALT must be 4 bytes.
-    static std::string calcSSHA256(const std::string & password, const unsigned char *ssalt);
-    static std::string calcSSHA512(const std::string & password, const unsigned char *ssalt);
 
     DataStructs::AuthReason validateCRAM(const std::string & passwordFromDB, const std::string & passwordInput, const std::string &cramSalt);
     DataStructs::AuthReason validateGAuth(const std::string & seed, const std::string & token);

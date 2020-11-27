@@ -1,8 +1,8 @@
 #include "iauth_validation_account.h"
 
-#include <openssl/sha.h>
 #include <cx2_hlp_functions/encoders.h>
 #include <cx2_hlp_functions/random.h>
+#include <cx2_hlp_functions/crypto.h>
 
 using namespace CX2::Authorization;
 using namespace CX2::Authorization::DataStructs;
@@ -37,21 +37,21 @@ sPasswordData IAuth_Validation_Account::genPassword(const std::string &passwordI
     } break;
     case PASS_MODE_SHA256:
     {
-        r.hash = calcSHA256(passwordInput);
+        r.hash = Helpers::Crypto::calcSHA256(passwordInput);
     } break;
     case PASS_MODE_SHA512:
     {
-        r.hash = calcSHA512(passwordInput);
+        r.hash = Helpers::Crypto::calcSHA512(passwordInput);
     } break;
     case PASS_MODE_SSHA256:
     {
         CX2::Helpers::Random::createRandomSalt32(r.ssalt);
-        r.hash = calcSSHA256(passwordInput, r.ssalt);
+        r.hash = Helpers::Crypto::calcSSHA256(passwordInput, r.ssalt);
     } break;
     case PASS_MODE_SSHA512:
     {
         CX2::Helpers::Random::createRandomSalt32(r.ssalt);
-        r.hash = calcSSHA512(passwordInput, r.ssalt);
+        r.hash = Helpers::Crypto::calcSSHA512(passwordInput, r.ssalt);
     } break;
     case PASS_MODE_GAUTHTIME:
         r.hash = passwordInput;
@@ -79,20 +79,20 @@ AuthReason IAuth_Validation_Account::validatePassword(const sPasswordData &store
     } break;
     case PASS_MODE_SHA256:
     {
-        toCompare = calcSHA256(passwordInput);
+        toCompare = Helpers::Crypto::calcSHA256(passwordInput);
     } break;
     case PASS_MODE_SHA512:
     {
-        toCompare = calcSHA512(passwordInput);
+        toCompare = Helpers::Crypto::calcSHA512(passwordInput);
     } break;
     case PASS_MODE_SSHA256:
     {
-        toCompare = calcSSHA256(passwordInput, storedPassword.ssalt);
+        toCompare = Helpers::Crypto::calcSSHA256(passwordInput, storedPassword.ssalt);
         saltedHash = true;
     } break;
     case PASS_MODE_SSHA512:
     {
-        toCompare = calcSSHA512(passwordInput, storedPassword.ssalt);
+        toCompare = Helpers::Crypto::calcSSHA512(passwordInput, storedPassword.ssalt);
         saltedHash = true;
     } break;
     case PASS_MODE_GAUTHTIME:
@@ -108,52 +108,6 @@ AuthReason IAuth_Validation_Account::validatePassword(const sPasswordData &store
     }
 
     return AUTH_REASON_NOT_IMPLEMENTED;
-}
-
-std::string IAuth_Validation_Account::calcSHA256(const std::string &password)
-{
-    std::string r;
-    unsigned char buffer_sha2[SHA256_DIGEST_LENGTH+1];
-    SHA256_CTX sha2;
-    SHA256_Init (&sha2);
-    SHA256_Update (&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA256_Final ( buffer_sha2, &sha2);
-    return CX2::Helpers::Encoders::toHex(buffer_sha2,SHA256_DIGEST_LENGTH);
-}
-
-std::string IAuth_Validation_Account::calcSHA512(const std::string &password)
-{
-    std::string r;
-    unsigned char buffer_sha2[SHA512_DIGEST_LENGTH+1];
-    SHA512_CTX sha2;
-    SHA512_Init (&sha2);
-    SHA512_Update (&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA512_Final ( buffer_sha2, &sha2);
-    return CX2::Helpers::Encoders::toHex(buffer_sha2,SHA512_DIGEST_LENGTH);
-}
-
-std::string IAuth_Validation_Account::calcSSHA256(const std::string &password, const unsigned char * ssalt)
-{
-    std::string r;
-    unsigned char buffer_sha2[SHA256_DIGEST_LENGTH+1];
-    SHA256_CTX sha2;
-    SHA256_Init (&sha2);
-    SHA256_Update (&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA256_Update (&sha2, ssalt, 4);
-    SHA256_Final ( buffer_sha2, &sha2);
-    return CX2::Helpers::Encoders::toHex(buffer_sha2,SHA256_DIGEST_LENGTH);
-}
-
-std::string IAuth_Validation_Account::calcSSHA512(const std::string &password, const unsigned char * ssalt)
-{
-    std::string r;
-    unsigned char buffer_sha2[SHA512_DIGEST_LENGTH+1];
-    SHA512_CTX sha2;
-    SHA512_Init (&sha2);
-    SHA512_Update (&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA512_Update (&sha2, ssalt, 4);
-    SHA512_Final ( buffer_sha2, &sha2);
-    return CX2::Helpers::Encoders::toHex(buffer_sha2,SHA512_DIGEST_LENGTH);
 }
 
 AuthReason IAuth_Validation_Account::validateCRAM(const std::string &passwordFromDB, const std::string &passwordInput, const std::string &cramSalt)

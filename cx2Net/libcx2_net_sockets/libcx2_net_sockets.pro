@@ -6,6 +6,7 @@ SOURCES += \
     src/acceptors/socket_acceptor_thread.cpp \
     src/bridge/streamsocketsbridge.cpp \
     src/bridge/streamsocketsbridge_thread.cpp \
+    src/crypto/cryptostream.cpp \
     src/datagrams/datagramsocket.cpp \
     src/socket.cpp \
     src/socket_tcp.cpp \
@@ -22,6 +23,7 @@ HEADERS += \
     src/acceptors/socket_acceptor_thread.h \
     src/bridge/streamsocketsbridge.h \
     src/bridge/streamsocketsbridge_thread.h \
+    src/crypto/cryptostream.h \
     src/datagrams/datagramsocket.h \
     src/socket.h \
     src/socket_tcp.h \
@@ -62,6 +64,12 @@ QMAKE_INCDIR += src/datagrams
 
 INCLUDEPATH += src/acceptors
 QMAKE_INCDIR += src/acceptors
+
+INCLUDEPATH += src/bridge
+QMAKE_INCDIR += src/bridge
+
+INCLUDEPATH += src/crypto
+QMAKE_INCDIR += src/crypto
 
 TARGET = cx2_net_sockets
 TEMPLATE = lib
