@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <cx2_thr_mutex/lock_shared.h>
-#include <cx2_file_vars/varsfile.h>
+#include <cx2_fs_vars/varsfile.h>
 
 #include <boost/filesystem.hpp>
 using namespace CX2::Authorization;

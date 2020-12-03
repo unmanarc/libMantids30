@@ -1,6 +1,6 @@
 #include "iauth_fs.h"
 
-#include <cx2_file_vars/varsfile.h>
+#include <cx2_fs_vars/varsfile.h>
 
 #include <boost/filesystem.hpp>
 

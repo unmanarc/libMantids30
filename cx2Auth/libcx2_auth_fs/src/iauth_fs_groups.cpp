@@ -5,7 +5,7 @@
 
 #include <boost/filesystem.hpp>
 #include <cx2_thr_mutex/lock_shared.h>
-#include <cx2_file_vars/varsfile.h>
+#include <cx2_fs_vars/varsfile.h>
 
 using namespace CX2::Authorization;
 #ifdef WIN32

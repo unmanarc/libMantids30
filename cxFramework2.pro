@@ -3,7 +3,7 @@ CONFIG += ordered
 
 SUBDIRS += cx2Helpers
 SUBDIRS += cx2Threads
-SUBDIRS += cx2FileFormats
+SUBDIRS += cx2FS
 SUBDIRS += cx2Mem
 SUBDIRS += cx2Net
 SUBDIRS += cx2NetParsers

@@ -21,7 +21,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-TARGET = cx2_file_vars
+TARGET = cx2_fs_vars
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib

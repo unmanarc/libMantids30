@@ -35,7 +35,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-TARGET = cx2_file_hive7
+TARGET = cx2_fs_hive7
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib
