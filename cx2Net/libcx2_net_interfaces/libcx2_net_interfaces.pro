@@ -1,11 +1,12 @@
 QT       -= core gui
 
-!win32:SOURCES += \
-    src/virtualnetworkinterface.cpp \
-    src/netifconfig.cpp
-!win32:HEADERS += \
-    src/virtualnetworkinterface.h \
-    src/netifconfig.h
+SOURCES += src/virtualnetworkinterface.cpp
+HEADERS += src/virtualnetworkinterface.h
+
+SOURCES += src/netifconfig.cpp
+HEADERS += src/netifconfig.h
+
+win32:HEADERS += src/tap-windows.h src/netheaders-windows.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -19,6 +20,8 @@ INCLUDEPATH += src
 
 # C++ standard.
 include(../../cflags.pri)
+
+win32:LIBS+= -L$$PREFIX/lib  -lws2_32 -liphlpapi
 
 TARGET = cx2_net_interfaces
 TEMPLATE = lib

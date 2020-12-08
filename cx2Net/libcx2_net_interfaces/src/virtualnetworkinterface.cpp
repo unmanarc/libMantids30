@@ -2,35 +2,66 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/ioctl.h>
 
+#ifndef WIN32
+#include <sys/ioctl.h>
 #include <linux/if_tun.h>
-//#include <linux/if.h>
+#include <pwd.h>
+#include <grp.h>
+#include "netifconfig.h"
+#else
+#include "tap-windows.h"
+#include "iphlpapi.h"
+#endif
 
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <pwd.h>
-#include <grp.h>
-
-#include "netifconfig.h"
-
 using namespace CX2::Network::Interfaces;
 
 VirtualNetworkInterface::VirtualNetworkInterface()
 {
-    MTU = 1500;
+#ifdef WIN32
+    fd = INVALID_HANDLE_VALUE;
+#else
     fd = -1;
+#endif
 }
 
-int VirtualNetworkInterface::start(bool configure)
+VirtualNetworkInterface::~VirtualNetworkInterface()
 {
+    stop();
+}
+
+bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &netIfaceName)
+{
+    interfaceName = netIfaceName;
+
+#ifdef WIN32
+    this->NETCLSID = netIfaceName;
+    DWORD open_flags = 0;
+    devicePath = std::string(USERMODEDEVICEDIR) + netIfaceName + TAP_WIN_SUFFIX;
+    fd = CreateFileA(devicePath.c_str(), GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | open_flags, 0);
+    if (fd != INVALID_HANDLE_VALUE)
+        interfaceRealName=netIfaceName;
+    // We have the interface handler now...
+    if (fd != INVALID_HANDLE_VALUE && netcfg)
+    {
+        netcfg->openTAPW32Interface(fd, getWinTapAdapterIndex());
+        netcfg->setUP(true);
+        if (!netcfg->apply())
+        {
+            lastError = "Failed to configure the interface.";
+        }
+    }
+    return fd!=INVALID_HANDLE_VALUE;
+#else
     // Open the TUN/TAP device...
     if((fd = open("/dev/net/tun", O_RDWR)) < 0)
     {
         lastError = "/dev/net/tun error";
-        return fd;
+        return false;
     }
 
     struct ifreq ifr;
@@ -52,80 +83,52 @@ int VirtualNetworkInterface::start(bool configure)
     {
         lastError = "TUNSETIFF error";
         stop();
-        return -1;
+        return false;
     }
 
     interfaceRealName = ifr.ifr_name;
-    // Configure MTU and UP.
-
-    if (configure)
+    if (netcfg)
     {
-        NetIfConfig iface;
-        if (iface.openInterface(interfaceRealName))
+        if (netcfg->openInterface(interfaceRealName))
         {
-            iface.setMTU(MTU);
-            iface.setPromiscMode(true);
-            iface.setUP(true);
-            iface.apply();
+            netcfg->setUP(true);
+            if (netcfg->apply())
+                return true;
+            else
+            {
+                lastError = "Failed to configure the interface.";
+                return false;
+            }
         }
         else
         {
             lastError = iface.getLastError();
             stop();
-            return -1;
+            return false;
         }
     }
 
-    return fd;
+    return true;
+#endif
 }
 
-/*
-void
-tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode, const char *username, const char *groupname, const struct tuntap_options *options)
+void VirtualNetworkInterface::stop()
 {
-    struct tuntap *tt;
-
-    ALLOC_OBJ(tt, struct tuntap);
-    clear_tuntap(tt);
-    tt->type = dev_type_enum(dev, dev_type);
-    tt->options = *options;
-    open_tun(dev, dev_type, dev_node, tt);
-    if (ioctl(tt->fd, TUNSETPERSIST, persist_mode) < 0)
-    {
-        msg(M_ERR, "Cannot ioctl TUNSETPERSIST(%d) %s", persist_mode, dev);
-    }
-    if (username != NULL)
-    {
-        struct platform_state_user platform_state_user;
-
-        if (!platform_user_get(username, &platform_state_user))
-        {
-            msg(M_ERR, "Cannot get user entry for %s", username);
-        }
-        else if (ioctl(tt->fd, TUNSETOWNER, platform_state_user.pw->pw_uid) < 0)
-        {
-            msg(M_ERR, "Cannot ioctl TUNSETOWNER(%s) %s", username, dev);
-        }
-    }
-    if (groupname != NULL)
-    {
-        struct platform_state_group platform_state_group;
-
-        if (!platform_group_get(groupname, &platform_state_group))
-        {
-            msg(M_ERR, "Cannot get group entry for %s", groupname);
-        }
-        else if (ioctl(tt->fd, TUNSETGROUP, platform_state_group.gr->gr_gid) < 0)
-        {
-            msg(M_ERR, "Cannot ioctl TUNSETOWNER(%s) %s", groupname, dev);
-        }
-    }
-    close_tun(tt);
-    msg(M_INFO, "Persist state set to: %s", (persist_mode ? "ON" : "OFF"));
+#ifdef WIN32
+    if (fd == INVALID_HANDLE_VALUE)
+        return;
+    if (CloseHandle(fd) == 0)
+        lastError = "Error closing the device.";
+    fd = INVALID_HANDLE_VALUE;
+#else
+    if (fd>=0)
+        close(fd);
+    fd = -1;
+#endif
 }
-*/
 
 
+#ifndef WIN32
 ssize_t VirtualNetworkInterface::writePacket(const void *packet, unsigned int len)
 {
     std::unique_lock<std::mutex> lock(mutexWrite);
@@ -137,26 +140,9 @@ ssize_t VirtualNetworkInterface::readPacket(void *packet, unsigned int len)
     return read(fd,packet,len);
 }
 
-void VirtualNetworkInterface::stop()
+int VirtualNetworkInterface::getInterfaceHandler()
 {
-    if (fd>=0)
-        close(fd);
-    fd = -1;
-}
-
-void VirtualNetworkInterface::setInterfaceName(const std::string &value)
-{
-    interfaceName = value;
-}
-
-int VirtualNetworkInterface::getMTU() const
-{
-    return MTU;
-}
-
-void VirtualNetworkInterface::setMTU(const int &value)
-{
-    MTU = value;
+    return fd;
 }
 
 bool VirtualNetworkInterface::setPersistentMode(bool mode)
@@ -200,12 +186,87 @@ bool VirtualNetworkInterface::setGroup(const char *groupName)
     return false;
 }
 
-std::string VirtualNetworkInterface::getInterfaceRealName() const
+#else
+HANDLE VirtualNetworkInterface::getWinTapHandler()
 {
-    return interfaceRealName;
+    return fd;
 }
+
+WINTAP_VERSION VirtualNetworkInterface::getWinTapVersion()
+{
+    WINTAP_VERSION r;
+    // Versión del controlador.
+    unsigned long info[3] = { 0, 0, 0 };
+    DWORD len;
+    DeviceIoControl(fd, TAP_WIN_IOCTL_GET_VERSION, &info, sizeof(info),&info, sizeof(info), &len,NULL);
+    r.major = info[0];
+    r.minor = info[1];
+    r.subminor = info[2];
+    return r;
+}
+
+std::string VirtualNetworkInterface::getWinTapDeviceInfo()
+{
+    char devInfo[256];
+    devInfo[0]=0;
+    DWORD len;
+    DeviceIoControl(fd, TAP_WIN_IOCTL_GET_INFO, &devInfo, sizeof(devInfo),&devInfo, sizeof(devInfo), &len,NULL);
+    return devInfo;
+}
+
+std::string VirtualNetworkInterface::getWinTapLogLine()
+{
+    char devInfo[1024];
+    devInfo[0]=0;
+    DWORD len;
+    DeviceIoControl(fd, TAP_WIN_IOCTL_GET_LOG_LINE, &devInfo, sizeof(devInfo),&devInfo, sizeof(devInfo), &len,NULL);
+    return devInfo;
+}
+
+DWORD VirtualNetworkInterface::writePacket(const void *packet, DWORD len)
+{
+    std::unique_lock<std::mutex> lock(mutexWrite);
+
+    DWORD wlen = 0;
+    if (WriteFile(fd, packet, len, &wlen, NULL) == 0)
+        return 0;
+    return wlen;
+}
+
+int VirtualNetworkInterface::readPacket(void *packet, DWORD len)
+{
+    return ReadFile(fd, packet, sizeof packet, &len, NULL);
+}
+
+std::string VirtualNetworkInterface::getWinTapDevicePath() const
+{
+    return devicePath;
+}
+
+// Useful for network configuration:
+ULONG VirtualNetworkInterface::getWinTapAdapterIndex()
+{
+    std::wstring wNetCLSID(NETCLSID.begin(), NETCLSID.end());
+
+    ULONG interfaceIndex;
+    wchar_t wDevPath[256] = L"\\DEVICE\\TCPIP_";
+    lstrcatW(wDevPath,wNetCLSID.c_str());
+
+    if (GetAdapterIndex(wDevPath, &interfaceIndex) != NO_ERROR)
+        return ((DWORD)-1);
+    else
+        return (DWORD)interfaceIndex;
+}
+
+#endif
 
 std::string VirtualNetworkInterface::getLastError() const
 {
     return lastError;
 }
+
+std::string VirtualNetworkInterface::getInterfaceRealName() const
+{
+    return interfaceRealName;
+}
+

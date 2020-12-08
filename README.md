@@ -3,7 +3,8 @@
 C++11 Based Libraries  
   
 Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>   
-License: LGPLv3   
+Main License: LGPLv3   
+WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
 
 ## Functionality
 
