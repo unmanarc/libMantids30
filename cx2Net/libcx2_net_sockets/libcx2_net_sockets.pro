@@ -39,7 +39,7 @@ HEADERS += \
 !win32:SOURCES+=src/socket_unix.cpp
 !win32:HEADERS+=src/socket_unix.h
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_thr_threads2 -lcx2_mem_vars2 -lssl -lcrypto -lws2_32
+win32:LIBS+= -L$$PREFIX/lib -lcx2_thr_threads2 -lcx2_hlp_functions2 -lcx2_mem_vars2 -lssl -lcrypto -lws2_32
 
 # -lcx2_thr_mutex2 -lcx2_thr_safecontainers2 -lcx2_hlp_functions2
 
