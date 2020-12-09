@@ -5,6 +5,11 @@
 
 using namespace CX2::Memory::Containers;
 
+#ifdef WIN32
+#define FS_DIRSLASH "\\"
+#else
+#define FS_DIRSLASH "/"
+#endif
 
 B_MMAP::B_MMAP()
 {
@@ -157,7 +162,7 @@ std::string B_MMAP::getRandomFileName()
     randomStr.reserve(length);
     while(length--) randomStr += baseChars[pick(rg)];
 
-    return fsDirectoryPath + "/" + fsBaseFileName + "." + randomStr;
+    return fsDirectoryPath + FS_DIRSLASH + fsBaseFileName + "." + randomStr;
 }
 
 bool B_MMAP::createEmptyFile(const std::string &)

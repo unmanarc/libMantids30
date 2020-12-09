@@ -2,9 +2,19 @@
 using namespace CX2::Network::MIME;
 using namespace CX2;
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 MIME_Sub_Content::MIME_Sub_Content()
 {
+#ifdef WIN32
+    char tempPath[MAX_PATH+1];
+    GetTempPathA(MAX_PATH,tempPath);
+    setFsTmpFolder(tempPath);
+#else
     setFsTmpFolder("/tmp");
+#endif
 
     contentContainer = nullptr;
     replaceContentContainer(new Memory::Containers::B_Chunks);

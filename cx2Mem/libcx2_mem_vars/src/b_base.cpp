@@ -102,7 +102,15 @@ std::pair<bool,uint64_t> B_Base::truncate(const uint64_t &bytes)
 bool B_Base::clear0()
 {
     containerBytes = 0;
+
+#ifdef WIN32
+    char tempPath[MAX_PATH+1];
+    GetTempPathA(MAX_PATH,tempPath);
+    fsDirectoryPath = tempPath;
+#else
     fsDirectoryPath = "/tmp";
+#endif
+
     fsBaseFileName = "BinaryContainer-";
     return true;
 }
