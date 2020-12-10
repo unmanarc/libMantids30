@@ -102,7 +102,7 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
         }
         else
         {
-            lastError = iface.getLastError();
+            lastError = "Failed to open the interface during the network configuration.";
             stop();
             return false;
         }
