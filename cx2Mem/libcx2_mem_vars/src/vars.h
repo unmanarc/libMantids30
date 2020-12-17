@@ -6,7 +6,7 @@
 #include <list>
 #include <set>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
 class Vars
 {

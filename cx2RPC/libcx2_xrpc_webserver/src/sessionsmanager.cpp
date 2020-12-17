@@ -54,7 +54,7 @@ void SessionsManager::setSessionExpirationTime(const uint32_t &value)
     sessionExpirationTime = value;
 }
 
-std::string SessionsManager::addSession(Authorization::Session::IAuth_Session *session)
+std::string SessionsManager::addSession(CX2::Authentication::Session *session)
 {
     auto userDomain = session->getUserDomainPair();
     {

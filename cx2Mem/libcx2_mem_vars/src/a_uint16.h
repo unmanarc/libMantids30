@@ -1,17 +1,17 @@
 #ifndef A_UINT16_H
 #define A_UINT16_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <stdint.h>
-#include <atomic>
+#include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_UINT16: public Abstract
+class UINT16: public Var
 {
 public:
-    A_UINT16();
-    A_UINT16& operator=(uint16_t value)
+    UINT16();
+    UINT16& operator=(uint16_t value)
     {
         setValue(value);
         return *this;
@@ -20,13 +20,17 @@ public:
     uint16_t getValue();
     bool setValue(uint16_t value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
-    std::atomic<uint16_t> value;
+    uint16_t value;
+    Threads::Sync::Mutex_Shared mutex;
+
 };
 
 }}}

@@ -7,7 +7,7 @@
 #include <cx2_net_sockets/streamsocket.h>
 #include <cx2_net_sockets/socket_acceptor_poolthreaded.h>
 #include <cx2_net_sockets/socket_acceptor_multithreaded.h>
-#include <cx2_auth/iauth_domains.h>
+#include <cx2_auth/domains.h>
 #include <cx2_xrpc_common/methodsmanager.h>
 
 namespace CX2 { namespace RPC { namespace Web {
@@ -58,7 +58,7 @@ public:
      * @brief setAuthenticator Set the Authenticator for Login
      * @param value Authenticator Object
      */
-    void setAuthenticator(Authorization::IAuth_Domains *value);
+    void setAuthenticator(CX2::Authentication::Domains *value);
     /**
      * @brief setMethodManagers Set the Method Manager that will be used for calling methods
      * @param value method manager Object
@@ -144,7 +144,7 @@ public:
     // Internal Methods (ClientHandler->Webserver), don't use them
     ////////////////////////////////////////////////////////////////////////////////
     MethodsManager *getMethodManagers() const;
-    Authorization::IAuth_Domains *getAuthenticator() const;
+    CX2::Authentication::Domains *getAuthenticator() const;
     SessionsManager * getSessionsManager();
     ResourcesFilter *getResourceFilter() const;
     bool getUseFormattedJSONOutput() const;
@@ -179,7 +179,7 @@ private:
 
     sWebServerCallBack extCallBackOnConnect, extCallBackOnInitFailed, extCallBackOnTimeOut;
     ResourcesFilter * resourceFilter;
-    Authorization::IAuth_Domains * authenticator;
+    CX2::Authentication::Domains * authenticator;
     MethodsManager *methodManagers;
     SessionsManager sessionsManager;
     bool useFormattedJSONOutput, usingCSRFToken, useHTMLIEngine;

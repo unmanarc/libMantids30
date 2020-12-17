@@ -1,6 +1,6 @@
 #include "vars.h"
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
 Vars::Vars()
 {

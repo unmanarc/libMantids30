@@ -1,12 +1,12 @@
 QT       -= core gui
 
 SOURCES += \ 
-    src/iauth_volatile.cpp \
-    src/iauth_volatile_groups.cpp \
-    src/iauth_volatile_attributes.cpp \
-    src/iauth_volatile_accounts.cpp
+    src/manager_volatile.cpp \
+    src/manager_volatile_groups.cpp \
+    src/manager_volatile_attributes.cpp \
+    src/manager_volatile_accounts.cpp
 HEADERS += \  
-    src/iauth_volatile.h
+    src/manager_volatile.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

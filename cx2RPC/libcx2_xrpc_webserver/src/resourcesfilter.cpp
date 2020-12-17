@@ -11,7 +11,7 @@ void CX2::RPC::Web::ResourcesFilter::addFilter(const CX2::RPC::Web::sFilter &fil
     filters.push_back(filter);
 }
 
-sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Authorization::Session::IAuth_Session * hSession, CX2::Authorization::IAuth * authorizer)
+sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, CX2::Authentication::Session * hSession, CX2::Authentication::Manager * authorizer)
 {
     sFilterEvaluation evalRet;
 

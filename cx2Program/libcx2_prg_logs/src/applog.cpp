@@ -86,7 +86,7 @@ AppLog::~AppLog()
     {
         sqlite3_close(ppDb);
         ppDb = nullptr;
-        logMode = logMode & ~((uint32_t)LOG_MODE_SYSLOG);
+        logMode = logMode & ~((uint32_t)MODE_SYSLOG);
     }
 #endif
     if (isUsingSyslog())
@@ -216,13 +216,13 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             syslog( LOG_INFO,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             syslog( LOG_WARNING,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "%s",buffer);
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "%s",buffer);
 #endif
     }
@@ -234,15 +234,15 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
 
     if (isUsingStandardLog())
     {
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             printStandardLog(stdout,module,user,ip,buffer,LOG_COLOR_BOLD,"INFO");
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             printStandardLog(stdout,module,user,ip,buffer,LOG_COLOR_BLUE,"WARN");
-        else if ((logSeverity == LOG_LEVEL_DEBUG || logSeverity == LOG_LEVEL_DEBUG1) && debug)
+        else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && debug)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_GREEN,"DEBUG");
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_RED,"CRIT");
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
 #ifndef NOSQLITE
@@ -274,13 +274,13 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             syslog( LOG_INFO,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             syslog( LOG_WARNING,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "%s",buffer);
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "%s",buffer);
 #endif
     }
@@ -292,15 +292,15 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
 
     if (isUsingStandardLog())
     {
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             printStandardLog(stdout,module,user,ip,buffer,LOG_COLOR_BOLD,"INFO");
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             printStandardLog(stdout,module,user,ip,buffer,LOG_COLOR_BLUE,"WARN");
-        else if ((logSeverity == LOG_LEVEL_DEBUG || logSeverity == LOG_LEVEL_DEBUG1) && debug)
+        else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && debug)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_GREEN,"DEBUG");
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_RED,"CRIT");
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
 #ifndef NOSQLITE
@@ -331,13 +331,13 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             syslog( LOG_INFO,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             syslog( LOG_WARNING,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "%s",buffer);
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "%s",buffer);
 #endif
     }
@@ -349,15 +349,15 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
 
     if (isUsingStandardLog())
     {
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             printStandardLog(stdout,module,"",ip,buffer,LOG_COLOR_BOLD,"INFO");
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             printStandardLog(stdout,module,"",ip,buffer,LOG_COLOR_BLUE,"WARN");
-        else if ((logSeverity == LOG_LEVEL_DEBUG || logSeverity == LOG_LEVEL_DEBUG1) && debug)
+        else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && debug)
             printStandardLog(stderr,module,"",ip,buffer,LOG_COLOR_GREEN,"DEBUG");
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             printStandardLog(stderr,module,"",ip,buffer,LOG_COLOR_RED,"CRIT");
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,"",ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
 #ifndef NOSQLITE
@@ -388,13 +388,13 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             syslog( LOG_INFO,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             syslog( LOG_WARNING,"%s", buffer);
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "%s",buffer);
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "%s",buffer);
 #endif
     }
@@ -406,15 +406,15 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
 
     if (isUsingStandardLog())
     {
-        if (logSeverity == LOG_LEVEL_INFO)
+        if (logSeverity == LEVEL_INFO)
             printStandardLog(stdout,module,"","",buffer,LOG_COLOR_BOLD,"INFO");
-        else if (logSeverity == LOG_LEVEL_WARN)
+        else if (logSeverity == LEVEL_WARN)
             printStandardLog(stdout,module,"","",buffer,LOG_COLOR_BLUE,"WARN");
-        else if ((logSeverity == LOG_LEVEL_DEBUG || logSeverity == LOG_LEVEL_DEBUG1) && debug)
+        else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && debug)
             printStandardLog(stderr,module,"","",buffer,LOG_COLOR_GREEN,"DEBUG");
-        else if (logSeverity == LOG_LEVEL_CRITICAL)
+        else if (logSeverity == LEVEL_CRITICAL)
             printStandardLog(stderr,module,"","",buffer,LOG_COLOR_RED,"CRIT");
-        else if (logSeverity == LOG_LEVEL_ERR)
+        else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,"","",buffer,LOG_COLOR_PURPLE,"ERR");
     }
 #ifndef NOSQLITE
@@ -450,18 +450,18 @@ bool AppLog::sqliteTableExist(const std::string &table)
 
 bool AppLog::isUsingSyslog()
 {
-    return (logMode & LOG_MODE_SYSLOG) == LOG_MODE_SYSLOG;
+    return (logMode & MODE_SYSLOG) == MODE_SYSLOG;
 }
 
 bool AppLog::isUsingStandardLog()
 {
-    return (logMode & LOG_MODE_STANDARD) == LOG_MODE_STANDARD;
+    return (logMode & MODE_STANDARD) == MODE_STANDARD;
 }
 
 bool AppLog::isUsingSqliteLog()
 {
 #ifndef NOSQLITE
-    return (logMode & LOG_MODE_SQLITE) == LOG_MODE_SQLITE;
+    return (logMode & MODE_SQLITE) == MODE_SQLITE;
 #else
     return false;
 #endif
@@ -587,7 +587,7 @@ bool AppLog::sqliteExecQueryVA(const std::string& query, int _va_size, ...)
 
 bool AppLog::isUsingWindowsEventLog()
 {
-    return (logMode & LOG_MODE_WINEVENTS) == LOG_MODE_WINEVENTS;
+    return (logMode & MODE_WINEVENTS) == MODE_WINEVENTS;
 }
 
 void AppLog::dropLog()
@@ -787,7 +787,7 @@ std::list<sLogElement> AppLog::getLogView(unsigned int id_from, unsigned int id_
 #ifndef NOSQLITE
     string xsql;
 
-    if (logLevelFilter == LOG_LEVEL_ALL)
+    if (logLevelFilter == LEVEL_ALL)
         xsql = "SELECT id,date as TEXT,severity,module,user,ip,message AS TEXT FROM logs_v1 WHERE id >= '" + to_string(id_from) + "' and id <= '" + to_string(id_to) + "';";
     else
         xsql = "SELECT id,date as TEXT,severity,module,user,ip,message AS TEXT FROM logs_v1 WHERE id >= '" + to_string(id_from) + "' AND id <= '" + to_string(id_to) + "' and severity = '" + to_string((unsigned int) logLevelFilter) + "';";

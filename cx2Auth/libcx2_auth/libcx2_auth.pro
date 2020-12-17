@@ -1,20 +1,21 @@
 QT       -= core gui
 
-SOURCES +=  src/iauth_domains.cpp \
-    src/iauth.cpp \
-    src/iauth_methods_attributes.cpp \
-    src/iauth_session.cpp \
-    src/iauth_validation_account.cpp
+SOURCES +=  \
+    src/accountsecret_validation.cpp \
+    src/domains.cpp \
+    src/manager.cpp \
+    src/methodsattributes_map.cpp \
+    src/session.cpp
 HEADERS += \
-    src/iauth.h \
-    src/iauth_domains.h \
-    src/iauth_methods_attributes.h \
-    src/iauth_session.h \
-    src/iauth_validation_account.h \
-    src/datastructs/ds_auth_modes.h \
-    src/datastructs/ds_auth_reasons.h \
-    src/datastructs/ds_auth_passworddata.h \
-    src/datastructs/ds_auth_passmodes.h
+    src/accountsecret_validation.h \
+    src/datastructs/ds_auth_function.h \
+    src/datastructs/ds_auth_mode.h \
+    src/datastructs/ds_auth_reason.h \
+    src/datastructs/ds_auth_secret.h \
+    src/domains.h \
+    src/manager.h \
+    src/methodsattributes_map.h \
+    src/session.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

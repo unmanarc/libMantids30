@@ -1,32 +1,38 @@
 #include "a_double.h"
 #include <stdexcept>      // std::invalid_argument
+#include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
-A_DOUBLE::A_DOUBLE()
+DOUBLE::DOUBLE()
 {
     value = 0;
-    setVarType(ABSTRACT_DOUBLE);
+    setVarType(TYPE_DOUBLE);
 
 }
 
-double A_DOUBLE::getValue()
+double DOUBLE::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-void A_DOUBLE::setValue(const double &value)
+void DOUBLE::setValue(const double &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
     this->value = value;
 }
 
-std::string A_DOUBLE::toString()
+std::string DOUBLE::toString()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return std::to_string(value);
 }
 
-bool A_DOUBLE::fromString(const std::string &value)
+bool DOUBLE::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     try
     {
         this->value = std::stod( value ) ;
@@ -42,9 +48,11 @@ bool A_DOUBLE::fromString(const std::string &value)
     }
 }
 
-Abstract *A_DOUBLE::protectedCopy()
+Var *DOUBLE::protectedCopy()
 {
-    A_DOUBLE * var = new A_DOUBLE;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    DOUBLE * var = new DOUBLE;
     if (var) *var = this->value;
     return var;
 }

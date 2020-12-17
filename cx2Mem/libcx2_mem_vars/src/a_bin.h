@@ -1,10 +1,10 @@
 #ifndef A_BIN_H
 #define A_BIN_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
 struct sBinContainer {
     sBinContainer()
@@ -17,15 +17,15 @@ struct sBinContainer {
     }
 
     char * ptr;
-    uint32_t dataSize;
+    size_t dataSize;
     Threads::Sync::Mutex_Shared mutex;
 };
 
-class A_BIN : public Abstract
+class BINARY : public Var
 {
 public:
-    A_BIN();
-    virtual ~A_BIN() override;
+    BINARY();
+    virtual ~BINARY() override;
 
     /**
      * @brief getValue Get container memory position
@@ -37,11 +37,14 @@ public:
     std::string toString() override;
     bool fromString(const std::string & value) override;
 
+    void * getDirectMemory() override { return &value; }
+
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
     sBinContainer value;
+
 };
 }}}
 

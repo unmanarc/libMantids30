@@ -1,31 +1,41 @@
 #include "a_uint64.h"
 #include <stdexcept>      // std::invalid_argument
-using namespace CX2::Memory::Vars;
+#include <cx2_thr_mutex/lock_shared.h>
 
-A_UINT64::A_UINT64()
+using namespace CX2::Memory::Abstract;
+
+UINT64::UINT64()
 {
     value = 0;
-    setVarType(ABSTRACT_UINT64);
+    setVarType(TYPE_UINT64);
 }
 
-uint64_t A_UINT64::getValue()
+uint64_t UINT64::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
+
     return value;
 }
 
-bool A_UINT64::setValue(const uint64_t &value)
+bool UINT64::setValue(const uint64_t &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     this->value = value;
     return true;
 }
 
-std::string A_UINT64::toString()
+std::string UINT64::toString()
 {
+    Threads::Sync::Lock_RD lock(mutex);
+
     return std::to_string(value);
 }
 
-bool A_UINT64::fromString(const std::string &value)
+bool UINT64::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     if (value.empty())
     {
         this->value = 0;
@@ -38,9 +48,11 @@ bool A_UINT64::fromString(const std::string &value)
     return true;
 }
 
-Abstract *A_UINT64::protectedCopy()
+Var *UINT64::protectedCopy()
 {
-    A_UINT64 * var = new A_UINT64;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    UINT64 * var = new UINT64;
     if (var) *var = this->value;
     return var;
 }

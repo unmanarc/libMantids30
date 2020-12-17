@@ -19,7 +19,7 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include <cx2_mem_vars/abstract.h>
+#include <cx2_mem_vars/a_var.h>
 
 using namespace std;
 
@@ -65,10 +65,10 @@ int StartApplication(int argc, char *argv[], Application *_app)
 
     // Local default cmd options...
 #ifndef WIN32
-    globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", CX2::Memory::Vars::ABSTRACT_BOOL );
+    globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", CX2::Memory::Abstract::TYPE_BOOL );
 #endif
-    globalArgs.addCommandLineOption("Other Options"  , 'v', "verbose", "Set verbosity level."   , "0", CX2::Memory::Vars::ABSTRACT_UINT8 );
-    globalArgs.addCommandLineOption("Other Options"  , 'h', "help"   , "Show information usage.", "0", CX2::Memory::Vars::ABSTRACT_BOOL  );
+    globalArgs.addCommandLineOption("Other Options"  , 'v', "verbose", "Set verbosity level."   , "0", CX2::Memory::Abstract::TYPE_UINT8 );
+    globalArgs.addCommandLineOption("Other Options"  , 'h', "help"   , "Show information usage.", "0", CX2::Memory::Abstract::TYPE_BOOL  );
 
     // Init vars...
     appPTR->_initvars(argc,argv, &globalArgs);

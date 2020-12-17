@@ -6,8 +6,8 @@
 
 #include <json/json.h>
 
-#include <cx2_auth/iauth_domains.h>
-#include <cx2_auth/iauth_methods_attributes.h>
+#include <cx2_auth/domains.h>
+#include <cx2_auth/methodsattributes_map.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 
 #include "validation_codes.h"
@@ -19,8 +19,8 @@ struct sRPCParameters
     std::string domainName;
     void * rpcMethodsCaller;
     void * connectionSender;
-    Authorization::IAuth_Domains *authDomains;
-    CX2::Authorization::Session::IAuth_Session *session;
+    CX2::Authentication::Domains *authDomains;
+    CX2::Authentication::Session *session;
     std::string methodName;
     Json::Value payload;
     uint64_t requestId;
@@ -31,7 +31,7 @@ struct sRPCMethod
     /**
      * @brief Function pointer.
      */
-    Json::Value (*rpcMethod)(void * obj, CX2::Authorization::IAuth *, CX2::Authorization::Session::IAuth_Session * session, const Json::Value & parameters);
+    Json::Value (*rpcMethod)(void * obj, CX2::Authentication::Manager *, CX2::Authentication::Session * session, const Json::Value & parameters);
     /**
      * @brief obj object to pass
      */
@@ -60,7 +60,7 @@ public:
      * @param answer
      * @return 0 if succeed, -4 if method not found.
      */
-    int runRPCMethod(Authorization::IAuth_Domains *, const std::string &domainName, CX2::Authorization::Session::IAuth_Session *auth, const std::string & methodName, const Json::Value & payload, Json::Value *payloadOut);
+    int runRPCMethod(CX2::Authentication::Domains *, const std::string &domainName, CX2::Authentication::Session *auth, const std::string & methodName, const Json::Value & payload, Json::Value *payloadOut);
     /**
      * @brief validateRPCMethod
      * @param auth
@@ -69,13 +69,13 @@ public:
      * @param extraInfoOut
      * @return
      */
-    eMethodValidationCodes validateRPCMethodPerms(Authorization::IAuth *auth, CX2::Authorization::Session::IAuth_Session *session, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, Json::Value * reasons);
+    eMethodValidationCodes validateRPCMethodPerms(Authentication::Manager *auth, CX2::Authentication::Session *session, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, Json::Value * reasons);
 
     /**
      * @brief getMethodsAttribs Use for method initialization only.
      * @return methods required attributes
      */
-    CX2::Authorization::Validation::IAuth_Methods_Attributes * getMethodsAttribs();
+    CX2::Authentication::MethodsAttributes_Map * getMethodsAttribs();
 
 
 private:
@@ -86,7 +86,7 @@ private:
     // method name -> method.
     std::map<std::string,sRPCMethod> methods;
 
-    CX2::Authorization::Validation::IAuth_Methods_Attributes methodsAttribs;
+    CX2::Authentication::MethodsAttributes_Map methodsAttribs;
 
     // lock for methods manipulation...
     Threads::Sync::Mutex_Shared smutexMethods;

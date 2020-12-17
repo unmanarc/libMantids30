@@ -11,7 +11,7 @@
 
 using namespace std;
 using namespace CX2::Application::Arguments;
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
 GlobalArguments::GlobalArguments()
 {
@@ -22,7 +22,7 @@ GlobalArguments::GlobalArguments()
     inifiniteWaitAtEnd = false;
 }
 
-bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar, const string &optName, const string &description, const string &defaultValue, const AVarType & varType, bool mandatory)
+bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar, const string &optName, const string &description, const string &defaultValue, const Type & varType, bool mandatory)
 {
     if (getProgramOption(optChar)) return false;
     if (getProgramOption(optName)) return false;
@@ -42,13 +42,13 @@ bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar,
 
 bool GlobalArguments::getCommandLineOptionBooleanValue(const string &optionName)
 {
-    Abstract * var = getCommandLineOptionValue(optionName);
+    Var * var = getCommandLineOptionValue(optionName);
     if (!var) return false;
-    if (var->getVarType() != ABSTRACT_BOOL) return false;
-    return ((A_BOOL *)var)->getValue();
+    if (var->getVarType() != TYPE_BOOL) return false;
+    return ((BOOL *)var)->getValue();
 }
 
-Abstract *GlobalArguments::getCommandLineOptionValue(const string &optionName)
+Var *GlobalArguments::getCommandLineOptionValue(const string &optionName)
 {
     sProgCMDOpts * opt = getProgramOption(optionName);
 
@@ -57,11 +57,11 @@ Abstract *GlobalArguments::getCommandLineOptionValue(const string &optionName)
     return opt->parsedOption.front();
 }
 
-std::list<Abstract *> GlobalArguments::getCommandLineOptionValues(const string &optionName)
+std::list<Var *> GlobalArguments::getCommandLineOptionValues(const string &optionName)
 {
     sProgCMDOpts * opt = getProgramOption(optionName);
 
-    std::list<Abstract *> v;
+    std::list<Var *> v;
     if (!opt) return v;
 
     if (!opt->parsedOption.size())
@@ -88,12 +88,12 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             char val[2];
             val[0] = optIter->val;
             val[1] = 0;
-            optString += string(val) + (optIter->varType==ABSTRACT_BOOL?"::":":");
+            optString += string(val) + (optIter->varType==TYPE_BOOL?"::":":");
         }
         // Put the long option
-        longOpts[i++] = { optIter->name.c_str(), optIter->varType==ABSTRACT_BOOL?optional_argument:required_argument, nullptr, optIter->val };
+        longOpts[i++] = { optIter->name.c_str(), optIter->varType==TYPE_BOOL?optional_argument:required_argument, nullptr, optIter->val };
         // Put the default values:
-        optIter->defaultValueVar = Abstract::makeAbstract(optIter->varType, optIter->defaultValue);
+        optIter->defaultValueVar = Var::makeAbstract(optIter->varType, optIter->defaultValue);
     }
     longOpts[cmdOptions.size()] = { nullptr       , no_argument      , nullptr, 0 };
 
@@ -117,9 +117,9 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             sProgCMDOpts * optValue = getProgramOption(opt);
             if (optValue)
             {
-                Abstract * absVar = Abstract::makeAbstract(optValue->varType, "");
+                Var * absVar = Var::makeAbstract(optValue->varType, "");
 
-                if (( (optarg!=nullptr && !optarg[0]) || !optarg) && optValue->varType == ABSTRACT_BOOL)
+                if (( (optarg!=nullptr && !optarg[0]) || !optarg) && optValue->varType == TYPE_BOOL)
                 {
                     absVar->fromString("1");
                 }
@@ -194,10 +194,10 @@ void GlobalArguments::printHelp()
                 printf(printer.c_str(), v->name.c_str());
             }
 
-            printf(v->varType != ABSTRACT_BOOL ? " <value>" : "        ");
+            printf(v->varType != TYPE_BOOL ? " <value>" : "        ");
 
             if (!v->mandatory)
-                printf(" : %s (default: %s)\n", v->description.c_str(), v->varType != ABSTRACT_BOOL ? v->defaultValue.c_str() : (v->defaultValue!="0"? "true" : "false") );
+                printf(" : %s (default: %s)\n", v->description.c_str(), v->varType != TYPE_BOOL ? v->defaultValue.c_str() : (v->defaultValue!="0"? "true" : "false") );
             else
                 printf(" : %s (required argument)\n", v->description.c_str());
         }
@@ -205,7 +205,7 @@ void GlobalArguments::printHelp()
     }
 }
 
-bool GlobalArguments::addStaticVariable(const string &name, Abstract *var)
+bool GlobalArguments::addStaticVariable(const string &name, Var *var)
 {
     Threads::Sync::Lock_RW lock(mutex_vars);
     if (variables.find(name) == variables.end())
@@ -216,7 +216,7 @@ bool GlobalArguments::addStaticVariable(const string &name, Abstract *var)
     return true;
 }
 
-Abstract *GlobalArguments::getStaticVariable(const string &name)
+Var *GlobalArguments::getStaticVariable(const string &name)
 {
     Threads::Sync::Lock_RD lock(mutex_vars);
     if (variables.find(name) == variables.end())
@@ -284,7 +284,7 @@ uint32_t GlobalArguments::getMaxOptNameSize(std::list<sProgCMDOpts *> options)
     unsigned int max = 1;
     for (sProgCMDOpts * x : options)
     {
-        uint32_t cursize = x->name.size(); // + (x->varType!=ABSTRACT_BOOL? strlen(" <value>") : 0 );
+        uint32_t cursize = x->name.size(); // + (x->varType!=TYPE_BOOL? strlen(" <value>") : 0 );
         if (cursize>max) max = cursize;
     }
     return max;

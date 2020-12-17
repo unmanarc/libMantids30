@@ -34,7 +34,7 @@ public:
      * @param _logName Log Name
      * @param _logMode Log mode (or combination)
      */
-    AppLog(const std::string & _appName, const std::string & _logName, unsigned int _logMode = LOG_MODE_STANDARD);
+    AppLog(const std::string & _appName, const std::string & _logName, unsigned int _logMode = MODE_STANDARD);
     /**
      * Class destructor.
      */
@@ -98,7 +98,7 @@ public:
      * @param logLevelFilter get only specific log level
      * @return list of log elements
      */
-    std::list<sLogElement>  getLogView(unsigned int id_from, unsigned int id_to,const std::string & filter, eLogLevels logLevelFilter = LOG_LEVEL_ALL);
+    std::list<sLogElement>  getLogView(unsigned int id_from, unsigned int id_to,const std::string & filter, eLogLevels logLevelFilter = LEVEL_ALL);
 
     bool getUsingPrintDate() const;
     void setUsingPrintDate(bool value);

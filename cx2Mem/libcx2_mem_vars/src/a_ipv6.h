@@ -1,7 +1,7 @@
 #ifndef A_IPV6_H
 #define A_IPV6_H
 
-#include "abstract.h"
+#include "a_var.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #include <in6addr.h>
@@ -10,14 +10,14 @@
 #endif
 #include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_IPV6: public Abstract
+class IPV6: public Var
 {
 public:
-    A_IPV6();
-    ~A_IPV6() override;
-    A_IPV6& operator=(const in6_addr & value)
+    IPV6();
+    ~IPV6() override;
+    IPV6& operator=(const in6_addr & value)
     {
         setValue(value);
         return *this;
@@ -26,14 +26,17 @@ public:
     in6_addr getValue();
     bool setValue(const in6_addr & value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
     in6_addr value;
     Threads::Sync::Mutex_Shared mutex;
+
 };
 
 }}}

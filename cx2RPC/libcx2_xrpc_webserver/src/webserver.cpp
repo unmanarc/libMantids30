@@ -214,7 +214,7 @@ SessionsManager *WebServer::getSessionsManager()
     return &sessionsManager;
 }
 
-Authorization::IAuth_Domains *WebServer::getAuthenticator() const
+CX2::Authentication::Domains *WebServer::getAuthenticator() const
 {
     return authenticator;
 }
@@ -229,7 +229,7 @@ void WebServer::setMethodManagers(MethodsManager *value)
     methodManagers = value;
 }
 
-void WebServer::setAuthenticator(Authorization::IAuth_Domains *value)
+void WebServer::setAuthenticator(CX2::Authentication::Domains *value)
 {
     authenticator = value;
 }

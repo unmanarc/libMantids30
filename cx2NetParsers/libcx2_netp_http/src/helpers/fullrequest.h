@@ -23,7 +23,7 @@ struct sHTTP_RequestData
     std::string USER_AGENT;
 
     // Proceced information:
-    Memory::Vars::Vars *VARS_GET, *VARS_POST;
+    Memory::Abstract::Vars *VARS_GET, *VARS_POST;
     MIME::MIME_HeaderOption * VARS_COOKIES;
 
     // Original Values:

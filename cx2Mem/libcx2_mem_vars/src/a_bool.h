@@ -1,17 +1,16 @@
 #ifndef A_BOOL_H
 #define A_BOOL_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <stdint.h>
-#include <atomic>
+#include <cx2_thr_mutex/mutex_shared.h>
 
-
-namespace CX2 { namespace Memory { namespace Vars {
-class A_BOOL: public Abstract
+namespace CX2 { namespace Memory { namespace Abstract {
+class BOOL: public Var
 {
 public:
-    A_BOOL();
-    A_BOOL& operator=(bool value)
+    BOOL();
+    BOOL& operator=(bool value)
     {
         setValue(value);
         return *this;
@@ -20,12 +19,16 @@ public:
     bool getValue();
     bool setValue(bool value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 private:
-    std::atomic<bool> value;
+    bool value;
+    Threads::Sync::Mutex_Shared mutex;
+
 };
 }}}
 #endif // A_BOOL_H

@@ -70,7 +70,7 @@ public:
 
     eHTTP_ContainerType getContainerType() const;
 
-    Memory::Vars::Vars * postVars();
+    Memory::Abstract::Vars * postVars();
 
     MIME::MIME_Vars * getMultiPartVars();
     HTTP_URLVars * getUrlVars();

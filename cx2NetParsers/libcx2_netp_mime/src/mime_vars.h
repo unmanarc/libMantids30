@@ -21,7 +21,7 @@ enum eMIME_VarStat
     MP_STATE_CONTENT
 };
 
-class MIME_Vars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
+class MIME_Vars : public Memory::Abstract::Vars, public Memory::Streams::Parsing::Parser
 {
 public:
     MIME_Vars(Memory::Streams::Streamable *value= nullptr);

@@ -52,7 +52,7 @@ public:
      * @param source POST/GET option
      * @return
      */
-    Memory::Vars::Vars * getRequestVars(const HTTP_VarSource &source);
+    Memory::Abstract::Vars * getRequestVars(const HTTP_VarSource &source);
     /**
      * @brief getRequestVirtualHost Requested Virtual Host
      * @return virtual hostname string.

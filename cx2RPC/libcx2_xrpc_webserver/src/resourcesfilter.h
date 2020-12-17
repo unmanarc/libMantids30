@@ -3,7 +3,7 @@
 
 #include <string>
 #include <list>
-#include <cx2_auth/iauth_session.h>
+#include <cx2_auth/session.h>
 
 #include <boost/regex.hpp>
 
@@ -50,7 +50,7 @@ public:
 
     void addFilter(const sFilter & filter);
 
-    sFilterEvaluation evaluateAction(const std::string & uri, Authorization::Session::IAuth_Session *hSession, Authorization::IAuth *authorizer);
+    sFilterEvaluation evaluateAction(const std::string & uri, CX2::Authentication::Session *hSession, Authentication::Manager *authorizer);
 private:
     std::list<sFilter> filters;
 };

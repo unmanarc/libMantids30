@@ -10,13 +10,16 @@ SOURCES += \
     src/a_int8.cpp \
     src/a_ipv4.cpp \
     src/a_ipv6.cpp \
+    src/a_map.cpp \
+    src/a_ptr.cpp \
     src/a_string.cpp \
     src/a_stringlist.cpp \
     src/a_uint16.cpp \
     src/a_uint32.cpp \
     src/a_uint64.cpp \
     src/a_uint8.cpp \
-    src/abstract.cpp \
+    src/a_var.cpp \
+    src/a_varchar.cpp \
     src/b_base.cpp \
     src/b_chunks.cpp \
     src/b_mem.cpp \
@@ -28,9 +31,9 @@ SOURCES += \
     src/streamablefile.cpp \
     src/streamparser.cpp \
     src/substreamparser.cpp \
-    src/vars.cpp \
-    src/abstractvars.cpp
+    src/vars.cpp
 HEADERS += \
+    src/a_allvars.h \
     src/a_bin.h \
     src/a_bool.h \
     src/a_double.h \
@@ -40,13 +43,16 @@ HEADERS += \
     src/a_int8.h \
     src/a_ipv4.h \
     src/a_ipv6.h \
+    src/a_map.h \
+    src/a_ptr.h \
     src/a_string.h \
     src/a_stringlist.h \
     src/a_uint16.h \
     src/a_uint32.h \
     src/a_uint64.h \
     src/a_uint8.h \
-    src/abstract.h \
+    src/a_var.h \
+    src/a_varchar.h \
     src/b_base.h \
     src/b_chunk.h \
     src/b_chunks.h \
@@ -59,8 +65,7 @@ HEADERS += \
     src/streamablefile.h \
     src/streamparser.h \
     src/substreamparser.h \
-    src/vars.h \
-    src/abstractvars.h
+    src/vars.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

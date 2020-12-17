@@ -6,10 +6,10 @@ SUBDIRS += libcx2_auth
 libcx2_auth.subdir = libcx2_auth
 
 # DB based authenticator (sqlite3 based)
-SUBDIRS += libcx2_auth_sqlite3
+#SUBDIRS += libcx2_auth_sqlite3
 # Project folders:
-libcx2_auth_sqlite3.subdir    = libcx2_auth_sqlite3
-libcx2_auth_sqlite3.depends   = libcx2_auth
+#libcx2_auth_sqlite3.subdir    = libcx2_auth_sqlite3
+#libcx2_auth_sqlite3.depends   = libcx2_auth
 
 # Internal based authenticator (filesystem based)
 SUBDIRS += libcx2_auth_fs

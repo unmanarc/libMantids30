@@ -6,8 +6,8 @@ SUBDIRS += libcx2_fs_vars
 libcx2_fs_vars.subdir = libcx2_fs_vars
 
 # Library for accesing hive7 format
-SUBDIRS += libcx2_fs_hive7
+#SUBDIRS += libcx2_fs_hive7
 # Project folders:
-libcx2_fs_hive7.subdir = libcx2_fs_hive7
+#libcx2_fs_hive7.subdir = libcx2_fs_hive7
 
 #END-

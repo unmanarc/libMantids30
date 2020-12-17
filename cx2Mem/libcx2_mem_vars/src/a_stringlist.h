@@ -1,18 +1,18 @@
 #ifndef A_STRINGLIST_H
 #define A_STRINGLIST_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <list>
 #include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_STRINGLIST: public Abstract
+class STRINGLIST: public Var
 {
 public:
-    A_STRINGLIST();
-    ~A_STRINGLIST() override;
-    A_STRINGLIST& operator=(const std::list<std::string> & value)
+    STRINGLIST();
+    ~STRINGLIST() override;
+    STRINGLIST& operator=(const std::list<std::string> & value)
     {
         setValue(value);
         return *this;
@@ -20,10 +20,12 @@ public:
     std::list<std::string> getValue();
     bool setValue(const std::list<std::string> &value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
     std::list<std::string> value;

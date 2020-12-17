@@ -1,16 +1,16 @@
 #ifndef A_DOUBLE_H
 #define A_DOUBLE_H
-#include "abstract.h"
+#include "a_var.h"
 
-#include <atomic>
+#include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_DOUBLE: public Abstract
+class DOUBLE: public Var
 {
 public:
-    A_DOUBLE();
-    A_DOUBLE& operator=(double value)
+    DOUBLE();
+    DOUBLE& operator=(double value)
     {
         setValue(value);
         return *this;
@@ -19,13 +19,18 @@ public:
     double getValue();
     void setValue(const double & value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
-    std::atomic<double> value;
+    double value;
+    Threads::Sync::Mutex_Shared mutex;
+
+
 };
 
 }}}

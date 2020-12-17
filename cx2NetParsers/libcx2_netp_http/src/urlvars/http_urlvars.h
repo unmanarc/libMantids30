@@ -15,7 +15,7 @@ enum eHTTP_URLVarStat
     URLV_STAT_WAITING_CONTENT
 };
 
-class HTTP_URLVars : public Memory::Vars::Vars, public Memory::Streams::Parsing::Parser
+class HTTP_URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parsing::Parser
 {
 public:
     HTTP_URLVars(Memory::Streams::Streamable *value = nullptr);

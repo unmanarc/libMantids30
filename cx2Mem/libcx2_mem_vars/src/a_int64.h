@@ -1,17 +1,17 @@
 #ifndef A_INT64_H
 #define A_INT64_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <stdint.h>
-#include <atomic>
+#include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_INT64: public Abstract
+class INT64: public Var
 {
 public:
-    A_INT64();
-    A_INT64& operator=(const int64_t &value)
+    INT64();
+    INT64& operator=(const int64_t &value)
     {
         setValue(value);
         return *this;
@@ -20,13 +20,16 @@ public:
     int64_t getValue();
     bool setValue(const int64_t &value);
 
+    void * getDirectMemory() override { return &value; }
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
-    std::atomic<int64_t> value;
+    int64_t value;
+    Threads::Sync::Mutex_Shared mutex;
+
 };
 
 }}}

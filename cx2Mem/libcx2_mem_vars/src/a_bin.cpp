@@ -2,25 +2,25 @@
 #include <string.h>
 #include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
-A_BIN::A_BIN()
+BINARY::BINARY()
 {
-    setVarType(ABSTRACT_BIN);
+    setVarType(TYPE_BIN);
 }
 
-A_BIN::~A_BIN()
+BINARY::~BINARY()
 {
 
 }
 
-sBinContainer *A_BIN::getValue()
+sBinContainer *BINARY::getValue()
 {
     value.mutex.lock();
     return &value;
 }
 
-bool A_BIN::setValue(sBinContainer *value)
+bool BINARY::setValue(sBinContainer *value)
 {
     Threads::Sync::Lock_RW lock(this->value.mutex);
     this->value.ptr = new char[value->dataSize];
@@ -30,14 +30,14 @@ bool A_BIN::setValue(sBinContainer *value)
     return true;
 }
 
-std::string A_BIN::toString()
+std::string BINARY::toString()
 {
     Threads::Sync::Lock_RD lock(this->value.mutex);
     std::string x( ((char *)value.ptr), value.dataSize);
     return x;
 }
 
-bool A_BIN::fromString(const std::string &value)
+bool BINARY::fromString(const std::string &value)
 {
     Threads::Sync::Lock_RW lock(this->value.mutex);
     this->value.ptr = new char[value.size()+1];
@@ -47,10 +47,10 @@ bool A_BIN::fromString(const std::string &value)
     return true;
 }
 
-Abstract *A_BIN::protectedCopy()
+Var *BINARY::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(this->value.mutex);
-    A_BIN * var = new A_BIN;
+    BINARY * var = new BINARY;
     if (!var->setValue(&(this->value)))
     {
         delete var;

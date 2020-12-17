@@ -35,7 +35,7 @@ public:
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
      */
-    Memory::Vars::Vars * getVarsPTR();
+    Memory::Abstract::Vars * getVarsPTR();
 
     //////////////////////////////////////////////////
     // Local getters/setters.

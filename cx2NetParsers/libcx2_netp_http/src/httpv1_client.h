@@ -48,11 +48,11 @@ public:
      */
     void setClientUserAgent(const std::string &userAgent);
     /**
-     * @brief setAuthorizationBasic
+     * @brief setAuthenticationBasic
      * @param user
      * @param pass
      */
-    void setBasicAuthorization(const std::string &user, const std::string &pass);
+    void setBasicAuthentication(const std::string &user, const std::string &pass);
     /**
      * @brief getServerCookies Get the server cookies container with the information of received cookies
      * @return server cookies container.

@@ -7,7 +7,7 @@
 #include <cx2_xrpc_common/methodsmanager.h>
 #include <cx2_xrpc_common/request.h>
 
-#include <cx2_auth/iauth_domains.h>
+#include <cx2_auth/domains.h>
 #include <cx2_netp_http/httpv1_server.h>
 
 #include <mutex>
@@ -22,7 +22,7 @@ public:
 
     //////////////////////////////////////////////
     // Initialization:
-    void setAuthenticators(Authorization::IAuth_Domains * authenticator);
+    void setAuthenticators(CX2::Authentication::Domains * authenticator);
     void setMethodsManager(MethodsManager *value);
     //////////////////////////////////////////////
 
@@ -52,14 +52,14 @@ private:
     Network::HTTP::eHTTP_RetCode processRPCRequest_AUTHINFO(WebSession * wSession);
     Network::HTTP::eHTTP_RetCode processRPCRequest_CSRFTOKEN(WebSession * wSession);
     Network::HTTP::eHTTP_RetCode processRPCRequest_AUTH(Request * request, std::string sSessionId);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_EXEC(Authorization::Session::IAuth_Session * hSession, Request * request);
+    Network::HTTP::eHTTP_RetCode processRPCRequest_EXEC(CX2::Authentication::Session * hSession, Request * request);
 
 
-    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Authorization::Session::IAuth_Session * session, Authorization::DataStructs::AuthReason *authReason);
-    Authorization::DataStructs::AuthReason temporaryAuthentication(const Authentication &authData, Authorization::Session::IAuth_Session *session);
+    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, CX2::Authentication::Session * session, CX2::Authentication::Reason *authReason);
+    CX2::Authentication::Reason temporaryAuthentication(const Authentication &authData, CX2::Authentication::Session *session);
 
     MethodsManager * methodsManager;
-    Authorization::IAuth_Domains * authDomains;
+    CX2::Authentication::Domains * authDomains;
     SessionsManager * sessionsManager;
     ResourcesFilter * resourceFilter;
     std::string remoteIP;

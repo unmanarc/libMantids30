@@ -1,7 +1,7 @@
 #ifndef A_IPV4_H
 #define A_IPV4_H
 
-#include "abstract.h"
+#include "a_var.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -10,14 +10,14 @@
 
 #include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_IPV4: public Abstract
+class IPV4: public Var
 {
 public:
-    A_IPV4();
-    ~A_IPV4() override;
-    A_IPV4& operator=(const in_addr & value)
+    IPV4();
+    ~IPV4() override;
+    IPV4& operator=(const in_addr & value)
     {
         setValue(value);
         return *this;
@@ -25,14 +25,17 @@ public:
     in_addr getValue();
     bool setValue(const in_addr & value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
     in_addr value;
     Threads::Sync::Mutex_Shared mutex;
+
 };
 
 }}}

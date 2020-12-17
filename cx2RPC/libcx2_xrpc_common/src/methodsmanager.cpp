@@ -29,10 +29,11 @@ bool MethodsManager::addRPCMethod(const std::string &methodName, const std::set<
     return false;
 }
 
-int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain, const std::string & domainName,CX2::Authorization::Session::IAuth_Session * session, const std::string & methodName, const Json::Value & payload,  Json::Value *payloadOut)
+int MethodsManager::runRPCMethod(CX2::Authentication::Domains * authDomain, const std::string & domainName,CX2::Authentication::Session * session, const std::string & methodName, const Json::Value & payload,  Json::Value *payloadOut)
 {
     // not authenticated...
-    if (session->isAuthenticated()!=Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
+
+    if (session->isAuthenticated()!=CX2::Authentication::REASON_AUTHENTICATED)
         return METHOD_RET_CODE_UNAUTHENTICATED;
 
     Threads::Sync::Lock_RD lock(smutexMethods);
@@ -41,7 +42,7 @@ int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain,
         return METHOD_RET_CODE_METHODNOTFOUND;
     else
     {
-        CX2::Authorization::IAuth * auth;
+        CX2::Authentication::Manager * auth;
         if ((auth=authDomain->openDomain(domainName))!=nullptr)
         {
             *payloadOut = methods[methodName].rpcMethod(methods[methodName].obj, auth, session,payload);
@@ -56,7 +57,7 @@ int MethodsManager::runRPCMethod(CX2::Authorization::IAuth_Domains * authDomain,
     }
 }
 
-eMethodValidationCodes MethodsManager::validateRPCMethodPerms(CX2::Authorization::IAuth * auth, CX2::Authorization::Session::IAuth_Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, Json::Value *reasons)
+eMethodValidationCodes MethodsManager::validateRPCMethodPerms(CX2::Authentication::Manager * auth, CX2::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, Json::Value *reasons)
 {
     std::set<uint32_t> passIndexesLeft;
     std::set<std::string> attribsLeft;
@@ -81,7 +82,7 @@ eMethodValidationCodes MethodsManager::validateRPCMethodPerms(CX2::Authorization
     }
 }
 
-CX2::Authorization::Validation::IAuth_Methods_Attributes *MethodsManager::getMethodsAttribs()
+CX2::Authentication::MethodsAttributes_Map *MethodsManager::getMethodsAttribs()
 {
     return &methodsAttribs;
 }

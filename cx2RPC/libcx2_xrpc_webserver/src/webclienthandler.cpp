@@ -29,7 +29,7 @@ WebClientHandler::~WebClientHandler()
 {
 }
 
-void WebClientHandler::setAuthenticators(Authorization::IAuth_Domains *authenticator)
+void WebClientHandler::setAuthenticators(CX2::Authentication::Domains *authenticator)
 {
     authDomains = authenticator;
 }
@@ -49,7 +49,7 @@ eHTTP_RetCode WebClientHandler::processClientRequest()
 
         WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
 
-        CX2::Authorization::IAuth * authorizer = hSession?authDomains->openDomain(hSession->session->getAuthDomain()) : nullptr;
+        CX2::Authentication::Manager * authorizer = hSession?authDomains->openDomain(hSession->session->getAuthDomain()) : nullptr;
         if (resourceFilter)  e = resourceFilter->evaluateAction(sRealRelativePath,hSession->session, authorizer);
 
         if (hSession)
@@ -285,7 +285,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_CSRFTOKEN(WebSession *wSession
 
 eHTTP_RetCode WebClientHandler::processRPCRequest_AUTH(Request *request, string sSessionId)
 {
-    Authorization::Session::IAuth_Session *hSession = nullptr;
+    CX2::Authentication::Session *hSession = nullptr;
     uint64_t uMaxAge;
     Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
@@ -294,13 +294,13 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_AUTH(Request *request, string 
     // Authenticate...
     for (const uint32_t & passIdx : request->getAuthenticationsIdxs())
     {
-        Authorization::DataStructs::AuthReason authReason;
+        CX2::Authentication::Reason authReason;
         sSessionId = persistentAuthentication( getRequestVars(HTTP_VARS_POST)->getStringValue("user"),
                                                getRequestVars(HTTP_VARS_POST)->getStringValue("domain"),
                                                request->getAuthentication(passIdx),
                                                hSession, &authReason);
 
-        (*(jPayloadOutStr->getValue()))["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);
+        (*(jPayloadOutStr->getValue()))["auth"][std::to_string(passIdx)]["reasonTxt"] = getReasonText(authReason);
         (*(jPayloadOutStr->getValue()))["auth"][std::to_string(passIdx)]["reasonVal"] = static_cast<Json::UInt>(authReason);
 
         // Set the parameters once, the first time we see sessionid...
@@ -334,7 +334,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_AUTH(Request *request, string 
     return eHTTPResponseCode;
 }
 
-eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(Authorization::Session::IAuth_Session *hSession, Request *request)
+eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(CX2::Authentication::Session *hSession, Request *request)
 {
     bool bDeleteTemporarySession = false;
     Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
@@ -353,7 +353,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(Authorization::Session::I
         ////////////////////////////////////
         // Create Temporary Session
         ////////////////////////////////////
-        hSession = new Authorization::Session::IAuth_Session;
+        hSession = new CX2::Authentication::Session;
 
         hSession->setAuthUser(getRequestVars(HTTP_VARS_POST)->getStringValue("user"));
         hSession->setAuthDomain(getRequestVars(HTTP_VARS_POST)->getStringValue("domain"));
@@ -363,23 +363,23 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(Authorization::Session::I
     std::set<uint32_t> extraTmpIndexes;
     for (const uint32_t & passIdx : request->getAuthenticationsIdxs())
     {
-        Authorization::DataStructs::AuthReason authReason;
+        CX2::Authentication::Reason authReason;
 
-        if ((authReason=temporaryAuthentication(request->getAuthentication(passIdx),hSession)) == Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
+        if ((authReason=temporaryAuthentication(request->getAuthentication(passIdx),hSession)) == CX2::Authentication::REASON_AUTHENTICATED)
         {
             extraTmpIndexes.insert(passIdx);
 
             if (bDeleteTemporarySession)
             {
                 // No persistent session, so make this AUTH persistent for this temporary session...
-                hSession->registerPersistentAuthentication(passIdx,Authorization::DataStructs::AUTH_REASON_AUTHENTICATED);
+                hSession->registerPersistentAuthentication(passIdx,CX2::Authentication::REASON_AUTHENTICATED);
             }
         }
         else
         {
             /*
              * // TODO:
-            (*outJStreamable.getValue())["auth"][std::to_string(passIdx)]["reasonTxt"] = getAuthReasonText(authReason);
+            (*outJStreamable.getValue())["auth"][std::to_string(passIdx)]["reasonTxt"] = getReasonText(authReason);
             (*outJStreamable.getValue())["auth"][std::to_string(passIdx)]["reasonVal"] = static_cast<Json::UInt>(authReason);
             */
         }
@@ -443,12 +443,12 @@ void WebClientHandler::setRemoteIP(const std::string &value)
     remoteIP = value;
 }
 
-std::string WebClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication &authData, Authorization::Session::IAuth_Session *session, Authorization::DataStructs::AuthReason * authReason)
+std::string WebClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication &authData, CX2::Authentication::Session *session, CX2::Authentication::Reason * authReason)
 {
     std::string sessionId;
     if (!session && authData.getPassIndex()!=0) return sessionId;
 
-    *authReason = Authorization::DataStructs::AUTH_REASON_INVALID_DOMAIN;
+    *authReason = CX2::Authentication::REASON_INVALID_DOMAIN;
     Json::Value payload;
 
     auto auth = authDomains->openDomain(domainName);
@@ -458,9 +458,9 @@ std::string WebClientHandler::persistentAuthentication(const string &userName, c
         authDomains->closeDomain(domainName);
     }
 
-    if (!session && *authReason == Authorization::DataStructs::AUTH_REASON_AUTHENTICATED)
+    if (!session && *authReason == CX2::Authentication::REASON_AUTHENTICATED)
     {
-        session = new Authorization::Session::IAuth_Session;
+        session = new CX2::Authentication::Session;
         session->registerPersistentAuthentication(userName,domainName,authData.getPassIndex(),*authReason);
         sessionId = sessionsManager->addSession(session);
     }
@@ -468,17 +468,17 @@ std::string WebClientHandler::persistentAuthentication(const string &userName, c
     return sessionId;
 }
 
-Authorization::DataStructs::AuthReason WebClientHandler::temporaryAuthentication(const Authentication &authData, Authorization::Session::IAuth_Session *session)
+CX2::Authentication::Reason WebClientHandler::temporaryAuthentication(const Authentication &authData, CX2::Authentication::Session *session)
 {
-    Authorization::DataStructs::AuthReason eReason;
-    if (!session) return Authorization::DataStructs::AUTH_REASON_UNAUTHENTICATED;
+    CX2::Authentication::Reason eReason;
+    if (!session) return CX2::Authentication::REASON_UNAUTHENTICATED;
 
     std::string userName = session->getAuthUser();
     std::string domainName = session->getAuthDomain();
 
     auto auth = authDomains->openDomain(domainName);
     if (!auth)
-        eReason = Authorization::DataStructs::AUTH_REASON_INVALID_DOMAIN;
+        eReason = CX2::Authentication::REASON_INVALID_DOMAIN;
     else
     {
         eReason = auth->authenticate( userName,authData.getUserPass(),authData.getPassIndex()); // Authenticate in a non-persistent fashion.

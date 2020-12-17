@@ -138,7 +138,7 @@ eHTTP_ContainerType HTTP_Content::getContainerType() const
     return containerType;
 }
 
-Memory::Vars::Vars *HTTP_Content::postVars()
+Memory::Abstract::Vars *HTTP_Content::postVars()
 {
     switch (containerType)
     {

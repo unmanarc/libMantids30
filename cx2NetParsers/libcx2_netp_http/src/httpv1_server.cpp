@@ -110,7 +110,7 @@ sHTTP_RequestData HTTPv1_Server::requestData()
 {
     sHTTP_RequestData fullReq;
 
-    if (_clientHeaders.exist("Authorization"))
+    if (_clientHeaders.exist("Authentication"))
     {
         // TODO: deal with http based authorization.
     }
@@ -161,7 +161,7 @@ eHTTP_ContainerType HTTPv1_Server::getRequestDataType()
     return _clientContentData.getContainerType();
 }
 
-Memory::Vars::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &source)
+Memory::Abstract::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &source)
 {
     switch (source)
     {

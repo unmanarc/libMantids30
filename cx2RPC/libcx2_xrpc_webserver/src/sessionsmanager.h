@@ -1,7 +1,7 @@
 #ifndef XRPC_SESSIONS_MANAGER_H
 #define XRPC_SESSIONS_MANAGER_H
 
-#include <cx2_auth/iauth_session.h>
+#include <cx2_auth/session.h>
 #include <cx2_thr_safecontainers/map.h>
 #include <cx2_thr_threads/garbagecollector.h>
 #include <cx2_hlp_functions/random.h>
@@ -28,7 +28,7 @@ public:
         return bAuthTokenConfirmed;
     }
 
-    Authorization::Session::IAuth_Session * session;
+    CX2::Authentication::Session * session;
     std::string sCSRFAuthConfirmToken, sCSRFToken;
     bool bAuthTokenConfirmed;
 };
@@ -51,7 +51,7 @@ public:
     uint32_t getMaxSessionsPerUser() const;
     void setMaxSessionsPerUser(const uint32_t &value);
 
-    std::string addSession(Authorization::Session::IAuth_Session * session);
+    std::string addSession(CX2::Authentication::Session * session);
     bool destroySession(const std::string & sessionID);
     WebSession *openSession(const std::string & sessionID, uint64_t *maxAge);
     bool closeSession(const std::string & sessionID);

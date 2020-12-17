@@ -13,6 +13,7 @@ This framework provides C++11 based enhancing libraries for console and network 
 ### Components:
 
 * Program User Authentication
+* Database
 * File Formats
 * Network Programming
   * Sockets (UDP/TCP/UNIX/TLS)

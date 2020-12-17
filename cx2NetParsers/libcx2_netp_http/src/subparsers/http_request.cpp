@@ -89,7 +89,7 @@ HTTP_Version * HTTP_Request::getHTTPVersion()
     return &httpVersion;
 }
 
-Memory::Vars::Vars *HTTP_Request::getVarsPTR()
+Memory::Abstract::Vars *HTTP_Request::getVarsPTR()
 {
     return &getVars;
 }

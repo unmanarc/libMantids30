@@ -1,31 +1,31 @@
 #include "a_stringlist.h"
 #include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
-A_STRINGLIST::A_STRINGLIST()
+STRINGLIST::STRINGLIST()
 {
-    setVarType(ABSTRACT_STRINGLIST);
+    setVarType(TYPE_STRINGLIST);
 }
 
-A_STRINGLIST::~A_STRINGLIST()
+STRINGLIST::~STRINGLIST()
 {
 }
 
-std::list<std::string> A_STRINGLIST::getValue()
+std::list<std::string> STRINGLIST::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-bool A_STRINGLIST::setValue(const std::list<std::string> &value)
+bool STRINGLIST::setValue(const std::list<std::string> &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
     this->value = value;
     return true;
 }
 
-std::string A_STRINGLIST::toString()
+std::string STRINGLIST::toString()
 {
     std::list<std::string> xvalue = getValue();
     // TODO:  use "" and escape seq CSV format.
@@ -39,7 +39,7 @@ std::string A_STRINGLIST::toString()
     return r;
 }
 
-bool A_STRINGLIST::fromString(const std::string &value)
+bool STRINGLIST::fromString(const std::string &value)
 {
     // TODO:  use "" and escape seq CSV format.
     std::list<std::string> strs;
@@ -65,9 +65,9 @@ bool A_STRINGLIST::fromString(const std::string &value)
     return setValue(strs);
 }
 
-Abstract *A_STRINGLIST::protectedCopy()
+Var *STRINGLIST::protectedCopy()
 {
-    A_STRINGLIST * var = new A_STRINGLIST;
+    STRINGLIST * var = new STRINGLIST;
     if (var) *var = getValue();
     return var;
 }

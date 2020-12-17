@@ -168,8 +168,8 @@ void HTTPv1_Client::setClientUserAgent(const std::string &userAgent)
     _clientHeaders.replace("User-Agent", userAgent);
 }
 
-void HTTPv1_Client::setBasicAuthorization(const std::string &user, const std::string &pass)
+void HTTPv1_Client::setBasicAuthentication(const std::string &user, const std::string &pass)
 {
     std::string authPlainText = user + ":" + pass;
-    _clientHeaders.replace("Authorization", "Basic " + Helpers::Encoders::toBase64(authPlainText.c_str(), authPlainText.size()));
+    _clientHeaders.replace("Authentication", "Basic " + Helpers::Encoders::toBase64(authPlainText.c_str(), authPlainText.size()));
 }

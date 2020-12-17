@@ -34,19 +34,19 @@ public:
      */
     void addAuthentication(const Authentication & auth);
     /**
-     * @brief addAuthentication Add an authentication as passIndex+Password
-     * @param passIndex Authentication Password Index
-     * @param pass Password
+     * @brief addAuthentication Add an authentication as passIndex+Secret
+     * @param passIndex Authentication Secret Index
+     * @param pass Secret
      */
     void addAuthentication(uint32_t passIndex, const std::string &pass);
     /**
-     * @brief getAuthenticationsIdxs Get authentications Password Indexes.
+     * @brief getAuthenticationsIdxs Get authentications Secret Indexes.
      * @return set of password indexes.
      */
     std::set<uint32_t> getAuthenticationsIdxs();
     /**
      * @brief getAuthentication Get authentication object given a password index.
-     * @param idx Authentication Password Index.
+     * @param idx Authentication Secret Index.
      * @return Authentication Object.
      */
     Authentication getAuthentication( const uint32_t & idx );

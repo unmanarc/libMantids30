@@ -1,17 +1,17 @@
 #ifndef A_INT8_H
 #define A_INT8_H
 
-#include "abstract.h"
+#include "a_var.h"
 #include <stdint.h>
-#include <atomic>
+#include <cx2_thr_mutex/mutex_shared.h>
 
-namespace CX2 { namespace Memory { namespace Vars {
+namespace CX2 { namespace Memory { namespace Abstract {
 
-class A_INT8: public Abstract
+class INT8: public Var
 {
 public:
-    A_INT8();
-    A_INT8& operator=(int8_t value)
+    INT8();
+    INT8& operator=(int8_t value)
     {
         setValue(value);
         return *this;
@@ -20,13 +20,17 @@ public:
     int8_t getValue();
     bool setValue(int8_t value);
 
+    void * getDirectMemory() override { return &value; }
+
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Abstract * protectedCopy() override;
+    Var * protectedCopy() override;
 
 private:
-    std::atomic<int8_t> value;
+    int8_t value;
+    Threads::Sync::Mutex_Shared mutex;
+
 };
 
 }}}

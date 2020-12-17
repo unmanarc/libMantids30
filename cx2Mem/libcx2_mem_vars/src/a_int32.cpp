@@ -1,33 +1,40 @@
 #include "a_int32.h"
+#include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
 
-A_INT32::A_INT32()
+INT32::INT32()
 {
     value = 0;
-    setVarType(ABSTRACT_INT32);
+    setVarType(TYPE_INT32);
 }
 
-int32_t A_INT32::getValue()
+int32_t INT32::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-bool A_INT32::setValue(int32_t value)
+bool INT32::setValue(int32_t value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     this->value = value;
     return true;
 }
 
-std::string A_INT32::toString()
+std::string INT32::toString()
 {
+    Threads::Sync::Lock_RD lock(mutex);
+
     return std::to_string(value);
 
 }
 
-bool A_INT32::fromString(const std::string &value)
+bool INT32::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
     if (value.empty())
     {
         this->value = 0;
@@ -40,9 +47,11 @@ bool A_INT32::fromString(const std::string &value)
     return true;
 }
 
-Abstract *A_INT32::protectedCopy()
+Var *INT32::protectedCopy()
 {
-    A_INT32 * var = new A_INT32;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    INT32 * var = new INT32;
     if (var) *var = this->value;
     return var;
 }

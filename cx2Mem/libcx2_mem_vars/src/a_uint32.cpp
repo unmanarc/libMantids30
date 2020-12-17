@@ -1,32 +1,41 @@
 #include "a_uint32.h"
 #include <stdexcept>      // std::invalid_argument
-using namespace CX2::Memory::Vars;
+#include <cx2_thr_mutex/lock_shared.h>
 
-A_UINT32::A_UINT32()
+using namespace CX2::Memory::Abstract;
+
+UINT32::UINT32()
 {
     value = 0;
-    setVarType(ABSTRACT_UINT32);
+    setVarType(TYPE_UINT32);
 }
 
-uint32_t A_UINT32::getValue()
+uint32_t UINT32::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
+
     return value;
 }
 
-bool A_UINT32::setValue(uint32_t value)
+bool UINT32::setValue(uint32_t value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     this->value = value;
     return true;
 }
 
-std::string A_UINT32::toString()
+std::string UINT32::toString()
 {
-    return std::to_string(value);
+    Threads::Sync::Lock_RD lock(mutex);
 
+    return std::to_string(value);
 }
 
-bool A_UINT32::fromString(const std::string &value)
+bool UINT32::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     if (value.empty())
     {
         this->value = 0;
@@ -39,9 +48,11 @@ bool A_UINT32::fromString(const std::string &value)
     return true;
 }
 
-Abstract *A_UINT32::protectedCopy()
+Var *UINT32::protectedCopy()
 {
-    A_UINT32 * var = new A_UINT32;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    UINT32 * var = new UINT32;
     if (var) *var = this->value;
     return var;
 }

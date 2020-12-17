@@ -1,41 +1,46 @@
 #include "a_bool.h"
 #include <stdexcept>      // std::invalid_argument
+#include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
-A_BOOL::A_BOOL()
+BOOL::BOOL()
 {
     value = false;
-    setVarType(ABSTRACT_BOOL);
-
+    setVarType(TYPE_BOOL);
 }
 
-bool A_BOOL::getValue()
+bool BOOL::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-bool A_BOOL::setValue(bool value)
+bool BOOL::setValue(bool value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
     this->value = value;
     return true;
 }
 
-std::string A_BOOL::toString()
+std::string BOOL::toString()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return value?"true":"false";
 }
 
-bool A_BOOL::fromString(const std::string &value)
+bool BOOL::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
     if (value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T") this->value = true;
     else this->value = false;
     return true;
 }
 
-Abstract *A_BOOL::protectedCopy()
+Var *BOOL::protectedCopy()
 {
-    A_BOOL * var = new A_BOOL;
+    Threads::Sync::Lock_RD lock(mutex);
+    BOOL * var = new BOOL;
     if (var) *var = this->value;
     return var;
 }

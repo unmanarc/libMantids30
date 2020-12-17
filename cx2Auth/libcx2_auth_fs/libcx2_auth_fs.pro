@@ -1,12 +1,12 @@
 QT       -= core gui
 
 SOURCES += \ 
-    src/iauth_fs.cpp \
-    src/iauth_fs_accounts.cpp \
-    src/iauth_fs_attributes.cpp \
-    src/iauth_fs_groups.cpp
+    src/manager_fs.cpp \
+    src/manager_fs_accounts.cpp \
+    src/manager_fs_attributes.cpp \
+    src/manager_fs_groups.cpp
 HEADERS += \ 
-    src/iauth_fs.h
+    src/manager_fs.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

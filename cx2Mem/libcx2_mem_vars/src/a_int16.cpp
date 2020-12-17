@@ -1,33 +1,41 @@
 #include "a_int16.h"
 #include <stdlib.h>
+#include <cx2_thr_mutex/lock_shared.h>
 
-using namespace CX2::Memory::Vars;
+using namespace CX2::Memory::Abstract;
 
-A_INT16::A_INT16()
+INT16::INT16()
 {
     value = 0;
-    setVarType(ABSTRACT_INT16);
+    setVarType(TYPE_INT16);
 
 }
 
-int16_t A_INT16::getValue()
+int16_t INT16::getValue()
 {
+    Threads::Sync::Lock_RD lock(mutex);
+
     return value;
 }
 
-bool A_INT16::setValue(int16_t value)
+bool INT16::setValue(int16_t value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     this->value = value;
     return true;
 }
 
-std::string A_INT16::toString()
+std::string INT16::toString()
 {
+    Threads::Sync::Lock_RD lock(mutex);
     return std::to_string(value);
 }
 
-bool A_INT16::fromString(const std::string &value)
+bool INT16::fromString(const std::string &value)
 {
+    Threads::Sync::Lock_RW lock(mutex);
+
     if (value.empty())
     {
         this->value = 0;
@@ -39,9 +47,11 @@ bool A_INT16::fromString(const std::string &value)
     return true;
 }
 
-Abstract *A_INT16::protectedCopy()
+Var *INT16::protectedCopy()
 {
-    A_INT16 * var = new A_INT16;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    INT16 * var = new INT16;
     if (var) *var = this->value;
     return var;
 }
