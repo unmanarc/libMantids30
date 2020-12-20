@@ -11,14 +11,15 @@ class INT8: public Var
 {
 public:
     INT8();
-    INT8& operator=(int8_t value)
+    INT8(const int8_t &value);
+    INT8& operator=(const int8_t & value)
     {
         setValue(value);
         return *this;
     }
 
     int8_t getValue();
-    bool setValue(int8_t value);
+    bool setValue(const int8_t & value);
 
     void * getDirectMemory() override { return &value; }
 

@@ -11,6 +11,12 @@ INT16::INT16()
 
 }
 
+INT16::INT16(const int16_t &value)
+{
+    this->value = value;
+    setVarType(TYPE_INT16);
+}
+
 int16_t INT16::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
@@ -18,7 +24,7 @@ int16_t INT16::getValue()
     return value;
 }
 
-bool INT16::setValue(int16_t value)
+bool INT16::setValue(const int16_t &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
 

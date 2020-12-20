@@ -8,9 +8,13 @@ STRING::STRING()
     setVarType(TYPE_STRING);
 }
 
-STRING::~STRING()
+STRING::STRING(const std::string &value)
 {
+    setVarType(TYPE_STRING);
+    setValue(value);
 }
+
+
 
 std::string STRING::getValue()
 {

@@ -11,6 +11,12 @@ PTR::PTR()
     setVarType(TYPE_PTR);
 }
 
+PTR::PTR(void *value)
+{
+    setVarType(TYPE_PTR);
+    this->value = value;
+}
+
 void * PTR::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);

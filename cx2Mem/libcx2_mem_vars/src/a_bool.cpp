@@ -10,6 +10,12 @@ BOOL::BOOL()
     setVarType(TYPE_BOOL);
 }
 
+BOOL::BOOL(const bool &value)
+{
+    setVarType(TYPE_BOOL);
+    this->value = value;
+}
+
 bool BOOL::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);

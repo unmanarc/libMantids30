@@ -11,7 +11,7 @@ class STRINGLIST: public Var
 {
 public:
     STRINGLIST();
-    ~STRINGLIST() override;
+    STRINGLIST(const std::list<std::string> & value);
     STRINGLIST& operator=(const std::list<std::string> & value)
     {
         setValue(value);

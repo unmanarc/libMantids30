@@ -10,7 +10,8 @@ class BOOL: public Var
 {
 public:
     BOOL();
-    BOOL& operator=(bool value)
+    BOOL(const bool & value);
+    BOOL& operator=(const bool & value)
     {
         setValue(value);
         return *this;

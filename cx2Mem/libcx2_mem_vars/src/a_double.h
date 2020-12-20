@@ -10,7 +10,8 @@ class DOUBLE: public Var
 {
 public:
     DOUBLE();
-    DOUBLE& operator=(double value)
+    DOUBLE(const double & value);
+    DOUBLE& operator=(const double & value)
     {
         setValue(value);
         return *this;

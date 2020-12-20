@@ -11,6 +11,7 @@ class VARCHAR : public Var
 {
 public:
     VARCHAR(const size_t & varSize);
+    VARCHAR(const size_t & varSize, char * value);
     VARCHAR(VARCHAR &var);
     virtual ~VARCHAR() override;
 

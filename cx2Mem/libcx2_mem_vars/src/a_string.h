@@ -10,7 +10,7 @@ class STRING: public Var
 {
 public:
     STRING();
-    ~STRING() override;
+    STRING(const std::string & value);
     STRING& operator=(const std::string & value)
     {
         setValue(value);

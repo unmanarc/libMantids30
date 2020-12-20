@@ -11,14 +11,15 @@ class INT32: public Var
 {
 public:
     INT32();
-    INT32& operator=(int32_t value)
+    INT32(const int32_t &value);
+    INT32& operator=(const int32_t & value)
     {
         setValue(value);
         return *this;
     }
 
     int32_t getValue();
-    bool setValue(int32_t value);
+    bool setValue(const int32_t & value);
 
     void * getDirectMemory() override { return &value; }
 

@@ -9,6 +9,12 @@ INT64::INT64()
     setVarType(TYPE_INT64);
 }
 
+INT64::INT64(const int64_t &value)
+{
+    this->value = value;
+    setVarType(TYPE_INT64);
+}
+
 int64_t INT64::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);

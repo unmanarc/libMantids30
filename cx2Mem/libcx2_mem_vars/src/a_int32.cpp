@@ -10,13 +10,19 @@ INT32::INT32()
     setVarType(TYPE_INT32);
 }
 
+INT32::INT32(const int32_t &value)
+{
+    this->value = value;
+    setVarType(TYPE_INT32);
+}
+
 int32_t INT32::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-bool INT32::setValue(int32_t value)
+bool INT32::setValue(const int32_t &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
 

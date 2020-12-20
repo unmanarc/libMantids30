@@ -10,6 +10,12 @@ UINT64::UINT64()
     setVarType(TYPE_UINT64);
 }
 
+UINT64::UINT64(const uint64_t &value)
+{
+    setVarType(TYPE_UINT64);
+    this->value = value;
+}
+
 uint64_t UINT64::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);

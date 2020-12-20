@@ -15,8 +15,16 @@ IPV4::IPV4()
     setVarType(TYPE_IPV4);
 }
 
-IPV4::~IPV4()
+IPV4::IPV4(const in_addr &value)
 {
+    setValue(value);
+    setVarType(TYPE_IPV4);
+}
+
+IPV4::IPV4(const std::string &value)
+{
+    fromString(value);
+    setVarType(TYPE_IPV4);
 }
 
 in_addr IPV4::getValue()

@@ -8,9 +8,12 @@ STRINGLIST::STRINGLIST()
     setVarType(TYPE_STRINGLIST);
 }
 
-STRINGLIST::~STRINGLIST()
+STRINGLIST::STRINGLIST(const std::list<std::string> &value)
 {
+    setVarType(TYPE_STRINGLIST);
+    this->value = value;
 }
+
 
 std::list<std::string> STRINGLIST::getValue()
 {

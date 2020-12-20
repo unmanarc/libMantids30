@@ -13,6 +13,16 @@ VARCHAR::VARCHAR(const size_t &varSize)
     this->value[varSize] = 0;
 }
 
+VARCHAR::VARCHAR(const size_t &varSize, char *value)
+{
+    setVarType(TYPE_VARCHAR);
+    wasTruncated = false;
+    this->varSize = varSize;
+    this->value = (char *)malloc(varSize+1);
+    this->value[varSize] = 0;
+    setValue(value);
+}
+
 VARCHAR::VARCHAR( VARCHAR &var )
 {
     setVarType(TYPE_VARCHAR);

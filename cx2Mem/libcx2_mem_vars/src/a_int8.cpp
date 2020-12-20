@@ -9,13 +9,19 @@ INT8::INT8()
     setVarType(TYPE_INT8);
 }
 
+INT8::INT8(const int8_t &value)
+{
+    this->value = value;
+    setVarType(TYPE_INT64);
+}
+
 int8_t INT8::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
     return value;
 }
 
-bool INT8::setValue(int8_t value)
+bool INT8::setValue(const int8_t &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
     this->value = value;

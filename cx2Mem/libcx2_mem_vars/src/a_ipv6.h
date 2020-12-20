@@ -16,7 +16,8 @@ class IPV6: public Var
 {
 public:
     IPV6();
-    ~IPV6() override;
+    IPV6(const in6_addr &value);
+    IPV6(const std::string &value);
     IPV6& operator=(const in6_addr & value)
     {
         setValue(value);

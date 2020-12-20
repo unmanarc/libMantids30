@@ -17,8 +17,19 @@ IPV6::IPV6()
     setVarType(TYPE_IPV6);
 }
 
-IPV6::~IPV6()
+
+IPV6::IPV6(const in6_addr &value)
 {
+    setVarType(TYPE_IPV6);
+    memset(&this->value, 0, sizeof(value));
+    setValue(value);
+}
+
+IPV6::IPV6(const std::string &value)
+{
+    setVarType(TYPE_IPV6);
+    memset(&this->value, 0, sizeof(value));
+    fromString(value);
 }
 
 in6_addr IPV6::getValue()

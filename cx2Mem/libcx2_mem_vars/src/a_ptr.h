@@ -10,11 +10,13 @@ class PTR: public Var
 {
 public:
     PTR();
+    PTR(void *value);
     PTR& operator=(void *value)
     {
         setValue(value);
         return *this;
     }
+
     void * getValue();
     bool setValue(void * value);
 

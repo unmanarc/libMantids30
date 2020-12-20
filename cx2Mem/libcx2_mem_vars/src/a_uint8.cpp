@@ -10,6 +10,12 @@ UINT8::UINT8()
     setVarType(TYPE_UINT8);
 }
 
+UINT8::UINT8(const uint8_t &value)
+{
+    this->value = value;
+    setVarType(TYPE_UINT8);
+}
+
 uint8_t UINT8::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
@@ -17,7 +23,7 @@ uint8_t UINT8::getValue()
     return value;
 }
 
-bool UINT8::setValue(uint8_t value)
+bool UINT8::setValue(const uint8_t & value)
 {
     Threads::Sync::Lock_RW lock(mutex);
 

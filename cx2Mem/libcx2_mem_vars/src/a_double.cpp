@@ -8,7 +8,12 @@ DOUBLE::DOUBLE()
 {
     value = 0;
     setVarType(TYPE_DOUBLE);
+}
 
+DOUBLE::DOUBLE(const double &value)
+{
+    setVarType(TYPE_DOUBLE);
+    this->value = value;
 }
 
 double DOUBLE::getValue()

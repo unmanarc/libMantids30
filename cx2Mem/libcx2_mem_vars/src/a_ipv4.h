@@ -16,7 +16,8 @@ class IPV4: public Var
 {
 public:
     IPV4();
-    ~IPV4() override;
+    IPV4(const in_addr & value);
+    IPV4(const std::string & value);
     IPV4& operator=(const in_addr & value)
     {
         setValue(value);
