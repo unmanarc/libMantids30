@@ -21,16 +21,23 @@ public:
      * @param query Query.
      * @return true if succeed.
      */
-    bool prepareQuery( Query_MariaDB * query );
+    void getDatabaseConnector( Query_MariaDB * query );
 
 
+    /**
+     * @brief dbTableExist Check if mariadb table exist
+     * @param table table name
+     * @return true if exist, otherwise false.
+     */
+    bool dbTableExist(const std::string & table);
+
+    std::string getEscaped(const std::string &v);
 
 protected:
     Query * createQuery0() { return new Query_MariaDB; };
     bool connect0();
 private:
     MYSQL *dbCnt;
-    std::mutex mtDatabaseLock;
 
 };
 }}

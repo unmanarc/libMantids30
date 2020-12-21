@@ -18,32 +18,27 @@ public:
     bool step();
 
     // MariaDB specific functions:
-    bool mariadbInitSTMT( MYSQL *dbCnt );
-
-    bool getFetchInsertRowID() const;
-    void setFetchInsertRowID(bool value);
+    void mariaDBSetDatabaseConnector( MYSQL *dbCnt );
 
     my_ulonglong getLastInsertRowID() const;
 
-private:
-    bool replaceFirstKey(std::string & sqlQuery, std::list<std::string> & keysIn, std::vector<std::string> &keysOutByPos );
-
+protected:
     bool postBindInputVars();
     bool postBindResultVars();
 
-    std::string * createDestroyableString(const std::string & str);
+private:
+    MYSQL * dbCnt;
 
     MYSQL_STMT * stmt;
-    MYSQL_BIND * bindedParams;
-    MYSQL_BIND * bindedResults;
+    MYSQL_BIND * bindedInputParams;
+    MYSQL_BIND * bindedResultsParams;
+
     my_bool * bIsNull;
 
     bool bDeallocateResultSet;
-    bool bFetchInsertRowID;
-    my_ulonglong lastInsertRowID;
+    bool bFetchLastInsertRowID;
 
     std::vector<std::string> keysByPos;
-    std::list<std::string *> destroyableStrings;
 
 };
 }}

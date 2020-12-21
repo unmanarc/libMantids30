@@ -12,6 +12,20 @@
 
 namespace CX2 { namespace Database {
 
+struct QueryInstance {
+    QueryInstance( Query * query )
+    {
+        ok = true;
+        this->query = query;
+    }
+    ~QueryInstance()
+    {
+        if (query) delete query;
+    }
+     Query * query;
+     bool ok;
+};
+
 class SQLConnector
 {
 public:
@@ -38,6 +52,8 @@ public:
     // Connection/Database Information:
     virtual std::string driverName() = 0;
 
+    virtual std::string getEscaped(const std::string & value) = 0;
+
     std::string getLastSQLError() const;
 
     std::queue<std::string> getErrorsAndFlush();
@@ -54,9 +70,11 @@ public:
 
     std::string getDBName() const;
 
+    // TODO: Reconnector thread / Reconnection options.
 
     // SQL Query:
     Query * prepareNewQuery();
+    QueryInstance prepareNewQueryInstance();
 
     void detachQuery( Query * query );
 
@@ -68,7 +86,7 @@ public:
      * @param inputVars Input Vars for the prepared query.
      * @return true if succeed.
      */
-    bool query( std::string & preparedQuery, const std::map<std::string,Memory::Abstract::Var> & inputVars );
+    bool query( const std::string & preparedQuery, const std::map<std::string,Memory::Abstract::Var> & inputVars = {} );
     /**
      * @brief query Fast Prepared Query for row-returning statements. (select)
      * @param preparedQuery Prepared SQL Query String.
@@ -80,11 +98,10 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::pair<bool, Query *> query( std::string & preparedQuery,
+    QueryInstance query( const std::string & preparedQuery,
                 const std::map<std::string,Memory::Abstract::Var> & inputVars,
-                const std::list<Memory::Abstract::Var *> & resultVars
+                const std::vector<Memory::Abstract::Var *> & resultVars
                 );
-
 
 protected:
     virtual Query * createQuery0() { return nullptr; };
@@ -104,6 +121,8 @@ private:
     std::set<Query *> querySet;
     bool finalized;
     std::mutex mtQuerySet;
+    std::mutex mtDatabaseLock;
+
     std::condition_variable cvEmptyQuerySet;
 };
 

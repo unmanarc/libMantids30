@@ -19,11 +19,12 @@ public:
     // Sqlite3 options...
 
     // Query preparation called from SQL Connector.
-    bool sqlite3Prepare( sqlite3 *ppDb );
+    void sqlite3SetDatabaseConnector( sqlite3 *ppDb );
     bool sqlite3IsDone() const;
 
 private:
     sqlite3_stmt *stmt;
+    sqlite3 *ppDb;
 };
 }}
 

@@ -8,6 +8,23 @@
 
 namespace CX2 { namespace Database {
 
+
+enum eSqlite3PragmaSyncMode {
+    SQLITE3_SYNC_OFF = 0,
+    SQLITE3_SYNC_NORMAL = 1,
+    SQLITE3_SYNC_FULL = 2,
+    SQLITE3_SYNC_EXTRA = 3
+};
+
+enum eSqlite3PragmaJournalMode {
+    SQLITE3_JOURNAL_OFF,
+    SQLITE3_JOURNAL_WAL,
+    SQLITE3_JOURNAL_MEMORY,
+    SQLITE3_JOURNAL_PERSIST,
+    SQLITE3_JOURNAL_TRUNCATE,
+    SQLITE3_JOURNAL_DELETE
+};
+
 class SQLConnector_SQLite3 : public SQLConnector
 {
 public:
@@ -32,8 +49,14 @@ public:
      * @param query Query.
      * @return true if succeed.
      */
-    bool prepareQuery( Query_SQLite3 * query );
+    void getDatabaseConnector( Query_SQLite3 * query );
 
+    bool sqlite3PragmaForeignKeys(bool on = true);
+    bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode & mode);
+    bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode & mode);
+
+
+    std::string getEscaped(const std::string & value);
 
 
 protected:
@@ -43,7 +66,6 @@ protected:
 private:
     int rc;
     sqlite3 *ppDb;
-    std::mutex mtDatabaseLock;
 
 };
 }}

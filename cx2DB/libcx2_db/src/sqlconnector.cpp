@@ -65,9 +65,14 @@ Query *SQLConnector::prepareNewQuery()
         return nullptr;
     }
 
-    query->setSqlConnector(this);
+    query->setSqlConnector(this, &mtDatabaseLock);
 
     return query;
+}
+
+QueryInstance SQLConnector::prepareNewQueryInstance()
+{
+    return QueryInstance(prepareNewQuery());
 }
 
 void SQLConnector::detachQuery(Query *query)
@@ -105,26 +110,36 @@ std::string SQLConnector::getLastSQLError() const
     return lastSQLError;
 }
 
-bool SQLConnector::query(std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars)
+bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars)
 {
-    bool r=true;
-    Query * q = prepareNewQuery();
-    if (!q) return false;
-    q->setPreparedSQLQuery(preparedQuery);
-    q->bindInputVars(inputVars);
-    r = q->exec(EXEC_TYPE_INSERT);
-    delete q;
-    return r;
+    QueryInstance q = prepareNewQueryInstance();
+    if (q.query)
+        return false;
+    if (!q.query->setPreparedSQLQuery(preparedQuery, inputVars))
+        return false;
+    return q.query->exec(EXEC_TYPE_INSERT);
 }
 
-std::pair<bool, Query *> SQLConnector::query(std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars, const std::list<CX2::Memory::Abstract::Var *> &resultVars)
+QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars, const std::vector<CX2::Memory::Abstract::Var *> &resultVars)
 {
-    Query * q = prepareNewQuery();
-    if (!q) return std::make_pair(false,nullptr);
-    q->setPreparedSQLQuery(preparedQuery);
-    q->bindInputVars(inputVars);
-    q->bindResultVars(resultVars);
-    return std::make_pair(q->exec(EXEC_TYPE_SELECT),q);
+    QueryInstance q = prepareNewQueryInstance();
+
+    if (!q.query)
+    {
+        q.ok = false;
+        return q;
+    }
+
+    if (q.query->setPreparedSQLQuery(preparedQuery,inputVars))
+    {
+        if (q.query->bindResultVars(resultVars))
+        {
+            q.query->exec(EXEC_TYPE_SELECT);
+            return q;
+        }
+    }
+    q.ok = false;
+    return q;
 }
 
 std::string SQLConnector::getDBName() const

@@ -30,11 +30,19 @@ bool Query_SQLite3::exec(const ExecType &execType)
     }
 
     // Prepare the query (will lock the db while using ppDb):
-    if (!((SQLConnector_SQLite3*)sqlConnector)->prepareQuery(this))
+    ((SQLConnector_SQLite3*)sqlConnector)->getDatabaseConnector(this);
+
+    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
+
+    const char *tail;
+    // TODO: querylenght isn't -1?
+    lastSQLReturnValue = sqlite3_prepare_v2(ppDb, query.c_str(), query.length(), &stmt, &tail);
+    if ( lastSQLReturnValue != SQLITE_OK)
     {
         lastSQLError = "Error preparing the SQL query";
         return false;
     }
+
 
     // Bind the parameters (in and out)
     for ( const auto &inputVar : InputVars)
@@ -91,34 +99,39 @@ bool Query_SQLite3::exec(const ExecType &execType)
                                 SQLITE_STATIC,
                                 SQLITE_UTF8);
         } break;
+        case Memory::Abstract::TYPE_DATETIME:
+        {
+            auto i = ABSTRACT_AS(DATETIME,inputVar.second)->toString();
+            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+        }break;
         case Memory::Abstract::TYPE_STRING:
         {
             auto i = ABSTRACT_AS(STRING,inputVar.second)->toString();
             sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
         }break;
-        case  Memory::Abstract::TYPE_STRINGLIST:
+        case Memory::Abstract::TYPE_STRINGLIST:
         {
             auto i = ABSTRACT_AS(STRINGLIST,inputVar.second)->toString();
             sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
         }break;
-        case  Memory::Abstract::TYPE_IPV4:
+        case Memory::Abstract::TYPE_IPV4:
         {
             auto i = ABSTRACT_AS(IPV4,inputVar.second)->toString();
             sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
         }break;
-        case  Memory::Abstract::TYPE_IPV6:
+        case Memory::Abstract::TYPE_IPV6:
         {
             auto i = ABSTRACT_AS(IPV6,inputVar.second)->toString();
             sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
         }break;
-        case  Memory::Abstract::TYPE_PTR:
+        case Memory::Abstract::TYPE_PTR:
         {
             void * ptr = ABSTRACT_AS(PTR,inputVar.second)->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
             size_t ptrSize = strnlen((char *)ptr,0xFFFFFFFF);
             sqlite3_bind_text(stmt,idx,(char *)ptr,ptrSize,SQLITE_STATIC);
         } break;
-        case  Memory::Abstract::TYPE_NULL:
+        case Memory::Abstract::TYPE_NULL:
             sqlite3_bind_null(stmt,idx);
             break;
         }
@@ -128,6 +141,10 @@ bool Query_SQLite3::exec(const ExecType &execType)
     if (execType == EXEC_TYPE_INSERT)
     {
         lastSQLReturnValue = sqlite3_step(stmt);
+
+        if (bFetchLastInsertRowID)
+             lastInsertRowID = sqlite3_last_insert_rowid(ppDb);
+
         return sqlite3IsDone();
     }
 
@@ -144,10 +161,11 @@ bool Query_SQLite3::step()
         int columnpos = 0;
         for ( const auto &outputVar : resultVars)
         {
+            isNull.push_back( sqlite3_column_type(stmt,columnpos) == SQLITE_NULL );
+
             switch (outputVar->getVarType())
             {
             case Memory::Abstract::TYPE_BOOL:
-
                 ABSTRACT_PTR_AS(BOOL,outputVar)->setValue( sqlite3_column_int(stmt, columnpos)?true:false );
                 break;
             case Memory::Abstract::TYPE_INT8:
@@ -196,24 +214,28 @@ bool Query_SQLite3::step()
             {
                 ABSTRACT_PTR_AS(STRING,outputVar)->setValue( (char *)sqlite3_column_text(stmt,columnpos) );
             }break;
-            case  Memory::Abstract::TYPE_STRINGLIST:
+            case Memory::Abstract::TYPE_STRINGLIST:
             {
                 ABSTRACT_PTR_AS(STRINGLIST,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
             }break;
-            case  Memory::Abstract::TYPE_IPV4:
+            case Memory::Abstract::TYPE_DATETIME:
+            {
+                ABSTRACT_PTR_AS(DATETIME,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
+            }break;
+            case Memory::Abstract::TYPE_IPV4:
             {
                 ABSTRACT_PTR_AS(IPV4,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
             }break;
-            case  Memory::Abstract::TYPE_IPV6:
+            case Memory::Abstract::TYPE_IPV6:
             {
                 ABSTRACT_PTR_AS(IPV6,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
             }break;
-            case  Memory::Abstract::TYPE_PTR:
+            case Memory::Abstract::TYPE_PTR:
             {
                 // This will reference the memory, but will disappear on the next step
                 ABSTRACT_PTR_AS(PTR,outputVar)->setValue( (char *)sqlite3_column_text(stmt,columnpos) );
             } break;
-            case  Memory::Abstract::TYPE_NULL:
+            case Memory::Abstract::TYPE_NULL:
                 // Don't copy the value (not needed).
                 break;
             }
@@ -229,11 +251,8 @@ bool Query_SQLite3::sqlite3IsDone() const
     return lastSQLReturnValue == SQLITE_DONE;
 }
 
-bool Query_SQLite3::sqlite3Prepare(sqlite3 *ppDb)
+void Query_SQLite3::sqlite3SetDatabaseConnector(sqlite3 *ppDb)
 {
-    const char *tail;
-    // TODO: querylenght isn't -1?
-    lastSQLReturnValue = sqlite3_prepare_v2(ppDb, query.c_str(), query.length(), &stmt, &tail);
-    return lastSQLReturnValue == SQLITE_OK;
+    this->ppDb = ppDb;
 }
 

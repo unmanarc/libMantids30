@@ -9,40 +9,84 @@ Query_MariaDB::Query_MariaDB()
 {
     bDeallocateResultSet = false;
     stmt = nullptr;
-    bindedParams = nullptr;
-    bindedResults = nullptr;
+    bindedInputParams = nullptr;
+    bindedResultsParams = nullptr;
     bIsNull = nullptr;
 }
 
 Query_MariaDB::~Query_MariaDB()
 {
-    // Destroy strings.
-    for (auto * i : destroyableStrings) delete i;
 
     // Destroy binded values.
     for (size_t pos=0;pos<keysByPos.size();pos++)
     {
-        if (bindedParams[pos].buffer_type == MYSQL_TYPE_LONGLONG)
+        if (bindedInputParams[pos].buffer)
         {
-            unsigned long long * buffer = (unsigned long long *)bindedParams[pos].buffer;
-            delete buffer;
-        }
-        else if (bindedParams[pos].buffer_type == MYSQL_TYPE_DOUBLE)
-        {
-            double * buffer = (double *)bindedParams[pos].buffer;
-            delete buffer;
-        }
-        else if (bindedParams[pos].buffer_type == MYSQL_TYPE_LONG)
-        {
-            long * buffer = (long *)bindedParams[pos].buffer;
-            delete buffer;
+            if (bindedInputParams[pos].buffer_type == MYSQL_TYPE_LONGLONG && bindedInputParams[pos].is_unsigned)
+            {
+                if (bindedInputParams[pos].is_unsigned)
+                {
+                    unsigned long long * buffer = (unsigned long long *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+                else
+                {
+                    long long * buffer = (long long *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+            }
+            else if (bindedInputParams[pos].buffer_type == MYSQL_TYPE_DOUBLE)
+            {
+                double * buffer = (double *)bindedInputParams[pos].buffer;
+                delete buffer;
+            }
+            else if (bindedInputParams[pos].buffer_type == MYSQL_TYPE_LONG)
+            {
+                if (bindedInputParams[pos].is_unsigned)
+                {
+                    unsigned long * buffer = (unsigned long *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+                else
+                {
+                    long * buffer = (long *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+            }
+            else if (bindedInputParams[pos].buffer_type == MYSQL_TYPE_TINY)
+            {
+                if (bindedInputParams[pos].is_unsigned)
+                {
+                    unsigned char * buffer = (unsigned char *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+                else
+                {
+                    char * buffer = (char *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+            }
+            else if (bindedInputParams[pos].buffer_type == MYSQL_TYPE_SHORT)
+            {
+                if (bindedInputParams[pos].is_unsigned)
+                {
+                    unsigned short * buffer = (unsigned short *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+                else
+                {
+                    short * buffer = (short *)bindedInputParams[pos].buffer;
+                    delete buffer;
+                }
+            }
+
         }
     }
 
     // Destroy main items:
     if (bIsNull) delete [] bIsNull;
-    if (bindedParams) delete [] bindedParams;
-    if (bindedResults) delete [] bindedResults;
+    if (bindedInputParams) delete [] bindedInputParams;
+    if (bindedResultsParams) delete [] bindedResultsParams;
 
     // Destroy result set.
     if (bDeallocateResultSet)
@@ -64,8 +108,13 @@ bool Query_MariaDB::exec(const ExecType &execType)
         return false;
     }
 
+    ((SQLConnector_MariaDB*)sqlConnector)->getDatabaseConnector(this);
+
+    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
+
     // Prepare the query (will lock the db while using ppDb):
-    if (!((SQLConnector_MariaDB*)sqlConnector)->prepareQuery(this))
+    stmt = mysql_stmt_init(dbCnt);
+    if (stmt==nullptr)
     {
         return false;
     }
@@ -82,7 +131,7 @@ bool Query_MariaDB::exec(const ExecType &execType)
     // Count/convert the parameters into "?"
 
     // Now we have an ordered array with the keys:
-    if (mysql_stmt_bind_param(stmt, bindedParams))
+    if (mysql_stmt_bind_param(stmt, bindedInputParams))
     {
         lastSQLError = mysql_stmt_error(stmt);
         return false;
@@ -91,7 +140,7 @@ bool Query_MariaDB::exec(const ExecType &execType)
     ///////////////
     if (execType == EXEC_TYPE_SELECT)
     {
-        if (mysql_stmt_bind_result(stmt, bindedResults))
+        if (mysql_stmt_bind_result(stmt, bindedResultsParams))
         {
             lastSQLError = mysql_stmt_error(stmt);
             return false;
@@ -113,8 +162,6 @@ bool Query_MariaDB::exec(const ExecType &execType)
         if ((lastSQLReturnValue = mysql_stmt_store_result(stmt)) == 0)
         {
             bDeallocateResultSet = true;
-            if (bFetchInsertRowID)
-                 lastInsertRowID = mysql_stmt_insert_id(stmt);
         }
         else
         {
@@ -122,56 +169,169 @@ bool Query_MariaDB::exec(const ExecType &execType)
             return false;
         }
     }
+    else
+    {
+        if (bFetchLastInsertRowID)
+            lastInsertRowID = mysql_stmt_insert_id(stmt);
+    }
 
     return true;
 }
 
 bool Query_MariaDB::step()
 {
-    return mysql_stmt_fetch (stmt) == 0;
-}
+    bool r = mysql_stmt_fetch (stmt) == 0;
+    std::map<size_t,Memory::Abstract::VARCHAR *> toGet;
 
-bool Query_MariaDB::mariadbInitSTMT(MYSQL *dbCnt)
-{
-    stmt = mysql_stmt_init(dbCnt);
-    return stmt!=nullptr;
-}
+    // Now fetch the good variables and check sizes.
 
-bool Query_MariaDB::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos)
-{
-    std::list<std::string> toDelete;
-
-    // Check who is the first key.
-    std::size_t firstKeyPos = std::string::npos;
-    std::string firstKeyFound;
-
-    for ( auto & key : keysIn )
+    if (r)
     {
-        std::size_t pos = sqlQuery.find(key);
-        if (pos!=std::string::npos)
+        for ( size_t col=0; col<resultVars.size(); col++ )
         {
-            if (pos <= firstKeyPos)
+            isNull.push_back( bIsNull[col] );
+
+            switch (resultVars[col]->getVarType())
             {
-                firstKeyPos = pos;
-                firstKeyFound = key;
+            case Memory::Abstract::TYPE_BOOL:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(1);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_TINY;
+                bindedResultsParams[col].is_unsigned = 1;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_BIN:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_BLOB;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_STRING:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_STRINGLIST:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_DATETIME:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_IPV4:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_IPV6:
+            {
+                // Fetch the column here..
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            case Memory::Abstract::TYPE_PTR:
+            {
+                // Fetch the column here.. (then transform to std::string :-/ very inefficient)
+                Memory::Abstract::VARCHAR * val = new Memory::Abstract::VARCHAR(bindedResultsParams[col].buffer_length);
+                bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+                bindedResultsParams[col].buffer = val->getDirectMemory();
+                toGet[col] = val;
+            }break;
+            default:
+                // Don't copy the value (not needed).
+                break;
             }
         }
-        else
-            toDelete.push_back( key );
+
+        // Fetch again with all values!...
+        if ( !toGet.empty() )
+        {
+            mysql_stmt_bind_result(stmt, bindedResultsParams);
+            r = mysql_stmt_fetch(stmt) == 0;
+        }
     }
-
-    // not used needles will be deleted.
-    for ( auto & needle : toDelete )
-        keysIn.remove(needle);
-
-    // If there is a key, replace.
-    if (firstKeyPos!=std::string::npos)
+    if (r)
     {
-        keysOutByPos.push_back(firstKeyFound);
-        sqlQuery.replace(firstKeyPos, firstKeyFound.length(), "?");
-        return true;
+        // Copy toGet Values to result vars..
+        for ( const auto & i : toGet)
+        {
+            size_t col = i.first;
+            Memory::Abstract::VARCHAR * val = i.second;
+
+            // Set data's:
+            switch (resultVars[col]->getVarType())
+            {
+            case Memory::Abstract::TYPE_BOOL:
+            {
+                ABSTRACT_PTR_AS(BOOL,resultVars[col])->setValue( val->getValue()[0]?true:false );
+            }break;
+            case Memory::Abstract::TYPE_BIN:
+            {
+                Memory::Abstract::sBinContainer x;
+                x.dataSize = val->getVarSize();
+                x.ptr = val->getValue();
+                ABSTRACT_PTR_AS(BINARY,resultVars[col])->setValue( &x );
+            }break;
+            case Memory::Abstract::TYPE_STRING:
+            {
+                ABSTRACT_PTR_AS(STRING,resultVars[col])->setValue( val->getValue() );
+            }break;
+            case Memory::Abstract::TYPE_STRINGLIST:
+            {
+                ABSTRACT_PTR_AS(STRINGLIST,resultVars[col])->fromString( val->getValue() );
+            }break;
+            case Memory::Abstract::TYPE_DATETIME:
+            {
+                ABSTRACT_PTR_AS(DATETIME,resultVars[col])->fromString( val->getValue() );
+            }break;
+            case Memory::Abstract::TYPE_IPV4:
+            {
+                ABSTRACT_PTR_AS(IPV4,resultVars[col])->fromString( val->getValue() );
+            }break;
+            case Memory::Abstract::TYPE_IPV6:
+            {
+                ABSTRACT_PTR_AS(IPV6,resultVars[col])->fromString( val->getValue() );
+            }break;
+                break;
+            case Memory::Abstract::TYPE_PTR:
+            {
+                std::string * str = createDestroyableString(val->getValue());
+                ABSTRACT_PTR_AS(PTR,resultVars[col])->setValue( (void *)str->c_str() );
+            }break;
+            default:
+                // Don't copy the value (not needed).
+                break;
+            }
+        }
     }
-    return false;
+
+    return r;
+}
+
+void Query_MariaDB::mariaDBSetDatabaseConnector(MYSQL *dbCnt)
+{
+    this->dbCnt = dbCnt;
 }
 
 bool Query_MariaDB::postBindInputVars()
@@ -181,25 +341,21 @@ bool Query_MariaDB::postBindInputVars()
     for (auto & i : InputVars) keysIn.push_back(i.first);
 
     // Replace the keys for ?:
-    while (replaceFirstKey(query,keysIn,keysByPos))
+    while (replaceFirstKey(query,keysIn,keysByPos, "?"))
     {}
 
     if (!keysByPos.size())
         return true;
 
     // Create the bind struct...
-    bindedParams = new MYSQL_BIND[keysByPos.size()];
-    bIsNull = new my_bool[keysByPos.size()];
+    bindedInputParams = new MYSQL_BIND[keysByPos.size()];
 
     for (size_t pos=0; pos<keysByPos.size(); pos++)
     {
-        memset(&(bindedParams[pos]),0,sizeof(MYSQL_BIND));
+        memset(&(bindedInputParams[pos]),0,sizeof(MYSQL_BIND));
 
-        bIsNull[pos] = 0;
-
-        bindedParams[pos].is_null = &(bIsNull[pos]);
-        bindedParams[pos].is_unsigned = 0;
-        bindedParams[pos].length = 0;
+        bindedInputParams[pos].is_unsigned = 0;
+        bindedInputParams[pos].length = 0;
 
         /*
         Bind params here.
@@ -208,113 +364,114 @@ bool Query_MariaDB::postBindInputVars()
         {
         case Memory::Abstract::TYPE_BOOL:
         {
-            long * buffer = new long;
-            (*buffer) = ABSTRACT_AS(BOOL,InputVars[ keysByPos[pos] ])->getValue()?1:0;
+            unsigned char * buffer = new unsigned char;
+            buffer[0] = ABSTRACT_AS(BOOL,InputVars[ keysByPos[pos] ])->getValue()?1:0;
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
-
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
+            bindedInputParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].is_unsigned = 1;
         } break;
         case Memory::Abstract::TYPE_INT8:
         {
-            long * buffer = new long;
+            char * buffer = new char;
             (*buffer) = ABSTRACT_AS(INT8,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
+            bindedInputParams[pos].buffer = (char *) buffer;
         } break;
         case Memory::Abstract::TYPE_INT16:
         {
-            long * buffer = new long;
+            short * buffer = new short;
             (*buffer) = ABSTRACT_AS(INT16,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_SHORT;
+            bindedInputParams[pos].buffer = (char *) buffer;
         } break;
         case Memory::Abstract::TYPE_INT32:
         {
             long * buffer = new long;
             (*buffer) = ABSTRACT_AS(INT32,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONG;
+            bindedInputParams[pos].buffer = (char *) buffer;
         } break;
         case Memory::Abstract::TYPE_INT64:
         {
             long long * buffer = new long long;
             (*buffer) = ABSTRACT_AS(INT64,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
-            bindedParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
+            bindedInputParams[pos].buffer = (char *) buffer;
         } break;
         case Memory::Abstract::TYPE_UINT8:
         {
-            unsigned long * buffer = new unsigned long;
+            unsigned char * buffer = new unsigned char;
             (*buffer) = ABSTRACT_AS(UINT8,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
-            bindedParams[pos].is_unsigned = 1;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
+            bindedInputParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].is_unsigned = 1;
         } break;
         case Memory::Abstract::TYPE_UINT16:
         {
-            unsigned long * buffer = new unsigned long;
+            unsigned short * buffer = new unsigned short;
             (*buffer) = ABSTRACT_AS(UINT16,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
-            bindedParams[pos].is_unsigned = 1;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_SHORT;
+            bindedInputParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].is_unsigned = 1;
         } break;
         case Memory::Abstract::TYPE_UINT32:
         {
             unsigned long * buffer = new unsigned long;
             (*buffer) = ABSTRACT_AS(UINT32,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            bindedParams[pos].buffer = (char *) buffer;
-            bindedParams[pos].is_unsigned = 1;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONG;
+            bindedInputParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].is_unsigned = 1;
         } break;
         case Memory::Abstract::TYPE_UINT64:
         {
             unsigned long long * buffer = new unsigned long long;
             (*buffer) = ABSTRACT_AS(UINT64,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
-            bindedParams[pos].buffer = (char *) buffer;
-            bindedParams[pos].is_unsigned = 1;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
+            bindedInputParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].is_unsigned = 1;
         } break;
         case Memory::Abstract::TYPE_DOUBLE:
         {
             double * buffer = new double;
             (*buffer) = ABSTRACT_AS(DOUBLE,InputVars[ keysByPos[pos] ])->getValue();
 
-            bindedParams[pos].buffer_type = MYSQL_TYPE_DOUBLE;
-            bindedParams[pos].buffer = (char *) buffer;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_DOUBLE;
+            bindedInputParams[pos].buffer = (char *) buffer;
         } break;
         case Memory::Abstract::TYPE_BIN:
         {
             Memory::Abstract::sBinContainer * i = ABSTRACT_AS(BINARY,InputVars[ keysByPos[pos] ])->getValue();
-            bindedParams[pos].buffer_type = MYSQL_TYPE_BLOB;
-            bindedParams[pos].buffer_length = i->dataSize;
-            bindedParams[pos].buffer = (char *) i->ptr;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_BLOB;
+            bindedInputParams[pos].buffer_length = i->dataSize;
+            bindedInputParams[pos].buffer = (char *) i->ptr;
         } break;
         case Memory::Abstract::TYPE_VARCHAR:
         {
-            bindedParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            bindedParams[pos].buffer_length = strnlen(ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue(),ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getVarSize())+1;
-            bindedParams[pos].buffer = (char *) ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue();
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
+            bindedInputParams[pos].buffer_length = strnlen(ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue(),ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getVarSize())+1;
+            bindedInputParams[pos].buffer = (char *) ABSTRACT_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue();
         } break;
         case Memory::Abstract::TYPE_PTR:
         {
             void * ptr = ABSTRACT_AS(PTR,InputVars[ keysByPos[pos] ])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-            bindedParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            bindedParams[pos].buffer_length = strnlen((char *)ptr,0xFFFFFFFF);
-            bindedParams[pos].buffer = (char *) ptr;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
+            bindedInputParams[pos].buffer_length = strnlen((char *)ptr,0xFFFFFFFF);
+            bindedInputParams[pos].buffer = (char *) ptr;
         } break;
 
         case Memory::Abstract::TYPE_STRING:
         case Memory::Abstract::TYPE_STRINGLIST:
+        case Memory::Abstract::TYPE_DATETIME:
         case Memory::Abstract::TYPE_IPV4:
         case Memory::Abstract::TYPE_IPV6:
         {
@@ -330,6 +487,10 @@ bool Query_MariaDB::postBindInputVars()
             {
                 str = createDestroyableString(ABSTRACT_AS(STRINGLIST,InputVars[ keysByPos[pos] ])->toString());
             } break;
+            case Memory::Abstract::TYPE_DATETIME:
+            {
+                str = createDestroyableString(ABSTRACT_AS(DATETIME,InputVars[ keysByPos[pos] ])->toString());
+            } break;
             case Memory::Abstract::TYPE_IPV4:
                 str = createDestroyableString(ABSTRACT_AS(IPV4,InputVars[ keysByPos[pos] ])->toString());
                 break;
@@ -340,13 +501,12 @@ bool Query_MariaDB::postBindInputVars()
                 break;
             }
 
-            // TODO: destroy i
-            bindedParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            bindedParams[pos].buffer_length = str->size()+1;
-            bindedParams[pos].buffer = (char *) str->c_str();
-        }
-        case  Memory::Abstract::TYPE_NULL:
-            bIsNull[pos] = 1;
+            bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
+            bindedInputParams[pos].buffer_length = str->size()+1;
+            bindedInputParams[pos].buffer = (char *) str->c_str();
+        } break;
+        case Memory::Abstract::TYPE_NULL:
+            bindedInputParams[pos].is_null_value = 1;
             break;
         }
     }
@@ -359,117 +519,101 @@ bool Query_MariaDB::postBindResultVars()
     if (!resultVars.size())
         return true;
 
-    bindedResults = new MYSQL_BIND[resultVars.size()];
+    bindedResultsParams = new MYSQL_BIND[resultVars.size()];
+    bIsNull = new my_bool[resultVars.size()];
 
-    long i=0;
+    long col=0;
     for (auto * val : resultVars)
     {
-        memset(&(bindedResults[i]),0,sizeof(MYSQL_BIND));
+        memset(&(bindedResultsParams[col]),0,sizeof(MYSQL_BIND));
+
+        bIsNull[col] = 0;
+        bindedResultsParams[col].is_null = &(bIsNull[col]);
 
         switch (val->getVarType())
         {
         case Memory::Abstract::TYPE_BOOL:
-            throw std::runtime_error("BOOL return type in MySQL is not compatible, please use INT32.");
+            // fetch later.
             break;
         case Memory::Abstract::TYPE_INT8:
-            throw std::runtime_error("INT8 return type in MySQL is not compatible, please use INT32.");
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_TINY;
+            bindedResultsParams[col].is_unsigned = 0;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_INT16:
-            throw std::runtime_error("INT16 return type in MySQL is not compatible, please use INT32.");
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_SHORT;
+            bindedResultsParams[col].is_unsigned = 0;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_INT32:
-            bindedResults[i].buffer_type = MYSQL_TYPE_LONG;
-            bindedResults[i].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_LONG;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_INT64:
-            bindedResults[i].buffer_type = MYSQL_TYPE_LONGLONG;
-            bindedResults[i].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_LONGLONG;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_UINT8:
-            throw std::runtime_error("UINT8 return type in MySQL is not compatible, please use UINT32.");
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_TINY;
+            bindedResultsParams[col].is_unsigned = 1;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_UINT16:
-            throw std::runtime_error("UINT16 return type in MySQL is not compatible, please use UINT32.");
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_SHORT;
+            bindedResultsParams[col].is_unsigned = 1;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_UINT32:
-            bindedResults[i].buffer_type = MYSQL_TYPE_LONG;
-            bindedResults[i].is_unsigned = 1;
-            bindedResults[i].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_LONG;
+            bindedResultsParams[col].is_unsigned = 1;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_UINT64:
-            bindedResults[i].buffer_type = MYSQL_TYPE_LONGLONG;
-            bindedResults[i].is_unsigned = 1;
-            bindedResults[i].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_LONGLONG;
+            bindedResultsParams[col].is_unsigned = 1;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_DOUBLE:
-            bindedResults[i].buffer_type = MYSQL_TYPE_DOUBLE;
-            bindedResults[i].is_unsigned = 1;
-            bindedResults[i].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_DOUBLE;
+            bindedResultsParams[col].is_unsigned = 0;
+            bindedResultsParams[col].buffer = val->getDirectMemory();
             break;
         case Memory::Abstract::TYPE_BIN:
-        {
-            // TODO: how to bind this..
-            throw std::runtime_error("BIN/BLOB return type is not compatible in MySQL yet, please use VARCHAR.");
-        } break;
+            // fetch later.
+            break;
         case Memory::Abstract::TYPE_VARCHAR:
         {
             // This will copy the memory.
-            bindedResults[i].buffer_type = MYSQL_TYPE_STRING;
-            bindedResults[i].length = ABSTRACT_PTR_AS(VARCHAR,val)->getFillSizePTR();
-            bindedResults[i].buffer = val->getDirectMemory();
-            bindedResults[i].buffer_length = ABSTRACT_PTR_AS(VARCHAR,val)->getVarSize();
+            bindedResultsParams[col].buffer_type = MYSQL_TYPE_STRING;
+            bindedResultsParams[col].length = ABSTRACT_PTR_AS(VARCHAR,val)->getFillSizePTR();
+            bindedResultsParams[col].buffer = val->getDirectMemory();
+            bindedResultsParams[col].buffer_length = ABSTRACT_PTR_AS(VARCHAR,val)->getVarSize();
         } break;
         case Memory::Abstract::TYPE_STRING:
-        {
-            throw std::runtime_error("STRING return type is not compatible in MySQL yet, please use VARCHAR.");
-        }break;
-        case  Memory::Abstract::TYPE_STRINGLIST:
-        {
-            throw std::runtime_error("STRINGLIST return type is not compatible in MySQL yet, please use VARCHAR.");
-        }break;
-        case  Memory::Abstract::TYPE_IPV4:
-        {
-            throw std::runtime_error("IPV4 return type is not compatible in MySQL yet, please use VARCHAR.");
-        }break;
-        case  Memory::Abstract::TYPE_IPV6:
-        {
-            throw std::runtime_error("IPV6 return type is not compatible in MySQL yet, please use VARCHAR.");
-        }break;
-        case  Memory::Abstract::TYPE_PTR:
-        {
-            throw std::runtime_error("Pointer return type is not compatible in MySQL yet, please use VARCHAR.");
-        } break;
-        case  Memory::Abstract::TYPE_NULL:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_STRINGLIST:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_DATETIME:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_IPV4:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_IPV6:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_PTR:
+            // fetch later.
+            break;
+        case Memory::Abstract::TYPE_NULL:
             // Don't copy the value (not needed).
-            throw std::runtime_error("NULL return type is not compatible in MySQL yet.");
             break;
         }
-        i++;
+        col++;
     }
     return true;
 }
 
-
-std::string *Query_MariaDB::createDestroyableString(const std::string &str)
-{
-    std::string * i = new std::string;
-    *i = str;
-    destroyableStrings.push_back(i);
-    return i;
-}
-
-my_ulonglong Query_MariaDB::getLastInsertRowID() const
-{
-    return lastInsertRowID;
-}
-
-bool Query_MariaDB::getFetchInsertRowID() const
-{
-    return bFetchInsertRowID;
-}
-
-void Query_MariaDB::setFetchInsertRowID(bool value)
-{
-    bFetchInsertRowID = value;
-}
 
