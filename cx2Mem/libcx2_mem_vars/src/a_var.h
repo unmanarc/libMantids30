@@ -23,6 +23,7 @@ enum Type {
     TYPE_IPV4,
     TYPE_IPV6,
     TYPE_PTR,
+    TYPE_DATETIME,
     TYPE_NULL
 };
 

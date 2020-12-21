@@ -24,6 +24,7 @@
 #include "a_string.h"
 #include "a_stringlist.h"
 #include "a_varchar.h"
+#include "a_datetime.h"
 
 
 #endif // A_ALLVARS_H

@@ -3,6 +3,7 @@ QT       -= core gui
 SOURCES += \
     src/a_bin.cpp \
     src/a_bool.cpp \
+    src/a_datetime.cpp \
     src/a_double.cpp \
     src/a_int16.cpp \
     src/a_int32.cpp \
@@ -36,6 +37,7 @@ HEADERS += \
     src/a_allvars.h \
     src/a_bin.h \
     src/a_bool.h \
+    src/a_datetime.h \
     src/a_double.h \
     src/a_int16.h \
     src/a_int32.h \

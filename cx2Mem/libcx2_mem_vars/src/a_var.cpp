@@ -16,6 +16,7 @@
 #include "a_uint32.h"
 #include "a_uint64.h"
 #include "a_varchar.h"
+#include "a_datetime.h"
 
 using namespace CX2::Memory::Abstract;
 
@@ -78,6 +79,9 @@ Var *Var::makeAbstract(Type type, const std::string &defValue)
         break;
     case TYPE_DOUBLE:
         v=new DOUBLE;
+        break;
+    case TYPE_DATETIME:
+        v=new DATETIME;
         break;
     case TYPE_BIN:
         v=new BINARY;
