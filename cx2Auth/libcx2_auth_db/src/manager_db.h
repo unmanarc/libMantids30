@@ -1,20 +1,16 @@
-#ifndef IAUTH_SQLITE3_H
-#define IAUTH_SQLITE3_H
+#ifndef MANAGER_DB_H
+#define MANAGER_DB_H
 
 #include <cx2_auth/manager.h>
-#include <sqlite3.h>
+#include <cx2_db/sqlconnector.h>
+
 namespace CX2 { namespace Authentication {
 
-class Manager_SQLite3 : public Manager
+class Manager_DB : public Manager
 {
 public:
     // Open authentication system:
-
-#ifdef WIN32
-    Manager_SQLite3(const std::string & appName, const std::string & filePath);
-#else
-    Manager_SQLite3(const std::string & appName, const std::string & filePath = "");
-#endif
+    Manager_DB( CX2::Database::SQLConnector * sqlConnector );
     bool initScheme() override;
 
     /////////////////////////////////////////////////////////////////////////////////
@@ -85,15 +81,12 @@ protected:
     Secret retrieveSecret(const std::string &accountName, uint32_t passIndex, bool *found) override;
 
 private:
-    bool _pSQLTableExist(const std::string &table);
-    bool _pSQLExecQuery(const std::string &query);
-    bool _pSQLExecQueryF(const std::string &query, int _va_size, ...);
 
     std::list<std::string> sqlErrorList;
     std::string filePath;
-    sqlite3 *ppDb;
+    CX2::Database::SQLConnector * sqlConnector;
 };
 
 
 }}
-#endif // IAUTH_SQLITE3_H
+#endif // MANAGER_DB_H

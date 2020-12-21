@@ -1,17 +1,18 @@
 QT       -= core gui
 
-SOURCES +=  \
-    src/query_pgsql.cpp \
-    src/sqlconnector_pgsql.cpp
-HEADERS +=  \
-    src/query_pgsql.h \
-    src/sqlconnector_pgsql.h
+SOURCES += \ 
+    src/manager_db.cpp \
+    src/manager_db_groups.cpp \
+    src/manager_db_attributes.cpp \
+    src/manager_db_accounts.cpp
+HEADERS += \  
+    src/manager_db.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib 
+win32:LIBS+= -L$$PREFIX/lib -lcx2_auth2 -lcx2_db -lcx2_thr_mutex2 -lcx2_hlp_functions2 -lcx2_thr_safecontainers2
 
 # includes dir
 QMAKE_INCDIR += $$PREFIX/include
@@ -22,9 +23,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_db -lcx2_thr_mutex2 -lcx2_mem_vars2 -lpq
-
-TARGET = cx2_db_pgsql
+TARGET = cx2_auth_db
 TEMPLATE = lib
 # INSTALLATION:
 target.path = $$PREFIX/lib

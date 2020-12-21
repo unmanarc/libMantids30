@@ -10,11 +10,9 @@ SUBDIRS += libcx2_db_mariadb
 # Project folders:
 libcx2_db_mariadb.subdir    = libcx2_db_mariadb
 
-
-# DB based authenticator (sqlite3 based)
-SUBDIRS += libcx2_auth_sqlite3
+# PostgreSQL DB Support
+SUBDIRS += libcx2_db_pgsql
 # Project folders:
-libcx2_auth_sqlite3.subdir    = libcx2_auth_sqlite3
-
+libcx2_db_pgsql.subdir    = libcx2_db_pgsql
 
 #END-
