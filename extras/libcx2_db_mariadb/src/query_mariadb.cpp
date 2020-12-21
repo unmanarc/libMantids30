@@ -313,7 +313,6 @@ bool Query_MariaDB::step()
             {
                 ABSTRACT_PTR_AS(IPV6,resultVars[col])->fromString( val->getValue() );
             }break;
-                break;
             case Memory::Abstract::TYPE_PTR:
             {
                 std::string * str = createDestroyableString(val->getValue());
