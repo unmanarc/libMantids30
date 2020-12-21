@@ -15,9 +15,5 @@ SUBDIRS += libcx2_net_multiplexer
 # Project folders:
 libcx2_net_multiplexer.subdir    = libcx2_net_multiplexer
 
-# PostgreSQL DB Support
-SUBDIRS += libcx2_db_pgsql
-# Project folders:
-libcx2_db_pgsql.subdir    = libcx2_db_pgsql
 
 #END-
