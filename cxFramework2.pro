@@ -14,5 +14,5 @@ SUBDIRS += cx2Scripts
 SUBDIRS += cx2Program
 
 
-#SUBDIRS += devel
-#SUBDIRS += extras
+SUBDIRS += devel
+SUBDIRS += extras
