@@ -48,31 +48,24 @@ AppLog::AppLog(const std::string & _appName, const std::string & _logName, unsig
     {
         appLogDir = "c:\\" + _appName;
     }
-    appLogFile = appLogDir + "/" + logName;
 
+    if ( access( appLogDir.c_str(), W_OK ) )
+    {
+        // Can't access this dir. Use current dir.
+        appLogDir = ".";
+    }
+    appLogFile = appLogDir + "\\" + logName;
 #else
 
-    if (getuid()==0)
-    {
-        appLogDir = "/var/log/" + _appName;
-    }
-    else
-    {
-        if (isUsingSqliteLog())
-        {
-            const char *homedir;
-            homedir = getpwuid(getuid())->pw_dir;
-            appLogDir = string(homedir) + string("/.") +  _appName;
-            if (access(appLogDir.c_str(),R_OK)) mkdir(appLogDir.c_str(),0700);
-            appLogDir = appLogDir + string("/log");
-            if (access(appLogDir.c_str(),R_OK)) mkdir(appLogDir.c_str(),0700);
-        }
-    }
-    appLogFile = appLogDir + "/" + logName;
-#endif
+    appLogDir = "/var/log/" + _appName;
 
-#ifndef NOSQLITE
-    ppDb = nullptr;
+    if ( access( appLogDir.c_str(), W_OK ) )
+    {
+        // Can't access this dir. Use current dir.
+        appLogDir = ".";
+    }
+
+    appLogFile = appLogDir + "/" + logName;
 #endif
 
     initialize();
@@ -81,14 +74,7 @@ AppLog::AppLog(const std::string & _appName, const std::string & _logName, unsig
 AppLog::~AppLog()
 {
     std::unique_lock<std::mutex> lock(mt);
-#ifndef NOSQLITE
-    if (ppDb)
-    {
-        sqlite3_close(ppDb);
-        ppDb = nullptr;
-        logMode = logMode & ~((uint32_t)MODE_SYSLOG);
-    }
-#endif
+
     if (isUsingSyslog())
     {
 #ifndef _WIN32
@@ -245,15 +231,7 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
         else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
-#ifndef NOSQLITE
-    if (isUsingSqliteLog() && ppDb)
-    {
-        unsigned int log_severity = (unsigned int) logSeverity;
-        std::string severity = to_string(log_severity);
 
-        sqliteExecQueryVA("INSERT INTO logs_v1 (date,severity,module,user,ip,message) VALUES(DateTime('now'),?,?,?,?,?);", 5, severity.c_str(), module.c_str(), user.c_str(), ip.c_str(), buffer);
-    }
-#endif
     va_end(args);
     delete [] buffer;
 }
@@ -303,15 +281,7 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
         else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
-#ifndef NOSQLITE
-    if (isUsingSqliteLog() && ppDb)
-    {
-        unsigned int log_severity = (unsigned int) logSeverity;
-        std::string severity = to_string(log_severity);
 
-        sqliteExecQueryVA("INSERT INTO logs_v1 (date,severity,module,user,ip,message) VALUES(DateTime('now'),?,?,?,?,?);", 5, severity.c_str(), module.c_str(), user.c_str(), ip.c_str(), buffer);
-    }
-#endif
     va_end(args);
 }
 
@@ -360,15 +330,7 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
         else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,"",ip,buffer,LOG_COLOR_PURPLE,"ERR");
     }
-#ifndef NOSQLITE
-    if (isUsingSqliteLog() && ppDb)
-    {
-        unsigned int log_severity = (unsigned int) logSeverity;
-        std::string severity = to_string(log_severity);
 
-        sqliteExecQueryVA("INSERT INTO logs_v1 (date,severity,module,user,ip,message) VALUES(DateTime('now'),?,?,?,?,?);", 5, severity.c_str(), module.c_str(), "", ip.c_str(), buffer);
-    }
-#endif
     va_end(args);
 }
 
@@ -417,36 +379,10 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
         else if (logSeverity == LEVEL_ERR)
             printStandardLog(stderr,module,"","",buffer,LOG_COLOR_PURPLE,"ERR");
     }
-#ifndef NOSQLITE
-    if (isUsingSqliteLog() && ppDb)
-    {
-        unsigned int log_severity = (unsigned int) logSeverity;
-        std::string severity = to_string(log_severity);
 
-        sqliteExecQueryVA("INSERT INTO logs_v1 (date,severity,module,user,ip,message) VALUES(DateTime('now'),?,?,?,?,?);", 5, severity.c_str(), module.c_str(), "", "", buffer);
-    }
-#endif
     va_end(args);
 }
 
-bool AppLog::sqliteTableExist(const std::string &table)
-{
-#ifndef NOSQLITE
-    bool ret;
-    string xsql = "select sql from sqlite_master where tbl_name=?;";
-    sqlite3_stmt * stmt;
-    sqlite3_prepare_v2(ppDb, xsql.c_str(), xsql.size() + 1, &stmt, nullptr);
-    sqlite3_bind_text(stmt, 1, table.c_str(), table.size(), nullptr);
-    int s = sqlite3_step(stmt);
-    ret = (s == SQLITE_ROW ? true : false);
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-    return ret;
-#else
-    return false;
-#endif
-}
 
 bool AppLog::isUsingSyslog()
 {
@@ -457,16 +393,6 @@ bool AppLog::isUsingStandardLog()
 {
     return (logMode & MODE_STANDARD) == MODE_STANDARD;
 }
-
-bool AppLog::isUsingSqliteLog()
-{
-#ifndef NOSQLITE
-    return (logMode & MODE_SQLITE) == MODE_SQLITE;
-#else
-    return false;
-#endif
-}
-
 
 void AppLog::printColorBold(FILE *fp, const char *str)
 {
@@ -528,73 +454,9 @@ void AppLog::printColorForWin32(FILE *fp, unsigned short color, const char *str)
 #endif
 }
 
-bool AppLog::sqliteExecQuery(const std::string& query)
-{
-#ifndef NOSQLITE
-    const char *tail;
-    sqlite3_stmt *stmt = nullptr;
-    sqlite3_prepare_v2(ppDb, query.c_str(), query.length(), &stmt, &tail);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE)
-    {
-        sqlite3_finalize(stmt);
-        fprintf(stderr, "Log SQL error: %s\n", sqlite3_errmsg(ppDb));
-        return false;
-    }
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-
-    return true;
-#else
-    return false;
-#endif
-}
-
-bool AppLog::sqliteExecQueryVA(const std::string& query, int _va_size, ...)
-{
-#ifndef NOSQLITE
-    const char *tail;
-    sqlite3_stmt *stmt = nullptr;
-    sqlite3_prepare_v2(ppDb, query.c_str(), query.length(), &stmt, &tail);
-
-    va_list args;
-    va_start(args, _va_size);
-
-    for (int i = 0; i < _va_size; i++)
-    {
-        const char *val_to_bind = va_arg(args, const char *);
-        sqlite3_bind_text(stmt, i + 1, val_to_bind, strlen(val_to_bind) + 1, SQLITE_TRANSIENT);
-    }
-
-    va_end(args);
-
-    if (sqlite3_step(stmt) != SQLITE_DONE)
-    {
-        sqlite3_finalize(stmt);
-        fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(ppDb));
-        return false;
-    }
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-
-    return true;
-#else
-    return false;
-#endif
-}
-
 bool AppLog::isUsingWindowsEventLog()
 {
     return (logMode & MODE_WINEVENTS) == MODE_WINEVENTS;
-}
-
-void AppLog::dropLog()
-{
-#ifndef NOSQLITE
-    sqliteExecQuery("DELETE FROM logs_v1 WHERE 1=1;");
-#endif
 }
 
 void AppLog::initialize()
@@ -615,46 +477,6 @@ void AppLog::initialize()
     {
         //TODO: future work.
     }
-#ifndef NOSQLITE
-    if (isUsingSqliteLog())
-    {
-        if (access(appLogDir.c_str(), R_OK))
-        {
-#ifdef _WIN32
-            if (mkdir(appLogDir.c_str()) == -1)
-#else
-            if (mkdir(appLogDir.c_str(), 0700) == -1)
-#endif
-            {
-                fprintf(stderr, " [+] ERROR (@std_log)> Unable to create log dir (%s)\n", appLogDir.c_str());
-            }
-        }
-        if (!access(appLogDir.c_str(), W_OK))
-        {
-            int rc;
-            rc = sqlite3_open(appLogFile.c_str(), &ppDb);
-            if (rc)
-            {
-                fprintf(stderr, " [+] ERROR (@std_log)> Unable to create/open log file (%s) - %s\n", appLogFile.c_str(), sqlite3_errmsg(ppDb));
-            }
-            else
-            {
-                if (!sqliteTableExist("logs_v1"))
-                {
-                    sqliteExecQuery("CREATE TABLE \"logs_v1\" (\"id\" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , \"date\" DATETIME NOT NULL , \"severity\" INTEGER NOT NULL , \"module\" VARCHAR(256) NOT NULL, \"user\" VARCHAR(256), \"ip\" VARCHAR(46), \"message\" TEXT NOT NULL );");
-                    sqliteExecQuery("CREATE UNIQUE INDEX \"idx_logs_v1_id\" ON \"logs_v1\" (\"id\" ASC);");
-                    sqliteExecQuery("CREATE INDEX \"idx_logs_v1_date\" ON \"logs_v1\" (\"date\" ASC);");
-                    sqliteExecQuery("CREATE INDEX \"idx_logs_v1_module\" ON \"logs_v1\" (\"module\" ASC);");
-                    sqliteExecQuery("CREATE INDEX \"idx_logs_v1_user\" ON \"logs_v1\" (\"user\" ASC);");
-                    sqliteExecQuery("CREATE INDEX \"idx_logs_v1_ip\" ON \"logs_v1\" (\"ip\" ASC);");
-                    sqliteExecQuery("CREATE INDEX \"idx_logs_v1_severity\" ON \"logs_v1\" (\"severity\" ASC);");
-
-                    // now we have the tables ;)
-                }
-            }
-        }
-    }
-#endif
 }
 
 string AppLog::getAlignedValue(const string &value, size_t sz)
@@ -747,83 +569,4 @@ void AppLog::setDebug(bool value)
 {
     std::unique_lock<std::mutex> lock(mt);
     debug = value;
-}
-
-unsigned int AppLog::getLogLastID()
-{
-    std::unique_lock<std::mutex> lock(mt);
-#ifndef NOSQLITE
-    unsigned int x = 0;
-    string xsql = "SELECT id FROM logs_v1 ORDER BY id DESC LIMIT 1";
-
-    sqlite3_stmt * stmt;
-    sqlite3_prepare_v2(ppDb, xsql.c_str(), xsql.size() + 1, &stmt, nullptr);
-
-    int s = sqlite3_step(stmt);
-    if (s == SQLITE_ROW)
-    {
-        x = sqlite3_column_int(stmt, 0);
-    }
-    else
-    {
-        fprintf(stderr, "Get IDS failed (using 0).\n");
-        exit(1);
-    }
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-
-    return x;
-#else
-    return 0;
-#endif
-}
-
-std::list<sLogElement> AppLog::getLogView(unsigned int id_from, unsigned int id_to, const std::string& filter, eLogLevels logLevelFilter)
-{
-    std::unique_lock<std::mutex> lock(mt);
-
-    std::list<sLogElement> r;
-#ifndef NOSQLITE
-    string xsql;
-
-    if (logLevelFilter == LEVEL_ALL)
-        xsql = "SELECT id,date as TEXT,severity,module,user,ip,message AS TEXT FROM logs_v1 WHERE id >= '" + to_string(id_from) + "' and id <= '" + to_string(id_to) + "';";
-    else
-        xsql = "SELECT id,date as TEXT,severity,module,user,ip,message AS TEXT FROM logs_v1 WHERE id >= '" + to_string(id_from) + "' AND id <= '" + to_string(id_to) + "' and severity = '" + to_string((unsigned int) logLevelFilter) + "';";
-
-    sqlite3_stmt * stmt;
-    sqlite3_prepare_v2(ppDb, xsql.c_str(), xsql.size() + 1, &stmt, nullptr);
-
-    for (;;)
-    {
-        int s = sqlite3_step(stmt);
-        if (s == SQLITE_ROW)
-        {
-            sLogElement rx;
-            rx.id = sqlite3_column_int(stmt, 0);
-            rx.date = (const char *)sqlite3_column_text(stmt, 1);
-            rx.severity = sqlite3_column_int(stmt, 2);
-            rx.module = (const char *)sqlite3_column_text(stmt, 3);
-            rx.user = (const char *)sqlite3_column_text(stmt, 4);
-            rx.ip = (const char *)sqlite3_column_text(stmt, 5);
-            rx.message = (const char *)sqlite3_column_text(stmt, 6);
-
-            r.push_back(rx);
-        }
-        else if (s == SQLITE_DONE)
-        {
-            break;
-        }
-        else
-        {
-            fprintf(stderr, "Get OIDS failed.\n");
-            exit(1);
-        }
-    }
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-#endif
-    return r;
 }

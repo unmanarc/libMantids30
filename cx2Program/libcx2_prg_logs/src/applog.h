@@ -6,11 +6,6 @@
 #include <list>
 #include <set>
 
-#define NOSQLITE
-#ifndef NOSQLITE
-#include <sqlite3.h>
-#endif
-
 #include "loglevels.h"
 #include "logcolors.h"
 #include "logmodes.h"
@@ -80,25 +75,6 @@ public:
     void setDebug(bool value);
 
     /////////////////////////////////////////////////////////
-    // Sqlite3 log manipulation:
-    /**
-     * Drop log events from SQLITE.
-     */
-    void dropLog();
-    /**
-     * Get the last log ID for sqlite3 logs
-     * @return return the last log id
-     */
-    unsigned int getLogLastID();
-    /**
-     * Get the list of log events from id_from to id_to...
-     * @param id_from First ID to search (inclusive).
-     * @param id_to Last ID to include (inclusive).
-     * @param filter Filter TODO (not working yet)
-     * @param logLevelFilter get only specific log level
-     * @return list of log elements
-     */
-    std::list<sLogElement>  getLogView(unsigned int id_from, unsigned int id_to,const std::string & filter, eLogLevels logLevelFilter = LEVEL_ALL);
 
     bool getUsingPrintDate() const;
     void setUsingPrintDate(bool value);
@@ -122,13 +98,10 @@ public:
     void setModuleAlignSize(const uint32_t &value);
 
 private:
-    bool sqliteTableExist(const std::string &table);
-    bool sqliteExecQuery(const std::string &query);
-    bool sqliteExecQueryVA(const std::string& query, int _va_size, ...);
+
     bool isUsingWindowsEventLog();
     bool isUsingSyslog();
     bool isUsingStandardLog();
-    bool isUsingSqliteLog();
 
     // Print functions:
     void printStandardLog(FILE *fp, std::string module, std::string user, std::string ip, const char * buffer, eLogColors color, const char *logLevelText);
@@ -143,7 +116,6 @@ private:
     void initialize();
 
     static std::string getAlignedValue(const std::string & value, size_t sz);
-
 
     ////////////////////////////////////////////////////////////////
     unsigned int logMode;
@@ -162,18 +134,8 @@ private:
     std::set<std::string> modulesOutputExclusion;
 
     bool debug, usingPrintDate, usingAttributeName, usingColors, printEmptyFields;
-
-#ifndef NOSQLITE
-    // DB
-    sqlite3 *ppDb;
-#endif
 };
 
-
 }}}
-
-
-
-
 
 #endif // APPLOGS_H
