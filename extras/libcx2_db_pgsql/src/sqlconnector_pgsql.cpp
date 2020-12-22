@@ -113,7 +113,7 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
 {
     char ** values = (char **)malloc( (connectionValues.size()+1)*sizeof(char *) );
 
-    uint pos = 0;
+    size_t pos = 0;
     for ( const auto & i : connectionValues )
     {
         values[pos++] = strdup(i.first.c_str());

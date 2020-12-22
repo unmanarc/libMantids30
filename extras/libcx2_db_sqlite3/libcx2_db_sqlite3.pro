@@ -22,7 +22,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_db -lcx2_thr_mutex2 -lcx2_mem_vars2 -lsqlite3
+win32:LIBS+= -L$$PREFIX/lib -lcx2_db2 -lcx2_thr_mutex2 -lcx2_mem_vars2 -lsqlite3
 
 TARGET = cx2_db_sqlite3
 TEMPLATE = lib

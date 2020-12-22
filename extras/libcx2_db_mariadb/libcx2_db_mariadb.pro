@@ -1,11 +1,16 @@
 QT       -= core gui
 
+# mariadb is not included in mingw ?
+!win32 {
+
 SOURCES +=  \
     src/query_mariadb.cpp \
     src/sqlconnector_mariadb.cpp
 HEADERS +=  \
     src/query_mariadb.h \
     src/sqlconnector_mariadb.h
+
+}
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -22,7 +27,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_db -lcx2_thr_mutex2 -lcx2_mem_vars2 -lmariadb
+#win32:LIBS+= -L$$PREFIX/lib -lcx2_db2 -lcx2_thr_mutex2 -lcx2_mem_vars2 -lmariadb
 
 TARGET = cx2_db_mariadb
 TEMPLATE = lib

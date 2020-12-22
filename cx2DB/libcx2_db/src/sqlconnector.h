@@ -30,7 +30,7 @@ class SQLConnector
 {
 public:
     SQLConnector();
-    ~SQLConnector();
+    virtual ~SQLConnector();
 
 
     // Database connection:
@@ -46,8 +46,7 @@ public:
     virtual bool isOpen() = 0;
 
     // Database Internals:
-    virtual bool dbTableExist(const std::string & table);
-
+    virtual bool dbTableExist(const std::string & table) = 0;
 
     // Connection/Database Information:
     virtual std::string driverName() = 0;

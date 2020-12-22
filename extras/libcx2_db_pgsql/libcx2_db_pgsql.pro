@@ -22,7 +22,7 @@ INCLUDEPATH += src
 # C++ standard.
 include(../../cflags.pri)
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_db -lcx2_thr_mutex2 -lcx2_mem_vars2 -lpq
+win32:LIBS+= -L$$PREFIX/lib -lcx2_db2 -lcx2_thr_mutex2 -lcx2_mem_vars2 -lpq
 
 TARGET = cx2_db_pgsql
 TEMPLATE = lib

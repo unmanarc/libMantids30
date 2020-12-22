@@ -13,7 +13,7 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib 
+win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2
 
 # includes dir
 QMAKE_INCDIR += $$PREFIX/include
