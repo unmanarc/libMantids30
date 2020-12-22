@@ -124,3 +124,10 @@ unsigned long VARCHAR::getFillSize() const
 {
     return fillSize;
 }
+
+Var *VARCHAR::protectedCopy()
+{
+    Threads::Sync::Lock_RD lock(this->mutex);
+    VARCHAR * var = new VARCHAR(this->varSize,this->value);
+    return var;
+}
