@@ -50,7 +50,7 @@ This library was tested so far in:
 * Fedora Linux 32
 * Ubuntu 18.04/20.04
 * CentOS/RHEL 7/8
-* CentOS/RHEL 5/6 for compatibility but may require special C++11 compilers: we don't recommend it
+* CentOS/RHEL 5/6, but may require special/external C++11 compilers, we don't recommend it
 
 ### Overall Pre-requisites:
 
