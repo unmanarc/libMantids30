@@ -191,7 +191,7 @@ bool Query_SQLite3::step0()
                 break;
             case Memory::Abstract::TYPE_UINT64:
                 // Not implemented.
-                throw std::runtime_error("UINT64 is not supported by SQLite3, check your implementation");
+                throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
                 break;
             case Memory::Abstract::TYPE_DOUBLE:
                 ABSTRACT_PTR_AS(DOUBLE,outputVar)->setValue( sqlite3_column_double(stmt, columnpos) );
