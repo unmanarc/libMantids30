@@ -14,13 +14,14 @@ public:
 
     // Direct Query:
     bool exec(const ExecType & execType);
-    bool step();
 
     // Sqlite3 options...
 
     // Query preparation called from SQL Connector.
     void sqlite3SetDatabaseConnector( sqlite3 *ppDb );
     bool sqlite3IsDone() const;
+protected:
+    bool step0();
 
 private:
     sqlite3_stmt *stmt;

@@ -21,9 +21,9 @@ Query::~Query()
     {
         ((SQLConnector *)sqlConnector)->detachQuery(this);
     }
-    // Destroy strings.
-    for (auto * i : destroyableStrings) delete i;
 
+    clearDestroyableStringsForInput();
+    clearDestroyableStringsForResults();
 }
 
 bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, CX2::Memory::Abstract::Var> &vars)
@@ -81,6 +81,13 @@ void Query::setFetchLastInsertRowID(bool value)
     bFetchLastInsertRowID = value;
 }
 
+bool Query::step()
+{
+    clearDestroyableStringsForInput();
+    isNull.clear();
+    return step0();
+}
+
 bool Query::getIsNull(const size_t &column)
 {
     if ((column+1) > isNull.size())
@@ -127,12 +134,32 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
     return false;
 }
 
-std::string *Query::createDestroyableString(const std::string &str)
+std::string *Query::createDestroyableStringForInput(const std::string &str)
 {
     std::string * i = new std::string;
     *i = str;
-    destroyableStrings.push_back(i);
+    destroyableStringsForInput.push_back(i);
     return i;
+}
+
+void Query::clearDestroyableStringsForInput()
+{
+    // Destroy strings.
+    for (auto * i : destroyableStringsForInput) delete i;
+}
+
+std::string *Query::createDestroyableStringForResults(const std::string &str)
+{
+    std::string * i = new std::string;
+    *i = str;
+    destroyableStringsForResults.push_back(i);
+    return i;
+}
+
+void Query::clearDestroyableStringsForResults()
+{
+    // Destroy strings.
+    for (auto * i : destroyableStringsForResults) delete i;
 }
 
 void Query::setSqlConnector(void *value, std::mutex *mtDatabaseLock)

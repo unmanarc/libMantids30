@@ -3,6 +3,7 @@
 
 #include "a_var.h"
 #include <cx2_thr_mutex/mutex_shared.h>
+#include <string.h>
 
 namespace CX2 { namespace Memory { namespace Abstract {
 
@@ -10,12 +11,32 @@ struct sBinContainer {
     sBinContainer()
     {
         ptr = nullptr;
+        dataSize = 0;
     }
     ~sBinContainer()
     {
         if (ptr) delete [] ptr;
     }
-
+    sBinContainer(const size_t & len)
+    {
+        ptr = nullptr;
+        if (len==0) return;
+        ptr = new char[len+1];
+        if (!ptr) return;
+        ptr[len] = 0;
+        dataSize = len;
+        memset(ptr,0,len);
+    }
+    sBinContainer(char * value, const size_t & len)
+    {
+        ptr = nullptr;
+        if (len==0) return;
+        ptr = new char[len+1];
+        if (!ptr) return;
+        ptr[len] = 0;
+        dataSize = len;
+        memcpy(ptr,value,len);
+    }
     char * ptr;
     size_t dataSize;
     Threads::Sync::Mutex_Shared mutex;

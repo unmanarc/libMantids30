@@ -15,7 +15,6 @@ public:
 
     // Direct Query:
     bool exec(const ExecType & execType);
-    bool step();
 
     // MariaDB specific functions:
     void mariaDBSetDatabaseConnector( MYSQL *dbCnt );
@@ -23,19 +22,22 @@ public:
     my_ulonglong getLastInsertRowID() const;
 
 protected:
+    bool step0();
     bool postBindInputVars();
-    bool postBindResultVars();
 
 private:
+    unsigned long mariaDBfetchVarSize(const size_t & col , const enum_field_types &fieldType = MYSQL_TYPE_STRING);
+
     MYSQL * dbCnt;
 
     MYSQL_STMT * stmt;
     MYSQL_BIND * bindedInputParams;
     MYSQL_BIND * bindedResultsParams;
 
-    my_bool * bIsNull;
+    //my_bool * bIsNull;
 
-    bool bDeallocateResultSet;
+    std::vector<unsigned long> bindedResultVarSizes;
+
     bool bFetchLastInsertRowID;
 
     std::vector<std::string> keysByPos;

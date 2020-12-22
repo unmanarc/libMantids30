@@ -38,8 +38,10 @@ public:
     // Query Execution:
     virtual bool exec(const ExecType & execType) = 0;
 
-    // SELECT Results:
-    virtual bool step() = 0;
+    // GET ROW FROM SELECT Results:
+    bool step();
+
+
     bool getIsNull(const size_t & column);
     unsigned long long getLastInsertRowID() const;
 
@@ -48,12 +50,19 @@ public:
     int getLastSQLReturnValue() const;
 
 protected:
+    virtual bool step0() = 0;
+
     virtual bool postBindInputVars() { return true; }
     virtual bool postBindResultVars() { return true; }
 
     bool replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string replaceBy);
 
-    std::string *createDestroyableString(const std::string &str);
+    std::string *createDestroyableStringForInput(const std::string &str);
+    void clearDestroyableStringsForInput();
+
+    std::string *createDestroyableStringForResults(const std::string &str);
+    void clearDestroyableStringsForResults();
+
 
     // Query:
     bool bBindInputVars, bBindResultVars;
@@ -76,7 +85,7 @@ protected:
 
 private:
     // Memory cleaning:
-    std::list<std::string *> destroyableStrings;
+    std::list<std::string *> destroyableStringsForInput, destroyableStringsForResults;
 
 };
 

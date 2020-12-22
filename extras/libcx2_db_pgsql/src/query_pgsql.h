@@ -13,7 +13,6 @@ public:
     Query_PostgreSQL();
     ~Query_PostgreSQL();
     bool exec(const ExecType & execType);
-    bool step();
 
 
     // PostgreSQL specific functions:
@@ -21,9 +20,8 @@ public:
     ExecStatusType psqlGetExecStatus() const;
 
 protected:
+    bool step0();
     bool postBindInputVars();
-    bool postBindResultVars();
-
 private:
     std::vector<std::string> keysByPos;
 

@@ -151,7 +151,7 @@ bool Query_SQLite3::exec(const ExecType &execType)
     return true;
 }
 
-bool Query_SQLite3::step()
+bool Query_SQLite3::step0()
 {
     // TODO: bind output values.
     lastSQLReturnValue = sqlite3_step(stmt);
