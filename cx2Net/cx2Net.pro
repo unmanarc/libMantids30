@@ -17,9 +17,9 @@ SUBDIRS+=libcx2_net_interfaces
 libcx2_net_interfaces.subdir    = libcx2_net_interfaces
 
 # Chain Sockets LIB.
-#SUBDIRS+=libcx2_net_chains
+SUBDIRS+=libcx2_net_chains
 # Project folders:
-#libcx2_net_chains.subdir    = libcx2_net_chains
-#libcx2_net_chains.depends   = libcx2_net_sockets
+libcx2_net_chains.subdir    = libcx2_net_chains
+libcx2_net_chains.depends   = libcx2_net_sockets
 
 #END-
