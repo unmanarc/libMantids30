@@ -128,7 +128,7 @@ bool NetIfConfig::apply()
             ULONG status = stateUP?1:0;
 
             DWORD len;
-            printf("Setting media status to connected\n");
+            //printf("Setting media status to connected\n");
             if (DeviceIoControl(fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
             {
                 lastError = "Failed to set media status";
