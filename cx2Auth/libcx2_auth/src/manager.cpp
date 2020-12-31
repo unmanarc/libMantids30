@@ -71,6 +71,13 @@ Secret_PublicData Manager::accountSecretPublicData(const std::string &accountNam
     return pdb;
 }
 
+bool Manager::accountChangeAuthenticatedSecret(const std::string &accountName, const std::string &currentPassword, Mode authMode, const std::string &cramSalt, const Secret &passwordData, uint32_t passIndex)
+{
+    if (authenticate(accountName,currentPassword,passIndex,authMode,cramSalt)!=REASON_AUTHENTICATED)
+        return false;
+    return accountChangeSecret(accountName,passwordData,passIndex);
+}
+
 bool Manager::isAccountExpired(const std::string &accountName)
 {
     time_t tAccountExpirationDate = accountExpirationDate(accountName);

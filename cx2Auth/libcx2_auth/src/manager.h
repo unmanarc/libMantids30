@@ -24,6 +24,8 @@ public:
     // authentication:
     virtual Reason authenticate(const std::string & accountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & cramSalt = "") override;
     Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0) override;
+    virtual bool accountChangeAuthenticatedSecret(const std::string & accountName, const std::string & currentPassword, Mode authMode, const std::string & cramSalt,
+                                                  const Secret & newPasswordData, uint32_t passIndex=0);
 
     virtual bool checkConnection() { return true; }
 
