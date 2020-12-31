@@ -68,7 +68,9 @@ void Session::updateLastActivity()
 
 bool Session::isLastActivityExpired(const uint32_t &expSeconds) const
 {
-    return (time(nullptr)-lastActivity)>expSeconds;
+    time_t curTime = time(nullptr);
+    if (lastActivity>curTime) return true; // Computer time has changed?
+    return (uint32_t)(curTime-lastActivity)>expSeconds;
 }
 
 time_t Session::getLastActivity() const
