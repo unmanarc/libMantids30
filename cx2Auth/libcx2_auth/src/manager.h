@@ -22,7 +22,7 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////
     // authentication:
-    Reason authenticate(const std::string & accountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & cramSalt = "") override;
+    virtual Reason authenticate(const std::string & accountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & cramSalt = "") override;
     Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0) override;
 
     virtual bool checkConnection() { return true; }
