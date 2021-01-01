@@ -102,6 +102,17 @@ std::set<std::string> Manager::accountUsableAttribs(const std::string &accountNa
     return x;
 }
 
+bool Manager::superUserAccountExist()
+{
+    auto accounts = accountsList();
+    for (const std::string & account : accounts)
+    {
+        if (isAccountSuperUser(account))
+            return true;
+    }
+    return false;
+}
+
 bool Manager::accountValidateAttribute(const std::string &accountName, const std::string &attribName)
 {
     Threads::Sync::Lock_RD lock(mutex);

@@ -30,6 +30,8 @@ public:
                     bool enabled = true,
                     bool confirmed = true,
                     bool superuser = false) override;
+
+
     std::string accountConfirmationToken(const std::string & accountName) override;
     bool accountExist(const std::string & accountName) override;
     bool accountRemove(const std::string & accountName) override;

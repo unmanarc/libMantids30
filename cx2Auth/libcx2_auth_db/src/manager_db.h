@@ -46,6 +46,8 @@ public:
     std::set<std::string> accountGroups(const std::string & accountName, bool lock = true) override;
     std::set<std::string> accountDirectAttribs(const std::string & accountName, bool lock = true) override;
 
+    bool superUserAccountExist() override;
+
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:
     bool attribAdd(const std::string & attribName, const std::string & attribDescription) override;

@@ -363,6 +363,20 @@ std::set<std::string> Manager_DB::accountDirectAttribs(const std::string &accoun
     return ret;
 }
 
+bool Manager_DB::superUserAccountExist()
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    QueryInstance i = sqlConnector->query("SELECT superuser FROM vauth_v2_accounts WHERE superuser=:superuser LIMIT 1;",
+                                          { {":superuser",Memory::Abstract::BOOL(true)} },
+                                          { });
+
+    if (i.ok && i.query->step())
+        return true;
+
+    return false;
+}
+
 Secret Manager_DB::retrieveSecret(const std::string &accountName, uint32_t passIndex, bool *found)
 {
     Threads::Sync::Lock_RD lock(mutex);

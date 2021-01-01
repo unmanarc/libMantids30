@@ -67,6 +67,9 @@ public:
     Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0) override;
 
 
+
+
+
     /////////////////////////////////////////////////////////////////////////////////
     // account:
     virtual     bool accountAdd(const std::string & accountName,
@@ -101,6 +104,8 @@ public:
     virtual std::set<std::string> accountGroups(const std::string & accountName, bool lock = true)=0;
     virtual std::set<std::string> accountDirectAttribs(const std::string & accountName, bool lock = true)=0;
     std::set<std::string> accountUsableAttribs(const std::string & accountName);
+
+    virtual bool superUserAccountExist();
 
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:
