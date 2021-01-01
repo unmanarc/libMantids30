@@ -1,9 +1,11 @@
 QT       -= core gui
 
 SOURCES += \
-    src/fullauth.cpp
+    src/fullauth.cpp \
+    src/loginauth.cpp
 HEADERS +=   \
-    src/fullauth.h
+    src/fullauth.h \
+    src/loginauth.h
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
