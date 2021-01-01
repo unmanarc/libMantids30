@@ -81,6 +81,7 @@ public:
 
     virtual bool accountChangeSecret(const std::string & accountName, const Secret & passwordData, uint32_t passIndex=0)=0;
     virtual bool accountRemove(const std::string & accountName)=0;
+    virtual bool accountExist(const std::string & accountName)=0;
     virtual bool accountDisable(const std::string & accountName, bool disabled = true)=0;
     virtual bool accountConfirm(const std::string & accountName, const std::string & confirmationToken)=0;
     virtual bool accountChangeDescription(const std::string & accountName, const std::string & description)=0;
@@ -105,6 +106,7 @@ public:
     // attributes:
     virtual bool attribAdd(const std::string & attribName, const std::string & attribDescription)=0;
     virtual bool attribRemove(const std::string & attribName)=0;
+    virtual bool attribExist(const std::string & attribName)=0;
     virtual bool attribGroupAdd(const std::string & attribName, const std::string & groupName)=0;
     virtual bool attribGroupRemove(const std::string & attribName, const std::string & groupName, bool lock = true)=0;
     virtual bool attribAccountAdd(const std::string & attribName, const std::string & accountName)=0;

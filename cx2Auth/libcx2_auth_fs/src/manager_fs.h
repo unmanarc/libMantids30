@@ -31,6 +31,7 @@ public:
                     bool confirmed = true,
                     bool superuser = false) override;
     std::string accountConfirmationToken(const std::string & accountName) override;
+    bool accountExist(const std::string & accountName) override;
     bool accountRemove(const std::string & accountName) override;
     bool accountDisable(const std::string & accountName, bool disabled = true) override;
     bool accountConfirm(const std::string & accountName, const std::string & confirmationToken) override;
@@ -54,6 +55,7 @@ public:
     // attributes:
     bool attribAdd(const std::string & attribName, const std::string & attribDescription) override;
     bool attribRemove(const std::string & attribName) override;
+    bool attribExist(const std::string & attribName) override;
     bool attribGroupAdd(const std::string & attribName, const std::string & groupName) override;
     bool attribGroupRemove(const std::string & attribName, const std::string & groupName, bool lock = true) override;
     bool attribAccountAdd(const std::string & attribName, const std::string & accountName) override;

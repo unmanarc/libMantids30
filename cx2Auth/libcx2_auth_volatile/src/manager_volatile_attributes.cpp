@@ -32,6 +32,13 @@ bool Manager_Volatile::attribRemove(const std::string &attribName)
     return true;
 }
 
+bool Manager_Volatile::attribExist(const std::string &attribName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+    if (attribs.find(attribName) == attribs.end()) return false;
+    return true;
+}
+
 bool Manager_Volatile::attribGroupAdd(const std::string &attribName, const std::string &groupName)
 {
     Threads::Sync::Lock_RW lock(mutex);

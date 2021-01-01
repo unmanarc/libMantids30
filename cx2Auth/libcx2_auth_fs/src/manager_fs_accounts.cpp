@@ -431,6 +431,23 @@ std::string Manager_FS::accountConfirmationToken(const std::string & accountName
     return r;
 }
 
+bool Manager_FS::accountExist(const std::string &accountName)
+{
+    std::string accountDir;
+    bool r = false;
+
+    Threads::Sync::Lock_RD lock(mutex);
+    if (!workingAuthDir.empty())
+    {
+        if (_pAccountDir(accountName,accountDir))
+        {
+            r = true;
+        }
+    }
+
+    return r;
+}
+
 std::string Manager_FS::accountExtraData(const std::string &accountName)
 {
     std::string r;

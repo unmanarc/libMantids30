@@ -44,6 +44,13 @@ bool Manager_Volatile::accountRemove(const std::string &accountName)
     return true;
 }
 
+bool Manager_Volatile::accountExist(const std::string &accountName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+    if (accounts.find(accountName) == accounts.end()) return false;
+    return true;
+}
+
 bool Manager_Volatile::accountDisable(const std::string &accountName, bool disabled)
 {
     Threads::Sync::Lock_RW lock(mutex);

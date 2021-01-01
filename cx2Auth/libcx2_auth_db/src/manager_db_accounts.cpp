@@ -81,6 +81,21 @@ bool Manager_DB::accountRemove(const std::string &accountName)
 
 }
 
+bool Manager_DB::accountExist(const std::string &accountName)
+{
+    bool ret = false;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    QueryInstance i = sqlConnector->query("SELECT enabled FROM vauth_v2_accounts WHERE name=:name LIMIT 1;",
+                                          {{":name",Memory::Abstract::STRING(accountName)}},
+                                          { });
+    if (i.ok && i.query->step())
+    {
+        ret = true;
+    }
+    return ret;
+}
+
 bool Manager_DB::accountDisable(const std::string &accountName, bool disabled)
 {
     Threads::Sync::Lock_RW lock(mutex);

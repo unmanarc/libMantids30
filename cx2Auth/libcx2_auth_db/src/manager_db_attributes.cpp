@@ -26,6 +26,21 @@ bool Manager_DB::attribRemove(const std::string &attribName)
                                });
 }
 
+bool Manager_DB::attribExist(const std::string &attribName)
+{
+    bool ret = false;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    QueryInstance i = sqlConnector->query("SELECT description FROM vauth_v2_attribs WHERE name=:name LIMIT 1;",
+                                          {{":name",Memory::Abstract::STRING(attribName)}},
+                                          { });
+    if (i.ok && i.query->step())
+    {
+        ret = true;
+    }
+    return ret;
+}
+
 bool Manager_DB::attribGroupAdd(const std::string &attribName, const std::string &groupName)
 {
     Threads::Sync::Lock_RW lock(mutex);

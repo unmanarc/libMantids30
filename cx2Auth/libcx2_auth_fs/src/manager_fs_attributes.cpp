@@ -120,6 +120,22 @@ bool Manager_FS::attribRemove(const std::string &attribName)
     return r;
 }
 
+bool Manager_FS::attribExist(const std::string &attribName)
+{
+    std::string attribDir;
+    bool r = false;
+    Threads::Sync::Lock_RW lock(mutex);
+    if (!workingAuthDir.empty())
+    {
+        if ((r=_pAttribDir(attribName,attribDir))==true)
+        {
+            r = true;
+        }
+    }
+
+    return r;
+}
+
 bool Manager_FS::attribGroupAdd(const std::string & attribName, const std::string & groupName)
 {
     std::string groupDir, groupAttribsDir;
