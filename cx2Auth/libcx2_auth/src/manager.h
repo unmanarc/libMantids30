@@ -17,17 +17,55 @@ public:
     Manager();
     virtual ~Manager() override;
 
+    /**
+     * @brief checkConnection Check if the Authentication Manager Connection is Alive.
+     * @return true if alive, false otherwise.
+     */
+    virtual bool checkConnection() { return true; }
+
     virtual bool initScheme()=0;
     virtual bool initAccounts();
 
     /////////////////////////////////////////////////////////////////////////////////
     // authentication:
-    virtual Reason authenticate(const std::string & accountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & cramSalt = "") override;
-    Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0) override;
-    virtual bool accountChangeAuthenticatedSecret(const std::string & accountName, const std::string & currentPassword, Mode authMode, const std::string & cramSalt,
+    /**
+     * @brief authenticate Authenticate the password for an specific account/index.
+     * @param accountName Account Name
+     * @param password Password Text (PLAIN,HASHED,SALTED-HASHED,Challenge,CODE)
+     * @param passIndex Password Index
+     * @param authMode Authentication Mode (CHALLENGE, PLAIN)
+     * @param cramSalt Challenge Salt.
+     * @return
+     */
+    virtual Reason authenticate(const std::string & accountName,
+                                const std::string & password,
+                                uint32_t passIndex = 0,
+                                Mode authMode = MODE_PLAIN,
+                                const std::string & cramSalt = "") override;
+    /**
+     * @brief accountChangeAuthenticatedSecret Change the password doing current password authentication
+     * @param accountName
+     * @param currentPassword
+     * @param authMode
+     * @param cramSalt
+     * @param newPasswordData New Password Data (hash, salt, expiration, etc)
+     * @param passIndex Password Index.
+     * @return true if changed, false if not (bad password, etc)
+     */
+    virtual bool accountChangeAuthenticatedSecret(const std::string & accountName,
+                                                  const std::string & currentPassword,
+                                                  Mode authMode,
+                                                  const std::string & cramSalt,
                                                   const Secret & newPasswordData, uint32_t passIndex=0);
+    /**
+     * @brief accountSecretPublicData Get information for Salted Password Calculation and expiration info (Not Authenticated)
+     * @param accountName Account Name
+     * @param found value set to true/false if the account was found or not.
+     * @param passIndex Password Index.
+     * @return Password Information (Eg. hashing function, salt, expiration, etc)
+     */
+    Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0) override;
 
-    virtual bool checkConnection() { return true; }
 
     /////////////////////////////////////////////////////////////////////////////////
     // account:
