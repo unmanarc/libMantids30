@@ -16,6 +16,7 @@ private:
     static Json::Value authenticate(void * obj, CX2::Authentication::Manager * auth, CX2::Authentication::Session * session, const Json::Value & payload);
     static Json::Value accountChangeSecret(void * obj, CX2::Authentication::Manager * auth, CX2::Authentication::Session * session, const Json::Value & payload);
     static Json::Value accountAdd(void * obj, CX2::Authentication::Manager * auth, CX2::Authentication::Session * session, const Json::Value & payload);
+    static Json::Value attribExist(void * obj, CX2::Authentication::Manager * auth, CX2::Authentication::Session * session, const Json::Value & payload);
 
 };
 
