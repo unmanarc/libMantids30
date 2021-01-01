@@ -28,6 +28,7 @@ static std::string getStringFromAuthMode( const Mode & mode )
     case MODE_CRAM:
         return "CRAM";
     };
+    return "PLAIN";
 }
 
 
