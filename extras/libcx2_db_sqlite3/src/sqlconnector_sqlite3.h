@@ -31,6 +31,8 @@ public:
     SQLConnector_SQLite3();
     ~SQLConnector_SQLite3();
 
+    bool isOpen();
+
     /**
      * @brief driverName Get driver Name.
      * @return driver name (SQLITE3)
@@ -49,7 +51,7 @@ public:
      * @param query Query.
      * @return true if succeed.
      */
-    void getDatabaseConnector( Query_SQLite3 * query );
+    void putDatabaseConnectorIntoQuery( Query_SQLite3 * query );
 
     bool sqlite3PragmaForeignKeys(bool on = true);
     bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode & mode);

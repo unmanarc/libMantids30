@@ -14,6 +14,11 @@ SQLConnector_SQLite3::~SQLConnector_SQLite3()
         sqlite3_close(ppDb);
 }
 
+bool SQLConnector_SQLite3::isOpen()
+{
+    return ppDb != nullptr && !rc;
+}
+
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
@@ -43,7 +48,7 @@ bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
     return ret;*/
 }
 
-void SQLConnector_SQLite3::getDatabaseConnector(Query_SQLite3 *query)
+void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
 {
     query->sqlite3SetDatabaseConnector(ppDb);
 }

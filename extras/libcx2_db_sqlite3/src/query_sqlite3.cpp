@@ -30,7 +30,7 @@ bool Query_SQLite3::exec(const ExecType &execType)
     }
 
     // Prepare the query (will lock the db while using ppDb):
-    ((SQLConnector_SQLite3*)sqlConnector)->getDatabaseConnector(this);
+    ((SQLConnector_SQLite3*)sqlConnector)->putDatabaseConnectorIntoQuery(this);
 
     std::unique_lock<std::mutex> lock(*mtDatabaseLock);
 
