@@ -2,7 +2,6 @@
 #define XRPC_FUNCTIONS_AUTH_H
 
 #include <cx2_xrpc_common/methodsmanager.h>
-#include <cx2_auth/domains.h>
 #include <json/json.h>
 
 namespace CX2 { namespace RPC { namespace Templates {
