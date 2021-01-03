@@ -8,13 +8,13 @@ namespace CX2 { namespace Authentication  {
 enum Mode
 {
     MODE_PLAIN,   // NOT RECOMMENDED.
-    MODE_CRAM
+    MODE_CHALLENGE
 };
 
 static Mode getAuthModeFromString( const std::string & mode )
 {
-    if (mode == "CRAM")
-        return MODE_CRAM;
+    if (mode == "CHALLENGE")
+        return MODE_CHALLENGE;
     else
         return MODE_PLAIN;
 }
@@ -25,8 +25,8 @@ static std::string getStringFromAuthMode( const Mode & mode )
     {
     case MODE_PLAIN:
         return "PLAIN";
-    case MODE_CRAM:
-        return "CRAM";
+    case MODE_CHALLENGE:
+        return "CHALLENGE";
     };
     return "PLAIN";
 }

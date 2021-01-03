@@ -33,7 +33,7 @@ bool Manager::initAccounts()
                       );
 }
 
-Reason Manager::authenticate(const std::string &accountName, const std::string &password, uint32_t passIndex, Mode authMode, const std::string &cramSalt)
+Reason Manager::authenticate(const std::string &accountName, const std::string &password, uint32_t passIndex, Mode authMode, const std::string &challengeSalt)
 {
     Reason ret;
     bool found=false;
@@ -44,7 +44,7 @@ Reason Manager::authenticate(const std::string &accountName, const std::string &
         if (!isAccountConfirmed(accountName)) ret = REASON_UNCONFIRMED_ACCOUNT;
         else if (isAccountDisabled(accountName)) ret = REASON_DISABLED_ACCOUNT;
         else if (isAccountExpired(accountName)) ret = REASON_EXPIRED_ACCOUNT;
-        else ret = validateSecret(pData, password,  cramSalt, authMode);
+        else ret = validateSecret(pData, password,  challengeSalt, authMode);
     }
     else
         ret = REASON_BAD_ACCOUNT;
@@ -71,9 +71,9 @@ Secret_PublicData Manager::accountSecretPublicData(const std::string &accountNam
     return pdb;
 }
 
-bool Manager::accountChangeAuthenticatedSecret(const std::string &accountName, const std::string &currentPassword, Mode authMode, const std::string &cramSalt, const Secret &passwordData, uint32_t passIndex)
+bool Manager::accountChangeAuthenticatedSecret(const std::string &accountName, const std::string &currentPassword, Mode authMode, const std::string &challengeSalt, const Secret &passwordData, uint32_t passIndex)
 {
-    if (authenticate(accountName,currentPassword,passIndex,authMode,cramSalt)!=REASON_AUTHENTICATED)
+    if (authenticate(accountName,currentPassword,passIndex,authMode,challengeSalt)!=REASON_AUTHENTICATED)
         return false;
     return accountChangeSecret(accountName,passwordData,passIndex);
 }

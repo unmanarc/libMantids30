@@ -18,7 +18,7 @@ Json::Value CX2::RPC::Templates::LoginAuth::authenticate(void * obj, const Json:
             payload["password"].asString(),
             payload["passIndex"].asUInt(),
             CX2::Authentication::getAuthModeFromString(payload["authMode"].asString()),
-            payload["cramSalt"].asString());
+            payload["challengeSalt"].asString());
 
     payloadOut["retMessage"] = CX2::Authentication::getReasonText((CX2::Authentication::Reason)payloadOut["retCode"].asUInt());
 
@@ -44,7 +44,7 @@ Json::Value CX2::RPC::Templates::LoginAuth::accountChangeSecret(void * obj, cons
                 payload["accountName"].asString(),
                 payload["currentPassword"].asString(),
                 CX2::Authentication::getAuthModeFromString(payload["authMode"].asString()),
-                payload["cramSalt"].asString(),
+                payload["challengeSalt"].asString(),
                 newSecret,
                 payload["passIndex"].asUInt());
     return payloadOut;

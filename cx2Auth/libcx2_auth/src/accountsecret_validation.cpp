@@ -61,7 +61,7 @@ Secret AccountSecret_Validation::genSecret(const std::string &passwordInput, con
     return r;
 }
 
-Reason AccountSecret_Validation::validateSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &cramSalt, Mode authMode)
+Reason AccountSecret_Validation::validateSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &challengeSalt, Mode authMode)
 {
     bool saltedHash = false;
     std::string toCompare;
@@ -103,17 +103,17 @@ Reason AccountSecret_Validation::validateSecret(const Secret &storedSecret, cons
     {
     case MODE_PLAIN:
         return storedSecret.hash==toCompare? REASON_AUTHENTICATED:REASON_BAD_PASSWORD; // 1-1 comparisson
-    case MODE_CRAM:
-        return saltedHash?REASON_INTERNAL_ERROR:validateCRAM(storedSecret.hash, passwordInput, cramSalt);
+    case MODE_CHALLENGE:
+        return saltedHash?REASON_NOT_IMPLEMENTED:validateChallenge(storedSecret.hash, passwordInput, challengeSalt);
     }
 
     return REASON_NOT_IMPLEMENTED;
 }
 
-Reason AccountSecret_Validation::validateCRAM(const std::string &passwordFromDB, const std::string &passwordInput, const std::string &cramSalt)
+Reason AccountSecret_Validation::validateChallenge(const std::string &passwordFromDB, const std::string &challengeInput, const std::string &challengeSalt)
 {
-    // TODO:
-    return REASON_NOT_IMPLEMENTED;
+    return challengeInput == Helpers::Crypto::calcSHA256(passwordFromDB + challengeSalt) ?
+                 REASON_AUTHENTICATED:REASON_BAD_PASSWORD;
 }
 
 Reason AccountSecret_Validation::validateGAuth(const std::string &seed, const std::string &token)

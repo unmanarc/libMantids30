@@ -34,20 +34,20 @@ public:
      * @param password Password Text (PLAIN,HASHED,SALTED-HASHED,Challenge,CODE)
      * @param passIndex Password Index
      * @param authMode Authentication Mode (CHALLENGE, PLAIN)
-     * @param cramSalt Challenge Salt.
+     * @param challengeSalt Challenge Salt.
      * @return
      */
     virtual Reason authenticate(const std::string & accountName,
                                 const std::string & password,
                                 uint32_t passIndex = 0,
                                 Mode authMode = MODE_PLAIN,
-                                const std::string & cramSalt = "") override;
+                                const std::string & challengeSalt = "") override;
     /**
      * @brief accountChangeAuthenticatedSecret Change the password doing current password authentication
      * @param accountName
      * @param currentPassword
      * @param authMode
-     * @param cramSalt
+     * @param challengeSalt
      * @param newPasswordData New Password Data (hash, salt, expiration, etc)
      * @param passIndex Password Index.
      * @return true if changed, false if not (bad password, etc)
@@ -55,7 +55,7 @@ public:
     virtual bool accountChangeAuthenticatedSecret(const std::string & accountName,
                                                   const std::string & currentPassword,
                                                   Mode authMode,
-                                                  const std::string & cramSalt,
+                                                  const std::string & challengeSalt,
                                                   const Secret & newPasswordData, uint32_t passIndex=0);
     /**
      * @brief accountSecretPublicData Get information for Salted Password Calculation and expiration info (Not Authenticated)
