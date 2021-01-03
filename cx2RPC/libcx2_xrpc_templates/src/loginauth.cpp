@@ -1,15 +1,16 @@
 #include "loginauth.h"
 
-void CX2::RPC::Templates::LoginAuth::AddLoginAuthMethods(CX2::RPC::MethodsManager *methods)
+void CX2::RPC::Templates::LoginAuth::AddLoginAuthMethods(CX2::Authentication::Manager *auth, CX2::RPC::Fast::FastRPC *fastRPC)
 {
-    methods->addRPCMethod("authenticate", {"admin"}, {&authenticate,nullptr});
-    methods->addRPCMethod("accountChangeSecret", {"admin"}, {&accountChangeSecret,nullptr});
-    methods->addRPCMethod("accountAdd", {"admin"}, {&accountAdd,nullptr});
-    methods->addRPCMethod("attribExist", {"admin"}, {&attribExist,nullptr});
+    fastRPC->addMethod("authenticate",{&authenticate,auth});
+    fastRPC->addMethod("accountChangeSecret",{&accountChangeSecret,auth});
+    fastRPC->addMethod("accountAdd",{&accountAdd,auth});
+    fastRPC->addMethod("attribExist",{&attribExist,auth});
 }
 
-Json::Value CX2::RPC::Templates::LoginAuth::authenticate(void *, CX2::Authentication::Manager *auth, CX2::Authentication::Session *, const Json::Value &payload)
+Json::Value CX2::RPC::Templates::LoginAuth::authenticate(void * obj, const Json::Value &payload)
 {
+    CX2::Authentication::Manager * auth = (CX2::Authentication::Manager *)obj;
     Json::Value payloadOut;
 
     payloadOut["retCode"] = (uint32_t)
@@ -24,8 +25,10 @@ Json::Value CX2::RPC::Templates::LoginAuth::authenticate(void *, CX2::Authentica
     return payloadOut;
 }
 
-Json::Value CX2::RPC::Templates::LoginAuth::accountChangeSecret(void *, CX2::Authentication::Manager *auth, CX2::Authentication::Session *, const Json::Value &payload)
+Json::Value CX2::RPC::Templates::LoginAuth::accountChangeSecret(void * obj, const Json::Value &payload)
 {
+    CX2::Authentication::Manager * auth = (CX2::Authentication::Manager *)obj;
+
     Json::Value payloadOut;
 
     std::map<std::string,std::string> mNewSecret;
@@ -48,8 +51,10 @@ Json::Value CX2::RPC::Templates::LoginAuth::accountChangeSecret(void *, CX2::Aut
 
 }
 
-Json::Value CX2::RPC::Templates::LoginAuth::accountAdd(void *, CX2::Authentication::Manager *auth, CX2::Authentication::Session *, const Json::Value &payload)
+Json::Value CX2::RPC::Templates::LoginAuth::accountAdd(void * obj, const Json::Value &payload)
 {
+    CX2::Authentication::Manager * auth = (CX2::Authentication::Manager *)obj;
+
     Json::Value payloadOut;
 
     std::map<std::string,std::string> mNewSecret;
@@ -74,10 +79,13 @@ Json::Value CX2::RPC::Templates::LoginAuth::accountAdd(void *, CX2::Authenticati
     return payloadOut;
 }
 
-Json::Value CX2::RPC::Templates::LoginAuth::attribExist(void *obj, CX2::Authentication::Manager *auth, CX2::Authentication::Session *session, const Json::Value &payload)
+Json::Value CX2::RPC::Templates::LoginAuth::attribExist(void *obj, const Json::Value &payload)
 {
+    CX2::Authentication::Manager * auth = (CX2::Authentication::Manager *)obj;
+
     // This function is important to aplications to understand if they have been installed into the user manager
     Json::Value payloadOut;
     payloadOut["retCode"] = auth->attribExist( payload["attribName"].asString() ); // Superuser
     return payloadOut;
 }
+
