@@ -17,12 +17,12 @@ bool Manager_DB::initScheme()
 {
     if (!sqlConnector->dbTableExist("vauth_v2_attribs_accounts"))
     {
-
+        bool r =
         sqlConnector->query("CREATE TABLE `vauth_v2_attribs` (\n"
                             "       `name`  VARCHAR(256) NOT NULL,\n"
                             "       `description`   VARCHAR(4096),\n"
                             "       PRIMARY KEY(`name`)\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_accounts` (\n"
                             "       `name`  VARCHAR(256) NOT NULL,\n"
                             "       `email` VARCHAR(1024),\n"
@@ -30,7 +30,7 @@ bool Manager_DB::initScheme()
                             "       `extraData`     VARCHAR(4096),\n"
                             "       `superuser`     BOOLEAN,\n"
                             "       PRIMARY KEY(`name`)\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_account_activation` (\n"
                             "       `account`       VARCHAR(256) NOT NULL,\n"
                             "       `enabled`       BOOLEAN,\n"
@@ -39,7 +39,7 @@ bool Manager_DB::initScheme()
                             "       `confirmationToken`       VARCHAR(256) NOT NULL,\n"
                             "       PRIMARY KEY(`account`),\n"
                             "       FOREIGN KEY(`account`) REFERENCES vauth_v2_accounts(`name`) ON DELETE CASCADE\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_account_passwords` (\n"
                             "       `index` INTEGER NOT NULL,\n"
                             "       `account`       VARCHAR(256) NOT NULL,\n"
@@ -51,35 +51,35 @@ bool Manager_DB::initScheme()
                             "       `steps` INTEGER DEFAULT 0,\n"
                             "       PRIMARY KEY(`index`,`account`),\n"
                             "       FOREIGN KEY(`account`) REFERENCES vauth_v2_accounts(`name`) ON DELETE CASCADE\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE \"vauth_v2_groups\" (\n"
                             "       `name`  VARCHAR(256) NOT NULL,\n"
                             "       `description`   VARCHAR(4096),\n"
                             "       PRIMARY KEY(`name`)\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_groups_accounts` (\n"
                             "       `group_name`    VARCHAR(256) NOT NULL,\n"
                             "       `account_name`  VARCHAR(256) NOT NULL,\n"
                             "       FOREIGN KEY(`group_name`) REFERENCES vauth_v2_groups(`name`) ON DELETE CASCADE,\n"
                             "       FOREIGN KEY(`account_name`) REFERENCES vauth_v2_accounts(`name`) ON DELETE CASCADE\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_attribs_groups` (\n"
                             "       `attrib_name`   VARCHAR(256) NOT NULL,\n"
                             "       `group_name`    VARCHAR(256) NOT NULL,\n"
                             "       FOREIGN KEY(`attrib_name`) REFERENCES vauth_v2_attribs(`name`) ON DELETE CASCADE,\n"
                             "       FOREIGN KEY(`group_name`) REFERENCES vauth_v2_groups(`name`) ON DELETE CASCADE\n"
-                            ");\n");
+                            ");\n") &&
         sqlConnector->query("CREATE TABLE `vauth_v2_attribs_accounts` (\n"
                             "       `attrib_name`    VARCHAR(256) NOT NULL,\n"
                             "       `account_name`   VARCHAR(256) NOT NULL,\n"
                             "       FOREIGN KEY(`attrib_name`) REFERENCES vauth_v2_attribs(`name`) ON DELETE CASCADE,\n"
                             "       FOREIGN KEY(`account_name`) REFERENCES vauth_v2_accounts(`name`) ON DELETE CASCADE\n"
-                            ");\n");
-
+                            ");\n") &&
         // TODO: check if this needs different implementation across different databases
-        sqlConnector->query("CREATE UNIQUE INDEX `idx_groups_accounts` ON `vauth_v2_groups_accounts` (`group_name` ,`account_name`);\n");
-        sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_groups` ON `vauth_v2_attribs_groups` (`attrib_name`,`group_name` );\n");
-        return sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_accounts` ON `vauth_v2_attribs_accounts` (`attrib_name`,`account_name`);\n");
+        sqlConnector->query("CREATE UNIQUE INDEX `idx_groups_accounts` ON `vauth_v2_groups_accounts` (`group_name` ,`account_name`);\n") &&
+        sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_groups` ON `vauth_v2_attribs_groups` (`attrib_name`,`group_name` );\n") &&
+        sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_accounts` ON `vauth_v2_attribs_accounts` (`attrib_name`,`account_name`);\n");
+        return r;
     }
     return true;
 }
