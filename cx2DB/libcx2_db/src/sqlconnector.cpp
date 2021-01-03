@@ -5,6 +5,7 @@ using namespace CX2::Database;
 SQLConnector::SQLConnector()
 {
     finalized = false;
+    port = 0;
 }
 
 SQLConnector::~SQLConnector()
@@ -113,7 +114,7 @@ std::string SQLConnector::getLastSQLError() const
 bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars)
 {
     QueryInstance q = prepareNewQueryInstance();
-    if (q.query)
+    if (!q.query)
         return false;
     if (!q.query->setPreparedSQLQuery(preparedQuery, inputVars))
         return false;
