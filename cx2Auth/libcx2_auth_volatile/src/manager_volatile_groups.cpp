@@ -34,34 +34,34 @@ bool Manager_Volatile::groupExist(const std::string &groupName)
     return groups.find(groupName)!=groups.end();
 }
 
-bool Manager_Volatile::groupAccountAdd(const std::string &groupName, const std::string &accountName)
+bool Manager_Volatile::groupAccountAdd(const std::string &groupName, const std::string &sUserName)
 {
     bool ret = false;
     Threads::Sync::Lock_RW lock(mutex);
 
-    if (    accounts.find(accountName) != accounts.end() &&
+    if (    accounts.find(sUserName) != accounts.end() &&
             groups.find(groupName) != groups.end() &&
-            accounts[accountName].accountGroups.find(groupName) == accounts[accountName].accountGroups.end()
+            accounts[sUserName].accountGroups.find(groupName) == accounts[sUserName].accountGroups.end()
             )
     {
-        accounts[accountName].accountGroups.insert(groupName);
+        accounts[sUserName].accountGroups.insert(groupName);
         ret = true;
     }
 
     return ret;
 }
 
-bool Manager_Volatile::groupAccountRemove(const std::string &groupName, const std::string &accountName, bool lock)
+bool Manager_Volatile::groupAccountRemove(const std::string &groupName, const std::string &sUserName, bool lock)
 {
     bool ret = false;
     if (lock) mutex.lock();
 
-    if (    accounts.find(accountName) != accounts.end() &&
+    if (    accounts.find(sUserName) != accounts.end() &&
             groups.find(groupName) != groups.end() &&
-            accounts[accountName].accountGroups.find(groupName) != accounts[accountName].accountGroups.end()
+            accounts[sUserName].accountGroups.find(groupName) != accounts[sUserName].accountGroups.end()
             )
     {
-        accounts[accountName].accountGroups.erase(groupName);
+        accounts[sUserName].accountGroups.erase(groupName);
         ret = true;
     }
     if (lock) mutex.unlock();

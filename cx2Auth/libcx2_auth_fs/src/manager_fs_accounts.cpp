@@ -30,29 +30,29 @@ bool Manager_FS::_pAccountAttribsDir(const std::string &accountDir, std::string 
     return !access(accountDirAttribsOut.c_str(), W_OK);
 }
 
-bool Manager_FS::_pAccountExist(const std::string &accountName)
+bool Manager_FS::_pAccountExist(const std::string &sUserName)
 {
     if (workingAuthDir.empty()) return false;
     std::string accountDir;
-    return _pAccountDir(accountName, accountDir);
+    return _pAccountDir(sUserName, accountDir);
 }
 
-bool Manager_FS::_pAccountDirCreate(const std::string &accountName, std::string &accountDirOut)
+bool Manager_FS::_pAccountDirCreate(const std::string &sUserName, std::string &accountDirOut)
 {
     std::string workingAuthDir;
     if (!_pWorkingAuthDir( workingAuthDir)) return false;
-    std::string accountDir = workingAuthDir + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName);
+    std::string accountDir = workingAuthDir + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName);
     if (access(accountDir.c_str(), W_OK) && mkdir(accountDir.c_str(),0750)) return false;
     accountDirOut = accountDir;
     return true;
 }
 
-bool Manager_FS::_pAccountDir(const std::string &accountName, std::string &accountDirOut)
+bool Manager_FS::_pAccountDir(const std::string &sUserName, std::string &accountDirOut)
 {
     if (access(workingAuthDir.c_str(), W_OK)) return false;
 
 
-    accountDirOut = workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName);
+    accountDirOut = workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName);
     return !access(accountDirOut.c_str(),W_OK);
 }
 
@@ -77,8 +77,8 @@ std::set<std::string> Manager_FS::accountsList()
     return accounts;
 }
 
-bool Manager_FS::accountAdd(const std::string &accountName,
-                          const Secret & passData,
+bool Manager_FS::accountAdd(const std::string &sUserName,
+                          const Secret & secretData,
                           const std::string &email,
                           const std::string &description,
                           const std::string &extraData,
@@ -92,18 +92,18 @@ bool Manager_FS::accountAdd(const std::string &accountName,
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        r=!_pAccountExist(accountName);
-        if (r) r = _pAccountDirCreate(accountName,accountDir);
+        r=!_pAccountExist(sUserName);
+        if (r) r = _pAccountDirCreate(sUserName,accountDir);
         if (r && (r=_pAccountAttribsDir(accountDir, accountAttribsDir))==false) r=!mkdir(accountAttribsDir.c_str(), 0750);
         if (r && (r=_pAccountGroupsDir(accountDir, accountGroupsDir))==false)   r=!mkdir(accountGroupsDir.c_str(), 0750);
         if (r)
         {
             // Dir created here, now fill the data.
-            Files::Vars::File fAcctDetails(getAccountDetailsFilePath(accountName));
-            Files::Vars::File fAcctSecret(getSecretFilePath(accountName,0));
-            Files::Vars::File fAcctActivation(getActivationFilePath(accountName));
+            Files::Vars::File fAcctDetails(getAccountDetailsFilePath(sUserName));
+            Files::Vars::File fAcctSecret(getSecretFilePath(sUserName,0));
+            Files::Vars::File fAcctActivation(getActivationFilePath(sUserName));
 
-            for (const auto & i : passData.getMap()) fAcctSecret.addVar(i.first,i.second);
+            for (const auto & i : secretData.getMap()) fAcctSecret.addVar(i.first,i.second);
 
             fAcctDetails.addVar("email", email);
             fAcctDetails.addVar("description", description);
@@ -130,22 +130,22 @@ bool Manager_FS::accountAdd(const std::string &accountName,
 }
 
 
-bool Manager_FS::accountRemove(const std::string & accountName)
+bool Manager_FS::accountRemove(const std::string & sUserName)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if ((r=_pAccountDir(accountName,accountDir))==true)
+        if ((r=_pAccountDir(sUserName,accountDir))==true)
         {
             // Remove attribs association
-            for (const std::string & attribName: accountDirectAttribs(accountName,false))
-                attribAccountRemove(attribName,accountName,false);
+            for (const std::string & attribName: accountDirectAttribs(sUserName,false))
+                attribAccountRemove(attribName,sUserName,false);
 
             // Remove group associations
-            for (const std::string & groupName: accountGroups(accountName,false))
-                groupAccountRemove(groupName, accountName,false);
+            for (const std::string & groupName: accountGroups(sUserName,false))
+                groupAccountRemove(groupName, sUserName,false);
 
             // Remove the directory.
             boost::filesystem::remove_all(accountDir);
@@ -155,16 +155,16 @@ bool Manager_FS::accountRemove(const std::string & accountName)
     return r;
 }
 
-bool Manager_FS::accountDisable(const std::string &accountName, bool disabled)
+bool Manager_FS::accountDisable(const std::string &sUserName, bool disabled)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir)==true)
+        if (_pAccountDir(sUserName,accountDir)==true)
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             f.setVar("enabled", !disabled ? "1" : "0" );
             r=f.save();
         }
@@ -173,16 +173,16 @@ bool Manager_FS::accountDisable(const std::string &accountName, bool disabled)
     return r;
 }
 
-bool Manager_FS::accountConfirm(const std::string &accountName, const std::string &confirmationToken)
+bool Manager_FS::accountConfirm(const std::string &sUserName, const std::string &confirmationToken)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
             {
                 if (f.getVarValue("confirmationToken") == confirmationToken && confirmationToken!="")
@@ -196,7 +196,7 @@ bool Manager_FS::accountConfirm(const std::string &accountName, const std::strin
     return r;
 }
 
-bool Manager_FS::accountChangeSecret(const std::string &accountName, const Secret &passwordData, uint32_t passIndex)
+bool Manager_FS::accountChangeSecret(const std::string &sUserName, const Secret &passwordData, uint32_t passIndex)
 {
     bool r = false;
     std::string accountDir;
@@ -204,9 +204,9 @@ bool Manager_FS::accountChangeSecret(const std::string &accountName, const Secre
 
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getSecretFilePath(accountName,passIndex));
+            Files::Vars::File f(getSecretFilePath(sUserName,passIndex));
             for (auto & i : passwordData.getMap()) f.setVar(i.first,i.second);
             r = f.save();
         }
@@ -215,16 +215,16 @@ bool Manager_FS::accountChangeSecret(const std::string &accountName, const Secre
     return r;
 }
 
-bool Manager_FS::accountChangeDescription(const std::string &accountName, const std::string &description)
+bool Manager_FS::accountChangeDescription(const std::string &sUserName, const std::string &description)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
             {
                 f.setVar("description", description);
@@ -236,16 +236,16 @@ bool Manager_FS::accountChangeDescription(const std::string &accountName, const 
     return r;
 }
 
-bool Manager_FS::accountChangeEmail(const std::string &accountName, const std::string &email)
+bool Manager_FS::accountChangeEmail(const std::string &sUserName, const std::string &email)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
             {
                 f.setVar("email", email);
@@ -257,16 +257,16 @@ bool Manager_FS::accountChangeEmail(const std::string &accountName, const std::s
     return r;
 }
 
-bool Manager_FS::accountChangeExtraData(const std::string &accountName, const std::string &extraData)
+bool Manager_FS::accountChangeExtraData(const std::string &sUserName, const std::string &extraData)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
             {
                 f.setVar("extraData", extraData);
@@ -278,16 +278,16 @@ bool Manager_FS::accountChangeExtraData(const std::string &accountName, const st
     return r;
 }
 
-bool Manager_FS::accountChangeExpiration(const std::string &accountName, time_t expiration)
+bool Manager_FS::accountChangeExpiration(const std::string &sUserName, time_t expiration)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RW lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
             {
                 f.setVar("expiration", std::to_string(expiration));
@@ -299,16 +299,16 @@ bool Manager_FS::accountChangeExpiration(const std::string &accountName, time_t 
     return r;
 }
 
-bool Manager_FS::isAccountDisabled(const std::string &accountName)
+bool Manager_FS::isAccountDisabled(const std::string &sUserName)
 {
     bool r = true;
     std::string accountDir;
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("enabled") == "0";
         }
@@ -317,16 +317,16 @@ bool Manager_FS::isAccountDisabled(const std::string &accountName)
     return r;
 }
 
-bool Manager_FS::isAccountConfirmed(const std::string &accountName)
+bool Manager_FS::isAccountConfirmed(const std::string &sUserName)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("confirmed") == "1";
         }
@@ -335,14 +335,14 @@ bool Manager_FS::isAccountConfirmed(const std::string &accountName)
     return r;
 }
 
-bool Manager_FS::isAccountSuperUser(const std::string &accountName)
+bool Manager_FS::isAccountSuperUser(const std::string &sUserName)
 {
     bool r = false;
     std::string accountDir;
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if ((r=_pAccountDir(accountName,accountDir))==true)
+        if ((r=_pAccountDir(sUserName,accountDir))==true)
         {
             std::string superUserFile = accountDir + "/superuser";
             r = !access(superUserFile.c_str(),R_OK);
@@ -352,7 +352,7 @@ bool Manager_FS::isAccountSuperUser(const std::string &accountName)
     return r;
 }
 
-std::string Manager_FS::accountDescription(const std::string &accountName)
+std::string Manager_FS::accountDescription(const std::string &sUserName)
 {
     std::string r;
     std::string accountDir;
@@ -360,9 +360,9 @@ std::string Manager_FS::accountDescription(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("description");
         }
@@ -371,7 +371,7 @@ std::string Manager_FS::accountDescription(const std::string &accountName)
     return r;
 }
 
-std::string Manager_FS::accountEmail(const std::string &accountName)
+std::string Manager_FS::accountEmail(const std::string &sUserName)
 {
     std::string r;
     std::string accountDir;
@@ -379,9 +379,9 @@ std::string Manager_FS::accountEmail(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("email");
         }
@@ -390,7 +390,7 @@ std::string Manager_FS::accountEmail(const std::string &accountName)
     return r;
 }
 
-Secret Manager_FS::retrieveSecret(const std::string &accountName, uint32_t passIndex, bool *found)
+Secret Manager_FS::retrieveSecret(const std::string &sUserName, uint32_t passIndex, bool *found)
 {
     Secret r;
     std::string accountDir;
@@ -399,9 +399,9 @@ Secret Manager_FS::retrieveSecret(const std::string &accountName, uint32_t passI
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getSecretFilePath(accountName,passIndex));
+            Files::Vars::File f(getSecretFilePath(sUserName,passIndex));
             if (f.load())
             {
                 *found = true;
@@ -414,16 +414,16 @@ Secret Manager_FS::retrieveSecret(const std::string &accountName, uint32_t passI
 }
 
 
-std::string Manager_FS::accountConfirmationToken(const std::string & accountName)
+std::string Manager_FS::accountConfirmationToken(const std::string & sUserName)
 {
     std::string accountDir, r;
 
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("confirmationToken");
         }
@@ -432,7 +432,7 @@ std::string Manager_FS::accountConfirmationToken(const std::string & accountName
     return r;
 }
 
-bool Manager_FS::accountExist(const std::string &accountName)
+bool Manager_FS::accountExist(const std::string &sUserName)
 {
     std::string accountDir;
     bool r = false;
@@ -440,7 +440,7 @@ bool Manager_FS::accountExist(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if (_pAccountDir(accountName,accountDir))
+        if (_pAccountDir(sUserName,accountDir))
         {
             r = true;
         }
@@ -449,7 +449,7 @@ bool Manager_FS::accountExist(const std::string &accountName)
     return r;
 }
 
-std::string Manager_FS::accountExtraData(const std::string &accountName)
+std::string Manager_FS::accountExtraData(const std::string &sUserName)
 {
     std::string r;
     std::string accountDir;
@@ -457,9 +457,9 @@ std::string Manager_FS::accountExtraData(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if ((_pAccountDir(accountName,accountDir))==true)
+        if ((_pAccountDir(sUserName,accountDir))==true)
         {
-            Files::Vars::File f(getAccountDetailsFilePath(accountName));
+            Files::Vars::File f(getAccountDetailsFilePath(sUserName));
             if (f.load())
                 r = f.getVarValue("extraData");
         }
@@ -468,7 +468,7 @@ std::string Manager_FS::accountExtraData(const std::string &accountName)
     return r;
 }
 
-time_t Manager_FS::accountExpirationDate(const std::string &accountName)
+time_t Manager_FS::accountExpirationDate(const std::string &sUserName)
 {
     time_t r = 0;
     std::string accountDir;
@@ -476,9 +476,9 @@ time_t Manager_FS::accountExpirationDate(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
     if (!workingAuthDir.empty())
     {
-        if ((_pAccountDir(accountName,accountDir))==true)
+        if ((_pAccountDir(sUserName,accountDir))==true)
         {
-            Files::Vars::File f(getActivationFilePath(accountName));
+            Files::Vars::File f(getActivationFilePath(sUserName));
             if (f.load())
                 r = strtoull(f.getVarValue("expiration").c_str(), nullptr, 10);
         }
@@ -487,17 +487,17 @@ time_t Manager_FS::accountExpirationDate(const std::string &accountName)
     return r;
 }
 
-std::string Manager_FS::getActivationFilePath(const std::string &accountName)
+std::string Manager_FS::getActivationFilePath(const std::string &sUserName)
 {
-    return (workingAuthDir + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName) + "/acct.activation");
+    return (workingAuthDir + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName) + "/acct.activation");
 }
 
-std::string Manager_FS::getAccountDetailsFilePath(const std::string &accountName)
+std::string Manager_FS::getAccountDetailsFilePath(const std::string &sUserName)
 {
-    return (workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName) + "/acct.details");
+    return (workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName) + "/acct.details");
 }
 
-std::string Manager_FS::getSecretFilePath(const std::string &accountName, uint32_t passIndex)
+std::string Manager_FS::getSecretFilePath(const std::string &sUserName, uint32_t passIndex)
 {
-    return (workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName) + "/acct.passwd." +  std::to_string(passIndex));
+    return (workingAuthDir  + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName) + "/acct.passwd." +  std::to_string(passIndex));
 }

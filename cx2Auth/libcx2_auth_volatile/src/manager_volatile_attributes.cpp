@@ -70,35 +70,35 @@ bool Manager_Volatile::attribGroupRemove(const std::string &attribName, const st
     return ret;
 }
 
-bool Manager_Volatile::attribAccountAdd(const std::string &attribName, const std::string &accountName)
+bool Manager_Volatile::attribAccountAdd(const std::string &attribName, const std::string &sUserName)
 {
     bool ret = false;
 
     Threads::Sync::Lock_RW lock(mutex);
 
-    if (    accounts.find(accountName) != accounts.end() &&
+    if (    accounts.find(sUserName) != accounts.end() &&
             attribs.find(attribName) != attribs.end() &&
-            accounts[accountName].accountAttribs.find(attribName) == accounts[accountName].accountAttribs.end()
+            accounts[sUserName].accountAttribs.find(attribName) == accounts[sUserName].accountAttribs.end()
             )
     {
-        accounts[accountName].accountAttribs.insert(attribName);
+        accounts[sUserName].accountAttribs.insert(attribName);
         ret = true;
     }
 
     return ret;
 }
 
-bool Manager_Volatile::attribAccountRemove(const std::string &attribName, const std::string &accountName, bool lock)
+bool Manager_Volatile::attribAccountRemove(const std::string &attribName, const std::string &sUserName, bool lock)
 {
     bool ret = false;
     if (lock) mutex.lock();
 
-    if (    accounts.find(accountName) != accounts.end() &&
+    if (    accounts.find(sUserName) != accounts.end() &&
             attribs.find(attribName) != attribs.end() &&
-            accounts[accountName].accountAttribs.find(attribName) != accounts[accountName].accountAttribs.end()
+            accounts[sUserName].accountAttribs.find(attribName) != accounts[sUserName].accountAttribs.end()
             )
     {
-        accounts[accountName].accountAttribs.erase(attribName);
+        accounts[sUserName].accountAttribs.erase(attribName);
         ret = true;
     }
     if (lock) mutex.unlock();
@@ -163,11 +163,11 @@ std::set<std::string> Manager_Volatile::attribAccounts(const std::string &attrib
     return ret;
 }
 
-bool Manager_Volatile::accountValidateDirectAttribute(const std::string &accountName, const std::string &attribName)
+bool Manager_Volatile::accountValidateDirectAttribute(const std::string &sUserName, const std::string &attribName)
 {
     bool ret=false;
     Threads::Sync::Lock_RD lock(mutex);
-    if (accounts.find(accountName) != accounts.end() && accounts[accountName].accountAttribs.find(attribName) != accounts[accountName].accountAttribs.end())
+    if (accounts.find(sUserName) != accounts.end() && accounts[sUserName].accountAttribs.find(attribName) != accounts[sUserName].accountAttribs.end())
     {
         ret = true;
     }

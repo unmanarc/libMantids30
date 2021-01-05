@@ -2,8 +2,9 @@
 
 #include <stdlib.h>
 #include <cx2_thr_mutex/lock_shared.h>
-#include <ctime>
-
+//#include <ctime>
+#include <time.h>
+#include <string.h>
 
 using namespace CX2::Memory::Abstract;
 using namespace std;
@@ -68,7 +69,12 @@ Var *DATETIME::protectedCopy()
 string DATETIME::getISOTimeStr(const time_t &v){
     char sTime[64];
     sTime[64-1]=0;
-    std::strftime(sTime, 63, "%FT%TZ", std::gmtime(&v));
+
+    tm tmTime;
+    gmtime_r(&v, &tmTime);
+    strftime(sTime, 63,  "%FT%TZ", &tmTime);
+
+//    std::strftime(sTime, 63, "%FT%TZ", std::gmtime(&v));
     return std::string(sTime);
 }
 
@@ -76,6 +82,7 @@ time_t DATETIME::fromISOTimeStr(const string &v)
 {
     // Thanks to: https://stackoverflow.com/questions/26895428/how-do-i-parse-an-iso-8601-date-with-optional-milliseconds-to-a-struct-tm-in-c
     tm tmTime;
+    memset(&tmTime,0,sizeof(tm));
 
     float s;
     int tzh = 0, tzm = 0;
@@ -95,5 +102,5 @@ time_t DATETIME::fromISOTimeStr(const string &v)
     tmTime.tm_mon -= 1;     // 0-11
     tmTime.tm_sec = (int)s;    // 0-61 (0-60 in C++11)
 
-    return mktime (&tmTime);
+    return mktime (&tmTime) - timezone;
 }

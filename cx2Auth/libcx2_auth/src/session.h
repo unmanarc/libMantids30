@@ -73,12 +73,12 @@ public:
 
     /**
      * @brief registerPersistentAuthentication
-     * @param accountName
+     * @param sUserName
      * @param accountDomain
      * @param passIndex
      * @param reason
      */
-    void registerPersistentAuthentication(const std::string &accountName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
+    void registerPersistentAuthentication(const std::string &sUserName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
 
     /**
      * @brief registerPersistentAuthentication

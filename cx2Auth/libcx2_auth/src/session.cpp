@@ -16,7 +16,7 @@ Reason Session::isAuthenticated(uint32_t passIndex)
     std::unique_lock<std::mutex> lock(mutexAuth);
 
     sCurrentAuthentication curAuth = getCurrentAuthentication(passIndex);
-    if (curAuth.lastReason == REASON_AUTHENTICATED)
+    if (curAuth.lastReason == REASON_AUTHENTICATED || curAuth.lastReason == REASON_EXPIRED_PASSWORD)
     {
         // If authenticated: check policy
         if (authPolicies.find(passIndex)!=authPolicies.end())
@@ -27,22 +27,22 @@ Reason Session::isAuthenticated(uint32_t passIndex)
     return curAuth.lastReason;
 }
 
-void Session::registerPersistentAuthentication(const std::string & accountName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
+void Session::registerPersistentAuthentication(const std::string & sUserName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
 {
     std::unique_lock<std::mutex> lock(mutexAuth);
 
     authMatrix[passIndex].lastReason = reason;
     authMatrix[passIndex].setCurrentTime();
 
-    if (reason == REASON_AUTHENTICATED)
+    if (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD )
     {
         updateLastActivity();
         firstActivity = lastActivity;
     }
     // Authenticated with the main password:
-    if (!passIndex && reason==REASON_AUTHENTICATED)
+    if (!passIndex && (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD ))
     {
-        authUser = accountName;
+        authUser = sUserName;
         authDomain = accountDomain;
     }
 }
@@ -54,7 +54,7 @@ void Session::registerPersistentAuthentication(uint32_t passIndex, const Reason 
     authMatrix[passIndex].lastReason = reason;
     authMatrix[passIndex].setCurrentTime();
 
-    if (reason == REASON_AUTHENTICATED)
+    if (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD )
     {
         updateLastActivity();
         firstActivity = lastActivity;

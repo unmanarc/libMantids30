@@ -61,13 +61,11 @@ Secret AccountSecret_Validation::genSecret(const std::string &passwordInput, con
     return r;
 }
 
-Reason AccountSecret_Validation::validateSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &challengeSalt, Mode authMode)
+Reason AccountSecret_Validation::validateStoredSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &challengeSalt, Mode authMode)
 {
-    bool saltedHash = false;
+    Reason r =REASON_NOT_IMPLEMENTED;
+  //  bool saltedHash = false;
     std::string toCompare;
-
-    if (storedSecret.isExpired())
-        return REASON_EXPIRED_PASSWORD;
 
     switch (storedSecret.passwordFunction)
     {
@@ -88,26 +86,34 @@ Reason AccountSecret_Validation::validateSecret(const Secret &storedSecret, cons
     case FN_SSHA256:
     {
         toCompare = Helpers::Crypto::calcSSHA256(passwordInput, storedSecret.ssalt);
-        saltedHash = true;
+       // saltedHash = true;
     } break;
     case FN_SSHA512:
     {
         toCompare = Helpers::Crypto::calcSSHA512(passwordInput, storedSecret.ssalt);
-        saltedHash = true;
+        //saltedHash = true;
     } break;
     case FN_GAUTHTIME:
-        return validateGAuth(storedSecret.hash,passwordInput); // GAuth Time Based Token comparisson (seed,token)
+        r = validateGAuth(storedSecret.hash,passwordInput); // GAuth Time Based Token comparisson (seed,token)
+        goto skipAuthMode;
     }
 
     switch (authMode)
     {
     case MODE_PLAIN:
-        return storedSecret.hash==toCompare? REASON_AUTHENTICATED:REASON_BAD_PASSWORD; // 1-1 comparisson
+        r = storedSecret.hash==toCompare? REASON_AUTHENTICATED:REASON_BAD_PASSWORD; // 1-1 comparisson
+        break;
     case MODE_CHALLENGE:
-        return saltedHash?REASON_NOT_IMPLEMENTED:validateChallenge(storedSecret.hash, passwordInput, challengeSalt);
+        r = validateChallenge(storedSecret.hash, passwordInput, challengeSalt);
+        break;
     }
 
-    return REASON_NOT_IMPLEMENTED;
+skipAuthMode:;
+
+    if (storedSecret.isExpired() && r==REASON_AUTHENTICATED)
+        r = REASON_EXPIRED_PASSWORD;
+
+    return r;
 }
 
 Reason AccountSecret_Validation::validateChallenge(const std::string &passwordFromDB, const std::string &challengeInput, const std::string &challengeSalt)

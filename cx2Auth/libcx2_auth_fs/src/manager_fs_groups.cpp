@@ -111,8 +111,8 @@ bool Manager_FS::groupRemove(const std::string &groupName)
         if ((r=_pGroupDir(groupName,groupDir))==true)
         {
             // Remove from accounts association.
-            for (const std::string & accountName : groupAccounts(groupName,false))
-                groupAccountRemove(groupName,accountName,false);
+            for (const std::string & sUserName : groupAccounts(groupName,false))
+                groupAccountRemove(groupName,sUserName,false);
 
             // Remove from attribs association.
             for (const std::string & attribName : groupAttribs(groupName,false))
@@ -135,7 +135,7 @@ bool Manager_FS::groupExist(const std::string &groupName)
     return r;
 }
 
-bool Manager_FS::groupAccountAdd(const std::string &groupName, const std::string &accountName)
+bool Manager_FS::groupAccountAdd(const std::string &groupName, const std::string &sUserName)
 {
     std::string accountDir, accountGroupsDir;
     std::string groupDir, groupAccountsDir;
@@ -144,17 +144,17 @@ bool Manager_FS::groupAccountAdd(const std::string &groupName, const std::string
     if (!workingAuthDir.empty())
     {
         r=_pGroupDir(groupName,groupDir) &&
-          _pAccountDir(accountName,accountDir) &&
+          _pAccountDir(sUserName,accountDir) &&
           _pGroupAccountsDir(groupDir, groupAccountsDir) &&
           _pAccountGroupsDir(accountDir, accountGroupsDir) &&
-          _pTouchFile(groupAccountsDir + "/" + CX2::Helpers::Encoders::toURL(accountName)) &&
+          _pTouchFile(groupAccountsDir + "/" + CX2::Helpers::Encoders::toURL(sUserName)) &&
           _pTouchFile(accountGroupsDir + "/" + CX2::Helpers::Encoders::toURL(groupName));
     }
     
     return r;
 }
 
-bool Manager_FS::groupAccountRemove(const std::string &groupName, const std::string &accountName, bool lock)
+bool Manager_FS::groupAccountRemove(const std::string &groupName, const std::string &sUserName, bool lock)
 {
     std::string accountDir, accountGroupsDir;
     std::string groupDir, groupAccountsDir;
@@ -163,10 +163,10 @@ bool Manager_FS::groupAccountRemove(const std::string &groupName, const std::str
     if (!workingAuthDir.empty())
     {
         r=_pGroupDir(groupName,groupDir) &&
-          _pAccountDir(accountName,accountDir) &&
+          _pAccountDir(sUserName,accountDir) &&
           _pGroupAccountsDir(groupDir, groupAccountsDir) &&
           _pAccountGroupsDir(accountDir, accountGroupsDir) &&
-          _pRemFile(groupAccountsDir + "/" + CX2::Helpers::Encoders::toURL(accountName)) &&
+          _pRemFile(groupAccountsDir + "/" + CX2::Helpers::Encoders::toURL(sUserName)) &&
           _pRemFile(accountGroupsDir + "/" + CX2::Helpers::Encoders::toURL(groupName));
     }
     if (lock) mutex.unlock();
@@ -225,7 +225,7 @@ std::set<std::string> Manager_FS::groupAccounts(const std::string &groupName, bo
 }
 
 
-std::set<std::string> Manager_FS::accountGroups(const std::string &accountName, bool lock)
+std::set<std::string> Manager_FS::accountGroups(const std::string &sUserName, bool lock)
 {
     std::set<std::string> groups;
     std::string accountDir, accountsGroupsDir;
@@ -233,7 +233,7 @@ std::set<std::string> Manager_FS::accountGroups(const std::string &accountName, 
     if (lock) mutex.lock_shared();
     if (!workingAuthDir.empty())
     {
-        r = _pAccountDir(accountName,accountDir) && _pAccountGroupsDir(accountDir,accountsGroupsDir);
+        r = _pAccountDir(sUserName,accountDir) && _pAccountGroupsDir(accountDir,accountsGroupsDir);
         if (r) groups = _pListDir(accountsGroupsDir);
     }
     if (lock) mutex.unlock_shared();

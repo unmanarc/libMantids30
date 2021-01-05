@@ -27,7 +27,6 @@ enum Type {
     TYPE_NULL
 };
 
-#define ABSTRACT_AS(x,y) ((CX2::Memory::Abstract::x *)(&y))
 #define ABSTRACT_PTR_AS(x,y) ((CX2::Memory::Abstract::x *)y)
 
 class Var

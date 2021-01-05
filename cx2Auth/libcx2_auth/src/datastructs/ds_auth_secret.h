@@ -19,7 +19,7 @@ struct Secret_PublicData
 {
     Secret_PublicData()
     {
-        expiration = std::numeric_limits<time_t>::max();
+        expiration = 0;
         forceExpiration = false;
         passwordFunction = FN_PLAIN;
         memset(ssalt,0,4);
@@ -45,7 +45,7 @@ struct Secret
         gAuthSteps = 0; // means current.
         forceExpiration = false;
         passwordFunction = FN_PLAIN;
-        expiration = std::numeric_limits<time_t>::max();
+        expiration = 0;
         memset(ssalt,0xFF,4);
     }
 
@@ -124,7 +124,7 @@ struct Secret
 
     bool isExpired() const
     {
-        return expiration<time(nullptr) || forceExpiration;
+        return (time(nullptr)>expiration && expiration!=0) || forceExpiration;
     }
 
     uint32_t gAuthSteps;

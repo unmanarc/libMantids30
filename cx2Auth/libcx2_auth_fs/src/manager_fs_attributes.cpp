@@ -105,8 +105,8 @@ bool Manager_FS::attribRemove(const std::string &attribName)
         if ((r=_pAttribDir(attribName,attribDir))==true)
         {
             // Remove from accounts association.
-            for (const std::string & accountName : attribAccounts(attribName,false))
-                attribAccountRemove(attribName,accountName,false);
+            for (const std::string & sUserName : attribAccounts(attribName,false))
+                attribAccountRemove(attribName,sUserName,false);
 
             // Remove from group association.
             for (const std::string & groupName : attribGroups(attribName, false))
@@ -174,7 +174,7 @@ bool Manager_FS::attribGroupRemove(const std::string &attribName, const std::str
     return r;
 }
 
-bool Manager_FS::attribAccountAdd(const std::string &attribName, const std::string &accountName)
+bool Manager_FS::attribAccountAdd(const std::string &attribName, const std::string &sUserName)
 {
     std::string accountDir, accountAttribsDir;
     std::string attribDir, attribAccountsDir;
@@ -185,10 +185,10 @@ bool Manager_FS::attribAccountAdd(const std::string &attribName, const std::stri
     if (!workingAuthDir.empty())
     {
         r =     _pAttribDir(attribName,attribDir) &&
-                _pAccountDir(accountName,accountDir) &&
+                _pAccountDir(sUserName,accountDir) &&
                 _pAccountAttribsDir(accountDir,accountAttribsDir) &&
                 _pAttribAccountsDir(attribDir,attribAccountsDir) &&
-                _pTouchFile(attribAccountsDir + "/" + CX2::Helpers::Encoders::toURL(accountName)) &&
+                _pTouchFile(attribAccountsDir + "/" + CX2::Helpers::Encoders::toURL(sUserName)) &&
                 _pTouchFile(accountAttribsDir + "/" + CX2::Helpers::Encoders::toURL(attribName));
     }
 
@@ -196,7 +196,7 @@ bool Manager_FS::attribAccountAdd(const std::string &attribName, const std::stri
     return r;
 }
 
-bool Manager_FS::attribAccountRemove(const std::string &attribName, const std::string &accountName, bool lock)
+bool Manager_FS::attribAccountRemove(const std::string &attribName, const std::string &sUserName, bool lock)
 {
     std::string accountDir, accountAttribsDir;
     std::string attribDir, attribAccountsDir;
@@ -207,10 +207,10 @@ bool Manager_FS::attribAccountRemove(const std::string &attribName, const std::s
     if (!workingAuthDir.empty())
     {
         r =     _pAttribDir(attribName,attribDir) &&
-                _pAccountDir(accountName,accountDir) &&
+                _pAccountDir(sUserName,accountDir) &&
                 _pAccountAttribsDir(accountDir,accountAttribsDir) &&
                 _pAttribAccountsDir(attribDir,attribAccountsDir) &&
-                _pRemFile(attribAccountsDir + "/" + CX2::Helpers::Encoders::toURL(accountName)) &&
+                _pRemFile(attribAccountsDir + "/" + CX2::Helpers::Encoders::toURL(sUserName)) &&
                 _pRemFile(accountAttribsDir + "/" + CX2::Helpers::Encoders::toURL(attribName));
     }
 
@@ -298,7 +298,7 @@ std::set<std::string> Manager_FS::attribAccounts(const std::string &attribName, 
     return accounts;
 }
 
-std::set<std::string> Manager_FS::accountDirectAttribs(const std::string &accountName, bool lock)
+std::set<std::string> Manager_FS::accountDirectAttribs(const std::string &sUserName, bool lock)
 {
     std::set<std::string> attribs;
     std::string accountsDir, accountsAttribDir;
@@ -306,7 +306,7 @@ std::set<std::string> Manager_FS::accountDirectAttribs(const std::string &accoun
     if (lock) mutex.lock_shared();
     if (!workingAuthDir.empty())
     {
-        r = _pAccountDir(accountName,accountsDir) && _pAccountAttribsDir(accountsDir,accountsAttribDir);
+        r = _pAccountDir(sUserName,accountsDir) && _pAccountAttribsDir(accountsDir,accountsAttribDir);
         if (r) attribs = _pListDir(accountsAttribDir);
     }
     if (lock) mutex.unlock_shared();
@@ -314,11 +314,11 @@ std::set<std::string> Manager_FS::accountDirectAttribs(const std::string &accoun
 }
 
 
-bool Manager_FS::accountValidateDirectAttribute(const std::string &accountName, const std::string &attribName)
+bool Manager_FS::accountValidateDirectAttribute(const std::string &sUserName, const std::string &attribName)
 {
 
     Threads::Sync::Lock_RD lock(mutex);
-    std::string attribFile = workingAuthDir  + "/attribs/" + CX2::Helpers::Encoders::toURL(attribName) + "/accounts/" + CX2::Helpers::Encoders::toURL(accountName);
+    std::string attribFile = workingAuthDir  + "/attribs/" + CX2::Helpers::Encoders::toURL(attribName) + "/accounts/" + CX2::Helpers::Encoders::toURL(sUserName);
     if (!access(attribFile.c_str(),R_OK))
     {
         

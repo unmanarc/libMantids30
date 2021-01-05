@@ -17,16 +17,16 @@ public:
     AccountSecret_Validation();
     virtual ~AccountSecret_Validation();
 
-    static Secret genSecret(const std::string & passwordInput, const Function & passFunction, bool forceExpiration = false, const time_t &expirationDate = std::numeric_limits<time_t>::max(), uint32_t _2faSteps = 0);
+    static Secret genSecret(const std::string & passwordInput, const Function & passFunction, bool forceExpiration = false, const time_t &expirationDate = 0, uint32_t _2faSteps = 0);
 
-    virtual std::string accountConfirmationToken(const std::string & accountName)=0;
-    virtual Secret_PublicData accountSecretPublicData(const std::string & accountName, bool * found, uint32_t passIndex=0)=0;
-    virtual Reason authenticate(const std::string & accountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & challengeSalt = "")=0;
+    virtual std::string accountConfirmationToken(const std::string & sUserName)=0;
+    virtual Secret_PublicData accountSecretPublicData(const std::string & sUserName, bool * found, uint32_t passIndex=0)=0;
+    virtual Reason authenticate(const std::string & sUserName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & challengeSalt = "")=0;
 
-    virtual bool accountValidateAttribute(const std::string & accountName, const std::string & attribName)=0;
+    virtual bool accountValidateAttribute(const std::string & sUserName, const std::string & attribName)=0;
 
 protected:
-    Reason validateSecret(const Secret & storedSecret, const std::string & passwordInput, const std::string &challengeSalt, Mode authMode);
+    Reason validateStoredSecret(const Secret & storedSecret, const std::string & passwordInput, const std::string &challengeSalt, Mode authMode);
 
 private:
     /**
