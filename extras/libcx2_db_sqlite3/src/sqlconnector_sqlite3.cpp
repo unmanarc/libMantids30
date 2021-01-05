@@ -22,8 +22,9 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
+
     QueryInstance i = query("select sql from sqlite_master where tbl_name=:tbl;",
-          {{":tbl",Memory::Abstract::STRING(table)}},
+          {{":tbl",new Memory::Abstract::STRING(table)}},
           {}
           );
 

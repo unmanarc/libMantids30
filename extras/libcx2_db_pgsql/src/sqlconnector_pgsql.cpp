@@ -33,7 +33,7 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
     // Select Query:
     QueryInstance i = query("SELECT to_regclass(:table);",
                    {
-                     { ":table", Memory::Abstract::STRING(realTableName)}
+                     { ":table", new Memory::Abstract::STRING(realTableName)}
                    },
                    {} );
 

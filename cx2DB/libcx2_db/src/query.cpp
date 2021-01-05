@@ -22,11 +22,18 @@ Query::~Query()
         ((SQLConnector *)sqlConnector)->detachQuery(this);
     }
 
+    // Destroy Input Vars...
+    for (auto & i : InputVars)
+        delete i.second;
+
+    InputVars.clear();
+
+
     clearDestroyableStringsForInput();
     clearDestroyableStringsForResults();
 }
 
-bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, CX2::Memory::Abstract::Var> &vars)
+bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, Memory::Abstract::Var *> &vars)
 {
     query = value;
 
@@ -36,7 +43,7 @@ bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::st
     return true;
 }
 
-bool Query::bindInputVars(const std::map<std::string, CX2::Memory::Abstract::Var> &vars)
+bool Query::bindInputVars(const std::map<std::string, CX2::Memory::Abstract::Var *> &vars)
 {
     if (vars.empty()) return true;
     if (bBindInputVars)

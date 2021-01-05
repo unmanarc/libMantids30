@@ -219,83 +219,83 @@ bool Query_PostgreSQL::postBindInputVars()
         /*
         Bind params here.
         */
-        switch (InputVars[ key ].getVarType())
+        switch (InputVars[ key ]->getVarType())
         {
         case Memory::Abstract::TYPE_BOOL:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(BOOL,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(BOOL,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_INT8:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(INT8,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(INT8,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_INT16:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(INT16,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(INT16,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_INT32:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(INT32,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(INT32,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_INT64:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(INT64,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(INT64,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_UINT8:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(UINT8,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(UINT8,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_UINT16:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(UINT16,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(UINT16,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_UINT32:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(UINT32,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(UINT32,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_UINT64:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(UINT64,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(UINT64,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_DATETIME:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(DATETIME,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(DATETIME,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_DOUBLE:
         {
-            str = createDestroyableStringForInput(ABSTRACT_AS(DOUBLE,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(DOUBLE,InputVars[key])->toString());
         } break;
         case Memory::Abstract::TYPE_BIN:
         {
-            auto * i =ABSTRACT_AS(BINARY,InputVars[key])->getValue();
+            auto * i =ABSTRACT_PTR_AS(BINARY,InputVars[key])->getValue();
             paramValues[pos] = i->ptr;
             paramLengths[pos] = i->dataSize;
             paramFormats[pos] = 1;
         } break;
         case Memory::Abstract::TYPE_VARCHAR:
         {
-            paramValues[pos] = ABSTRACT_AS(VARCHAR,InputVars[key])->getValue();
-            paramLengths[pos] = strnlen(ABSTRACT_AS(VARCHAR,InputVars[key])->getValue(),ABSTRACT_AS(VARCHAR,InputVars[key])->getVarSize());
+            paramValues[pos] = ABSTRACT_PTR_AS(VARCHAR,InputVars[key])->getValue();
+            paramLengths[pos] = strnlen(ABSTRACT_PTR_AS(VARCHAR,InputVars[key])->getValue(),ABSTRACT_PTR_AS(VARCHAR,InputVars[key])->getVarSize());
         } break;
         case Memory::Abstract::TYPE_PTR:
         {
-            void * ptr = ABSTRACT_AS(PTR,InputVars[key])->getValue();
+            void * ptr = ABSTRACT_PTR_AS(PTR,InputVars[key])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
             paramLengths[pos] = strnlen((char *)ptr,0xFFFFFFFF);
             paramValues[pos] = (char *) ptr;
         } break;
         case Memory::Abstract::TYPE_STRING:
         {
-            str = (std::string *)ABSTRACT_AS(STRING,InputVars[key])->getDirectMemory();
+            str = (std::string *)ABSTRACT_PTR_AS(STRING,InputVars[key])->getDirectMemory();
         } break;
         case Memory::Abstract::TYPE_STRINGLIST:
-            str = createDestroyableStringForInput(ABSTRACT_AS(STRINGLIST,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(STRINGLIST,InputVars[key])->toString());
             break;
         case Memory::Abstract::TYPE_IPV4:
-            str = createDestroyableStringForInput(ABSTRACT_AS(IPV4,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV4,InputVars[key])->toString());
             break;
         case Memory::Abstract::TYPE_IPV6:
-            str = createDestroyableStringForInput(ABSTRACT_AS(IPV6,InputVars[key])->toString());
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV6,InputVars[key])->toString());
             break;
         case Memory::Abstract::TYPE_NULL:
             paramValues[pos] = nullptr;

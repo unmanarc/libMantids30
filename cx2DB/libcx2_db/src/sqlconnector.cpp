@@ -111,7 +111,7 @@ std::string SQLConnector::getLastSQLError() const
     return lastSQLError;
 }
 
-bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars)
+bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars)
 {
     QueryInstance q = prepareNewQueryInstance();
     if (!q.query)
@@ -121,7 +121,7 @@ bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::s
     return q.query->exec(EXEC_TYPE_INSERT);
 }
 
-QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var> &inputVars, const std::vector<CX2::Memory::Abstract::Var *> &resultVars)
+QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars, const std::vector<CX2::Memory::Abstract::Var *> &resultVars)
 {
     QueryInstance q = prepareNewQueryInstance();
 
@@ -135,10 +135,11 @@ QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::m
     {
         if (q.query->bindResultVars(resultVars))
         {
-            q.query->exec(EXEC_TYPE_SELECT);
+            q.ok = q.query->exec(EXEC_TYPE_SELECT);
             return q;
         }
     }
+
     q.ok = false;
     return q;
 }

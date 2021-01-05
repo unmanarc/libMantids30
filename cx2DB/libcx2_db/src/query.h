@@ -26,8 +26,8 @@ public:
     void setSqlConnector(void *value, std::mutex * mtDatabaseLock);
 
     // Query Prepare:
-    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,Memory::Abstract::Var> & vars = {} );
-    bool bindInputVars(const std::map<std::string,Memory::Abstract::Var> & vars);
+    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,Memory::Abstract::Var *> & vars = {} );
+    bool bindInputVars(const std::map<std::string, Memory::Abstract::Var *> &vars);
     bool bindResultVars(const std::vector<Memory::Abstract::Var *> & vars);   
     bool getFetchLastInsertRowID() const;
     void setFetchLastInsertRowID(bool value);
@@ -66,7 +66,7 @@ protected:
 
     // Query:
     bool bBindInputVars, bBindResultVars;
-    std::map<std::string,Memory::Abstract::Var> InputVars;
+    std::map<std::string,Memory::Abstract::Var *> InputVars;
     std::string query;
     bool bFetchLastInsertRowID;
 

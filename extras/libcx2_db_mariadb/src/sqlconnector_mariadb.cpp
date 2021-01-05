@@ -36,8 +36,8 @@ bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
     // Select Query:
     QueryInstance i = query("SELECT * FROM information_schema.tables WHERE table_schema = :schema AND table_name = :table LIMIT 1;",
                    {
-                     { ":schema", Memory::Abstract::STRING(dbName)},
-                     { ":table", Memory::Abstract::STRING(table)}
+                     { ":schema", new Memory::Abstract::STRING(dbName)},
+                     { ":table", new Memory::Abstract::STRING(table)}
                    },
                    {} );
 
