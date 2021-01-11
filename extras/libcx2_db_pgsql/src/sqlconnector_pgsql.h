@@ -3,7 +3,12 @@
 
 #include <cx2_db/sqlconnector.h>
 #include "query_pgsql.h"
-#include <libpq-fe.h>
+
+#if __has_include(<libpq-fe.h>)
+# include "<libpq-fe.h>"
+#elif __has_include(<postgresql/libpq-fe.h>)
+# include <postgresql/libpq-fe.h>
+#endif
 
 namespace CX2 { namespace Database {
 
