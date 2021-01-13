@@ -10,6 +10,8 @@ Query_MariaDB::Query_MariaDB()
     stmt = nullptr;
     bindedInputParams = nullptr;
     bindedResultsParams = nullptr;
+
+    dbCnt = nullptr;
 }
 
 Query_MariaDB::~Query_MariaDB()
@@ -95,6 +97,8 @@ Query_MariaDB::~Query_MariaDB()
 
 bool Query_MariaDB::exec(const ExecType &execType)
 {
+
+
     if (stmt)
     {
         throw std::runtime_error("Re-using queries is not supported.");
@@ -102,6 +106,9 @@ bool Query_MariaDB::exec(const ExecType &execType)
     }
 
     ((SQLConnector_MariaDB*)sqlConnector)->getDatabaseConnector(this);
+
+    if (!dbCnt)
+        return false;
 
     std::unique_lock<std::mutex> lock(*mtDatabaseLock);
 
@@ -163,7 +170,7 @@ bool Query_MariaDB::step0()
 
         unsigned char cRetBoolean;
         MYSQL_BIND result = {};
-        my_bool bIsNull;
+        bool bIsNull;
         memset(&(result),0,sizeof(MYSQL_BIND));
 
         result.is_null = &bIsNull;
@@ -505,7 +512,7 @@ unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_f
     unsigned long r;
     static const size_t szBuffer = 64;
 
-    my_bool isTruncated = 0;
+    bool isTruncated = 0;
     std::array<char, szBuffer> aBuffer;
 
     MYSQL_BIND bind = {};

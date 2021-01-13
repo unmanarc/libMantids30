@@ -8,6 +8,7 @@ using namespace CX2::Database;
 Query_SQLite3::Query_SQLite3()
 {
     stmt = nullptr;
+    ppDb = nullptr;
     lastSQLReturnValue = SQLITE_OK;
 }
 
@@ -31,6 +32,9 @@ bool Query_SQLite3::exec(const ExecType &execType)
 
     // Prepare the query (will lock the db while using ppDb):
     ((SQLConnector_SQLite3*)sqlConnector)->putDatabaseConnectorIntoQuery(this);
+
+    if (!ppDb)
+        return false;
 
     std::unique_lock<std::mutex> lock(*mtDatabaseLock);
 

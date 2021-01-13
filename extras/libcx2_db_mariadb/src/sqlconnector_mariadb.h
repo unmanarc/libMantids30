@@ -16,6 +16,8 @@ public:
     std::string driverName() { return "MARIADB"; }
 
 
+    bool isOpen();
+
     /**
      * @brief prepareQuery Internal function used by the query to prepare the query with the database handler.
      * @param query Query.

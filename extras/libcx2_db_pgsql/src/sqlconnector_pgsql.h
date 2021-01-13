@@ -19,6 +19,7 @@ public:
     ~SQLConnector_PostgreSQL();
     std::string driverName() { return "PGSQL"; }
 
+    bool isOpen();
     // Query:
 
     /**

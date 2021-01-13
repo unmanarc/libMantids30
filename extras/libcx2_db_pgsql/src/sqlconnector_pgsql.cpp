@@ -16,6 +16,14 @@ SQLConnector_PostgreSQL::~SQLConnector_PostgreSQL()
         PQfinish(conn);
 }
 
+bool SQLConnector_PostgreSQL::isOpen()
+{
+    if (!conn) return false;
+    QueryInstance i = query("SELECT 1;", {},{} );
+    if (i.ok) return i.query->step();
+    return true;
+}
+
 void SQLConnector_PostgreSQL::getDatabaseConnector(Query_PostgreSQL *query)
 {
     query->psqlSetDatabaseConnector(conn);

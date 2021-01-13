@@ -16,6 +16,14 @@ SQLConnector_MariaDB::~SQLConnector_MariaDB()
         mysql_close(dbCnt);
 }
 
+bool SQLConnector_MariaDB::isOpen()
+{
+    if (!dbCnt) return false;
+    QueryInstance i = query("SELECT 1;", {},{} );
+    if (i.ok) return i.query->step();
+    return true;
+}
+
 void SQLConnector_MariaDB::getDatabaseConnector(Query_MariaDB *query)
 {
     query->mariaDBSetDatabaseConnector(dbCnt);

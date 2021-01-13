@@ -16,6 +16,10 @@ Query_PostgreSQL::Query_PostgreSQL()
     paramLengths=nullptr;
     paramFormats=nullptr;
 
+
+
+    dbCnt = nullptr;
+    result = nullptr;
 }
 
 Query_PostgreSQL::~Query_PostgreSQL()
@@ -39,6 +43,9 @@ bool Query_PostgreSQL::exec(const ExecType &execType)
 
     // Prepare the query (will lock the db while using ppDb):
     ((SQLConnector_PostgreSQL*)sqlConnector)->getDatabaseConnector(this);
+
+    if (!dbCnt)
+        return false;
 
     std::unique_lock<std::mutex> lock(*mtDatabaseLock);
 

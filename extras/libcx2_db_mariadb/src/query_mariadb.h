@@ -34,7 +34,7 @@ private:
     MYSQL_BIND * bindedInputParams;
     MYSQL_BIND * bindedResultsParams;
 
-    //my_bool * bIsNull;
+    //bool * bIsNull;
 
     std::vector<unsigned long> bindedResultVarSizes;
 
