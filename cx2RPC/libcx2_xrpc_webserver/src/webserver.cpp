@@ -1,5 +1,6 @@
 #include "webserver.h"
 #include <cx2_netp_http/httpv1_server.h>
+#include <cx2_net_sockets/socket_tls.h>
 #include "webclienthandler.h"
 
 #include <stdexcept>
@@ -10,6 +11,7 @@ using namespace CX2;
 
 WebServer::WebServer()
 {
+    rpcLog = nullptr;
     resourceFilter = nullptr;
     obj = nullptr;
     sessionsManager.startGC( SessionsManager::threadGC, &sessionsManager );
@@ -57,11 +59,23 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
 {
     WebServer * webserver = ((WebServer *)obj);
 
+    std::string tlsCN;
+
+    if (s->isSecure())
+    {
+        Network::TLS::Socket_TLS * tlsSock = (Network::TLS::Socket_TLS *)s;
+        tlsCN = tlsSock->getTLSPeerCN();
+    }
+
+
     // Prepare the web services handler.
     WebClientHandler webHandler(webserver,s);
 
+    webHandler.setRPCLog(webserver->getRPCLog());
+    webHandler.setAppName(webserver->getAppName());
     webHandler.setIsSecure(isSecure);
     webHandler.setRemoteIP(remotePairIPAddr);
+    webHandler.setRemoteTLSCN(tlsCN);
     webHandler.setMethodsManager(webserver->getMethodManagers());
     webHandler.setAuthenticators(webserver->getAuthenticator());
     webHandler.setSessionsManagger(webserver->getSessionsManager());
@@ -101,6 +115,24 @@ void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s
         s->writeString("<center><h1>503 Service Temporarily Unavailable</h1></center><hr>\r\n");
     }
 }
+
+Application::Logs::RPCLog *WebServer::getRPCLog() const
+{
+    return rpcLog;
+}
+
+void WebServer::setRPCLog(Application::Logs::RPCLog *value)
+{
+    rpcLog = value;
+}
+
+std::string WebServer::getAppName() const
+{
+    if (!methodManagers) return "";
+    return methodManagers->getAppName();
+}
+
+
 
 bool WebServer::getUseHTMLIEngine() const
 {

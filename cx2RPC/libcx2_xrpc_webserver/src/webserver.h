@@ -9,6 +9,7 @@
 #include <cx2_net_sockets/socket_acceptor_multithreaded.h>
 #include <cx2_auth/domains.h>
 #include <cx2_xrpc_common/methodsmanager.h>
+#include <cx2_prg_logs/rpclog.h>
 
 namespace CX2 { namespace RPC { namespace Web {
 
@@ -158,6 +159,11 @@ public:
 
     bool getUseHTMLIEngine() const;
 
+    std::string getAppName() const;
+
+    Application::Logs::RPCLog *getRPCLog() const;
+    void setRPCLog(Application::Logs::RPCLog *value);
+
 private:
     Network::Sockets::Acceptors::Socket_Acceptor_MultiThreaded multiThreadedAcceptor;
     Network::Sockets::Acceptors::Socket_Acceptor_PoolThreaded poolThreadedAcceptor;
@@ -178,6 +184,7 @@ private:
     void * obj;
 
     sWebServerCallBack extCallBackOnConnect, extCallBackOnInitFailed, extCallBackOnTimeOut;
+    Application::Logs::RPCLog * rpcLog;
     ResourcesFilter * resourceFilter;
     CX2::Authentication::Domains * authenticator;
     MethodsManager *methodManagers;
