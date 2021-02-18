@@ -114,17 +114,17 @@ string Encoders::toBase64(const char *buf, uint32_t count)
     return encodedString;
 }
 
-string Encoders::toURL(const string &str)
+string Encoders::toURL(const string &str, const eURLEncodingType & urlEncodingType)
 {
     if (!str.size()) return "";
 
     size_t x=0;
     std::string out;
-    out.resize(calcExpandedStringSize(str),' ');
+    out.resize(calcURLEncodingExpandedStringSize(str,urlEncodingType),' ');
 
     for (size_t i=0; i<str.size();i++)
     {
-        if ( mustBeEncoded(str.at(i)) )
+        if ( getIfMustBeURLEncoded(str.at(i),urlEncodingType) )
         {
             out[x++]='%';
             out[x++]=toHexPair(str.at(i), 1);
@@ -202,20 +202,31 @@ char Encoders::hexToValue(char v)
     return 0;
 }
 
-bool Encoders::mustBeEncoded(char c)
+bool Encoders::getIfMustBeURLEncoded(char c,const eURLEncodingType & urlEncodingType)
 {
-    if (c >= 'A' && c<= 'Z') return false;
-    if (c >= 'a' && c<= 'z') return false;
-    if (c >= '0' && c<= '9') return false;
+    if (urlEncodingType==ENC_QUOTEPRINT)
+    {
+        // All printable chars but " and '
+        if (  c=='\"' || c=='\'' ) return true;
+        if (c >= 32 && c<= 126) return false;
+    }
+    else
+    {
+        // be strict: Only very safe chars...
+        if (c >= 'A' && c<= 'Z') return false;
+        if (c >= 'a' && c<= 'z') return false;
+        if (c >= '0' && c<= '9') return false;
+    }
+
     return true;
 }
 
-size_t Encoders::calcExpandedStringSize(const string &str)
+size_t Encoders::calcURLEncodingExpandedStringSize(const string &str,const eURLEncodingType & urlEncodingType)
 {
     size_t x = 0;
     for (size_t i=0; i<str.size();i++)
     {
-        if ( mustBeEncoded(str.at(i)) ) x+=3;
+        if ( getIfMustBeURLEncoded(str.at(i),urlEncodingType) ) x+=3;
         else x+=1;
     }
     return x;

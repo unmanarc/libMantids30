@@ -5,6 +5,12 @@
 
 namespace CX2 { namespace Helpers {
 
+enum eURLEncodingType
+{
+    ENC_STRICT,
+    ENC_QUOTEPRINT
+};
+
 class Encoders
 {
 public:
@@ -14,7 +20,7 @@ public:
     static std::string toBase64(char const* buf, uint32_t count);
 
     // URL Percent Encoding
-    static std::string toURL(const std::string &str);
+    static std::string toURL(const std::string &str, const eURLEncodingType & urlEncodingType = ENC_STRICT);
     static std::string fromURL(const std::string &urlEncodedStr);
 
     // Hex Encoding
@@ -26,8 +32,8 @@ public:
     static bool isHexChar(char v);
     static char hexToValue(char v);
 private:
-    static bool mustBeEncoded(char c);
-    static size_t calcExpandedStringSize(const std::string &str);
+    static bool getIfMustBeURLEncoded(char c, const eURLEncodingType &urlEncodingType);
+    static size_t calcURLEncodingExpandedStringSize(const std::string &str,const eURLEncodingType & urlEncodingType);
     static const std::string b64Chars;
 
 };
