@@ -5,48 +5,76 @@ using namespace CX2;
 
 Authentication::Authentication()
 {
-    passIndex = 0;
+    iPassIDX = 0;
 }
 
 Authentication::Authentication(const std::string &pass, const uint32_t &idx)
 {
-    userPass = pass;
-    passIndex = idx;
+    sPassword = pass;
+    iPassIDX = idx;
+}
+
+bool Authentication::fromString(const std::string &sAuth)
+{
+     Json::Value x;
+
+     if (sAuth.empty()) return true;
+
+     Json::Reader reader;
+     if (!reader.parse(sAuth, x)) return false;
+     if (!x.isObject()) return false;
+
+     return fromJSON(x);
 }
 
 bool Authentication::fromJSON(const Json::Value &x)
 {
-    if (!x["pass"].isNull()) userPass = x["pass"].asString();
+//    if (!x["user"].isNull()) userName = x["user"].asString();
+
+    if (!x["pass"].isNull()) sPassword = x["pass"].asString();
     else return false;
-    if (!x["idx"].isNull()) passIndex = x["idx"].asUInt();
+
+    if (!x["idx"].isNull()) iPassIDX = x["idx"].asUInt();
     else return false;
+
     return true;
 }
 
 Json::Value Authentication::toJSON() const
 {
     Json::Value x;
-    x["pass"] = userPass;
-    x["idx"] = passIndex;
+    x["pass"] = sPassword;
+    x["idx"] = iPassIDX;
     return x;
 }
 
-std::string Authentication::getUserPass() const
+std::string Authentication::getPassword() const
 {
-    return userPass;
+    return sPassword;
 }
 
-void Authentication::setUserPass(const std::string &value)
+void Authentication::setPassword(const std::string &value)
 {
-    userPass = value;
+    sPassword = value;
 }
 
 uint32_t Authentication::getPassIndex() const
 {
-    return passIndex;
+    return iPassIDX;
 }
 
 void Authentication::setPassIndex(const uint32_t &value)
 {
-    passIndex = value;
+    iPassIDX = value;
 }
+/*
+std::string Authentication::getUserName() const
+{
+    return userName;
+}
+
+void Authentication::setUserName(const std::string &value)
+{
+    userName = value;
+}
+*/

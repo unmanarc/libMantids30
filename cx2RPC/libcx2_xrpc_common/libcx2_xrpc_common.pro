@@ -2,13 +2,15 @@ QT       -= core gui
 
 SOURCES +=   src/authentication.cpp \
     src/json_streamable.cpp \
+    src/methodsattributes_map.cpp \
     src/methodsmanager.cpp \
-    src/request.cpp
+    src/multiauths.cpp
 
 HEADERS += src/authentication.h \
     src/json_streamable.h \
+    src/methodsattributes_map.h \
     src/methodsmanager.h \
-    src/request.h \
+    src/multiauths.h \
     src/retcodes.h \
     src/validation.h \
     src/validation_codes.h

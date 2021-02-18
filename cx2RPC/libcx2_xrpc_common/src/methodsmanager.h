@@ -7,10 +7,10 @@
 #include <json/json.h>
 
 #include <cx2_auth/domains.h>
-#include <cx2_auth/methodsattributes_map.h>
 #include <cx2_thr_mutex/mutex_shared.h>
 
 #include "validation_codes.h"
+#include "methodsattributes_map.h"
 
 namespace CX2 { namespace RPC {
     
@@ -41,7 +41,7 @@ struct sRPCMethod
 class MethodsManager
 {
 public:
-    MethodsManager();
+    MethodsManager(const std::string & appName);
 
     //////////////////////////////////////////////////
     /**
@@ -51,7 +51,7 @@ public:
      * @param rpcMethod
      * @return
      */
-    bool addRPCMethod(const std::string & methodName, const std::set<std::string> & reqAttribs, const sRPCMethod & rpcMethod);
+    bool addRPCMethod(const std::string & methodName, const std::set<std::string> & reqAttribs, const sRPCMethod & rpcMethod, bool requireFullAuth = true);
     /**
      * @brief runRPCMethod2
      * @param methodName
@@ -70,22 +70,36 @@ public:
      * @return
      */
     eMethodValidationCodes validateRPCMethodPerms(Authentication::Manager *auth, CX2::Authentication::Session *session, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, Json::Value * reasons);
-
     /**
      * @brief getMethodsAttribs Use for method initialization only.
      * @return methods required attributes
      */
     CX2::Authentication::MethodsAttributes_Map * getMethodsAttribs();
 
+    bool getMethodRequireFullSession(const std::string & methodName);
+
+    /**
+     * @brief getAppName Get Application Name
+     * @return app name
+     */
+    std::string getAppName() const;
 
 private:
+    std::set<CX2::Authentication::sApplicationAttrib> getAppAttribs(const std::set<std::string> & reqAttribs);
+
+    Json::Value toValue(const std::set<CX2::Authentication::sApplicationAttrib> &t);
     Json::Value toValue(const std::set<std::string> &t);
     Json::Value toValue(const std::set<uint32_t> &t);
 
     // Methods:
+
     // method name -> method.
     std::map<std::string,sRPCMethod> methods;
 
+    // method name -> bool (requireFullAuth).
+    std::map<std::string,bool> methodRequireFullAuth;
+
+    std::string appName;
     CX2::Authentication::MethodsAttributes_Map methodsAttribs;
 
     // lock for methods manipulation...
