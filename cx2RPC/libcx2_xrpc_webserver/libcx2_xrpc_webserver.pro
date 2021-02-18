@@ -5,16 +5,18 @@ SOURCES += \
     src/sessionsmanager.cpp \
     src/webclienthandler.cpp \
     src/webserver.cpp
+
 HEADERS += \
     src/resourcesfilter.h \
     src/sessionsmanager.h \
     src/webclienthandler.h \
     src/webserver.h
+
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lboost_regex-mt-x32 -lcx2_thr_safecontainers2 -lcx2_thr_threads2 -lcx2_hlp_functions2 -lcx2_auth2 -lcx2_mem_vars2 -lcx2_net_sockets2 -lcx2_netp_http2 -lcx2_netp_mime2 -lcx2_xrpc_common2
+win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lboost_regex-mt-x32 -lcx2_thr_safecontainers2 -lcx2_thr_threads2 -lcx2_hlp_functions2 -lcx2_auth2 -lcx2_mem_vars2 -lcx2_net_sockets2 -lcx2_netp_http2 -lcx2_netp_mime2 -lcx2_xrpc_common2 -lcx2_prg_logs
 
 
 # includes dir
