@@ -29,7 +29,7 @@ public:
      * @brief addClearCookie Add cookie with empty values (to clear the previous cookie)
      * @param cookieName cookie Name
      */
-    void addClearCookie(const std::string & cookieName);
+    void addClearSecureCookie(const std::string & cookieName);
 
 private:
     std::map<std::string,HTTP_Cookie *> cookiesMap;

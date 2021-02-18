@@ -70,13 +70,21 @@ bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_
     return true;
 }
 
-void HTTP_Cookies_ServerSide::addClearCookie(const string &cookieName)
+void HTTP_Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
 {
     HTTP_Cookie c;
+
+    c.setValue("");
+    c.setSecure(true);
+    c.setHttpOnly(true);
+    c.setToExpire();
+    c.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
+
     if (cookiesMap.find(cookieName) != cookiesMap.end())
     {
         delete cookiesMap[cookieName];
         cookiesMap.erase(cookieName);
     }
+
     addCookieVal(cookieName,c);
 }
