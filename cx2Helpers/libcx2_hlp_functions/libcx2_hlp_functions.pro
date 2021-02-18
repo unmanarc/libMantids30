@@ -9,7 +9,11 @@ SOURCES += src/encoders.cpp \
 HEADERS += src/encoders.h \
            src/random.h \
            src/mem.h \
-           src/crypto.h
+           src/crypto.h \
+           src/stdlist.h \
+           src/stdmap.h \
+           src/stdset.h \
+           src/stdvector.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
