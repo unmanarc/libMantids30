@@ -14,74 +14,115 @@ public:
     bool initScheme() override;
 
     /////////////////////////////////////////////////////////////////////////////////
+    // Pass Indexes:
+    std::set<uint32_t> passIndexesUsedByAccount(const std::string & sAccountName) override;
+    std::set<uint32_t> passIndexesRequiredForLogin() override;
+    bool passIndexAdd(const uint32_t & passIndex, const std::string & description, const bool & loginRequired) override;
+    bool passIndexModify(const uint32_t & passIndex, const std::string & description, const bool & loginRequired) override;
+    bool passIndexDelete(const uint32_t & passIndex) override;
+    std::string passIndexDescription(const uint32_t & passIndex) override;
+    bool passIndexLoginRequired(const uint32_t & passIndex) override;
+
+
+    /////////////////////////////////////////////////////////////////////////////////
     // account:
-    bool accountAdd(const std::string & sUserName,
-                    const Secret &secretData,
-                    const std::string & email = "",
-                    const std::string & accountDescription = "",
-                    const std::string & extraData = "",
-                    time_t expirationDate = 0,
-                    bool enabled = true,
-                    bool confirmed = true,
-                    bool superuser = false) override;
-    std::string accountConfirmationToken(const std::string & sUserName) override;
-    bool accountRemove(const std::string & sUserName) override;
-    bool accountExist(const std::string & sUserName) override;
-    bool accountDisable(const std::string & sUserName, bool disabled = true) override;
-    bool accountConfirm(const std::string & sUserName, const std::string & confirmationToken) override;
-    bool accountChangeSecret(const std::string & sUserName, const Secret & passwordData, uint32_t passIndex=0) override;
-    bool accountChangeDescription(const std::string & sUserName, const std::string & description) override;
-    bool accountChangeEmail(const std::string & sUserName, const std::string & email) override;
-    bool accountChangeExtraData(const std::string & sUserName, const std::string & extraData) override;
-    bool accountChangeExpiration(const std::string & sUserName, time_t expiration = 0) override;
-    bool isAccountDisabled(const std::string & sUserName) override;
-    bool isAccountConfirmed(const std::string & sUserName) override;
-    bool isAccountSuperUser(const std::string & sUserName) override;
-    std::string accountDescription(const std::string & sUserName) override;
-    std::string accountEmail(const std::string & sUserName) override;
-    std::string accountExtraData(const std::string & sUserName) override;
-    time_t accountExpirationDate(const std::string & sUserName) override;
+    bool accountAdd(        const std::string & sAccountName,
+                            const Secret &secretData,
+                            const sAccountDetails & accountDetails = { "","","","","" },
+                            time_t expirationDate = 0, // Note: use 1 to create an expired account.
+                            const sAccountAttribs & accountAttribs = {true,true,false,false,false},
+                            const std::string & sCreatorAccountName = "") override;
+
+    std::string accountConfirmationToken(const std::string & sAccountName) override;
+    bool accountRemove(const std::string & sAccountName) override;
+    bool accountExist(const std::string & sAccountName) override;
+    bool accountDisable(const std::string & sAccountName, bool disabled = true) override;
+    bool accountConfirm(const std::string & sAccountName, const std::string & confirmationToken) override;
+    bool accountChangeSecret(const std::string & sAccountName, const Secret & passwordData, uint32_t passIndex=0) override;
+    bool accountChangeDescription(const std::string & sAccountName, const std::string & description) override;
+    bool accountChangeGivenName(const std::string & sAccountName, const std::string & sGivenName) override;
+    bool accountChangeLastName(const std::string & sAccountName, const std::string & sLastName) override;
+    bool accountChangeEmail(const std::string & sAccountName, const std::string & email) override;
+    bool accountChangeExtraData(const std::string & sAccountName, const std::string & extraData) override;
+    bool accountChangeExpiration(const std::string & sAccountName, time_t expiration = 0) override;
+    bool isAccountDisabled(const std::string & sAccountName) override;
+    bool isAccountConfirmed(const std::string & sAccountName) override;
+    bool isAccountSuperUser(const std::string & sAccountName) override;
+    std::string accountGivenName(const std::string & sAccountName) override;
+    std::string accountLastName(const std::string & sAccountName) override;
+    std::string accountDescription(const std::string & sAccountName) override;
+    std::string accountEmail(const std::string & sAccountName) override;
+    std::string accountExtraData(const std::string & sAccountName) override;
+    time_t accountExpirationDate(const std::string & sAccountName) override;
+
+    void updateLastLogin(const std::string &sAccountName, const uint32_t & uPassIdx, const sClientDetails & clientDetails) override;
+
+    time_t accountLastLogin(const std::string & sAccountName) override;
+    void resetBadAttempts(const std::string & sAccountName, const uint32_t & passIndex) override;
+    void incrementBadAttempts(const std::string & sAccountName, const uint32_t & passIndex) override;
+
     std::set<std::string> accountsList() override;
-    std::set<std::string> accountGroups(const std::string & sUserName, bool lock = true) override;
-    std::set<std::string> accountDirectAttribs(const std::string & sUserName, bool lock = true) override;
+    std::set<std::string> accountGroups(const std::string & sAccountName, bool lock = true) override;
+    std::set<sApplicationAttrib> accountDirectAttribs(const std::string & sAccountName, bool lock = true) override;
 
     bool superUserAccountExist() override;
 
     /////////////////////////////////////////////////////////////////////////////////
+    // applications:
+    bool applicationAdd(const std::string & appName, const std::string & applicationDescription, const std::string & sOwnerAccountName) override;
+    bool applicationRemove(const std::string & appName) override;
+    bool applicationExist(const std::string & appName) override;
+    std::string applicationDescription(const std::string & appName) override;
+    bool applicationChangeDescription(const std::string & appName, const std::string & applicationDescription) override;
+    std::set<std::string> applicationList() override;
+
+    // TODO:
+    bool applicationValidateOwner(const std::string & appName, const std::string & sAccountName) override;
+    bool applicationValidateAccount(const std::string & appName, const std::string & sAccountName) override;
+    std::set<std::string> applicationOwners(const std::string & appName) override;
+    std::set<std::string> applicationAccounts(const std::string & appName) override;
+    std::set<std::string> accountApplications(const std::string & sAccountName) override;
+    bool applicationAccountAdd(const std::string & appName, const std::string & sAccountName) override;
+    bool applicationAccountRemove(const std::string & appName, const std::string & sAccountName) override;
+    bool applicationOwnerAdd(const std::string & appName, const std::string & sAccountName) override;
+    bool applicationOwnerRemove(const std::string & appName, const std::string & sAccountName) override;
+
+
+    /////////////////////////////////////////////////////////////////////////////////
     // attributes:
-    bool attribAdd(const std::string & attribName, const std::string & attribDescription) override;
-    bool attribRemove(const std::string & sAttribName) override;
-    bool attribExist(const std::string & attribName) override;
-    bool attribGroupAdd(const std::string & attribName, const std::string & groupName) override;
-    bool attribGroupRemove(const std::string & attribName, const std::string & groupName, bool lock = true) override;
-    bool attribAccountAdd(const std::string & attribName, const std::string & sUserName) override;
-    bool attribAccountRemove(const std::string & attribName, const std::string & sUserName, bool lock = true) override;
-    bool attribChangeDescription(const std::string & attribName, const std::string & attribDescription) override;
-    std::string attribDescription(const std::string & attribName) override;
-    std::set<std::string> attribsList() override;
-    std::set<std::string> attribGroups(const std::string & attribName, bool lock = true) override;
-    std::set<std::string> attribAccounts(const std::string & attribName, bool lock = true) override;
+    bool attribAdd(const sApplicationAttrib & applicationAttrib, const std::string & attribDescription) override;
+    bool attribRemove(const sApplicationAttrib & applicationAttrib) override;
+    bool attribExist(const sApplicationAttrib & applicationAttrib) override;
+    bool attribGroupAdd(const sApplicationAttrib & applicationAttrib, const std::string & groupName) override;
+    bool attribGroupRemove(const sApplicationAttrib & applicationAttrib, const std::string & groupName, bool lock = true) override;
+    bool attribAccountAdd(const sApplicationAttrib & applicationAttrib, const std::string & sAccountName) override;
+    bool attribAccountRemove(const sApplicationAttrib & applicationAttrib, const std::string & sAccountName, bool lock = true) override;
+    bool attribChangeDescription(const sApplicationAttrib & applicationAttrib, const std::string & attribDescription) override;
+    std::string attribDescription(const sApplicationAttrib & applicationAttrib) override;
+    std::set<sApplicationAttrib> attribsList() override;
+    std::set<std::string> attribGroups(const sApplicationAttrib & applicationAttrib, bool lock = true) override;
+    std::set<std::string> attribAccounts(const sApplicationAttrib & applicationAttrib, bool lock = true) override;
 
     /////////////////////////////////////////////////////////////////////////////////
     // group:
     bool groupAdd(const std::string & groupName, const std::string & groupDescription) override;
     bool groupRemove(const std::string & groupName) override;
     bool groupExist(const std::string & groupName) override;
-    bool groupAccountAdd(const std::string & groupName, const std::string & sUserName) override;
-    bool groupAccountRemove(const std::string & groupName, const std::string & sUserName, bool lock = true) override;
+    bool groupAccountAdd(const std::string & groupName, const std::string & sAccountName) override;
+    bool groupAccountRemove(const std::string & groupName, const std::string & sAccountName, bool lock = true) override;
     bool groupChangeDescription(const std::string & groupName, const std::string & groupDescription) override;
-    bool groupValidateAttribute(const std::string & groupName, const std::string & attribName, bool lock =true) override;
+    bool groupValidateAttribute(const std::string & groupName, const sApplicationAttrib & attrib, bool lock =true) override;
     std::string groupDescription(const std::string & groupName) override;
     std::set<std::string> groupsList() override;
-    std::set<std::string> groupAttribs(const std::string & groupName, bool lock = true) override;
+    std::set<sApplicationAttrib> groupAttribs(const std::string & groupName, bool lock = true) override;
     std::set<std::string> groupAccounts(const std::string & groupName, bool lock = true) override;
 
     std::list<std::string> getSqlErrorList() const;
     void clearSQLErrorList();
 
 protected:
-    bool accountValidateDirectAttribute(const std::string & sUserName, const std::string & attribName) override;
-    Secret retrieveSecret(const std::string &sUserName, uint32_t passIndex, bool *found) override;
+    bool accountValidateDirectAttribute(const std::string & sAccountName, const sApplicationAttrib & applicationAttrib) override;
+    Secret retrieveSecret(const std::string &sAccountName, uint32_t passIndex, bool * accountFound, bool * indexFound) override;
 
 private:
 

@@ -8,43 +8,49 @@
 #include <cx2_mem_vars/a_bool.h>
 #include <cx2_mem_vars/a_int32.h>
 #include <cx2_mem_vars/a_uint32.h>
+#include <cx2_mem_vars/a_var.h>
 
 using namespace CX2::Authentication;
 using namespace CX2::Memory;
 using namespace CX2::Database;
 
-bool Manager_DB::accountAdd(const std::string &sUserName, const Secret &secretData, const std::string &email, const std::string &accountDescription, const std::string &extraData, time_t expirationDate, bool enabled, bool confirmed, bool superuser)
+bool Manager_DB::accountAdd(const std::string &sAccountName, const Secret &secretData, const sAccountDetails &accountDetails, time_t expirationDate, const sAccountAttribs &accountAttribs, const std::string &sCreatorAccountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    return sqlConnector->query("INSERT INTO vauth_v3_accounts (`username`,`email`,`description`,`extraData`,`superuser`,`enabled`,`expiration`,`confirmed`) "
-                               "VALUES(:username,:email,:description,:extraData,:superuser,:enabled,:expiration,:confirmed);",
+    return sqlConnector->query("INSERT INTO vauth_v3_accounts (`userName`,`givenName`,`lastName`,`email`,`description`,`extraData`,`superuser`,`enabled`,`expiration`,`confirmed`,`canCreateAccounts`,`canCreateApplications`,`creator`) "
+                                                       "VALUES(:userName ,:givenname ,:lastname ,:email ,:description ,:extraData ,:superuser ,:enabled ,:expiration ,:confirmed ,:canCreateAccounts ,:canCreateApplications ,:creator);",
                                {
-                                   {":username",new Abstract::STRING(sUserName)},
-                                   {":email",new Abstract::STRING(email)},
-                                   {":description",new Abstract::STRING(accountDescription)},
-                                   {":extraData",new Abstract::STRING(extraData)},
-                                   {":superuser",new Abstract::BOOL(superuser)},
-                                   {":enabled",new Abstract::BOOL(enabled)},
+                                   {":userName",new Abstract::STRING(sAccountName)},
+                                   {":givenname",new Abstract::STRING(accountDetails.sGivenName)},
+                                   {":lastname",new Abstract::STRING(accountDetails.sLastName)},
+                                   {":email",new Abstract::STRING(accountDetails.sEmail)},
+                                   {":description",new Abstract::STRING(accountDetails.sDescription)},
+                                   {":extraData",new Abstract::STRING(accountDetails.sExtraData)},
+                                   {":superuser",new Abstract::BOOL(accountAttribs.superuser)},
+                                   {":enabled",new Abstract::BOOL(accountAttribs.enabled)},
                                    {":expiration",new Abstract::DATETIME(expirationDate)},
-                                   {":confirmed",new Abstract::BOOL(confirmed)}
+                                   {":confirmed",new Abstract::BOOL(accountAttribs.confirmed)},
+                                   {":canCreateAccounts",new Abstract::BOOL(accountAttribs.canCreateAccounts)},
+                                   {":canCreateApplications",new Abstract::BOOL(accountAttribs.canCreateApplications)},
+                                   {":creator", sCreatorAccountName.empty() ? new Abstract::Var() /* null */ : new Abstract::STRING(accountDetails.sExtraData)}
                                }
                                )
             &&
-            sqlConnector->query("INSERT INTO vauth_v3_accountactivationtokens (`f_username`,`confirmationToken`) "
+            sqlConnector->query("INSERT INTO vauth_v3_accountactivationtokens (`f_userName`,`confirmationToken`) "
                                 "VALUES(:account,:confirmationToken);",
                                 {
-                                    {":account",new Abstract::STRING(sUserName)},
+                                    {":account",new Abstract::STRING(sAccountName)},
                                     {":confirmationToken",new Abstract::STRING(genRandomConfirmationToken())}
                                 }
                                 )
             &&
             sqlConnector->query("INSERT INTO vauth_v3_accountsecrets "
-                                "(`index`,`f_username`,`hash`,`expiration`,`function`,`salt`,`forcedExpiration`,`steps`)"
+                                "(`f_secretIndex`,`f_userName`,`hash`,`expiration`,`function`,`salt`,`forcedExpiration`,`steps`)"
                                 " VALUES"
-                                "(0,:account,:hash,:expiration,:function,:salt,:forcedExpiration,:steps);",
+                                "('0',:account,:hash,:expiration,:function,:salt,:forcedExpiration,:steps);",
                                 {
-                                    {":account",new Abstract::STRING(sUserName)},
+                                    {":account",new Abstract::STRING(sAccountName)},
                                     {":hash",new Abstract::STRING(secretData.hash)},
                                     {":expiration",new Abstract::DATETIME(secretData.expiration)},
                                     {":function",new Abstract::INT32(secretData.passwordFunction)},
@@ -56,13 +62,13 @@ bool Manager_DB::accountAdd(const std::string &sUserName, const Secret &secretDa
 
 }
 
-std::string Manager_DB::accountConfirmationToken(const std::string &sUserName)
+std::string Manager_DB::accountConfirmationToken(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING token;
-    QueryInstance i = sqlConnector->query("SELECT confirmationToken FROM vauth_v3_accountactivationtokens WHERE `f_username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT confirmationToken FROM vauth_v3_accountactivationtokens WHERE `f_userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &token });
     if (i.ok && i.query->step())
     {
@@ -71,23 +77,23 @@ std::string Manager_DB::accountConfirmationToken(const std::string &sUserName)
     return "";
 }
 
-bool Manager_DB::accountRemove(const std::string &sUserName)
+bool Manager_DB::accountRemove(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return sqlConnector->query("DELETE FROM vauth_v3_accounts WHERE `username`=:username;",
+    return sqlConnector->query("DELETE FROM vauth_v3_accounts WHERE `userName`=:userName;",
                                {
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 
 }
 
-bool Manager_DB::accountExist(const std::string &sUserName)
+bool Manager_DB::accountExist(const std::string &sAccountName)
 {
     bool ret = false;
     Threads::Sync::Lock_RD lock(mutex);
 
-    QueryInstance i = sqlConnector->query("SELECT `enabled` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          {{":username",new Memory::Abstract::STRING(sUserName)}},
+    QueryInstance i = sqlConnector->query("SELECT `enabled` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          {{":userName",new Memory::Abstract::STRING(sAccountName)}},
                                           { });
     if (i.ok && i.query->step())
     {
@@ -96,115 +102,135 @@ bool Manager_DB::accountExist(const std::string &sUserName)
     return ret;
 }
 
-bool Manager_DB::accountDisable(const std::string &sUserName, bool disabled)
+bool Manager_DB::accountDisable(const std::string &sAccountName, bool disabled)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return sqlConnector->query("UPDATE vauth_v3_accounts SET `enabled`=:enabled WHERE `username`=:username;",
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `enabled`=:enabled WHERE `userName`=:userName;",
                                {
                                    {":enabled",new Abstract::BOOL(!disabled)},
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 }
 
-bool Manager_DB::accountConfirm(const std::string &sUserName, const std::string &confirmationToken)
+bool Manager_DB::accountConfirm(const std::string &sAccountName, const std::string &confirmationToken)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
     Abstract::STRING token;
-    QueryInstance i = sqlConnector->query("SELECT `confirmationToken` FROM vauth_v3_accountactivationtokens WHERE `f_username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `confirmationToken` FROM vauth_v3_accountactivationtokens WHERE `f_userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &token });
 
     if (i.ok && i.query->step())
     {
         if (!token.getValue().empty() && token.getValue() == confirmationToken)
         {
-            return sqlConnector->query("UPDATE vauth_v3_accounts SET `confirmed`='1' WHERE `username`=:username;",
+            return sqlConnector->query("UPDATE vauth_v3_accounts SET `confirmed`='1' WHERE `userName`=:userName;",
                                        {
-                                           {":username",new Abstract::STRING(sUserName)}
+                                           {":userName",new Abstract::STRING(sAccountName)}
                                        });
         }
     }
     return false;
 }
 
-bool Manager_DB::accountChangeSecret(const std::string &sUserName, const Secret &passwordData, uint32_t passIndex)
+bool Manager_DB::accountChangeSecret(const std::string &sAccountName, const Secret &passwordData, uint32_t passIndex)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
+    // Destroy (if exist).
+    sqlConnector->query("DELETE FROM vauth_v3_accountsecrets WHERE `f_userName`=:userName and `f_secretIndex`=:index",
+                        {
+                            {":userName",new Abstract::STRING(sAccountName)},
+                            {":index",new Abstract::UINT32(passIndex)}
+                        });
 
-    return  sqlConnector->query("DELETE FROM vauth_v3_accountsecrets WHERE `f_username`=:username and `index`=:index",
-                                {
-                                    {":username",new Abstract::STRING(sUserName)},
-                                    {":index",new Abstract::UINT32(passIndex)}
-                                })
-            &&
-            sqlConnector->query("INSERT INTO vauth_v3_accountsecrets "
-                                "(`index`,`f_username`,`hash`,`expiration`,`function`,`salt`,`forcedExpiration`,`steps`) "
-                                "VALUES"
-                                "(:index,:account,:hash,:expiration,:function,:salt,:forcedExpiration,:steps);",
-                                {
-                                    {":index",new Abstract::UINT32(passIndex)},
-                                    {":account",new Abstract::STRING(sUserName)},
-                                    {":hash",new Abstract::STRING(passwordData.hash)},
-                                    {":expiration",new Abstract::DATETIME(passwordData.expiration)},
-                                    {":function",new Abstract::UINT32(passwordData.passwordFunction)},
-                                    {":salt",new Abstract::STRING(CX2::Helpers::Encoders::toHex(passwordData.ssalt,4))},
-                                    {":forcedExpiration",new Abstract::BOOL(passwordData.forceExpiration)},
-                                    {":steps",new Abstract::UINT32(passwordData.gAuthSteps)}
-                                });
+    return sqlConnector->query("INSERT INTO vauth_v3_accountsecrets "
+                               "(`f_secretIndex`,`f_userName`,`hash`,`expiration`,`function`,`salt`,`forcedExpiration`,`steps`) "
+                               "VALUES"
+                               "(:index,:account,:hash,:expiration,:function,:salt,:forcedExpiration,:steps);",
+                               {
+                                   {":index",new Abstract::UINT32(passIndex)},
+                                   {":account",new Abstract::STRING(sAccountName)},
+                                   {":hash",new Abstract::STRING(passwordData.hash)},
+                                   {":expiration",new Abstract::DATETIME(passwordData.expiration)},
+                                   {":function",new Abstract::UINT32(passwordData.passwordFunction)},
+                                   {":salt",new Abstract::STRING(CX2::Helpers::Encoders::toHex(passwordData.ssalt,4))},
+                                   {":forcedExpiration",new Abstract::BOOL(passwordData.forceExpiration)},
+                                   {":steps",new Abstract::UINT32(passwordData.gAuthSteps)}
+                               });
 
 }
 
-bool Manager_DB::accountChangeDescription(const std::string &sUserName, const std::string &description)
+bool Manager_DB::accountChangeDescription(const std::string &sAccountName, const std::string &description)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return sqlConnector->query("UPDATE vauth_v3_accounts SET `description`=:description WHERE `username`=:username;",
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `description`=:description WHERE `userName`=:userName;",
                                {
                                    {":description",new Abstract::STRING(description)},
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 }
 
-bool Manager_DB::accountChangeEmail(const std::string &sUserName, const std::string &email)
+bool Manager_DB::accountChangeGivenName(const std::string &sAccountName, const std::string &sGivenName)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `givenName`=:givenname WHERE `userName`=:userName;",
+                               {
+                                   {":givenname",new Abstract::STRING(sGivenName)},
+                                   {":userName",new Abstract::STRING(sAccountName)}
+                               });
+}
+
+bool Manager_DB::accountChangeLastName(const std::string &sAccountName, const std::string &sLastName)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `lastName`=:lastname WHERE `userName`=:userName;",
+                               {
+                                   {":lastname",new Abstract::STRING(sLastName)},
+                                   {":userName",new Abstract::STRING(sAccountName)}
+                               });
+}
+
+bool Manager_DB::accountChangeEmail(const std::string &sAccountName, const std::string &email)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    return sqlConnector->query("UPDATE vauth_v3_accounts SET `email`=:email WHERE `username`=:username;",
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `email`=:email WHERE `userName`=:userName;",
                                {
                                    {":email",new Abstract::STRING(email)},
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 }
 
-bool Manager_DB::accountChangeExtraData(const std::string &sUserName, const std::string &extraData)
+bool Manager_DB::accountChangeExtraData(const std::string &sAccountName, const std::string &extraData)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return sqlConnector->query("UPDATE vauth_v3_accounts SET `extraData`=:extraData WHERE `username`=:username;",
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `extraData`=:extraData WHERE `userName`=:userName;",
                                {
                                    {":extraData",new Abstract::STRING(extraData)},
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 }
 
-bool Manager_DB::accountChangeExpiration(const std::string &sUserName, time_t expiration)
+bool Manager_DB::accountChangeExpiration(const std::string &sAccountName, time_t expiration)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    return sqlConnector->query("UPDATE vauth_v3_accounts SET `expiration`=:expiration WHERE `username`=:username;",
+    return sqlConnector->query("UPDATE vauth_v3_accounts SET `expiration`=:expiration WHERE `userName`=:userName;",
                                {
                                    {":expiration",new Abstract::DATETIME(expiration)},
-                                   {":username",new Abstract::STRING(sUserName)}
+                                   {":userName",new Abstract::STRING(sAccountName)}
                                });
 }
 
-bool Manager_DB::isAccountDisabled(const std::string &sUserName)
+bool Manager_DB::isAccountDisabled(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL enabled;
-    QueryInstance i = sqlConnector->query("SELECT `enabled` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `enabled` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &enabled });
 
     if (i.ok && i.query->step())
@@ -214,13 +240,13 @@ bool Manager_DB::isAccountDisabled(const std::string &sUserName)
     return true;
 }
 
-bool Manager_DB::isAccountConfirmed(const std::string &sUserName)
+bool Manager_DB::isAccountConfirmed(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL confirmed;
-    QueryInstance i = sqlConnector->query("SELECT `confirmed` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `confirmed` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &confirmed });
 
     if (i.ok && i.query->step())
@@ -230,13 +256,13 @@ bool Manager_DB::isAccountConfirmed(const std::string &sUserName)
     return false;
 }
 
-bool Manager_DB::isAccountSuperUser(const std::string &sUserName)
+bool Manager_DB::isAccountSuperUser(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL superuser;
-    QueryInstance i = sqlConnector->query("SELECT `superuser` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `superuser` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &superuser });
 
     if (i.ok && i.query->step())
@@ -246,13 +272,45 @@ bool Manager_DB::isAccountSuperUser(const std::string &sUserName)
     return false;
 }
 
-std::string Manager_DB::accountDescription(const std::string &sUserName)
+std::string Manager_DB::accountGivenName(const std::string &sAccountName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING sGivenName;
+    QueryInstance i = sqlConnector->query("SELECT `givenName` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
+                                          { &sGivenName });
+
+    if (i.ok && i.query->step())
+    {
+        return sGivenName.getValue();
+    }
+    return "";
+}
+
+std::string Manager_DB::accountLastName(const std::string &sAccountName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING sLastName;
+    QueryInstance i = sqlConnector->query("SELECT `lastName` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
+                                          { &sLastName });
+
+    if (i.ok && i.query->step())
+    {
+        return sLastName.getValue();
+    }
+    return "";
+}
+
+std::string Manager_DB::accountDescription(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING description;
-    QueryInstance i = sqlConnector->query("SELECT `description` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `description` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &description });
 
     if (i.ok && i.query->step())
@@ -262,13 +320,13 @@ std::string Manager_DB::accountDescription(const std::string &sUserName)
     return "";
 }
 
-std::string Manager_DB::accountEmail(const std::string &sUserName)
+std::string Manager_DB::accountEmail(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING email;
-    QueryInstance i = sqlConnector->query("SELECT `email` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `email` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &email });
 
     if (i.ok && i.query->step())
@@ -278,13 +336,13 @@ std::string Manager_DB::accountEmail(const std::string &sUserName)
     return "";
 }
 
-std::string Manager_DB::accountExtraData(const std::string &sUserName)
+std::string Manager_DB::accountExtraData(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING extraData;
-    QueryInstance i = sqlConnector->query("SELECT `extraData` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `extraData` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &extraData });
 
     if (i.ok && i.query->step())
@@ -294,13 +352,13 @@ std::string Manager_DB::accountExtraData(const std::string &sUserName)
     return "";
 }
 
-time_t Manager_DB::accountExpirationDate(const std::string &sUserName)
+time_t Manager_DB::accountExpirationDate(const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::DATETIME expiration;
-    QueryInstance i = sqlConnector->query("SELECT `expiration` FROM vauth_v3_accounts WHERE `username`=:username LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `expiration` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &expiration });
     if (i.ok && i.query->step())
     {
@@ -310,31 +368,93 @@ time_t Manager_DB::accountExpirationDate(const std::string &sUserName)
     return 1;
 }
 
+void Manager_DB::updateLastLogin(const std::string &sAccountName, const uint32_t &uPassIdx, const sClientDetails &clientDetails)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+
+    sqlConnector->query("UPDATE vauth_v3_accounts SET `lastLogin`=CURRENT_TIMESTAMP WHERE `userName`=:userName;",
+                        {
+                            {":userName",new Abstract::STRING(sAccountName)}
+                        });
+
+    sqlConnector->query("INSERT INTO vauth_v3_accountlogins(`f_userName`,`f_secretIndex`,`loginDateTime`,`loginIP`,`loginTLSCN`,`loginUserAgent`,`loginExtraData`) "
+                        "VALUES "
+                        "(:userName,:index,:date,:loginIP,:loginTLSCN,:loginUserAgent,:loginExtraData);",
+                        {
+                            {":userName",new Abstract::STRING(sAccountName)},
+                            {":index",new Abstract::UINT32(uPassIdx)},
+                            {":date",new Abstract::DATETIME(time(nullptr))},
+                            {":loginIP",new Abstract::STRING(clientDetails.sIPAddr)},
+                            {":loginTLSCN",new Abstract::STRING(clientDetails.sTLSCommonName)},
+                            {":loginUserAgent",new Abstract::STRING(clientDetails.sUserAgent)},
+                            {":loginExtraData",new Abstract::STRING(clientDetails.sExtraData)}
+                        }
+                        );
+
+}
+
+time_t Manager_DB::accountLastLogin(const std::string &sAccountName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::DATETIME lastLogin;
+    QueryInstance i = sqlConnector->query("SELECT `lastLogin` FROM vauth_v3_accounts WHERE `userName`=:userName LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
+                                          { &lastLogin });
+    if (i.ok && i.query->step())
+    {
+        return lastLogin.getValue();
+    }
+    // If can't get this data, the account is expired:
+    return 1;
+}
+
+void Manager_DB::resetBadAttempts(const std::string &sAccountName, const uint32_t &passIndex)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    sqlConnector->query("UPDATE vauth_v3_accountsecrets SET `badAttempts`='0' WHERE `f_userName`=:userName and `f_secretIndex`=:index;",
+                        {
+                            {":userName",new Abstract::STRING(sAccountName)},
+                            {":index",new Abstract::UINT32(passIndex)}
+                        });
+
+}
+
+void Manager_DB::incrementBadAttempts(const std::string &sAccountName, const uint32_t &passIndex)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    sqlConnector->query("UPDATE vauth_v3_accountsecrets SET `badAttempts`=`badAttempts`+1  WHERE `f_userName`=:userName and `f_secretIndex`=:index;",
+                        {
+                            {":userName",new Abstract::STRING(sAccountName)},
+                            {":index",new Abstract::UINT32(passIndex)}
+                        });
+}
+
 std::set<std::string> Manager_DB::accountsList()
 {
     std::set<std::string> ret;
     Threads::Sync::Lock_RD lock(mutex);
 
-    Abstract::STRING sUserName;
-    QueryInstance i = sqlConnector->query("SELECT `username` FROM vauth_v3_accounts;",
+    Abstract::STRING sAccountName;
+    QueryInstance i = sqlConnector->query("SELECT `userName` FROM vauth_v3_accounts;",
                                           { },
-                                          { &sUserName });
+                                          { &sAccountName });
     while (i.ok && i.query->step())
     {
-        ret.insert(sUserName.getValue());
+        ret.insert(sAccountName.getValue());
     }
 
     return ret;
 }
 
-std::set<std::string> Manager_DB::accountGroups(const std::string &sUserName, bool lock)
+std::set<std::string> Manager_DB::accountGroups(const std::string &sAccountName, bool lock)
 {
     std::set<std::string> ret;
     if (lock) mutex.lock_shared();
 
     Abstract::STRING group;
-    QueryInstance i = sqlConnector->query("SELECT `f_groupname` FROM vauth_v3_groupsaccounts WHERE `f_username`=:username;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
+    QueryInstance i = sqlConnector->query("SELECT `f_groupName` FROM vauth_v3_groupsaccounts WHERE `f_userName`=:userName;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
                                           { &group });
     while (i.ok && i.query->step())
     {
@@ -345,18 +465,18 @@ std::set<std::string> Manager_DB::accountGroups(const std::string &sUserName, bo
     return ret;
 }
 
-std::set<std::string> Manager_DB::accountDirectAttribs(const std::string &sUserName, bool lock)
+std::set<sApplicationAttrib> Manager_DB::accountDirectAttribs(const std::string &sAccountName, bool lock)
 {
-    std::set<std::string> ret;
+    std::set<sApplicationAttrib> ret;
     if (lock) mutex.lock_shared();
 
-    Abstract::STRING attrib;
-    QueryInstance i = sqlConnector->query("SELECT `f_attribname` FROM vauth_v3_attribsaccounts WHERE `f_username`=:username;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)} },
-                                          { &attrib });
+    Abstract::STRING appName,attrib;
+    QueryInstance i = sqlConnector->query("SELECT `f_appName`,`f_attribName` FROM vauth_v3_attribsaccounts WHERE `f_userName`=:userName;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)} },
+                                          { &appName,&attrib });
     while (i.ok && i.query->step())
     {
-        ret.insert(attrib.getValue());
+        ret.insert( { appName.getValue(), attrib.getValue() } );
     }
 
     if (lock) mutex.unlock_shared();
@@ -377,31 +497,40 @@ bool Manager_DB::superUserAccountExist()
     return false;
 }
 
-Secret Manager_DB::retrieveSecret(const std::string &sUserName, uint32_t passIndex, bool *found)
+
+Secret Manager_DB::retrieveSecret(const std::string &sAccountName, uint32_t passIndex, bool *accountFound, bool *indexFound)
 {
+    Secret ret;
+    *indexFound = false;
+    *accountFound = false;
+
     Threads::Sync::Lock_RD lock(mutex);
 
-    Abstract::UINT32 steps,function;
+    Abstract::UINT32 steps,function,badAttempts;
     Abstract::BOOL forcedExpiration;
     Abstract::DATETIME expiration;
     Abstract::STRING salt,hash;
 
-    Secret ret;
-    QueryInstance i = sqlConnector->query("SELECT `steps`,`forcedExpiration`,`function`,`expiration`,`salt`,`hash` FROM vauth_v3_accountsecrets "
-                                          "WHERE `f_username`=:username AND `index`=:index LIMIT 1;",
-                                          { {":username",new Memory::Abstract::STRING(sUserName)},
+    *accountFound = accountExist(sAccountName);
+
+    if (!*accountFound)
+        return ret;
+
+    QueryInstance i = sqlConnector->query("SELECT `steps`,`forcedExpiration`,`function`,`expiration`,`badAttempts`,`salt`,`hash` FROM vauth_v3_accountsecrets "
+                                          "WHERE `f_userName`=:userName AND `f_secretIndex`=:index LIMIT 1;",
+                                          { {":userName",new Memory::Abstract::STRING(sAccountName)},
                                             {":index",new Memory::Abstract::UINT32(passIndex)}
                                           },
-                                          { &steps, &forcedExpiration, &function, &expiration, &salt, &hash });
+                                          { &steps, &forcedExpiration, &function, &expiration, &badAttempts, &salt, &hash });
 
-    if (found) *found = false;
     if (i.ok && i.query->step())
     {
-        if (found) *found = true;
+        *indexFound = true;
         ret.gAuthSteps = steps.getValue();
         ret.forceExpiration = forcedExpiration.getValue();
         ret.passwordFunction = (Authentication::Function)function.getValue();
         ret.expiration = expiration.getValue();
+        ret.badAttempts = badAttempts.getValue();
         CX2::Helpers::Encoders::fromHex(salt.getValue(),ret.ssalt,4);
         ret.hash = hash.getValue();
     }

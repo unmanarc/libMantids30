@@ -1,10 +1,12 @@
 QT       -= core gui
 
-SOURCES += \ 
+SOURCES += \
+    src/manager_db_application.cpp \
     src/manager_db.cpp \
     src/manager_db_groups.cpp \
     src/manager_db_attributes.cpp \
-    src/manager_db_accounts.cpp
+    src/manager_db_accounts.cpp \
+    src/manager_db_passindexs.cpp
 HEADERS += \  
     src/manager_db.h
 
