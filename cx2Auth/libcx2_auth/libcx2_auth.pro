@@ -4,7 +4,6 @@ SOURCES +=  \
     src/accountsecret_validation.cpp \
     src/domains.cpp \
     src/manager.cpp \
-    src/methodsattributes_map.cpp \
     src/session.cpp
 HEADERS += \
     src/accountsecret_validation.h \
@@ -14,7 +13,6 @@ HEADERS += \
     src/datastructs/ds_auth_secret.h \
     src/domains.h \
     src/manager.h \
-    src/methodsattributes_map.h \
     src/session.h
 
 isEmpty(PREFIX) {
