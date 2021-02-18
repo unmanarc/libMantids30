@@ -178,7 +178,7 @@ void HTTPv1_Server::setResponseServerName(const string &sServerName)
     _serverHeaders.replace("Server", sServerName);
 }
 
-bool HTTPv1_Server::setResponseFileFromURI(const string &sServerDir,string *sRealRelativePath, string *sRealFullPath)
+bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sRealRelativePath, string *sRealFullPath, const string &defaultFileAppend)
 {
     bool ret = false;
     char *cFullPath, *cServerDir;
@@ -193,7 +193,7 @@ bool HTTPv1_Server::setResponseFileFromURI(const string &sServerDir,string *sRea
         return false;
     }
 
-    string sFullPath = cServerDir + getRequestURI();
+    string sFullPath = cServerDir + getRequestURI() + defaultFileAppend;
     cServerDirSize = strlen(cServerDir);
 
     // Detect transversal:
@@ -561,15 +561,9 @@ Memory::Streams::Status HTTPv1_Server::getResponseTransmissionStatus() const
     return ansBytes;
 }
 
-bool HTTPv1_Server::setResponseDeleteSecureCookie(const string &cookieName)
+void HTTPv1_Server::addCookieClearSecure(const string &cookieName)
 {
-    HTTP_Cookie val;
-    val.setValue("");
-    val.setSecure(true);
-    val.setHttpOnly(true);
-    val.setToExpire();
-    val.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
-    return setResponseCookie(cookieName,val);
+    setCookies.addClearSecureCookie(cookieName);
 }
 
 bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const string &cookieValue, const uint32_t &uMaxAge)

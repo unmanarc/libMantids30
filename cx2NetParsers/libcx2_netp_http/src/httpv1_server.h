@@ -96,13 +96,13 @@ public:
      */
     void setResponseServerName(const std::string &sServerName);
     /**
-     * @brief setResponseFileFromURI Set the container as MMAP from file
+     * @brief getLocalFilePathFromURI Set the container as MMAP from file
      * @param sServerDir
      * @param sRealRelativePath
      * @param sRealFullPath
      * @return
      */
-    bool setResponseFileFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath);
+    bool getLocalFilePathFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath, const std::string & defaultFileAppend = "");
     /**
      * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
      * @param sFilePath filename string
@@ -131,11 +131,11 @@ public:
      */
     Memory::Streams::Status getResponseTransmissionStatus() const;
     /**
-     * @brief setResponseDeleteSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
+     * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
      * @param cookieName
      * @return
      */
-    bool setResponseDeleteSecureCookie(const std::string &cookieName);
+    void addCookieClearSecure(const std::string &cookieName);
     /**
      * @brief setResponseSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite)
      * @param cookieName
