@@ -2,6 +2,8 @@
 #define IAUTH_VALIDATION_ACCOUNT_H
 
 #include <string>
+#include <set>
+
 #include "ds_auth_mode.h"
 #include "ds_auth_reason.h"
 #include "ds_auth_function.h"
@@ -11,19 +13,32 @@
 
 namespace CX2 { namespace Authentication {
 
+struct sApplicationAttrib {
+    bool operator<(const sApplicationAttrib & x) const
+    {
+        if (x.appName < appName) return true;
+        else if (x.appName == appName && x.attribName < attribName) return true;
+        else return false;
+    }
+    std::string appName,attribName;
+};
+
+struct sClientDetails {
+    std::string sIPAddr,sExtraData,sTLSCommonName,sUserAgent;
+};
+
 class AccountSecret_Validation : public CX2::Threads::Safe::Map_Element
 {
 public:
     AccountSecret_Validation();
     virtual ~AccountSecret_Validation();
 
-    static Secret genSecret(const std::string & passwordInput, const Function & passFunction, bool forceExpiration = false, const time_t &expirationDate = 0, uint32_t _2faSteps = 0);
+    virtual std::string accountConfirmationToken(const std::string & sAccountName)=0;
+    virtual Secret_PublicData accountSecretPublicData(const std::string & sAccountName, uint32_t passIndex=0)=0;
+    virtual Reason authenticate(const std::string & appName,const sClientDetails & clientDetails,const std::string & sAccountName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & challengeSalt = "",
+                                std::map<uint32_t,std::string> * accountPassIndexesUsedForLogin = nullptr )=0;
 
-    virtual std::string accountConfirmationToken(const std::string & sUserName)=0;
-    virtual Secret_PublicData accountSecretPublicData(const std::string & sUserName, bool * found, uint32_t passIndex=0)=0;
-    virtual Reason authenticate(const std::string & sUserName, const std::string & password, uint32_t passIndex = 0, Mode authMode = MODE_PLAIN, const std::string & challengeSalt = "")=0;
-
-    virtual bool accountValidateAttribute(const std::string & sUserName, const std::string & attribName)=0;
+    virtual bool accountValidateAttribute(const std::string & sAccountName, const sApplicationAttrib & applicationAttrib)=0;
 
 protected:
     Reason validateStoredSecret(const Secret & storedSecret, const std::string & passwordInput, const std::string &challengeSalt, Mode authMode);
