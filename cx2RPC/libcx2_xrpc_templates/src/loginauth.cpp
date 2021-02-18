@@ -13,8 +13,16 @@ Json::Value CX2::RPC::Templates::LoginAuth::authenticate(void * obj, const Json:
     CX2::Authentication::Manager * auth = (CX2::Authentication::Manager *)obj;
     Json::Value payloadOut;
 
-    payloadOut["retCode"] = (uint32_t)
-            auth->authenticate(payload["accountName"].asString(),
+    CX2::Authentication::sClientDetails clientDetails;
+    clientDetails.sIPAddr = payload["clientDetails"]["ipAddr"].asString();
+    clientDetails.sExtraData = payload["clientDetails"]["extraData"].asString();
+    clientDetails.sTLSCommonName = payload["clientDetails"]["tlsCN"].asString();
+    clientDetails.sUserAgent = payload["clientDetails"]["userAgent"].asString();
+
+    payloadOut["retCode"] = (uint32_t) auth->authenticate(
+                payload["appName"].asString(),
+            clientDetails,
+            payload["user"].asString(),
             payload["password"].asString(),
             payload["passIndex"].asUInt(),
             CX2::Authentication::getAuthModeFromString(payload["authMode"].asString()),
@@ -40,13 +48,21 @@ Json::Value CX2::RPC::Templates::LoginAuth::accountChangeSecret(void * obj, cons
     CX2::Authentication::Secret newSecret;
     newSecret.fromMap(mNewSecret);
 
-    payloadOut["retCode"] = auth->accountChangeAuthenticatedSecret(
-                payload["accountName"].asString(),
-                payload["currentPassword"].asString(),
-                CX2::Authentication::getAuthModeFromString(payload["authMode"].asString()),
-                payload["challengeSalt"].asString(),
-                newSecret,
-                payload["passIndex"].asUInt());
+    CX2::Authentication::sClientDetails clientDetails;
+    clientDetails.sIPAddr = payload["clientDetails"]["ipAddr"].asString();
+    clientDetails.sExtraData = payload["clientDetails"]["extraData"].asString();
+    clientDetails.sTLSCommonName = payload["clientDetails"]["tlsCN"].asString();
+    clientDetails.sUserAgent = payload["clientDetails"]["userAgent"].asString();
+
+    payloadOut["retCode"] = auth->accountChangeAuthenticatedSecret( payload["appName"].asString(),
+            payload["user"].asString(),
+            payload["passIndex"].asUInt(),
+            payload["currentPassword"].asString(),
+            newSecret,
+            clientDetails,
+            CX2::Authentication::getAuthModeFromString(payload["authMode"].asString()),
+            payload["challengeSalt"].asString()
+            );
     return payloadOut;
 
 }
@@ -66,16 +82,27 @@ Json::Value CX2::RPC::Templates::LoginAuth::accountAdd(void * obj, const Json::V
     CX2::Authentication::Secret newSecret;
     newSecret.fromMap(mNewSecret);
 
+
+    CX2::Authentication::sAccountDetails accountDetails;
+    accountDetails.sDescription = payload["accountDetails"]["description"].asString();
+    accountDetails.sEmail = payload["accountDetails"]["email"].asString();
+    accountDetails.sExtraData = payload["accountDetails"]["extraData"].asString();
+    accountDetails.sGivenName = payload["accountDetails"]["givenName"].asString();
+    accountDetails.sLastName = payload["accountDetails"]["lastName"].asString();
+    CX2::Authentication::sAccountAttribs accountAttribs;
+    accountAttribs.canCreateAccounts = false;
+    accountAttribs.canCreateApplications = false;
+    accountAttribs.confirmed = true;
+    accountAttribs.enabled = false;
+    accountAttribs.superuser = false;
+
+
     payloadOut["retCode"] =
-            auth->accountAdd(   payload["accountName"].asString(),
+            auth->accountAdd(   payload["userName"].asString(),
                                 newSecret,
-                                payload["email"].asString(),
-                                payload["description"].asString(),
-                                payload["extraData"].asString(),
+                                accountDetails,
                                 payload["expiration"].asUInt64(),
-                                false,  // Disabled (will require manual activation)
-                                true,   // Confirmed (TODO: Handle confirmation)
-                                false); // Superuser
+                                accountAttribs); // Superuser
     return payloadOut;
 }
 
@@ -85,7 +112,7 @@ Json::Value CX2::RPC::Templates::LoginAuth::attribExist(void *obj, const Json::V
 
     // This function is important to aplications to understand if they have been installed into the user manager
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribExist( payload["attribName"].asString() ); // Superuser
+    payloadOut["retCode"] = auth->attribExist( { payload["appName"].asString(), payload["attribName"].asString() } ); // Superuser
     return payloadOut;
 }
 
