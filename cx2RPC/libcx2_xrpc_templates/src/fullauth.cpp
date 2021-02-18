@@ -55,121 +55,121 @@ void FullAuth::AddFullAuthMethods(MethodsManager *methods)
 Json::Value FullAuth::accountChangeSecret(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    CX2::Authentication::Secret passData;
-    passData.fromMap(jsonToMap(payload["passData"]));
-    payloadOut["retCode"] = auth->accountChangeSecret(payload["accountName"].asString(),  passData, payload["passIndex"].asUInt());
+    CX2::Authentication::Secret secretData;
+    secretData.fromMap(jsonToMap(payload["secretData"]));
+    payloadOut["retCode"] = auth->accountChangeSecret(payload["user"].asString(),  secretData, payload["passIndex"].asUInt());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountRemove(payload["accountName"].asString());
+    payloadOut["retCode"] = auth->accountRemove(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountDisable(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountDisable(payload["accountName"].asString(), payload["disabled"].asBool());
+    payloadOut["retCode"] = auth->accountDisable(payload["user"].asString(), payload["disabled"].asBool());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountConfirm(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountDisable(payload["accountName"].asString(), payload["disabled"].asBool());
+    payloadOut["retCode"] = auth->accountDisable(payload["user"].asString(), payload["disabled"].asBool());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeDescription(payload["accountName"].asString(), payload["description"].asString());
+    payloadOut["retCode"] = auth->accountChangeDescription(payload["user"].asString(), payload["description"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountChangeEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeEmail(payload["accountName"].asString(), payload["email"].asString());
+    payloadOut["retCode"] = auth->accountChangeEmail(payload["user"].asString(), payload["email"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountChangeExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeExtraData(payload["accountName"].asString(), payload["extraData"].asString());
+    payloadOut["retCode"] = auth->accountChangeExtraData(payload["user"].asString(), payload["extraData"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountChangeExpiration(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeExpiration(payload["accountName"].asString(), payload["expiration"].asUInt64());
+    payloadOut["retCode"] = auth->accountChangeExpiration(payload["user"].asString(), payload["expiration"].asUInt64());
     return payloadOut;
 }
 
 Json::Value FullAuth::isAccountDisabled(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["disabled"] = auth->isAccountDisabled(payload["accountName"].asString());
+    payloadOut["disabled"] = auth->isAccountDisabled(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::isAccountConfirmed(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["confirmed"] = auth->isAccountConfirmed(payload["accountName"].asString());
+    payloadOut["confirmed"] = auth->isAccountConfirmed(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::isAccountSuperUser(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["superuser"] = auth->isAccountSuperUser(payload["accountName"].asString());
+    payloadOut["superuser"] = auth->isAccountSuperUser(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["description"] = auth->accountDescription(payload["accountName"].asString());
+    payloadOut["description"] = auth->accountDescription(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["email"] = auth->accountEmail(payload["accountName"].asString());
+    payloadOut["email"] = auth->accountEmail(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["extraData"] = auth->accountExtraData(payload["accountName"].asString());
+    payloadOut["extraData"] = auth->accountExtraData(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountExpirationDate(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["expirationDate"] = Json::Int64(auth->accountExpirationDate(payload["accountName"].asString()));
+    payloadOut["expirationDate"] = Json::Int64(auth->accountExpirationDate(payload["user"].asString()));
     return payloadOut;
 }
 
 Json::Value FullAuth::isAccountExpired(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["isAccountExpired"] = auth->isAccountExpired(payload["accountName"].asString());
+    payloadOut["isAccountExpired"] = auth->isAccountExpired(payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::accountValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["isAccountExpired"] = auth->accountValidateAttribute(payload["accountName"].asString(), payload["attribName"].asString());
+    payloadOut["isAccountExpired"] = auth->accountValidateAttribute(payload["user"].asString(),  {payload["appName"].asString(),payload["attribName"].asString()});
     return payloadOut;
 }
 
@@ -184,7 +184,7 @@ Json::Value FullAuth::accountGroups(void *, CX2::Authentication::Manager *auth,C
 {
     Json::Value payloadOut;
 
-    payloadOut["accountGroups"] = stringListToValue(auth->accountGroups(payload["accountName"].asString()));
+    payloadOut["accountGroups"] = stringListToValue(auth->accountGroups(payload["user"].asString()));
     return payloadOut;
 }
 
@@ -192,7 +192,7 @@ Json::Value FullAuth::accountDirectAttribs(void *, CX2::Authentication::Manager 
 {
     Json::Value payloadOut;
 
-    payloadOut["accountDirectAttribs"] = stringListToValue(auth->accountDirectAttribs(payload["accountName"].asString()));
+    payloadOut["accountDirectAttribs"] = attribListToValue(auth->accountDirectAttribs(payload["user"].asString()));
     return payloadOut;
 }
 
@@ -200,7 +200,7 @@ Json::Value FullAuth::accountUsableAttribs(void *, CX2::Authentication::Manager 
 {
     Json::Value payloadOut;
 
-    payloadOut["accountUsableAttribs"] = stringListToValue(auth->accountUsableAttribs(payload["accountName"].asString()));
+    payloadOut["accountUsableAttribs"] = attribListToValue(auth->accountUsableAttribs(payload["user"].asString()));
     return payloadOut;
 }
 
@@ -208,7 +208,8 @@ Json::Value FullAuth::attribAdd(void *, CX2::Authentication::Manager *auth,CX2::
 {
     Json::Value payloadOut;
 
-    payloadOut["retCode"] = auth->attribAdd(payload["attribName"].asString(), payload["description"].asString());
+    payloadOut["retCode"] = auth->attribAdd({payload["appName"].asString(),payload["attribName"].asString()},
+                                            payload["description"].asString());
     return payloadOut;
 }
 
@@ -216,63 +217,63 @@ Json::Value FullAuth::attribRemove(void *, CX2::Authentication::Manager *auth,CX
 {
     Json::Value payloadOut;
 
-    payloadOut["retCode"] = auth->attribRemove(payload["attribName"].asString());
+    payloadOut["retCode"] = auth->attribRemove( {payload["appName"].asString(),payload["attribName"].asString()});
     return payloadOut;
 }
 
 Json::Value FullAuth::attribGroupAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribGroupAdd(payload["attribName"].asString(),payload["groupName"].asString());
+    payloadOut["retCode"] = auth->attribGroupAdd( {payload["appName"].asString(),payload["attribName"].asString()},payload["groupName"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribGroupRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribGroupRemove(payload["attribName"].asString(),payload["groupName"].asString());
+    payloadOut["retCode"] = auth->attribGroupRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["groupName"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountAdd(payload["attribName"].asString(),payload["accountName"].asString());
+    payloadOut["retCode"] = auth->attribAccountAdd( {payload["appName"].asString(),payload["attribName"].asString()},payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountRemove(payload["attribName"].asString(),payload["accountName"].asString());
+    payloadOut["retCode"] = auth->attribAccountRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountRemove(payload["attribName"].asString(),payload["attribDescription"].asString());
+    payloadOut["retCode"] = auth->attribAccountRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["attribDescription"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["attribsList"] = stringListToValue(auth->attribsList());
+    payloadOut["attribsList"] = attribListToValue(auth->attribsList());
     return payloadOut;
 }
 
 Json::Value FullAuth::attribGroups(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["attribGroups"] = stringListToValue(auth->attribGroups(payload["attribName"].asString()));
+    payloadOut["attribGroups"] = stringListToValue(auth->attribGroups( {payload["appName"].asString(),payload["attribName"].asString()}));
     return payloadOut;
 }
 
 Json::Value FullAuth::attribAccounts(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["attribAccounts"] = stringListToValue(auth->attribAccounts(payload["attribName"].asString()));
+    payloadOut["attribAccounts"] = stringListToValue(auth->attribAccounts( {payload["appName"].asString(),payload["attribName"].asString()}));
     return payloadOut;
 }
 
@@ -300,14 +301,14 @@ Json::Value FullAuth::groupExist(void *, CX2::Authentication::Manager *auth,CX2:
 Json::Value FullAuth::groupAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupAccountAdd(payload["groupName"].asString(),payload["accountName"].asString());
+    payloadOut["retCode"] = auth->groupAccountAdd(payload["groupName"].asString(),payload["user"].asString());
     return payloadOut;
 }
 
 Json::Value FullAuth::groupAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupAccountRemove(payload["groupName"].asString(),payload["accountName"].asString());
+    payloadOut["retCode"] = auth->groupAccountRemove(payload["groupName"].asString(),payload["user"].asString());
     return payloadOut;
 }
 
@@ -321,7 +322,7 @@ Json::Value FullAuth::groupChangeDescription(void *, CX2::Authentication::Manage
 Json::Value FullAuth::groupValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupValidateAttribute(payload["groupName"].asString(),payload["attribName"].asString());
+    payloadOut["retCode"] = auth->groupValidateAttribute(payload["groupName"].asString(), {payload["appName"].asString(),payload["attribName"].asString()});
     return payloadOut;
 }
 
@@ -342,7 +343,7 @@ Json::Value FullAuth::groupsList(void *, CX2::Authentication::Manager *auth,CX2:
 Json::Value FullAuth::groupAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
 {
     Json::Value payloadOut;
-    payloadOut["groupAttribs"] = stringListToValue(auth->groupAttribs(payload["groupName"].asString()));
+    payloadOut["groupAttribs"] = attribListToValue(auth->groupAttribs(payload["groupName"].asString()));
     return payloadOut;
 }
 

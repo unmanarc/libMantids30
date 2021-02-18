@@ -54,6 +54,20 @@ private:
     static Json::Value groupAccounts(void * obj, CX2::Authentication::Manager * auth, CX2::Authentication::Session * session, const Json::Value & payload);
 
     static std::map<std::string,std::string> jsonToMap(const Json::Value & jValue);
+
+    static Json::Value attribListToValue(const std::set<CX2::Authentication::sApplicationAttrib> & value)
+    {
+        Json::Value x;
+        int i=0;
+        for (const auto & strVal : value)
+        {
+            x[i++]["appName"] = strVal.appName;
+            x[i++]["attribName"] = strVal.attribName;
+        }
+        return x;
+    }
+
+
     template<typename T> static Json::Value stringListToValue(const T & value)
     {
         Json::Value x;
