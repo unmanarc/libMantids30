@@ -9,10 +9,13 @@ SUBDIRS += cx2DB
 SUBDIRS += cx2Net
 SUBDIRS += cx2NetParsers
 SUBDIRS += cx2Auth
+SUBDIRS += cx2Program
 SUBDIRS += cx2RPC
 SUBDIRS += cx2Scripts
-SUBDIRS += cx2Program
 
 
 SUBDIRS += devel
 SUBDIRS += extras
+
+# Not ready yet:
+#SUBDIRS += programs
