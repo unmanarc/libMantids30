@@ -23,6 +23,9 @@ class HTTP_Status : public Memory::Streams::Parsing::SubParser
 {
 public:
     HTTP_Status();
+
+    static uint16_t getHTTPRetCodeValue(const eHTTP_RetCode & code);
+
     /**
      * @brief getHttpVersion - Get HTTP Version Object
      * @return Version Object

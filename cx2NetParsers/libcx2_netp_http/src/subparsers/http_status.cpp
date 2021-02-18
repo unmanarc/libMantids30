@@ -66,6 +66,15 @@ HTTP_Status::HTTP_Status()
     setParseDataTargetSize(128);
 }
 
+uint16_t HTTP_Status::getHTTPRetCodeValue(const eHTTP_RetCode &code)
+{
+    if (code != HTTP_RET_999_NOT_SET)
+    {
+        return responseCodes[code].code;
+    }
+    return 999;
+}
+
 Memory::Streams::Parsing::ParseStatus HTTP_Status::parse()
 {
     std::string clientRequest = getParsedData()->toString();
@@ -135,3 +144,5 @@ HTTP_Version *HTTP_Status::getHttpVersion()
 {
     return &httpVersion;
 }
+
+
