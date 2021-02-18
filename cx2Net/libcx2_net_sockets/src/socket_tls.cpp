@@ -8,6 +8,8 @@
 #include <iostream>
 
 #include <unistd.h>
+#include <signal.h>
+
 #include <limits>
 
 #ifdef WIN32
@@ -43,6 +45,12 @@ void Socket_TLS::prepareTLS()
     ERR_load_crypto_strings();
     // Register the available ciphers and digests
     SSL_library_init ();
+
+
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
 }
 
 bool Socket_TLS::postConnectSubInitialization()
