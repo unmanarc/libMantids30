@@ -10,7 +10,7 @@ using namespace CX2;
 SessionsManager::SessionsManager()
 {
     setGcWaitTime(1); // 1 sec.
-    setSessionExpirationTime(600); // 10 min
+    setSessionExpirationTime(300); // 5 min
     setMaxSessionsPerUser(100); // 100 sessions
 }
 
@@ -25,7 +25,7 @@ void SessionsManager::gc()
     for (const auto & key : i)
     {
         WebSession * s = (WebSession *)sessions.openElement(key);
-        if (s && s->session->isLastActivityExpired(sessionExpirationTime))
+        if (s && s->authSession->isLastActivityExpired(sessionExpirationTime))
         {
             sessions.closeElement( key );
             sessions.destroyElement( key );
@@ -54,7 +54,7 @@ void SessionsManager::setSessionExpirationTime(const uint32_t &value)
     sessionExpirationTime = value;
 }
 
-std::string SessionsManager::addSession(CX2::Authentication::Session *session)
+std::string SessionsManager::createWebSession(CX2::Authentication::Session *session)
 {
     auto userDomain = session->getUserDomainPair();
     {
@@ -72,11 +72,11 @@ std::string SessionsManager::addSession(CX2::Authentication::Session *session)
         }
     }
 
-    std::string sessionId = CX2::Helpers::Random::createRandomString(32);
-    WebSession * xSession = new WebSession;
+    std::string sessionId = CX2::Helpers::Random::createRandomString(12) + ":" + CX2::Helpers::Random::createRandomString(12);
+    WebSession * webSession = new WebSession;
     session->setSessionId(sessionId);
-    xSession->session = session;
-    sessions.addElement(sessionId,xSession);
+    webSession->authSession = session;
+    sessions.addElement(sessionId,webSession);
     return sessionId;
 }
 
@@ -86,7 +86,7 @@ bool SessionsManager::destroySession(const std::string &sessionID)
     WebSession * sess;
     if ((sess=(WebSession *)sessions.openElement(sessionID))!=nullptr)
     {
-        userDomain = sess->session->getUserDomainPair();
+        userDomain = sess->authSession->getUserDomainPair();
         sessions.closeElement(sessionID);
     }
     else return false;
@@ -113,10 +113,10 @@ WebSession *SessionsManager::openSession(const std::string &sessionID, uint64_t 
     WebSession *xs;
     if ((xs=(WebSession *)sessions.openElement(sessionID))!=nullptr)
     {
-        if (xs->session->isLastActivityExpired(sessionExpirationTime))
+        if (xs->authSession->isLastActivityExpired(sessionExpirationTime))
             *maxAge = 0;
         else
-            *maxAge = (xs->session->getLastActivity()+sessionExpirationTime)-time(nullptr);
+            *maxAge = (xs->authSession->getLastActivity()+sessionExpirationTime)-time(nullptr);
         return xs;
     }
     return nullptr;

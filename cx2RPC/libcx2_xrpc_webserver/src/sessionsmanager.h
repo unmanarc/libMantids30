@@ -13,11 +13,13 @@ class WebSession : public Threads::Safe::Map_Element
 public:
     WebSession()
     {
+        authSession = nullptr;
         bAuthTokenConfirmed = false;
         sCSRFAuthConfirmToken = CX2::Helpers::Random::createRandomString(32);
         sCSRFToken = CX2::Helpers::Random::createRandomString(32);
     }
-    ~WebSession() { delete session; }    
+    ~WebSession() { delete authSession; }
+
     bool validateCSRFToken(const std::string & token)
     {
         return token == sCSRFToken;
@@ -28,9 +30,9 @@ public:
         return bAuthTokenConfirmed;
     }
 
-    CX2::Authentication::Session * session;
+    CX2::Authentication::Session * authSession;
     std::string sCSRFAuthConfirmToken, sCSRFToken;
-    bool bAuthTokenConfirmed;
+    std::atomic<bool> bAuthTokenConfirmed;
 };
 
 class SessionsManager : public Threads::GarbageCollector
@@ -51,7 +53,7 @@ public:
     uint32_t getMaxSessionsPerUser() const;
     void setMaxSessionsPerUser(const uint32_t &value);
 
-    std::string addSession(CX2::Authentication::Session * session);
+    std::string createWebSession(CX2::Authentication::Session * session);
     bool destroySession(const std::string & sessionID);
     WebSession *openSession(const std::string & sessionID, uint64_t *maxAge);
     bool closeSession(const std::string & sessionID);
