@@ -9,6 +9,8 @@
 #include <time.h>
 
 #include <cx2_hlp_functions/encoders.h>
+#include <cx2_hlp_functions/crypto.h>
+#include <cx2_hlp_functions/random.h>
 
 #include "ds_auth_function.h"
 
@@ -19,22 +21,31 @@ struct Secret_PublicData
 {
     Secret_PublicData()
     {
+        nul = true;
         expiration = 0;
+        badAttempts = 0;
         forceExpiration = false;
-        passwordFunction = FN_PLAIN;
+        passwordFunction = FN_NOTFOUND;
         memset(ssalt,0,4);
+        requiredAtLogin = false;
+        locked = false;
     }
 
-    bool isExpired()
+    bool isExpired() const
     {
-        return expiration<time(nullptr);
+        return (expiration<time(nullptr) && expiration!=0) || forceExpiration;
     }
 
     Function passwordFunction;
     unsigned char ssalt[4];
     time_t expiration;
     bool forceExpiration;
+    uint32_t badAttempts;
+    std::string description;
+    bool requiredAtLogin;
+    bool locked;
 
+    bool nul;
     char align[7];
 };
 
@@ -42,6 +53,7 @@ struct Secret
 {
     Secret()
     {
+        badAttempts = 0;
         gAuthSteps = 0; // means current.
         forceExpiration = false;
         passwordFunction = FN_PLAIN;
@@ -52,13 +64,17 @@ struct Secret
     Secret_PublicData getBasicData()
     {
         Secret_PublicData B;
+        B.nul = false;
+        B.locked = false;
+        B.requiredAtLogin = false;
+        B.badAttempts = badAttempts;
         B.expiration = expiration;
         B.forceExpiration = forceExpiration;
         B.passwordFunction = passwordFunction;
         memcpy(B.ssalt, ssalt ,4);
         return B;
     }
-
+/*
     std::map<std::string,std::string> getMap() const
     {
         std::map<std::string,std::string> r;
@@ -70,12 +86,12 @@ struct Secret
         r["FORCE_EXPIRATION"] = std::string(forceExpiration?"1":"0");
         r["GAUTH_STEPS"] = std::to_string(gAuthSteps);
         return r;
-    }
+    }*/
 
     std::string mget(std::map<std::string,std::string> mp, const std::string &k )
     {
         std::map<std::string,std::string> mpx;
-        if (mp.find(k)==mp.end()) return "";
+        if ( mp.find(k)==mp.end() ) return "";
         return mp[k];
     }
 
@@ -127,13 +143,62 @@ struct Secret
         return (time(nullptr)>expiration && expiration!=0) || forceExpiration;
     }
 
+
     uint32_t gAuthSteps;
     bool forceExpiration;
     Function passwordFunction;
+    uint32_t badAttempts;
     time_t expiration;
     std::string hash;
     unsigned char ssalt[4];
 };
+
+
+
+static Secret createNewSecret(const std::string & passwordInput, const Function & passFunction, bool forceExpiration = false, const time_t &expirationDate = 0, uint32_t _2faSteps = 0)
+{
+    Secret r;
+
+    r.passwordFunction = passFunction;
+    r.forceExpiration = forceExpiration;
+    r.expiration = expirationDate;
+
+    switch (passFunction)
+    {
+    case FN_NOTFOUND:
+    {
+        // Do nothing...
+    } break;
+    case FN_PLAIN:
+    {
+        r.hash = passwordInput;
+    } break;
+    case FN_SHA256:
+    {
+        r.hash = Helpers::Crypto::calcSHA256(passwordInput);
+    } break;
+    case FN_SHA512:
+    {
+        r.hash = Helpers::Crypto::calcSHA512(passwordInput);
+    } break;
+    case FN_SSHA256:
+    {
+        CX2::Helpers::Random::createRandomSalt32(r.ssalt);
+        r.hash = Helpers::Crypto::calcSSHA256(passwordInput, r.ssalt);
+    } break;
+    case FN_SSHA512:
+    {
+        CX2::Helpers::Random::createRandomSalt32(r.ssalt);
+        r.hash = Helpers::Crypto::calcSSHA512(passwordInput, r.ssalt);
+    } break;
+    case FN_GAUTHTIME:
+        r.hash = passwordInput;
+        r.gAuthSteps = _2faSteps;
+    }
+
+    return r;
+}
+
 
 }}
 #endif // IAUTH_PASSWORDDATA_H
