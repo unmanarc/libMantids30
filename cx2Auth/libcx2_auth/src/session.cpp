@@ -6,43 +6,39 @@
 
 using namespace CX2::Authentication;
 
-Session::Session()
+
+
+Session::Session(const std::string &appName)
 {
+    this->isPersistentSession = false;
+    this->appName = appName;
     regenSessionId();
 }
 
-Reason Session::isAuthenticated(uint32_t passIndex)
+Reason Session::getIdxAuthenticationStatus(uint32_t passIndex)
 {
     std::unique_lock<std::mutex> lock(mutexAuth);
 
-    sCurrentAuthentication curAuth = getCurrentAuthentication(passIndex);
-    if (curAuth.lastReason == REASON_AUTHENTICATED || curAuth.lastReason == REASON_EXPIRED_PASSWORD)
-    {
-        // If authenticated: check policy
-        if (authPolicies.find(passIndex)!=authPolicies.end())
-        {
-           if (authPolicies[passIndex].validTime>0 && curAuth.authTime+authPolicies[passIndex].validTime < time(nullptr)) return REASON_EXPIRED;
-        }
-    }
-    return curAuth.lastReason;
+    return getIdxAuthenticationStatus_I(passIndex);
+
 }
 
-void Session::registerPersistentAuthentication(const std::string & sUserName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
+void Session::registerPersistentAuthentication(const std::string & sAccountName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
 {
     std::unique_lock<std::mutex> lock(mutexAuth);
 
-    authMatrix[passIndex].lastReason = reason;
+    authMatrix[passIndex].lastAuthStatus = reason;
     authMatrix[passIndex].setCurrentTime();
 
-    if (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD )
+    if ( IS_PASSWORD_AUTHENTICATED(reason) )
     {
-        updateLastActivity();
+        iUpdateLastActivity();
         firstActivity = lastActivity;
     }
     // Authenticated with the main password:
-    if (!passIndex && (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD ))
+    if (!passIndex && IS_PASSWORD_AUTHENTICATED( reason ) )
     {
-        authUser = sUserName;
+        authUser = sAccountName;
         authDomain = accountDomain;
     }
 }
@@ -51,35 +47,42 @@ void Session::registerPersistentAuthentication(uint32_t passIndex, const Reason 
 {
     std::unique_lock<std::mutex> lock(mutexAuth);
 
-    authMatrix[passIndex].lastReason = reason;
+    authMatrix[passIndex].lastAuthStatus = reason;
     authMatrix[passIndex].setCurrentTime();
 
-    if (reason == REASON_AUTHENTICATED || reason == REASON_EXPIRED_PASSWORD )
+    if ( IS_PASSWORD_AUTHENTICATED(reason) )
     {
-        updateLastActivity();
+        iUpdateLastActivity();
         firstActivity = lastActivity;
     }
 }
 
 void Session::updateLastActivity()
 {
-    lastActivity = time(nullptr);
+    std::unique_lock<std::mutex> lock(mutexAuth);
+    iUpdateLastActivity();
 }
 
-bool Session::isLastActivityExpired(const uint32_t &expSeconds) const
+bool Session::isLastActivityExpired(const uint32_t &expSeconds)
 {
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
     time_t curTime = time(nullptr);
     if (lastActivity>curTime) return true; // Computer time has changed?
     return (uint32_t)(curTime-lastActivity)>expSeconds;
 }
 
-time_t Session::getLastActivity() const
+time_t Session::getLastActivity()
 {
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
     return lastActivity;
 }
 
 void Session::regenSessionId()
 {
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
     sessionId = createNewSessionIDStr();
 }
 
@@ -88,12 +91,114 @@ std::string Session::getUserID()
     return authUser;
 }
 
-sCurrentAuthentication Session::getCurrentAuthentication(const uint32_t &passIndex)
+sCurrentAuthentication Session::getCurrentAuthenticationStatus(const uint32_t &passIndex)
 {
+   // std::unique_lock<std::mutex> lock(mutexAuth); < private method.
     if (authMatrix.find(passIndex)!=authMatrix.end())
         return authMatrix[passIndex];
     sCurrentAuthentication x;
     return x;
+}
+
+Reason Session::getIdxAuthenticationStatus_I(uint32_t passIndex)
+{
+    sCurrentAuthentication curAuthStatus;
+
+    curAuthStatus = getCurrentAuthenticationStatus(passIndex);
+    if ( IS_PASSWORD_AUTHENTICATED( curAuthStatus.lastAuthStatus ) )
+    {
+        // If authenticated: check if exist a policy for that idx
+        if (authPolicies.find(passIndex)!=authPolicies.end())
+        {
+            // Then, if exist, check the max auth time.
+            if (authPolicies[passIndex].validTime>0 && curAuthStatus.authTime+authPolicies[passIndex].validTime < time(nullptr))
+                return REASON_EXPIRED;
+        }
+    }
+    return curAuthStatus.lastAuthStatus;
+}
+
+void Session::iUpdateLastActivity()
+{
+    lastActivity = time(nullptr);
+
+}
+
+bool Session::getIsPersistentSession()
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    return isPersistentSession;
+}
+
+void Session::setIsPersistentSession(bool value)
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    isPersistentSession = value;
+}
+
+std::map<uint32_t, std::string> Session::getRequiredLoginIdxs()
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    return requiredLoginIdxs;
+}
+
+std::pair<uint32_t, std::string> Session::getNextRequiredLoginIdxs()
+{
+    std::pair<uint32_t, std::string> r = std::make_pair(0xFFFFFFFF,"");
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    for (const auto & i : requiredLoginIdxs)
+    {
+        // Get the first required password that is not authenticated (allow expired and valid pass):
+        if ( !IS_PASSWORD_AUTHENTICATED(getIdxAuthenticationStatus_I(i.first)) )
+            return i;
+    }
+
+    return r;
+}
+
+void Session::setRequiredLoginIdx(const std::map<uint32_t,std::string> &value)
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    requiredLoginIdxs = value;
+}
+
+bool Session::getIsFullyLoggedIn(const eCheckMode &eCheckMode)
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    if (requiredLoginIdxs.empty())
+        return false;
+
+    for (const auto & i : requiredLoginIdxs)
+    {
+        auto currentAuthenticationForPassword = getIdxAuthenticationStatus_I(i.first);
+
+        if ( eCheckMode == CHECK_DISALLOW_EXPIRED_PASSWORDS && currentAuthenticationForPassword!=REASON_AUTHENTICATED )
+            return false;
+
+        if ( eCheckMode == CHECK_ALLOW_EXPIRED_PASSWORDS && !IS_PASSWORD_AUTHENTICATED(currentAuthenticationForPassword) )
+            return false;
+    }
+    return true;
+}
+
+std::string Session::getAppName()
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    return appName;
+}
+
+void Session::setAppName(const std::string &value)
+{
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
+    appName = value;
 }
 
 std::string Session::getAuthDomain()
@@ -111,6 +216,8 @@ void Session::setAuthDomain(const std::string &value)
 
 void Session::setLastActivity(const time_t &value)
 {
+    std::unique_lock<std::mutex> lock(mutexAuth);
+
     lastActivity = value;
 }
 

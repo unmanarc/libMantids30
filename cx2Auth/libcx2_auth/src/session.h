@@ -10,6 +10,12 @@
 
 namespace CX2 { namespace Authentication {
 
+enum eCheckMode
+{
+    CHECK_ALLOW_EXPIRED_PASSWORDS,
+    CHECK_DISALLOW_EXPIRED_PASSWORDS
+};
+
 struct sAuthenticationPolicy
 {
     sAuthenticationPolicy()
@@ -25,14 +31,14 @@ struct sCurrentAuthentication
 {
     sCurrentAuthentication()
     {
-        lastReason = REASON_UNAUTHENTICATED;
+        lastAuthStatus = REASON_UNAUTHENTICATED;
     }
     void setCurrentTime()
     {
         authTime = time(nullptr);
     }
 
-    Reason lastReason;
+    Reason lastAuthStatus;
     time_t authTime;
 };
 
@@ -40,9 +46,10 @@ struct sCurrentAuthentication
 class Session
 {
 public:
-    Session();
-    Session& operator=(Session &value)
+    Session(const std::string & appName);
+   /* Session& operator=(Session &value)
     {
+        this->appName = value.appName;
         this->authUser = value.authUser;
 
         this->sessionId = value.sessionId;
@@ -51,8 +58,13 @@ public:
         this->firstActivity = value.firstActivity;
 
         return *this;
-    }
-
+    }*/
+    /**
+     * @brief getIdxAuthenticationStatus
+     * @param passIndex
+     * @return
+     */
+    Reason getIdxAuthenticationStatus(uint32_t passIndex = 0);
     /**
      * @brief getAuthUser
      * @return
@@ -64,22 +76,15 @@ public:
      * @param authPolicy
      */
     void setIndexAuthenticationPolicy(uint32_t passIndex, const sAuthenticationPolicy & authPolicy);
-    /**
-     * @brief isAuthenticated
-     * @param passIndex
-     * @return
-     */
-    Reason isAuthenticated(uint32_t passIndex = 0);
 
     /**
      * @brief registerPersistentAuthentication
-     * @param sUserName
+     * @param sAccountName
      * @param accountDomain
      * @param passIndex
      * @param reason
      */
-    void registerPersistentAuthentication(const std::string &sUserName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
-
+    void registerPersistentAuthentication(const std::string &sAccountName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
     /**
      * @brief registerPersistentAuthentication
      * @param passIndex
@@ -95,12 +100,12 @@ public:
      * @param expSeconds
      * @return true if expired
      */
-    bool isLastActivityExpired(const uint32_t & expSeconds) const;
+    bool isLastActivityExpired(const uint32_t & expSeconds);
     /**
      * @brief getLastActivity Get the unix time from the last activity
      * @return unix time of last activity
      */
-    time_t getLastActivity() const;
+    time_t getLastActivity();
     /**
      * @brief setLastActivity Set last activity time (for assign operations), use updateLastActivity for updating this value
      * @param value unix time
@@ -133,7 +138,7 @@ public:
     std::pair<std::string,std::string> getUserDomainPair() const;
     /**
      * @brief getUserID Get the user ID
-     * @return user id string (username)
+     * @return user id string (userName)
      */
     std::string getUserID();
     /**
@@ -151,11 +156,33 @@ public:
 
     std::string getAuthDomain();
 
-private:
-    sCurrentAuthentication getCurrentAuthentication(const uint32_t &passIndex);
+    std::string getAppName();
+    void setAppName(const std::string &value);
 
-    std::string authUser, authDomain;
+    void setRequiredLoginIdx(const std::map<uint32_t, std::string> &value);
+    bool getIsFullyLoggedIn(const eCheckMode & eCheckMode);
+    std::map<uint32_t,std::string> getRequiredLoginIdxs();
+    std::pair<uint32_t, std::string> getNextRequiredLoginIdxs();
+
+    bool getIsPersistentSession();
+    void setIsPersistentSession(bool value);
+
+private:
+    sCurrentAuthentication getCurrentAuthenticationStatus(const uint32_t &passIndex);
+    /**
+     * @brief getIdxAuthenticationStatus
+     * @param passIndex
+     * @return
+     */
+    Reason getIdxAuthenticationStatus_I(uint32_t passIndex = 0);
+
+    void iUpdateLastActivity();
+
+    std::string authUser, authDomain, appName;
     std::string sessionId;
+
+    std::map<uint32_t,std::string> requiredLoginIdxs;
+
     std::map<uint32_t,sCurrentAuthentication> authMatrix;
     std::map<uint32_t,sAuthenticationPolicy> authPolicies;
 
@@ -163,6 +190,9 @@ private:
     std::atomic<time_t> lastActivity;
 
     std::mutex mutexAuth;
+
+    bool isPersistentSession;
+
 };
 
 }}
