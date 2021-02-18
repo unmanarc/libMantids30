@@ -20,8 +20,8 @@ sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, CX2::A
         if (!filter.reqAttrib.empty())
         {
             if (!hSession || !authorizer) continue;
-            if (!filter.negativeAttrib && !authorizer->accountValidateAttribute(hSession->getAuthUser(),filter.reqAttrib)) continue;
-            if (filter.negativeAttrib && authorizer->accountValidateAttribute(hSession->getAuthUser(),filter.reqAttrib)) continue;
+            if (!filter.negativeAttrib && !authorizer->accountValidateAttribute(hSession->getAuthUser(),{hSession->getAppName(), filter.reqAttrib})) continue;
+            if (filter.negativeAttrib && authorizer->accountValidateAttribute(hSession->getAuthUser(),{hSession->getAppName(), filter.reqAttrib})) continue;
         }
 
         boost::cmatch what;
