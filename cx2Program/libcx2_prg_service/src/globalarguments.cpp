@@ -13,6 +13,7 @@ using namespace std;
 using namespace CX2::Application::Arguments;
 using namespace CX2::Memory::Abstract;
 
+
 GlobalArguments::GlobalArguments()
 {
 #ifndef WIN32
