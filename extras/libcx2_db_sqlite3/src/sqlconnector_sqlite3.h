@@ -31,6 +31,17 @@ public:
     SQLConnector_SQLite3();
     ~SQLConnector_SQLite3();
 
+    /**
+     * @brief connectInMemory Connect to IN-MEMORY SQLite3 Database (like using connect(":memory:"))
+     * reference: https://sqlite.org/inmemorydb.html
+     * @return true if connected
+     */
+    bool connectInMemory();
+
+    /**
+     * @brief isOpen Check if the database is open
+     * @return true if open.
+     */
     bool isOpen();
 
     /**

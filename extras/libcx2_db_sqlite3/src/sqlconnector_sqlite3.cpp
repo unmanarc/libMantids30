@@ -14,6 +14,11 @@ SQLConnector_SQLite3::~SQLConnector_SQLite3()
         sqlite3_close(ppDb);
 }
 
+bool SQLConnector_SQLite3::connectInMemory()
+{
+    return connect(":memory:");
+}
+
 bool SQLConnector_SQLite3::isOpen()
 {
     return ppDb != nullptr && !rc;
@@ -22,7 +27,6 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
-
     QueryInstance i = query("select sql from sqlite_master where tbl_name=:tbl;",
           {{":tbl",new Memory::Abstract::STRING(table)}},
           {}
@@ -32,21 +36,6 @@ bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
         return i.query->step();
     else
         return false;
-
-    /*std::unique_lock<std::mutex> lock(mtDatabaseLock);
-
-    bool ret;
-    std::string xsql = "select sql from sqlite_master where tbl_name=?;";
-    sqlite3_stmt * stmt = nullptr;
-    sqlite3_prepare_v2(ppDb, xsql.c_str(), xsql.size() + 1, &stmt, nullptr);
-    sqlite3_bind_text(stmt, 1, table.c_str(), table.size(), nullptr);
-    int s = sqlite3_step(stmt);
-    ret = (s == SQLITE_ROW ? true : false);
-    sqlite3_reset(stmt);
-    sqlite3_clear_bindings(stmt);
-    sqlite3_finalize(stmt);
-
-    return ret;*/
 }
 
 void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
