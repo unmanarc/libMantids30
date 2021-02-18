@@ -2,13 +2,19 @@ QT       -= core gui
 CONFIG   += c++11
 
 SOURCES += \
-    src/applog.cpp
+    src/applog.cpp \
+    src/logbase.cpp \
+    src/rpclog.cpp \
+    src/weblog.cpp
 
 HEADERS += \
+    src/logbase.h \
     src/loglevels.h \
     src/logcolors.h \
     src/logmodes.h \
-    src/applog.h
+    src/applog.h \
+    src/rpclog.h \
+    src/weblog.h
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -26,6 +32,9 @@ include(../../cflags.pri)
 
 TARGET = cx2_prg_logs
 TEMPLATE = lib
+
+win32:LIBS+= -L$$PREFIX/lib -lcx2_hlp_functions2
+
 # INSTALLATION:
 target.path = $$PREFIX/lib
 header_files.files = $$HEADERS
