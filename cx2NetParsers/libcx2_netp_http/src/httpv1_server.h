@@ -199,7 +199,6 @@ public:
 
     void setResponseIncludeServerDate(bool value);
 
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OTHER FUNCTIONS:
     /**
@@ -211,10 +210,13 @@ public:
     bool getIsSecure() const;
     void setIsSecure(bool value);
 
-
-
+    void addStaticContent(const std::string & path, CX2::Memory::Containers::B_MEM * contentElement);
+    void setStaticContentElements(const std::map<std::string, CX2::Memory::Containers::B_MEM *> &value);
 
 protected:
+
+    bool verifyStaticContentExistence(const std::string & path);
+
     /**
     * @brief processClientURI Virtual function called when the Client URI request
     *                         (ex. GET / HTTP/1.1) is available.
@@ -249,6 +251,9 @@ private:
     void parseHostOptions();
 
     bool answer(Memory::Streams::Status &wrStat);
+
+
+    std::map<std::string,CX2::Memory::Containers::B_MEM *> staticContentElements;
 
     HTTP_Cookies_ServerSide setCookies;
     HTTP_Security_XFrameOpts secXFrameOpts;

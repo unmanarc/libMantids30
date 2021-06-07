@@ -238,6 +238,14 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
             }
         }
     }
+    else if (  staticContentElements.find(std::string(getRequestURI()+defaultFileAppend)) != staticContentElements.end() )
+    { // STATIC CONTENT:
+        *sRealRelativePath = getRequestURI()+defaultFileAppend;
+        *sRealFullPath = "MEM:" + *sRealRelativePath;
+        setResponseDataStreamer(staticContentElements[*sRealRelativePath],false);
+        ret = true;
+    }
+
 
     if (cFullPath) free(cFullPath);
 
@@ -501,6 +509,16 @@ bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
     return true;
 }
 
+void HTTPv1_Server::setStaticContentElements(const std::map<std::string, CX2::Memory::Containers::B_MEM *> &value)
+{
+    staticContentElements = value;
+}
+
+bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
+{
+    return !(staticContentElements.find(path) == staticContentElements.end());
+}
+
 std::string HTTPv1_Server::getContentType() const
 {
     return contentType;
@@ -524,6 +542,11 @@ bool HTTPv1_Server::getIsSecure() const
 void HTTPv1_Server::setIsSecure(bool value)
 {
     isSecure = value;
+}
+
+void HTTPv1_Server::addStaticContent(const string &path, Memory::Containers::B_MEM *contentElement)
+{
+    staticContentElements[path] = contentElement;
 }
 
 HTTP_Security_HSTS HTTPv1_Server::getResponseSecurityHSTS() const
