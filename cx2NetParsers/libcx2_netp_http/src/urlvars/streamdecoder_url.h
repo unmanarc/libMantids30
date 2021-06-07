@@ -17,7 +17,7 @@ public:
     void writeEOF(bool) override;
 
 private:
-    size_t getPlainBytesSize(const unsigned char * buf, size_t count);
+    size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
     Status flushBytes(Status &wrStat);
 
     inline unsigned char hex2uchar();
