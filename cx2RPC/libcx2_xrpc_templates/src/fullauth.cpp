@@ -1,366 +1,1040 @@
 #include "fullauth.h"
-
+#include <regex>
 using namespace CX2::RPC::Templates;
 using namespace CX2;
 
-void FullAuth::AddFullAuthMethods(MethodsManager *methods)
+std::string FullAuth::dirAppName;
+
+void FullAuth::AddFullAuthMethods(MethodsManager *methods, const std::string &_dirAppName)
 {
-    methods->addRPCMethod("accountChangeSecret", {"admin"}, {&accountChangeSecret,nullptr});
-    methods->addRPCMethod("accountRemove", {"admin"}, {&accountRemove,nullptr});
-    methods->addRPCMethod("accountDisable", {"admin"}, {&accountDisable,nullptr});
-    methods->addRPCMethod("accountConfirm", {"admin"}, {&accountConfirm,nullptr});
-    methods->addRPCMethod("accountChangeDescription", {"admin"}, {&accountChangeDescription,nullptr});
-    methods->addRPCMethod("accountChangeEmail", {"admin"}, {&accountChangeEmail,nullptr});
-    methods->addRPCMethod("accountChangeExtraData", {"admin"}, {&accountChangeExtraData,nullptr});
-    methods->addRPCMethod("accountChangeExpiration", {"admin"}, {&accountChangeExpiration,nullptr});
+    dirAppName = _dirAppName;
 
-    methods->addRPCMethod("isAccountDisabled", {"admin"}, {&isAccountDisabled,nullptr});
-    methods->addRPCMethod("isAccountConfirmed", {"admin"}, {&isAccountConfirmed,nullptr});
-    methods->addRPCMethod("isAccountSuperUser", {"admin"}, {&isAccountSuperUser,nullptr});
-    methods->addRPCMethod("accountDescription", {"admin"}, {&accountDescription,nullptr});
-    methods->addRPCMethod("accountEmail", {"admin"}, {&accountEmail,nullptr});
-    methods->addRPCMethod("accountExtraData", {"admin"}, {&accountExtraData,nullptr});
-    methods->addRPCMethod("accountExpirationDate", {"admin"}, {&accountExpirationDate,nullptr});
-    methods->addRPCMethod("isAccountExpired", {"admin"}, {&isAccountExpired,nullptr});
-    methods->addRPCMethod("accountValidateAttribute", {"admin"}, {&accountValidateAttribute,nullptr});
-    methods->addRPCMethod("accountsList", {"admin"}, {&accountsList,nullptr});
-    methods->addRPCMethod("accountGroups", {"admin"}, {&accountGroups,nullptr});
-    methods->addRPCMethod("accountDirectAttribs", {"admin"}, {&accountDirectAttribs,nullptr});
-    methods->addRPCMethod("accountUsableAttribs", {"admin"}, {&accountUsableAttribs,nullptr});
+    // Accounts:
+    methods->addRPCMethod("accountAdd", {"DIRWRITE"}, {&accountAdd,nullptr});
+    methods->addRPCMethod("accountExist",{"DIRREAD"},{&accountExist,nullptr});
+    methods->addRPCMethod("accountChangeSecret", {"DIRWRITE"}, {&accountChangeSecret,nullptr});
+    methods->addRPCMethod("accountRemove", {"DIRWRITE"}, {&accountRemove,nullptr});
+    methods->addRPCMethod("accountDisable", {"DIRWRITE"}, {&accountDisable,nullptr});
+    methods->addRPCMethod("accountConfirm", {"DIRWRITE"}, {&accountConfirm,nullptr});
+    methods->addRPCMethod("accountChangeBasicInfo", {"DIRWRITE"}, {&accountChangeBasicInfo,nullptr});
+    methods->addRPCMethod("accountChangeDescription", {"DIRWRITE"}, {&accountChangeDescription,nullptr});
+    methods->addRPCMethod("accountChangeGivenName", {"DIRWRITE"}, {&accountChangeGivenName,nullptr});
+    methods->addRPCMethod("accountChangeLastName", {"DIRWRITE"}, {&accountChangeLastName,nullptr});
+    methods->addRPCMethod("accountChangeEmail", {"DIRWRITE"}, {&accountChangeEmail,nullptr});
+    methods->addRPCMethod("accountChangeExtraData", {"DIRWRITE"}, {&accountChangeExtraData,nullptr});
+    methods->addRPCMethod("accountChangeExpiration", {"DIRWRITE"}, {&accountChangeExpiration,nullptr});
+    methods->addRPCMethod("accountChangeGroupSet", {"DIRWRITE"}, {&accountChangeGroupSet,nullptr});
+    methods->addRPCMethod("isAccountDisabled", {"DIRWRITE"}, {&isAccountDisabled,nullptr});
+    methods->addRPCMethod("isAccountConfirmed", {"DIRWRITE"}, {&isAccountConfirmed,nullptr});
+    methods->addRPCMethod("isAccountSuperUser", {"DIRWRITE"}, {&isAccountSuperUser,nullptr});
+    methods->addRPCMethod("accountGivenName", {"DIRREAD"}, {&accountGivenName,nullptr});
+    methods->addRPCMethod("accountLastName", {"DIRREAD"}, {&accountLastName,nullptr});
+    methods->addRPCMethod("accountBasicInfo", {"DIRREAD"}, {&accountBasicInfo,nullptr});
+    methods->addRPCMethod("accountDescription", {"DIRREAD"}, {&accountDescription,nullptr});
+    methods->addRPCMethod("accountEmail", {"DIRREAD"}, {&accountEmail,nullptr});
+    methods->addRPCMethod("accountExtraData", {"DIRREAD"}, {&accountExtraData,nullptr});
+    methods->addRPCMethod("isAccountExpired", {"DIRREAD"}, {&isAccountExpired,nullptr});
+    methods->addRPCMethod("accountValidateAttribute", {"DIRREAD"}, {&accountValidateAttribute,nullptr});
+    methods->addRPCMethod("accountsList", {"DIRREAD"}, {&accountsList,nullptr});
+    methods->addRPCMethod("accountsBasicInfoSearch", {"DIRREAD"}, {&accountsBasicInfoSearch,nullptr});
+    methods->addRPCMethod("accountGroups", {"DIRREAD"}, {&accountGroups,nullptr});
+    methods->addRPCMethod("accountDirectAttribs", {"DIRREAD"}, {&accountDirectAttribs,nullptr});
+    methods->addRPCMethod("accountUsableAttribs", {"DIRREAD"}, {&accountUsableAttribs,nullptr});
+    methods->addRPCMethod("accountExpirationDate", {"DIRREAD"}, {&accountExpirationDate,nullptr});
+    methods->addRPCMethod("accountLastLogin", {"DIRREAD"}, {&accountLastLogin,nullptr});
+    methods->addRPCMethod("resetBadAttempts", {"DIRWRITE"}, {&resetBadAttempts,nullptr});
 
-    methods->addRPCMethod("attribAdd", {"admin"}, {&attribAdd,nullptr});
-    methods->addRPCMethod("attribRemove", {"admin"}, {&attribRemove,nullptr});
-    methods->addRPCMethod("attribGroupAdd", {"admin"}, {&attribGroupAdd,nullptr});
-    methods->addRPCMethod("attribGroupRemove", {"admin"}, {&attribGroupRemove,nullptr});
-    methods->addRPCMethod("attribAccountAdd", {"admin"}, {&attribAccountAdd,nullptr});
-    methods->addRPCMethod("attribAccountRemove", {"admin"}, {&attribAccountRemove,nullptr});
-    methods->addRPCMethod("attribChangeDescription", {"admin"}, {&attribChangeDescription,nullptr});
-    methods->addRPCMethod("attribsList", {"admin"}, {&attribsList,nullptr});
-    methods->addRPCMethod("attribGroups", {"admin"}, {&attribGroups,nullptr});
-    methods->addRPCMethod("attribAccounts", {"admin"}, {&attribAccounts,nullptr});
+    // Attribs:
+    methods->addRPCMethod("attribAdd", {"DIRWRITE"}, {&attribAdd,nullptr});
+    methods->addRPCMethod("attribRemove", {"DIRWRITE"}, {&attribRemove,nullptr});
+    methods->addRPCMethod("attribGroupAdd", {"DIRWRITE"}, {&attribGroupAdd,nullptr});
+    methods->addRPCMethod("attribGroupRemove", {"DIRWRITE"}, {&attribGroupRemove,nullptr});
+    methods->addRPCMethod("attribAccountAdd", {"DIRWRITE"}, {&attribAccountAdd,nullptr});
+    methods->addRPCMethod("attribAccountRemove", {"DIRWRITE"}, {&attribAccountRemove,nullptr});
+    methods->addRPCMethod("attribChangeDescription", {"DIRWRITE"}, {&attribChangeDescription,nullptr});
+    methods->addRPCMethod("attribDescription", {"DIRREAD"}, {&attribDescription,nullptr});
+    methods->addRPCMethod("attribsList", {"DIRREAD"}, {&attribsList,nullptr});
+    methods->addRPCMethod("attribGroups", {"DIRREAD"}, {&attribGroups,nullptr});
+    methods->addRPCMethod("attribAccounts", {"DIRREAD"}, {&attribAccounts,nullptr});
+    methods->addRPCMethod("attribsBasicInfoSearch", {"DIRREAD"}, {&attribsBasicInfoSearch,nullptr});
+    methods->addRPCMethod("attribsLeftListForGroup", {"DIRREAD"}, {&attribsLeftListForGroup,nullptr});
 
-    methods->addRPCMethod("groupAdd", {"admin"}, {&groupAdd,nullptr});
-    methods->addRPCMethod("groupRemove", {"admin"}, {&groupRemove,nullptr});
-    methods->addRPCMethod("groupExist", {"admin"}, {&groupExist,nullptr});
-    methods->addRPCMethod("groupAccountAdd", {"admin"}, {&groupAccountAdd,nullptr});
-    methods->addRPCMethod("groupAccountRemove", {"admin"}, {&groupAccountRemove,nullptr});
-    methods->addRPCMethod("groupChangeDescription", {"admin"}, {&groupChangeDescription,nullptr});
-    methods->addRPCMethod("groupValidateAttribute", {"admin"}, {&groupValidateAttribute,nullptr});
-    methods->addRPCMethod("groupDescription", {"admin"}, {&groupDescription,nullptr});
-    methods->addRPCMethod("groupsList", {"admin"}, {&groupsList,nullptr});
-    methods->addRPCMethod("groupAttribs", {"admin"}, {&groupAttribs,nullptr});
-    methods->addRPCMethod("groupAccounts", {"admin"}, {&groupAccounts,nullptr});
+    //  Applications
+    methods->addRPCMethod("applicationBasicInfo", {"DIRREAD"}, {&applicationBasicInfo,nullptr});
+    methods->addRPCMethod("applicationAdd", {"DIRWRITE"}, {&applicationAdd,nullptr});
+    methods->addRPCMethod("applicationRemove", {"DIRWRITE"}, {&applicationRemove,nullptr});
+    methods->addRPCMethod("applicationExist", {"DIRREAD"}, {&applicationExist,nullptr});
+    methods->addRPCMethod("applicationDescription", {"DIRREAD"}, {&applicationDescription,nullptr});
+    methods->addRPCMethod("applicationChangeDescription", {"DIRWRITE"}, {&applicationChangeDescription,nullptr});
+    methods->addRPCMethod("applicationChangeKey", {"DIRWRITE"}, {&applicationChangeKey,nullptr});
+    methods->addRPCMethod("applicationList", {"DIRREAD"}, {&applicationList,nullptr});
+    methods->addRPCMethod("applicationValidateOwner", {"DIRREAD"}, {&applicationValidateOwner,nullptr});
+    methods->addRPCMethod("applicationValidateAccount", {"DIRREAD"}, {&applicationValidateAccount,nullptr});
+    methods->addRPCMethod("applicationOwners", {"DIRREAD"}, {&applicationOwners,nullptr});
+    methods->addRPCMethod("applicationAccounts", {"DIRREAD"}, {&applicationAccounts,nullptr});
+    methods->addRPCMethod("accountApplications", {"DIRREAD"}, {&accountApplications,nullptr});
+    methods->addRPCMethod("applicationAccountAdd", {"DIRWRITE"}, {&applicationAccountAdd,nullptr});
+    methods->addRPCMethod("applicationAccountRemove", {"DIRWRITE"}, {&applicationAccountRemove,nullptr});
+    methods->addRPCMethod("applicationOwnerAdd", {"DIRWRITE"}, {&applicationOwnerAdd,nullptr});
+    methods->addRPCMethod("applicationOwnerRemove", {"DIRWRITE"}, {&applicationOwnerRemove,nullptr});
+    methods->addRPCMethod("applicationsBasicInfoSearch", {"DIRREAD"}, {&applicationsBasicInfoSearch,nullptr});
+
+    // Groups:
+    methods->addRPCMethod("groupAdd", {"DIRWRITE"}, {&groupAdd,nullptr});
+    methods->addRPCMethod("groupRemove", {"DIRWRITE"}, {&groupRemove,nullptr});
+    methods->addRPCMethod("groupExist", {"DIRREAD"}, {&groupExist,nullptr});
+    methods->addRPCMethod("groupAccountAdd", {"DIRWRITE"}, {&groupAccountAdd,nullptr});
+    methods->addRPCMethod("groupAccountRemove", {"DIRWRITE"}, {&groupAccountRemove,nullptr});
+    methods->addRPCMethod("groupChangeDescription", {"DIRWRITE"}, {&groupChangeDescription,nullptr});
+    methods->addRPCMethod("groupValidateAttribute", {"DIRREAD"}, {&groupValidateAttribute,nullptr});
+    methods->addRPCMethod("groupDescription", {"DIRREAD"}, {&groupDescription,nullptr});
+    methods->addRPCMethod("groupsList", {"DIRREAD"}, {&groupsList,nullptr});
+    methods->addRPCMethod("groupAttribs", {"DIRREAD"}, {&groupAttribs,nullptr});
+    methods->addRPCMethod("groupAccounts", {"DIRREAD"}, {&groupAccounts,nullptr});
+    methods->addRPCMethod("groupsBasicInfoSearch", {"DIRREAD"}, {&groupsBasicInfoSearch,nullptr});
+    methods->addRPCMethod("groupBasicInfo", {"DIRREAD"}, {&groupBasicInfo,nullptr});
+
+    //getBAuthPolicyMaxTries ?
 }
 
-Json::Value FullAuth::accountChangeSecret(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountAdd(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
+
+    std::string accountName = JSON_ASSTRING(payload,"accountName","");
+
+    if (auth->accountExist(accountName))
+    {
+        payloadOut["retCode"] =false;
+        payloadOut["retMsg"] = "Account Already Exist";
+        return payloadOut;
+    }
+
+    if (accountName.empty())
+    {
+        payloadOut["retCode"] =false;
+        payloadOut["retMsg"] = "Account Name is Empty";
+        return payloadOut;
+    }
+
+    std::regex accountNameExpr("[a-zA-Z0-9]+");
+    if(!regex_match(accountName,accountNameExpr))
+    {
+        payloadOut["retCode"] =false;
+        payloadOut["retMsg"] = "Account name have invalid characters";
+        return payloadOut;
+    }
+
+    // Create Expired SSHA256 password (require change)
+    CX2::Authentication::Secret newSecretData = CX2::Authentication::createNewSecret(JSON_ASSTRING(payload,"secretTempPass",""),CX2::Authentication::FN_SSHA256,true);
+
+    CX2::Authentication::sAccountDetails accountDetails;
+    accountDetails.sDescription = JSON_ASSTRING(payload,"description","");
+    accountDetails.sEmail = JSON_ASSTRING(payload,"mail","");
+    accountDetails.sExtraData = JSON_ASSTRING(payload,"extraData","");
+    accountDetails.sGivenName = JSON_ASSTRING(payload,"givenName","");
+    accountDetails.sLastName = JSON_ASSTRING(payload,"lastName","");
+
+    CX2::Authentication::sAccountAttribs accountAttribs;
+    accountAttribs.confirmed  = JSON_ASBOOL(payload,"isConfirmed",false);
+    accountAttribs.enabled  = JSON_ASBOOL(payload,"isEnabled",false);
+    accountAttribs.superuser  = JSON_ASBOOL(payload,"isSuperuser",false);
+
+    payloadOut["retCode"] =
+            auth->accountAdd(
+                accountName,
+                newSecretData,
+                accountDetails,
+                JSON_ASUINT64(payload,"expirationDate",0),
+            accountAttribs, session->getAuthUser()
+            );
+
+    if (!JSON_ASBOOL(payloadOut,"retCode",false))
+    {
+        payloadOut["retMsg"] = "Internal Error";
+    }
+
+    return payloadOut;
+}
+
+json FullAuth::accountExist(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountExist(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountChangeSecret(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
     CX2::Authentication::Secret secretData;
     secretData.fromMap(jsonToMap(payload["secretData"]));
-    payloadOut["retCode"] = auth->accountChangeSecret(payload["user"].asString(),  secretData, payload["passIndex"].asUInt());
+    payloadOut["retCode"] = auth->accountChangeSecret(JSON_ASSTRING(payload,"accountName",""),  secretData, JSON_ASUINT(payload,"passIndex",0));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountRemove(payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountRemove(JSON_ASSTRING(payload,"accountName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDisable(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountDisable(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountDisable(payload["user"].asString(), payload["disabled"].asBool());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountDisable(JSON_ASSTRING(payload,"accountName",""), JSON_ASBOOL(payload,"disabled",false));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountConfirm(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountConfirm(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountDisable(payload["user"].asString(), payload["disabled"].asBool());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountDisable(JSON_ASSTRING(payload,"accountName",""), JSON_ASBOOL(payload,"disabled",false));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeBasicInfo(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeDescription(payload["user"].asString(), payload["description"].asString());
+    json payloadOut;
+    CX2::Authentication::sAccountAttribs attribs;
+
+    attribs.enabled = JSON_ASBOOL(payload,"isEnabled",false);
+    attribs.confirmed = JSON_ASBOOL(payload,"isConfirmed",false);
+    attribs.superuser = JSON_ASBOOL(payload,"isSuperuser",false);
+
+    payloadOut["retCode"] =
+            auth->accountChangeDescription(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"description","")) &&
+            auth->accountChangeGivenName(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"givenName","")) &&
+            auth->accountChangeLastName(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"lastName","")) &&
+            auth->accountChangeEmail(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"email","")) &&
+            auth->accountChangeExtraData(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"extraData","")) &&
+            auth->accountChangeAttribs(JSON_ASSTRING(payload,"accountName",""), attribs);
+    return payloadOut;
+
+}
+
+json FullAuth::accountChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeDescription(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"description",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeGivenName(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeEmail(payload["user"].asString(), payload["email"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeGivenName(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"givenName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeLastName(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeExtraData(payload["user"].asString(), payload["extraData"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeLastName(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"lastName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountChangeExpiration(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->accountChangeExpiration(payload["user"].asString(), payload["expiration"].asUInt64());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeEmail(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"email",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountDisabled(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["disabled"] = auth->isAccountDisabled(payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeExtraData(JSON_ASSTRING(payload,"accountName",""), JSON_ASSTRING(payload,"extraData",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountConfirmed(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeExpiration(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["confirmed"] = auth->isAccountConfirmed(payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->accountChangeExpiration(JSON_ASSTRING(payload,"accountName",""), JSON_ASUINT64(payload,"expiration",0));
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountSuperUser(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountChangeGroupSet(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["superuser"] = auth->isAccountSuperUser(payload["user"].asString());
+    std::set<std::string> groupSet;
+    json payloadOut;
+
+    if (!payload["groups"].isArray())
+    {
+        payloadOut["retCode"] = false;
+        return payloadOut;
+    }
+
+    for ( size_t i=0; i<payload["groups"].size();i++ )
+    {
+        groupSet.insert(payload["groups"][(int)i].asString());
+    }
+
+    payloadOut["retCode"] = auth->accountChangeGroupSet(JSON_ASSTRING(payload,"accountName",""), groupSet);
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::isAccountDisabled(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["description"] = auth->accountDescription(payload["user"].asString());
+    json payloadOut;
+    payloadOut["disabled"] = auth->isAccountDisabled(JSON_ASSTRING(payload,"accountName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::isAccountConfirmed(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["email"] = auth->accountEmail(payload["user"].asString());
+    json payloadOut;
+    payloadOut["confirmed"] = auth->isAccountConfirmed(JSON_ASSTRING(payload,"accountName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::isAccountSuperUser(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["extraData"] = auth->accountExtraData(payload["user"].asString());
+    json payloadOut;
+    payloadOut["superuser"] = auth->isAccountSuperUser(JSON_ASSTRING(payload,"accountName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountExpirationDate(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["expirationDate"] = Json::Int64(auth->accountExpirationDate(payload["user"].asString()));
+    json payloadOut;
+    payloadOut["description"] = auth->accountDescription(JSON_ASSTRING(payload,"accountName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::isAccountExpired(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountBasicInfo(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["isAccountExpired"] = auth->isAccountExpired(payload["user"].asString());
+    json payloadOut;
+
+    payloadOut["givenName"] = auth->accountGivenName(JSON_ASSTRING(payload,"accountName",""));
+    payloadOut["lastName"] = auth->accountLastName(JSON_ASSTRING(payload,"accountName",""));
+    payloadOut["description"] = auth->accountDescription(JSON_ASSTRING(payload,"accountName",""));
+    payloadOut["email"] = auth->accountEmail(JSON_ASSTRING(payload,"accountName",""));
+    payloadOut["extraData"] = auth->accountExtraData(JSON_ASSTRING(payload,"accountName",""));
+
+    auto attribs = auth->accountAttribs(JSON_ASSTRING(payload,"accountName",""));
+
+    payloadOut["enabled"] = attribs.enabled;
+    payloadOut["confirmed"] = attribs.confirmed;
+    payloadOut["superuser"] = attribs.superuser;
+
+    int i=0;
+    auto accountGroups = auth->accountGroups(JSON_ASSTRING(payload,"accountName",""));
+    for (const auto & groupName : accountGroups)
+    {
+        payloadOut["groups"][i]["name"] = groupName;
+        // TODO: optimize:
+        payloadOut["groups"][i]["description"] = auth->groupDescription(groupName);
+        i++;
+    }
+
+    i=0;
+    for (const auto & groupName : auth->groupsList())
+    {
+        if (accountGroups.find(groupName)==accountGroups.end())
+        {
+            payloadOut["groupsLeft"][i]["name"] = groupName;
+            payloadOut["groupsLeft"][i]["description"] = auth->groupDescription(groupName);
+            i++;
+        }
+    }
+
+    auto directAttribs = auth->accountDirectAttribs(JSON_ASSTRING(payload,"accountName",""));
+    auto usableAttribs = auth->accountUsableAttribs(JSON_ASSTRING(payload,"accountName",""));
+
+    auto accountApplications = auth->accountApplications(JSON_ASSTRING(payload,"accountName",""));
+    i=0;
+    for (const auto & applicationName : accountApplications)
+    {
+        payloadOut["applications"][i]["name"] = applicationName;
+        // TODO: optimize:
+        payloadOut["applications"][i]["description"] = auth->applicationDescription(applicationName);
+
+        int j=0;
+        for (const auto & directAttrib : directAttribs)
+        {
+            if (directAttrib.appName == applicationName)
+            {
+                payloadOut["applications"][i]["directAttribs"][j]["name"] = directAttrib.attribName;
+                payloadOut["applications"][i]["directAttribs"][j]["description"] = auth->attribDescription(directAttrib);
+                j++;
+            }
+        }
+
+        j=0;
+        for (const auto & attrib : auth->attribsList(applicationName))
+        {
+            if (directAttribs.find(attrib)==directAttribs.end())
+            {
+                payloadOut["applications"][i]["directAttribsLeft"][j]["name"] = attrib.attribName;
+                payloadOut["applications"][i]["directAttribsLeft"][j]["description"] = auth->attribDescription(attrib);
+                j++;
+            }
+        }
+
+        j=0;
+        for (const auto & usableAttrib : directAttribs)
+        {
+            if (usableAttrib.appName == applicationName)
+            {
+                payloadOut["applications"][i]["usableAttribs"][j]["name"] = usableAttrib.attribName;
+                payloadOut["applications"][i]["usableAttribs"][j]["description"] = auth->attribDescription(usableAttrib);
+                j++;
+            }
+        }
+        i++;
+    }
+
+
+    i=0;
+
+    for (const auto & applicationName : auth->applicationList())
+    {
+        if ( accountApplications.find(applicationName) == accountApplications.end()  )
+        {
+            payloadOut["applicationsLeft"][i]["name"] = applicationName;
+            payloadOut["applicationsLeft"][i]["description"] = auth->applicationDescription(applicationName);
+            i++;
+        }
+    }
+
     return payloadOut;
 }
 
-Json::Value FullAuth::accountValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::attribDescription(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["isAccountExpired"] = auth->accountValidateAttribute(payload["user"].asString(),  {payload["appName"].asString(),payload["attribName"].asString()});
+    json payloadOut;
+    payloadOut["description"] = auth->attribDescription({JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")});
     return payloadOut;
 }
 
-Json::Value FullAuth::accountsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountGivenName(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
+    payloadOut["givenName"] = auth->accountGivenName(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountLastName(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["lastName"] = auth->accountLastName(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountLastLogin(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["lastLogin"] = (Json::UInt64)auth->accountLastLogin(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::resetBadAttempts(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    auth->resetBadAttempts(JSON_ASSTRING(payload,"accountName",""),JSON_ASUINT(payload,"passIndex",0));
+    return payloadOut;
+}
+
+json FullAuth::accountEmail(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["email"] = auth->accountEmail(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountExtraData(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["extraData"] = auth->accountExtraData(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountExpirationDate(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["expirationDate"] = Json::Int64(auth->accountExpirationDate(JSON_ASSTRING(payload,"accountName","")));
+    return payloadOut;
+}
+
+json FullAuth::isAccountExpired(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["isAccountExpired"] = auth->isAccountExpired(JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::accountValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["isAccountExpired"] = auth->accountValidateAttribute(JSON_ASSTRING(payload,"accountName",""),  {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")});
+    return payloadOut;
+}
+
+json FullAuth::accountsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
     payloadOut["accountsList"] = stringListToValue(auth->accountsList());
     return payloadOut;
 }
 
-Json::Value FullAuth::accountGroups(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountsBasicInfoSearch(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json x;
+    int i=0;
+    for (const auto & strVal : auth->accountsBasicInfoSearch(
+             JSON_ASSTRING(payload,"searchWords",""),
+             JSON_ASUINT64(payload,"limit",0),
+             JSON_ASUINT64(payload,"offset",0)
+             ))
+    {
+        x[i]["lastName"] = strVal.sLastName;
+        x[i]["givenName"] = strVal.sGivenName;
+        x[i]["email"] = strVal.sEmail;
+        x[i]["description"] = strVal.sDescription;
+        x[i]["accountName"] = strVal.sAccountName;
+        x[i]["superuser"] = strVal.superuser;
+        x[i]["expired"] = strVal.expired;
+        x[i]["enabled"] = strVal.enabled;
+        x[i]["confirmed"] = strVal.confirmed;
+        i++;
+    }
+    return x;
+}
 
-    payloadOut["accountGroups"] = stringListToValue(auth->accountGroups(payload["user"].asString()));
+json FullAuth::accountGroups(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+
+    payloadOut["accountGroups"] = stringListToValue(auth->accountGroups(JSON_ASSTRING(payload,"accountName","")));
     return payloadOut;
 }
 
-Json::Value FullAuth::accountDirectAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountDirectAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
 
-    payloadOut["accountDirectAttribs"] = attribListToValue(auth->accountDirectAttribs(payload["user"].asString()));
+    payloadOut["accountDirectAttribs"] = attribListToValue(auth->accountDirectAttribs(JSON_ASSTRING(payload,"accountName","")),auth);
     return payloadOut;
 }
 
-Json::Value FullAuth::accountUsableAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountUsableAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
 
-    payloadOut["accountUsableAttribs"] = attribListToValue(auth->accountUsableAttribs(payload["user"].asString()));
+    payloadOut["accountUsableAttribs"] = attribListToValue(auth->accountUsableAttribs(JSON_ASSTRING(payload,"accountName","")),auth);
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationAdd(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-
-    payloadOut["retCode"] = auth->attribAdd({payload["appName"].asString(),payload["attribName"].asString()},
-                                            payload["description"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationAdd(   JSON_ASSTRING(payload,"appName",""),
+                                                    JSON_ASSTRING(payload,"description",""),
+                                                    JSON_ASSTRING(payload,"appKey",""),
+                                                    session->getAuthUser()
+                                                );
     return payloadOut;
 }
 
-Json::Value FullAuth::attribRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationRemove(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
 
-    payloadOut["retCode"] = auth->attribRemove( {payload["appName"].asString(),payload["attribName"].asString()});
+    std::string appName = JSON_ASSTRING(payload,"appName","");
+
+    if (appName == dirAppName)
+    {
+        payloadOut["retCode"] = false;
+        return payloadOut;
+    }
+
+    payloadOut["retCode"] = auth->applicationRemove(appName);
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroupAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationExist(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribGroupAdd( {payload["appName"].asString(),payload["attribName"].asString()},payload["groupName"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationExist( JSON_ASSTRING(payload,"appName",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroupRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationDescription(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribGroupRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["groupName"].asString());
+    json payloadOut;
+    payloadOut["description"] = auth->applicationDescription( JSON_ASSTRING(payload,"appName",""));
+    return payloadOut;
+}
+/*
+json FullAuth::applicationKey(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["appKey"] = auth->applicationKey( JSON_ASSTRING(payload,"appName",""));
+    return payloadOut;
+}
+*/
+json FullAuth::applicationBasicInfo(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    std::string appName = JSON_ASSTRING(payload,"appName","");
+    payloadOut["description"] = auth->applicationDescription( appName );
+
+    // Get associated attribs...
+    auto attrList = auth->attribsList(appName);
+    int i=0;
+    for ( const auto & attrib : attrList )
+    {
+        payloadOut["attribs"][i]["name"] = attrib.attribName;
+        payloadOut["attribs"][i]["description"] = auth->attribDescription(attrib);
+        i++;
+    }
+
+    // Get associated direct accounts...
+    auto acctList = auth->applicationAccounts(appName);
+    i=0;
+    for ( const auto & acct : acctList )
+    {
+        payloadOut["accounts"][i]["name"] = acct;
+        payloadOut["accounts"][i]["description"] = auth->accountDescription(acct);
+        payloadOut["accounts"][i]["givenName"] = auth->accountGivenName(acct);
+        payloadOut["accounts"][i]["lastName"] = auth->accountLastName(acct);
+        i++;
+    }
+
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationChangeDescription(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountAdd( {payload["appName"].asString(),payload["attribName"].asString()},payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationChangeDescription( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"description","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationChangeKey(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationChangeKey( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"appKey","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::attribChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationList(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->attribAccountRemove( {payload["appName"].asString(),payload["attribName"].asString()},payload["attribDescription"].asString());
+    json payloadOut;
+    payloadOut["applications"] = stringListToValue(auth->applicationList());
     return payloadOut;
 }
 
-Json::Value FullAuth::attribsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationValidateOwner(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["attribsList"] = attribListToValue(auth->attribsList());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationValidateOwner( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::attribGroups(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationValidateAccount(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["attribGroups"] = stringListToValue(auth->attribGroups( {payload["appName"].asString(),payload["attribName"].asString()}));
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationValidateAccount( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::attribAccounts(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationOwners(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["attribAccounts"] = stringListToValue(auth->attribAccounts( {payload["appName"].asString(),payload["attribName"].asString()}));
+    json payloadOut;
+    payloadOut["owners"] = stringListToValue(auth->applicationOwners( JSON_ASSTRING(payload,"applicationName","")));
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationAccounts(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupAdd(payload["groupName"].asString(), payload["groupDescription"].asString());
+    json payloadOut;
+    payloadOut["accounts"] = stringListToValue(auth->applicationAccounts( JSON_ASSTRING(payload,"applicationName","")));
     return payloadOut;
 }
 
-Json::Value FullAuth::groupRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::accountApplications(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupRemove(payload["groupName"].asString());
+    json payloadOut;
+    payloadOut["applications"] = stringListToValue(auth->accountApplications( JSON_ASSTRING(payload,"accountName","")));
     return payloadOut;
 }
 
-Json::Value FullAuth::groupExist(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationAccountAdd(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupExist(payload["groupName"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationAccountAdd( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationAccountRemove(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupAccountAdd(payload["groupName"].asString(),payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationAccountRemove( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationOwnerAdd(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupAccountRemove(payload["groupName"].asString(),payload["user"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationOwnerAdd( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::groupChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationOwnerRemove(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupChangeDescription(payload["groupName"].asString(),payload["groupDescription"].asString());
+    json payloadOut;
+    payloadOut["retCode"] = auth->applicationOwnerRemove( JSON_ASSTRING(payload,"appName",""), JSON_ASSTRING(payload,"accountName","") );
     return payloadOut;
 }
 
-Json::Value FullAuth::groupValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::applicationsBasicInfoSearch(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupValidateAttribute(payload["groupName"].asString(), {payload["appName"].asString(),payload["attribName"].asString()});
+    json x;
+    int i=0;
+    for (const auto & strVal : auth->applicationsBasicInfoSearch(
+             JSON_ASSTRING(payload,"searchWords",""),
+             JSON_ASUINT64(payload,"limit",0),
+             JSON_ASUINT64(payload,"offset",0)
+             ))
+    {
+        x[i]["appCreator"] = strVal.sAppCreator;
+        x[i]["appName"] = strVal.sApplicationName;
+        x[i]["description"] = strVal.sDescription;
+        i++;
+    }
+    return x;
+}
+
+json FullAuth::attribAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+
+    std::string appName = JSON_ASSTRING(payload,"appName","");
+
+    // Don't modify attribs from CX2DIR:
+    if ( appName == dirAppName )
+    {
+        payloadOut["retCode"] = false;
+        return payloadOut;
+    }
+
+    payloadOut["retCode"] = auth->attribAdd({appName,JSON_ASSTRING(payload,"attribName","")},
+                                            JSON_ASSTRING(payload,"description",""));
     return payloadOut;
 }
 
-Json::Value FullAuth::groupDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::attribRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["retCode"] = auth->groupDescription(payload["groupName"].asString());
+    json payloadOut;
+
+    std::string appName = JSON_ASSTRING(payload,"appName","");
+
+    // Don't modify attribs from CX2DIR:
+    if ( appName == dirAppName )
+    {
+        payloadOut["retCode"] = false;
+        return payloadOut;
+    }
+
+    payloadOut["retCode"] = auth->attribRemove( {appName,JSON_ASSTRING(payload,"attribName","")});
     return payloadOut;
 }
 
-Json::Value FullAuth::groupsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::attribGroupAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
+    json payloadOut;
+    payloadOut["retCode"] = auth->attribGroupAdd( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")},JSON_ASSTRING(payload,"groupName",""));
+    return payloadOut;
+}
+
+json FullAuth::attribGroupRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->attribGroupRemove( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")},JSON_ASSTRING(payload,"groupName",""));
+    return payloadOut;
+}
+
+json FullAuth::attribAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->attribAccountAdd( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")},JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::attribAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->attribAccountRemove( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")},JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::attribChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+
+    std::string appName = JSON_ASSTRING(payload,"appName","");
+
+    // Don't modify attribs from CX2DIR:
+    if ( appName == dirAppName )
+    {
+        payloadOut["retCode"] = false;
+        return payloadOut;
+    }
+
+    payloadOut["retCode"] = auth->attribAccountRemove( {appName,JSON_ASSTRING(payload,"attribName","")},JSON_ASSTRING(payload,"attribDescription",""));
+    return payloadOut;
+}
+
+json FullAuth::attribsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["attribsList"] = attribListToValue(auth->attribsList(JSON_ASSTRING(payload,"appName","")),auth);
+    return payloadOut;
+}
+
+json FullAuth::attribGroups(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["attribGroups"] = stringListToValue(auth->attribGroups( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")}));
+    return payloadOut;
+}
+
+json FullAuth::attribAccounts(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["attribAccounts"] = stringListToValue(auth->attribAccounts( {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")}));
+    return payloadOut;
+}
+
+json FullAuth::attribsBasicInfoSearch(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    int i=0;
+    for (const auto & strVal : auth->attribsBasicInfoSearch(
+             JSON_ASSTRING(payload,"appName",""),
+             JSON_ASSTRING(payload,"searchWords",""),
+             JSON_ASUINT64(payload,"limit",0),
+             JSON_ASUINT64(payload,"offset",0)
+             ))
+    {
+        payloadOut[i]["attribName"] = strVal.sAttributeName;
+        payloadOut[i]["description"] = strVal.sDescription;
+        i++;
+    }
+    return payloadOut;
+}
+
+json FullAuth::attribsLeftListForGroup(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+
+    auto attribsLeft = iAttribsLeftListForGroup(auth,JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"groupName",""));
+
+    payloadOut["attribsLeft"] = attribListToValue(attribsLeft,auth);
+
+    return payloadOut;
+}
+
+json FullAuth::groupAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupAdd(JSON_ASSTRING(payload,"groupName",""), JSON_ASSTRING(payload,"groupDescription",""));
+    return payloadOut;
+}
+
+json FullAuth::groupRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupRemove(JSON_ASSTRING(payload,"groupName",""));
+    return payloadOut;
+}
+
+json FullAuth::groupExist(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupExist(JSON_ASSTRING(payload,"groupName",""));
+    return payloadOut;
+}
+
+json FullAuth::groupAccountAdd(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupAccountAdd(JSON_ASSTRING(payload,"groupName",""),JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::groupAccountRemove(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupAccountRemove(JSON_ASSTRING(payload,"groupName",""),JSON_ASSTRING(payload,"accountName",""));
+    return payloadOut;
+}
+
+json FullAuth::groupChangeDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupChangeDescription(JSON_ASSTRING(payload,"groupName",""),JSON_ASSTRING(payload,"groupDescription",""));
+    return payloadOut;
+}
+
+json FullAuth::groupValidateAttribute(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["retCode"] = auth->groupValidateAttribute(JSON_ASSTRING(payload,"groupName",""), {JSON_ASSTRING(payload,"appName",""),JSON_ASSTRING(payload,"attribName","")});
+    return payloadOut;
+}
+
+json FullAuth::groupDescription(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
+    payloadOut["description"] = auth->groupDescription(JSON_ASSTRING(payload,"groupName",""));
+    return payloadOut;
+}
+
+json FullAuth::groupsList(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
+{
+    json payloadOut;
     payloadOut["groupsList"] = stringListToValue(auth->groupsList());
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::groupAttribs(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["groupAttribs"] = attribListToValue(auth->groupAttribs(payload["groupName"].asString()));
+    json payloadOut;
+    payloadOut["groupAttribs"] = attribListToValue(auth->groupAttribs(JSON_ASSTRING(payload,"groupName","")),auth);
     return payloadOut;
 }
 
-Json::Value FullAuth::groupAccounts(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const Json::Value &payload)
+json FullAuth::groupAccounts(void *, CX2::Authentication::Manager *auth,CX2::Authentication::Session *session, const json &payload)
 {
-    Json::Value payloadOut;
-    payloadOut["groupAccounts"] = stringListToValue(auth->groupAccounts(payload["groupName"].asString()));
+    json payloadOut;
+    payloadOut["groupAccounts"] = stringListToValue(auth->groupAccounts(JSON_ASSTRING(payload,"groupName","")));
     return payloadOut;
 }
 
-std::map<std::string, std::string> FullAuth::jsonToMap(const Json::Value &jValue)
+json FullAuth::groupsBasicInfoSearch(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    json x;
+    int i=0;
+    for (const auto & strVal : auth->groupsBasicInfoSearch(
+             JSON_ASSTRING(payload,"searchWords",""),
+             JSON_ASUINT64(payload,"limit",0),
+             JSON_ASUINT64(payload,"offset",0)
+             ))
+    {
+        x[i]["description"] = strVal.sDescription;
+        x[i]["groupName"] = strVal.sGroupName;
+        i++;
+    }
+    return x;
+}
+
+json FullAuth::groupBasicInfo(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
+{
+    // TODO: optimize:
+
+    json payloadOut;
+    std::string groupName = JSON_ASSTRING(payload,"groupName","");
+
+    payloadOut["description"] = auth->groupDescription(groupName);
+
+    int i=0;
+    auto groupAccounts = auth->groupAccounts(groupName);
+
+    for (const auto & accountName : groupAccounts)
+    {
+        payloadOut["accounts"][i]["name"] = accountName;
+        payloadOut["accounts"][i]["description"] = auth->accountDescription(accountName);
+        payloadOut["accounts"][i]["lastName"] = auth->accountLastName(accountName);
+        payloadOut["accounts"][i]["givenName"] = auth->accountGivenName(accountName);
+
+        i++;
+    }
+
+    auto directAttribs = auth->groupAttribs(groupName);
+
+    i=0;
+    std::set<std::string> applications;
+    for (const auto & attrib : directAttribs)
+    {
+        if (applications.find(attrib.appName) != applications.end())
+            continue; // This application has been already mapped.
+
+        applications.insert(attrib.appName);
+        payloadOut["applications"][i]["name"] = attrib.appName;
+        payloadOut["applications"][i]["description"] = auth->applicationDescription(attrib.appName);
+
+        // Take the active application attribs for this group:
+        int x=0;
+        for (const auto & attrib2 : directAttribs)
+        {
+            if (attrib.appName == attrib2.appName)
+            {
+                payloadOut["applications"][i]["attribs"][x]["name"] = attrib.attribName;
+                payloadOut["applications"][i]["attribs"][x]["description"] = auth->attribDescription(attrib);
+                x++;
+            }
+        }
+        // Take the unused application attribs for this group:
+
+        x=0;
+        for (const auto & attrib : auth->attribsList(attrib.appName))
+        {
+            if (directAttribs.find(attrib)==directAttribs.end())
+            {
+                payloadOut["applications"][i]["attribsLeft"][x]["name"] = attrib.attribName;
+                payloadOut["applications"][i]["attribsLeft"][x]["description"] = auth->attribDescription(attrib);
+                x++;
+            }
+        }
+
+        i++;
+    }
+
+    i=0;
+    // put full application list:
+
+    auto leftApplicationList = auth->applicationList();
+
+
+    for (const auto & appName :auth->applicationList())
+    {
+        if ( !iAttribsLeftListForGroup(auth,appName,groupName ).empty() )
+        {
+            payloadOut["leftApplicationsList"][i]["name"] = appName;
+            payloadOut["leftApplicationsList"][i]["description"] = auth->applicationDescription(appName);
+            i++;
+        }
+    }
+
+
+
+    return payloadOut;
+}
+
+std::map<std::string, std::string> FullAuth::jsonToMap(const json &jValue)
 {
     std::map<std::string, std::string> r;
     for (const std::string & memberName : jValue.getMemberNames())
     {
         if (jValue[memberName].isString())
-            r[memberName] = jValue[memberName].asString();
+            r[memberName] = JSON_ASSTRING(jValue,memberName,"");
     }
     return r;
+}
+
+std::set<Authentication::sApplicationAttrib> FullAuth::iAttribsLeftListForGroup(Authentication::Manager *auth, const std::string &appName, const std::string &groupName)
+{
+    auto attribsLeft = auth->attribsList(appName);
+    auto groupAttribs = auth->groupAttribs(groupName);
+
+    for (const auto &groupAttrib : groupAttribs)
+    {
+        attribsLeft.erase(groupAttrib);
+    }
+    return attribsLeft;
 }
