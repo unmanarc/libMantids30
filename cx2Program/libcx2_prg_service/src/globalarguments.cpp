@@ -230,10 +230,10 @@ Var *GlobalArguments::getStaticVariable(const string &name)
 
 void GlobalArguments::printProgramHeader()
 {
-    cout << description << " (" <<  programName << ") v" << version << endl;
-    cout << "Author:  " << author << " (" << email << ")" << endl;
-    cout << "License: " << license << endl;
-    cout << endl <<  flush;
+    cout << "# " << description << " (" <<  programName << ") v" << version << endl;
+    cout << "# " << "Author:  " << author << " (" << email << ")" << endl;
+    cout << "# " << "License: " << license << endl;
+    cout << "# " << endl <<  flush;
 }
 
 bool GlobalArguments::isInifiniteWaitAtEnd() const

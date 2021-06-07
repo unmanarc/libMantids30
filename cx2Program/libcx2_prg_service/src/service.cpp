@@ -109,7 +109,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
             return r;
         else
         {
-            cout << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
+            cout<< "# "  << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
             for (;;) { sleep(3600); }
         }
 #ifndef WIN32

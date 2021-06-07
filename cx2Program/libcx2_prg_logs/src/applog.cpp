@@ -83,22 +83,23 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
     {
 #ifndef _WIN32
         if (logSeverity == LEVEL_INFO)
-            syslog( LOG_INFO,"%s", logLine.c_str());
+            syslog( LOG_INFO,"S/%s", logLine.c_str());
         else if (logSeverity == LEVEL_WARN)
-            syslog( LOG_WARNING,"%s", logLine.c_str());
+            syslog( LOG_WARNING,"S/%s", logLine.c_str());
         else if (logSeverity == LEVEL_CRITICAL)
-            syslog( LOG_CRIT, "%s",logLine.c_str());
+            syslog( LOG_CRIT, "S/%s",logLine.c_str());
         else if (logSeverity == LEVEL_ERR)
-            syslog( LOG_ERR, "%s",logLine.c_str());
+            syslog( LOG_ERR, "S/%s",logLine.c_str());
 #endif
     }
 
     if (isUsingStandardLog())
     {
+        fprintf(fp,"S/");
         if (usingPrintDate)
         {
             printDate(fp);
-            fprintf(fp, "%s", standardLogSeparator.c_str());
+      //      fprintf(fp, "%s", standardLogSeparator.c_str());
         }
 
         if (usingColors)
@@ -220,6 +221,8 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
     char buffer[8192];
     buffer[8191] = 0;
 
+
+    // TODO: filter arguments for ' and special chars...
 
     // take arguments...
     va_list args;

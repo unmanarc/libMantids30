@@ -151,10 +151,8 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     {
         if (usingPrintDate)
         {
+            fprintf(fp,"R/");
             printDate(fp);
-          /*  fprintf(fp, "%s", standardLogSeparator.c_str());
-            fflush(fp);
-*/
         }
 
         if (usingColors)
