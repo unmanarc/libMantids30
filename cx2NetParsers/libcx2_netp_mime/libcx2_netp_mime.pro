@@ -32,7 +32,8 @@ INCLUDEPATH += src
 
 QMAKE_INCDIR += src/subparsers
 INCLUDEPATH += src/subparsers
-# C++ standard.
+
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 TARGET = cx2_netp_mime

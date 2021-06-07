@@ -17,5 +17,3 @@ SUBDIRS += cx2Scripts
 SUBDIRS += devel
 SUBDIRS += extras
 
-# Not ready yet:
-#SUBDIRS += programs

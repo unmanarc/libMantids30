@@ -1,11 +1,9 @@
 QT       -= core gui
 
 SOURCES += \
-    src/fullauth.cpp \
-    src/loginauth.cpp
+    src/fullauth.cpp
 HEADERS +=   \
-    src/fullauth.h \
-    src/loginauth.h
+    src/fullauth.h
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
@@ -18,7 +16,7 @@ QMAKE_INCDIR += src
 INCLUDEPATH += $$PREFIX/include
 INCLUDEPATH += src
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 TARGET = cx2_xrpc_templates

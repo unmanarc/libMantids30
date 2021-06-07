@@ -32,7 +32,7 @@ INCLUDEPATH += src
 INCLUDEPATH += src/datastructs
 INCLUDEPATH += src/helpers
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 TARGET = cx2_auth

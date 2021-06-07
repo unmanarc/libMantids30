@@ -18,7 +18,7 @@ QMAKE_INCDIR += src
 INCLUDEPATH += $$PREFIX/include
 INCLUDEPATH += src
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 win32:LIBS+= -L$$PREFIX/lib  -lws2_32 -liphlpapi

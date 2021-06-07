@@ -15,4 +15,9 @@ SUBDIRS += libcx2_db_pgsql
 # Project folders:
 libcx2_db_pgsql.subdir    = libcx2_db_pgsql
 
+# Remote Authentication Support
+SUBDIRS += libcx2_auth_remote
+# Project folders:
+libcx2_auth_remote.subdir    = libcx2_auth_remote
+
 #END-

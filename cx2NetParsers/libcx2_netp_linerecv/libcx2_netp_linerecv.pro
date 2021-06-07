@@ -34,7 +34,7 @@ INCLUDEPATH += src/defs
 
 win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 TARGET = cx2_netp_linerecv

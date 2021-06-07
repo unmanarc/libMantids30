@@ -7,6 +7,7 @@ SOURCES += src/encoders.cpp \
            src/crypto.cpp
 
 HEADERS += src/encoders.h \
+           src/json.h \
            src/random.h \
            src/mem.h \
            src/crypto.h \
@@ -26,7 +27,7 @@ QMAKE_INCDIR += src
 INCLUDEPATH += $$PREFIX/include
 INCLUDEPATH += src
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 win32:LIBS+= -L$$PREFIX/lib -lcrypto
