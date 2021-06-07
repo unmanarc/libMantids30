@@ -21,6 +21,13 @@ void MethodsAttributes_Map::addAttribPassIndexes(const sApplicationAttrib &attri
 
 bool MethodsAttributes_Map::validateMethod(Manager *auth, Session *session,  const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, std::set<uint32_t> *passIndexesLeft, std::set<sApplicationAttrib> *attribsLeft)
 {
+    if (auth->isAccountSuperUser(session->getAuthUser()))
+    {
+        passIndexesLeft->clear();
+        attribsLeft->clear();
+        return true;
+    }
+
     std::set<uint32_t> requiredPassIndexes  = getMethodPassIndexes(methodName);
     std::set<sApplicationAttrib> requiredAttribs = getMethodAttribs(methodName);
 
