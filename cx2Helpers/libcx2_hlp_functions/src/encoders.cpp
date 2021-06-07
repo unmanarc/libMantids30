@@ -1,4 +1,6 @@
 #include "encoders.h"
+#include <string.h>
+#include <random>
 
 using namespace std;
 using namespace CX2::Helpers;
@@ -8,6 +10,84 @@ const std::string Encoders::b64Chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 Encoders::Encoders()
 {
 
+}
+
+string Encoders::fromBase64Obf(const string &sB64Buf, const uint64_t & seed)
+{
+    unsigned char cont4[4], cont3[3];
+    std::string decodedString;
+    std::mt19937_64 gen( seed );
+    std::uniform_int_distribution<char> dis;
+    size_t count=sB64Buf.size(), x=0, y=0;
+    int bufPos=0;
+
+    while (     count-- &&
+                ( sB64Buf[bufPos] != '=')  &&
+                (isalnum(sB64Buf[bufPos]) || (sB64Buf[bufPos] == '/') || (sB64Buf[bufPos] == '+'))
+           )
+    {
+        cont4[x++]=sB64Buf[bufPos]; bufPos++;
+        if (x==4)
+        {
+            for (x=0; x <4; x++)
+            {
+                cont4[x]=(unsigned char)b64Chars.find(cont4[x]);
+            }
+
+            cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
+            cont3[1]=((cont4[1] & 0xf) << 4) + ((cont4[2] & 0x3c) >> 2);
+            cont3[2]=((cont4[2] & 0x3) << 6) + cont4[3];
+
+            for (x=0; (x < 3); x++)
+            {
+                decodedString += cont3[x]^dis(gen);
+            }
+            x=0;
+        }
+    }
+
+    if (x)
+    {
+        for (y=x; y <4; y++)
+        {
+            cont4[y]=0;
+        }
+        for (y=0; y <4; y++)
+        {
+            cont4[y]=(unsigned char)b64Chars.find(cont4[y]);
+        }
+
+        cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
+        cont3[1]=((cont4[1] & 0xf) << 4) + ((cont4[2] & 0x3c) >> 2);
+        cont3[2]=((cont4[2] & 0x3) << 6) + cont4[3];
+
+        for (y=0; (y < x - 1); y++) decodedString += cont3[y]^dis(gen);
+    }
+
+    return decodedString;
+}
+
+string Encoders::toBase64Obf(const unsigned char *buf, uint32_t count,  const uint64_t & seed)
+{
+    std::string r;
+    std::mt19937_64 gen( seed );
+    std::uniform_int_distribution<char> dis;
+
+    unsigned char * obfBuf = (unsigned char *)malloc(count+1);
+    if (!obfBuf) return "";
+    obfBuf[count] = 0;
+
+    for ( size_t i=0; i<count; i++ )
+        obfBuf[i] = buf[i]^dis(gen);
+
+    r = toBase64(obfBuf,count);
+    free(obfBuf);
+    return r;
+}
+
+string Encoders::toBase64Obf(const string &buf, const uint64_t & seed)
+{
+    return toBase64Obf((unsigned char *)buf.c_str(),buf.size(),seed);
 }
 
 string Encoders::fromBase64(const string &sB64Buf)
@@ -63,7 +143,12 @@ string Encoders::fromBase64(const string &sB64Buf)
     return decodedString;
 }
 
-string Encoders::toBase64(const char *buf, uint32_t count)
+string Encoders::toBase64(const string &buf)
+{
+    return toBase64((unsigned char *)buf.c_str(),buf.size());
+}
+
+string Encoders::toBase64(const unsigned char *buf, uint32_t count)
 {
     unsigned char cont3[3],cont4[4];
     std::string encodedString;
@@ -206,8 +291,8 @@ bool Encoders::getIfMustBeURLEncoded(char c,const eURLEncodingType & urlEncoding
 {
     if (urlEncodingType==ENC_QUOTEPRINT)
     {
-        // All printable chars but " and '
-        if (  c=='\"' || c=='\'' ) return true;
+        // All printable chars but "
+        if (  c=='\"' ) return true;
         if (c >= 32 && c<= 126) return false;
     }
     else
