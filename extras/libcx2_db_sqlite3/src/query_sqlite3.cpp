@@ -52,93 +52,94 @@ bool Query_SQLite3::exec(const ExecType &execType)
     for ( const auto &inputVar : InputVars)
     {
         int idx = sqlite3_bind_parameter_index(stmt, inputVar.first.c_str());
-        if (!idx)
+        if (idx)
         {
-            lastSQLError = "Binding parameter for index not found";
-            return false;
+            switch (inputVar.second->getVarType())
+            {
+            case Memory::Abstract::TYPE_BOOL:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(BOOL,inputVar.second)->getValue()?1:0 );
+                break;
+            case Memory::Abstract::TYPE_INT8:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT8,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_INT16:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT16,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_INT32:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT32,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_INT64:
+                sqlite3_bind_int64(stmt, idx, ABSTRACT_PTR_AS(INT64,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_UINT8:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(UINT8,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_UINT16:
+                sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(UINT16,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_UINT32:
+                sqlite3_bind_int64(stmt, idx, ABSTRACT_PTR_AS(UINT32,inputVar.second)->getValue() );
+                break;
+            case Memory::Abstract::TYPE_UINT64:
+                // Not implemented.
+                throw std::runtime_error("UINT64 is not supported by SQLite3, check your implementation");
+                break;
+            case Memory::Abstract::TYPE_DOUBLE:
+                sqlite3_bind_double(stmt,idx,ABSTRACT_PTR_AS(DOUBLE,inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::TYPE_BIN:
+            {
+                Memory::Abstract::sBinContainer * i = ABSTRACT_PTR_AS(BINARY,inputVar.second)->getValue();
+                sqlite3_bind_blob64(stmt,idx,i->ptr,i->dataSize,SQLITE_STATIC);
+            } break;
+            case Memory::Abstract::TYPE_VARCHAR:
+            {
+                sqlite3_bind_text64(stmt,idx,ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getValue(),
+                                    ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getVarSize(),
+                                    SQLITE_STATIC,
+                                    SQLITE_UTF8);
+            } break;
+            case Memory::Abstract::TYPE_DATETIME:
+            {
+                auto i = ABSTRACT_PTR_AS(DATETIME,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
+            case Memory::Abstract::TYPE_STRING:
+            {
+                auto i = ABSTRACT_PTR_AS(STRING,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
+            case Memory::Abstract::TYPE_STRINGLIST:
+            {
+                auto i = ABSTRACT_PTR_AS(STRINGLIST,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
+            case Memory::Abstract::TYPE_IPV4:
+            {
+                auto i = ABSTRACT_PTR_AS(IPV4,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
+            case Memory::Abstract::TYPE_IPV6:
+            {
+                auto i = ABSTRACT_PTR_AS(IPV6,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
+            case Memory::Abstract::TYPE_PTR:
+            {
+                void * ptr = ABSTRACT_PTR_AS(PTR,inputVar.second)->getValue();
+                // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
+                size_t ptrSize = strnlen((char *)ptr,0xFFFFFFFF);
+                sqlite3_bind_text(stmt,idx,(char *)ptr,ptrSize,SQLITE_STATIC);
+            } break;
+            case Memory::Abstract::TYPE_NULL:
+                sqlite3_bind_null(stmt,idx);
+                break;
+            }
+
+/*            lastSQLError = "Binding parameter for index not found";
+            return false;*/
         }
 
-        switch (inputVar.second->getVarType())
-        {
-        case Memory::Abstract::TYPE_BOOL:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(BOOL,inputVar.second)->getValue()?1:0 );
-            break;
-        case Memory::Abstract::TYPE_INT8:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT8,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_INT16:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT16,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_INT32:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(INT32,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_INT64:
-            sqlite3_bind_int64(stmt, idx, ABSTRACT_PTR_AS(INT64,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_UINT8:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(UINT8,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_UINT16:
-            sqlite3_bind_int(stmt, idx, ABSTRACT_PTR_AS(UINT16,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_UINT32:
-            sqlite3_bind_int64(stmt, idx, ABSTRACT_PTR_AS(UINT32,inputVar.second)->getValue() );
-            break;
-        case Memory::Abstract::TYPE_UINT64:
-            // Not implemented.
-            throw std::runtime_error("UINT64 is not supported by SQLite3, check your implementation");
-            break;
-        case Memory::Abstract::TYPE_DOUBLE:
-            sqlite3_bind_double(stmt,idx,ABSTRACT_PTR_AS(DOUBLE,inputVar.second)->getValue());
-            break;
-        case Memory::Abstract::TYPE_BIN:
-        {
-            Memory::Abstract::sBinContainer * i = ABSTRACT_PTR_AS(BINARY,inputVar.second)->getValue();
-            sqlite3_bind_blob64(stmt,idx,i->ptr,i->dataSize,SQLITE_STATIC);
-        } break;
-        case Memory::Abstract::TYPE_VARCHAR:
-        {
-            sqlite3_bind_text64(stmt,idx,ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getValue(),
-                                ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getVarSize(),
-                                SQLITE_STATIC,
-                                SQLITE_UTF8);
-        } break;
-        case Memory::Abstract::TYPE_DATETIME:
-        {
-            auto i = ABSTRACT_PTR_AS(DATETIME,inputVar.second)->toString();
-            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
-        }break;
-        case Memory::Abstract::TYPE_STRING:
-        {
-            auto i = ABSTRACT_PTR_AS(STRING,inputVar.second)->toString();
-            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
-        }break;
-        case Memory::Abstract::TYPE_STRINGLIST:
-        {
-            auto i = ABSTRACT_PTR_AS(STRINGLIST,inputVar.second)->toString();
-            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
-        }break;
-        case Memory::Abstract::TYPE_IPV4:
-        {
-            auto i = ABSTRACT_PTR_AS(IPV4,inputVar.second)->toString();
-            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
-        }break;
-        case Memory::Abstract::TYPE_IPV6:
-        {
-            auto i = ABSTRACT_PTR_AS(IPV6,inputVar.second)->toString();
-            sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
-        }break;
-        case Memory::Abstract::TYPE_PTR:
-        {
-            void * ptr = ABSTRACT_PTR_AS(PTR,inputVar.second)->getValue();
-            // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-            size_t ptrSize = strnlen((char *)ptr,0xFFFFFFFF);
-            sqlite3_bind_text(stmt,idx,(char *)ptr,ptrSize,SQLITE_STATIC);
-        } break;
-        case Memory::Abstract::TYPE_NULL:
-            sqlite3_bind_null(stmt,idx);
-            break;
-        }
     }
 
     // if insert, only do one step.
