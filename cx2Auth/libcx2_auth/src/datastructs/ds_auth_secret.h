@@ -36,6 +36,68 @@ struct Secret_PublicData
         return (expiration<time(nullptr) && expiration!=0) || forceExpiration;
     }
 
+
+    std::map<std::string,std::string> getMap() const
+    {
+        std::map<std::string,std::string> r;
+        r["VERSION"] = "1";
+        r["PMODE"] = std::to_string(passwordFunction);
+        r["SALT"] = CX2::Helpers::Encoders::toHex(ssalt,4);
+        r["EXPIRATION"] = std::to_string(expiration);
+        r["FORCE_EXPIRATION"] = std::string(forceExpiration?"1":"0");
+        r["BAD_ATTEMPTS"] = badAttempts;
+        r["DESCRIPTION"] = description;
+        r["REQUIRED_AT_LOGIN"] = std::string(requiredAtLogin?"1":"0");;
+        r["LOCKED"] = locked;
+        r["NUL"] = nul;
+        return r;
+    }
+
+    std::string mget(std::map<std::string,std::string> mp, const std::string &k )
+    {
+        std::map<std::string,std::string> mpx;
+        if ( mp.find(k)==mp.end() ) return "";
+        return mp[k];
+    }
+    bool fromMap( const std::map<std::string,std::string> & mp )
+    {
+        if ( mget( mp, "VERSION" ) != "1" ) return false;
+
+        CX2::Helpers::Encoders::fromHex(mget(mp,"SALT"),ssalt,4);
+        expiration = strtoull(mget(mp,"EXPIRATION").c_str(), nullptr, 10);
+        forceExpiration = strtoul(mget(mp,"FORCE_EXPIRATION").c_str(), nullptr, 10)?true:false;
+
+        switch (strtoul(mget( mp, "PMODE" ).c_str(), nullptr, 10))
+        {
+        case 500: passwordFunction = FN_NOTFOUND;
+            break;
+        case 0: passwordFunction = FN_PLAIN;
+            break;
+        case 1: passwordFunction = FN_SHA256;
+            break;
+        case 2: passwordFunction = FN_SHA512;
+            break;
+        case 3: passwordFunction = FN_SSHA256;
+            break;
+        case 4: passwordFunction = FN_SSHA512;
+            break;
+        case 5: passwordFunction = FN_GAUTHTIME;
+            break;
+        default: passwordFunction = FN_NOTFOUND;
+            break;
+        }
+
+
+        badAttempts = strtoul(mget(mp,"BAD_ATTEMPTS").c_str(), nullptr, 10);
+        description = mget(mp,"DESCRIPTION");
+        requiredAtLogin = strtoul(mget(mp,"REQUIRED_AT_LOGIN").c_str(), nullptr, 10)?true:false;
+        locked = strtoul(mget(mp,"LOCKED").c_str(), nullptr, 10)?true:false;
+        nul = strtoul(mget(mp,"NUL").c_str(), nullptr, 10)?true:false;
+
+        return true;
+    }
+
+
     Function passwordFunction;
     unsigned char ssalt[4];
     time_t expiration;
@@ -74,7 +136,7 @@ struct Secret
         memcpy(B.ssalt, ssalt ,4);
         return B;
     }
-/*
+
     std::map<std::string,std::string> getMap() const
     {
         std::map<std::string,std::string> r;
@@ -86,7 +148,7 @@ struct Secret
         r["FORCE_EXPIRATION"] = std::string(forceExpiration?"1":"0");
         r["GAUTH_STEPS"] = std::to_string(gAuthSteps);
         return r;
-    }*/
+    }
 
     std::string mget(std::map<std::string,std::string> mp, const std::string &k )
     {
