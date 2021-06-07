@@ -171,5 +171,5 @@ void HTTPv1_Client::setClientUserAgent(const std::string &userAgent)
 void HTTPv1_Client::setBasicAuthentication(const std::string &user, const std::string &pass)
 {
     std::string authPlainText = user + ":" + pass;
-    _clientHeaders.replace("Authentication", "Basic " + Helpers::Encoders::toBase64(authPlainText.c_str(), authPlainText.size()));
+    _clientHeaders.replace("Authentication", "Basic " + Helpers::Encoders::toBase64(authPlainText));
 }
