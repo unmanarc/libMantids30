@@ -1,7 +1,7 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 #include <set>
 #include <cx2_mem_vars/substreamparser.h>
 #include "json_streamable.h"

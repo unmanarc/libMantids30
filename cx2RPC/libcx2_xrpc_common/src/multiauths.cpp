@@ -42,7 +42,7 @@ bool MultiAuths::setAuthentications(const std::string &sAuthentications)
 {
     if (sAuthentications.empty()) return true;
 
-    Json::Value jAuthentications;
+    json jAuthentications;
     Json::Reader reader;
     if (!reader.parse(sAuthentications, jAuthentications)) return false;
     if (!jAuthentications.isObject()) return false;
@@ -53,7 +53,7 @@ bool MultiAuths::setAuthentications(const std::string &sAuthentications)
         {
             if ( jAuthentications[idx].isMember("pass") )
             {
-                addAuthentication(strtoul(idx.c_str(),nullptr,10), jAuthentications[idx]["pass"].asString());
+                addAuthentication(strtoul(idx.c_str(),nullptr,10), JSON_ASSTRING(jAuthentications[idx],"pass",""));
             }
         }
     }
