@@ -47,6 +47,7 @@ void WebClientHandler::setAuthenticators(CX2::Authentication::Domains *authentic
 eHTTP_RetCode WebClientHandler::processClientRequest()
 {
     // RPC MODE:
+    bool staticContent = false;
     std::string sRealRelativePath, sRealFullPath;
     eHTTP_RetCode ret  = HTTP_RET_404_NOT_FOUND;
     if (getRequestURI() == "/api") return processRPCRequest();
@@ -56,8 +57,18 @@ eHTTP_RetCode WebClientHandler::processClientRequest()
     uint64_t uMaxAge;
     WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
 
-    if (        getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "")
-             || getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, ".html") )
+/*    if ((staticContent=verifyStaticContentExistence(getRequestURI())) == true)
+    {
+        sRealRelativePath = getRequestURI();
+        sRealFullPath = "";
+    }*/
+
+    if ( staticContent ||
+         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "") ||
+         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, ".html") ||
+         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "index.html") ||
+         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "/index.html")
+         )
     {
         // Evaluate...
         sFilterEvaluation e;
@@ -66,7 +77,6 @@ eHTTP_RetCode WebClientHandler::processClientRequest()
 
         if ( resourceFilter )
             e = resourceFilter->evaluateAction(sRealRelativePath, !hSession?nullptr:hSession->authSession, authorizer);
-
 
         if (e.accept)
         {
@@ -86,14 +96,13 @@ eHTTP_RetCode WebClientHandler::processClientRequest()
         log(LEVEL_WARN,hSession, "fileServer", 65535, "R/404: %s",getRequestURI().c_str());
     }
 
-
     if (ret != HTTP_RET_200_OK)
     {
         // Stream nothing....
         setResponseDataStreamer(nullptr,false);
     }
 
-    if ( useHTMLIEngine && getContentType() == "text/html" )
+    if ( !staticContent && useHTMLIEngine && getContentType() == "text/html" )
         processHTMLIEngine(sRealFullPath,hSession);
 
     if (hSession)
@@ -446,11 +455,12 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_INITAUTH(const Authentication 
                 (*(jPayloadOutStr->getValue()))["nextPassReq"]["idx"] = i.first;
                 (*(jPayloadOutStr->getValue()))["nextPassReq"]["desc"] = i.second;
 
-                log(LEVEL_INFO, currentWebSession, "rpcServer", 2048, "Logged in, waiting for the next authentication factor {val=%d,txt=%s}", (*(jPayloadOutStr->getValue()))["val"].asUInt(), (*(jPayloadOutStr->getValue()))["txt"].asCString());
+                log(LEVEL_INFO, currentWebSession, "rpcServer", 2048, "Logged in, waiting for the next authentication factor {val=%d,txt=%s}",
+                    JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
             }
             else
             {
-                log(LEVEL_INFO, currentWebSession, "rpcServer", 2048, "Logged in {val=%d,txt=%s}", (*(jPayloadOutStr->getValue()))["val"].asUInt(), (*(jPayloadOutStr->getValue()))["txt"].asCString());
+                log(LEVEL_INFO, currentWebSession, "rpcServer", 2048, "Logged in {val=%d,txt=%s}", JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
             }
 
             eHTTPResponseCode = HTTP_RET_200_OK;
@@ -462,8 +472,8 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_INITAUTH(const Authentication 
     {
         // TODO: for better log, remove usage of , in user/domain
         log(LEVEL_WARN, nullptr, "rpcServer", 2048, "Invalid Login Attempt {val=%d,txt=%s,user=%s,domain=%s}",
-            (*(jPayloadOutStr->getValue()))["val"].asUInt(),
-                (*(jPayloadOutStr->getValue()))["txt"].asCString(),
+            JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0),
+                JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""),
                 user.c_str(),
                 domain.c_str());
 
@@ -514,7 +524,9 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_POSTAUTH(const Authentication 
     }
     else
     {
-        log(LEVEL_WARN, currentWebSession, "rpcServer", 2048, "Authentication error on factor #(%d), Logged out {val=%d,txt=%s}",auth.getPassIndex(), (*(jPayloadOutStr->getValue()))["val"].asUInt(), (*(jPayloadOutStr->getValue()))["txt"].asCString());
+        log(LEVEL_WARN, currentWebSession, "rpcServer", 2048, "Authentication error on factor #(%d), Logged out {val=%d,txt=%s}",auth.getPassIndex(),
+             JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt","")
+            );
 
         // Mark to Destroy the session if the chpasswd is invalid...
         *destroySession = true;
@@ -535,7 +547,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
     eHTTP_RetCode eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
     std::string sMethodName = getRequestVars(HTTP_VARS_GET)->getStringValue("method");
-    Json::Value jPayloadIn;
+    json jPayloadIn;
     Json::Reader reader;
 
     std::string  userName = getRequestVars(HTTP_VARS_POST)->getStringValue("user");
@@ -548,7 +560,9 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
         domainName = authSession->getAuthDomain();
     }
 
-    if (!getRequestVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(getRequestVars(HTTP_VARS_POST)->getStringValue("payload"), jPayloadIn))
+    std::string payloadStr = getRequestVars(HTTP_VARS_POST)->getStringValue("payload");
+
+    if (!getRequestVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(payloadStr, jPayloadIn))
     {
         log(LEVEL_ERR, wSession, "rpcServer", 2048, "Invalid JSON Payload for execution {method=%s}", sMethodName.c_str());
         return HTTP_RET_400_BAD_REQUEST;
@@ -591,7 +605,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
     auto authorizer = authDomains->openDomain(domainName);
     if (authorizer)
     {
-        Json::Value reasons;
+        json reasons;
 
         // Validate that the RPC method is ready to go (fully authorized and no password is expired).
         auto i = methodsManager->validateRPCMethodPerms( authorizer,  authSession, sMethodName, extraTmpIndexes, &reasons );
@@ -605,28 +619,28 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
             if (authSession)
                 authSession->updateLastActivity();
 
-            log(LEVEL_INFO, wSession, "rpcServer", 2048, "Executing method {method=%s}", sMethodName.c_str());
-            log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Executing method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadIn).c_str());
+            log(LEVEL_INFO, wSession, "rpcServer", 2048, "Executing Web Method {method=%s}", sMethodName.c_str());
+            log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadIn).c_str());
 
             switch (methodsManager->runRPCMethod(authDomains,domainName, authSession, sMethodName, jPayloadIn, jPayloadOutStr->getValue()))
             {
             case CX2::RPC::METHOD_RET_CODE_SUCCESS:
-                log(LEVEL_INFO, wSession, "rpcServer", 2048, "Method executed OK {method=%s}", sMethodName.c_str());
-                log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadOutStr->getValue()).c_str());
+                log(LEVEL_INFO, wSession, "rpcServer", 2048, "Web Method executed OK {method=%s}", sMethodName.c_str());
+                log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadOutStr->getValue()).c_str());
 
                 eHTTPResponseCode = HTTP_RET_200_OK;
                 break;
             case CX2::RPC::METHOD_RET_CODE_METHODNOTFOUND:
-                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Method not found {method=%s}", sMethodName.c_str());
+                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Web Method not found {method=%s}", sMethodName.c_str());
                 eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
                 break;
             case CX2::RPC::METHOD_RET_CODE_INVALIDDOMAIN:
                 // This code should never be executed... <
-                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Domain not found during method execution {method=%s}", sMethodName.c_str());
+                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Domain not found during web method execution {method=%s}", sMethodName.c_str());
                 eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
                 break;
             default:
-                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Unknown error during execution {method=%s}", sMethodName.c_str());
+                log(LEVEL_ERR, wSession, "rpcServer", 2048, "Unknown error during web method execution {method=%s}", sMethodName.c_str());
                 eHTTPResponseCode = HTTP_RET_401_UNAUTHORIZED;
                 break;
             }
@@ -708,7 +722,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_CHPASSWD(const Authentication 
                                                                                                           clientDetails
                                                                                                           );
 
-            if ((*(jPayloadOutStr->getValue()))["ok"].asBool() == true)
+            if ( JSON_ASBOOL((*(jPayloadOutStr->getValue())),"ok",false) == true)
                 log(LEVEL_INFO, wSession, "rpcServer", 2048, "Password change requested {idx=%d,result=1}",credIdx);
             else
                 log(LEVEL_ERR, wSession, "rpcServer", 2048, "Password change failed due to internal error {idx=%d,result=0}",credIdx);
@@ -833,7 +847,7 @@ void WebClientHandler::setRemoteIP(const std::string &value)
 
 std::string WebClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication &authData, CX2::Authentication::Session *authSession, CX2::Authentication::Reason * authReason)
 {
-    Json::Value payload;
+    json payload;
     std::string sessionId;
     std::map<uint32_t,std::string> stAccountPassIndexesUsedForLogin;
 
@@ -876,6 +890,12 @@ std::string WebClientHandler::persistentAuthentication(const string &userName, c
 
             // Add to session manager (creates web session).
             sessionId = sessionsManager->createWebSession(authSession);
+
+            // Destroy the authentication session if the web session was not inserted.
+            if (sessionId == "")
+            {
+                delete authSession;
+            }
         }
         else
         {
@@ -920,11 +940,11 @@ void WebClientHandler::log(eLogLevels logSeverity, WebSession *wSession, const s
     va_start(args, fmtLog);
 
     if (rpcLog) rpcLog->logVA( logSeverity,
-                             remoteIP,
-                             !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getSessionId()),
-                             !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getAuthUser()),
-                             !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getAuthDomain()),
-                             module, outSize,fmtLog,args);
+                               remoteIP,
+                               !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getSessionId()),
+                               !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getAuthUser()),
+                               !wSession?"" : ( !(wSession->authSession)?"" : wSession->authSession->getAuthDomain()),
+                               module, outSize,fmtLog,args);
 
     va_end(args);
 }
