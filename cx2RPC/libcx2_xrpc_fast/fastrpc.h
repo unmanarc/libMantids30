@@ -1,7 +1,7 @@
 #ifndef FASTRPC_H
 #define FASTRPC_H
 
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 #include <cx2_thr_threads/threadpool.h>
 #include <cx2_thr_mutex/mutex_shared.h>
@@ -11,12 +11,18 @@
 
 namespace CX2 { namespace RPC { namespace Fast {
 
+struct sFastRPCOnConnectedMethod
+{
+    void (*fastRPCOnConnectedMethod)(const std::string &, void * obj);
+    void * obj;
+};
+
 struct sFastRPCMethod
 {
     /**
      * @brief Function pointer.
      */
-    Json::Value (*rpcMethod)(void * obj, const Json::Value & parameters);
+    json (*rpcMethod)(void * obj, const std::string &key, const json & parameters);
     /**
      * @brief obj object to pass
      */
@@ -30,8 +36,8 @@ struct sFastRPCParameters
     Threads::Sync::Mutex_Shared * done;
     Threads::Sync::Mutex * mtSocket;
     std::string methodName;
-    Json::Value payload;
-    //std::string key;
+    json payload;
+    std::string key;
     uint64_t requestId;
 };
 
@@ -46,13 +52,15 @@ public:
     // Socket
     CX2::Network::Streams::StreamSocket * stream;
     Threads::Sync::Mutex * mtSocket;
+    std::string key;
 
     // Request ID counter.
     uint64_t requestIdCounter;
     Threads::Sync::Mutex mtReqIdCt;
 
     // Answers:
-    std::map<uint64_t,Json::Value> answers;
+    std::map<uint64_t,json> answers;
+    std::map<uint64_t,uint8_t> executionStatus;
     std::mutex mtAnswers;
     std::condition_variable cvAnswers;
     std::set<uint64_t> pendingRequests;
@@ -84,6 +92,8 @@ public:
      * @param rpcMethod Method function and Object
      */
     bool addMethod(const std::string & methodName, const sFastRPCMethod & rpcMethod);
+
+
     /**
      * @brief processConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
      *                          Additional security should be configured at the TLS Connections, like peer validation
@@ -91,10 +101,12 @@ public:
      *                          management delegation or in each RPC function.
      * @param stream Stream Socket to be handled with this fast rpc protocol.
      * @param key Connection Name, used for running remote RPC methods.
-     * @param priority threadpool distribution usage (0.5 = half, 1.0 = full, 0.NN = NN%)
+     * @param keyDistFactor threadpool distribution usage by the key (0.5 = half, 1.0 = full, 0.NN = NN%)
+     * @param callbackOnConnectedMethod On connect Method to be executed in background (new thread) when connection is accepted/processed.
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(CX2::Network::Streams::StreamSocket * stream, const std::string & key, const float & priority=1.0 );
+    int processConnection(CX2::Network::Streams::StreamSocket * stream, const std::string & key, const sFastRPCOnConnectedMethod & callbackOnConnectedMethod = {nullptr,nullptr}, const float & keyDistFactor=1.0 );
+
     /**
      * @brief setTimeout Timeout in milliseconds to desist to put the execution task into the threadpool
      * @param value milliseconds, default is 2secs (2000).
@@ -102,9 +114,9 @@ public:
     void setQueuePushTimeoutInMS(const uint32_t &value = 2000);
     /**
      * @brief setMaxMessageSize Max JSON Size
-     * @param value max bytes for reception/transmition json, default is 256K
+     * @param value max bytes for reception/transmition json, default is 1M
      */
-    void setMaxMessageSize(const uint32_t &value = 256*1024);
+    void setMaxMessageSize(const uint32_t &value = 1024*1024);
     /**
      * @brief setRemoteExecutionTimeoutInMS Set the remote Execution Timeout for "runRemoteRPCMethod" function
      * @param value timeout in milliseconds, default is 2secs (2000).
@@ -115,30 +127,45 @@ public:
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
      * @param methodName Method Name
      * @param payload Function Payload
+     * @param error Error Return
      * @return Answer, or Json::nullValue if answer is not received or if timed out.
      */
-    Json::Value runRemoteRPCMethod( const std::string &connectionKey, const std::string &methodName, const Json::Value &payload );
+    json runRemoteRPCMethod( const std::string &connectionKey, const std::string &methodName, const json &payload , json * error );
+    /**
+     * @brief runRemoteClose Run Remote Close Method
+     * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
+     * @return Answer, or Json::nullValue if answer is not received or if timed out.
+     */
+    bool runRemoteClose( const std::string &connectionKey );
+
+    /**
+     * @brief getConnectionKeys Get keys from the current connections.
+     * @return set of strings containing the unique keys
+     */
+    std::set<std::string> getConnectionKeys();
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    Json::Value runLocalRPCMethod(const std::string & methodName, const Json::Value &payload);
+    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const json &payload, bool * found);
+
+    void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
 
 protected:
     virtual void eventUnexpectedAnswerReceived(FastRPC_Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(sFastRPCParameters * params);
-    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
-    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
+    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const json &payload);
+    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const json &payload);
 
 private:
     static void executeRPCTask(void * taskData);
-    static void sendRPCAnswer(sFastRPCParameters * parameters, const std::string & answer);
+    static void sendRPCAnswer(sFastRPCParameters * parameters, const std::string & answer, uint8_t execution);
 
     int processAnswer(FastRPC_Connection *connection);
     int processQuery(CX2::Network::Streams::StreamSocket * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket);
 
     CX2::Threads::Safe::Map<std::string> connectionsByKeyId;
 
-    std::atomic<uint32_t> queuePushTimeoutInMS,maxMessageSize, remoteExecutionTimeoutInMS;
+    std::atomic<uint32_t> queuePushTimeoutInMS,maxMessageSize, remoteExecutionTimeoutInMS, remoteExecutionDisconnectedTries;
     // Methods:
     // method name -> method.
     std::map<std::string,sFastRPCMethod> methods;
