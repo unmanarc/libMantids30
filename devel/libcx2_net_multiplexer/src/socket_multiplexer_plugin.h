@@ -2,7 +2,7 @@
 #define SOCKET_MULTIPLEXER_PLUGINS_H
 
 #include <string>
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 namespace CX2 { namespace Network { namespace Multiplexor {
 
@@ -17,7 +17,7 @@ public:
      * @brief processJSON16 Process JSON (up to 64Kb in size)
      * @param value json value.
      */
-    virtual void processJSON16(const Json::Value & value) {}
+    virtual void processJSON16(const json & value) {}
     /**
      * @brief processData Process data block.
      * @param data
@@ -40,7 +40,7 @@ public:
 
 protected:
     void setPluginId(const std::string &value);
-    bool sendJSON16(const Json::Value & value);
+    bool sendJSON16(const json & value);
 
     void * multiplexerPtr;
 private:

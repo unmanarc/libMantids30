@@ -19,7 +19,7 @@ void Socket_Multiplexer_Callbacks::setCallback_ClientConnectFailed(bool (*callba
     cbClientConnectFailed.obj = obj;
 }
 
-void Socket_Multiplexer_Callbacks::setCallback_ServerConnectAcceptor(Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const Json::Value &), void *obj)
+void Socket_Multiplexer_Callbacks::setCallback_ServerConnectAcceptor(Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const json &), void *obj)
 {
     cbServerConnectAcceptor.obj = obj;
     cbServerConnectAcceptor.callbackFunction = callbackFunction;

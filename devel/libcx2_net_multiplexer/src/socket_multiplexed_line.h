@@ -7,7 +7,7 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 #include <cx2_thr_mutex/mutex.h>
 #include <cx2_thr_mutex/mutex_shared.h>
@@ -89,8 +89,8 @@ public:
     void setLocalObject(void *value);
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    Json::Value getConnectionParams() const;
-    void setConnectionParams(const Json::Value &value);
+    json getConnectionParams() const;
+    void setConnectionParams(const json &value);
 
 private:
     static void processLineThread(Socket_Multiplexed_Line * multiplexedLine);
@@ -114,7 +114,7 @@ private:
     bool processLineFinished; // mtProcessLineFinished mutex.
     bool remoteUnprocessedFinished; // mutexRemoteProccesedBytes mutex.
 
-   Json::Value connectionParams;
+   json connectionParams;
 
     std::queue<DataStructs::sDataBuffer *> dataBuffer;
 

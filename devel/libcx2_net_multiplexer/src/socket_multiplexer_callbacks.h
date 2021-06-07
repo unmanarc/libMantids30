@@ -28,7 +28,7 @@ struct sServerConnectAcceptCallback
         callbackFunction=nullptr;
         obj = nullptr;
     }
-    Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const Json::Value &);
+    Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const json &);
     void *obj;
 };
 
@@ -77,7 +77,7 @@ public:
     Socket_Multiplexer_Callbacks();
     //////////////////////////////////
     // callback systems:
-    void setCallback_ServerConnectAcceptor(Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const Json::Value &), void *obj=nullptr);
+    void setCallback_ServerConnectAcceptor(Streams::StreamSocket * (*callbackFunction)(void *, const LineID &, const json &), void *obj=nullptr);
     void setCallback_ServerConnectionFinished(void (*callbackFunction)(void *, const LineID &, Streams::StreamSocket *), void *obj=nullptr);
     void setCallback_ClientConnectAccepted(Streams::StreamSocket * (*callbackFunction)(void *, std::shared_ptr<Socket_Multiplexed_Line>), void * obj=nullptr);
     void setCallback_ClientConnectFailed(bool (*callbackFunction)(void *, std::shared_ptr<Socket_Multiplexed_Line>, DataStructs::eConnectFailedReason), void * obj=nullptr);

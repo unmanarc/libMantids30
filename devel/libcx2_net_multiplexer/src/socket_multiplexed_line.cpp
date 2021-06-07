@@ -274,12 +274,12 @@ DataStructs::sDataBuffer *Socket_Multiplexed_Line::getBufferElement(bool emptyBl
     return dbuf;
 }
 
-Json::Value Socket_Multiplexed_Line::getConnectionParams() const
+json Socket_Multiplexed_Line::getConnectionParams() const
 {
     return connectionParams;
 }
 
-void Socket_Multiplexed_Line::setConnectionParams(const Json::Value &value)
+void Socket_Multiplexed_Line::setConnectionParams(const json &value)
 {
     connectionParams = value;
 }

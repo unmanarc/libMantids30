@@ -5,11 +5,11 @@ using namespace CX2::Network::Multiplexor;
 
 bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID &lineId, const DataStructs::eLineAcceptAnswerMSG &msg, const uint32_t &localLineWindow)
 {
-    Json::Value x;
+    json x;
     return multiplexedSocket_sendLineConnectionAnswer(lineId, msg, x, localLineWindow);
 }
 
-bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG &msg, const Json::Value &answerValue, const uint32_t & localLineWindow)
+bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG &msg, const json &answerValue, const uint32_t & localLineWindow)
 {
     if (noSendData) return false;
     std::unique_lock<std::timed_mutex> lock(mtLock_multiplexedSocket);
@@ -42,7 +42,7 @@ bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataSt
 }
 
 
-void Socket_Multiplexer::server_AcceptConnection_Callback(DataStructs::sLineID lineId,const uint32_t &remoteWindowSize, const Json::Value &connectionParams)
+void Socket_Multiplexer::server_AcceptConnection_Callback(DataStructs::sLineID lineId,const uint32_t &remoteWindowSize, const json &connectionParams)
 {
     std::shared_ptr<Socket_Multiplexed_Line> sock = registerLine();
 

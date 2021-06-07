@@ -16,7 +16,7 @@ struct sServerLineInitThreadParams {
     }
     sLineID lineID;
     uint32_t remoteWindowSize;
-    Json::Value jConnectionParams;
+    json jConnectionParams;
     void * multiPlexer;
 };
 

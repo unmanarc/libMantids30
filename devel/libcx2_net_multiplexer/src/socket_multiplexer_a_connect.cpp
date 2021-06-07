@@ -7,7 +7,7 @@
 using namespace CX2::Network::Multiplexor;
 using Ms = std::chrono::milliseconds;
 
-LineID Socket_Multiplexer::connect(const Json::Value &connectionParams, void * multiplexedSocketLocalObject, unsigned int milliseconds)
+LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiplexedSocketLocalObject, unsigned int milliseconds)
 {
     if (mtLock_multiplexedSocket.try_lock_for(Ms(milliseconds)))
     {
@@ -66,7 +66,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 {
     bool readen;
     std::string sJMessage;
-    Json::Value jAcceptMsg;
+    json jAcceptMsg;
     DataStructs::sLineID lineId;
     uint32_t remoteWindowSize;
     DataStructs::eLineAcceptAnswerMSG msg;

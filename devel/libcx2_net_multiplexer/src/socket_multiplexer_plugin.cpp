@@ -24,7 +24,7 @@ void Socket_Mutiplexer_Plugin::setPluginId(const std::string &value)
     pluginId = value;
 }
 
-bool Socket_Mutiplexer_Plugin::sendJSON16(const Json::Value &value)
+bool Socket_Mutiplexer_Plugin::sendJSON16(const json &value)
 {
     return ((Socket_Multiplexer *)multiplexerPtr)->plugin_SendJson(pluginId, value);
 }

@@ -49,7 +49,7 @@ public:
      * @param lineSocketLocalObject  object to be setted into.
      * @return line id (only local).
      */
-    LineID connect(const Json::Value & connectionParams, void *multiplexedSocketLocalObject = nullptr, unsigned int milliseconds = 5000);
+    LineID connect(const json & connectionParams, void *multiplexedSocketLocalObject = nullptr, unsigned int milliseconds = 5000);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // status:
@@ -58,14 +58,14 @@ public:
     // Internal functions (don't use them):
     // Plugins:
     bool plugin_SendData(const std::string & pluginId, void * data, const uint32_t &datalen, bool lock = true); // use lock false when
-    bool plugin_SendJson(const std::string & pluginId, const Json::Value & jData, bool lock = true);
+    bool plugin_SendJson(const std::string & pluginId, const json & jData, bool lock = true);
     // Line:
     bool multiplexedSocket_sendLineData(const DataStructs::sLineID &lineId, void * data, const uint16_t &datalen);
     bool multiplexedSocket_sendTermination(const DataStructs::sLineID &lineId);
     bool multiplexedSocket_sendReadenBytes(const DataStructs::sLineID &lineId, const uint16_t &freedSize);
 
     // callbacks:
-    void server_AcceptConnection_Callback(DataStructs::sLineID remoteLineId, const uint32_t &remoteWindowSize, const Json::Value & connectionParams);
+    void server_AcceptConnection_Callback(DataStructs::sLineID remoteLineId, const uint32_t &remoteWindowSize, const json & connectionParams);
     void client_HandlerConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock);
     void client_FailedConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock, DataStructs::eConnectFailedReason reason);
 
@@ -92,7 +92,7 @@ private:
     bool multiplexedSocket_sendCloseACK2();
 
     bool multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG & msg, const uint32_t &localLineWindow = 0);
-    bool multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG & msg, const Json::Value & answerValue, const uint32_t &localLineWindow = 0);
+    bool multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG & msg, const json & answerValue, const uint32_t &localLineWindow = 0);
 
     bool processMultiplexedSocketCommand_Plugin_JSON16();
     bool processMultiplexedSocketCommand_Plugin_Data();

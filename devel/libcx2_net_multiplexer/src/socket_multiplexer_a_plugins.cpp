@@ -5,7 +5,7 @@ using namespace CX2::Network::Multiplexor;
 bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
 {
     bool readen;
-    Json::Value jMsg;
+    json jMsg;
     std::string pluginId = multiplexedSocket->readString(&readen,8), sMsg;
     if (!readen) return false;
     sMsg = multiplexedSocket->readString(&readen, 16);
@@ -68,7 +68,7 @@ bool Socket_Multiplexer::plugin_SendData(const std::string &pluginId, void *data
     return true;
 }
 
-bool Socket_Multiplexer::plugin_SendJson(const std::string &pluginId, const Json::Value &jData, bool lock)
+bool Socket_Multiplexer::plugin_SendJson(const std::string &pluginId, const json &jData, bool lock)
 {
     if (noSendData) return false;
     if (lock) mtLock_multiplexedSocket.lock();
