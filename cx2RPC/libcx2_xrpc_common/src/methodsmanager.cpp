@@ -31,7 +31,7 @@ bool MethodsManager::addRPCMethod(const std::string &methodName, const std::set<
     return false;
 }
 
-int MethodsManager::runRPCMethod(CX2::Authentication::Domains * authDomain, const std::string & domainName,CX2::Authentication::Session * session, const std::string & methodName, const Json::Value & payload,  Json::Value *payloadOut)
+int MethodsManager::runRPCMethod(CX2::Authentication::Domains * authDomain, const std::string & domainName,CX2::Authentication::Session * session, const std::string & methodName, const json & payload,  json *payloadOut)
 {
     Threads::Sync::Lock_RD lock(smutexMethods);
 
@@ -54,7 +54,7 @@ int MethodsManager::runRPCMethod(CX2::Authentication::Domains * authDomain, cons
     }
 }
 
-eMethodValidationCodes MethodsManager::validateRPCMethodPerms(CX2::Authentication::Manager * auth, CX2::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, Json::Value *reasons)
+eMethodValidationCodes MethodsManager::validateRPCMethodPerms(CX2::Authentication::Manager * auth, CX2::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, json *reasons)
 {
     std::set<uint32_t> passIndexesLeft;
     std::set<CX2::Authentication::sApplicationAttrib> attribsLeft;
@@ -108,9 +108,9 @@ std::set<CX2::Authentication::sApplicationAttrib> MethodsManager::getAppAttribs(
     return r;
 }
 
-Json::Value MethodsManager::toValue(const std::set<CX2::Authentication::sApplicationAttrib> &t)
+json MethodsManager::toValue(const std::set<CX2::Authentication::sApplicationAttrib> &t)
 {
-    Json::Value x;
+    json x;
     int v=0;
     for (const auto &i : t)
     {
@@ -119,18 +119,18 @@ Json::Value MethodsManager::toValue(const std::set<CX2::Authentication::sApplica
     return x;
 }
 
-Json::Value MethodsManager::toValue(const std::set<std::string> &t)
+json MethodsManager::toValue(const std::set<std::string> &t)
 {
-    Json::Value x;
+    json x;
     int v=0;
     for (const std::string & i : t)
         x[v++] = i;
     return x;
 }
 
-Json::Value MethodsManager::toValue(const std::set<uint32_t> &t)
+json MethodsManager::toValue(const std::set<uint32_t> &t)
 {
-    Json::Value x;
+    json x;
     int v=0;
     for (const uint32_t & i : t)
         x[v++] = i;

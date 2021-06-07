@@ -4,7 +4,7 @@
 #include <map>
 #include <list>
 
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 #include <cx2_auth/domains.h>
 #include <cx2_thr_mutex/mutex_shared.h>
@@ -22,7 +22,7 @@ struct sRPCParameters
     CX2::Authentication::Domains *authDomains;
     CX2::Authentication::Session *session;
     std::string methodName;
-    Json::Value payload;
+    json payload;
     uint64_t requestId;
 };
 
@@ -31,7 +31,7 @@ struct sRPCMethod
     /**
      * @brief Function pointer.
      */
-    Json::Value (*rpcMethod)(void * obj, CX2::Authentication::Manager *, CX2::Authentication::Session * session, const Json::Value & parameters);
+    json (*rpcMethod)(void * obj, CX2::Authentication::Manager *, CX2::Authentication::Session * session, const json & parameters);
     /**
      * @brief obj object to pass
      */
@@ -60,7 +60,7 @@ public:
      * @param answer
      * @return 0 if succeed, -4 if method not found.
      */
-    int runRPCMethod(CX2::Authentication::Domains *, const std::string &domainName, CX2::Authentication::Session *auth, const std::string & methodName, const Json::Value & payload, Json::Value *payloadOut);
+    int runRPCMethod(CX2::Authentication::Domains *, const std::string &domainName, CX2::Authentication::Session *auth, const std::string & methodName, const json & payload, json *payloadOut);
     /**
      * @brief validateRPCMethod
      * @param auth
@@ -69,7 +69,7 @@ public:
      * @param extraInfoOut
      * @return
      */
-    eMethodValidationCodes validateRPCMethodPerms(Authentication::Manager *auth, CX2::Authentication::Session *session, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, Json::Value * reasons);
+    eMethodValidationCodes validateRPCMethodPerms(Authentication::Manager *auth, CX2::Authentication::Session *session, const std::string & methodName, const std::set<uint32_t> &extraTmpIndexes, json * reasons);
     /**
      * @brief getMethodsAttribs Use for method initialization only.
      * @return methods required attributes
@@ -87,9 +87,9 @@ public:
 private:
     std::set<CX2::Authentication::sApplicationAttrib> getAppAttribs(const std::set<std::string> & reqAttribs);
 
-    Json::Value toValue(const std::set<CX2::Authentication::sApplicationAttrib> &t);
-    Json::Value toValue(const std::set<std::string> &t);
-    Json::Value toValue(const std::set<uint32_t> &t);
+    json toValue(const std::set<CX2::Authentication::sApplicationAttrib> &t);
+    json toValue(const std::set<std::string> &t);
+    json toValue(const std::set<uint32_t> &t);
 
     // Methods:
 
