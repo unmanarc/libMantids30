@@ -58,7 +58,7 @@ bool AtomicExpression::compile(std::string expr)
     return true;
 }
 
-bool AtomicExpression::evaluate(const Json::Value &values)
+bool AtomicExpression::evaluate(const json &values)
 {
     std::set<std::string> lvalues = left.resolve(values,evalOperator == EVAL_OPERATOR_REGEXMATCH, ignoreCase);
     std::set<std::string> rvalues = right.resolve(values,evalOperator == EVAL_OPERATOR_REGEXMATCH, ignoreCase);

@@ -173,7 +173,7 @@ bool JSONEval::compile(std::string expr)
     return true;
 }
 
-bool JSONEval::evaluate(const Json::Value &values)
+bool JSONEval::evaluate(const json &values)
 {
     switch (evalMode)
     {

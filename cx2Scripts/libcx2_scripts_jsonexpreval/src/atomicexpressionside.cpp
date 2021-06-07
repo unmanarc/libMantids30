@@ -48,14 +48,14 @@ void AtomicExpressionSide::setExpr(const string &value)
     boost::trim(expr);
 }
 
-set<string> AtomicExpressionSide::resolve(const Json::Value &v, bool resolveRegex, bool ignoreCase)
+set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool ignoreCase)
 {
     switch (mode)
     {
     case EXPR_MODE_JSONPATH:
     {
         Json::Path path(expr.substr(1));
-        Json::Value result = path.resolve(v);
+        json result = path.resolve(v);
         set<string> res;
 
         if (result.size() == 0 && !result.isNull())

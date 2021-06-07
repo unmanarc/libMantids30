@@ -2,7 +2,7 @@
 #define JSONEXPREVAL_H
 
 #include "atomicexpression.h"
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 namespace CX2 { namespace Scripts { namespace Expressions {
 
@@ -21,7 +21,7 @@ public:
     ~JSONEval();
 
     bool compile( std::string expr );
-    bool evaluate( const Json::Value & values );
+    bool evaluate( const json & values );
 
     std::string getLastCompilerError() const;
 

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <set>
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 
 namespace CX2 { namespace Scripts { namespace Expressions {
@@ -29,7 +29,7 @@ public:
     std::string getExpr() const;
     void setExpr(const std::string &value);
 
-    std::set<std::string> resolve(const Json::Value & v, bool resolveRegex, bool ignoreCase);
+    std::set<std::string> resolve(const json & v, bool resolveRegex, bool ignoreCase);
 
     boost::regex *getRegexp() const;
     void setRegexp(boost::regex *value);

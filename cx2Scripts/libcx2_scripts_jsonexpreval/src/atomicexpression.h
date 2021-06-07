@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 #include "atomicexpressionside.h"
 
@@ -26,7 +26,7 @@ public:
     AtomicExpression(std::vector<std::string> *staticTexts );
 
     bool compile( std::string expr );
-    bool evaluate(const Json::Value & values);
+    bool evaluate(const json & values);
 
     void setStaticTexts(std::vector<std::string> *value);
 
