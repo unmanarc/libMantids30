@@ -28,7 +28,7 @@ QMAKE_INCDIR += src
 INCLUDEPATH += $$PREFIX/include
 INCLUDEPATH += src
 
-# C++ standard.
+# C++ Compiler Flags.
 include(../../cflags.pri)
 
 TARGET = cx2_xrpc_common
