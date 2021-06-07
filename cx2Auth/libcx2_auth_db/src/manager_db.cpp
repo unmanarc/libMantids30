@@ -38,14 +38,13 @@ bool Manager_DB::initScheme()
                                     "       `lastLogin`             DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,\n"
                                     "       `enabled`               BOOLEAN         NOT NULL,\n"
                                     "       `confirmed`             BOOLEAN         NOT NULL,\n"
-                                    "       `canCreateAccounts`     BOOLEAN         NOT NULL,\n"
-                                    "       `canCreateApplications` BOOLEAN         NOT NULL,\n"
                                     "       PRIMARY KEY(`userName`)\n"
                                     ");\n") &&
                 sqlConnector->query("CREATE TABLE `vauth_v3_applications` (\n"
                                     "       `appName`               VARCHAR(256)  NOT NULL,\n"
                                     "       `f_appCreator`          VARCHAR(256)  NOT NULL,\n"
                                     "       `appDescription`        VARCHAR(4096) NOT NULL,\n"
+                                    "       `appKey`                VARCHAR(512)  NOT NULL,\n"
                                     "       FOREIGN KEY(`f_appCreator`)   REFERENCES vauth_v3_accounts(`userName`) ON DELETE CASCADE\n"
                                     "       PRIMARY KEY(`appName`)\n"
                                     ");\n") &&
@@ -141,8 +140,8 @@ bool Manager_DB::initScheme()
                                     ");\n") &&
                 // TODO: check if this needs different implementation across different databases, by now this works on SQLite3
                 sqlConnector->query("CREATE UNIQUE INDEX `idx_groups_accounts` ON `vauth_v3_groupsaccounts` (`f_groupName` ,`f_userName`);\n") &&
-                sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_groups` ON `vauth_v3_attribsgroups` (`f_attribName`,`f_groupName` );\n") &&
-                sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_accounts` ON `vauth_v3_attribsaccounts` (`f_attribName`,`f_userName`);\n") &&
+                sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_groups` ON `vauth_v3_attribsgroups` (`f_appName`,`f_attribName`,`f_groupName` );\n") &&
+                sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_accounts` ON `vauth_v3_attribsaccounts` (`f_appName`,`f_attribName`,`f_userName`);\n") &&
                 sqlConnector->query("INSERT INTO vauth_v3_secretsindexs (`index`,`indexDescription`,`loginRequired`) "
                                     "VALUES(:index,:indexDescription,:loginRequired);",
                                     {
