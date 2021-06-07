@@ -1,6 +1,7 @@
 #include "manager_db.h"
 #include <cx2_thr_mutex/lock_shared.h>
 #include <cx2_mem_vars/a_string.h>
+#include <cx2_mem_vars/a_uint64.h>
 
 using namespace CX2::Authentication;
 using namespace CX2::Memory;
@@ -149,6 +150,46 @@ std::set<std::string> Manager_DB::groupAccounts(const std::string &sGroupName, b
     }
 
     if (lock) mutex.unlock_shared();
+    return ret;
+}
+
+std::list<sGroupSimpleDetails> Manager_DB::groupsBasicInfoSearch(std::string sSearchWords, uint64_t limit, uint64_t offset)
+{
+    std::list<sGroupSimpleDetails> ret;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING sGroupName,description;
+
+    std::string sSqlQuery = "SELECT `groupName`,`groupDescription` FROM vauth_v3_groups";
+
+    if (!sSearchWords.empty())
+    {
+        sSearchWords = '%' + sSearchWords + '%';
+        sSqlQuery+=" WHERE (`groupName` LIKE :SEARCHWORDS OR `groupDescription` LIKE :SEARCHWORDS)";
+    }
+
+    if (limit)
+        sSqlQuery+=" LIMIT :LIMIT OFFSET :OFFSET";
+
+    sSqlQuery+=";";
+
+    QueryInstance i = sqlConnector->query(sSqlQuery,
+                                          {
+                                              {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
+                                              {":LIMIT",new Abstract::UINT64(limit)},
+                                              {":OFFSET",new Abstract::UINT64(offset)}
+                                          },
+                                          { &sGroupName, &description });
+    while (i.ok && i.query->step())
+    {
+        sGroupSimpleDetails rDetail;
+
+        rDetail.sDescription = description.getValue();
+        rDetail.sGroupName = sGroupName.getValue();
+
+        ret.push_back(rDetail);
+    }
+
     return ret;
 }
 
