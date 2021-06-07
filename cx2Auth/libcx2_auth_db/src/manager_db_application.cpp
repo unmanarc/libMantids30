@@ -8,19 +8,22 @@
 #include <cx2_mem_vars/a_int32.h>
 #include <cx2_mem_vars/a_uint32.h>
 #include <cx2_mem_vars/a_var.h>
+#include <cx2_mem_vars/a_uint64.h>
 
 using namespace CX2::Authentication;
 using namespace CX2::Memory;
 using namespace CX2::Database;
+using namespace CX2::Helpers;
 
-bool Manager_DB::applicationAdd(const std::string &appName, const std::string &applicationDescription, const std::string & sOwnerAccountName)
+bool Manager_DB::applicationAdd(const std::string &appName, const std::string &applicationDescription, const std::string & sAppKey, const std::string & sOwnerAccountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return sqlConnector->query("INSERT INTO vauth_v3_applications (`appName`,`f_appCreator`,`appDescription`) VALUES(:appName,:appCreator,:description);",
+    return sqlConnector->query("INSERT INTO vauth_v3_applications (`appName`,`f_appCreator`,`appDescription`,`appKey`) VALUES(:appName,:appCreator,:description,:appKey);",
                                {
                                    {":appName",new Abstract::STRING(appName)},
                                    {":appCreator",new Abstract::STRING(sOwnerAccountName)},
-                                   {":description",new Abstract::STRING(applicationDescription)}
+                                   {":description",new Abstract::STRING(applicationDescription)},
+                                   {":appKey",new Abstract::STRING( Encoders::toBase64Obf(sAppKey) )}
                                });
 }
 
@@ -66,6 +69,34 @@ std::string Manager_DB::applicationDescription(const std::string &appName)
         return description.getValue();
     }
     return "";
+}
+
+std::string Manager_DB::applicationKey(const std::string &appName)
+{
+    std::string ret;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING appKey;
+    QueryInstance i = sqlConnector->query("SELECT `appKey` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
+                                          {
+                                              {":appName",new Abstract::STRING(appName)}
+                                          },
+                                          { &appKey });
+    if (i.ok && i.query->step())
+    {
+        return Encoders::fromBase64Obf(appKey.getValue());
+    }
+    return "";
+}
+
+bool Manager_DB::applicationChangeKey(const std::string &appName, const std::string &appKey)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return sqlConnector->query("UPDATE vauth_v3_applications SET `appKey`=:appKey WHERE `appName`=:appName;",
+                               {
+                                   {":appName",new Abstract::STRING(appName)},
+                                   {":appKey",new Abstract::STRING( Abstract::STRING( Encoders::toBase64Obf(appKey)) )}
+                               });
 }
 
 bool Manager_DB::applicationChangeDescription(const std::string &appName, const std::string &applicationDescription)
@@ -218,5 +249,46 @@ bool Manager_DB::applicationOwnerRemove(const std::string &appName, const std::s
                                   {":appName",new Abstract::STRING(appName)},
                                   {":userName",new Abstract::STRING(sAccountName)}
                               });
+    return ret;
+}
+
+std::list<sApplicationSimpleDetails> Manager_DB::applicationsBasicInfoSearch(std::string sSearchWords, uint64_t limit, uint64_t offset)
+{
+    std::list<sApplicationSimpleDetails> ret;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING sApplicationName,sAppCreator,description;
+
+    std::string sSqlQuery = "SELECT `appName`,`f_appCreator`,`appDescription` FROM vauth_v3_applications";
+
+    if (!sSearchWords.empty())
+    {
+        sSearchWords = '%' + sSearchWords + '%';
+        sSqlQuery+=" WHERE (`appName` LIKE :SEARCHWORDS OR `appDescription` LIKE :SEARCHWORDS)";
+    }
+
+    if (limit)
+        sSqlQuery+=" LIMIT :LIMIT OFFSET :OFFSET";
+
+    sSqlQuery+=";";
+
+    QueryInstance i = sqlConnector->query(sSqlQuery,
+                                          {
+                                              {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
+                                              {":LIMIT",new Abstract::UINT64(limit)},
+                                              {":OFFSET",new Abstract::UINT64(offset)}
+                                          },
+                                          { &sApplicationName, &sAppCreator, &description });
+    while (i.ok && i.query->step())
+    {
+        sApplicationSimpleDetails rDetail;
+
+        rDetail.sAppCreator = sAppCreator.getValue();
+        rDetail.sDescription = description.getValue();
+        rDetail.sApplicationName = sApplicationName.getValue();
+
+        ret.push_back(rDetail);
+    }
+
     return ret;
 }
