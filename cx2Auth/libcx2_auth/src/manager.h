@@ -11,13 +11,58 @@
 #include <cx2_thr_mutex/mutex_shared.h>
 
 namespace CX2 { namespace Authentication {
+
 struct sAccountDetails{
     std::string sGivenName,sLastName,sEmail,sDescription,sExtraData;
 };
 struct sAccountAttribs{
-    bool enabled,confirmed,superuser,canCreateAccounts,canCreateApplications;
+    sAccountAttribs(bool enabled, bool confirmed,bool superuser)
+    {
+        this->enabled=enabled;
+        this->confirmed=confirmed;
+        this->superuser=superuser;
+    }
+    sAccountAttribs()
+    {
+        enabled=confirmed=superuser=false;
+    }
+    bool enabled,confirmed,superuser;
+};
+struct sAccountSimpleDetails {
+    sAccountSimpleDetails()
+    {
+        expired=true;
+        enabled=confirmed=superuser=false;
+    }
+    std::string sAccountName;
+    std::string sGivenName,sLastName,sEmail,sDescription;
+    bool enabled,confirmed,superuser,expired;
 };
 
+struct sGroupSimpleDetails {
+    sGroupSimpleDetails()
+    {
+    }
+    std::string sGroupName;
+    std::string sDescription;
+};
+
+struct sApplicationSimpleDetails {
+    sApplicationSimpleDetails()
+    {
+    }
+    std::string sApplicationName;
+    std::string sAppCreator;
+    std::string sDescription;
+};
+
+struct sAttributeSimpleDetails {
+    sAttributeSimpleDetails()
+    {
+    }
+    std::string sAttributeName;
+    std::string sDescription;
+};
 class Manager : public AccountSecret_Validation
 {
 public:
@@ -78,7 +123,7 @@ public:
      * @param passIndex Password Index.
      * @return Password Information (Eg. hashing function, salt, expiration, etc)
      */
-    Secret_PublicData accountSecretPublicData(const std::string & sAccountName, uint32_t passIndex=0) override;
+    virtual Secret_PublicData accountSecretPublicData(const std::string & sAccountName, uint32_t passIndex=0) override;
 
     /**
      * @brief getAccountAllSecretsPublicData Get a map with idx->public secret data for an account.
@@ -109,7 +154,7 @@ public:
                                 const Secret &secretData,
                                 const sAccountDetails & accountDetails = { "","","","","" },
                                 time_t expirationDate = 0, // Note: use 1 to create an expired account.
-                                const sAccountAttribs & accountAttribs = {true,true,false,false,false},
+                                const sAccountAttribs & accountAttribs = {true,true,false},
                                 const std::string & sCreatorAccountName = "")=0;
 
     virtual bool accountChangeSecret(const std::string & sAccountName, const Secret & passwordData, uint32_t passIndex=0)=0;
@@ -123,6 +168,9 @@ public:
     virtual bool accountChangeEmail(const std::string & sAccountName, const std::string & email)=0;
     virtual bool accountChangeExtraData(const std::string & sAccountName, const std::string & extraData)=0;
     virtual bool accountChangeExpiration(const std::string & sAccountName, time_t expiration = 0)=0;
+    virtual sAccountAttribs accountAttribs(const std::string & sAccountName) = 0;
+    virtual bool accountChangeGroupSet( const std::string & sAccountName, const std::set<std::string> & groupSet )=0;
+    virtual bool accountChangeAttribs(const std::string & sAccountName,const sAccountAttribs & accountAttribs)=0;
     virtual bool isAccountDisabled(const std::string & sAccountName)=0;
     virtual bool isAccountConfirmed(const std::string & sAccountName)=0;
     virtual bool isAccountSuperUser(const std::string & sAccountName)=0;
@@ -133,7 +181,9 @@ public:
     virtual std::string accountExtraData(const std::string & sAccountName)=0;
     bool isAccountExpired(const std::string & sAccountName);
 
-    bool accountValidateAttribute(const std::string & sAccountName, const sApplicationAttrib & applicationAttrib) override;
+    virtual bool accountValidateAttribute(const std::string & sAccountName, const sApplicationAttrib & applicationAttrib) override;
+
+    virtual std::list<sAccountSimpleDetails> accountsBasicInfoSearch(std::string sSearchWords, uint64_t limit=0, uint64_t offset=0)=0;
     virtual std::set<std::string> accountsList()=0;
     virtual std::set<std::string> accountGroups(const std::string & sAccountName, bool lock = true)=0;
     virtual std::set<sApplicationAttrib> accountDirectAttribs(const std::string & sAccountName, bool lock = true)=0;
@@ -149,11 +199,13 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////
     // applications:
-    virtual bool applicationAdd(const std::string & appName, const std::string & applicationDescription, const std::string & sOwnerAccountName)=0;
+    virtual bool applicationAdd(const std::string & appName, const std::string & applicationDescription, const std::string &sAppKey, const std::string & sOwnerAccountName)=0;
     virtual bool applicationRemove(const std::string & appName)=0;
     virtual bool applicationExist(const std::string & appName)=0;
     virtual std::string applicationDescription(const std::string & appName)=0;
+    virtual std::string applicationKey(const std::string & appName)=0;
     virtual bool applicationChangeDescription(const std::string & appName, const std::string & applicationDescription)=0;
+    virtual bool applicationChangeKey(const std::string & appName, const std::string & appKey)=0;
     virtual std::set<std::string> applicationList()=0;
     virtual bool applicationValidateOwner(const std::string & appName, const std::string & sAccountName)=0;
     virtual bool applicationValidateAccount(const std::string & appName, const std::string & sAccountName)=0;
@@ -164,6 +216,7 @@ public:
     virtual bool applicationAccountRemove(const std::string & appName, const std::string & sAccountName)=0;
     virtual bool applicationOwnerAdd(const std::string & appName, const std::string & sAccountName)=0;
     virtual bool applicationOwnerRemove(const std::string & appName, const std::string & sAccountName)=0;
+    virtual std::list<sApplicationSimpleDetails> applicationsBasicInfoSearch(std::string sSearchWords, uint64_t limit=0, uint64_t offset=0)=0;
 
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:
@@ -176,9 +229,10 @@ public:
     virtual bool attribAccountRemove(const sApplicationAttrib & applicationAttrib, const std::string & sAccountName, bool lock = true)=0;
     virtual bool attribChangeDescription(const sApplicationAttrib & applicationAttrib, const std::string & attribDescription)=0;
     virtual std::string attribDescription(const sApplicationAttrib & applicationAttrib)=0;
-    virtual std::set<sApplicationAttrib> attribsList()=0;
+    virtual std::set<sApplicationAttrib> attribsList(const std::string & applicationName = "")=0;
     virtual std::set<std::string> attribGroups(const sApplicationAttrib & applicationAttrib, bool lock = true)=0;
     virtual std::set<std::string> attribAccounts(const sApplicationAttrib & applicationAttrib, bool lock = true)=0;
+    virtual std::list<sAttributeSimpleDetails> attribsBasicInfoSearch(const std::string & appName, std::string sSearchWords, uint64_t limit=0, uint64_t offset=0)=0;
 
     /////////////////////////////////////////////////////////////////////////////////
     // group:
@@ -193,6 +247,7 @@ public:
     virtual std::set<std::string> groupsList()=0;
     virtual std::set<sApplicationAttrib> groupAttribs(const std::string & groupName, bool lock = true)=0;
     virtual std::set<std::string> groupAccounts(const std::string & groupName, bool lock = true)=0;
+    virtual std::list<sGroupSimpleDetails> groupsBasicInfoSearch(std::string sSearchWords, uint64_t limit=0, uint64_t offset=0)=0;
 
     uint32_t getBAuthPolicyMaxTries();
     void setBAuthPolicyMaxTries(const uint32_t &value);

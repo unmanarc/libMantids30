@@ -34,9 +34,7 @@ bool Manager::initAccounts()
                       0, // Expiration (don't expire)
                       { true, // enabled
                         true,// confirmed
-                        true, // superuser
-                        true, // canCreateUsers
-                        true  // canCreateApplications
+                        true // superuser
                       }
                       );
 }
