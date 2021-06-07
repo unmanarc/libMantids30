@@ -10,6 +10,7 @@
 #include <cx2_auth/domains.h>
 #include <cx2_xrpc_common/methodsmanager.h>
 #include <cx2_prg_logs/rpclog.h>
+#include <cx2_mem_vars/b_mem.h>
 
 namespace CX2 { namespace RPC { namespace Web {
 
@@ -141,6 +142,9 @@ public:
      */
     void setUseHTMLIEngine(bool value);
 
+
+    void addInternalContentElement(const std::string & path, const std::string & content);
+
     ////////////////////////////////////////////////////////////////////////////////
     // Internal Methods (ClientHandler->Webserver), don't use them
     ////////////////////////////////////////////////////////////////////////////////
@@ -164,6 +168,10 @@ public:
     Application::Logs::RPCLog *getRPCLog() const;
     void setRPCLog(Application::Logs::RPCLog *value);
 
+
+
+    std::map<std::string, CX2::Memory::Containers::B_MEM *> getStaticContentElements();
+
 private:
     Network::Sockets::Acceptors::Socket_Acceptor_MultiThreaded multiThreadedAcceptor;
     Network::Sockets::Acceptors::Socket_Acceptor_PoolThreaded poolThreadedAcceptor;
@@ -182,6 +190,11 @@ private:
     static void _callbackOnTimeOut(void *, Network::Streams::StreamSocket *, const char *, bool);
 
     void * obj;
+
+    std::map<std::string,CX2::Memory::Containers::B_MEM *> staticContentElements;
+    std::list<char *> memToBeFreed;
+
+    std::mutex mutexInternalContent;
 
     sWebServerCallBack extCallBackOnConnect, extCallBackOnInitFailed, extCallBackOnTimeOut;
     Application::Logs::RPCLog * rpcLog;

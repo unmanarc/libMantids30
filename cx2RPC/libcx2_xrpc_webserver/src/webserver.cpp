@@ -24,6 +24,14 @@ WebServer::WebServer()
 
 WebServer::~WebServer()
 {
+    for (const auto & i : staticContentElements)
+    {
+        delete i.second;
+    }
+    for (const auto & i : memToBeFreed)
+    {
+        free(i);
+    }
 }
 
 void WebServer::acceptMultiThreaded(Network::Streams::StreamSocket *listenerSocket, const uint32_t &maxConcurrentConnections)
@@ -86,6 +94,7 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     webHandler.setWebServerName(webserver->getWebServerName());
     webHandler.setSoftwareVersion(webserver->getSoftwareVersion());
     webHandler.setUseHTMLIEngine(webserver->getUseHTMLIEngine());
+    webHandler.setStaticContentElements(webserver->getStaticContentElements());
 
     if (webserver->getExtCallBackOnConnect().call(obj,s,remotePairIPAddr,isSecure))
     {
@@ -116,6 +125,12 @@ void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s
     }
 }
 
+std::map<std::string, CX2::Memory::Containers::B_MEM *> WebServer::getStaticContentElements()
+{
+    std::lock_guard<std::mutex> lck (mutexInternalContent);
+    return staticContentElements;
+}
+
 Application::Logs::RPCLog *WebServer::getRPCLog() const
 {
     return rpcLog;
@@ -142,6 +157,22 @@ bool WebServer::getUseHTMLIEngine() const
 void WebServer::setUseHTMLIEngine(bool value)
 {
     useHTMLIEngine = value;
+}
+
+void WebServer::addInternalContentElement(const std::string &path, const std::string &content)
+{
+    std::lock_guard<std::mutex> lck (mutexInternalContent);
+
+    // TODO: update.... (when no http clients running)
+
+    if (staticContentElements.find(path) == staticContentElements.end())
+    {
+        char * xmem = (char *)malloc(content.size()+1);
+        xmem[content.size()]=0;
+        memcpy(xmem,content.c_str(),content.size());
+        staticContentElements[path] = new CX2::Memory::Containers::B_MEM(xmem,content.size());
+        memToBeFreed.push_back(xmem);
+    }
 }
 
 std::string WebServer::getWebServerName() const
