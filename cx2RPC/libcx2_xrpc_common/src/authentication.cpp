@@ -1,5 +1,6 @@
 #include "authentication.h"
 
+
 using namespace CX2::RPC;
 using namespace CX2;
 
@@ -16,7 +17,7 @@ Authentication::Authentication(const std::string &pass, const uint32_t &idx)
 
 bool Authentication::fromString(const std::string &sAuth)
 {
-     Json::Value x;
+     json x;
 
      if (sAuth.empty()) return true;
 
@@ -27,22 +28,22 @@ bool Authentication::fromString(const std::string &sAuth)
      return fromJSON(x);
 }
 
-bool Authentication::fromJSON(const Json::Value &x)
+bool Authentication::fromJSON(const json &x)
 {
-//    if (!x["user"].isNull()) userName = x["user"].asString();
+//    if (!x["user"].isNull()) userName = JSON_ASSTRING(x,"user","");
 
-    if (!x["pass"].isNull()) sPassword = x["pass"].asString();
-    else return false;
+    if (x["pass"].isNull() || x["idx"].isNull())
+        return false;
 
-    if (!x["idx"].isNull()) iPassIDX = x["idx"].asUInt();
-    else return false;
+    sPassword = JSON_ASSTRING(x,"pass","");
+    iPassIDX = JSON_ASUINT(x,"idx",0);
 
     return true;
 }
 
-Json::Value Authentication::toJSON() const
+json Authentication::toJSON() const
 {
-    Json::Value x;
+    json x;
     x["pass"] = sPassword;
     x["idx"] = iPassIDX;
     return x;
