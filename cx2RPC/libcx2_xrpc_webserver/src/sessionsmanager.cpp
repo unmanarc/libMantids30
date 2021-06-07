@@ -10,7 +10,7 @@ using namespace CX2;
 SessionsManager::SessionsManager()
 {
     setGcWaitTime(1); // 1 sec.
-    setSessionExpirationTime(300); // 5 min
+    setSessionExpirationTime(900); // 15 min
     setMaxSessionsPerUser(100); // 100 sessions
 }
 
@@ -65,7 +65,6 @@ std::string SessionsManager::createWebSession(CX2::Authentication::Session *sess
         {
             if (sessionPerUser[userDomain] >= maxSessionsPerUser)
             {
-                delete session;
                 return "";
             }
             else sessionPerUser[userDomain]++;
@@ -76,7 +75,11 @@ std::string SessionsManager::createWebSession(CX2::Authentication::Session *sess
     WebSession * webSession = new WebSession;
     session->setSessionId(sessionId);
     webSession->authSession = session;
-    sessions.addElement(sessionId,webSession);
+    if (!sessions.addElement(sessionId,webSession))
+    {
+        delete webSession;
+        return "";
+    }
     return sessionId;
 }
 
