@@ -4,7 +4,7 @@
 #include <cx2_db/query.h>
 
 #if __has_include(<libpq-fe.h>)
-# include "<libpq-fe.h>"
+# include <libpq-fe.h>
 #elif __has_include(<postgresql/libpq-fe.h>)
 # include <postgresql/libpq-fe.h>
 #endif
