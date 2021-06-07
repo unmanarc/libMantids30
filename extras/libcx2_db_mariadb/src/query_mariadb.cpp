@@ -3,6 +3,14 @@
 #include <string.h>
 #include <cx2_mem_vars/a_allvars.h>
 
+// From: https://bugs.mysql.com/?id=87337
+#if !defined(MARIADB_BASE_VERSION) && \
+    !defined(MARIADB_VERSION_ID) && \
+    MYSQL_VERSION_ID >= 80001 && \
+    MYSQL_VERSION_ID != 80002
+typedef bool my_bool;
+#endif
+
 using namespace CX2::Database;
 
 Query_MariaDB::Query_MariaDB()
@@ -170,7 +178,7 @@ bool Query_MariaDB::step0()
 
         unsigned char cRetBoolean;
         MYSQL_BIND result = {};
-        bool bIsNull;
+        my_bool bIsNull;
         memset(&(result),0,sizeof(MYSQL_BIND));
 
         result.is_null = &bIsNull;
@@ -512,7 +520,7 @@ unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_f
     unsigned long r;
     static const size_t szBuffer = 64;
 
-    bool isTruncated = 0;
+    my_bool isTruncated = 0;
     std::array<char, szBuffer> aBuffer;
 
     MYSQL_BIND bind = {};
