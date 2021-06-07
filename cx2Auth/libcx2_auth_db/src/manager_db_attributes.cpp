@@ -2,6 +2,7 @@
 #include <cx2_thr_mutex/lock_shared.h>
 
 #include <cx2_mem_vars/a_string.h>
+#include <cx2_mem_vars/a_uint64.h>
 
 using namespace CX2::Authentication;
 using namespace CX2::Memory;
@@ -127,14 +128,19 @@ std::string Manager_DB::attribDescription(const sApplicationAttrib & application
     return "";
 }
 
-std::set<sApplicationAttrib> Manager_DB::attribsList()
+std::set<sApplicationAttrib> Manager_DB::attribsList(const std::string & applicationName)
 {
     std::set<sApplicationAttrib> ret;
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sAppName,sAttribName;
-    QueryInstance i = sqlConnector->query("SELECT `f_appName`,`attribName` FROM vauth_v3_attribs;",
-                                          {},
+
+    std::string sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v3_attribs;";
+    if (!applicationName.empty())
+        sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v3_attribs WHERE `f_appName`=:appName;";
+
+    QueryInstance i = sqlConnector->query(sqlQuery,
+                                          { {":appName", new Abstract::STRING(applicationName)} },
                                           { &sAppName,&sAttribName });
     while (i.ok && i.query->step())
     {
@@ -183,6 +189,47 @@ std::set<std::string> Manager_DB::attribAccounts(const sApplicationAttrib & appl
     }
 
     if (lock) mutex.unlock_shared();
+    return ret;
+}
+
+std::list<sAttributeSimpleDetails> Manager_DB::attribsBasicInfoSearch(const std::string &appName, std::string sSearchWords, uint64_t limit, uint64_t offset)
+{
+    std::list<sAttributeSimpleDetails> ret;
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING sAttributeName,description;
+
+    std::string sSqlQuery = "SELECT `attribName`,`attribDescription` FROM vauth_v3_applications WHERE `f_appName`=:APPNAME";
+
+    if (!sSearchWords.empty())
+    {
+        sSearchWords = '%' + sSearchWords + '%';
+        sSqlQuery+=" AND (`applicationName` LIKE :SEARCHWORDS OR `appDescription` LIKE :SEARCHWORDS)";
+    }
+
+    if (limit)
+        sSqlQuery+=" LIMIT :LIMIT OFFSET :OFFSET";
+
+    sSqlQuery+=";";
+
+    QueryInstance i = sqlConnector->query(sSqlQuery,
+                                          {
+                                              {":APPNAME",new Abstract::STRING(appName)},
+                                              {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
+                                              {":LIMIT",new Abstract::UINT64(limit)},
+                                              {":OFFSET",new Abstract::UINT64(offset)}
+                                          },
+                                          { &sAttributeName, &description });
+    while (i.ok && i.query->step())
+    {
+        sAttributeSimpleDetails rDetail;
+
+        rDetail.sDescription = description.getValue();
+        rDetail.sAttributeName = sAttributeName.getValue();
+
+        ret.push_back(rDetail);
+    }
+
     return ret;
 }
 
