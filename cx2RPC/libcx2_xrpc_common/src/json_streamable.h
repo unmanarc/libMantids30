@@ -2,7 +2,7 @@
 #define JSON_STREAMABLEOBJECT_H
 
 #include <cx2_mem_vars/streamable.h>
-#include <json/json.h>
+#include <cx2_hlp_functions/json.h>
 
 namespace CX2 { namespace Memory { namespace Streams {
 
@@ -11,7 +11,7 @@ class JSON_Streamable : public Memory::Streams::Streamable
 public:
     JSON_Streamable();
 
-    static std::string jsonToString( const Json::Value & value );
+    static std::string jsonToString( const json & value );
 
     bool streamTo(Memory::Streams::Streamable * out, Memory::Streams::Status & wrStatUpd) override;
     Memory::Streams::Status write(const void * buf, const size_t &count, Memory::Streams::Status & wrStatUpd)  override;
@@ -21,10 +21,10 @@ public:
 
     std::string getString();
 
-    Json::Value * processValue();
-    Json::Value * getValue();
+    json * processValue();
+    json * getValue();
 
-    void setValue(const Json::Value & value);
+    void setValue(const json & value);
 
     void setMaxSize(const uint64_t &value);
 
@@ -34,7 +34,7 @@ public:
 private:
     uint64_t maxSize;
     std::string strValue;
-    Json::Value root;
+    json root;
     bool formatted;
 };
 
