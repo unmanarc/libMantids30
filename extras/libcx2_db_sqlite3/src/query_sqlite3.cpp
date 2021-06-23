@@ -150,7 +150,14 @@ bool Query_SQLite3::exec(const ExecType &execType)
         if (bFetchLastInsertRowID)
              lastInsertRowID = sqlite3_last_insert_rowid(ppDb);
 
-        return sqlite3IsDone();
+
+        if (!sqlite3IsDone())
+        {
+            lastSQLError = sqlite3_errmsg(ppDb);
+            return false;
+        }
+        else
+            return true;
     }
 
     return true;

@@ -55,7 +55,7 @@ public:
 
     std::string getLastSQLError() const;
 
-    std::queue<std::string> getErrorsAndFlush();
+    //std::queue<std::string> getErrorsAndFlush();
 
     std::string getDBHostname() const;
 
@@ -85,7 +85,10 @@ public:
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted after the query is executed)
      * @return true if succeed.
      */
+    bool query(std::string * lastError, const std::string & preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars = {} );
+
     bool query(const std::string & preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars = {} );
+
     /**
      * @brief query Fast Prepared Query for row-returning statements. (select)
      * @param preparedQuery Prepared SQL Query String.
@@ -97,7 +100,7 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    QueryInstance query( const std::string & preparedQuery,
+    QueryInstance query(const std::string & preparedQuery,
                 const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                 const std::vector<Memory::Abstract::Var *> & resultVars
                 );

@@ -111,14 +111,25 @@ std::string SQLConnector::getLastSQLError() const
     return lastSQLError;
 }
 
-bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars)
+bool SQLConnector::query(std::string * lastError,const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars)
 {
     QueryInstance q = prepareNewQueryInstance();
     if (!q.query)
-        return false;
+    {
+        if (lastError) *lastError = q.query->getLastSQLError();
+        return false;  
+    }
     if (!q.query->setPreparedSQLQuery(preparedQuery, inputVars))
+    {
+        if (lastError) *lastError = q.query->getLastSQLError();
         return false;
-    return q.query->exec(EXEC_TYPE_INSERT);
+    }
+    if (!q.query->exec(EXEC_TYPE_INSERT))
+    {
+        if (lastError) *lastError = q.query->getLastSQLError();
+        return false;
+    }
+    return true;
 }
 
 QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars, const std::vector<CX2::Memory::Abstract::Var *> &resultVars)
@@ -142,6 +153,11 @@ QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::m
 
     q.ok = false;
     return q;
+}
+
+bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, CX2::Memory::Abstract::Var *> &inputVars)
+{
+    return query(nullptr,preparedQuery,inputVars);
 }
 
 std::string SQLConnector::getDBName() const
