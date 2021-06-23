@@ -27,6 +27,19 @@ sLocalSysInfo OS::getLocalSysInfo()
     sLocalSysInfo x;
 
 #ifndef WIN32
+    char hostname[ 1024+1 ];
+    gethostname(hostname,1024);
+    x.hostname = hostname;
+
+#else
+    char buffer[1024+1];
+    ZeroMemory(buffer,1025);
+    DWORD dwSize = _countof(buffer);
+    GetComputerNameExA((COMPUTER_NAME_FORMAT)1, buffer, &dwSize);
+    x.hostname = buffer;
+#endif
+
+#ifndef WIN32
     std::string name = "Linux",version;
     std::ifstream infile( "/etc/os-release" );
 

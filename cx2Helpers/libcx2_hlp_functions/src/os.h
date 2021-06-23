@@ -12,6 +12,7 @@ struct sLocalSysInfo
     uint16_t architectureBits;
     uint16_t threadCount;
     uint64_t memSize;
+    std::string hostname;
 };
 
 class OS
