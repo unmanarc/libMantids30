@@ -2,12 +2,14 @@ QT       -= core gui
 CONFIG += c++11
 
 SOURCES += src/encoders.cpp \
+           src/os.cpp \
            src/random.cpp \
            src/mem.cpp \
            src/crypto.cpp
 
 HEADERS += src/encoders.h \
            src/json.h \
+           src/os.h \
            src/random.h \
            src/mem.h \
            src/crypto.h \
