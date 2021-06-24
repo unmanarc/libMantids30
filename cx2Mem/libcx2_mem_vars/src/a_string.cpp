@@ -27,6 +27,14 @@ bool STRING::setValue(const std::string &value)
     return fromString(value);
 }
 
+bool STRING::setValue(const char *value)
+{
+    if (!value)
+        return fromString("");
+
+    return fromString(value);
+}
+
 std::string STRING::toString()
 {
     return getValue();

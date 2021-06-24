@@ -18,6 +18,7 @@ public:
     }
     std::string getValue();
     bool setValue(const std::string &value);
+    bool setValue(const char * value);
 
     void * getDirectMemory() override { return &value; }
 
