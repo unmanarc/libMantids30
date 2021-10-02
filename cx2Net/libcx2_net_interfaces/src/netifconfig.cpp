@@ -16,6 +16,7 @@
 #include "tap-windows.h"
 #endif
 
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Network::Interfaces;
 
@@ -25,7 +26,7 @@ NetIfConfig::NetIfConfig()
     MTU = 0;
 #ifndef WIN32
     fd = -1;
-    memset(&ifr,0,sizeof(ifreq));
+    ZeroBStruct(ifr);
 #else
     adapterIndex = ((DWORD)-1);
     fd = INVALID_HANDLE_VALUE;
@@ -50,11 +51,11 @@ bool NetIfConfig::apply()
         struct ifreq ifr1_host;
         struct ifreq ifr1_netmask;
 
-        memset(&ifr1_host,0,sizeof(ifreq));
-        memset(&ifr1_netmask,0,sizeof(ifreq));
+        ZeroBStruct(ifr1_host);
+        ZeroBStruct(ifr1_netmask);
 
         sockaddr_in addr;
-        memset(&addr,0,sizeof(sockaddr_in));
+        ZeroBStruct(addr);
 
         ifr1_host = ifr;
         ifr1_netmask = ifr;
@@ -165,18 +166,33 @@ NetIfConfig::~NetIfConfig()
 #ifndef WIN32
 bool NetIfConfig::openInterface(const std::string &_ifaceName)
 {
+    char errormsg[4096];
+    errormsg[4095] = 0;
+
     netifType = NETIF_GENERIC_LIN;
 
     interfaceName = _ifaceName;
     if((fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
-        lastError = "socket error @" + _ifaceName;
+        // TODO: all errono should be reentrant...
+        snprintf(errormsg,sizeof(errormsg), "socket(AF_INET, SOCK_RAW, IPPROTO_TCP) error(%d): %s\n", errno, strerror(errno));
+        if (errormsg[strlen(errormsg)-1] == 0x0A)
+            errormsg[strlen(errormsg)-1] = 0;
+
+        lastError = errormsg;
         return false;
     }
-    strncpy(ifr.ifr_name, _ifaceName.c_str(),IFNAMSIZ);
+
+    SecBACopy(ifr.ifr_name, _ifaceName.c_str());
+
     if((ioctl(fd, SIOCGIFFLAGS, &ifr) == -1))
     {
-        lastError = "SIOCGIFFLAGS error @" + _ifaceName;
+        snprintf(errormsg,sizeof(errormsg), "ioctl(SIOCGIFFLAGS) on interface %s error(%d): %s\n", _ifaceName.c_str(),errno,  strerror(errno));
+        if (errormsg[strlen(errormsg)-1] == 0x0A)
+            errormsg[strlen(errormsg)-1] = 0;
+
+        lastError = errormsg;
+
         return false;
     }
     return true;
@@ -200,7 +216,9 @@ int NetIfConfig::getMTU()
     {
         return 0;
     }
-    strncpy(ifr2.ifr_name, interfaceName.c_str(),IFNAMSIZ);
+
+    SecBACopy(ifr2.ifr_name, interfaceName.c_str());
+
     if((ioctl(sock2, SIOCGIFMTU, &ifr2) == -1))
     {
         lastError = "SIOCGIFMTU error @" + interfaceName;
@@ -229,26 +247,27 @@ int NetIfConfig::getMTU()
 
 ethhdr NetIfConfig::getEthernetAddress()
 {
-    ethhdr x;
-    memset(&x,0,sizeof(ethhdr));
+    ethhdr etherHdrData;
+    ZeroBStruct(etherHdrData);
+
 #ifndef WIN32
-    x.h_proto = htons(ETH_P_IP);
+    etherHdrData.h_proto = htons(ETH_P_IP);
     struct ifreq ifr1x = ifr;
     if (ioctl(fd, SIOCGIFHWADDR, &ifr1x) < 0)
     {
         lastError = "SIOCGIFHWADDR error @" + interfaceName;
-        return x;
+        return etherHdrData;
     }
-    memcpy(x.h_dest,ifr1x.ifr_hwaddr.sa_data,6);
+    memcpy(etherHdrData.h_dest,ifr1x.ifr_hwaddr.sa_data,6);
 #else
     switch (netifType)
     {
     case NETIF_VIRTUAL_WIN:
         DWORD len;
-        if (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MAC, &(x.h_dest), 6, &(x.h_dest), 6, &len, NULL) == 0)
+        if (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MAC, &(etherHdrData.h_dest), 6, &(etherHdrData.h_dest), 6, &len, NULL) == 0)
         {
             lastError = "Failed to obtain interface MAC Address";
-            memset(&x,0,sizeof(ethhdr));
+            ZeroBStruct(etherHdrData);
             break;
         }
         break;
@@ -256,7 +275,7 @@ ethhdr NetIfConfig::getEthernetAddress()
         break;
     }
 #endif
-    return x;
+    return etherHdrData;
 }
 
 std::string NetIfConfig::getLastError() const
