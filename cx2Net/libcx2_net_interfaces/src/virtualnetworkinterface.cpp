@@ -18,6 +18,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cx2_hlp_functions/mem.h>
+
+
 using namespace CX2::Network::Interfaces;
 
 VirtualNetworkInterface::VirtualNetworkInterface()
@@ -37,6 +40,7 @@ VirtualNetworkInterface::~VirtualNetworkInterface()
 bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &netIfaceName)
 {
     interfaceName = netIfaceName;
+    interfaceRealName = netIfaceName;
 
 #ifdef WIN32
     this->NETCLSID = netIfaceName;
@@ -65,7 +69,7 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
     }
 
     struct ifreq ifr;
-    memset(&ifr, 0, sizeof(ifr));
+    ZeroBStruct(ifr);
 
     // Create the tun/tap interface.
     ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
@@ -81,7 +85,14 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
 
     if(ioctl(fd, TUNSETIFF, (void*) &ifr) < 0)
     {
-        lastError = "TUNSETIFF error";
+        char errormsg[4096];
+        snprintf(errormsg,sizeof(errormsg), "ioctl(TUNSETIFF) error(%d): %s\n", errno, strerror(errno));
+
+        if (errormsg[strlen(errormsg)-1] == 0x0A)
+            errormsg[strlen(errormsg)-1] = 0;
+
+        lastError = errormsg;
+
         stop();
         return false;
     }
@@ -96,13 +107,13 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
                 return true;
             else
             {
-                lastError = "Failed to configure the interface.";
+                lastError = netcfg->getLastError();
                 return false;
             }
         }
         else
         {
-            lastError = "Failed to open the interface during the network configuration.";
+            lastError =  netcfg->getLastError();
             stop();
             return false;
         }
