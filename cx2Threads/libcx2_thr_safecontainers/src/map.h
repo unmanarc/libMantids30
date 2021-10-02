@@ -35,6 +35,7 @@ public:
 
     std::set<T> getKeys();
 
+    bool checkElement( const T & key );
     bool addElement( const T & key, Map_Element * element );
     Map_Element * openElement(const T & key);
     bool closeElement(const T & key);
@@ -56,6 +57,13 @@ std::set<T> Map<T>::getKeys()
     std::set<T> ret;
     for (const auto & i : xMap) ret.insert(i.first);
     return ret;
+}
+
+template<class T>
+bool Map<T>::checkElement(const T &key)
+{
+    std::unique_lock<std::mutex> lock(mutex_xMap);
+    return (xMap.find(key) != xMap.end());
 }
 
 template<class T>
