@@ -68,8 +68,11 @@ bool JSONEval::compile(std::string expr)
     {
         uint64_t pos = staticTexts->size();
         char _staticmsg[128];
-        _staticmsg[127]=0;
-        snprintf(_staticmsg,127,"_STATIC_%lu",pos);
+#ifdef WIN32
+        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%llu",pos);
+#else
+        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%lu",pos);
+#endif
         staticTexts->push_back(string(whatStaticText[1].first, whatStaticText[1].second));
         boost::replace_all(expr,"\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"" ,_staticmsg);
     }
@@ -245,8 +248,12 @@ size_t JSONEval::detectSubExpr(string &expr, size_t start)
 
                 uint64_t pos = subExpressions.size();
                 char _staticmsg[128];
-                _staticmsg[127]=0;
-                snprintf(_staticmsg,127,"_SUBEXPR_%lu",pos);
+
+#ifdef WIN32
+                snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%llu",pos);
+#else
+                snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%lu",pos);
+#endif
 
                 if (firstByte>0 && isalnum(expr.at(firstByte-1)))
                 {

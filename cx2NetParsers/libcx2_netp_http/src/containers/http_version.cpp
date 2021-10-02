@@ -47,10 +47,10 @@ void HTTP_Version::parseVersion(const std::string &version)
 
 string HTTP_Version::getHTTPVersionString()
 {
-    char w[128];
-    snprintf(w,128,"HTTP/%u.%u", versionMajor, versionMinor);
-    std::string x = w;
-    return x;
+    char cHTTPVersion[128];
+    snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%u.%u", versionMajor, versionMinor);
+    std::string sHTTPVersion = cHTTPVersion;
+    return sHTTPVersion;
 }
 
 uint16_t HTTP_Version::getVersionMinor() const

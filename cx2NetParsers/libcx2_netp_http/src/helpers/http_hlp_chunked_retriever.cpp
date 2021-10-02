@@ -26,7 +26,7 @@ Memory::Streams::Status HTTP_HLP_Chunked_Retriever::write(const void *buf, const
     char strhex[32];
 
     if (count+64<count) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }
-    snprintf(strhex,32, pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
+    snprintf(strhex,sizeof(strhex), pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
 
     if (!(cur+=dst->writeString(strhex,wrStat)).succeed) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }
     if (!(cur+=dst->writeFullStream(buf,count,wrStat)).succeed) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }

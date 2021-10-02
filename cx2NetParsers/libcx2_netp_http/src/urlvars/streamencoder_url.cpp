@@ -48,7 +48,7 @@ Status URL::write(const void *buf, const size_t &count, Status &wrStat)
         else
         {
             char encodedByte[8];
-            snprintf(encodedByte,8, "%%%02X", *(((const unsigned char *)buf)+pos));
+            snprintf(encodedByte,sizeof(encodedByte), "%%%02X", *(((const unsigned char *)buf)+pos));
             if (!(cur+=orig->writeFullStream(encodedByte,3, wrStat)).succeed)
             {
                 finalBytesWritten+=cur.bytesWritten;

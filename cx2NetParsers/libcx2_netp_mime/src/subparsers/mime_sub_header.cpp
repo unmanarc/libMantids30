@@ -173,8 +173,13 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
     {
         uint64_t pos = vStaticTexts.size();
         char _staticmsg[128];
-        _staticmsg[127]=0;
-        snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),pos);
+
+#ifdef WIN32
+        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),pos);
+#else
+        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),pos);
+#endif
+
         vStaticTexts.push_back(string(whatStaticText[1].first, whatStaticText[1].second));
         boost::replace_all(sVarValues,"\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"" ,_staticmsg);
     }
@@ -198,9 +203,11 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-                _staticmsg[127]=0;
-                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
-
+#ifdef WIN32
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
+#else
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
+#endif
                 boost::replace_all(sVarName,_staticmsg, vStaticTexts[i]);
                 boost::replace_all(sVarValue,_staticmsg, vStaticTexts[i]);
             }
@@ -215,8 +222,12 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-                _staticmsg[127]=0;
-                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
+
+#ifdef WIN32
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
+#else
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
+#endif
 
                 boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
             }
@@ -233,8 +244,13 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-                _staticmsg[127]=0;
-                snprintf(_staticmsg,127,"_STATIC_%s_%lu",secureReplace.c_str(),i);
+
+#ifdef WIN32
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
+#else
+                snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
+#endif
+
 
                 boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
             }
