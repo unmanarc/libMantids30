@@ -1,8 +1,11 @@
 #ifndef LOGINRPCCLIENT_H
 #define LOGINRPCCLIENT_H
 
-#include <string>
 #include "manager_remote.h"
+
+#include <string>
+#include <stdint.h>
+
 #include <cx2_net_sockets/socket_tls.h>
 
 namespace CX2 { namespace Authentication {
@@ -23,12 +26,12 @@ public:
      * @brief connect Internal Static function for processing the connections
      * @param rpcClient Login RPC Client Class to process
      */
-    static void process(LoginRPCClient * rpcClient,u_int16_t sleepBetweenConnectionsSeconds);
+    static void process(LoginRPCClient * rpcClient,uint16_t sleepBetweenConnectionsSeconds);
     /**
      * @brief start start connection loop in background
      * NOTE: every set for this call should be done before start.
      */
-    void start(u_int16_t sleepBetweenConnectionsSeconds=5);
+    void start(uint16_t sleepBetweenConnectionsSeconds=5);
     /**
      * @brief getRemoteHost Get Remote RPC Login Server Host
      * @return RPC Login Server Host

@@ -15,7 +15,7 @@ LoginRPCClient::LoginRPCClient()
     caFile = "ca.crt";
 }
 
-void LoginRPCClient::process(LoginRPCClient *rpcClient,u_int16_t sleepBetweenConnectionsSeconds)
+void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConnectionsSeconds)
 {
     for (;;)
     {
@@ -59,7 +59,7 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,u_int16_t sleepBetweenCon
     }
 }
 
-void LoginRPCClient::start(u_int16_t sleepBetweenConnectionsSeconds)
+void LoginRPCClient::start(uint16_t sleepBetweenConnectionsSeconds)
 {
     auto i = std::thread(process, this, sleepBetweenConnectionsSeconds);
     i.detach();
