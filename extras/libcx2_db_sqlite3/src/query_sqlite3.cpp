@@ -82,7 +82,7 @@ bool Query_SQLite3::exec(const ExecType &execType)
                 break;
             case Memory::Abstract::TYPE_UINT64:
                 // Not implemented.
-                throw std::runtime_error("UINT64 is not supported by SQLite3, check your implementation");
+                throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
                 break;
             case Memory::Abstract::TYPE_DOUBLE:
                 sqlite3_bind_double(stmt,idx,ABSTRACT_PTR_AS(DOUBLE,inputVar.second)->getValue());
@@ -128,7 +128,7 @@ bool Query_SQLite3::exec(const ExecType &execType)
             {
                 void * ptr = ABSTRACT_PTR_AS(PTR,inputVar.second)->getValue();
                 // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-                size_t ptrSize = strnlen((char *)ptr,0xFFFFFFFF);
+                size_t ptrSize = strnlen((char *)ptr,(0xFFFFFFFF/2)-1);
                 sqlite3_bind_text(stmt,idx,(char *)ptr,ptrSize,SQLITE_STATIC);
             } break;
             case Memory::Abstract::TYPE_NULL:

@@ -288,7 +288,7 @@ bool Query_PostgreSQL::postBindInputVars()
         {
             void * ptr = ABSTRACT_PTR_AS(PTR,InputVars[key])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-            paramLengths[pos] = strnlen((char *)ptr,0xFFFFFFFF);
+            paramLengths[pos] = strnlen((char *)ptr,(0xFFFFFFFF/2)-1);
             paramValues[pos] = (char *) ptr;
         } break;
         case Memory::Abstract::TYPE_STRING:
