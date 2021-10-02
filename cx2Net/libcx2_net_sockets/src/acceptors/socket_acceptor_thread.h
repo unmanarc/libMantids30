@@ -67,7 +67,7 @@ private:
     bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *, bool);
     bool (*callbackOnInitFail)(void *,Streams::StreamSocket *, const char *, bool);
 
-    char remotePair[INET6_ADDRSTRLEN+2];
+    char remotePair[INET6_ADDRSTRLEN];
     bool isSecure;
 
     void *objOnConnect, *objOnInitFail;
