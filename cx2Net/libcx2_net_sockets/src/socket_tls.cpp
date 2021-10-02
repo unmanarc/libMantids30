@@ -46,11 +46,12 @@ void Socket_TLS::prepareTLS()
     // Register the available ciphers and digests
     SSL_library_init ();
 
-
-    sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &set, NULL);
+#ifndef WIN32
+    sigset_t sigPipeSet;
+    sigemptyset(&sigPipeSet);
+    sigaddset(&sigPipeSet, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &sigPipeSet, NULL);
+#endif
 }
 
 bool Socket_TLS::postConnectSubInitialization()
@@ -334,7 +335,7 @@ string Socket_TLS::getProtocolVersionName()
 
 CX2::Network::Streams::StreamSocket * Socket_TLS::acceptConnection()
 {
-    char remotePair[INET6_ADDRSTRLEN+2];
+    char remotePair[INET6_ADDRSTRLEN];
     StreamSocket * mainSock = Socket_TCP::acceptConnection();
     if (!mainSock) return nullptr;
 
