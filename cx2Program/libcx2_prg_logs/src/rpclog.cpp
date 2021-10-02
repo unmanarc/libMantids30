@@ -45,12 +45,11 @@ void RPCLog::log(eLogLevels logSeverity, const std::string &ip, const std::strin
 void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize, const char *fmtLog, va_list args)
 {
     std::unique_lock<std::mutex> lock(mt);
-    char * buffer = new char [outSize];
+    char * buffer = new char[outSize];
     if (!buffer) return;
-    buffer[outSize-1] = 0;
 
     // take arguments...
-    vsnprintf(buffer, outSize-2, fmtLog, args);
+    vsnprintf(buffer, outSize, fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
         printStandardLog(logSeverity,stdout,ip,sessionId,user,domain,module,buffer,LOG_COLOR_BOLD,"INFO");
