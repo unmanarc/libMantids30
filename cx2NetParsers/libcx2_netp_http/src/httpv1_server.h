@@ -238,7 +238,7 @@ protected:
     void * getThis() override { return this; }
     bool changeToNextParser() override;
 
-    char remotePairAddress[INET6_ADDRSTRLEN+1];
+    char remotePairAddress[INET6_ADDRSTRLEN];
 
 private:
     bool changeToNextParserOnClientHeaders();
