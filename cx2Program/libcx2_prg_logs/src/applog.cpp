@@ -139,13 +139,12 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
     std::unique_lock<std::mutex> lock(mt);
     char * buffer = new char [outSize];
     if (!buffer) return;
-    buffer[outSize-1] = 0;
 
 
     // take arguments...
     va_list args;
     va_start(args, fmtLog);
-    vsnprintf(buffer, outSize-2, fmtLog, args);
+    vsnprintf(buffer, outSize, fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
         printStandardLog(logSeverity,stdout,module,user,ip,buffer,LOG_COLOR_BOLD,"INFO");
@@ -167,12 +166,11 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
 {
     std::unique_lock<std::mutex> lock(mt);
     char buffer[8192];
-    buffer[8191] = 0;
 
     // take arguments...
     va_list args;
     va_start(args, fmtLog);
-    vsnprintf(buffer, 8192-2, fmtLog, args);
+    vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
         printStandardLog(logSeverity,stdout,module,user,ip,buffer,LOG_COLOR_BOLD,"INFO");
@@ -192,13 +190,11 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
 {
     std::unique_lock<std::mutex> lock(mt);
     char buffer[8192];
-    buffer[8191] = 0;
-
 
     // take arguments...
     va_list args;
     va_start(args, fmtLog);
-    vsnprintf(buffer, 8192-2, fmtLog, args);
+    vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
         printStandardLog(logSeverity,stdout,module,"",ip,buffer,LOG_COLOR_BOLD,"INFO");
@@ -219,16 +215,13 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
 {
     std::unique_lock<std::mutex> lock(mt);
     char buffer[8192];
-    buffer[8191] = 0;
-
 
     // TODO: filter arguments for ' and special chars...
 
     // take arguments...
     va_list args;
     va_start(args, fmtLog);
-    vsnprintf(buffer, 8192-2, fmtLog, args);
-
+    vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
         printStandardLog(logSeverity,stdout,module,"","",buffer,LOG_COLOR_BOLD,"INFO");
