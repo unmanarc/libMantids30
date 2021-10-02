@@ -80,13 +80,13 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
             {
             case AF_INET6:
             {
-                char ipAddr6[INET6_ADDRSTRLEN+1]="";
+                char ipAddr6[INET6_ADDRSTRLEN]="";
                 inet_ntop(AF_INET6, &(curAddrIn->sin_addr), ipAddr6, INET6_ADDRSTRLEN);
                 setRemotePair(ipAddr6);
             }break;
             case AF_INET:
             {
-                char ipAddr4[INET_ADDRSTRLEN+1]="";
+                char ipAddr4[INET_ADDRSTRLEN]="";
                 inet_ntop(AF_INET, &(curAddrIn->sin_addr), ipAddr4, INET_ADDRSTRLEN);
                 setRemotePair(ipAddr4);
             }break;
@@ -147,7 +147,7 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
         cursocket = new Socket_TCP;
         // Set the proper socket-
         cursocket->setSocketFD(sdconn);
-        char ipAddr[INET6_ADDRSTRLEN+1];
+        char ipAddr[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET, &cli_addr.sin_addr, ipAddr, sizeof(ipAddr)-1);
         cursocket->setRemotePort(ntohs(cli_addr.sin_port));
         cursocket->setRemotePair(ipAddr);
