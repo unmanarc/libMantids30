@@ -264,7 +264,7 @@ protected:
     /**
      * buffer with the remote pair address.
      */
-    char remotePair[INET6_ADDRSTRLEN+2];
+    char remotePair[INET6_ADDRSTRLEN];
     /**
      * @brief remotePort remote port when accepting connections.
      */
