@@ -6,10 +6,12 @@
 #include <chrono>
 
 #ifdef _WIN32
-#pragma comment(lib, "crypt32.lib")
+//#pragma comment(lib, "crypt32.lib")
 #include <windows.h>
 #include <wincrypt.h>
 #endif
+
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Network::Chains::Protocols;
 
@@ -149,7 +151,10 @@ bool SocketChain_AES::postAcceptSubInitialization()
         return false;
     // Decrypt the header.
     readParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
-    memcpy( &(readParams.handshake), vFirstLoad, sizeof(sHandShakeHeader));
+
+    sHandShakeHeader * hshdr = (sHandShakeHeader *)vFirstLoad;
+    readParams.handshake = *hshdr;
+
     // Check the decryption:
     if (memcmp(readParams.handshake.magicBytes,"IHDR",4))
         return false;
@@ -162,7 +167,7 @@ bool SocketChain_AES::postAcceptSubInitialization()
     readParams.mt19937IV[1].seed(*((uint64_t *)p2));
 
     // clean the mem...
-    memset(vFirstLoad,0,sizeof(sHandShakeHeader));
+    ZeroBStruct(vFirstLoad);
 
     initialized = true;
     return true;
@@ -178,7 +183,11 @@ const EVP_CIPHER *SocketChain_AES::openSSLInit()
     /* Initialise the library */
     ERR_load_crypto_strings();
     OpenSSL_add_all_algorithms();
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     OPENSSL_config(nullptr);
+#endif
+
     return EVP_aes_256_cbc();
 }
 
