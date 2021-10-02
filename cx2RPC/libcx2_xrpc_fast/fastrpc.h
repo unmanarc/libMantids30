@@ -130,7 +130,7 @@ public:
      * @param error Error Return
      * @return Answer, or Json::nullValue if answer is not received or if timed out.
      */
-    json runRemoteRPCMethod( const std::string &connectionKey, const std::string &methodName, const json &payload , json * error );
+    json runRemoteRPCMethod( const std::string &connectionKey, const std::string &methodName, const json &payload , json * error, bool retryIfDisconnected = true );
     /**
      * @brief runRemoteClose Run Remote Close Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
@@ -143,6 +143,13 @@ public:
      * @return set of strings containing the unique keys
      */
     std::set<std::string> getConnectionKeys();
+
+    /**
+     * @brief checkConnectionKey Check if the given connection key does exist.
+     * @param connectionKey connection key
+     * @return true if exist, otherwise false.
+     */
+    bool checkConnectionKey( const std::string &connectionKey );
 
     //////////////////////////////////////////////////////////
     // For Internal use only:

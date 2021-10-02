@@ -96,7 +96,9 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
         if ( connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
         {
             connection->executionStatus[requestId] = executionStatus;
-            Json::Reader reader;
+//            Json::CharReaderBuilder x;
+
+            JSONReader2 reader;
             bool parsingSuccessful = reader.parse( payloadBytes, connection->answers[requestId] );
             if (parsingSuccessful)
             {
@@ -154,7 +156,7 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Json::Reader reader;
+    JSONReader2 reader;
     sFastRPCParameters * params = new sFastRPCParameters;
     params->requestId = requestId;
     params->methodName = methodName;
@@ -274,10 +276,12 @@ void FastRPC::executeRPCTask(void *taskData)
 {
     sFastRPCParameters * params = (sFastRPCParameters *)(taskData);
 
-    Json::FastWriter fastWriter;
+    Json::StreamWriterBuilder builder;
+    builder.settings_["indentation"] = "";
+
     bool found;
     json r = ((FastRPC *)params->caller)->runLocalRPCMethod(params->methodName,params->key,params->payload,&found);
-    std::string output = fastWriter.write(r);
+    std::string output = Json::writeString(builder, r);
     sendRPCAnswer(params,output,found?2:4);
     params->done->unlock_shared();
 }
@@ -300,12 +304,13 @@ void FastRPC::setMaxMessageSize(const uint32_t &value)
     maxMessageSize = value;
 }
 
-json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const json &payload, json *error)
+json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const json &payload, json *error, bool retryIfDisconnected)
 {
     json r;
 
-    Json::FastWriter fastWriter;
-    std::string output = fastWriter.write(payload);
+    Json::StreamWriterBuilder builder;
+    builder.settings_["indentation"] = "";
+    std::string output = Json::writeString(builder, payload);
 
     if (output.size()>maxMessageSize)
     {
@@ -324,7 +329,7 @@ json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::st
     while ( (connection=(FastRPC_Connection *)connectionsByKeyId.openElement(connectionKey))==nullptr )
     {
         _tries++;
-        if (_tries >= remoteExecutionDisconnectedTries)
+        if (_tries >= remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
             eventRemotePeerDisconnected(connectionKey,methodName,payload);
             if (error)
@@ -474,6 +479,11 @@ bool FastRPC::runRemoteClose(const std::string &connectionKey)
 std::set<std::string> FastRPC::getConnectionKeys()
 {
     return connectionsByKeyId.getKeys();
+}
+
+bool FastRPC::checkConnectionKey(const std::string &connectionKey)
+{
+    return connectionsByKeyId.checkElement(connectionKey);
 }
 
 void FastRPC::eventFullQueueDrop(sFastRPCParameters *)

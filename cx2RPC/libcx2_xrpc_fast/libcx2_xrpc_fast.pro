@@ -9,7 +9,7 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lcx2_thr_threads2 -lcx2_thr_mutex2 -lcx2_thr_safecontainers2 -lcx2_net_sockets2
+win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lcx2_thr_threads2 -lcx2_thr_mutex2 -lcx2_thr_safecontainers2 -lcx2_hlp_functions2 -lcx2_net_sockets2
 !win32:LIBS+= -ljsoncpp
 
 # includes dir
