@@ -19,6 +19,9 @@ public:
     }
 
     uint64_t getValue();
+
+    int64_t getIValueTruncatedOrZero();
+
     bool setValue(const uint64_t &value);
 
     void * getDirectMemory() override { return &value; }

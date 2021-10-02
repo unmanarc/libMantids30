@@ -23,6 +23,16 @@ uint64_t UINT64::getValue()
     return value;
 }
 
+int64_t UINT64::getIValueTruncatedOrZero()
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    if (value<=0x7FFFFFFFFFFFFFFF)
+        return value;
+    else
+        return 0;
+}
+
 bool UINT64::setValue(const uint64_t &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
