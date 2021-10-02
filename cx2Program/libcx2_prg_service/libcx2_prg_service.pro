@@ -1,13 +1,13 @@
 QT       -= core gui
 CONFIG += c++11
 
-SOURCES += \ 
+SOURCES += \
+    src/application.cpp \
     src/globalarguments.cpp \
-    src/service.cpp \
     src/programvalues.cpp
 
 HEADERS += \
-    src/service.h \
+    src/application.h \
     src/globalarguments.h \
     src/programvalues.h
 

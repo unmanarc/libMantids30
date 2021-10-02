@@ -1,5 +1,5 @@
-#ifndef SERVICE_H
-#define SERVICE_H
+#ifndef APPLICATION_H
+#define APPLICATION_H
 
 #include "globalarguments.h"
 #include <unistd.h>
@@ -53,6 +53,4 @@ virtual int _start(int argc, char *argv[], CX2::Application::Arguments::GlobalAr
 int StartApplication(int argc, char *argv[], Application * _app);
 
 
-
-
-#endif // SERVICE_H
+#endif // APPLICATION_H
