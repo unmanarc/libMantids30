@@ -29,7 +29,7 @@ protected:
 private:
     std::vector<std::string> keysByPos;
 
-    int paramCount;
+    size_t paramCount;
     char ** paramValues;
     int * paramLengths;
     int * paramFormats;
