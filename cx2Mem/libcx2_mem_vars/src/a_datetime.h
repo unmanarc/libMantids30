@@ -22,12 +22,15 @@ public:
     bool setValue(const time_t & value);
 
     void * getDirectMemory() override { return &value; }
+
+    std::string toStringLcl();
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
     Var * protectedCopy() override;
 
 private:
+    std::string getPlainLclTimeStr( time_t v );
     std::string getISOTimeStr( const time_t & v );
     time_t fromISOTimeStr( const std::string & v );
 
