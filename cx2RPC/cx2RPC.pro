@@ -35,6 +35,13 @@ SUBDIRS+=libcx2_xrpc_fast
 libcx2_xrpc_fast.subdir    = libcx2_xrpc_fast
 libcx2_xrpc_fast.depends   = libcx2_xrpc_common
 
+# RPC based services
+SUBDIRS+=libcx2_xrpc_service
+# Project folders:
+libcx2_xrpc_service.subdir    = libcx2_xrpc_service
+libcx2_xrpc_service.depends   = libcx2_xrpc_common libcx2_xrpc_fast libcx2_xrpc_templates libcx2_xrpc_webserver
+
+
 #END-
 # TODO:
 # - common user management gui
