@@ -12,16 +12,6 @@ JSON_Streamable::JSON_Streamable()
     setFormatted(false);
 }
 
-std::string JSON_Streamable::jsonToString(const json &value)
-{
-    Json::FastWriter fastWriter;
-    std::string xstrValue = fastWriter.write(value);
-    if (!xstrValue.empty() && xstrValue[xstrValue.length()-1] == '\n')
-    {
-        xstrValue.erase(xstrValue.length()-1);
-    }
-    return xstrValue;
-}
 
 
 bool JSON_Streamable::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrStatUpd)
@@ -63,19 +53,19 @@ void JSON_Streamable::clear()
 {
     json x;
     root = x;
-    //root.clear();
     strValue.clear();
 }
 
 std::string JSON_Streamable::getString()
 {
-    Json::FastWriter fastWriter;
-    return fastWriter.write(root);
+    Json::StreamWriterBuilder builder;
+    builder.settings_["indentation"] = "";
+    return Json::writeString(builder, root);
 }
 
 json *JSON_Streamable::processValue()
 {
-    Json::Reader reader;
+    JSONReader2 reader;
     bool parsingSuccessful = reader.parse( strValue, root );
     if ( !parsingSuccessful )
         return nullptr;
@@ -84,13 +74,11 @@ json *JSON_Streamable::processValue()
 
 json *JSON_Streamable::getValue()
 {
-  //  std::cout << "getting value" << std::endl << std::flush;
     return &root;
 }
 
 void JSON_Streamable::setValue(const json &value)
 {
-//    std::cout << "setting value to " << value.toStyledString() << std::endl << std::flush;
     root=value;
 }
 

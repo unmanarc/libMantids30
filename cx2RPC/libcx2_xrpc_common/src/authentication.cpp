@@ -21,7 +21,7 @@ bool Authentication::fromString(const std::string &sAuth)
 
      if (sAuth.empty()) return true;
 
-     Json::Reader reader;
+     JSONReader2 reader;
      if (!reader.parse(sAuth, x)) return false;
      if (!x.isObject()) return false;
 

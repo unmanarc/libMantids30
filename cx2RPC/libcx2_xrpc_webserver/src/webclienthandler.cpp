@@ -4,6 +4,7 @@
 #include <cx2_xrpc_common/json_streamable.h>
 #include <cx2_xrpc_common/retcodes.h>
 #include <cx2_hlp_functions/crypto.h>
+#include <cx2_hlp_functions/json.h>
 
 #include <stdarg.h>
 #include <fstream>
@@ -548,7 +549,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
     eHTTP_RetCode eHTTPResponseCode = HTTP_RET_404_NOT_FOUND;
     std::string sMethodName = getRequestVars(HTTP_VARS_GET)->getStringValue("method");
     json jPayloadIn;
-    Json::Reader reader;
+    JSONReader2 reader;
 
     std::string  userName = getRequestVars(HTTP_VARS_POST)->getStringValue("user");
     std::string domainName = getRequestVars(HTTP_VARS_POST)->getStringValue("domain");
@@ -620,13 +621,13 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
                 authSession->updateLastActivity();
 
             log(LEVEL_INFO, wSession, "rpcServer", 2048, "Executing Web Method {method=%s}", sMethodName.c_str());
-            log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadIn).c_str());
+            log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),jsonToString(jPayloadIn).c_str());
 
             switch (methodsManager->runRPCMethod(authDomains,domainName, authSession, sMethodName, jPayloadIn, jPayloadOutStr->getValue()))
             {
             case CX2::RPC::METHOD_RET_CODE_SUCCESS:
                 log(LEVEL_INFO, wSession, "rpcServer", 2048, "Web Method executed OK {method=%s}", sMethodName.c_str());
-                log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(jPayloadOutStr->getValue()).c_str());
+                log(LEVEL_DEBUG, wSession, "rpcServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),jsonToString(jPayloadOutStr->getValue()).c_str());
 
                 eHTTPResponseCode = HTTP_RET_200_OK;
                 break;
@@ -649,7 +650,7 @@ eHTTP_RetCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSession, Mu
         {
             // not enough permissions.
             (*(jPayloadOutStr->getValue()))["auth"]["reasons"] = reasons;
-            log(LEVEL_ERR, wSession, "rpcServer", 8192, "Not authorized to execute method {method=%s,reasons=%s}", sMethodName.c_str(),Memory::Streams::JSON_Streamable::jsonToString(reasons).c_str());
+            log(LEVEL_ERR, wSession, "rpcServer", 8192, "Not authorized to execute method {method=%s,reasons=%s}", sMethodName.c_str(),jsonToString(reasons).c_str());
             eHTTPResponseCode = HTTP_RET_401_UNAUTHORIZED;
         }break;
         case VALIDATION_METHODNOTFOUND:

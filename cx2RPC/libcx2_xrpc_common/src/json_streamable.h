@@ -11,8 +11,6 @@ class JSON_Streamable : public Memory::Streams::Streamable
 public:
     JSON_Streamable();
 
-    static std::string jsonToString( const json & value );
-
     bool streamTo(Memory::Streams::Streamable * out, Memory::Streams::Status & wrStatUpd) override;
     Memory::Streams::Status write(const void * buf, const size_t &count, Memory::Streams::Status & wrStatUpd)  override;
     void writeEOF(bool) override;
@@ -32,6 +30,7 @@ public:
     void setFormatted(bool value);
 
 private:
+
     uint64_t maxSize;
     std::string strValue;
     json root;
