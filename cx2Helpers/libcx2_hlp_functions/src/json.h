@@ -15,5 +15,18 @@ typedef Json::Value json;
 #define JSON_ASUINT(j,x,def) (j[x].isUInt()?j[x].asUInt():def)
 #define JSON_ASUINT64(j,x,def) (j[x].isUInt64()?j[x].asUInt64():def)
 
+class JSONReader2 {
+public:
+    JSONReader2();
+    ~JSONReader2();
+
+    bool parse(const std::string& document, Json::Value& root);
+private:
+    Json::CharReader * reader;
+    std::string errors;
+};
+
+std::string jsonToString(const json &value);
+
 
 #endif // JSON_H

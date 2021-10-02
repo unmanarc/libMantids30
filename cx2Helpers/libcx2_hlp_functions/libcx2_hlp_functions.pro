@@ -2,6 +2,7 @@ QT       -= core gui
 CONFIG += c++11
 
 SOURCES += src/encoders.cpp \
+           src/json.cpp \
            src/os.cpp \
            src/random.cpp \
            src/mem.cpp \
@@ -32,7 +33,7 @@ INCLUDEPATH += src
 # C++ Compiler Flags.
 include(../../cflags.pri)
 
-win32:LIBS+= -L$$PREFIX/lib -lcrypto
+win32:LIBS+= -L$$PREFIX/lib -lcrypto -ljsoncpp
 
 TARGET = cx2_hlp_functions
 TEMPLATE = lib
