@@ -1,5 +1,6 @@
 #include "socket_acceptor_poolthreaded.h"
 #include <string.h>
+#include <cx2_hlp_functions/mem.h>
 
 namespace CX2 { namespace Network { namespace Sockets { namespace Acceptors {
 
@@ -14,7 +15,7 @@ struct sAcceptorTaskData
             clientSocket = nullptr;
         }
         isSecure = false;
-        memset(remotePair,0,INET6_ADDRSTRLEN+1);
+        ZeroBArray(remotePair);
     }
 
     bool (*callbackOnConnect)(void *,Streams::StreamSocket *, const char *,bool);
@@ -25,7 +26,7 @@ struct sAcceptorTaskData
 
     void * obj;
     Streams::StreamSocket * clientSocket;
-    char remotePair[INET6_ADDRSTRLEN+2];
+    char remotePair[INET6_ADDRSTRLEN];
     bool isSecure;
     char pad;
 };

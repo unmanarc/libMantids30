@@ -8,12 +8,13 @@
 
 #include <string.h>
 #include <cx2_thr_mutex/lock_shared.h>
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Memory::Abstract;
 
 IPV6::IPV6()
 {
-    memset(&value, 0, sizeof(value));
+    ZeroBStruct(value);
     setVarType(TYPE_IPV6);
 }
 
@@ -21,14 +22,14 @@ IPV6::IPV6()
 IPV6::IPV6(const in6_addr &value)
 {
     setVarType(TYPE_IPV6);
-    memset(&this->value, 0, sizeof(value));
+    ZeroBStruct(this->value);
     setValue(value);
 }
 
 IPV6::IPV6(const std::string &value)
 {
     setVarType(TYPE_IPV6);
-    memset(&this->value, 0, sizeof(value));
+    ZeroBStruct(this->value);
     fromString(value);
 }
 
@@ -52,8 +53,8 @@ bool IPV6::setValue(const in6_addr &value)
 std::string IPV6::toString()
 {
     in6_addr xvalue = getValue();
-    char cIpSource[INET6_ADDRSTRLEN+2]="";
-    inet_ntop(AF_INET6, &xvalue ,cIpSource, INET6_ADDRSTRLEN+2);
+    char cIpSource[INET6_ADDRSTRLEN]="";
+    inet_ntop(AF_INET6, &xvalue ,cIpSource, INET6_ADDRSTRLEN);
     return std::string(cIpSource);
 }
 
@@ -62,7 +63,7 @@ bool IPV6::fromString(const std::string &value)
     if (value.empty())
     {
         in6_addr dfl;
-        memset(&dfl,0,sizeof(dfl));
+        ZeroBStruct(dfl);
         setValue(dfl);
         return true;
     }

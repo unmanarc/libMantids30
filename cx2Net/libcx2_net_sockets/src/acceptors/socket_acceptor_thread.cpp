@@ -10,12 +10,13 @@
 #include <string.h>
 
 #include "socket_acceptor_multithreaded.h"
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Network::Sockets::Acceptors;
 
 Socket_Acceptor_Thread::Socket_Acceptor_Thread()
 {
-    memset(remotePair,0,INET6_ADDRSTRLEN+2);
+    ZeroBArray(remotePair);
 
     callbackOnConnect = nullptr;
     callbackOnInitFail = nullptr;

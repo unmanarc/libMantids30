@@ -153,7 +153,7 @@ sHTTP_ResponseData HTTPv1_Server::responseData()
 
 void HTTPv1_Server::setRemotePairAddress(const char *value)
 {
-    strncpy(remotePairAddress,value,sizeof(remotePairAddress)-1);
+    SecBACopy(remotePairAddress,value);
 }
 
 eHTTP_ContainerType HTTPv1_Server::getRequestDataType()

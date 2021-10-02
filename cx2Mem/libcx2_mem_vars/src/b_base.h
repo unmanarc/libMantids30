@@ -5,13 +5,13 @@
 #include "b_chunk.h"
 
 #include "streamable.h"
-#include <cx2_hlp_functions/mem.h>
 
 #include <limits.h>
 #include <stdio.h>
 #include <list>
 #include <vector>
 #include <iostream>
+#include <cx2_hlp_functions/mem.h>
 
 namespace CX2 { namespace Memory { namespace Containers {
 

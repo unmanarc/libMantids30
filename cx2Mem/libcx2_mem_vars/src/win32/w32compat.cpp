@@ -6,6 +6,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#include <cx2_hlp_functions/mem.h>
+
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 {
     struct sockaddr_storage addrStorage;
@@ -36,14 +38,12 @@ int inet_pton(int af, const char *src, void *dst)
 {
     struct sockaddr_storage addrStorage;
     int size = sizeof(addrStorage);
-    char srcv2[INET6_ADDRSTRLEN+1];
+    char cSrcIPAddress[INET6_ADDRSTRLEN]="";
 
+    SecBACopy(cSrcIPAddress,src);
     ZeroMemory(&addrStorage, sizeof(addrStorage));
 
-    srcv2[INET6_ADDRSTRLEN]=0;
-    strncpy(srcv2, src, INET6_ADDRSTRLEN);
-
-    if (WSAStringToAddressA(srcv2, af, nullptr, (struct sockaddr *)&addrStorage, &size) == 0)
+    if (WSAStringToAddressA(cSrcIPAddress, af, nullptr, (struct sockaddr *)&addrStorage, &size) == 0)
     {
         switch(af)
         {

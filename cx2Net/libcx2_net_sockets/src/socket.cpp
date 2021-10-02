@@ -28,6 +28,9 @@
 
 #endif
 
+
+#include <cx2_hlp_functions/mem.h>
+
 using namespace CX2::Network::Sockets;
 
 #ifdef _WIN32
@@ -56,8 +59,7 @@ void Socket::initVars()
     shutdown_proto_rd = false;
     shutdown_proto_wr = false;
 
-
-    memset(remotePair, 0, sizeof(remotePair));
+    ZeroBArray(remotePair);
 }
 
 bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
@@ -67,20 +69,20 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
 
     if (!useIPv6)
     {
-        struct sockaddr_in serveraddr;
-        memset(&serveraddr, 0, sizeof(serveraddr));
+        struct sockaddr_in saBindServer;
+        ZeroBStruct(saBindServer);
 
-        serveraddr.sin_family = AF_INET;
-        serveraddr.sin_port   = htons(port);
+        saBindServer.sin_family = AF_INET;
+        saBindServer.sin_port   = htons(port);
 
         // Accept * or :: as a generic listen address
         if (    (bindAddress[0] == '*' && bindAddress[1] == 0) ||
                 (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0) )
-            inet_pton(AF_INET, "0.0.0.0", &serveraddr.sin_addr);
+            inet_pton(AF_INET, "0.0.0.0", &saBindServer.sin_addr);
         else
-            inet_pton(AF_INET, bindAddress, &serveraddr.sin_addr);
+            inet_pton(AF_INET, bindAddress, &saBindServer.sin_addr);
 
-        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
+        if (bind(sockfd,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
         {
             lastError = "bind() failed";
             closeSocket();
@@ -89,18 +91,18 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
     }
     else
     {
-        struct sockaddr_in6 serveraddr;
-        memset(&serveraddr, 0, sizeof(serveraddr));
+        struct sockaddr_in6 saBindServer;
+        ZeroBStruct(saBindServer);
 
-        serveraddr.sin6_family = AF_INET6;
-        serveraddr.sin6_port   = htons(port);
+        saBindServer.sin6_family = AF_INET6;
+        saBindServer.sin6_port   = htons(port);
 
         if (bindAddress[0] == '*' && bindAddress[1] == 0)
-            inet_pton(AF_INET6, "::", &serveraddr.sin6_addr);
+            inet_pton(AF_INET6, "::", &saBindServer.sin6_addr);
         else
-            inet_pton(AF_INET6, bindAddress, &serveraddr.sin6_addr);
+            inet_pton(AF_INET6, bindAddress, &saBindServer.sin6_addr);
 
-        if (bind(sockfd,(struct sockaddr *)&serveraddr,sizeof(serveraddr)) < 0)
+        if (bind(sockfd,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
         {
             lastError = "bind() failed";
             closeSocket();
@@ -116,7 +118,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     addrinfo hints;
     int rc;
 
-    memset(&hints, 0x00, sizeof(hints));
+    ZeroBStruct(hints);
 
 #ifdef _WIN32
     hints.ai_flags    = 0;
@@ -148,7 +150,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     }
 
     char serverPort[8];
-    snprintf(serverPort,8,"%u",remotePort);
+    snprintf(serverPort,sizeof(serverPort),"%u",remotePort);
 
     rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **)res);
 
@@ -518,13 +520,13 @@ int Socket::adquireSocketFD()
 
 void Socket::getRemotePair(char * address) const
 {
-    strncpy(address, remotePair, INET6_ADDRSTRLEN);
+    memset(address,0,INET6_ADDRSTRLEN);
+    strncpy(address, remotePair, INET6_ADDRSTRLEN-1);
 }
 
 void Socket::setRemotePair(const char * address)
 {
-    remotePair[INET6_ADDRSTRLEN] = 0;
-    strncpy(remotePair, address, INET6_ADDRSTRLEN);
+    SecBACopy(remotePair, address);
 }
 
 int Socket::shutdownSocket(int mode)

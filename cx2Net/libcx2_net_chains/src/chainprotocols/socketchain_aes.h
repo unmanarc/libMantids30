@@ -6,6 +6,7 @@
 #include <openssl/evp.h>
 #include <string.h>
 #include <random>
+#include <cx2_hlp_functions/mem.h>
 
 namespace CX2 { namespace Network { namespace Chains { namespace Protocols {
 
@@ -14,15 +15,17 @@ namespace CX2 { namespace Network { namespace Chains { namespace Protocols {
 struct sHandShakeHeader {
     sHandShakeHeader()
     {
+        ZeroBArray(reserved);
+        ZeroBArray(phase2Key);
+        ZeroBArray(IVSeed);
         memcpy(magicBytes,"IHDR",4);
-        memset(reserved,0,sizeof(reserved));
     }
     ~sHandShakeHeader()
     {
-        memset(reserved,0,sizeof(reserved));
-        memset(phase2Key,0,sizeof(phase2Key));
-        memset(IVSeed,0,sizeof(IVSeed));
-        memset(magicBytes,0,sizeof(magicBytes));
+        ZeroBArray(reserved);
+        ZeroBArray(phase2Key);
+        ZeroBArray(IVSeed);
+        ZeroBArray(magicBytes);
     }
 
     // TOT: 112 bytes initial header.
@@ -41,8 +44,7 @@ struct sSideParams {
     ~sSideParams()
     {
         cleanAESBlock();
-        memset(handShakeIV,0,sizeof(handShakeIV));
-
+        ZeroBArray(handShakeIV);
     }
     void cleanAESBlock( char * nAesBlock = nullptr , size_t nAesBlock_curSize = 0 )
     {

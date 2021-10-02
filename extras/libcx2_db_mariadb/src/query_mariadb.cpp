@@ -2,6 +2,7 @@
 #include "sqlconnector_mariadb.h"
 #include <string.h>
 #include <cx2_mem_vars/a_allvars.h>
+#include <cx2_hlp_functions/mem.h>
 
 // From: https://bugs.mysql.com/?id=87337
 #if !defined(MARIADB_BASE_VERSION) && \
@@ -179,8 +180,8 @@ bool Query_MariaDB::step0()
         unsigned char cRetBoolean;
         MYSQL_BIND result = {};
         my_bool bIsNull;
-        memset(&(result),0,sizeof(MYSQL_BIND));
 
+        ZeroBStruct(result);
         result.is_null = &bIsNull;
 
         switch (resultVars[col]->getVarType())
@@ -352,7 +353,7 @@ bool Query_MariaDB::postBindInputVars()
 
     for (size_t pos=0; pos<keysByPos.size(); pos++)
     {
-        memset(&(bindedInputParams[pos]),0,sizeof(MYSQL_BIND));
+        ZeroBStruct(bindedInputParams[pos]);
 
         bindedInputParams[pos].is_unsigned = 0;
         bindedInputParams[pos].length = 0;

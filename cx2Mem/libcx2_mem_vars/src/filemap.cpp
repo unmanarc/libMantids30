@@ -1,5 +1,4 @@
 #include "filemap.h"
-#include <cx2_hlp_functions/mem.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -22,6 +21,8 @@
 #endif
 
 #endif
+
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Memory::Containers;
 

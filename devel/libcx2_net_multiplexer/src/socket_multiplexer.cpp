@@ -1,4 +1,5 @@
 #include "socket_multiplexer.h"
+#include <cx2_hlp_functions/mem.h>
 
 using namespace CX2::Network::Multiplexor;
 
@@ -6,7 +7,7 @@ Socket_Multiplexer::Socket_Multiplexer()
 {
     mtLock_multiplexedSocket.lock();
 
-    memset(readData,0,65536);
+    ZeroBArray(readData);
 
     localName = "localhost";
     noSendData = true;

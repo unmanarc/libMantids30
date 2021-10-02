@@ -7,6 +7,8 @@
 #include <sys/un.h>
 #include <sys/socket.h>
 
+#include <cx2_hlp_functions/mem.h>
+
 using namespace CX2::Network;
 using namespace CX2::Network::Sockets;
 
@@ -34,7 +36,9 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
    if (recvbuffer) setRecvBuffer(recvbuffer);
 
    server_address.sun_family = AF_UNIX;
-   strncpy(server_address.sun_path, path, sizeof(server_address.sun_path)-1);
+
+   SecBACopy(server_address.sun_path, path);
+
    server_len = sizeof(server_address);
 
    if (bind(sockfd,(struct sockaddr *)&server_address,server_len) < 0)

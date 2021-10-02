@@ -14,6 +14,9 @@
 
 #include "ds_auth_function.h"
 
+#include <cx2_hlp_functions/mem.h>
+
+
 namespace CX2 { namespace Authentication {
 
 
@@ -21,12 +24,13 @@ struct Secret_PublicData
 {
     Secret_PublicData()
     {
+        ZeroBArrayNS(ssalt);
+
         nul = true;
         expiration = 0;
         badAttempts = 0;
         forceExpiration = false;
         passwordFunction = FN_NOTFOUND;
-        memset(ssalt,0,4);
         requiredAtLogin = false;
         locked = false;
     }

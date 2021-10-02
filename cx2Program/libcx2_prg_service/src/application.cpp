@@ -1,4 +1,4 @@
-#include "service.h"
+#include "application.h"
 
 // STD:
 #include <stdio.h>
@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include <cx2_mem_vars/a_var.h>
+#include <cx2_hlp_functions/mem.h>
 
 using namespace std;
 
@@ -172,7 +173,8 @@ static int get_lock()
 
     if ((lockfd = open(lockFile.c_str(), O_CREAT | O_RDWR, 0700)) < 0) return 0;
 
-    memset(&lplock, 0, sizeof(lplock));
+    ZeroBStruct(lplock);
+
     lplock.l_type = F_WRLCK;
     lplock.l_pid = getpid();
 
@@ -339,7 +341,8 @@ void catch_sigterm()
 #else
     static struct sigaction _sigact;
 
-    memset(&_sigact, 0, sizeof(_sigact));
+    ZeroBStruct(_sigact);
+
     _sigact.sa_sigaction = exitRoutine;
     _sigact.sa_flags = SA_SIGINFO;
 
