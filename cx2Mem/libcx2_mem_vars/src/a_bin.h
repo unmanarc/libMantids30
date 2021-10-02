@@ -23,9 +23,8 @@ struct sBinContainer {
         if (len==0) return;
         ptr = new char[len+1];
         if (!ptr) return;
-        ptr[len] = 0;
+        memset(ptr,0,len+1);
         dataSize = len;
-        memset(ptr,0,len);
     }
     sBinContainer(char * value, const size_t & len)
     {
