@@ -8,14 +8,14 @@ WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)
 
 
 ***
-## Building cxFramework2
+## Building cxFramework2 in Linux
 
 ### Instructions:
 
 as root:
 
 ```
-qmake-qt5 . PREFIX=/usr
+qmake-qt6 . PREFIX=/usr
 make -j8 install
 ```
 
@@ -68,4 +68,5 @@ This library was tested so far in:
 
 ### Win32 Pre-requisites:
 
-* Fedora MinGW (x86_64 or i686) compiler and required libs
+* Using MSYS MinGW 64bit
+* Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
