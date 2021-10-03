@@ -22,7 +22,7 @@ INCLUDEPATH += src
 # C++ Compiler Flags.
 include(../../cflags.pri)
 
-#win32:LIBS+= -L$$PREFIX/lib -lcx2_db2 -lcx2_thr_mutex2 -lcx2_mem_vars2 -lmariadb
+win32:LIBS+= -L$$PREFIX/lib -lcx2_db2 -lcx2_mem_vars2 -lcx2_thr_mutex2 -lmariadb
 
 TARGET = cx2_db_mariadb
 TEMPLATE = lib
