@@ -1,16 +1,11 @@
 QT       -= core gui
 
-# mariadb is not included in mingw ?
-!win32 {
-
 SOURCES +=  \
     src/query_mariadb.cpp \
     src/sqlconnector_mariadb.cpp
 HEADERS +=  \
     src/query_mariadb.h \
     src/sqlconnector_mariadb.h
-
-}
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
