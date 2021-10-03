@@ -14,7 +14,7 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lboost_regex-mt-x32
+win32:LIBS+= -L$$PREFIX/lib -ljsoncpp -lboost_regex-mt
 
 # includes dir
 QMAKE_INCDIR += $$PREFIX/include

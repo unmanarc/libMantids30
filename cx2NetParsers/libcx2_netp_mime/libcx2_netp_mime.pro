@@ -19,7 +19,7 @@ isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 
-win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2 -lcx2_hlp_functions2 -lcx2_thr_threads2 -lcx2_thr_mutex2 -lboost_thread-mt-x32 -lboost_regex-mt-x32
+win32:LIBS+= -L$$PREFIX/lib -lcx2_mem_vars2 -lcx2_hlp_functions2 -lcx2_thr_threads2 -lcx2_thr_mutex2 -lboost_thread-mt -lboost_regex-mt
 
 # -lcx2_net_sockets2 -ljsoncpp -lssl -lcrypto -lws2_32
 

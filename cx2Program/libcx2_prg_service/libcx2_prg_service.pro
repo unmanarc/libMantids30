@@ -17,7 +17,7 @@ isEmpty(PREFIX) {
 
 win32:LIBS+= -L$$PREFIX/lib -lcx2_thr_threads2 -lcx2_thr_mutex2 -lcx2_mem_vars2
 #-lcx2_hlp_functions2 -lcx2_auth2 -lcx2_xrpc_common2
-#-lcx2_thr_safecontainers2    -lcx2_net_sockets2 -lcx2_netp_http2 -lcx2_netp_mime2  -ljsoncpp -lboost_regex-mt-x32
+#-lcx2_thr_safecontainers2    -lcx2_net_sockets2 -lcx2_netp_http2 -lcx2_netp_mime2  -ljsoncpp -lboost_regex-mt
 
 
 # includes dir
