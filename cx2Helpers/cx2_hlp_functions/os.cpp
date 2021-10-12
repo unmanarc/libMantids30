@@ -337,11 +337,13 @@ sLocalSysInfo OS::getLocalSysInfo()
         x.architectureName = "ARM";
         x.architectureBits = 32;
     }break;
+#ifdef PROCESSOR_ARCHITECTURE_ARM64
     case PROCESSOR_ARCHITECTURE_ARM64:
     {
         x.architectureName = "ARM64";
         x.architectureBits = 64;
     }break;
+#endif
     case PROCESSOR_ARCHITECTURE_IA64:
     {
         x.architectureName = "IA64";
