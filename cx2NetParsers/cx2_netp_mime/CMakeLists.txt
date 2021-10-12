@@ -59,5 +59,3 @@ include_directories("${cx2_thr_mutex_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_thr_mutex)
 
 target_link_libraries(${LIB_NAME} "-lboost_thread-mt -lboost_regex-mt")
-
-

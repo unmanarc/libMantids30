@@ -77,11 +77,7 @@ target_link_libraries(${LIB_NAME} cx2_xrpc_common)
 include_directories("${cx2_prg_logs_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_prg_logs)
 
-target_link_libraries(${LIB_NAME} "-ljsoncpp -lboost_regex-mt")
+target_link_libraries(${LIB_NAME} "-ljsoncpp")
 
 
-
-
-
-
-
+target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
