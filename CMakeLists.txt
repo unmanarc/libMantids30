@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(cxFramework2)
 project(${PROJECT_NAME} VERSION 2.4.0 DESCRIPTION "CX2 Framework Libraries")
 set(SVERSION 2.4.0)
