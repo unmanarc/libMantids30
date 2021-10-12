@@ -15,7 +15,7 @@ WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)
 as root:
 
 ```
-cmake . 
+cmake . -DBUILD_SHARED_LIBS=ON
 make -j12
 make install
 ```
