@@ -6,7 +6,7 @@
 
 #include <sys/types.h>          /* See NOTES */
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
@@ -24,7 +24,7 @@ using namespace CX2::Network::Interfaces;
 NetIfConfig::NetIfConfig()
 {
     MTU = 0;
-#ifndef WIN32
+#ifndef _WIN32
     fd = -1;
     ZeroBStruct(ifr);
 #else
@@ -44,7 +44,7 @@ NetIfConfig::NetIfConfig()
 
 bool NetIfConfig::apply()
 {
-#ifndef WIN32
+#ifndef _WIN32
     // Linux:
     if (changeIPv4Addr)
     {
@@ -155,7 +155,7 @@ NetIfType NetIfConfig::getNetIfType() const
 
 NetIfConfig::~NetIfConfig()
 {
-#ifndef WIN32
+#ifndef _WIN32
     if (fd>=0)
         close(fd);
 #else
@@ -163,7 +163,7 @@ NetIfConfig::~NetIfConfig()
 #endif
 }
 
-#ifndef WIN32
+#ifndef _WIN32
 bool NetIfConfig::openInterface(const std::string &_ifaceName)
 {
     char errormsg[4096];
@@ -209,7 +209,7 @@ void NetIfConfig::openTAPW32Interface(HANDLE fd, ULONG adapterIndex)
 
 int NetIfConfig::getMTU()
 {
-#ifndef WIN32
+#ifndef _WIN32
     struct ifreq ifr2;
     int sock2;
     if((sock2 = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
@@ -250,7 +250,7 @@ ethhdr NetIfConfig::getEthernetAddress()
     ethhdr etherHdrData;
     ZeroBStruct(etherHdrData);
 
-#ifndef WIN32
+#ifndef _WIN32
     etherHdrData.h_proto = htons(ETH_P_IP);
     struct ifreq ifr1x = ifr;
     if (ioctl(fd, SIOCGIFHWADDR, &ifr1x) < 0)

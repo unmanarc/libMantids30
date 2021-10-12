@@ -1,6 +1,7 @@
 #ifndef SOCKET_UNIX_H
 #define SOCKET_UNIX_H
 
+#ifndef _WIN32
 #include "streamsocket.h"
 
 namespace CX2 { namespace Network { namespace Sockets {
@@ -41,4 +42,6 @@ public:
 
 typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
 }}}
+
+#endif
 #endif // SOCKET_UNIX_H

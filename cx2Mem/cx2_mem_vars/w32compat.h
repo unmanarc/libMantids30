@@ -1,7 +1,7 @@
 #ifndef WIN32NETCOMPAT_H
 #define WIN32NETCOMPAT_H
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <ws2tcpip.h>
 
 int inet_pton(int af, const char *src, void *dst);

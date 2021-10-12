@@ -251,7 +251,7 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
 
 bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, const int32_t & recvbuffer,const int32_t & backlog)
 {
-#ifdef WIN32
+#ifdef _WIN32
     BOOL bOn = TRUE;
 #else
     int on=1;
@@ -267,7 +267,7 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, cons
     if (recvbuffer) setRecvBuffer(recvbuffer);
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-               #ifdef WIN32
+               #ifdef _WIN32
                    (char *)(&bOn),sizeof(bOn)
                #else
                    static_cast<void *>(&on),sizeof(on)

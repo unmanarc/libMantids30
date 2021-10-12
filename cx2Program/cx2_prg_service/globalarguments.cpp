@@ -16,7 +16,7 @@ using namespace CX2::Memory::Abstract;
 
 GlobalArguments::GlobalArguments()
 {
-#ifndef WIN32
+#ifndef _WIN32
     sDefaultDaemonOption = "daemon";
 #endif
     sDefaultHelpOption = "help";
@@ -257,7 +257,7 @@ void GlobalArguments::setDefaultHelpOption(const std::string &value)
 }
 
 
-#ifndef WIN32
+#ifndef _WIN32
 std::string GlobalArguments::getDefaultDaemonOption() const
 {
     return sDefaultDaemonOption;

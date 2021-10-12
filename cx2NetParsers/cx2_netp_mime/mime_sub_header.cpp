@@ -174,7 +174,7 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
         uint64_t pos = vStaticTexts.size();
         char _staticmsg[128];
 
-#ifdef WIN32
+#ifdef _WIN32
         snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),pos);
 #else
         snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),pos);
@@ -203,7 +203,7 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-#ifdef WIN32
+#ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
@@ -223,7 +223,7 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             {
                 char _staticmsg[128];
 
-#ifdef WIN32
+#ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
@@ -245,7 +245,7 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             {
                 char _staticmsg[128];
 
-#ifdef WIN32
+#ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);

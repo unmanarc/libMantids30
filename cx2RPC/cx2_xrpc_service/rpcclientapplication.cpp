@@ -4,7 +4,7 @@
 #include <sys/time.h>
 #include <boost/algorithm/string/replace.hpp>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <shlobj.h>
 #endif
 
@@ -32,7 +32,7 @@ void RPCClientApplication::_initvars(int argc, char *argv[], CX2::Application::A
 
     globalArguments->setVersion( to_string(appVersionMajor) + "." + to_string(appVersionMinor) + "." + to_string(appVersionSubMinor) );
 
-#ifdef WIN32
+#ifdef _WIN32
     char folderProgramFiles[MAX_PATH];
     SHGetSpecialFolderPathA(0,folderProgramFiles, CSIDL_PROGRAM_FILES, FALSE);
 

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <signal.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <syslog.h>
 #else
 #include <windows.h>
@@ -26,7 +26,7 @@ using namespace std;
 
 void catch_sigterm();
 
-#ifndef WIN32
+#ifndef _WIN32
 // LOCK:
 static int lockfd = -1;
 static string pidFile;
@@ -65,7 +65,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
     globalArgs.initProgramName(argv[0]);
 
     // Local default cmd options...
-#ifndef WIN32
+#ifndef _WIN32
     globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", CX2::Memory::Abstract::TYPE_BOOL );
 #endif
     globalArgs.addCommandLineOption("Other Options"  , 'v', "verbose", "Set verbosity level."   , "0", CX2::Memory::Abstract::TYPE_UINT8 );
@@ -98,7 +98,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
 
     int r = 0;
 
-#ifndef WIN32
+#ifndef _WIN32
     if (!globalArgs.getCommandLineOptionBooleanValue(globalArgs.getDefaultDaemonOption()))
     {
 #endif
@@ -113,7 +113,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
             cout<< "# "  << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
             for (;;) { sleep(3600); }
         }
-#ifndef WIN32
+#ifndef _WIN32
     }
     else
     {
@@ -149,7 +149,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
 }
 
 
-#ifndef WIN32
+#ifndef _WIN32
 static void child_handler(int signum)
 {
     switch (signum)
@@ -288,7 +288,7 @@ void exitRoutine(int , siginfo_t *, void *)
 #endif
 
 
-#ifdef WIN32
+#ifdef _WIN32
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
@@ -332,7 +332,7 @@ void exitHandler(int s)
 
 void catch_sigterm()
 {
-#ifdef WIN32
+#ifdef _WIN32
     SetConsoleCtrlHandler( CtrlHandler, TRUE );
 /*
     signal(SIGINT, exitHandler);

@@ -158,7 +158,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     {
     case 0:
         return true;
-#ifndef WIN32
+#ifndef _WIN32
     case EAI_ADDRFAMILY:
         lastError = "The specified network host does not have any network addresses in the requested address family.";
         return false;
@@ -190,7 +190,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     case EAI_SOCKTYPE:
         lastError = "The requested socket type is not supported.";
         return false;
-#ifndef WIN32
+#ifndef _WIN32
     case EAI_SYSTEM:
         lastError = "System Error duing name resolution.";
         return false;
@@ -437,7 +437,7 @@ void Socket::setRemotePort(unsigned short value)
 
 int Socket::getSockOpt(int level, int optname, void *optval, socklen_t *optlen)
 {
-#ifdef WIN32
+#ifdef _WIN32
     return getsockopt(sockfd, level, optname, (char *)optval, optlen);
 #else
     return getsockopt(sockfd, level, optname, optval, optlen);
@@ -446,7 +446,7 @@ int Socket::getSockOpt(int level, int optname, void *optval, socklen_t *optlen)
 
 int Socket::setSockOpt(int level, int optname, const void *optval, socklen_t optlen)
 {
-#ifdef WIN32
+#ifdef _WIN32
     return setsockopt(sockfd,  level, optname, (char *)optval, optlen);
 #else
     return setsockopt(sockfd,  level, optname, optval, optlen);

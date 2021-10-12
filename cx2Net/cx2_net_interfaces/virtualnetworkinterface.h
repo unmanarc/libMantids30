@@ -6,7 +6,7 @@
 #include <mutex>
 #include <stdint.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -14,7 +14,7 @@ namespace CX2 { namespace Network { namespace Interfaces {
 
 // LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for WIN32 applications.
 
-#ifdef WIN32
+#ifdef _WIN32
 struct WINTAP_VERSION{
     std::string toString()
     {
@@ -58,7 +58,7 @@ public:
      */
     std::string getInterfaceRealName() const;
 
-#ifndef WIN32
+#ifndef _WIN32
     // Linux specific functions:
     /**
      * @brief setPersistentMode Set the Interface as persistent (use after start)
@@ -159,7 +159,7 @@ private:
     std::string lastError;
     std::string interfaceName, interfaceRealName;
 
-#ifndef WIN32
+#ifndef _WIN32
     int fd;
 #else
     HANDLE fd;

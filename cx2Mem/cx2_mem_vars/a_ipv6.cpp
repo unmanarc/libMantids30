@@ -42,7 +42,7 @@ in6_addr IPV6::getValue()
 bool IPV6::setValue(const in6_addr &value)
 {
     Threads::Sync::Lock_RW lock(mutex);
-#ifndef WIN32
+#ifndef _WIN32
     this->value.__in6_u = value.__in6_u;
 #else
     this->value.u = value.u;

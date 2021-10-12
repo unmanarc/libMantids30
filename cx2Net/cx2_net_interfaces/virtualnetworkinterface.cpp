@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <sys/ioctl.h>
 #include <linux/if_tun.h>
 #include <pwd.h>
@@ -25,7 +25,7 @@ using namespace CX2::Network::Interfaces;
 
 VirtualNetworkInterface::VirtualNetworkInterface()
 {
-#ifdef WIN32
+#ifdef _WIN32
     fd = INVALID_HANDLE_VALUE;
 #else
     fd = -1;
@@ -42,7 +42,7 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
     interfaceName = netIfaceName;
     interfaceRealName = netIfaceName;
 
-#ifdef WIN32
+#ifdef _WIN32
     this->NETCLSID = netIfaceName;
     DWORD open_flags = 0;
     devicePath = std::string(USERMODEDEVICEDIR) + netIfaceName + TAP_WIN_SUFFIX;
@@ -125,7 +125,7 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
 
 void VirtualNetworkInterface::stop()
 {
-#ifdef WIN32
+#ifdef _WIN32
     if (fd == INVALID_HANDLE_VALUE)
         return;
     if (CloseHandle(fd) == 0)
@@ -139,7 +139,7 @@ void VirtualNetworkInterface::stop()
 }
 
 
-#ifndef WIN32
+#ifndef _WIN32
 ssize_t VirtualNetworkInterface::writePacket(const void *packet, unsigned int len)
 {
     std::unique_lock<std::mutex> lock(mutexWrite);

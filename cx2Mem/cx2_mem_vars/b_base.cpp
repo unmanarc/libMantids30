@@ -103,7 +103,7 @@ bool B_Base::clear0()
 {
     containerBytes = 0;
 
-#ifdef WIN32
+#ifdef _WIN32
     char tempPath[MAX_PATH+1];
     GetTempPathA(MAX_PATH,tempPath);
     fsDirectoryPath = tempPath;

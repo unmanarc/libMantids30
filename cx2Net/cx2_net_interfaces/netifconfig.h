@@ -3,7 +3,7 @@
 
 #include <string>
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <netinet/in.h>
 #include <net/if.h>
 #include <linux/if_ether.h>
@@ -31,7 +31,7 @@ public:
     NetIfConfig();
     ~NetIfConfig();
 
-#ifndef WIN32
+#ifndef _WIN32
     /**
      * @brief openInterface Open the interface given the interface name (Linux)
      * @param _ifaceName interface name.
@@ -101,7 +101,7 @@ public:
     NetIfType getNetIfType() const;
 
 private:
-#ifndef WIN32
+#ifndef _WIN32
     struct ifreq ifr;
     int fd;
 #else

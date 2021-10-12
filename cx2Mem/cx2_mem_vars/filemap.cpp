@@ -52,7 +52,7 @@ FileMap &FileMap::operator=(FileMap &bc)
     mmapAddr = bc.mmapAddr;
     fileOpenSize = bc.fileOpenSize;
     readOnly = bc.readOnly;
-#ifdef WIN32
+#ifdef _WIN32
     hFileMapping = bc.hFileMapping;
 #endif
     bc.cleanVars();
@@ -67,7 +67,7 @@ void FileMap::cleanVars()
     removeOnDestroy = false;
     fd = -1;
     mmapAddr = nullptr;
-#ifdef WIN32
+#ifdef _WIN32
     hFileMapping = nullptr;
 #endif
     fileOpenSize=0;
@@ -91,7 +91,7 @@ bool FileMap::unMapFile()
 #endif
     }
 
-#ifdef WIN32
+#ifdef _WIN32
     if (hFileMapping)
     {
         CloseHandle(hFileMapping);

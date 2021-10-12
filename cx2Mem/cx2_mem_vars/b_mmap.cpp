@@ -5,7 +5,7 @@
 
 using namespace CX2::Memory::Containers;
 
-#ifdef WIN32
+#ifdef _WIN32
 #define FS_DIRSLASH "\\"
 #else
 #define FS_DIRSLASH "/"

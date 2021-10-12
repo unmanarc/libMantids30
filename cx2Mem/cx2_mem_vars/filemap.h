@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -100,7 +100,7 @@ private:
      */
     bool readOnly;
 
-#ifdef WIN32
+#ifdef _WIN32
     HANDLE hFileMapping;
 #endif
 };

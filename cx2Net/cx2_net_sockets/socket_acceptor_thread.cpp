@@ -1,6 +1,6 @@
 #include "socket_acceptor_thread.h"
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #else

@@ -9,7 +9,7 @@
 
 #include <sys/stat.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <stdlib.h>
 // TODO: check if _fullpath mitigate transversal.
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
@@ -219,7 +219,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
                 if (!stat(sFullPath.c_str(), &attrib))
                 {
                     HTTP_Date fileModificationDate;
-#ifdef WIN32
+#ifdef _WIN32
                     fileModificationDate.setRawTime(attrib.st_mtime);
 #else
                     fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);

@@ -1,7 +1,7 @@
 #ifndef NETHEADERSWINDOWS_H
 #define NETHEADERSWINDOWS_H
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #include <stdint.h>
 

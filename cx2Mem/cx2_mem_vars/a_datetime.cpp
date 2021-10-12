@@ -6,7 +6,7 @@
 #include <string.h>
 #include <cx2_hlp_functions/mem.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #endif
 
@@ -84,7 +84,7 @@ string DATETIME::getPlainLclTimeStr(time_t v)
     v-=timezone;
 
     tm tmTime;
-#ifdef WIN32
+#ifdef _WIN32
     gmtime_s(&tmTime,&v);
 #else
     gmtime_r(&v, &tmTime);
@@ -99,7 +99,7 @@ string DATETIME::getISOTimeStr(const time_t &v){
     sTime[64-1]=0;
 
     tm tmTime;
-#ifdef WIN32
+#ifdef _WIN32
     gmtime_s(&tmTime,&v);
 #else
     gmtime_r(&v, &tmTime);

@@ -109,7 +109,7 @@ public:
     std::string getDefaultHelpOption() const;
     void setDefaultHelpOption(const std::string &value);
 
-#ifndef WIN32
+#ifndef _WIN32
 
     /**
      * @brief getDefaultDaemonOption Get Default option to deamon compatible (Eg. daemon for --daemon)
@@ -124,7 +124,7 @@ public:
 
 private:
     std::string sDefaultHelpOption;
-#ifndef WIN32
+#ifndef _WIN32
     std::string sDefaultDaemonOption;
 #endif
     std::list<sProgCMDOpts *> getAllCMDOptions();

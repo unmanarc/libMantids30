@@ -7,7 +7,7 @@
 
 #include "rpcclientimpl.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 static std::string dirSlash =  "\\";
 #else
 static std::string dirSlash =  "/";

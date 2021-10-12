@@ -12,7 +12,7 @@
 
 #include <limits>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <openssl/safestack.h>
 #endif
 
@@ -46,7 +46,7 @@ void Socket_TLS::prepareTLS()
     // Register the available ciphers and digests
     SSL_library_init ();
 
-#ifndef WIN32
+#ifndef _WIN32
     sigset_t sigPipeSet;
     sigemptyset(&sigPipeSet);
     sigaddset(&sigPipeSet, SIGPIPE);

@@ -68,7 +68,7 @@ bool JSONEval::compile(std::string expr)
     {
         uint64_t pos = staticTexts->size();
         char _staticmsg[128];
-#ifdef WIN32
+#ifdef _WIN32
         snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%llu",pos);
 #else
         snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%lu",pos);
@@ -249,7 +249,7 @@ size_t JSONEval::detectSubExpr(string &expr, size_t start)
                 uint64_t pos = subExpressions.size();
                 char _staticmsg[128];
 
-#ifdef WIN32
+#ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%llu",pos);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%lu",pos);
