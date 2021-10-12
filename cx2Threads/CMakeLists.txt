@@ -1,0 +1,3 @@
+ADD_SUBDIRECTORY(cx2_thr_mutex)
+ADD_SUBDIRECTORY(cx2_thr_safecontainers)
+ADD_SUBDIRECTORY(cx2_thr_threads)

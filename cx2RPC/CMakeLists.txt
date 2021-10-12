@@ -1,0 +1,5 @@
+ADD_SUBDIRECTORY(cx2_xrpc_common)
+ADD_SUBDIRECTORY(cx2_xrpc_fast)
+ADD_SUBDIRECTORY(cx2_xrpc_service)
+ADD_SUBDIRECTORY(cx2_xrpc_templates)
+ADD_SUBDIRECTORY(cx2_xrpc_webserver)

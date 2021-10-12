@@ -1,0 +1,2 @@
+ADD_SUBDIRECTORY(cx2_prg_logs)
+ADD_SUBDIRECTORY(cx2_prg_service)

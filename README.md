@@ -15,11 +15,10 @@ WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)
 as root:
 
 ```
-qmake-qt6 . PREFIX=/usr
-make -j8 install
+cmake . 
+make -j12
+make install
 ```
-
-`NOTICE: This project does not use QT libraries, We only rely on QT Make files`
 
 ***
 ## Functionality
