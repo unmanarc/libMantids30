@@ -42,28 +42,41 @@ install(
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         )
 
+if (EXTRAPREFIX)
+    target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
+    target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
+endif()
 
 include_directories("${cx2_thr_safecontainers_SOURCE_DIR}/../")
-include_directories("${cx2_thr_threads_SOURCE_DIR}/../")
-include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
-include_directories("${cx2_auth_SOURCE_DIR}/../")
-include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
-include_directories("${cx2_net_sockets_SOURCE_DIR}/../")
-include_directories("${cx2_netp_http_SOURCE_DIR}/../")
-include_directories("${cx2_netp_mime_SOURCE_DIR}/../")
-include_directories("${cx2_xrpc_common_SOURCE_DIR}/../")
-include_directories("${cx2_prg_logs_SOURCE_DIR}/../")
-
 target_link_libraries(${LIB_NAME} cx2_thr_safecontainers)
+
+include_directories("${cx2_thr_threads_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_thr_threads)
+
+include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
+
+include_directories("${cx2_auth_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_auth)
+
+include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_mem_vars)
+
+include_directories("${cx2_net_sockets_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_net_sockets)
+
+include_directories("${cx2_netp_http_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_netp_http)
+
+include_directories("${cx2_netp_mime_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_netp_mime)
+
+include_directories("${cx2_xrpc_common_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_xrpc_common)
+
+include_directories("${cx2_prg_logs_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_prg_logs)
+
 target_link_libraries(${LIB_NAME} "-ljsoncpp -lboost_regex-mt")
 
 

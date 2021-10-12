@@ -42,6 +42,11 @@ install(
         )
 
 
+if (EXTRAPREFIX)
+    target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
+    target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
+endif()
+
 include_directories("${cx2_thr_safecontainers_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_thr_safecontainers)
 

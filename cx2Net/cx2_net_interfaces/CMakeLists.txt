@@ -41,6 +41,10 @@ install(
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         )
 
+if (EXTRAPREFIX)
+    target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
+    target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
+endif()
 
 if (WIN32)
     target_link_libraries(${LIB_NAME} "-lws2_32 -liphlpapi")

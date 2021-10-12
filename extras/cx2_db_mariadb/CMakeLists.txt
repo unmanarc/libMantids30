@@ -40,6 +40,10 @@ install(
         FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${LIB_NAME}/${LIB_NAME}.pc
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         )
+if (EXTRAPREFIX)
+    target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
+    target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
+endif()
 
 include_directories("${cx2_db_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_db)
