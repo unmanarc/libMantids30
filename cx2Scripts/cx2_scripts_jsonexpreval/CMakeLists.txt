@@ -51,4 +51,10 @@ include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 
 target_link_libraries(${LIB_NAME} "-ljsoncpp")
-target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
+
+if (WIN32)
+    target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
+else()
+    target_link_libraries(${LIB_NAME} "-lboost_regex")
+endif()
+

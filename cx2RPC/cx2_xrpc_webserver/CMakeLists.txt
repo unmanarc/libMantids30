@@ -80,4 +80,10 @@ target_link_libraries(${LIB_NAME} cx2_prg_logs)
 target_link_libraries(${LIB_NAME} "-ljsoncpp")
 
 
-target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
+if (WIN32)
+    target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
+else()
+    target_link_libraries(${LIB_NAME} "-lboost_regex")
+endif()
+
+
