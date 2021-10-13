@@ -52,9 +52,16 @@ target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 
 target_link_libraries(${LIB_NAME} "-ljsoncpp")
 
-if (WIN32)
-    target_link_libraries(${LIB_NAME} "-lboost_regex-mt")
+######################################
+
+find_library (
+    BOOST_REGEX_LIB
+    NAMES boost_regex-mt-x32 libboost_regex-mt-x32 boost_regex-mt libboost_regex-mt boost_regex libboost_regex # what to look for
+)
+if (NOT BOOST_REGEX_LIB)
+    message("ERROR: Did not found lib BOOST_REGEX_LIB")
 else()
-    target_link_libraries(${LIB_NAME} "-lboost_regex")
+    message("-- BOOST_REGEX_LIB found at [${BOOST_REGEX_LIB}] for ${LIB_NAME}")
 endif()
 
+target_link_libraries(${LIB_NAME} ${BOOST_REGEX_LIB})

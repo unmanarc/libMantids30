@@ -46,9 +46,15 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-if (WIN32)
-    target_link_libraries(${LIB_NAME} "-lws2_32")
+find_library (
+    WINDOWS_SOCKLIB
+    NAMES ws2_32 libws2_32 # what to look for
+)
+if (WINDOWS_SOCKLIB)
+    message("-- WINDOWS_SOCKLIB found at [${WINDOWS_SOCKLIB}] for ${LIB_NAME}")
+    target_link_libraries(${LIB_NAME} ${WINDOWS_SOCKLIB})
 endif()
+
 
 include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_mem_vars)

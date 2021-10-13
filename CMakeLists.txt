@@ -4,7 +4,6 @@ set(SVERSION 2.4.0)
 project(cxFramework2)
 project(${PROJECT_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Libraries")
 
-
 ADD_SUBDIRECTORY(cx2Helpers)
 ADD_SUBDIRECTORY(cx2Scripts)
 ADD_SUBDIRECTORY(cx2Threads)
