@@ -62,7 +62,7 @@ This library was tested so far in:
 
 ### Win32 Pre-requisites:
 
-* Using MSYS MinGW 64bit
+* Using MSYS MinGW 64bit + QtCreator
 * Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
 
 ***
