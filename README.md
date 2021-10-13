@@ -96,9 +96,19 @@ cmake . -DBUILD_SHARED_LIBS=ON
 make -j12
 make install
 ```
+### Instructions (Win32 - Host: Fedora):
+
+installing everything in /winpath:
+
+```
+/usr/bin/mingw32-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/winpath -DCMAKE_INSTALL_LIBDIR=lib -B../cxFramework2-BuildWin32
+cd ../cxFramework2-BuildWin32
+make -j12
+make install
+```
 
 
-### Instructions (Win32):
+### Instructions (Win32 - Host: Win):
 
 You can use MSYS2+QtCreator... First install the required mingw64 libraries and mingw64 compiler using pacman (boost devel, sqlite3 devel, mysql devel, openssl devel, postgresql devel, etc...), then open Qtcreator and build the project using this CMAKE options:
 
