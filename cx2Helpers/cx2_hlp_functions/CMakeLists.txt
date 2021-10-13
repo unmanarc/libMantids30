@@ -47,4 +47,4 @@ if (EXTRAPREFIX)
 endif()
 target_link_libraries(${LIB_NAME} "-ljsoncpp -lcrypto")
 
-
+message("Will install to ${CMAKE_INSTALL_LIBDIR}")

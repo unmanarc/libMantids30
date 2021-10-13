@@ -46,15 +46,15 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-
-
-include_directories("${cx2_net_sockets_SOURCE_DIR}/../")
-target_link_libraries(${LIB_NAME} cx2_net_sockets)
-
 include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 
 include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_mem_vars)
+
+include_directories("${cx2_net_sockets_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} cx2_net_sockets)
+
+message("Chain found...: ${cx2_net_sockets_SOURCE_DIR}")
 
 target_link_libraries(${LIB_NAME} "-lssl -lcrypto")
