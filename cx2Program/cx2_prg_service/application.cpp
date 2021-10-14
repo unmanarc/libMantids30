@@ -56,6 +56,8 @@ void closelog() {}
 
 #endif
 
+using namespace CX2::Application;
+
 static Application *appPTR = nullptr;
 
 int StartApplication(int argc, char *argv[], Application *_app)

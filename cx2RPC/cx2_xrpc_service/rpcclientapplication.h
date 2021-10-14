@@ -7,7 +7,7 @@
 
 namespace CX2 { namespace RPC {
 
-class RPCClientApplication : public Application
+class RPCClientApplication : public CX2::Application::Application
 {
 public:
     RPCClientApplication() {
