@@ -50,10 +50,17 @@ find_library (
     WINDOWS_SOCKLIB
     NAMES ws2_32 libws2_32 # what to look for
 )
+
 if (WINDOWS_SOCKLIB)
     message("-- WINDOWS_SOCKLIB found at [${WINDOWS_SOCKLIB}] for ${LIB_NAME}")
     target_link_libraries(${LIB_NAME} ${WINDOWS_SOCKLIB})
+elseif(WIN32)
+    # AT LEAST PASS IT TO THE COMPILER...
+    message("-- Using native WINDOWS_SOCKLIB")
+    target_link_libraries(${LIB_NAME} "-lws2_32")
 endif()
+
+
 
 include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)

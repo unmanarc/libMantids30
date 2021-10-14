@@ -54,6 +54,10 @@ find_library (
 if (WINDOWS_SOCKLIB)
     message("-- WINDOWS_SOCKLIB found at [${WINDOWS_SOCKLIB}] for ${LIB_NAME}")
     target_link_libraries(${LIB_NAME} ${WINDOWS_SOCKLIB})
+elseif(WIN32)
+    # AT LEAST PASS IT TO THE COMPILER...
+    message("-- Using native WINDOWS_SOCKLIB")
+    target_link_libraries(${LIB_NAME} "-lws2_32")
 endif()
 
 find_library (
@@ -63,6 +67,10 @@ find_library (
 if (WINDOWS_IPHLPAPI)
     message("-- WINDOWS_IPHLPAPI found at [${WINDOWS_IPHLPAPI}] for ${LIB_NAME}")
     target_link_libraries(${LIB_NAME} ${WINDOWS_IPHLPAPI})
+elseif(WIN32)
+    # AT LEAST PASS IT TO THE COMPILER...
+    message("-- Using native WINDOWS_IPHLPAPI")
+    target_link_libraries(${LIB_NAME} "-liphlpapi")
 endif()
 
 

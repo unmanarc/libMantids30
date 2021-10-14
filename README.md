@@ -62,7 +62,7 @@ This library was tested so far in:
 
 ### Win32 Pre-requisites:
 
-* Using MSYS MinGW 64bit + QtCreator
+* Using MSYS MinGW 64bit
 * Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
 
 ***
@@ -110,11 +110,12 @@ make install
 
 ### Instructions (Win32 - Host: Win):
 
-You can use MSYS2+QtCreator... First install the required mingw64 libraries and mingw64 compiler using pacman (boost devel, sqlite3 devel, mysql devel, openssl devel, postgresql devel, etc...), then open Qtcreator and build the project using this CMAKE options:
+You can use MSYS2... First install the required mingw64 libraries and mingw64 compiler using pacman (boost devel, sqlite3 devel, mysql devel, openssl devel, postgresql devel, etc...), then open MSYS and build the project using this CMAKE options:
 
 ```
-EXTRAPREFIX -> C:/msys64/mingw64
-BUILD_SHARED_LIBS -> ON
+cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/home/user/ROOT -DCMAKE_INSTALL_LIBDIR=lib -B../cxFramework2-BuildWin32 -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe -G "MinGW Makefiles"
+cd ../cxFramework2-BuildWin32
+mingw32-make.exe -j12 install
 ```
 
 
