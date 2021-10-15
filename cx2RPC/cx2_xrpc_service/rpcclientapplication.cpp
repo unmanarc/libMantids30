@@ -48,8 +48,11 @@ void RPCClientApplication::_initvars(int argc, char *argv[], CX2::Application::A
 bool RPCClientApplication::_config(int argc, char *argv[], CX2::Application::Arguments::GlobalArguments *globalArguments)
 {
     std::string configDir = globalArguments->getCommandLineOptionValue("config-dir")->toString(),
+#ifdef WIN32
+                            configPath = configDir + "\\config.ini";
+#else
                             configPath = configDir + "/config.ini";
-
+#endif
     // process config here.
     unsigned int logMode = CX2::Application::Logs::MODE_STANDARD;
 
