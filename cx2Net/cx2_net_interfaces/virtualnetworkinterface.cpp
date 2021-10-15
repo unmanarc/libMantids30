@@ -246,7 +246,9 @@ DWORD VirtualNetworkInterface::writePacket(const void *packet, DWORD len)
 
 int VirtualNetworkInterface::readPacket(void *packet, DWORD len)
 {
-    return ReadFile(fd, packet, sizeof packet, &len, NULL);
+    if (ReadFile(fd, packet, len, &len, NULL)==TRUE)
+        return len;
+    return -1;
 }
 
 std::string VirtualNetworkInterface::getWinTapDevicePath() const
