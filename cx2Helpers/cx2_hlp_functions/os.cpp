@@ -161,7 +161,7 @@ sLocalSysInfo OS::getLocalSysInfo()
     ZeroMemory(&osviex, sizeof(OSVERSIONINFOEX));
     osviex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    GetVersionExW((LPOSVERSIONINFOW)&osviex);
+    GetVersionExA((LPOSVERSIONINFOA)&osviex);
 
     x.osName = "Windows";
 
