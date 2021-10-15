@@ -36,10 +36,10 @@ void RPCClientApplication::_initvars(int argc, char *argv[], CX2::Application::A
     char folderProgramFiles[MAX_PATH];
     SHGetSpecialFolderPathA(0,folderProgramFiles, CSIDL_PROGRAM_FILES, FALSE);
 
-    boost::replace_all(defaultConfigDir,"/etc/", "etc/");
+    boost::replace_all(defaultConfigDir,"/etc/", "");
     boost::replace_all(defaultConfigDir,"/", dirSlash);
 
-    defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir;
+    defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir + dirSlash + "etc";
 #endif
 
     globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , defaultConfigDir, CX2::Memory::Abstract::TYPE_STRING );
