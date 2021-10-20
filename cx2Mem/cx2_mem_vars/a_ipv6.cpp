@@ -29,8 +29,7 @@ IPV6::IPV6(const in6_addr &value)
 IPV6::IPV6(const std::string &value)
 {
     setVarType(TYPE_IPV6);
-    ZeroBStruct(this->value);
-    fromString(value);
+    setValue(_fromString(value));
 }
 
 in6_addr IPV6::getValue()
@@ -52,27 +51,39 @@ bool IPV6::setValue(const in6_addr &value)
 
 std::string IPV6::toString()
 {
-    in6_addr xvalue = getValue();
-    char cIpSource[INET6_ADDRSTRLEN]="";
-    inet_ntop(AF_INET6, &xvalue ,cIpSource, INET6_ADDRSTRLEN);
-    return std::string(cIpSource);
+    return _toString(getValue());
 }
 
 bool IPV6::fromString(const std::string &value)
 {
+    bool r;
+    auto ipaddr = _fromString(value,&r);
+    setValue(ipaddr);
+    return r;
+}
+
+std::string IPV6::_toString(const in6_addr &value)
+{
+    char cIpSource[INET6_ADDRSTRLEN]="";
+    inet_ntop(AF_INET6, &value ,cIpSource, INET6_ADDRSTRLEN);
+    return std::string(cIpSource);
+}
+
+in6_addr IPV6::_fromString(const std::string &value, bool *ok)
+{
+    in6_addr xvalue;
+    ZeroBStruct(xvalue);
+
     if (value.empty())
     {
-        in6_addr dfl;
-        ZeroBStruct(dfl);
-        setValue(dfl);
-        return true;
+        if (ok) *ok = true;
+        return xvalue;
     }
 
-    in6_addr xvalue;
     bool r = inet_pton(AF_INET6, value.c_str(), &xvalue)==1;
-    if (r == false) return false;
-    setValue(xvalue);
-    return true;
+    if (ok) *ok = r;
+
+    return xvalue;
 }
 
 Var *IPV6::protectedCopy()

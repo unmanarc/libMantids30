@@ -31,6 +31,10 @@ public:
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
+
+    static std::string _toString(const in6_addr & value);
+    static in6_addr _fromString(const std::string & value, bool * ok = nullptr);
+
 protected:
     Var * protectedCopy() override;
 

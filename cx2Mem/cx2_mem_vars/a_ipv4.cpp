@@ -5,7 +5,10 @@
 #else
 #include <arpa/inet.h>
 #endif
+
 #include <cx2_thr_mutex/lock_shared.h>
+#include <cx2_hlp_functions/mem.h>
+#include <string.h>
 
 using namespace CX2::Memory::Abstract;
 
@@ -23,8 +26,8 @@ IPV4::IPV4(const in_addr &value)
 
 IPV4::IPV4(const std::string &value)
 {
-    fromString(value);
     setVarType(TYPE_IPV4);
+    setValue(_fromString(value));
 }
 
 in_addr IPV4::getValue()
@@ -42,27 +45,39 @@ bool IPV4::setValue(const in_addr &value)
 
 std::string IPV4::toString()
 {   
-    in_addr xvalue = getValue();
-    char cIpSource[INET_ADDRSTRLEN+2]="";
-    inet_ntop(AF_INET, &xvalue ,cIpSource, INET_ADDRSTRLEN+2);
-    return std::string(cIpSource);
+    return _toString(getValue());
 }
 
 bool IPV4::fromString(const std::string &value)
 {
+    bool r;
+    auto ipaddr = _fromString(value,&r);
+    setValue(ipaddr);
+    return r;
+}
+
+std::string IPV4::_toString(const in_addr &value)
+{
+    char cIpSource[INET_ADDRSTRLEN]="";
+    inet_ntop(AF_INET, &value ,cIpSource, INET_ADDRSTRLEN);
+    return std::string(cIpSource);
+}
+
+in_addr IPV4::_fromString(const std::string &value, bool *ok)
+{
+    in_addr xvalue;
+    ZeroBStruct(xvalue);
+
     if (value.empty())
     {
-        in_addr dfl;
-        dfl.s_addr = 0;
-        setValue(dfl);
-        return true;
+        if (ok) *ok = true;
+        return xvalue;
     }
 
-    in_addr xvalue;
     bool r = inet_pton(AF_INET, value.c_str(), &xvalue)==1;
-    if (r == false) return false;
-    setValue(xvalue);
-    return true;
+    if (ok) *ok = r;
+
+    return xvalue;
 }
 
 Var *IPV4::protectedCopy()
