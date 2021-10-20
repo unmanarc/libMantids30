@@ -93,7 +93,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     if (usingAttributeName)
     {
         if ((ip.empty() && printEmptyFields) || !ip.empty())
-            logLine += "IPADDR=" + getAlignedValue("\"" + ip + "\"",INET_ADDRSTRLEN+2) + standardLogSeparator;
+            logLine += "IPADDR=" + getAlignedValue("\"" + ip + "\"",INET_ADDRSTRLEN) + standardLogSeparator;
         if ((sessionId.empty() && printEmptyFields) || !sessionId.empty())
             logLine += "SESSID=" + getAlignedValue("\"" + sessionId + "\"",15) + standardLogSeparator;
         if ((user.empty() && printEmptyFields) || !user.empty())
@@ -108,7 +108,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     else
     {
         if ((ip.empty() && printEmptyFields) || !ip.empty())
-            logLine +=  getAlignedValue("\"" +ip+ "\"",INET_ADDRSTRLEN+2) + standardLogSeparator ;
+            logLine +=  getAlignedValue("\"" +ip+ "\"",INET_ADDRSTRLEN) + standardLogSeparator ;
 
         if ((sessionId.empty() && printEmptyFields) || !sessionId.empty())
             logLine += getAlignedValue("\"" +sessionId+ "\"",15) + standardLogSeparator;
