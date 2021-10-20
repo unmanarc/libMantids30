@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 #include <winsock2.h>
-#include <ws2tcpip.h>
+#include <ws2ipdef.h>
 
 #include <cx2_hlp_functions/mem.h>
 
