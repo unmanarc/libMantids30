@@ -16,6 +16,10 @@ typedef Json::Value json;
 #define JSON_ASUINT(j,x,def) (j[x].isUInt()?j[x].asUInt():def)
 #define JSON_ASUINT64(j,x,def) (j[x].isUInt64()?j[x].asUInt64():def)
 
+namespace CX2 { namespace Helpers {
+
+std::string jsonToString(const json &value);
+
 // deprecated JSONReader replacement:
 class JSONReader2 {
 public:
@@ -30,7 +34,6 @@ private:
     std::string errors;
 };
 
-std::string jsonToString(const json &value);
-
+}};
 
 #endif // JSON_H

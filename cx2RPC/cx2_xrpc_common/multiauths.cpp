@@ -43,7 +43,7 @@ bool MultiAuths::setAuthentications(const std::string &sAuthentications)
     if (sAuthentications.empty()) return true;
 
     json jAuthentications;
-    JSONReader2 reader;
+    CX2::Helpers::JSONReader2 reader;
     if (!reader.parse(sAuthentications, jAuthentications)) return false;
     if (!jAuthentications.isObject()) return false;
 

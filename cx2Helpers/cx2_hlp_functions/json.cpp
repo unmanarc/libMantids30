@@ -13,6 +13,8 @@ std::string jsonToString(const json &value)
     return xstrValue;
 }
 
+using namespace CX2::Helpers;
+
 JSONReader2::JSONReader2()
 {
     Json::CharReaderBuilder builder;

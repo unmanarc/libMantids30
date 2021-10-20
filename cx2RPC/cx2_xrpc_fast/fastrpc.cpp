@@ -98,7 +98,7 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
             connection->executionStatus[requestId] = executionStatus;
 //            Json::CharReaderBuilder x;
 
-            JSONReader2 reader;
+            CX2::Helpers::JSONReader2 reader;
             bool parsingSuccessful = reader.parse( payloadBytes, connection->answers[requestId] );
             if (parsingSuccessful)
             {
@@ -156,7 +156,7 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    JSONReader2 reader;
+    CX2::Helpers::JSONReader2 reader;
     sFastRPCParameters * params = new sFastRPCParameters;
     params->requestId = requestId;
     params->methodName = methodName;

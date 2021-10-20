@@ -100,7 +100,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
             std::string sRemoteConfigDecrypted = decryptStr(lineInFile);
 
             json jRemoteConfig;
-            JSONReader2 reader;
+            CX2::Helpers::JSONReader2 reader;
             bool parsingSuccessful = reader.parse( sRemoteConfigDecrypted, jRemoteConfig );
             if ( parsingSuccessful )
             {

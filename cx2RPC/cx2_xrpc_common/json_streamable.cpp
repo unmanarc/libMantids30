@@ -18,7 +18,7 @@ bool JSON_Streamable::streamTo(Memory::Streams::Streamable *out, Memory::Streams
 {
     Memory::Streams::Status cur;
     if (!formatted)
-        strValue = jsonToString(root);
+        strValue = CX2::Helpers::jsonToString(root);
     else
         strValue = root.toStyledString();
     return (cur = out->writeFullStream(strValue.c_str(), strValue.size(), wrStatUpd)).succeed;
@@ -65,7 +65,7 @@ std::string JSON_Streamable::getString()
 
 json *JSON_Streamable::processValue()
 {
-    JSONReader2 reader;
+    CX2::Helpers::JSONReader2 reader;
     bool parsingSuccessful = reader.parse( strValue, root );
     if ( !parsingSuccessful )
         return nullptr;
