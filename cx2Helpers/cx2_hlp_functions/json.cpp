@@ -28,3 +28,8 @@ bool JSONReader2::parse(const std::string &document, Json::Value &root)
 {
     return reader->parse(document.c_str(),document.c_str()+document.size(),&root,&errors);
 }
+
+std::string JSONReader2::getFormattedErrorMessages()
+{
+    return errors;
+}

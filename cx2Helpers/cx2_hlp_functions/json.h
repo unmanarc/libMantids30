@@ -23,6 +23,8 @@ public:
     ~JSONReader2();
 
     bool parse(const std::string& document, Json::Value& root);
+    std::string getFormattedErrorMessages();
+
 private:
     Json::CharReader * reader;
     std::string errors;
