@@ -102,6 +102,11 @@ public:
      */
     NetIfType getNetIfType() const;
 
+#ifdef _WIN32
+    static CX2::Helpers::sAppExecCmd createRouteCMD( const std::vector<std::string> & routecmdopts );
+    static CX2::Helpers::sAppExecCmd createNetSHCMD( const std::vector<std::string> & netshcmdopts );
+#endif
+
 private:
 #ifndef _WIN32
     struct ifreq ifr;
@@ -109,10 +114,8 @@ private:
 #else
     ULONG adapterIndex;
     HANDLE fd;
-
-    CX2::Helpers::sAppExecCmd createNetSHCMD( const std::vector<std::string> & netshcmdopts );
-    std::string getNetSHExecPath();
-
+    static std::string getNetSHExecPath();
+    static std::string getRouteExecPath();
 #endif
 
 

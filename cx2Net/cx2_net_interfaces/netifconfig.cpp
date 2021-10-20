@@ -207,6 +207,15 @@ NetIfType NetIfConfig::getNetIfType() const
 
 
 #ifdef _WIN32
+
+CX2::Helpers::sAppExecCmd NetIfConfig::createRouteCMD(const std::vector<std::string> &routecmdopts)
+{
+    CX2::Helpers::sAppExecCmd x;
+    x.arg0 = getRouteExecPath();
+    x.args = routecmdopts;
+    return x;
+}
+
 CX2::Helpers::sAppExecCmd NetIfConfig::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
 {
     CX2::Helpers::sAppExecCmd x;
@@ -228,6 +237,23 @@ std::string NetIfConfig::getNetSHExecPath()
     CoTaskMemFree(syspath_ptr);
 
     r+="\\netsh.exe";
+
+    return r;
+}
+
+std::string NetIfConfig::getRouteExecPath()
+{
+    wchar_t *syspath_ptr = nullptr;
+
+    if (SHGetKnownFolderPath(FOLDERID_System, 0, nullptr, &syspath_ptr) != S_OK)
+        return "";
+
+    std::wstring rw( syspath_ptr );
+    std::string r( rw.begin(), rw.end() );
+
+    CoTaskMemFree(syspath_ptr);
+
+    r+="\\route.exe";
 
     return r;
 }
