@@ -119,6 +119,7 @@ CX2::Helpers::sAppExecResult CX2::Helpers::AppExec::blexec(const sAppExecCmd &cm
     GetExitCodeProcess(runningProcInfo.hProcess, &lpExitCode);
 
     rt.result = lpExitCode;
+    rt.error =CX2EXEC_NOERR;
 
     CloseHandle(runningProcInfo.hThread);
     CloseHandle(runningProcInfo.hProcess);
