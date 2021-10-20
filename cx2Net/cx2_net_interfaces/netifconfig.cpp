@@ -1,4 +1,6 @@
+#include <cx2_mem_vars/a_ipv4.h>
 #include "netifconfig.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -14,13 +16,16 @@
 #include <netinet/if_ether.h> /* includes net/ethernet.h */
 #else
 #include "tap-windows.h"
+#include <Shlobj.h>
+#include <cx2_hlp_functions/appexec.h>
 #endif
 
 #include <cx2_hlp_functions/mem.h>
+#include <cx2_hlp_functions/appexec.h>
+
 
 using namespace CX2::Network::Interfaces;
 
-// TODO: windows...
 NetIfConfig::NetIfConfig()
 {
     MTU = 0;
@@ -121,6 +126,50 @@ bool NetIfConfig::apply()
         changeMTU = false;
     }
 #else
+    if (changeIPv4Addr)
+    {
+        auto i = CX2::Helpers::AppExec::blexec(createNetSHCMD({"interface",
+                                                                "ipv4",
+                                                                "set",
+                                                                "address",
+                                                                std::string("name="+std::to_string(adapterIndex)),
+                                                                "static",
+                                                                CX2::Memory::Abstract::IPV4::_toString(address),
+                                                                CX2::Memory::Abstract::IPV4::_toString(netmask)
+                                                               }));
+        if (i.error==0)
+            changeIPv4Addr = false;
+        else
+        {
+            lastError = "NETSH error changing IPv4 Address";
+            return false;
+        }
+    }
+
+    if (changeMTU)
+    {
+        auto i = CX2::Helpers::AppExec::blexec(createNetSHCMD({"interface",
+                                                                "ipv4",
+                                                                "set",
+                                                                "interface",
+                                                                std::to_string(adapterIndex),
+                                                                std::string("mtu="+std::to_string(MTU))
+                                                               }));
+        if (i.error==0)
+            changeMTU = false;
+        else
+        {
+            lastError = "NETSH error changing MTU Value";
+            return false;
+        }
+    }
+
+    if (changePromiscMode)
+    {
+        // TODO:
+        lastError = "WIN32 Prosmic mode not implemented yet";
+        return false;
+    }
 
     if (changeState)
     {
@@ -129,16 +178,19 @@ bool NetIfConfig::apply()
             ULONG status = stateUP?1:0;
 
             DWORD len;
-            //printf("Setting media status to connected\n");
             if (DeviceIoControl(fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
             {
                 lastError = "Failed to set media status";
                 return false;
             }
+            else
+                changeState = false;
         }
         else
         {
             // TODO:
+            lastError = "WIN32 Phy interface change state not implemented";
+            return false;
         }
         changeState = false;
     }
@@ -153,13 +205,41 @@ NetIfType NetIfConfig::getNetIfType() const
     return netifType;
 }
 
+
+#ifdef _WIN32
+CX2::Helpers::sAppExecCmd NetIfConfig::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
+{
+    CX2::Helpers::sAppExecCmd x;
+    x.arg0 = getNetSHExecPath();
+    x.args = netshcmdopts;
+    return x;
+}
+
+std::string NetIfConfig::getNetSHExecPath()
+{
+    wchar_t *syspath_ptr = nullptr;
+
+    if (SHGetKnownFolderPath(FOLDERID_System, 0, nullptr, &syspath_ptr) != S_OK)
+        return "";
+
+    std::wstring rw( syspath_ptr );
+    std::string r( rw.begin(), rw.end() );
+
+    CoTaskMemFree(syspath_ptr);
+
+    r+="\\netsh.exe";
+
+    return r;
+}
+#endif
+
 NetIfConfig::~NetIfConfig()
 {
 #ifndef _WIN32
     if (fd>=0)
         close(fd);
 #else
-
+    // WIN32: HANDLE fd is handled outside this class, and only works for virtual interfaces..
 #endif
 }
 

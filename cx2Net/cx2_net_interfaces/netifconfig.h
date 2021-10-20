@@ -8,8 +8,10 @@
 #include <net/if.h>
 #include <linux/if_ether.h>
 #else
+#include <vector>
 #include <windows.h>
 #include "netheaders-windows.h"
+#include <cx2_hlp_functions/appexec.h>
 #endif
 
 namespace CX2 { namespace Network { namespace Interfaces {
@@ -107,7 +109,12 @@ private:
 #else
     ULONG adapterIndex;
     HANDLE fd;
+
+    CX2::Helpers::sAppExecCmd createNetSHCMD( const std::vector<std::string> & netshcmdopts );
+    std::string getNetSHExecPath();
+
 #endif
+
 
     in_addr address, netmask;
 

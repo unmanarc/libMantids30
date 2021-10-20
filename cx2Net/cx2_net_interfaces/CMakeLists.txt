@@ -77,4 +77,9 @@ endif()
 include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 
+include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} cx2_mem_vars)
+
+include_directories("${cx2_thr_mutex_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} cx2_thr_mutex)
 
