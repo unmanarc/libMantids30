@@ -5,6 +5,7 @@
 
 typedef Json::Value json;
 
+// jsoncpp macros:
 #define JSON_ASCSTRING(j,x,def) (j[x].isString()?j[x].asCString():def)
 #define JSON_ASSTRING(j,x,def) (j[x].isString()?j[x].asString():def)
 #define JSON_ASBOOL(j,x,def) (j[x].isBool()?j[x].asBool():def)
@@ -15,6 +16,7 @@ typedef Json::Value json;
 #define JSON_ASUINT(j,x,def) (j[x].isUInt()?j[x].asUInt():def)
 #define JSON_ASUINT64(j,x,def) (j[x].isUInt64()?j[x].asUInt64():def)
 
+// deprecated JSONReader replacement:
 class JSONReader2 {
 public:
     JSONReader2();
