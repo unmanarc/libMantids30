@@ -123,7 +123,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     if (!connected)
     {
         if (lastError == "")
-            lastError = "connect() failed";
+            lastError = "connect() failed - unkonwn";
         return false;
     }
 
@@ -187,7 +187,12 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
     res2 = connect(sockfd, addr, addrlen);
     if (res2 < 0)
     {
+#ifdef _WIN32
+        auto werr = WSAGetLastError();
+        if (werr == WSAEWOULDBLOCK)
+#else
         if (errno == EINPROGRESS || !errno)
+#endif
         {
             fd_set myset;
 
@@ -198,10 +203,47 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
             FD_SET(sockfd, &myset);
 
             res2 = select(sockfd+1, nullptr, &myset, nullptr, timeout?&tv:nullptr);
-
+#ifdef _WIN32
+            if (res2 < 0 && WSAGetLastError() != WSAEINTR)
+#else
             if (res2 < 0 && errno != EINTR)
+#endif
             {
-                lastError = "Error selecting...";
+#ifdef _WIN32
+                switch (WSAGetLastError())
+                {
+                case WSANOTINITIALISED:
+                    lastError = "select() - A successful WSAStartup call must occur before using select().";
+                    break;
+                case WSAEFAULT:
+                    lastError = "select() - The Windows Sockets implementation was unable to allocate needed resources for its internal operations";
+                    break;
+                case WSAENETDOWN:
+                    lastError = "select() - The network subsystem has failed.";
+                    break;
+                case WSAEINVAL:
+                    lastError = "select() - The time-out value is not valid, or all three descriptor parameters were null.";
+                    break;
+                case WSAEINTR:
+                    lastError = "select() - A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
+                    break;
+                case WSAEINPROGRESS:
+                    lastError = "select() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
+                    break;
+                case WSAENOTSOCK:
+                    lastError = "select() - One of the descriptor sets contains an entry that is not a socket.";
+                    break;
+                default:
+                    lastError = "select() - unknown error (" + std::to_string( WSAGetLastError() ) + ")";
+                    break;
+
+                }
+#else
+                // TODO: specific message.
+                lastError = "select() - error (" + std::to_string(errno) + ")";
+#endif
+
+
                 return false;
             }
             else if (res2 > 0)
@@ -240,7 +282,129 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
         }
         else
         {
-            lastError = "Error connecting - (2)";
+#ifdef _WIN32
+            switch(werr)
+            {
+            case WSANOTINITIALISED:
+                lastError = "connect() - A successful WSAStartup call must occur before using this function.";
+                break;
+            case WSAENETDOWN:
+                lastError = "connect() - The network subsystem has failed.";
+                break;
+            case WSAEADDRINUSE:
+                lastError = "connect() - The socket's local address is already in use and the socket was not marked to allow address reuse with SO_REUSEADDR.";
+                break;
+            case WSAEINTR:
+                lastError = "connect() - The blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
+                break;
+            case WSAEINPROGRESS:
+                lastError = "connect() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
+                break;
+            case WSAEALREADY:
+                lastError = "connect() - A nonblocking connect call is in progress on the specified socket.";
+                break;
+            case WSAEADDRNOTAVAIL:
+                lastError = "connect() - The remote address is not a valid address (such as INADDR_ANY or in6addr_any)";
+                break;
+            case WSAEAFNOSUPPORT:
+                lastError = "connect() - Addresses in the specified family cannot be used with this socket.";
+                break;
+            case WSAECONNREFUSED:
+                lastError = "connect() - The attempt to connect was forcefully rejected.";
+                break;
+            case WSAEFAULT:
+                lastError = "connect() - The sockaddr structure pointed to by the name contains incorrect address format for the associated address family or the namelen parameter is too small.";
+                break;
+            case WSAEINVAL:
+                lastError = "connect() - The parameter is a listening socket.";
+                break;
+            case WSAEISCONN:
+                lastError = "connect() - The socket is already connected (connection-oriented sockets only).";
+                break;
+            case WSAENETUNREACH:
+                lastError = "connect() - The network cannot be reached from this host at this time.";
+                break;
+            case WSAEHOSTUNREACH:
+                lastError = "connect() - A socket operation was attempted to an unreachable host.";
+                break;
+            case WSAENOBUFS:
+                lastError = "connect() - Note  No buffer space is available. The socket cannot be connected.";
+                break;
+            case WSAENOTSOCK:
+                lastError = "connect() - The descriptor specified in the s parameter is not a socket.";
+                break;
+            case WSAETIMEDOUT:
+                lastError = "connect() - An attempt to connect timed out without establishing a connection.";
+                break;
+            case WSAEWOULDBLOCK:
+                lastError = "connect() - The socket is marked as nonblocking and the connection cannot be completed immediately.";
+                break;
+            case WSAEACCES:
+                lastError = "connect() - An attempt to connect a datagram socket to broadcast address failed because setsockopt option SO_BROADCAST is not enabled.";
+            default:
+                lastError = "connect() - unknown error (" + std::to_string( WSAGetLastError() ) + ")";
+                break;
+            }
+#else
+            switch(errno)
+            {
+            case EACCES:
+                lastError = "connect() - Write permission is denied on the socket file";
+                break;
+            case EPERM:
+                lastError = "connect() - The  user  tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.";
+                break;
+            case EADDRINUSE:
+                lastError = "connect() - Local address is already in use.";
+                break;
+            case EADDRNOTAVAIL:
+                lastError = "connect() - The socket referred to by sockfd had not previously been bound to an address and, upon attempting to bind it to an ephemeral port.";
+                break;
+            case EAFNOSUPPORT:
+                lastError = "connect() - The passed address didn't have the correct address family in its sa_family field.";
+                break;
+            case EAGAIN:
+                lastError = "connect() - insufficient entries in the routing cache.";
+                break;
+            case EALREADY:
+                lastError = "connect() - The socket is nonblocking and a previous connection attempt has not yet been completed.";
+                break;
+            case EBADF:
+                lastError = "connect() - sockfd is not a valid open file descriptor.";
+                break;
+            case ECONNREFUSED:
+                lastError = "connect() - found no one listening on the remote address.";
+                break;
+            case EFAULT:
+                lastError = "connect() - The socket structure address is outside the user's address space.";
+                break;
+            case EINPROGRESS:
+                lastError = "connect() - The socket is nonblocking and the connection cannot be completed immediately.";
+                break;
+            case EINTR:
+                lastError = "connect() - The system call was interrupted by a signal that was caught.";
+                break;
+            case EISCONN:
+                lastError = "connect() - The socket is already connected.";
+                break;
+            case ENETUNREACH:
+                lastError = "connect() - Network is unreachable.";
+                break;
+            case ENOTSOCK:
+                lastError = "connect() - The file descriptor sockfd does not refer to a socket.";
+                break;
+            case EPROTOTYPE:
+                lastError = "connect() - The socket type does not support the requested communications protocol.";
+                break;
+            case ETIMEDOUT:
+                lastError = "connect() - Timeout while attempting connection.";
+                break;
+            default:
+                lastError = "tcp connect() unknown errno - " +std::to_string( errno );
+
+                break;
+            }
+#endif
             return false;
         }
     }

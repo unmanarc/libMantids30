@@ -586,6 +586,32 @@ bool Socket::setBlockingMode(bool blocking)
     int iResult;
     unsigned long int iMode = (!blocking)?1:0;
     iResult = ioctlsocket(sockfd, FIONBIO, &iMode);
+
+    if (iResult!=NO_ERROR)
+    {
+        switch (WSAGetLastError())
+        {
+        case WSANOTINITIALISED:
+            lastError = "A successful WSAStartup call must occur before using ioctlsocket.";
+            break;
+        case WSAENETDOWN:
+            lastError = "The network subsystem has failed. (ioctlsocket)";
+            break;
+        case WSAEINPROGRESS:
+            lastError = "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function. (ioctlsocket)";
+            break;
+        case WSAENOTSOCK:
+            lastError = "The socket descriptor is not a socket. (ioctlsocket)";
+            break;
+        case WSAEFAULT:
+            lastError = "The argp parameter is not a valid part of the user address space. (ioctlsocket)";
+            break;
+        default:
+            lastError = "Uknown error in ioctlsocket.";
+            break;
+        }
+    }
+
     return (iResult == NO_ERROR);
 #else
     long arg;
