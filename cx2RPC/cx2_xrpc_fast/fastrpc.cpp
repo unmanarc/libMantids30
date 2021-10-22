@@ -4,21 +4,49 @@
 using namespace CX2::RPC::Fast;
 using namespace CX2;
 using Ms = std::chrono::milliseconds;
+using S = std::chrono::seconds;
+
+
+
+void fastRPCPingerThread( FastRPC * obj )
+{
+    while (obj->waitPingInterval())
+    {
+        obj->sendPings(); // send pings to every registered client...
+    }
+}
 
 FastRPC::FastRPC(uint32_t threadsCount, uint32_t taskQueues)
 {
     threadPool = new CX2::Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
+    finished = false;
+
+    setRWTimeout();
+    setPingInterval();
     setRemoteExecutionTimeoutInMS();
     setMaxMessageSize();
     setQueuePushTimeoutInMS();
     setRemoteExecutionDisconnectedTries();
 
     threadPool->start();
+    pinger = std::thread(fastRPCPingerThread,this);
 }
 
 FastRPC::~FastRPC()
 {
+    // Set pings to cease (the current one will continue)
+    finished=true;
+
+    // Notify that pings should stop now... This can take a while (while pings are cycled)...
+    {
+        std::unique_lock<std::mutex> lk(mtPing);
+        cvPing.notify_all();
+    }
+
+    // Wait until the loop ends...
+    pinger.join();
+
     delete threadPool;
 }
 
@@ -39,6 +67,40 @@ bool FastRPC::addMethod(const std::string &methodName, const sFastRPCMethod &rpc
     {
         // Put the method.
         methods[methodName] = rpcMethod;
+        return true;
+    }
+    return false;
+}
+
+void FastRPC::sendPings()
+{
+    // This will create some traffic:
+    auto keys = connectionsByKeyId.getKeys();
+    for (const auto & i : keys)
+    {
+        // Avoid to ping more hosts during program finalization...
+        if (finished)
+            return;
+        // Run unexistant remote function
+        runRemoteRPCMethod(i,"_pingNotFound_",{},nullptr,false);
+    }
+}
+
+void FastRPC::setPingInterval(uint32_t _intvl)
+{
+    pingIntvl = _intvl;
+}
+
+uint32_t FastRPC::getPingInterval()
+{
+    return pingIntvl;
+}
+
+bool FastRPC::waitPingInterval()
+{
+    std::unique_lock<std::mutex> lk(mtPing);
+    if (cvPing.wait_for(lk,S(pingIntvl)) == std::cv_status::timeout )
+    {
         return true;
     }
     return false;
@@ -96,13 +158,11 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
         if ( connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
         {
             connection->executionStatus[requestId] = executionStatus;
-//            Json::CharReaderBuilder x;
 
             CX2::Helpers::JSONReader2 reader;
             bool parsingSuccessful = reader.parse( payloadBytes, connection->answers[requestId] );
             if (parsingSuccessful)
             {
-
                 // Notify that there is a new answer... everyone have to check if it's for him.
                 connection->cvAnswers.notify_all();
             }
@@ -131,8 +191,6 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
     uint64_t requestId;
     char * payloadBytes;
     bool ok;
-
-
 
     ////////////////////////////////////////////////////////////
     // READ THE REQUEST ID.
@@ -191,6 +249,30 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
     return 1;
 }
 
+uint32_t FastRPC::getRWTimeout() const
+{
+    return rwTimeout;
+}
+
+void FastRPC::setRWTimeout(uint32_t _rwTimeout)
+{
+    rwTimeout = _rwTimeout;
+}
+/*
+
+bool FastRPC::shutdownConnection(const std::string &connectionKey)
+{
+    FastRPC_Connection * connection =(FastRPC_Connection *)connectionsByKeyId.openElement(connectionKey);
+    if (connection!=nullptr)
+    {
+        connection->stream->shutdownSocket();
+        connectionsByKeyId.closeElement(connectionKey);
+        return true;
+    }
+    return false;
+}
+
+*/
 
 void FastRPC::setRemoteExecutionDisconnectedTries(const uint32_t &value)
 {
@@ -201,7 +283,6 @@ void FastRPC::setRemoteExecutionTimeoutInMS(const uint32_t &value)
 {
     remoteExecutionTimeoutInMS = value;
 }
-
 
 int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std::string &key, const sFastRPCOnConnectedMethod &callbackOnConnectedMethod, const float &keyDistFactor)
 {
@@ -228,6 +309,9 @@ int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std
         i.detach();
     }
 
+    stream->setReadTimeout(rwTimeout);
+    stream->setWriteTimeout(rwTimeout);
+
     while (ret>0)
     {
         ////////////////////////////////////////////////////////////
@@ -246,7 +330,7 @@ int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std
         case 0:
             // Remote shutdown
             // TODO: clean up on exit and send the signal back?
-            if (!readOK)
+            if (!readOK) // <- read timeout.
                 ret = -101;
             else
                 ret = 0;
@@ -256,6 +340,7 @@ int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std
             ret = -100;
             break;
         }
+//        connection->lastReceivedData = time(nullptr);
     }
 
     // Wait until all task are done.
@@ -423,7 +508,7 @@ json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::st
             {
                 (*error)["succeed"] = false;
                 (*error)["errorId"] = 6;
-                (*error)["errorMessage"] = "Remote Execution Timed Out: No Answer Received.";
+                (*error)["errorMessage"] = "Connection is terminated: No Answer Received.";
             }
             break;
         }

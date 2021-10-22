@@ -46,6 +46,7 @@ class FastRPC_Connection : public CX2::Threads::Safe::Map_Element
 public:
     FastRPC_Connection()
     {
+       // lastReceivedData = 0;
         requestIdCounter = 1;
         terminated = false;
     }
@@ -66,7 +67,7 @@ public:
     std::set<uint64_t> pendingRequests;
 
     // Finalization:
-    bool terminated;
+    std::atomic<bool> terminated;
 };
 
 /**
@@ -94,6 +95,27 @@ public:
     bool addMethod(const std::string & methodName, const sFastRPCMethod & rpcMethod);
 
 
+    // Ping functions:
+    /**
+     * @brief sendPings Internal function to send pings to every connected peer
+     */
+    void sendPings();
+    /**
+     * @brief waitPingInterval Wait interval for pings
+     * @return true if ping interval completed, false if a signal closed the wait interval (eg. FastRPC destroyed)
+     */
+    bool waitPingInterval();
+    /**
+     * @brief setPingInterval Set Ping interval
+     * @param _intvl ping interval in seconds
+     */
+    void setPingInterval(uint32_t _intvl=20);
+    /**
+     * @brief getPingInterval Get ping interval
+     * @return ping interval in seconds
+     */
+    uint32_t getPingInterval();
+
     /**
      * @brief processConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
      *                          Additional security should be configured at the TLS Connections, like peer validation
@@ -119,9 +141,9 @@ public:
     void setMaxMessageSize(const uint32_t &value = 1024*1024);
     /**
      * @brief setRemoteExecutionTimeoutInMS Set the remote Execution Timeout for "runRemoteRPCMethod" function
-     * @param value timeout in milliseconds, default is 2secs (2000).
+     * @param value timeout in milliseconds, default is 5secs (5000).
      */
-    void setRemoteExecutionTimeoutInMS(const uint32_t &value = 2000);
+    void setRemoteExecutionTimeoutInMS(const uint32_t &value = 5000);
     /**
      * @brief runRemoteRPCMethod Run Remote RPC Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
@@ -157,6 +179,26 @@ public:
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
 
+
+    /**
+     * @brief getReadTimeout Get R/W Timeout
+     * @return W/R timeout in seconds
+     */
+    uint32_t getRWTimeout() const;
+    /**
+     * @brief setRWTimeout   This timeout will be setted on processConnection, call this function before that.
+     *
+     *                       Read timeout defines how long are we going to wait if no-data comes from a RPC connection socket,
+     *                       we also send a periodic ping to avoid the connection to be closed due to RPC per-se inactivity, so
+     *                       basically we are only going to close due to network issues.
+     *
+     *                       Write timeout is also important, since we are using blocking sockets, if the peer is full
+     *                       just before having a network problem, the writes (including the ping one) may block the pinging process forever.
+     *
+     * @param _rwTimeout     W/R timeout in seconds (default: 40)
+     */
+    void setRWTimeout(uint32_t _rwTimeout = 40);
+
 protected:
     virtual void eventUnexpectedAnswerReceived(FastRPC_Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(sFastRPCParameters * params);
@@ -178,6 +220,13 @@ private:
     std::map<std::string,sFastRPCMethod> methods;
     Threads::Sync::Mutex_Shared smutexMethods;
     CX2::Threads::Pool::ThreadPool * threadPool;
+
+    std::thread pinger;
+
+    std::atomic<bool> finished;
+    uint32_t pingIntvl, rwTimeout;
+    std::mutex mtPing;
+    std::condition_variable cvPing;
 };
 
 }}}
