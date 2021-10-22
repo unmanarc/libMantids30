@@ -230,7 +230,7 @@ public:
      */
     virtual int iShutdown(int mode = SHUT_RDWR);
 
-    virtual bool isSecure() { return false; };
+    virtual bool isSecure() { return false; }
 
     /**
      * @brief getUseIPv6 Get if using IPv6 Functions
