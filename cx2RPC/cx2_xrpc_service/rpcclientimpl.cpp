@@ -57,9 +57,11 @@ void RPCClientImpl::runRPClient()
             _exit(-3);
         }
 
+        Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%d...", remoteAddr.c_str(), remotePort);
+
         if ( sockRPCClient.connectTo( remoteAddr.c_str(), remotePort ) )
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "Connected to %s:%d (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%d (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
 
             if (postConnect(&sockRPCClient))
             {
@@ -73,11 +75,13 @@ void RPCClientImpl::runRPClient()
                     Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%d", remoteAddr.c_str(), remotePort);
                 }
             }
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%d (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
         }
         else
         {
             Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%d: %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
         }
+
         sleep(secsBetweenConnections);
     }
 }
