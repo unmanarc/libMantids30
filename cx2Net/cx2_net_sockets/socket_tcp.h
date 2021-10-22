@@ -57,11 +57,25 @@ public:
 
     virtual bool isSecure() override;
 
+    int getTcpKeepIdle() const;
+    void setTcpKeepIdle(int newTcpKeepIdle);
+
+    int getTcpKeepCnt() const;
+    void setTcpKeepCnt(int newTcpKeepCnt);
+
+    int getTcpKeepIntvl() const;
+    void setTcpKeepIntvl(int newTcpKeepIntvl);
+
+    bool getTcpUseKeepAlive() const;
+    void setTcpUseKeepAlive(bool newTcpUseKeepAlive);
+
 protected:
 
 private:
     bool tcpConnect(const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
+    bool tcpForceKeepAlive;
+    int tcpKeepIdle,tcpKeepCnt,tcpKeepIntvl;
     int32_t ovrReadTimeout,ovrWriteTimeout;
 };
 
