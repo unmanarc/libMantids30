@@ -62,6 +62,9 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,ip,sessionId,user,domain,module,buffer,LOG_COLOR_PURPLE,"ERR");
 
+    fflush(stderr);
+    fflush(stdout);
+
 
     delete [] buffer;
 }
