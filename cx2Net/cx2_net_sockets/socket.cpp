@@ -580,6 +580,11 @@ int Socket::shutdownSocket(int mode)
     //  return -1;
 }
 
+int Socket::_shutdownSocket(int mode)
+{
+    return shutdown(sockfd, mode);
+}
+
 bool Socket::setBlockingMode(bool blocking)
 {
 #ifdef _WIN32

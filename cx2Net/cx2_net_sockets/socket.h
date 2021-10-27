@@ -204,6 +204,10 @@ public:
      * You should also use Close too. (or reuse the socket?)
      */
     virtual int shutdownSocket(int mode = SHUT_RDWR);
+
+    // Real/Pure socket shutdown:
+    int _shutdownSocket(int mode = SHUT_RDWR);
+
     /**
      * Read a data block from the socket
      * Receive the data block in only one command (without chunks).
