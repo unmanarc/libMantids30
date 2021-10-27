@@ -39,27 +39,27 @@ public:
     /**
         * Read data block of maximum of 256 bytes (teotherical).
         * @param data data to allocate the incoming bytes.
-        * @param datalen data length to be allocated.
-        * @param keepDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
+        * @param datalen data length to be allocated.  and out the data received...
+        * @param mustReceiveFullDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
         * @return true if succeed.
         */
-    bool readBlock8(void * data, uint8_t datalen, bool keepDataLen = false);
+    bool readBlock8(void * data, uint8_t * datalen, bool mustReceiveFullDataLen = false);
     /**
         * Read data block of maximum of 64k bytes (teotherical).
         * @param data data to allocate the incoming bytes.
-        * @param datalen data length to be allocated.
-        * @param keepDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
+        * @param datalen data length to be allocated.  and out the data received...
+        * @param mustReceiveFullDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
         * @return true if succeed.
         */
-    bool readBlock16(void * data, uint16_t datalen, bool keepDataLen = false);
+    bool readBlock16(void * data, uint16_t * datalen, bool mustReceiveFullDataLen = false);
     /**
         * Read data block of maximum of 4g bytes (teotherical).
         * @param data data to allocate the incoming bytes.
-        * @param datalen data length to be allocated.
-        * @param keepDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
+        * @param datalen data length to be allocated. and out the data received...
+        * @param mustReceiveFullDataLen maximum data to be received should match the incoming data, otherwise,return false (and you should close)
         * @return true if succeed.
         */
-    bool readBlock32(void * data, uint32_t datalen, bool keepDataLen = false);
+    bool readBlock32(void * data, uint32_t * datalen, bool mustReceiveFullDataLen = false);
     /**
         * Read and allocate a memory space data block of maximum of 4g bytes (teotherical).
         * NOTE: Allocation occurs with new [], so delete it with delete []

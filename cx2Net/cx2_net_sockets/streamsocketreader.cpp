@@ -85,14 +85,57 @@ uint64_t StreamSocketReader::readU64(bool *readOK)
 }
 
 
-bool StreamSocketReader::readBlock32(void* data, uint32_t datalen, bool keepDataLen)
+bool StreamSocketReader::readBlock32(void* data, uint32_t * datalen, bool mustReceiveFullDataLen)
 {
     bool readOK;
     uint32_t len;
+
+    if (*datalen == 0) return true;
+
     if ((len = readU32(&readOK)) != 0 && readOK)
     {
-        if (len != datalen && !keepDataLen)
+        if (len != *datalen && mustReceiveFullDataLen)
             return false;
+
+        *datalen = len;
+        uint32_t r;
+        return (readBlock(data, len, &r) && r==len);
+    }
+    return false;
+}
+
+bool StreamSocketReader::readBlock16(void* data, uint16_t * datalen,
+        bool mustReceiveFullDataLen)
+{
+    bool readOK;
+    uint16_t len;
+
+    if (*datalen == 0) return true;
+
+    if ((len = readU16(&readOK)) != 0 && readOK)
+    {
+        if (len != *datalen && mustReceiveFullDataLen)
+            return false;
+        *datalen = len;
+        uint32_t r;
+        return (readBlock(data, len, &r) && r==len);
+    }
+    return false;
+}
+bool StreamSocketReader::readBlock8(void* data, uint8_t * datalen,
+        bool mustReceiveFullDataLen)
+{
+    bool readOK;
+    uint8_t len;
+
+    if (*datalen == 0) return true;
+
+    if ((len = readU8(&readOK)) != 0 && readOK)
+    {
+        if (len != *datalen && mustReceiveFullDataLen)
+            return false;
+
+        *datalen = len;
         uint32_t r;
         return (readBlock(data, len, &r) && r==len);
     }
@@ -103,6 +146,7 @@ char * StreamSocketReader::readBlock32WAlloc(uint32_t *datalen)
 {
     bool readOK;
     uint32_t len;
+
     if ((len = readU32(&readOK)) != 0 && readOK)
     {
         if (*datalen < len)  // len received exceeded the max datalen permited.
@@ -195,20 +239,6 @@ char* StreamSocketReader::readBlock32WAllocAndDelim(unsigned int* datalen,
     }
 }
 
-bool StreamSocketReader::readBlock16(void* data, uint16_t datalen,
-        bool keepDataLen)
-{
-    bool readOK;
-    uint16_t len;
-    if ((len = readU16(&readOK)) != 0 && readOK)
-    {
-        if (len != datalen && !keepDataLen)
-            return false;
-        uint32_t r;
-        return readBlock(data, len, &r) && r==len;
-    }
-    return false;
-}
 
 char *StreamSocketReader::readBlockWAlloc(uint32_t *datalen, unsigned char sizel)
 {
@@ -251,21 +281,6 @@ char *StreamSocketReader::readBlockWAlloc(uint32_t *datalen, unsigned char sizel
         *datalen = 0;
         return nullptr;
     }
-}
-
-bool StreamSocketReader::readBlock8(void* data, uint8_t datalen,
-        bool keepDataLen)
-{
-    bool readOK;
-    uint8_t len;
-    if ((len = readU8(&readOK)) != 0 && readOK)
-    {
-        if (len != datalen && !keepDataLen)
-            return false;
-        uint32_t r;
-        return readBlock(data, len, &r) && r==len;
-    }
-    return false;
 }
 
 std::string StreamSocketReader::readString(bool *readOK, unsigned char sizel)
