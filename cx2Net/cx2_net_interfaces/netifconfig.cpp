@@ -129,14 +129,14 @@ bool NetIfConfig::apply()
     if (changeIPv4Addr)
     {
         auto i = CX2::Helpers::AppExec::blexec(createNetSHCMD({"interface",
-                                                                "ipv4",
-                                                                "set",
-                                                                "address",
-                                                                std::string("name="+std::to_string(adapterIndex)),
-                                                                "static",
-                                                                CX2::Memory::Abstract::IPV4::_toString(address),
-                                                                CX2::Memory::Abstract::IPV4::_toString(netmask)
-                                                               }));
+                                                               "ipv4",
+                                                               "set",
+                                                               "address",
+                                                               std::string("name="+std::to_string(adapterIndex)),
+                                                               "static",
+                                                               CX2::Memory::Abstract::IPV4::_toString(address),
+                                                               CX2::Memory::Abstract::IPV4::_toString(netmask)
+                                                              }));
         if (i.error==0)
             changeIPv4Addr = false;
         else
@@ -149,12 +149,12 @@ bool NetIfConfig::apply()
     if (changeMTU)
     {
         auto i = CX2::Helpers::AppExec::blexec(createNetSHCMD({"interface",
-                                                                "ipv4",
-                                                                "set",
-                                                                "interface",
-                                                                std::to_string(adapterIndex),
-                                                                std::string("mtu="+std::to_string(MTU))
-                                                               }));
+                                                               "ipv4",
+                                                               "set",
+                                                               "interface",
+                                                               std::to_string(adapterIndex),
+                                                               std::string("mtu="+std::to_string(MTU))
+                                                              }));
         if (i.error==0)
             changeMTU = false;
         else
@@ -173,26 +173,29 @@ bool NetIfConfig::apply()
 
     if (changeState)
     {
-        if (netifType==NETIF_VIRTUAL_WIN)
+        if (fd != INVALID_HANDLE_VALUE)
         {
-            ULONG status = stateUP?1:0;
-
-            DWORD len;
-            if (DeviceIoControl(fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
+            if (netifType==NETIF_VIRTUAL_WIN)
             {
-                lastError = "Failed to set media status";
-                return false;
+                ULONG status = stateUP?1:0;
+
+                DWORD len;
+                if (DeviceIoControl(fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
+                {
+                    lastError = "Failed to set media status";
+                    return false;
+                }
+                else
+                    changeState = false;
             }
             else
-                changeState = false;
+            {
+                // TODO:
+                lastError = "WIN32 Phy interface change state not implemented";
+                return false;
+            }
+            changeState = false;
         }
-        else
-        {
-            // TODO:
-            lastError = "WIN32 Phy interface change state not implemented";
-            return false;
-        }
-        changeState = false;
     }
 
 #endif
@@ -336,14 +339,19 @@ int NetIfConfig::getMTU()
     switch (netifType)
     {
     case NETIF_VIRTUAL_WIN:
-        ULONG mtu;
-        DWORD len;
-        if  (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof (mtu), &mtu, sizeof (mtu), &len, NULL) == 0)
+    {
+        ULONG mtu = 1500;
+        if (fd != INVALID_HANDLE_VALUE)
         {
-            lastError = "Failed to obtain interface MTU";
-            return 0;
+            DWORD len;
+            if  (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof (mtu), &mtu, sizeof (mtu), &len, NULL) == 0)
+            {
+                lastError = "Failed to obtain interface MTU";
+                return 0;
+            }
         }
         return mtu;
+    }break;
     default:
         return 0;
     }
@@ -369,12 +377,15 @@ ethhdr NetIfConfig::getEthernetAddress()
     switch (netifType)
     {
     case NETIF_VIRTUAL_WIN:
-        DWORD len;
-        if (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MAC, &(etherHdrData.h_dest), 6, &(etherHdrData.h_dest), 6, &len, NULL) == 0)
+        if (fd != INVALID_HANDLE_VALUE)
         {
-            lastError = "Failed to obtain interface MAC Address";
-            ZeroBStruct(etherHdrData);
-            break;
+            DWORD len;
+            if (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MAC, &(etherHdrData.h_dest), 6, &(etherHdrData.h_dest), 6, &len, NULL) == 0)
+            {
+                lastError = "Failed to obtain interface MAC Address";
+                ZeroBStruct(etherHdrData);
+                break;
+            }
         }
         break;
     default:
