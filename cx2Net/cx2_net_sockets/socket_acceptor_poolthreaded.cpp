@@ -179,6 +179,10 @@ void Socket_Acceptor_PoolThreaded::stopper(void *data)
 
 void Socket_Acceptor_PoolThreaded::acceptorTask(void *data)
 {
+#ifndef _WIN32
+     pthread_setname_np(pthread_self(), "poolthr_sockaccept");
+#endif
+
     sAcceptorTaskData * taskData = ((sAcceptorTaskData *)data);
     if (taskData->clientSocket->postAcceptSubInitialization())
     {

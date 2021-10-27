@@ -85,6 +85,10 @@ bool ThreadPool::pushTask(void (*task)(void *), void *data, uint32_t timeoutMS, 
 
 Task ThreadPool::popTask()
 {
+#ifndef _WIN32
+     pthread_setname_np(pthread_self(), "tp_poptask");
+#endif
+
     // lock and wait for an incomming task
     std::unique_lock<std::mutex> lk(mutexQueues);
 

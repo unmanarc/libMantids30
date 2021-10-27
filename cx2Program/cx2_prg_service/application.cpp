@@ -62,6 +62,10 @@ static Application *appPTR = nullptr;
 
 int StartApplication(int argc, char *argv[], Application *_app)
 {
+#ifndef _WIN32
+     pthread_setname_np(pthread_self(), __func__);
+#endif
+
     appPTR = _app;
     // Get program name from program path.
     globalArgs.initProgramName(argv[0]);
