@@ -188,7 +188,11 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
         }
 
         fprintf(fp, "%s\n",  logLine.c_str());
-        fflush(fp);
+        //fflush(fp);
+
+        fflush(stderr);
+        fflush(stdout);
+
     }
 
 }

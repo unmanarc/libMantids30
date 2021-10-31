@@ -130,7 +130,11 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
 
 
         fprintf(fp, "%s\n",  logLine.c_str());
-        fflush(fp);
+        //fflush(fp);
+
+        fflush(stderr);
+        fflush(stdout);
+
     }
 }
 
