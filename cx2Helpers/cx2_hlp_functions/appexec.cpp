@@ -6,13 +6,13 @@
 struct sAppPIPE {
     sAppPIPE()
     {
-        hRead=0;
-        hWrite=0;
+        hRead=INVALID_HANDLE_VALUE;
+        hWrite=INVALID_HANDLE_VALUE;
     }
     ~sAppPIPE()
     {
-        if (hRead) CloseHandle(hRead);
-        if (hWrite) CloseHandle(hWrite);
+        if (hRead!=INVALID_HANDLE_VALUE) CloseHandle(hRead);
+        if (hWrite!=INVALID_HANDLE_VALUE) CloseHandle(hWrite);
     }
 
     SECURITY_ATTRIBUTES createInheritedSecAttribs()
