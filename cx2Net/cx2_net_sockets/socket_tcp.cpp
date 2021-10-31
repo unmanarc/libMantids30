@@ -30,6 +30,8 @@ Socket_TCP::Socket_TCP()
     tcpKeepCnt=5;
     tcpKeepIntvl=5;
 
+    tcpNoDelayOption = true;
+
     ovrReadTimeout = -1;
     ovrWriteTimeout = -1;
 }
@@ -169,6 +171,7 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
         inet_ntop(AF_INET, &cli_addr.sin_addr, ipAddr, sizeof(ipAddr)-1);
         cursocket->setRemotePort(ntohs(cli_addr.sin_port));
         cursocket->setRemotePair(ipAddr);
+        ((Socket_TCP *)cursocket)->setTcpNoDelayOption(tcpNoDelayOption);
 
         if (readTimeout) cursocket->setReadTimeout(readTimeout);
         if (writeTimeout) cursocket->setWriteTimeout(writeTimeout);
@@ -187,15 +190,7 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
 
 bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
 {
-    int res2,valopt,flags;
-
-    int tcplevel =
-#ifdef _WIN32
-            IPPROTO_TCP
-#else
-            SOL_TCP
-#endif
-            ;
+    int res2,valopt;
 
     // Non-blocking connect with timeout...
     if (!setBlockingMode(false)) return false;
@@ -215,24 +210,21 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
         // https://linux.die.net/man/7/tcp
 #ifdef TCP_KEEPIDLE
         //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        flags = tcpKeepIdle;
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPIDLE, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPIDLE,tcpKeepIdle))
         {
         }
 #endif
 
 #ifdef TCP_KEEPCNT
-        flags = tcpKeepCnt;
         //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPCNT, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPCNT,tcpKeepCnt))
         {
         }
 #endif
 
 #ifdef TCP_KEEPINTVL
-        flags = tcpKeepIntvl;
         //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPINTVL, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPINTVL,tcpKeepIntvl))
         {
         }
 #endif
@@ -297,8 +289,6 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
                 // TODO: specific message.
                 lastError = "select() - error (" + std::to_string(errno) + ")";
 #endif
-
-
                 return false;
             }
             else if (res2 > 0)
@@ -306,11 +296,7 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
                 // Socket selected for write
                 socklen_t lon;
                 lon = sizeof(int);
-#ifdef _WIN32
-                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (char*)(&valopt), &lon) < 0)
-#else
-                if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0)
-#endif
+                if (getSocketOption(SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0)
                 {
                     lastError = "Error in getsockopt(SOL_SOCKET)";
                     return false;
@@ -331,16 +317,17 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
 
                 if (tcpForceKeepAlive)
                 {
-                    flags =1;
-#ifdef _WIN32
-                    if (setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, (const char *)&flags, sizeof(flags)))
-#else
-                    if (setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, (void *)&flags, sizeof(flags)))
-#endif
+                    if (setSocketOptionBool(SOL_SOCKET, SO_KEEPALIVE, true))
                     {
                         lastError = "setsocketopt(SO_KEEPALIVE)";
                         return false;
                     }
+                }
+
+                if (setTCPOptionBool(TCP_NODELAY,tcpNoDelayOption))
+                {
+                    lastError = "setsocketopt(SO_KEEPALIVE)";
+                    return false;
                 }
 
                 // Connected!!!
@@ -485,6 +472,17 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
     return false;
 }
 
+bool Socket_TCP::getTcpNoDelayOption() const
+{
+    return tcpNoDelayOption;
+}
+
+void Socket_TCP::setTcpNoDelayOption(bool newTcpNoDelayOption)
+{
+    tcpNoDelayOption = newTcpNoDelayOption;
+    setTCPOptionBool(TCP_NODELAY,tcpNoDelayOption);
+}
+
 bool Socket_TCP::getTcpUseKeepAlive() const
 {
     return tcpForceKeepAlive;
@@ -527,20 +525,6 @@ void Socket_TCP::setTcpKeepIdle(int newTcpKeepIdle)
 
 bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, const int32_t & recvbuffer,const int32_t & backlog)
 {
-#ifdef _WIN32
-    BOOL bOn = TRUE;
-#else
-    int on=1;
-#endif
-
-int flags,tcplevel =
-#ifdef _WIN32
-            IPPROTO_TCP
-#else
-            SOL_TCP
-#endif
-            ;
-
     sockfd = socket(useIPv6?AF_INET6:AF_INET, SOCK_STREAM, 0);
     if (!isActive())
     {
@@ -550,13 +534,7 @@ int flags,tcplevel =
 
     if (recvbuffer) setRecvBuffer(recvbuffer);
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
-               #ifdef _WIN32
-                   (char *)(&bOn),sizeof(bOn)
-               #else
-                   static_cast<void *>(&on),sizeof(on)
-               #endif
-                   ) < 0)
+    if (setSocketOptionBool(SOL_SOCKET, SO_REUSEADDR, true))
     {
         lastError = "setsockopt(SO_REUSEADDR) failed";
         closeSocket();
@@ -569,24 +547,21 @@ int flags,tcplevel =
         // https://linux.die.net/man/7/tcp
 #ifdef TCP_KEEPIDLE
         //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        flags = tcpKeepIdle;
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPIDLE, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPIDLE, tcpKeepIdle))
         {
         }
 #endif
 
 #ifdef TCP_KEEPCNT
-        flags = tcpKeepCnt;
         //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPCNT, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPCNT, tcpKeepCnt))
         {
         }
 #endif
 
 #ifdef TCP_KEEPINTVL
-        flags = tcpKeepIntvl;
         //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setsockopt(sockfd, tcplevel, TCP_KEEPINTVL, (void *)&flags, sizeof(flags)))
+        if (setTCPOptionBool(TCP_KEEPINTVL, tcpKeepIntvl))
         {
         }
 #endif
@@ -617,18 +592,35 @@ bool Socket_TCP::postAcceptSubInitialization()
 
 int Socket_TCP::setTCPOptionBool(const int32_t &optname, bool value)
 {
-    int flag = value?1:0;
-    return setTCPOption(optname, (char *) &flag, sizeof(int));
+    return setSocketOptionBool(
+            #ifdef WIN32
+                IPPROTO_TCP
+            #else
+                SOL_TCP
+            #endif
+                ,optname,value);
 }
 
 int Socket_TCP::setTCPOption(const int32_t &optname, const void *optval, socklen_t optlen)
 {
-    return setSockOpt(IPPROTO_TCP, optname, optval, optlen);
+    return setSocketOption(
+            #ifdef WIN32
+                IPPROTO_TCP
+            #else
+                SOL_TCP
+            #endif
+                , optname, optval, optlen);
 }
 
 int Socket_TCP::getTCPOption(const int32_t & optname, void *optval, socklen_t *optlen)
 {
-    return getSockOpt(IPPROTO_TCP, optname, optval, optlen);
+    return getSocketOption(
+            #ifdef WIN32
+                IPPROTO_TCP
+            #else
+                SOL_TCP
+            #endif
+                , optname, optval, optlen);
 }
 
 void Socket_TCP::overrideReadTimeout(int32_t tout)

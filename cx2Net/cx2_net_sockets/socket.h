@@ -141,23 +141,31 @@ public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Socket Options...
     /**
-     * @brief getSockOpt Get Socket Option
-     * @param level IP / TCP / ...
+     * @brief getSocketOption Get Socket Option
+     * @param level SOL_SOCKET / IPPROTO_TCP / ...
      * @param optname SO Option Name
      * @param optval Option Value Pointer
      * @param optlen IN/OUT option Value Memory Length
      * @return zero if succeed. error -1
      */
-    int getSockOpt(int level, int optname, void *optval, socklen_t *optlen);
+    int getSocketOption(int level, int optname, void *optval, socklen_t *optlen);
     /**
-     * @brief setSockOpt Set Socket Option
-     * @param level IP / TCP / ...
+     * @brief setSocketOption Set Socket Option
+     * @param level SOL_SOCKET / IPPROTO_TCP / ...
      * @param optname SO Option Name
      * @param optval Option Value Pointer
      * @param optlen Option Value Memory Length
      * @return zero if succeed. error -1
      */
-    int setSockOpt(int level, int optname, const void *optval, socklen_t optlen);
+    int setSocketOption(int level, int optname, const void *optval, socklen_t optlen);
+    /**
+     * @brief setSocketOptionBool Set Socket Option as bool
+     * @param level SOL_SOCKET / IPPROTO_TCP / ...
+     * @param optname SO Option Name
+     * @param value value as true or false
+     * @return zero if succeed. error -1
+     */
+    int setSocketOptionBool(int level, int optname, bool value);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Socket Connection elements...

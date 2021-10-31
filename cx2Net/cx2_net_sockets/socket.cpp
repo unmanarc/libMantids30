@@ -435,7 +435,7 @@ void Socket::setRemotePort(unsigned short value)
     remotePort = value;
 }
 
-int Socket::getSockOpt(int level, int optname, void *optval, socklen_t *optlen)
+int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *optlen)
 {
 #ifdef _WIN32
     return getsockopt(sockfd, level, optname, (char *)optval, optlen);
@@ -444,13 +444,19 @@ int Socket::getSockOpt(int level, int optname, void *optval, socklen_t *optlen)
 #endif
 }
 
-int Socket::setSockOpt(int level, int optname, const void *optval, socklen_t optlen)
+int Socket::setSocketOption(int level, int optname, const void *optval, socklen_t optlen)
 {
 #ifdef _WIN32
     return setsockopt(sockfd,  level, optname, (char *)optval, optlen);
 #else
     return setsockopt(sockfd,  level, optname, optval, optlen);
 #endif
+}
+
+int Socket::setSocketOptionBool(int level, int optname, bool value)
+{
+    int flag = value?1:0;
+    return setSocketOption(level,optname,(char *) &flag, sizeof(int));
 }
 
 bool Socket::setReadTimeout(unsigned int _timeout)

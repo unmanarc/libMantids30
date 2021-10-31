@@ -69,11 +69,15 @@ public:
     bool getTcpUseKeepAlive() const;
     void setTcpUseKeepAlive(bool newTcpUseKeepAlive);
 
+    bool getTcpNoDelayOption() const;
+    void setTcpNoDelayOption(bool newTcpNoDelayOption);
+
 protected:
 
 private:
     bool tcpConnect(const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
+    bool tcpNoDelayOption;
     bool tcpForceKeepAlive;
     int tcpKeepIdle,tcpKeepCnt,tcpKeepIntvl;
     int32_t ovrReadTimeout,ovrWriteTimeout;
