@@ -165,6 +165,8 @@ private:
     HANDLE fd;
     std::string devicePath;
     std::string NETCLSID;
+    OVERLAPPED overlapped;
+
 #endif
 };
 

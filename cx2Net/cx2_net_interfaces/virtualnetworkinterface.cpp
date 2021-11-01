@@ -43,12 +43,17 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
     interfaceRealName = netIfaceName;
 
 #ifdef _WIN32
+    memset(&overlapped, 0, sizeof(overlapped));
     this->NETCLSID = netIfaceName;
-    DWORD open_flags = 0;
     devicePath = std::string(USERMODEDEVICEDIR) + netIfaceName + TAP_WIN_SUFFIX;
-    fd = CreateFileA(devicePath.c_str(), GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | open_flags, 0);
+    fd =             CreateFile(devicePath.c_str(), GENERIC_WRITE | GENERIC_READ, 0, 0, OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED, 0);
+
     if (fd != INVALID_HANDLE_VALUE)
+    {
         interfaceRealName=netIfaceName;
+        // TODO: destroy this event.
+        overlapped.hEvent = CreateEvent(NULL, true, false, NULL);
+    }
     // We have the interface handler now...
     if (fd != INVALID_HANDLE_VALUE && netcfg)
     {
@@ -238,16 +243,58 @@ DWORD VirtualNetworkInterface::writePacket(const void *packet, DWORD len)
 {
     std::unique_lock<std::mutex> lock(mutexWrite);
 
+    OVERLAPPED overlapped;
+    memset(&overlapped, 0, sizeof(overlapped));
+
     DWORD wlen = 0;
-    if (WriteFile(fd, packet, len, &wlen, NULL) == 0)
+    if (WriteFile(fd, packet, len, &wlen, &overlapped) == 0)
+    {
+        if (GetLastError()==997) // WSA_IO_PENDING
+            return len;
+
+        lastError = "Error during TAP Write: " + std::to_string(GetLastError());
         return 0;
+    }
     return wlen;
 }
 
+
 int VirtualNetworkInterface::readPacket(void *packet, DWORD len)
 {
-    if (ReadFile(fd, packet, len, &len, NULL)==TRUE)
+    int wait_result;
+
+    auto leninit=len;
+
+    if (!ReadFile(fd, packet, len, &len, &overlapped))
+    {
+        if (GetLastError() != ERROR_IO_PENDING)
+        {
+            lastError = "Error - Not I/O Pending: " + std::to_string(GetLastError());
+            return -1;
+        }
+
+        wait_result = WaitForSingleObjectEx(overlapped.hEvent, INFINITE, false);
+        if (wait_result != WAIT_OBJECT_0)
+        {
+            lastError = "Error - Not waiting for object: " + std::to_string(GetLastError());
+            return -1;
+        }
+
+        if (!GetOverlappedResult(fd, &overlapped, &len, true))
+        {
+            lastError = "Error - Can't get the read result: " + std::to_string(GetLastError());
+            return -1;
+        }
+    }
+
+    if (len!=leninit)
+    {
         return len;
+    }
+
+    lastError = "Error - during read: " + std::to_string(GetLastError());
+
+
     return -1;
 }
 
