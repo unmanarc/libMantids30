@@ -41,49 +41,57 @@ bool Manager::initAccounts()
 
 Reason Manager::authenticate(const std::string &appName, const sClientDetails &clientDetails, const std::string &sAccountName, const std::string &incommingPassword, uint32_t passIndex, Mode authMode, const std::string &challengeSalt, std::map<uint32_t,std::string> *stAccountPassIndexesUsedForLogin)
 {
-
-    Reason ret;
+    Reason ret = REASON_BAD_ACCOUNT;
     bool accountFound=false, indexFound=false;
-    Threads::Sync::Lock_RD lock(mutex);      
+    Secret pStoredSecretData;
+    uint32_t _bAuthPolicyMaxTries=0;
 
-    // Check if the user is enabled to authenticate in this APP:
-    if (!applicationValidateAccount(appName,sAccountName))
-        return REASON_BAD_ACCOUNT; // Account not available for this application.
-
-    Secret pStoredSecretData = retrieveSecret(sAccountName,passIndex, &accountFound, &indexFound);
-
-    if (accountFound == false)
-        ret = REASON_BAD_ACCOUNT;
-    else if (indexFound == false)
-        ret = REASON_PASSWORD_INDEX_NOTFOUND;
-    else
+    // If something changes in between,
+    if (1)
     {
-        time_t lastLogin = accountLastLogin(sAccountName);
+        Threads::Sync::Lock_RD lock(mutex);
 
-        if      (!isAccountConfirmed(sAccountName))
-            return REASON_UNCONFIRMED_ACCOUNT;
+        // Check if the user is enabled to authenticate in this APP:
+        if (!applicationValidateAccount(appName,sAccountName))
+            return REASON_BAD_ACCOUNT; // Account not available for this application.
 
-        else if (isAccountDisabled(sAccountName))
-            return REASON_DISABLED_ACCOUNT;
+        // Check if the retrieved secret
+        pStoredSecretData = retrieveSecret(sAccountName,passIndex, &accountFound, &indexFound);
+        _bAuthPolicyMaxTries = bAuthPolicyMaxTries;
 
-        else if (isAccountExpired(sAccountName))
-            return REASON_EXPIRED_ACCOUNT;
-
-        else if (lastLogin+bAuthPolicyAbandonedAccountExpirationSeconds<time(nullptr))
-            return REASON_EXPIRED_ACCOUNT;
-
+        if (accountFound == false)
+            ret = REASON_BAD_ACCOUNT;
+        else if (indexFound == false)
+            ret = REASON_PASSWORD_INDEX_NOTFOUND;
         else
         {
-            ret = validateStoredSecret(pStoredSecretData, incommingPassword, challengeSalt, authMode);
+            time_t lastLogin = accountLastLogin(sAccountName);
 
-            // On successfull first login, give all pass indexes used for login...
-            if ( IS_PASSWORD_AUTHENTICATED(ret) && stAccountPassIndexesUsedForLogin && passIndex == 0 )
+            if      (!isAccountConfirmed(sAccountName))
+                return REASON_UNCONFIRMED_ACCOUNT;
+
+            else if (isAccountDisabled(sAccountName))
+                return REASON_DISABLED_ACCOUNT;
+
+            else if (isAccountExpired(sAccountName))
+                return REASON_EXPIRED_ACCOUNT;
+
+            else if (lastLogin+bAuthPolicyAbandonedAccountExpirationSeconds<time(nullptr))
+                return REASON_EXPIRED_ACCOUNT;
+
+            else
             {
-                *stAccountPassIndexesUsedForLogin = accountPassIndexesUsedForLogin(sAccountName);
+                ret = validateStoredSecret(pStoredSecretData, incommingPassword, challengeSalt, authMode);
 
-                // If can't retrieve well the pass indexes used for login, return an authentication error for any valid idx 0 password (preventing error).
-                if (stAccountPassIndexesUsedForLogin->find(0xFFFFFFFF)!=stAccountPassIndexesUsedForLogin->end())
-                    return REASON_INTERNAL_ERROR;
+                // On successfull first login, give all pass indexes used for login...
+                if ( IS_PASSWORD_AUTHENTICATED(ret) && stAccountPassIndexesUsedForLogin && passIndex == 0 )
+                {
+                    *stAccountPassIndexesUsedForLogin = accountPassIndexesUsedForLogin(sAccountName);
+
+                    // If can't retrieve well the pass indexes used for login, return an authentication error for any valid idx 0 password (preventing error).
+                    if (stAccountPassIndexesUsedForLogin->find(0xFFFFFFFF)!=stAccountPassIndexesUsedForLogin->end())
+                        return REASON_INTERNAL_ERROR;
+                }
             }
         }
     }
@@ -92,7 +100,7 @@ Reason Manager::authenticate(const std::string &appName, const sClientDetails &c
     if ( !IS_PASSWORD_AUTHENTICATED( ret ) )
     {
         // Increment the counter and disable the account acording to the policy.
-        if ( (pStoredSecretData.badAttempts + 1) >= bAuthPolicyMaxTries )
+        if ( (pStoredSecretData.badAttempts + 1) >= _bAuthPolicyMaxTries )
         {
             // Disable the account...
             accountDisable(sAccountName,true);
