@@ -84,7 +84,6 @@ Given that ubuntu have another library paths, it requires aditional steps:
 
 ```
 cd /usr/include
-ln -s jsoncpp/json
 ln -s mariadb mysql
 ln -s /usr/lib/x86_64-linux-gnu/libboost_regex.so /usr/lib/x86_64-linux-gnu/libboost_regex-mt.so
 ln -s /usr/lib/x86_64-linux-gnu/libboost_thread.so /usr/lib/x86_64-linux-gnu/libboost_thread-mt.so
@@ -92,7 +91,8 @@ ln -s /usr/lib/x86_64-linux-gnu/libboost_thread.so /usr/lib/x86_64-linux-gnu/lib
 
 then, continue with the compilation:
 ```
-cmake . -DBUILD_SHARED_LIBS=ON
+cmake . -DBUILD_SHARED_LIBS=ON -B../cxFramework2-BuildLinux
+cd  ../cxFramework2-BuildLinux
 make -j12
 make install
 ```

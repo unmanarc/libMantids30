@@ -50,7 +50,11 @@ endif()
 include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 
-target_link_libraries(${LIB_NAME} "-ljsoncpp")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
+
 
 ######################################
 

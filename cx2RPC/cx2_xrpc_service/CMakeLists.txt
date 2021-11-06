@@ -63,5 +63,10 @@ target_link_libraries(${LIB_NAME} cx2_prg_logs)
 target_link_libraries(${LIB_NAME} cx2_net_sockets)
 target_link_libraries(${LIB_NAME} cx2_prg_service)
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
-target_link_libraries(${LIB_NAME} "-ljsoncpp")
+
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 

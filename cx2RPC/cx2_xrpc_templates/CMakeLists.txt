@@ -59,4 +59,8 @@ target_link_libraries(${LIB_NAME} cx2_auth)
 include_directories("${cx2_xrpc_common_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_xrpc_common)
 
-target_link_libraries(${LIB_NAME} "-ljsoncpp")
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
+
