@@ -140,7 +140,6 @@ int RPCClientApplication::_start(int argc, char *argv[], CX2::Application::Argum
         return false;
 
     // Start the client...
-
     std::thread(RPCClientImpl::runRPClient0,Globals::getRpcImpl()).detach();
 
     // If retrieve config is setted up, retrieve it.

@@ -10,7 +10,6 @@ using namespace CX2::Application;
 
 RPCClientImpl::RPCClientImpl()
 {
-    secsBetweenConnections = 3;
     getClientConfigCmd="getClientConfig";
     updateClientConfigLoadTimeCmd="updateClientConfigLoadTime";
 
@@ -30,6 +29,7 @@ void RPCClientImpl::runRPClient()
 {
     uint16_t remotePort = Globals::getLC_C2RemotePort();
     std::string remoteAddr = Globals::getLC_C2RemoteAddress();
+    int secsBetweenConnections = Globals::getLC_C2TimeBetweenConnections();
 
     addMethods();
 

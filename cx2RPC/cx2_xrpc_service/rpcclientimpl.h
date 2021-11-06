@@ -29,7 +29,6 @@ protected:
 
     std::string getClientConfigCmd,updateClientConfigLoadTimeCmd;
 
-    int secsBetweenConnections;
     CX2::RPC::Fast::FastRPC fastRPC;
     json jRetrievedConfig;
 

