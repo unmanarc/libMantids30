@@ -5,7 +5,7 @@
 
 #ifndef _WIN32
 #include <netinet/in.h>
-#include <net/if.h>
+#include <linux/if.h>
 #include <linux/if_ether.h>
 #else
 #include <vector>
