@@ -90,14 +90,27 @@ bool Query_SQLite3::exec(const ExecType &execType)
             case Memory::Abstract::TYPE_BIN:
             {
                 Memory::Abstract::sBinContainer * i = ABSTRACT_PTR_AS(BINARY,inputVar.second)->getValue();
+#if SQLITE_VERSION_NUMBER>=3008007L
                 sqlite3_bind_blob64(stmt,idx,i->ptr,i->dataSize,SQLITE_STATIC);
+#else
+                // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
+                sqlite3_bind_blob(stmt,idx,i->ptr,i->dataSize,SQLITE_STATIC);
+#endif
             } break;
             case Memory::Abstract::TYPE_VARCHAR:
             {
+#if SQLITE_VERSION_NUMBER>=3008007L
                 sqlite3_bind_text64(stmt,idx,ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getValue(),
                                     ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getVarSize(),
                                     SQLITE_STATIC,
                                     SQLITE_UTF8);
+#else
+                // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
+                // Also the encoding is not defined...
+                sqlite3_bind_text(stmt,idx,ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getValue(),
+                                    ABSTRACT_PTR_AS(VARCHAR,inputVar.second)->getVarSize(),
+                                    SQLITE_STATIC);
+#endif
             } break;
             case Memory::Abstract::TYPE_DATETIME:
             {
