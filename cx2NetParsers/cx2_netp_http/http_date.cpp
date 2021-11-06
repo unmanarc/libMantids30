@@ -41,7 +41,23 @@ std::string HTTP_Date::toString()
 
 bool HTTP_Date::fromString(const std::string &fTime)
 {
-    //    if (strptime(fTime.c_str(), "%a, %d %b %Y %T %Z", &tm) == nullptr) return false;
+
+#ifndef _WIN32
+    struct tm timeinfo;
+    memset(&timeinfo,0, sizeof(tm));
+    if (strptime(fTime.c_str(), "%a, %d %b %Y %H:%M:%S %Z", &timeinfo) != NULL)
+    {
+        std::time_t tt = std::mktime(&timeinfo);
+        rawTime = tt;
+        return true;
+    }
+    else
+    {
+        rawTime=0;
+        return false;
+    }
+#else
+    // win32 compatible version... (from c++11..)
     std::tm t = {};
     // C++11 Win32/Linux Compatible
     std::istringstream ss(fTime);
@@ -57,6 +73,9 @@ bool HTTP_Date::fromString(const std::string &fTime)
         rawTime = mktime ( &t );
         return true;
     }
+#endif
+
+
     // TODO: check this function (specially with different locales).
     // TODO: check hour zones changes.
 }
