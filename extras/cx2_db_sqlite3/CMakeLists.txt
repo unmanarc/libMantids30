@@ -12,8 +12,6 @@ else()
     get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
     get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
-    message("-- SQLITE3_LIB found at [${SQLITE3_LIB}] for ${LIB_NAME}")
-
     project(${LIB_NAME})
     project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Helper Functions")
 
@@ -68,6 +66,13 @@ else()
     include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
     target_link_libraries(${LIB_NAME} cx2_mem_vars)
 
-    target_link_libraries(${LIB_NAME} ${SQLITE3_LIB})
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SQLite sqlite3)
+    link_libraries(${SQLite_LIBRARIES})
+    target_link_libraries(${LIB_NAME} ${SQLite_LIBRARIES})
+
+    message("-- SQLITE3_LIB found at [${SQLITE3_LIB}] for ${SQLite_LIBRARIES}")
+
+#    target_link_libraries(${LIB_NAME} ${SQLITE3_LIB})
 
 endif()
