@@ -982,7 +982,7 @@ json FullAuth::groupBasicInfo(void *obj, Authentication::Manager *auth, Authenti
         // Take the unused application attribs for this group:
 
         x=0;
-        for (const auto & attrib : auth->attribsList(attrib.appName))
+        for (const CX2::Authentication::sApplicationAttrib & attrib : auth->attribsList(attrib.appName))
         {
             if (directAttribs.find(attrib)==directAttribs.end())
             {
