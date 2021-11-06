@@ -135,7 +135,15 @@ bool Socket_TLS::tlsInitContext()
 
     if (isServer)
     {
+#if TLS_MAX_VERSION == TLS1_VERSION
+        sslContext = SSL_CTX_new (TLSv1_server_method());
+#elif TLS_MAX_VERSION == TLS1_1_VERSION
+        sslContext = SSL_CTX_new (TLSv1_1_server_method());
+#elif TLS_MAX_VERSION == TLS1_2_VERSION
+        sslContext = SSL_CTX_new (TLSv1_2_server_method());
+#elif TLS_MAX_VERSION == TLS1_3_VERSION
         sslContext = SSL_CTX_new (TLS_server_method());
+#endif
         if (!sslContext)
         {
             sslErrors.push_back("SSL_CTX_new Failed in server mode.");
@@ -144,7 +152,15 @@ bool Socket_TLS::tlsInitContext()
     }
     else
     {
+#if TLS_MAX_VERSION == TLS1_VERSION
+        sslContext = SSL_CTX_new (TLSv1_client_method());
+#elif TLS_MAX_VERSION == TLS1_1_VERSION
+        sslContext = SSL_CTX_new (TLSv1_1_client_method());
+#elif TLS_MAX_VERSION == TLS1_2_VERSION
+        sslContext = SSL_CTX_new (TLSv1_2_client_method());
+#elif TLS_MAX_VERSION == TLS1_3_VERSION
         sslContext = SSL_CTX_new (TLS_client_method());
+#endif
         if (!sslContext)
         {
             sslErrors.push_back("SSL_CTX_new Failed in client mode.");
