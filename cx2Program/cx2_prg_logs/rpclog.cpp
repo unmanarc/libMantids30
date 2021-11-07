@@ -150,9 +150,9 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
 
     if (isUsingStandardLog())
     {
+        fprintf(fp,"R/");
         if (usingPrintDate)
         {
-            fprintf(fp,"R/");
             printDate(fp);
         }
 
