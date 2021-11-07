@@ -115,7 +115,8 @@ sHTTP_RequestData HTTPv1_Server::requestData()
     if (_clientHeaders.exist("Authorization"))
     {
         vector<string> authParts;
-        split(authParts,_clientHeaders.getOptionValueStringByName("Authorization"),is_any_of(" "),token_compress_on);
+        string f1 = _clientHeaders.getOptionValueStringByName("Authorization");
+        split(authParts,f1,is_any_of(" "),token_compress_on);
         if (authParts.size()==2)
         {
             if (authParts[0] == "Basic")
