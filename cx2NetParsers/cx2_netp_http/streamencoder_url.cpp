@@ -2,6 +2,8 @@
 
 #include <limits>
 
+#include <cx2_mem_vars/b_mem.h>
+#include <cx2_mem_vars/b_chunks.h>
 
 using namespace CX2::Memory::Streams;
 using namespace CX2::Memory::Streams::Encoders;
@@ -82,4 +84,22 @@ inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
 uint64_t URL::getFinalBytesWritten() const
 {
     return finalBytesWritten;
+}
+
+
+std::string URL::encodeURLStr(const std::string &url)
+{
+    CX2::Memory::Containers::B_MEM uriDecoded( url.c_str(), url.size() );
+    Memory::Containers::B_Chunks uriEncoded;
+
+    // Encode URI...
+    Memory::Streams::Encoders::URL uriEncoder(&uriEncoded);
+    Memory::Streams::Status cur;
+    Memory::Streams::Status wrsStat;
+
+    if ((cur+=uriDecoded.streamTo(&uriEncoder, wrsStat)).succeed)
+    {
+        return uriEncoded.toString();
+    }
+    return url;
 }

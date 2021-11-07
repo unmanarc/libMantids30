@@ -16,6 +16,8 @@ public:
     uint64_t getFinalBytesWritten() const;
     void writeEOF(bool) override;
 
+    static std::string decodeURLStr(const std::string & url);
+
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
     Status flushBytes(Status &wrStat);

@@ -12,6 +12,7 @@ public:
     bool streamTo(Memory::Streams::Streamable *, Streams::Status & ) override;
     Memory::Streams::Status write(const void * buf, const size_t &count, Streams::Status &wrStat) override;
     uint64_t getFinalBytesWritten() const;
+    static std::string encodeURLStr(const std::string &url);
 
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count);

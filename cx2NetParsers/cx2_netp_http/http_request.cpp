@@ -2,6 +2,7 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include "streamdecoder_url.h"
 
 #include <vector>
 #include <string>
@@ -69,6 +70,9 @@ void HTTP_Request::parseURI()
     {
         // No parameters.
     }
+
+    // Decode URI (maybe it's url encoded)...
+    requestURI = Memory::Streams::Decoders::URL::decodeURLStr(requestURI);
 }
 
 void HTTP_Request::parseGETParameters()

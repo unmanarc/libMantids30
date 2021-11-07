@@ -1,5 +1,8 @@
 #include "streamdecoder_url.h"
 
+#include <cx2_mem_vars/b_mem.h>
+#include <cx2_mem_vars/b_chunks.h>
+
 using namespace CX2::Memory::Streams;
 using namespace CX2::Memory::Streams::Decoders;
 
@@ -180,4 +183,21 @@ void URL::writeEOF(bool )
     // flush intermediary bytes...
     Status w;
     flushBytes(w);
+}
+
+std::string URL::decodeURLStr(const std::string &url)
+{
+    CX2::Memory::Containers::B_MEM uriEncoded( url.c_str(), url.size() );
+    Memory::Containers::B_Chunks uriDecoded;
+
+    // Decode URI (maybe it's url encoded)...
+    Memory::Streams::Decoders::URL uriDecoder(&uriDecoded);
+    Memory::Streams::Status cur;
+    Memory::Streams::Status wrsStat;
+
+    if ((cur+=uriEncoded.streamTo(&uriDecoder, wrsStat)).succeed)
+    {
+        return uriDecoded.toString();
+    }
+    return url;
 }
