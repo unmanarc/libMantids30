@@ -178,7 +178,7 @@ void HTTPv1_Server::setResponseServerName(const string &sServerName)
     _serverHeaders.replace("Server", sServerName);
 }
 
-bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sRealRelativePath, string *sRealFullPath, const string &defaultFileAppend)
+bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sRealRelativePath, string *sRealFullPath, const string &defaultFileAppend, bool *isDir)
 {
     bool ret = false;
     char *cFullPath, *cServerDir;
@@ -186,6 +186,9 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
 
     *sRealRelativePath="";
     *sRealFullPath="";
+
+    if (isDir)
+        *isDir = false;
 
     // Check Server Dir Real Path:
     if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
@@ -234,6 +237,26 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
             {
                 // File not found / Readable...
                 delete bFile;
+
+                // Maybe is a directory...
+                if (isDir)
+                {
+                    struct stat stats;
+
+                    stat(cFullPath, &stats);
+
+                    // Check if it's a directory...
+                    *isDir = S_ISDIR(stats.st_mode);
+
+                    if (*isDir)
+                    {
+                        *sRealFullPath = sFullPath;
+                        *sRealRelativePath = cFullPath+cServerDirSize;
+
+                        return true;
+                    }
+                }
+
                 return false;
             }
         }

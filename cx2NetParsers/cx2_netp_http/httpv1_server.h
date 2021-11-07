@@ -96,13 +96,15 @@ public:
      */
     void setResponseServerName(const std::string &sServerName);
     /**
-     * @brief getLocalFilePathFromURI Set the container as MMAP from file
-     * @param sServerDir
-     * @param sRealRelativePath
-     * @param sRealFullPath
-     * @return
+     * @brief getLocalFilePathFromURI Get the local and relative path from the URL, it also checks for transversal escape attempts
+     * @param sServerDir URI
+     * @param sRealRelativePath Output with the Relative path of the requested resource
+     * @param sRealFullPath Output with the Full path of the requested resource
+     * @param defaultFileAppend Append default suffix (eg. /index.html), default is not to append.
+     * @param isDir Output parameter to check if the requested resource is a directory
+     * @return true if there is a resource, false if not
      */
-    bool getLocalFilePathFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath, const std::string & defaultFileAppend = "");
+    bool getLocalFilePathFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath, const std::string & defaultFileAppend = "", bool * isDir = nullptr);
     /**
      * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
      * @param sFilePath filename string
