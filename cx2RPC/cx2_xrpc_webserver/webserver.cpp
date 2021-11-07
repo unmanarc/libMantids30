@@ -147,8 +147,6 @@ std::string WebServer::getAppName() const
     return methodManagers->getAppName();
 }
 
-
-
 bool WebServer::getUseHTMLIEngine() const
 {
     return useHTMLIEngine;
