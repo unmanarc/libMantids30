@@ -81,7 +81,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     domain = Helpers::Encoders::toURL(domain,Helpers::ENC_QUOTEPRINT);
     sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId),Helpers::ENC_QUOTEPRINT);
 
-    if (!usingAttributeName)
+    if (!usingAttributeName && printEmptyFields)
     {
         if (ip.empty()) ip="-";
         if (sessionId.empty()) sessionId="-";
