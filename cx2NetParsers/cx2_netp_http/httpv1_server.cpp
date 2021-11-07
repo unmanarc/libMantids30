@@ -122,19 +122,18 @@ sHTTP_RequestData HTTPv1_Server::requestData()
             {
                 auto bp = Helpers::Encoders::fromBase64(authParts[1]);
 
-                vector<string> authUserPass;
-                split(authUserPass,bp,is_any_of(":"),token_compress_off);
+                std::string::size_type pos = bp.find(':', 0);
 
-                if (authUserPass.size()==2)
+                if (pos != std::string::npos)
                 {
                     fullReq.USING_BASIC_AUTH = true;
-                    fullReq.AUTH_USER = authUserPass[0];
-                    fullReq.AUTH_PASS = authUserPass[1];
+                    fullReq.AUTH_USER = bp.substr(0,pos);
+                    fullReq.AUTH_PASS = bp.substr(pos+1,bp.size());
                 }
+
             }
         }
     }
-
 
     if (_clientHeaders.exist("User-Agent"))
     {
