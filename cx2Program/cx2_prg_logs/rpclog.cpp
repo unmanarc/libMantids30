@@ -83,12 +83,11 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
 
     if (!usingAttributeName)
     {
-        if (sessionId.empty()) ip="-";
         if (ip.empty()) ip="-";
-        if (module.empty()) module="-";
+        if (sessionId.empty()) sessionId="-";
         if (user.empty()) user="-";
         if (domain.empty()) domain="-";
-        if (ip.empty()) ip="-";
+        if (module.empty()) module="-";
     }
 
     std::string logLine;
