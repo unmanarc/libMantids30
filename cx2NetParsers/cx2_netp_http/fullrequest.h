@@ -15,9 +15,9 @@ struct sHTTP_RequestData
     std::string * VIRTUAL_HOST;
     uint16_t * VIRTUAL_PORT;
 
-    // TODO: pass...
     // Authentication information
     std::string AUTH_USER,AUTH_PASS;
+    bool USING_BASIC_AUTH;
 
     // User Agent
     std::string USER_AGENT;

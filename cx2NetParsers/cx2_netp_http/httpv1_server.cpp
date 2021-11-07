@@ -4,7 +4,7 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include <cx2_hlp_functions/encoders.h>
 #include <cx2_mem_vars/b_mmap.h>
 
 #include <sys/stat.h>
@@ -110,10 +110,32 @@ sHTTP_RequestData HTTPv1_Server::requestData()
 {
     sHTTP_RequestData fullReq;
 
-    if (_clientHeaders.exist("Authentication"))
+    fullReq.USING_BASIC_AUTH = false;
+
+    if (_clientHeaders.exist("Authorization"))
     {
-        // TODO: deal with http based authorization.
+        vector<string> authParts;
+        split(authParts,_clientHeaders.getOptionValueStringByName("Authorization"),is_any_of(" "),token_compress_on);
+        if (authParts.size()==2)
+        {
+            if (authParts[0] == "Basic")
+            {
+                auto bp = Helpers::Encoders::fromBase64(authParts[1]);
+
+                vector<string> authUserPass;
+                split(authUserPass,bp,is_any_of(":"),token_compress_off);
+
+                if (authUserPass.size()==2)
+                {
+                    fullReq.USING_BASIC_AUTH = true;
+                    fullReq.AUTH_USER = authUserPass[0];
+                    fullReq.AUTH_PASS = authUserPass[1];
+                }
+            }
+        }
     }
+
+
     if (_clientHeaders.exist("User-Agent"))
     {
         fullReq.USER_AGENT = _clientHeaders.getOptionRawStringByName("User-Agent");
@@ -363,8 +385,6 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
                 _clientContentData.setContainerType(HTTP_CONTAINERTYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
-        // Auth:
-        // TODO: deal with http based authorization.
 
         // Process the client header options
         if (!badAnswer)
@@ -505,14 +525,13 @@ void HTTPv1_Server::parseHostOptions()
     }
 }
 
+
 bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
 {
     wrStat.bytesWritten = 0;
 
     // Process client petition here.
     if (!badAnswer) _serverCodeResponse.setRetCode(processClientRequest());
-
-    //  printf("@%p attending %s\n", this, _clientRequest.getURI().c_str()); fflush(stdout);
 
     // Answer is the last... close the connection after it.
     currentParser = nullptr;
