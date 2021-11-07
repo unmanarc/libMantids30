@@ -26,6 +26,7 @@ struct sHTTP_ResponseData
     HTTP_Status * status; //
     HTTP_Content * contentData; //
 
+    std::string *authenticate;
     std::string contentType;
     bool bNoSniff;
 };

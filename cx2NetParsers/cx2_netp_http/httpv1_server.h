@@ -266,7 +266,7 @@ private:
     Memory::Streams::Status ansBytes;
     uint16_t virtualPort;
 
-
+    std::string authenticate;
     std::string virtualHost;
     std::string contentType;
     std::string currentFileExtension;

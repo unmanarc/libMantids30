@@ -168,6 +168,7 @@ sHTTP_ResponseData HTTPv1_Server::responseData()
     fullR.secHSTS = &secHSTS;
     fullR.bNoSniff = bNoSniff;
     fullR.contentType = contentType;
+    fullR.authenticate = &authenticate;
 
     return fullR;
 }
@@ -449,6 +450,11 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
     currentDate.setCurrentTime();
     if (includeServerDate)
         _serverHeaders.add("Date", currentDate.toString());
+
+    if (!authenticate.empty())
+    {
+        _serverHeaders.add("WWW-Authenticate", "Basic realm=\""+ authenticate + "\"");
+    }
 
     // Establish the cookies
     _serverHeaders.remove("Set-Cookie");
