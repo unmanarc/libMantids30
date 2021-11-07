@@ -215,6 +215,8 @@ public:
     void addStaticContent(const std::string & path, CX2::Memory::Containers::B_MEM * contentElement);
     void setStaticContentElements(const std::map<std::string, CX2::Memory::Containers::B_MEM *> &value);
 
+    static std::string htmlEncode(const std::string& rawStr);
+
 protected:
 
     bool verifyStaticContentExistence(const std::string & path);

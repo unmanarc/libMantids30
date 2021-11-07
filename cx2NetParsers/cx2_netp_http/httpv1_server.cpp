@@ -167,7 +167,7 @@ sHTTP_ResponseData HTTPv1_Server::responseData()
     fullR.secXSSProtection = &secXSSProtection;
     fullR.secHSTS = &secHSTS;
     fullR.bNoSniff = bNoSniff;
-    fullR.contentType = contentType;
+    fullR.contentType = &contentType;
     fullR.authenticate = &authenticate;
 
     return fullR;
@@ -218,6 +218,8 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
         return false;
     }
 
+
+
     string sFullPath = cServerDir + getRequestURI() + defaultFileAppend;
     cServerDirSize = strlen(cServerDir);
 
@@ -231,35 +233,10 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
         else
         {
             // No transversal detected.
-            CX2::Memory::Containers::B_MMAP * bFile = new CX2::Memory::Containers::B_MMAP;
-            if (bFile->referenceFile(cFullPath,true,false))
+
+            // looking for dir...
+            if (getRequestURI().back() == '/' && defaultFileAppend.empty())
             {
-                // File Found / Readable.
-                *sRealFullPath = sFullPath;
-                *sRealRelativePath = cFullPath+cServerDirSize;
-                setResponseDataStreamer(bFile,true);
-                setResponseContentTypeByFileExtension(*sRealRelativePath);
-
-                struct stat attrib;
-                if (!stat(sFullPath.c_str(), &attrib))
-                {
-                    HTTP_Date fileModificationDate;
-#ifdef _WIN32
-                    fileModificationDate.setRawTime(attrib.st_mtime);
-#else
-                    fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
-#endif
-                    if (includeServerDate)
-                        _serverHeaders.add("Last-Modified", fileModificationDate.toString());
-                }
-
-                ret = true;
-            }
-            else
-            {
-                // File not found / Readable...
-                delete bFile;
-
                 // Maybe is a directory...
                 if (isDir)
                 {
@@ -275,11 +252,43 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
                         *sRealFullPath = sFullPath;
                         *sRealRelativePath = cFullPath+cServerDirSize;
 
-                        return true;
+                        ret = true;
                     }
                 }
+            }
+            // looking for file...
+            else
+            {
+                CX2::Memory::Containers::B_MMAP * bFile = new CX2::Memory::Containers::B_MMAP;
+                if (bFile->referenceFile(cFullPath,true,false))
+                {
+                    // File Found / Readable.
+                    *sRealFullPath = sFullPath;
+                    *sRealRelativePath = cFullPath+cServerDirSize;
+                    setResponseDataStreamer(bFile,true);
+                    setResponseContentTypeByFileExtension(*sRealRelativePath);
 
-                return false;
+                    struct stat attrib;
+                    if (!stat(sFullPath.c_str(), &attrib))
+                    {
+                        HTTP_Date fileModificationDate;
+#ifdef _WIN32
+                        fileModificationDate.setRawTime(attrib.st_mtime);
+#else
+                        fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
+#endif
+                        if (includeServerDate)
+                            _serverHeaders.add("Last-Modified", fileModificationDate.toString());
+                    }
+
+                    ret = true;
+                }
+                else
+                {
+                    // File not found / Readable...
+                    delete bFile;
+                    ret = false;
+                }
             }
         }
     }
@@ -559,6 +568,37 @@ bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
 void HTTPv1_Server::setStaticContentElements(const std::map<std::string, CX2::Memory::Containers::B_MEM *> &value)
 {
     staticContentElements = value;
+}
+
+std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
+{
+    std::string output;
+    output.reserve(rawStr.size());
+    for(size_t i=0; rawStr.size()!=i; i++)
+    {
+        switch(rawStr[i])
+        {
+        case '<':
+            output.append("&lt;");
+            break;
+        case '>':
+            output.append("&gt;");
+            break;
+        case '\"':
+            output.append("&quot;");
+            break;
+        case '&':
+            output.append("&amp;");
+            break;
+        case '\'':
+            output.append("&apos;");
+            break;
+        default:
+            output.append(&rawStr[i], 1);
+            break;
+        }
+    }
+    return output;
 }
 
 bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
