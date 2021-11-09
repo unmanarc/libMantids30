@@ -2,7 +2,7 @@
 #define QUERY_MARIADB_H
 
 #include <cx2_db/query.h>
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include <vector>
 
 namespace CX2 { namespace Database {

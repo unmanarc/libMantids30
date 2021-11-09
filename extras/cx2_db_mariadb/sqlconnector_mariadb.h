@@ -1,7 +1,7 @@
 #ifndef SQLCONNECTOR_MARIADB_H
 #define SQLCONNECTOR_MARIADB_H
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 #include <cx2_db/sqlconnector.h>
 #include "query_mariadb.h"
 
