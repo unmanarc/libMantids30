@@ -13,14 +13,13 @@ else()
     get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
     get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
-    message("-- POSTGRESQL_LIB found at [${POSTGRESQL_LIB}] for ${LIB_NAME}")
-
     find_path (
             PQ_INCLUDE_DIR NAMES libpq-fe.h PATHS /usr/include /usr/include/postgresql
         )
 
     if (PQ_INCLUDE_DIR)
-        message("-- POSTGRESQL INCLUDE DIR found at [${PQ_INCLUDE_DIR}]")
+        message("-- POSTGRESQL_LIB found at [${POSTGRESQL_LIB}] for ${LIB_NAME}")
+        message("-- PQ_INCLUDE_DIR found at [${PQ_INCLUDE_DIR}]")
 
         project(${LIB_NAME})
         project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework PostgreSQL Database Connector")
@@ -78,6 +77,7 @@ else()
         target_include_directories(${LIB_NAME} PRIVATE ${PQ_INCLUDE_DIR})
 
         target_link_libraries(${LIB_NAME} ${POSTGRESQL_LIB})
+    else()
+        message("-- WARNING: Did not found lib PQ_INCLUDE_DIR")
     endif()
-
 endif()
