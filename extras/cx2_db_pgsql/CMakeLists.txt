@@ -16,13 +16,8 @@ else()
     message("-- POSTGRESQL_LIB found at [${POSTGRESQL_LIB}] for ${LIB_NAME}")
 
     find_path (
-        PQ_INCLUDE_DIR libpq-fe.h
+            PQ_INCLUDE_DIR NAMES libpq-fe.h PATHS /usr/include /usr/include/postgresql
         )
-    if (NOT PQ_INCLUDE_DIR)
-        find_path (
-            PQ_INCLUDE_DIR postgresql/libpq-fe.h
-            )
-    endif()
 
     if (PQ_INCLUDE_DIR)
         message("-- POSTGRESQL INCLUDE DIR found at [${PQ_INCLUDE_DIR}]")
