@@ -1,26 +1,28 @@
-#include "http_hlp_chunked_retriever.h"
+#include "common_content_chunked_subparser.h"
 #include <stdio.h>
 #include <string.h>
+
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Common;
 using namespace CX2;
 
-HTTP_HLP_Chunked_Retriever::HTTP_HLP_Chunked_Retriever(Memory::Streams::Streamable *dst)
+Content_Chunked_SubParser::Content_Chunked_SubParser(Memory::Streams::Streamable *dst)
 {
     this->dst = dst;
     pos = 0;
 }
 
-HTTP_HLP_Chunked_Retriever::~HTTP_HLP_Chunked_Retriever()
+Content_Chunked_SubParser::~Content_Chunked_SubParser()
 {
     endBuffer();
 }
 
-bool HTTP_HLP_Chunked_Retriever::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrsStat)
+bool Content_Chunked_SubParser::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrsStat)
 {
     return false;
 }
 
-Memory::Streams::Status HTTP_HLP_Chunked_Retriever::write(const void *buf, const size_t &count, Memory::Streams::Status &wrStat)
+Memory::Streams::Status Content_Chunked_SubParser::write(const void *buf, const size_t &count, Memory::Streams::Status &wrStat)
 {
     Memory::Streams::Status cur;
     char strhex[32];
@@ -36,7 +38,7 @@ Memory::Streams::Status HTTP_HLP_Chunked_Retriever::write(const void *buf, const
     return cur;
 }
 
-bool HTTP_HLP_Chunked_Retriever::endBuffer()
+bool Content_Chunked_SubParser::endBuffer()
 {
     Memory::Streams::Status cur;
     return (cur=dst->writeString(pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n",cur)).succeed;

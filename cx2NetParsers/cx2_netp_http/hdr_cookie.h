@@ -2,20 +2,20 @@
 #define HTTP_COOKIE_VALUE_H
 
 #include <string>
-#include "http_date.h"
+#include "common_date.h"
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Headers {
 
-enum eHTTP_Cookie_SameSitePolicy {
+enum eCookie_SameSitePolicy {
     HTTP_COOKIE_SAMESITE_NONE = 0,
     HTTP_COOKIE_SAMESITE_LAX = 1,
     HTTP_COOKIE_SAMESITE_STRICT = 2
 };
 
-class HTTP_Cookie
+class Cookie
 {
 public:
-    HTTP_Cookie();
+    Cookie();
 
     std::string toSetCookieString(const std::string & cookieName);
     bool fromSetCookieString(const std::string & setCookieValue, std::string * cookieName);
@@ -45,22 +45,22 @@ public:
     void setSecure(bool value);
 
 
-    eHTTP_Cookie_SameSitePolicy getSameSite() const;
-    void setSameSite(const eHTTP_Cookie_SameSitePolicy &value);
+    eCookie_SameSitePolicy getSameSite() const;
+    void setSameSite(const eCookie_SameSitePolicy &value);
 
 private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
 
     std::string value;
 
-    HTTP_Date expires;
+    Common::Date expires;
     uint32_t max_age;
     std::string domain;
     std::string path;
     bool secure,httpOnly;
-    eHTTP_Cookie_SameSitePolicy sameSite;
+    eCookie_SameSitePolicy sameSite;
 };
 
-}}}
+}}}}
 
 #endif // HTTP_COOKIE_VALUE_H

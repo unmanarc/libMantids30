@@ -11,17 +11,17 @@ using namespace CX2;
 HTTPv1_Client::HTTPv1_Client(Memory::Streams::Streamable *sobject) : HTTPv1_Base(true,sobject)
 {
     currentParser = (Memory::Streams::Parsing::SubParser *)(&_serverCodeResponse);
-    _clientRequest.getHTTPVersion()->setVersionMajor(1);
-    _clientRequest.getHTTPVersion()->setVersionMinor(0);
+    _clientRequestLine.getHTTPVersion()->setVersionMajor(1);
+    _clientRequestLine.getHTTPVersion()->setVersionMinor(0);
 
-    _clientRequest.setRequestMethod("GET");
+    _clientRequestLine.setRequestMethod("GET");
 }
 
 bool HTTPv1_Client::initProtocol()
 {
     Memory::Streams::Status wrStat;
 
-    if (!_clientRequest.stream(wrStat))
+    if (!_clientRequestLine.stream(wrStat))
         return false;
     if (!streamClientHeaders(wrStat))
         return false;
@@ -71,19 +71,19 @@ void HTTPv1_Client::parseHeaders2ServerCookies()
 
 Memory::Streams::Parsing::SubParser * HTTPv1_Client::parseHeaders2TransmitionMode()
 {
-    _serverContentData.setTransmitionMode(HTTP_CONTENT_TRANSMODE_CONNECTION_CLOSE);
+    _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONNECTION_CLOSE);
     // Set Content Data Reception Mode.
     if (_serverHeaders.exist("Content-Length"))
     {
         uint64_t len = _serverHeaders.getOptionAsUINT64("Content-Length");
-        _serverContentData.setTransmitionMode(HTTP_CONTENT_TRANSMODE_CONTENT_LENGTH);
+        _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
         if (!len || !_serverContentData.setContentLenSize(len))
             return nullptr;
     }
     else if (icontains(_serverHeaders.getOptionValueStringByName("Transfer-Encoding"),"CHUNKED"))
-        _serverContentData.setTransmitionMode(HTTP_CONTENT_TRANSMODE_CHUNKS);
+        _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CHUNKS);
 
     return &_serverContentData;
 }
@@ -109,17 +109,17 @@ bool HTTPv1_Client::streamClientHeaders(Memory::Streams::Status &wrStat)
     return _clientHeaders.stream(wrStat);
 }
 
-HTTP_Security_HSTS HTTPv1_Client::getSecHSTS() const
+Headers::Security::HSTS HTTPv1_Client::getSecHSTS() const
 {
     return secHSTS;
 }
 
-HTTP_Security_XSSProtection HTTPv1_Client::getSecXSSProtection() const
+Headers::Security::XSSProtection HTTPv1_Client::getSecXSSProtection() const
 {
     return secXSSProtection;
 }
 
-HTTP_Security_XFrameOpts HTTPv1_Client::getSecXFrameOpts() const
+Headers::Security::XFrameOpts HTTPv1_Client::getSecXFrameOpts() const
 {
     return secXFrameOpts;
 }
@@ -134,27 +134,27 @@ std::string HTTPv1_Client::getServerContentType() const
     return serverContentType;
 }
 
-HTTP_Cookies_ServerSide * HTTPv1_Client::getServerCookies()
+Response::Cookies_ServerSide * HTTPv1_Client::getServerCookies()
 {
     return &serverCookies;
 }
 
 void HTTPv1_Client::setClientRequest(const std::string &hostName, const std::string &uriPath)
 {
-    if (!hostName.empty()) _clientRequest.getHTTPVersion()->upgradeMinorVersion(1);
-    _clientRequest.setRequestURI(uriPath);
+    if (!hostName.empty()) _clientRequestLine.getHTTPVersion()->upgradeMinorVersion(1);
+    _clientRequestLine.setRequestURI(uriPath);
     _clientHeaders.replace("Host", hostName);
 }
 
 void HTTPv1_Client::setDontTrackFlag(bool dnt)
 {
-    _clientRequest.getHTTPVersion()->upgradeMinorVersion(1);
+    _clientRequestLine.getHTTPVersion()->upgradeMinorVersion(1);
     _clientHeaders.replace("DNT", dnt?"1":"0");
 }
 
 void HTTPv1_Client::setReferer(const std::string &refererURL)
 {
-    _clientRequest.getHTTPVersion()->upgradeMinorVersion(1);
+    _clientRequestLine.getHTTPVersion()->upgradeMinorVersion(1);
     _clientHeaders.replace("Referer", refererURL);
 }
 

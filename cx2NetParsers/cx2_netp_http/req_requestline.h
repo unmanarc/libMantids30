@@ -5,16 +5,16 @@
 #include <cx2_mem_vars/b_base.h>
 
 #include <string>
-#include "http_version.h"
+#include "common_version.h"
+#include "common_urlvars.h"
 
-#include "http_urlvars.h"
+namespace CX2 { namespace Network { namespace HTTP { namespace Request {
 
-namespace CX2 { namespace Network { namespace HTTP {
 
-class HTTP_Request : public Memory::Streams::Parsing::SubParser
+class RequestLine : public Memory::Streams::Parsing::SubParser
 {
 public:
-    HTTP_Request();
+    RequestLine();
     ////////////////////////////////////////////////
     // Virtuals:
     /**
@@ -30,7 +30,7 @@ public:
      * @brief getHttpVersion Get HTTP Version requested.
      * @return version object requested.
      */
-    HTTP_Version * getHTTPVersion();
+    Common::Version * getHTTPVersion();
     /**
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
@@ -75,10 +75,10 @@ private:
      */
     std::string requestURIParameters;
 
-    HTTP_Version httpVersion;
-    HTTP_URLVars getVars;
+    Common::Version httpVersion;
+    Common::URLVars getVars;
 };
 
-}}}
+}}}}
 
 #endif // HTTP_URL_REQUEST_H

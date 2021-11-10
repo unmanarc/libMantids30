@@ -1,4 +1,4 @@
-#include "http_date.h"
+#include "common_date.h"
 
 #include <string.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -8,25 +8,26 @@
 #include <iomanip>
 
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Common;
 using namespace CX2;
 using namespace boost::posix_time;
 
-HTTP_Date::HTTP_Date()
+Date::Date()
 {
     setCurrentTime();
 }
 
-time_t HTTP_Date::getRawTime() const
+time_t Date::getRawTime() const
 {
     return rawTime;
 }
 
-void HTTP_Date::setRawTime(const time_t &value)
+void Date::setRawTime(const time_t &value)
 {
     rawTime = value;
 }
 
-std::string HTTP_Date::toString()
+std::string Date::toString()
 {
     char buffer[64];
     struct tm timeinfo;
@@ -39,7 +40,7 @@ std::string HTTP_Date::toString()
     return std::string(buffer);
 }
 
-bool HTTP_Date::fromString(const std::string &fTime)
+bool Date::fromString(const std::string &fTime)
 {
 
 #ifndef _WIN32
@@ -80,12 +81,12 @@ bool HTTP_Date::fromString(const std::string &fTime)
     // TODO: check hour zones changes.
 }
 
-void HTTP_Date::setCurrentTime()
+void Date::setCurrentTime()
 {
     rawTime = time(nullptr);
 }
 
-void HTTP_Date::incTime(const uint32_t &seconds)
+void Date::incTime(const uint32_t &seconds)
 {
     rawTime += seconds;
 }

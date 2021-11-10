@@ -1,4 +1,4 @@
-#include "http_cookies_clientside.h"
+#include "req_cookies.h"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -9,19 +9,19 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Request;
 using namespace CX2;
 
-HTTP_Cookies_ClientSide::HTTP_Cookies_ClientSide()
+Cookies_ClientSide::Cookies_ClientSide()
 {
 }
 
-void HTTP_Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
+void Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
     headers->add("Cookie",toString());
 }
 
-std::string HTTP_Cookies_ClientSide::toString() const
+std::string Cookies_ClientSide::toString() const
 {
     std::string cookies;
 
@@ -40,14 +40,14 @@ std::string HTTP_Cookies_ClientSide::toString() const
     return cookies;
 }
 
-void HTTP_Cookies_ClientSide::parseFromHeaders(const std::string &cookies_str)
+void Cookies_ClientSide::parseFromHeaders(const std::string &cookies_str)
 {
     vector<string> cookies;
     split(cookies,cookies_str,is_any_of(";"),token_compress_on);
     for (const string & cookie : cookies) parseCookie(cookie);
 }
 
-void HTTP_Cookies_ClientSide::parseCookie(string cookie)
+void Cookies_ClientSide::parseCookie(string cookie)
 {
     size_t found=cookie.find("=");
 
@@ -69,12 +69,12 @@ void HTTP_Cookies_ClientSide::parseCookie(string cookie)
     }
 }
 
-void HTTP_Cookies_ClientSide::addCookieVal(const string &cookieName, const string &cookieValue)
+void Cookies_ClientSide::addCookieVal(const string &cookieName, const string &cookieValue)
 {
     cookiesMap[cookieName] = cookieValue;
 }
 
-std::string HTTP_Cookies_ClientSide::getCookieByName(const std::string &cookieName)
+std::string Cookies_ClientSide::getCookieByName(const std::string &cookieName)
 {
     if (cookiesMap.find(cookieName) == cookiesMap.end()) return "";
     return cookiesMap[cookieName];

@@ -5,9 +5,9 @@
 #include <cx2_mem_vars/vars.h>
 #include <map>
 
-#include "http_urlvarcontent_subparser.h"
+#include "common_urlvar_subparser.h"
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Common {
 
 enum eHTTP_URLVarStat
 {
@@ -15,11 +15,11 @@ enum eHTTP_URLVarStat
     URLV_STAT_WAITING_CONTENT
 };
 
-class HTTP_URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parsing::Parser
+class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parsing::Parser
 {
 public:
-    HTTP_URLVars(Memory::Streams::Streamable *value = nullptr);
-    ~HTTP_URLVars() override;
+    URLVars(Memory::Streams::Streamable *value = nullptr);
+    ~URLVars() override;
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
@@ -48,7 +48,8 @@ private:
     std::string currentVarName;
     std::multimap<std::string, Memory::Containers::B_Chunks *> vars;
 
-    HTTP_URLVarContent_SubParser _urlVarParser;
+    URLVar_SubParser _urlVarParser;
 };
-}}}
+}}}}
+
 #endif // HTTPURLFORMATTEDVARS_H

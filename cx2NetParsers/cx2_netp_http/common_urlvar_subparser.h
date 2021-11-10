@@ -3,13 +3,13 @@
 
 #include <cx2_mem_vars/substreamparser.h>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Common {
 
-class HTTP_URLVarContent_SubParser : public Memory::Streams::Parsing::SubParser
+class URLVar_SubParser : public Memory::Streams::Parsing::SubParser
 {
 public:
-    HTTP_URLVarContent_SubParser();
-    ~HTTP_URLVarContent_SubParser() override;
+    URLVar_SubParser();
+    ~URLVar_SubParser() override;
 
     bool stream(Memory::Streams::Status &) override;
 
@@ -25,6 +25,6 @@ protected:
 
 };
 
-}}}
+}}}}
 
 #endif // HTTP_SUB_URLVARPARSER_H

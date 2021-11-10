@@ -5,7 +5,7 @@ using namespace CX2;
 
 HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) : Memory::Streams::Parsing::Parser(sobject,clientMode)
 {
-    initSubParser(&_clientRequest);
+    initSubParser(&_clientRequestLine);
     initSubParser(&_clientHeaders);
     initSubParser(&_clientContentData);
 
@@ -15,21 +15,21 @@ HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) 
     setInternalProductVersion("CX2::HTTP","(+https://github.com/unmanarc/cxFramework2)");
 }
 
-HTTP_ResponseParams HTTPv1_Base::response()
+Response::ResponseDeliveryObjects HTTPv1_Base::response()
 {
-    HTTP_ResponseParams ret;
+    Response::ResponseDeliveryObjects ret;
     ret.status = &_serverCodeResponse;
     ret.content = &_serverContentData;
     ret.headers = &_serverHeaders;
     return ret;
 }
 
-HTTP_RequestParams HTTPv1_Base::request()
+Request::RequestDeliveryObjects HTTPv1_Base::request()
 {
-    HTTP_RequestParams ret;
+    Request::RequestDeliveryObjects ret;
     ret.content = &_clientContentData;
     ret.headers = &_clientHeaders;
-    ret.request = &_clientRequest;
+    ret.request = &_clientRequestLine;
     return ret;
 }
 

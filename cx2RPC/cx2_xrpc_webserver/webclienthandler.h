@@ -49,20 +49,20 @@ protected:
      * @brief processClientRequest Process web client request
      * @return http responce code.
      */
-    Network::HTTP::eHTTP_RetCode processClientRequest() override;
+    Network::HTTP::Response::StatusCode processClientRequest() override;
 
 private:
-    Network::HTTP::eHTTP_RetCode processHTMLIEngine(const std::string &sRealFullPath,WebSession * hSession);
-    Network::HTTP::eHTTP_RetCode processRPCRequest();
-    Network::HTTP::eHTTP_RetCode processRPCRequest_VERSION();
-    Network::HTTP::eHTTP_RetCode processRPCRequest_AUTHINFO(WebSession * wSession, const uint32_t & uMaxAge);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_CSRFTOKEN(WebSession * wSession);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_INITAUTH(const Authentication & auth, std::string sSessionId);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_POSTAUTH(const Authentication & auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_EXEC(WebSession * wSession, MultiAuths *extraAuths);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_CHPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_TESTPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::eHTTP_RetCode processRPCRequest_PASSWDLIST(WebSession * wSession);
+    Network::HTTP::Response::StatusCode processHTMLIEngine(const std::string &sRealFullPath,WebSession * hSession);
+    Network::HTTP::Response::StatusCode processRPCRequest();
+    Network::HTTP::Response::StatusCode processRPCRequest_VERSION();
+    Network::HTTP::Response::StatusCode processRPCRequest_AUTHINFO(WebSession * wSession, const uint32_t & uMaxAge);
+    Network::HTTP::Response::StatusCode processRPCRequest_CSRFTOKEN(WebSession * wSession);
+    Network::HTTP::Response::StatusCode processRPCRequest_INITAUTH(const Authentication & auth, std::string sSessionId);
+    Network::HTTP::Response::StatusCode processRPCRequest_POSTAUTH(const Authentication & auth, WebSession * wSession, bool * destroySession);
+    Network::HTTP::Response::StatusCode processRPCRequest_EXEC(WebSession * wSession, MultiAuths *extraAuths);
+    Network::HTTP::Response::StatusCode processRPCRequest_CHPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
+    Network::HTTP::Response::StatusCode processRPCRequest_TESTPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
+    Network::HTTP::Response::StatusCode processRPCRequest_PASSWDLIST(WebSession * wSession);
 
                    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, CX2::Authentication::Session *session, CX2::Authentication::Reason *authReason);
     CX2::Authentication::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Authentication &authData);

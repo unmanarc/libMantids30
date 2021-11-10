@@ -1,4 +1,4 @@
-#include "http_version.h"
+#include "common_version.h"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -9,15 +9,16 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Common;
 using namespace CX2;
 
-HTTP_Version::HTTP_Version()
+Version::Version()
 {
     versionMajor = 1;
     versionMinor = 1;
 }
 
-void HTTP_Version::parseVersion(const std::string &version)
+void Version::parseVersion(const std::string &version)
 {
     vector<string> versionParts;
     split(versionParts,version,is_any_of("/"),token_compress_on);
@@ -45,7 +46,7 @@ void HTTP_Version::parseVersion(const std::string &version)
     }
 }
 
-string HTTP_Version::getHTTPVersionString()
+string Version::getHTTPVersionString()
 {
     char cHTTPVersion[128];
     snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%u.%u", versionMajor, versionMinor);
@@ -53,27 +54,27 @@ string HTTP_Version::getHTTPVersionString()
     return sHTTPVersion;
 }
 
-uint16_t HTTP_Version::getVersionMinor() const
+uint16_t Version::getVersionMinor() const
 {
     return versionMinor;
 }
 
-void HTTP_Version::setVersionMinor(const uint16_t &value)
+void Version::setVersionMinor(const uint16_t &value)
 {
     versionMinor = value;
 }
 
-void HTTP_Version::upgradeMinorVersion(const uint16_t &value)
+void Version::upgradeMinorVersion(const uint16_t &value)
 {
     if (value > versionMinor) versionMinor = value;
 }
 
-uint16_t HTTP_Version::getVersionMajor() const
+uint16_t Version::getVersionMajor() const
 {
     return versionMajor;
 }
 
-void HTTP_Version::setVersionMajor(const uint16_t &value)
+void Version::setVersionMajor(const uint16_t &value)
 {
     versionMajor = value;
 }

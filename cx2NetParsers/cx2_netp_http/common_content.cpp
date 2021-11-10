@@ -1,45 +1,47 @@
-#include "http_content.h"
-#include "http_hlp_chunked_retriever.h"
+#include "common_content.h"
+#include "common_content_chunked_subparser.h"
 
 #include <limits>
 
 // TODO: CHECK THIS CLASS
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Common;
+
 using namespace CX2;
 
-HTTP_Content::HTTP_Content()
+Content::Content()
 {
-    transmitionMode = HTTP_CONTENT_TRANSMODE_CONNECTION_CLOSE;
-    currentMode = HTTP_CONTENTDATA_CURRMODE_CONTENT_LENGTH;
+    transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
+    currentMode = PROCMODE_CONTENT_LENGTH;
     currentContentLengthSize = 0;
     securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
     securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
-    containerType = HTTP_CONTAINERTYPE_BIN;
+    containerType = CONTENT_TYPE_BIN;
     outStream = &binDataContainer;
     deleteOutStream = false;
 }
 
-HTTP_Content::~HTTP_Content()
+Content::~Content()
 {
     if (deleteOutStream) delete outStream;
 }
 
-bool HTTP_Content::isDefaultStreamableOutput()
+bool Content::isDefaultStreamableOutput()
 {
     return outStream==&binDataContainer || outStream==&urlVars || outStream==&multiPartVars;
 }
 
-void HTTP_Content::setSecurityMaxPostDataSize(const uint64_t &value)
+void Content::setSecurityMaxPostDataSize(const uint64_t &value)
 {
     securityMaxPostDataSize = value;
 }
 
 
-Memory::Streams::Parsing::ParseStatus HTTP_Content::parse()
+Memory::Streams::Parsing::ParseStatus Content::parse()
 {
     switch (currentMode)
     {
-    case HTTP_CONTENTDATA_CURRMODE_CHUNK_SIZE:
+    case PROCMODE_CHUNK_SIZE:
     {
         size_t targetChunkSize;
         if ((targetChunkSize=parseHttpChunkSize())!=std::numeric_limits<uint32_t>::max())
@@ -48,7 +50,7 @@ Memory::Streams::Parsing::ParseStatus HTTP_Content::parse()
             {
                 setParseMode(Memory::Streams::Parsing::PARSE_MODE_SIZE);
                 setParseDataTargetSize(targetChunkSize);
-                currentMode = HTTP_CONTENTDATA_CURRMODE_CHUNK_DATA;
+                currentMode = PROCMODE_CHUNK_DATA;
                 return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
             }
             else
@@ -61,25 +63,25 @@ Memory::Streams::Parsing::ParseStatus HTTP_Content::parse()
         }
         return Memory::Streams::Parsing::PARSE_STAT_ERROR;
     }
-    case HTTP_CONTENTDATA_CURRMODE_CHUNK_DATA:
+    case PROCMODE_CHUNK_DATA:
     {
         // Ok, continue
         setParseMode(Memory::Streams::Parsing::PARSE_MODE_SIZE);
         setParseDataTargetSize(2); // for CRLF.
-        currentMode = HTTP_CONTENTDATA_CURRMODE_CHUNK_CRLF;
+        currentMode = PROCMODE_CHUNK_CRLF;
         // Proccess chunk into mem...
         getParsedData()->appendTo(*outStream);
         return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
     }
-    case HTTP_CONTENTDATA_CURRMODE_CHUNK_CRLF:
+    case PROCMODE_CHUNK_CRLF:
     {
         setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(1*KB_MULT); // !1kb max (until fails).
-        currentMode = HTTP_CONTENTDATA_CURRMODE_CHUNK_SIZE;
+        currentMode = PROCMODE_CHUNK_SIZE;
         return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
     }
-    case HTTP_CONTENTDATA_CURRMODE_CONTENT_LENGTH:
+    case PROCMODE_CONTENT_LENGTH:
     {
         getParsedData()->appendTo(*outStream);
         if (getLeftToparse()>0)
@@ -93,7 +95,7 @@ Memory::Streams::Parsing::ParseStatus HTTP_Content::parse()
             return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
         }
     }
-    case HTTP_CONTENTDATA_CURRMODE_CONNECTION_CLOSE:
+    case PROCMODE_CONNECTION_CLOSE:
     {
         // Content satisfied...
         if (getParsedData()->size())
@@ -113,7 +115,7 @@ Memory::Streams::Parsing::ParseStatus HTTP_Content::parse()
     return Memory::Streams::Parsing::PARSE_STAT_ERROR;
 }
 
-uint32_t HTTP_Content::parseHttpChunkSize()
+uint32_t Content::parseHttpChunkSize()
 {
     uint32_t parsedSize = getParsedData()->toUInt32(16);
     if ( parsedSize == std::numeric_limits<uint32_t>::max() || parsedSize>securityMaxHttpChunkSize)
@@ -122,77 +124,77 @@ uint32_t HTTP_Content::parseHttpChunkSize()
         return parsedSize;
 }
 
-eHTTP_Content_Transmition_Mode HTTP_Content::getTransmitionMode() const
+eContent_TransmitionMode Content::getTransmitionMode() const
 {
     return transmitionMode;
 }
 
-HTTP_URLVars *HTTP_Content::getUrlVars()
+URLVars *Content::getUrlVars()
 {
     return &urlVars;
 }
 
 
-eHTTP_ContainerType HTTP_Content::getContainerType() const
+eContent_DataType Content::getContainerType() const
 {
     return containerType;
 }
 
-Memory::Abstract::Vars *HTTP_Content::postVars()
+Memory::Abstract::Vars *Content::postVars()
 {
     switch (containerType)
     {
-    case HTTP_CONTAINERTYPE_MIME:
+    case CONTENT_TYPE_MIME:
         return &multiPartVars;
-    case HTTP_CONTAINERTYPE_URL:
-    case HTTP_CONTAINERTYPE_BIN:
+    case CONTENT_TYPE_URL:
+    case CONTENT_TYPE_BIN:
         return &urlVars; // url vars should be empty here...
     }
     return &urlVars;
 }
 
-Network::MIME::MIME_Vars *HTTP_Content::getMultiPartVars()
+Network::MIME::MIME_Vars *Content::getMultiPartVars()
 {
     return &multiPartVars;
 }
 
-void HTTP_Content::setContainerType(const eHTTP_ContainerType &value)
+void Content::setContainerType(const eContent_DataType &value)
 {
     containerType = value;
     if (isDefaultStreamableOutput())
     {
         switch (containerType)
         {
-        case HTTP_CONTAINERTYPE_MIME:
+        case CONTENT_TYPE_MIME:
             outStream = &multiPartVars;
             break;
-        case HTTP_CONTAINERTYPE_URL:
+        case CONTENT_TYPE_URL:
             outStream = &urlVars;
             break;
-        case HTTP_CONTAINERTYPE_BIN:
+        case CONTENT_TYPE_BIN:
             outStream = &binDataContainer;
             break;
         }
     }
 }
 
-void HTTP_Content::setSecurityMaxHttpChunkSize(const uint32_t &value)
+void Content::setSecurityMaxHttpChunkSize(const uint32_t &value)
 {
     securityMaxHttpChunkSize = value;
 }
 
-bool HTTP_Content::stream(Memory::Streams::Status & wrStat)
+bool Content::stream(Memory::Streams::Status & wrStat)
 {
     // Act as a client. Send data from here.
     switch (transmitionMode)
     {
-    case HTTP_CONTENT_TRANSMODE_CHUNKS:
+    case TRANSMIT_MODE_CHUNKS:
     {
-        HTTP_HLP_Chunked_Retriever retr(upStream);
+        Content_Chunked_SubParser retr(upStream);
         return outStream->streamTo(&retr,wrStat) && upStream->getFailedWriteState()==0;
     }
-    case HTTP_CONTENT_TRANSMODE_CONTENT_LENGTH:
-    case HTTP_CONTENT_TRANSMODE_CONNECTION_CLOSE:
+    case TRANSMIT_MODE_CONTENT_LENGTH:
+    case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
         return outStream->streamTo(upStream, wrStat) && upStream->getFailedWriteState()==0;
     }
@@ -200,36 +202,36 @@ bool HTTP_Content::stream(Memory::Streams::Status & wrStat)
     return true;
 }
 
-void HTTP_Content::setTransmitionMode(const eHTTP_Content_Transmition_Mode &value)
+void Content::setTransmitionMode(const eContent_TransmitionMode &value)
 {
     transmitionMode = value;
 
     switch (transmitionMode)
     {
-    case HTTP_CONTENT_TRANSMODE_CONNECTION_CLOSE:
+    case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
         // TODO: disable connection-close for client->server
         setParseMode(Memory::Streams::Parsing::PARSE_MODE_DIRECT);
         setParseDataTargetSize(securityMaxPostDataSize); // !1kb max (until fails).
-        currentMode = HTTP_CONTENTDATA_CURRMODE_CONNECTION_CLOSE;
+        currentMode = PROCMODE_CONNECTION_CLOSE;
     }break;
-    case HTTP_CONTENT_TRANSMODE_CHUNKS:
+    case TRANSMIT_MODE_CHUNKS:
     {
         // TODO: disable chunk transmition for client->server
         setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(64); // 64 bytes max (until fails).
-        currentMode = HTTP_CONTENTDATA_CURRMODE_CHUNK_SIZE;
+        currentMode = PROCMODE_CHUNK_SIZE;
     }break;
-    case HTTP_CONTENT_TRANSMODE_CONTENT_LENGTH:
+    case TRANSMIT_MODE_CONTENT_LENGTH:
     {
         setParseMode(Memory::Streams::Parsing::PARSE_MODE_DIRECT);
-        currentMode = HTTP_CONTENTDATA_CURRMODE_CONTENT_LENGTH;
+        currentMode = PROCMODE_CONTENT_LENGTH;
     }break;
     }
 }
 
-bool HTTP_Content::setContentLenSize(const uint64_t &contentLengthSize)
+bool Content::setContentLenSize(const uint64_t &contentLengthSize)
 {
     if (contentLengthSize>securityMaxPostDataSize)
     {
@@ -245,19 +247,19 @@ bool HTTP_Content::setContentLenSize(const uint64_t &contentLengthSize)
     return true;
 }
 
-void HTTP_Content::setMaxPostSizeInMemBeforeGoingToFS(const uint64_t &value)
+void Content::setMaxPostSizeInMemBeforeGoingToFS(const uint64_t &value)
 {
     //getParsedData()->setMaxContainerSizeUntilGoingToFS(value);
     binDataContainer.setMaxContainerSizeUntilGoingToFS(value);
 }
 
-void HTTP_Content::useFilesystem(const std::string &fsFilePath)
+void Content::useFilesystem(const std::string &fsFilePath)
 {
     // TODO:
     //binDataContainer.setFsBaseFileName();
 }
 
-void HTTP_Content::preemptiveDestroyStreamableOuput()
+void Content::preemptiveDestroyStreamableOuput()
 {
     binDataContainer.clear();
     if (this->deleteOutStream)
@@ -268,12 +270,12 @@ void HTTP_Content::preemptiveDestroyStreamableOuput()
     }
 }
 
-Memory::Streams::Streamable *HTTP_Content::getStreamableOuput()
+Memory::Streams::Streamable *Content::getStreamableOuput()
 {
     return outStream;
 }
 
-void HTTP_Content::setStreamableOutput(Memory::Streams::Streamable *outDataContainer, bool deleteOutStream)
+void Content::setStreamableOutput(Memory::Streams::Streamable *outDataContainer, bool deleteOutStream)
 {
     // This stream has been setted up before...
     // Delete the previous stream/data before replacing...
@@ -289,7 +291,7 @@ void HTTP_Content::setStreamableOutput(Memory::Streams::Streamable *outDataConta
     }
 }
 
-uint64_t HTTP_Content::getStreamSize()
+uint64_t Content::getStreamSize()
 {
     return outStream->size();
 }

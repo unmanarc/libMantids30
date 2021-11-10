@@ -1,4 +1,4 @@
-#include "http_cookie.h"
+#include "hdr_cookie.h"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -8,10 +8,10 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Headers;
 using namespace CX2;
 
-HTTP_Cookie::HTTP_Cookie()
+Cookie::Cookie()
 {
     // Don't expire.
     expires.setRawTime(0);
@@ -21,7 +21,7 @@ HTTP_Cookie::HTTP_Cookie()
     sameSite = HTTP_COOKIE_SAMESITE_LAX;
 }
 
-std::string HTTP_Cookie::toSetCookieString(const std::string &cookieName)
+std::string Cookie::toSetCookieString(const std::string &cookieName)
 {
     std::string opts = cookieName + "=" + value + "; ";
 
@@ -48,7 +48,7 @@ std::string HTTP_Cookie::toSetCookieString(const std::string &cookieName)
     return opts;
 }
 
-bool HTTP_Cookie::fromSetCookieString(const std::string &setCookieValue, string *cookieName)
+bool Cookie::fromSetCookieString(const std::string &setCookieValue, string *cookieName)
 {
     vector<string> cookiesParams;
     split(cookiesParams,setCookieValue,is_any_of(";"),token_compress_on);
@@ -94,88 +94,88 @@ bool HTTP_Cookie::fromSetCookieString(const std::string &setCookieValue, string 
     return true;
 }
 
-time_t HTTP_Cookie::getExpiration() const
+time_t Cookie::getExpiration() const
 {
     return expires.getRawTime();
 }
 
-void HTTP_Cookie::setToExpire()
+void Cookie::setToExpire()
 {
     setExpiration(0);
 }
 
-void HTTP_Cookie::setExpiration(const time_t &exp)
+void Cookie::setExpiration(const time_t &exp)
 {
     expires.setRawTime(exp);
 }
 
-void HTTP_Cookie::setExpirationInSeconds(const uint32_t &seconds)
+void Cookie::setExpirationInSeconds(const uint32_t &seconds)
 {
     expires.setCurrentTime();
     expires.incTime(seconds);
 }
 
-std::string HTTP_Cookie::getValue() const
+std::string Cookie::getValue() const
 {
     return value;
 }
 
-void HTTP_Cookie::setValue(const std::string &value)
+void Cookie::setValue(const std::string &value)
 {
     this->value = value;
 }
 
-uint32_t HTTP_Cookie::getMaxAge() const
+uint32_t Cookie::getMaxAge() const
 {
     return max_age;
 }
 
-void HTTP_Cookie::setMaxAge(const uint32_t &value)
+void Cookie::setMaxAge(const uint32_t &value)
 {
     max_age = value;
 }
 
-std::string HTTP_Cookie::getDomain() const
+std::string Cookie::getDomain() const
 {
     return domain;
 }
 
-void HTTP_Cookie::setDomain(const std::string &value)
+void Cookie::setDomain(const std::string &value)
 {
     domain = value;
 }
 
-std::string HTTP_Cookie::getPath() const
+std::string Cookie::getPath() const
 {
     return path;
 }
 
-void HTTP_Cookie::setPath(const std::string &value)
+void Cookie::setPath(const std::string &value)
 {
     path = value;
 }
 
-bool HTTP_Cookie::isHttpOnly() const
+bool Cookie::isHttpOnly() const
 {
     return httpOnly;
 }
 
-void HTTP_Cookie::setHttpOnly(bool value)
+void Cookie::setHttpOnly(bool value)
 {
     httpOnly = value;
 }
 
-bool HTTP_Cookie::isSecure() const
+bool Cookie::isSecure() const
 {
     return secure;
 }
 
-void HTTP_Cookie::setSecure(bool value)
+void Cookie::setSecure(bool value)
 {
     secure = value;
 }
 
-std::pair<string, string> HTTP_Cookie::getVarNameAndValue(const string &var)
+std::pair<string, string> Cookie::getVarNameAndValue(const string &var)
 {
     std::pair<string, string> r;
 
@@ -199,12 +199,12 @@ std::pair<string, string> HTTP_Cookie::getVarNameAndValue(const string &var)
     return r;
 }
 
-eHTTP_Cookie_SameSitePolicy HTTP_Cookie::getSameSite() const
+eCookie_SameSitePolicy Cookie::getSameSite() const
 {
     return sameSite;
 }
 
-void HTTP_Cookie::setSameSite(const eHTTP_Cookie_SameSitePolicy &value)
+void Cookie::setSameSite(const eCookie_SameSitePolicy &value)
 {
     sameSite = value;
 }

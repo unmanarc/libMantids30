@@ -1,4 +1,4 @@
-#include "http_security_hsts.h"
+#include "hdr_sec_hsts.h"
 #include <stdexcept>
 #include <vector>
 
@@ -6,13 +6,15 @@
 #include <boost/algorithm/string.hpp>
 #include <stdlib.h>
 
+
+using namespace CX2::Network::HTTP::Headers::Security;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-HTTP_Security_HSTS::HTTP_Security_HSTS()
+HSTS::HSTS()
 {
     activated=false;
     preload=false;
@@ -20,7 +22,7 @@ HTTP_Security_HSTS::HTTP_Security_HSTS()
     maxAge=0;
 }
 
-HTTP_Security_HSTS::HTTP_Security_HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
+HSTS::HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
 {
     this->activated=true;
     this->preload=preload;
@@ -28,37 +30,37 @@ HTTP_Security_HSTS::HTTP_Security_HSTS(uint32_t maxAge, bool includeSubDomains, 
     this->maxAge=maxAge;
 }
 
-bool HTTP_Security_HSTS::getActivated() const
+bool HSTS::getActivated() const
 {
     return activated;
 }
 
-void HTTP_Security_HSTS::setActivated(bool value)
+void HSTS::setActivated(bool value)
 {
     activated = value;
 }
 
-bool HTTP_Security_HSTS::getPreload() const
+bool HSTS::getPreload() const
 {
     return preload;
 }
 
-void HTTP_Security_HSTS::setPreload(bool value)
+void HSTS::setPreload(bool value)
 {
     preload = value;
 }
 
-bool HTTP_Security_HSTS::getIncludeSubDomains() const
+bool HSTS::getIncludeSubDomains() const
 {
     return includeSubDomains;
 }
 
-void HTTP_Security_HSTS::setIncludeSubDomains(bool value)
+void HSTS::setIncludeSubDomains(bool value)
 {
     includeSubDomains = value;
 }
 
-std::string HTTP_Security_HSTS::toValue()
+std::string HSTS::toValue()
 {
     if (activated)
     {
@@ -77,7 +79,7 @@ std::string HTTP_Security_HSTS::toValue()
     return "";
 }
 
-bool HTTP_Security_HSTS::fromValue(const std::string &sValue)
+bool HSTS::fromValue(const std::string &sValue)
 {
     vector<string> parts;
     split(parts,sValue,is_any_of("; "),token_compress_on);

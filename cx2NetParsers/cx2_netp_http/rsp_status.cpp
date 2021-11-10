@@ -1,4 +1,4 @@
-#include "http_status.h"
+#include "rsp_status.h"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -9,9 +9,10 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Response;
 using namespace CX2;
 
-const sHTTP_ResponseCode HTTP_Status::responseCodes[] = {
+const sHTTP_StatusCode Status::responseCodes[] = {
 {100,"Continue"},
 {101,"Switching Protocol"},
 {200,"OK"},
@@ -59,23 +60,23 @@ const sHTTP_ResponseCode HTTP_Status::responseCodes[] = {
 {511,"Network Authentication Required"}};
 
 
-HTTP_Status::HTTP_Status()
+Status::Status()
 {
     setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setParseDataTargetSize(128);
 }
 
-uint16_t HTTP_Status::getHTTPRetCodeValue(const eHTTP_RetCode &code)
+uint16_t Status::getHTTPStatusCodeTranslation(const StatusCode &code)
 {
-    if (code != HTTP_RET_999_NOT_SET)
+    if (code != Response::StatusCode::S_999_NOT_SET)
     {
         return responseCodes[code].code;
     }
     return 999;
 }
 
-Memory::Streams::Parsing::ParseStatus HTTP_Status::parse()
+Memory::Streams::Parsing::ParseStatus Status::parse()
 {
     std::string clientRequest = getParsedData()->toString();
 
@@ -101,17 +102,17 @@ Memory::Streams::Parsing::ParseStatus HTTP_Status::parse()
     return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
-std::string HTTP_Status::getResponseMessage() const
+std::string Status::getResponseMessage() const
 {
     return responseMessage;
 }
 
-void HTTP_Status::setResponseMessage(const std::string &value)
+void Status::setResponseMessage(const std::string &value)
 {
     responseMessage = value;
 }
 
-bool HTTP_Status::stream(Memory::Streams::Status & wrStat)
+bool Status::stream(Memory::Streams::Status & wrStat)
 {
     // Act as a client. Send data from here.
     return upStream->writeString(  httpVersion.getHTTPVersionString()
@@ -121,26 +122,26 @@ bool HTTP_Status::stream(Memory::Streams::Status & wrStat)
                                  +  responseMessage + "\r\n",wrStat).succeed;
 }
 
-void HTTP_Status::setRetCodeValue(unsigned short value)
+void Status::setRetCodeValue(unsigned short value)
 {
     responseCode = value;
 }
 
-void HTTP_Status::setRetCode(eHTTP_RetCode code)
+void Status::setRetCode(StatusCode code)
 {
-    if (code != HTTP_RET_999_NOT_SET)
+    if (code != Response::StatusCode::S_999_NOT_SET)
     {
         setRetCodeValue(responseCodes[code].code);
         setResponseMessage(responseCodes[code].responseMessage);
     }
 }
 
-unsigned short HTTP_Status::getRetCode() const
+unsigned short Status::getRetCode() const
 {
     return responseCode;
 }
 
-HTTP_Version *HTTP_Status::getHttpVersion()
+Common::Version *Status::getHttpVersion()
 {
     return &httpVersion;
 }

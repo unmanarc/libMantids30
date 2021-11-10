@@ -1,4 +1,4 @@
-#include "http_request.h"
+#include "req_requestline.h"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -11,9 +11,10 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 using namespace CX2::Network::HTTP;
+using namespace CX2::Network::HTTP::Request;
 using namespace CX2;
 
-HTTP_Request::HTTP_Request()
+RequestLine::RequestLine()
 {
     requestMethod = "GET"; // Default Method.
 
@@ -22,7 +23,7 @@ HTTP_Request::HTTP_Request()
     setSecurityMaxURLSize(128*KB_MULT); // 128K
 }
 
-bool HTTP_Request::stream(Memory::Streams::Status & wrStat)
+bool RequestLine::stream(Memory::Streams::Status & wrStat)
 {
     Memory::Streams::Status cur;
     // Act as a client. Send data from here.
@@ -36,7 +37,7 @@ bool HTTP_Request::stream(Memory::Streams::Status & wrStat)
     return true;
 }
 
-Memory::Streams::Parsing::ParseStatus HTTP_Request::parse()
+Memory::Streams::Parsing::ParseStatus RequestLine::parse()
 {
     std::string clientRequest = getParsedData()->toString();
 
@@ -55,7 +56,7 @@ Memory::Streams::Parsing::ParseStatus HTTP_Request::parse()
     return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
-void HTTP_Request::parseURI()
+void RequestLine::parseURI()
 {
     size_t found=requestURI.find("?");
 
@@ -75,7 +76,7 @@ void HTTP_Request::parseURI()
     requestURI = Memory::Streams::Decoders::URL::decodeURLStr(requestURI);
 }
 
-void HTTP_Request::parseGETParameters()
+void RequestLine::parseGETParameters()
 {
     Memory::Streams::Status x;
     Memory::Containers::B_Chunks bc;
@@ -83,42 +84,42 @@ void HTTP_Request::parseGETParameters()
     bc.streamTo(&getVars,x);
 }
 
-std::string HTTP_Request::getRequestURIParameters() const
+std::string RequestLine::getRequestURIParameters() const
 {
     return requestURIParameters;
 }
 
-HTTP_Version * HTTP_Request::getHTTPVersion()
+Common::Version * RequestLine::getHTTPVersion()
 {
     return &httpVersion;
 }
 
-Memory::Abstract::Vars *HTTP_Request::getVarsPTR()
+Memory::Abstract::Vars *RequestLine::getVarsPTR()
 {
     return &getVars;
 }
 
-std::string HTTP_Request::getRequestMethod() const
+std::string RequestLine::getRequestMethod() const
 {
     return requestMethod;
 }
 
-void HTTP_Request::setRequestMethod(const std::string &value)
+void RequestLine::setRequestMethod(const std::string &value)
 {
     requestMethod = value;
 }
 
-std::string HTTP_Request::getURI() const
+std::string RequestLine::getURI() const
 {
     return requestURI;
 }
 
-void HTTP_Request::setRequestURI(const std::string &value)
+void RequestLine::setRequestURI(const std::string &value)
 {
     requestURI = value;
 }
 
-void HTTP_Request::setSecurityMaxURLSize(size_t value)
+void RequestLine::setSecurityMaxURLSize(size_t value)
 {
     setParseDataTargetSize(value);
 }

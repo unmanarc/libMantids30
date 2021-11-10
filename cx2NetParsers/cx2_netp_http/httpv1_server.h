@@ -3,11 +3,11 @@
 
 #include "httpv1_base.h"
 
-#include "fullrequest.h"
-#include "fullresponse.h"
+#include "req_dataobjects.h"
+#include "rsp_dataobjects.h"
 
-#include "http_cookies_clientside.h"
-#include "http_cookies_serverside.h"
+#include "rsp_cookies.h"
+#include "req_cookies.h"
 
 // TODO: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
 
@@ -30,12 +30,12 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // REQUEST:
-    sHTTP_RequestData requestData();
+    Request::DataObjects getRequestActiveObjects();
     /**
      * @brief getRequestDataType Get Client Data Decodification Type
      * @return BIN/MIME/URL Options
      */
-    eHTTP_ContainerType getRequestDataType();
+    Common::eContent_DataType getRequestDataType();
     /**
      * @brief setRequestDataContainer Set Container for request input
      * @param outStream container
@@ -89,7 +89,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
-    sHTTP_ResponseData responseData();
+    Response::DataObject getResponseActiveObjects();
     /**
      * @brief setServerTokens Set Server Header
      * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
@@ -159,7 +159,7 @@ public:
      * @param cookieValue value of the cookie.
      * @return false if already exist
      */
-    bool setResponseCookie(const std::string &sCookieName, const HTTP_Cookie &sCookieValue );
+    bool setResponseCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue );
     /**
      * @brief streamResponse Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
@@ -169,7 +169,7 @@ public:
      * @brief setResponseRedirect Redirect site to another URL
      * @param location URL string
      */
-    eHTTP_RetCode setResponseRedirect(const std::string & location, bool temporary = true);
+    Response::StatusCode setResponseRedirect(const std::string & location, bool temporary = true);
     /**
      * @brief setResponseContentType Set Response Content Type
      * @param contentType Content Type (eg. application/json, text/html)
@@ -190,14 +190,14 @@ public:
     std::string getContentType() const;
 
     // SECURITY OPTIONS:
-    HTTP_Security_XFrameOpts getResponseSecurityXFrameOpts() const;
-    void setResponseSecurityXFrameOpts(const HTTP_Security_XFrameOpts &value);
+    Headers::Security::XFrameOpts getResponseSecurityXFrameOpts() const;
+    void setResponseSecurityXFrameOpts(const Headers::Security::XFrameOpts &value);
 
-    HTTP_Security_XSSProtection getResponseSecurityXSSProtection() const;
-    void setResponseSecurityXSSProtection(const HTTP_Security_XSSProtection &value);
+    Headers::Security::XSSProtection getResponseSecurityXSSProtection() const;
+    void setResponseSecurityXSSProtection(const Headers::Security::XSSProtection &value);
 
-    HTTP_Security_HSTS getResponseSecurityHSTS() const;
-    void setResponseSecurityHSTS(const HTTP_Security_HSTS &value);
+    Headers::Security::HSTS getResponseSecurityHSTS() const;
+    void setResponseSecurityHSTS(const Headers::Security::HSTS &value);
 
     void setResponseIncludeServerDate(bool value);
 
@@ -237,7 +237,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual eHTTP_RetCode processClientRequest();
+    virtual Response::StatusCode processClientRequest();
 
     void * getThis() override { return this; }
     bool changeToNextParser() override;
@@ -259,10 +259,10 @@ private:
 
     std::map<std::string,CX2::Memory::Containers::B_MEM *> staticContentElements;
 
-    HTTP_Cookies_ServerSide setCookies;
-    HTTP_Security_XFrameOpts secXFrameOpts;
-    HTTP_Security_XSSProtection secXSSProtection;
-    HTTP_Security_HSTS secHSTS;
+    Response::Cookies_ServerSide setCookies;
+    Headers::Security::XFrameOpts secXFrameOpts;
+    Headers::Security::XSSProtection secXSSProtection;
+    Headers::Security::HSTS secHSTS;
 
     bool badAnswer;
     Memory::Streams::Status ansBytes;

@@ -2,13 +2,13 @@
 #define HTTP_SECURITY_HSTS_H
 
 #include <string>
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Headers { namespace Security {
 
-class HTTP_Security_HSTS
+class HSTS
 {
 public:
-    HTTP_Security_HSTS();
-    HTTP_Security_HSTS(uint32_t maxAge, bool includeSubDomains = false, bool preload = false);
+    HSTS();
+    HSTS(uint32_t maxAge, bool includeSubDomains = false, bool preload = false);
 
     bool getActivated() const;
     void setActivated(bool value);
@@ -36,6 +36,6 @@ private:
     uint32_t maxAge;
 };
 
-}}}
+}}}}}
 #endif // HTTP_SECURITY_HSTS_H
 

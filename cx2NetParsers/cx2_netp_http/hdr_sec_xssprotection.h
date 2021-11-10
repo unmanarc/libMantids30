@@ -3,14 +3,14 @@
 
 #include <string>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Headers { namespace Security {
 
-class HTTP_Security_XSSProtection
+class XSSProtection
 {
 public:
-    HTTP_Security_XSSProtection();
-    HTTP_Security_XSSProtection(bool activated, bool blocking);
-    HTTP_Security_XSSProtection(bool activated, const std::string &reportURL);
+    XSSProtection();
+    XSSProtection(bool activated, bool blocking);
+    XSSProtection(bool activated, const std::string &reportURL);
 
     bool getActivated() const;
     void setActivated(bool value);
@@ -31,6 +31,6 @@ private:
     std::string reportURL;
 };
 
-}}}
+}}}}}
 
 #endif // HTTP_SECURITY_XSSPROTECTION_H

@@ -1,46 +1,48 @@
 #ifndef HTTP_CONTENT_H
 #define HTTP_CONTENT_H
 
-#include "http_urlvars.h"
+#include "common_urlvars.h"
 
 #include <cx2_mem_vars/substreamparser.h>
 #include <cx2_mem_vars/b_base.h>
 #include <cx2_netp_mime/mime_vars.h>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Common {
 
-enum eHTTP_Content_Transmition_Mode {
-    HTTP_CONTENT_TRANSMODE_CHUNKS,
-    HTTP_CONTENT_TRANSMODE_CONTENT_LENGTH,
-    HTTP_CONTENT_TRANSMODE_CONNECTION_CLOSE
+
+
+enum eContent_TransmitionMode {
+    TRANSMIT_MODE_CHUNKS,
+    TRANSMIT_MODE_CONTENT_LENGTH,
+    TRANSMIT_MODE_CONNECTION_CLOSE
 };
 
-enum eHTTP_ContentData_CurrentMode {
-    HTTP_CONTENTDATA_CURRMODE_CHUNK_SIZE,
-    HTTP_CONTENTDATA_CURRMODE_CHUNK_DATA,
-    HTTP_CONTENTDATA_CURRMODE_CHUNK_CRLF,
-    HTTP_CONTENTDATA_CURRMODE_CONTENT_LENGTH,
-    HTTP_CONTENTDATA_CURRMODE_CONNECTION_CLOSE
+enum eContent_ProcessingMode {
+    PROCMODE_CHUNK_SIZE,
+    PROCMODE_CHUNK_DATA,
+    PROCMODE_CHUNK_CRLF,
+    PROCMODE_CONTENT_LENGTH,
+    PROCMODE_CONNECTION_CLOSE
 };
 
-enum eHTTP_ContainerType {
-    HTTP_CONTAINERTYPE_BIN,
-    HTTP_CONTAINERTYPE_MIME,
-    HTTP_CONTAINERTYPE_URL
+enum eContent_DataType {
+    CONTENT_TYPE_BIN,
+    CONTENT_TYPE_MIME,
+    CONTENT_TYPE_URL
 };
 
-class HTTP_Content : public Memory::Streams::Parsing::SubParser
+class Content : public Memory::Streams::Parsing::SubParser
 {
 public:
-    HTTP_Content();
-    ~HTTP_Content() override;
+    Content();
+    ~Content() override;
 
     bool isDefaultStreamableOutput();
 
-    void setContainerType(const eHTTP_ContainerType &value);
+    void setContainerType(const eContent_DataType &value);
 
-    void setTransmitionMode(const eHTTP_Content_Transmition_Mode &value);
-    eHTTP_Content_Transmition_Mode getTransmitionMode() const;
+    void setTransmitionMode(const eContent_TransmitionMode &value);
+    eContent_TransmitionMode getTransmitionMode() const;
 
     /**
      * @brief setContentLenSize Set content length data size.
@@ -68,12 +70,12 @@ public:
 
     bool stream(Memory::Streams::Status & wrStat) override;
 
-    eHTTP_ContainerType getContainerType() const;
+    eContent_DataType getContainerType() const;
 
     Memory::Abstract::Vars * postVars();
 
     MIME::MIME_Vars * getMultiPartVars();
-    HTTP_URLVars * getUrlVars();
+    URLVars * getUrlVars();
 
 protected:
     Memory::Streams::Parsing::ParseStatus parse() override;
@@ -85,9 +87,9 @@ private:
     uint32_t parseHttpChunkSize();
 
     // Parsing Optimization:
-    eHTTP_Content_Transmition_Mode transmitionMode;
-    eHTTP_ContentData_CurrentMode currentMode;
-    eHTTP_ContainerType containerType;
+    eContent_TransmitionMode transmitionMode;
+    eContent_ProcessingMode currentMode;
+    eContent_DataType containerType;
 
     // Security Parameters (for parsing):
     uint64_t securityMaxPostDataSize;
@@ -97,9 +99,9 @@ private:
     Memory::Containers::B_Chunks binDataContainer;
 
     MIME::MIME_Vars multiPartVars;
-    HTTP_URLVars urlVars;
+    URLVars urlVars;
 };
 
-}}}
+}}}}
 
 #endif // HTTP_CONTENT_H

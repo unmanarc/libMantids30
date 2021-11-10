@@ -1,4 +1,4 @@
-#include "http_cookies_serverside.h"
+#include "rsp_cookies.h"
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
@@ -9,42 +9,43 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
+using namespace CX2::Network::HTTP::Response;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 
-HTTP_Cookies_ServerSide::HTTP_Cookies_ServerSide()
+Cookies_ServerSide::Cookies_ServerSide()
 {
 }
 
-HTTP_Cookies_ServerSide::~HTTP_Cookies_ServerSide()
+Cookies_ServerSide::~Cookies_ServerSide()
 {
     for (auto & cookie : cookiesMap) delete cookie.second;
 }
 
-void HTTP_Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
+void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
     for (const auto & cookie :cookiesMap )
     {
-        headers->add("Set-Cookie",((HTTP_Cookie *)cookie.second)->toSetCookieString(cookie.first));
+        headers->add("Set-Cookie",((Headers::Cookie *)cookie.second)->toSetCookieString(cookie.first));
     }
 }
 
-string HTTP_Cookies_ServerSide::getCookieValueByName(const string &cookieName)
+string Cookies_ServerSide::getCookieValueByName(const string &cookieName)
 {
-    HTTP_Cookie * cookieValue = getCookieByName(cookieName);
+    Headers::Cookie * cookieValue = getCookieByName(cookieName);
     return !cookieValue?"":cookieValue->getValue();
 }
 
-HTTP_Cookie * HTTP_Cookies_ServerSide::getCookieByName(const string &cookieName)
+Headers::Cookie * Cookies_ServerSide::getCookieByName(const string &cookieName)
 {
     if (cookiesMap.find(cookieName) == cookiesMap.end()) return nullptr;
     return cookiesMap[cookieName];
 }
 
-bool HTTP_Cookies_ServerSide::parseCookie(const string &cookie_str)
+bool Cookies_ServerSide::parseCookie(const string &cookie_str)
 {
     std::string cookieName;
-    HTTP_Cookie * cookieValue = new HTTP_Cookie;
+    Headers::Cookie * cookieValue = new Headers::Cookie;
     cookieValue->fromSetCookieString(cookie_str,&cookieName);
     if (cookieName.empty() || cookiesMap.find(cookieName) != cookiesMap.end())
     {
@@ -58,11 +59,11 @@ bool HTTP_Cookies_ServerSide::parseCookie(const string &cookie_str)
     }
 }
 
-bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_Cookie &cookieValue)
+bool Cookies_ServerSide::addCookieVal(const string &cookieName, const Headers::Cookie &cookieValue)
 {
     if (cookiesMap.find(cookieName) != cookiesMap.end()) return false;
 
-    HTTP_Cookie * val = new HTTP_Cookie;
+    Headers::Cookie * val = new Headers::Cookie;
     *val = cookieValue;
 
     cookiesMap[cookieName] = val;
@@ -70,15 +71,15 @@ bool HTTP_Cookies_ServerSide::addCookieVal(const string &cookieName, const HTTP_
     return true;
 }
 
-void HTTP_Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
+void Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
 {
-    HTTP_Cookie c;
+    Headers::Cookie c;
 
     c.setValue("");
     c.setSecure(true);
     c.setHttpOnly(true);
     c.setToExpire();
-    c.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
+    c.setSameSite(HTTP::Headers::HTTP_COOKIE_SAMESITE_STRICT);
 
     if (cookiesMap.find(cookieName) != cookiesMap.end())
     {

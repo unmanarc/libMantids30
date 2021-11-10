@@ -2,13 +2,14 @@
 #define FULLREQUEST_H
 
 #include <cx2_mem_vars/vars.h>
-#include "http_cookies_clientside.h"
-#include "http_request.h"
-#include "http_content.h"
+#include "req_cookies.h"
+#include "req_requestline.h"
+#include "common_content.h"
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Request {
 
-struct sHTTP_RequestData
+
+struct DataObjects
 {
     // Host Information:
     const char * CLIENT_IP;
@@ -27,12 +28,13 @@ struct sHTTP_RequestData
     MIME::MIME_HeaderOption * VARS_COOKIES;
 
     // Original Values:
-    MIME::MIME_Sub_Header * clientHeaders; // User agent, ...
-    HTTP_Request * clientRequest; // method type, and other options...
-    HTTP_Content * clientContentData; // content data...
+    MIME::MIME_Sub_Header * clientHeaders; // User agent, Host, etc ...
+    Request::RequestLine * clientRequestLine; // method type, and other options...
+    Common::Content * clientContentData; // content data...
 };
 
-}}}
+}}}}
+
 
 
 #endif // FULLREQUEST_H

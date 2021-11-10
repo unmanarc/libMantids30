@@ -6,12 +6,12 @@
 
 #include <cx2_netp_mime/mime_sub_header.h>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Request {
 
-class HTTP_Cookies_ClientSide
+class Cookies_ClientSide
 {
 public:
-    HTTP_Cookies_ClientSide();
+    Cookies_ClientSide();
 
     void putOnHeaders(MIME::MIME_Sub_Header * headers) const;
     /**
@@ -33,11 +33,10 @@ private:
      */
     std::string toString() const;
 
-
     void parseCookie(std::string cookie);
     std::map<std::string,std::string> cookiesMap;
 };
 
-}}}
+}}}}
 
 #endif // HTTP_COOKIES_H

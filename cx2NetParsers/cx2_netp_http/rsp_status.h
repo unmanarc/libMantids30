@@ -2,15 +2,14 @@
 #define HTTP_CODE_RESPONSE_H
 
 #include <cx2_mem_vars/substreamparser.h>
-#include "http_version.h"
-#include "http_retcodes.h"
+#include "common_version.h"
+#include "rsp_statuscodes.h"
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Response {
 
-
-struct sHTTP_ResponseCode
+struct sHTTP_StatusCode
 {
-    sHTTP_ResponseCode(const uint16_t &code,const char *responseMessage)
+    sHTTP_StatusCode(const uint16_t &code,const char *responseMessage)
     {
         this->code = code;
         this->responseMessage = responseMessage;
@@ -19,18 +18,18 @@ struct sHTTP_ResponseCode
     std::string responseMessage;
 };
 
-class HTTP_Status : public Memory::Streams::Parsing::SubParser
+class Status : public Memory::Streams::Parsing::SubParser
 {
 public:
-    HTTP_Status();
+    Status();
 
-    static uint16_t getHTTPRetCodeValue(const eHTTP_RetCode & code);
+    static uint16_t getHTTPStatusCodeTranslation(const StatusCode & code);
 
     /**
      * @brief getHttpVersion - Get HTTP Version Object
      * @return Version Object
      */
-    HTTP_Version * getHttpVersion();
+    Common::Version * getHttpVersion();
     /**
      * @brief getResponseCode - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
@@ -44,7 +43,7 @@ public:
     /**
      * @brief setResponseCode2 Set response code and message from a fixed list.
      */
-    void setRetCode(eHTTP_RetCode code);
+    void setRetCode(StatusCode code);
     /**
      * @brief getResponseMessage - Get HTTP Response Code Message (Ex. Not found)
      * @return response code message
@@ -61,15 +60,15 @@ protected:
     Memory::Streams::Parsing::ParseStatus parse() override;
 
 private:
-    HTTP_Version httpVersion;
+    Common::Version httpVersion;
     unsigned short responseCode;
     std::string responseMessage;
 
-    static const sHTTP_ResponseCode responseCodes[];
+    static const sHTTP_StatusCode responseCodes[];
 
 
 };
 
-}}}
+}}}}
 
 #endif // HTTP_CODE_RESPONSE_H

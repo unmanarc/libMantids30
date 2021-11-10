@@ -1,53 +1,54 @@
-#include "http_security_xssprotection.h"
+#include "hdr_sec_xssprotection.h"
 #include <stdexcept>
 #include <vector>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+using namespace CX2::Network::HTTP::Headers::Security;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-HTTP_Security_XSSProtection::HTTP_Security_XSSProtection()
+XSSProtection::XSSProtection()
 {
     activated = true;
     blocking = true;
 }
 
-bool HTTP_Security_XSSProtection::getActivated() const
+bool XSSProtection::getActivated() const
 {
     return activated;
 }
 
-void HTTP_Security_XSSProtection::setActivated(bool value)
+void XSSProtection::setActivated(bool value)
 {
     activated = value;
 }
 
-bool HTTP_Security_XSSProtection::getBlocking() const
+bool XSSProtection::getBlocking() const
 {
     return blocking;
 }
 
-void HTTP_Security_XSSProtection::setBlocking(bool value)
+void XSSProtection::setBlocking(bool value)
 {
     blocking = value;
 }
 
-std::string HTTP_Security_XSSProtection::getReportURL() const
+std::string XSSProtection::getReportURL() const
 {
     return reportURL;
 }
 
-void HTTP_Security_XSSProtection::setReportURL(const std::string &value)
+void XSSProtection::setReportURL(const std::string &value)
 {
     reportURL = value;
 }
 
-string HTTP_Security_XSSProtection::toValue()
+string XSSProtection::toValue()
 {
     if (!activated)
     {
@@ -64,7 +65,7 @@ string HTTP_Security_XSSProtection::toValue()
     }
 }
 
-bool HTTP_Security_XSSProtection::fromValue(const string &sValue)
+bool XSSProtection::fromValue(const string &sValue)
 {
     vector<string> parts;
     split(parts,sValue,is_any_of("; "),token_compress_on);

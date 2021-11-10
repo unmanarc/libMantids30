@@ -2,11 +2,12 @@
 #define HTTP1CLIENT_H
 
 #include "httpv1_base.h"
-#include "http_cookies_clientside.h"
-#include "http_cookies_serverside.h"
-#include "http_security_xframeopts.h"
-#include "http_security_xssprotection.h"
-#include "http_security_hsts.h"
+
+#include "rsp_cookies.h"
+#include "req_cookies.h"
+#include "hdr_sec_xframeopts.h"
+#include "hdr_sec_xssprotection.h"
+#include "hdr_sec_hsts.h"
 
 // TODO: https://en.wikipedia.org/wiki/Media_type
 // TODO: cuando el request para doh5 este listo, pre-procesar primero el request y luego recibir los datos.
@@ -57,7 +58,7 @@ public:
      * @brief getServerCookies Get the server cookies container with the information of received cookies
      * @return server cookies container.
      */
-    HTTP_Cookies_ServerSide * getServerCookies();
+    Response::Cookies_ServerSide * getServerCookies();
     /**
      * @brief getServerContentType Get Server Content Type
      * @return Content Type
@@ -72,17 +73,17 @@ public:
      * @brief getSecXFrameOpts Get Security XFrame Options
      * @return
      */
-    HTTP_Security_XFrameOpts getSecXFrameOpts() const;
+    Headers::Security::XFrameOpts getSecXFrameOpts() const;
     /**
      * @brief getSecXSSProtection Get XSS Protection Header from server
      * @return
      */
-    HTTP_Security_XSSProtection getSecXSSProtection() const;
+    Headers::Security::XSSProtection getSecXSSProtection() const;
     /**
      * @brief getSecHSTS Get HSTS Policy...
      * @return
      */
-    HTTP_Security_HSTS getSecHSTS() const;
+    Headers::Security::HSTS getSecHSTS() const;
 
 protected:
     bool initProtocol() override;
@@ -112,11 +113,11 @@ private:
 
     bool streamClientHeaders(Memory::Streams::Status &wrStat);
 
-    HTTP_Cookies_ClientSide clientCookies;
-    HTTP_Cookies_ServerSide serverCookies;
-    HTTP_Security_XFrameOpts secXFrameOpts;
-    HTTP_Security_HSTS secHSTS;
-    HTTP_Security_XSSProtection secXSSProtection;
+    Request::Cookies_ClientSide clientCookies;
+    Response::Cookies_ServerSide serverCookies;
+    Headers::Security::XFrameOpts secXFrameOpts;
+    Headers::Security::HSTS secHSTS;
+    Headers::Security::XSSProtection secXSSProtection;
 
     std::string serverContentType;
     bool securityNoSniffContentType;

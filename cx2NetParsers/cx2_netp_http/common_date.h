@@ -4,12 +4,12 @@
 #include <time.h>
 #include <string>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Common {
 
-class HTTP_Date
+class Date
 {
 public:
-    HTTP_Date();
+    Date();
 
     time_t getRawTime() const;
     void setRawTime(const time_t &value);
@@ -24,6 +24,6 @@ private:
     time_t rawTime;
 };
 
-}}}
+}}}}
 
 #endif // HTTP_DATE_H

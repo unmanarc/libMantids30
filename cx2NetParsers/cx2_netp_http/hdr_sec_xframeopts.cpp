@@ -1,22 +1,23 @@
-#include "http_security_xframeopts.h"
+#include "hdr_sec_xframeopts.h"
 #include <stdexcept>
 #include <vector>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+using namespace CX2::Network::HTTP::Headers::Security;
 using namespace CX2::Network::HTTP;
 using namespace CX2;
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-HTTP_Security_XFrameOpts::HTTP_Security_XFrameOpts()
+XFrameOpts::XFrameOpts()
 {
     value = HTTP_XFRAME_DENY;
 }
 
-HTTP_Security_XFrameOpts::HTTP_Security_XFrameOpts(const eHTTP_Security_XFrameOptsValues &value, const string &fromURL)
+XFrameOpts::XFrameOpts(const eXFrameOptsValues &value, const string &fromURL)
 {
     this->value = value;
     this->fromURL = fromURL;
@@ -27,12 +28,12 @@ HTTP_Security_XFrameOpts::HTTP_Security_XFrameOpts(const eHTTP_Security_XFrameOp
     }
 }
 
-bool HTTP_Security_XFrameOpts::isNotActivated() const
+bool XFrameOpts::isNotActivated() const
 {
     return value == HTTP_XFRAME_NONE;
 }
 
-string CX2::Network::HTTP::HTTP_Security_XFrameOpts::toValue()
+string CX2::Network::HTTP::Headers::Security::XFrameOpts::toValue()
 {
     switch (value)
     {
@@ -52,7 +53,7 @@ string CX2::Network::HTTP::HTTP_Security_XFrameOpts::toValue()
     }
 }
 
-bool HTTP_Security_XFrameOpts::fromValue(const string &sValue)
+bool XFrameOpts::fromValue(const string &sValue)
 {
     vector<string> parts;
     split(parts,sValue,is_any_of(" "),token_compress_on);
@@ -84,17 +85,17 @@ bool HTTP_Security_XFrameOpts::fromValue(const string &sValue)
     return true;
 }
 
-string HTTP_Security_XFrameOpts::getFromURL() const
+string XFrameOpts::getFromURL() const
 {
     return fromURL;
 }
 
-void HTTP_Security_XFrameOpts::setFromURL(const string &value)
+void XFrameOpts::setFromURL(const string &value)
 {
     fromURL = value;
 }
 
-eHTTP_Security_XFrameOptsValues HTTP_Security_XFrameOpts::getValue() const
+eXFrameOptsValues XFrameOpts::getValue() const
 {
     return value;
 }

@@ -1,5 +1,7 @@
 #include "httpv1_server.h"
 
+#include "hdr_cookie.h"
+
 #include <vector>
 
 #include <boost/algorithm/string/split.hpp>
@@ -25,7 +27,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
 {
     badAnswer = false;
     remotePairAddress[0]=0;
-    currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequest);
+    currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
     mimeTypes[".aac"] = "audio/aac";
@@ -106,9 +108,9 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     includeServerDate = true;
 }
 
-sHTTP_RequestData HTTPv1_Server::requestData()
+Request::DataObjects HTTPv1_Server::getRequestActiveObjects()
 {
-    sHTTP_RequestData fullReq;
+    Request::DataObjects fullReq;
 
     fullReq.USING_BASIC_AUTH = false;
 
@@ -150,15 +152,15 @@ sHTTP_RequestData HTTPv1_Server::requestData()
     fullReq.VIRTUAL_PORT = &virtualPort;
 
     fullReq.clientHeaders = &_clientHeaders;
-    fullReq.clientRequest = &_clientRequest;
+    fullReq.clientRequestLine = &_clientRequestLine;
     fullReq.clientContentData = &_clientContentData;
 
     return fullReq;
 }
 
-sHTTP_ResponseData HTTPv1_Server::responseData()
+Response::DataObject HTTPv1_Server::getResponseActiveObjects()
 {
-    sHTTP_ResponseData fullR;
+    Response::DataObject fullR;
 
     fullR.contentData = &_serverContentData;
     fullR.headers = &_serverHeaders;
@@ -179,7 +181,7 @@ void HTTPv1_Server::setRemotePairAddress(const char *value)
     SecBACopy(remotePairAddress,value);
 }
 
-eHTTP_ContainerType HTTPv1_Server::getRequestDataType()
+Common::eContent_DataType HTTPv1_Server::getRequestDataType()
 {
     return _clientContentData.getContainerType();
 }
@@ -191,7 +193,7 @@ Memory::Abstract::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &sour
     case HTTP_VARS_POST:
         return _clientContentData.postVars();
     case HTTP_VARS_GET:
-        return _clientRequest.getVarsPTR();
+        return _clientRequestLine.getVarsPTR();
     }
     return nullptr;
 }
@@ -272,7 +274,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
                     struct stat attrib;
                     if (!stat(sFullPath.c_str(), &attrib))
                     {
-                        HTTP_Date fileModificationDate;
+                        HTTP::Common::Date fileModificationDate;
 #ifdef _WIN32
                         fileModificationDate.setRawTime(attrib.st_mtime);
 #else
@@ -340,15 +342,15 @@ bool HTTPv1_Server::processClientOptions()
     return true;
 }
 
-eHTTP_RetCode HTTPv1_Server::processClientRequest()
+Response::StatusCode HTTPv1_Server::processClientRequest()
 {
-    return HTTP_RET_200_OK;
+    return Response::StatusCode::S_200_OK;
 }
 
 bool HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
-    if (currentParser == &_clientRequest) return changeToNextParserOnClientRequest();
+    if (currentParser == &_clientRequestLine) return changeToNextParserOnClientRequest();
     else if (currentParser == &_clientHeaders) return changeToNextParserOnClientHeaders();
     else return changeToNextParserOnClientContentData();
 }
@@ -372,27 +374,27 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         if (contentLength)
         {
             // Content length defined.
-            _clientContentData.setTransmitionMode(HTTP_CONTENT_TRANSMODE_CONTENT_LENGTH);
+            _clientContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONTENT_LENGTH);
             if (!_clientContentData.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
                 badAnswer = true;
-                _serverCodeResponse.setRetCode(HTTP_RET_413_PAYLOAD_TOO_LARGE);
+                _serverCodeResponse.setRetCode(Response::StatusCode::S_413_PAYLOAD_TOO_LARGE);
                 return answer(ansBytes);
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
             if ( icontains(contentType,"multipart/form-data") )
             {
-                _clientContentData.setContainerType(HTTP_CONTAINERTYPE_MIME);
+                _clientContentData.setContainerType(Common::CONTENT_TYPE_MIME);
                 _clientContentData.getMultiPartVars()->setMultiPartBoundary(_clientHeaders.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
             else if ( icontains(contentType,"application/x-www-form-urlencoded") )
             {
-                _clientContentData.setContainerType(HTTP_CONTAINERTYPE_URL);
+                _clientContentData.setContainerType(Common::CONTENT_TYPE_URL);
             }
             else
-                _clientContentData.setContainerType(HTTP_CONTAINERTYPE_BIN);
+                _clientContentData.setContainerType(Common::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -447,7 +449,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
         _serverHeaders.add("Connetion", "Close");
         _serverHeaders.remove("Content-Length");
         /////////////////////
-        if (_serverContentData.getTransmitionMode() == HTTP_CONTENT_TRANSMODE_CHUNKS)
+        if (_serverContentData.getTransmitionMode() == Common::TRANSMIT_MODE_CHUNKS)
             _serverHeaders.replace("Transfer-Encoding", "Chunked");
     }
     else
@@ -456,7 +458,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
         _serverHeaders.replace("Content-Length", std::to_string(strsize));
     }
 
-    HTTP_Date currentDate;
+    HTTP::Common::Date currentDate;
     currentDate.setCurrentTime();
     if (includeServerDate)
         _serverHeaders.add("Date", currentDate.toString());
@@ -496,25 +498,25 @@ void HTTPv1_Server::prepareServerVersionOnURI()
     _serverCodeResponse.getHttpVersion()->setVersionMajor(1);
     _serverCodeResponse.getHttpVersion()->setVersionMinor(0);
 
-    if (_clientRequest.getHTTPVersion()->getVersionMajor()!=1)
+    if (_clientRequestLine.getHTTPVersion()->getVersionMajor()!=1)
     {
-        _serverCodeResponse.setRetCode(HTTP_RET_505_HTTP_VERSION_NOT_SUPPORTED);
+        _serverCodeResponse.setRetCode(Response::StatusCode::S_505_HTTP_VERSION_NOT_SUPPORTED);
         badAnswer = true;
     }
     else
     {
-        _serverCodeResponse.getHttpVersion()->setVersionMinor(_clientRequest.getHTTPVersion()->getVersionMinor());
+        _serverCodeResponse.getHttpVersion()->setVersionMinor(_clientRequestLine.getHTTPVersion()->getVersionMinor());
     }
 }
 
 void HTTPv1_Server::prepareServerVersionOnOptions()
 {
-    if (_clientRequest.getHTTPVersion()->getVersionMinor()>=1)
+    if (_clientRequestLine.getHTTPVersion()->getVersionMinor()>=1)
     {
         if (virtualHost=="")
         {
             // TODO: does really need the VHost?
-            _serverCodeResponse.setRetCode(HTTP_RET_400_BAD_REQUEST);
+            _serverCodeResponse.setRetCode(Response::StatusCode::S_400_BAD_REQUEST);
             badAnswer = true;
         }
     }
@@ -637,32 +639,32 @@ void HTTPv1_Server::addStaticContent(const string &path, Memory::Containers::B_M
     staticContentElements[path] = contentElement;
 }
 
-HTTP_Security_HSTS HTTPv1_Server::getResponseSecurityHSTS() const
+Headers::Security::HSTS HTTPv1_Server::getResponseSecurityHSTS() const
 {
     return secHSTS;
 }
 
-void HTTPv1_Server::setResponseSecurityHSTS(const HTTP_Security_HSTS &value)
+void HTTPv1_Server::setResponseSecurityHSTS(const Headers::Security::HSTS &value)
 {
     secHSTS = value;
 }
 
-HTTP_Security_XSSProtection HTTPv1_Server::getResponseSecurityXSSProtection() const
+Headers::Security::XSSProtection HTTPv1_Server::getResponseSecurityXSSProtection() const
 {
     return secXSSProtection;
 }
 
-void HTTPv1_Server::setResponseSecurityXSSProtection(const HTTP_Security_XSSProtection &value)
+void HTTPv1_Server::setResponseSecurityXSSProtection(const Headers::Security::XSSProtection &value)
 {
     secXSSProtection = value;
 }
 
-HTTP_Security_XFrameOpts HTTPv1_Server::getResponseSecurityXFrameOpts() const
+Headers::Security::XFrameOpts HTTPv1_Server::getResponseSecurityXFrameOpts() const
 {
     return secXFrameOpts;
 }
 
-void HTTPv1_Server::setResponseSecurityXFrameOpts(const HTTP_Security_XFrameOpts &value)
+void HTTPv1_Server::setResponseSecurityXFrameOpts(const Headers::Security::XFrameOpts &value)
 {
     secXFrameOpts = value;
 }
@@ -679,24 +681,24 @@ void HTTPv1_Server::addCookieClearSecure(const string &cookieName)
 
 bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const string &cookieValue, const uint32_t &uMaxAge)
 {
-    HTTP_Cookie val;
+    Headers::Cookie val;
     val.setValue(cookieValue);
     val.setSecure(true);
     val.setHttpOnly(true);
     val.setExpirationInSeconds(uMaxAge);
     val.setMaxAge(uMaxAge);
-    val.setSameSite(HTTP_COOKIE_SAMESITE_STRICT);
+    val.setSameSite(HTTP::Headers::HTTP_COOKIE_SAMESITE_STRICT);
     return setResponseCookie(cookieName,val);
 }
 
 bool HTTPv1_Server::setResponseInsecureCookie(const string &sCookieName, const string &sCookieValue)
 {
-    HTTP_Cookie val;
+    Headers::Cookie val;
     val.setValue(sCookieValue);
     return setResponseCookie(sCookieName,val);
 }
 
-bool HTTPv1_Server::setResponseCookie(const string &sCookieName, const HTTP_Cookie &sCookieValue)
+bool HTTPv1_Server::setResponseCookie(const string &sCookieName, const Headers::Cookie &sCookieValue)
 {
     return setCookies.addCookieVal(sCookieName,sCookieValue);
 }
@@ -715,13 +717,13 @@ Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamabl
     return stat;
 }
 
-Network::HTTP::eHTTP_RetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
+Network::HTTP::Response::StatusCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
 {
     _serverHeaders.replace("Location", location);
     if (temporary)
-        return Network::HTTP::HTTP_RET_307_TEMPORARY_REDIRECT;
+        return Network::HTTP::Response::StatusCode::S_307_TEMPORARY_REDIRECT;
     else
-        return Network::HTTP::HTTP_RET_308_PERMANENT_REDIRECT;
+        return Network::HTTP::Response::StatusCode::S_308_PERMANENT_REDIRECT;
 }
 
 void HTTPv1_Server::setResponseContentType(const string &contentType, bool bNoSniff)
@@ -775,7 +777,7 @@ Memory::Streams::Streamable *HTTPv1_Server::getRequestDataContainer()
 
 string HTTPv1_Server::getRequestURI()
 {
-    return _clientRequest.getURI();
+    return _clientRequestLine.getURI();
 }
 
 string HTTPv1_Server::getRequestVirtualHost() const

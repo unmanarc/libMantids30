@@ -4,12 +4,12 @@
 #include <string>
 #include <stdint.h>
 
-namespace CX2 { namespace Network { namespace HTTP {
+namespace CX2 { namespace Network { namespace HTTP { namespace Common {
 
-class HTTP_Version
+class Version
 {
 public:
-    HTTP_Version();
+    Version();
     void parseVersion(const std::string & version);
     std::string getHTTPVersionString();
 
@@ -31,6 +31,6 @@ private:
      */
     uint16_t versionMajor;
 };
-}}}
+}}}}
 
 #endif // HTTP_VERSION_H
