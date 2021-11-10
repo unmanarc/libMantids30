@@ -34,9 +34,18 @@ public:
     uint32_t getMaxAge() const;
     void setMaxAge(uint32_t newMaxAge);
 
+    bool getOptionImmutable() const;
+    void setOptionImmutable(bool newOptionImmutable);
+
+    bool getOptionNoTransform() const;
+    void setOptionNoTransform(bool newOptionNoTransform);
+
+    uint32_t getSMaxAge() const;
+    void setSMaxAge(uint32_t newSMaxAge);
+
 private:
-    bool optionNoStore, optionNoCache, optionMustRevalidate, optionPrivate, optionPublic;
-    uint32_t maxAge;
+    bool optionNoStore, optionNoCache, optionMustRevalidate, optionPrivate, optionPublic, optionImmutable, optionNoTransform,optionProxyRevalidate;
+    uint32_t maxAge,sMaxAge;
 };
 
 }}}}
