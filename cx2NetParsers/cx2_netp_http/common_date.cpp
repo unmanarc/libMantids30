@@ -36,7 +36,10 @@ std::string Date::toString()
     ptime t = from_time_t(rawTime);
     timeinfo = to_tm(t);
 
-    strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
+    if (!timeinfo.tm_zone)
+        strftime (buffer,80,"%a, %d %b %Y %T GMT",&timeinfo);
+    else
+        strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
     return std::string(buffer);
 }
 
