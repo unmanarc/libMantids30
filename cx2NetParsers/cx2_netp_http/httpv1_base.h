@@ -9,12 +9,8 @@
 #include "rsp_status.h"
 #include <cx2_netp_mime/mime_sub_header.h>
 
-//#include <netinet/in.h>
-
-#define VNET_PROD_NAME "vProtonHTTP"
-
-#define VNET_HTTP_VERSION_MAJOR 0
-#define VNET_HTTP_VERSION_MINOR 1
+#define HTTP_PRODUCT_VERSION_MAJOR 0
+#define HTTP_PRODUCT_VERSION_MINOR 2
 
 namespace CX2 { namespace Network { namespace HTTP {
 
@@ -78,7 +74,7 @@ protected:
     Common::Content _serverContentData;
 
 private:
-    void setInternalProductVersion(const std::string & prodName, const std::string & extraInfo, const uint32_t &versionMajor = VNET_HTTP_VERSION_MAJOR, const uint32_t &versionMinor = VNET_HTTP_VERSION_MINOR);
+    void setInternalProductVersion(const std::string & prodName, const std::string & extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR, const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 
 };
 

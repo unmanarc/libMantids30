@@ -172,6 +172,7 @@ Response::DataObject HTTPv1_Server::getResponseActiveObjects()
     fullR.bNoSniff = bNoSniff;
     fullR.contentType = &contentType;
     fullR.authenticate = &authenticate;
+    fullR.cacheControl = &cacheControl;
 
     return fullR;
 }
@@ -475,6 +476,10 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
     // Security Options...
 
     _serverHeaders.replace("X-XSS-Protection", secXSSProtection.toValue());
+
+    std::string cacheOptions = cacheControl.toString();
+    if (!cacheOptions.empty())
+        _serverHeaders.replace("Cache-Control", cacheOptions);
 
     if (!secXFrameOpts.isNotActivated())
         _serverHeaders.replace("X-Frame-Options", secXFrameOpts.toValue());

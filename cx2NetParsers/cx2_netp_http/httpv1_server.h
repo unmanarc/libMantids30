@@ -256,13 +256,13 @@ private:
 
     bool answer(Memory::Streams::Status &wrStat);
 
-
     std::map<std::string,CX2::Memory::Containers::B_MEM *> staticContentElements;
 
     Response::Cookies_ServerSide setCookies;
     Headers::Security::XFrameOpts secXFrameOpts;
     Headers::Security::XSSProtection secXSSProtection;
     Headers::Security::HSTS secHSTS;
+    Headers::CacheControl cacheControl;
 
     bool badAnswer;
     Memory::Streams::Status ansBytes;

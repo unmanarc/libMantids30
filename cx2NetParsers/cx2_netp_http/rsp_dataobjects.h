@@ -8,9 +8,9 @@
 #include "hdr_sec_xframeopts.h"
 #include "hdr_sec_xssprotection.h"
 #include "hdr_sec_hsts.h"
+#include "hdr_cachecontrol.h"
 
 namespace CX2 { namespace Network { namespace HTTP { namespace Response {
-
 
 struct DataObject
 {
@@ -21,6 +21,7 @@ struct DataObject
     Headers::Security::XFrameOpts * secXFrameOpts;
     Headers::Security::XSSProtection * secXSSProtection;
     Headers::Security::HSTS * secHSTS;
+    Headers::CacheControl * cacheControl;
 
     // Original Values:
     MIME::MIME_Sub_Header * headers; //
