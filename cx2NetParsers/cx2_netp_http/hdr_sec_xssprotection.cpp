@@ -14,8 +14,7 @@ using namespace boost::algorithm;
 
 XSSProtection::XSSProtection()
 {
-    activated = true;
-    blocking = true;
+    setDefaults();
 }
 
 bool XSSProtection::getActivated() const
@@ -70,9 +69,7 @@ bool XSSProtection::fromValue(const string &sValue)
     vector<string> parts;
     split(parts,sValue,is_any_of("; "),token_compress_on);
 
-    activated = true;
-    blocking = true;
-    reportURL = "";
+    setDefaults();
 
     if (parts.empty())
     {
@@ -98,4 +95,11 @@ bool XSSProtection::fromValue(const string &sValue)
         }
     }
     return true;
+}
+
+void XSSProtection::setDefaults()
+{
+    activated = true;
+    blocking = true;
+    reportURL = "";
 }

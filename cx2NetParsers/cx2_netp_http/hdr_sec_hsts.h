@@ -10,6 +10,8 @@ public:
     HSTS();
     HSTS(uint32_t maxAge, bool includeSubDomains = false, bool preload = false);
 
+    void setDefaults();
+
     bool getActivated() const;
     void setActivated(bool value);
 
@@ -23,7 +25,6 @@ public:
      * @param value
      */
     void setPreload(bool value);
-
 
     bool getIncludeSubDomains() const;
     void setIncludeSubDomains(bool value);

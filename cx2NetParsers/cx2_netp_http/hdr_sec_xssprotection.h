@@ -25,6 +25,8 @@ public:
     bool fromValue(const std::string & sValue);
 
 
+    void setDefaults();
+
 private:
     bool activated;
     bool blocking;

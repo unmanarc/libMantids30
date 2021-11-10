@@ -18,6 +18,8 @@ public:
     XFrameOpts();
     XFrameOpts(const eXFrameOptsValues & value, const std::string & fromURL);
 
+    void setDefaults();
+
     bool isNotActivated() const;
 
     std::string toValue();

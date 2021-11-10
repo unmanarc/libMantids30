@@ -1,9 +1,9 @@
 #include "hdr_cookie.h"
 
+#include <vector>
+
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-
-#include <vector>
 
 using namespace std;
 using namespace boost;
@@ -13,12 +13,21 @@ using namespace CX2;
 
 Cookie::Cookie()
 {
+    setDefaults();
+}
+
+void Cookie::setDefaults()
+{
     // Don't expire.
     expires.setRawTime(0);
     max_age=std::numeric_limits<uint32_t>::max();
     secure=false;
     httpOnly=false;
     sameSite = HTTP_COOKIE_SAMESITE_LAX;
+
+    value="";
+    domain="";
+    path="";
 }
 
 std::string Cookie::toSetCookieString(const std::string &cookieName)
@@ -52,6 +61,8 @@ bool Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
 {
     vector<string> cookiesParams;
     split(cookiesParams,setCookieValue,is_any_of(";"),token_compress_on);
+
+    setDefaults();
 
     bool firstVal = true;
     for (const string & param : cookiesParams)

@@ -17,6 +17,8 @@ class Cookie
 public:
     Cookie();
 
+    void setDefaults();
+
     std::string toSetCookieString(const std::string & cookieName);
     bool fromSetCookieString(const std::string & setCookieValue, std::string * cookieName);
 

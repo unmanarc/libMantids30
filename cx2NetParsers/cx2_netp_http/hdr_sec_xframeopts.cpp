@@ -14,7 +14,7 @@ using namespace boost::algorithm;
 
 XFrameOpts::XFrameOpts()
 {
-    value = HTTP_XFRAME_DENY;
+    setDefaults();
 }
 
 XFrameOpts::XFrameOpts(const eXFrameOptsValues &value, const string &fromURL)
@@ -26,6 +26,12 @@ XFrameOpts::XFrameOpts(const eXFrameOptsValues &value, const string &fromURL)
     {
         throw runtime_error("Using fromURL without HTTP_XFRAME_ALLOWFROM");
     }
+}
+
+void XFrameOpts::setDefaults()
+{
+    fromURL = "";
+    value = HTTP_XFRAME_DENY;
 }
 
 bool XFrameOpts::isNotActivated() const
@@ -57,6 +63,8 @@ bool XFrameOpts::fromValue(const string &sValue)
 {
     vector<string> parts;
     split(parts,sValue,is_any_of(" "),token_compress_on);
+
+    setDefaults();
 
     if (parts.empty())
     {

@@ -16,10 +16,7 @@ using namespace boost::algorithm;
 
 HSTS::HSTS()
 {
-    activated=false;
-    preload=false;
-    includeSubDomains=false;
-    maxAge=0;
+    setDefaults();
 }
 
 HSTS::HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
@@ -28,6 +25,14 @@ HSTS::HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
     this->preload=preload;
     this->includeSubDomains=includeSubDomains;
     this->maxAge=maxAge;
+}
+
+void HSTS::setDefaults()
+{
+    activated=false;
+    preload=false;
+    includeSubDomains=false;
+    maxAge=0;
 }
 
 bool HSTS::getActivated() const
@@ -84,9 +89,7 @@ bool HSTS::fromValue(const std::string &sValue)
     vector<string> parts;
     split(parts,sValue,is_any_of("; "),token_compress_on);
 
-    includeSubDomains = false;
-    preload = false;
-    maxAge = 0;
+    setDefaults();
 
     if (sValue.empty())
         activated = false;
