@@ -26,6 +26,12 @@ using namespace CX2;
 HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base(false, sobject)
 {
     badAnswer = false;
+
+    // All request will have no-cache activated.... (unless it's a real file and it's not overwritten)
+    cacheControl.setOptionNoCache(true);
+    cacheControl.setOptionNoStore(true);
+    cacheControl.setOptionMustRevalidate(true);
+
     remotePairAddress[0]=0;
     currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequestLine);
 
@@ -222,8 +228,6 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
         return false;
     }
 
-
-
     string sFullPath = cServerDir + getRequestURI() + defaultFileAppend;
     cServerDirSize = strlen(cServerDir);
 
@@ -284,6 +288,11 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
                         if (includeServerDate)
                             _serverHeaders.add("Last-Modified", fileModificationDate.toString());
                     }
+
+                    cacheControl.setOptionNoCache(false);
+                    cacheControl.setOptionNoStore(false);
+                    cacheControl.setOptionMustRevalidate(false);
+                    cacheControl.setMaxAge(3600);
 
                     ret = true;
                 }
