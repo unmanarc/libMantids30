@@ -293,7 +293,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
                     cacheControl.setOptionNoStore(false);
                     cacheControl.setOptionMustRevalidate(false);
                     cacheControl.setMaxAge(3600);
-
+                    cacheControl.setOptionImmutable(true);
                     ret = true;
                 }
                 else
