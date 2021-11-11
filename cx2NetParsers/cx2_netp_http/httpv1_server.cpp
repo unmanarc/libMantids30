@@ -107,8 +107,8 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     mimeTypes[".xml"] = "application/xml";
     mimeTypes[".xul"] = "application/vnd.mozilla.xul+xml";
     mimeTypes[".zip"] = "application/zip";
-    mimeTypes[".3gp"] = "video/3gpp</code><br>";
-    mimeTypes[".3g2"] = "video/3gpp2</code><br>";
+    mimeTypes[".3gp"] = "video/3gpp";
+    mimeTypes[".3g2"] = "video/3gpp2";
     mimeTypes[".7z"] = "application/x-7z-compressed";
 
     includeServerDate = true;
