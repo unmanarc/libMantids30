@@ -304,7 +304,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
             sFullComputedPath += SLASH;
 
         info->sRealFullPath = sFullComputedPath;
-        info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+        info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
 
         return !access(sFullComputedPath.c_str(),R_OK);
     }
@@ -321,7 +321,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
             // file is executable... don't map, and the most important: don't create cache in the browser...
             // Very useful for CGI-like implementations...
             info->sRealFullPath = sFullComputedPath;
-            info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+            info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
             info->isExecutable = true;
             return true;
         }
@@ -332,7 +332,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
             {
                 // File Found / Readable.
                 info->sRealFullPath = sFullComputedPath;
-                info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+                info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
                 setResponseDataStreamer(bFile,true);
                 setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
