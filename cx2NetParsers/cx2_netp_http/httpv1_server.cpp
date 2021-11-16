@@ -12,9 +12,15 @@
 #include <sys/stat.h>
 
 #ifdef _WIN32
+#define SLASHB '\\'
+#define SLASH "\\"
+#include <boost/algorithm/string/predicate.hpp>
 #include <stdlib.h>
 // TODO: check if _fullpath mitigate transversal.
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#else
+#define SLASH "/"
+#define SLASHB '/'
 #endif
 
 using namespace std;
@@ -56,6 +62,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     mimeTypes[".gif"] = "image/gif";
     mimeTypes[".htm"] = "text/html";
     mimeTypes[".html"] = "text/html";
+    mimeTypes[".iso"] = "application/octet-stream";
     mimeTypes[".ico"] = "image/vnd.microsoft.icon";
     mimeTypes[".ics"] = "text/calendar";
     mimeTypes[".jar"] = "application/java-archive";
@@ -210,6 +217,160 @@ void HTTPv1_Server::setResponseServerName(const string &sServerName)
     _serverHeaders.replace("Server", sServerName);
 }
 
+
+bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
+{
+    if (!info)
+        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
+
+    info->reset();
+
+    {
+        char *cServerDir;
+        // Check Server Dir Real Path:
+        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+            return false;
+
+        sServerDir = cServerDir;
+
+        // Put a slash at the end of the server dir resource...
+        sServerDir += (sServerDir.back() == SLASHB ? "" : std::string(SLASH));
+
+        free(cServerDir);
+    }
+
+    // Compute the requested path:
+    string sFullRequestedPath =    sServerDir           // Put the current server dir...
+            + getRequestURI().substr(1) // Put the Request URI (without the first character / slash)
+            + defaultFileAppend; // Append option...
+
+    struct stat stats;
+
+    // Compute the full requested path:
+    std::string sFullComputedPath;
+    {
+        char *cFullPath;
+        if (  staticContentElements.find(std::string(getRequestURI()+defaultFileAppend)) != staticContentElements.end() )
+        {
+            // CHECK FOR STATIC CONTENT:
+            info->sRealRelativePath = getRequestURI()+defaultFileAppend;
+            info->sRealFullPath = "MEM:" + info->sRealRelativePath;
+            setResponseDataStreamer(staticContentElements[info->sRealRelativePath],false);
+            return true;
+        }
+        else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
+        {
+            // Compute the full path..
+            sFullComputedPath = cFullPath;
+            free(cFullPath);
+
+            // Check file properties...
+            stat(sFullComputedPath.c_str(), &stats);
+
+            // Put a slash at the end of the computed dir resource (when dir)...
+            if ((info->isDir = S_ISDIR(stats.st_mode)) == true)
+                sFullComputedPath += (sFullComputedPath.back() == SLASHB ? "" : std::string(SLASH));
+
+            // Path OK, continue.
+        }
+        else
+        {
+            // Does not exist or unaccesible. (404)
+            return false;
+        }
+    }
+
+    // Check for transversal access hacking attempts...
+    if (sFullComputedPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedPath.c_str(),sServerDir.size())!=0)
+    {
+        info->isTransversal=true;
+        return false;
+    }
+
+    // No transversal detected at this point.
+
+
+
+    // Check if it's a directory...
+
+    if (info->isDir == true)
+    {
+        // Don't get directories when we are appending something.
+        if (!defaultFileAppend.empty())
+            return false;
+
+        // Complete the directory notation (slash at the end)
+        if (sFullComputedPath.back()!=SLASHB)
+            sFullComputedPath += SLASH;
+
+        info->sRealFullPath = sFullComputedPath;
+        info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+
+        return !access(sFullComputedPath.c_str(),R_OK);
+    }
+    else if ( S_ISREG(stats.st_mode) == true  ) // Check if it's a regular file
+    {
+        if (    dontMapExecutables &&
+        #ifndef _WIN32
+                !access(sFullComputedPath.c_str(),X_OK)
+        #else
+                (boost::iends_with(cFullPath,".exe") || boost::iends_with(cFullPath,".bat") || boost::iends_with(cFullPath,".com"))
+        #endif
+                )
+        {
+            // file is executable... don't map, and the most important: don't create cache in the browser...
+            // Very useful for CGI-like implementations...
+            info->sRealFullPath = sFullComputedPath;
+            info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+            info->isExecutable = true;
+            return true;
+        }
+        else
+        {
+            CX2::Memory::Containers::B_MMAP * bFile = new CX2::Memory::Containers::B_MMAP;
+            if (bFile->referenceFile(sFullComputedPath.c_str(),true,false))
+            {
+                // File Found / Readable.
+                info->sRealFullPath = sFullComputedPath;
+                info->sRealRelativePath = sFullRequestedPath.c_str()+(sServerDir.size()-1);
+                setResponseDataStreamer(bFile,true);
+                setResponseContentTypeByFileExtension(info->sRealRelativePath);
+
+                struct stat attrib;
+                if (!stat(sFullRequestedPath.c_str(), &attrib))
+                {
+                    HTTP::Common::Date fileModificationDate;
+#ifdef _WIN32
+                    fileModificationDate.setRawTime(attrib.st_mtime);
+#else
+                    fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
+#endif
+                    if (includeServerDate)
+                        _serverHeaders.add("Last-Modified", fileModificationDate.toString());
+                }
+
+                cacheControl.setOptionNoCache(false);
+                cacheControl.setOptionNoStore(false);
+                cacheControl.setOptionMustRevalidate(false);
+                cacheControl.setMaxAge(3600);
+                cacheControl.setOptionImmutable(true);
+                return true;
+            }
+            else
+            {
+                // File not found / Readable...
+                delete bFile;
+                return false;
+            }
+        }
+    }
+    else
+    {
+        // Special files...
+        return false;
+    }
+}
+/*
 bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sRealRelativePath, string *sRealFullPath, const string &defaultFileAppend, bool *isDir)
 {
     bool ret = false;
@@ -317,8 +478,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sR
     if (cFullPath) free(cFullPath);
 
     return ret;
-}
-
+}*/
 bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
 {
     const char * cFileExtension = strrchr(sFilePath.c_str(),'.');

@@ -23,6 +23,25 @@ enum HTTP_VarSource
     HTTP_VARS_GET
 };
 
+struct sLocalRequestedFileInfo
+{
+    sLocalRequestedFileInfo()
+    {
+        reset();
+    }
+    void reset()
+    {
+        sRealRelativePath="";
+        sRealFullPath="";
+        isDir = false;
+        isExecutable = false;
+        isTransversal = false;
+    }
+    std::string sRealRelativePath;
+    std::string sRealFullPath;
+    bool isDir, isExecutable, isTransversal;
+};
+
 class HTTPv1_Server : public HTTPv1_Base
 {
 public:
@@ -95,16 +114,28 @@ public:
      * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
      */
     void setResponseServerName(const std::string &sServerName);
+
+
     /**
-     * @brief getLocalFilePathFromURI Get the local and relative path from the URL, it also checks for transversal escape attempts
+     * @brief getLocalFilePathFromURI2 Get the local and relative path from the URL, it also checks for transversal escape attempts
+     * @param sServerDir URI
+     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
+     * @param defaultFileAppend  Append default suffix (eg. /index.html), default is not to append.
+     * @param dontMapExecutables Don't map the executable file as the response
+     * @return true if there is a positive resource that should be served, otherwise false.
+     */
+    bool getLocalFilePathFromURI2(std::string sServerDir, sLocalRequestedFileInfo * info, const std::string & defaultFileAppend = "", const bool & dontMapExecutables = false);
+
+    /**
+     * @brief getLocalFilePathFromURI (deprecated) Get the local and relative path from the URL, it also checks for transversal escape attempts
      * @param sServerDir URI
      * @param sRealRelativePath Output with the Relative path of the requested resource
      * @param sRealFullPath Output with the Full path of the requested resource
      * @param defaultFileAppend Append default suffix (eg. /index.html), default is not to append.
      * @param isDir Output parameter to check if the requested resource is a directory
      * @return true if there is a resource, false if not
-     */
-    bool getLocalFilePathFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath, const std::string & defaultFileAppend = "", bool * isDir = nullptr);
+     bool getLocalFilePathFromURI(const std::string &sServerDir, std::string *sRealRelativePath, std::string *sRealFullPath, const std::string & defaultFileAppend = "", bool * isDir = nullptr);
+*/
     /**
      * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
      * @param sFilePath filename string
