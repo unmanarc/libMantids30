@@ -48,8 +48,9 @@ void WebClientHandler::setAuthenticators(CX2::Authentication::Domains *authentic
 Response::StatusCode WebClientHandler::processClientRequest()
 {
     // RPC MODE:
-    bool staticContent = false;
-    std::string sRealRelativePath, sRealFullPath;
+    //bool staticContent = false;
+    //   std::string sRealRelativePath, sRealFullPath;
+    sLocalRequestedFileInfo fileInfo;
     Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
     if (getRequestURI() == "/api") return processRPCRequest();
 
@@ -58,17 +59,18 @@ Response::StatusCode WebClientHandler::processClientRequest()
     uint64_t uMaxAge;
     WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
 
-/*    if ((staticContent=verifyStaticContentExistence(getRequestURI())) == true)
+    /*    if ((staticContent=verifyStaticContentExistence(getRequestURI())) == true)
     {
         sRealRelativePath = getRequestURI();
         sRealFullPath = "";
     }*/
 
-    if ( staticContent ||
-         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "") ||
-         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, ".html") ||
-         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "index.html") ||
-         getLocalFilePathFromURI(resourcesLocalPath, &sRealRelativePath, &sRealFullPath, "/index.html")
+    if ( //staticContent ||
+         (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "index.html") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "/index.html")
+          ) && !fileInfo.isDir
          )
     {
         // Evaluate...
@@ -77,7 +79,7 @@ Response::StatusCode WebClientHandler::processClientRequest()
         CX2::Authentication::Manager * authorizer = hSession?authDomains->openDomain(hSession->authSession->getAuthDomain()) : nullptr;
 
         if ( resourceFilter )
-            e = resourceFilter->evaluateAction(sRealRelativePath, !hSession?nullptr:hSession->authSession, authorizer);
+            e = resourceFilter->evaluateAction(fileInfo.sRealRelativePath, !hSession?nullptr:hSession->authSession, authorizer);
 
         if (e.accept)
         {
@@ -89,8 +91,8 @@ Response::StatusCode WebClientHandler::processClientRequest()
         else
             ret = Response::StatusCode::S_403_FORBIDDEN;
 
-        log(LEVEL_INFO,hSession, "fileServer", 2048, "R/%03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),sRealRelativePath.c_str());
-        log(LEVEL_DEBUG,hSession, "fileServer", 2048, "R LOCAL/%03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),sRealFullPath.c_str());
+        log(LEVEL_INFO,hSession, "fileServer", 2048, "R/%03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealRelativePath.c_str());
+        log(LEVEL_DEBUG,hSession, "fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
     }
     else
     {
@@ -103,8 +105,10 @@ Response::StatusCode WebClientHandler::processClientRequest()
         setResponseDataStreamer(nullptr,false);
     }
 
-    if ( !staticContent && useHTMLIEngine && getContentType() == "text/html" )
-        processHTMLIEngine(sRealFullPath,hSession);
+    if ( //!staticContent &&
+         useHTMLIEngine &&
+         getContentType() == "text/html" ) // The content type has changed during the map.
+        processHTMLIEngine(fileInfo.sRealFullPath,hSession);
 
     if (hSession)
         sessionsManager->closeSession(sSessionId);
@@ -474,9 +478,9 @@ Response::StatusCode WebClientHandler::processRPCRequest_INITAUTH(const Authenti
         // TODO: for better log, remove usage of , in user/domain
         log(LEVEL_WARN, nullptr, "rpcServer", 2048, "Invalid Login Attempt {val=%d,txt=%s,user=%s,domain=%s}",
             JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0),
-                JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""),
-                user.c_str(),
-                domain.c_str());
+            JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""),
+            user.c_str(),
+            domain.c_str());
 
     }
 
@@ -526,7 +530,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_POSTAUTH(const Authenti
     else
     {
         log(LEVEL_WARN, currentWebSession, "rpcServer", 2048, "Authentication error on factor #(%d), Logged out {val=%d,txt=%s}",auth.getPassIndex(),
-             JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt","")
+            JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt","")
             );
 
         // Mark to Destroy the session if the chpasswd is invalid...
