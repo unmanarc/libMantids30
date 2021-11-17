@@ -198,7 +198,16 @@ void GlobalArguments::printHelp()
             printf(v->varType != TYPE_BOOL ? " <value>" : "        ");
 
             if (!v->mandatory)
-                printf(" : %s (default: %s)\n", v->description.c_str(), v->varType != TYPE_BOOL ? v->defaultValue.c_str() : (v->defaultValue!="0"? "true" : "false") );
+            {
+                if ( v->varType != TYPE_BOOL )
+                    printf(" : %s (default: %s)\n", v->description.c_str(),  v->defaultValue.c_str() );
+                else
+                {
+                    BOOL defValue;
+                    defValue.fromString(v->defaultValue);
+                    printf(" : %s (default: %s)\n", v->description.c_str(), defValue.toString().c_str());
+                }
+            }
             else
                 printf(" : %s (required argument)\n", v->description.c_str());
         }
