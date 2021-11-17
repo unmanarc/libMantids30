@@ -37,8 +37,8 @@ std::string Date::toString()
     timeinfo = to_tm(t);
 
 #ifndef _WIN32
-    if (timeinfo.tm_zone)
-        timeinfo.tm_hour+=timeinfo.tm_zone; // TODO: check when tm_zone is not zero
+//    if (timeinfo.tm_zone)
+//        timeinfo.tm_hour+=timeinfo.tm_zone; // TODO: check when tm_zone is not zero
     strftime (buffer,sizeof(buffer),"%a, %d %b %Y %T GMT",&timeinfo);
 #else
     strftime (buffer,sizeof(buffer),"%a, %d %b %Y %H:%M:%S GMT",&timeinfo);
