@@ -29,7 +29,7 @@ void Date::setRawTime(const time_t &value)
 
 std::string Date::toString()
 {
-    char buffer[64];
+    char buffer[128];
     struct tm timeinfo;
 
     // Win32/Linux Compatible (not using localtime_r):
@@ -37,12 +37,11 @@ std::string Date::toString()
     timeinfo = to_tm(t);
 
 #ifndef _WIN32
-    if (!timeinfo.tm_zone)
-        strftime (buffer,80,"%a, %d %b %Y %T GMT",&timeinfo);
-    else
-        strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
+    if (timeinfo.tm_zone)
+        timeinfo.tm_hour+=timeinfo.tm_zone; // TODO: check when tm_zone is not zero
+    strftime (buffer,sizeof(buffer),"%a, %d %b %Y %T GMT",&timeinfo);
 #else
-    strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
+    strftime (buffer,sizeof(buffer),"%a, %d %b %Y %H:%M:%S GMT",&timeinfo);
 #endif
 
     return std::string(buffer);
