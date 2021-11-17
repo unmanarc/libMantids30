@@ -1,12 +1,15 @@
 #ifndef APPEXEC_H
 #define APPEXEC_H
 
+#ifndef _WIN32
+#include <spawn.h>
+#include <poll.h>
+#include <stdio.h>
+#include <set>
+#endif
+
 #include <string>
 #include <vector>
-#include <spawn.h>
-#include <stdio.h>
-#include <poll.h>
-#include <set>
 
 // Define STDOUT_FILENO/STDERR_FILENO:
 #include <unistd.h>
@@ -51,6 +54,7 @@ public:
     static sAppExecResult blexec(const sAppExecCmd& cmd);
 };
 
+#ifndef _WIN32
 class AppSpawn
 {
 public:
@@ -123,5 +127,8 @@ private:
 };
 
 
+#endif
+
 }}
+
 #endif

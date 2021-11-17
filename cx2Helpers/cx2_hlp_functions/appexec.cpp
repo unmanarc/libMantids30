@@ -4,13 +4,13 @@
 #include <boost/algorithm/string/predicate.hpp>
 #else
 #include <unistd.h>
+#include <sys/wait.h>
 #endif
+
 #include <string.h>
 #include <stdexcept>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <fcntl.h>
-
 
 #ifdef _WIN32
 #include <windows.h>
@@ -146,6 +146,7 @@ CX2::Helpers::sAppExecResult CX2::Helpers::AppExec::blexec(const sAppExecCmd &cm
 }
 
 
+#ifndef _WIN32
 
 CX2::Helpers::AppSpawn::AppSpawn()
 {
@@ -301,3 +302,4 @@ ssize_t CX2::Helpers::AppSpawn::read(int fd, void *buf, size_t count)
 
     throw std::runtime_error("AppSpawn: You should use stderr or stdout magic numbers in read function.");
 }
+#endif

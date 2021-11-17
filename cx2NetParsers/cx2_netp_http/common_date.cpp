@@ -36,10 +36,15 @@ std::string Date::toString()
     ptime t = from_time_t(rawTime);
     timeinfo = to_tm(t);
 
+#ifndef _WIN32
     if (!timeinfo.tm_zone)
         strftime (buffer,80,"%a, %d %b %Y %T GMT",&timeinfo);
     else
         strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
+#else
+    strftime (buffer,80,"%a, %d %b %Y %T %Z",&timeinfo);
+#endif
+
     return std::string(buffer);
 }
 

@@ -314,7 +314,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
         #ifndef _WIN32
                 !access(sFullComputedPath.c_str(),X_OK)
         #else
-                (boost::iends_with(cFullPath,".exe") || boost::iends_with(cFullPath,".bat") || boost::iends_with(cFullPath,".com"))
+                (boost::iends_with(sFullComputedPath,".exe") || boost::iends_with(sFullComputedPath,".bat") || boost::iends_with(sFullComputedPath,".com"))
         #endif
                 )
         {

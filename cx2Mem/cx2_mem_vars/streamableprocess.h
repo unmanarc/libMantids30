@@ -1,6 +1,8 @@
 #ifndef STREAMABLEPROCESS_H
 #define STREAMABLEPROCESS_H
 
+#ifndef _WIN32
+
 #include <cx2_hlp_functions/appexec.h>
 #include "streamable.h"
 
@@ -25,5 +27,6 @@ private:
 };
 
 }}}
+#endif
 
 #endif // STREAMABLEPROCESS_H

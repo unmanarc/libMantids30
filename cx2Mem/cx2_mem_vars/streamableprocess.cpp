@@ -1,4 +1,5 @@
 #include "streamableprocess.h"
+#ifndef _WIN32
 #include <string.h>
 
 CX2::Memory::Streams::StreamableProcess::StreamableProcess(Helpers::AppSpawn *spawner)
@@ -71,3 +72,4 @@ CX2::Memory::Streams::Status CX2::Memory::Streams::StreamableProcess::write(cons
     status.finish = false;
     return status;
 }
+#endif
