@@ -66,10 +66,10 @@ Response::StatusCode WebClientHandler::processClientRequest()
     }*/
 
     if ( //staticContent ||
-         (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "") ||
-          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
+         (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
           getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "index.html") ||
-          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "/index.html")
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "/index.html") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "")
           ) && !fileInfo.isDir
          )
     {
