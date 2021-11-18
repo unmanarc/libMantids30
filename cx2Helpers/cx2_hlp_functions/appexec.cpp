@@ -190,6 +190,11 @@ void CX2::Helpers::AppSpawn::addArgument(const std::string &arg)
     arguments.push_back(arg);
 }
 
+void CX2::Helpers::AppSpawn::addEnvironment(const std::string &env)
+{
+    environment.push_back(env);
+}
+
 bool CX2::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
     // Create the argv...
@@ -198,6 +203,18 @@ bool CX2::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
     for (size_t i=1; i<(arguments.size()+1);i++)
         argv[i] = (char *)strdup(arguments[i-1].c_str());
     argv[arguments.size()+1] = 0;
+
+    // Create the env...
+    std::vector<std::string> _environment = environment;
+    // Pass the current environ...
+    for (int i=0;environ[i];i++ )
+        _environment.push_back(environ[i]);
+
+    char ** env = (char **)malloc( (_environment.size()+1)*sizeof(char *) );
+    for (size_t i=0; i<_environment.size();i++)
+        env[i] = (char *)strdup(_environment[i].c_str());
+    env[_environment.size()] = 0;
+
 
     if (pipeStdout)
     {
@@ -232,7 +249,7 @@ bool CX2::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 
     // Execute:
     int s = posix_spawn(&child_pid, execPath.c_str(), file_actionsp, attrp,
-                        &argv[0], environ);
+                        &argv[0], env);
 
     if (pipeStdout)
     {
@@ -251,6 +268,11 @@ bool CX2::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
     // Destroy objects:
     for (int i=0; argv[i]; i++) free(argv[i]);
     free(argv);
+
+    // Destroy objects:
+    for (int i=0; env[i]; i++) free(env[i]);
+    free(env);
+
 
     if (attrp != nullptr && ((s = posix_spawnattr_destroy(attrp))!=0))
         throw std::runtime_error("Unable to destroy execution attributes.");

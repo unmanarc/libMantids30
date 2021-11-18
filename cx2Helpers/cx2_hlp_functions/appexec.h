@@ -85,6 +85,13 @@ public:
     void addArgument(const std::string & arg);
 
     /**
+     * @brief addEnvironment Add program environment var.
+     * @param env environment var (in form of VAR=VALUE)
+     */
+    void addEnvironment(const std::string & env);
+
+
+    /**
      * @brief spawnProcess Initiate the process
      * @param pipeStdout set to pipe here the stdout from the child
      * @param pipeStderr set to pipe here the stderr from the child
@@ -116,6 +123,7 @@ public:
 private:
     std::string execPath;
     std::vector<std::string> arguments;
+    std::vector<std::string> environment;
     pid_t child_pid;
     posix_spawnattr_t attr;
     posix_spawnattr_t *attrp;
