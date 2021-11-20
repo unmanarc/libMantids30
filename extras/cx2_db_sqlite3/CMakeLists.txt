@@ -69,6 +69,7 @@ else()
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(SQLite sqlite3)
     link_libraries(${SQLite_LIBRARIES})
+    target_include_directories(${LIB_NAME} PUBLIC ${SQLite_INCLUDE_DIRS})
     target_link_libraries(${LIB_NAME} ${SQLite_LIBRARIES})
 
     message("-- SQLITE3_LIB found at [${SQLITE3_LIB}] for ${SQLite_LIBRARIES}")
