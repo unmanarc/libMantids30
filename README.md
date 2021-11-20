@@ -70,6 +70,10 @@ This library was tested so far in:
 
 For each system, you need to have already installed the pre-requisites
 
+### Instructions (CentOS 7.x):
+
+[Building Instructions for CentOS-7 / RHEL7](INSTALL.CentOS7.md)
+
 ### Instructions (Fedora):
 
 ```
