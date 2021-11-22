@@ -288,6 +288,7 @@ void Content::setStreamableOutput(Memory::Streams::Streamable *outDataContainer,
     {
         // Point to empty container...
         outStream = &binDataContainer;
+        this->deleteOutStream = false;
     }
 }
 
