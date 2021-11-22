@@ -253,7 +253,13 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
         char *cFullPath;
         if (  staticContentElements.find(std::string(getRequestURI()+defaultFileAppend)) != staticContentElements.end() )
         {
-            // CHECK FOR STATIC CONTENT:
+            // STATIC CONTENT:
+            cacheControl.setOptionNoCache(false);
+            cacheControl.setOptionNoStore(false);
+            cacheControl.setOptionMustRevalidate(false);
+            cacheControl.setMaxAge(3600);
+            cacheControl.setOptionImmutable(true);
+
             info->sRealRelativePath = getRequestURI()+defaultFileAppend;
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
             setResponseDataStreamer(staticContentElements[info->sRealRelativePath],false);
