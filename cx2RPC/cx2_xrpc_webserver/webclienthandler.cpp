@@ -48,8 +48,6 @@ void WebClientHandler::setAuthenticators(CX2::Authentication::Domains *authentic
 Response::StatusCode WebClientHandler::processClientRequest()
 {
     // RPC MODE:
-    //bool staticContent = false;
-    //   std::string sRealRelativePath, sRealFullPath;
     sLocalRequestedFileInfo fileInfo;
     Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
     if (getRequestURI() == "/api") return processRPCRequest();
@@ -58,12 +56,6 @@ Response::StatusCode WebClientHandler::processClientRequest()
     std::string sSessionId = getRequestCookie("sessionId");
     uint64_t uMaxAge;
     WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
-
-    /*    if ((staticContent=verifyStaticContentExistence(getRequestURI())) == true)
-    {
-        sRealRelativePath = getRequestURI();
-        sRealFullPath = "";
-    }*/
 
     if ( //staticContent ||
          (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
