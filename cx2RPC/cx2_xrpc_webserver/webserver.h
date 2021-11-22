@@ -92,11 +92,11 @@ public:
      */
     void setUsingCSRFToken(bool value);
     /**
-     * @brief setResourcesLocalPath Set Resources Local Path
+     * @brief setDocumentRootPath Set Resources Local Path
      * @param value Resources Local Path
      * @return true if path is accessible from this application.
      */
-    bool setResourcesLocalPath(const std::string &value);
+    bool setDocumentRootPath(const std::string &value, const bool & autoloadResourceFilter = true);
     /**
      * @brief setExtCallBackOnConnect Set External Callback On Successfully Established Connection
      * @param value callback details
@@ -154,23 +154,22 @@ public:
     ResourcesFilter *getResourceFilter() const;
     bool getUseFormattedJSONOutput() const;
     bool getUsingCSRFToken() const;
-    std::string getResourcesLocalPath() const;
+    std::string getDocumentRootPath() const;
     sWebServerCallBack getExtCallBackOnConnect() const;
     sWebServerCallBack getExtCallBackOnInitFailed() const;
     sWebServerCallBack getExtCallBackOnTimeOut() const;
     std::string getSoftwareVersion() const;
     std::string getWebServerName() const;
-
     bool getUseHTMLIEngine() const;
-
     std::string getAppName() const;
 
     Application::Logs::RPCLog *getRPCLog() const;
     void setRPCLog(Application::Logs::RPCLog *value);
 
-
-
     std::map<std::string, CX2::Memory::Containers::B_MEM *> getStaticContentElements();
+
+    std::string getRedirectOn404() const;
+    void setRedirectOn404(const std::string &newRedirectOn404);
 
 private:
     Network::Sockets::Acceptors::Socket_Acceptor_MultiThreaded multiThreadedAcceptor;
@@ -202,8 +201,9 @@ private:
     CX2::Authentication::Domains * authenticator;
     MethodsManager *methodManagers;
     SessionsManager sessionsManager;
+    std::string redirectOn404;
     bool useFormattedJSONOutput, usingCSRFToken, useHTMLIEngine;
-    std::string resourcesLocalPath;
+    std::string documentRootPath;
     std::string webServerName;
     std::string softwareVersion;
 };

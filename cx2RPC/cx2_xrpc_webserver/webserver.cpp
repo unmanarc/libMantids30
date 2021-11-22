@@ -20,6 +20,7 @@ WebServer::WebServer()
     useHTMLIEngine = true;
     authenticator = nullptr;
     methodManagers = nullptr;
+    redirectOn404 = "/login";
 }
 
 WebServer::~WebServer()
@@ -32,6 +33,9 @@ WebServer::~WebServer()
     {
         free(i);
     }
+
+    if (resourceFilter)
+        delete resourceFilter;
 }
 
 void WebServer::acceptMultiThreaded(Network::Streams::StreamSocket *listenerSocket, const uint32_t &maxConcurrentConnections)
@@ -90,11 +94,12 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     webHandler.setUseFormattedJSONOutput(webserver->getUseFormattedJSONOutput());
     webHandler.setUsingCSRFToken(webserver->getUsingCSRFToken());
     webHandler.setResourceFilter(webserver->getResourceFilter());
-    webHandler.setResourcesLocalPath(webserver->getResourcesLocalPath());
+    webHandler.setDocumentRootPath(webserver->getDocumentRootPath());
     webHandler.setWebServerName(webserver->getWebServerName());
     webHandler.setSoftwareVersion(webserver->getSoftwareVersion());
     webHandler.setUseHTMLIEngine(webserver->getUseHTMLIEngine());
     webHandler.setStaticContentElements(webserver->getStaticContentElements());
+    webHandler.setRedirectOn404(webserver->getRedirectOn404());
 
     if (webserver->getExtCallBackOnConnect().call(obj,s,remotePairIPAddr,isSecure))
     {
@@ -123,6 +128,16 @@ void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s
         s->writeString("\r\n");
         s->writeString("<center><h1>503 Service Temporarily Unavailable</h1></center><hr>\r\n");
     }
+}
+
+std::string WebServer::getRedirectOn404() const
+{
+    return redirectOn404;
+}
+
+void WebServer::setRedirectOn404(const std::string & newRedirectOn404)
+{
+    redirectOn404 = newRedirectOn404;
 }
 
 std::map<std::string, CX2::Memory::Containers::B_MEM *> WebServer::getStaticContentElements()
@@ -238,15 +253,33 @@ void WebServer::setExtCallBackOnConnect(const sWebServerCallBack &value)
     extCallBackOnConnect = value;
 }
 
-std::string WebServer::getResourcesLocalPath() const
+std::string WebServer::getDocumentRootPath() const
 {
-    return resourcesLocalPath;
+    return documentRootPath;
 }
 
-bool WebServer::setResourcesLocalPath(const std::string &value)
+bool WebServer::setDocumentRootPath(const std::string &value, const bool &autoloadResourceFilter)
 {
     if (access(value.c_str(), R_OK)) return false;
-    resourcesLocalPath = value;
+    documentRootPath = value;
+
+    if (autoloadResourceFilter)
+    {
+        std::string resourceFilterPath = documentRootPath + "/resources.conf";
+        if (!access(resourceFilterPath.c_str(), R_OK))
+        {
+            ResourcesFilter * rf = new ResourcesFilter;
+            if (rf->loadFile(resourceFilterPath))
+            {
+                if (resourceFilter)
+                    delete resourceFilter; // Remove the previous RF.
+                resourceFilter = rf;
+            }
+            else
+                delete rf;
+        }
+    }
+
     return  true;
 }
 

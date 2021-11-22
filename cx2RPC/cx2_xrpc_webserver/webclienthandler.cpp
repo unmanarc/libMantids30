@@ -75,15 +75,14 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
         if (e.accept)
         {
-            if (e.location.empty())
+            if (e.redirectLocation.empty())
                 ret = Response::StatusCode::S_200_OK;
             else
-                ret = setResponseRedirect( e.location );
+                ret = setResponseRedirect( e.redirectLocation );
         }
         else
             ret = Response::StatusCode::S_403_FORBIDDEN;
 
-        log(LEVEL_INFO,hSession, "fileServer", 2048, "R/%03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealRelativePath.c_str());
         log(LEVEL_DEBUG,hSession, "fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
     }
     else
@@ -97,13 +96,23 @@ Response::StatusCode WebClientHandler::processClientRequest()
         setResponseDataStreamer(nullptr,false);
     }
 
-    if ( //!staticContent &&
-         useHTMLIEngine &&
+    if ( useHTMLIEngine &&
          getContentType() == "text/html" ) // The content type has changed during the map.
         processHTMLIEngine(fileInfo.sRealFullPath,hSession);
 
     if (hSession)
         sessionsManager->closeSession(sSessionId);
+
+    if (ret==Response::StatusCode::S_404_NOT_FOUND && !redirectOn404.empty())
+    {
+        ret = setResponseRedirect( redirectOn404 );
+    }
+
+    log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,hSession,
+        "fileServer", 2048, "R/%03d: %s",
+            Response::Status::getHTTPStatusCodeTranslation(ret),
+            ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
+
 
     return ret;
 }
@@ -946,6 +955,11 @@ void WebClientHandler::log(eLogLevels logSeverity, WebSession *wSession, const s
     va_end(args);
 }
 
+void WebClientHandler::setRedirectOn404(const std::string &newRedirectOn404)
+{
+    redirectOn404 = newRedirectOn404;
+}
+
 void WebClientHandler::setRPCLog(Application::Logs::RPCLog *value)
 {
     rpcLog = value;
@@ -991,7 +1005,7 @@ void WebClientHandler::setUsingCSRFToken(bool value)
     usingCSRFToken = value;
 }
 
-void WebClientHandler::setResourcesLocalPath(const std::string &value)
+void WebClientHandler::setDocumentRootPath(const std::string &value)
 {
     char * cFullPath = realpath(value.c_str(), nullptr);
     if (cFullPath)

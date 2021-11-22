@@ -30,9 +30,10 @@ public:
     void setSessionsManagger(SessionsManager *value);
     void setUseFormattedJSONOutput(bool value);
     void setResourceFilter(ResourcesFilter *value);
-    void setResourcesLocalPath(const std::string &value);
+    void setDocumentRootPath(const std::string &value);
     void setUsingCSRFToken(bool value);
     void setUseHTMLIEngine(bool value);
+    void setRedirectOn404(const std::string &newRedirectOn404);
 
     void setWebServerName(const std::string &value);
     void setSoftwareVersion(const std::string &value);
@@ -43,6 +44,7 @@ public:
     void setRemoteTLSCN(const std::string &value);
 
     void setRPCLog(Application::Logs::RPCLog *value);
+
 
 protected:
     /**
@@ -80,6 +82,7 @@ private:
     std::string appName;
     std::string remoteIP, remoteTLSCN, remoteUserAgent;
     std::string resourcesLocalPath;
+    std::string redirectOn404;
     bool useFormattedJSONOutput, usingCSRFToken, useHTMLIEngine;
     std::string webServerName;
     std::string softwareVersion;
