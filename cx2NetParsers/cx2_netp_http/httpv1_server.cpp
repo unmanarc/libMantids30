@@ -77,6 +77,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     mimeTypes[".mp3"] = "audio/mpeg";
     mimeTypes[".mp4"] = "video/mp4";
     mimeTypes[".mpeg"] = "video/mpeg";
+    mimeTypes[".mpg"] = "video/mpeg";
     mimeTypes[".mpkg"] = "application/vnd.apple.installer+xml";
     mimeTypes[".odp"] = "application/vnd.oasis.opendocument.presentation";
     mimeTypes[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
@@ -894,6 +895,12 @@ Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamabl
 Network::HTTP::Response::StatusCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
 {
     _serverHeaders.replace("Location", location);
+
+
+    // Remove previous data streamer:
+    setResponseDataStreamer(nullptr);
+
+
     if (temporary)
         return Network::HTTP::Response::StatusCode::S_307_TEMPORARY_REDIRECT;
     else
@@ -931,6 +938,17 @@ uint16_t HTTPv1_Server::getRequestVirtualPort() const
 
 void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::Streamable *dsOut, bool bDeleteAfter)
 {
+    if (dsOut == nullptr)
+    {
+        // Set default headers (lost previous ones):
+        _serverHeaders.remove("Last-Modified");
+        cacheControl.setDefaults();
+        cacheControl.setOptionNoCache(true);
+        cacheControl.setOptionNoStore(true);
+        cacheControl.setOptionMustRevalidate(true);
+        setResponseContentType("",false);
+    }
+
     _serverContentData.setStreamableOutput(dsOut,bDeleteAfter);
 }
 
