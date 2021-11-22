@@ -16,7 +16,7 @@ struct sFilterEvaluation
         accept = true;
     }
     bool accept;
-    std::string location;
+    std::string redirectLocation;
 };
 
 enum eFilterActions
@@ -28,18 +28,24 @@ enum eFilterActions
 
 struct sFilter
 {
-    sFilter( const std::string & regex, const std::string & location, const std::string & reqAttrib, const bool & negativeAttrib, const eFilterActions & action)
+    sFilter( const std::list<std::string> & regexs,
+             const std::string & redirectLocation,
+             const std::list<std::string> & reqAttrib,
+             const std::list<std::string> & rejAttrib,
+             const eFilterActions & action)
     {
-        this->regex = boost::regex(regex.c_str(),boost::regex::extended );
-        this->location = location;
+        for ( const auto &i : regexs )
+        {
+            this->regexs.push_back( boost::regex(i.c_str(),boost::regex::extended ));
+        }
+        this->redirectLocation = redirectLocation;
         this->action = action;
         this->reqAttrib = reqAttrib;
-        this->negativeAttrib = negativeAttrib;
+        this->rejAttrib = rejAttrib;
     }
-    boost::regex regex;
-    std::string location;
-    std::string reqAttrib;
-    bool negativeAttrib;
+    std::list<boost::regex> regexs;
+    std::string redirectLocation;
+    std::list<std::string> reqAttrib, rejAttrib;
     eFilterActions action;
 };
 
@@ -48,6 +54,8 @@ class ResourcesFilter
 public:
     ResourcesFilter();
 
+
+    bool loadFile(const std::string & filePath);
     void addFilter(const sFilter & filter);
 
     sFilterEvaluation evaluateAction(const std::string & uri, CX2::Authentication::Session *hSession, Authentication::Manager *authorizer);
