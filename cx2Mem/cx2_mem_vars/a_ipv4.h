@@ -32,8 +32,8 @@ public:
     bool fromString(const std::string & value) override;
 
 
-    static uint8_t _toStringCIDRMask(const in_addr& value);
-    static in_addr _fromStringCIDRMask(const uint8_t &value, bool * ok = nullptr);
+    static uint8_t _toCIDRMask(const in_addr& value);
+    static in_addr _fromCIDRMask(const uint8_t &value, bool * ok = nullptr);
 
 
     static std::string _toString(const in_addr& value);

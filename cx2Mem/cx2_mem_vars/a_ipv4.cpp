@@ -56,7 +56,7 @@ bool IPV4::fromString(const std::string &value)
     return r;
 }
 
-uint8_t IPV4::_toStringCIDRMask(const in_addr &value)
+uint8_t IPV4::_toCIDRMask(const in_addr &value)
 {
     std::string maskValue = _toString(value);
 
@@ -100,7 +100,7 @@ uint8_t IPV4::_toStringCIDRMask(const in_addr &value)
     return 255;
 }
 
-in_addr IPV4::_fromStringCIDRMask(const uint8_t &value, bool *ok)
+in_addr IPV4::_fromCIDRMask(const uint8_t &value, bool *ok)
 {
     if (ok)
         *ok = true;
