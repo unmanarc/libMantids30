@@ -14,20 +14,22 @@ using namespace CX2::Memory::Abstract;
 
 IPV4::IPV4()
 {
+    cidrMask = 32;
     value.s_addr = 0;
     setVarType(TYPE_IPV4);
 }
 
-IPV4::IPV4(const in_addr &value)
+IPV4::IPV4(const in_addr &value, const uint8_t &cidrMask)
 {
-    setValue(value);
+    setValue(value,cidrMask);
     setVarType(TYPE_IPV4);
 }
 
 IPV4::IPV4(const std::string &value)
 {
     setVarType(TYPE_IPV4);
-    setValue(_fromString(value));
+    auto v = _fromStringWithNetmask(value);
+    setValue(v.first,v.second);
 }
 
 in_addr IPV4::getValue()
@@ -36,9 +38,16 @@ in_addr IPV4::getValue()
     return value;
 }
 
-bool IPV4::setValue(const in_addr &value)
+uint8_t IPV4::getCidrMask()
+{
+    Threads::Sync::Lock_RD lock(mutex);
+    return cidrMask;
+}
+
+bool IPV4::setValue(const in_addr &value, const uint8_t &cidrMask)
 {
     Threads::Sync::Lock_RW lock(mutex);
+    this->cidrMask = cidrMask;
     this->value.s_addr = value.s_addr;
     return true;
 }
@@ -50,9 +59,9 @@ std::string IPV4::toString()
 
 bool IPV4::fromString(const std::string &value)
 {
-    bool r;
-    auto ipaddr = _fromString(value,&r);
-    setValue(ipaddr);
+    bool r = false;
+    auto v = _fromStringWithNetmask(value, &r);
+    setValue(v.first,v.second);
     return r;
 }
 
@@ -150,11 +159,11 @@ in_addr IPV4::_fromCIDRMask(const uint8_t &value, bool *ok)
     }
 }
 
-std::string IPV4::_toString(const in_addr &value)
+std::string IPV4::_toString(const in_addr &value, const uint8_t & cidrMask)
 {
     char cIpSource[INET_ADDRSTRLEN]="";
     inet_ntop(AF_INET, &value ,cIpSource, INET_ADDRSTRLEN);
-    return std::string(cIpSource);
+    return std::string(cIpSource) + (cidrMask==32?"":"/" + std::to_string(cidrMask));
 }
 
 in_addr IPV4::_fromString(const std::string &value, bool *ok)
@@ -172,6 +181,42 @@ in_addr IPV4::_fromString(const std::string &value, bool *ok)
     if (ok) *ok = r;
 
     return xvalue;
+}
+
+std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &value, bool *ok)
+{
+    std::pair<in_addr, uint8_t> r;
+
+    r.first.s_addr=0;
+    r.second = 0;
+
+    if (value.find_first_of('/') == std::string::npos )
+    {
+        r.second = 32;
+        r.first = _fromString(value, ok);
+    }
+    else
+    {
+        std::string detectedNetmask = value.substr( value.find_first_of('/')+1 );
+        if (detectedNetmask.size()!=1 && detectedNetmask.size()!=2)
+        {
+            if (ok)
+                *ok = false;
+        }
+        else
+        {
+            r.second = std::strtoul(detectedNetmask.c_str(),0,10);
+            if (r.second>32)
+            {
+                if (ok)
+                    *ok = false;
+                r.second = 0;
+            }
+            else
+                r.first = _fromString(value.substr( 0,value.find_first_of('/') ),ok);
+        }
+    }
+    return r;
 }
 
 Var *IPV4::protectedCopy()
