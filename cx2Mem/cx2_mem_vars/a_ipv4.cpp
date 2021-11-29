@@ -14,15 +14,17 @@ using namespace CX2::Memory::Abstract;
 
 IPV4::IPV4()
 {
+    setVarType(TYPE_IPV4);
     cidrMask = 32;
     value.s_addr = 0;
-    setVarType(TYPE_IPV4);
 }
 
-IPV4::IPV4(const in_addr &value, const uint8_t &cidrMask)
+IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
 {
-    setValue(value,cidrMask);
     setVarType(TYPE_IPV4);
+    in_addr x;
+    x.s_addr=value;
+    setValue(x,cidrMask);
 }
 
 IPV4::IPV4(const std::string &value)
@@ -191,6 +193,13 @@ std::string IPV4::_toString(const in_addr &value, const uint8_t & cidrMask)
     char cIpSource[INET_ADDRSTRLEN]="";
     inet_ntop(AF_INET, &value ,cIpSource, INET_ADDRSTRLEN);
     return std::string(cIpSource) + (cidrMask==32?"":"/" + std::to_string(cidrMask));
+}
+
+std::string IPV4::_toString(const uint32_t &value, const uint8_t &cidrMask)
+{
+    in_addr x;
+    x.s_addr = value;
+    return _toString(x,cidrMask);
 }
 
 in_addr IPV4::_fromString(const std::string &value, bool *ok)

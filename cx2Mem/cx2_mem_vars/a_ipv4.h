@@ -16,6 +16,7 @@ class IPV4: public Var
 {
 public:
     IPV4();
+    IPV4(const uint32_t & value, const uint8_t & cidrMask=32);
     IPV4(const in_addr & value, const uint8_t & cidrMask=32);
     IPV4(const std::string & value);
 
@@ -44,6 +45,7 @@ public:
     static uint8_t _toCIDRMask(const in_addr& value);
     static in_addr _fromCIDRMask(const uint8_t &value, bool * ok = nullptr);
     static std::string _toString(const in_addr& value, const uint8_t &cidrMask = 32);
+    static std::string _toString(const uint32_t & value, const uint8_t &cidrMask = 32);
     static in_addr _fromString(const std::string &value, bool * ok = nullptr);
 
     static std::pair<in_addr, uint8_t> _fromStringWithNetmask( const std::string &value, bool * ok = nullptr );
