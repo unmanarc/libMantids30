@@ -100,6 +100,14 @@ std::string MACADDR::_toString(const unsigned char *value)
     return std::string(addr);
 }
 
+uint64_t MACADDR::_toHash(const unsigned char *value)
+{
+    unsigned char _macaddr[sizeof(uint64_t)];
+    *((uint64_t *)_macaddr) = 0;
+    memcpy(_macaddr,value,6);
+    return ntohll(*((uint64_t *)_macaddr));
+}
+
 uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
 {
     unsigned char _macaddr[sizeof(uint64_t)];

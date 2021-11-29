@@ -43,6 +43,7 @@ public:
     static void _fromHASH(const uint64_t &src,  unsigned char *dst);
 
     static std::string _toString(const unsigned char *value);
+    static uint64_t _toHash(const unsigned char *value);
     static uint64_t _fromStringToHASH(const std::string &value, bool * ok = nullptr);
     static std::string _fromHASHToString(const uint64_t &value);
 
