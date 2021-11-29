@@ -17,6 +17,7 @@
 #include "a_uint32.h"
 #include "a_uint64.h"
 
+#include "a_macaddr.h"
 #include "a_ipv4.h"
 #include "a_ipv6.h"
 #include "a_map.h"

@@ -158,6 +158,10 @@ bool Query_PostgreSQL::step0()
         {
             ABSTRACT_PTR_AS(IPV4,outputVar)->fromString( PQgetvalue(result,i,columnpos) );
         }break;
+        case Memory::Abstract::TYPE_MACADDR:
+        {
+            ABSTRACT_PTR_AS(MACADDR,outputVar)->fromString( PQgetvalue(result,i,columnpos) );
+        }break;
         case Memory::Abstract::TYPE_IPV6:
         {
             ABSTRACT_PTR_AS(IPV6,outputVar)->fromString( PQgetvalue(result,i,columnpos) );
@@ -300,6 +304,9 @@ bool Query_PostgreSQL::postBindInputVars()
             break;
         case Memory::Abstract::TYPE_IPV4:
             str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV4,InputVars[key])->toString());
+            break;
+        case Memory::Abstract::TYPE_MACADDR:
+            str = createDestroyableStringForInput(ABSTRACT_PTR_AS(MACADDR,InputVars[key])->toString());
             break;
         case Memory::Abstract::TYPE_IPV6:
             str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV6,InputVars[key])->toString());

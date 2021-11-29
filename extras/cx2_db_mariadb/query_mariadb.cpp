@@ -259,6 +259,7 @@ bool Query_MariaDB::step0()
         case Memory::Abstract::TYPE_STRINGLIST:
         case Memory::Abstract::TYPE_DATETIME:
         case Memory::Abstract::TYPE_IPV4:
+        case Memory::Abstract::TYPE_MACADDR:
         case Memory::Abstract::TYPE_IPV6:
         case Memory::Abstract::TYPE_PTR:
         {
@@ -308,6 +309,10 @@ bool Query_MariaDB::step0()
             case Memory::Abstract::TYPE_IPV4:
             {
                 ABSTRACT_PTR_AS(IPV4,resultVars[col])->fromString( sBin->ptr );
+            }break;
+            case Memory::Abstract::TYPE_MACADDR:
+            {
+                ABSTRACT_PTR_AS(MACADDR,resultVars[col])->fromString( sBin->ptr );
             }break;
             case Memory::Abstract::TYPE_IPV6:
             {
@@ -473,6 +478,7 @@ bool Query_MariaDB::postBindInputVars()
         case Memory::Abstract::TYPE_STRING:
         case Memory::Abstract::TYPE_STRINGLIST:
         case Memory::Abstract::TYPE_DATETIME:
+        case Memory::Abstract::TYPE_MACADDR:
         case Memory::Abstract::TYPE_IPV4:
         case Memory::Abstract::TYPE_IPV6:
         {
@@ -494,6 +500,9 @@ bool Query_MariaDB::postBindInputVars()
             } break;
             case Memory::Abstract::TYPE_IPV4:
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV4,InputVars[ keysByPos[pos] ])->toString());
+                break;
+            case Memory::Abstract::TYPE_MACADDR:
+                str = createDestroyableStringForInput(ABSTRACT_PTR_AS(MACADDR,InputVars[ keysByPos[pos] ])->toString());
                 break;
             case Memory::Abstract::TYPE_IPV6:
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV6,InputVars[ keysByPos[pos] ])->toString());

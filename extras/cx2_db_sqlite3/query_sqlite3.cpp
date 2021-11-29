@@ -132,6 +132,11 @@ bool Query_SQLite3::exec(const ExecType &execType)
                 auto i = ABSTRACT_PTR_AS(IPV4,inputVar.second)->toString();
                 sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
             }break;
+            case Memory::Abstract::TYPE_MACADDR:
+            {
+                auto i = ABSTRACT_PTR_AS(MACADDR,inputVar.second)->toString();
+                sqlite3_bind_text(stmt,idx,i.c_str(),i.size(),SQLITE_TRANSIENT);
+            }break;
             case Memory::Abstract::TYPE_IPV6:
             {
                 auto i = ABSTRACT_PTR_AS(IPV6,inputVar.second)->toString();
@@ -249,6 +254,10 @@ bool Query_SQLite3::step0()
             case Memory::Abstract::TYPE_IPV4:
             {
                 ABSTRACT_PTR_AS(IPV4,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
+            }break;
+            case Memory::Abstract::TYPE_MACADDR:
+            {
+                ABSTRACT_PTR_AS(MACADDR,outputVar)->fromString( (char *)sqlite3_column_text(stmt,columnpos) );
             }break;
             case Memory::Abstract::TYPE_IPV6:
             {

@@ -8,6 +8,7 @@
 #include "a_int32.h"
 #include "a_int64.h"
 #include "a_ipv4.h"
+#include "a_macaddr.h"
 #include "a_ipv6.h"
 #include "a_string.h"
 #include "a_stringlist.h"
@@ -94,6 +95,9 @@ Var *Var::makeAbstract(Type type, const std::string &defValue)
         break;
     case TYPE_IPV4:
         v=new IPV4;
+        break;
+    case TYPE_MACADDR:
+        v=new MACADDR;
         break;
     case TYPE_IPV6:
         v=new IPV6;

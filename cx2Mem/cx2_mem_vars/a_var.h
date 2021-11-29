@@ -22,6 +22,7 @@ enum Type {
     TYPE_STRINGLIST,
     TYPE_IPV4,
     TYPE_IPV6,
+    TYPE_MACADDR,
     TYPE_PTR,
     TYPE_DATETIME,
     TYPE_NULL
