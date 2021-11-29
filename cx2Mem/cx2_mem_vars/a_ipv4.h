@@ -35,7 +35,12 @@ public:
     std::string toString() override;
     bool fromString(const std::string & value) override;
 
+    bool matchRange( const char * value );
+    bool matchRange( const in_addr& value );
 
+    static bool _matchRange( const char * haystack, const in_addr& needle );
+    static bool _matchRange( const char * haystack, const char * needle );
+    static bool _matchRange( const in_addr& haystack, uint8_t cidr, const in_addr& needle );
     static uint8_t _toCIDRMask(const in_addr& value);
     static in_addr _fromCIDRMask(const uint8_t &value, bool * ok = nullptr);
     static std::string _toString(const in_addr& value, const uint8_t &cidrMask = 32);
@@ -47,6 +52,8 @@ protected:
     Var * protectedCopy() override;
 
 private:
+    static uint64_t u64pow(uint32_t base, uint32_t exponent);
+
     in_addr value;
     uint8_t cidrMask;
     Threads::Sync::Mutex_Shared mutex;

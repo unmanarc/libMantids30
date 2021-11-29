@@ -65,6 +65,64 @@ bool IPV4::fromString(const std::string &value)
     return r;
 }
 
+uint64_t IPV4::u64pow(uint32_t base, uint32_t exponent)
+{
+    uint64_t result=base;
+
+    if (exponent==0)
+        return 1;
+    else
+    {
+        for (uint32_t ec = 1; ec < exponent; ec++)
+            result*=2;
+        return result;
+    }
+}
+
+bool IPV4::matchRange(const char * value)
+{
+    return matchRange(_fromString(value));
+}
+
+bool IPV4::matchRange(const in_addr &value)
+{
+    return _matchRange(getValue(),getCidrMask(),value);
+}
+
+bool IPV4::_matchRange(const char *haystack, const in_addr &needle)
+{
+    bool ok = true;
+
+    auto v = _fromStringWithNetmask(haystack,&ok);
+    if (!ok) return false;
+
+    return _matchRange( v.first,v.second,needle );
+}
+
+bool IPV4::_matchRange(const char *haystack, const char *needle)
+{
+    bool ok = true;
+
+    auto aNeedle = _fromString(needle,&ok);
+    if (!ok) return false;
+
+    return _matchRange(haystack,aNeedle);
+}
+
+bool IPV4::_matchRange(const in_addr &haystack, uint8_t cidr, const in_addr &needle)
+{
+    auto baseNetmaskCIDR = cidr;
+    if (baseNetmaskCIDR>32)
+        return false;
+
+    uint32_t baseNetmask = htonl(u64pow(2,baseNetmaskCIDR)-1);
+
+    auto cmp01=(htonl(haystack.s_addr))&baseNetmask;
+    auto cmp02=(htonl(needle.s_addr))&baseNetmask;
+
+    return  cmp01 == cmp02;
+}
+
 uint8_t IPV4::_toCIDRMask(const in_addr &value)
 {
     std::string maskValue = _toString(value);
@@ -112,51 +170,20 @@ uint8_t IPV4::_toCIDRMask(const in_addr &value)
 in_addr IPV4::_fromCIDRMask(const uint8_t &value, bool *ok)
 {
     if (ok)
-        *ok = true;
-    switch (value)
     {
-    case 32: return _fromString("255.255.255.255");
-    case 31: return _fromString("255.255.255.254");
-    case 30: return _fromString("255.255.255.252");
-    case 29: return _fromString("255.255.255.248");
-    case 28: return _fromString("255.255.255.240");
-    case 27: return _fromString("255.255.255.224");
-    case 26: return _fromString("255.255.255.192");
-    case 25: return _fromString("255.255.255.128");
-
-    case 24: return _fromString("255.255.255.0");
-    case 23: return _fromString("255.255.254.0");
-    case 22: return _fromString("255.255.252.0");
-    case 21: return _fromString("255.255.248.0");
-    case 20: return _fromString("255.255.240.0");
-    case 19: return _fromString("255.255.224.0");
-    case 18: return _fromString("255.255.192.0");
-    case 17: return _fromString("255.255.128.0");
-
-    case 16: return _fromString("255.255.0.0");
-    case 15: return _fromString("255.254.0.0");
-    case 14: return _fromString("255.252.0.0");
-    case 13: return _fromString("255.248.0.0");
-    case 12: return _fromString("255.240.0.0");
-    case 11: return _fromString("255.224.0.0");
-    case 10: return _fromString("255.192.0.0");
-    case 9: return _fromString("255.128.0.0");
-
-    case 8: return _fromString("255.0.0.0");
-    case 7: return _fromString("254.0.0.0");
-    case 6: return _fromString("252.0.0.0");
-    case 5: return _fromString("248.0.0.0");
-    case 4: return _fromString("240.0.0.0");
-    case 3: return _fromString("224.0.0.0");
-    case 2: return _fromString("192.0.0.0");
-    case 1: return _fromString("128.0.0.0");
-    case 0: return _fromString("0.0.0.0");
-
-    default:
-        if (ok)
+        if (value>32)
             *ok = false;
-        return  _fromString("0.0.0.0");
+        else
+            *ok=true;
     }
+
+    if (value<=32)
+    {
+        in_addr baseNetmask;
+        baseNetmask.s_addr = (u64pow(2,value)-1);
+        return baseNetmask;
+    }
+    return  _fromString("0.0.0.0");
 }
 
 std::string IPV4::_toString(const in_addr &value, const uint8_t & cidrMask)
@@ -222,6 +249,7 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
 Var *IPV4::protectedCopy()
 {
     IPV4 * var = new IPV4;
-    if (var) *var = getValue();
+    if (var)
+        var->setValue( getValue(),getCidrMask() );
     return var;
 }
