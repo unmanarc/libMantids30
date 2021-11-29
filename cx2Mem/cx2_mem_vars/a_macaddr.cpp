@@ -69,7 +69,11 @@ bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
 
     memset(dst,0,sizeof (macaddr));
     unsigned int a,b,c,d,e,f;
-    if (sscanf(src.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X",&a,&b,&c,&d,&e,&f)==6)
+    if (    sscanf(src.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X",&a,&b,&c,&d,&e,&f)==6
+        ||  sscanf(src.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x",&a,&b,&c,&d,&e,&f)==6
+        ||  sscanf(src.c_str(), "%02X-%02X-%02X-%02X-%02X-%02X",&a,&b,&c,&d,&e,&f)==6
+        ||  sscanf(src.c_str(), "%02x-%02x-%02x-%02x-%02x-%02x",&a,&b,&c,&d,&e,&f)==6
+            )
     {
         dst[0] = (unsigned char)a;
         dst[1] = (unsigned char)b;
