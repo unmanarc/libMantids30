@@ -2,7 +2,7 @@
 #define A_MACADDR_H
 
 #include "a_var.h"
-#include "endian.h"
+#include "endian2.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
