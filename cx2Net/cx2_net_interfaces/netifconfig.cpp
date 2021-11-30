@@ -372,6 +372,11 @@ ethhdr NetIfConfig::getEthernetAddress()
         lastError = "SIOCGIFHWADDR error @" + interfaceName;
         return etherHdrData;
     }
+    if (ifr1x.ifr_hwaddr.sa_family!=ARPHRD_ETHER)
+    {
+        lastError = "SIOCGIFHWADDR error, not an ethernet interface @" + interfaceName;
+        return etherHdrData;
+    }
     memcpy(etherHdrData.h_dest,ifr1x.ifr_hwaddr.sa_data,6);
 #else
     switch (netifType)
