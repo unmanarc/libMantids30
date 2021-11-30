@@ -90,7 +90,9 @@ bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
 void MACADDR::_fromHASH(const uint64_t &src, unsigned char *dst)
 {
     memset(dst,0,sizeof(ETH_ALEN));
-    *((uint64_t *)dst) = htonll(src);
+    char dst2[sizeof(uint64_t)];
+    *((uint64_t *)dst2) = htonll(src);
+    memcpy(dst,dst2,ETH_ALEN);
 }
 
 std::string MACADDR::_toString(const unsigned char *value)
