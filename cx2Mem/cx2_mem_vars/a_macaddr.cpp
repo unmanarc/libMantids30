@@ -113,6 +113,7 @@ uint64_t MACADDR::_toHash(const unsigned char *value)
 uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
 {
     unsigned char _macaddr[sizeof(uint64_t)];
+    memset(_macaddr,0,sizeof(_macaddr));
     bool okv = _fromString(value, _macaddr);
     if (ok ) *ok = okv;
     return ntohll(*((uint64_t *)_macaddr));
