@@ -149,6 +149,7 @@ int RPCClientApplication::_start(int argc, char *argv[], CX2::Application::Argum
         if (!Globals::getRpcImpl()->retrieveConfigFromC2())
         {
             // Unable to get the new config...
+
         }
         processRetrievedConfig();
     }

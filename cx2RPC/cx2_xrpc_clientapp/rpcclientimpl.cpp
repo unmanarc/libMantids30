@@ -127,7 +127,6 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
     Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from remote C2.");
 
-
     // Try to retrieve the configuration from the C&C.
     json jRemoteConfig = fastRPC.runRemoteRPCMethod("SERVER",getClientConfigCmd,{},&rpcError);
     if (rpcError["succeed"].asBool() == true)
@@ -148,7 +147,6 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
             std::string localConfigPath = Globals::getLC_RemoteConfigFilePath();
 
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "Writting the C2 local configuration to: %s",localConfigPath.c_str());
 
             std::ofstream outfile;
             outfile.open(localConfigPath, std::ios_base::out);
@@ -172,7 +170,13 @@ bool RPCClientImpl::retrieveConfigFromC2()
                     Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }
 
+                Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "C2 configuration written to: %s",localConfigPath.c_str());
+
                 return true;
+            }
+            else
+            {
+                Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
             }
         }
         else
