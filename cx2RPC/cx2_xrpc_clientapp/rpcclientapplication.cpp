@@ -145,12 +145,17 @@ int RPCClientApplication::_start(int argc, char *argv[], CX2::Application::Argum
     // If retrieve config is setted up, retrieve it.
     if (retrieveConfig)
     {
+        // Obtain the config from the disk:
         Globals::getRpcImpl()->retrieveConfigFromLocalFile();
+
+        // Obtain the config from the c2:
         if (!Globals::getRpcImpl()->retrieveConfigFromC2())
         {
             // Unable to get the new config...
 
         }
+
+        // Virtual function to process the jRetrievedConfig...
         processRetrievedConfig();
     }
 

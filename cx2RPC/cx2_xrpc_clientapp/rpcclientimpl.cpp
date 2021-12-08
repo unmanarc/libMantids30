@@ -12,7 +12,7 @@ RPCClientImpl::RPCClientImpl()
 {
     getClientConfigCmd="getClientConfig";
     updateClientConfigLoadTimeCmd="updateClientConfigLoadTime";
-
+    failedToRetrieveC2Config = false;
 }
 
 RPCClientImpl::~RPCClientImpl()
@@ -68,6 +68,9 @@ void RPCClientImpl::runRPClient()
                 CX2::Network::Streams::CryptoStream cstreams(&sockRPCClient);
                 if (cstreams.mutualChallengeResponseSHA256Auth(Globals::getLC_C2NetresApiKey(),false) == std::make_pair(true,true))
                 {
+                    // now is fully connected / authenticated...
+                    if (failedToRetrieveC2Config)
+                        connectedToC2AfterFailingToLoadC2Config();
                     fastRPC.processConnection(&sockRPCClient,"SERVER");
                 }
                 else
@@ -125,9 +128,11 @@ bool RPCClientImpl::retrieveConfigFromC2()
     /////////////////////////////////////////////////////////////
     json rpcError;
 
+    failedToRetrieveC2Config = false;
+
     Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from remote C2.");
 
-    // Try to retrieve the configuration from the C&C.
+    // Try to retrieve the configuration from the C&C. (will try several attempts)
     json jRemoteConfig = fastRPC.runRemoteRPCMethod("SERVER",getClientConfigCmd,{},&rpcError);
     if (rpcError["succeed"].asBool() == true)
     {
@@ -188,6 +193,10 @@ bool RPCClientImpl::retrieveConfigFromC2()
     {
         Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
     }
+
+    // If the C2 is available in the near future, handle it (recommendation: exit the program).
+    failedToRetrieveC2Config = true;
+
 
     return false;
 }
