@@ -110,6 +110,10 @@ public:
     void setDefaultHelpOption(const std::string &value);
 
 #ifndef _WIN32
+    void setUid(uint16_t newUid);
+    void setGid(uint16_t newGid);
+    uint16_t getUid() const;
+    uint16_t getGid() const;
 
     /**
      * @brief getDefaultDaemonOption Get Default option to deamon compatible (Eg. daemon for --daemon)
@@ -122,10 +126,12 @@ public:
 // INTERNAL FUNCTIONS:
     bool parseCommandLineOptions(int argc, char *argv[]);
 
+
 private:
     std::string sDefaultHelpOption;
 #ifndef _WIN32
     std::string sDefaultDaemonOption;
+    uint16_t uid,gid;
 #endif
     std::list<sProgCMDOpts *> getAllCMDOptions();
     uint32_t getMaxOptNameSize(std::list<sProgCMDOpts *> options);
@@ -134,7 +140,7 @@ private:
     sProgCMDOpts * getProgramOption(char optChar);
     sProgCMDOpts * getProgramOption(const std::string & optName);
 
-    bool inifiniteWaitAtEnd;
+    bool inifiniteWaitAtEnd;    
 
     std::map<std::string,std::list<sProgCMDOpts *>> cmdOptions; // group->list of command options
     // TODO: multimap

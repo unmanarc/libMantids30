@@ -165,6 +165,28 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     return fulfilled;
 }
 
+
+
+#ifndef _WIN32
+void GlobalArguments::setUid(uint16_t newUid)
+{
+    uid = newUid;
+}
+
+void GlobalArguments::setGid(uint16_t newGid)
+{
+    gid = newGid;
+}
+uint16_t GlobalArguments::getUid() const
+{
+    return uid;
+}
+uint16_t GlobalArguments::getGid() const
+{
+    return gid;
+}
+#endif
+
 void GlobalArguments::printHelp()
 {
     cout << endl;

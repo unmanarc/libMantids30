@@ -69,6 +69,8 @@ int StartApplication(int argc, char *argv[], Application *_app)
     appPTR = _app;
     // Get program name from program path.
     globalArgs.initProgramName(argv[0]);
+    globalArgs.setGid(getgid());
+    globalArgs.setUid(getuid());
 
     // Local default cmd options...
 #ifndef _WIN32
@@ -101,6 +103,41 @@ int StartApplication(int argc, char *argv[], Application *_app)
         cout << "ERR: Failed to Load Configuration." << endl << flush;
         return -1;
     }
+
+#ifndef _WIN32
+    // UID/GID change...
+    if (getgid() != globalArgs.getGid() || getuid() != globalArgs.getUid())
+    {
+        // Drop privileges and act like user process:
+        if (getgid() != globalArgs.getGid())
+        {
+            if (setgid(globalArgs.getGid()))
+            {
+                cout << "ERR: Failed to drop privileged to group" << globalArgs.getGid() << endl << flush;
+                return -3;
+            }
+        }
+        if (getuid() != globalArgs.getUid())
+        {
+            if (setuid(globalArgs.getUid()))
+            {
+                cout << "ERR: Failed to drop privileged to user" << globalArgs.getUid() << endl << flush;
+                return -4;
+            }
+        }
+        // Now change EUID/EGID...
+        if (setegid(globalArgs.getGid()) != 0)
+        {
+            cout << "ERR: Failed to drop extended privileged to group" << globalArgs.getGid() << endl << flush;
+            return -5;
+        }
+        if (seteuid(globalArgs.getUid()) != 0)
+        {
+            cout << "ERR: Failed to drop extended privileged to user" << globalArgs.getUid() << endl << flush;
+            return -6;
+        }
+    }
+#endif
 
     int r = 0;
 
