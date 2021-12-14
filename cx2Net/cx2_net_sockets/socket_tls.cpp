@@ -271,8 +271,6 @@ int Socket_TLS::iShutdown(int mode)
         return -1;
     }
 
-    if (mode != SHUT_RDWR) mode = SHUT_RDWR;
-
     switch (SSL_shutdown (sslHandle))
     {
     case 0:
