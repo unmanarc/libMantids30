@@ -135,17 +135,17 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
 
     ////////////////////////////////////////////////////////////
     // READ THE REQUEST ID.
-    requestId=connection->stream->readU64();
+    requestId=connection->stream->readU<uint64_t>();
     if (!requestId)
     {
         return -1;
     }
     ////////////////////////////////////////////////////////////
     // READ IF EXECUTED.
-    executionStatus=connection->stream->readU8();
+    executionStatus=connection->stream->readU<uint8_t>();
 
     // READ THE PAYLOAD...
-    payloadBytes = connection->stream->readBlockWAlloc(&maxAlloc, 32);
+    payloadBytes = connection->stream->readBlockWAllocEx<uint32_t>(&maxAlloc);
     if (payloadBytes == nullptr)
     {
         return -3;
@@ -194,19 +194,19 @@ int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::str
 
     ////////////////////////////////////////////////////////////
     // READ THE REQUEST ID.
-    requestId=stream->readU64();
+    requestId=stream->readU<uint64_t>();
     if (!requestId)
     {
         return -1;
     }
     // READ THE METHOD NAME.
-    std::string methodName = stream->readString(&ok,8);
+    std::string methodName = stream->readStringEx<uint8_t>(&ok);
     if (!ok)
     {
         return -2;
     }
     // READ THE PAYLOAD...
-    payloadBytes = stream->readBlockWAlloc(&maxAlloc, 32);
+    payloadBytes = stream->readBlockWAllocEx<uint32_t>(&maxAlloc);
     if (payloadBytes == nullptr)
     {
         return -3;
@@ -321,7 +321,7 @@ int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std
         ////////////////////////////////////////////////////////////
         // READ THE REQUEST TYPE.
         bool readOK;
-        switch (stream->readU8(&readOK))
+        switch (stream->readU<uint8_t>(&readOK))
         {
         case 'A':
             // Process Answer
@@ -379,10 +379,10 @@ void FastRPC::sendRPCAnswer(sFastRPCParameters *params, const std::string &answe
 {
     // Send a block.
     params->mtSocket->lock();
-    if (    params->streamBack->writeU8('A') && // ANSWER
-            params->streamBack->writeU64(params->requestId) &&
-            params->streamBack->writeU8(execution) &&
-            params->streamBack->writeString32(answer.size()<=params->maxMessageSize?answer:"",params->maxMessageSize ) )
+    if (    params->streamBack->writeU<uint8_t>('A') && // ANSWER
+            params->streamBack->writeU<uint64_t>(params->requestId) &&
+            params->streamBack->writeU<uint8_t>(execution) &&
+            params->streamBack->writeStringEx<uint32_t>(answer.size()<=params->maxMessageSize?answer:"",params->maxMessageSize ) )
     {
     }
     params->mtSocket->unlock();
@@ -446,10 +446,10 @@ json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::st
     }
 
     connection->mtSocket->lock();
-    if (    connection->stream->writeU8('Q') && // QUERY FOR ANSWER
-            connection->stream->writeU64(requestId) &&
-            connection->stream->writeString8(methodName) &&
-            connection->stream->writeString32( output,maxMessageSize ) )
+    if (    connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
+            connection->stream->writeU<uint64_t>(requestId) &&
+            connection->stream->writeStringEx<uint8_t>(methodName) &&
+            connection->stream->writeStringEx<uint32_t>( output,maxMessageSize ) )
     {
     }
     connection->mtSocket->unlock();
@@ -551,7 +551,7 @@ bool FastRPC::runRemoteClose(const std::string &connectionKey)
     {
 
         connection->mtSocket->lock();
-        if (    connection->stream->writeU8(0) )
+        if (    connection->stream->writeU<uint8_t>(0) )
         {
         }
         connection->mtSocket->unlock();

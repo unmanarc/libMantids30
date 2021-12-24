@@ -112,7 +112,7 @@ bool SocketChain_AES::postAcceptSubInitialization()
     // Put the very first IV
     genRandomBytes(writeParams.handShakeIV,sizeof(writeParams.handShakeIV));
     // Transmit the very first IV
-    if (!writeBlock(writeParams.handShakeIV,sizeof(writeParams.handShakeIV)))
+    if (!writeFull(writeParams.handShakeIV,sizeof(writeParams.handShakeIV)))
         return false;
     // Create the en/decryption xoring block
     if (!appendNewAESBlock( &writeParams, phase1Key, writeParams.handShakeIV))
@@ -126,7 +126,7 @@ bool SocketChain_AES::postAcceptSubInitialization()
     // Encrypt the header.
     writeParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
     // Transmit the encrypted header.
-    if (!writeBlock(vFirstLoad,sizeof(sHandShakeHeader)))
+    if (!writeFull(vFirstLoad,sizeof(sHandShakeHeader)))
         return false;
     // Initialize with the transmited values:
     writeParams.cleanAESBlock();
@@ -141,10 +141,10 @@ bool SocketChain_AES::postAcceptSubInitialization()
     // Reception:
     ///////////////////////////////////////////////
     // Read the IV
-    if (!readBlock(readParams.handShakeIV,sizeof(readParams.handShakeIV)))
+    if (!readFull(readParams.handShakeIV,sizeof(readParams.handShakeIV)))
         return false;
     // Read the encryted header
-    if (!readBlock(vFirstLoad,sizeof(sHandShakeHeader)))
+    if (!readFull(vFirstLoad,sizeof(sHandShakeHeader)))
         return false;
     // Create the en/decryption xoring block
     if (!appendNewAESBlock( &readParams, phase1Key, readParams.handShakeIV))

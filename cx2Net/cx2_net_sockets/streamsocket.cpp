@@ -65,7 +65,7 @@ Memory::Streams::Status StreamSocket::write(const void *buf, const size_t &count
 {
     Memory::Streams::Status cur;
     // TODO: report the right amount of data copied...
-    bool r = writeBlock(buf,count);
+    bool r = writeFull(buf,count);
     if (!r)
         wrStat.succeed=cur.succeed=setFailedWriteState();
     else
@@ -113,17 +113,17 @@ std::pair<StreamSocket *,StreamSocket *> StreamSocket::GetSocketPair()
     return p;
 }
 
-bool StreamSocket::writeBlock(const void *data)
+bool StreamSocket::writeFull(const void *data)
 {
-    return writeBlock(data,strlen(((const char *)data)));
+    return writeFull(data,strlen(((const char *)data)));
 }
 
-bool StreamSocket::writeBlock(const void *data, const uint32_t &datalen)
+bool StreamSocket::writeFull(const void *data, const uint64_t &datalen)
 {
    // if (!isActive()) return false;
 
-    int32_t sent_bytes = 0;
-    int32_t left_to_send = datalen;
+    uint64_t sent_bytes = 0;
+    uint64_t left_to_send = datalen;
 
     // Send the raw data.
     // datalen-left_to_send is the _size_ of the data already sent.
@@ -166,37 +166,37 @@ bool StreamSocket::postConnectSubInitialization()
 }
 
 
-bool StreamSocket::readBlock(void *data, const uint32_t &datalen, uint32_t * bytesReceived)
+bool StreamSocket::readFull(void *data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount)
 {
-    if (bytesReceived) *bytesReceived = 0;
+    if (receivedDataBytesCount) *receivedDataBytesCount = 0;
 
     if (!isActive())
     {
         return false;
     }
 
-    int total_recv_bytes = 0;
-    int local_recv_bytes = 0;
+    uint64_t curReceivedBytesCount = 0;
+    int partialReceivedBytesCount = 0;
 
-    if (datalen==0) return true;
+    if (expectedDataBytesCount==0) return true;
 
     // Try to receive the maximum amount of data left.
-    while ( (datalen - total_recv_bytes)>0 // there are bytes to read.
-            && (local_recv_bytes = partialRead(((char *) data) + total_recv_bytes, datalen - total_recv_bytes)) >0 // receive bytes. if error, will return with -1.
+    while ( (expectedDataBytesCount - curReceivedBytesCount)>0 // there are bytes to read.
+            && (partialReceivedBytesCount = partialRead(((char *) data) + curReceivedBytesCount, expectedDataBytesCount - curReceivedBytesCount)) >0 // receive bytes. if error, will return with -1 or zero (connection terminated).
             )
     {
         // Count the data received.
-        total_recv_bytes += local_recv_bytes;
+        curReceivedBytesCount += partialReceivedBytesCount;
     }
 
-    if ((unsigned int)total_recv_bytes<datalen)
+    if (curReceivedBytesCount<expectedDataBytesCount)
     {
-        if (total_recv_bytes==0) return false;
-        if (bytesReceived) *bytesReceived = total_recv_bytes;
+        if (curReceivedBytesCount==0) return false;
+        if (receivedDataBytesCount) *receivedDataBytesCount = curReceivedBytesCount;
         return true;
     }
 
-    if (bytesReceived) *bytesReceived = datalen;
+    if (receivedDataBytesCount) *receivedDataBytesCount = expectedDataBytesCount;
 
     // Otherwise... return true.
     return true;
@@ -232,6 +232,18 @@ int StreamSocket::iShutdown(int mode)
     throw std::runtime_error("Double shutdown on Socket Base Stream");
 */
     return -1;
+}
+
+void StreamSocket::writeDeSync()
+{
+    // Action when everything is desynced... (better to stop R/W from the socket)
+    shutdownSocket();
+}
+
+void StreamSocket::readDeSync()
+{
+    // Action when everything is desynced... (better to stop R/W from the socket)
+    shutdownSocket();
 }
 
 bool StreamSocket::isConnected()

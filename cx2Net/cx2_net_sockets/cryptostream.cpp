@@ -15,9 +15,9 @@ std::pair<bool, bool> CX2::Network::Streams::CryptoStream::mutualChallengeRespon
     std::string sLocalRandomValue = Helpers::Random::createRandomString(64), sRemoteRandomValue;
 
     // RND strings filled up.
-    if (!socket->writeString8(sLocalRandomValue))
+    if (!socket->writeStringEx<uint8_t>(sLocalRandomValue))
         return std::make_pair(false,false);
-    sRemoteRandomValue = socket->readString(&readOK,8);
+    sRemoteRandomValue = socket->readStringEx<uint8_t>(&readOK);
     if (!readOK)
         return std::make_pair(false,false);
 
@@ -31,12 +31,12 @@ std::pair<bool, bool> CX2::Network::Streams::CryptoStream::mutualChallengeRespon
     if (!server)
     {
         // The client should expose the sharedKey (hashed+randomly salted), so please use a truly random sharedKey to prevent key cracking
-        if (!socket->writeString8(Helpers::Crypto::calcSHA256(sharedKey+sRemoteRandomValue+sLocalRandomValue)))
+        if (!socket->writeStringEx<uint8_t>(Helpers::Crypto::calcSHA256(sharedKey+sRemoteRandomValue+sLocalRandomValue)))
             return std::make_pair(false,false);
     }
 
     // Read the remote guess
-    std::string sRemoteChallenge = socket->readString(&readOK,8);
+    std::string sRemoteChallenge = socket->readStringEx<uint8_t>(&readOK);
     if (!readOK)
         return std::make_pair(false,false);
 
@@ -47,12 +47,12 @@ std::pair<bool, bool> CX2::Network::Streams::CryptoStream::mutualChallengeRespon
     if (server)
     {
         // The server won't expose the sharedKey if the client does not meet the challenge itself.
-        if (!socket->writeString8(Helpers::Crypto::calcSHA256((bRemoteChallengeOK?sharedKey:"")+sRemoteRandomValue+sLocalRandomValue)))
+        if (!socket->writeStringEx<uint8_t>(Helpers::Crypto::calcSHA256((bRemoteChallengeOK?sharedKey:"")+sRemoteRandomValue+sLocalRandomValue)))
             return std::make_pair(false,false);
     }
 
-    socket->writeU8(bRemoteChallengeOK?1:0);
-    bool bLocalChallengeOK  = socket->readU8() == 1;
+    socket->writeU<uint8_t>(bRemoteChallengeOK?1:0);
+    bool bLocalChallengeOK  = socket->readU<uint8_t>() == 1;
 
     return std::make_pair(bRemoteChallengeOK,bLocalChallengeOK);
 }

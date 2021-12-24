@@ -193,7 +193,7 @@ void ChainSockets::chainThread(sChainTElement *chain)
     bool w1=0;
 
     while (     (r0=chain->sockets[0]->partialRead(data,sizeof(data)))>0 &&
-                ((w1=chain->sockets[1]->writeBlock(data,r0)))==true )
+                ((w1=chain->sockets[1]->writeFull(data,r0)))==true )
     {
     }
 

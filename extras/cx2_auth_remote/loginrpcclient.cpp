@@ -36,7 +36,7 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
             // TLS connected
             rpcClient->notifyTLSConnectedOK(&tlsClient);
             Network::Streams::CryptoStream cstream(&tlsClient);
-            tlsClient.writeString16(rpcClient->getAppName());
+            tlsClient.writeStringEx<uint16_t>(rpcClient->getAppName());
             if (cstream.mutualChallengeResponseSHA256Auth(rpcClient->getApiKey(),false) == std::make_pair(true,true))
             {
                 // Authentication OK...

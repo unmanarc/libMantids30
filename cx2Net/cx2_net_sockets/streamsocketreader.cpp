@@ -34,8 +34,8 @@ unsigned char StreamSocketReader::readU8(bool* readOK)
     if (readOK)
         *readOK = true;
     // Receive 1 byte, if fails, readOK is setted as false.
-    uint32_t r;
-    if ((!readBlock(&rsp, 1, &r) || r!=1) && readOK)
+    uint64_t r;
+    if ((!readFull(&rsp, 1, &r) || r!=1) && readOK)
         *readOK = false;
     return rsp[0];
 }
@@ -47,8 +47,8 @@ uint16_t StreamSocketReader::readU16(bool* readOK)
     if (readOK)
         *readOK = true;
     // Receive 2 bytes (unsigned short), if fails, readOK is setted as false.
-    uint32_t r;
-    if ((!readBlock(&ret, sizeof(uint16_t), &r) || r!=sizeof(uint16_t)) && readOK)
+    uint64_t r;
+    if ((!readFull(&ret, sizeof(uint16_t), &r) || r!=sizeof(uint16_t)) && readOK)
         *readOK = false;
     ret = ntohs(ret); // Reconvert into host based integer.
     return ret;
@@ -62,8 +62,8 @@ uint32_t StreamSocketReader::readU32(bool* readOK)
         *readOK = true;
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
-    uint32_t r;
-    if ((!readBlock(&ret, sizeof(uint32_t), &r) || r!=sizeof(uint32_t)) && readOK)
+    uint64_t r;
+    if ((!readFull(&ret, sizeof(uint32_t), &r) || r!=sizeof(uint32_t)) && readOK)
         *readOK = false;
     ret = ntohl(ret); // Reconvert into host based integer.
     return ret;
@@ -76,105 +76,15 @@ uint64_t StreamSocketReader::readU64(bool *readOK)
         *readOK = true;
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
-    uint32_t r;
-    if ((!readBlock(&ret, sizeof(uint64_t), &r) || r!=sizeof(uint64_t)) && readOK)
+    uint64_t r;
+    if ((!readFull(&ret, sizeof(uint64_t), &r) || r!=sizeof(uint64_t)) && readOK)
         *readOK = false;
 
     ret = ntohll(ret); // Reconvert into host based integer.
     return ret;
 }
 
-
-bool StreamSocketReader::readBlock32(void* data, uint32_t * datalen, bool mustReceiveFullDataLen)
-{
-    bool readOK;
-    uint32_t len;
-
-    if (*datalen == 0) return true;
-
-    if ((len = readU32(&readOK)) != 0 && readOK)
-    {
-        if (len != *datalen && mustReceiveFullDataLen)
-            return false;
-
-        *datalen = len;
-        uint32_t r;
-        return (readBlock(data, len, &r) && r==len);
-    }
-    return false;
-}
-
-bool StreamSocketReader::readBlock16(void* data, uint16_t * datalen,
-        bool mustReceiveFullDataLen)
-{
-    bool readOK;
-    uint16_t len;
-
-    if (*datalen == 0) return true;
-
-    if ((len = readU16(&readOK)) != 0 && readOK)
-    {
-        if (len != *datalen && mustReceiveFullDataLen)
-            return false;
-        *datalen = len;
-        uint32_t r;
-        return (readBlock(data, len, &r) && r==len);
-    }
-    return false;
-}
-bool StreamSocketReader::readBlock8(void* data, uint8_t * datalen,
-        bool mustReceiveFullDataLen)
-{
-    bool readOK;
-    uint8_t len;
-
-    if (*datalen == 0) return true;
-
-    if ((len = readU8(&readOK)) != 0 && readOK)
-    {
-        if (len != *datalen && mustReceiveFullDataLen)
-            return false;
-
-        *datalen = len;
-        uint32_t r;
-        return (readBlock(data, len, &r) && r==len);
-    }
-    return false;
-}
-
-char * StreamSocketReader::readBlock32WAlloc(uint32_t *datalen)
-{
-    bool readOK;
-    uint32_t len;
-
-    if ((len = readU32(&readOK)) != 0 && readOK)
-    {
-        if (*datalen < len)  // len received exceeded the max datalen permited.
-        {
-            *datalen = 0;
-            return nullptr;
-        }
-        // download and resize
-        char * odata = new char[len];
-        if (!odata)
-            return nullptr; // not enough memory.
-        uint32_t r;
-        bool ok = readBlock(odata, len,&r) && r==len;
-        if (!ok)
-        {
-            delete [] odata;
-            *datalen = 0;
-            return nullptr;
-        }
-        *datalen = len;
-        return odata;
-    }
-    *datalen = 0;
-    return nullptr;
-}
-
 // TODO: null termination
-
 int32_t StreamSocketReader::read64KBlockDelim(char * block, const char *delim, const uint16_t &delimBytes, const uint32_t & blockNo)
 {
     bool readOK;
@@ -239,72 +149,3 @@ char* StreamSocketReader::readBlock32WAllocAndDelim(unsigned int* datalen,
     }
 }
 
-
-char *StreamSocketReader::readBlockWAlloc(uint32_t *datalen, unsigned char sizel)
-{
-    if (!datalen) return nullptr;
-
-    bool readOK = false;
-    uint32_t lenReceived=0;
-
-    if (sizel==8)
-        lenReceived = (readU8(&readOK))+1;
-    if (sizel==16)
-        lenReceived = (readU16(&readOK))+1;
-    if (sizel>16)
-        lenReceived = (readU32(&readOK))+1;
-
-    if (readOK)
-    {
-        if (lenReceived > *datalen)  // len received exceeded the max datalen permited.
-        {
-            *datalen = 0;
-            return nullptr;
-        }
-        *datalen = lenReceived-1;
-        // download and resize
-        char * odata = new char[lenReceived];
-        odata[lenReceived-1]=0;
-        if (!odata) return nullptr; // not enough memory.
-        uint32_t r;
-        bool ok = readBlock(odata, lenReceived-1, &r) && r==lenReceived-1;
-        if (!ok)
-        {
-            delete [] odata;
-            *datalen = 0;
-            return nullptr;
-        }
-        return odata;
-    }
-    else
-    {
-        *datalen = 0;
-        return nullptr;
-    }
-}
-
-std::string StreamSocketReader::readString(bool *readOK, unsigned char sizel)
-{
-    uint32_t receivedBytes = (1 << sizel)-1;
-
-    if (readOK) *readOK = true;
-
-    char * data = (char *)readBlockWAlloc(&receivedBytes,sizel);
-    if (!data)
-    {
-        if (readOK) *readOK = false;
-        return "";
-    }
-
-    if (!receivedBytes)
-    {
-        delete [] data;
-        return "";
-    }
-    else
-    {
-        std::string v(data,receivedBytes);
-        delete [] data;
-        return v;
-    }
-}

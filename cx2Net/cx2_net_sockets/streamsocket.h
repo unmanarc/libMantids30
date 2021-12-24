@@ -56,26 +56,25 @@ public:
      * @param data null terminated string
      * @return true if the string was successfully sent
      */
-    virtual bool writeBlock(const void * buf);
+    virtual bool writeFull(const void * buf);
     /**
      * Write a data block on the socket
-     * Send the data block in chunks until it ends or fail.
+     *
      * You can specify sizes bigger than 4k/8k, or megabytes (be careful with memory), and it will be fully sent in chunks.
      * @param data data block.
      * @param datalen data length in bytes
      * @return true if the data block was sucessfully sent.
      */
-    virtual bool writeBlock(const void * data, const uint32_t & datalen) override;
+    virtual bool writeFull(const void * data, const uint64_t & datalen) override;
     /**
-     * Read a data block from the socket
-     * Receive the data block in 4k chunks (or less) until it ends or fail.
-     * You can specify sizes bigger than 4k/8k, or megabytes (be careful with memory), and it will be fully received in chunks.
-     * You may want to specify read a timeout for your protocol.
-     * @param data data block.
-     * @param datalen data length in bytes
-     * @return true if the data block was sucessfully received.
+     * @brief readBlock Read a data block from the socket
+     *                  Receive the data block in 4k chunks (or less) until it ends or fail.
+     * @param data Memory address where the received data will be allocated
+     * @param expectedDataBytesCount Expected data size (in bytes) to be read from the socket
+     * @param receivedBytesCount if not null, this function returns the received byte count.
+     * @return if it's disconnected (invalid sockfd) or it's not able to obtain at least 1 byte, then return false, otherwise true, you should check by yourself that expectedDataBytesCount == *receivedDataBytesCount
      */
-    virtual bool readBlock(void * data, const uint32_t &datalen, uint32_t * bytesReceived = nullptr) override;
+    virtual bool readFull(void * data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount = nullptr) override;
     /**
      * @brief iShutdown Internal protocol Shutdown
      * @return depends on protocol.
@@ -83,6 +82,9 @@ public:
     virtual int iShutdown(int mode = SHUT_RDWR) override;
 
 
+protected:
+    void writeDeSync() override;
+    void readDeSync() override;
 };
 
 typedef std::shared_ptr<StreamSocket> StreamSocket_SP;

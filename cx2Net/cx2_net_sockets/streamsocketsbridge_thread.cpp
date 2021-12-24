@@ -49,7 +49,7 @@ bool StreamsSocketsBridge_Thread::writeBlockL(const void *data, const uint32_t &
 {
     std::lock_guard<std::mutex> lock(fwd?mt_fwd:mt_rev);
     StreamSocket *dstX=fwd?dst:src;
-    return dstX->writeBlock(data,datalen);
+    return dstX->writeFull(data,datalen);
 }
 
 int StreamsSocketsBridge_Thread::simpleProcessPipe(bool fwd)
