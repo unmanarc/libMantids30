@@ -356,20 +356,20 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
         return FALSE;
     }
 }
-/*
-void exitHandler(int s)
-{
-    switch (s) {
-    case SIGTERM:
-    case SIGABRT:
-    case SIGINT:
-        fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-        _shutdown();
-        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-        break;
-    }
 
-}*/
+//void exitHandler(int s)
+//{
+//    switch (s) {
+//    case SIGTERM:
+//    case SIGABRT:
+//    case SIGINT:
+//        fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+//        _shutdown();
+//        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+//        break;
+//    }
+
+//}
 #endif
 
 
@@ -378,10 +378,9 @@ void catch_sigterm()
 {
 #ifdef _WIN32
     SetConsoleCtrlHandler( CtrlHandler, TRUE );
-/*
-    signal(SIGINT, exitHandler);
-    signal(SIGTERM, exitHandler);
-    signal(SIGABRT, exitHandler);*/
+//    signal(SIGINT, exitHandler);
+//    signal(SIGTERM, exitHandler);
+//    signal(SIGABRT, exitHandler);
 #else
     static struct sigaction _sigact;
 

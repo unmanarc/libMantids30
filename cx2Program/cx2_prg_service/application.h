@@ -9,13 +9,13 @@ static CX2::Application::Arguments::GlobalArguments globalArgs;
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-/*
-* NOTE: when used as daemon, you have to create this writeable locations:
-*
-*               /var/log/<program_name>/
-*               /var/lock/<program_name>/
-*               /var/run/<program_name>/
-*/
+
+// NOTE: when used as daemon, you have to create this writeable locations:
+//
+//               /var/log/<program_name>/
+//               /var/lock/<program_name>/
+//               /var/run/<program_name>/
+
 namespace CX2 { namespace Application {
 
 class Application
