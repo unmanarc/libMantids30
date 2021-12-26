@@ -7,45 +7,45 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Abstract Authentication Layer")
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
+
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
-include(GNUInstallDirs)
-
 add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
 
 set_target_properties(  ${LIB_NAME}
-                        PROPERTIES VERSION ${PROJECT_VERSION}
-                        SOVERSION 2
-                        PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
-                      )
+    PROPERTIES VERSION ${PROJECT_VERSION}
+    SOVERSION 2
+    PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
+    )
 
 configure_file(
-                "genericlib.pc.in"
-                "${LIB_NAME}.pc" @ONLY
-              )
+    "genericlib.pc.in"
+    "${LIB_NAME}.pc" @ONLY
+    )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
-        TARGETS ${LIB_NAME}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
-        )
+    TARGETS ${LIB_NAME}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
+    )
 
 install(
-        FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${LIB_NAME}/${LIB_NAME}.pc
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
-        )
+    FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${LIB_NAME}/${LIB_NAME}.pc
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+    )
 
 if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
+
+
 include_directories("${cx2_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_hlp_functions)
 

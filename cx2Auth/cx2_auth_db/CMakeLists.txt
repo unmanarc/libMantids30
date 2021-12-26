@@ -7,13 +7,8 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Database Based Abstract Authorization Layer")
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
-
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
-
-include(GNUInstallDirs)
 
 add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
 
@@ -46,7 +41,6 @@ if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
-
 
 include_directories("${cx2_mem_vars_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} cx2_mem_vars)

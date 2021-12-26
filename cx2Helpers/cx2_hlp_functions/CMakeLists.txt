@@ -7,15 +7,15 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Helper Functions")
 
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+
+
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
-include(GNUInstallDirs)
-
-add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+add_library(${LIB_NAME} SHARED ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+add_library(${LIB_NAME}_static STATIC ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+set_target_properties(${LIB_NAME}_static PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
 set_target_properties(  ${LIB_NAME}
                         PROPERTIES VERSION ${PROJECT_VERSION}
@@ -23,15 +23,14 @@ set_target_properties(  ${LIB_NAME}
                         PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                       )
 
-configure_file(
-                "genericlib.pc.in"
+configure_file("genericlib.pc.in"
                 "${LIB_NAME}.pc" @ONLY
               )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
-        TARGETS ${LIB_NAME}
+        TARGETS ${LIB_NAME} "${LIB_NAME}_static"
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
@@ -56,7 +55,6 @@ target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 target_link_libraries(${LIB_NAME} "-lcrypto")
 
 include(CheckFunctionExists)
-
 check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)
 if(HAVE_EXPLICIT_BZERO)
         add_definitions(-DHAVE_EXPLICIT_BZERO)
