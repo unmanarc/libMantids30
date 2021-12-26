@@ -69,9 +69,10 @@ int StartApplication(int argc, char *argv[], Application *_app)
     appPTR = _app;
     // Get program name from program path.
     globalArgs.initProgramName(argv[0]);
+#ifndef _WIN32
     globalArgs.setGid(getgid());
     globalArgs.setUid(getuid());
-
+#endif
     // Local default cmd options...
 #ifndef _WIN32
     globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", CX2::Memory::Abstract::TYPE_BOOL );
