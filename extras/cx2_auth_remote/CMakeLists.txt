@@ -8,15 +8,12 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Remote Authentication Library")
 
-
-
-
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
-
-
-add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+add_library(${LIB_NAME} SHARED ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+add_library(${LIB_NAME}_static STATIC ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+set_target_properties(${LIB_NAME}_static PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
 set_target_properties(  ${LIB_NAME}
                         PROPERTIES VERSION ${PROJECT_VERSION}
@@ -24,15 +21,12 @@ set_target_properties(  ${LIB_NAME}
                         PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                       )
 
-configure_file(
-                "genericlib.pc.in"
-                "${LIB_NAME}.pc" @ONLY
-              )
+configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
-        TARGETS ${LIB_NAME}
+        TARGETS ${LIB_NAME} "${LIB_NAME}_static"
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
@@ -42,6 +36,7 @@ install(
         FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${LIB_NAME}/${LIB_NAME}.pc
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         )
+
 if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")

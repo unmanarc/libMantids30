@@ -24,15 +24,13 @@ else()
         project(${LIB_NAME})
         project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework PostgreSQL Database Connector")
 
-        
-        
-
         file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
         file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
-        
+        add_library(${LIB_NAME} SHARED ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+        add_library(${LIB_NAME}_static STATIC ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
 
-        add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+        set_target_properties(${LIB_NAME}_static PROPERTIES OUTPUT_NAME ${LIB_NAME})
 
         set_target_properties(  ${LIB_NAME}
                                 PROPERTIES VERSION ${PROJECT_VERSION}
@@ -40,15 +38,12 @@ else()
                                 PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                               )
 
-        configure_file(
-                        "genericlib.pc.in"
-                        "${LIB_NAME}.pc" @ONLY
-                      )
+        configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
         target_include_directories(${LIB_NAME} PRIVATE .)
 
         install(
-                TARGETS ${LIB_NAME}
+                TARGETS ${LIB_NAME} "${LIB_NAME}_static"
                 ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
@@ -76,7 +71,7 @@ else()
         target_link_libraries(${LIB_NAME} cx2_mem_vars)
 
         target_include_directories(${LIB_NAME} PRIVATE ${PQ_INCLUDE_DIR})
-
+        target_include_directories(${LIB_NAME}_static PRIVATE ${PQ_INCLUDE_DIR})
         target_link_libraries(${LIB_NAME} ${POSTGRESQL_LIB})
     else()
         message("-- WARNING: Did not found lib PQ_INCLUDE_DIR")

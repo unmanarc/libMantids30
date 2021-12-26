@@ -7,9 +7,6 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework Helper Functions")
 
-
-
-
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
@@ -23,9 +20,7 @@ set_target_properties(  ${LIB_NAME}
                         PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                       )
 
-configure_file("genericlib.pc.in"
-                "${LIB_NAME}.pc" @ONLY
-              )
+configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
