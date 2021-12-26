@@ -18,9 +18,9 @@ else()
     file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
     file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
-    add_library(${LIB_NAME} SHARED ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
-    add_library(${LIB_NAME}_static STATIC ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
-    set_target_properties(${LIB_NAME}_static PROPERTIES OUTPUT_NAME ${LIB_NAME})
+    add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
+    
+    
 
     set_target_properties(  ${LIB_NAME}
                             PROPERTIES VERSION ${PROJECT_VERSION}
@@ -33,7 +33,7 @@ else()
     target_include_directories(${LIB_NAME} PRIVATE .)
 
     install(
-            TARGETS ${LIB_NAME} "${LIB_NAME}_static"
+            TARGETS ${LIB_NAME}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIB_NAME}
@@ -65,7 +65,6 @@ else()
     pkg_check_modules(SQLite sqlite3)
     link_libraries(${SQLite_LIBRARIES})
     target_include_directories(${LIB_NAME} PUBLIC ${SQLite_INCLUDE_DIRS})
-    target_include_directories(${LIB_NAME}_static PUBLIC ${SQLite_INCLUDE_DIRS})
     target_link_libraries(${LIB_NAME} ${SQLite_LIBRARIES})
 
     message("-- SQLITE3_LIB found at [${SQLITE3_LIB}] for ${SQLite_LIBRARIES}")
