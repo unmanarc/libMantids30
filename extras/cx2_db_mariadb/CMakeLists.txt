@@ -1,5 +1,3 @@
-
-
 cmake_minimum_required(VERSION 3.10)
 
 
@@ -7,6 +5,7 @@ cmake_minimum_required(VERSION 3.10)
 find_library (
     MARIADB_LIB
     NAMES mariadb libmariadb mysql libmysql libmysqlclient mysqlclient # what to look for
+    PATH_SUFFIXES mysql
 )
 if (NOT MARIADB_LIB)
     message("-- WARNING: Did not found lib MARIADB_LIB")
