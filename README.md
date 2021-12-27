@@ -10,7 +10,7 @@ WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)
 ***
 ## Functionality
 
-This framework provides C++11 based enhancing libraries for console and network based proyects.
+This framework provides C++11 based enhancing libraries for console and network based projects
 
 ### Components:
 
