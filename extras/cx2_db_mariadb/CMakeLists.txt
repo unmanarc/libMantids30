@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 ######################################
 find_library (
     MARIADB_LIB
-    NAMES mariadb libmariadb mysql libmysql libmysqlclient # what to look for
+    NAMES mariadb libmariadb mysql libmysql libmysqlclient mysqlclient # what to look for
 )
 if (NOT MARIADB_LIB)
     message("-- WARNING: Did not found lib MARIADB_LIB")
