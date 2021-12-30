@@ -4,7 +4,7 @@
 
 Name:           %{name}
 Version:        %{version}
-Release:        %{build_timestamp}.git
+Release:        %{build_timestamp}.git%{?dist}
 Summary:        C++11 Framework Libraries v2
 License:        LGPLv3
 URL:            https://github.com/unmanarc/cxFramework2
@@ -22,6 +22,10 @@ Group:          Development/Libraries
 %endif
 
 %if 0%{?rhel} == 8
+%define debug_package %{nil}
+%endif
+
+%if 0%{?fedora} >= 33
 %define debug_package %{nil}
 %endif
 
@@ -86,6 +90,11 @@ rm -rf $RPM_BUILD_ROOT
 
 %install
 rm -rf $RPM_BUILD_ROOT
+
+%if 0%{?fedora} >= 33
+cd $HOME/rpmbuild/BUILD/cxFramework2-master
+ln -s . x86_64-redhat-linux-gnu
+%endif
 
 %if "%{cmake}" == "cmake3"
 %cmake3_install
