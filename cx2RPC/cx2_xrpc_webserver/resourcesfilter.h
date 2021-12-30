@@ -1,6 +1,7 @@
 #ifndef RESOURCESFILTER_H
 #define RESOURCESFILTER_H
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
 #include <boost/regex.hpp>
 
 #include <string>
