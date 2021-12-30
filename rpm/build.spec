@@ -80,7 +80,7 @@ rm -rf $RPM_BUILD_ROOT
 %install
 rm -rf $RPM_BUILD_ROOT
 
-%if %{cmake} == "cmake3"
+%if "%{cmake}" == "cmake3"
 %cmake3_install
 %else
 %cmake_install
