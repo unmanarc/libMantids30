@@ -21,7 +21,12 @@ Group:          Development/Libraries
 %define cmake cmake3
 %endif
 
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel
+%if 0%{?rhel} == 6
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel postgresql-devel gcc-c++
+%else
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++
+%endif
+
 Requires:       jsoncpp boost-regex boost-thread openssl
 
 %description
@@ -85,22 +90,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %doc
-/usr/lib64/libcx2_*
-%exclude /usr/lib64/libcx2_db_sqlite*
-%exclude /usr/lib64/libcx2_db_pgsql*
-%exclude /usr/lib64/libcx2_db_mariadb*
+%{_libdir}/libcx2_*
+%exclude %{_libdir}/libcx2_db_sqlite*
+%exclude %{_libdir}/libcx2_db_pgsql*
+%exclude %{_libdir}/libcx2_db_mariadb*
 
 %files devel
 /usr/include/cx2*
 /usr/share/pkgconfig/cx2*
 
 %files sqlite
-/usr/lib64/libcx2_db_sqlite*
+%{_libdir}/libcx2_db_sqlite*
 
 %files postgresql
-/usr/lib64/libcx2_db_pgsql*
+%{_libdir}/libcx2_db_pgsql*
 
 %files mariadb
-/usr/lib64/libcx2_db_mariadb*
+%{_libdir}/libcx2_db_mariadb*
 
 %changelog
