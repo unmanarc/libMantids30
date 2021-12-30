@@ -24,7 +24,7 @@ Group:          Development/Libraries
 %define cmake cmake3
 %endif
 
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel git >= 2.1 sed
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel sed git
 Requires:       jsoncpp boost-regex boost-thread openssl
 
 %description
