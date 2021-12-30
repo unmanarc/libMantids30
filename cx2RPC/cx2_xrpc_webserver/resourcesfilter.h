@@ -1,11 +1,11 @@
 #ifndef RESOURCESFILTER_H
 #define RESOURCESFILTER_H
 
+#include <boost/regex.hpp>
+
 #include <string>
 #include <list>
 #include <cx2_auth/session.h>
-
-#include <boost/regex.hpp>
 
 namespace CX2 { namespace RPC { namespace Web {
 
