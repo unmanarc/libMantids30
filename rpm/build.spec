@@ -3,7 +3,7 @@
 %define build_timestamp %{lua: print(os.date("%Y%m%d_%H%M"))}
 %define revx      %(git ls-remote https://github.com/unmanarc/cxFramework2 HEAD | sed 's/HEAD//g' )
 %define rev       %(r=%{revx}; echo ${r:0:40})
-%define shortrev  %(r=%{revx}; echo ${r:0:12})
+%define shortrev  %(r=%{revx}; echo ${r:0:8})
 
 Name:           %{name}
 Version:        %{version}
