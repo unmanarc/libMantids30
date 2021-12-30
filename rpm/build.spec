@@ -1,6 +1,6 @@
 %define name cxFramework2
 %define version 2.5.0
-%define build_timestamp %{lua: print(os.date("%Y%m%d%H%M"))}
+%define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
 Version:        %{version}
@@ -8,7 +8,7 @@ Release:        %{build_timestamp}.git
 Summary:        C++11 Framework Libraries v2
 License:        LGPLv3
 URL:            https://github.com/unmanarc/cxFramework2
-Source0:        https://github.com/unmanarc/cxFramework2/archive/master.tar.gz#/%{name}-%{version}-%{release}.tar.gz
+Source0:        https://github.com/unmanarc/cxFramework2/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
 Group:          Development/Libraries
 
 %define cmake cmake
