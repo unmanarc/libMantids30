@@ -1,13 +1,10 @@
 %define name cxFramework2
 %define version 2.5.0
-%define build_timestamp %{lua: print(os.date("%Y%m%d_%H%M"))}
-%define revx      %(git ls-remote https://github.com/unmanarc/cxFramework2 HEAD | sed 's/HEAD//g' )
-%define rev       %(r=%{revx}; echo ${r:0:40})
-%define shortrev  %(r=%{revx}; echo ${r:0:8})
+%define build_timestamp %{lua: print(os.date("%Y%m%d%H%M"))}
 
 Name:           %{name}
 Version:        %{version}
-Release:        %{build_timestamp}_git%{shortrev}
+Release:        %{build_timestamp}.git
 Summary:        C++11 Framework Libraries v2
 License:        LGPLv3
 URL:            https://github.com/unmanarc/cxFramework2
@@ -24,7 +21,7 @@ Group:          Development/Libraries
 %define cmake cmake3
 %endif
 
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel sed git
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel
 Requires:       jsoncpp boost-regex boost-thread openssl
 
 %description
