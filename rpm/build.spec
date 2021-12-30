@@ -92,7 +92,6 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT
 
 %if 0%{?fedora} >= 33
-cd $HOME/rpmbuild/BUILD/cxFramework2-master
 ln -s . x86_64-redhat-linux-gnu
 %endif
 
