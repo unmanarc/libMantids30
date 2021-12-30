@@ -21,6 +21,11 @@ Group:          Development/Libraries
 %define cmake cmake3
 %endif
 
+%if 0%{?rhel} == 8
+%define debug_package %{nil}
+%endif
+
+
 %if 0%{?rhel} == 6
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
 %else
