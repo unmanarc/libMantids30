@@ -22,7 +22,7 @@ Group:          Development/Libraries
 %endif
 
 %if 0%{?rhel} == 6
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel postgresql-devel gcc-c++
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
 %else
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++
 %endif
