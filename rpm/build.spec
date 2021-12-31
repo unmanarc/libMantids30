@@ -103,6 +103,10 @@ ln -s . redhat-linux-build
 ln -s . ppc64le-redhat-linux-gnu
 %endif
 
+%if "%{_host}" == "s390x-ibm-linux-gnu"
+ln -s . s390x-redhat-linux-gnu
+%endif
+
 %if "%{cmake}" == "cmake3"
 %cmake3_install
 %else
