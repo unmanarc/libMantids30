@@ -99,7 +99,7 @@ ln -s . %{_host}
 ln -s . redhat-linux-build
 %endif
 
-%if "%{_host}" == powerpc64le-redhat-linux-gnu
+%if "%{_host}" == "powerpc64le-redhat-linux-gnu"
 ln -s . ppc64le-redhat-linux-gnu
 %endif
 
