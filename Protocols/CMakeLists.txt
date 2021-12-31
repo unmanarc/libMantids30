@@ -1,0 +1,3 @@
+ADD_SUBDIRECTORY(mdz_netp_http)
+ADD_SUBDIRECTORY(mdz_netp_linerecv)
+ADD_SUBDIRECTORY(mdz_netp_mime)

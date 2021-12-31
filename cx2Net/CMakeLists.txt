@@ -1,3 +1,0 @@
-ADD_SUBDIRECTORY(cx2_net_chains)
-ADD_SUBDIRECTORY(cx2_net_interfaces)
-ADD_SUBDIRECTORY(cx2_net_sockets)

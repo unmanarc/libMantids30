@@ -1,14 +1,14 @@
-%define name cxFramework2
+%define name libMantids
 %define version 2.5.0
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
 Version:        %{version}
 Release:        %{build_timestamp}.git%{?dist}
-Summary:        C++11 Framework Libraries v2
+Summary:        Mini-Advanced C++11 Network Toolkit for Internet Services Development
 License:        LGPLv3
-URL:            https://github.com/unmanarc/cxFramework2
-Source0:        https://github.com/unmanarc/cxFramework2/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
+URL:            https://github.com/unmanarc/libMantids
+Source0:        https://github.com/unmanarc/libMantids/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
 Group:          Development/Libraries
 
 %define cmake cmake
@@ -48,7 +48,7 @@ Provides:       %{name}-sqlite
 Requires:       %{name} sqlite
 
 %description sqlite
-This package contains the SQLite3 extensions for cx2Framework
+This package contains the SQLite3 extensions for libMantids
 
 %package postgresql
 Summary:        C++11 Framework Libraries v2 PostgreSQL Extensions
@@ -57,7 +57,7 @@ Provides:       %{name}-postgresql
 Requires:       %{name} postgresql-devel postgresql-libs
 
 %description postgresql
-This package contains the PostgreSQL extensions for cx2Framework
+This package contains the PostgreSQL extensions for libMantids
 
 %package mariadb
 Summary:        C++11 Framework Libraries v2 MariaDB Extensions
@@ -66,7 +66,7 @@ Provides:       %{name}-mariadb
 Requires:       %{name} mariadb-devel mariadb-libs
 
 %description mariadb
-This package contains the MariaDB extensions for cx2Framework
+This package contains the MariaDB extensions for libMantids
 
 %package devel
 Summary:        C++11 Framework Libraries v2 development files
@@ -103,22 +103,22 @@ ln -s . x86_64-redhat-linux-gnu
 
 %files
 %doc
-%{_libdir}/libcx2_*
-%exclude %{_libdir}/libcx2_db_sqlite*
-%exclude %{_libdir}/libcx2_db_pgsql*
-%exclude %{_libdir}/libcx2_db_mariadb*
+%{_libdir}/libmdz_*
+%exclude %{_libdir}/libmdz_db_sqlite*
+%exclude %{_libdir}/libmdz_db_pgsql*
+%exclude %{_libdir}/libmdz_db_mariadb*
 
 %files devel
-/usr/include/cx2*
-/usr/share/pkgconfig/cx2*
+/usr/include/mdz*
+/usr/share/pkgconfig/mdz*
 
 %files sqlite
-%{_libdir}/libcx2_db_sqlite*
+%{_libdir}/libmdz_db_sqlite*
 
 %files postgresql
-%{_libdir}/libcx2_db_pgsql*
+%{_libdir}/libmdz_db_pgsql*
 
 %files mariadb
-%{_libdir}/libcx2_db_mariadb*
+%{_libdir}/libmdz_db_mariadb*
 
 %changelog

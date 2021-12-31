@@ -1,1 +1,0 @@
-ADD_SUBDIRECTORY(cx2_mem_vars)

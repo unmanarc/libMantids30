@@ -1,4 +1,4 @@
-ADD_SUBDIRECTORY(cx2_auth_remote)
-ADD_SUBDIRECTORY(cx2_db_mariadb)
-ADD_SUBDIRECTORY(cx2_db_pgsql)
-ADD_SUBDIRECTORY(cx2_db_sqlite3)
+ADD_SUBDIRECTORY(mdz_auth_remote)
+ADD_SUBDIRECTORY(mdz_db_mariadb)
+ADD_SUBDIRECTORY(mdz_db_pgsql)
+ADD_SUBDIRECTORY(mdz_db_sqlite3)

@@ -1,0 +1,5 @@
+ADD_SUBDIRECTORY(mdz_xrpc_common)
+ADD_SUBDIRECTORY(mdz_xrpc_fast)
+ADD_SUBDIRECTORY(mdz_xrpc_clientapp)
+ADD_SUBDIRECTORY(mdz_xrpc_templates)
+ADD_SUBDIRECTORY(mdz_xrpc_webserver)

@@ -1,3 +1,0 @@
-ADD_SUBDIRECTORY(cx2_netp_http)
-ADD_SUBDIRECTORY(cx2_netp_linerecv)
-ADD_SUBDIRECTORY(cx2_netp_mime)

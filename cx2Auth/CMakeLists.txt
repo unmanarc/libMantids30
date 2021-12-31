@@ -1,2 +1,0 @@
-ADD_SUBDIRECTORY(cx2_auth)
-ADD_SUBDIRECTORY(cx2_auth_db)
