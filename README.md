@@ -1,10 +1,10 @@
-# cxFramework2 
+# libMantids 
 
-C++11 Based Libraries  
+Mini-Advanced C++ Network Toolkit for Internet Services Development
   
 Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>   
 Main License: LGPLv3   
-WIN32 License for cx2_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
+WIN32 License for mdz_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
 
 
 ***
@@ -66,7 +66,7 @@ This library was tested so far in:
 * Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
 
 ***
-## Building cxFramework2
+## Building libMantids
 
 For each system, you need to have already installed the pre-requisites
 
@@ -95,8 +95,8 @@ ln -s /usr/lib/x86_64-linux-gnu/libboost_thread.so /usr/lib/x86_64-linux-gnu/lib
 
 then, continue with the compilation:
 ```
-cmake . -DBUILD_SHARED_LIBS=ON -B../cxFramework2-BuildLinux
-cd  ../cxFramework2-BuildLinux
+cmake . -DBUILD_SHARED_LIBS=ON -B../libMantids-BuildLinux
+cd  ../libMantids-BuildLinux
 make -j12
 make install
 ```
@@ -105,8 +105,8 @@ make install
 installing everything in /winpath:
 
 ```
-/usr/bin/mingw32-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/winpath -DCMAKE_INSTALL_LIBDIR=lib -B../cxFramework2-BuildWin32
-cd ../cxFramework2-BuildWin32
+/usr/bin/mingw32-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/winpath -DCMAKE_INSTALL_LIBDIR=lib -B../libMantids-BuildWin32
+cd ../libMantids-BuildWin32
 make -j12
 make install
 ```
@@ -117,8 +117,8 @@ make install
 You can use MSYS2... First install the required mingw64 libraries and mingw64 compiler using pacman (boost devel, sqlite3 devel, mysql devel, openssl devel, postgresql devel, etc...), then open MSYS and build the project using this CMAKE options:
 
 ```
-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/home/user/ROOT -DCMAKE_INSTALL_LIBDIR=lib -B../cxFramework2-BuildWin32 -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe -G "MinGW Makefiles"
-cd ../cxFramework2-BuildWin32
+cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/home/user/ROOT -DCMAKE_INSTALL_LIBDIR=lib -B../libMantids-BuildWin32 -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe -G "MinGW Makefiles"
+cd ../libMantids-BuildWin32
 mingw32-make.exe -j12 install
 ```
 

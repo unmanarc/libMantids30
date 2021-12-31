@@ -12,7 +12,7 @@ HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject) 
     initSubParser(&_serverCodeResponse);
     initSubParser(&_serverHeaders);
     initSubParser(&_serverContentData);
-    setInternalProductVersion("Mantids::HTTP","(+https://github.com/unmanarc/cxFramework2)");
+    setInternalProductVersion("Mantids::HTTP","(+https://github.com/unmanarc/libMantids)");
 }
 
 Response::ResponseDeliveryObjects HTTPv1_Base::response()

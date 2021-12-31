@@ -1,4 +1,4 @@
-# cxFramework2 Install Guide for CentOS 7.x (RHEL7)
+# libMantids Install Guide for CentOS 7.x (RHEL7)
 
 Simple instructions for building this library in CentOS 7.x
 
@@ -47,13 +47,13 @@ This is the default build for the library:
 PREFIXPATH=/opt/osslibs
 
 prjdir=$(pwd)
-cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/cxFramework2-Build-Shared
-cd ~/builds/cxFramework2-Build-Shared
+cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids-Build-Shared
+cd ~/builds/libMantids-Build-Shared
 make clean
 make -j12 install
 cd "$prjdir"
-cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/cxFramework2-Build-Static
-cd ~/builds/cxFramework2-Build-Static
+cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids-Build-Static
+cd ~/builds/libMantids-Build-Static
 make clean
 make -j12 install
 cd "$prjdir"
