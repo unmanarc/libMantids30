@@ -95,6 +95,14 @@ rm -rf $RPM_BUILD_ROOT
 ln -s . %{_host}
 %endif
 
+%if 0%{?fedora} == 35
+ln -s . redhat-linux-build
+%endif
+
+%if "%{_host}" == powerpc64le-redhat-linux-gnu
+ln -s . ppc64le-redhat-linux-gnu
+%endif
+
 %if "%{cmake}" == "cmake3"
 %cmake3_install
 %else
