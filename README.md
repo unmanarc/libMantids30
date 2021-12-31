@@ -6,6 +6,12 @@ Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>
 Main License: LGPLv3   
 WIN32 License for mdz_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
 
+***
+## Builds
+
+- COPR (Fedora/CentOS/etc):  
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/libMantids/package/libMantids/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/libMantids/package/libMantids/)
+
 
 ***
 ## Functionality
