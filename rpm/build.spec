@@ -92,7 +92,7 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT
 
 %if 0%{?fedora} >= 33
-ln -s . x86_64-redhat-linux-gnu
+ln -s . %{_host}
 %endif
 
 %if "%{cmake}" == "cmake3"
