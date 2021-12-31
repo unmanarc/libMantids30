@@ -60,11 +60,11 @@ target_link_libraries(${LIB_NAME} mdz_mem_vars)
 include_directories("${mdz_net_sockets_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} mdz_net_sockets)
 
-include_directories("${mdz_netp_http_SOURCE_DIR}/../")
-target_link_libraries(${LIB_NAME} mdz_netp_http)
+include_directories("${mdz_proto_http_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} mdz_proto_http)
 
-include_directories("${mdz_netp_mime_SOURCE_DIR}/../")
-target_link_libraries(${LIB_NAME} mdz_netp_mime)
+include_directories("${mdz_proto_mime_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} mdz_proto_mime)
 
 include_directories("${mdz_xrpc_common_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} mdz_xrpc_common)

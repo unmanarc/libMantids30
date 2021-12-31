@@ -5,7 +5,7 @@
 
 #include <mdz_mem_vars/substreamparser.h>
 #include <mdz_mem_vars/b_base.h>
-#include <mdz_netp_mime/mime_vars.h>
+#include <mdz_proto_mime/mime_vars.h>
 
 namespace Mantids { namespace Network { namespace HTTP { namespace Common {
 

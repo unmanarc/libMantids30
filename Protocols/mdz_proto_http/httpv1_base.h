@@ -7,7 +7,7 @@
 #include "req_requestline.h"
 #include "common_content.h"
 #include "rsp_status.h"
-#include <mdz_netp_mime/mime_sub_header.h>
+#include <mdz_proto_mime/mime_sub_header.h>
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 2

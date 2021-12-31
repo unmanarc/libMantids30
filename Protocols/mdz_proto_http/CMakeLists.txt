@@ -45,8 +45,8 @@ endif()
 include_directories("${mdz_mem_vars_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} mdz_mem_vars)
 
-include_directories("${mdz_netp_mime_SOURCE_DIR}/../")
-target_link_libraries(${LIB_NAME} mdz_netp_mime)
+include_directories("${mdz_proto_mime_SOURCE_DIR}/../")
+target_link_libraries(${LIB_NAME} mdz_proto_mime)
 
 include_directories("${mdz_hlp_functions_SOURCE_DIR}/../")
 target_link_libraries(${LIB_NAME} mdz_hlp_functions)

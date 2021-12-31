@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 
-#include <mdz_netp_mime/mime_sub_header.h>
+#include <mdz_proto_mime/mime_sub_header.h>
 
 namespace Mantids { namespace Network { namespace HTTP { namespace Request {
 

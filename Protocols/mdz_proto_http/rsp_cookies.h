@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include "hdr_cookie.h"
-#include <mdz_netp_mime/mime_sub_header.h>
+#include <mdz_proto_mime/mime_sub_header.h>
 #include <stdint.h>
 
 namespace Mantids { namespace Network { namespace HTTP { namespace Response {

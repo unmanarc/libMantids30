@@ -6,7 +6,7 @@
 
 #include <mdz_xrpc_common/methodsmanager.h>
 #include <mdz_auth/domains.h>
-#include <mdz_netp_http/httpv1_server.h>
+#include <mdz_proto_http/httpv1_server.h>
 #include <mdz_xrpc_common/multiauths.h>
 
 #include <mdz_prg_logs/rpclog.h>
