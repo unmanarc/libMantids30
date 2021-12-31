@@ -17,7 +17,7 @@
 
 #include <mdz_net_sockets/streamsocket.h>
 
-namespace CX2 { namespace Network { namespace Multiplexor {
+namespace Mantids { namespace Network { namespace Multiplexor {
 
 class Socket_Multiplexed_Line
 {

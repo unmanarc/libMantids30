@@ -715,7 +715,7 @@ json FullAuth::attribAdd(void *, Mantids::Authentication::Manager *auth,Mantids:
 
     std::string appName = JSON_ASSTRING(payload,"appName","");
 
-    // Don't modify attribs from CX2DIR:
+    // Don't modify attribs from MANTIDSDIR:
     if ( appName == dirAppName )
     {
         payloadOut["retCode"] = false;
@@ -733,7 +733,7 @@ json FullAuth::attribRemove(void *, Mantids::Authentication::Manager *auth,Manti
 
     std::string appName = JSON_ASSTRING(payload,"appName","");
 
-    // Don't modify attribs from CX2DIR:
+    // Don't modify attribs from MANTIDSDIR:
     if ( appName == dirAppName )
     {
         payloadOut["retCode"] = false;
@@ -778,7 +778,7 @@ json FullAuth::attribChangeDescription(void *, Mantids::Authentication::Manager 
 
     std::string appName = JSON_ASSTRING(payload,"appName","");
 
-    // Don't modify attribs from CX2DIR:
+    // Don't modify attribs from MANTIDSDIR:
     if ( appName == dirAppName )
     {
         payloadOut["retCode"] = false;

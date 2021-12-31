@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace CX2 { namespace Network { namespace Multiplexor {
+namespace Mantids { namespace Network { namespace Multiplexor {
 
 typedef uint32_t LineID;
 

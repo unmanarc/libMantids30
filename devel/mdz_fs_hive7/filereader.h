@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace CX2 { namespace Files { namespace Hive7 {
+namespace Mantids { namespace Files { namespace Hive7 {
 
 class FileReader
 {

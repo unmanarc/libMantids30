@@ -6,7 +6,7 @@
 
 #define NULL_LINE std::numeric_limits<LineID>::max()
 
-namespace CX2 { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
 
 struct sLineID
 {

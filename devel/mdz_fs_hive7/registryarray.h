@@ -4,7 +4,7 @@
 #include "attributes.h"
 #include "permissions.h"
 
-namespace CX2 { namespace Files { namespace Hive7 {
+namespace Mantids { namespace Files { namespace Hive7 {
 class RegistryArray : public Attributes, public Permissions
 {
 public:

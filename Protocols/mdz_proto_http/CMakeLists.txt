@@ -5,7 +5,7 @@ get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "CX2 Framework HTTP Network Protocol Implementation")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids Framework HTTP Network Protocol Implementation")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")

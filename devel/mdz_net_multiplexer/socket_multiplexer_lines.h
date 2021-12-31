@@ -7,7 +7,7 @@
 #include <memory>
 #include "socket_multiplexed_line.h"
 
-namespace CX2 { namespace Network { namespace Multiplexor {
+namespace Mantids { namespace Network { namespace Multiplexor {
 
 class Socket_Multiplexer_Lines
 {

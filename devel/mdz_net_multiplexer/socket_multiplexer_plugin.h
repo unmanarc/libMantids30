@@ -4,7 +4,7 @@
 #include <string>
 #include <mdz_hlp_functions/json.h>
 
-namespace CX2 { namespace Network { namespace Multiplexor {
+namespace Mantids { namespace Network { namespace Multiplexor {
 
 class Socket_Mutiplexer_Plugin
 {

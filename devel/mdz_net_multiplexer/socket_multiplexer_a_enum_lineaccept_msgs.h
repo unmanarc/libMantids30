@@ -2,7 +2,7 @@
 #define SOCKET_MULTIPLEXER_A_ENUM_LINEACCEPT_MSGS_H
 
 
-namespace CX2 { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
 
 enum eLineAcceptAnswerMSG {
     INIT_LINE_ANS_THREADED         =0x00,

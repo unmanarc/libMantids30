@@ -7,7 +7,7 @@
 
 #include "socket_multiplexer_callbacks.h"
 
-namespace CX2 { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
 
 struct sServerLineInitThreadParams {
     sServerLineInitThreadParams()

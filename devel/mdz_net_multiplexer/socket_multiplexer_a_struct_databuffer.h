@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace CX2 { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
 
 struct sDataBuffer {
 
