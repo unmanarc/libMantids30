@@ -25,6 +25,10 @@ Group:          Development/Libraries
 %define debug_package %{nil}
 %endif
 
+%if 0%{?rhel} == 9
+%define debug_package %{nil}
+%endif
+
 %if 0%{?fedora} >= 33
 %define debug_package %{nil}
 %endif
@@ -92,6 +96,10 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT
 
 %if 0%{?fedora} >= 33
+ln -s . %{_host}
+%endif
+
+%if 0%{?rhel} >= 9
 ln -s . %{_host}
 %endif
 
