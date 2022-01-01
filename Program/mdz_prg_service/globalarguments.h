@@ -107,7 +107,7 @@ public:
     /**
      * @brief getCurrentProgramOptionsValuesAsBashLine Print introduced/available program options in one line with bash escapes
      */
-    std::string getCurrentProgramOptionsValuesAsBashLine();
+    std::string getCurrentProgramOptionsValuesAsBashLine(bool removeInstall = false);
 
 
     // Wait forever functions:

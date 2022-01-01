@@ -63,7 +63,7 @@ static Application *appPTR = nullptr;
 int StartApplication(int argc, char *argv[], Application *_app)
 {
 #ifndef _WIN32
-     pthread_setname_np(pthread_self(), __func__);
+    pthread_setname_np(pthread_self(), __func__);
 #endif
 
     appPTR = _app;
@@ -77,7 +77,11 @@ int StartApplication(int argc, char *argv[], Application *_app)
 #ifndef _WIN32
     globalArgs.addCommandLineOption("Service Options",   0, "daemon" , "Run as daemon."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
 #endif
-    globalArgs.addCommandLineOption("Service Options",   0, "install" , "Install as a service with current parameters.", "", Mantids::Memory::Abstract::TYPE_STRING );
+
+    // be careful to sanitize install parameters, because it can affect the security.
+    globalArgs.addCommandLineOption("Service Options",   0, "install" , "Install this program with systemd file/service name", "", Mantids::Memory::Abstract::TYPE_STRING );
+    globalArgs.addCommandLineOption("Service Options",   0, "reinstall" , "Reinstall this program if it's already installed", "0", Mantids::Memory::Abstract::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Service Options",   0, "uninstall" , "Uninstall this program with systemd file/service name", "", Mantids::Memory::Abstract::TYPE_STRING );
 
     globalArgs.addCommandLineOption("Other Options",     0, "debugparams" , "Debug parameters and exit."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
     globalArgs.addCommandLineOption("Other Options"  ,   0, "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::TYPE_UINT8 );
@@ -90,7 +94,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
     // Parse program options.
     if (!globalArgs.parseCommandLineOptions(argc,argv))
     {
-        cout << "ERR: Failed to Load CMD Line Parameters." << endl << flush;
+        cout << "# ERR: Failed to Load CMD Line Parameters." << endl << flush;
         return -2;
     }
 
@@ -107,10 +111,96 @@ int StartApplication(int argc, char *argv[], Application *_app)
         return 0;
     }
 
+    if (    globalArgs.getCommandLineOptionValue("install")->toString() != "" ||
+            globalArgs.getCommandLineOptionValue("uninstall")->toString() != ""
+            )
+    {
+        // :)
+#ifdef WIN32
+
+        // TODO: windows service or something like?
+        fprintf(stderr,"Not supported yet.\n");
+
+#else
+        bool uninstall = false;
+        std::string serviceName = globalArgs.getCommandLineOptionValue("install")->toString();
+        if (serviceName.empty())
+        {
+            serviceName = globalArgs.getCommandLineOptionValue("uninstall")->toString();
+            uninstall = true;
+        }
+
+        // Linux? -> systemd
+        std::ofstream outfile;
+        std::string serviceFilePath = "/etc/systemd/system/"  +  serviceName  +  ".service";
+        if (getuid()!=0)
+        {
+            char *homedir = getenv("HOME");
+            if (homedir == nullptr)
+            {
+                fprintf(stderr,"# ERR: Undefined HOME directory...\n");
+                return -7;
+            }
+            serviceFilePath = std::string(homedir) + "/.config/systemd/user/"  +  serviceName  +  ".service";
+        }
+
+        if (uninstall)
+        {
+            if (access(serviceFilePath.c_str(), F_OK))
+            {
+                fprintf(stderr,"# ERR: Can't uninstall service '%s' not installed here\n", serviceName.c_str());
+                return -10;
+            }
+
+            system( getuid()!=0 ? ("/usr/bin/systemctl --user disable --now " + serviceName).c_str() : ("/usr/bin/systemctl disable --now " + serviceName).c_str());
+            unlink(serviceFilePath.c_str());
+            system( getuid()!=0 ? "/usr/bin/systemctl --user daemon-reload" : "/usr/bin/systemctl daemon-reload");
+
+            fprintf(stderr,"# Uninstalled systemd service '%s'...\n", serviceName.c_str());
+        }
+        else
+        {
+            if (!access(serviceFilePath.c_str(), F_OK) && !globalArgs.getCommandLineOptionBooleanValue("reinstall") )
+            {
+                fprintf(stderr,"# ERR: Service already exists, try using --reinstall=1...\n");
+                return -9;
+            }
+
+            outfile.open(serviceFilePath, std::ios_base::out);
+
+            if (outfile.is_open())
+            {
+                outfile  <<   "[Unit]\n"
+                              "Description=" << globalArgs.getDescription() << "\n"
+                              "After=network.target\n"
+                              "\n"
+                              "[Service]\n"
+                              "Type=simple\n"
+                              "Restart=always\n"
+                              "RestartSec=5\n"
+                              "ExecStart=" << realpath(argv[0],nullptr) << " "  << globalArgs.getCurrentProgramOptionsValuesAsBashLine() << "\n"
+                              "\n"
+                              "[Install]\n"
+                              "WantedBy=multi-user.target\n";
+                outfile.close();
+                system( getuid()!=0 ? "/usr/bin/systemctl --user daemon-reload" : "/usr/bin/systemctl daemon-reload");
+                fprintf(stderr,"# Installed as systemd service '%s'...\n", serviceName.c_str());
+                fprintf(stderr,"# you can activate it now using: systemctl %senable --now %s\n", getuid()==0?"":"--user ", serviceName.c_str());
+            }
+            else
+            {
+                fprintf(stderr,"# ERR: Failed to write into '%s'...\n", serviceFilePath.c_str());
+                return -8;
+            }
+        }
+#endif
+        return 0;
+    }
+
     // Load/Prepare the configuration based in command line arguments.
     if (!appPTR->_config(argc,argv,&globalArgs))
     {
-        cout << "ERR: Failed to Load Configuration." << endl << flush;
+        cout << "# ERR: Failed to Load Configuration." << endl << flush;
         return -1;
     }
 
@@ -123,7 +213,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
         {
             if (setgid(globalArgs.getGid()))
             {
-                cout << "ERR: Failed to drop privileged to group" << globalArgs.getGid() << endl << flush;
+                cout << "# ERR: Failed to drop privileged to group" << globalArgs.getGid() << endl << flush;
                 return -3;
             }
         }
@@ -131,19 +221,19 @@ int StartApplication(int argc, char *argv[], Application *_app)
         {
             if (setuid(globalArgs.getUid()))
             {
-                cout << "ERR: Failed to drop privileged to user" << globalArgs.getUid() << endl << flush;
+                cout << "# ERR: Failed to drop privileged to user" << globalArgs.getUid() << endl << flush;
                 return -4;
             }
         }
         // Now change EUID/EGID...
         if (setegid(globalArgs.getGid()) != 0)
         {
-            cout << "ERR: Failed to drop extended privileged to group" << globalArgs.getGid() << endl << flush;
+            cout << "# ERR: Failed to drop extended privileged to group" << globalArgs.getGid() << endl << flush;
             return -5;
         }
         if (seteuid(globalArgs.getUid()) != 0)
         {
-            cout << "ERR: Failed to drop extended privileged to user" << globalArgs.getUid() << endl << flush;
+            cout << "# ERR: Failed to drop extended privileged to user" << globalArgs.getUid() << endl << flush;
             return -6;
         }
     }
@@ -347,7 +437,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType)
     {
-        // Handle the CTRL-C signal.
+    // Handle the CTRL-C signal.
     case CTRL_C_EVENT:
     case CTRL_CLOSE_EVENT:
         fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
@@ -387,9 +477,9 @@ void catch_sigterm()
 {
 #ifdef _WIN32
     SetConsoleCtrlHandler( CtrlHandler, TRUE );
-//    signal(SIGINT, exitHandler);
-//    signal(SIGTERM, exitHandler);
-//    signal(SIGABRT, exitHandler);
+    //    signal(SIGINT, exitHandler);
+    //    signal(SIGTERM, exitHandler);
+    //    signal(SIGABRT, exitHandler);
 #else
     static struct sigaction _sigact;
 

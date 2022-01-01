@@ -320,7 +320,7 @@ void GlobalArguments::printCurrentProgramOptionsValues()
     fflush(stdout);
 }
 
-std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine()
+std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool removeInstall)
 {
     std::string r;
     for ( auto & i : cmdOptions )
@@ -345,6 +345,9 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine()
             {
                 varNameToPrint = v->name;
             }
+
+            if (removeInstall && varNameToPrint == "install")
+                continue;
 
             for ( auto & var : v->parsedOption )
             {
