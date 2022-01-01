@@ -15,7 +15,7 @@ struct sProgCMDOpts {
     sProgCMDOpts()
     {
         defaultValueVar = nullptr;
-        val = 0;
+        optChar = 0;
         mandatory = true;
         varType = Mantids::Memory::Abstract::TYPE_BOOL;
     }
@@ -31,7 +31,7 @@ struct sProgCMDOpts {
 
     //
     std::string name;
-    char val;
+    int optChar;
 };
 
 class GlobalArguments : public Values::ProgramValues
@@ -98,6 +98,18 @@ public:
      */
     void printProgramHeader();
 
+
+    /**
+     * @brief printCurrentProgramOptionsValues Print introduced/available program options
+     */
+    void printCurrentProgramOptionsValues();
+
+    /**
+     * @brief getCurrentProgramOptionsValuesAsBashLine Print introduced/available program options in one line with bash escapes
+     */
+    std::string getCurrentProgramOptionsValuesAsBashLine();
+
+
     // Wait forever functions:
     bool isInifiniteWaitAtEnd() const;
     void setInifiniteWaitAtEnd(bool value);
@@ -128,6 +140,7 @@ public:
 
 
 private:
+    int extraOptChars;
     std::string sDefaultHelpOption;
 #ifndef _WIN32
     std::string sDefaultDaemonOption;
@@ -137,7 +150,7 @@ private:
     uint32_t getMaxOptNameSize(std::list<sProgCMDOpts *> options);
     std::string getLine(const uint32_t &size);
 
-    sProgCMDOpts * getProgramOption(char optChar);
+    sProgCMDOpts * getProgramOption(int optChar);
     sProgCMDOpts * getProgramOption(const std::string & optName);
 
     bool inifiniteWaitAtEnd;    

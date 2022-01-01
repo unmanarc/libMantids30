@@ -5,6 +5,10 @@
 #include <getopt.h>
 
 #include <set>
+#include <limits>
+
+#include <algorithm>
+#include <boost/algorithm/string/replace.hpp>
 
 #include <mdz_mem_vars/a_bool.h>
 #include <mdz_thr_mutex/lock_shared.h>
@@ -21,6 +25,7 @@ GlobalArguments::GlobalArguments()
 #endif
     sDefaultHelpOption = "help";
     inifiniteWaitAtEnd = false;
+    extraOptChars = 256;
 }
 
 bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar, const string &optName, const string &description, const string &defaultValue, const Type & varType, bool mandatory)
@@ -29,12 +34,17 @@ bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar,
     if (getProgramOption(optName)) return false;
 
     sProgCMDOpts * opts = new sProgCMDOpts;
-    opts->val = optChar;
+    opts->optChar = optChar?optChar:(extraOptChars++);
     opts->name = optName;
     opts->defaultValue = defaultValue;
     opts->description = description;
     opts->varType = varType;
     opts->mandatory = mandatory;
+
+    if(extraOptChars==std::numeric_limits<int>::max())
+    {
+        throw std::runtime_error("too many command line defined options.");
+    }
 
     cmdOptions[optGroup].push_back(opts);
 
@@ -80,19 +90,24 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
 
     static string optString;
     static struct option * longOpts = new option[cmdOptions.size()+1];
-    size_t i=0;
+    size_t iLongOptPos=0;
     for (sProgCMDOpts * optIter : cmdOptions)
     {
-        if (optIter->val)
+        if (optIter->optChar && optIter->optChar < 256)
         {
             // Add option by using char
             char val[2];
-            val[0] = optIter->val;
+            val[0] = optIter->optChar;
             val[1] = 0;
             optString += string(val) + (optIter->varType==TYPE_BOOL?"::":":");
         }
         // Put the long option
-        longOpts[i++] = { optIter->name.c_str(), optIter->varType==TYPE_BOOL?optional_argument:required_argument, nullptr, optIter->val };
+        longOpts[iLongOptPos++] = {
+            optIter->name.c_str(), // Option variable
+            optIter->varType==TYPE_BOOL?optional_argument:required_argument,  // With argument?
+            nullptr,
+            optIter->optChar
+        };
         // Put the default values:
         optIter->defaultValueVar = Var::makeAbstract(optIter->varType, optIter->defaultValue);
     }
@@ -101,10 +116,10 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     std::set<sProgCMDOpts *> cmdOptionsFulfilled;
 
     int longIndex;
-    int opt = getopt_long(argc, argv, optString.c_str(), longOpts, &longIndex);
-    while (opt != -1)
+    int curOptChar = getopt_long(argc, argv, optString.c_str(), longOpts, &longIndex);
+    while (curOptChar != -1)
     {
-        if (opt == 0)
+        if (curOptChar == 0)
         {
             if (longOpts[longIndex].val)
                 fprintf(stderr, "ERR: Argument -%c / --%s value not specified.\n", longOpts[longIndex].val, longOpts[longIndex].name );
@@ -115,7 +130,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
         }
         else
         {
-            sProgCMDOpts * optValue = getProgramOption(opt);
+            sProgCMDOpts * optValue = getProgramOption(curOptChar);
             if (optValue)
             {
                 Var * absVar = Var::makeAbstract(optValue->varType, "");
@@ -126,7 +141,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
                 }
                 else if (optarg && !absVar->fromString(optarg))
                 {
-                    if (longOpts[longIndex].val)
+                    if (longOpts[longIndex].val && longOpts[longIndex].val<256)
                         fprintf(stderr, "ERR: Argument -%c / --%s value not parsed correctly.\n", longOpts[longIndex].val, longOpts[longIndex].name );
                     else
                         fprintf(stderr, "ERR: Argument --%s value not parsed correctly.\n",  longOpts[longIndex].name );
@@ -141,7 +156,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
                 fprintf(stderr, "Unknown Error: parsed option not wired.\n");
             }
         }
-        opt = getopt_long(argc, argv, optString.c_str(), longOpts, &longIndex);
+        curOptChar = getopt_long(argc, argv, optString.c_str(), longOpts, &longIndex);
     }
 
 
@@ -152,8 +167,8 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     {
         if (optIter->mandatory && cmdOptionsFulfilled.find(optIter) == cmdOptionsFulfilled.end())
         {
-            if (optIter->val)
-                fprintf(stderr, "ERR: Argument -%c / --%s value was required but not parsed.\n", optIter->val, optIter->name.c_str());
+            if (optIter->optChar && optIter->optChar<256)
+                fprintf(stderr, "ERR: Argument -%c / --%s value was required but not parsed.\n", optIter->optChar, optIter->name.c_str());
             else
                 fprintf(stderr, "ERR: Argument --%s value was required but not parsed.\n", optIter->name.c_str());
 
@@ -202,12 +217,12 @@ void GlobalArguments::printHelp()
         uint32_t msize = getMaxOptNameSize(i.second);
         for ( sProgCMDOpts * v : i.second )
         {
-            if (v->val)
+            if (v->optChar && v->optChar<256)
             {
                 string printer = "-%c ";
                 printer+=(v->name!="")?"--%-":"  %";
                 printer+= to_string(msize) + "s";
-                printf(printer.c_str(), v->val, v->name.c_str());
+                printf(printer.c_str(), v->optChar, v->name.c_str());
             }
             else
             {
@@ -265,6 +280,83 @@ void GlobalArguments::printProgramHeader()
     cout << "# " << "Author:  " << author << " (" << email << ")" << endl;
     cout << "# " << "License: " << license << endl;
     cout << "# " << endl <<  flush;
+}
+
+void GlobalArguments::printCurrentProgramOptionsValues()
+{
+    for ( auto & i : cmdOptions )
+    {
+        for ( sProgCMDOpts * v : i.second )
+        {
+            std::string varNameToPrint = "";
+            if (v->optChar>0 && v->optChar<256)
+            {
+                if (v->name.empty())
+                {
+                    char x[2] = { 0, 0 };
+                    x[0] = v->optChar;
+                    varNameToPrint = x;
+                }
+                else
+                {
+                    varNameToPrint = v->name;
+                }
+            }
+            else
+            {
+                varNameToPrint = v->name;
+            }
+
+            for ( auto & var : v->parsedOption )
+            {
+                printf("--%s=%s\n",varNameToPrint.c_str(), var->toString().c_str());
+            }
+            if (v->parsedOption.empty())
+            {
+                printf("--%s=%s\n",varNameToPrint.c_str(), v->defaultValueVar->toString().c_str());
+            }
+        }
+    }
+    fflush(stdout);
+}
+
+std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine()
+{
+    std::string r;
+    for ( auto & i : cmdOptions )
+    {
+        for ( sProgCMDOpts * v : i.second )
+        {
+            std::string varNameToPrint = "";
+            if (v->optChar>0 && v->optChar<256)
+            {
+                if (v->name.empty())
+                {
+                    char x[2] = { 0, 0 };
+                    x[0] = v->optChar;
+                    varNameToPrint = x;
+                }
+                else
+                {
+                    varNameToPrint = v->name;
+                }
+            }
+            else
+            {
+                varNameToPrint = v->name;
+            }
+
+            for ( auto & var : v->parsedOption )
+            {
+                r += std::string(r.empty()?"":" ") + "--" + varNameToPrint + "='" + boost::replace_all_copy(var->toString(), "'" , "'\''") + "'";
+            }
+            if (v->parsedOption.empty())
+            {
+                r += std::string(r.empty()?"":" ") + "--" + varNameToPrint + "='" + boost::replace_all_copy(v->defaultValueVar->toString(), "'" , "'\''") + "'";
+            }
+        }
+    }
+    return r;
 }
 
 bool GlobalArguments::isInifiniteWaitAtEnd() const
@@ -330,17 +422,21 @@ string GlobalArguments::getLine(const uint32_t & size)
 }
 
 // TODO: unicode?
-sProgCMDOpts * GlobalArguments::getProgramOption(char optChar)
+sProgCMDOpts * GlobalArguments::getProgramOption(int optChar)
 {
+    if (!optChar) return nullptr;
     for ( auto & i : cmdOptions )
     {
         for ( sProgCMDOpts * v : i.second )
         {
-            char x[2] = { 0, 0 };
-            x[0] = optChar;
+            if (optChar == v->optChar) return v;
 
-            if (optChar == v->val) return v;
-            if (x == v->name) return v;
+            if (optChar>0 && optChar<256)
+            {
+                char x[2] = { 0, 0 };
+                x[0] = optChar;
+                if (x == v->name) return v;
+            }
         }
     }
     return nullptr;
@@ -353,7 +449,7 @@ sProgCMDOpts * GlobalArguments::getProgramOption(const std::string &optName)
         for ( sProgCMDOpts * v : i.second )
         {
             if (optName == v->name) return v;
-            if (optName.size() == 1 && optName.at(0) == v->val) return v;
+            if (optName.size() == 1 && v->optChar>0 && v->optChar<256 && optName.at(0) == v->optChar) return v;
         }
     }
     return nullptr;
