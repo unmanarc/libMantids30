@@ -11,7 +11,7 @@
 #define MAGIC_BANNER_SIZE 6
 #define HEADER_SIZE (MAGIC_BANNER_SIZE+8)
 
-using namespace CX2::Files::Hive7;
+using namespace Mantids::Files::Hive7;
 
 
 H7File::H7File(const std::string &filePath)

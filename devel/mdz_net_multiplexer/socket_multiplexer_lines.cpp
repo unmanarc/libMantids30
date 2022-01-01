@@ -1,8 +1,8 @@
 #include "socket_multiplexer_lines.h"
 #include "socket_multiplexer.h"
-#include <cx2_thr_mutex/lock_shared.h>
+#include <mdz_thr_mutex/lock_shared.h>
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 Socket_Multiplexer_Lines::Socket_Multiplexer_Lines()
 {

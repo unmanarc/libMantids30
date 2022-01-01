@@ -2,10 +2,10 @@
 #include "socket_multiplexer.h"
 #include "vars.h"
 #include <thread>
-#include <cx2_thr_mutex/lock_shared.h>
+#include <mdz_thr_mutex/lock_shared.h>
 
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 Socket_Multiplexed_Line::Socket_Multiplexed_Line()
 {

@@ -1,6 +1,6 @@
 #include "registry.h"
 
-using namespace CX2::Files::Hive7;
+using namespace Mantids::Files::Hive7;
 
 
 Registry::Registry()

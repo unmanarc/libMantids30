@@ -1,6 +1,6 @@
 #include "socket_multiplexer.h"
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
 {

@@ -1,7 +1,7 @@
 #include "socket_multiplexer.h"
 #include <thread>
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID &lineId, const DataStructs::eLineAcceptAnswerMSG &msg, const uint32_t &localLineWindow)
 {

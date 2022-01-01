@@ -1,6 +1,6 @@
 #include "socket_multiplexer.h"
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 bool Socket_Multiplexer::multiplexedSocket_sendLineData(const DataStructs::sLineID &lineId, void *data, const uint16_t &datalen)
 {

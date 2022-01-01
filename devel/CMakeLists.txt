@@ -1,2 +1,2 @@
-ADD_SUBDIRECTORY(cx2_fs_hive7)
-ADD_SUBDIRECTORY(cx2_net_multiplexer)
+ADD_SUBDIRECTORY(mdz_fs_hive7)
+ADD_SUBDIRECTORY(mdz_net_multiplexer)

@@ -1,7 +1,7 @@
 #include "socket_multiplexer.h"
-#include <cx2_hlp_functions/mem.h>
+#include <mdz_hlp_functions/mem.h>
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 
 Socket_Multiplexer::Socket_Multiplexer()
 {

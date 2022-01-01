@@ -4,7 +4,7 @@
 // TODO: timeout callback
 
 
-using namespace CX2::Network::Multiplexor;
+using namespace Mantids::Network::Multiplexor;
 using Ms = std::chrono::milliseconds;
 
 LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiplexedSocketLocalObject, unsigned int milliseconds)
