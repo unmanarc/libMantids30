@@ -75,10 +75,13 @@ int StartApplication(int argc, char *argv[], Application *_app)
 #endif
     // Local default cmd options...
 #ifndef _WIN32
-    globalArgs.addCommandLineOption("Service Options", 'd', "daemon" , "Run as daemon."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Service Options",   0, "daemon" , "Run as daemon."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
 #endif
-    globalArgs.addCommandLineOption("Other Options"  , 'v', "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::TYPE_UINT8 );
-    globalArgs.addCommandLineOption("Other Options"  , 'h', "help"   , "Show information usage.", "0", Mantids::Memory::Abstract::TYPE_BOOL  );
+    globalArgs.addCommandLineOption("Service Options",   0, "install" , "Install as a service with current parameters.", "", Mantids::Memory::Abstract::TYPE_STRING );
+
+    globalArgs.addCommandLineOption("Other Options",     0, "debugparams" , "Debug parameters and exit."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Other Options"  ,   0, "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::TYPE_UINT8 );
+    globalArgs.addCommandLineOption("Other Options"  ,  'h', "help"   , "Show information usage.", "0", Mantids::Memory::Abstract::TYPE_BOOL  );
 
     // Init vars...
     appPTR->_initvars(argc,argv, &globalArgs);
@@ -95,6 +98,12 @@ int StartApplication(int argc, char *argv[], Application *_app)
     if (globalArgs.getCommandLineOptionBooleanValue(globalArgs.getDefaultHelpOption()))
     {
         globalArgs.printHelp();
+        return 0;
+    }
+
+    if (globalArgs.getCommandLineOptionBooleanValue("debugparams"))
+    {
+        globalArgs.printCurrentProgramOptionsValues();
         return 0;
     }
 
