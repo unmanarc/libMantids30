@@ -346,7 +346,7 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool remov
                 varNameToPrint = v->name;
             }
 
-            if (removeInstall && varNameToPrint == "install")
+            if (removeInstall && (varNameToPrint == "install" || varNameToPrint == "reinstall" || varNameToPrint == "uninstall"))
                 continue;
 
             for ( auto & var : v->parsedOption )
