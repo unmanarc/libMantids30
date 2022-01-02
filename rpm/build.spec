@@ -1,5 +1,5 @@
 %define name libMantids
-%define version 2.5.0
+%define version %(cat ../VERSION)
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
