@@ -196,7 +196,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
                               "Restart=always\n"
                               "RestartSec=5\n"
                               "WorkingDirectory=" <<  cwd <<  "\n"
-                              "ExecStart=" << realpath(argv[0],nullptr) << " "  << globalArgs.getCurrentProgramOptionsValuesAsBashLine() << "\n"
+                              "ExecStart=" << realpath(argv[0],nullptr) << " "  << globalArgs.getCurrentProgramOptionsValuesAsBashLine(true) << "\n"
                               "Environment=" << envs << "\n"
                               "\n"
                               "[Install]\n"
