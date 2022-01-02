@@ -6,6 +6,7 @@
 
 #ifndef _WIN32
 #include <syslog.h>
+#include <linux/limits.h>
 #else
 #include <windows.h>
 #endif
@@ -18,6 +19,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <mdz_mem_vars/a_var.h>
 #include <mdz_hlp_functions/mem.h>
@@ -166,10 +168,25 @@ int StartApplication(int argc, char *argv[], Application *_app)
                 return -9;
             }
 
+            char cwd[PATH_MAX];
+            if (getcwd(cwd, sizeof(cwd)) == NULL)
+            {
+                fprintf(stderr,"# ERR: Error getting CWD...\n");
+                return -11;
+            }
             outfile.open(serviceFilePath, std::ios_base::out);
 
             if (outfile.is_open())
             {
+
+                std::string envs;
+
+                char *ldlibrarypath = getenv("LD_LIBRARY_PATH");
+                if (ldlibrarypath != nullptr)
+                {
+                    envs=std::string("LD_LIBRARY_PATH=") + ldlibrarypath;
+                }
+
                 outfile  <<   "[Unit]\n"
                               "Description=" << globalArgs.getDescription() << "\n"
                               "After=network.target\n"
@@ -178,7 +195,9 @@ int StartApplication(int argc, char *argv[], Application *_app)
                               "Type=simple\n"
                               "Restart=always\n"
                               "RestartSec=5\n"
+                              "WorkingDirectory=" <<  cwd <<  "\n"
                               "ExecStart=" << realpath(argv[0],nullptr) << " "  << globalArgs.getCurrentProgramOptionsValuesAsBashLine() << "\n"
+                              "Environment=" << envs << "\n"
                               "\n"
                               "[Install]\n"
                               "WantedBy=multi-user.target\n";
