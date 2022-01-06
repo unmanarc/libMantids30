@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string>
 #include <limits>
+#include <stdexcept>
 
 namespace Mantids { namespace Network { namespace Streams {
 
@@ -50,16 +51,20 @@ public:
     template<typename T>
     bool writeBlockEx(const void * data,const T & datalen)
     {
-        if (sizeof(T) == 1 && !writeU8(datalen))
+        bool wr=false;
+
+        if (sizeof(T) == 1 && !(wr=writeU8(datalen)))
             return false;
-        if (sizeof(T) == 2 && !writeU16(datalen))
+        else if (sizeof(T) == 2 && !(wr=writeU16(datalen)))
             return false;
-        if (sizeof(T) == 4 && !writeU32(datalen))
+        else if (sizeof(T) == 4 && !(wr=writeU32(datalen)))
             return false;
-        if (sizeof(T) == 8 && !writeU64(datalen))
+        else if (sizeof(T) == 8 && !(wr=writeU64(datalen)))
             return false;
-        else // Not supported
+
+        if (!wr) // sizeof T Not supported
         {
+            throw std::runtime_error("Code Error: writting block with invalid lenght variable size.");
             writeDeSync();
             return false;
         }

@@ -39,6 +39,7 @@ public:
             r = readU64(&_readOK);
             break;
         default:
+            throw std::runtime_error("Code Error: reading block with invalid lenght variable size.");
             _readOK = false;
         }
 
@@ -185,7 +186,7 @@ public:
         }
         else
         {
-            std::string v(data,receivedBytes+1);
+            std::string v(data,receivedBytes);
             delete [] data;
             return v;
         }
