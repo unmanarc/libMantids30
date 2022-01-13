@@ -20,6 +20,8 @@
 #include <unistd.h>
 #include <errno.h>
 
+#define DEFAULT_NETWORK_TIMEOUT 5*60
+
 using namespace Mantids::Network;
 using namespace Mantids::Network::Sockets;
 
@@ -67,20 +69,27 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
             break;
         }
 
-        // Set the read timeout here. (to zero)
-        setReadTimeout(0);
+        // Some network envirnoments will not call back for connection error, so we should establish some acceptable
+        // arbitrary value (eg. 5min?) to connect/receive/send data from/to the socket.
+        setReadTimeout(DEFAULT_NETWORK_TIMEOUT);
+        setWriteTimeout(DEFAULT_NETWORK_TIMEOUT);
 
         sockaddr * curAddr = resiter->ai_addr;
         struct sockaddr_in * curAddrIn = ((sockaddr_in *)curAddr);
 
-        if (    ( (resiter->ai_addr->sa_family == AF_INET) ||                // IPv4 always have the permission to go.
+        if (    ( (resiter->ai_addr->sa_family == AF_INET) ||             // IPv4 always have the permission to go.
                   (resiter->ai_addr->sa_family == AF_INET6 && useIPv6))   // Check if ipv6 have our permission to go.
                 && tcpConnect(curAddr, resiter->ai_addrlen,timeout)
                 )
         {
 
-            if (ovrReadTimeout!=-1) setReadTimeout(ovrReadTimeout);
-            if (ovrWriteTimeout!=-1) setWriteTimeout(ovrWriteTimeout);
+            setReadTimeout(DEFAULT_NETWORK_TIMEOUT);
+            setWriteTimeout(DEFAULT_NETWORK_TIMEOUT);
+
+            if (ovrReadTimeout!=-1)
+                setReadTimeout(ovrReadTimeout);
+            if (ovrWriteTimeout!=-1)
+                setWriteTimeout(ovrWriteTimeout);
 
             // Set remote pairs...
             switch (curAddr->sa_family)
