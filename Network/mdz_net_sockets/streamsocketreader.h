@@ -64,17 +64,18 @@ public:
         bool readOK;
         T len;
 
+        // no data to be received:
         if (*datalen == 0) return true;
 
         len = readU<T>(&readOK);
 
         if (readOK)
         {
-            if (len != *datalen && mustReceiveFullDataLen)
+            if ((len != *datalen && mustReceiveFullDataLen) || len > *datalen)
             {
                 readDeSync();
                 return false;
-            }
+            }           
 
             *datalen = len;
 
