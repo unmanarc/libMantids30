@@ -391,7 +391,8 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
     }
     else
     {
-        switch(SSL_get_error(sslHandle, readBytes))
+        int err = SSL_get_error(sslHandle, readBytes);
+        switch(err)
         {
         case SSL_ERROR_WANT_WRITE:
         case SSL_ERROR_WANT_READ:
@@ -400,6 +401,11 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
         case SSL_ERROR_ZERO_RETURN:
             // Socket closed.
             parseErrors();
+            return -1;
+        case SSL_ERROR_SYSCALL:
+            // Common error (maybe tcp error).
+            parseErrors();
+            lastError = "Syscall Error #" + std::to_string(errno);
             return -1;
         default:
             parseErrors();
