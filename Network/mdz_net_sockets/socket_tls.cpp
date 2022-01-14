@@ -405,7 +405,7 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
         case SSL_ERROR_SYSCALL:
             // Common error (maybe tcp error).
             parseErrors();
-            lastError = "Syscall Error #" + std::to_string(errno);
+            lastError = strerrorname_np(errno) + std::string(": ") + strerrordesc_np(errno);
             return -1;
         default:
             parseErrors();
