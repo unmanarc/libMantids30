@@ -75,7 +75,7 @@ public:
 protected:
 
 private:
-    bool tcpConnect(const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
+    bool tcpConnect(const unsigned short &addrType, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
     bool tcpNoDelayOption;
     bool tcpForceKeepAlive;

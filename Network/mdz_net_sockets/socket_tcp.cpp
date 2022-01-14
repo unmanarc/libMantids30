@@ -20,14 +20,13 @@
 #include <unistd.h>
 #include <errno.h>
 
-#define DEFAULT_NETWORK_TIMEOUT 5*60
-
 using namespace Mantids::Network;
 using namespace Mantids::Network::Sockets;
 
 Socket_TCP::Socket_TCP()
 {
-    tcpForceKeepAlive = true;
+    tcpForceKeepAlive = false;
+
     tcpKeepIdle=10;
     tcpKeepCnt=5;
     tcpKeepIntvl=5;
@@ -69,23 +68,16 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
             break;
         }
 
-        // Some network envirnoments will not call back for connection error, so we should establish some acceptable
-        // arbitrary value (eg. 5min?) to connect/receive/send data from/to the socket.
-        setReadTimeout(DEFAULT_NETWORK_TIMEOUT);
-        setWriteTimeout(DEFAULT_NETWORK_TIMEOUT);
+        setReadTimeout(0);
 
         sockaddr * curAddr = resiter->ai_addr;
         struct sockaddr_in * curAddrIn = ((sockaddr_in *)curAddr);
 
         if (    ( (resiter->ai_addr->sa_family == AF_INET) ||             // IPv4 always have the permission to go.
                   (resiter->ai_addr->sa_family == AF_INET6 && useIPv6))   // Check if ipv6 have our permission to go.
-                && tcpConnect(curAddr, resiter->ai_addrlen,timeout)
+                && tcpConnect(resiter->ai_addr->sa_family,curAddr, resiter->ai_addrlen,timeout)
                 )
         {
-
-            setReadTimeout(DEFAULT_NETWORK_TIMEOUT);
-            setWriteTimeout(DEFAULT_NETWORK_TIMEOUT);
-
             if (ovrReadTimeout!=-1)
                 setReadTimeout(ovrReadTimeout);
             if (ovrWriteTimeout!=-1)
@@ -180,11 +172,15 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
         inet_ntop(AF_INET, &cli_addr.sin_addr, ipAddr, sizeof(ipAddr)-1);
         cursocket->setRemotePort(ntohs(cli_addr.sin_port));
         cursocket->setRemotePair(ipAddr);
+
         ((Socket_TCP *)cursocket)->setTcpNoDelayOption(tcpNoDelayOption);
 
-        if (readTimeout) cursocket->setReadTimeout(readTimeout);
-        if (writeTimeout) cursocket->setWriteTimeout(writeTimeout);
-        if (recvBuffer) cursocket->setRecvBuffer(recvBuffer);
+        if (readTimeout)
+            cursocket->setReadTimeout(readTimeout);
+        if (writeTimeout)
+            cursocket->setWriteTimeout(writeTimeout);
+        if (recvBuffer)
+            cursocket->setRecvBuffer(recvBuffer);
     }
     // Establish the error.
     else
@@ -197,7 +193,7 @@ Streams::StreamSocket * Socket_TCP::acceptConnection()
     return cursocket;
 }
 
-bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
+bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
 {
     int res2,valopt;
 
@@ -302,6 +298,18 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
             }
             else if (res2 > 0)
             {
+
+                switch(addrFamily) {
+                case AF_INET:
+                    inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr),remotePair, INET_ADDRSTRLEN);
+                    break;
+                case AF_INET6:
+                    inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)addr)->sin6_addr),remotePair, INET6_ADDRSTRLEN);
+                    break;
+                default:
+                    break;
+                }
+
                 // Socket selected for write
                 socklen_t lon;
                 lon = sizeof(int);
@@ -313,7 +321,7 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
                 // Check the value returned...
                 if (valopt)
                 {
-                    lastError = "Error in delayed connection()";
+                    lastError = std::string("connect(") + remotePair + (") - ") + strerrorname_np(valopt) + ", " + strerrordesc_np(valopt);
                     return false;
                 }
 
@@ -335,7 +343,7 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
 
                 if (setTCPOptionBool(TCP_NODELAY,tcpNoDelayOption))
                 {
-                    lastError = "setsocketopt(SO_KEEPALIVE)";
+                    lastError = "setsocketopt(TCP_NODELAY)";
                     return false;
                 }
 
@@ -414,13 +422,13 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
                 break;
             }
 #else
-            switch(errno)
+            /*  switch(errno)
             {
             case EACCES:
                 lastError = "connect() - Write permission is denied on the socket file";
                 break;
             case EPERM:
-                lastError = "connect() - The  user  tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.";
+                lastError = "connect() - The user tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.";
                 break;
             case EADDRINUSE:
                 lastError = "connect() - Local address is already in use.";
@@ -471,7 +479,9 @@ bool Socket_TCP::tcpConnect(const sockaddr *addr, socklen_t addrlen, uint32_t ti
                 lastError = "tcp connect() unknown errno - " +std::to_string( errno );
 
                 break;
-            }
+            }*/
+
+            lastError = std::string("connect() - ") + strerrorname_np(errno) + ", " + strerrordesc_np(errno);
 #endif
             return false;
         }
