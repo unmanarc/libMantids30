@@ -115,6 +115,12 @@ public:
      * @param last error message pointer. (static mem)
      */
     std::string getLastError() const;
+
+    /**
+     * @brief getRemotePairStr Non-Efficient get remote pair string (useful only for cheap print operations)
+     * @return remote pair as string.
+     */
+    std::string getRemotePairStr();
     /**
      * Get remote pair address
      * @param address pair address char * (should contain at least 64 bytes)

@@ -28,7 +28,6 @@
 
 #endif
 
-
 #include <mdz_hlp_functions/mem.h>
 
 using namespace Mantids::Network::Sockets;
@@ -41,13 +40,18 @@ bool Socket::winSockInitialized = Socket::win32Init();
 bool Socket::socketInitialized = false;
 bool Socket::badSocket = false;
 
+#define DEFAULT_SOCKRW_TIMEOUT 60*5
+
 void Socket::initVars()
 {
     useIPv6 = false;
 
     listenMode = false;
-    readTimeout = 0;
-    writeTimeout = 0;
+
+    // default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
+    readTimeout = DEFAULT_SOCKRW_TIMEOUT;
+    writeTimeout = DEFAULT_SOCKRW_TIMEOUT;
+
     recvBuffer = 0;
     useWrite = false;
     lastError = "";
@@ -160,43 +164,43 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
         return true;
 #ifndef _WIN32
     case EAI_ADDRFAMILY:
-        lastError = "The specified network host does not have any network addresses in the requested address family.";
+        lastError = "getaddrinfo() - The specified network host does not have any network addresses in the requested address family.";
         return false;
 #endif
     case EAI_AGAIN:
-        lastError = "The name server returned a temporary failure indication.  Try again later.";
+        lastError = "getaddrinfo() - The name server returned a temporary failure indication. Try again later.";
         return false;
     case EAI_BADFLAGS:
-        lastError = "hints.ai_flags contains invalid flags; or, hints.ai_flags included AI_CANONNAME and name was NULL.";
+        lastError = "getaddrinfo() - hints.ai_flags contains invalid flags; or, hints.ai_flags included AI_CANONNAME and name was NULL.";
         return false;
     case EAI_FAIL:
-        lastError = "The name server returned a permanent failure indication.";
+        lastError = "getaddrinfo() - The name server returned a permanent failure indication.";
         return false;
     case EAI_FAMILY:
-        lastError = "The requested address family is not supported.";
+        lastError = "getaddrinfo() - The requested address family is not supported.";
         return false;
     case EAI_MEMORY:
-        lastError = "Out of memory during name resolution.";
+        lastError = "getaddrinfo() - Out of memory during name resolution.";
         return false;
     case EAI_NODATA:
-        lastError = "The specified network host exists, but does not have any network addresses defined.";
+        lastError = "getaddrinfo() - The specified network host exists, but does not have any network addresses defined.";
         return false;
     case EAI_NONAME:
-        lastError = "The node or service is not known; or both node and service are NULL; or AI_NUMERICSERV was specified in  hints.ai_flags and service was not a numeric port-number string.";
+        lastError = "getaddrinfo() - The node or service is not known"; //; or both node and service are NULL; or AI_NUMERICSERV was specified in hints.ai_flags and service was not a numeric port-number string.";
         return false;
     case EAI_SERVICE:
-        lastError = "The requested service is not available for the requested socket type.";
+        lastError = "getaddrinfo() - The requested service is not available for the requested socket type.";
         return false;
     case EAI_SOCKTYPE:
-        lastError = "The requested socket type is not supported.";
+        lastError = "getaddrinfo() - The requested socket type is not supported.";
         return false;
 #ifndef _WIN32
     case EAI_SYSTEM:
-        lastError = "System Error duing name resolution.";
+        lastError = "getaddrinfo() - System Error duing name resolution.";
         return false;
 #endif
     default:
-        lastError = "Unknown name resolution error.";
+        lastError = "getaddrinfo() - Unknown name resolution error.";
         break;
     }
 
@@ -309,6 +313,11 @@ int Socket::closeSocket()
 std::string Socket::getLastError() const
 {
     return lastError;
+}
+
+std::string Socket::getRemotePairStr()
+{
+    return std::string(remotePair);
 }
 
 uint16_t Socket::getPort()
