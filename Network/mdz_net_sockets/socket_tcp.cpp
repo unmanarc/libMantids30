@@ -51,8 +51,11 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         return false;
     }
 
+    setRemotePort(port);
+
     bool connected = false;
 
+    // Iterate over DNS
     for (struct addrinfo *resiter=res; resiter && !connected; resiter = resiter->ai_next)
     {
         if (sockfd >=0 ) closeSocket();
@@ -73,15 +76,10 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         sockaddr * curAddr = resiter->ai_addr;
         struct sockaddr_in * curAddrIn = ((sockaddr_in *)curAddr);
 
-        if (    ( (resiter->ai_addr->sa_family == AF_INET) ||             // IPv4 always have the permission to go.
-                  (resiter->ai_addr->sa_family == AF_INET6 && useIPv6))   // Check if ipv6 have our permission to go.
-                && tcpConnect(resiter->ai_addr->sa_family,curAddr, resiter->ai_addrlen,timeout)
-                )
+        if (     (resiter->ai_addr->sa_family == AF_INET) ||             // IPv4 always have the permission to go.
+                 (resiter->ai_addr->sa_family == AF_INET6 && useIPv6)   // Check if ipv6 have our permission to go.
+                 )
         {
-            if (ovrReadTimeout!=-1)
-                setReadTimeout(ovrReadTimeout);
-            if (ovrWriteTimeout!=-1)
-                setWriteTimeout(ovrWriteTimeout);
 
             // Set remote pairs...
             switch (curAddr->sa_family)
@@ -102,21 +100,28 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
                 break;
             }
 
-            setRemotePort(port);
+            // Connect...
+            if (tcpConnect(resiter->ai_addr->sa_family,curAddr, resiter->ai_addrlen,timeout))
+            {
+                if (ovrReadTimeout!=-1)
+                    setReadTimeout(ovrReadTimeout);
+                if (ovrWriteTimeout!=-1)
+                    setWriteTimeout(ovrWriteTimeout);
 
-            // now it's connected...
-            if (postConnectSubInitialization())
-            {
-                connected = true;
+                // now it's connected...
+                if (postConnectSubInitialization())
+                {
+                    connected = true;
+                }
+                else
+                {
+                    // should disconnect here.
+                    shutdownSocket();
+                    // drop the socket descriptor. we don't need it anymore.
+                    closeSocket();
+                }
+                break;
             }
-            else
-            {
-                // should disconnect here.
-                shutdownSocket();
-                // drop the socket descriptor. we don't need it anymore.
-                closeSocket();
-            }
-            break;
         }
         else
         {
@@ -131,9 +136,11 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     if (!connected)
     {
         if (lastError == "")
-            lastError = "connect() failed - unkonwn";
+            lastError = std::string("Connection using TCP Socket Failed with UNKNOWN reason.");
         return false;
     }
+
+
 
     return true;
 }
@@ -298,18 +305,6 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
             else if (res2 > 0)
             {
-
-                switch(addrFamily) {
-                case AF_INET:
-                    inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr),remotePair, INET_ADDRSTRLEN);
-                    break;
-                case AF_INET6:
-                    inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)addr)->sin6_addr),remotePair, INET6_ADDRSTRLEN);
-                    break;
-                default:
-                    break;
-                }
-
                 // Socket selected for write
                 socklen_t lon;
                 lon = sizeof(int);
@@ -321,7 +316,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 // Check the value returned...
                 if (valopt)
                 {
-                    lastError = std::string("connect(") + remotePair + (") - ") + strerrorname_np(valopt) + ", " + strerrordesc_np(valopt);
+                    lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with ") + strerrorname_np(valopt) + ": " + strerrordesc_np(valopt);
                     return false;
                 }
 
@@ -352,7 +347,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
             else
             {
-                lastError = "Timeout in select() - Cancelling!";
+                lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + ("failed with SELTMOUT: Timeout while connecting...");
                 return false;
             }
         }
@@ -422,66 +417,8 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 break;
             }
 #else
-            /*  switch(errno)
-            {
-            case EACCES:
-                lastError = "connect() - Write permission is denied on the socket file";
-                break;
-            case EPERM:
-                lastError = "connect() - The user tried to connect to a broadcast address without having the socket broadcast flag enabled or the connection request failed because of a local firewall rule.";
-                break;
-            case EADDRINUSE:
-                lastError = "connect() - Local address is already in use.";
-                break;
-            case EADDRNOTAVAIL:
-                lastError = "connect() - The socket referred to by sockfd had not previously been bound to an address and, upon attempting to bind it to an ephemeral port.";
-                break;
-            case EAFNOSUPPORT:
-                lastError = "connect() - The passed address didn't have the correct address family in its sa_family field.";
-                break;
-            case EAGAIN:
-                lastError = "connect() - insufficient entries in the routing cache.";
-                break;
-            case EALREADY:
-                lastError = "connect() - The socket is nonblocking and a previous connection attempt has not yet been completed.";
-                break;
-            case EBADF:
-                lastError = "connect() - sockfd is not a valid open file descriptor.";
-                break;
-            case ECONNREFUSED:
-                lastError = "connect() - found no one listening on the remote address.";
-                break;
-            case EFAULT:
-                lastError = "connect() - The socket structure address is outside the user's address space.";
-                break;
-            case EINPROGRESS:
-                lastError = "connect() - The socket is nonblocking and the connection cannot be completed immediately.";
-                break;
-            case EINTR:
-                lastError = "connect() - The system call was interrupted by a signal that was caught.";
-                break;
-            case EISCONN:
-                lastError = "connect() - The socket is already connected.";
-                break;
-            case ENETUNREACH:
-                lastError = "connect() - Network is unreachable.";
-                break;
-            case ENOTSOCK:
-                lastError = "connect() - The file descriptor sockfd does not refer to a socket.";
-                break;
-            case EPROTOTYPE:
-                lastError = "connect() - The socket type does not support the requested communications protocol.";
-                break;
-            case ETIMEDOUT:
-                lastError = "connect() - Timeout while attempting connection.";
-                break;
-            default:
-                lastError = "tcp connect() unknown errno - " +std::to_string( errno );
 
-                break;
-            }*/
-
-            lastError = std::string("connect() - ") + strerrorname_np(errno) + ", " + strerrordesc_np(errno);
+            lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with ") + strerrorname_np(errno) + ": " + strerrordesc_np(errno);
 #endif
             return false;
         }
