@@ -80,7 +80,7 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
     }
 
     address.sun_family = AF_UNIX;
-    strcpy(address.sun_path, path);
+    strncpy(address.sun_path, path,sizeof(address.sun_path));
     len = sizeof(address);
 
     // Set the timeout here.
@@ -88,7 +88,24 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
 
     if(connect(sockfd, (sockaddr*)&address, len) == -1)
     {
-        lastError = "socket() failed";
+        int valopt=0;
+        // Socket selected for write
+        socklen_t lon;
+        lon = sizeof(int);
+        if (getSocketOption(SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0)
+        {
+            lastError = "Error in getsockopt(SOL_SOCKET)";
+            return false;
+        }
+
+        // Check the value returned...
+        if (valopt)
+        {
+            lastError = std::string("Connection to AF_UNIX Socket failed with ") + strerrorname_np(valopt) + ": " + strerrordesc_np(valopt);
+            return false;
+        }
+
+        lastError = "Connect(AF_UNIX) failed";
         return false;
     }
 
