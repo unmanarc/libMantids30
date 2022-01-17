@@ -91,16 +91,16 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
         return false;
     }
 
-    // Set the timeout here.
-    setReadTimeout(timeout);
-
     // UDP connection does not establish the connection. is enough to have the remote address resolved and the socket file descriptor...
     bool connected = (res ? true : false);
     if (!connected)
     {
-        lastError = "connect() failed on addr resolution";
+        lastError = std::string("Connection using UDP Socket to ") + remoteHost + (":") + std::to_string(port) + (" Failed with ") + strerrorname_np(errno) + ": " + strerrordesc_np(errno);
         return false;
     }
+
+    // Set the timeout here.
+    setReadTimeout(timeout);
 
     return true;
 }
