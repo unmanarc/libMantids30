@@ -369,7 +369,9 @@ static void daemonize()
     pid = fork();
     if (pid < 0)
     {
-        syslog( LOG_ERR, "unable to fork daemon, code=%d [%s]", errno, strerror(errno));
+        char cError[1024]="Unknown Error";
+
+        syslog( LOG_ERR, "unable to fork daemon, code=%d [%s]", errno, strerror_r(errno,cError,sizeof(cError)));
         _exit(EXIT_FAILURE);
     }
 
@@ -399,7 +401,9 @@ static void daemonize()
     sid = setsid();
     if (sid < 0)
     {
-        syslog( LOG_ERR, "unable to create a new session, code %d (%s)", errno, strerror(errno));
+        char cError[1024]="Unknown Error";
+
+        syslog( LOG_ERR, "unable to create a new session, code %d (%s)", errno, strerror_r(errno,cError,sizeof(cError)));
         _exit(EXIT_FAILURE);
     }
 

@@ -383,6 +383,7 @@ Mantids::Network::Streams::StreamSocket * Socket_TLS::acceptConnection()
 int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 {
     if (!sslHandle) return -1;
+    char cError[1024]="Unknown Error";
 
     int readBytes = SSL_read(sslHandle, data, datalen);
     if (readBytes > 0)
@@ -405,7 +406,7 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
         case SSL_ERROR_SYSCALL:
             // Common error (maybe tcp error).
             parseErrors();
-            lastError = strerrorname_np(errno) + std::string(": ") + strerrordesc_np(errno);
+            lastError = "Error " + std::to_string(errno) + " during read: " + strerror_r(errno,cError,sizeof(cError));
             return -1;
         default:
             parseErrors();

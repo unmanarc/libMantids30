@@ -316,7 +316,8 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 // Check the value returned...
                 if (valopt)
                 {
-                    lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with ") + strerrorname_np(valopt) + ": " + strerrordesc_np(valopt);
+                    char cError[1024]="Unknown Error";
+                    lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
                     return false;
                 }
 
@@ -418,7 +419,9 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
 #else
 
-            lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with ") + strerrorname_np(errno) + ": " + strerrordesc_np(errno);
+            char cError[1024]="Unknown Error";
+
+            lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
 #endif
             return false;
         }

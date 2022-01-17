@@ -90,8 +90,10 @@ bool VirtualNetworkInterface::start(NetIfConfig * netcfg, const std::string &net
 
     if(ioctl(fd, TUNSETIFF, (void*) &ifr) < 0)
     {
+        char cError[1024]="Unknown Error";
+
         char errormsg[4096];
-        snprintf(errormsg,sizeof(errormsg), "ioctl(TUNSETIFF) error(%d): %s\n", errno, strerror(errno));
+        snprintf(errormsg,sizeof(errormsg), "ioctl(TUNSETIFF) error(%d): %s\n", errno, strerror_r(errno,cError,sizeof(cError)));
 
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;

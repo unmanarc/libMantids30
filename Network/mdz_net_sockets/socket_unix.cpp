@@ -101,7 +101,10 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
         // Check the value returned...
         if (valopt)
         {
-            lastError = std::string("Connection to AF_UNIX Socket failed with ") + strerrorname_np(valopt) + ": " + strerrordesc_np(valopt);
+
+            char cError[1024]="Unknown Error";
+
+            lastError = std::string("Connection to AF_UNIX Socket failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
             return false;
         }
 

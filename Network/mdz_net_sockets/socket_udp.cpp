@@ -95,7 +95,9 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
     bool connected = (res ? true : false);
     if (!connected)
     {
-        lastError = std::string("Connection using UDP Socket to ") + remoteHost + (":") + std::to_string(port) + (" Failed with ") + strerrorname_np(errno) + ": " + strerrordesc_np(errno);
+        char cError[1024]="Unknown Error";
+
+        lastError = std::string("Connection using UDP Socket to ") + remoteHost + (":") + std::to_string(port) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
         return false;
     }
 

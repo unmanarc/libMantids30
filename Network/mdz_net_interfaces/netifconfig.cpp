@@ -283,8 +283,9 @@ bool NetIfConfig::openInterface(const std::string &_ifaceName)
     interfaceName = _ifaceName;
     if((fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
-        // TODO: all errono should be reentrant...
-        snprintf(errormsg,sizeof(errormsg), "socket(AF_INET, SOCK_RAW, IPPROTO_TCP) error(%d): %s\n", errno, strerror(errno));
+        char cError[1024]="Unknown Error";
+
+        snprintf(errormsg,sizeof(errormsg), "socket(AF_INET, SOCK_RAW, IPPROTO_TCP) error(%d): %s\n", errno, strerror_r(errno,cError,sizeof(cError)));
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;
 
@@ -296,7 +297,9 @@ bool NetIfConfig::openInterface(const std::string &_ifaceName)
 
     if((ioctl(fd, SIOCGIFFLAGS, &ifr) == -1))
     {
-        snprintf(errormsg,sizeof(errormsg), "ioctl(SIOCGIFFLAGS) on interface %s error(%d): %s\n", _ifaceName.c_str(),errno,  strerror(errno));
+        char cError[1024]="Unknown Error";
+
+        snprintf(errormsg,sizeof(errormsg), "ioctl(SIOCGIFFLAGS) on interface %s error(%d): %s\n", _ifaceName.c_str(),errno,  strerror_r(errno,cError,sizeof(cError)));
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;
 
