@@ -18,6 +18,8 @@
 // SYS:
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/time.h>
+
 #include <string.h>
 #include <unistd.h>
 
@@ -88,6 +90,11 @@ int StartApplication(int argc, char *argv[], Application *_app)
     globalArgs.addCommandLineOption("Other Options",     0, "debugparams" , "Debug parameters and exit."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
     globalArgs.addCommandLineOption("Other Options"  ,   0, "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::TYPE_UINT8 );
     globalArgs.addCommandLineOption("Other Options"  ,  'h', "help"   , "Show information usage.", "0", Mantids::Memory::Abstract::TYPE_BOOL  );
+
+    /////////////////////////
+    struct timeval time;
+    gettimeofday(&time,nullptr);
+    srand(((time.tv_sec * 1000) + (time.tv_usec / 1000))*getpid());
 
     // Init vars...
     appPTR->_initvars(argc,argv, &globalArgs);
