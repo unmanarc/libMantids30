@@ -24,10 +24,6 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids::Applicatio
     globalArguments->setInifiniteWaitAtEnd(true);
 
     /////////////////////////
-    struct timeval time;
-    gettimeofday(&time,nullptr);
-    srand(((time.tv_sec * 1000) + (time.tv_usec / 1000))*getpid());
-
     rpcInitVars(argc,argv,globalArguments);
 
     globalArguments->setVersion( to_string(appVersionMajor) + "." + to_string(appVersionMinor) + "." + to_string(appVersionSubMinor) );
