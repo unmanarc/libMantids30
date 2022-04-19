@@ -54,7 +54,7 @@ protected:
     Network::HTTP::Response::StatusCode processClientRequest() override;
 
 private:
-    Network::HTTP::Response::StatusCode processHTMLIEngine(const std::string &sRealFullPath,WebSession * hSession);
+    Network::HTTP::Response::StatusCode processHTMLIEngine(const std::string &sRealFullPath,WebSession * hSession, uint64_t uMaxAge);
     Network::HTTP::Response::StatusCode processRPCRequest();
     Network::HTTP::Response::StatusCode processRPCRequest_VERSION();
     Network::HTTP::Response::StatusCode processRPCRequest_AUTHINFO(WebSession * wSession, const uint32_t & uMaxAge);

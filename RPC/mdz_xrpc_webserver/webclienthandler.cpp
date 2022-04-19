@@ -54,7 +54,7 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
     // WEB MODE:
     std::string sSessionId = getRequestCookie("sessionId");
-    uint64_t uMaxAge;
+    uint64_t uMaxAge=0;
     WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
 
     if ( //staticContent ||
@@ -98,7 +98,7 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
     if ( useHTMLIEngine &&
          getContentType() == "text/html" ) // The content type has changed during the map.
-        processHTMLIEngine(fileInfo.sRealFullPath,hSession);
+        processHTMLIEngine(fileInfo.sRealFullPath,hSession,uMaxAge);
 
     if (hSession)
         sessionsManager->closeSession(sSessionId);
@@ -119,7 +119,7 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
 // TODO: documentar los privilegios cargados de un usuario
 
-Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & sRealFullPath,WebSession * hSession )
+Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & sRealFullPath,WebSession * hSession, uint64_t uMaxAge )
 {
     // Drop the MMAP container:
     setResponseDataStreamer(nullptr,false);
@@ -132,6 +132,8 @@ Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & s
 
         // PRECOMPILE _STATIC_TEXT
         boost::match_flag_type flags = boost::match_default;
+
+        // CINC PROCESSOR:
         boost::regex exStaticText("<CINC_(?<TAGOPEN>[^>]*)>(?<INCPATH>[^<]+)<\\/CINC_(?<TAGCLOSE>[^>]*)>",boost::regex::icase);
         boost::match_results<string::const_iterator> whatStaticText;
         for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
@@ -162,6 +164,39 @@ Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & s
 
                 log(LEVEL_ERR,hSession, "fileserver", 2048, "file not found: %s",sRealFullPath.c_str());
             }
+        }
+
+        // CINPUTVAR PROCESSOR:
+        boost::regex exStaticTextInputVar("<CINPUTVAR>(?<VARNAME>[^<]+)<\\/CINPUTVAR>",boost::regex::icase);
+        for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
+             boost::regex_search(start, end, whatStaticText, exStaticTextInputVar, flags); // FIND REGEXP
+             start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
+        {
+            string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
+            string varName      = string(whatStaticText[1].first, whatStaticText[1].second);
+
+            // The path is relative to resourcesLocalPath (beware: admits transversal)
+
+            std::string varValue = "";
+            if (varName == "csrfToken" && hSession)
+                varValue = hSession->sCSRFToken;
+            if (varName == "softwareVersion")
+                varValue = softwareVersion;
+            if (varName == "user" && hSession && hSession->authSession)
+                varValue = hSession->authSession->getUserDomainPair().first;
+            if (varName == "domain" && hSession && hSession->authSession)
+                varValue = hSession->authSession->getUserDomainPair().second;
+            if (varName == "maxAge" && hSession )
+                      varValue = std::to_string(uMaxAge);
+            else
+            {
+                // TODO: when include other vars, sanitize first (maybe via json?)
+
+                log(LEVEL_ERR,hSession, "fileserver", 2048, "var not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
+            }
+
+            std::string htmlVar = "<input type=\"hidden\" id=\"" + varName +"\" value=\"" + varValue + "\" />";
+            boost::replace_all(fileContent,fulltag, htmlVar);
         }
 
         // Stream the generated content...

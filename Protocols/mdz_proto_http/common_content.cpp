@@ -70,6 +70,7 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
         setParseDataTargetSize(2); // for CRLF.
         currentMode = PROCMODE_CHUNK_CRLF;
         // Proccess chunk into mem...
+        // TODO: validate when outstream is filled up.
         getParsedData()->appendTo(*outStream);
         return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
     }
@@ -83,6 +84,7 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
     }
     case PROCMODE_CONTENT_LENGTH:
     {
+        // TODO: validate when outstream is filled up.
         getParsedData()->appendTo(*outStream);
         if (getLeftToparse()>0)
         {
@@ -101,6 +103,7 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
         if (getParsedData()->size())
         {
             // Parsing data...
+            // TODO: validate when outstream is filled up.
             getParsedData()->appendTo(*outStream);
             return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
         }
