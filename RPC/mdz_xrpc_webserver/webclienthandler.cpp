@@ -180,14 +180,22 @@ Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & s
             std::string varValue = "";
             if (varName == "csrfToken" && hSession)
                 varValue = hSession->sCSRFToken;
-            if (varName == "softwareVersion")
+            else if (varName == "csrfToken")
+            {}
+            else if (varName == "softwareVersion")
                 varValue = softwareVersion;
-            if (varName == "user" && hSession && hSession->authSession)
+            else if (varName == "user" && hSession && hSession->authSession)
                 varValue = hSession->authSession->getUserDomainPair().first;
-            if (varName == "domain" && hSession && hSession->authSession)
+            else if (varName == "user")
+            {}
+            else if (varName == "domain" && hSession && hSession->authSession)
                 varValue = hSession->authSession->getUserDomainPair().second;
-            if (varName == "maxAge" && hSession )
+            else if (varName == "domain")
+            {}
+            else if (varName == "maxAge" && hSession )
                       varValue = std::to_string(uMaxAge);
+            else if (varName == "maxAge")
+            {}
             else
             {
                 // TODO: when include other vars, sanitize first (maybe via json?)
@@ -198,6 +206,11 @@ Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & s
             std::string htmlVar = "<input type=\"hidden\" id=\"" + varName +"\" value=\"" + varValue + "\" />";
             boost::replace_all(fileContent,fulltag, htmlVar);
         }
+
+
+        // Update last activity on each page load.
+        if (hSession && hSession->authSession)
+            hSession->authSession->updateLastActivity();
 
         // Stream the generated content...
         getResponseDataStreamer()->writeString(fileContent);
