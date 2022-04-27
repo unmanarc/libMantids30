@@ -1,5 +1,7 @@
 #include "query.h"
 #include "sqlconnector.h"
+#include <iostream>
+#include <ostream>
 #include <stdexcept>
 
 using namespace Mantids::Database;
@@ -27,7 +29,6 @@ Query::~Query()
         delete i.second;
 
     InputVars.clear();
-
 
     clearDestroyableStringsForInput();
     clearDestroyableStringsForResults();
@@ -90,7 +91,7 @@ void Query::setFetchLastInsertRowID(bool value)
 
 bool Query::step()
 {
-    clearDestroyableStringsForInput();
+    //clearDestroyableStringsForInput();
     isNull.clear();
     return step0();
 }
@@ -153,6 +154,19 @@ void Query::clearDestroyableStringsForInput()
 {
     // Destroy strings.
     for (auto * i : destroyableStringsForInput) delete i;
+
+    //std::list<std::string *>::iterator it = destroyableStringsForInput.begin();
+
+    //auto current = destroyableStringsForInput.begin();
+    //auto last = destroyableStringsForInput.end();
+
+    //while (current != last)
+     //   {
+        //const std::string* ref = *current;
+        //std::cout << *ref << std::endl;
+     //   delete *current;
+    //    current = std::next(current, 1);
+    //}
 }
 
 std::string *Query::createDestroyableStringForResults(const std::string &str)
