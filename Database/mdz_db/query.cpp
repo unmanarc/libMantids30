@@ -89,7 +89,7 @@ void Query::setFetchLastInsertRowID(bool value)
 
 bool Query::step()
 {
-    //clearDestroyableStringsForInput();
+    clearDestroyableStringsForResults();
     isNull.clear();
     return step0();
 }
@@ -166,6 +166,7 @@ void Query::clearDestroyableStringsForResults()
 {
     // Destroy strings.
     for (auto * i : destroyableStringsForResults) delete i;
+    destroyableStringsForResults.clear();
 }
 
 void Query::setSqlConnector(void *value, std::mutex *mtDatabaseLock)
