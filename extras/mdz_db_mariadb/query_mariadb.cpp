@@ -527,7 +527,7 @@ bool Query_MariaDB::postBindInputVars()
 
 unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_field_types & fieldType)
 {
-    unsigned long r;
+    unsigned long r=0;
     static const size_t szBuffer = 64;
 
     my_bool isTruncated = 0;
@@ -541,8 +541,9 @@ unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_f
     bind.length = &r;
     bind.error = &isTruncated;
 
-    mysql_stmt_fetch_column(stmt, &bind, col, 0);
-
-    return r;
+    if (mysql_stmt_fetch_column(stmt, &bind, col, 0)==0)
+        return r;
+    else
+        return 0;
 }
 
