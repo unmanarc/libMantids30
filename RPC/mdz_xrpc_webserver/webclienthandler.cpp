@@ -1,5 +1,6 @@
 #include "webclienthandler.h"
 
+#include <boost/algorithm/string/predicate.hpp>
 #include <mdz_mem_vars/b_mmap.h>
 #include <mdz_xrpc_common/json_streamable.h>
 #include <mdz_xrpc_common/retcodes.h>
@@ -110,8 +111,8 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
     log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,hSession,
         "fileServer", 2048, "R/%03d: %s",
-            Response::Status::getHTTPStatusCodeTranslation(ret),
-            ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
+        Response::Status::getHTTPStatusCodeTranslation(ret),
+        ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
 
 
     return ret;
@@ -122,104 +123,116 @@ Response::StatusCode WebClientHandler::processClientRequest()
 Response::StatusCode WebClientHandler::processHTMLIEngine( const std::string & sRealFullPath,WebSession * hSession, uint64_t uMaxAge )
 {
     // Drop the MMAP container:
-    setResponseDataStreamer(nullptr,false);
-    std::ifstream fileStream(sRealFullPath);
-    if (fileStream.is_open())
+
+    std::string fileContent;
+
+    if (boost::starts_with(sRealFullPath,"MEM:"))
     {
+        // Mem-Static resource.
+        fileContent = ((Mantids::Memory::Containers::B_MEM *)getResponseDataStreamer())->toString();
+        setResponseDataStreamer(nullptr,false);
+    }
+    else
+    {
+        setResponseDataStreamer(nullptr,false);
+        // Local resource.
+        std::ifstream fileStream(sRealFullPath);
+        if (!fileStream.is_open())
+        {
+            log(LEVEL_ERR,hSession, "fileServer", 2048, "file not found: %s",sRealFullPath.c_str());
+            return Response::StatusCode::S_404_NOT_FOUND;
+        }
         // Pass the file to a string.
-        std::string fileContent((std::istreambuf_iterator<char>(fileStream)),std::istreambuf_iterator<char>());
+        fileContent = std::string((std::istreambuf_iterator<char>(fileStream)),std::istreambuf_iterator<char>());
         fileStream.close();
-
-        // PRECOMPILE _STATIC_TEXT
-        boost::match_flag_type flags = boost::match_default;
-
-        // CINC PROCESSOR:
-        boost::regex exStaticText("<CINC_(?<TAGOPEN>[^>]*)>(?<INCPATH>[^<]+)<\\/CINC_(?<TAGCLOSE>[^>]*)>",boost::regex::icase);
-        boost::match_results<string::const_iterator> whatStaticText;
-        for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
-             boost::regex_search(start, end, whatStaticText, exStaticText, flags); // FIND REGEXP
-             start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
-        {
-            string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
-            string tagOpen      = string(whatStaticText[1].first, whatStaticText[1].second);
-            string includePath  = string(whatStaticText[2].first, whatStaticText[2].second);
-            string tagClose     = string(whatStaticText[3].first, whatStaticText[3].second);
-
-            // GET THE TAG DATA HERE...
-
-            // The path is relative to resourcesLocalPath (beware: admits transversal)
-            std::ifstream fileIncludeStream(resourcesLocalPath + includePath);
-
-            if (fileIncludeStream.is_open())
-            {
-                std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)),std::istreambuf_iterator<char>());
-                if (tagOpen.empty())
-                    boost::replace_all(fileContent,fulltag, includeFileContent);
-                else
-                    boost::replace_all(fileContent,fulltag, "<" + tagOpen + ">" + includeFileContent + "</" + tagClose + ">" );
-            }
-            else
-            {
-                boost::replace_all(fileContent,fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
-
-                log(LEVEL_ERR,hSession, "fileserver", 2048, "file not found: %s",sRealFullPath.c_str());
-            }
-        }
-
-        // CINPUTVAR PROCESSOR:
-        boost::regex exStaticTextInputVar("<CINPUTVAR>(?<VARNAME>[^<]+)<\\/CINPUTVAR>",boost::regex::icase);
-        for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
-             boost::regex_search(start, end, whatStaticText, exStaticTextInputVar, flags); // FIND REGEXP
-             start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
-        {
-            string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
-            string varName      = string(whatStaticText[1].first, whatStaticText[1].second);
-
-            // The path is relative to resourcesLocalPath (beware: admits transversal)
-
-            std::string varValue = "";
-            if (varName == "csrfToken" && hSession)
-                varValue = hSession->sCSRFToken;
-            else if (varName == "csrfToken")
-            {}
-            else if (varName == "softwareVersion")
-                varValue = softwareVersion;
-            else if (varName == "user" && hSession && hSession->authSession)
-                varValue = hSession->authSession->getUserDomainPair().first;
-            else if (varName == "user")
-            {}
-            else if (varName == "domain" && hSession && hSession->authSession)
-                varValue = hSession->authSession->getUserDomainPair().second;
-            else if (varName == "domain")
-            {}
-            else if (varName == "maxAge" && hSession )
-                      varValue = std::to_string(uMaxAge);
-            else if (varName == "maxAge")
-            {}
-            else
-            {
-                // TODO: when include other vars, sanitize first (maybe via json?)
-
-                log(LEVEL_ERR,hSession, "fileserver", 2048, "var not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
-            }
-
-            std::string htmlVar = "<input type=\"hidden\" id=\"" + varName +"\" value=\"" + varValue + "\" />";
-            boost::replace_all(fileContent,fulltag, htmlVar);
-        }
-
-
-        // Update last activity on each page load.
-        if (hSession && hSession->authSession)
-            hSession->authSession->updateLastActivity();
-
-        // Stream the generated content...
-        getResponseDataStreamer()->writeString(fileContent);
-        return Response::StatusCode::S_200_OK;
     }
 
-    log(LEVEL_ERR,hSession, "fileServer", 2048, "file not found: %s",sRealFullPath.c_str());
 
-    return Response::StatusCode::S_404_NOT_FOUND;
+    // PRECOMPILE _STATIC_TEXT
+    boost::match_flag_type flags = boost::match_default;
+
+    // CINC PROCESSOR:
+    boost::regex exStaticText("<CINC_(?<TAGOPEN>[^>]*)>(?<INCPATH>[^<]+)<\\/CINC_(?<TAGCLOSE>[^>]*)>",boost::regex::icase);
+    boost::match_results<string::const_iterator> whatStaticText;
+    for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticText, flags); // FIND REGEXP
+         start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
+    {
+        string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
+        string tagOpen      = string(whatStaticText[1].first, whatStaticText[1].second);
+        string includePath  = string(whatStaticText[2].first, whatStaticText[2].second);
+        string tagClose     = string(whatStaticText[3].first, whatStaticText[3].second);
+
+        // GET THE TAG DATA HERE...
+
+        // The path is relative to resourcesLocalPath (beware: admits transversal)
+        std::ifstream fileIncludeStream(resourcesLocalPath + includePath);
+
+        if (fileIncludeStream.is_open())
+        {
+            std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)),std::istreambuf_iterator<char>());
+            if (tagOpen.empty())
+                boost::replace_all(fileContent,fulltag, includeFileContent);
+            else
+                boost::replace_all(fileContent,fulltag, "<" + tagOpen + ">" + includeFileContent + "</" + tagClose + ">" );
+        }
+        else
+        {
+            boost::replace_all(fileContent,fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
+
+            log(LEVEL_ERR,hSession, "fileserver", 2048, "file not found: %s",sRealFullPath.c_str());
+        }
+    }
+
+    // CINPUTVAR PROCESSOR:
+    boost::regex exStaticTextInputVar("<CINPUTVAR>(?<VARNAME>[^<]+)<\\/CINPUTVAR>",boost::regex::icase);
+    for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticTextInputVar, flags); // FIND REGEXP
+         start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
+    {
+        string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
+        string varName      = string(whatStaticText[1].first, whatStaticText[1].second);
+
+        // The path is relative to resourcesLocalPath (beware: admits transversal)
+
+        std::string varValue = "";
+        if (varName == "csrfToken" && hSession)
+            varValue = hSession->sCSRFToken;
+        else if (varName == "csrfToken")
+        {}
+        else if (varName == "softwareVersion")
+            varValue = softwareVersion;
+        else if (varName == "user" && hSession && hSession->authSession)
+            varValue = hSession->authSession->getUserDomainPair().first;
+        else if (varName == "user")
+        {}
+        else if (varName == "domain" && hSession && hSession->authSession)
+            varValue = hSession->authSession->getUserDomainPair().second;
+        else if (varName == "domain")
+        {}
+        else if (varName == "maxAge" && hSession )
+            varValue = std::to_string(uMaxAge);
+        else if (varName == "maxAge")
+        {}
+        else
+        {
+            // TODO: when include other vars, sanitize first (maybe via json?)
+
+            log(LEVEL_ERR,hSession, "fileserver", 2048, "var not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
+        }
+
+        std::string htmlVar = "<input type=\"hidden\" id=\"" + varName +"\" value=\"" + varValue + "\" />";
+        boost::replace_all(fileContent,fulltag, htmlVar);
+    }
+
+
+    // Update last activity on each page load.
+    if (hSession && hSession->authSession)
+        hSession->authSession->updateLastActivity();
+
+    // Stream the generated content...
+    getResponseDataStreamer()->writeString(fileContent);
+    return Response::StatusCode::S_200_OK;
 }
 
 Response::StatusCode WebClientHandler::processRPCRequest()
@@ -641,8 +654,8 @@ Response::StatusCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSess
     for (const uint32_t & passIdx : extraAuths->getAuthenticationsIdxs())
     {
         Mantids::Authentication::Reason authReason=temporaryAuthentication( userName,
-                                                                        domainName,
-                                                                        extraAuths->getAuthentication(passIdx) );
+                                                                            domainName,
+                                                                            extraAuths->getAuthentication(passIdx) );
 
         // Include the pass idx in the Extra TMP Index.
         if ( Mantids::Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
