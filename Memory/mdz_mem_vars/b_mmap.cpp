@@ -80,6 +80,7 @@ std::pair<bool, uint64_t> B_MMAP::truncate2(const uint64_t &bytes)
     }
 
     reMapMemoryContainer();
+    // TODO: check this false.
     return std::make_pair(false,size());
 }
 

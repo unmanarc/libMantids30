@@ -182,7 +182,7 @@ std::pair<bool,uint64_t> B_MEM::copyOut2(void *buf, const uint64_t &bytes, const
 
     memcpy(buf,linearMemOffseted,copiedBytes);
 
-    return std::make_pair(false,copiedBytes);
+    return std::make_pair(true,copiedBytes);
 }
 
 bool B_MEM::compare2(const void *buf, const uint64_t &len, bool caseSensitive, const uint64_t &offset)
