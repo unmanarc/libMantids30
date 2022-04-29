@@ -260,10 +260,12 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
             cacheControl.setMaxAge(3600);
             cacheControl.setOptionImmutable(true);
 
+            info->sRealRelativePath = getRequestURI()+defaultFileAppend;
+
             setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
-            info->sRealRelativePath = getRequestURI()+defaultFileAppend;
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
+
             setResponseDataStreamer(staticContentElements[info->sRealRelativePath],false);
             return true;
         }
