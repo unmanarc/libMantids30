@@ -47,9 +47,10 @@ This framework provides C++11 based enhancing libraries for console and network 
 
 This library was tested so far in:
 
-* Fedora Linux 32
-* Ubuntu 18.04/20.04
-* CentOS/RHEL 7/8
+* OpenSUSE Tumbleweed
+* Fedora Linux 35
+* Ubuntu 18.04/20.04/22.04
+* CentOS/RHEL 7/8/9
 * CentOS/RHEL 5/6, but may require special/external C++11 compilers, we don't recommend it
 
 ### Overall Pre-requisites:
@@ -68,13 +69,13 @@ This library was tested so far in:
 
 ### Win32 Pre-requisites:
 
-* Using MSYS MinGW 64bit
+* Using MSYS MinGW 64bit (recommended)
 * Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
 
 ***
 ## Building libMantids
 
-For each system, you need to have already installed the pre-requisites
+Building instructions
 
 ### Instructions (CentOS 7.x):
 
@@ -82,52 +83,13 @@ For each system, you need to have already installed the pre-requisites
 
 ### Instructions (Fedora):
 
-```
-cmake . -DBUILD_SHARED_LIBS=ON
-make -j12
-make install
-```
+[Building Instructions for Fedora 3x](INSTALL.Fedora.md)
 
 ### Instructions (Ubuntu):
 
-Given that ubuntu have another library paths, it requires aditional steps:
+[Building Instructions for Ubuntu 20.04/22.04 LTS](INSTALL.Ubuntu.md)
 
-```
-cd /usr/include
-ln -s mariadb mysql
-ln -s /usr/lib/x86_64-linux-gnu/libboost_regex.so /usr/lib/x86_64-linux-gnu/libboost_regex-mt.so
-ln -s /usr/lib/x86_64-linux-gnu/libboost_thread.so /usr/lib/x86_64-linux-gnu/libboost_thread-mt.so
-```
-
-then, continue with the compilation:
-```
-cmake . -DBUILD_SHARED_LIBS=ON -B../libMantids-BuildLinux
-cd  ../libMantids-BuildLinux
-make -j12
-make install
-```
 ### Instructions (Win32 - Host: Fedora):
 
-installing everything in /winpath:
-
-```
-/usr/bin/mingw32-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/winpath -DCMAKE_INSTALL_LIBDIR=lib -B../libMantids-BuildWin32
-cd ../libMantids-BuildWin32
-make -j12
-make install
-```
-
-
-### Instructions (Win32 - Host: Win):
-
-You can use MSYS2... First install the required mingw64 libraries and mingw64 compiler using pacman (boost devel, sqlite3 devel, mysql devel, openssl devel, postgresql devel, etc...), then open MSYS and build the project using this CMAKE options:
-
-```
-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/home/user/ROOT -DCMAKE_INSTALL_LIBDIR=lib -B../libMantids-BuildWin32 -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe -G "MinGW Makefiles"
-cd ../libMantids-BuildWin32
-mingw32-make.exe -j12 install
-```
-
-
-
+[Building Instructions for Win32/64 via MSYS](INSTALL.Win32.md)
 
