@@ -52,6 +52,8 @@ Response::StatusCode WebClientHandler::processClientRequest()
     sLocalRequestedFileInfo fileInfo;
     Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
     if (getRequestURI() == "/api") return processRPCRequest();
+    else if (resourcesLocalPath.empty())
+        return Response::StatusCode::S_404_NOT_FOUND;
 
     // WEB MODE:
     std::string sSessionId = getRequestCookie("sessionId");
@@ -1068,6 +1070,12 @@ void WebClientHandler::setUsingCSRFToken(bool value)
 
 void WebClientHandler::setDocumentRootPath(const std::string &value)
 {
+    if (value.empty())
+    {
+        resourcesLocalPath = "";
+        return;
+    }
+
     char * cFullPath = realpath(value.c_str(), nullptr);
     if (cFullPath)
     {
