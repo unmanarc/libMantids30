@@ -177,7 +177,7 @@ bool Query_MariaDB::step0()
 
         Memory::Abstract::sBinContainer * sBin = nullptr;
 
-        unsigned char cRetBoolean;
+        unsigned char cRetBoolean=0;
         MYSQL_BIND result = {};
         my_bool bIsNull;
 
@@ -512,8 +512,17 @@ bool Query_MariaDB::postBindInputVars()
             }
 
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            bindedInputParams[pos].buffer_length = str->size()+1;
-            bindedInputParams[pos].buffer = (char *) str->c_str();
+
+            if (str)
+            {
+                bindedInputParams[pos].buffer_length = str->size()+1;
+                bindedInputParams[pos].buffer = (char *) str->c_str();
+            }
+            else
+            {
+                bindedInputParams[pos].buffer_length = 0;
+                bindedInputParams[pos].buffer = 0;
+            }
         } break;
         case Memory::Abstract::TYPE_NULL:
             bindedInputParams[pos].is_null_value = 1;
@@ -528,15 +537,16 @@ bool Query_MariaDB::postBindInputVars()
 unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_field_types & fieldType)
 {
     unsigned long r=0;
-    static const size_t szBuffer = 64;
+//    static const size_t szBuffer = 64;
 
     my_bool isTruncated = 0;
-    std::array<char, szBuffer> aBuffer;
+    char aBuffer[64];
+  //  std::array<char, szBuffer> aBuffer;
 
     MYSQL_BIND bind = {};
     bind.buffer_type = fieldType;
-    bind.buffer = aBuffer.data();
-    bind.buffer_length = aBuffer.size();
+    bind.buffer = aBuffer;
+    bind.buffer_length = 64;
     bind.is_null = 0;
     bind.length = &r;
     bind.error = &isTruncated;
