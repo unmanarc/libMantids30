@@ -14,7 +14,7 @@ else()
     get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
     find_path (
-            PQ_INCLUDE_DIR NAMES libpq-fe.h PATHS /usr/include /usr/include/postgresql
+            PQ_INCLUDE_DIR NAMES libpq-fe.h PATHS /usr/include /usr/include/postgresql /usr/include/pgsql
         )
 
     if (PQ_INCLUDE_DIR)
