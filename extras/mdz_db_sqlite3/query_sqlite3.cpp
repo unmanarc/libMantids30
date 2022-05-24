@@ -167,7 +167,7 @@ bool Query_SQLite3::exec(const ExecType &execType)
         lastSQLReturnValue = sqlite3_step(stmt);
 
         // Get number of changes:
-        affectedRows = sqlite3_changes64(ppDb);
+        affectedRows = sqlite3_changes(ppDb);
 
         if (bFetchLastInsertRowID)
              lastInsertRowID = sqlite3_last_insert_rowid(ppDb);
