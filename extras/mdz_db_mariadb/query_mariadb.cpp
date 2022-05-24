@@ -154,6 +154,12 @@ bool Query_MariaDB::exec(const ExecType &execType)
     numRows=0;
     affectedRows=0;
 
+    if(mysql_stmt_store_result(stmt)!=0)
+    {
+        lastSQLError = mysql_stmt_error(stmt);
+        return false;
+    }
+
     ///////////////
     if (execType != EXEC_TYPE_SELECT)
     {
