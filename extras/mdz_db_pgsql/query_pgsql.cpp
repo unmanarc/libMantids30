@@ -60,6 +60,9 @@ bool Query_PostgreSQL::exec(const ExecType &execType)
 
     execStatus = PQresultStatus(result);
 
+    numRows=0;
+    affectedRows=0;
+
     if (    execStatus==PGRES_BAD_RESPONSE
             ||
             execStatus==PGRES_FATAL_ERROR
@@ -70,11 +73,14 @@ bool Query_PostgreSQL::exec(const ExecType &execType)
         return false;
     }
 
-
     if (execType==EXEC_TYPE_SELECT)
+    {
+        numRows = PQntuples(result);
         return execStatus == PGRES_TUPLES_OK;
+    }
     else
     {
+        affectedRows = strtoull(PQcmdTuples(result),0,10);
         if (bFetchLastInsertRowID)
              lastInsertRowID = PQoidValue(result);
         return execStatus == PGRES_COMMAND_OK;

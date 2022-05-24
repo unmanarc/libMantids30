@@ -106,8 +106,6 @@ Query_MariaDB::~Query_MariaDB()
 
 bool Query_MariaDB::exec(const ExecType &execType)
 {
-
-
     if (stmt)
     {
         throw std::runtime_error("Re-using queries is not supported.");
@@ -153,11 +151,20 @@ bool Query_MariaDB::exec(const ExecType &execType)
         return false;
     }
 
+
+    numRows=0;
+    affectedRows=0;
+
     ///////////////
     if (execType != EXEC_TYPE_SELECT)
     {
         if (bFetchLastInsertRowID)
             lastInsertRowID = mysql_stmt_insert_id(stmt);
+        affectedRows = mysql_stmt_num_rows(stmt);
+    }
+    else
+    {
+        numRows = mysql_stmt_num_rows(stmt);
     }
 
     return true;

@@ -47,7 +47,6 @@ bool Query_SQLite3::exec(const ExecType &execType)
         return false;
     }
 
-
     // Bind the parameters (in and out)
     for ( const auto &inputVar : InputVars)
     {
@@ -153,21 +152,25 @@ bool Query_SQLite3::exec(const ExecType &execType)
                 sqlite3_bind_null(stmt,idx);
                 break;
             }
-
 /*            lastSQLError = "Binding parameter for index not found";
             return false;*/
         }
-
     }
+
+    numRows=0;
+    affectedRows=0;
 
     // if insert, only do one step.
     if (execType == EXEC_TYPE_INSERT)
     {
+        // execute...
         lastSQLReturnValue = sqlite3_step(stmt);
+
+        // Get number of changes:
+        affectedRows = sqlite3_changes64(ppDb);
 
         if (bFetchLastInsertRowID)
              lastInsertRowID = sqlite3_last_insert_rowid(ppDb);
-
 
         if (!sqlite3IsDone())
         {
@@ -176,6 +179,11 @@ bool Query_SQLite3::exec(const ExecType &execType)
         }
         else
             return true;
+    }
+    else
+    {
+        // Execution should be done on step0.
+        // TODO: retrieve number of retrieved rows in numRows.
     }
 
     return true;

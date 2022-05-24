@@ -13,6 +13,8 @@ Query::Query()
     sqlConnector = nullptr;
     bBindInputVars = false;
     bBindResultVars = false;
+    numRows=0;
+    affectedRows=0;
 }
 
 Query::~Query()
@@ -167,6 +169,16 @@ void Query::clearDestroyableStringsForResults()
     // Destroy strings.
     for (auto * i : destroyableStringsForResults) delete i;
     destroyableStringsForResults.clear();
+}
+
+uint64_t Query::getAffectedRows() const
+{
+    return affectedRows;
+}
+
+uint64_t Query::getNumRows() const
+{
+    return numRows;
 }
 
 void Query::setSqlConnector(void *value, std::mutex *mtDatabaseLock)

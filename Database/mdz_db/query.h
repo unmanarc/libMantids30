@@ -41,13 +41,24 @@ public:
     // GET ROW FROM SELECT Results:
     bool step();
 
-
     bool getIsNull(const size_t & column);
     unsigned long long getLastInsertRowID() const;
 
     // Error Management:
     std::string getLastSQLError() const;
     int getLastSQLReturnValue() const;
+
+    /**
+     * @brief getNumRows Get the retrieved rows count on SELECT statement
+     * warning: does not apply to sqlite3
+     * @return number of rows retrieved by the select statement
+     */
+    uint64_t getNumRows() const;
+    /**
+     * @brief getAffectedRows Get Affected Rows by INSERT/UPDATE/DELETE commands
+     * @return number of affected rows.
+     */
+    uint64_t getAffectedRows() const;
 
 protected:
     virtual bool step0() = 0;
@@ -62,7 +73,6 @@ protected:
 
     std::string *createDestroyableStringForResults(const std::string &str);
     void clearDestroyableStringsForResults();
-
 
     // Query:
     bool bBindInputVars, bBindResultVars;
@@ -81,6 +91,8 @@ protected:
     std::vector<bool> isNull;
     std::vector<Memory::Abstract::Var *> resultVars;
     unsigned long long lastInsertRowID;
+    uint64_t numRows;
+    uint64_t affectedRows;
     std::mutex * mtDatabaseLock;
 
 private:
