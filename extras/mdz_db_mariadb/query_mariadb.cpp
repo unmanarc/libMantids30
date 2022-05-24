@@ -151,7 +151,6 @@ bool Query_MariaDB::exec(const ExecType &execType)
         return false;
     }
 
-
     numRows=0;
     affectedRows=0;
 
@@ -522,7 +521,7 @@ bool Query_MariaDB::postBindInputVars()
 
             if (str)
             {
-                bindedInputParams[pos].buffer_length = str->size()+1;
+                bindedInputParams[pos].buffer_length = str->size();
                 bindedInputParams[pos].buffer = (char *) str->c_str();
             }
             else
