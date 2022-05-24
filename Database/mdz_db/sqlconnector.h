@@ -13,6 +13,12 @@
 namespace Mantids { namespace Database {
 
 struct QueryInstance {
+    QueryInstance()
+    {
+        ok = false;
+        this->query = nullptr;
+    }
+
     QueryInstance( Query * query )
     {
         ok = true;
@@ -21,6 +27,7 @@ struct QueryInstance {
     ~QueryInstance()
     {
         if (query) delete query;
+        query=nullptr;
     }
      Query * query;
      bool ok;
@@ -77,20 +84,18 @@ public:
 
     void detachQuery( Query * query );
 
-
-    // Fast Queries Approach:
+    // Fast Queries Approach (TODO: deprecate query, only work with qInsert/qSelect):
     /**
-     * @brief query Fast Prepared Query for non-return statements (non-select).
+     * @brief query Fast Prepared Query for non-row-return statements (non-select).
      * @param preparedQuery Prepared SQL Query String.
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted after the query is executed)
      * @return true if succeed.
      */
     bool query(std::string * lastError, const std::string & preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars = {} );
-
     bool query(const std::string & preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars = {} );
 
     /**
-     * @brief query Fast Prepared Query for row-returning statements. (select)
+     * @brief qInsert Fast Prepared Query for non-row-return statements. (update/insert/delete)
      * @param preparedQuery Prepared SQL Query String.
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
      * @param outputVars Output Vars for the step iteration.
@@ -100,11 +105,30 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
+    QueryInstance qInsert(const std::string & preparedQuery,
+                          const std::map<std::string,Memory::Abstract::Var *> & inputVars,
+                          const std::vector<Memory::Abstract::Var *> & resultVars = {}
+                         );
+
+    /**
+     * @brief qSelect Fast Prepared Query for row-returning statements. (select)
+     * @param preparedQuery Prepared SQL Query String.
+     * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
+     * @param outputVars Output Vars for the step iteration.
+     * @return pair of bool and query pointer
+     *         if the query suceeed, the boolean will be true and there will be a query pointer.
+     *         if the query can't be created, the boolean will be false and the query pointer nullptr.
+     *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
+     *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
+     */
+    QueryInstance qSelect(const std::string & preparedQuery,
+                const std::map<std::string,Memory::Abstract::Var *> & inputVars,
+                const std::vector<Memory::Abstract::Var *> & resultVars
+                );
     QueryInstance query(const std::string & preparedQuery,
                 const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                 const std::vector<Memory::Abstract::Var *> & resultVars
                 );
-
 protected:
     virtual Query * createQuery0() { return nullptr; };
     virtual bool connect0() { return false; }

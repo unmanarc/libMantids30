@@ -19,7 +19,7 @@ SQLConnector_PostgreSQL::~SQLConnector_PostgreSQL()
 bool SQLConnector_PostgreSQL::isOpen()
 {
     if (!conn) return false;
-    QueryInstance i = query("SELECT 1;", {},{} );
+    QueryInstance i = qSelect("SELECT 1;", {},{} );
     if (i.ok) return i.query->step();
     return true;
 }
@@ -39,7 +39,7 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
         realTableName = "public." + table;
 
     // Select Query:
-    QueryInstance i = query("SELECT to_regclass(:table);",
+    QueryInstance i = qSelect("SELECT to_regclass(:table);",
                    {
                      { ":table", new Memory::Abstract::STRING(realTableName)}
                    },

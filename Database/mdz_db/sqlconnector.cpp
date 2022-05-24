@@ -88,6 +88,40 @@ void SQLConnector::detachQuery(Query *query)
         cvEmptyQuerySet.notify_all();
 }
 
+bool SQLConnector::query(std::string *lastError, const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars)
+{
+    auto i = qInsert(preparedQuery,inputVars);
+    if (lastError && i.query)
+        *lastError = i.query->getLastSQLError();
+    return i.ok;
+}
+
+bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars)
+{
+    auto i = qInsert(preparedQuery,inputVars);
+    return i.ok;
+}
+
+QueryInstance SQLConnector::qInsert(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
+{
+    QueryInstance q = prepareNewQueryInstance();
+
+    if (!q.query)
+    {
+        q.ok = false;
+        return q;
+    }
+
+    if (q.query->setPreparedSQLQuery(preparedQuery,inputVars))
+    {
+        q.ok = q.query->exec(EXEC_TYPE_INSERT);
+        return q;
+    }
+
+    q.ok = false;
+    return q;
+}
+
 bool SQLConnector::attachQuery(Query *query)
 {
     std::unique_lock<std::mutex> lock(this->mtQuerySet);
@@ -110,7 +144,7 @@ std::string SQLConnector::getLastSQLError() const
 {
     return lastSQLError;
 }
-
+/*
 bool SQLConnector::query(std::string * lastError,const std::string &preparedQuery, const std::map<std::string, Mantids::Memory::Abstract::Var *> &inputVars)
 {
     QueryInstance q = prepareNewQueryInstance();
@@ -130,9 +164,9 @@ bool SQLConnector::query(std::string * lastError,const std::string &preparedQuer
         return false;
     }
     return true;
-}
+}*/
 
-QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Mantids::Memory::Abstract::Var *> &inputVars, const std::vector<Mantids::Memory::Abstract::Var *> &resultVars)
+QueryInstance SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, Mantids::Memory::Abstract::Var *> &inputVars, const std::vector<Mantids::Memory::Abstract::Var *> &resultVars)
 {
     QueryInstance q = prepareNewQueryInstance();
 
@@ -155,11 +189,16 @@ QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::m
     return q;
 }
 
+QueryInstance SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
+{
+    return qSelect(preparedQuery,inputVars,resultVars);
+}
+/*
 bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Mantids::Memory::Abstract::Var *> &inputVars)
 {
     return query(nullptr,preparedQuery,inputVars);
 }
-
+*/
 std::string SQLConnector::getDBName() const
 {
     return dbName;

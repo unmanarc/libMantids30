@@ -20,7 +20,7 @@ std::set<uint32_t> Manager_DB::passIndexesUsedByAccount(const std::string &sAcco
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::UINT32 idx;
-    QueryInstance i = sqlConnector->query("SELECT `f_secretIndex` FROM vauth_v3_accountsecrets WHERE `f_userName`=:f_userName;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `f_secretIndex` FROM vauth_v3_accountsecrets WHERE `f_userName`=:f_userName;",
                                           {  {":f_userName",             new Memory::Abstract::STRING(sAccountName)} },
                                           { &idx });
 
@@ -38,7 +38,7 @@ std::set<uint32_t> Manager_DB::passIndexesRequiredForLogin()
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::UINT32 idx;
-    QueryInstance i = sqlConnector->query("SELECT `index` FROM vauth_v3_secretsindexs WHERE `loginRequired`=:loginRequired;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `index` FROM vauth_v3_secretsindexs WHERE `loginRequired`=:loginRequired;",
                                           {  {":loginRequired",             new Memory::Abstract::BOOL(true)} },
                                           { &idx });
 
@@ -88,7 +88,7 @@ std::string Manager_DB::passIndexDescription(const uint32_t &passIndex)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING description;
-    QueryInstance i = sqlConnector->query("SELECT `indexDescription` FROM vauth_v3_secretsindexs WHERE `index`=:index LIMIT 1;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `indexDescription` FROM vauth_v3_secretsindexs WHERE `index`=:index LIMIT 1;",
                                           {  {":index",             new Memory::Abstract::UINT32(passIndex)} },
                                           { &description });
 
@@ -104,7 +104,7 @@ bool Manager_DB::passIndexLoginRequired(const uint32_t &passIndex)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL loginRequired;
-    QueryInstance i = sqlConnector->query("SELECT `loginRequired` FROM vauth_v3_secretsindexs WHERE `index`=:index LIMIT 1;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `loginRequired` FROM vauth_v3_secretsindexs WHERE `index`=:index LIMIT 1;",
                                           {  {":index",             new Memory::Abstract::UINT32(passIndex)} },
                                           { &loginRequired });
 

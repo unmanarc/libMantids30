@@ -29,7 +29,7 @@ bool Manager_DB::groupRemove(const std::string &groupName)
 bool Manager_DB::groupExist(const std::string &groupName)
 {
     Threads::Sync::Lock_RD lock(mutex);
-    QueryInstance i = sqlConnector->query("SELECT `groupName` FROM vauth_v3_groups WHERE `groupName`=:groupName;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `groupName` FROM vauth_v3_groups WHERE `groupName`=:groupName;",
                                           {{":groupName",new Memory::Abstract::STRING(groupName)}},
                                           {});
     return i.ok && i.query->step();
@@ -74,7 +74,7 @@ bool Manager_DB::groupValidateAttribute(const std::string &sGroupName, const sAp
     bool ret = false;
     if (lock) mutex.lock_shared();
 
-    QueryInstance i = sqlConnector->query("SELECT `f_groupName` FROM vauth_v3_attribsgroups WHERE `f_attribName`=:attribName AND `f_appName`=:appName AND `f_groupName`=:groupName;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `f_groupName` FROM vauth_v3_attribsgroups WHERE `f_attribName`=:attribName AND `f_appName`=:appName AND `f_groupName`=:groupName;",
                                           {
                                               {":attribName",new Memory::Abstract::STRING(attrib.attribName)},
                                               {":appName",new Memory::Abstract::STRING(attrib.appName)},
@@ -91,7 +91,7 @@ std::string Manager_DB::groupDescription(const std::string &sGroupName)
 {
     Threads::Sync::Lock_RD lock(mutex);
     Abstract::STRING groupDescription;
-    QueryInstance i = sqlConnector->query("SELECT `groupDescription` FROM vauth_v3_groups WHERE `groupName`=:groupName LIMIT 1;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `groupDescription` FROM vauth_v3_groups WHERE `groupName`=:groupName LIMIT 1;",
                                           {{":groupName",new Memory::Abstract::STRING(sGroupName)}},
                                           { &groupDescription });
     if (i.ok && i.query->step())
@@ -107,7 +107,7 @@ std::set<std::string> Manager_DB::groupsList()
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sGroupName;
-    QueryInstance i = sqlConnector->query("SELECT `groupName` FROM vauth_v3_groups;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `groupName` FROM vauth_v3_groups;",
                                           {},
                                           { &sGroupName });
     while (i.ok && i.query->step())
@@ -123,7 +123,7 @@ std::set<sApplicationAttrib> Manager_DB::groupAttribs(const std::string &sGroupN
     if (lock) mutex.lock_shared();
 
     Abstract::STRING sAppName,sAttribName;
-    QueryInstance i = sqlConnector->query("SELECT `f_appName`,`f_attribName` FROM vauth_v3_attribsgroups WHERE `f_groupName`=:groupName;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `f_appName`,`f_attribName` FROM vauth_v3_attribsgroups WHERE `f_groupName`=:groupName;",
                                           { {":groupName",new Memory::Abstract::STRING(sGroupName)} },
                                           { &sAppName,&sAttribName });
     while (i.ok && i.query->step())
@@ -141,7 +141,7 @@ std::set<std::string> Manager_DB::groupAccounts(const std::string &sGroupName, b
     if (lock) mutex.lock_shared();
 
     Abstract::STRING sAccountName;
-    QueryInstance i = sqlConnector->query("SELECT `f_userName` FROM vauth_v3_groupsaccounts WHERE `f_groupName`=:groupName;",
+    QueryInstance i = sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_groupsaccounts WHERE `f_groupName`=:groupName;",
                                           { {":groupName",new Memory::Abstract::STRING(sGroupName)} },
                                           { &sAccountName });
     while (i.ok && i.query->step())
@@ -173,7 +173,7 @@ std::list<sGroupSimpleDetails> Manager_DB::groupsBasicInfoSearch(std::string sSe
 
     sSqlQuery+=";";
 
-    QueryInstance i = sqlConnector->query(sSqlQuery,
+    QueryInstance i = sqlConnector->qSelect(sSqlQuery,
                                           {
                                               {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
                                               {":LIMIT",new Abstract::UINT64(limit)},
