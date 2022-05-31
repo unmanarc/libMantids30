@@ -10,8 +10,6 @@ LoginRPCClient::LoginRPCClient()
     remotePort=30301;
     useIPv6=false;
 
-  //  certFile = "snakeoil-cli.crt";
-  //  keyFile = "snakeoil-cli.key";
     caFile = "ca.crt";
 }
 
