@@ -127,17 +127,17 @@ public:
     bool accountChangeEmail(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool accountChangeExtraData(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool accountChangeExpiration(const std::string & , time_t  = 0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
-    sAccountAttribs accountAttribs(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {false,false,false}; }
+    sAccountAttribs accountAttribs(const std::string & ) override;
     bool accountChangeGroupSet( const std::string & , const std::set<std::string> &  ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool accountChangeAttribs(const std::string & ,const sAccountAttribs & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
-    bool isAccountDisabled(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
-    bool isAccountConfirmed(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
+    bool isAccountDisabled(const std::string & ) override;
+    bool isAccountConfirmed(const std::string & ) override;
     bool isAccountSuperUser(const std::string & sAccountName) override;
-    std::string accountGivenName(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return ""; }
-    std::string accountLastName(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return ""; }
-    std::string accountDescription(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return ""; }
-    std::string accountEmail(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return ""; }
-    std::string accountExtraData(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return ""; }
+    std::string accountGivenName(const std::string & ) override;
+    std::string accountLastName(const std::string & ) override;
+    std::string accountDescription(const std::string & ) override;
+    std::string accountEmail(const std::string & ) override;
+    std::string accountExtraData(const std::string & ) override;
     time_t accountExpirationDate(const std::string & sAccountName ) override;
 
     void updateLastLogin(const std::string &, const uint32_t & , const sClientDetails & ) override {}
@@ -160,15 +160,15 @@ public:
     bool applicationAdd(const std::string & , const std::string & , const std::string &, const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool applicationRemove(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool applicationExist(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
-    std::string applicationDescription(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return ""; }
+    std::string applicationDescription(const std::string & ) override;
     std::string applicationKey(const std::string & ) override  { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return ""; }
     bool applicationChangeKey(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool applicationChangeDescription(const std::string & , const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
     std::set<std::string> applicationList() override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    bool applicationValidateOwner(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
-    bool applicationValidateAccount(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
-    std::set<std::string> applicationOwners(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    std::set<std::string> applicationAccounts(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
+    bool applicationValidateOwner(const std::string & , const std::string & ) override;
+    bool applicationValidateAccount(const std::string & , const std::string & ) override;
+    std::set<std::string> applicationOwners(const std::string & ) override;
+    std::set<std::string> applicationAccounts(const std::string & ) override;
     std::set<std::string> accountApplications(const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     bool applicationAccountAdd(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool applicationAccountRemove(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }

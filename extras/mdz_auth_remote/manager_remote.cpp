@@ -305,3 +305,189 @@ int Manager_Remote::processFastRPCConnection(Mantids::Network::Streams::StreamSo
 {
     return fastRPC->processConnection(stream,CKEY);
 }
+
+sAccountAttribs Manager_Remote::accountAttribs(const std::string & accountName)
+{
+    json payload;
+
+    sAccountAttribs attribs;
+
+    payload["accountName"] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountAttribs",payload,nullptr), jNull;
+
+    if (jNull == answer) return attribs;
+
+    attribs.confirmed = JSON_ASBOOL(answer,"confirmed",false);
+    attribs.enabled = JSON_ASBOOL(answer,"enabled",false);
+    attribs.superuser = JSON_ASBOOL(answer,"superuser",false);
+
+    return attribs;
+}
+
+std::string Manager_Remote::accountGivenName(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountGivenName",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"givenName","");
+}
+
+std::string Manager_Remote::accountLastName(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountLastName",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"lastName","");
+}
+
+std::string Manager_Remote::accountDescription(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountDescription",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"description","");
+}
+
+std::string Manager_Remote::accountEmail(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountEmail",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"email","");
+}
+
+std::string Manager_Remote::accountExtraData(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"accountExtraData",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"extraData","");
+}
+
+std::string Manager_Remote::applicationDescription(const std::string & applicationName)
+{
+    json payload;
+
+    payload["applicationName" ] = applicationName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"applicationDescription",payload,nullptr), jNull;
+
+    if (jNull == answer) return "";
+
+    return JSON_ASSTRING(answer,"description","");
+}
+
+bool Manager_Remote::applicationValidateOwner(const std::string & applicationName, const std::string & accountName)
+{
+    json payload;
+
+    payload["applicationName" ] = applicationName;
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"applicationValidateOwner",payload,nullptr), jNull;
+
+    if (jNull == answer) return false;
+
+    return JSON_ASBOOL(answer,"retCode",false);
+}
+bool Manager_Remote::applicationValidateAccount(const std::string & applicationName, const std::string & accountName)
+{
+    json payload;
+
+    payload["applicationName" ] = applicationName;
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"applicationValidateAccount",payload,nullptr), jNull;
+
+    if (jNull == answer) return false;
+
+    return JSON_ASBOOL(answer,"retCode",false);
+}
+
+std::set<std::string> Manager_Remote::applicationOwners(const std::string & applicationName)
+{
+    json payload;
+    std::set<std::string> r;
+    payload["applicationName" ] = applicationName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"applicationOwners",payload,nullptr), jNull;
+
+    if (jNull != answer)
+    {
+        for ( uint32_t i = 0; i< answer.size(); i++ )
+        {
+            r.insert(JSON_ASSTRING(answer,i,""));
+        }
+    }
+    return r;
+}
+std::set<std::string> Manager_Remote::applicationAccounts(const std::string & applicationName)
+{
+    json payload;
+    std::set<std::string> r;
+    payload["applicationName" ] = applicationName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"applicationAccounts",payload,nullptr), jNull;
+
+    if (jNull != answer)
+    {
+        for ( uint32_t i = 0; i< answer.size(); i++ )
+        {
+            r.insert(JSON_ASSTRING(answer,i,""));
+        }
+    }
+    return r;
+}
+
+bool Manager_Remote::isAccountDisabled(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"isAccountDisabled",payload,nullptr), jNull;
+
+    if (jNull == answer) return false;
+
+    return JSON_ASBOOL(answer,"retCode",true);
+}
+
+bool Manager_Remote::isAccountConfirmed(const std::string & accountName)
+{
+    json payload;
+
+    payload["accountName" ] = accountName;
+
+    json answer = fastRPC->runRemoteRPCMethod(CKEY,"isAccountConfirmed",payload,nullptr), jNull;
+
+    if (jNull == answer) return false;
+
+    return JSON_ASBOOL(answer,"retCode",false);
+}
+
