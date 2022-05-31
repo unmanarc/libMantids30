@@ -8,6 +8,11 @@ namespace Mantids { namespace RPC { namespace Templates {
 
 class FullAuth {
 public:
+    /**
+     * @brief AddFullAuthMethods Add full set of login authentication methods as web server functions
+     * @param methods Methods Manager that manages the web server special methods/api requests
+     * @param _dirAppName set your application name here to prevent that the application will be removing itself
+     */
     static void AddFullAuthMethods(MethodsManager *methods, const std::string & _dirAppName);
 private:
 
