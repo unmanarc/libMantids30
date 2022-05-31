@@ -15,12 +15,32 @@ class LoginRPCClient
 public:
     LoginRPCClient();
 
+    /**
+     * @brief notifyTLSConnecting Notify just before the TLS/TCP-IP Connection
+     */
     virtual void notifyTLSConnecting(Mantids::Network::TLS::Socket_TLS * , const std::string & , const uint16_t &) {}
+    /**
+     * @brief notifyTLSDisconnected Notify just after the TLS/TCP-IP Connection (with the error code as integer)
+     */
     virtual void notifyTLSDisconnected(Mantids::Network::TLS::Socket_TLS * , const std::string & , const uint16_t &, int) {}
+    /**
+     * @brief notifyAPIProcessingOK Notify when the TLS/TCP-IP connection is established and the application is authenticated
+     */
     virtual void notifyAPIProcessingOK(Mantids::Network::TLS::Socket_TLS * ) {}
+    /**
+     * @brief notifyTLSConnectedOK Notify when the TLS/TCP-IP connection is established and we are about to authenticate
+     */
     virtual void notifyTLSConnectedOK(Mantids::Network::TLS::Socket_TLS * ) {}
+    /**
+     * @brief notifyBadApiKey Notify when there is an error during the mutual API KEY exchange/authentication
+     */
     virtual void notifyBadApiKey(Mantids::Network::TLS::Socket_TLS * ) {}
+    /**
+     * @brief notifyTLSErrorConnecting Notify when there is an error during the TLS/TCP-IP Connection
+     */
     virtual void notifyTLSErrorConnecting(Mantids::Network::TLS::Socket_TLS *, const std::string &, const uint16_t & ) {}
+
+    ///////////////////////////////////////////////////////
 
     /**
      * @brief connect Internal Static function for processing the connections

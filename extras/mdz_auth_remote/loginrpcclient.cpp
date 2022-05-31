@@ -19,40 +19,57 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
     {
         Mantids::Network::TLS::Socket_TLS tlsClient;
 
+        // Authenticate that the server with X.509
         tlsClient.setTLSCertificateAuthorityPath(rpcClient->getCaFile().c_str());
 
+        // If there is any client certificate, set the client certificate (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
         if (!rpcClient->getCertFile().empty())
             tlsClient.setTLSPublicKeyPath(rpcClient->getCertFile().c_str());
+
+        // If there is any client key file, set the key file (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
         if (!rpcClient->getKeyFile().empty())
             tlsClient.setTLSPrivateKeyPath(rpcClient->getKeyFile().c_str());
 
-        // Connecting...
+        // Callback to notifyTLSConnecting which occurs just before the connection.
         rpcClient->notifyTLSConnecting(&tlsClient,rpcClient->getRemoteHost(),rpcClient->getRemotePort());
 
+        // Connect to the remote FastRPC TLS Server
         if (tlsClient.connectTo( rpcClient->getRemoteHost().c_str(),rpcClient->getRemotePort() ))
         {
-            // TLS connected
+            // TLS connection is established here
             rpcClient->notifyTLSConnectedOK(&tlsClient);
+
+            // Initialize the crypto stream (for crypto challenge authentication)
             Network::Streams::CryptoStream cstream(&tlsClient);
+            // Send the Application name
             tlsClient.writeStringEx<uint16_t>(rpcClient->getAppName());
+            // Exchange the crypto challenge/response for the authentication (both nodes will authenticate that the other one haves the challenge key without sharing it)
             if (cstream.mutualChallengeResponseSHA256Auth(rpcClient->getApiKey(),false) == std::make_pair(true,true))
             {
-                // Authentication OK...
+                // Notify that we are fully authenticated here (mutual crypto challenge succeed)
                 rpcClient->notifyAPIProcessingOK(&tlsClient);
+
+                // Process authentication functions, while we are into this function, any process can interact with the remote server
                 int code = rpcClient->getRemoteAuthManager()->processFastRPCConnection(&tlsClient);
+
+                // When we are outside the processFastRPCConnection function, request will fail.
+
+                // Notify that the connection was terminated with this integer code (given the result)
                 rpcClient->notifyTLSDisconnected(&tlsClient,rpcClient->getRemoteHost(),rpcClient->getRemotePort(), code);
             }
             else
             {
+                // Notify that the crypto-challenge failed (bad api key), client and server api key are not equal.
                 rpcClient->notifyBadApiKey(&tlsClient);
-                // Bad API Key...
             }
         }
         else
         {
-            // Error connecting..
+            // Notify that there is an error during the TLS/TCP-IP connection
             rpcClient->notifyTLSErrorConnecting(&tlsClient,rpcClient->getRemoteHost(),rpcClient->getRemotePort());
         }
+
+        // Sleep until the next try
         sleep(sleepBetweenConnectionsSeconds);
     }
 }
