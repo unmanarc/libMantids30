@@ -125,7 +125,7 @@ WebSession *SessionsManager::openSession(const std::string &sessionID, uint64_t 
     return nullptr;
 }
 
-bool SessionsManager::closeSession(const std::string &sessionID)
+bool SessionsManager::releaseSession(const std::string &sessionID)
 {
     return sessions.closeElement(sessionID);
 }

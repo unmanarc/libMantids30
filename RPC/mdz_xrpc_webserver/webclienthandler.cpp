@@ -71,46 +71,58 @@ Response::StatusCode WebClientHandler::processClientRequest()
         // Evaluate...
         sFilterEvaluation e;
 
+        // If there is any session (hSession), then get the authorizer from the session
+        // if not, the authorizer is null.
         Mantids::Authentication::Manager * authorizer = hSession?authDomains->openDomain(hSession->authSession->getAuthDomain()) : nullptr;
 
+        // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
+        // it will proccess this according to the authorization session
         if ( resourceFilter )
             e = resourceFilter->evaluateAction(fileInfo.sRealRelativePath, !hSession?nullptr:hSession->authSession, authorizer);
 
+        // If the element is accepted (during the filter)
         if (e.accept)
         {
+            // and there is not redirect's, the resoponse code will be 200 (OK)
             if (e.redirectLocation.empty())
                 ret = Response::StatusCode::S_200_OK;
-            else
+            else // otherwise you will need to redirect.
                 ret = setResponseRedirect( e.redirectLocation );
         }
-        else
+        else // If not, drop a 403 (forbidden)
             ret = Response::StatusCode::S_403_FORBIDDEN;
 
         log(LEVEL_DEBUG,hSession, "fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
     }
     else
     {
+        // File not found at this point (404)
         log(LEVEL_WARN,hSession, "fileServer", 65535, "R/404: %s",getRequestURI().c_str());
     }
 
     if (ret != Response::StatusCode::S_200_OK)
     {
-        // Stream nothing....
+        // For NON-200 responses, will stream nothing....
         setResponseDataStreamer(nullptr,false);
     }
 
+    // If the URL is going to process the Interactive HTML Engine,
+    // and the document content is text/html, then, process it as HTMLIEngine:
     if ( useHTMLIEngine &&
          getContentType() == "text/html" ) // The content type has changed during the map.
         processHTMLIEngine(fileInfo.sRealFullPath,hSession,uMaxAge);
 
+    // If there is any session, release the session
     if (hSession)
-        sessionsManager->closeSession(sSessionId);
+        sessionsManager->releaseSession(sSessionId);
 
+    // And if the file is not found and there are redirections, set the redirection:
     if (ret==Response::StatusCode::S_404_NOT_FOUND && !redirectOn404.empty())
     {
         ret = setResponseRedirect( redirectOn404 );
     }
 
+    // Log the response.
     log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,hSession,
         "fileServer", 2048, "R/%03d: %s",
         Response::Status::getHTTPStatusCodeTranslation(ret),
@@ -414,7 +426,7 @@ Response::StatusCode WebClientHandler::processRPCRequest()
 
         setResponseSecureCookie("sessionId", sSessionId, uMaxAge);
         setResponseSecureCookie("sessionId", sSessionId, uMaxAge);
-        sessionsManager->closeSession(sSessionId);
+        sessionsManager->releaseSession(sSessionId);
     }
     if (bDestroySession)
     {
@@ -534,7 +546,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_INITAUTH(const Authenti
 
             eHTTPResponseCode = Response::StatusCode::S_200_OK;
 
-            sessionsManager->closeSession(sSessionId);
+            sessionsManager->releaseSession(sSessionId);
         }
     }
     else
