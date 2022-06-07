@@ -136,9 +136,9 @@ public:
     void setQueuePushTimeoutInMS(const uint32_t &value = 2000);
     /**
      * @brief setMaxMessageSize Max JSON Size
-     * @param value max bytes for reception/transmition json, default is 1M
+     * @param value max bytes for reception/transmition json, default is 10M
      */
-    void setMaxMessageSize(const uint32_t &value = 1024*1024);
+    void setMaxMessageSize(const uint32_t &value = 10*1024*1024);
     /**
      * @brief setRemoteExecutionTimeoutInMS Set the remote Execution Timeout for "runRemoteRPCMethod" function
      * @param value timeout in milliseconds, default is 5secs (5000).
