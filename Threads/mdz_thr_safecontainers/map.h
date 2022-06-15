@@ -38,7 +38,7 @@ public:
     bool checkElement( const T & key );
     bool addElement( const T & key, Map_Element * element );
     Map_Element * openElement(const T & key);
-    bool closeElement(const T & key);
+    bool releaseElement(const T & key);
     bool destroyElement(const T & key);
 
     void waitForEmpty();
@@ -93,7 +93,7 @@ Map_Element *Map<T>::openElement(const T &key)
 
 // FAST
 template<class T>
-bool Map<T>::closeElement(const T &key)
+bool Map<T>::releaseElement(const T &key)
 {
     std::unique_lock<std::mutex> lock(mutex_xMap);
 
