@@ -27,12 +27,12 @@ void SessionsManager::gc()
         WebSession * s = (WebSession *)sessions.openElement(key);
         if (s && s->authSession->isLastActivityExpired(sessionExpirationTime))
         {
-            sessions.closeElement( key );
+            sessions.releaseElement( key );
             sessions.destroyElement( key );
         }
         else if (s)
         {
-            sessions.closeElement( key );
+            sessions.releaseElement( key );
         }
 
     }
@@ -90,7 +90,7 @@ bool SessionsManager::destroySession(const std::string &sessionID)
     if ((sess=(WebSession *)sessions.openElement(sessionID))!=nullptr)
     {
         userDomain = sess->authSession->getUserDomainPair();
-        sessions.closeElement(sessionID);
+        sessions.releaseElement(sessionID);
     }
     else return false;
 
@@ -127,7 +127,7 @@ WebSession *SessionsManager::openSession(const std::string &sessionID, uint64_t 
 
 bool SessionsManager::releaseSession(const std::string &sessionID)
 {
-    return sessions.closeElement(sessionID);
+    return sessions.releaseElement(sessionID);
 }
 
 uint32_t SessionsManager::getMaxSessionsPerUser() const
