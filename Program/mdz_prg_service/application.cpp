@@ -280,6 +280,9 @@ int StartApplication(int argc, char *argv[], Application *_app)
         else
         {
             cout<< "# "  << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
+#ifndef WIN32
+            pthread_setname_np(pthread_self(), "Main:LoopWait");
+#endif
             for (;;) { sleep(3600); }
         }
 #ifndef _WIN32
