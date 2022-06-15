@@ -41,9 +41,13 @@ void Socket_Acceptor_MultiThreaded::setMaxConnectionsPerIP(const uint32_t &value
 
 void Socket_Acceptor_MultiThreaded::thread_streamaccept(Socket_Acceptor_MultiThreaded *threadMasterControl)
 {
-#ifndef _WIN32
+/*#ifndef _WIN32
      pthread_setname_np(pthread_self(), __func__);
+#endif*/
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), "MT:StreamAccept");
 #endif
+
     // Accept until it fails:
     while (threadMasterControl->acceptClient()) {}
 }
