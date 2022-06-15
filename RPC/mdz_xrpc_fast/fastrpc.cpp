@@ -10,6 +10,10 @@ using S = std::chrono::seconds;
 
 void fastRPCPingerThread( FastRPC * obj )
 {
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), "fRPC:Pinger");
+#endif
+
     while (obj->waitPingInterval())
     {
         obj->sendPings(); // send pings to every registered client...
@@ -266,7 +270,7 @@ bool FastRPC::shutdownConnection(const std::string &connectionKey)
     if (connection!=nullptr)
     {
         connection->stream->shutdownSocket();
-        connectionsByKeyId.closeElement(connectionKey);
+        connectionsByKeyId.releaseElement(connectionKey);
         return true;
     }
     return false;
@@ -527,7 +531,7 @@ json FastRPC::runRemoteRPCMethod(const std::string &connectionKey, const std::st
         connection->pendingRequests.erase(requestId);
     }
 
-    connectionsByKeyId.closeElement(connectionKey);
+    connectionsByKeyId.releaseElement(connectionKey);
 
     if (error)
     {
@@ -556,7 +560,7 @@ bool FastRPC::runRemoteClose(const std::string &connectionKey)
         }
         connection->mtSocket->unlock();
 
-        connectionsByKeyId.closeElement(connectionKey);
+        connectionsByKeyId.releaseElement(connectionKey);
     }
     else
     {
