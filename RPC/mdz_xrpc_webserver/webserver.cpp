@@ -14,7 +14,7 @@ WebServer::WebServer()
     rpcLog = nullptr;
     resourceFilter = nullptr;
     obj = nullptr;
-    sessionsManager.startGC( SessionsManager::threadGC, &sessionsManager );
+    sessionsManager.startGC( SessionsManager::threadGC, &sessionsManager, "GC:WebSessions" );
     useFormattedJSONOutput = true;
     usingCSRFToken = true;
     useHTMLIEngine = true;
