@@ -15,11 +15,11 @@ GarbageCollector::GarbageCollector(const uint32_t &periodMS)
     gcPeriodMS = periodMS;
 }
 
-void GarbageCollector::startGC(void (*gcRunner)(void *), void *obj)
+void GarbageCollector::startGC(void (*gcRunner)(void *), void *obj, const char *threadName)
 {
     this->gcRunner = gcRunner;
     this->obj = obj;
-    xThreadGC = std::thread(bgGCLoop,this);
+    xThreadGC = std::thread(bgGCLoop,this,threadName);
 }
 
 GarbageCollector::~GarbageCollector()
@@ -58,8 +58,11 @@ void GarbageCollector::setGCPeriodMS(const uint32_t &msecs)
     gcPeriodMS = msecs;
 }
 
-void GarbageCollector::bgGCLoop(GarbageCollector *threadClass)
+void GarbageCollector::bgGCLoop(GarbageCollector *threadClass, const char * threadName)
 {
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), threadName);
+#endif
     threadClass->loopGC();
 }
 

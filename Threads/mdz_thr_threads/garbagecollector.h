@@ -12,7 +12,7 @@ class GarbageCollector
 {
 public:
     GarbageCollector(const uint32_t &periodMS = 3000);
-    void startGC(void (*gcRunner)(void *obj), void *obj);
+    void startGC(void (*gcRunner)(void *obj), void *obj, const char * threadName = "GC:Generic");
 
     virtual ~GarbageCollector();
 
@@ -20,7 +20,7 @@ public:
     void setGCPeriodMS(const uint32_t & msecs);
 
 private:
-    static void bgGCLoop(GarbageCollector * threadClass);
+    static void bgGCLoop(GarbageCollector * threadClass, const char * threadName);
 
     int gcThreadStatus;
 
