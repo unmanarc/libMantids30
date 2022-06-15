@@ -242,7 +242,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
     // Compute the requested path:
     string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + getRequestURI().substr(1) // Put the Request URI (without the first character / slash)
+            + (getRequestURI().empty()?"":getRequestURI().substr(1)) // Put the Request URI (without the first character / slash)
             + defaultFileAppend; // Append option...
 
     struct stat stats;
@@ -731,6 +731,10 @@ void HTTPv1_Server::parseHostOptions()
 bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
 {
     wrStat.bytesWritten = 0;
+
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), "HTTP:Response");
+#endif
 
     // Process client petition here.
     if (!badAnswer) _serverCodeResponse.setRetCode(processClientRequest());
