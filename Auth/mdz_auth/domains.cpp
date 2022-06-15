@@ -20,7 +20,7 @@ Manager *Domains::openDomain(const std::string &domainName)
     return i;
 }
 
-bool Domains::closeDomain(const std::string &domainName)
+bool Domains::releaseDomain(const std::string &domainName)
 {
-    return domainMap.closeElement(domainName);
+    return domainMap.releaseElement(domainName);
 }

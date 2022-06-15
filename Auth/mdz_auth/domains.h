@@ -13,7 +13,7 @@ public:
 
     bool addDomain( const std::string & domainName, Manager * auth);
     Manager * openDomain(const std::string & domainName);
-    bool closeDomain(const std::string & domainName);
+    bool releaseDomain(const std::string & domainName);
 
 private:
     Threads::Safe::Map<std::string> domainMap;
