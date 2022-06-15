@@ -48,88 +48,12 @@ void WebClientHandler::setAuthenticators(Mantids::Authentication::Domains *authe
 
 Response::StatusCode WebClientHandler::processClientRequest()
 {
-    // RPC MODE:
-    sLocalRequestedFileInfo fileInfo;
     Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
+
+    // Detect if is /api, then process the RPC Request.
     if (getRequestURI() == "/api") return processRPCRequest();
-    else if (resourcesLocalPath.empty())
-        return Response::StatusCode::S_404_NOT_FOUND;
-
-    // WEB MODE:
-    std::string sSessionId = getRequestCookie("sessionId");
-    uint64_t uMaxAge=0;
-    WebSession * hSession = sessionsManager->openSession(sSessionId, &uMaxAge);
-
-    if ( //staticContent ||
-         (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
-          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "index.html") ||
-          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "/index.html") ||
-          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "")
-          ) && !fileInfo.isDir
-         )
-    {
-        // Evaluate...
-        sFilterEvaluation e;
-
-        // If there is any session (hSession), then get the authorizer from the session
-        // if not, the authorizer is null.
-        Mantids::Authentication::Manager * authorizer = hSession?authDomains->openDomain(hSession->authSession->getAuthDomain()) : nullptr;
-
-        // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
-        // it will proccess this according to the authorization session
-        if ( resourceFilter )
-            e = resourceFilter->evaluateAction(fileInfo.sRealRelativePath, !hSession?nullptr:hSession->authSession, authorizer);
-
-        // If the element is accepted (during the filter)
-        if (e.accept)
-        {
-            // and there is not redirect's, the resoponse code will be 200 (OK)
-            if (e.redirectLocation.empty())
-                ret = Response::StatusCode::S_200_OK;
-            else // otherwise you will need to redirect.
-                ret = setResponseRedirect( e.redirectLocation );
-        }
-        else // If not, drop a 403 (forbidden)
-            ret = Response::StatusCode::S_403_FORBIDDEN;
-
-        log(LEVEL_DEBUG,hSession, "fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
-    }
-    else
-    {
-        // File not found at this point (404)
-        log(LEVEL_WARN,hSession, "fileServer", 65535, "R/404: %s",getRequestURI().c_str());
-    }
-
-    if (ret != Response::StatusCode::S_200_OK)
-    {
-        // For NON-200 responses, will stream nothing....
-        setResponseDataStreamer(nullptr,false);
-    }
-
-    // If the URL is going to process the Interactive HTML Engine,
-    // and the document content is text/html, then, process it as HTMLIEngine:
-    if ( useHTMLIEngine &&
-         getContentType() == "text/html" ) // The content type has changed during the map.
-        processHTMLIEngine(fileInfo.sRealFullPath,hSession,uMaxAge);
-
-    // If there is any session, release the session
-    if (hSession)
-        sessionsManager->releaseSession(sSessionId);
-
-    // And if the file is not found and there are redirections, set the redirection:
-    if (ret==Response::StatusCode::S_404_NOT_FOUND && !redirectOn404.empty())
-    {
-        ret = setResponseRedirect( redirectOn404 );
-    }
-
-    // Log the response.
-    log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,hSession,
-        "fileServer", 2048, "R/%03d: %s",
-        Response::Status::getHTTPStatusCodeTranslation(ret),
-        ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
-
-
-    return ret;
+    // Otherwise, process as web Resource
+    else return processWebResource();
 }
 
 // TODO: documentar los privilegios cargados de un usuario
@@ -290,7 +214,7 @@ Response::StatusCode WebClientHandler::processRPCRequest()
     {
         if (sSessionId!="")
         {
-            log(LEVEL_WARN, nullptr, "rpcServer", 2048, "requested session not found {sessionId=%s,mode=%s}",RPCLog::truncateSessionId(sSessionId).c_str(),sRPCMode.c_str());
+            log(LEVEL_WARN, nullptr, "rpcServer", 2048, "Requested session not found {sessionId=%s,mode=%s}",RPCLog::truncateSessionId(sSessionId).c_str(),sRPCMode.c_str());
 
             addCookieClearSecure("sessionId");
             return Response::StatusCode::S_404_NOT_FOUND;
@@ -440,6 +364,98 @@ Response::StatusCode WebClientHandler::processRPCRequest()
 
     // return the HTTP response code.
     return eHTTPResponseCode;
+}
+
+Response::StatusCode WebClientHandler::processWebResource()
+{
+    // WEB RESOURCE MODE:
+    Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
+    sLocalRequestedFileInfo fileInfo;
+    std::string sSessionId = getRequestCookie("sessionId");
+    uint64_t uMaxAge=0;
+
+    // if there are no web resources path, return 404 without data.
+    if (resourcesLocalPath.empty())
+            return Response::StatusCode::S_404_NOT_FOUND;
+
+    // Load session from cookie Session ID
+    WebSession * webSession = sessionsManager->openSession(sSessionId, &uMaxAge);
+
+    if (sSessionId!="" && !webSession)
+    {
+        log(LEVEL_WARN, nullptr, "rpcServer", 2048, "Requested session for web resource not found {sessionId=%s}, cleaning up cookie",RPCLog::truncateSessionId(sSessionId).c_str());
+        addCookieClearSecure("sessionId");
+        sSessionId = ""; // INVALID SESSION ID.
+    }
+
+    if ( //staticContent ||
+         (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "index.html") ||
+          getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, "")
+          ) && !fileInfo.isDir
+         )
+    {
+        // Evaluate...
+        sFilterEvaluation e;
+
+        // If there is any session (hSession), then get the authorizer from the session
+        // if not, the authorizer is null.
+        Mantids::Authentication::Manager * authorizer = webSession?authDomains->openDomain(webSession->authSession->getAuthDomain()) : nullptr;
+
+        // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
+        // it will proccess this according to the authorization session
+        if ( resourceFilter )
+            e = resourceFilter->evaluateAction(fileInfo.sRealRelativePath, !webSession?nullptr:webSession->authSession, authorizer);
+
+        // If the element is accepted (during the filter)
+        if (e.accept)
+        {
+            // and there is not redirect's, the resoponse code will be 200 (OK)
+            if (e.redirectLocation.empty())
+                ret = Response::StatusCode::S_200_OK;
+            else // otherwise you will need to redirect.
+                ret = setResponseRedirect( e.redirectLocation );
+        }
+        else // If not, drop a 403 (forbidden)
+            ret = Response::StatusCode::S_403_FORBIDDEN;
+
+        log(LEVEL_DEBUG,webSession, "fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
+    }
+    else
+    {
+        // File not found at this point (404)
+        log(LEVEL_WARN,webSession, "fileServer", 65535, "R/404: %s",getRequestURI().c_str());
+    }
+
+    if (ret != Response::StatusCode::S_200_OK)
+    {
+        // For NON-200 responses, will stream nothing....
+        setResponseDataStreamer(nullptr,false);
+    }
+
+    // If the URL is going to process the Interactive HTML Engine,
+    // and the document content is text/html, then, process it as HTMLIEngine:
+    if ( useHTMLIEngine &&
+         getContentType() == "text/html" ) // The content type has changed during the map.
+        processHTMLIEngine(fileInfo.sRealFullPath,webSession,uMaxAge);
+
+    // If there is any session, release the session
+    if (webSession)
+        sessionsManager->releaseSession(sSessionId);
+
+    // And if the file is not found and there are redirections, set the redirection:
+    if (ret==Response::StatusCode::S_404_NOT_FOUND && !redirectOn404.empty())
+    {
+        ret = setResponseRedirect( redirectOn404 );
+    }
+
+    // Log the response.
+    log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,webSession,
+        "fileServer", 2048, "R/%03d: %s",
+        Response::Status::getHTTPStatusCodeTranslation(ret),
+        ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
+
+    return ret;
 }
 
 Response::StatusCode WebClientHandler::processRPCRequest_VERSION()
@@ -655,7 +671,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSess
         return Response::StatusCode::S_500_INTERNAL_SERVER_ERROR;
     }
 
-    if (methodsManager->getMethodRequireFullSession(sMethodName) && !authSession)
+    if (methodsManager->getMethodRequireFullAuth(sMethodName) && !authSession)
     {
         log(LEVEL_ERR, wSession, "rpcServer", 2048, "This method requires full authentication {method=%s}", sMethodName.c_str());
         // Method not available for this null session..
@@ -691,7 +707,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_EXEC(WebSession * wSess
         // Validate that the RPC method is ready to go (fully authorized and no password is expired).
         auto i = methodsManager->validateRPCMethodPerms( authorizer,  authSession, sMethodName, extraTmpIndexes, &reasons );
 
-        authDomains->closeDomain(domainName);
+        authDomains->releaseDomain(domainName);
 
         switch (i)
         {
@@ -820,7 +836,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_CHPASSWD(const Authenti
         }
 
 
-        authDomains->closeDomain(authSession->getAuthDomain());
+        authDomains->releaseDomain(authSession->getAuthDomain());
     }
     else
     {
@@ -866,7 +882,7 @@ Response::StatusCode WebClientHandler::processRPCRequest_TESTPASSWD(const Authen
         (*(jPayloadOutStr->getValue()))["ok"] = true;
 
 
-        authDomains->closeDomain(authSession->getAuthDomain());
+        authDomains->releaseDomain(authSession->getAuthDomain());
     }
     else
     {
@@ -953,7 +969,7 @@ std::string WebClientHandler::persistentAuthentication(const string &userName, c
 
         *authReason = domainAuthenticator->authenticate(appName,clientDetails,userName,authData.getPassword(),authData.getPassIndex(), Mantids::Authentication::MODE_PLAIN,"",&stAccountPassIndexesUsedForLogin);
 
-        authDomains->closeDomain(domainName);
+        authDomains->releaseDomain(domainName);
     }
 
     if ( Mantids::Authentication::IS_PASSWORD_AUTHENTICATED( *authReason ) )
@@ -1004,7 +1020,7 @@ Mantids::Authentication::Reason WebClientHandler::temporaryAuthentication( const
         clientDetails.sUserAgent = getRequestActiveObjects().USER_AGENT;
 
         eReason = auth->authenticate( appName, clientDetails, userName,authData.getPassword(),authData.getPassIndex()); // Authenticate in a non-persistent fashion.
-        authDomains->closeDomain(domainName);
+        authDomains->releaseDomain(domainName);
     }
 
     return eReason;
