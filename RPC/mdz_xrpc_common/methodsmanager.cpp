@@ -43,7 +43,7 @@ int MethodsManager::runRPCMethod(Mantids::Authentication::Domains * authDomain, 
         if ((auth=authDomain->openDomain(domainName))!=nullptr)
         {
             *payloadOut = methods[methodName].rpcMethod(methods[methodName].obj, auth, session,payload);
-            authDomain->closeDomain(domainName);
+            authDomain->releaseDomain(domainName);
             return METHOD_RET_CODE_SUCCESS;
         }
         else
@@ -92,7 +92,7 @@ Mantids::Authentication::MethodsAttributes_Map *MethodsManager::getMethodsAttrib
     return &methodsAttribs;
 }
 
-bool MethodsManager::getMethodRequireFullSession(const std::string &methodName)
+bool MethodsManager::getMethodRequireFullAuth(const std::string &methodName)
 {
     Threads::Sync::Lock_RD lock(smutexMethods);
     return methodRequireFullAuth[methodName];
