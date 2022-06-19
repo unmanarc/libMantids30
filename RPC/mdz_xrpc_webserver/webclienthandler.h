@@ -26,7 +26,7 @@ public:
     void setMethodsManager(MethodsManager *value);
     //////////////////////////////////////////////
 
-    void setRemoteIP(const std::string &value);
+    void setUserIP(const std::string &value);
     void setSessionsManagger(SessionsManager *value);
     void setUseFormattedJSONOutput(bool value);
     void setResourceFilter(ResourcesFilter *value);
@@ -52,36 +52,64 @@ protected:
      * @return http responce code.
      */
     Network::HTTP::Response::StatusCode processClientRequest() override;
-
 private:
-    Network::HTTP::Response::StatusCode processHTMLIEngine(const std::string &sRealFullPath,WebSession * hSession, uint64_t uMaxAge);
-    Network::HTTP::Response::StatusCode processRPCRequest();
-    Network::HTTP::Response::StatusCode processWebResource();
-    Network::HTTP::Response::StatusCode processRPCRequest_VERSION();
-    Network::HTTP::Response::StatusCode processRPCRequest_AUTHINFO(WebSession * wSession, const uint32_t & uMaxAge);
-    Network::HTTP::Response::StatusCode processRPCRequest_CSRFTOKEN(WebSession * wSession);
-    Network::HTTP::Response::StatusCode processRPCRequest_INITAUTH(const Authentication & auth, std::string sSessionId);
-    Network::HTTP::Response::StatusCode processRPCRequest_POSTAUTH(const Authentication & auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::Response::StatusCode processRPCRequest_EXEC(WebSession * wSession, MultiAuths *extraAuths);
-    Network::HTTP::Response::StatusCode processRPCRequest_CHPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::Response::StatusCode processRPCRequest_TESTPASSWD(const Authentication &auth, WebSession * wSession, bool * destroySession);
-    Network::HTTP::Response::StatusCode processRPCRequest_PASSWDLIST(WebSession * wSession);
+    void sessionOpen();
+    void sessionRelease();
+    void sessionDestroy();
 
-                   std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Mantids::Authentication::Session *session, Mantids::Authentication::Reason *authReason);
+    Network::HTTP::Response::StatusCode procResource_File(MultiAuths *extraAuths);
+    Network::HTTP::Response::StatusCode procResource_HTMLIEngine(const std::string &sRealFullPath, MultiAuths *extraAuths);
+
+    Network::HTTP::Response::StatusCode procJAPI_Session();
+    Network::HTTP::Response::StatusCode procJAPI_Session_AUTHINFO();
+    Network::HTTP::Response::StatusCode procJAPI_Session_CSRFTOKEN();
+    Network::HTTP::Response::StatusCode procJAPI_Session_LOGIN(const Authentication & auth);
+    Network::HTTP::Response::StatusCode procJAPI_Session_POSTLOGIN(const Authentication & auth);
+    Network::HTTP::Response::StatusCode procJAPI_Session_CHPASSWD(const Authentication &auth);
+    Network::HTTP::Response::StatusCode procJAPI_Session_TESTPASSWD(const Authentication &auth);
+    Network::HTTP::Response::StatusCode procJAPI_Session_PASSWDLIST();
+
+    Network::HTTP::Response::StatusCode procJAPI_Exec( MultiAuths *extraAuths,
+                                                       std::string sMethodName,
+                                                       std::string sPayloadIn,
+                                                       Memory::Streams::JSON_Streamable * jPayloadOutStr = nullptr
+                                                       );
+    bool csrfValidate();
+
+    Network::HTTP::Response::StatusCode procJAPI_Version();
+
+
+    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Mantids::Authentication::Session *session, Mantids::Authentication::Reason *authReason);
     Mantids::Authentication::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Authentication &authData);
 
-    std::string getAuthSessionID(Mantids::Authentication::Session *authSession);
+    //std::string getAuthSessionID(Mantids::Authentication::Session *authSession);
 
-    void log(Mantids::Application::Logs::eLogLevels logSeverity, WebSession * wSession, const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
+    void log(Mantids::Application::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
 
     Application::Logs::RPCLog * rpcLog;
 
     MethodsManager * methodsManager;
     Mantids::Authentication::Domains * authDomains;
     SessionsManager * sessionsManager;
+
+    // Current Session Vars:
+    WebSession * webSession;
+    Mantids::Authentication::Session *authSession;
+    uint64_t uSessionMaxAge;
+    std::string sSessionId;
+    bool bDestroySession;
+    bool bReleaseSessionHandler;
+    MultiAuths extraCredentials;
+    Authentication credentials;
+
+    // Current User Security Vars:
+    std::string sClientCSRFToken;
+
+
+
     ResourcesFilter * resourceFilter;
     std::string appName;
-    std::string remoteIP, remoteTLSCN, remoteUserAgent;
+    std::string userIP, userTLSCommonName;
     std::string resourcesLocalPath;
     std::string redirectOn404;
     bool useFormattedJSONOutput, usingCSRFToken, useHTMLIEngine;
