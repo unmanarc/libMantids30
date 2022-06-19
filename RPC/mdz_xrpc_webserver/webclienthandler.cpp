@@ -296,7 +296,7 @@ Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::stri
     jVars["csrfToken"]         = webSession?webSession->sCSRFToken:jNull;
     jVars["user"]              = authSession?authSession->getUserDomainPair().first:jNull;
     jVars["domain"]            = authSession?authSession->getUserDomainPair().second:jNull;
-    jVars["maxAge"]            = webSession?uSessionMaxAge:0;
+    jVars["maxAge"]            = (Json::UInt64)webSession?uSessionMaxAge:0;
     jVars["userAgent"]         = getRequestActiveObjects().USER_AGENT;
     jVars["userIP"]            = userIP;
     jVars["userTLSCommonName"] = userTLSCommonName;
@@ -664,7 +664,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_AUTHINFO()
 
     (*(jPayloadOutStr->getValue()))["user"]   = !authSession?"":authSession->getUserDomainPair().first;
     (*(jPayloadOutStr->getValue()))["domain"] = !authSession?"":authSession->getUserDomainPair().second;
-    (*(jPayloadOutStr->getValue()))["maxAge"] = uSessionMaxAge;
+    (*(jPayloadOutStr->getValue()))["maxAge"] = (Json::UInt64)uSessionMaxAge;
 
     setResponseDataStreamer(jPayloadOutStr,true);
     setResponseContentType("application/json",true);
