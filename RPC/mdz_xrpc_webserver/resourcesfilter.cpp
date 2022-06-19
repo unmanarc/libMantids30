@@ -73,7 +73,8 @@ bool ResourcesFilter::loadFile(const std::string &filePath)
                            sRedirectLocation,
                            requiredAppAtrribs,
                            rejectedAppAtrribs,
-                           fAction));
+                           fAction
+                           ));
     }
     /* }
     catch(property_tree::ptree_bad_path)
@@ -95,9 +96,14 @@ sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantid
 {
     sFilterEvaluation evalRet;
 
+    int ruleId=0;
     for (const auto & filter : filters)
     {
+        ruleId++;
         bool allAttribsDone=true;
+
+        /*printf("Evaluating rule %d for %s\n%s",  ruleId,uri.c_str(), filter.toString().c_str());
+        fflush(stdout);*/
 
         for (const auto & attrib : filter.reqAttrib)
         {
@@ -120,13 +126,24 @@ sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantid
         }
 
         if (!allAttribsDone)
+        {
+          /*  printf("\nRule %d does not match attributes.\n", ruleId);
+            fflush(stdout);
+*/
             continue; // Rule does not match
+        }
 
+       /* printf("\nRule %d match attributes, checking regex.\n", ruleId);
+        fflush(stdout);
+*/
         boost::cmatch what;
         for (const auto & i : filter.regexs)
         {
             if (boost::regex_match(uri.c_str(), what, i))
             {
+              /*  printf("Rule %d match regex, returning action.\n", ruleId);
+                fflush(stdout);
+*/
                 switch (  filter.action  )
                 {
                 case RFILTER_ACCEPT:
