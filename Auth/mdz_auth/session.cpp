@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <sstream>
 #include <mdz_hlp_functions/random.h>
+#include <mdz_thr_mutex/lock_shared.h>
 
 using namespace Mantids::Authentication;
 

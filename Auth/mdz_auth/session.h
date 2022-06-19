@@ -1,12 +1,11 @@
 #ifndef IAUTH_SESSION_H
 #define IAUTH_SESSION_H
 
-#include <string>
-#include <map>
+#include "manager.h"
+#include "session_vars.h"
+
 #include <mutex>
 #include <atomic>
-
-#include "manager.h"
 
 namespace Mantids { namespace Authentication {
 
@@ -43,7 +42,7 @@ struct sCurrentAuthentication
 };
 
 
-class Session
+class Session : public Session_Vars
 {
 public:
     Session(const std::string & appName);
