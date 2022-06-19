@@ -12,8 +12,6 @@ JSON_Streamable::JSON_Streamable()
     setFormatted(false);
 }
 
-
-
 bool JSON_Streamable::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrStatUpd)
 {
     Memory::Streams::Status cur;
