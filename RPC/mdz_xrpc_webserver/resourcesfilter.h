@@ -33,10 +33,12 @@ struct sFilter
              const std::string & redirectLocation,
              const std::list<std::string> & reqAttrib,
              const std::list<std::string> & rejAttrib,
-             const eFilterActions & action)
+             const eFilterActions & action
+             )
     {
         for ( const auto &i : regexs )
         {
+            this->sRegexs.push_back(i);
             this->regexs.push_back( boost::regex(i.c_str(),boost::regex::extended ));
         }
         this->redirectLocation = redirectLocation;
@@ -44,9 +46,43 @@ struct sFilter
         this->reqAttrib = reqAttrib;
         this->rejAttrib = rejAttrib;
     }
+
+    std::string listToString(const std::list<std::string> & list)const
+    {
+        std::string x;
+        for (auto & i : list)
+            x+="\"" + i + "\",";
+        return x;
+    }
+
+    std::string actionToString(eFilterActions action)const
+    {
+        switch (action)
+        {
+        case     RFILTER_ACCEPT:
+            return "ACCEPT";
+        case     RFILTER_DENY:
+            return "DENY";
+        case     RFILTER_REDIRECT:
+            return "REDIRECT";
+
+        }
+    }
+
+    std::string toString() const
+    {
+        return    "Filter:\n"
+                    "-------\n"
+                    "Redirect Location: " + redirectLocation + "\n"
+                    "reqAttrib: " + listToString(reqAttrib) + "\n"
+                    "rejAttrib: " + listToString(rejAttrib) + "\n"
+                    "Regexs: " + listToString(sRegexs) + "\n"
+                    "Action: " + actionToString(action);
+    }
+
     std::list<boost::regex> regexs;
     std::string redirectLocation;
-    std::list<std::string> reqAttrib, rejAttrib;
+    std::list<std::string> reqAttrib, rejAttrib, sRegexs;
     eFilterActions action;
 };
 
