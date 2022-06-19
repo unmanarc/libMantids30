@@ -10,7 +10,7 @@
 #include <mdz_proto_mime/mime_sub_header.h>
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
-#define HTTP_PRODUCT_VERSION_MINOR 2
+#define HTTP_PRODUCT_VERSION_MINOR 3
 
 namespace Mantids { namespace Network { namespace HTTP {
 
