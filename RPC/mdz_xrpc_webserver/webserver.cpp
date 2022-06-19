@@ -20,7 +20,7 @@ WebServer::WebServer()
     useHTMLIEngine = true;
     authenticator = nullptr;
     methodManagers = nullptr;
-    redirectOn404 = "/login";
+    redirectOn404 = "";
 }
 
 WebServer::~WebServer()
@@ -67,12 +67,11 @@ void WebServer::acceptPoolThreaded(Network::Streams::StreamSocket *listenerSocke
     poolThreadedAcceptor.start();
 }
 
-bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * s, const char *remotePairIPAddr, bool isSecure)
+bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * s, const char *cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
 
     std::string tlsCN;
-
     if (s->isSecure())
     {
         Network::TLS::Socket_TLS * tlsSock = (Network::TLS::Socket_TLS *)s;
@@ -86,7 +85,7 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     webHandler.setRPCLog(webserver->getRPCLog());
     webHandler.setAppName(webserver->getAppName());
     webHandler.setIsSecure(isSecure);
-    webHandler.setRemoteIP(remotePairIPAddr);
+    webHandler.setUserIP(cUserIP);
     webHandler.setRemoteTLSCN(tlsCN);
     webHandler.setMethodsManager(webserver->getMethodManagers());
     webHandler.setAuthenticators(webserver->getAuthenticator());
@@ -101,7 +100,7 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     webHandler.setStaticContentElements(webserver->getStaticContentElements());
     webHandler.setRedirectOn404(webserver->getRedirectOn404());
 
-    if (webserver->getExtCallBackOnConnect().call(obj,s,remotePairIPAddr,isSecure))
+    if (webserver->getExtCallBackOnConnect().call(obj,s,cUserIP,isSecure))
     {
         // Handle the webservice.
         Memory::Streams::Parsing::ParseErrorMSG err;
@@ -110,17 +109,17 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     return true;
 }
 
-bool WebServer::_callbackOnInitFailed(void * obj, Network::Streams::StreamSocket * s, const char * remotePairIPAddr, bool isSecure)
+bool WebServer::_callbackOnInitFailed(void * obj, Network::Streams::StreamSocket * s, const char * cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
-    webserver->getExtCallBackOnInitFailed().call(obj,s,remotePairIPAddr,isSecure);
+    webserver->getExtCallBackOnInitFailed().call(obj,s,cUserIP,isSecure);
     return true;
 }
 
-void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s, const char * remotePairIPAddr, bool isSecure)
+void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s, const char * cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
-    if (webserver->getExtCallBackOnInitFailed().call(obj,s,remotePairIPAddr,isSecure))
+    if (webserver->getExtCallBackOnInitFailed().call(obj,s,cUserIP,isSecure))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");
