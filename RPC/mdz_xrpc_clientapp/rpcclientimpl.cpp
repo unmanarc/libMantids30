@@ -1,6 +1,6 @@
 #include "rpcclientimpl.h"
 #include "globals.h"
-
+#include <inttypes.h>
 #include <thread>
 
 #include <mdz_net_sockets/cryptostream.h>
@@ -43,25 +43,25 @@ void RPCClientImpl::runRPClient()
 
         if (!sockRPCClient.setTLSCertificateAuthorityPath(  caCertPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%d: Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
             _exit(-3);
         }
         if (!sockRPCClient.setTLSPrivateKeyPath(  privKeyPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%d: Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
             _exit(-3);
         }
         if (!sockRPCClient.setTLSPublicKeyPath(  pubCertPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%d: Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
             _exit(-3);
         }
 
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%d...", remoteAddr.c_str(), remotePort);
+        Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
 
         if ( sockRPCClient.connectTo( remoteAddr.c_str(), remotePort ) )
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%d (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
 
             if (postConnect(&sockRPCClient))
             {
@@ -75,14 +75,14 @@ void RPCClientImpl::runRPClient()
                 }
                 else
                 {
-                    Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%d", remoteAddr.c_str(), remotePort);
+                    Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%" PRIu16, remoteAddr.c_str(), remotePort);
                 }
             }
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%d (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
         }
         else
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%d: %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
+            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
         }
 
         sleep(secsBetweenConnections);

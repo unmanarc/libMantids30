@@ -5,7 +5,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/types.h>
-
+#include <inttypes.h>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -154,7 +154,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     }
 
     char serverPort[8];
-    snprintf(serverPort,sizeof(serverPort),"%u",remotePort);
+    snprintf(serverPort,sizeof(serverPort),"%" PRIu16,remotePort);
 
     rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **)res);
 

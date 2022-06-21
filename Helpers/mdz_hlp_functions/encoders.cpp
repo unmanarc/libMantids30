@@ -1,6 +1,7 @@
 #include "encoders.h"
 #include <string.h>
 #include <random>
+#include <inttypes.h>
 
 using namespace std;
 using namespace Mantids::Helpers;
@@ -250,7 +251,7 @@ string Encoders::toHex(const unsigned char *data, size_t len)
     for (size_t x = 0; x<len; x++)
     {
         char buf[4];
-        sprintf(buf, "%02X", data[x]);
+        sprintf(buf, "%02" PRIX8, data[x]);
         r.append( buf );
     }
     return r;

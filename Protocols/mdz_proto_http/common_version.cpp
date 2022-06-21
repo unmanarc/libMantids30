@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <inttypes.h>
 #include <vector>
 #include <string>
 
@@ -49,7 +50,7 @@ void Version::parseVersion(const std::string &version)
 string Version::getHTTPVersionString()
 {
     char cHTTPVersion[128];
-    snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%u.%u", versionMajor, versionMinor);
+    snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%" PRIu16 ".%" PRIu16, versionMajor, versionMinor);
     std::string sHTTPVersion = cHTTPVersion;
     return sHTTPVersion;
 }
