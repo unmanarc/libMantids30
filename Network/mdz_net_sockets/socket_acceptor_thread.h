@@ -34,7 +34,7 @@ public:
      */
     void setParent(void * parent);
     /**
-     * Set callback when connection is fully established
+     * Set callback when connection is fully established (if your function returns false, the socket will not be destroyed by this)
      */
     void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Streams::StreamSocket *, const char *, bool), void *objOnConnected);
     /**
