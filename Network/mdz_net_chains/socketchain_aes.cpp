@@ -82,7 +82,10 @@ int SocketChain_AES::partialWrite(const void *data, const uint32_t &datalen)
     {
         regenIV(&writeParams);
         if (!appendNewAESBlock( &writeParams, writeParams.handshake.phase2Key, writeParams.currentIV))
+        {
+            delete [] edata;
             return false;
+        }
     }
 
     // Encrypt the data...
@@ -202,7 +205,10 @@ bool SocketChain_AES::appendNewAESBlock(sSideParams *params, const char *key, co
     // Init AES here.
     EVP_CIPHER_CTX *ctx;
     if(!(ctx = EVP_CIPHER_CTX_new()))
+    {
+        delete [] cipherText;
         return false;
+    }
     if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char *)key, (unsigned char *)iv))
     {
         EVP_CIPHER_CTX_free(ctx);
