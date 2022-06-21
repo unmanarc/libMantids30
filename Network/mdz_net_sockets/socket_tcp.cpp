@@ -136,7 +136,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     if (!connected)
     {
         if (lastError == "")
-            lastError = std::string("Connection using TCP Socket Failed with UNKNOWN reason.");
+            lastError = std::string("The TCP/IP connection has failed without a reason.");
         return false;
     }
 
