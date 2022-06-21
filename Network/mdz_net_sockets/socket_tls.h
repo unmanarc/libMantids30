@@ -144,6 +144,9 @@ public:
     bool isSecure() override;
 
 
+    bool getAcceptInvalidServerCerts() const;
+    void setAcceptInvalidServerCerts(bool newAcceptInvalidServerCerts);
+
 protected:
     /**
      * function for TLS client protocol initialization after the connection starts (client-mode)...
@@ -164,7 +167,7 @@ private:
     std::list<std::string> sslErrors;
 
     SSL_MODE sslMode;
-    bool isServer;
+    bool isServer, acceptInvalidServerCerts;
 };
 }}}
 

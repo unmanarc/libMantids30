@@ -21,6 +21,7 @@ using namespace Mantids::Network::TLS;
 
 Socket_TLS::Socket_TLS()
 {
+    acceptInvalidServerCerts = false;
     isServer = false;
     sslHandle = nullptr;
     sslContext = nullptr;
@@ -83,7 +84,7 @@ bool Socket_TLS::postConnectSubInitialization()
         return false;
     }
 
-    if (!validateConnection())
+    if (!acceptInvalidServerCerts && !validateConnection())
     {
         return false;
     }
@@ -232,6 +233,16 @@ bool Socket_TLS::validateConnection()
     return bValid;
 }
 
+bool Socket_TLS::getAcceptInvalidServerCerts() const
+{
+    return acceptInvalidServerCerts;
+}
+
+void Socket_TLS::setAcceptInvalidServerCerts(bool newAcceptInvalidServerCerts)
+{
+    acceptInvalidServerCerts = newAcceptInvalidServerCerts;
+}
+
 string Socket_TLS::getCipherName()
 {
     if (!sslHandle) return "";
@@ -282,7 +293,8 @@ int Socket_TLS::iShutdown(int mode)
         // The shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
         //shutdown_proto_rd = true;
         shutdown_proto_wr = true;
-        return Streams::StreamSocket::iShutdown(mode);
+        // Call the private iShutdown to shutdown RD on the socket...
+        return Socket::iShutdown(mode);
     default:
         //The shutdown was not successful.
         return -3;
