@@ -63,6 +63,7 @@ int StreamsSocketsBridge_Thread::simpleProcessPipe(bool fwd)
         // Update Counters:
         return bytesReceived;
     }
+
     return -1;
 }
 

@@ -75,11 +75,6 @@ public:
      * @return if it's disconnected (invalid sockfd) or it's not able to obtain at least 1 byte, then return false, otherwise true, you should check by yourself that expectedDataBytesCount == *receivedDataBytesCount
      */
     virtual bool readFull(void * data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount = nullptr) override;
-    /**
-     * @brief iShutdown Internal protocol Shutdown
-     * @return depends on protocol.
-     */
-    virtual int iShutdown(int mode = SHUT_RDWR) override;
 
 
 protected:

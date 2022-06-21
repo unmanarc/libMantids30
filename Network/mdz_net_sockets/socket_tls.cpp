@@ -265,21 +265,26 @@ string Socket_TLS::getTLSPeerCN()
 int Socket_TLS::iShutdown(int mode)
 {
     if (!sslHandle) return -2;
-    if (shutdown_proto_rd || shutdown_proto_wr)
+
+    if (shutdown_proto_wr)
     {
-        //        throw std::runtime_error("Double shutdown on Socket TLS");
+        // Already shutted down.
         return -1;
     }
 
+    // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
     switch (SSL_shutdown (sslHandle))
     {
     case 0:
+        // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
         return -2;
     case 1:
-        shutdown_proto_rd = true;
+        // The shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
+        //shutdown_proto_rd = true;
         shutdown_proto_wr = true;
-        return 0;
+        return Streams::StreamSocket::iShutdown(mode);
     default:
+        //The shutdown was not successful.
         return -3;
     }
 }

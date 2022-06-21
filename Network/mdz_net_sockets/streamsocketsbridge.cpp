@@ -2,8 +2,6 @@
 
 using namespace Mantids::Network::Streams;
 
-
-
 StreamSocketsBridge::StreamSocketsBridge()
 {
     bridgeThreadPrc = nullptr;

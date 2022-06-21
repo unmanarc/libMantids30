@@ -202,38 +202,6 @@ bool StreamSocket::readFull(void *data, const uint64_t &expectedDataBytesCount, 
     return true;
 }
 
-int StreamSocket::iShutdown(int mode)
-{
-    /*
-    if (   (mode == SHUT_RDWR && shutdown_proto_rd == false && shutdown_proto_wr == false)
-        || (mode == SHUT_RD && shutdown_proto_rd == false)
-        || (mode == SHUT_WR && shutdown_proto_wr == false) )
-    {
-        switch (mode)
-        {
-        case SHUT_WR:
-            shutdown_proto_wr = true;
-            break;
-        case SHUT_RD:
-            shutdown_proto_rd = true;
-            break;
-        case SHUT_RDWR:
-            shutdown_proto_rd = true;
-            shutdown_proto_wr = true;
-            break;
-        default:
-            break;
-        }
-
-        return 0;
-    }
-
-    // Double shutdown?
-    throw std::runtime_error("Double shutdown on Socket Base Stream");
-*/
-    return -1;
-}
-
 void StreamSocket::writeDeSync()
 {
     // Action when everything is desynced... (better to stop R/W from the socket)

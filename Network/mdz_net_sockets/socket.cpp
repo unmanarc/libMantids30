@@ -372,34 +372,66 @@ int Socket::partialWrite(const void *data, const uint32_t &datalen)
 
 int Socket::iShutdown(int mode)
 {
-    if (   (mode == SHUT_RDWR && shutdown_proto_rd == false && shutdown_proto_wr == false)
-           || (mode == SHUT_RD && shutdown_proto_rd == false)
-           || (mode == SHUT_WR && shutdown_proto_wr == false) )
+   bool rd_to_shutdown = false;
+    bool wr_to_shutdown = false;
+
+    switch (mode)
     {
-
-        switch (mode)
-        {
-        case SHUT_WR:
-            shutdown_proto_wr = true;
-            break;
-        case SHUT_RD:
-            shutdown_proto_rd = true;
-            break;
-        case SHUT_RDWR:
-            shutdown_proto_rd = true;
-            shutdown_proto_wr = true;
-            break;
-        default:
-            break;
-        }
-
-        return 0;
+    case SHUT_WR:
+        wr_to_shutdown = true;
+        break;
+    case SHUT_RD:
+        rd_to_shutdown = true;
+        break;
+    case SHUT_RDWR:
+        rd_to_shutdown = true;
+        wr_to_shutdown = true;
+        break;
+    default:
+        break;
     }
 
-    // Double shutdown?
-    throw std::runtime_error("Double shutdown on Socket");
+    // Already shutted down:
+    if (shutdown_proto_rd == true)
+        rd_to_shutdown = false;
+    if (shutdown_proto_wr == true)
+        wr_to_shutdown = false;
 
-    return -1;
+    if ( rd_to_shutdown && wr_to_shutdown )
+    {
+        int x = _shutdownSocket(SHUT_RDWR);
+        if (x == 0)
+        {
+            shutdown_proto_rd = true;
+            shutdown_proto_wr = true;
+        }
+        return x;
+    }
+    else if ( rd_to_shutdown )
+    {
+        int x = _shutdownSocket(SHUT_RD);
+        if (x == 0)
+        {
+            shutdown_proto_rd = true;
+        }
+        return x;
+    }
+    else if ( wr_to_shutdown )
+    {
+        int x = _shutdownSocket(SHUT_WR);
+        if (x == 0)
+        {
+            shutdown_proto_wr = true;
+        }
+        return x;
+    }
+    else
+    {
+        // Double shutdown?
+        throw std::runtime_error("Double shutdown on Socket");
+        return -1;
+    }
+
 }
 
 void Socket::socketSystemInitialization()
@@ -549,55 +581,81 @@ int Socket::shutdownSocket(int mode)
     if (!isActive()) return -1;
 
     int i;
-    if ((i=iShutdown(mode))!=0) return i;
-
-    if ( mode == SHUT_RDWR && (shutdown_rd && shutdown_wr) )
+    // Shutdown sub-protocol:
+    if ((i=iShutdown(mode))!=0)
     {
-        // Double shutdown handling...
-        return -1;
-    }
-    else if ( mode == SHUT_RDWR && (shutdown_rd && !shutdown_wr) )
-    {
-        // Double shutdown handling...
-        mode = SHUT_WR;
-        shutdown_rd = true;
-    }
-    else if ( mode == SHUT_RDWR && (!shutdown_rd && shutdown_wr) )
-    {
-        // Double shutdown handling...
-        mode = SHUT_RD;
-        shutdown_wr = true;
-    }
-    else if ( mode == SHUT_WR && (shutdown_wr) )
-    {
-        // Double shutdown handling...
-        return -1;
-    }
-    else if ( mode == SHUT_WR && (!shutdown_wr) )
-    {
-        shutdown_wr = true;
-    }
-    else if ( mode == SHUT_RD && (shutdown_rd) )
-    {
-        // Double shutdown handling...
-        return -1;
-    }
-    else if ( mode == SHUT_RD && (!shutdown_rd) )
-    {
-        shutdown_rd = true;
+        return i;
     }
 
-    return shutdown(sockfd, mode);
+    return 0;
 
-    // Double shutdown?
-    //    throw std::runtime_error("Double shutdown on Socket");
+    // Shutdown the socket:
+   /* {
+        bool rd_to_shutdown = false;
+        bool wr_to_shutdown = false;
 
-    //  return -1;
+        switch (mode)
+        {
+        case SHUT_WR:
+            wr_to_shutdown = true;
+            break;
+        case SHUT_RD:
+            rd_to_shutdown = true;
+            break;
+        case SHUT_RDWR:
+            rd_to_shutdown = true;
+            wr_to_shutdown = true;
+            break;
+        default:
+            break;
+        }
+
+        // Already shutted down:
+        if (shutdown_proto_rd == true)
+            rd_to_shutdown = false;
+        if (shutdown_proto_wr == true)
+            wr_to_shutdown = false;
+
+        if ( rd_to_shutdown && wr_to_shutdown )
+        {
+            int x = _shutdownSocket(SHUT_RDWR);
+            if (x == 0)
+            {
+                shutdown_proto_rd = true;
+                shutdown_proto_wr = true;
+            }
+            return x;
+        }
+        else if ( rd_to_shutdown )
+        {
+            int x = _shutdownSocket(SHUT_RD);
+            if (x == 0)
+            {
+                shutdown_proto_rd = true;
+            }
+            return x;
+        }
+        else if ( wr_to_shutdown )
+        {
+            int x = _shutdownSocket(SHUT_WR);
+            if (x == 0)
+            {
+                shutdown_proto_wr = true;
+            }
+            return x;
+        }
+        else
+        {
+            // Double shutdown?
+            throw std::runtime_error("Double shutdown on Socket");
+        }
+    }*/
 }
 
 int Socket::_shutdownSocket(int mode)
 {
-    return shutdown(sockfd, mode);
+    int x = shutdown(sockfd, mode);
+    return x;
 }
 
 bool Socket::setBlockingMode(bool blocking)
