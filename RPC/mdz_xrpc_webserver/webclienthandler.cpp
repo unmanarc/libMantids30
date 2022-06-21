@@ -181,7 +181,7 @@ void replaceTagByJVar( std::string & content, const std::string & tag, const jso
 
     if (!varName.empty() && varName.size()>1 && varName.at(0) == '/')
     {
-        str = "<script>const " + varName.substr(1) + " = " + str + ";</script>";
+        str = "<script>\nconst " + varName.substr(1) + " = " + str + ";\n</script>";
     }
 
     if (!replaceFirst)
@@ -204,7 +204,6 @@ inline unsigned char hex2uchar(const std::string &t1, const std::string &t2)
 {
     return get16Value(t1.c_str()[0])*0x10+get16Value(t2.c_str()[0]);
 }
-
 
 void replaceHexCodes( std::string &content )
 {
@@ -413,6 +412,20 @@ Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::stri
         procJAPI_Exec(extraAuths,functionName,functionInput, &jPayloadOutStr);
         replaceTagByJVar(fileContent,fulltag,*(jPayloadOutStr.getValue()),true,scriptVarName);
     }
+
+
+    // Sanitize <script></script>
+  /*  boost::regex exStaticScriptSanitizer("</script>[\\ \n\r\t]*<script>[\n]?",boost::regex::icase);
+    for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticScriptSanitizer, flags); // FIND REGEXP
+         start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
+    {
+        string fulltag       = string(whatStaticText[0].first, whatStaticText[0].second);
+        boost::ireplace_all(fileContent,fulltag, "");
+    }*/
+
+
+
 
     // Update last activity on each page load.
     if (authSession)
