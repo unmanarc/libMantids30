@@ -67,7 +67,7 @@ static Application *appPTR = nullptr;
 int StartApplication(int argc, char *argv[], Application *_app)
 {
 #ifndef _WIN32
-    pthread_setname_np(pthread_self(), __func__);
+    pthread_setname_np(pthread_self(), "APP:Start");
 #endif
 
     appPTR = _app;

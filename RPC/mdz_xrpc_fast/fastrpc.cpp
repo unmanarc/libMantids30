@@ -291,7 +291,7 @@ void FastRPC::setRemoteExecutionTimeoutInMS(const uint32_t &value)
 int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std::string &key, const sFastRPCOnConnectedMethod &callbackOnConnectedMethod, const float &keyDistFactor)
 {
 #ifndef _WIN32
-     pthread_setname_np(pthread_self(), "xrpc_fast_process");
+    pthread_setname_np(pthread_self(), "XRPC:ProcStream");
 #endif
 
     int ret = 1;
