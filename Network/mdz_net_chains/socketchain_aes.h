@@ -75,7 +75,8 @@ struct sSideParams {
         {
             char * nBlock = new char[aesBlock_curSize-bytes];
             if (!nBlock) return;
-            if (aesBlock_curSize) memcpy(nBlock,aesBlock+bytes,aesBlock_curSize-bytes);
+            if (aesBlock_curSize)
+                memcpy(nBlock,aesBlock+bytes,aesBlock_curSize-bytes);
             cleanAESBlock(nBlock,aesBlock_curSize-bytes);
         }
     }
@@ -161,8 +162,6 @@ private:
     size_t aesRegenBlockSize;
     bool initialized;
     const static EVP_CIPHER *cipher;
-
-
 };
 
 }}}}

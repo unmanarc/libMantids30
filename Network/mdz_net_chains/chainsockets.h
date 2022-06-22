@@ -60,7 +60,7 @@ class ChainSockets : public Mantids::Network::Streams::StreamSocket
 {
 public:
     ChainSockets(Mantids::Network::Streams::StreamSocket * _baseSocket, bool _deleteBaseSocketOnExit = true);
-    ~ChainSockets();
+    virtual ~ChainSockets();
 
     /**
      * @brief addToChain Add the chain element to the socket chains...

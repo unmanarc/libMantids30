@@ -47,7 +47,7 @@ void ChainSockets::removeSocketsOnExit()
 ChainSockets::~ChainSockets()
 {
     // Propagate the shutdownSocket
-    shutdownSocket();
+    ChainSockets::shutdownSocket();
 
     // Wait for threads:
     waitUntilFinish();
