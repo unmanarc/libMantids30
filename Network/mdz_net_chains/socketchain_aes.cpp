@@ -35,12 +35,12 @@ void SocketChain_AES::setAESRegenBlockSize(const size_t &value)
     aesRegenBlockSize = value;
 }
 
-void SocketChain_AES::setPhase1Key256(char *pass)
+void SocketChain_AES::setPhase1Key256(const char *pass)
 {
     memcpy(phase1Key,pass,sizeof(phase1Key));
 }
 
-void SocketChain_AES::setPhase1Key(char *pass)
+void SocketChain_AES::setPhase1Key(const char *pass)
 {
     SHA256_CTX sha256;
     SHA256_Init(&sha256);

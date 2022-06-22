@@ -120,8 +120,8 @@ public:
      * @brief setPhase1Key Set Phase 1 (header interchange) AES Key
      * @param pass AES Key.
      */
-    void setPhase1Key256(char * pass);
-    void setPhase1Key(char * pass);
+    void setPhase1Key256(const char *pass);
+    void setPhase1Key(const char * pass);
 
     //////////////////////////////////////////
     // Overwritten functions:
