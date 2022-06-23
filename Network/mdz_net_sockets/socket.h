@@ -98,7 +98,7 @@ public:
      * Check if we have an initialized socket.
      * @return true if the socket is a valid file descriptor
      */
-    bool isActive() const;
+    virtual bool isActive() const;
     /**
      * Check if the remote pair is connected or not.
      * @param true if is it connected
