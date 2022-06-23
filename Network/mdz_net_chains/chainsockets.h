@@ -67,7 +67,7 @@ public:
      * @param chainElement chain element (should be deleted later)
      * @return true if successfully initialized
      */
-    bool addToChain(SocketChainBase * chainElement);
+    bool addToChain(SocketChainBase * chainElement, bool deleteAtExit = false);
     bool addToChain(std::pair<Mantids::Network::Streams::StreamSocket *, Mantids::Network::Streams::StreamSocket *> sockPairs,
                     bool deleteFirstSocketOnExit = false,
                     bool deleteSecondSocketOnExit = true,
@@ -106,6 +106,7 @@ public:
 
     ////////////////////
     // virtuals:
+    bool isConnected() override;
     int shutdownSocket(int mode = SHUT_WR) override;
     int partialRead(void * data, const uint32_t & datalen) override;
     int partialWrite(const void * data, const uint32_t & datalen) override;
