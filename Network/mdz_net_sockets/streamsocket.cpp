@@ -16,10 +16,12 @@ using namespace Mantids::Network::Streams;
 
 StreamSocket::StreamSocket()
 {
+    //printf("Creating streamsocket %p\n", this); fflush(stdout);
 }
 
 StreamSocket::~StreamSocket()
 {
+  //  printf("Removing streamsocket %p\n", this); fflush(stdout);
 }
 
 void StreamSocket::writeEOF(bool)
@@ -120,8 +122,6 @@ bool StreamSocket::writeFull(const void *data)
 
 bool StreamSocket::writeFull(const void *data, const uint64_t &datalen)
 {
-   // if (!isActive()) return false;
-
     uint64_t sent_bytes = 0;
     uint64_t left_to_send = datalen;
 
@@ -170,15 +170,11 @@ bool StreamSocket::readFull(void *data, const uint64_t &expectedDataBytesCount, 
 {
     if (receivedDataBytesCount) *receivedDataBytesCount = 0;
 
-    if (!isActive())
-    {
-        return false;
-    }
-
     uint64_t curReceivedBytesCount = 0;
     int partialReceivedBytesCount = 0;
 
-    if (expectedDataBytesCount==0) return true;
+    if (expectedDataBytesCount==0)
+        return true;
 
     // Try to receive the maximum amount of data left.
     while ( (expectedDataBytesCount - curReceivedBytesCount)>0 // there are bytes to read.
@@ -191,7 +187,8 @@ bool StreamSocket::readFull(void *data, const uint64_t &expectedDataBytesCount, 
 
     if (curReceivedBytesCount<expectedDataBytesCount)
     {
-        if (curReceivedBytesCount==0) return false;
+        if (curReceivedBytesCount==0)
+            return false;
         if (receivedDataBytesCount) *receivedDataBytesCount = curReceivedBytesCount;
         return true;
     }
@@ -216,7 +213,8 @@ void StreamSocket::readDeSync()
 
 bool StreamSocket::isConnected()
 {
-    if (!isActive()) return false;
+    if (!isActive())
+        return false;
 
     struct sockaddr peer;
     socklen_t peer_len;
