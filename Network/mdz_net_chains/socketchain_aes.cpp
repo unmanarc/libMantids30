@@ -54,7 +54,8 @@ int SocketChain_AES::partialRead(void *data, const uint32_t &datalen)
         return StreamSocket::partialRead(data,datalen);
 
     int r = StreamSocket::partialRead(data,datalen);
-    if (r<=0) return r;
+    if (r<=0)
+        return r;
 
     // Enlarge the buffer to decrypt the requested string...
     while (readParams.aesBlock_curSize<(size_t)r)
@@ -191,7 +192,7 @@ const EVP_CIPHER *SocketChain_AES::openSSLInit()
     OPENSSL_config(nullptr);
 #endif
 
-    return EVP_aes_256_cbc();
+    return EVP_aes_256_gcm();
 }
 
 bool SocketChain_AES::appendNewAESBlock(sSideParams *params, const char *key, const char *iv)
@@ -209,7 +210,8 @@ bool SocketChain_AES::appendNewAESBlock(sSideParams *params, const char *key, co
         delete [] cipherText;
         return false;
     }
-    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (unsigned char *)key, (unsigned char *)iv))
+
+    if(1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, (unsigned char *)key, (unsigned char *)iv))
     {
         EVP_CIPHER_CTX_free(ctx);
         delete [] cipherText;
