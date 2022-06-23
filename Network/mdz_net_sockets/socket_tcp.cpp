@@ -62,7 +62,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (!isActive())
         {
-            lastError = "socket() failed";
+            lastError = "socket() failed, " + std::string(strerror(errno));
             break;
         }
 
