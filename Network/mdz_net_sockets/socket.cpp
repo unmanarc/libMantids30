@@ -428,7 +428,8 @@ int Socket::iShutdown(int mode)
     else
     {
         // Double shutdown?
-        throw std::runtime_error("Double shutdown on Socket");
+        //fprintf(stderr,"Double shutdown detected at socket: %i in mode %s @%p\n", sockfd, mode==SHUT_RD?"RD": ( mode==SHUT_WR?"WR":"RDWR") ,this); fflush(stderr);
+//        throw std::runtime_error("Double shutdown on Socket");
         return -1;
     }
 
@@ -588,72 +589,11 @@ int Socket::shutdownSocket(int mode)
     }
 
     return 0;
-
-    // Shutdown the socket:
-   /* {
-        bool rd_to_shutdown = false;
-        bool wr_to_shutdown = false;
-
-        switch (mode)
-        {
-        case SHUT_WR:
-            wr_to_shutdown = true;
-            break;
-        case SHUT_RD:
-            rd_to_shutdown = true;
-            break;
-        case SHUT_RDWR:
-            rd_to_shutdown = true;
-            wr_to_shutdown = true;
-            break;
-        default:
-            break;
-        }
-
-        // Already shutted down:
-        if (shutdown_proto_rd == true)
-            rd_to_shutdown = false;
-        if (shutdown_proto_wr == true)
-            wr_to_shutdown = false;
-
-        if ( rd_to_shutdown && wr_to_shutdown )
-        {
-            int x = _shutdownSocket(SHUT_RDWR);
-            if (x == 0)
-            {
-                shutdown_proto_rd = true;
-                shutdown_proto_wr = true;
-            }
-            return x;
-        }
-        else if ( rd_to_shutdown )
-        {
-            int x = _shutdownSocket(SHUT_RD);
-            if (x == 0)
-            {
-                shutdown_proto_rd = true;
-            }
-            return x;
-        }
-        else if ( wr_to_shutdown )
-        {
-            int x = _shutdownSocket(SHUT_WR);
-            if (x == 0)
-            {
-                shutdown_proto_wr = true;
-            }
-            return x;
-        }
-        else
-        {
-            // Double shutdown?
-            throw std::runtime_error("Double shutdown on Socket");
-        }
-    }*/
 }
 
 int Socket::_shutdownSocket(int mode)
 {
+    //printf("Shutting down socket: %i in mode %s @%p\n", sockfd, mode==SHUT_RD?"RD": ( mode==SHUT_WR?"WR":"RDWR") ,this); fflush(stdout);
     int x = shutdown(sockfd, mode);
     return x;
 }
