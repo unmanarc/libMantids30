@@ -14,6 +14,7 @@
 
 #ifdef _WIN32
 #include <openssl/safestack.h>
+#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
 #endif
 
 using namespace std;

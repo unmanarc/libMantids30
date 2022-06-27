@@ -9,6 +9,7 @@
 #include <linux/limits.h>
 #else
 #include <windows.h>
+#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
 #endif
 
 #include <fcntl.h>

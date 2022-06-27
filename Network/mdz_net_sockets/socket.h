@@ -133,7 +133,7 @@ public:
      */
     void setRemotePair(const char * address);
     /**
-     * @brief getRemotePort Get Remote Port for listenning connections
+     * @brief getRemotePort Get Remote Port for listening connections
      * @return remote port 0-65535
      */
     unsigned short getRemotePort() const;

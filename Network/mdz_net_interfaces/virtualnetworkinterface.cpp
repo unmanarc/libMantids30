@@ -12,6 +12,7 @@
 #else
 #include "tap-windows.h"
 #include "iphlpapi.h"
+#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
 #endif
 
 #include <string.h>
