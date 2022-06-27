@@ -9,6 +9,12 @@
 
 #include <mdz_hlp_functions/mem.h>
 
+char * strerror_r(int _errno, char * buf, int len)
+{
+    strerror_s(buf,len,_errno);
+    return buf;
+}
+
 const char *inet_ntop(int af, const void *src, char *dst, socklen_t size)
 {
     struct sockaddr_storage addrStorage;

@@ -18,7 +18,7 @@
 #include "tap-windows.h"
 #include <Shlobj.h>
 #include <mdz_hlp_functions/appexec.h>
-#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
+#include <mdz_mem_vars/w32compat.h>
 #endif
 
 #include <mdz_hlp_functions/mem.h>

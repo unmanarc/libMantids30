@@ -9,7 +9,7 @@
 #include <linux/limits.h>
 #else
 #include <windows.h>
-#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
+#include <mdz_mem_vars/w32compat.h>
 #endif
 
 #include <fcntl.h>

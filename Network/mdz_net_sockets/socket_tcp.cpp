@@ -6,7 +6,6 @@
 #include <mdz_mem_vars/w32compat.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#define strerror_r(errno,buf,len) strerror_s(buf,len,errno)
 #else
 
 #include <sys/socket.h>
