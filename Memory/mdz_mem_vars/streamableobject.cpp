@@ -99,11 +99,10 @@ void StreamableObject::writeEOF(bool )
 
 }
 /*
-uint64_t Streamable::size() const
+uint64_t StreamableObject::size() const
 {
   return std::numeric_limits<uint64_t>::max();
 }*/
-
 
 uint16_t StreamableObject::getFailedWriteState() const
 {
@@ -117,7 +116,7 @@ bool StreamableObject::setFailedWriteState(const uint16_t &value)
 }
 
 #ifdef _WIN32
-int Streamable::vasprintf(char **strp, const char *fmt, va_list ap)
+int StreamableObject::vasprintf(char **strp, const char *fmt, va_list ap)
 {
     char *cBuffer;
     int dNeededLength, iBytesWritten;
