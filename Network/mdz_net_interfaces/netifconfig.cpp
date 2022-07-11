@@ -212,17 +212,17 @@ NetIfConfig::NetIfType NetIfConfig::getNetIfType() const
 
 #ifdef _WIN32
 
-Mantids::Helpers::sAppExecCmd NetIfConfig::createRouteCMD(const std::vector<std::string> &routecmdopts)
+Mantids::Helpers::AppExec::sAppExecCmd NetIfConfig::createRouteCMD(const std::vector<std::string> &routecmdopts)
 {
-    Mantids::Helpers::sAppExecCmd x;
+    Mantids::Helpers::AppExec::sAppExecCmd x;
     x.arg0 = getRouteExecPath();
     x.args = routecmdopts;
     return x;
 }
 
-Mantids::Helpers::sAppExecCmd NetIfConfig::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
+Mantids::Helpers::AppExec::sAppExecCmd NetIfConfig::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
 {
-    Mantids::Helpers::sAppExecCmd x;
+    Mantids::Helpers::AppExec::sAppExecCmd x;
     x.arg0 = getNetSHExecPath();
     x.args = netshcmdopts;
     return x;
