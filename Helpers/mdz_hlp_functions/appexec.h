@@ -24,27 +24,27 @@
 
 namespace Mantids { namespace Helpers {
 
-
-struct sAppExecResult {
-    // Command output
-    std::string output;
-
-    // Result (usually 0: success)
-    int result;
-
-    // Errors (DEFINED):
-    int error;
-};
-
-struct sAppExecCmd
-{
-    std::string arg0;
-    std::vector<std::string> args;
-};
-
 class AppExec
 {
 public:
+    struct sAppExecResult {
+        // Command output
+        std::string output;
+
+        // Result (usually 0: success)
+        int result;
+
+        // Errors (DEFINED):
+        int error;
+    };
+
+    struct sAppExecCmd
+    {
+        std::string arg0;
+        std::vector<std::string> args;
+    };
+
+
     AppExec() {}
     /**
      * @brief blexec blocking command execution

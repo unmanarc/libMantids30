@@ -144,10 +144,10 @@ bool Socket_UDP::readBlock(void *, const uint32_t &)
     return false;
 }
 
-std::shared_ptr<Datagram::Block> Socket_UDP::readBlock()
+std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
 {
-    std::shared_ptr<Datagram::Block> datagramBlock;
-    datagramBlock.reset(new Datagram::Block);
+    std::shared_ptr<Socket_UDP::Block> datagramBlock;
+    datagramBlock.reset(new Socket_UDP::Block);
     if (!isActive()) return datagramBlock;
 
     socklen_t fromlen = SOCKADDR_IN_SIZE;

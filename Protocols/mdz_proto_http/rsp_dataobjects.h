@@ -10,7 +10,7 @@
 #include "hdr_sec_hsts.h"
 #include "hdr_cachecontrol.h"
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Response {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Response {
 
 struct DataObject
 {

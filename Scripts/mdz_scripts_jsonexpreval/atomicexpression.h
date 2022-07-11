@@ -10,19 +10,21 @@
 
 namespace Mantids { namespace Scripts { namespace Expressions {
 
-enum eEvalOperator {
-    EVAL_OPERATOR_CONTAINS, // operator for multi items..
-    EVAL_OPERATOR_REGEXMATCH,
-    EVAL_OPERATOR_ISEQUAL,
-    EVAL_OPERATOR_STARTSWITH,
-    EVAL_OPERATOR_ENDSWITH,
-    EVAL_OPERATOR_ISNULL,
-    EVAL_OPERATOR_UNDEFINED
-};
+
 
 class AtomicExpression
 {
 public:
+    enum eEvalOperator {
+        EVAL_OPERATOR_CONTAINS, // operator for multi items..
+        EVAL_OPERATOR_REGEXMATCH,
+        EVAL_OPERATOR_ISEQUAL,
+        EVAL_OPERATOR_STARTSWITH,
+        EVAL_OPERATOR_ENDSWITH,
+        EVAL_OPERATOR_ISNULL,
+        EVAL_OPERATOR_UNDEFINED
+    };
+
     AtomicExpression(std::vector<std::string> *staticTexts );
 
     bool compile( std::string expr );

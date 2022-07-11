@@ -10,18 +10,20 @@
 
 namespace Mantids { namespace Scripts { namespace Expressions {
 
-enum eExpressionSideMode
-{
-    EXPR_MODE_NUMERIC,
-    EXPR_MODE_STATIC_STRING,
-    EXPR_MODE_JSONPATH,
-    EXPR_MODE_NULL,
-    EXPR_MODE_UNDEFINED
-};
-
 class AtomicExpressionSide
 {
 public:
+
+    enum eExpressionSideMode
+    {
+        EXPR_MODE_NUMERIC,
+        EXPR_MODE_STATIC_STRING,
+        EXPR_MODE_JSONPATH,
+        EXPR_MODE_NULL,
+        EXPR_MODE_UNDEFINED
+    };
+
+
     AtomicExpressionSide(std::vector<std::string> * staticTexts);
     ~AtomicExpressionSide();
 

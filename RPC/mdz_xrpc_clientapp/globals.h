@@ -13,6 +13,8 @@ static std::string dirSlash =  "\\";
 static std::string dirSlash =  "/";
 #endif
 
+#define LOG_APP Globals::getAppLog()
+
 class Globals
 {
 public:

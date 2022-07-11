@@ -6,21 +6,21 @@
 using namespace Mantids::Memory::Streams;
 using namespace Mantids::Memory::Streams::Decoders;
 
-URL::URL(Memory::Streams::Streamable * orig)
+URL::URL(Memory::Streams::StreamableObject * orig)
 {
     this->orig = orig;
     filled=0;
     finalBytesWritten =0;
 }
 
-bool URL::streamTo(Memory::Streams::Streamable *, Status & )
+bool URL::streamTo(Memory::Streams::StreamableObject *, StreamableObject::Status & )
 {
     return false;
 }
 
-Status URL::write(const void *buf, const size_t &count, Status &wrStat)
+StreamableObject::Status URL::write(const void *buf, const size_t &count, Status &wrStat)
 {
-    Status cur;
+    StreamableObject::Status cur;
     size_t pos=0;
 
     while (pos<count)
@@ -146,7 +146,7 @@ size_t URL::getPlainBytesSize(const unsigned char *buf, size_t count, unsigned c
     return count;
 }
 
-Status URL::flushBytes(Status & wrStat)
+StreamableObject::Status URL::flushBytes(Status & wrStat)
 {
     auto x= orig->writeFullStream(bytes,filled, wrStat);
     filled = 0;
@@ -192,8 +192,8 @@ std::string URL::decodeURLStr(const std::string &url)
 
     // Decode URI (maybe it's url encoded)...
     Memory::Streams::Decoders::URL uriDecoder(&uriDecoded);
-    Memory::Streams::Status cur;
-    Memory::Streams::Status wrsStat;
+    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::StreamableObject::Status wrsStat;
 
     if ((cur+=uriEncoded.streamTo(&uriDecoder, wrsStat)).succeed)
     {

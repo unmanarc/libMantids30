@@ -124,7 +124,7 @@ std::pair<bool,uint64_t> B_MEM::copyToStream2(std::ostream &bc, const uint64_t &
     return std::make_pair(true,copyToStreamUsingCleanVector(bc,copyChunks));
 }
 
-std::pair<bool,uint64_t> B_MEM::copyTo2(Streamable &bc, Streams::Status & wrStatUpd, const uint64_t &roBytes, const uint64_t &offset)
+std::pair<bool,uint64_t> B_MEM::copyTo2(StreamableObject &bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &roBytes, const uint64_t &offset)
 {
     uint64_t bytes = roBytes;
     // No bytes to copy.

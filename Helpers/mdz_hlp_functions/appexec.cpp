@@ -54,7 +54,7 @@ struct sAppPIPE {
 };
 #endif
 
-Mantids::Helpers::sAppExecResult Mantids::Helpers::AppExec::blexec(const sAppExecCmd &cmd)
+Mantids::Helpers::AppExec::sAppExecResult Mantids::Helpers::AppExec::blexec(const sAppExecCmd &cmd)
 {
     sAppExecResult rt;
 

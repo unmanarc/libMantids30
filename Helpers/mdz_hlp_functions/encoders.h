@@ -5,15 +5,16 @@
 
 namespace Mantids { namespace Helpers {
 
-enum eURLEncodingType
-{
-    ENC_STRICT,
-    ENC_QUOTEPRINT
-};
-
 class Encoders
 {
 public:
+
+    enum eURLEncodingType
+    {
+        ENC_STRICT,
+        ENC_QUOTEPRINT
+    };
+
     Encoders();
 
     // Obfuscated encoding

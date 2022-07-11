@@ -15,18 +15,48 @@
 // TODO: reuse the connection?...
 // TODO: header: :scheme:https (begins with :)
 
-namespace Mantids { namespace Network { namespace HTTP {
+namespace Mantids { namespace Protocols { namespace HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
 {
 public:
-    HTTPv1_Client(Memory::Streams::Streamable * sobject);
+    HTTPv1_Client(Memory::Streams::StreamableObject * sobject);
     /**
      * @brief setClientRequest Set client request
      * @param hostName host name
      * @param uriPath requested Uniform Resource Indetifier Path
      */
     void setClientRequest(const std::string & hostName, const std::string & uriPath);
+
+    struct PostMIMERequest {
+        Protocols::MIME::MIME_Message * postVars;
+        Common::URLVars * urlVars;
+    };
+    /**
+     * @brief prepareRequestAsPostMIME Prepare a POST MIME Request (by default we use GET)
+     * @param hostName
+     * @param uriPath
+     */
+    PostMIMERequest prepareRequestAsPostMIME( const std::string & hostName, const std::string & uriPath );
+
+    struct PostURLRequest {
+        Common::URLVars * postVars;
+        Common::URLVars * urlVars;
+    };
+    /**
+     * @brief prepareRequestAsPostURL Prepare a POST URL Request (by default we use GET)
+     * @param hostName
+     * @param uriPath
+     */
+    PostURLRequest prepareRequestAsPostURL( const std::string & hostName, const std::string & uriPath );
+
+    /**
+     * @brief getResponseHeader Get Response Header from the server as string
+     * @param headerName Header Name
+     * @return string with the header value
+     */
+    std::string getResponseHeader(const std::string & headerName);
+
     /**
      * @brief setDontTrackFlag Set Don't track flag
      * @param dnt true: don't track
@@ -37,6 +67,12 @@ public:
      * @param refererURL referer URL
      */
     void setReferer(const std::string & refererURL);
+    /**
+     * @brief addURLVar Add URL GET Variable
+     * @param varName Variable Name
+     * @param varValue Variable Value
+     */
+    void addURLVar(const std::string & varName, const std::string & varValue);
     /**
      * @brief addCookieValue Add cookie.
      * @param cookieName Cookie Name
@@ -109,9 +145,9 @@ protected:
     virtual void onFinished() {}
 private:
     void parseHeaders2ServerCookies();
-    Memory::Streams::Parsing::SubParser *parseHeaders2TransmitionMode();
+    Memory::Streams::SubParser *parseHeaders2TransmitionMode();
 
-    bool streamClientHeaders(Memory::Streams::Status &wrStat);
+    bool streamClientHeaders(Memory::Streams::StreamableObject::Status &wrStat);
 
     Request::Cookies_ClientSide clientCookies;
     Response::Cookies_ServerSide serverCookies;

@@ -10,26 +10,26 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-namespace Mantids { namespace Network { namespace TLS {
-
-enum SSL_MODE {
-    SSL_MODE_TLS_12
-};
-
-struct cipherBits
-{
-    cipherBits() {
-        aSymBits = 0;
-        symBits = 0;
-    }
-    int aSymBits, symBits;
-};
+namespace Mantids { namespace Network { namespace Sockets {
 
 /**
  * TCP Socket Class
  */
-class Socket_TLS : public Sockets::Socket_TCP {
+class Socket_TLS : public Socket_TCP {
 public:
+    enum TLS_MODE {
+        TLS_MODE_12
+    };
+
+    struct TLS_CipherBits
+    {
+        TLS_CipherBits() {
+            aSymBits = 0;
+            symBits = 0;
+        }
+        int aSymBits, symBits;
+    };
+
 	/**
 	 * Class constructor.
 	 */
@@ -47,7 +47,7 @@ public:
      * Accept a new TCP connection on a listening socket. The connection should be initialized with "postAcceptSubInitialization"
      * @return returns a socket with the new established tcp connection.
      */
-    StreamSocket *acceptConnection() override;
+    Socket_StreamBase *acceptConnection() override;
     /**
      * Read a data block from the TLS socket
      * Receive the data block in only one command (without chunks).
@@ -77,7 +77,7 @@ public:
     /**
      * SSL protocol set.
      */
-    void setTLSContextMode(const SSL_MODE &value);
+    void setTLSContextMode(const TLS_MODE &value);
     /**
      * Set TLS certificate authority chain file.
      * @return true if succeed
@@ -117,7 +117,7 @@ public:
      * @brief getCipherBits Get current cipher bits used.
      * @return bits used
      */
-    cipherBits getCipherBits();
+    TLS_CipherBits getCipherBits();
     /**
      * @brief getProtocolVersionName Get protocol version name
      * @return cipher version string
@@ -166,7 +166,7 @@ private:
 
     std::list<std::string> sslErrors;
 
-    SSL_MODE sslMode;
+    TLS_MODE sslMode;
     bool isServer, acceptInvalidServerCerts;
 };
 }}}

@@ -1,7 +1,7 @@
 #ifndef HTTP1BASE_H
 #define HTTP1BASE_H
 
-#include <mdz_mem_vars/streamparser.h>
+#include <mdz_mem_vars/parser.h>
 #include <mdz_mem_vars/vars.h>
 
 #include "req_requestline.h"
@@ -12,7 +12,7 @@
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 3
 
-namespace Mantids { namespace Network { namespace HTTP {
+namespace Mantids { namespace Protocols { namespace HTTP {
 
 namespace Request {
 struct RequestDeliveryObjects
@@ -32,10 +32,10 @@ struct ResponseDeliveryObjects
 };
 }
 
-class HTTPv1_Base : public Memory::Streams::Parsing::Parser
+class HTTPv1_Base : public Memory::Streams::Parser
 {
 public:
-    HTTPv1_Base(bool clientMode, Memory::Streams::Streamable *sobject);
+    HTTPv1_Base(bool clientMode, Memory::Streams::StreamableObject *sobject);
     virtual ~HTTPv1_Base()  override {}
 
     // Parameters:

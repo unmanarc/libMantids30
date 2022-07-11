@@ -1,7 +1,7 @@
 #ifndef SOCKET_TCP_H
 #define SOCKET_TCP_H
 
-#include "streamsocket.h"
+#include "socket_streambase.h"
 #include <unistd.h>
 
 #ifdef _WIN32
@@ -13,7 +13,7 @@ namespace Mantids { namespace Network { namespace Sockets {
 /**
  * TCP Socket Class
  */
-class Socket_TCP : public Streams::StreamSocket {
+class Socket_TCP : public Sockets::Socket_StreamBase {
 public:
     /**
      * Class constructor.
@@ -39,7 +39,7 @@ public:
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.
      */
-    virtual StreamSocket *acceptConnection() override;
+    virtual Socket_StreamBase *acceptConnection() override;
 
     /**
      * Virtual function for protocol initialization after the connection starts...

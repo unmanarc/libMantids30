@@ -10,15 +10,16 @@
 
 namespace Mantids { namespace Database {
 
-enum ExecType
-{
-    EXEC_TYPE_SELECT,
-    EXEC_TYPE_INSERT
-};
 
 class Query
 {
 public:
+    enum ExecType
+    {
+        EXEC_TYPE_SELECT,
+        EXEC_TYPE_INSERT
+    };
+
     Query();
     virtual ~Query();
 

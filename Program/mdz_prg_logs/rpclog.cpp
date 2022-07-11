@@ -77,9 +77,9 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
         if (modulesOutputExclusion.find(module)!=modulesOutputExclusion.end()) return;
     }
 
-    user = Helpers::Encoders::toURL(user,Helpers::ENC_QUOTEPRINT);
-    domain = Helpers::Encoders::toURL(domain,Helpers::ENC_QUOTEPRINT);
-    sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId),Helpers::ENC_QUOTEPRINT);
+    user = Helpers::Encoders::toURL(user,Helpers::Encoders::ENC_QUOTEPRINT);
+    domain = Helpers::Encoders::toURL(domain,Helpers::Encoders::ENC_QUOTEPRINT);
+    sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId),Helpers::Encoders::ENC_QUOTEPRINT);
 
     if (!usingAttributeName && printEmptyFields)
     {
@@ -105,7 +105,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
         if (((module.empty() && printEmptyFields) || !module.empty()) && !disableModule)
             logLine += "MODULE=" + getAlignedValue("\"" + module + "\"",moduleAlignSize)+ "" + standardLogSeparator;
         if ((!buffer[0] && printEmptyFields) || buffer[0])
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::ENC_QUOTEPRINT) + "\"";
+            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::ENC_QUOTEPRINT) + "\"";
     }
     else
     {
@@ -125,7 +125,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
             logLine +=getAlignedValue("\"" +module+ "\"",moduleAlignSize) + standardLogSeparator;
 
         if ((!buffer[0] && printEmptyFields) || buffer[0])
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::ENC_QUOTEPRINT) + "\"";
+            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::ENC_QUOTEPRINT) + "\"";
     }
 
 

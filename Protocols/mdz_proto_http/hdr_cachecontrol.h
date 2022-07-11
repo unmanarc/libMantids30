@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Headers {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Headers {
 
 class CacheControl
 {

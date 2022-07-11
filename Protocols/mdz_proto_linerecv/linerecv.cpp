@@ -1,11 +1,11 @@
 #include "linerecv.h"
 
-using namespace Mantids::Network::Line2Line;
+using namespace Mantids::Protocols::Line2Line;
 
-LineRecv::LineRecv(Memory::Streams::Streamable *sobject) : Memory::Streams::Parsing::Parser(sobject,false)
+LineRecv::LineRecv(Memory::Streams::StreamableObject *sobject) : Memory::Streams::Parser(sobject,false)
 {
     initialized = initProtocol();
-    currentParser = (Memory::Streams::Parsing::SubParser *)(&subParser);
+    currentParser = (Memory::Streams::SubParser *)(&subParser);
 }
 
 void LineRecv::setMaxLineSize(const uint32_t &maxLineSize)

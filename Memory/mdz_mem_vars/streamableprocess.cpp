@@ -12,7 +12,7 @@ Mantids::Memory::Streams::StreamableProcess::~StreamableProcess()
     delete this->spawner;
 }
 
-bool Mantids::Memory::Streams::StreamableProcess::streamTo(Streamable *out, Status &wrStatUpd)
+bool Mantids::Memory::Streams::StreamableProcess::streamTo(StreamableObject *out, Status &wrStatUpd)
 {
     Status cur;
     for (;;)
@@ -64,10 +64,10 @@ bool Mantids::Memory::Streams::StreamableProcess::streamTo(Streamable *out, Stat
    return true;
 }
 
-Mantids::Memory::Streams::Status Mantids::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count, Status &wrStatUpd)
+Mantids::Memory::Streams::StreamableObject::Status Mantids::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count, Status &wrStatUpd)
 {
     // TODO:
-    Mantids::Memory::Streams::Status status;
+    Mantids::Memory::Streams::StreamableObject::Status status;
     status.succeed = false;
     status.finish = false;
     return status;

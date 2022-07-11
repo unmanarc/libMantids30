@@ -1,13 +1,13 @@
 #include "mime_partmessage.h"
 
-using namespace Mantids::Network::MIME;
+using namespace Mantids::Protocols::MIME;
 
 
 MIME_PartMessage::MIME_PartMessage()
 {
 }
 
-bool MIME_PartMessage::stream(Memory::Streams::Status &wrStat)
+bool MIME_PartMessage::stream(Memory::Streams::StreamableObject::Status &wrStat)
 {
     if (!header.stream(wrStat)) return false;
     if (!content.stream(wrStat)) return false;

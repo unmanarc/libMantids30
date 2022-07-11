@@ -1,7 +1,9 @@
 #include "loginrpcclient.h"
-#include <mdz_net_sockets/cryptostream.h>
+#include <mdz_net_sockets/streams_cryptochallenge.h>
 
 #include <thread>
+
+using namespace Mantids::Network::Sockets;
 using namespace Mantids::Authentication;
 
 LoginRPCClient::LoginRPCClient()
@@ -17,7 +19,7 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
 {
     for (;;)
     {
-        Mantids::Network::TLS::Socket_TLS tlsClient;
+        Socket_TLS tlsClient;
 
         // Authenticate that the server with X.509
         tlsClient.setTLSCertificateAuthorityPath(rpcClient->getCaFile().c_str());
@@ -40,7 +42,7 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
             rpcClient->notifyTLSConnectedOK(&tlsClient);
 
             // Initialize the crypto stream (for crypto challenge authentication)
-            Network::Streams::CryptoStream cstream(&tlsClient);
+            NetStreams::CryptoChallenge cstream(&tlsClient);
             // Send the Application name
             tlsClient.writeStringEx<uint16_t>(rpcClient->getAppName());
             // Exchange the crypto challenge/response for the authentication (both nodes will authenticate that the other one haves the challenge key without sharing it)

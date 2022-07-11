@@ -9,11 +9,6 @@
 
 namespace Mantids { namespace Authentication {
 
-enum eCheckMode
-{
-    CHECK_ALLOW_EXPIRED_PASSWORDS,
-    CHECK_DISALLOW_EXPIRED_PASSWORDS
-};
 
 struct sAuthenticationPolicy
 {
@@ -45,6 +40,12 @@ struct sCurrentAuthentication
 class Session : public Session_Vars
 {
 public:
+    enum eCheckMode
+    {
+        CHECK_ALLOW_EXPIRED_PASSWORDS,
+        CHECK_DISALLOW_EXPIRED_PASSWORDS
+    };
+
     Session(const std::string & appName);
    /* Session& operator=(Session &value)
     {

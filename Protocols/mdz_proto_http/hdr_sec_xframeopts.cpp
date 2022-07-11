@@ -5,8 +5,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
-using namespace Mantids::Network::HTTP::Headers::Security;
-using namespace Mantids::Network::HTTP;
+using namespace Mantids::Protocols::HTTP::Headers::Security;
+using namespace Mantids::Protocols::HTTP;
 using namespace Mantids;
 using namespace std;
 using namespace boost;
@@ -17,7 +17,7 @@ XFrameOpts::XFrameOpts()
     setDefaults();
 }
 
-XFrameOpts::XFrameOpts(const eXFrameOptsValues &value, const string &fromURL)
+XFrameOpts::XFrameOpts(const eOptsValues &value, const string &fromURL)
 {
     this->value = value;
     this->fromURL = fromURL;
@@ -39,7 +39,7 @@ bool XFrameOpts::isNotActivated() const
     return value == HTTP_XFRAME_NONE;
 }
 
-string Mantids::Network::HTTP::Headers::Security::XFrameOpts::toValue()
+string Mantids::Protocols::HTTP::Headers::Security::XFrameOpts::toValue()
 {
     switch (value)
     {
@@ -103,7 +103,7 @@ void XFrameOpts::setFromURL(const string &value)
     fromURL = value;
 }
 
-eXFrameOptsValues XFrameOpts::getValue() const
+XFrameOpts::eOptsValues XFrameOpts::getValue() const
 {
     return value;
 }

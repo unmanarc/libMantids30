@@ -14,7 +14,7 @@ using namespace Mantids::Application;
 
 void RPCClientApplication::_shutdown()
 {
-    Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "SIGTERM received.");
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO, "SIGTERM received.");
     rpcShutdown();
 }
 
@@ -38,7 +38,7 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids::Applicatio
     defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir;
 #endif
 
-    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , defaultConfigDir, Mantids::Memory::Abstract::TYPE_STRING );
+    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , defaultConfigDir, Mantids::Memory::Abstract::Var::TYPE_STRING );
 }
 
 bool RPCClientApplication::_config(int argc, char *argv[], Mantids::Application::Arguments::GlobalArguments *globalArguments)
@@ -95,12 +95,12 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids::Application:
     if ( Globals::getLC_LogsUsingSyslog() ) logMode|=Mantids::Application::Logs::MODE_SYSLOG;
     // Applog instance
     Globals::setAppLog(new Logs::AppLog(logMode));
-    Globals::getAppLog()->setPrintEmptyFields(true);
-    Globals::getAppLog()->setUserAlignSize(1);
-    Globals::getAppLog()->setUsingAttributeName(false);
-    Globals::getAppLog()->setUsingColors(Globals::getLC_LogsShowColors());
-    Globals::getAppLog()->setUsingPrintDate(Globals::getLC_LogsShowDate());
-    Globals::getAppLog()->setModuleAlignSize(36);
+    LOG_APP->setPrintEmptyFields(true);
+    LOG_APP->setUserAlignSize(1);
+    LOG_APP->setUsingAttributeName(false);
+    LOG_APP->setUsingColors(Globals::getLC_LogsShowColors());
+    LOG_APP->setUsingPrintDate(Globals::getLC_LogsShowDate());
+    LOG_APP->setModuleAlignSize(36);
 
     bool cont=true;
 
@@ -118,17 +118,17 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
     // Check I will be able to connect:
     if (access(Globals::getLC_TLSCAFilePath().c_str(),R_OK))
     {
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
         cont=false;
     }
     if (!Globals::getLC_TLSCertFilePath().empty() && access(Globals::getLC_TLSCertFilePath().c_str(),R_OK))
     {
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
+        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
         cont=false;
     }
     if (!Globals::getLC_TLSKeyFilePath().empty() && access(Globals::getLC_TLSKeyFilePath().c_str(),R_OK))
     {
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
+        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
         cont=false;
     }
 
@@ -160,7 +160,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
     int r = rpcStart(argc,argv,globalArguments);
 
     // Everything is running ok here...
-    Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->getDescription() + " started up, PID: %d").c_str(), getpid());
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->getDescription() + " started up, PID: %d").c_str(), getpid());
     return r;
 }
 

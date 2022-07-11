@@ -4,9 +4,9 @@
 #include "sessionsmanager.h"
 #include "resourcesfilter.h"
 
-#include <mdz_net_sockets/streamsocket.h>
-#include <mdz_net_sockets/socket_acceptor_poolthreaded.h>
-#include <mdz_net_sockets/socket_acceptor_multithreaded.h>
+#include <mdz_net_sockets/socket_streambase.h>
+#include <mdz_net_sockets/acceptor_poolthreaded.h>
+#include <mdz_net_sockets/acceptor_multithreaded.h>
 #include <mdz_auth/domains.h>
 #include <mdz_xrpc_common/methodsmanager.h>
 #include <mdz_prg_logs/rpclog.h>
@@ -14,33 +14,35 @@
 
 namespace Mantids { namespace RPC { namespace Web {
 
-struct sWebServerCallBack
-{
-    sWebServerCallBack()
-    {
-        callbackFunction=nullptr;
-    }
-
-    sWebServerCallBack( bool (*callbackFunction)(void *, Network::Streams::StreamSocket *, const char *, bool) )
-    {
-        this->callbackFunction=callbackFunction;
-    }
-
-    bool call(void *x, Network::Streams::StreamSocket *y, const char *z, bool q) const
-    {
-        if (!callbackFunction) return true;
-        return callbackFunction(x,y,z,q);
-    }
-    /**
-     * return false to cancel the connection, true to continue...
-     */
-    bool (*callbackFunction)(void *, Network::Streams::StreamSocket *, const char *, bool);
-};
-
 
 class WebServer
 {
 public:
+
+    struct sWebServerCallBack
+    {
+        sWebServerCallBack()
+        {
+            callbackFunction=nullptr;
+        }
+
+        sWebServerCallBack( bool (*callbackFunction)(void *, Network::Sockets::Socket_StreamBase *, const char *, bool) )
+        {
+            this->callbackFunction=callbackFunction;
+        }
+
+        bool call(void *x, Network::Sockets::Socket_StreamBase *y, const char *z, bool q) const
+        {
+            if (!callbackFunction) return true;
+            return callbackFunction(x,y,z,q);
+        }
+        /**
+         * return false to cancel the connection, true to continue...
+         */
+        bool (*callbackFunction)(void *, Network::Sockets::Socket_StreamBase *, const char *, bool);
+    };
+
+
     WebServer();
     ~WebServer();
     /**
@@ -48,14 +50,14 @@ public:
      * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
      * @param maxConcurrentConnections Max Number of allowed Connections/Threads
      */
-    void acceptMultiThreaded(Network::Streams::StreamSocket * listenerSocket, const uint32_t & maxConcurrentConnections = 10000);
+    void acceptMultiThreaded(Network::Sockets::Socket_StreamBase * listenerSocket, const uint32_t & maxConcurrentConnections = 10000);
     /**
      * @brief acceptPoolThreaded Start Web Server as Pool-Threaded (threads are already started and consume clients from a queue)
      * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
      * @param threadCount Pre-started thread count
      * @param threadMaxQueuedElements Max queued connections per threads
      */
-    void acceptPoolThreaded(Network::Streams::StreamSocket * listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );   
+    void acceptPoolThreaded(Network::Sockets::Socket_StreamBase * listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );   
     /**
      * @brief setAuthenticator Set the Authenticator for Login
      * @param value Authenticator Object
@@ -172,21 +174,21 @@ public:
     void setRedirectOn404(const std::string &newRedirectOn404);
 
 private:
-    Network::Sockets::Acceptors::Socket_Acceptor_MultiThreaded multiThreadedAcceptor;
-    Network::Sockets::Acceptors::Socket_Acceptor_PoolThreaded poolThreadedAcceptor;
+    Network::Sockets::Acceptors::MultiThreaded multiThreadedAcceptor;
+    Network::Sockets::Acceptors::PoolThreaded poolThreadedAcceptor;
 
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _callbackOnConnect(void *, Network::Streams::StreamSocket *, const char *, bool);
+    static bool _callbackOnConnect(void *, Network::Sockets::Socket_StreamBase *, const char *, bool);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _callbackOnInitFailed(void *, Network::Streams::StreamSocket *, const char *, bool);
+    static bool _callbackOnInitFailed(void *, Network::Sockets::Socket_StreamBase *, const char *, bool);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void _callbackOnTimeOut(void *, Network::Streams::StreamSocket *, const char *, bool);
+    static void _callbackOnTimeOut(void *, Network::Sockets::Socket_StreamBase *, const char *, bool);
 
     void * obj;
 

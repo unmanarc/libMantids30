@@ -301,7 +301,7 @@ json Manager_Remote::getStaticContent()
     return fastRPC->runRemoteRPCMethod(CKEY,"getStaticContent",payload,nullptr);
 }
 
-int Manager_Remote::processFastRPCConnection(Mantids::Network::Streams::StreamSocket *stream)
+int Manager_Remote::processFastRPCConnection(Mantids::Network::Sockets::Socket_StreamBase *stream)
 {
     return fastRPC->processConnection(stream,CKEY);
 }

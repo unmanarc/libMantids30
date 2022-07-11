@@ -145,13 +145,13 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     return true;
 }
 
-Streams::StreamSocket * Socket_TCP::acceptConnection()
+Sockets::Socket_StreamBase * Socket_TCP::acceptConnection()
 {
     int sdconn;
 
     if (!isActive()) return nullptr;
 
-    StreamSocket * cursocket;
+    Socket_StreamBase * cursocket;
 
     int32_t clilen;
     struct sockaddr_in cli_addr;

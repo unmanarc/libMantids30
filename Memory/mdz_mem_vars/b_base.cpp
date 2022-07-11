@@ -285,13 +285,13 @@ std::pair<bool,uint64_t> B_Base::copyToStream(std::ostream &out, uint64_t bytes,
     return copyToStream2(out,bytes,offset);
 }
 
-std::pair<bool,uint64_t> B_Base::appendTo(Streamable &out, const uint64_t &bytes, const uint64_t &offset)
+std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, const uint64_t &bytes, const uint64_t &offset)
 {
-    Memory::Streams::Status wrStat;
+    Memory::Streams::StreamableObject::Status wrStat;
     return appendTo(out,wrStat,bytes,offset);
 }
 
-std::pair<bool,uint64_t> B_Base::appendTo(Streamable &out, Streams::Status &wrStatUpd, uint64_t bytes, const uint64_t &offset)
+std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, Streams::StreamableObject::Status &wrStatUpd, uint64_t bytes, const uint64_t &offset)
 {
     uint64_t currentSize = size();
 
@@ -601,7 +601,7 @@ void B_Base::setMaxSize(const uint64_t &value)
     maxSize = value;
 }
 
-bool B_Base::streamTo(Memory::Streams::Streamable *out, Streams::Status &wrStatUpd)
+bool B_Base::streamTo(Memory::Streams::StreamableObject *out, Streams::StreamableObject::Status &wrStatUpd)
 {
     std::pair<bool,uint64_t> bytesAppended = appendTo(*out,wrStatUpd);
     if (bytesAppended.first==false)
@@ -616,9 +616,9 @@ bool B_Base::streamTo(Memory::Streams::Streamable *out, Streams::Status &wrStatU
     }
 }
 
-Mantids::Memory::Streams::Status B_Base::write(const void * buf, const size_t &count, Mantids::Memory::Streams::Status & wrStatUpd)
+Mantids::Memory::Streams::StreamableObject::Status B_Base::write(const void * buf, const size_t &count, Mantids::Memory::Streams::StreamableObject::Status & wrStatUpd)
 {
-    Memory::Streams::Status ret;
+    Memory::Streams::StreamableObject::Status ret;
     std::pair<bool,uint64_t> bytesAppended = append(buf,count);
     if (bytesAppended.first==false)
     {
@@ -680,9 +680,9 @@ std::string B_Base::getCurrentFileName() const
     return "";
 }
 
-std::pair<bool,uint64_t> B_Base::copyTo2(Streamable &bc, const uint64_t &bytes, const uint64_t &offset)
+std::pair<bool,uint64_t> B_Base::copyTo2(StreamableObject &bc, const uint64_t &bytes, const uint64_t &offset)
 {
-    Memory::Streams::Status wrStatUpd;
+    Memory::Streams::StreamableObject::Status wrStatUpd;
     return copyTo2(bc,wrStatUpd,bytes,offset);
 }
 
@@ -716,13 +716,13 @@ uint64_t B_Base::copyToStreamUsingCleanVector(std::ostream &bc, std::vector<Bina
     return dataCopied;
 }
 
-uint64_t B_Base::copyToSOUsingCleanVector(Streamable &bc, std::vector<BinaryContainerChunk> copyChunks, Streams::Status &wrStatUpd)
+uint64_t B_Base::copyToSOUsingCleanVector(StreamableObject &bc, std::vector<BinaryContainerChunk> copyChunks, Streams::StreamableObject::Status &wrStatUpd)
 {
-    Memory::Streams::Status acum;
+    Memory::Streams::StreamableObject::Status acum;
     // Appending mode.
     for (size_t i=0; i<copyChunks.size();i++)
     {
-        Memory::Streams::Status cur;
+        Memory::Streams::StreamableObject::Status cur;
         if ( !(cur = bc.write(copyChunks[i].rodata,copyChunks[i].rosize,wrStatUpd)).succeed || cur.bytesWritten!=copyChunks[i].rosize)
         {
             acum+=cur;

@@ -8,8 +8,8 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP;
-using namespace Mantids::Network::HTTP::Response;
+using namespace Mantids::Protocols::HTTP;
+using namespace Mantids::Protocols::HTTP::Response;
 using namespace Mantids;
 
 const sHTTP_StatusCode Status::responseCodes[] = {
@@ -62,21 +62,21 @@ const sHTTP_StatusCode Status::responseCodes[] = {
 
 Status::Status()
 {
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setParseDataTargetSize(128);
 }
 
-uint16_t Status::getHTTPStatusCodeTranslation(const StatusCode &code)
+uint16_t Status::getHTTPStatusCodeTranslation(const Status::eCode &code)
 {
-    if (code != Response::StatusCode::S_999_NOT_SET)
+    if (code != Response::Status::eCode::S_999_NOT_SET)
     {
         return responseCodes[code].code;
     }
     return 999;
 }
 
-Memory::Streams::Parsing::ParseStatus Status::parse()
+Memory::Streams::SubParser::ParseStatus Status::parse()
 {
     std::string clientRequest = getParsedData()->toString();
 
@@ -84,7 +84,7 @@ Memory::Streams::Parsing::ParseStatus Status::parse()
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::Parsing::PARSE_STAT_ERROR;
+    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 
     httpVersion.parseVersion(requestParts[0]);
     responseCode = strtoul(requestParts[1].c_str(),nullptr,10);
@@ -99,7 +99,7 @@ Memory::Streams::Parsing::ParseStatus Status::parse()
         }
     }
 
-    return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
 std::string Status::getResponseMessage() const
@@ -112,7 +112,7 @@ void Status::setResponseMessage(const std::string &value)
     responseMessage = value;
 }
 
-bool Status::stream(Memory::Streams::Status & wrStat)
+bool Status::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     // Act as a client. Send data from here.
     return upStream->writeString(  httpVersion.getHTTPVersionString()
@@ -127,9 +127,9 @@ void Status::setRetCodeValue(unsigned short value)
     responseCode = value;
 }
 
-void Status::setRetCode(StatusCode code)
+void Status::setRetCode(Status::eCode code)
 {
-    if (code != Response::StatusCode::S_999_NOT_SET)
+    if (code != Response::Status::eCode::S_999_NOT_SET)
     {
         setRetCodeValue(responseCodes[code].code);
         setResponseMessage(responseCodes[code].responseMessage);

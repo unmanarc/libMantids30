@@ -80,17 +80,17 @@ int StartApplication(int argc, char *argv[], Application *_app)
 #endif
     // Local default cmd options...
 #ifndef _WIN32
-    globalArgs.addCommandLineOption("Service Options",   0, "daemon" , "Run as daemon."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Service Options",   0, "daemon" , "Run as daemon."         , "0", Mantids::Memory::Abstract::Var::TYPE_BOOL );
 #endif
 
     // be careful to sanitize install parameters, because it can affect the security.
-    globalArgs.addCommandLineOption("Service Options",   0, "install" , "Install this program with systemd file/service name", "", Mantids::Memory::Abstract::TYPE_STRING );
-    globalArgs.addCommandLineOption("Service Options",   0, "reinstall" , "Reinstall this program if it's already installed", "0", Mantids::Memory::Abstract::TYPE_BOOL );
-    globalArgs.addCommandLineOption("Service Options",   0, "uninstall" , "Uninstall this program with systemd file/service name", "", Mantids::Memory::Abstract::TYPE_STRING );
+    globalArgs.addCommandLineOption("Service Options",   0, "install" , "Install this program with systemd file/service name", "", Mantids::Memory::Abstract::Var::TYPE_STRING );
+    globalArgs.addCommandLineOption("Service Options",   0, "reinstall" , "Reinstall this program if it's already installed", "0", Mantids::Memory::Abstract::Var::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Service Options",   0, "uninstall" , "Uninstall this program with systemd file/service name", "", Mantids::Memory::Abstract::Var::TYPE_STRING );
 
-    globalArgs.addCommandLineOption("Other Options",     0, "debugparams" , "Debug parameters and exit."         , "0", Mantids::Memory::Abstract::TYPE_BOOL );
-    globalArgs.addCommandLineOption("Other Options"  ,   0, "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::TYPE_UINT8 );
-    globalArgs.addCommandLineOption("Other Options"  ,  'h', "help"   , "Show information usage.", "0", Mantids::Memory::Abstract::TYPE_BOOL  );
+    globalArgs.addCommandLineOption("Other Options",     0, "debugparams" , "Debug parameters and exit."         , "0", Mantids::Memory::Abstract::Var::TYPE_BOOL );
+    globalArgs.addCommandLineOption("Other Options"  ,   0, "verbose", "Set verbosity level."   , "0", Mantids::Memory::Abstract::Var::TYPE_UINT8 );
+    globalArgs.addCommandLineOption("Other Options"  ,  'h', "help"   , "Show information usage.", "0", Mantids::Memory::Abstract::Var::TYPE_BOOL  );
 
     /////////////////////////
     struct timeval time;

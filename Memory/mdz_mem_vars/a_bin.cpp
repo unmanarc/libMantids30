@@ -14,7 +14,7 @@ BINARY::~BINARY()
 
 }
 
-sBinContainer *BINARY::getValue()
+BINARY::sBinContainer *BINARY::getValue()
 {
     value.mutex.lock();
     return &value;

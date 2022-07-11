@@ -8,26 +8,26 @@
 
 namespace Mantids { namespace Database {
 
-
-enum eSqlite3PragmaSyncMode {
-    SQLITE3_SYNC_OFF = 0,
-    SQLITE3_SYNC_NORMAL = 1,
-    SQLITE3_SYNC_FULL = 2,
-    SQLITE3_SYNC_EXTRA = 3
-};
-
-enum eSqlite3PragmaJournalMode {
-    SQLITE3_JOURNAL_OFF,
-    SQLITE3_JOURNAL_WAL,
-    SQLITE3_JOURNAL_MEMORY,
-    SQLITE3_JOURNAL_PERSIST,
-    SQLITE3_JOURNAL_TRUNCATE,
-    SQLITE3_JOURNAL_DELETE
-};
-
 class SQLConnector_SQLite3 : public SQLConnector
 {
 public:
+
+    enum eSqlite3PragmaSyncMode {
+        SQLITE3_SYNC_OFF = 0,
+        SQLITE3_SYNC_NORMAL = 1,
+        SQLITE3_SYNC_FULL = 2,
+        SQLITE3_SYNC_EXTRA = 3
+    };
+
+    enum eSqlite3PragmaJournalMode {
+        SQLITE3_JOURNAL_OFF,
+        SQLITE3_JOURNAL_WAL,
+        SQLITE3_JOURNAL_MEMORY,
+        SQLITE3_JOURNAL_PERSIST,
+        SQLITE3_JOURNAL_TRUNCATE,
+        SQLITE3_JOURNAL_DELETE
+    };
+
     SQLConnector_SQLite3();
     ~SQLConnector_SQLite3();
 

@@ -9,38 +9,59 @@
 #include <mdz_auth/domains.h>
 #include <mdz_thr_mutex/mutex_shared.h>
 
-#include "validation_codes.h"
+//#include "validation_codes.h"
 #include "methodsattributes_map.h"
 
 namespace Mantids { namespace RPC {
     
-struct sRPCParameters
-{
-    std::string domainName;
-    void * rpcMethodsCaller;
-    void * connectionSender;
-    Mantids::Authentication::Domains *authDomains;
-    Mantids::Authentication::Session *session;
-    std::string methodName;
-    json payload;
-    uint64_t requestId;
-};
 
-struct sRPCMethod
-{
-    /**
-     * @brief Function pointer.
-     */
-    json (*rpcMethod)(void * obj, Mantids::Authentication::Manager *, Mantids::Authentication::Session * session, const json & parameters);
-    /**
-     * @brief obj object to pass
-     */
-    void * obj;
-};
 
 class MethodsManager
 {
 public:
+    /*
+    struct sRPCParameters
+    {
+        std::string domainName;
+        void * rpcMethodsCaller;
+        void * connectionSender;
+        Mantids::Authentication::Domains *authDomains;
+        Mantids::Authentication::Session *session;
+        std::string methodName;
+        json payload;
+        uint64_t requestId;
+    };*/
+
+    enum eMethodValidationCodes
+    {
+        VALIDATION_OK = 0x0,
+        VALIDATION_METHODNOTFOUND = 0x1,
+        VALIDATION_NOTAUTHORIZED = 0x2
+    };
+
+    enum eRetCodes {
+        METHOD_RET_CODE_SUCCESS = 0,
+        METHOD_RET_CODE_INVALIDDOMAIN = -9993,
+        METHOD_RET_CODE_UNAUTHENTICATED = -9994,
+        METHOD_RET_CODE_INVALIDLOCALAUTH = -9995,
+        METHOD_RET_CODE_TIMEDOUT = -9996,
+        METHOD_RET_CODE_INVALIDAUTH = -9997,
+        METHOD_RET_CODE_SERVERMEMORYFULL = -9998,
+        METHOD_RET_CODE_METHODNOTFOUND = -9999
+    };
+
+    struct sRPCMethod
+    {
+        /**
+         * @brief Function pointer.
+         */
+        json (*rpcMethod)(void * obj, Mantids::Authentication::Manager *, Mantids::Authentication::Session * session, const json & parameters);
+        /**
+         * @brief obj object to pass
+         */
+        void * obj;
+    };
+
     /**
      * @brief MethodsManager Constructor
      * @param appName Application Name

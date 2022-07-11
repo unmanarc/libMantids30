@@ -12,6 +12,7 @@ class B_Chunks : public B_Base
 {
 public:
     B_Chunks();
+    B_Chunks(const std::string & str);
     ~B_Chunks() override;
 
     void setMaxContainerSizeUntilGoingToFS(const uint64_t &value);
@@ -99,7 +100,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::pair<bool,uint64_t> copyTo2(Streamable & bc, Streams::Status & wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) override;
+    std::pair<bool,uint64_t> copyTo2(StreamableObject & bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) override;
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container

@@ -10,22 +10,22 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP;
-using namespace Mantids::Network::HTTP::Request;
+using namespace Mantids::Protocols::HTTP;
+using namespace Mantids::Protocols::HTTP::Request;
 using namespace Mantids;
 
 RequestLine::RequestLine()
 {
     requestMethod = "GET"; // Default Method.
 
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K
 }
 
-bool RequestLine::stream(Memory::Streams::Status & wrStat)
+bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
-    Memory::Streams::Status cur;
+    Memory::Streams::StreamableObject::Status cur;
     // Act as a client. Send data from here.
     if (!(cur+=upStream->writeString(requestMethod + " " + requestURI, wrStat )).succeed) return false;
     if (!getVars.isEmpty())
@@ -37,7 +37,7 @@ bool RequestLine::stream(Memory::Streams::Status & wrStat)
     return true;
 }
 
-Memory::Streams::Parsing::ParseStatus RequestLine::parse()
+Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 {
     std::string clientRequest = getParsedData()->toString();
 
@@ -45,7 +45,7 @@ Memory::Streams::Parsing::ParseStatus RequestLine::parse()
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::Parsing::PARSE_STAT_ERROR;
+    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 
     requestMethod = boost::to_upper_copy(requestParts[0]);
     requestURI = requestParts[1];
@@ -53,7 +53,7 @@ Memory::Streams::Parsing::ParseStatus RequestLine::parse()
 
     parseURI();
 
-    return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
 void RequestLine::parseURI()
@@ -78,7 +78,7 @@ void RequestLine::parseURI()
 
 void RequestLine::parseGETParameters()
 {
-    Memory::Streams::Status x;
+    Memory::Streams::StreamableObject::Status x;
     Memory::Containers::B_Chunks bc;
     bc.append(requestURIParameters.c_str(),requestURIParameters.size());
     bc.streamTo(&getVars,x);
@@ -94,7 +94,7 @@ Common::Version * RequestLine::getHTTPVersion()
     return &httpVersion;
 }
 
-Memory::Abstract::Vars *RequestLine::getVarsPTR()
+Memory::Abstract::Vars *RequestLine::urlVars()
 {
     return &getVars;
 }

@@ -204,7 +204,7 @@ bool NetIfConfig::apply()
     return true;
 }
 
-NetIfType NetIfConfig::getNetIfType() const
+NetIfConfig::NetIfType NetIfConfig::getNetIfType() const
 {
     return netifType;
 }

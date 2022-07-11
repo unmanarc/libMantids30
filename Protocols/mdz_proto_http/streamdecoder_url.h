@@ -1,16 +1,16 @@
 #ifndef STREAMDECURL_H
 #define STREAMDECURL_H
 
-#include <mdz_mem_vars/streamable.h>
+#include <mdz_mem_vars/streamableobject.h>
 
 namespace Mantids { namespace Memory { namespace Streams { namespace Decoders {
 
-class URL : public Memory::Streams::Streamable
+class URL : public Memory::Streams::StreamableObject
 {
 public:
-    URL(Memory::Streams::Streamable * orig);
+    URL(Memory::Streams::StreamableObject * orig);
 
-    bool streamTo(Memory::Streams::Streamable *, Status & ) override;
+    bool streamTo(Memory::Streams::StreamableObject *, Status & ) override;
     Status write(const void * buf, const size_t &count, Status &wrStat) override;
 
     uint64_t getFinalBytesWritten() const;
@@ -29,7 +29,7 @@ private:
     uint8_t filled;
 
     uint64_t finalBytesWritten;
-    Memory::Streams::Streamable * orig;
+    Memory::Streams::StreamableObject * orig;
 };
 
 }}}}

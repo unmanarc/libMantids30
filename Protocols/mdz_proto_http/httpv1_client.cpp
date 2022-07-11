@@ -5,12 +5,12 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP;
+using namespace Mantids::Protocols::HTTP;
 using namespace Mantids;
 
-HTTPv1_Client::HTTPv1_Client(Memory::Streams::Streamable *sobject) : HTTPv1_Base(true,sobject)
+HTTPv1_Client::HTTPv1_Client(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(true,sobject)
 {
-    currentParser = (Memory::Streams::Parsing::SubParser *)(&_serverCodeResponse);
+    currentParser = (Memory::Streams::SubParser *)(&_serverCodeResponse);
     _clientRequestLine.getHTTPVersion()->setVersionMajor(1);
     _clientRequestLine.getHTTPVersion()->setVersionMinor(0);
 
@@ -19,7 +19,7 @@ HTTPv1_Client::HTTPv1_Client(Memory::Streams::Streamable *sobject) : HTTPv1_Base
 
 bool HTTPv1_Client::initProtocol()
 {
-    Memory::Streams::Status wrStat;
+    Memory::Streams::StreamableObject::Status wrStat;
 
     if (!_clientRequestLine.stream(wrStat))
         return false;
@@ -69,26 +69,26 @@ void HTTPv1_Client::parseHeaders2ServerCookies()
         serverCookies.parseCookie(serverCookie->getOrigValue());
 }
 
-Memory::Streams::Parsing::SubParser * HTTPv1_Client::parseHeaders2TransmitionMode()
+Memory::Streams::SubParser * HTTPv1_Client::parseHeaders2TransmitionMode()
 {
-    _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONNECTION_CLOSE);
+    _serverContentData.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONNECTION_CLOSE);
     // Set Content Data Reception Mode.
     if (_serverHeaders.exist("Content-Length"))
     {
         uint64_t len = _serverHeaders.getOptionAsUINT64("Content-Length");
-        _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONTENT_LENGTH);
+        _serverContentData.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
         if (!len || !_serverContentData.setContentLenSize(len))
             return nullptr;
     }
     else if (icontains(_serverHeaders.getOptionValueStringByName("Transfer-Encoding"),"CHUNKED"))
-        _serverContentData.setTransmitionMode(Common::TRANSMIT_MODE_CHUNKS);
+        _serverContentData.setTransmitionMode(Common::Content::TRANSMIT_MODE_CHUNKS);
 
     return &_serverContentData;
 }
 
-bool HTTPv1_Client::streamClientHeaders(Memory::Streams::Status &wrStat)
+bool HTTPv1_Client::streamClientHeaders(Memory::Streams::StreamableObject::Status &wrStat)
 {
     // Act as a server. Send data from here.
     uint64_t strsize;
@@ -146,6 +146,37 @@ void HTTPv1_Client::setClientRequest(const std::string &hostName, const std::str
     _clientHeaders.replace("Host", hostName);
 }
 
+HTTPv1_Client::PostMIMERequest HTTPv1_Client::prepareRequestAsPostMIME(const std::string &hostName, const std::string &uriPath)
+{
+    HTTPv1_Client::PostMIMERequest req;
+
+    setClientRequest(hostName,uriPath);
+    request().request->setRequestMethod("POST");
+    request().content->setContainerType(Common::Content::CONTENT_TYPE_MIME);
+    req.urlVars = (Common::URLVars *)request().request->urlVars();
+    req.postVars = request().content->getMultiPartVars();
+
+    return req;
+}
+
+HTTPv1_Client::PostURLRequest HTTPv1_Client::prepareRequestAsPostURL(const std::string &hostName, const std::string &uriPath)
+{
+    HTTPv1_Client::PostURLRequest req;
+
+    setClientRequest(hostName,uriPath);
+    request().request->setRequestMethod("POST");
+    request().content->setContainerType(Common::Content::CONTENT_TYPE_URL);
+    req.urlVars = (Common::URLVars *)request().request->urlVars();
+    req.postVars = request().content->getUrlPostVars();
+
+    return req;
+}
+
+std::string HTTPv1_Client::getResponseHeader(const std::string &headerName)
+{
+    return response().headers->getOptionValueStringByName(headerName);
+}
+
 void HTTPv1_Client::setDontTrackFlag(bool dnt)
 {
     _clientRequestLine.getHTTPVersion()->upgradeMinorVersion(1);
@@ -156,6 +187,11 @@ void HTTPv1_Client::setReferer(const std::string &refererURL)
 {
     _clientRequestLine.getHTTPVersion()->upgradeMinorVersion(1);
     _clientHeaders.replace("Referer", refererURL);
+}
+
+void HTTPv1_Client::addURLVar(const std::string &varName, const std::string &varValue)
+{
+    ((Common::URLVars *)request().request->urlVars())->addVar(varName, new Memory::Containers::B_Chunks(varValue));
 }
 
 void HTTPv1_Client::addCookie(const std::string &cookieName, const std::string &cookieVal)

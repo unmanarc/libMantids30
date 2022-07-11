@@ -8,13 +8,13 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::MIME;
+using namespace Mantids::Protocols::MIME;
 using namespace Mantids;
 using namespace std;
 
 MIME_Sub_Header::MIME_Sub_Header()
 {
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setMaxOptionSize(2*KB_MULT); // 2K per option
     maxOptions = 32; // 32 Max options
@@ -29,9 +29,9 @@ MIME_Sub_Header::~MIME_Sub_Header()
     }
 }
 
-bool MIME_Sub_Header::stream(Memory::Streams::Status & wrStat)
+bool MIME_Sub_Header::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
-    Memory::Streams::Status cur;
+    Memory::Streams::StreamableObject::Status cur;
 
     // Write out the header option values...
     for (auto & i : headers)
@@ -66,7 +66,7 @@ void MIME_Sub_Header::replace(const std::string &optionName, const std::string &
 }
 
 // TODO: sanitize inputs when client...
-void MIME_Sub_Header::add(const std::string &optionName, const std::string &optionValue, int state)
+bool MIME_Sub_Header::add(const std::string &optionName, const std::string &optionValue, int state)
 {
     MIME_HeaderOption * optP;
     if (state == 0)
@@ -75,13 +75,18 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
         if (headers.size()==maxOptions)
         {
             delete optP;
-            return; // Can't exceed.
+            return false; // Can't exceed.
         }
 
         optP->setOrigName(optionName);
         parseSubValues(optP,optionValue);
 
-        headers.insert(std::pair<std::string,MIME_HeaderOption *>(boost::to_upper_copy(optionName),optP));
+        if (!addHeaderOption(optP))
+        {
+            delete optP;
+            return false;
+        }
+        //headers.insert(std::pair<std::string,MIME_HeaderOption *>(boost::to_upper_copy(optionName),optP));
         lastOpt = optP;
     }
     else if (state == 1 && lastOpt)
@@ -89,12 +94,14 @@ void MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
         optP = lastOpt;
         parseSubValues(optP,optionValue);
     }
+    return true;
 }
 
-void MIME_Sub_Header::addHeaderOption(MIME_HeaderOption *opt)
+bool MIME_Sub_Header::addHeaderOption(MIME_HeaderOption *opt)
 {
-    if (headers.size()==maxOptions) return; // Can't exceed.
+    if (headers.size()==maxOptions) return false; // Can't exceed.
     headers.insert(std::pair<std::string,MIME_HeaderOption *>(opt->getUpperName(),opt));
+    return true;
 }
 
 std::list<MIME_HeaderOption *> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
@@ -144,11 +151,11 @@ void MIME_Sub_Header::setMaxOptions(const size_t &value)
     maxOptions = value;
 }
 
-Memory::Streams::Parsing::ParseStatus MIME_Sub_Header::parse()
+Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
 {
-    if (!getParsedData()->size()) return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    if (!getParsedData()->size()) return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
     parseOptionValue(getParsedData()->toString());
-    return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+    return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
 }
 
 void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string &strName)

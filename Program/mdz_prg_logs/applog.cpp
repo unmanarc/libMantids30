@@ -29,7 +29,6 @@ AppLog::AppLog(unsigned int _logMode) : LogBase(_logMode)
     userAlignSize = 13;
 }
 
-
 void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, string user, string ip, const char *buffer, eLogColors color, const char * logLevelText)
 {
     if (true)
@@ -38,7 +37,7 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
         if (modulesOutputExclusion.find(module)!=modulesOutputExclusion.end()) return;
     }
 
-    user = Helpers::Encoders::toURL(user,Helpers::ENC_QUOTEPRINT);
+    user = Helpers::Encoders::toURL(user,Helpers::Encoders::ENC_QUOTEPRINT);
 
 
     if (!usingAttributeName)
@@ -59,7 +58,7 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
         if ((user.empty() && printEmptyFields) || !user.empty())
             logLine += "USER=" + getAlignedValue( "\"" + user + "\"",userAlignSize) +  standardLogSeparator;
         if ((!buffer[0] && printEmptyFields) || buffer[0])
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::ENC_QUOTEPRINT) + "\"";
+            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::ENC_QUOTEPRINT) + "\"";
     }
     else
     {
@@ -70,7 +69,7 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
         if ((user.empty() && printEmptyFields) || !user.empty())
             logLine +=  getAlignedValue( "\"" + user +  "\"",userAlignSize) +  standardLogSeparator;
         if ((!buffer[0] && printEmptyFields) || buffer[0])
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::ENC_QUOTEPRINT) + "\"";
+            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::ENC_QUOTEPRINT) + "\"";
     }
 
 

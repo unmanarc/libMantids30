@@ -1,37 +1,67 @@
 #ifndef HTTPURLFORMATTEDVARS_H
 #define HTTPURLFORMATTEDVARS_H
 
-#include <mdz_mem_vars/streamparser.h>
+#include <mdz_mem_vars/parser.h>
 #include <mdz_mem_vars/vars.h>
 #include <map>
 
 #include "common_urlvar_subparser.h"
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Common {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Common {
 
-enum eHTTP_URLVarStat
-{
-    URLV_STAT_WAITING_NAME,
-    URLV_STAT_WAITING_CONTENT
-};
 
-class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parsing::Parser
+class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
 public:
-    URLVars(Memory::Streams::Streamable *value = nullptr);
+    enum eHTTP_URLVarStat
+    {
+        URLV_STAT_WAITING_NAME,
+        URLV_STAT_WAITING_CONTENT
+    };
+
+    URLVars(Memory::Streams::StreamableObject *value = nullptr);
     ~URLVars() override;
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
-    bool streamTo(Memory::Streams::Streamable * out, Memory::Streams::Status & wrsStat) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::StreamableObject::Status & wrsStat) override;
 
     /////////////////////////////////////////////////////
     // Variables Container:
+    /**
+     * @brief varCount Get the number of values for a variable name
+     * @param varName Variable name
+     * @return Count of values
+     */
     uint32_t varCount(const std::string & varName) override;
+    /**
+     * @brief getValue Get Value of specific variable
+     * @param varName Variable Name
+     * @return binary container with the variable
+     */
     Memory::Containers::B_Base * getValue(const std::string & varName) override;
+    /**
+     * @brief getValues Get the values for an specific variable name
+     * @param varName variable name
+     * @return list of binary containers containing the data of each value of the variable
+     */
     std::list<Memory::Containers::B_Base *> getValues(const std::string & varName) override;
+    /**
+     * @brief getKeysList Get set of Variable Names
+     * @return set of variables names
+     */
     std::set<std::string> getKeysList() override;
+    /**
+     * @brief isEmpty Return if there is no vars
+     * @return false for no variable defined
+     */
     bool isEmpty() override;
+    /**
+     * @brief addVar Add Variable (Useful for Requests)
+     * @param varName Var Name
+     * @param data Variable Data (will be destroyed during URLVars destruction)
+     */
+    void addVar(const std::string & varName, Memory::Containers::B_Chunks * data);
 
 protected:
     void iSetMaxVarContentSize() override;
@@ -41,7 +71,6 @@ protected:
     void endProtocol() override;
     bool changeToNextParser() override;
 private:
-    void insertVar(const std::string & varName, Memory::Containers::B_Chunks * data);
 
     eHTTP_URLVarStat currentStat;
 

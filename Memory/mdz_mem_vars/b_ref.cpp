@@ -98,7 +98,7 @@ std::pair<bool,uint64_t> B_Ref::copyToStream2(std::ostream &out, const uint64_t 
     return referencedBC->copyToStream(out,bytesToCopy,referencedOffset+offset);
 }
 
-std::pair<bool,uint64_t> B_Ref::copyTo2(Streamable &bc, Streams::Status & wrStatUpd, const uint64_t &bytes, const uint64_t &offset)
+std::pair<bool,uint64_t> B_Ref::copyTo2(StreamableObject &bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &bytes, const uint64_t &offset)
 {
     if (!referencedBC)
     {

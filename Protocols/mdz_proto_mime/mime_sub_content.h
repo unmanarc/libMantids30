@@ -1,18 +1,18 @@
 #ifndef MIME_SUB_CONTENT_H
 #define MIME_SUB_CONTENT_H
 
-#include <mdz_mem_vars/substreamparser.h>
+#include <mdz_mem_vars/subparser.h>
 
-namespace Mantids { namespace Network { namespace MIME {
+namespace Mantids { namespace Protocols { namespace MIME {
 
 
-class MIME_Sub_Content : public Memory::Streams::Parsing::SubParser
+class MIME_Sub_Content : public Memory::Streams::SubParser
 {
 public:
     MIME_Sub_Content();
     ~MIME_Sub_Content();
 
-    bool stream(Memory::Streams::Status &wrStat) override;
+    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
 
     uint64_t getMaxContentSize() const;
     void setMaxContentSize(const uint64_t &value);
@@ -31,7 +31,7 @@ public:
     void setMaxContentSizeUntilGoingToFS(const uint64_t &value);
 
 protected:
-    Memory::Streams::Parsing::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseStatus parse() override;
 private:
     Memory::Containers::B_Base * contentContainer;
 

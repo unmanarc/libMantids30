@@ -26,10 +26,10 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP;
+using namespace Mantids::Protocols::HTTP;
 using namespace Mantids;
 
-HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base(false, sobject)
+HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(false, sobject)
 {
     badAnswer = false;
 
@@ -39,7 +39,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::Streamable *sobject) : HTTPv1_Base
     cacheControl.setOptionMustRevalidate(true);
 
     remotePairAddress[0]=0;
-    currentParser = (Memory::Streams::Parsing::SubParser *)(&_clientRequestLine);
+    currentParser = (Memory::Streams::SubParser *)(&_clientRequestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
     mimeTypes[".aac"] = "audio/aac";
@@ -196,7 +196,7 @@ void HTTPv1_Server::setRemotePairAddress(const char *value)
     SecBACopy(remotePairAddress,value);
 }
 
-Common::eContent_DataType HTTPv1_Server::getRequestDataType()
+Common::Content::eDataType HTTPv1_Server::getRequestDataType()
 {
     return _clientContentData.getContainerType();
 }
@@ -208,7 +208,7 @@ Memory::Abstract::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &sour
     case HTTP_VARS_POST:
         return _clientContentData.postVars();
     case HTTP_VARS_GET:
-        return _clientRequestLine.getVarsPTR();
+        return _clientRequestLine.urlVars();
     }
     return nullptr;
 }
@@ -523,9 +523,9 @@ bool HTTPv1_Server::processClientOptions()
     return true;
 }
 
-Response::StatusCode HTTPv1_Server::processClientRequest()
+Response::Status::eCode HTTPv1_Server::processClientRequest()
 {
-    return Response::StatusCode::S_200_OK;
+    return Response::Status::eCode::S_200_OK;
 }
 
 bool HTTPv1_Server::changeToNextParser()
@@ -555,27 +555,27 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         if (contentLength)
         {
             // Content length defined.
-            _clientContentData.setTransmitionMode(Common::TRANSMIT_MODE_CONTENT_LENGTH);
+            _clientContentData.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
             if (!_clientContentData.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
                 badAnswer = true;
-                _serverCodeResponse.setRetCode(Response::StatusCode::S_413_PAYLOAD_TOO_LARGE);
+                _serverCodeResponse.setRetCode(Response::Status::eCode::S_413_PAYLOAD_TOO_LARGE);
                 return answer(ansBytes);
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
             if ( icontains(contentType,"multipart/form-data") )
             {
-                _clientContentData.setContainerType(Common::CONTENT_TYPE_MIME);
+                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_MIME);
                 _clientContentData.getMultiPartVars()->setMultiPartBoundary(_clientHeaders.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
             else if ( icontains(contentType,"application/x-www-form-urlencoded") )
             {
-                _clientContentData.setContainerType(Common::CONTENT_TYPE_URL);
+                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_URL);
             }
             else
-                _clientContentData.setContainerType(Common::CONTENT_TYPE_BIN);
+                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -619,7 +619,7 @@ bool HTTPv1_Server::changeToNextParserOnClientContentData()
     return answer(ansBytes);
 }
 
-bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
+bool HTTPv1_Server::streamServerHeaders(Memory::Streams::StreamableObject::Status &wrStat)
 {
     // Act as a server. Send data from here.
     uint64_t strsize;
@@ -630,7 +630,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::Status &wrStat)
         _serverHeaders.add("Connetion", "Close");
         _serverHeaders.remove("Content-Length");
         /////////////////////
-        if (_serverContentData.getTransmitionMode() == Common::TRANSMIT_MODE_CHUNKS)
+        if (_serverContentData.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
             _serverHeaders.replace("Transfer-Encoding", "Chunked");
     }
     else
@@ -685,7 +685,7 @@ void HTTPv1_Server::prepareServerVersionOnURI()
 
     if (_clientRequestLine.getHTTPVersion()->getVersionMajor()!=1)
     {
-        _serverCodeResponse.setRetCode(Response::StatusCode::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        _serverCodeResponse.setRetCode(Response::Status::eCode::S_505_HTTP_VERSION_NOT_SUPPORTED);
         badAnswer = true;
     }
     else
@@ -701,7 +701,7 @@ void HTTPv1_Server::prepareServerVersionOnOptions()
         if (virtualHost=="")
         {
             // TODO: does really need the VHost?
-            _serverCodeResponse.setRetCode(Response::StatusCode::S_400_BAD_REQUEST);
+            _serverCodeResponse.setRetCode(Response::Status::eCode::S_400_BAD_REQUEST);
             badAnswer = true;
         }
     }
@@ -728,7 +728,7 @@ void HTTPv1_Server::parseHostOptions()
 }
 
 
-bool HTTPv1_Server::answer(Memory::Streams::Status &wrStat)
+bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
 {
     wrStat.bytesWritten = 0;
 
@@ -858,7 +858,7 @@ void HTTPv1_Server::setResponseSecurityXFrameOpts(const Headers::Security::XFram
     secXFrameOpts = value;
 }
 
-Memory::Streams::Status HTTPv1_Server::getResponseTransmissionStatus() const
+Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return ansBytes;
 }
@@ -876,7 +876,7 @@ bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const stri
     val.setHttpOnly(true);
     val.setExpirationInSeconds(uMaxAge);
     val.setMaxAge(uMaxAge);
-    val.setSameSite(HTTP::Headers::HTTP_COOKIE_SAMESITE_STRICT);
+    val.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
     return setResponseCookie(cookieName,val);
 }
 
@@ -892,9 +892,9 @@ bool HTTPv1_Server::setResponseCookie(const string &sCookieName, const Headers::
     return setCookies.addCookieVal(sCookieName,sCookieValue);
 }
 
-Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamable *source)
+Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(Memory::Streams::StreamableObject *source)
 {
-    Memory::Streams::Status stat;
+    Memory::Streams::StreamableObject::Status stat;
 
     if (!_serverContentData.getStreamableOuput())
     {
@@ -906,7 +906,7 @@ Memory::Streams::Status HTTPv1_Server::streamResponse(Memory::Streams::Streamabl
     return stat;
 }
 
-Network::HTTP::Response::StatusCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
+Protocols::HTTP::Response::Status::eCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
 {
     _serverHeaders.replace("Location", location);
 
@@ -916,9 +916,9 @@ Network::HTTP::Response::StatusCode HTTPv1_Server::setResponseRedirect(const str
 
 
     if (temporary)
-        return Network::HTTP::Response::StatusCode::S_307_TEMPORARY_REDIRECT;
+        return Protocols::HTTP::Response::Status::eCode::S_307_TEMPORARY_REDIRECT;
     else
-        return Network::HTTP::Response::StatusCode::S_308_PERMANENT_REDIRECT;
+        return Protocols::HTTP::Response::Status::eCode::S_308_PERMANENT_REDIRECT;
 }
 
 void HTTPv1_Server::setResponseContentType(const string &contentType, bool bNoSniff)
@@ -950,7 +950,7 @@ uint16_t HTTPv1_Server::getRequestVirtualPort() const
     return virtualPort;
 }
 
-void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::Streamable *dsOut, bool bDeleteAfter)
+void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::StreamableObject *dsOut, bool bDeleteAfter)
 {
     if (dsOut == nullptr)
     {
@@ -966,17 +966,17 @@ void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::Streamable *dsOut, 
     _serverContentData.setStreamableOutput(dsOut,bDeleteAfter);
 }
 
-void HTTPv1_Server::setRequestDataContainer(Memory::Streams::Streamable *dsIn, bool bDeleteAfter)
+void HTTPv1_Server::setRequestDataContainer(Memory::Streams::StreamableObject *dsIn, bool bDeleteAfter)
 {
     _clientContentData.setStreamableOutput(dsIn,bDeleteAfter);
 }
 
-Memory::Streams::Streamable *HTTPv1_Server::getResponseDataStreamer()
+Memory::Streams::StreamableObject *HTTPv1_Server::getResponseDataStreamer()
 {
     return _serverContentData.getStreamableOuput();
 }
 
-Memory::Streams::Streamable *HTTPv1_Server::getRequestDataContainer()
+Memory::Streams::StreamableObject *HTTPv1_Server::getRequestDataContainer()
 {
     return _clientContentData.getStreamableOuput();
 }

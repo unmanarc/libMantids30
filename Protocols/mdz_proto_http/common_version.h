@@ -4,7 +4,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Common {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Common {
 
 class Version
 {

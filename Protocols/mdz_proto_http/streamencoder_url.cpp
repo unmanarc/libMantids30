@@ -9,18 +9,18 @@
 using namespace Mantids::Memory::Streams;
 using namespace Mantids::Memory::Streams::Encoders;
 
-URL::URL(Memory::Streams::Streamable * orig)
+URL::URL(Memory::Streams::StreamableObject * orig)
 {
     this->orig = orig;
     finalBytesWritten =0;
 }
 
-bool URL::streamTo(Memory::Streams::Streamable *, Status & )
+bool URL::streamTo(Memory::Streams::StreamableObject *, Status & )
 {
     return false;
 }
 
-Status URL::write(const void *buf, const size_t &count, Status &wrStat)
+StreamableObject::Status URL::write(const void *buf, const size_t &count, Status &wrStat)
 {
     Status cur;
     size_t pos=0;
@@ -95,8 +95,8 @@ std::string URL::encodeURLStr(const std::string &url)
 
     // Encode URI...
     Memory::Streams::Encoders::URL uriEncoder(&uriEncoded);
-    Memory::Streams::Status cur;
-    Memory::Streams::Status wrsStat;
+    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::StreamableObject::Status wrsStat;
 
     if ((cur+=uriDecoded.streamTo(&uriEncoder, wrsStat)).succeed)
     {

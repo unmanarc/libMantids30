@@ -6,7 +6,7 @@
 #include <mdz_thr_threads/threadpool.h>
 #include <mdz_thr_mutex/mutex_shared.h>
 #include <mdz_thr_mutex/mutex.h>
-#include <mdz_net_sockets/streamsocket.h>
+#include <mdz_net_sockets/socket_streambase.h>
 #include <mdz_thr_safecontainers/map.h>
 
 namespace Mantids { namespace RPC { namespace Fast {
@@ -30,7 +30,7 @@ struct sFastRPCMethod
 };
 struct sFastRPCParameters
 {
-    Network::Streams::StreamSocket *streamBack;
+    Network::Sockets::Socket_StreamBase *streamBack;
     uint32_t maxMessageSize;
     void * caller;
     Threads::Sync::Mutex_Shared * done;
@@ -41,7 +41,7 @@ struct sFastRPCParameters
     uint64_t requestId;
 };
 
-class FastRPC_Connection : public Mantids::Threads::Safe::Map_Element
+class FastRPC_Connection : public Mantids::Threads::Safe::MapItem
 {
 public:
     FastRPC_Connection()
@@ -51,7 +51,7 @@ public:
         terminated = false;
     }
     // Socket
-    Mantids::Network::Streams::StreamSocket * stream;
+    Mantids::Network::Sockets::Socket_StreamBase * stream;
     Threads::Sync::Mutex * mtSocket;
     std::string key;
 
@@ -127,7 +127,7 @@ public:
      * @param callbackOnConnectedMethod On connect Method to be executed in background (new thread) when connection is accepted/processed.
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(Mantids::Network::Streams::StreamSocket * stream, const std::string & key, const sFastRPCOnConnectedMethod & callbackOnConnectedMethod = {nullptr,nullptr}, const float & keyDistFactor=1.0 );
+    int processConnection(Mantids::Network::Sockets::Socket_StreamBase * stream, const std::string & key, const sFastRPCOnConnectedMethod & callbackOnConnectedMethod = {nullptr,nullptr}, const float & keyDistFactor=1.0 );
 
     /**
      * @brief setTimeout Timeout in milliseconds to desist to put the execution task into the threadpool
@@ -210,7 +210,7 @@ private:
     static void sendRPCAnswer(sFastRPCParameters * parameters, const std::string & answer, uint8_t execution);
 
     int processAnswer(FastRPC_Connection *connection);
-    int processQuery(Mantids::Network::Streams::StreamSocket * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket);
+    int processQuery(Mantids::Network::Sockets::Socket_StreamBase * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket);
 
     Mantids::Threads::Safe::Map<std::string> connectionsByKeyId;
 

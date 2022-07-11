@@ -24,7 +24,7 @@ void Map::set(const std::string &varName, Map *vars)
     varsSubMap[varName] = vars;
 }
 
-void Map::setFromString(const std::string &varName, Type varType, const std::string &str)
+void Map::setFromString(const std::string &varName, Var::Type varType, const std::string &str)
 {
     set(varName, Var::makeAbstract(varType,str));
 }

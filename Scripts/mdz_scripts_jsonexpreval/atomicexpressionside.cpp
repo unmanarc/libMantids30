@@ -102,7 +102,7 @@ void AtomicExpressionSide::setRegexp(boost::regex *value)
     regexp = value;
 }
 
-eExpressionSideMode AtomicExpressionSide::getMode() const
+Mantids::Scripts::Expressions::AtomicExpressionSide::eExpressionSideMode AtomicExpressionSide::getMode() const
 {
     return mode;
 }

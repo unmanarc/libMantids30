@@ -1,7 +1,7 @@
 #ifndef MIME_SUB_HEADER_H
 #define MIME_SUB_HEADER_H
 
-#include <mdz_mem_vars/substreamparser.h>
+#include <mdz_mem_vars/subparser.h>
 
 #include <string>
 #include <map>
@@ -11,7 +11,7 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace Mantids { namespace Network { namespace MIME {
+namespace Mantids { namespace Protocols { namespace MIME {
 // ??
 /**
  * @brief The HeaderOption struct
@@ -63,13 +63,13 @@ private:
     std::map<std::string,std::string> subVar;
 };
 
-class MIME_Sub_Header : public Memory::Streams::Parsing::SubParser
+class MIME_Sub_Header : public Memory::Streams::SubParser
 {
 public:
     MIME_Sub_Header();
     ~MIME_Sub_Header() override;
 
-    bool stream(Memory::Streams::Status &wrStat) override;
+    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
 
     /**
      * @brief exist exist option.
@@ -94,7 +94,7 @@ public:
      * @param optionValue option value.
      * @param state 1: continue with the last option. 0: new option.
      */
-    void add(const std::string &optionName, const std::string &optionValue, int state = 0);
+    bool add(const std::string &optionName, const std::string &optionValue, int state = 0);
     /**
      * @brief getOptionsByName Get option list by name (multiple options with the same name (eg. set-cookie)
      * @param varName value name.
@@ -129,7 +129,7 @@ public:
     uint64_t getOptionAsUINT64(const std::string & varName, uint16_t base = 10, bool * optExist = nullptr) const;
     //////////////////////////////////////////////////
 
-    void addHeaderOption(MIME_HeaderOption *opt);
+    bool addHeaderOption(MIME_HeaderOption *opt);
 
     //////////////////////////////////////////////////
     // Security:
@@ -143,7 +143,7 @@ public:
     void setMaxSubOptionSize(const size_t &value);
 
 protected:
-    Memory::Streams::Parsing::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
     void parseSubValues(MIME_HeaderOption *opt, const std::string & strName);

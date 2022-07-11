@@ -18,18 +18,18 @@ namespace Mantids { namespace Network { namespace Interfaces {
 
 // LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for NETIF_VIRTUAL_WIN interfaces.
 
-enum NetIfType
-{
-    NETIF_GENERIC_LIN,
-    NETIF_VIRTUAL_WIN
-};
-
 /**
  * @brief The NetIfConfig class Network Interface Configuration
  */
 class NetIfConfig
 {
 public:
+    enum NetIfType
+    {
+        NETIF_GENERIC_LIN,
+        NETIF_VIRTUAL_WIN
+    };
+
     NetIfConfig();
     ~NetIfConfig();
 

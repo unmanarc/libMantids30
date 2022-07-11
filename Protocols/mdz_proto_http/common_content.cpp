@@ -4,8 +4,8 @@
 #include <limits>
 
 // TODO: CHECK THIS CLASS
-using namespace Mantids::Network::HTTP;
-using namespace Mantids::Network::HTTP::Common;
+using namespace Mantids::Protocols::HTTP;
+using namespace Mantids::Protocols::HTTP::Common;
 
 using namespace Mantids;
 
@@ -28,7 +28,7 @@ Content::~Content()
 
 bool Content::isDefaultStreamableOutput()
 {
-    return outStream==&binDataContainer || outStream==&urlVars || outStream==&multiPartVars;
+    return outStream==&binDataContainer || outStream==&urlPostVars || outStream==&multiPartVars;
 }
 
 void Content::setSecurityMaxPostDataSize(const uint64_t &value)
@@ -37,7 +37,7 @@ void Content::setSecurityMaxPostDataSize(const uint64_t &value)
 }
 
 
-Memory::Streams::Parsing::ParseStatus Content::parse()
+Memory::Streams::SubParser::ParseStatus Content::parse()
 {
     switch (currentMode)
     {
@@ -48,39 +48,39 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
         {
             if (targetChunkSize>0)
             {
-                setParseMode(Memory::Streams::Parsing::PARSE_MODE_SIZE);
+                setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
                 setParseDataTargetSize(targetChunkSize);
                 currentMode = PROCMODE_CHUNK_DATA;
-                return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+                return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
             }
             else
             {
                 // Done... last chunk.
                 // report that is last chunk.
                 outStream->writeEOF(true);
-                return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+                return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
             }
         }
-        return Memory::Streams::Parsing::PARSE_STAT_ERROR;
+        return Memory::Streams::SubParser::PARSE_STAT_ERROR;
     }
     case PROCMODE_CHUNK_DATA:
     {
         // Ok, continue
-        setParseMode(Memory::Streams::Parsing::PARSE_MODE_SIZE);
+        setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
         setParseDataTargetSize(2); // for CRLF.
         currentMode = PROCMODE_CHUNK_CRLF;
         // Proccess chunk into mem...
         // TODO: validate when outstream is filled up.
         getParsedData()->appendTo(*outStream);
-        return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+        return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
     }
     case PROCMODE_CHUNK_CRLF:
     {
-        setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(1*KB_MULT); // !1kb max (until fails).
         currentMode = PROCMODE_CHUNK_SIZE;
-        return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+        return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
     }
     case PROCMODE_CONTENT_LENGTH:
     {
@@ -88,13 +88,13 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
         getParsedData()->appendTo(*outStream);
         if (getLeftToparse()>0)
         {
-            return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+            return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
         }
         else
         {
             // End of stream reached...
             outStream->writeEOF(true);
-            return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+            return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
         }
     }
     case PROCMODE_CONNECTION_CLOSE:
@@ -105,17 +105,17 @@ Memory::Streams::Parsing::ParseStatus Content::parse()
             // Parsing data...
             // TODO: validate when outstream is filled up.
             getParsedData()->appendTo(*outStream);
-            return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+            return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
         }
         else
         {
             // No more data to parse, ending and processing it...
             outStream->writeEOF(true);
-            return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+            return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
         }
     }
     }
-    return Memory::Streams::Parsing::PARSE_STAT_ERROR;
+    return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 }
 
 uint32_t Content::parseHttpChunkSize()
@@ -127,18 +127,20 @@ uint32_t Content::parseHttpChunkSize()
         return parsedSize;
 }
 
-eContent_TransmitionMode Content::getTransmitionMode() const
+Content::eTransmitionMode Content::getTransmitionMode() const
 {
     return transmitionMode;
 }
 
-URLVars *Content::getUrlVars()
+URLVars *Content::getUrlPostVars()
 {
-    return &urlVars;
+    if (containerType == CONTENT_TYPE_URL)
+        return &urlPostVars;
+    throw std::runtime_error("Don't call getUrlPostVars when the content is not URL.");
 }
 
 
-eContent_DataType Content::getContainerType() const
+Content::eDataType Content::getContainerType() const
 {
     return containerType;
 }
@@ -151,17 +153,19 @@ Memory::Abstract::Vars *Content::postVars()
         return &multiPartVars;
     case CONTENT_TYPE_URL:
     case CONTENT_TYPE_BIN:
-        return &urlVars; // url vars should be empty here...
+        return &urlPostVars; // url vars should be empty here...
     }
-    return &urlVars;
+    return &urlPostVars;
 }
 
-Network::MIME::MIME_Vars *Content::getMultiPartVars()
+Protocols::MIME::MIME_Message *Content::getMultiPartVars()
 {
+    if ( containerType != CONTENT_TYPE_MIME )
+        throw std::runtime_error("Don't call getMultiPartVars when the content is not MIME.");
     return &multiPartVars;
 }
 
-void Content::setContainerType(const eContent_DataType &value)
+void Content::setContainerType(const eDataType &value)
 {
     containerType = value;
     if (isDefaultStreamableOutput())
@@ -172,7 +176,7 @@ void Content::setContainerType(const eContent_DataType &value)
             outStream = &multiPartVars;
             break;
         case CONTENT_TYPE_URL:
-            outStream = &urlVars;
+            outStream = &urlPostVars;
             break;
         case CONTENT_TYPE_BIN:
             outStream = &binDataContainer;
@@ -186,7 +190,7 @@ void Content::setSecurityMaxHttpChunkSize(const uint32_t &value)
     securityMaxHttpChunkSize = value;
 }
 
-bool Content::stream(Memory::Streams::Status & wrStat)
+bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     // Act as a client. Send data from here.
     switch (transmitionMode)
@@ -205,7 +209,7 @@ bool Content::stream(Memory::Streams::Status & wrStat)
     return true;
 }
 
-void Content::setTransmitionMode(const eContent_TransmitionMode &value)
+void Content::setTransmitionMode(const eTransmitionMode &value)
 {
     transmitionMode = value;
 
@@ -214,21 +218,21 @@ void Content::setTransmitionMode(const eContent_TransmitionMode &value)
     case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
         // TODO: disable connection-close for client->server
-        setParseMode(Memory::Streams::Parsing::PARSE_MODE_DIRECT);
+        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
         setParseDataTargetSize(securityMaxPostDataSize); // !1kb max (until fails).
         currentMode = PROCMODE_CONNECTION_CLOSE;
     }break;
     case TRANSMIT_MODE_CHUNKS:
     {
         // TODO: disable chunk transmition for client->server
-        setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(64); // 64 bytes max (until fails).
         currentMode = PROCMODE_CHUNK_SIZE;
     }break;
     case TRANSMIT_MODE_CONTENT_LENGTH:
     {
-        setParseMode(Memory::Streams::Parsing::PARSE_MODE_DIRECT);
+        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
         currentMode = PROCMODE_CONTENT_LENGTH;
     }break;
     }
@@ -273,12 +277,12 @@ void Content::preemptiveDestroyStreamableOuput()
     }
 }
 
-Memory::Streams::Streamable *Content::getStreamableOuput()
+Memory::Streams::StreamableObject *Content::getStreamableOuput()
 {
     return outStream;
 }
 
-void Content::setStreamableOutput(Memory::Streams::Streamable *outDataContainer, bool deleteOutStream)
+void Content::setStreamableOutput(Memory::Streams::StreamableObject *outDataContainer, bool deleteOutStream)
 {
     // This stream has been setted up before...
     // Delete the previous stream/data before replacing...

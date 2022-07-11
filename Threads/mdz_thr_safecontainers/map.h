@@ -10,22 +10,9 @@
 #include <unistd.h>
 #include <stdexcept>
 
-
-#include "map_element.h"
+#include "mapitem.h"
 
 namespace Mantids { namespace Threads { namespace Safe {
-
-struct sMapElement
-{
-    sMapElement()
-    {
-        readers = 0;
-        rdElement = nullptr;
-    }
-    Map_Element *rdElement;
-    std::atomic<uint32_t> readers;
-    std::condition_variable cond_zeroReaders;
-};
 
 template <class T>
 class Map
@@ -36,14 +23,26 @@ public:
     std::set<T> getKeys();
 
     bool checkElement( const T & key );
-    bool addElement( const T & key, Map_Element * element );
-    Map_Element * openElement(const T & key);
+    bool addElement( const T & key, MapItem * element );
+    MapItem * openElement(const T & key);
     bool releaseElement(const T & key);
     bool destroyElement(const T & key);
 
     void waitForEmpty();
 
 private:
+    struct sMapElement
+    {
+        sMapElement()
+        {
+            readers = 0;
+            rdElement = nullptr;
+        }
+        MapItem *rdElement;
+        std::atomic<uint32_t> readers;
+        std::condition_variable cond_zeroReaders;
+    };
+
     std::map<T,sMapElement> xMap;
     std::condition_variable cond_zeroMaps;
     std::mutex mutex_xMap;
@@ -67,7 +66,7 @@ bool Map<T>::checkElement(const T &key)
 }
 
 template<class T>
-bool Map<T>::addElement(const T &key, Map_Element *element)
+bool Map<T>::addElement(const T &key, MapItem *element)
 {
     std::unique_lock<std::mutex> lock(mutex_xMap);
     if (xMap.find(key) == xMap.end())
@@ -80,7 +79,7 @@ bool Map<T>::addElement(const T &key, Map_Element *element)
 
 // FAST
 template<class T>
-Map_Element *Map<T>::openElement(const T &key)
+MapItem *Map<T>::openElement(const T &key)
 {
     std::unique_lock<std::mutex> lock(mutex_xMap);
     if (xMap.find(key) != xMap.end() && xMap[key].rdElement)
@@ -122,7 +121,7 @@ bool Map<T>::destroyElement(const T &key)
             && xMap[key].rdElement != nullptr )
     {
         // No more open readers and destroy element.. (inaccesible for openElement and for destroyElement)
-        Map_Element * delElement = xMap[key].rdElement;
+        MapItem * delElement = xMap[key].rdElement;
         xMap[key].rdElement = nullptr;
 
         for (;xMap[key].readers != 0;)

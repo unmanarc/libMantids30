@@ -5,14 +5,15 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP;
-using namespace Mantids::Network::HTTP::Common;
+using namespace Mantids::Protocols::HTTP;
+using namespace Mantids::Protocols::HTTP::Common;
 using namespace Mantids;
 
-URLVars::URLVars(Memory::Streams::Streamable *value) : Memory::Streams::Parsing::Parser(value,false)
+URLVars::URLVars(Memory::Streams::StreamableObject *value) : Memory::Streams::Parser(value,false)
 {
     initSubParser(&_urlVarParser);
 
+    // TODO: virtual method during constructor...
     initialized = initProtocol();
     currentStat = URLV_STAT_WAITING_NAME;
     _urlVarParser.setVarType(true);
@@ -33,9 +34,9 @@ bool URLVars::isEmpty()
     return vars.empty();
 }
 
-bool URLVars::streamTo(Memory::Streams::Streamable *out, Memory::Streams::Status &wrsStat)
+bool URLVars::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrsStat)
 {
-    Memory::Streams::Status cur;
+    Memory::Streams::StreamableObject::Status cur;
     bool firstVar = true;
     for (auto & i : vars)
     {
@@ -124,7 +125,7 @@ bool URLVars::changeToNextParser()
         if (_urlVarParser.getDelimiterFound() == "&" || _urlVarParser.isStreamEnded())
         {
             // AMP / END:
-            insertVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
+            addVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
         }
         else
         {
@@ -136,7 +137,7 @@ bool URLVars::changeToNextParser()
     }break;
     case URLV_STAT_WAITING_CONTENT:
     {
-        insertVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
+        addVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
         currentStat = URLV_STAT_WAITING_NAME;
         _urlVarParser.setVarType(true);
         _urlVarParser.setMaxObjectSize(maxVarNameSize);
@@ -148,7 +149,7 @@ bool URLVars::changeToNextParser()
     return true;
 }
 
-void URLVars::insertVar(const std::string &varName, Memory::Containers::B_Chunks *data)
+void URLVars::addVar(const std::string &varName, Memory::Containers::B_Chunks *data)
 {
     //vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(currentVarName, _urlVarParser.flushRetrievedContentAsBC()));
     if (!varName.empty())

@@ -8,7 +8,7 @@
 
 namespace Mantids { namespace RPC { namespace Web {
 
-class WebSession : public Threads::Safe::Map_Element
+class WebSession : public Threads::Safe::MapItem
 {
 public:
     WebSession()

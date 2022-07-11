@@ -38,7 +38,7 @@ WebServer::~WebServer()
         delete resourceFilter;
 }
 
-void WebServer::acceptMultiThreaded(Network::Streams::StreamSocket *listenerSocket, const uint32_t &maxConcurrentConnections)
+void WebServer::acceptMultiThreaded(Network::Sockets::Socket_StreamBase *listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     if (!methodManagers) throw std::runtime_error("Don't Accept XRPC Web before setting some methodsmanager");
     if (!authenticator) throw std::runtime_error("Don't Accept XRPC Web before setting some authenticator");
@@ -52,7 +52,7 @@ void WebServer::acceptMultiThreaded(Network::Streams::StreamSocket *listenerSock
     multiThreadedAcceptor.startThreaded();
 }
 
-void WebServer::acceptPoolThreaded(Network::Streams::StreamSocket *listenerSocket, const uint32_t &threadCount, const uint32_t &threadMaxQueuedElements)
+void WebServer::acceptPoolThreaded(Network::Sockets::Socket_StreamBase *listenerSocket, const uint32_t &threadCount, const uint32_t &threadMaxQueuedElements)
 {
     if (!methodManagers) throw std::runtime_error("Don't Accept XRPC Web before setting some methodsmanager");
     if (!authenticator) throw std::runtime_error("Don't Accept XRPC Web before setting some authenticator");
@@ -67,14 +67,14 @@ void WebServer::acceptPoolThreaded(Network::Streams::StreamSocket *listenerSocke
     poolThreadedAcceptor.start();
 }
 
-bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * s, const char *cUserIP, bool isSecure)
+bool WebServer::_callbackOnConnect(void * obj, Network::Sockets::Socket_StreamBase * s, const char *cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
 
     std::string tlsCN;
     if (s->isSecure())
     {
-        Network::TLS::Socket_TLS * tlsSock = (Network::TLS::Socket_TLS *)s;
+        Network::Sockets::Socket_TLS * tlsSock = (Network::Sockets::Socket_TLS *)s;
         tlsCN = tlsSock->getTLSPeerCN();
     }
 
@@ -103,20 +103,20 @@ bool WebServer::_callbackOnConnect(void * obj, Network::Streams::StreamSocket * 
     if (webserver->getExtCallBackOnConnect().call(obj,s,cUserIP,isSecure))
     {
         // Handle the webservice.
-        Memory::Streams::Parsing::ParseErrorMSG err;
+        Memory::Streams::Parser::ErrorMSG err;
         webHandler.parseObject(&err);
     }
     return true;
 }
 
-bool WebServer::_callbackOnInitFailed(void * obj, Network::Streams::StreamSocket * s, const char * cUserIP, bool isSecure)
+bool WebServer::_callbackOnInitFailed(void * obj, Network::Sockets::Socket_StreamBase * s, const char * cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
     webserver->getExtCallBackOnInitFailed().call(obj,s,cUserIP,isSecure);
     return true;
 }
 
-void WebServer::_callbackOnTimeOut(void * obj, Network::Streams::StreamSocket *s, const char * cUserIP, bool isSecure)
+void WebServer::_callbackOnTimeOut(void * obj, Network::Sockets::Socket_StreamBase *s, const char * cUserIP, bool isSecure)
 {
     WebServer * webserver = ((WebServer *)obj);
     if (webserver->getExtCallBackOnInitFailed().call(obj,s,cUserIP,isSecure))
@@ -222,17 +222,17 @@ bool WebServer::getUsingCSRFToken() const
     return usingCSRFToken;
 }
 
-sWebServerCallBack WebServer::getExtCallBackOnTimeOut() const
+Mantids::RPC::Web::WebServer::sWebServerCallBack WebServer::getExtCallBackOnTimeOut() const
 {
     return extCallBackOnTimeOut;
 }
 
-sWebServerCallBack WebServer::getExtCallBackOnInitFailed() const
+Mantids::RPC::Web::WebServer::sWebServerCallBack WebServer::getExtCallBackOnInitFailed() const
 {
     return extCallBackOnInitFailed;
 }
 
-sWebServerCallBack WebServer::getExtCallBackOnConnect() const
+Mantids::RPC::Web::WebServer::sWebServerCallBack WebServer::getExtCallBackOnConnect() const
 {
     return extCallBackOnConnect;
 }

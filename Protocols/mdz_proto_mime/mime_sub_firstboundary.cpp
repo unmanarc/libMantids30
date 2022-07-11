@@ -1,14 +1,14 @@
 #include "mime_sub_firstboundary.h"
-using namespace Mantids::Network::MIME;
+using namespace Mantids::Protocols::MIME;
 using namespace Mantids;
 
 MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()
 {
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_DELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
-bool MIME_Sub_FirstBoundary::stream(Memory::Streams::Status & wrStat)
+bool MIME_Sub_FirstBoundary::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     return true;
 }
@@ -25,7 +25,7 @@ void MIME_Sub_FirstBoundary::setBoundary(const std::string &value)
     boundary = value;
 }
 
-Memory::Streams::Parsing::ParseStatus MIME_Sub_FirstBoundary::parse()
+Memory::Streams::SubParser::ParseStatus MIME_Sub_FirstBoundary::parse()
 {
-    return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }

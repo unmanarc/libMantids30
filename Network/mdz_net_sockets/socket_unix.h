@@ -2,7 +2,7 @@
 #define SOCKET_UNIX_H
 
 #ifndef _WIN32
-#include "streamsocket.h"
+#include "socket_streambase.h"
 
 namespace Mantids { namespace Network { namespace Sockets {
 
@@ -10,7 +10,7 @@ namespace Mantids { namespace Network { namespace Sockets {
 /**
  * Unix Socket Class
  */
-class  Socket_UNIX : public Streams::StreamSocket {
+class  Socket_UNIX : public Sockets::Socket_StreamBase {
 public:
 	/**
 	 * Class constructor.
@@ -37,7 +37,7 @@ public:
      * Accept a new connection on a listening socket.
      * @return returns a socket with the new connection.
      */
-    StreamSocket *acceptConnection() override;
+    Socket_StreamBase *acceptConnection() override;
 };
 
 typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;

@@ -3,8 +3,8 @@
 
 #include <mdz_hlp_functions/json.h>
 #include <set>
-#include <mdz_mem_vars/substreamparser.h>
-#include "json_streamable.h"
+#include <mdz_mem_vars/subparser.h>
+#include "streamablejson.h"
 #include "authentication.h"
 
 namespace Mantids { namespace RPC {

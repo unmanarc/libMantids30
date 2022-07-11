@@ -13,33 +13,6 @@ namespace Mantids { namespace Threads {
 
 namespace Pool {
 
-struct Task
-{
-    Task()
-    {
-        task = nullptr;
-        data = nullptr;
-    }
-
-    bool isNull()
-    {
-        return task == nullptr && data == nullptr;
-    }
-
-    void (*task) (void *);
-    void * data;
-};
-
-struct TasksQueue
-{
-    TasksQueue()
-    {
-        init=true;
-    }
-    std::queue<Task> tasks;
-    std::condition_variable cond_removedElement;
-    bool init;
-};
 
 // TODO: statistics
 /**
@@ -48,6 +21,35 @@ struct TasksQueue
 class ThreadPool
 {
 public:
+
+    struct Task
+    {
+        Task()
+        {
+            task = nullptr;
+            data = nullptr;
+        }
+
+        bool isNull()
+        {
+            return task == nullptr && data == nullptr;
+        }
+
+        void (*task) (void *);
+        void * data;
+    };
+
+    struct TasksQueue
+    {
+        TasksQueue()
+        {
+            init=true;
+        }
+        std::queue<Task> tasks;
+        std::condition_variable cond_removedElement;
+        bool init;
+    };
+
     /**
      * @brief ThreadPool Initialize thread pool
      * @param threadsCount concurrent threads initialized

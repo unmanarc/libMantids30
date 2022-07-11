@@ -7,7 +7,7 @@
 #include <mdz_proto_mime/mime_sub_header.h>
 #include <stdint.h>
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Response {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Response {
 
 class Cookies_ServerSide
 {

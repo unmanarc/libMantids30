@@ -28,7 +28,7 @@ GlobalArguments::GlobalArguments()
     extraOptChars = 256;
 }
 
-bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar, const string &optName, const string &description, const string &defaultValue, const Type & varType, bool mandatory)
+bool GlobalArguments::addCommandLineOption(const string &optGroup, char optChar, const string &optName, const string &description, const string &defaultValue, const Var::Type & varType, bool mandatory)
 {
     if (getProgramOption(optChar)) return false;
     if (getProgramOption(optName)) return false;
@@ -55,7 +55,7 @@ bool GlobalArguments::getCommandLineOptionBooleanValue(const string &optionName)
 {
     Var * var = getCommandLineOptionValue(optionName);
     if (!var) return false;
-    if (var->getVarType() != TYPE_BOOL) return false;
+    if (var->getVarType() != Var::TYPE_BOOL) return false;
     return ((BOOL *)var)->getValue();
 }
 
@@ -99,12 +99,12 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             char val[2];
             val[0] = optIter->optChar;
             val[1] = 0;
-            optString += string(val) + (optIter->varType==TYPE_BOOL?"::":":");
+            optString += string(val) + (optIter->varType==Var::TYPE_BOOL?"::":":");
         }
         // Put the long option
         longOpts[iLongOptPos++] = {
             optIter->name.c_str(), // Option variable
-            optIter->varType==TYPE_BOOL?optional_argument:required_argument,  // With argument?
+            optIter->varType==Var::TYPE_BOOL?optional_argument:required_argument,  // With argument?
             nullptr,
             optIter->optChar
         };
@@ -135,7 +135,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             {
                 Var * absVar = Var::makeAbstract(optValue->varType, "");
 
-                if (( (optarg!=nullptr && !optarg[0]) || !optarg) && optValue->varType == TYPE_BOOL)
+                if (( (optarg!=nullptr && !optarg[0]) || !optarg) && optValue->varType == Var::TYPE_BOOL)
                 {
                     absVar->fromString("1");
                 }
@@ -232,11 +232,11 @@ void GlobalArguments::printHelp()
                 printf(printer.c_str(), v->name.c_str());
             }
 
-            printf(v->varType != TYPE_BOOL ? " <value>" : "        ");
+            printf(v->varType != Var::TYPE_BOOL ? " <value>" : "        ");
 
             if (!v->mandatory)
             {
-                if ( v->varType != TYPE_BOOL )
+                if ( v->varType != Var::TYPE_BOOL )
                     printf(" : %s (default: %s)\n", v->description.c_str(),  v->defaultValue.c_str() );
                 else
                 {

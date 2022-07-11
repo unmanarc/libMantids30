@@ -22,7 +22,7 @@ public:
      */
     void set(const std::string & varName, Map * vars);
 
-    void setFromString(const std::string & varName, Mantids::Memory::Abstract::Type varType, const std::string & str);
+    void setFromString(const std::string & varName, Mantids::Memory::Abstract::Var::Type varType, const std::string & str);
     /**
      * @brief set Set variable.
      *               The variable will be destroyed

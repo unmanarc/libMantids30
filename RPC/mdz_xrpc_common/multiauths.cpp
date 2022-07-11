@@ -32,7 +32,7 @@ void MultiAuths::print()
 {
     for (const auto & i : authentications)
     {
-        Memory::Streams::JSON_Streamable s;
+        Memory::Streams::StreamableJSON s;
         s.setValue(i.second.toJSON());
         std::cout << ">>>> With auth: " << s.getString() << std::endl << std::flush;
     }

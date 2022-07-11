@@ -1,9 +1,9 @@
 #include "webclienthandler.h"
+#include "mdz_xrpc_common/methodsmanager.h"
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <mdz_mem_vars/b_mmap.h>
-#include <mdz_xrpc_common/json_streamable.h>
-#include <mdz_xrpc_common/retcodes.h>
+#include <mdz_xrpc_common/streamablejson.h>
 #include <mdz_hlp_functions/crypto.h>
 #include <mdz_hlp_functions/json.h>
 
@@ -19,14 +19,14 @@
 #endif
 
 using namespace Mantids::Application::Logs;
-using namespace Mantids::Network::HTTP;
+using namespace Mantids::Protocols::HTTP;
 using namespace Mantids::Memory;
 using namespace Mantids::RPC::Web;
 using namespace Mantids::RPC;
 using namespace Mantids;
 using namespace std;
 
-WebClientHandler::WebClientHandler(void *parent, Memory::Streams::Streamable *sock) : HTTPv1_Server(sock)
+WebClientHandler::WebClientHandler(void *parent, Memory::Streams::StreamableObject *sock) : HTTPv1_Server(sock)
 {
     // TODO: rpc logs?
     bReleaseSessionHandler = false;
@@ -49,9 +49,9 @@ void WebClientHandler::setAuthenticators(Mantids::Authentication::Domains *authe
     authDomains = authenticator;
 }
 
-Response::StatusCode WebClientHandler::processClientRequest()
+Response::Status::eCode WebClientHandler::processClientRequest()
 {
-    Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
+    Response::Status::eCode ret  = Response::Status::eCode::S_404_NOT_FOUND;
     bDestroySession = false;
     bReleaseSessionHandler = false;
     uint64_t uSessionMaxAge=0;
@@ -64,11 +64,11 @@ Response::StatusCode WebClientHandler::processClientRequest()
 
     // POST VARS / EXTRA AUTHS:
     if (!extraCredentials.setAuthentications(getRequestVars(HTTP_VARS_POST)->getStringValue("extraAuth")))
-        return Response::StatusCode::S_400_BAD_REQUEST;
+        return Response::Status::eCode::S_400_BAD_REQUEST;
 
     // POST VARS / AUTH:
     if (!credentials.fromString(getRequestVars(HTTP_VARS_POST)->getStringValue("auth")))
-        return Response::StatusCode::S_400_BAD_REQUEST;
+        return Response::Status::eCode::S_400_BAD_REQUEST;
 
     // OPEN THE SESSION HERE:
     sessionOpen();
@@ -133,7 +133,7 @@ void WebClientHandler::sessionOpen()
         {
             log(LEVEL_WARN, "rpcServer", 2048, "Requested session not found {sessionId=%s}",RPCLog::truncateSessionId(sSessionId).c_str());
             addCookieClearSecure("sessionId");
-           // return Response::StatusCode::S_404_NOT_FOUND;
+           // return Response::Status::eCode::S_404_NOT_FOUND;
         }
         sSessionId = ""; // INVALID SESSION ID.
     }
@@ -150,7 +150,7 @@ void WebClientHandler::sessionRelease()
         simpleJSSecureCookie.setHttpOnly(false);
         simpleJSSecureCookie.setExpirationInSeconds(uSessionMaxAge);
         simpleJSSecureCookie.setMaxAge(uSessionMaxAge);
-        simpleJSSecureCookie.setSameSite( Headers::HTTP_COOKIE_SAMESITE_STRICT);
+        simpleJSSecureCookie.setSameSite( Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
 
         setResponseCookie("jsSessionTimeout",simpleJSSecureCookie);
         setResponseSecureCookie("sessionId", sSessionId, uSessionMaxAge);
@@ -226,7 +226,7 @@ void replaceHexCodes( std::string &content )
 }
 
 // TODO: documentar los privilegios cargados de un usuario
-Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::string & sRealFullPath, MultiAuths *extraAuths)
+Response::Status::eCode WebClientHandler::procResource_HTMLIEngine( const std::string & sRealFullPath, MultiAuths *extraAuths)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -245,7 +245,7 @@ Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::stri
         if (!fileStream.is_open())
         {
             log(LEVEL_ERR,"fileServer", 2048, "file not found: %s",sRealFullPath.c_str());
-            return Response::StatusCode::S_404_NOT_FOUND;
+            return Response::Status::eCode::S_404_NOT_FOUND;
         }
         // Pass the file to a string.
         fileContent = std::string((std::istreambuf_iterator<char>(fileStream)),std::istreambuf_iterator<char>());
@@ -408,7 +408,7 @@ Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::stri
 
         replaceHexCodes(functionInput);
 
-        Memory::Streams::JSON_Streamable jPayloadOutStr;
+        Memory::Streams::StreamableJSON jPayloadOutStr;
         procJAPI_Exec(extraAuths,functionName,functionInput, &jPayloadOutStr);
         replaceTagByJVar(fileContent,fulltag,*(jPayloadOutStr.getValue()),true,scriptVarName);
     }
@@ -433,13 +433,13 @@ Response::StatusCode WebClientHandler::procResource_HTMLIEngine( const std::stri
 
     // Stream the generated content...
     getResponseDataStreamer()->writeString(fileContent);
-    return Response::StatusCode::S_200_OK;
+    return Response::Status::eCode::S_200_OK;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session()
+Response::Status::eCode WebClientHandler::procJAPI_Session()
 {
     std::string sMode;
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
 
     // GET VARS:
     sMode = getRequestVars(HTTP_VARS_GET)->getStringValue("mode");
@@ -472,12 +472,12 @@ Response::StatusCode WebClientHandler::procJAPI_Session()
                     // Now this method will fixate the introduced session in the browser...
                     log(LEVEL_DEBUG, "rpcServer", 2048, "CSRF Confirmation Token OK");
                     setResponseSecureCookie("sessionId", sSessionId, uSessionMaxAge);
-                    eHTTPResponseCode = Response::StatusCode::S_200_OK;
+                    eHTTPResponseCode = Response::Status::eCode::S_200_OK;
                 }
                 else
                 {
                     log(LEVEL_ERR,  "rpcServer", 2048, "Invalid CSRF Confirmation Token {mode=%s}", sMode.c_str());
-                    eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+                    eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
                 }
             }
             // Session found and auth token already confirmed, CSRF token must match session.
@@ -516,14 +516,14 @@ Response::StatusCode WebClientHandler::procJAPI_Session()
         // CHANGE MY ACCOUNT PASSWORD...
         else if (webSession && authSession && // exist a websession+authSession
                  webSession->bAuthTokenConfirmed && // The session is CSRF Confirmed/Obtained
-                 authSession->getIsFullyLoggedIn(Mantids::Authentication::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
+                 authSession->getIsFullyLoggedIn(Mantids::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
                  sMode == "CHPASSWD") // CHPASSWD command
             eHTTPResponseCode = procJAPI_Session_CHPASSWD(credentials);
         /////////////////////////////////////////////////////////////////
         // TEST MY ACCOUNT PASSWORD...
         else if (webSession && authSession && // exist a websession+authSession
                  webSession->bAuthTokenConfirmed && // The session is CSRF Confirmed/Obtained
-                 authSession->getIsFullyLoggedIn(Mantids::Authentication::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
+                 authSession->getIsFullyLoggedIn(Mantids::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
                  sMode == "TESTPASSWD") // TESTPASSWD command
             eHTTPResponseCode = procJAPI_Session_TESTPASSWD(credentials);
         /////////////////////////////////////////////////////////////////
@@ -531,7 +531,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session()
         // GET MY ACCOUNT PASSWORD LIST/DESCRIPTION...
         else if (webSession && authSession && // exist a websession+authSession
                  webSession->bAuthTokenConfirmed && // The session is CSRF Confirmed/Obtained
-                 authSession->getIsFullyLoggedIn(Mantids::Authentication::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
+                 authSession->getIsFullyLoggedIn(Mantids::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS) && // All required login passwords passed the authorization
                  sMode == "PASSWDLIST") // PASSWDLIST command
             eHTTPResponseCode = procJAPI_Session_PASSWDLIST();
         /////////////////////////////////////////////////////////////////
@@ -546,7 +546,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session()
         // PERSISTENT SESSION LOGOUT
         else if ( webSession && sMode == "LOGOUT" )
         {
-            eHTTPResponseCode = Response::StatusCode::S_200_OK;
+            eHTTPResponseCode = Response::Status::eCode::S_200_OK;
             bDestroySession = true;
         }
     }
@@ -583,16 +583,16 @@ bool WebClientHandler::csrfValidate()
     return csrfValidationOK;
 }
 
-Response::StatusCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
+Response::Status::eCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
 {
     // WEB RESOURCE MODE:
-    Response::StatusCode ret  = Response::StatusCode::S_404_NOT_FOUND;
+    Response::Status::eCode ret  = Response::Status::eCode::S_404_NOT_FOUND;
     sLocalRequestedFileInfo fileInfo;
     uint64_t uMaxAge=0;
 
     // if there are no web resources path, return 404 without data.
     if (resourcesLocalPath.empty())
-            return Response::StatusCode::S_404_NOT_FOUND;
+            return Response::Status::eCode::S_404_NOT_FOUND;
 
     if ( //staticContent ||
          (getLocalFilePathFromURI2(resourcesLocalPath, &fileInfo, ".html") ||
@@ -602,7 +602,7 @@ Response::StatusCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
          )
     {
         // Evaluate...
-        sFilterEvaluation e;
+        ResourcesFilter::sFilterEvaluation e;
 
         // If there is any session (hSession), then get the authorizer from the session
         // if not, the authorizer is null.
@@ -618,12 +618,12 @@ Response::StatusCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
         {
             // and there is not redirect's, the resoponse code will be 200 (OK)
             if (e.redirectLocation.empty())
-                ret = Response::StatusCode::S_200_OK;
+                ret = Response::Status::eCode::S_200_OK;
             else // otherwise you will need to redirect.
                 ret = setResponseRedirect( e.redirectLocation );
         }
         else // If not, drop a 403 (forbidden)
-            ret = Response::StatusCode::S_403_FORBIDDEN;
+            ret = Response::Status::eCode::S_403_FORBIDDEN;
 
         log(LEVEL_DEBUG,"fileServer", 2048, "R/ - LOCAL - %03d: %s",Response::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
     }
@@ -633,7 +633,7 @@ Response::StatusCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
         log(LEVEL_WARN,"fileServer", 65535, "R/404: %s",getRequestURI().c_str());
     }
 
-    if (ret != Response::StatusCode::S_200_OK)
+    if (ret != Response::Status::eCode::S_200_OK)
     {
         // For NON-200 responses, will stream nothing....
         setResponseDataStreamer(nullptr,false);
@@ -646,33 +646,33 @@ Response::StatusCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
         procResource_HTMLIEngine(fileInfo.sRealFullPath,extraAuths);
 
     // And if the file is not found and there are redirections, set the redirection:
-    if (ret==Response::StatusCode::S_404_NOT_FOUND && !redirectOn404.empty())
+    if (ret==Response::Status::eCode::S_404_NOT_FOUND && !redirectOn404.empty())
     {
         ret = setResponseRedirect( redirectOn404 );
     }
 
     // Log the response.
-    log(ret==Response::StatusCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,
+    log(ret==Response::Status::eCode::S_200_OK?LEVEL_INFO:LEVEL_WARN,
         "fileServer", 2048, "R/%03d: %s",
         Response::Status::getHTTPStatusCodeTranslation(ret),
-        ret==Response::StatusCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
+        ret==Response::Status::eCode::S_200_OK?fileInfo.sRealRelativePath.c_str():getRequestURI().c_str());
 
     return ret;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Version()
+Response::Status::eCode WebClientHandler::procJAPI_Version()
 {
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["version"]  = softwareVersion;
     setResponseDataStreamer(jPayloadOutStr,true);
     setResponseContentType("application/json",true);
-    return Response::StatusCode::S_200_OK;
+    return Response::Status::eCode::S_200_OK;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_AUTHINFO()
+Response::Status::eCode WebClientHandler::procJAPI_Session_AUTHINFO()
 {
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
 
     (*(jPayloadOutStr->getValue()))["user"]   = !authSession?"":authSession->getUserDomainPair().first;
@@ -681,13 +681,13 @@ Response::StatusCode WebClientHandler::procJAPI_Session_AUTHINFO()
 
     setResponseDataStreamer(jPayloadOutStr,true);
     setResponseContentType("application/json",true);
-    return Response::StatusCode::S_200_OK;
+    return Response::Status::eCode::S_200_OK;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_CSRFTOKEN()
+Response::Status::eCode WebClientHandler::procJAPI_Session_CSRFTOKEN()
 {
     // On Page Load...
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["csrfToken"] = webSession->sCSRFToken;
     setResponseDataStreamer(jPayloadOutStr,true);
@@ -697,16 +697,16 @@ Response::StatusCode WebClientHandler::procJAPI_Session_CSRFTOKEN()
     if (authSession)
         authSession->updateLastActivity();
 
-    return Response::StatusCode::S_200_OK;
+    return Response::Status::eCode::S_200_OK;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_LOGIN(const Authentication & auth)
+Response::Status::eCode WebClientHandler::procJAPI_Session_LOGIN(const Authentication & auth)
 {
     Mantids::Authentication::Reason authReason;
     uint64_t uMaxAge;
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
 
 
     std::string user = getRequestVars(HTTP_VARS_POST)->getStringValue("user");
@@ -759,7 +759,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_LOGIN(const Authenticati
                 log(LEVEL_INFO,  "rpcServer", 2048, "Logged in {val=%d,txt=%s}", JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
             }
 
-            eHTTPResponseCode = Response::StatusCode::S_200_OK;
+            eHTTPResponseCode = Response::Status::eCode::S_200_OK;
 
             sessionsManager->releaseSession(sSessionId);
         }
@@ -780,12 +780,12 @@ Response::StatusCode WebClientHandler::procJAPI_Session_LOGIN(const Authenticati
     return eHTTPResponseCode;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authentication &auth)
+Response::Status::eCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authentication &auth)
 {
     Mantids::Authentication::Reason authReason;
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
 
     // Authenticate...
     // We fill the sSessionId in case we want to destroy it with bDestroySession
@@ -816,7 +816,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authenti
         {
             log(LEVEL_INFO,  "rpcServer", 2048, "Authentication factor (%d) OK, Logged in.", auth.getPassIndex());
         }
-        eHTTPResponseCode = Response::StatusCode::S_200_OK;
+        eHTTPResponseCode = Response::Status::eCode::S_200_OK;
     }
     else
     {
@@ -826,7 +826,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authenti
 
         // Mark to Destroy the session if the chpasswd is invalid...
         bDestroySession = true;
-        eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+        eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
     }
 
     setResponseDataStreamer(jPayloadOutStr,true);
@@ -834,10 +834,10 @@ Response::StatusCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authenti
     return eHTTPResponseCode;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
+Response::Status::eCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
                                                      std::string sMethodName,
                                                      std::string sPayloadIn,
-                                                     Memory::Streams::JSON_Streamable * jPayloadOutStr
+                                                     Memory::Streams::StreamableJSON * jPayloadOutStr
                                                      )
 {
     bool useExternalPayload = jPayloadOutStr?true:false;
@@ -846,12 +846,12 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
     if (!useExternalPayload)
     {
         if (!csrfValidate())
-            return Response::StatusCode::S_404_NOT_FOUND;
+            return Response::Status::eCode::S_404_NOT_FOUND;
     }
 
-    if (!useExternalPayload) jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    if (!useExternalPayload) jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
 
     json jPayloadIn;
     Mantids::Helpers::JSONReader2 reader;
@@ -869,20 +869,20 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
     if (!getRequestVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(sPayloadIn, jPayloadIn))
     {
         log(LEVEL_ERR,  "rpcServer", 2048, "Invalid JSON Payload for execution {method=%s}", sMethodName.c_str());
-        return Response::StatusCode::S_400_BAD_REQUEST;
+        return Response::Status::eCode::S_400_BAD_REQUEST;
     }
 
     if (!authDomains)
     {
         log(LEVEL_CRITICAL,  "rpcServer", 2048, "No authentication domain list exist.");
-        return Response::StatusCode::S_500_INTERNAL_SERVER_ERROR;
+        return Response::Status::eCode::S_500_INTERNAL_SERVER_ERROR;
     }
 
     if (methodsManager->getMethodRequireFullAuth(sMethodName) && !authSession)
     {
         log(LEVEL_ERR, "rpcServer", 2048, "This method requires full authentication {method=%s}", sMethodName.c_str());
         // Method not available for this null session..
-        return Response::StatusCode::S_404_NOT_FOUND;
+        return Response::Status::eCode::S_404_NOT_FOUND;
     }
 
     // TODO: what happens if we are given with unhandled but valid auths that should not be validated...?
@@ -918,7 +918,7 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
 
         switch (i)
         {
-        case VALIDATION_OK:
+        case MethodsManager::VALIDATION_OK:
         {
             if (authSession)
                 authSession->updateLastActivity();
@@ -932,7 +932,7 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
 
             switch (methodsManager->runRPCMethod(authDomains,domainName, authSession, sMethodName, jPayloadIn, jPayloadOutStr->getValue()))
             {
-            case Mantids::RPC::METHOD_RET_CODE_SUCCESS:
+            case Mantids::RPC::MethodsManager::METHOD_RET_CODE_SUCCESS:
 
                 finish = chrono::high_resolution_clock::now();
                 elapsed = finish - start;
@@ -940,36 +940,36 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
                 log(LEVEL_INFO, "rpcServer", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", sMethodName.c_str(),elapsed.count());
                 log(LEVEL_DEBUG, "rpcServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Mantids::Helpers::jsonToString(jPayloadOutStr->getValue()).c_str());
 
-                eHTTPResponseCode = Response::StatusCode::S_200_OK;
+                eHTTPResponseCode = Response::Status::eCode::S_200_OK;
                 break;
-            case Mantids::RPC::METHOD_RET_CODE_METHODNOTFOUND:
+            case Mantids::RPC::MethodsManager::METHOD_RET_CODE_METHODNOTFOUND:
                 log(LEVEL_ERR, "rpcServer", 2048, "Web Method not found {method=%s}", sMethodName.c_str());
-                eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+                eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
                 break;
-            case Mantids::RPC::METHOD_RET_CODE_INVALIDDOMAIN:
+            case Mantids::RPC::MethodsManager::METHOD_RET_CODE_INVALIDDOMAIN:
                 // This code should never be executed... <
                 log(LEVEL_ERR, "rpcServer", 2048, "Domain not found during web method execution {method=%s}", sMethodName.c_str());
-                eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+                eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
                 break;
             default:
                 log(LEVEL_ERR, "rpcServer", 2048, "Unknown error during web method execution {method=%s}", sMethodName.c_str());
-                eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+                eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
                 break;
             }
         }break;
-        case VALIDATION_NOTAUTHORIZED:
+        case MethodsManager::VALIDATION_NOTAUTHORIZED:
         {
             // not enough permissions.
             (*(jPayloadOutStr->getValue()))["auth"]["reasons"] = reasons;
             log(LEVEL_ERR, "rpcServer", 8192, "Not authorized to execute method {method=%s,reasons=%s}", sMethodName.c_str(),Mantids::Helpers::jsonToString(reasons).c_str());
-            eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+            eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
         }break;
-        case VALIDATION_METHODNOTFOUND:
+        case MethodsManager::VALIDATION_METHODNOTFOUND:
         default:
         {
             log(LEVEL_ERR, "rpcServer", 2048, "Method not found {method=%s}", sMethodName.c_str());
             // not enough permissions.
-            eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+            eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
         }break;
         }
     }
@@ -978,7 +978,7 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
         log(LEVEL_ERR, "rpcServer", 2048, "Domain not found {method=%s}", sMethodName.c_str());
 
         // Domain Not found.
-        eHTTPResponseCode = Response::StatusCode::S_404_NOT_FOUND;
+        eHTTPResponseCode = Response::Status::eCode::S_404_NOT_FOUND;
     }
 
     if (!useExternalPayload)
@@ -989,14 +989,14 @@ Response::StatusCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
     return eHTTPResponseCode;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentication &oldAuth)
+Response::Status::eCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentication &oldAuth)
 {
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
 
     if (!authSession)
         return eHTTPResponseCode;
 
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
 
     Authentication newAuth;
@@ -1005,13 +1005,13 @@ Response::StatusCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentic
     if (!newAuth.fromString(getRequestVars(HTTP_VARS_POST)->getStringValue("newAuth")))
     {
         log(LEVEL_ERR, "rpcServer", 2048, "Invalid JSON Parsing for new credentials item");
-        return Response::StatusCode::S_400_BAD_REQUEST;
+        return Response::Status::eCode::S_400_BAD_REQUEST;
     }
 
     if (oldAuth.getPassIndex()!=newAuth.getPassIndex())
     {
         log(LEVEL_ERR, "rpcServer", 2048, "Provided credential index differs from new credential index.");
-        return Response::StatusCode::S_400_BAD_REQUEST;
+        return Response::Status::eCode::S_400_BAD_REQUEST;
     }
 
     uint32_t credIdx = newAuth.getPassIndex();
@@ -1045,7 +1045,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentic
             else
                 log(LEVEL_ERR, "rpcServer", 2048, "Password change failed due to internal error {idx=%d,result=0}",credIdx);
 
-            eHTTPResponseCode = Response::StatusCode::S_200_OK;
+            eHTTPResponseCode = Response::Status::eCode::S_200_OK;
         }
         else
         {
@@ -1053,7 +1053,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentic
 
             // Mark to Destroy the session if the chpasswd is invalid...
             bDestroySession = true;
-            eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+            eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
         }
 
 
@@ -1070,13 +1070,13 @@ Response::StatusCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentic
 
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authentication &auth)
+Response::Status::eCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authentication &auth)
 {
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
 
     if (!authSession) return eHTTPResponseCode;
 
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
 
     auto domainAuthenticator = authDomains->openDomain(authSession->getAuthDomain());
@@ -1092,7 +1092,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authent
         {
             log(LEVEL_INFO, "rpcServer", 2048, "Password validation requested {idx=%d,result=1}",auth.getPassIndex());
             //(*(jPayloadOutStr->getValue()))["ok"] = true;
-            eHTTPResponseCode = Response::StatusCode::S_200_OK;
+            eHTTPResponseCode = Response::Status::eCode::S_200_OK;
         }
         else
         {
@@ -1100,7 +1100,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authent
 
             // Mark to destroy the session if the test password is invalid...
             bDestroySession = true;
-            eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+            eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
         }
         (*(jPayloadOutStr->getValue()))["ok"] = true;
 
@@ -1117,14 +1117,14 @@ Response::StatusCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authent
     return eHTTPResponseCode;
 }
 
-Response::StatusCode WebClientHandler::procJAPI_Session_PASSWDLIST()
+Response::Status::eCode WebClientHandler::procJAPI_Session_PASSWDLIST()
 {
-    Response::StatusCode eHTTPResponseCode = Response::StatusCode::S_401_UNAUTHORIZED;
+    Response::Status::eCode eHTTPResponseCode = Response::Status::eCode::S_401_UNAUTHORIZED;
 
     if (!authSession) return eHTTPResponseCode;
 
-    eHTTPResponseCode = Response::StatusCode::S_200_OK;
-    Memory::Streams::JSON_Streamable * jPayloadOutStr = new Memory::Streams::JSON_Streamable;
+    eHTTPResponseCode = Response::Status::eCode::S_200_OK;
+    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
 
     auto domainAuthenticator = authDomains->openDomain(authSession->getAuthDomain());
@@ -1151,7 +1151,7 @@ Response::StatusCode WebClientHandler::procJAPI_Session_PASSWDLIST()
         }
     }
     else
-        eHTTPResponseCode = Response::StatusCode::S_500_INTERNAL_SERVER_ERROR;
+        eHTTPResponseCode = Response::Status::eCode::S_500_INTERNAL_SERVER_ERROR;
 
     setResponseDataStreamer(jPayloadOutStr,true);
     setResponseContentType("application/json",true);

@@ -1,7 +1,7 @@
 #ifndef SOCKET_UDP_H
 #define SOCKET_UDP_H
 
-#include "datagramsocket.h"
+#include "socket_datagrambase.h"
 
 #ifndef _WIN32
 #include <netdb.h>
@@ -9,7 +9,7 @@
 
 namespace Mantids { namespace Network { namespace Sockets {
 
-class Socket_UDP : public Datagram::DatagramSocket {
+class Socket_UDP : public Socket_DatagramBase {
 public:
     /**
      * Class constructor
@@ -64,7 +64,7 @@ public:
      * Receive the data block of maximum 65507 bytes.
      * You may want to specify read a timeout for your protocol.
      */
-    std::shared_ptr<Datagram::Block> readBlock() override;
+    std::shared_ptr<Block> readBlock() override;
 
     /**
      * Minimum read size allowed on read funcion.

@@ -115,14 +115,14 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
     return true;
 }
 
-Streams::StreamSocket * Socket_UNIX::acceptConnection()
+Sockets::Socket_StreamBase * Socket_UNIX::acceptConnection()
 {
     int sdconn;
-    StreamSocket * cursocket = nullptr;
+    Socket_StreamBase * cursocket = nullptr;
 
     if ((sdconn = accept(sockfd, nullptr, nullptr)) >= 0)
     {
-        cursocket = new StreamSocket;
+        cursocket = new Socket_StreamBase;
         // Set the proper socket-
         cursocket->setSocketFD(sdconn);
     }

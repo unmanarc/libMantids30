@@ -6,15 +6,16 @@
 
 namespace Mantids { namespace Scripts { namespace Expressions {
 
-enum eEvalMode {
-    EVAL_MODE_OR,
-    EVAL_MODE_AND,
-    EVAL_MODE_UNDEFINED
-};
-
 class JSONEval
 {
 public:
+
+    enum eEvalMode {
+        EVAL_MODE_OR,
+        EVAL_MODE_AND,
+        EVAL_MODE_UNDEFINED
+    };
+
     JSONEval();
     JSONEval(const std::string & expr);
     JSONEval(const std::string & expr, std::vector<std::string> * staticTexts, bool negativeExpression);

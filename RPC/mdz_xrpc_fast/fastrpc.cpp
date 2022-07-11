@@ -189,7 +189,7 @@ int FastRPC::processAnswer(FastRPC_Connection * connection)
     return 1;
 }
 
-int FastRPC::processQuery(Network::Streams::StreamSocket *stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket)
+int FastRPC::processQuery(Network::Sockets::Socket_StreamBase *stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket)
 {
     uint32_t maxAlloc = maxMessageSize;
     uint64_t requestId;
@@ -288,7 +288,7 @@ void FastRPC::setRemoteExecutionTimeoutInMS(const uint32_t &value)
     remoteExecutionTimeoutInMS = value;
 }
 
-int FastRPC::processConnection(Network::Streams::StreamSocket *stream, const std::string &key, const sFastRPCOnConnectedMethod &callbackOnConnectedMethod, const float &keyDistFactor)
+int FastRPC::processConnection(Network::Sockets::Socket_StreamBase *stream, const std::string &key, const sFastRPCOnConnectedMethod &callbackOnConnectedMethod, const float &keyDistFactor)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "XRPC:ProcStream");

@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 
 class XSSProtection
 {

@@ -1,6 +1,6 @@
 #include "socket_tls.h"
 
-#include "streamsocket.h"
+#include "socket_streambase.h"
 
 #include <openssl/rand.h>
 #include <openssl/err.h>
@@ -18,7 +18,7 @@
 #endif
 
 using namespace std;
-using namespace Mantids::Network::TLS;
+using namespace Mantids::Network::Sockets;
 
 Socket_TLS::Socket_TLS()
 {
@@ -324,7 +324,7 @@ void Socket_TLS::setServerMode(bool value)
     isServer = value;
 }
 
-void Socket_TLS::setTLSContextMode(const SSL_MODE &value)
+void Socket_TLS::setTLSContextMode(const TLS_MODE &value)
 {
     sslMode = value;
 }
@@ -351,9 +351,9 @@ bool Socket_TLS::setTLSPrivateKeyPath(const char *_key_file)
 }
 
 
-cipherBits Socket_TLS::getCipherBits()
+Socket_TLS::TLS_CipherBits Socket_TLS::getCipherBits()
 {
-    cipherBits cb;
+    TLS_CipherBits cb;
     if (!sslHandle) return cb;
     cb.aSymBits = SSL_get_cipher_bits(sslHandle, &cb.symBits);
     return cb;
@@ -365,10 +365,10 @@ string Socket_TLS::getProtocolVersionName()
     return SSL_get_version(sslHandle);
 }
 
-Mantids::Network::Streams::StreamSocket * Socket_TLS::acceptConnection()
+Mantids::Network::Sockets::Socket_StreamBase * Socket_TLS::acceptConnection()
 {
     char remotePair[INET6_ADDRSTRLEN];
-    StreamSocket * mainSock = Socket_TCP::acceptConnection();
+    Socket_StreamBase * mainSock = Socket_TCP::acceptConnection();
     if (!mainSock) return nullptr;
 
 

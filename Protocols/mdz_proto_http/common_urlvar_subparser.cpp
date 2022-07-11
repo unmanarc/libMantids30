@@ -2,13 +2,13 @@
 
 #include "streamdecoder_url.h"
 
-using namespace Mantids::Network::HTTP;
-using namespace Mantids::Network::HTTP::Common;
+using namespace Mantids::Protocols::HTTP;
+using namespace Mantids::Protocols::HTTP::Common;
 using namespace Mantids;
 
 URLVar_SubParser::URLVar_SubParser()
 {
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_MULTIDELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
     setParseMultiDelimiter({"=","&"});
     setMaxObjectSize(4096);
     pData = new Memory::Containers::B_Chunks;
@@ -19,7 +19,7 @@ URLVar_SubParser::~URLVar_SubParser()
     if (pData) delete pData;
 }
 
-bool URLVar_SubParser::stream(Memory::Streams::Status &)
+bool URLVar_SubParser::stream(Memory::Streams::StreamableObject::Status &)
 {
     // NOT IMPLEMENTED.
     return false;
@@ -53,17 +53,17 @@ std::string URLVar_SubParser::flushRetrievedContentAsString()
     return r;
 }
 
-Memory::Streams::Parsing::ParseStatus URLVar_SubParser::parse()
+Memory::Streams::SubParser::ParseStatus URLVar_SubParser::parse()
 {
     pData->clear();
-    if (!getParsedData()->size()) return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
-    Memory::Streams::Status cur;
+    if (!getParsedData()->size()) return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+    Memory::Streams::StreamableObject::Status cur;
     Memory::Streams::Decoders::URL decUrl(pData);
     if (!(cur=getParsedData()->streamTo(&decUrl,cur)).succeed)
     {
         pData->clear();
     }
-    return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
 Memory::Containers::B_Chunks *URLVar_SubParser::getPData()

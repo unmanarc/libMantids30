@@ -2,7 +2,7 @@
 #define HTTP_SECURITY_HSTS_H
 
 #include <string>
-namespace Mantids { namespace Network { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 
 class HSTS
 {

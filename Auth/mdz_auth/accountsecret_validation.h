@@ -9,7 +9,7 @@
 #include "ds_auth_function.h"
 #include "ds_auth_secret.h"
 
-#include <mdz_thr_safecontainers/map_element.h>
+#include <mdz_thr_safecontainers/mapitem.h>
 
 namespace Mantids { namespace Authentication {
 
@@ -27,7 +27,7 @@ struct sClientDetails {
     std::string sIPAddr,sExtraData,sTLSCommonName,sUserAgent;
 };
 
-class AccountSecret_Validation : public Mantids::Threads::Safe::Map_Element
+class AccountSecret_Validation : public Mantids::Threads::Safe::MapItem
 {
 public:
     AccountSecret_Validation();

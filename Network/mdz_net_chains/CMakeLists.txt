@@ -12,8 +12,6 @@ file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
 add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
 
-
-
 set_target_properties(  ${LIB_NAME}
                         PROPERTIES VERSION ${PROJECT_VERSION}
                         SOVERSION 2

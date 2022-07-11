@@ -2,7 +2,7 @@
 #define MANAGER_REMOTE_H
 
 #include <mdz_auth/manager.h>
-#include <mdz_net_sockets/streamsocket.h>
+#include <mdz_net_sockets/socket_streambase.h>
 #include <mdz_xrpc_fast/fastrpc.h>
 #include <stdexcept>
 
@@ -217,7 +217,7 @@ public:
      * @param stream connection
      * @return
      */
-    int processFastRPCConnection(Mantids::Network::Streams::StreamSocket *stream);
+    int processFastRPCConnection(Mantids::Network::Sockets::Socket_StreamBase *stream);
 protected:
     bool accountValidateDirectAttribute(const std::string & , const sApplicationAttrib &) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
     Secret retrieveSecret(const std::string &, uint32_t , bool * , bool * ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); Secret s; return s; }

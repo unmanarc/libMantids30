@@ -4,17 +4,18 @@
 #include <string>
 #include "common_date.h"
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Headers {
-
-enum eCookie_SameSitePolicy {
-    HTTP_COOKIE_SAMESITE_NONE = 0,
-    HTTP_COOKIE_SAMESITE_LAX = 1,
-    HTTP_COOKIE_SAMESITE_STRICT = 2
-};
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Headers {
 
 class Cookie
 {
 public:
+
+    enum eSameSitePolicy {
+        HTTP_COOKIE_SAMESITE_NONE = 0,
+        HTTP_COOKIE_SAMESITE_LAX = 1,
+        HTTP_COOKIE_SAMESITE_STRICT = 2
+    };
+
     Cookie();
 
     void setDefaults();
@@ -47,8 +48,8 @@ public:
     void setSecure(bool value);
 
 
-    eCookie_SameSitePolicy getSameSite() const;
-    void setSameSite(const eCookie_SameSitePolicy &value);
+    eSameSitePolicy getSameSite() const;
+    void setSameSite(const eSameSitePolicy &value);
 
 private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
@@ -60,7 +61,7 @@ private:
     std::string domain;
     std::string path;
     bool secure,httpOnly;
-    eCookie_SameSitePolicy sameSite;
+    eSameSitePolicy sameSite;
 };
 
 }}}}

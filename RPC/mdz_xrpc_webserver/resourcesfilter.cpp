@@ -15,6 +15,7 @@ bool ResourcesFilter::loadFile(const std::string &filePath)
     // Create a root ptree
     property_tree::ptree root;
 
+    // TODO:
     //    try {
     // Load the info file in this ptree
     property_tree::read_json(filePath, root);
@@ -87,12 +88,12 @@ bool ResourcesFilter::loadFile(const std::string &filePath)
     return true;
 }
 
-void Mantids::RPC::Web::ResourcesFilter::addFilter(const Mantids::RPC::Web::sFilter &filter)
+void Mantids::RPC::Web::ResourcesFilter::addFilter(const sFilter &filter)
 {
     filters.push_back(filter);
 }
 
-sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids::Authentication::Session * hSession, Mantids::Authentication::Manager * authorizer)
+Mantids::RPC::Web::ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids::Authentication::Session * hSession, Mantids::Authentication::Manager * authorizer)
 {
     sFilterEvaluation evalRet;
 

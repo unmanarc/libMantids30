@@ -9,8 +9,8 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP::Response;
-using namespace Mantids::Network::HTTP;
+using namespace Mantids::Protocols::HTTP::Response;
+using namespace Mantids::Protocols::HTTP;
 using namespace Mantids;
 
 Cookies_ServerSide::Cookies_ServerSide()
@@ -79,7 +79,7 @@ void Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
     c.setSecure(true);
     c.setHttpOnly(true);
     c.setToExpire();
-    c.setSameSite(HTTP::Headers::HTTP_COOKIE_SAMESITE_STRICT);
+    c.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
 
     if (cookiesMap.find(cookieName) != cookiesMap.end())
     {

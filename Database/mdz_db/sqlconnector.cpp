@@ -114,7 +114,7 @@ QueryInstance SQLConnector::qInsert(const std::string &preparedQuery, const std:
 
     if (q.query->setPreparedSQLQuery(preparedQuery,inputVars))
     {
-        q.ok = q.query->exec(EXEC_TYPE_INSERT);
+        q.ok = q.query->exec(Query::EXEC_TYPE_INSERT);
         return q;
     }
 
@@ -180,7 +180,7 @@ QueryInstance SQLConnector::qSelect(const std::string &preparedQuery, const std:
     {
         if (q.query->bindResultVars(resultVars))
         {
-            q.ok = q.query->exec(EXEC_TYPE_SELECT);
+            q.ok = q.query->exec(Query::EXEC_TYPE_SELECT);
             return q;
         }
     }

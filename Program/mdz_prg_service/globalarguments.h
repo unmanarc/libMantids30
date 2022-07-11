@@ -17,14 +17,14 @@ struct sProgCMDOpts {
         defaultValueVar = nullptr;
         optChar = 0;
         mandatory = true;
-        varType = Mantids::Memory::Abstract::TYPE_BOOL;
+        varType = Mantids::Memory::Abstract::Var::TYPE_BOOL;
     }
 
     std::string defaultValue;
     std::string description;
     bool mandatory;
 
-    Mantids::Memory::Abstract::Type varType;
+    Mantids::Memory::Abstract::Var::Type varType;
 
     Mantids::Memory::Abstract::Var * defaultValueVar;
     std::list<Mantids::Memory::Abstract::Var *> parsedOption;
@@ -51,7 +51,7 @@ public:
      * @param mandatory Mandatory argument (required to start)
      * @return true if added, otherwise false.
      */
-    bool addCommandLineOption(const std::string & optGroup, char optChar, const std::string & optName, const std::string & description, const std::string & defaultValue, const Mantids::Memory::Abstract::Type &varType, bool mandatory = false);
+    bool addCommandLineOption(const std::string & optGroup, char optChar, const std::string & optName, const std::string & description, const std::string & defaultValue, const Memory::Abstract::Var::Type &varType, bool mandatory = false);
     /**
      * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced Value
      * @param optionName Option Name (Full name)

@@ -83,7 +83,7 @@ bool ThreadPool::pushTask(void (*task)(void *), void *data, uint32_t timeoutMS, 
     return true;
 }
 
-Task ThreadPool::popTask()
+ThreadPool::Task ThreadPool::popTask()
 {
 #ifndef _WIN32
      pthread_setname_np(pthread_self(), "tp_poptask");
@@ -117,7 +117,7 @@ Task ThreadPool::popTask()
     return r;
 }
 
-TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
+ThreadPool::TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
 {
     std::vector<size_t> fullVector;
     // Randomize the full vector

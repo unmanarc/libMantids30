@@ -8,9 +8,9 @@ StreamableFile::StreamableFile(int _rd_fd, int _wr_fd)
     wr_fd = _wr_fd;
 }
 
-bool StreamableFile::streamTo(Memory::Streams::Streamable *out, Status &wrStatUpd)
+bool StreamableFile::streamTo(Memory::Streams::StreamableObject *out, StreamableObject::Status &wrStatUpd)
 {
-    Status cur;
+    StreamableObject::Status cur;
     for (;;)
     {
         char buf[4096];
@@ -42,9 +42,9 @@ bool StreamableFile::streamTo(Memory::Streams::Streamable *out, Status &wrStatUp
     }
 }
 
-Status StreamableFile::write(const void *buf, const size_t &count, Status &wrStatUpd)
+StreamableObject::Status StreamableFile::write(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
 {
-    Status cur;
+    StreamableObject::Status cur;
     ssize_t x=0;
     if ((x=::write(wr_fd, buf, count)) == -1)
     {

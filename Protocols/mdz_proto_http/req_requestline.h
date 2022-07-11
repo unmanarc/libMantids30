@@ -1,17 +1,17 @@
 #ifndef HTTP_URL_REQUEST_H
 #define HTTP_URL_REQUEST_H
 
-#include <mdz_mem_vars/substreamparser.h>
+#include <mdz_mem_vars/subparser.h>
 #include <mdz_mem_vars/b_base.h>
 
 #include <string>
 #include "common_version.h"
 #include "common_urlvars.h"
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Request {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Request {
 
 
-class RequestLine : public Memory::Streams::Parsing::SubParser
+class RequestLine : public Memory::Streams::SubParser
 {
 public:
     RequestLine();
@@ -22,7 +22,7 @@ public:
      *        writes this class objects/data into the http uplink.
      * @return true if written successfully/
      */
-    bool stream(Memory::Streams::Status & wrStat) override;
+    bool stream(Memory::Streams::StreamableObject::Status & wrStat) override;
 
     ////////////////////////////////////////////////
     // Objects:
@@ -35,7 +35,7 @@ public:
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
      */
-    Memory::Abstract::Vars * getVarsPTR();
+    Memory::Abstract::Vars * urlVars();
 
     //////////////////////////////////////////////////
     // Local getters/setters.
@@ -56,7 +56,7 @@ public:
     std::string getRequestURIParameters() const;
 
 protected:
-    Memory::Streams::Parsing::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
     void parseURI();

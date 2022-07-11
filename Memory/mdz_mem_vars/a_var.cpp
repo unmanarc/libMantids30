@@ -124,7 +124,7 @@ bool Var::fromString(const std::string &)
     return true;
 }
 
-Type Var::getVarType() const
+Var::Type Var::getVarType() const
 {
     return varType;
 }

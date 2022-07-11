@@ -4,7 +4,7 @@
 
 #include "b_chunk.h"
 
-#include "streamable.h"
+#include "streamableobject.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -23,7 +23,7 @@ enum BinaryContainerMethod {
     BC_METHOD_NULL
 };
 
-class B_Base : public Streams::Streamable
+class B_Base : public Streams::StreamableObject
 {
 public:
     B_Base();
@@ -146,8 +146,8 @@ public:
     * @param offset displacement in bytes where the data starts.
     * @return -1 if error, 0 if no data appended (eg. max reached), n bytes appended.
     */
-    std::pair<bool,uint64_t> appendTo(Streamable & out, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
-    std::pair<bool,uint64_t> appendTo(Streamable & out, Streams::Status & wrStatUpd, uint64_t bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
+    std::pair<bool,uint64_t> appendTo(StreamableObject & out, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
+    std::pair<bool,uint64_t> appendTo(StreamableObject & out, Streams::StreamableObject::Status & wrStatUpd, uint64_t bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
@@ -260,8 +260,8 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Streamable
-    bool streamTo(Memory::Streams::Streamable * out, Streams::Status & wrStatUpd) override;
-    Memory::Streams::Status write(const void * buf, const size_t &count, Streams::Status & wrStatUpd) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Streams::StreamableObject::Status & wrStatUpd) override;
+    Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Streams::StreamableObject::Status & wrStatUpd) override;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FS options:
     B_Base * copyToFS(const std::string &fileName, bool removeOnDestroy);
@@ -335,8 +335,8 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return number of bytes copied
     */
-    virtual std::pair<bool,uint64_t> copyTo2(Streamable & bc, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
-    virtual std::pair<bool,uint64_t> copyTo2(Streamable & bc, Streams::Status & wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) = 0;
+    virtual std::pair<bool,uint64_t> copyTo2(StreamableObject & bc, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
+    virtual std::pair<bool,uint64_t> copyTo2(StreamableObject & bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) = 0;
     /**
      * @brief Copy append to external memory
      * @param bc destination binary container
@@ -368,7 +368,7 @@ protected:
 
     // Auxiliar:
     uint64_t copyToStreamUsingCleanVector(std::ostream &bc, std::vector<BinaryContainerChunk> copyChunks);
-    uint64_t copyToSOUsingCleanVector(Streamable &bc, std::vector<BinaryContainerChunk> copyChunks, Streams::Status & wrStatUpd);
+    uint64_t copyToSOUsingCleanVector(StreamableObject &bc, std::vector<BinaryContainerChunk> copyChunks, Streams::StreamableObject::Status & wrStatUpd);
     void setContainerBytes(const uint64_t &value);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

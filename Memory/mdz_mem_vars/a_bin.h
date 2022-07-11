@@ -7,43 +7,44 @@
 
 namespace Mantids { namespace Memory { namespace Abstract {
 
-struct sBinContainer {
-    sBinContainer()
-    {
-        ptr = nullptr;
-        dataSize = 0;
-    }
-    ~sBinContainer()
-    {
-        if (ptr) delete [] ptr;
-    }
-    sBinContainer(const size_t & len)
-    {
-        ptr = nullptr;
-        if (len==0) return;
-        ptr = new char[len+1];
-        if (!ptr) return;
-        memset(ptr,0,len+1);
-        dataSize = len;
-    }
-    sBinContainer(char * value, const size_t & len)
-    {
-        ptr = nullptr;
-        if (len==0) return;
-        ptr = new char[len+1];
-        if (!ptr) return;
-        ptr[len] = 0;
-        dataSize = len;
-        memcpy(ptr,value,len);
-    }
-    char * ptr;
-    size_t dataSize;
-    Threads::Sync::Mutex_Shared mutex;
-};
 
 class BINARY : public Var
 {
 public:
+    struct sBinContainer {
+        sBinContainer()
+        {
+            ptr = nullptr;
+            dataSize = 0;
+        }
+        ~sBinContainer()
+        {
+            if (ptr) delete [] ptr;
+        }
+        sBinContainer(const size_t & len)
+        {
+            ptr = nullptr;
+            if (len==0) return;
+            ptr = new char[len+1];
+            if (!ptr) return;
+            memset(ptr,0,len+1);
+            dataSize = len;
+        }
+        sBinContainer(char * value, const size_t & len)
+        {
+            ptr = nullptr;
+            if (len==0) return;
+            ptr = new char[len+1];
+            if (!ptr) return;
+            ptr[len] = 0;
+            dataSize = len;
+            memcpy(ptr,value,len);
+        }
+        char * ptr;
+        size_t dataSize;
+        Threads::Sync::Mutex_Shared mutex;
+    };
+
     BINARY();
     virtual ~BINARY() override;
 

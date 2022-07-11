@@ -1,7 +1,6 @@
 #include "methodsmanager.h"
 
 #include "multiauths.h"
-#include "retcodes.h"
 
 #include <mdz_thr_mutex/lock_shared.h>
 
@@ -54,7 +53,7 @@ int MethodsManager::runRPCMethod(Mantids::Authentication::Domains * authDomain, 
     }
 }
 
-eMethodValidationCodes MethodsManager::validateRPCMethodPerms(Mantids::Authentication::Manager * auth, Mantids::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, json *reasons)
+MethodsManager::eMethodValidationCodes MethodsManager::validateRPCMethodPerms(Mantids::Authentication::Manager * auth, Mantids::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, json *reasons)
 {
     std::set<uint32_t> passIndexesLeft;
     std::set<Mantids::Authentication::sApplicationAttrib> attribsLeft;
@@ -67,7 +66,7 @@ eMethodValidationCodes MethodsManager::validateRPCMethodPerms(Mantids::Authentic
     // If requires full authentication, check that the session report that is fully authenticated (all required ID's) and it's also a persistent session.
     if (methodRequireFullAuth[methodName])
     {
-        if (!session || !session->getIsFullyLoggedIn(Mantids::Authentication::CHECK_DISALLOW_EXPIRED_PASSWORDS) || !session->getIsPersistentSession())
+        if (!session || !session->getIsFullyLoggedIn(Mantids::Authentication::Session::CHECK_DISALLOW_EXPIRED_PASSWORDS) || !session->getIsPersistentSession())
             return VALIDATION_NOTAUTHORIZED;
     }
     // else: otherwise, the method will only be validated against authenticated attribs/indexes

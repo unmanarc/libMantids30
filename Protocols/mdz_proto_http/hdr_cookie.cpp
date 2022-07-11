@@ -8,7 +8,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids::Network::HTTP::Headers;
+using namespace Mantids::Protocols::HTTP::Headers;
 using namespace Mantids;
 
 Cookie::Cookie()
@@ -210,12 +210,12 @@ std::pair<string, string> Cookie::getVarNameAndValue(const string &var)
     return r;
 }
 
-eCookie_SameSitePolicy Cookie::getSameSite() const
+Cookie::eSameSitePolicy Cookie::getSameSite() const
 {
     return sameSite;
 }
 
-void Cookie::setSameSite(const eCookie_SameSitePolicy &value)
+void Cookie::setSameSite(const Cookie::eSameSitePolicy &value)
 {
     sameSite = value;
 }

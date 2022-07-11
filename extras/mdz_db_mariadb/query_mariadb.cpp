@@ -187,7 +187,7 @@ bool Query_MariaDB::step0()
     {
         Memory::Abstract::Var * val = resultVars[col];
 
-        Memory::Abstract::sBinContainer * sBin = nullptr;
+        Memory::Abstract::BINARY::sBinContainer * sBin = nullptr;
 
         unsigned char cRetBoolean=0;
         MYSQL_BIND result = {};
@@ -198,60 +198,60 @@ bool Query_MariaDB::step0()
 
         switch (resultVars[col]->getVarType())
         {
-        case Memory::Abstract::TYPE_BOOL:
+        case Memory::Abstract::Var::TYPE_BOOL:
             result.buffer_type = MYSQL_TYPE_TINY;
             result.is_unsigned = 0;
             result.buffer = &(cRetBoolean);
             break;
-        case Memory::Abstract::TYPE_INT8:
+        case Memory::Abstract::Var::TYPE_INT8:
             result.buffer_type = MYSQL_TYPE_TINY;
             result.is_unsigned = 0;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_INT16:
+        case Memory::Abstract::Var::TYPE_INT16:
             result.buffer_type = MYSQL_TYPE_SHORT;
             result.is_unsigned = 0;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_INT32:
+        case Memory::Abstract::Var::TYPE_INT32:
             result.buffer_type = MYSQL_TYPE_LONG;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_INT64:
+        case Memory::Abstract::Var::TYPE_INT64:
             result.buffer_type = MYSQL_TYPE_LONGLONG;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_UINT8:
+        case Memory::Abstract::Var::TYPE_UINT8:
             result.buffer_type = MYSQL_TYPE_TINY;
             result.is_unsigned = 1;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_UINT16:
+        case Memory::Abstract::Var::TYPE_UINT16:
             result.buffer_type = MYSQL_TYPE_SHORT;
             result.is_unsigned = 1;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_UINT32:
+        case Memory::Abstract::Var::TYPE_UINT32:
             result.buffer_type = MYSQL_TYPE_LONG;
             result.is_unsigned = 1;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_UINT64:
+        case Memory::Abstract::Var::TYPE_UINT64:
             result.buffer_type = MYSQL_TYPE_LONGLONG;
             result.is_unsigned = 1;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_DOUBLE:
+        case Memory::Abstract::Var::TYPE_DOUBLE:
             result.buffer_type = MYSQL_TYPE_DOUBLE;
             result.is_unsigned = 0;
             result.buffer = val->getDirectMemory();
             break;
-        case Memory::Abstract::TYPE_BIN:
+        case Memory::Abstract::Var::TYPE_BIN:
         {
             unsigned long varSize = mariaDBfetchVarSize(col,MYSQL_TYPE_BLOB);
             if (varSize>0)
             {
-                sBin = new Memory::Abstract::sBinContainer(varSize);
+                sBin = new Memory::Abstract::BINARY::sBinContainer(varSize);
                 result.buffer_type = MYSQL_TYPE_BLOB;
                 result.buffer = sBin->ptr;
                 result.buffer_length = sBin->dataSize;
@@ -259,7 +259,7 @@ bool Query_MariaDB::step0()
             }
             // fetch later.
         } break;
-        case Memory::Abstract::TYPE_VARCHAR:
+        case Memory::Abstract::Var::TYPE_VARCHAR:
         {
             // This will copy the memory.
             result.buffer_type = MYSQL_TYPE_STRING;
@@ -267,25 +267,25 @@ bool Query_MariaDB::step0()
             result.buffer = val->getDirectMemory();
             result.buffer_length = ABSTRACT_PTR_AS(VARCHAR,val)->getVarSize();
         } break;
-        case Memory::Abstract::TYPE_STRING:
-        case Memory::Abstract::TYPE_STRINGLIST:
-        case Memory::Abstract::TYPE_DATETIME:
-        case Memory::Abstract::TYPE_IPV4:
-        case Memory::Abstract::TYPE_MACADDR:
-        case Memory::Abstract::TYPE_IPV6:
-        case Memory::Abstract::TYPE_PTR:
+        case Memory::Abstract::Var::TYPE_STRING:
+        case Memory::Abstract::Var::TYPE_STRINGLIST:
+        case Memory::Abstract::Var::TYPE_DATETIME:
+        case Memory::Abstract::Var::TYPE_IPV4:
+        case Memory::Abstract::Var::TYPE_MACADDR:
+        case Memory::Abstract::Var::TYPE_IPV6:
+        case Memory::Abstract::Var::TYPE_PTR:
         {
             unsigned long varSize = mariaDBfetchVarSize(col,MYSQL_TYPE_STRING);
             if (varSize>0)
             {
-                sBin = new Memory::Abstract::sBinContainer(varSize);
+                sBin = new Memory::Abstract::BINARY::sBinContainer(varSize);
                 result.buffer_type = MYSQL_TYPE_STRING;
                 result.buffer = sBin->ptr;
                 result.buffer_length = sBin->dataSize;
                 // TODO: handle truncated?
             }
         } break;
-        case Memory::Abstract::TYPE_NULL:
+        case Memory::Abstract::Var::TYPE_NULL:
             // Don't copy the value (not needed).
             break;
         }
@@ -293,7 +293,7 @@ bool Query_MariaDB::step0()
         // fetch the column:
         mysql_stmt_fetch_column(stmt, &result, col, 0);
 
-        if ( resultVars[col]->getVarType() == Memory::Abstract::TYPE_BOOL )
+        if ( resultVars[col]->getVarType() == Memory::Abstract::Var::TYPE_BOOL )
         {
             ABSTRACT_PTR_AS(BOOL,val)->setValue(cRetBoolean);
         }
@@ -302,35 +302,35 @@ bool Query_MariaDB::step0()
         {
             switch (resultVars[col]->getVarType())
             {
-            case Memory::Abstract::TYPE_BIN:
+            case Memory::Abstract::Var::TYPE_BIN:
             {
                 ABSTRACT_PTR_AS(BINARY,resultVars[col])->setValue( sBin );
             }break;
-            case Memory::Abstract::TYPE_STRING:
+            case Memory::Abstract::Var::TYPE_STRING:
             {
                 ABSTRACT_PTR_AS(STRING,resultVars[col])->setValue( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_STRINGLIST:
+            case Memory::Abstract::Var::TYPE_STRINGLIST:
             {
                 ABSTRACT_PTR_AS(STRINGLIST,resultVars[col])->fromString( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_DATETIME:
+            case Memory::Abstract::Var::TYPE_DATETIME:
             {
                 ABSTRACT_PTR_AS(DATETIME,resultVars[col])->fromString( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_IPV4:
+            case Memory::Abstract::Var::TYPE_IPV4:
             {
                 ABSTRACT_PTR_AS(IPV4,resultVars[col])->fromString( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_MACADDR:
+            case Memory::Abstract::Var::TYPE_MACADDR:
             {
                 ABSTRACT_PTR_AS(MACADDR,resultVars[col])->fromString( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_IPV6:
+            case Memory::Abstract::Var::TYPE_IPV6:
             {
                 ABSTRACT_PTR_AS(IPV6,resultVars[col])->fromString( sBin->ptr );
             }break;
-            case Memory::Abstract::TYPE_PTR:
+            case Memory::Abstract::Var::TYPE_PTR:
             {
                 ABSTRACT_PTR_AS(PTR,resultVars[col])->setValue((void *)createDestroyableStringForResults(sBin->ptr)->c_str());
             }break;
@@ -380,7 +380,7 @@ bool Query_MariaDB::postBindInputVars()
         */
         switch (InputVars[ keysByPos[pos] ]->getVarType())
         {
-        case Memory::Abstract::TYPE_BOOL:
+        case Memory::Abstract::Var::TYPE_BOOL:
         {
             unsigned char * buffer = new unsigned char;
             buffer[0] = ABSTRACT_PTR_AS(BOOL,InputVars[ keysByPos[pos] ])->getValue()?1:0;
@@ -389,7 +389,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) buffer;
             bindedInputParams[pos].is_unsigned = 1;
         } break;
-        case Memory::Abstract::TYPE_INT8:
+        case Memory::Abstract::Var::TYPE_INT8:
         {
             char * buffer = new char;
             (*buffer) = ABSTRACT_PTR_AS(INT8,InputVars[ keysByPos[pos] ])->getValue();
@@ -397,7 +397,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
             bindedInputParams[pos].buffer = (char *) buffer;
         } break;
-        case Memory::Abstract::TYPE_INT16:
+        case Memory::Abstract::Var::TYPE_INT16:
         {
             short * buffer = new short;
             (*buffer) = ABSTRACT_PTR_AS(INT16,InputVars[ keysByPos[pos] ])->getValue();
@@ -405,7 +405,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_SHORT;
             bindedInputParams[pos].buffer = (char *) buffer;
         } break;
-        case Memory::Abstract::TYPE_INT32:
+        case Memory::Abstract::Var::TYPE_INT32:
         {
             long * buffer = new long;
             (*buffer) = ABSTRACT_PTR_AS(INT32,InputVars[ keysByPos[pos] ])->getValue();
@@ -413,7 +413,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONG;
             bindedInputParams[pos].buffer = (char *) buffer;
         } break;
-        case Memory::Abstract::TYPE_INT64:
+        case Memory::Abstract::Var::TYPE_INT64:
         {
             long long * buffer = new long long;
             (*buffer) = ABSTRACT_PTR_AS(INT64,InputVars[ keysByPos[pos] ])->getValue();
@@ -421,7 +421,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
             bindedInputParams[pos].buffer = (char *) buffer;
         } break;
-        case Memory::Abstract::TYPE_UINT8:
+        case Memory::Abstract::Var::TYPE_UINT8:
         {
             unsigned char * buffer = new unsigned char;
             (*buffer) = ABSTRACT_PTR_AS(UINT8,InputVars[ keysByPos[pos] ])->getValue();
@@ -430,7 +430,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) buffer;
             bindedInputParams[pos].is_unsigned = 1;
         } break;
-        case Memory::Abstract::TYPE_UINT16:
+        case Memory::Abstract::Var::TYPE_UINT16:
         {
             unsigned short * buffer = new unsigned short;
             (*buffer) = ABSTRACT_PTR_AS(UINT16,InputVars[ keysByPos[pos] ])->getValue();
@@ -439,7 +439,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) buffer;
             bindedInputParams[pos].is_unsigned = 1;
         } break;
-        case Memory::Abstract::TYPE_UINT32:
+        case Memory::Abstract::Var::TYPE_UINT32:
         {
             unsigned long * buffer = new unsigned long;
             (*buffer) = ABSTRACT_PTR_AS(UINT32,InputVars[ keysByPos[pos] ])->getValue();
@@ -448,7 +448,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) buffer;
             bindedInputParams[pos].is_unsigned = 1;
         } break;
-        case Memory::Abstract::TYPE_UINT64:
+        case Memory::Abstract::Var::TYPE_UINT64:
         {
             unsigned long long * buffer = new unsigned long long;
             (*buffer) = ABSTRACT_PTR_AS(UINT64,InputVars[ keysByPos[pos] ])->getValue();
@@ -457,7 +457,7 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) buffer;
             bindedInputParams[pos].is_unsigned = 1;
         } break;
-        case Memory::Abstract::TYPE_DOUBLE:
+        case Memory::Abstract::Var::TYPE_DOUBLE:
         {
             double * buffer = new double;
             (*buffer) = ABSTRACT_PTR_AS(DOUBLE,InputVars[ keysByPos[pos] ])->getValue();
@@ -465,20 +465,20 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_DOUBLE;
             bindedInputParams[pos].buffer = (char *) buffer;
         } break;
-        case Memory::Abstract::TYPE_BIN:
+        case Memory::Abstract::Var::TYPE_BIN:
         {
-            Memory::Abstract::sBinContainer * i = ABSTRACT_PTR_AS(BINARY,InputVars[ keysByPos[pos] ])->getValue();
+            Memory::Abstract::BINARY::sBinContainer * i = ABSTRACT_PTR_AS(BINARY,InputVars[ keysByPos[pos] ])->getValue();
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_BLOB;
             bindedInputParams[pos].buffer_length = i->dataSize;
             bindedInputParams[pos].buffer = (char *) i->ptr;
         } break;
-        case Memory::Abstract::TYPE_VARCHAR:
+        case Memory::Abstract::Var::TYPE_VARCHAR:
         {
             bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
             bindedInputParams[pos].buffer_length = strnlen(ABSTRACT_PTR_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue(),ABSTRACT_PTR_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getVarSize())+1;
             bindedInputParams[pos].buffer = (char *) ABSTRACT_PTR_AS(VARCHAR,InputVars[ keysByPos[pos] ])->getValue();
         } break;
-        case Memory::Abstract::TYPE_PTR:
+        case Memory::Abstract::Var::TYPE_PTR:
         {
             void * ptr = ABSTRACT_PTR_AS(PTR,InputVars[ keysByPos[pos] ])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
@@ -487,36 +487,36 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].buffer = (char *) ptr;
         } break;
 
-        case Memory::Abstract::TYPE_STRING:
-        case Memory::Abstract::TYPE_STRINGLIST:
-        case Memory::Abstract::TYPE_DATETIME:
-        case Memory::Abstract::TYPE_MACADDR:
-        case Memory::Abstract::TYPE_IPV4:
-        case Memory::Abstract::TYPE_IPV6:
+        case Memory::Abstract::Var::TYPE_STRING:
+        case Memory::Abstract::Var::TYPE_STRINGLIST:
+        case Memory::Abstract::Var::TYPE_DATETIME:
+        case Memory::Abstract::Var::TYPE_MACADDR:
+        case Memory::Abstract::Var::TYPE_IPV4:
+        case Memory::Abstract::Var::TYPE_IPV6:
         {
             std::string * str = nullptr;
 
             switch (InputVars[ keysByPos[pos] ]->getVarType())
             {
-            case Memory::Abstract::TYPE_STRING:
+            case Memory::Abstract::Var::TYPE_STRING:
             {
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(STRING,InputVars[ keysByPos[pos] ])->getValue());
             } break;
-            case Memory::Abstract::TYPE_STRINGLIST:
+            case Memory::Abstract::Var::TYPE_STRINGLIST:
             {
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(STRINGLIST,InputVars[ keysByPos[pos] ])->toString());
             } break;
-            case Memory::Abstract::TYPE_DATETIME:
+            case Memory::Abstract::Var::TYPE_DATETIME:
             {
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(DATETIME,InputVars[ keysByPos[pos] ])->toString());
             } break;
-            case Memory::Abstract::TYPE_IPV4:
+            case Memory::Abstract::Var::TYPE_IPV4:
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV4,InputVars[ keysByPos[pos] ])->toString());
                 break;
-            case Memory::Abstract::TYPE_MACADDR:
+            case Memory::Abstract::Var::TYPE_MACADDR:
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(MACADDR,InputVars[ keysByPos[pos] ])->toString());
                 break;
-            case Memory::Abstract::TYPE_IPV6:
+            case Memory::Abstract::Var::TYPE_IPV6:
                 str = createDestroyableStringForInput(ABSTRACT_PTR_AS(IPV6,InputVars[ keysByPos[pos] ])->toString());
                 break;
             default:
@@ -536,7 +536,7 @@ bool Query_MariaDB::postBindInputVars()
                 bindedInputParams[pos].buffer = 0;
             }
         } break;
-        case Memory::Abstract::TYPE_NULL:
+        case Memory::Abstract::Var::TYPE_NULL:
             bindedInputParams[pos].is_null_value = 1;
             break;
         }

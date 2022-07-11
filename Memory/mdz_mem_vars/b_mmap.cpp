@@ -132,7 +132,7 @@ std::pair<bool, uint64_t> B_MMAP::copyToStream2(std::ostream &out, const uint64_
     return mem.copyToStream(out,bytes,offset);
 }
 
-std::pair<bool, uint64_t> B_MMAP::copyTo2(Streamable &bc, Streams::Status & wrStatUpd, const uint64_t &bytes, const uint64_t &offset)
+std::pair<bool, uint64_t> B_MMAP::copyTo2(StreamableObject &bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &bytes, const uint64_t &offset)
 {
     return mem.appendTo(bc,wrStatUpd,bytes,offset);
 }

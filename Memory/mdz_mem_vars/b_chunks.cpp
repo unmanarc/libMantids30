@@ -19,6 +19,12 @@ B_Chunks::B_Chunks()
     B_Chunks::clear2();
 }
 
+B_Chunks::B_Chunks(const std::string &str)
+{
+    B_Chunks();
+    append(str.c_str(),str.size());
+}
+
 B_Chunks::~B_Chunks()
 {
     B_Chunks::clear2();
@@ -275,7 +281,7 @@ std::pair<bool,uint64_t> B_Chunks::copyToStream2(std::ostream &bc, const uint64_
     return std::make_pair(true,copyToStreamUsingCleanVector(bc,copyChunks));
 }
 
-std::pair<bool,uint64_t> B_Chunks::copyTo2(Streamable &bc, Streams::Status & wrStatUpd, const uint64_t &roBytes, const uint64_t &roOffset)
+std::pair<bool,uint64_t> B_Chunks::copyTo2(StreamableObject &bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &roBytes, const uint64_t &roOffset)
 {
     uint64_t bytes = roBytes;
     uint64_t offset = roOffset;

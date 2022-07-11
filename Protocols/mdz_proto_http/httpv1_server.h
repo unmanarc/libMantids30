@@ -15,37 +15,40 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
-namespace Mantids { namespace Network { namespace HTTP {
+namespace Mantids { namespace Protocols { namespace HTTP {
 
-enum HTTP_VarSource
-{
-    HTTP_VARS_POST,
-    HTTP_VARS_GET
-};
-
-struct sLocalRequestedFileInfo
-{
-    sLocalRequestedFileInfo()
-    {
-        reset();
-    }
-    void reset()
-    {
-        sRealRelativePath="";
-        sRealFullPath="";
-        isDir = false;
-        isExecutable = false;
-        isTransversal = false;
-    }
-    std::string sRealRelativePath;
-    std::string sRealFullPath;
-    bool isDir, isExecutable, isTransversal;
-};
 
 class HTTPv1_Server : public HTTPv1_Base
 {
 public:
-    HTTPv1_Server(Memory::Streams::Streamable * sobject);
+
+    enum HTTP_VarSource
+    {
+        HTTP_VARS_POST,
+        HTTP_VARS_GET
+    };
+
+    struct sLocalRequestedFileInfo
+    {
+        sLocalRequestedFileInfo()
+        {
+            reset();
+        }
+        void reset()
+        {
+            sRealRelativePath="";
+            sRealFullPath="";
+            isDir = false;
+            isExecutable = false;
+            isTransversal = false;
+        }
+        std::string sRealRelativePath;
+        std::string sRealFullPath;
+        bool isDir, isExecutable, isTransversal;
+    };
+
+
+    HTTPv1_Server(Memory::Streams::StreamableObject * sobject);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // REQUEST:
@@ -54,18 +57,18 @@ public:
      * @brief getRequestDataType Get Client Data Decodification Type
      * @return BIN/MIME/URL Options
      */
-    Common::eContent_DataType getRequestDataType();
+    Common::Content::eDataType getRequestDataType();
     /**
      * @brief setRequestDataContainer Set Container for request input
      * @param outStream container
      * @param deleteOutStream delete the container after usage.
      */
-    void setRequestDataContainer(Memory::Streams::Streamable * dsIn, bool bDeleteAfter = false);
+    void setRequestDataContainer(Memory::Streams::StreamableObject * dsIn, bool bDeleteAfter = false);
     /**
      * @brief getRequestDataContainer Request Data Container
      * @return
      */
-    Memory::Streams::Streamable *getRequestDataContainer();
+    Memory::Streams::StreamableObject *getRequestDataContainer();
     /**
      * @brief getRequestVars POST/GET Variables introduced in the request.
      * @param source POST/GET option
@@ -152,17 +155,17 @@ public:
      * @param outStream stream used (or nullptr to default empty streamer)
      * @param deleteOutStream delete the container after usage.
      */
-    void setResponseDataStreamer(Memory::Streams::Streamable * dsOut, bool bDeleteAfter = false);
+    void setResponseDataStreamer(Memory::Streams::StreamableObject * dsOut, bool bDeleteAfter = false);
     /**
      * @brief getResponseDataStreamer Get the response data streamer
      * @return
      */
-    Memory::Streams::Streamable *getResponseDataStreamer();
+    Memory::Streams::StreamableObject *getResponseDataStreamer();
     /**
      * @brief getResponseTransmissionStatus Get the response transmitted byte count after the request was completed.
      * @return
      */
-    Memory::Streams::Status getResponseTransmissionStatus() const;
+    Memory::Streams::StreamableObject::Status getResponseTransmissionStatus() const;
     /**
      * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
      * @param cookieName
@@ -195,12 +198,12 @@ public:
      * @brief streamResponse Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
      */
-    Memory::Streams::Status streamResponse(Memory::Streams::Streamable * source);
+    Memory::Streams::StreamableObject::Status streamResponse(Memory::Streams::StreamableObject * source);
     /**
      * @brief setResponseRedirect Redirect site to another URL
      * @param location URL string
      */
-    Response::StatusCode setResponseRedirect(const std::string & location, bool temporary = true);
+    Response::Status::eCode setResponseRedirect(const std::string & location, bool temporary = true);
     /**
      * @brief setResponseContentType Set Response Content Type
      * @param contentType Content Type (eg. application/json, text/html)
@@ -268,7 +271,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual Response::StatusCode processClientRequest();
+    virtual Response::Status::eCode processClientRequest();
 
     void * getThis() override { return this; }
     bool changeToNextParser() override;
@@ -279,13 +282,13 @@ private:
     bool changeToNextParserOnClientHeaders();
     bool changeToNextParserOnClientRequest();
     bool changeToNextParserOnClientContentData();
-    bool streamServerHeaders(Memory::Streams::Status &wrStat);
+    bool streamServerHeaders(Memory::Streams::StreamableObject::Status &wrStat);
     void prepareServerVersionOnURI();
 
     void prepareServerVersionOnOptions();
     void parseHostOptions();
 
-    bool answer(Memory::Streams::Status &wrStat);
+    bool answer(Memory::Streams::StreamableObject::Status &wrStat);
 
     std::map<std::string,Mantids::Memory::Containers::B_MEM *> staticContentElements;
 
@@ -296,7 +299,7 @@ private:
     Headers::CacheControl cacheControl;
 
     bool badAnswer;
-    Memory::Streams::Status ansBytes;
+    Memory::Streams::StreamableObject::Status ansBytes;
     uint16_t virtualPort;
 
     std::string authenticate;

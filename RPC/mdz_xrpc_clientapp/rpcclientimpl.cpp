@@ -3,7 +3,7 @@
 #include <inttypes.h>
 #include <thread>
 
-#include <mdz_net_sockets/cryptostream.h>
+#include <mdz_net_sockets/streams_cryptochallenge.h>
 
 using namespace Mantids::RPC;
 using namespace Mantids::Application;
@@ -35,7 +35,7 @@ void RPCClientImpl::runRPClient()
 
     for (;;)
     {
-        Mantids::Network::TLS::Socket_TLS sockRPCClient;
+        Mantids::Network::Sockets::Socket_TLS sockRPCClient;
 
         std::string caCertPath = Globals::getLC_TLSCAFilePath();
         std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
@@ -43,29 +43,29 @@ void RPCClientImpl::runRPClient()
 
         if (!sockRPCClient.setTLSCertificateAuthorityPath(  caCertPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
             _exit(-3);
         }
         if (!sockRPCClient.setTLSPrivateKeyPath(  privKeyPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
             _exit(-3);
         }
         if (!sockRPCClient.setTLSPublicKeyPath(  pubCertPath.c_str() ))
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
             _exit(-3);
         }
 
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
+        LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
 
         if ( sockRPCClient.connectTo( remoteAddr.c_str(), remotePort ) )
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
 
             if (postConnect(&sockRPCClient))
             {
-                Mantids::Network::Streams::CryptoStream cstreams(&sockRPCClient);
+                Mantids::Network::Sockets::NetStreams::CryptoChallenge cstreams(&sockRPCClient);
                 if (cstreams.mutualChallengeResponseSHA256Auth(Globals::getLC_C2NetresApiKey(),false) == std::make_pair(true,true))
                 {
                     // now is fully connected / authenticated...
@@ -75,14 +75,14 @@ void RPCClientImpl::runRPClient()
                 }
                 else
                 {
-                    Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%" PRIu16, remoteAddr.c_str(), remotePort);
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%" PRIu16, remoteAddr.c_str(), remotePort);
                 }
             }
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
         }
         else
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
         }
 
         sleep(secsBetweenConnections);
@@ -95,7 +95,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
     //***********CONFIG RETRIEVE FROM FILE**********
     /////////////////////////////////////////////////////////////
     std::string localConfigPath = Globals::getLC_RemoteConfigFilePath();
-    Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from local file: %s",localConfigPath.c_str());
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from local file: %s",localConfigPath.c_str());
 
     std::ifstream infile(localConfigPath);
 
@@ -130,7 +130,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
     failedToRetrieveC2Config = false;
 
-    Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from remote C2.");
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from remote C2.");
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
     json jRemoteConfig = fastRPC.runRemoteRPCMethod("SERVER",getClientConfigCmd,{},&rpcError);
@@ -142,7 +142,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
         if (sRemoteConfig == sLocalConfig)
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "C2 remote/local configuration is the same. Not upgrading.");
+            LOG_APP->log0(__func__,Logs::LEVEL_INFO, "C2 remote/local configuration is the same. Not upgrading.");
             return true;
         }
 
@@ -167,31 +167,31 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
                 if ( rpcError["succeed"].asBool() == false )
                 {
-                    Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s", rpcError["errorMessage"].asCString());
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s", rpcError["errorMessage"].asCString());
                 }
 
                 if ( JSON_ASBOOL(ans,"x",false)==false )
                 {
-                    Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }
 
-                Globals::getAppLog()->log0(__func__,Logs::LEVEL_INFO, "C2 configuration written to: %s",localConfigPath.c_str());
+                LOG_APP->log0(__func__,Logs::LEVEL_INFO, "C2 configuration written to: %s",localConfigPath.c_str());
 
                 return true;
             }
             else
             {
-                Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
+                LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
             }
         }
         else
         {
-            Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Remote configuration from the C2 is not reliable.");
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Remote configuration from the C2 is not reliable.");
         }
     }
     else
     {
-        Globals::getAppLog()->log0(__func__,Logs::LEVEL_ERR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
+        LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).

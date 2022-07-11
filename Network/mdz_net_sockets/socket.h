@@ -20,13 +20,6 @@
 
 namespace Mantids { namespace Network { namespace Sockets {
 
-enum SocketMode
-{
-    DATAGRAM_SOCKET,
-    STREAM_SOCKET,
-    UNINITIALIZED_SOCKET
-};
-
 /**
  * Socket base class
  * Manipulates all kind of sockets (udp,tcp,unix, etc)

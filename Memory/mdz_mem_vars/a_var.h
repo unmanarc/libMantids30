@@ -5,34 +5,34 @@
 
 namespace Mantids { namespace Memory { namespace Abstract {
 
-enum Type {
-    TYPE_BOOL,
-    TYPE_INT8,
-    TYPE_INT16,
-    TYPE_INT32,
-    TYPE_INT64,
-    TYPE_UINT8,
-    TYPE_UINT16,
-    TYPE_UINT32,
-    TYPE_UINT64,
-    TYPE_DOUBLE,
-    TYPE_BIN,
-    TYPE_STRING,
-    TYPE_VARCHAR,
-    TYPE_STRINGLIST,
-    TYPE_IPV4,
-    TYPE_IPV6,
-    TYPE_MACADDR,
-    TYPE_PTR,
-    TYPE_DATETIME,
-    TYPE_NULL
-};
-
 #define ABSTRACT_PTR_AS(x,y) ((Mantids::Memory::Abstract::x *)y)
 
 class Var
 {
 public:
+    enum Type {
+        TYPE_BOOL,
+        TYPE_INT8,
+        TYPE_INT16,
+        TYPE_INT32,
+        TYPE_INT64,
+        TYPE_UINT8,
+        TYPE_UINT16,
+        TYPE_UINT32,
+        TYPE_UINT64,
+        TYPE_DOUBLE,
+        TYPE_BIN,
+        TYPE_STRING,
+        TYPE_VARCHAR,
+        TYPE_STRINGLIST,
+        TYPE_IPV4,
+        TYPE_IPV6,
+        TYPE_MACADDR,
+        TYPE_PTR,
+        TYPE_DATETIME,
+        TYPE_NULL
+    };
+
     Var();
     Var * copy();
     virtual ~Var();

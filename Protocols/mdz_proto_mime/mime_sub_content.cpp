@@ -1,5 +1,6 @@
 #include "mime_sub_content.h"
-using namespace Mantids::Network::MIME;
+#include "mdz_mem_vars/subparser.h"
+using namespace Mantids::Protocols::MIME;
 using namespace Mantids;
 
 #ifdef _WIN32
@@ -18,7 +19,7 @@ MIME_Sub_Content::MIME_Sub_Content()
 
     contentContainer = nullptr;
     replaceContentContainer(new Memory::Containers::B_Chunks);
-    setParseMode(Memory::Streams::Parsing::PARSE_MODE_DIRECT_DELIMITER);
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 }
 
@@ -27,9 +28,9 @@ MIME_Sub_Content::~MIME_Sub_Content()
     if (contentContainer) delete contentContainer;
 }
 
-bool MIME_Sub_Content::stream(Memory::Streams::Status &wrStat)
+bool MIME_Sub_Content::stream(Memory::Streams::StreamableObject::Status &wrStat)
 {
-    Memory::Streams::Status cur;
+    Memory::Streams::StreamableObject::Status cur;
     // TODO: interpret content encoding...
     if (!contentContainer->streamTo(upStream,wrStat)) return false;
     if (!(cur+=contentContainer->writeString("\r\n--" + boundary, wrStat)).succeed) return false;
@@ -67,16 +68,16 @@ void MIME_Sub_Content::setFsTmpFolder(const std::string &value)
     fsTmpFolder = value;
 }
 
-Memory::Streams::Parsing::ParseStatus MIME_Sub_Content::parse()
+Memory::Streams::SubParser::ParseStatus MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
     getParsedData()->appendTo(*contentContainer);
     if (getDelimiterFound().size())
     {
         // finished (delimiter found).
-        return Memory::Streams::Parsing::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
     }
-    return Memory::Streams::Parsing::PARSE_STAT_GET_MORE_DATA;
+    return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
 }
 
 std::string MIME_Sub_Content::getBoundary() const

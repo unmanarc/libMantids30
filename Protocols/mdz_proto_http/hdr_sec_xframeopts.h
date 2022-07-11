@@ -3,20 +3,20 @@
 
 #include <string>
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Headers { namespace Security {
-
-enum eXFrameOptsValues {
-    HTTP_XFRAME_NONE=0,
-    HTTP_XFRAME_DENY=1,
-    HTTP_XFRAME_SAMEORIGIN=2,
-    HTTP_XFRAME_ALLOWFROM=3
-};
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 
 class XFrameOpts
 {
 public:
+    enum eOptsValues {
+        HTTP_XFRAME_NONE=0,
+        HTTP_XFRAME_DENY=1,
+        HTTP_XFRAME_SAMEORIGIN=2,
+        HTTP_XFRAME_ALLOWFROM=3
+    };
+
     XFrameOpts();
-    XFrameOpts(const eXFrameOptsValues & value, const std::string & fromURL);
+    XFrameOpts(const eOptsValues & value, const std::string & fromURL);
 
     void setDefaults();
 
@@ -28,10 +28,10 @@ public:
     std::string getFromURL() const;
     void setFromURL(const std::string &value);
 
-    eXFrameOptsValues getValue() const;
+    eOptsValues getValue() const;
 
 private:
-    eXFrameOptsValues value;
+    eOptsValues value;
     std::string fromURL;
 };
 

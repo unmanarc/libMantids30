@@ -6,7 +6,7 @@
 #include "req_requestline.h"
 #include "common_content.h"
 
-namespace Mantids { namespace Network { namespace HTTP { namespace Request {
+namespace Mantids { namespace Protocols { namespace HTTP { namespace Request {
 
 
 struct DataObjects
