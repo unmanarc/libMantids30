@@ -6,12 +6,6 @@ Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>
 Main License: LGPLv3   
 WIN32 License for mdz_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
 
-***
-## Builds
-
-- COPR (Fedora/CentOS/etc):  
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/)
-
 
 ***
 ## Functionality
@@ -41,6 +35,46 @@ This framework provides C++11 based enhancing libraries for console and network 
   * JSON Expressions evaluation
 * File Formats
   * Vars File
+
+
+
+***
+## Installing packages (HOWTO)
+
+- COPR (Fedora/CentOS/etc):  
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/)
+
+
+
+### Simple installation guide for Fedora/RHEL to develop software:
+
+To activate our repo's and download/install the software:
+
+In RHEL7:
+```bash
+# Install EPEL Repo + COPR
+yum -y install epel-release
+yum -y install yum-plugin-copr
+
+# Install unmanarc's copr
+yum copr enable amizrachi/unmanarc -y
+# Install the required software:
+yum -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
+```
+
+In RHEL8:
+```bash
+# Install EPEL Repo
+dnf -y install 'dnf-command(config-manager)'
+dnf config-manager --set-enabled powertools
+dnf -y install epel-release
+
+# Install unmanarc's copr
+dnf copr enable amizrachi/unmanarc -y
+# Install the required software:
+dnf -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
+```
+
 
 ***
 ## Compatibility
