@@ -59,7 +59,7 @@ yum -y install yum-plugin-copr
 # Install unmanarc's copr
 yum copr enable amizrachi/unmanarc -y
 # Install the required software:
-yum -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
+yum -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake3
 ```
 
 In RHEL8:
