@@ -20,7 +20,7 @@ typedef Json::Value json;
 namespace Mantids { namespace Helpers {
 
 std::string jsonToString(const json &value);
-std::list<std::string> jsonToStringList(const json &value);
+std::list<std::string> jsonToStringList(const json &value, const std::string & sub="");
 
 // deprecated JSONReader replacement:
 class JSONReader2 {
