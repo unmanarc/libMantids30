@@ -47,7 +47,7 @@ std::list<std::string> Mantids::Helpers::jsonToStringList(const json &value, con
                 r.push_back(value[(int)x].asString());
         }
     }
-    else if (!sub.empty() && value.isMember(sub) && value[sub].isArray())
+    else if (!sub.empty() && JSON_ISARRAY(value,sub))
     {
         for ( size_t x = 0; x< value[sub].size(); x++)
         {

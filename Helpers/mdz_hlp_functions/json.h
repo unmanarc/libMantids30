@@ -16,6 +16,7 @@ typedef Json::Value json;
 #define JSON_ASINT64(j,x,def) (j[x].isInt64()?j[x].asInt64():def)
 #define JSON_ASUINT(j,x,def) (j[x].isUInt()?j[x].asUInt():def)
 #define JSON_ASUINT64(j,x,def) (j[x].isUInt64()?j[x].asUInt64():def)
+#define JSON_ISARRAY(j,x) (j.isMember(x) && j[x].isArray())
 
 namespace Mantids { namespace Helpers {
 
