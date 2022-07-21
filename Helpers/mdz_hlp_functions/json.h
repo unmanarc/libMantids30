@@ -2,6 +2,7 @@
 #define JSON_H
 
 #include <json/json.h>
+#include <list>
 
 typedef Json::Value json;
 
@@ -19,6 +20,7 @@ typedef Json::Value json;
 namespace Mantids { namespace Helpers {
 
 std::string jsonToString(const json &value);
+std::list<std::string> jsonToStringList(const json &value);
 
 // deprecated JSONReader replacement:
 class JSONReader2 {

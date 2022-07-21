@@ -34,3 +34,17 @@ std::string Mantids::Helpers::JSONReader2::getFormattedErrorMessages()
 {
     return errors;
 }
+
+std::list<std::string> Mantids::Helpers::jsonToStringList(const json &value)
+{
+    std::list<std::string> r;
+    if (value.isArray())
+    {
+        for ( size_t x = 0; x< value.size(); x++)
+        {
+            if (value[(int)x].isString())
+                r.push_back(value[(int)x].asString());
+        }
+    }
+    return r;
+}
