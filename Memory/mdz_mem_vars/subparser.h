@@ -5,6 +5,14 @@
 #include "b_ref.h"
 #include "streamableobject.h"
 
+//#define DEBUG 1
+
+#ifdef DEBUG
+#include <openssl/bio.h>
+#define BIO_dump_fp(a,b,c) fprintf(a, "BIO_dump_fp->%lu bytes\n", c); fflush(a);
+#endif
+
+
 namespace Mantids { namespace Memory { namespace Streams {
 
 
@@ -74,6 +82,8 @@ public:
      */
     bool isStreamEnded() const;
 
+    const std::string &getSubParserName() const;
+
 protected:
     /**
      * @brief Parse is called when the parser in writeStream reached the completion of ParseMode
@@ -105,17 +115,24 @@ protected:
      * @brief Get Parsed Data Pointer
      * @return parsed data pointer.
      */
-    Mantids::Memory::Containers::B_Base * getParsedData();
+    Mantids::Memory::Containers::B_Base * getParsedBuffer();
     /**
      * @brief Set Parse Data Target Size in bytes
      * @param value Target Size in bytes
      */
     void setParseDataTargetSize(const uint64_t &value);
 
+
+    /**
+     * @brief clear Clear parsed and unparsed buffers... (ready to use it again)
+     */
+    void clear();
+
     ////////////////////////////
     bool clientMode;
     Memory::Streams::StreamableObject * upStream;
     bool streamEnded;
+    std::string subParserName;
 
 private:
     std::pair<bool,uint64_t> parseByMultiDelimiter(const void * buf, size_t count);
@@ -138,9 +155,6 @@ private:
 
     ParseMode parseMode;
     ParseStatus parseStatus;
-
-    // parse by size status:
-    uint64_t leftToParse;
 };
 
 }}}
