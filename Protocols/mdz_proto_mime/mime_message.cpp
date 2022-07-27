@@ -1,7 +1,8 @@
-#include "mime_vars.h"
+#include "mime_message.h"
 #include "mdz_hlp_functions/crypto.h"
 #include "mdz_hlp_functions/random.h"
 #include "mdz_mem_vars/b_chunks.h"
+#include "mdz_mem_vars/streamableobject.h"
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -19,7 +20,7 @@ MIME_Message::MIME_Message(Memory::Streams::StreamableObject *value) : Memory::S
 
     multiPartType = "multipart/mixed";
 
-    maxParts=128;
+    maxNumberOfParts=128;
 
     maxHeaderSubOptionsCount=16;
     maxHeaderSubOptionsSize=8*KB_MULT;
@@ -39,7 +40,7 @@ MIME_Message::MIME_Message(Memory::Streams::StreamableObject *value) : Memory::S
 MIME_Message::~MIME_Message()
 {
     if (currentPart) delete currentPart;
-    for (MIME_PartMessage * i : parts) delete i;
+    for (MIME_PartMessage * i : allParts) delete i;
 }
 
 bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrStat)
@@ -47,15 +48,16 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out, Memory::Stre
     Memory::Streams::StreamableObject::Status cur;
     // first boundary:
     if (!(cur+=out->writeString("--" + multiPartBoundary, wrStat)).succeed) return false;
-    for (MIME_PartMessage * i : parts)
+    for (MIME_PartMessage * i : allParts)
     {
         if (!(cur+=out->writeString("\r\n", wrStat)).succeed) return false;
         i->getContent()->initElemParser(out,true);
         i->getHeader()->initElemParser(out,true);
         if (!i->stream(wrStat))
             return false;
+        if (!(cur+=out->writeString("--" + multiPartBoundary, wrStat)).succeed) return false;
     }
-    if (!(cur+=out->writeString("--", wrStat)).succeed)
+    if (!(cur+=out->writeString("--\r\n", wrStat)).succeed)
         return false;
     return true;
 }
@@ -68,18 +70,20 @@ uint32_t MIME_Message::varCount(const std::string &varName)
     return ix;
 }
 
-Memory::Containers::B_Base *MIME_Message::getValue(const std::string &varName)
+Memory::Streams::StreamableObject *MIME_Message::getValue(const std::string &varName)
 {
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i) return (((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
+    for (auto i = range.first; i != range.second; ++i)
+        return (((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
     return nullptr;
 }
 
-std::list<Memory::Containers::B_Base *> MIME_Message::getValues(const std::string &varName)
+std::list<Memory::Streams::StreamableObject *> MIME_Message::getValues(const std::string &varName)
 {
-    std::list<Memory::Containers::B_Base *> values;
+    std::list<Memory::Streams::StreamableObject *> values;
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i) values.push_back(((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
+    for (auto i = range.first; i != range.second; ++i)
+        values.push_back(((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
     return values;
 }
 
@@ -117,6 +121,16 @@ void MIME_Message::renewCurrentPart()
     // Sub Header:
     currentPart->getHeader()->setMaxSubOptionCount(maxHeaderSubOptionsCount);
     currentPart->getHeader()->setMaxSubOptionSize(maxHeaderSubOptionsSize);
+}
+
+void MIME_Message::setCallbackOnHeaderReady(const sMIMECallback &newCallbackOnHeaderReady)
+{
+    callbackOnHeaderReady = newCallbackOnHeaderReady;
+}
+
+void MIME_Message::setCallbackOnContentReady(const sMIMECallback &newCallbackOnContentReady)
+{
+    callbackOnContentReady = newCallbackOnContentReady;
 }
 
 size_t MIME_Message::getMaxHeaderOptionSize() const
@@ -165,22 +179,12 @@ void MIME_Message::setMaxHeaderSubOptionsCount(const size_t &value)
 
 size_t MIME_Message::getMaxParts() const
 {
-    return maxParts;
+    return maxNumberOfParts;
 }
 
 void MIME_Message::setMaxParts(const size_t &value)
 {
-    maxParts = value;
-}
-
-void MIME_Message::makeDataSizeExceptionForPart(const std::string &partName, const uint64_t &size)
-{
-    dataSizeExceptions[partName] = size;
-}
-
-void MIME_Message::writeVarToFS(const std::string &varName, const std::string &fileName)
-{
-    varToFS[varName] = fileName;
+    maxNumberOfParts = value;
 }
 
 bool MIME_Message::changeToNextParser()
@@ -189,11 +193,13 @@ bool MIME_Message::changeToNextParser()
     {
     case MP_STATE_FIRST_BOUNDARY:
     {
-        currentState = MP_STATE_ENDPOINT;
-        currentParser = &subEndPBoundary;
+        // FIRST_BOUNDARY IS READY
+        currentState = MP_STATE_HEADERS;
+        currentParser = currentPart->getHeader();
     }break;
     case MP_STATE_ENDPOINT:
     {
+        // ENDPOINT IS READY
         if (subEndPBoundary.getStatus() == ENDP_STAT_CONTINUE)
         {
             currentState = MP_STATE_HEADERS;
@@ -204,33 +210,31 @@ bool MIME_Message::changeToNextParser()
     }break;
     case MP_STATE_HEADERS:
     {
+        // HEADERS ARE READY
+        // Callback:
+        callbackOnHeaderReady.call(getMultiPartMessageName(currentPart),currentPart);
+        // GOTO CONTENT:
         currentState = MP_STATE_CONTENT;
         currentParser = currentPart->getContent();
-        std::string currentPartName = getMultiPartMessageName(currentPart);
-        if (varToFS.find(currentPartName) != varToFS.end())
-        {
-            // TODO: why mmap
-            Memory::Containers::B_MMAP * fContainer = new Memory::Containers::B_MMAP;
-            if (fContainer->referenceFile(varToFS[currentPartName]))
-                currentPart->getContent()->replaceContentContainer(fContainer);
-            else // Can't write on this location :(
-                currentParser = nullptr;
-        }
-        if (dataSizeExceptions.find(currentPartName) != dataSizeExceptions.end())
-            currentPart->getContent()->setMaxContentSize(dataSizeExceptions[currentPartName]);
     }break;
     case MP_STATE_CONTENT:
     {
+        // CONTENT IS READY
+        // Callback:
+        callbackOnContentReady.call(getMultiPartMessageName(currentPart),currentPart);
+
         // Put current Part.
         addMultiPartMessage(currentPart);
         // new current part definition.
         renewCurrentPart();
         // Check if the max parts target is reached.
-        if (parts.size()==maxParts) currentParser = nullptr; // End here.
+        if (allParts.size()==maxNumberOfParts)
+            currentParser = nullptr; // End here.
         else
         {
             // Goto boundary.
             currentState = MP_STATE_ENDPOINT;
+            subEndPBoundary.reset();
             currentParser = &subEndPBoundary;
         }
     }break;
@@ -243,7 +247,7 @@ bool MIME_Message::changeToNextParser()
 
 void MIME_Message::addMultiPartMessage(MIME_PartMessage *part)
 {
-    parts.push_back(part);
+    allParts.push_back(part);
     // Insert by name:
     std::string varName = getMultiPartMessageName(part);
     if (varName!="") partsByName.insert(std::pair<std::string,MIME_PartMessage*>(boost::to_upper_copy(varName),part));
@@ -291,7 +295,6 @@ bool MIME_Message::addStringVar(const std::string &varName, const std::string &v
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
     // TODO: check max size?
-
     auto * fContainer = new Memory::Containers::B_MMAP;
     if (!fContainer->referenceFile(filePath,true,false))
     {
@@ -333,7 +336,9 @@ std::string MIME_Message::getMultiPartBoundary() const
 void MIME_Message::setMultiPartBoundary(const std::string &value)
 {
     multiPartBoundary = value;
+
     subFirstBoundary.setBoundary(multiPartBoundary);
+
     if (currentPart)
         currentPart->getContent()->setBoundary(multiPartBoundary);
 }

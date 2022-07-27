@@ -1,5 +1,5 @@
-#ifndef MIME_MULTIPART_H
-#define MIME_MULTIPART_H
+#ifndef MIME_MESSAGE_H
+#define MIME_MESSAGE_H
 
 #include <map>
 
@@ -36,13 +36,13 @@ public:
      * @param varName Variable Name
      * @return Memory Container Base
      */
-    Memory::Containers::B_Base * getValue(const std::string & varName) override;
+    StreamableObject *getValue(const std::string & varName) override;
     /**
      * @brief getValues Get memory containers for an specific variable name (if one variable name contains multiple definitions)
      * @param varName Variable Name
      * @return list of memory containers
      */
-    std::list<Memory::Containers::B_Base *> getValues(const std::string & varName) override;
+    std::list<StreamableObject *> getValues(const std::string & varName) override;
     /**
      * @brief getKeysList Get Variable Name List
      * @return Variable Name List
@@ -87,14 +87,43 @@ public:
     bool addReferecedFileVar(const std::string & varName, const std::string & filePath );
 
     ////////////////////////////////////////////////////////////////////
-    //        ------------- EXTENDED OPTIONS -------------
+    //        ------------- CALLBACKS OPTIONS -------------
     ////////////////////////////////////////////////////////////////////
+
+    struct sMIMECallback
+    {
+        sMIMECallback( void (*callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * obj)
+        {
+           this->callbackFunction = callbackFunction;
+           this->obj = obj;
+        }
+
+        sMIMECallback()
+        {
+           callbackFunction = nullptr;
+           obj = nullptr;
+        }
+
+        void call(const std::string & partName, MIME_PartMessage *partMessage)
+        {
+            if (callbackFunction!=nullptr)
+                callbackFunction(obj,partName,partMessage);
+        }
+
+        void (*callbackFunction)(void *obj, const std::string & partName, MIME_PartMessage *partMessage);
+        void * obj;
+    };
+
     /**
-     * @brief writeVarToFS Write specific variable name to filesystem when receiving/parsing
-     * @param varName variable name
-     * @param fileName assigned file name
+     * @brief setCallbackOnContentReady Set callback when content is ready (this is useful to post-process an specific part, eg. move a tmp file)
+     * @param newCallbackOnContentReady object with proper callback
      */
-    void writeVarToFS(const std::string &varName, const std::string &fileName);
+    void setCallbackOnContentReady(const sMIMECallback &newCallbackOnContentReady);
+    /**
+     * @brief setCallbackOnHeaderReady Set callback when header is ready (this is useful to redirect special content)
+     * @param newCallbackOnHeaderReady object with proper callback
+     */
+    void setCallbackOnHeaderReady(const sMIMECallback &newCallbackOnHeaderReady);
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- MULTIPART OPTIONS -------------
@@ -123,12 +152,6 @@ public:
     ////////////////////////////////////////////////////////////////////
     //             ------------- SECURITY OPTIONS -------------
     ////////////////////////////////////////////////////////////////////
-    /**
-     * @brief makeDataSizeExceptionForPart Create a data size exception for an specific mime part
-     * @param partName Part Name
-     * @param size max size
-     */
-    void makeDataSizeExceptionForPart(const std::string & partName, const uint64_t & size);
     /**
      * @brief getMaxParts Get Max number of parts allowed to be decoded on this container
      * @return Max number of parts
@@ -180,6 +203,7 @@ public:
      */
     void setMaxHeaderOptionSize(const size_t &value);
 
+
 protected:
     bool initProtocol() override;
     void endProtocol() override;
@@ -205,24 +229,31 @@ private:
 
     void renewCurrentPart();
 
-    size_t maxParts;
+    // Constraints:
+    size_t maxNumberOfParts;
     size_t maxHeaderSubOptionsCount, maxHeaderSubOptionsSize;
     size_t maxHeaderOptionsCount, maxHeaderOptionSize;
 
+    // MIME Message Options:
     std::string multiPartType, multiPartBoundary;
 
-    std::map<std::string,uint64_t> dataSizeExceptions;
-    std::map<std::string,std::string> varToFS;
-    std::list<MIME_PartMessage *> parts;
-    std::multimap<std::string,MIME_PartMessage *> partsByName;
-
+    // Status:
     eMIME_VarStat currentState;
+
+    // Message Parts:
+    std::list<MIME_PartMessage *> allParts;
+    std::multimap<std::string,MIME_PartMessage *> partsByName;
     MIME_PartMessage * currentPart;
     MIME_Sub_FirstBoundary subFirstBoundary;
     MIME_Sub_EndPBoundary subEndPBoundary;
+
+    // Callbacks:
+    sMIMECallback callbackOnHeaderReady;
+    sMIMECallback callbackOnContentReady;
+
 };
 
 
 }}}
 
-#endif // MIME_MULTIPART_H
+#endif // MIME_MESSAGE_H
