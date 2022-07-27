@@ -45,7 +45,8 @@ std::pair<bool,uint64_t> B_Base::append(const void *buf)
 std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
 {
     // Read only: can't append nothing.
-    if (readOnly) return std::make_pair(false,(uint64_t)0);
+    if (readOnly)
+        return std::make_pair(false,(uint64_t)0);
 
     uint64_t currentSize = size();
 
@@ -480,20 +481,27 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     char * c_needle = (char *)needle;
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len)) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len))
+        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace)) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace))
+        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
 
-    if (offset>currentSize) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
-    if (searchSpace == 0) searchSpace = currentSize-offset;
-    if (searchSpace == 0) return std::make_pair(false,(uint64_t)0);
+    if (offset>currentSize)
+        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    if (searchSpace == 0)
+        searchSpace = currentSize-offset;
+    if (searchSpace == 0)
+        return std::make_pair(false,(uint64_t)0);
 
     // not enough search space to found anything...
-    if (searchSpace<needle_len) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    if (searchSpace<needle_len)
+        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
 
     // nothing to be found... first position
-    if (needle_len == 0) return std::make_pair(true,0);
+    if (needle_len == 0)
+        return std::make_pair(true,0);
 
     uint64_t currentOffset = offset;
 
@@ -599,6 +607,23 @@ uint64_t B_Base::getMaxSize() const
 void B_Base::setMaxSize(const uint64_t &value)
 {
     maxSize = value;
+}
+
+uint64_t B_Base::getSizeLeft() const
+{
+    // ERR
+    if (size()>maxSize)
+        return 0;
+    // DEF
+    return maxSize-size();
+}
+
+void B_Base::reduceMaxSizeBy(const uint64_t &value)
+{
+    if ( value > getMaxSize() )
+        throw std::runtime_error("Don't reduce the max size with a value greater than the current max.");
+
+    setMaxSize( getMaxSize() - value );
 }
 
 bool B_Base::streamTo(Memory::Streams::StreamableObject *out, Streams::StreamableObject::Status &wrStatUpd)

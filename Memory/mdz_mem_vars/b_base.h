@@ -257,6 +257,17 @@ public:
      * @param value Maximum Container Size allowed in bytes
      */
     void setMaxSize(const uint64_t &value);
+    /**
+     * @brief getSizeLeft Get maximum appendable amount of data.
+     * @return maximum appendable ammount of data.
+     */
+    uint64_t getSizeLeft() const;
+
+    /**
+     * @brief reduceMaxSizeBy Reduce the maximum size by value
+     * @param value value to reduce
+     */
+    void reduceMaxSizeBy(const uint64_t &value);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Streamable
