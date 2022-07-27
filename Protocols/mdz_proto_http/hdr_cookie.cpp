@@ -57,7 +57,7 @@ std::string Cookie::toSetCookieString(const std::string &cookieName)
     return opts;
 }
 
-bool Cookie::fromSetCookieString(const std::string &setCookieValue, string *cookieName)
+void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cookieName)
 {
     vector<string> cookiesParams;
     split(cookiesParams,setCookieValue,is_any_of(";"),token_compress_on);
@@ -101,8 +101,6 @@ bool Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
             }
         }
     }
-
-    return true;
 }
 
 time_t Cookie::getExpiration() const
@@ -110,7 +108,7 @@ time_t Cookie::getExpiration() const
     return expires.getRawTime();
 }
 
-void Cookie::setToExpire()
+void Cookie::setAsTransientCookie()
 {
     setExpiration(0);
 }
@@ -120,7 +118,7 @@ void Cookie::setExpiration(const time_t &exp)
     expires.setRawTime(exp);
 }
 
-void Cookie::setExpirationInSeconds(const uint32_t &seconds)
+void Cookie::setExpirationFromNow(const uint32_t &seconds)
 {
     expires.setCurrentTime();
     expires.incTime(seconds);
