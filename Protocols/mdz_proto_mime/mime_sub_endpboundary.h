@@ -15,6 +15,8 @@ class MIME_Sub_EndPBoundary : public Memory::Streams::SubParser
 {
 public:
     MIME_Sub_EndPBoundary();
+
+    void reset();
     bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
     int getStatus() const;
 

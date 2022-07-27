@@ -84,16 +84,16 @@ uint32_t URLVars::varCount(const std::string &varName)
     return i;
 }
 
-Memory::Containers::B_Base *URLVars::getValue(const std::string &varName)
+Memory::Streams::StreamableObject *URLVars::getValue(const std::string &varName)
 {
     auto range = vars.equal_range(boost::to_upper_copy(varName));
     for (auto iterator = range.first; iterator != range.second;) return iterator->second;
     return nullptr;
 }
 
-std::list<Memory::Containers::B_Base *> URLVars::getValues(const std::string &varName)
+std::list<Memory::Streams::StreamableObject *> URLVars::getValues(const std::string &varName)
 {
-    std::list<Memory::Containers::B_Base *> r;
+    std::list<Memory::Streams::StreamableObject *> r;
     auto range = vars.equal_range(boost::to_upper_copy(varName));
     for (auto iterator = range.first; iterator != range.second;) r.push_back(iterator->second);
     return r;

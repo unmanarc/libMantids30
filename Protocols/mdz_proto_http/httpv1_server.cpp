@@ -34,190 +34,110 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv
     badAnswer = false;
 
     // All request will have no-cache activated.... (unless it's a real file and it's not overwritten)
-    cacheControl.setOptionNoCache(true);
-    cacheControl.setOptionNoStore(true);
-    cacheControl.setOptionMustRevalidate(true);
+    serverResponse.cacheControl.setOptionNoCache(true);
+    serverResponse.cacheControl.setOptionNoStore(true);
+    serverResponse.cacheControl.setOptionMustRevalidate(true);
 
-    remotePairAddress[0]=0;
-    currentParser = (Memory::Streams::SubParser *)(&_clientRequestLine);
+    currentParser = (Memory::Streams::SubParser *)(&clientRequest.requestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
-    mimeTypes[".aac"] = "audio/aac";
-    mimeTypes[".abw"] = "application/x-abiword";
-    mimeTypes[".arc"] = "application/x-freearc";
-    mimeTypes[".avi"] = "video/x-msvideo";
-    mimeTypes[".azw"] = "application/vnd.amazon.ebook";
-    mimeTypes[".bin"] = "application/octet-stream";
-    mimeTypes[".bmp"] = "image/bmp";
-    mimeTypes[".bz"] = "application/x-bzip";
-    mimeTypes[".bz2"] = "application/x-bzip2";
-    mimeTypes[".csh"] = "application/x-csh";
-    mimeTypes[".css"] = "text/css";
-    mimeTypes[".csv"] = "text/csv";
-    mimeTypes[".doc"] = "application/msword";
-    mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    mimeTypes[".eot"] = "application/vnd.ms-fontobject";
-    mimeTypes[".epub"] = "application/epub+zip";
-    mimeTypes[".gz"] = "application/gzip";
-    mimeTypes[".gif"] = "image/gif";
-    mimeTypes[".htm"] = "text/html";
-    mimeTypes[".html"] = "text/html";
-    mimeTypes[".iso"] = "application/octet-stream";
-    mimeTypes[".ico"] = "image/vnd.microsoft.icon";
-    mimeTypes[".ics"] = "text/calendar";
-    mimeTypes[".jar"] = "application/java-archive";
-    mimeTypes[".jpeg"] = "image/jpeg";
-    mimeTypes[".jpg"] = "image/jpeg";
-    mimeTypes[".js"] = "application/javascript";
-    mimeTypes[".json"] = "application/json";
+    mimeTypes[".aac"]    = "audio/aac";
+    mimeTypes[".abw"]    = "application/x-abiword";
+    mimeTypes[".arc"]    = "application/x-freearc";
+    mimeTypes[".avi"]    = "video/x-msvideo";
+    mimeTypes[".azw"]    = "application/vnd.amazon.ebook";
+    mimeTypes[".bin"]    = "application/octet-stream";
+    mimeTypes[".bmp"]    = "image/bmp";
+    mimeTypes[".bz"]     = "application/x-bzip";
+    mimeTypes[".bz2"]    = "application/x-bzip2";
+    mimeTypes[".csh"]    = "application/x-csh";
+    mimeTypes[".css"]    = "text/css";
+    mimeTypes[".csv"]    = "text/csv";
+    mimeTypes[".doc"]    = "application/msword";
+    mimeTypes[".docx"]   = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    mimeTypes[".eot"]    = "application/vnd.ms-fontobject";
+    mimeTypes[".epub"]   = "application/epub+zip";
+    mimeTypes[".gz"]     = "application/gzip";
+    mimeTypes[".gif"]    = "image/gif";
+    mimeTypes[".htm"]    = "text/html";
+    mimeTypes[".html"]   = "text/html";
+    mimeTypes[".iso"]    = "application/octet-stream";
+    mimeTypes[".ico"]    = "image/vnd.microsoft.icon";
+    mimeTypes[".ics"]    = "text/calendar";
+    mimeTypes[".jar"]    = "application/java-archive";
+    mimeTypes[".jpeg"]   = "image/jpeg";
+    mimeTypes[".jpg"]    = "image/jpeg";
+    mimeTypes[".js"]     = "application/javascript";
+    mimeTypes[".json"]   = "application/json";
     mimeTypes[".jsonld"] = "application/ld+json";
-    mimeTypes[".mid"] = "audio/midi";
-    mimeTypes[".midi"] = "audio/x-midi";
-    mimeTypes[".mjs"] = "text/javascript";
-    mimeTypes[".mp3"] = "audio/mpeg";
-    mimeTypes[".mp4"] = "video/mp4";
-    mimeTypes[".mpeg"] = "video/mpeg";
-    mimeTypes[".mpg"] = "video/mpeg";
-    mimeTypes[".mpkg"] = "application/vnd.apple.installer+xml";
-    mimeTypes[".odp"] = "application/vnd.oasis.opendocument.presentation";
-    mimeTypes[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-    mimeTypes[".odt"] = "application/vnd.oasis.opendocument.text";
-    mimeTypes[".oga"] = "audio/ogg";
-    mimeTypes[".ogv"] = "video/ogg";
-    mimeTypes[".ogx"] = "application/ogg";
-    mimeTypes[".opus"] = "audio/opus";
-    mimeTypes[".otf"] = "font/otf";
-    mimeTypes[".png"] = "image/png";
-    mimeTypes[".pdf"] = "application/pdf";
-    mimeTypes[".php"] = "application/x-httpd-php";
-    mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
-    mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    mimeTypes[".rar"] = "application/vnd.rar";
-    mimeTypes[".rtf"] = "application/rtf";
-    mimeTypes[".sh"] = "application/x-sh";
-    mimeTypes[".svg"] = "image/svg+xml";
-    mimeTypes[".swf"] = "application/x-shockwave-flash";
-    mimeTypes[".tar"] = "application/x-tar";
-    mimeTypes[".tif"] = "image/tiff";
-    mimeTypes[".ts"] = "video/mp2t";
-    mimeTypes[".ttf"] = "font/ttf";
-    mimeTypes[".txt"] = "text/plain";
-    mimeTypes[".vsd"] = "application/vnd.visio";
-    mimeTypes[".wav"] = "audio/wav";
-    mimeTypes[".weba"] = "audio/webm";
-    mimeTypes[".webm"] = "video/webm";
-    mimeTypes[".webp"] = "image/webp";
-    mimeTypes[".woff"] = "font/woff";
-    mimeTypes[".woff2"] = "font/woff2";
-    mimeTypes[".xhtml"] = "application/xhtml+xml";
-    mimeTypes[".xls"] = "application/vnd.ms-excel";
-    mimeTypes[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    mimeTypes[".xml"] = "application/xml";
-    mimeTypes[".xul"] = "application/vnd.mozilla.xul+xml";
-    mimeTypes[".zip"] = "application/zip";
-    mimeTypes[".3gp"] = "video/3gpp";
-    mimeTypes[".3g2"] = "video/3gpp2";
-    mimeTypes[".7z"] = "application/x-7z-compressed";
+    mimeTypes[".mid"]    = "audio/midi";
+    mimeTypes[".midi"]   = "audio/x-midi";
+    mimeTypes[".mjs"]    = "text/javascript";
+    mimeTypes[".mp3"]    = "audio/mpeg";
+    mimeTypes[".mp4"]    = "video/mp4";
+    mimeTypes[".mpeg"]   = "video/mpeg";
+    mimeTypes[".mpg"]    = "video/mpeg";
+    mimeTypes[".mpkg"]   = "application/vnd.apple.installer+xml";
+    mimeTypes[".odp"]    = "application/vnd.oasis.opendocument.presentation";
+    mimeTypes[".ods"]    = "application/vnd.oasis.opendocument.spreadsheet";
+    mimeTypes[".odt"]    = "application/vnd.oasis.opendocument.text";
+    mimeTypes[".oga"]    = "audio/ogg";
+    mimeTypes[".ogv"]    = "video/ogg";
+    mimeTypes[".ogx"]    = "application/ogg";
+    mimeTypes[".opus"]   = "audio/opus";
+    mimeTypes[".otf"]    = "font/otf";
+    mimeTypes[".png"]    = "image/png";
+    mimeTypes[".pdf"]    = "application/pdf";
+    mimeTypes[".php"]    = "application/x-httpd-php";
+    mimeTypes[".ppt"]    = "application/vnd.ms-powerpoint";
+    mimeTypes[".pptx"]   = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    mimeTypes[".rar"]    = "application/vnd.rar";
+    mimeTypes[".rtf"]    = "application/rtf";
+    mimeTypes[".sh"]     = "application/x-sh";
+    mimeTypes[".svg"]    = "image/svg+xml";
+    mimeTypes[".swf"]    = "application/x-shockwave-flash";
+    mimeTypes[".tar"]    = "application/x-tar";
+    mimeTypes[".tif"]    = "image/tiff";
+    mimeTypes[".ts"]     = "video/mp2t";
+    mimeTypes[".ttf"]    = "font/ttf";
+    mimeTypes[".txt"]    = "text/plain";
+    mimeTypes[".vsd"]    = "application/vnd.visio";
+    mimeTypes[".wav"]    = "audio/wav";
+    mimeTypes[".weba"]   = "audio/webm";
+    mimeTypes[".webm"]   = "video/webm";
+    mimeTypes[".webp"]   = "image/webp";
+    mimeTypes[".woff"]   = "font/woff";
+    mimeTypes[".woff2"]  = "font/woff2";
+    mimeTypes[".xhtml"]  = "application/xhtml+xml";
+    mimeTypes[".xls"]    = "application/vnd.ms-excel";
+    mimeTypes[".xlsx"]   = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    mimeTypes[".xml"]    = "application/xml";
+    mimeTypes[".xul"]    = "application/vnd.mozilla.xul+xml";
+    mimeTypes[".zip"]    = "application/zip";
+    mimeTypes[".3gp"]    = "video/3gpp";
+    mimeTypes[".3g2"]    = "video/3gpp2";
+    mimeTypes[".7z"]     = "application/x-7z-compressed";
 
     includeServerDate = true;
 }
 
-Request::DataObjects HTTPv1_Server::getRequestActiveObjects()
+void HTTPv1_Server::fillRequestDataStruct()
 {
-    Request::DataObjects fullReq;
-
-    fullReq.USING_BASIC_AUTH = false;
-
-    if (_clientHeaders.exist("Authorization"))
-    {
-        vector<string> authParts;
-        string f1 = _clientHeaders.getOptionValueStringByName("Authorization");
-        split(authParts,f1,is_any_of(" "),token_compress_on);
-        if (authParts.size()==2)
-        {
-            if (authParts[0] == "Basic")
-            {
-                auto bp = Helpers::Encoders::fromBase64(authParts[1]);
-
-                std::string::size_type pos = bp.find(':', 0);
-
-                if (pos != std::string::npos)
-                {
-                    fullReq.USING_BASIC_AUTH = true;
-                    fullReq.AUTH_USER = bp.substr(0,pos);
-                    fullReq.AUTH_PASS = bp.substr(pos+1,bp.size());
-                }
-
-            }
-        }
-    }
-
-    if (_clientHeaders.exist("User-Agent"))
-    {
-        fullReq.USER_AGENT = _clientHeaders.getOptionRawStringByName("User-Agent");
-    }
-
-    fullReq.VARS_GET = getRequestVars(HTTP_VARS_GET);
-    fullReq.VARS_POST = getRequestVars(HTTP_VARS_POST);
-    fullReq.VARS_COOKIES = _clientHeaders.getOptionByName("Cookie");
-
-    fullReq.CLIENT_IP = remotePairAddress;
-    fullReq.VIRTUAL_HOST = &virtualHost;
-    fullReq.VIRTUAL_PORT = &virtualPort;
-
-    fullReq.clientHeaders = &_clientHeaders;
-    fullReq.clientRequestLine = &_clientRequestLine;
-    fullReq.clientContentData = &_clientContentData;
-
-    return fullReq;
-}
-
-Response::DataObject HTTPv1_Server::getResponseActiveObjects()
-{
-    Response::DataObject fullR;
-
-    fullR.contentData = &_serverContentData;
-    fullR.headers = &_serverHeaders;
-    fullR.status = &_serverCodeResponse;
-    fullR.setCookies = &setCookies;
-    fullR.secXFrameOpts = &secXFrameOpts;
-    fullR.secXSSProtection = &secXSSProtection;
-    fullR.secHSTS = &secHSTS;
-    fullR.bNoSniff = bNoSniff;
-    fullR.contentType = &contentType;
-    fullR.authenticate = &authenticate;
-    fullR.cacheControl = &cacheControl;
-
-    return fullR;
+    clientVars.VARS_GET = clientRequest.getVars(HTTP_VARS_GET);
+    clientVars.VARS_POST = clientRequest.getVars(HTTP_VARS_POST);
+    clientVars.VARS_COOKIES = clientRequest.headers.getOptionByName("Cookie");
 }
 
 void HTTPv1_Server::setRemotePairAddress(const char *value)
 {
-    SecBACopy(remotePairAddress,value);
+    SecBACopy(clientVars.REMOTE_ADDR,value);
 }
 
-Common::Content::eDataType HTTPv1_Server::getRequestDataType()
-{
-    return _clientContentData.getContainerType();
-}
-
-Memory::Abstract::Vars *HTTPv1_Server::getRequestVars(const HTTP_VarSource &source)
-{
-    switch (source)
-    {
-    case HTTP_VARS_POST:
-        return _clientContentData.postVars();
-    case HTTP_VARS_GET:
-        return _clientRequestLine.urlVars();
-    }
-    return nullptr;
-}
 
 void HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
-    _serverHeaders.replace("Server", sServerName);
+    serverResponse.headers.replace("Server", sServerName);
 }
-
 
 bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
 {
@@ -242,7 +162,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
     // Compute the requested path:
     string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + (getRequestURI().empty()?"":getRequestURI().substr(1)) // Put the Request URI (without the first character / slash)
+            + (clientRequest.getURI().empty()?"":clientRequest.getURI().substr(1)) // Put the Request URI (without the first character / slash)
             + defaultFileAppend; // Append option...
 
     struct stat stats;
@@ -251,22 +171,22 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
     std::string sFullComputedPath;
     {
         char *cFullPath;
-        if (  staticContentElements.find(std::string(getRequestURI()+defaultFileAppend)) != staticContentElements.end() )
+        if (  staticContentElements.find(std::string(clientRequest.getURI()+defaultFileAppend)) != staticContentElements.end() )
         {
             // STATIC CONTENT:
-            cacheControl.setOptionNoCache(false);
-            cacheControl.setOptionNoStore(false);
-            cacheControl.setOptionMustRevalidate(false);
-            cacheControl.setMaxAge(3600);
-            cacheControl.setOptionImmutable(true);
+            serverResponse.cacheControl.setOptionNoCache(false);
+            serverResponse.cacheControl.setOptionNoStore(false);
+            serverResponse.cacheControl.setOptionMustRevalidate(false);
+            serverResponse.cacheControl.setMaxAge(3600);
+            serverResponse.cacheControl.setOptionImmutable(true);
 
-            info->sRealRelativePath = getRequestURI()+defaultFileAppend;
+            info->sRealRelativePath = clientRequest.getURI()+defaultFileAppend;
 
             setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
 
-            setResponseDataStreamer(staticContentElements[info->sRealRelativePath],false);
+            serverResponse.setDataStreamer(staticContentElements[info->sRealRelativePath],false);
             return true;
         }
         else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
@@ -300,12 +220,12 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
     // No transversal detected at this point.
 
-
-
     // Check if it's a directory...
 
     if (info->isDir == true)
     {
+        info->pathExist=true;
+
         // Don't get directories when we are appending something.
         if (!defaultFileAppend.empty())
             return false;
@@ -317,10 +237,19 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
         info->sRealFullPath = sFullComputedPath;
         info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
 
-        return !access(sFullComputedPath.c_str(),R_OK);
+        if (!access(sFullComputedPath.c_str(),R_OK))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     else if ( S_ISREG(stats.st_mode) == true  ) // Check if it's a regular file
     {
+        info->pathExist=true;
+
         if (    dontMapExecutables &&
         #ifndef _WIN32
                 !access(sFullComputedPath.c_str(),X_OK)
@@ -334,6 +263,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
             info->sRealFullPath = sFullComputedPath;
             info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
             info->isExecutable = true;
+            info->pathExist = true;
             return true;
         }
         else
@@ -344,7 +274,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                 // File Found / Readable.
                 info->sRealFullPath = sFullComputedPath;
                 info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
-                setResponseDataStreamer(bFile,true);
+                serverResponse.setDataStreamer(bFile,true);
                 setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
                 struct stat attrib;
@@ -357,14 +287,14 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                     fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
 #endif
                     if (includeServerDate)
-                        _serverHeaders.add("Last-Modified", fileModificationDate.toString());
+                        serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
                 }
 
-                cacheControl.setOptionNoCache(false);
-                cacheControl.setOptionNoStore(false);
-                cacheControl.setOptionMustRevalidate(false);
-                cacheControl.setMaxAge(3600);
-                cacheControl.setOptionImmutable(true);
+                serverResponse.cacheControl.setOptionNoCache(false);
+                serverResponse.cacheControl.setOptionNoStore(false);
+                serverResponse.cacheControl.setOptionMustRevalidate(false);
+                serverResponse.cacheControl.setMaxAge(3600);
+                serverResponse.cacheControl.setOptionImmutable(true);
                 return true;
             }
             else
@@ -381,115 +311,121 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
         return false;
     }
 }
-/*
-bool HTTPv1_Server::getLocalFilePathFromURI(const string &sServerDir, string *sRealRelativePath, string *sRealFullPath, const string &defaultFileAppend, bool *isDir)
+
+bool HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::string sServerDir, sLocalRequestedFileInfo *info)
 {
-    bool ret = false;
-    char *cFullPath, *cServerDir;
-    size_t cServerDirSize = 0;
+    if (!info)
+        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
 
-    *sRealRelativePath="";
-    *sRealFullPath="";
+    info->reset();
 
-    if (isDir)
-        *isDir = false;
-
-    // Check Server Dir Real Path:
-    if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
     {
+        char *cServerDir;
+        // Check Server Dir Real Path:
+        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+            return false;
+
+        sServerDir = cServerDir;
+
+        // Put a slash at the end of the server dir resource...
+        sServerDir += (sServerDir.back() == SLASHB ? "" : std::string(SLASH));
+
+        free(cServerDir);
+    }
+
+    // Compute the requested path:
+    string sFullRequestedPath =    sServerDir           // Put the current server dir...
+            + (uri.empty()?"":uri.substr(1)) // Put the Request URI (without the first character / slash)
+            ; // Append option...
+
+    // Compute the full requested path:
+    std::string sFullComputedRealPath;
+    {
+        char cRealPath[PATH_MAX+2];
+        realpath(sFullRequestedPath.c_str(), cRealPath);
+        if ( errno == ENOENT )
+        {
+            // Non-Existant File.
+            sFullComputedRealPath = cRealPath;
+        }
+        else
+            return false;
+    }
+
+    // Check for transversal access hacking attempts...
+    if (sFullComputedRealPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedRealPath.c_str(),sServerDir.size())!=0)
+    {
+        info->isTransversal=true;
         return false;
     }
 
-    string sFullPath = cServerDir + getRequestURI() + defaultFileAppend;
-    cServerDirSize = strlen(cServerDir);
+    // No transversal detected at this point.
+    info->sRealFullPath = sFullComputedRealPath;
+    info->sRealRelativePath = sFullComputedRealPath.c_str()+(sServerDir.size()-1);
 
-    // Detect transversal:
-    if ((cFullPath=realpath(sFullPath.c_str(), nullptr))!=nullptr)
+    return true;
+}
+
+bool HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+{
+    if (!info)
+        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
+
+    info->reset();
+
     {
-        if (strlen(cFullPath)<cServerDirSize || memcmp(cServerDir,cFullPath,cServerDirSize)!=0)
-        {
-            // Transversal directory attempt TODO: report.
-        }
-        else
-        {
-            // No transversal detected.
+        char *cServerDir;
+        // Check Server Dir Real Path:
+        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+            return false;
 
-            // looking for dir...
-            if (getRequestURI().back() == '/' && defaultFileAppend.empty())
-            {
-                // Maybe is a directory...
-                if (isDir)
-                {
-                    struct stat stats;
+        sServerDir = cServerDir;
 
-                    stat(cFullPath, &stats);
+        // Put a slash at the end of the server dir resource...
+        sServerDir += (sServerDir.back() == SLASHB ? "" : std::string(SLASH));
 
-                    // Check if it's a directory...
-                    *isDir = S_ISDIR(stats.st_mode);
-
-                    if (*isDir)
-                    {
-                        *sRealFullPath = sFullPath;
-                        *sRealRelativePath = cFullPath+cServerDirSize;
-
-                        ret = true;
-                    }
-                }
-            }
-            // looking for file...
-            else
-            {
-                Mantids::Memory::Containers::B_MMAP * bFile = new Mantids::Memory::Containers::B_MMAP;
-                if (bFile->referenceFile(cFullPath,true,false))
-                {
-                    // File Found / Readable.
-                    *sRealFullPath = sFullPath;
-                    *sRealRelativePath = cFullPath+cServerDirSize;
-                    setResponseDataStreamer(bFile,true);
-                    setResponseContentTypeByFileExtension(*sRealRelativePath);
-
-                    struct stat attrib;
-                    if (!stat(sFullPath.c_str(), &attrib))
-                    {
-                        HTTP::Common::Date fileModificationDate;
-#ifdef _WIN32
-                        fileModificationDate.setRawTime(attrib.st_mtime);
-#else
-                        fileModificationDate.setRawTime(attrib.st_mtim.tv_sec);
-#endif
-                        if (includeServerDate)
-                            _serverHeaders.add("Last-Modified", fileModificationDate.toString());
-                    }
-
-                    cacheControl.setOptionNoCache(false);
-                    cacheControl.setOptionNoStore(false);
-                    cacheControl.setOptionMustRevalidate(false);
-                    cacheControl.setMaxAge(3600);
-                    cacheControl.setOptionImmutable(true);
-                    ret = true;
-                }
-                else
-                {
-                    // File not found / Readable...
-                    delete bFile;
-                    ret = false;
-                }
-            }
-        }
-    }
-    else if (  staticContentElements.find(std::string(getRequestURI()+defaultFileAppend)) != staticContentElements.end() )
-    { // STATIC CONTENT:
-        *sRealRelativePath = getRequestURI()+defaultFileAppend;
-        *sRealFullPath = "MEM:" + *sRealRelativePath;
-        setResponseDataStreamer(staticContentElements[*sRealRelativePath],false);
-        ret = true;
+        free(cServerDir);
     }
 
+    // Compute the requested path:
+    string sFullRequestedPath =    sServerDir           // Put the current server dir...
+            + (uri.empty()?"":uri.substr(1)) // Put the Request URI (without the first character / slash)
+            ; // Append option...
 
-    if (cFullPath) free(cFullPath);
+    struct stat stats;
 
-    return ret;
-}*/
+    // Compute the full requested path:
+    std::string sFullComputedRealPath;
+    {
+        char cRealPath[PATH_MAX+2];
+        if ( realpath(sFullRequestedPath.c_str(), cRealPath) )
+        {
+            sFullComputedRealPath = cRealPath;
+
+            // Check file properties...
+            stat(sFullComputedRealPath.c_str(), &stats);
+            // Put a slash at the end of the computed dir resource (when dir)...
+            if ((info->isDir = S_ISDIR(stats.st_mode)) == true)
+                sFullComputedRealPath += (sFullComputedRealPath.back() == SLASHB ? "" : std::string(SLASH));
+        }
+        else // Non-Existant File.
+            return false;
+    }
+
+    // Check for transversal access hacking attempts...
+    if (sFullComputedRealPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedRealPath.c_str(),sServerDir.size())!=0)
+    {
+        info->isTransversal=true;
+        return false;
+    }
+
+    // No transversal detected at this point.
+    info->sRealFullPath = sFullComputedRealPath;
+    info->sRealRelativePath = sFullComputedRealPath.c_str()+(sServerDir.size()-1);
+
+    return true;
+}
+
 bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
 {
     const char * cFileExtension = strrchr(sFilePath.c_str(),'.');
@@ -501,10 +437,10 @@ bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePat
 
     if (mimeTypes.find(currentFileExtension) != mimeTypes.end())
     {
-        setResponseContentType(mimeTypes[currentFileExtension],true);
+        serverResponse.setContentType(mimeTypes[currentFileExtension],true);
         return true;
     }
-    setResponseContentType("",false);
+    serverResponse.setContentType("",false);
     return false;
 }
 
@@ -513,26 +449,11 @@ void HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const
     mimeTypes[ext] = type;
 }
 
-bool HTTPv1_Server::processClientURI()
-{
-    return true;
-}
-
-bool HTTPv1_Server::processClientOptions()
-{
-    return true;
-}
-
-Response::Status::eCode HTTPv1_Server::processClientRequest()
-{
-    return Response::Status::eCode::S_200_OK;
-}
-
 bool HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
-    if (currentParser == &_clientRequestLine) return changeToNextParserOnClientRequest();
-    else if (currentParser == &_clientHeaders) return changeToNextParserOnClientHeaders();
+    if (currentParser == &clientRequest.requestLine) return changeToNextParserOnClientRequest();
+    else if (currentParser == &clientRequest.headers) return changeToNextParserOnClientHeaders();
     else return changeToNextParserOnClientContentData();
 }
 
@@ -544,50 +465,81 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
     parseHostOptions();
     prepareServerVersionOnOptions();
 
+    // PARSE CLIENT BASIC AUTHENTICATION:
+    clientRequest.basicAuth.bEnabled = false;
+    if (clientRequest.headers.exist("Authorization"))
+    {
+        vector<string> authParts;
+        string f1 = clientRequest.headers.getOptionValueStringByName("Authorization");
+        split(authParts,f1,is_any_of(" "),token_compress_on);
+        if (authParts.size()==2)
+        {
+            if (authParts[0] == "Basic")
+            {
+                auto bp = Helpers::Encoders::fromBase64(authParts[1]);
+                std::string::size_type pos = bp.find(':', 0);
+                if (pos != std::string::npos)
+                {
+                    clientRequest.basicAuth.bEnabled = true;
+                    clientRequest.basicAuth.user = bp.substr(0,pos);
+                    clientRequest.basicAuth.pass = bp.substr(pos+1,bp.size());
+                }
+
+            }
+        }
+    }
+
+    // PARSE USER-AGENT
+    if (clientRequest.headers.exist("User-Agent"))
+        clientRequest.userAgent = clientRequest.headers.getOptionRawStringByName("User-Agent");
+
+    // PARSE CONTENT TYPE/LENGHT OPTIONS
     if (badAnswer)
         return answer(ansBytes);
     else
     {
-        uint64_t contentLength = _clientHeaders.getOptionAsUINT64("Content-Length");
-        string contentType = _clientHeaders.getOptionValueStringByName("Content-Type");
+        uint64_t contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
+        string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
         /////////////////////////////////////////////////////////////////////////////////////
         // Content-Length...
         if (contentLength)
         {
             // Content length defined.
-            _clientContentData.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
-            if (!_clientContentData.setContentLenSize(contentLength))
+            clientRequest.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+            if (!clientRequest.content.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
                 badAnswer = true;
-                _serverCodeResponse.setRetCode(Response::Status::eCode::S_413_PAYLOAD_TOO_LARGE);
+                serverResponse.status.setRetCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
                 return answer(ansBytes);
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
             if ( icontains(contentType,"multipart/form-data") )
             {
-                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_MIME);
-                _clientContentData.getMultiPartVars()->setMultiPartBoundary(_clientHeaders.getOptionByName("Content-Type")->getSubVar("boundary"));
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
+                clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
             else if ( icontains(contentType,"application/x-www-form-urlencoded") )
             {
-                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_URL);
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
             }
             else
-                _clientContentData.setContainerType(Common::Content::CONTENT_TYPE_BIN);
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
 
         // Process the client header options
         if (!badAnswer)
         {
-            if (!processClientOptions())
+            fillRequestDataStruct();
+
+            if (!procHTTPClientHeaders())
                 currentParser = nullptr; // Don't continue with parsing (close the connection)
             else
             {
                 // OK, we are ready.
-                if (contentLength) currentParser = &_clientContentData;
+                if (contentLength) currentParser = &clientRequest.content;
                 else
                 {
                     // Answer here:
@@ -607,9 +559,11 @@ bool HTTPv1_Server::changeToNextParserOnClientRequest()
         return answer(ansBytes);
     else
     {
-        if (!processClientURI())
+        fillRequestDataStruct();
+
+        if (!procHTTPClientURI())
             currentParser = nullptr; // Don't continue with parsing.
-        else currentParser = &_clientHeaders;
+        else currentParser = &clientRequest.headers;
     }
     return true;
 }
@@ -624,84 +578,84 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::StreamableObject::Statu
     // Act as a server. Send data from here.
     uint64_t strsize;
 
-    if ((strsize=_serverContentData.getStreamSize()) == std::numeric_limits<uint64_t>::max())
+    if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
     {
         // TODO: connection keep alive.
-        _serverHeaders.add("Connetion", "Close");
-        _serverHeaders.remove("Content-Length");
+        serverResponse.headers.add("Connetion", "Close");
+        serverResponse.headers.remove("Content-Length");
         /////////////////////
-        if (_serverContentData.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
-            _serverHeaders.replace("Transfer-Encoding", "Chunked");
+        if (serverResponse.content.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
+            serverResponse.headers.replace("Transfer-Encoding", "Chunked");
     }
     else
     {
-        _serverHeaders.remove("Connetion");
-        _serverHeaders.replace("Content-Length", std::to_string(strsize));
+        serverResponse.headers.remove("Connetion");
+        serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
     HTTP::Common::Date currentDate;
     currentDate.setCurrentTime();
     if (includeServerDate)
-        _serverHeaders.add("Date", currentDate.toString());
+        serverResponse.headers.add("Date", currentDate.toString());
 
-    if (!authenticate.empty())
+    if (!serverResponse.sWWWAuthenticateRealm.empty())
     {
-        _serverHeaders.add("WWW-Authenticate", "Basic realm=\""+ authenticate + "\"");
+        serverResponse.headers.add("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");
     }
 
     // Establish the cookies
-    _serverHeaders.remove("Set-Cookie");
-    setCookies.putOnHeaders(&_serverHeaders);
+    serverResponse.headers.remove("Set-Cookie");
+    serverResponse.cookies.putOnHeaders(&serverResponse.headers);
 
     // Security Options...
+    serverResponse.headers.replace("X-XSS-Protection", serverResponse.security.XSSProtection.toValue());
 
-    _serverHeaders.replace("X-XSS-Protection", secXSSProtection.toValue());
-
-    std::string cacheOptions = cacheControl.toString();
+    std::string cacheOptions = serverResponse.cacheControl.toString();
     if (!cacheOptions.empty())
-        _serverHeaders.replace("Cache-Control", cacheOptions);
+        serverResponse.headers.replace("Cache-Control", cacheOptions);
 
-    if (!secXFrameOpts.isNotActivated())
-        _serverHeaders.replace("X-Frame-Options", secXFrameOpts.toValue());
+    if (!serverResponse.security.XFrameOpts.isNotActivated())
+        serverResponse.headers.replace("X-Frame-Options", serverResponse.security.XFrameOpts.toValue());
 
     // TODO: check if this is a secure connection.. (Over TLS?)
-    if (secHSTS.getActivated())
-        _serverHeaders.replace("Strict-Transport-Security", secHSTS.toValue());
+    if (serverResponse.security.HSTS.getActivated())
+        serverResponse.headers.replace("Strict-Transport-Security", serverResponse.security.HSTS.toValue());
 
     // Content Type...
-    if (!contentType.empty())
+    if (!serverResponse.contentType.empty())
     {
-        _serverHeaders.replace("Content-Type", contentType);
-        if (bNoSniff) _serverHeaders.replace("X-Content-Type-Options", "nosniff");
+        serverResponse.headers.replace("Content-Type", serverResponse.contentType);
+        if (serverResponse.security.bNoSniffContentType)
+            serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
     }
 
-    return _serverHeaders.stream(wrStat);
+    return serverResponse.headers.stream(wrStat);
 }
 
 void HTTPv1_Server::prepareServerVersionOnURI()
 {
-    _serverCodeResponse.getHttpVersion()->setVersionMajor(1);
-    _serverCodeResponse.getHttpVersion()->setVersionMinor(0);
+    serverResponse.status.getHttpVersion()->setVersionMajor(1);
+    serverResponse.status.getHttpVersion()->setVersionMinor(0);
 
-    if (_clientRequestLine.getHTTPVersion()->getVersionMajor()!=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getVersionMajor()!=1)
     {
-        _serverCodeResponse.setRetCode(Response::Status::eCode::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        serverResponse.status.setRetCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
         badAnswer = true;
     }
     else
     {
-        _serverCodeResponse.getHttpVersion()->setVersionMinor(_clientRequestLine.getHTTPVersion()->getVersionMinor());
+        serverResponse.status.getHttpVersion()->setVersionMinor(clientRequest.requestLine.getHTTPVersion()->getVersionMinor());
     }
 }
 
 void HTTPv1_Server::prepareServerVersionOnOptions()
 {
-    if (_clientRequestLine.getHTTPVersion()->getVersionMinor()>=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getVersionMinor()>=1)
     {
-        if (virtualHost=="")
+        if (clientRequest.virtualHost=="")
         {
             // TODO: does really need the VHost?
-            _serverCodeResponse.setRetCode(Response::Status::eCode::S_400_BAD_REQUEST);
+            serverResponse.status.setRetCode(HTTP::Status::S_400_BAD_REQUEST);
             badAnswer = true;
         }
     }
@@ -709,20 +663,20 @@ void HTTPv1_Server::prepareServerVersionOnOptions()
 
 void HTTPv1_Server::parseHostOptions()
 {
-    string hostVal = _clientHeaders.getOptionValueStringByName("HOST");
+    string hostVal = clientRequest.headers.getOptionValueStringByName("HOST");
     if (!hostVal.empty())
     {
-        virtualPort = 80;
+        clientRequest.virtualPort = 80;
         vector<string> hostParts;
         split(hostParts,hostVal,is_any_of(":"),token_compress_on);
         if (hostParts.size()==1)
         {
-            virtualHost = hostParts[0];
+            clientRequest.virtualHost = hostParts[0];
         }
         else if (hostParts.size()>1)
         {
-            virtualHost = hostParts[0];
-            virtualPort = (uint16_t)strtoul(hostParts[1].c_str(),nullptr,10);
+            clientRequest.virtualHost = hostParts[0];
+            clientRequest.virtualPort = (uint16_t)strtoul(hostParts[1].c_str(),nullptr,10);
         }
     }
 }
@@ -736,24 +690,26 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
 
+    fillRequestDataStruct();
+
     // Process client petition here.
-    if (!badAnswer) _serverCodeResponse.setRetCode(processClientRequest());
+    if (!badAnswer) serverResponse.status.setRetCode(procHTTPClientContent());
 
     // Answer is the last... close the connection after it.
     currentParser = nullptr;
 
-    if (!_serverCodeResponse.stream(wrStat))
+    if (!serverResponse.status.stream(wrStat))
         return false;
     if (!streamServerHeaders(wrStat))
         return false;
-    if (!_serverContentData.stream(wrStat))
+    if (!serverResponse.content.stream(wrStat))
     {
-        _serverContentData.preemptiveDestroyStreamableOuput();
+        serverResponse.content.preemptiveDestroyStreamableObj();
         return false;
     }
 
     // If all the data was sent OK, ret true, and destroy the external container.
-    _serverContentData.preemptiveDestroyStreamableOuput();
+    serverResponse.content.preemptiveDestroyStreamableObj();
     return true;
 }
 
@@ -798,10 +754,6 @@ bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
     return !(staticContentElements.find(path) == staticContentElements.end());
 }
 
-std::string HTTPv1_Server::getContentType() const
-{
-    return contentType;
-}
 
 std::string HTTPv1_Server::getCurrentFileExtension() const
 {
@@ -828,165 +780,48 @@ void HTTPv1_Server::addStaticContent(const string &path, Memory::Containers::B_M
     staticContentElements[path] = contentElement;
 }
 
-Headers::Security::HSTS HTTPv1_Server::getResponseSecurityHSTS() const
-{
-    return secHSTS;
-}
-
-void HTTPv1_Server::setResponseSecurityHSTS(const Headers::Security::HSTS &value)
-{
-    secHSTS = value;
-}
-
-Headers::Security::XSSProtection HTTPv1_Server::getResponseSecurityXSSProtection() const
-{
-    return secXSSProtection;
-}
-
-void HTTPv1_Server::setResponseSecurityXSSProtection(const Headers::Security::XSSProtection &value)
-{
-    secXSSProtection = value;
-}
-
-Headers::Security::XFrameOpts HTTPv1_Server::getResponseSecurityXFrameOpts() const
-{
-    return secXFrameOpts;
-}
-
-void HTTPv1_Server::setResponseSecurityXFrameOpts(const Headers::Security::XFrameOpts &value)
-{
-    secXFrameOpts = value;
-}
-
 Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return ansBytes;
 }
 
-void HTTPv1_Server::addCookieClearSecure(const string &cookieName)
-{
-    setCookies.addClearSecureCookie(cookieName);
-}
 
-bool HTTPv1_Server::setResponseSecureCookie(const string &cookieName, const string &cookieValue, const uint32_t &uMaxAge)
-{
-    Headers::Cookie val;
-    val.setValue(cookieValue);
-    val.setSecure(true);
-    val.setHttpOnly(true);
-    val.setExpirationInSeconds(uMaxAge);
-    val.setMaxAge(uMaxAge);
-    val.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
-    return setResponseCookie(cookieName,val);
-}
 
-bool HTTPv1_Server::setResponseInsecureCookie(const string &sCookieName, const string &sCookieValue)
-{
-    Headers::Cookie val;
-    val.setValue(sCookieValue);
-    return setResponseCookie(sCookieName,val);
-}
 
-bool HTTPv1_Server::setResponseCookie(const string &sCookieName, const Headers::Cookie &sCookieValue)
-{
-    return setCookies.addCookieVal(sCookieName,sCookieValue);
-}
+
+
+
+
 
 Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(Memory::Streams::StreamableObject *source)
 {
     Memory::Streams::StreamableObject::Status stat;
 
-    if (!_serverContentData.getStreamableOuput())
+    if (!serverResponse.content.getStreamableObj())
     {
         stat.succeed = false;
         return stat;
     }
 
-    source->streamTo( _serverContentData.getStreamableOuput(), stat);
+    source->streamTo( serverResponse.content.getStreamableObj(), stat);
     return stat;
 }
 
-Protocols::HTTP::Response::Status::eCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
+Protocols::HTTP::Status::eRetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
 {
-    _serverHeaders.replace("Location", location);
-
+    serverResponse.headers.replace("Location", location);
 
     // Remove previous data streamer:
-    setResponseDataStreamer(nullptr);
-
+    serverResponse.setDataStreamer(nullptr);
 
     if (temporary)
-        return Protocols::HTTP::Response::Status::eCode::S_307_TEMPORARY_REDIRECT;
+        return HTTP::Status::S_307_TEMPORARY_REDIRECT;
     else
-        return Protocols::HTTP::Response::Status::eCode::S_308_PERMANENT_REDIRECT;
-}
-
-void HTTPv1_Server::setResponseContentType(const string &contentType, bool bNoSniff)
-{
-    this->contentType = contentType;
-    this->bNoSniff = bNoSniff;
-}
-
-string HTTPv1_Server::getRequestCookie(const string &sCookieName)
-{
-    MIME::MIME_HeaderOption * cookiesSubVars = _clientHeaders.getOptionByName("Cookie");
-    if (!cookiesSubVars) return "";
-    // TODO: mayus
-    return cookiesSubVars->getSubVar(sCookieName);
-}
-
-string HTTPv1_Server::getRequestContentType()
-{
-    return _clientHeaders.getOptionRawStringByName("Content-Type");
-}
-
-string HTTPv1_Server::getClientHeaderOption(const string &optionName)
-{
-    return _clientHeaders.getOptionRawStringByName(optionName);
-}
-
-uint16_t HTTPv1_Server::getRequestVirtualPort() const
-{
-    return virtualPort;
-}
-
-void HTTPv1_Server::setResponseDataStreamer(Memory::Streams::StreamableObject *dsOut, bool bDeleteAfter)
-{
-    if (dsOut == nullptr)
-    {
-        // Set default headers (lost previous ones):
-        _serverHeaders.remove("Last-Modified");
-        cacheControl.setDefaults();
-        cacheControl.setOptionNoCache(true);
-        cacheControl.setOptionNoStore(true);
-        cacheControl.setOptionMustRevalidate(true);
-        setResponseContentType("",false);
-    }
-
-    _serverContentData.setStreamableOutput(dsOut,bDeleteAfter);
-}
-
-void HTTPv1_Server::setRequestDataContainer(Memory::Streams::StreamableObject *dsIn, bool bDeleteAfter)
-{
-    _clientContentData.setStreamableOutput(dsIn,bDeleteAfter);
+        return HTTP::Status::S_308_PERMANENT_REDIRECT;
 }
 
 Memory::Streams::StreamableObject *HTTPv1_Server::getResponseDataStreamer()
 {
-    return _serverContentData.getStreamableOuput();
+    return serverResponse.content.getStreamableObj();
 }
 
-Memory::Streams::StreamableObject *HTTPv1_Server::getRequestDataContainer()
-{
-    return _clientContentData.getStreamableOuput();
-}
-
-string HTTPv1_Server::getRequestURI()
-{
-    return _clientRequestLine.getURI();
-}
-
-string HTTPv1_Server::getRequestVirtualHost() const
-{
-    return virtualHost;
-}

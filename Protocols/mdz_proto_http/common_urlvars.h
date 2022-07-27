@@ -6,6 +6,7 @@
 #include <map>
 
 #include "common_urlvar_subparser.h"
+#include "mdz_mem_vars/streamableobject.h"
 
 namespace Mantids { namespace Protocols { namespace HTTP { namespace Common {
 
@@ -39,13 +40,13 @@ public:
      * @param varName Variable Name
      * @return binary container with the variable
      */
-    Memory::Containers::B_Base * getValue(const std::string & varName) override;
+    Memory::Streams::StreamableObject * getValue(const std::string & varName) override;
     /**
      * @brief getValues Get the values for an specific variable name
      * @param varName variable name
      * @return list of binary containers containing the data of each value of the variable
      */
-    std::list<Memory::Containers::B_Base *> getValues(const std::string & varName) override;
+    std::list<Memory::Streams::StreamableObject *> getValues(const std::string & varName) override;
     /**
      * @brief getKeysList Get set of Variable Names
      * @return set of variables names

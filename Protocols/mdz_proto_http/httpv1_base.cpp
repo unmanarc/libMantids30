@@ -5,32 +5,14 @@ using namespace Mantids;
 
 HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::StreamableObject *sobject) : Memory::Streams::Parser(sobject,clientMode)
 {
-    initSubParser(&_clientRequestLine);
-    initSubParser(&_clientHeaders);
-    initSubParser(&_clientContentData);
+    initSubParser(&clientRequest.requestLine);
+    initSubParser(&clientRequest.headers);
+    initSubParser(&clientRequest.content);
 
-    initSubParser(&_serverCodeResponse);
-    initSubParser(&_serverHeaders);
-    initSubParser(&_serverContentData);
+    initSubParser(&serverResponse.status);
+    initSubParser(&serverResponse.headers);
+    initSubParser(&serverResponse.content);
     setInternalProductVersion("Mantids::HTTP","(+https://github.com/unmanarc/libMantids)");
-}
-
-Response::ResponseDeliveryObjects HTTPv1_Base::response()
-{
-    Response::ResponseDeliveryObjects ret;
-    ret.status = &_serverCodeResponse;
-    ret.content = &_serverContentData;
-    ret.headers = &_serverHeaders;
-    return ret;
-}
-
-Request::RequestDeliveryObjects HTTPv1_Base::request()
-{
-    Request::RequestDeliveryObjects ret;
-    ret.content = &_clientContentData;
-    ret.headers = &_clientHeaders;
-    ret.request = &_clientRequestLine;
-    return ret;
 }
 
 bool HTTPv1_Base::initProtocol()
@@ -40,12 +22,11 @@ bool HTTPv1_Base::initProtocol()
 
 void HTTPv1_Base::endProtocol()
 {
-
 }
 
 void HTTPv1_Base::setInternalProductVersion(const std::string &prodName, const std::string &extraInfo, const uint32_t &versionMajor, const uint32_t &versionMinor)
 {
-    _serverHeaders .replace("Server",
+    serverResponse.headers.replace("Server",
                 prodName + "/" + std::to_string(versionMajor) + "." + std::to_string(versionMinor) +
                 (!extraInfo.empty()? (" " + extraInfo) :"") );
 }

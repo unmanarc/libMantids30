@@ -1,6 +1,7 @@
 #ifndef MIME_SUB_CONTENT_H
 #define MIME_SUB_CONTENT_H
 
+#include "mdz_mem_vars/streamableobject.h"
 #include <mdz_mem_vars/subparser.h>
 
 namespace Mantids { namespace Protocols { namespace MIME {
@@ -20,8 +21,8 @@ public:
     std::string getFsTmpFolder() const;
     void setFsTmpFolder(const std::string &value);
 
-    Memory::Containers::B_Base *getContentContainer() const;
-    void replaceContentContainer(Memory::Containers::B_Base *value);
+    Memory::Streams::StreamableObject *getContentContainer() const;
+    void replaceContentContainer(Memory::Streams::StreamableObject *value);
 
     std::string getBoundary() const;
     void setBoundary(const std::string &value);
@@ -33,7 +34,7 @@ public:
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 private:
-    Memory::Containers::B_Base * contentContainer;
+    Memory::Streams::StreamableObject * contentContainer;
 
     std::string fsTmpFolder, boundary;
     uint64_t maxContentSize;

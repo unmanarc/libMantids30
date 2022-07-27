@@ -61,6 +61,8 @@ public:
     // TODO: what if the protocol reached std::numeric_limits<uint64_t>::max() ? enforce 64bit max. (on streamTo)
     // TODO: report percentage completed
 
+    virtual std::string toString();
+
     /**
      * @brief writeEOF proccess the end of the stream (should be implemented on streamTo)
      */

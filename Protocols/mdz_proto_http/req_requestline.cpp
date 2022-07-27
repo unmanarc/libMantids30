@@ -21,6 +21,8 @@ RequestLine::RequestLine()
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K
+
+    subParserName = "RequestLine";
 }
 
 bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
@@ -39,7 +41,7 @@ bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
 
 Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 {
-    std::string clientRequest = getParsedData()->toString();
+    std::string clientRequest = getParsedBuffer()->toString();
 
     vector<string> requestParts;
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);

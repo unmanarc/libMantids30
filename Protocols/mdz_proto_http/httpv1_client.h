@@ -3,12 +3,6 @@
 
 #include "httpv1_base.h"
 
-#include "rsp_cookies.h"
-#include "req_cookies.h"
-#include "hdr_sec_xframeopts.h"
-#include "hdr_sec_xssprotection.h"
-#include "hdr_sec_hsts.h"
-
 // TODO: https://en.wikipedia.org/wiki/Media_type
 // TODO: cuando el request para doh5 este listo, pre-procesar primero el request y luego recibir los datos.
 // TODO: post data? <<< IMPORTANT.
@@ -56,12 +50,6 @@ public:
      * @return string with the header value
      */
     std::string getResponseHeader(const std::string & headerName);
-
-    /**
-     * @brief setDontTrackFlag Set Don't track flag
-     * @param dnt true: don't track
-     */
-    void setDontTrackFlag(bool dnt = true);
     /**
      * @brief setReferer Set Referer URL
      * @param refererURL referer URL
@@ -80,46 +68,16 @@ public:
      */
     void addCookie(const std::string & cookieName, const std::string & cookieVal);
     /**
-     * @brief setClientUserAgent Set Client User Agent
-     * @param userAgent User Agent String (eg. Wgetty/1.1)
-     */
-    void setClientUserAgent(const std::string &userAgent);
-    /**
      * @brief setAuthenticationBasic
      * @param user
      * @param pass
      */
     void setBasicAuthentication(const std::string &user, const std::string &pass);
     /**
-     * @brief getServerCookies Get the server cookies container with the information of received cookies
-     * @return server cookies container.
-     */
-    Response::Cookies_ServerSide * getServerCookies();
-    /**
      * @brief getServerContentType Get Server Content Type
      * @return Content Type
      */
     std::string getServerContentType() const;
-    /**
-     * @brief getSecurityNoSniffContentType Get if No-Sniff option was sent
-     * @return
-     */
-    bool getSecurityNoSniffContentType() const;
-    /**
-     * @brief getSecXFrameOpts Get Security XFrame Options
-     * @return
-     */
-    Headers::Security::XFrameOpts getSecXFrameOpts() const;
-    /**
-     * @brief getSecXSSProtection Get XSS Protection Header from server
-     * @return
-     */
-    Headers::Security::XSSProtection getSecXSSProtection() const;
-    /**
-     * @brief getSecHSTS Get HSTS Policy...
-     * @return
-     */
-    Headers::Security::HSTS getSecHSTS() const;
 
 protected:
     bool initProtocol() override;
@@ -149,14 +107,9 @@ private:
 
     bool streamClientHeaders(Memory::Streams::StreamableObject::Status &wrStat);
 
-    Request::Cookies_ClientSide clientCookies;
-    Response::Cookies_ServerSide serverCookies;
-    Headers::Security::XFrameOpts secXFrameOpts;
-    Headers::Security::HSTS secHSTS;
-    Headers::Security::XSSProtection secXSSProtection;
+    HTTP::Request::Cookies_ClientSide clientCookies;
 
     std::string serverContentType;
-    bool securityNoSniffContentType;
 };
 
 }}}

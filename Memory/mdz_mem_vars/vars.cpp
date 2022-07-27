@@ -14,15 +14,15 @@ Vars::~Vars()
 
 std::string Vars::getStringValue(const std::string &varName)
 {
-    Mantids::Memory::Containers::B_Base * value = getValue(varName);
+    auto * value = getValue(varName);
     return !value?"":value->toString();
 }
 
 std::list<std::string> Vars::getStringValues(const std::string &varName)
 {
     std::list<std::string> r;
-    std::list<Mantids::Memory::Containers::B_Base *> contList = getValues(varName);
-    for (Mantids::Memory::Containers::B_Base * b : contList)
+    auto contList = getValues(varName);
+    for (auto * b : contList)
         r.push_back(b->toString());
     return r;
 }

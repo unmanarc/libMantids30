@@ -29,7 +29,18 @@ public:
     std::string getSubVar(const std::string & subVarName)
     {
         if (subVar.find(subVarName) == subVar.end()) return "";
-        return subVar[subVarName];
+        return subVar.find(subVarName)->second;
+    }
+
+    std::list<std::string> getSubVars(const std::string & subVarName)
+    {
+        std::list<std::string> r;
+        auto ret = subVar.equal_range(subVarName);
+        for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
+        {
+              r.push_back(it->second);
+        }
+        return r;
     }
 
     std::string getString();
@@ -60,7 +71,7 @@ private:
     std::string origName;
     std::string origValue;
     std::string value;
-    std::map<std::string,std::string> subVar;
+    std::multimap<std::string,std::string> subVar;
 };
 
 class MIME_Sub_Header : public Memory::Streams::SubParser
@@ -95,6 +106,11 @@ public:
      * @param state 1: continue with the last option. 0: new option.
      */
     bool add(const std::string &optionName, const std::string &optionValue, int state = 0);
+    /**
+     * @brief getOptionsSize Get Number of Options (headers)
+     * @return number of options/headers
+     */
+    size_t getOptionsSize();
     /**
      * @brief getOptionsByName Get option list by name (multiple options with the same name (eg. set-cookie)
      * @param varName value name.

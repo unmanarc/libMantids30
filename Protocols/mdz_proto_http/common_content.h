@@ -5,7 +5,7 @@
 
 #include <mdz_mem_vars/subparser.h>
 #include <mdz_mem_vars/b_base.h>
-#include <mdz_proto_mime/mime_vars.h>
+#include <mdz_proto_mime/mime_message.h>
 
 namespace Mantids { namespace Protocols { namespace HTTP { namespace Common {
 
@@ -46,25 +46,30 @@ public:
      */
     bool stream(Memory::Streams::StreamableObject::Status & wrStat) override;
     /**
-     * @brief isDefaultStreamableOutput Get if the default streamable output is in use.
+     * @brief isDefaultStreamableObj Get if the default streamable output is in use.
      * @return true if is it use, false if replaced by another one
      */
-    bool isDefaultStreamableOutput();
+    bool isDefaultStreamableObj();
     /**
-     * @brief preemptiveDestroyStreamableOuput Destroy the current streamable output (if marked for deletion) and use the internal one.
+     * @brief preemptiveDestroyStreamableObj Destroy the current streamable output (if marked for deletion) and use the internal one.
      */
-    void preemptiveDestroyStreamableOuput();
+    void preemptiveDestroyStreamableObj();
     /**
-     * @brief getStreamableOuput Get the current streamable output
+     * @brief writer Same of getStreamableObj
      * @return current streamable output
      */
-    Memory::Streams::StreamableObject * getStreamableOuput();
+    Memory::Streams::StreamableObject * writer() { return outStream; }
     /**
-     * @brief setStreamableOutput Set the streamable output (eg. a file?)
+     * @brief getStreamableObj Get the current streamable output
+     * @return current streamable output
+     */
+    Memory::Streams::StreamableObject * getStreamableObj();
+    /**
+     * @brief setStreamableObj Set the streamable output (eg. a file?)
      * @param outStream stream that will be used for the content trnasmission
      * @param deleteOutStream delete the stream after deleting this class
      */
-    void setStreamableOutput(Memory::Streams::StreamableObject * outStream, bool deleteOutStream = false);
+    void setStreamableObj(Memory::Streams::StreamableObject * outStream, bool deleteOutStream = false);
     /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<uint64_t>::max() if size not defined, or >=0 if size defined.
@@ -108,8 +113,8 @@ public:
     /**
      * @brief useFilesystem Set filesystem path when variables exceed limits
      * @param fsFilePath file path
-     */
-    void useFilesystem(const std::string & fsFilePath);
+     *
+    void useFilesystem(const std::string & fsFilePath);*/
     /**
      * @brief setContainerType Set Container Content Data Type (URL/MIME/BIN)
      * @param value type

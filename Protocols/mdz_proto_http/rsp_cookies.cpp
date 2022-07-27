@@ -78,7 +78,7 @@ void Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
     c.setValue("");
     c.setSecure(true);
     c.setHttpOnly(true);
-    c.setToExpire();
+    c.setAsTransientCookie();
     c.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
 
     if (cookiesMap.find(cookieName) != cookiesMap.end())

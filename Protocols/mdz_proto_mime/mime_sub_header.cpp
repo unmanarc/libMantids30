@@ -19,14 +19,12 @@ MIME_Sub_Header::MIME_Sub_Header()
     setMaxOptionSize(2*KB_MULT); // 2K per option
     maxOptions = 32; // 32 Max options
     lastOpt = nullptr;
+    subParserName = "MIME_Sub_Header";
 }
 MIME_Sub_Header::~MIME_Sub_Header()
 {
     for ( auto & i : headers )
-    {
-        //printf("Deleting %p\n", i.second); fflush(stdout);
         delete i.second;
-    }
 }
 
 bool MIME_Sub_Header::stream(Memory::Streams::StreamableObject::Status & wrStat)
@@ -86,7 +84,6 @@ bool MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
             delete optP;
             return false;
         }
-        //headers.insert(std::pair<std::string,MIME_HeaderOption *>(boost::to_upper_copy(optionName),optP));
         lastOpt = optP;
     }
     else if (state == 1 && lastOpt)
@@ -95,6 +92,11 @@ bool MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
         parseSubValues(optP,optionValue);
     }
     return true;
+}
+
+size_t MIME_Sub_Header::getOptionsSize()
+{
+    return headers.size();
 }
 
 bool MIME_Sub_Header::addHeaderOption(MIME_HeaderOption *opt)
@@ -152,9 +154,18 @@ void MIME_Sub_Header::setMaxOptions(const size_t &value)
 }
 
 Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
-{
-    if (!getParsedData()->size()) return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
-    parseOptionValue(getParsedData()->toString());
+{   
+    if (!getParsedBuffer()->size())
+    {
+#ifdef DEBUG
+        printf("Parsing MIME header lines (END).\n");fflush(stdout);
+#endif
+        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    }
+#ifdef DEBUG
+    printf("Parsing MIME header (line).\n");fflush(stdout);
+#endif
+    parseOptionValue(getParsedBuffer()->toString());
     return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
 }
 
@@ -229,17 +240,14 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-
 #ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
 #endif
-
                 boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
             }
 
-            //if (!(first && vValues.size()==1))
             opt->addSubVar(sv,"");
         }
 
@@ -251,14 +259,11 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
             for (uint64_t i=0; i<vStaticTexts.size();i++)
             {
                 char _staticmsg[128];
-
 #ifdef _WIN32
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%llu",secureReplace.c_str(),i);
 #else
                 snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%s_%lu",secureReplace.c_str(),i);
 #endif
-
-
                 boost::replace_all(sv,_staticmsg, vStaticTexts[i]);
             }
 
@@ -267,86 +272,6 @@ void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string 
         }
 
     }
-
-    /*    int usingQuotes = 0;
-    size_t prevPos = 0;
-    std::string curSubVarName, curSubVarValue;
-
-    for (size_t pos = 0; pos<strName.size()+1;pos++)
-    {
-        switch(state)
-        {
-        case 0:
-        {   // Looking for the first value.
-            if (cStrName[pos]==';' || cStrName[pos]==0)
-            {
-                opt->setValue(std::string(cStrName,pos));
-
-                state = 1;
-                prevPos = pos+1;
-            }
-        }break;
-        case 1:
-        {
-            usingQuotes=0;
-            // Looking for sub var Name.
-            if (cStrName[pos]=='=' || cStrName[pos]==0 || cStrName[pos]==';')
-            {
-                curSubVarName = std::string(cStrName+prevPos,pos-prevPos);
-                boost::trim(curSubVarName);
-                if ( cStrName[pos]==0 || cStrName[pos]==';' ) // empty var.
-                {
-                    if (curSubVarName!="")
-                    {
-                        opt->addSubVar(curSubVarName,"");
-                        state = 1;
-                    }
-                }
-                else if (cStrName[pos]=='=') // var with data
-                {
-                    // There is a variable... look for " or char
-                    state = 2;
-                }
-                prevPos = pos+1;
-            }
-        }break;
-        case 2:
-        {
-            if ( cStrName[pos]==0 || (!usingQuotes && cStrName[pos]==';') )
-            {
-                curSubVarValue = std::string(cStrName+prevPos,pos-prevPos);
-                boost::trim(curSubVarValue);
-                opt->addSubVar(curSubVarName,curSubVarValue);
-                state = 1;
-                prevPos = pos+1;
-            }
-            else if (!usingQuotes && cStrName[pos]=='"')
-            {
-                usingQuotes = 1;
-                prevPos = pos+1;
-            }
-            else if (usingQuotes && cStrName[pos]=='"')
-            {
-                usingQuotes = 0;
-                curSubVarValue = std::string(cStrName+prevPos,pos-prevPos);
-                opt->addSubVar(curSubVarName,curSubVarValue);
-                state = 3; // Now search for ;
-            }
-        }break;
-        case 3:
-        {
-            if ( cStrName[pos]==';' )
-            {
-                // discard data here.
-                state = 1;
-                prevPos = pos+1;
-            }
-        }
-            break;
-        default:
-            break;
-        }
-    }*/
 }
 
 void MIME_Sub_Header::parseOptionValue(std::string optionValue)
@@ -400,26 +325,8 @@ std::string MIME_HeaderOption::getString()
     std::string r;
 
     r = origName + ": " + origValue;
-/*
-    bool prev = false;
-    for (const auto & i : subVar)
-    {
-        if (prev)
-        {
-            r+="; ";
-        }
-        prev=true;
-        if (i.second.empty())
-        {
-            r+= i.first;
-        }
-        else
-        {
-            r+= i.first + "=\"" + i.second + "\"";
-        }
-    }*/
-    return r;
 
+    return r;
 }
 
 
@@ -442,7 +349,8 @@ void MIME_HeaderOption::addSubVar(const std::string &varName, const std::string 
     if (!isPermited7bitCharset(varName)) return;
     if (!isPermited7bitCharset(varValue)) return;
     curHeaderOptSize += varName.size()+varValue.size();
-    subVar[varName] = varValue;
+    // TODO: the subVar may be URL Encoded... (decode)
+    subVar.insert(std::make_pair(varName,varValue));
 }
 
 std::string MIME_HeaderOption::getUpperName() const

@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "b_ref.h"
 
+
 using namespace Mantids::Memory::Streams;
 
 Parser::Parser(Memory::Streams::StreamableObject *value, bool clientMode)
@@ -52,6 +53,12 @@ StreamableObject::Status Parser::write(const void *buf, const size_t &count, Sta
     size_t ttl = 0;
     bool finished = false;
 
+#ifdef DEBUG
+    printf("Writting on Parser %p:\n", this); fflush(stdout);
+    BIO_dump_fp (stdout, (char *)buf, count);
+    fflush(stdout);
+#endif
+
     std::pair<bool, uint64_t> r = parseData(buf,count, &ttl, &finished);
     if (finished) ret.finish = wrStat.finish = true;
 
@@ -77,11 +84,19 @@ void Parser::writeEOF(bool)
 
 std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_t *ttl, bool *finished)
 {
-    // TODO: reset TTL?
     if (*ttl>maxTTL)
+    {
+        // TODO: reset TTL?
+#ifdef DEBUG
+        fprintf(stderr, "%p Parser reaching TTL %zu", this, *ttl); fflush(stderr);
+#endif
         return std::make_pair(false,(uint64_t)0); // TTL Reached...
-//    std::cout << "Reaching TTL " << *ttl << std::endl << std::flush;
+    }
     (*ttl)++;
+
+    // We are parsing data here...
+    // written bytes will be filled with first=error, and second=displacebytes
+    // displace bytes is the number of bytes that the subparser have taken from the incomming buffer, so we have to displace them.
     std::pair<bool, uint64_t> writtenBytes;
 
     if (currentParser!=nullptr)
@@ -96,33 +111,44 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
         {
         case SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER:
         {
-         //   std::cout << std::asctime(std::localtime(&result)) << "PARSE_STAT_GOTO_NEXT_SUBPARSER" << std::endl << std::flush;
+#ifdef DEBUG
+            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#endif
             // Check if there is next parser...
             if (!changeToNextParser())
                 return std::make_pair(false,(uint64_t)0);
+#ifdef DEBUG
+            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#endif
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
-            if (currentParser==nullptr) *finished = true;
+            if (currentParser==nullptr)
+                *finished = true;
             if (currentParser==nullptr || writtenBytes.second == count)
                 return writtenBytes;
         } break;
         case SubParser::PARSE_STAT_GET_MORE_DATA:
         {
-        //    std::cout << std::asctime(std::localtime(&result)) << "PARSE_STAT_GET_MORE_DATA" << std::endl << std::flush;
+#ifdef DEBUG
+            printf("%p PARSE_STAT_GET_MORE_DATA requested from %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#endif
             // More data required... (TODO: check this)
             if (writtenBytes.second == count)
                 return writtenBytes;
         } break;
             // Bad parsing... end here.
         case SubParser::PARSE_STAT_ERROR:
-         //   std::cout << std::asctime(std::localtime(&result)) << "PARSE_STAT_ERROR" << std::endl << std::flush;
+#ifdef DEBUG
+            printf("%p PARSE_STAT_ERROR executed from %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#endif
+
             return std::make_pair(false,(uint64_t)0);
             // Unknown parser...
         }
     }
-    // TODO: what if writtenBytes == 0?
 
-    // Data left, process it.
+    // TODO: what if writtenBytes == 0?
+    // Data left in buffer, process it.
     if (writtenBytes.second!=count)
     {
         buf=((const char *)buf)+writtenBytes.second;
@@ -135,7 +161,8 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 
         return std::make_pair(true,x.second+writtenBytes.second);
     }
-    else return writtenBytes;
+    else
+        return writtenBytes;
 }
 
 void Parser::initSubParser(SubParser *subparser)

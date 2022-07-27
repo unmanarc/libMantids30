@@ -48,35 +48,35 @@ public:
 
 protected:
     /**
-     * @brief processClientRequest Process web client request
-     * @return http responce code.
+     * @brief procHTTPClientContent Process web client request
+     * @return http response code.
      */
-    Protocols::HTTP::Response::Status::eCode processClientRequest() override;
+    Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
 private:
     void sessionOpen();
     void sessionRelease();
     void sessionDestroy();
 
-    Protocols::HTTP::Response::Status::eCode procResource_File(MultiAuths *extraAuths);
-    Protocols::HTTP::Response::Status::eCode procResource_HTMLIEngine(const std::string &sRealFullPath, MultiAuths *extraAuths);
+    Protocols::HTTP::Status::eRetCode procResource_File(MultiAuths *extraAuths);
+    Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, MultiAuths *extraAuths);
 
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session();
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_AUTHINFO();
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_CSRFTOKEN();
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_LOGIN(const Authentication & auth);
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_POSTLOGIN(const Authentication & auth);
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_CHPASSWD(const Authentication &auth);
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_TESTPASSWD(const Authentication &auth);
-    Protocols::HTTP::Response::Status::eCode procJAPI_Session_PASSWDLIST();
+    Protocols::HTTP::Status::eRetCode procJAPI_Session();
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_AUTHINFO();
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_CSRFTOKEN();
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication & auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication & auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication &auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication &auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_PASSWDLIST();
 
-    Protocols::HTTP::Response::Status::eCode procJAPI_Exec( MultiAuths *extraAuths,
+    Protocols::HTTP::Status::eRetCode procJAPI_Exec( MultiAuths *extraAuths,
                                                        std::string sMethodName,
                                                        std::string sPayloadIn,
                                                        Memory::Streams::StreamableJSON * jPayloadOutStr = nullptr
                                                        );
     bool csrfValidate();
 
-    Protocols::HTTP::Response::Status::eCode procJAPI_Version();
+    Protocols::HTTP::Status::eRetCode procJAPI_Version();
 
 
     std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Mantids::Authentication::Session *session, Mantids::Authentication::Reason *authReason);

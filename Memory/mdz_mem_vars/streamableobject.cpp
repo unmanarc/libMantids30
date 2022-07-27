@@ -1,4 +1,5 @@
 #include "streamableobject.h"
+#include "streamablestring.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -15,6 +16,15 @@ StreamableObject::StreamableObject()
 
 StreamableObject::~StreamableObject()
 {
+}
+
+std::string StreamableObject::toString()
+{
+    StreamableString s;
+    Status x;
+    this->streamTo(&s, x);
+    return s.getValue();
+
 }
 
 StreamableObject::Status StreamableObject::writeFullStream(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
