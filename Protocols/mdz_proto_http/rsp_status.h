@@ -3,9 +3,8 @@
 
 #include <mdz_mem_vars/subparser.h>
 #include "common_version.h"
-#include "rsp_statuscodes.h"
 
-namespace Mantids { namespace Protocols { namespace HTTP { namespace Response {
+namespace Mantids { namespace Protocols { namespace HTTP {
 
 struct sHTTP_StatusCode
 {
@@ -21,7 +20,7 @@ struct sHTTP_StatusCode
 class Status : public Memory::Streams::SubParser
 {
 public:
-    enum eCode {
+    enum eRetCode {
         S_100_CONTINUE = 0,
         S_101_SWITCHING_PROTOCOL = 1,
         S_200_OK = 2,
@@ -72,7 +71,7 @@ public:
 
     Status();
 
-    static uint16_t getHTTPStatusCodeTranslation(const eCode & code);
+    static uint16_t getHTTPStatusCodeTranslation(const eRetCode & code);
 
     /**
      * @brief getHttpVersion - Get HTTP Version Object
@@ -80,19 +79,19 @@ public:
      */
     Common::Version * getHttpVersion();
     /**
-     * @brief getResponseCode - Get HTTP Response Code (Ex. 404=Not found)
+     * @brief getResponseRetCode - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
      */
     unsigned short getRetCode() const;
     /**
-     * @brief setResponseCode - Set HTTP Response Code (Ex. 404=Not found)
+     * @brief setResponseRetCode - Set HTTP Response Code (Ex. 404=Not found)
      * @param value response code number
      */
     void setRetCodeValue(unsigned short value);
     /**
-     * @brief setResponseCode2 Set response code and message from a fixed list.
+     * @brief setResponseRetCode2 Set response code and message from a fixed list.
      */
-    void setRetCode(eCode code);
+    void setRetCode(eRetCode code);
     /**
      * @brief getResponseMessage - Get HTTP Response Code Message (Ex. Not found)
      * @return response code message
@@ -110,14 +109,13 @@ protected:
 
 private:
     Common::Version httpVersion;
-    unsigned short responseCode;
+    unsigned short responseRetCode;
     std::string responseMessage;
 
-    static const sHTTP_StatusCode responseCodes[];
+    static const sHTTP_StatusCode responseRetCodes[];
 
 
 };
-
-}}}}
+}}}
 
 #endif // HTTP_CODE_RESPONSE_H
