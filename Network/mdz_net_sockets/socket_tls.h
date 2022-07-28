@@ -21,9 +21,9 @@ public:
         TLS_MODE_12
     };
 
-    struct TLS_CipherBits
+    struct sCipherBits
     {
-        TLS_CipherBits() {
+        sCipherBits() {
             aSymBits = 0;
             symBits = 0;
         }
@@ -94,35 +94,35 @@ public:
      */
     bool setTLSPrivateKeyPath(const char * _key_file);
     /**
-     * @brief getCertificateAuthorityPath
+     * @brief getTLSCertificateAuthorityPath
      * @return Certificate Authority Path
      */
-    std::string getCertificateAuthorityPath()const;
+    std::string getTLSCertificateAuthorityPath()const;
     /**
-     * @brief getPrivateKeyPath
+     * @brief getTLSPrivateKeyPath
      * @return private key path
      */
-    std::string getPrivateKeyPath()const;
+    std::string getTLSPrivateKeyPath()const;
     /**
-     * @brief getPublicKeyPath Get public key path
+     * @brief getTLSPublicKeyPath Get public key path
      * @return public key path
      */
-    std::string getPublicKeyPath()const;
+    std::string getTLSPublicKeyPath()const;
     /**
-     * @brief getCipherName Get current cipher used.
+     * @brief getTLSConnectionCipherName Get current cipher used by current connection
      * @return current cipher
      */
-    std::string getCipherName();
+    std::string getTLSConnectionCipherName();
     /**
-     * @brief getCipherBits Get current cipher bits used.
+     * @brief getTLSConnectionCipherBits Get current cipher bits of current connection
      * @return bits used
      */
-    TLS_CipherBits getCipherBits();
+    sCipherBits getTLSConnectionCipherBits();
     /**
-     * @brief getProtocolVersionName Get protocol version name
+     * @brief getTLSConnectionProtocolVersion Get protocol version name of current connection
      * @return cipher version string
      */
-    std::string getProtocolVersionName();
+    std::string getTLSConnectionProtocolVersion();
     /**
      * @brief setServer Mark this socket as server (useful to determine if works as server or client)
      * @param value true for server.
@@ -162,6 +162,7 @@ private:
     SSL *sslHandle;
     SSL_CTX *sslContext;
 
+    std::string cipherList;
     std::string crt_file,key_file,ca_file;
 
     std::list<std::string> sslErrors;

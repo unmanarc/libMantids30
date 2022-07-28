@@ -186,6 +186,8 @@ bool Socket_TLS::tlsInitContext()
         }
     }
 
+
+
     if (!crt_file.empty() && (SSL_CTX_use_certificate_file(sslContext, crt_file.c_str(), SSL_FILETYPE_PEM) != 1))
     {
         sslErrors.push_back("SSL_CTX_use_certificate_file Failed for local Certificate.");
@@ -244,7 +246,7 @@ void Socket_TLS::setAcceptInvalidServerCerts(bool newAcceptInvalidServerCerts)
     acceptInvalidServerCerts = newAcceptInvalidServerCerts;
 }
 
-string Socket_TLS::getCipherName()
+string Socket_TLS::getTLSConnectionCipherName()
 {
     if (!sslHandle) return "";
     return SSL_get_cipher_name(sslHandle);
@@ -304,17 +306,17 @@ int Socket_TLS::iShutdown(int mode)
 
 bool Socket_TLS::isSecure() { return true; }
 
-std::string Socket_TLS::getCertificateAuthorityPath() const
+std::string Socket_TLS::getTLSCertificateAuthorityPath() const
 {
     return ca_file;
 }
 
-std::string Socket_TLS::getPrivateKeyPath() const
+std::string Socket_TLS::getTLSPrivateKeyPath() const
 {
     return key_file;
 }
 
-std::string Socket_TLS::getPublicKeyPath() const
+std::string Socket_TLS::getTLSPublicKeyPath() const
 {
     return crt_file;
 }
@@ -351,15 +353,15 @@ bool Socket_TLS::setTLSPrivateKeyPath(const char *_key_file)
 }
 
 
-Socket_TLS::TLS_CipherBits Socket_TLS::getCipherBits()
+Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
-    TLS_CipherBits cb;
+    sCipherBits cb;
     if (!sslHandle) return cb;
     cb.aSymBits = SSL_get_cipher_bits(sslHandle, &cb.symBits);
     return cb;
 }
 
-string Socket_TLS::getProtocolVersionName()
+string Socket_TLS::getTLSConnectionProtocolVersion()
 {
     if (!sslHandle) return "";
     return SSL_get_version(sslHandle);
