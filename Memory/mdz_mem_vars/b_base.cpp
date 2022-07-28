@@ -4,6 +4,7 @@
 #include "b_ref.h"
 
 #include <limits>
+#include <stdexcept>
 
 using namespace Mantids::Memory::Containers;
 
