@@ -41,17 +41,17 @@ void RPCClientImpl::runRPClient()
         std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
         std::string pubCertPath = Globals::getLC_TLSCertFilePath();
 
-        if (!sockRPCClient.setTLSCertificateAuthorityPath(  caCertPath.c_str() ))
+        if (!sockRPCClient.keys.loadCAFromPEMFile(  caCertPath.c_str() ))
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
             _exit(-3);
         }
-        if (!sockRPCClient.setTLSPrivateKeyPath(  privKeyPath.c_str() ))
+        if (!sockRPCClient.keys.loadPrivateKeyFromPEMFile(  privKeyPath.c_str() ))
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
             _exit(-3);
         }
-        if (!sockRPCClient.setTLSPublicKeyPath(  pubCertPath.c_str() ))
+        if (!sockRPCClient.keys.loadPublicKeyFromPEMFile(  pubCertPath.c_str() ))
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
             _exit(-3);

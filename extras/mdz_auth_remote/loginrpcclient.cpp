@@ -22,15 +22,15 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
         Socket_TLS tlsClient;
 
         // Authenticate that the server with X.509
-        tlsClient.setTLSCertificateAuthorityPath(rpcClient->getCaFile().c_str());
+        tlsClient.keys.loadCAFromPEMFile(rpcClient->getCaFile().c_str());
 
         // If there is any client certificate, set the client certificate (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
         if (!rpcClient->getCertFile().empty())
-            tlsClient.setTLSPublicKeyPath(rpcClient->getCertFile().c_str());
+            tlsClient.keys.loadPublicKeyFromPEMFile(rpcClient->getCertFile().c_str());
 
         // If there is any client key file, set the key file (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
         if (!rpcClient->getKeyFile().empty())
-            tlsClient.setTLSPrivateKeyPath(rpcClient->getKeyFile().c_str());
+            tlsClient.keys.loadPrivateKeyFromPEMFile(rpcClient->getKeyFile().c_str());
 
         // Callback to notifyTLSConnecting which occurs just before the connection.
         rpcClient->notifyTLSConnecting(&tlsClient,rpcClient->getRemoteHost(),rpcClient->getRemotePort());
