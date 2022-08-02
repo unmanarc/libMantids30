@@ -11,6 +11,7 @@
 
 #include <limits>
 #include <string>
+#include <stdexcept>
 
 #include <openssl/ssl.h>
 #include <openssl/dh.h>

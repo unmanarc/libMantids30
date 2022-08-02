@@ -3,6 +3,7 @@
 #include "hdr_cookie.h"
 
 #include <vector>
+#include <stdexcept>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>

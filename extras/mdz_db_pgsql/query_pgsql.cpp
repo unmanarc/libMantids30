@@ -4,6 +4,8 @@
 #include <string.h>
 #include <mdz_mem_vars/a_allvars.h>
 
+#include <stdexcept>
+
 using namespace Mantids::Database;
 
 Query_PostgreSQL::Query_PostgreSQL()

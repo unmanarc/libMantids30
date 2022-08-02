@@ -2,6 +2,7 @@
 #include "common_content_chunked_subparser.h"
 
 #include <limits>
+#include <stdexcept>
 
 // TODO: CHECK THIS CLASS
 using namespace Mantids::Protocols::HTTP;

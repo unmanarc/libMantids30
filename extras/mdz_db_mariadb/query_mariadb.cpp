@@ -4,6 +4,8 @@
 #include <mdz_mem_vars/a_allvars.h>
 #include <mdz_hlp_functions/mem.h>
 
+#include <stdexcept>
+
 // From: https://bugs.mysql.com/?id=87337
 #if !defined(MARIADB_BASE_VERSION) && \
     !defined(MARIADB_VERSION_ID) && \

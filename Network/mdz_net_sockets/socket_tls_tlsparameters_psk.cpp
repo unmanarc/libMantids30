@@ -1,4 +1,5 @@
 #include "socket_tls.h"
+#include <stdexcept>
 
 using namespace std;
 using namespace Mantids::Network::Sockets;

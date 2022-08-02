@@ -3,6 +3,8 @@
 #include <mdz_mem_vars/a_allvars.h>
 #include <string.h>
 
+#include <stdexcept>
+
 using namespace Mantids::Database;
 
 Query_SQLite3::Query_SQLite3()

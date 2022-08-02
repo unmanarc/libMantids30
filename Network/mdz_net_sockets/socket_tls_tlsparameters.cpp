@@ -6,6 +6,7 @@
 #include <string.h>
 #include <mdz_mem_vars/streamablefile.h>
 #include <mdz_hlp_functions/random.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace Mantids::Network::Sockets;
