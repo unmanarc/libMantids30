@@ -19,9 +19,6 @@ namespace Mantids { namespace Network { namespace Sockets {
  */
 class Socket_TLS : public Socket_TCP {
 public:
-    enum TLS_MODE {
-        TLS_MODE_12
-    };
 
     struct sCipherBits
     {
@@ -511,19 +508,10 @@ public:
 
     // Setters:
     /**
-     * SSL protocol set.
-     */
-    void setTLSContextMode(const TLS_MODE &value);
-    /**
      * @brief setServer Mark this socket as server (useful to determine if works as server or client)
      * @param value true for server.
      */
     void setIsServerMode(bool value);
-
-
-
-
-
     /**
      * @brief setTLSCipherList Set the TLS cipher list
      * @param newTLSCipherList cipher list to configure before establishing the connection
@@ -556,9 +544,10 @@ public:
      * @return List of SSL Errors.
      */
     std::list<std::string> getTLSErrorsAndClear();
+
     /**
-     * @brief getTLSPeerCommonName Get TLS Peer Common Name
-     * @return
+     * @brief getTLSPeerCN Get TLS Peer Common Name for PKI or identity for PSK
+     * @return string with the CN or identity
      */
     std::string getTLSPeerCN();
 
@@ -603,7 +592,6 @@ private:
 
     std::list<std::string> sslErrors;
 
-    TLS_MODE sslMode;
     bool bIsServer;
 };
 }}}

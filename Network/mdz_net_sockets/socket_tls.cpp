@@ -315,12 +315,6 @@ bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
     else
     {
         bValid = true;
-
-        /*long res = SSL_get_verify_result(sslh);
-        if (res == X509_V_OK)
-            bValid = true;
-        else
-            sslErrors.push_back("TLS/SSL PSK Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));*/
     }
 
     return bValid;
@@ -413,11 +407,6 @@ void Socket_TLS::setIsServerMode(bool value)
     bIsServer = value;
 }
 
-void Socket_TLS::setTLSContextMode(const TLS_MODE &value)
-{
-    sslMode = value;
-}
-
 Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
@@ -454,7 +443,6 @@ Mantids::Network::Sockets::Socket_StreamBase * Socket_TLS::acceptConnection()
     acceptedTLSSock->setTLSParent(this);
 
     // Set contexts and modes...
-    acceptedTLSSock->setTLSContextMode(sslMode);
     acceptedTLSSock->setIsServerMode(bIsServer);
 
     // now we should copy the file descriptor:
