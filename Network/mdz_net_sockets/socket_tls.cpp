@@ -2,42 +2,56 @@
 
 #include "socket_streambase.h"
 
+
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/pem.h>
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include <iostream>
+#include <limits>
+#include <string>
+
+#include <openssl/ssl.h>
+#include <openssl/dh.h>
+#include <openssl/x509_vfy.h>
+#include <openssl/stack.h>
 
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 
-#include <limits>
 
 #ifdef _WIN32
 #include <openssl/safestack.h>
 #include <mdz_mem_vars/w32compat.h>
 #endif
 
+
 using namespace std;
 using namespace Mantids::Network::Sockets;
 
-Socket_TLS::Socket_TLS()
+Socket_TLS::Socket_TLS() : keys(&bIsServer)
 {
-    acceptInvalidServerCerts = false;
-    isServer = false;
-    sslHandle = nullptr;
-    sslContext = nullptr;
+    // Ignore sigpipes in this thread (eg. SSL_Write on closed socket):
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGPIPE);
+    pthread_sigmask(SIG_BLOCK, &set, NULL);
+
+    setCertValidation(CERT_X509_VALIDATE);
+    tlsParent = nullptr;
+    bIsServer = false;
+    sslh = nullptr;
+    ctx = nullptr;
 }
 
 Socket_TLS::~Socket_TLS()
 {
-    if (sslHandle)
-    {
-        SSL_free (sslHandle);
-    }
-    if (sslContext)
-    {
-        SSL_CTX_free(sslContext);
-    }
+    if (sslh)
+        SSL_free (sslh);
+    if (ctx)
+        SSL_CTX_free(ctx);
 }
 
 void Socket_TLS::prepareTLS()
@@ -56,148 +70,188 @@ void Socket_TLS::prepareTLS()
 #endif
 }
 
+void Socket_TLS::setTLSParent(Socket_TLS *parent)
+{
+    tlsParent = parent;
+}
+
 bool Socket_TLS::postConnectSubInitialization()
 {
-    if (sslHandle!=nullptr) return false; // already connected (don't connect again)
+    if (sslh!=nullptr)
+        return false; // already connected (don't connect again)
 
-    isServer = false;
+    bIsServer = false;
 
-    if (!tlsInitContext())
+    if (!createTLSContext())
     {
         return false;
     }
 
-    if (!(sslHandle = SSL_new(sslContext)))
+    if (!(sslh = SSL_new(ctx)))
     {
         sslErrors.push_back("SSL_new failed.");
         return false;
     }
 
-    if (SSL_set_fd (sslHandle, sockfd) != 1)
-    {
-        sslErrors.push_back("SSL_set_fd failed.");
-        return false;
-    }
+    // If there is any configured PSK, put the key in the static list here...
+    bool usingPSK = keys.linkPSKWithTLSHandle(sslh);
 
-    if ( SSL_get_error(sslHandle, SSL_connect (sslHandle)) != SSL_ERROR_NONE )
+    // Initialize TLS client certificates and keys
+    if (!keys.initTLSKeys(ctx,sslh, &sslErrors))
     {
         parseErrors();
         return false;
     }
 
-    if (!acceptInvalidServerCerts && !validateConnection())
+    if (SSL_set_fd (sslh, sockfd) != 1)
     {
+        sslErrors.push_back("SSL_set_fd failed.");
         return false;
     }
 
-    // connected!
-    return true;
+    if ( SSL_get_error(sslh, SSL_connect (sslh)) != SSL_ERROR_NONE )
+    {
+        parseErrors();
+        return false;
+    }
+
+    if ( certValidation!=CERT_X509_NOVALIDATE )
+    {
+        // Using PKI, need to validate the certificate.
+        // connected+validated!
+        return validateTLSConnection(usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
+    }
+    // no validate here...
+    else
+        return true;
 }
 
 bool Socket_TLS::postAcceptSubInitialization()
 {
-    if (sslHandle!=nullptr) return false; // already connected (don't connect again)
+    if (sslh!=nullptr)
+        return false; // already connected (don't connect again)
 
-    isServer = true;
+    bIsServer = true;
 
-    if (!tlsInitContext())
+    if (!createTLSContext())
     {
         return false;
     }
 
     // ssl empty, create a new one.
-    if (!(sslHandle = SSL_new(sslContext)))
+    if (!(sslh = SSL_new(ctx)))
     {
         sslErrors.push_back("SSL_new failed.");
         return false;
     }
 
-    if ( ca_file.size()>0 )
-        SSL_set_verify(sslHandle, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, nullptr);
+    // If the parent have any PSK key, pass everything to the current socket_tls.
+    *(keys.getPSKServerWallet()) = *(tlsParent->keys.getPSKServerWallet());
 
-    if (SSL_set_fd (sslHandle, sockfd) != 1)
+    auto * pskValues = tlsParent->keys.getPSKServerWallet();
+    // If there is any configured PSK, link the key in the static list...
+    if ( pskValues->usingPSK )
     {
-        sslErrors.push_back("SSL_set_fd failed.");
-        return false;
+        keys.linkPSKWithTLSHandle(sslh);
     }
 
-    if (SSL_accept(sslHandle) != 1)
+    // in server mode, use the parent keys...
+    if (!tlsParent->keys.initTLSKeys(ctx,sslh, &sslErrors))
     {
         parseErrors();
         return false;
     }
 
-    // connected!
-    return true;
+    if ( tlsParent->keys.getCAPath().size()>0 )
+        SSL_set_verify(sslh, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (certValidation==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+
+    if (SSL_set_fd (sslh, sockfd) != 1)
+    {
+        sslErrors.push_back("SSL_set_fd failed.");
+        return false;
+    }
+
+    int err;
+    if ((err=SSL_accept(sslh)) != 1)
+    {
+        parseErrors();
+        return false;
+    }
+
+    if ( certValidation!=CERT_X509_NOVALIDATE )
+    {
+        // Using PKI, need to validate the certificate.
+        // connected+validated!
+        return validateTLSConnection(pskValues->usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
+    }
+    // no validate here...
+    else
+        return true;
 }
 
-bool Socket_TLS::tlsInitContext()
+SSL_CTX *Socket_TLS::createServerSSLContext()
+{
+#if TLS_MAX_VERSION == TLS1_VERSION
+    return SSL_CTX_new (TLSv1_server_method());
+#elif TLS_MAX_VERSION == TLS1_1_VERSION
+    return SSL_CTX_new (TLSv1_1_server_method());
+#elif TLS_MAX_VERSION == TLS1_2_VERSION
+    return SSL_CTX_new (TLSv1_2_server_method());
+#elif TLS_MAX_VERSION >= TLS1_3_VERSION
+    return SSL_CTX_new (TLS_server_method());
+#endif
+    return nullptr;
+}
+
+SSL_CTX *Socket_TLS::createClientSSLContext()
+{
+#if TLS_MAX_VERSION == TLS1_VERSION
+    return SSL_CTX_new (TLSv1_client_method());
+#elif TLS_MAX_VERSION == TLS1_1_VERSION
+    return SSL_CTX_new (TLSv1_1_client_method());
+#elif TLS_MAX_VERSION == TLS1_2_VERSION
+    return SSL_CTX_new (TLSv1_2_client_method());
+#elif TLS_MAX_VERSION >= TLS1_3_VERSION
+    return SSL_CTX_new (TLS_client_method());
+#endif
+    return nullptr;
+}
+
+bool Socket_TLS::getIsServer() const
+{
+    return bIsServer;
+}
+
+
+bool Socket_TLS::createTLSContext()
 {
     // create new SSL Context.
 
-    if (isServer)
+    if (ctx)
     {
-#if TLS_MAX_VERSION == TLS1_VERSION
-        sslContext = SSL_CTX_new (TLSv1_server_method());
-#elif TLS_MAX_VERSION == TLS1_1_VERSION
-        sslContext = SSL_CTX_new (TLSv1_1_server_method());
-#elif TLS_MAX_VERSION == TLS1_2_VERSION
-        sslContext = SSL_CTX_new (TLSv1_2_server_method());
-#elif TLS_MAX_VERSION == TLS1_3_VERSION
-        sslContext = SSL_CTX_new (TLS_server_method());
-#endif
-        if (!sslContext)
+        throw std::runtime_error("Can't reuse the TLS socket. Create a new one.");
+        return false;
+    }
+
+    if (bIsServer)
+    {
+        ctx = createServerSSLContext();
+        if (!ctx)
         {
-            sslErrors.push_back("SSL_CTX_new Failed in server mode.");
+            sslErrors.push_back("TLS_server_method() Failed.");
             return false;
         }
     }
     else
     {
-#if TLS_MAX_VERSION == TLS1_VERSION
-        sslContext = SSL_CTX_new (TLSv1_client_method());
-#elif TLS_MAX_VERSION == TLS1_1_VERSION
-        sslContext = SSL_CTX_new (TLSv1_1_client_method());
-#elif TLS_MAX_VERSION == TLS1_2_VERSION
-        sslContext = SSL_CTX_new (TLSv1_2_client_method());
-#elif TLS_MAX_VERSION == TLS1_3_VERSION
-        sslContext = SSL_CTX_new (TLS_client_method());
-#endif
-        if (!sslContext)
+        ctx = createClientSSLContext();
+        if (!ctx)
         {
-            sslErrors.push_back("SSL_CTX_new Failed in client mode.");
+            sslErrors.push_back("TLS_client_method() Failed.");
             return false;
         }
     }
 
-    if (!ca_file.empty())
-    {
-        if (SSL_CTX_load_verify_locations(sslContext, ca_file.c_str(),nullptr) != 1)
-        {
-            sslErrors.push_back("SSL_CTX_load_verify_locations Failed for CA.");
-            return false;
-        }
-        STACK_OF(X509_NAME) *list;
-        list = SSL_load_client_CA_file( ca_file.c_str() );
-        if( list != nullptr )
-        {
-            SSL_CTX_set_client_CA_list( sslContext, list );
-            // It takes ownership. (list now belongs to sslContext)
-        }
-    }
-
-
-
-    if (!crt_file.empty() && (SSL_CTX_use_certificate_file(sslContext, crt_file.c_str(), SSL_FILETYPE_PEM) != 1))
-    {
-        sslErrors.push_back("SSL_CTX_use_certificate_file Failed for local Certificate.");
-        return false;
-    }
-    if (!key_file.empty() && (SSL_CTX_use_PrivateKey_file(sslContext, key_file.c_str(), SSL_FILETYPE_PEM) != 1))
-    {
-        sslErrors.push_back("SSL_CTX_use_PrivateKey_file Failed for private key.");
-        return false;
-    }
 
     return true;
 }
@@ -213,43 +267,62 @@ void Socket_TLS::parseErrors()
     }
 }
 
-bool Socket_TLS::validateConnection()
+bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
 {
-    if (!sslHandle) return false;
-    X509 *cert;
+    if (!sslh)
+        return false;
+
     bool bValid  = false;
-    cert = SSL_get_peer_certificate(sslHandle);
-    if ( cert != nullptr )
+
+    if (!usingPSK)
     {
-        long res = SSL_get_verify_result(sslHandle);
-        if (res == X509_V_OK)
+        X509 *cert;
+        cert = SSL_get_peer_certificate(sslh);
+        if ( cert != nullptr )
         {
-            bValid = true;
+            long res = SSL_get_verify_result(sslh);
+            if (res == X509_V_OK)
+            {
+                bValid = true;
+            }
+            else
+            {
+                sslErrors.push_back("Peer TLS/SSL Certificate Verification Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));
+            }
+            X509_free(cert);
         }
         else
-        {
-            sslErrors.push_back("TLS/SSL Certificate Error: " + std::to_string(res));
-        }
-        X509_free(cert);
+            sslErrors.push_back("Peer TLS/SSL Certificate does not exist.");
+    }
+    else
+    {
+        bValid = true;
+
+        /*long res = SSL_get_verify_result(sslh);
+        if (res == X509_V_OK)
+            bValid = true;
+        else
+            sslErrors.push_back("TLS/SSL PSK Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));*/
     }
 
     return bValid;
 }
 
-bool Socket_TLS::getAcceptInvalidServerCerts() const
+Socket_TLS::eCertValidationOptions Socket_TLS::getCertValidation() const
 {
-    return acceptInvalidServerCerts;
+    return certValidation;
 }
 
-void Socket_TLS::setAcceptInvalidServerCerts(bool newAcceptInvalidServerCerts)
+void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
 {
-    acceptInvalidServerCerts = newAcceptInvalidServerCerts;
+    certValidation = newCertValidation;
 }
+
 
 string Socket_TLS::getTLSConnectionCipherName()
 {
-    if (!sslHandle) return "";
-    return SSL_get_cipher_name(sslHandle);
+    if (!sslh) return "";
+    return SSL_get_cipher_name(sslh);
 }
 
 std::list<std::string> Socket_TLS::getTLSErrorsAndClear()
@@ -261,9 +334,9 @@ std::list<std::string> Socket_TLS::getTLSErrorsAndClear()
 
 string Socket_TLS::getTLSPeerCN()
 {
-    if (!sslHandle) return "";
+    if (!sslh) return "";
     char certCNText[512]="";
-    X509 * cert = SSL_get_peer_certificate(sslHandle);
+    X509 * cert = SSL_get_peer_certificate(sslh);
     if(cert)
     {
         X509_NAME * certName = X509_get_subject_name(cert);
@@ -278,52 +351,48 @@ string Socket_TLS::getTLSPeerCN()
 
 int Socket_TLS::iShutdown(int mode)
 {
-    if (!sslHandle) return -2;
-
-    if (shutdown_proto_wr)
+    if (!sslh && getIsServer())
+    {
+        // Then is a listening socket... (shutdown like a normal tcp/ip connection)
+        return Socket::iShutdown(mode);
+    }
+    else if (!sslh)
+    {
+        return -4;
+    }
+    else if (shutdown_proto_wr || (SSL_get_shutdown(sslh) & SSL_SENT_SHUTDOWN))
     {
         // Already shutted down.
         return -1;
     }
-
-    // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
-    switch (SSL_shutdown (sslHandle))
+    else
     {
-    case 0:
-        // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
-        return -2;
-    case 1:
-        // The shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
-        //shutdown_proto_rd = true;
-        shutdown_proto_wr = true;
-        // Call the private iShutdown to shutdown RD on the socket...
-        return Socket::iShutdown(mode);
-    default:
-        //The shutdown was not successful.
-        return -3;
+
+        // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
+        switch (SSL_shutdown (sslh))
+        {
+        case 0:
+            // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
+            return -2;
+        case 1:
+            // The write shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
+            //shutdown_proto_rd = true;
+            shutdown_proto_wr = true;
+            return 0;
+            // Call the private TCP iShutdown to shutdown RD on the socket ?...
+            //return Socket_TCP::iShutdown(mode);
+        default:
+            //The shutdown was not successful.
+            return -3;
+        }
     }
 }
 
 bool Socket_TLS::isSecure() { return true; }
 
-std::string Socket_TLS::getTLSCertificateAuthorityPath() const
+void Socket_TLS::setIsServerMode(bool value)
 {
-    return ca_file;
-}
-
-std::string Socket_TLS::getTLSPrivateKeyPath() const
-{
-    return key_file;
-}
-
-std::string Socket_TLS::getTLSPublicKeyPath() const
-{
-    return crt_file;
-}
-
-void Socket_TLS::setServerMode(bool value)
-{
-    isServer = value;
+    bIsServer = value;
 }
 
 void Socket_TLS::setTLSContextMode(const TLS_MODE &value)
@@ -331,88 +400,69 @@ void Socket_TLS::setTLSContextMode(const TLS_MODE &value)
     sslMode = value;
 }
 
-bool Socket_TLS::setTLSCertificateAuthorityPath(const char *_ca_file)
-{
-    if (access(_ca_file,R_OK)) return false;
-    ca_file = _ca_file;
-    return true;
-}
-
-bool Socket_TLS::setTLSPublicKeyPath(const char *_crt_file)
-{
-    if (access(_crt_file,R_OK)) return false;
-    crt_file = _crt_file;
-    return true;
-}
-
-bool Socket_TLS::setTLSPrivateKeyPath(const char *_key_file)
-{
-    if (access(_key_file,R_OK)) return false;
-    key_file = _key_file;
-    return true;
-}
-
-
 Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
-    if (!sslHandle) return cb;
-    cb.aSymBits = SSL_get_cipher_bits(sslHandle, &cb.symBits);
+    if (!sslh) return cb;
+    cb.aSymBits = SSL_get_cipher_bits(sslh, &cb.symBits);
     return cb;
 }
 
 string Socket_TLS::getTLSConnectionProtocolVersion()
 {
-    if (!sslHandle) return "";
-    return SSL_get_version(sslHandle);
+    if (!sslh) return "";
+    return SSL_get_version(sslh);
 }
 
 Mantids::Network::Sockets::Socket_StreamBase * Socket_TLS::acceptConnection()
 {
     char remotePair[INET6_ADDRSTRLEN];
-    Socket_StreamBase * mainSock = Socket_TCP::acceptConnection();
-    if (!mainSock) return nullptr;
 
+    bIsServer = true;
 
-    Socket_TLS * tlsSock = new Socket_TLS; // Convert to this thing...
-    isServer = true;
+    Socket_StreamBase * acceptedTCPSock = Socket_TCP::acceptConnection();
+
+    if (!acceptedTCPSock)
+        return nullptr;
+
+    Socket_TLS * acceptedTLSSock = new Socket_TLS; // Convert to this thing...
 
     // Set current retrieved socket info.
-    mainSock->getRemotePair(remotePair);
-    tlsSock->setRemotePair(remotePair);
-    tlsSock->setRemotePort(mainSock->getRemotePort());
+    acceptedTCPSock->getRemotePair(remotePair);
+    acceptedTLSSock->setRemotePair(remotePair);
+    acceptedTLSSock->setRemotePort(acceptedTCPSock->getRemotePort());
 
-    // Set certificates paths...
-    if (!ca_file.empty()) tlsSock->setTLSCertificateAuthorityPath( ca_file.c_str() );
-    if (!crt_file.empty()) tlsSock->setTLSPublicKeyPath( crt_file.c_str() );
-    if (!key_file.empty()) tlsSock->setTLSPrivateKeyPath( key_file.c_str() );
+    // Inehrit certificates...
+    acceptedTLSSock->setTLSParent(this);
 
     // Set contexts and modes...
-    tlsSock->setTLSContextMode(sslMode);
-    tlsSock->setServerMode(isServer);
+    acceptedTLSSock->setTLSContextMode(sslMode);
+    acceptedTLSSock->setIsServerMode(bIsServer);
 
     // now we should copy the file descriptor:
-    tlsSock->setSocketFD(mainSock->adquireSocketFD());
-    delete mainSock;
+    acceptedTLSSock->setSocketFD(acceptedTCPSock->adquireSocketFD());
+    delete acceptedTCPSock;
 
-    // TODO: where is called postAcceptsubinitialization?
-
-    return tlsSock;
+    // After this, the postInitialization will be called by the acceptor thread.
+    return acceptedTLSSock;
 }
 
 int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 {
-    if (!sslHandle) return -1;
+    if (!sslh) return -1;
     char cError[1024]="Unknown Error";
 
-    int readBytes = SSL_read(sslHandle, data, datalen);
+    int readBytes = SSL_read(sslh, data, datalen);
     if (readBytes > 0)
     {
         return readBytes;
     }
     else
     {
-        int err = SSL_get_error(sslHandle, readBytes);
+        // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
+        Socket_TCP::iShutdown();
+
+        int err = SSL_get_error(sslh, readBytes);
         switch(err)
         {
         case SSL_ERROR_WANT_WRITE:
@@ -437,21 +487,25 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 
 int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 {
-    if (!sslHandle) return -1;
+    if (!sslh) return -1;
 
     // TODO: sigpipe here?
-    int sentBytes = SSL_write(sslHandle, data, datalen);
+    int sentBytes = SSL_write(sslh, data, datalen);
     if (sentBytes > 0)
     {
         return sentBytes;
     }
     else
     {
-        switch(SSL_get_error(sslHandle, sentBytes))
+        // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
+        Socket_TCP::iShutdown();
+
+        switch(SSL_get_error(sslh, sentBytes))
         {
         case SSL_ERROR_WANT_WRITE:
         case SSL_ERROR_WANT_READ:
             // Must wait a little bit until the socket buffer is free
+            // TODO: ?
             usleep(100000);
             return 0;
         case SSL_ERROR_ZERO_RETURN:
@@ -465,5 +519,6 @@ int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
         }
     }
 }
+
 
 
