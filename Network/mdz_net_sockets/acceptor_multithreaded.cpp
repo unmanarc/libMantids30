@@ -168,13 +168,13 @@ MultiThreaded::~MultiThreaded()
     if (initialized)
         acceptorThread.join();
 
-    // Now we can safetly free the acceptor socket resource.
     if (acceptorSocket)
     {
-        delete acceptorSocket;
-        acceptorSocket = nullptr;
+        // Shutdown the listener here, but don't delete the object yet...
+        acceptorSocket->shutdownSocket();
     }
 
+    // Close all current connections...
     if (true)
     {
         std::unique_lock<std::mutex> lock(mutex_clients);
@@ -184,6 +184,14 @@ MultiThreaded::~MultiThreaded()
         // unlock until there is no threads left.
         while ( !threadList.empty() )
             cond_clients_empty.wait(lock);
+    }
+
+
+    // Now we can safetly free the acceptor socket resource.
+    if (acceptorSocket)
+    {
+        delete acceptorSocket;
+        acceptorSocket = nullptr;
     }
 }
 

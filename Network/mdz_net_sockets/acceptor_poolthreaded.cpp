@@ -62,8 +62,10 @@ void PoolThreaded::setCallbackOnTimedOut(_callbackConnectionRV _callbackOnTimeOu
 
 PoolThreaded::~PoolThreaded()
 {
-    if (this->pool) delete this->pool;
-    if (this->acceptorSocket) delete acceptorSocket;
+    if (this->pool)
+        delete this->pool;
+    if (this->acceptorSocket)
+        delete acceptorSocket;
 }
 
 void PoolThreaded::run()

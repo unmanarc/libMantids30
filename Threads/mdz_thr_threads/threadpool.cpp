@@ -25,7 +25,8 @@ ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
 ThreadPool::~ThreadPool()
 {
     stop();
-    for (uint32_t i =0; i<threadsCount;i++) threads[i].join();
+    for (uint32_t i =0; i<threadsCount;i++)
+        threads[i].join();
 }
 
 void ThreadPool::start()
