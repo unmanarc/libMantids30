@@ -1,7 +1,6 @@
 #include "accountsecret_validation.h"
 
 #include <mdz_hlp_functions/encoders.h>
-//#include <mdz_hlp_functions/random.h>
 #include <mdz_hlp_functions/crypto.h>
 
 using namespace Mantids::Authentication;
