@@ -176,15 +176,6 @@ public:
          * @return true if succeed, false otherwise
          */
         bool initTLSKeys(SSL_CTX *ctx, SSL * sslh , std::list<std::string> *keyErrors);
-
-
-        /**
-         * @brief loadCAFromPEMFile Load Certificate Authority from PEM File
-         * @param filePath file Path
-         * @return true if file exist, false otherwise
-         */
-        bool loadCAFromPEMFile( const char * filePath );
-
         // Private Key From PEM File:
         /**
          * @brief loadPrivateKeyFromPEMFileEP Load Private Key From encrypted PEM File
