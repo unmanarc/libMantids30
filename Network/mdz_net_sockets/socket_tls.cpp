@@ -33,11 +33,13 @@ using namespace Mantids::Network::Sockets;
 
 Socket_TLS::Socket_TLS() : keys(&bIsServer)
 {
+#ifndef WIN32
     // Ignore sigpipes in this thread (eg. SSL_Write on closed socket):
     sigset_t set;
     sigemptyset(&set);
     sigaddset(&set, SIGPIPE);
     pthread_sigmask(SIG_BLOCK, &set, NULL);
+#endif
 
     setCertValidation(CERT_X509_VALIDATE);
     tlsParent = nullptr;
