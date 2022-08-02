@@ -26,7 +26,8 @@ struct QueryInstance {
     }
     ~QueryInstance()
     {
-        if (query) delete query;
+        if (query)
+            delete query;
         query=nullptr;
     }
      Query * query;
@@ -80,7 +81,7 @@ public:
 
     // SQL Query:
     Query * prepareNewQuery();
-    QueryInstance prepareNewQueryInstance();
+    std::shared_ptr<QueryInstance> prepareNewQueryInstance();
 
     void detachQuery( Query * query );
 
@@ -105,7 +106,7 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    QueryInstance qInsert(const std::string & preparedQuery,
+    std::shared_ptr<QueryInstance> qInsert(const std::string & preparedQuery,
                           const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                           const std::vector<Memory::Abstract::Var *> & resultVars = {}
                          );
@@ -121,11 +122,11 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    QueryInstance qSelect(const std::string & preparedQuery,
+    std::shared_ptr<QueryInstance> qSelect(const std::string & preparedQuery,
                 const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                 const std::vector<Memory::Abstract::Var *> & resultVars
                 );
-    QueryInstance query(const std::string & preparedQuery,
+    std::shared_ptr<QueryInstance> query(const std::string & preparedQuery,
                 const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                 const std::vector<Memory::Abstract::Var *> & resultVars
                 );

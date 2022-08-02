@@ -27,13 +27,13 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
-    QueryInstance i = qSelect("select sql from sqlite_master where tbl_name=:tbl;",
+    std::shared_ptr<QueryInstance> i = qSelect("select sql from sqlite_master where tbl_name=:tbl;",
           {{":tbl",new Memory::Abstract::STRING(table)}},
           {}
           );
 
-    if (i.ok)
-        return i.query->step();
+    if (i->ok)
+        return i->query->step();
     else
         return false;
 }

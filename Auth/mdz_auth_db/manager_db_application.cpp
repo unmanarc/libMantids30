@@ -41,12 +41,12 @@ bool Manager_DB::applicationExist(const std::string &appName)
     bool ret = false;
     Threads::Sync::Lock_RD lock(mutex);
 
-    QueryInstance i = sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
                                           {
                                               {":appName",new Abstract::STRING(appName)}
                                           },
                                           { });
-    if (i.ok && i.query->step())
+    if (i->ok && i->query->step())
     {
         ret = true;
     }
@@ -59,12 +59,12 @@ std::string Manager_DB::applicationDescription(const std::string &appName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING description;
-    QueryInstance i = sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
                                           {
                                               {":appName",new Abstract::STRING(appName)}
                                           },
                                           { &description });
-    if (i.ok && i.query->step())
+    if (i->ok && i->query->step())
     {
         return description.getValue();
     }
@@ -77,12 +77,12 @@ std::string Manager_DB::applicationKey(const std::string &appName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING appKey;
-    QueryInstance i = sqlConnector->qSelect("SELECT `appKey` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `appKey` FROM vauth_v3_applications WHERE `appName`=:appName LIMIT 1;",
                                           {
                                               {":appName",new Abstract::STRING(appName)}
                                           },
                                           { &appKey });
-    if (i.ok && i.query->step())
+    if (i->ok && i->query->step())
     {
         return Encoders::fromBase64Obf(appKey.getValue());
     }
@@ -115,10 +115,10 @@ std::set<std::string> Manager_DB::applicationList()
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sAppName;
-    QueryInstance i = sqlConnector->qSelect("SELECT `appName` FROM vauth_v3_applications;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `appName` FROM vauth_v3_applications;",
                                           {},
                                           { &sAppName });
-    while (i.ok && i.query->step())
+    while (i->ok && i->query->step())
     {
         ret.insert(sAppName.getValue());
     }
@@ -129,24 +129,24 @@ bool Manager_DB::applicationValidateOwner(const std::string &appName, const std:
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    QueryInstance i = sqlConnector->qSelect("SELECT `f_applicationManaged` FROM vauth_v3_applicationmanagers WHERE `f_userNameManager`=:userName AND `f_applicationManaged`=:appName;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `f_applicationManaged` FROM vauth_v3_applicationmanagers WHERE `f_userNameManager`=:userName AND `f_applicationManaged`=:appName;",
                                           { {":appName",new Abstract::STRING(appName)},
                                             {":userName",new Memory::Abstract::STRING(sAccountName)}
                                           },
                                           { });
-    return (i.ok && i.query->step());
+    return (i->ok && i->query->step());
 }
 
 bool Manager_DB::applicationValidateAccount(const std::string &appName, const std::string &sAccountName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    QueryInstance i = sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v3_applicationusers WHERE `f_userName`=:userName AND `f_appName`=:appName;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v3_applicationusers WHERE `f_userName`=:userName AND `f_appName`=:appName;",
                                           { {":appName",new Abstract::STRING(appName)},
                                             {":userName",new Memory::Abstract::STRING(sAccountName)}
                                           },
                                           { });
-    return (i.ok && i.query->step());
+    return (i->ok && i->query->step());
 }
 
 std::set<std::string> Manager_DB::applicationOwners(const std::string &appName)
@@ -155,12 +155,12 @@ std::set<std::string> Manager_DB::applicationOwners(const std::string &appName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sAccountName;
-    QueryInstance i = sqlConnector->qSelect("SELECT `f_userNameManager` FROM vauth_v3_applicationmanagers WHERE `f_applicationManaged`=:appName;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `f_userNameManager` FROM vauth_v3_applicationmanagers WHERE `f_applicationManaged`=:appName;",
                                           {
                                               {":appName",new Abstract::STRING(appName)}
                                           },
                                           { &sAccountName });
-    while (i.ok && i.query->step())
+    while (i->ok && i->query->step())
     {
         ret.insert(sAccountName.getValue());
     }
@@ -174,12 +174,12 @@ std::set<std::string> Manager_DB::applicationAccounts(const std::string &appName
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sAccountName;
-    QueryInstance i = sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_applicationusers WHERE `f_appName`=:appName;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_applicationusers WHERE `f_appName`=:appName;",
                                           {
                                               {":appName",new Abstract::STRING(appName)}
                                           },
                                           { &sAccountName });
-    while (i.ok && i.query->step())
+    while (i->ok && i->query->step())
     {
         ret.insert(sAccountName.getValue());
     }
@@ -193,12 +193,12 @@ std::set<std::string> Manager_DB::accountApplications(const std::string &sAccoun
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING sApplicationName;
-    QueryInstance i = sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v3_applicationusers WHERE `f_userName`=:userName;",
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v3_applicationusers WHERE `f_userName`=:userName;",
                                           {
                                               {":userName",new Abstract::STRING(sAccountName)}
                                           },
                                           { &sApplicationName });
-    while (i.ok && i.query->step())
+    while (i->ok && i->query->step())
     {
         ret.insert(sApplicationName.getValue());
     }
@@ -272,14 +272,14 @@ std::list<sApplicationSimpleDetails> Manager_DB::applicationsBasicInfoSearch(std
 
     sSqlQuery+=";";
 
-    QueryInstance i = sqlConnector->qSelect(sSqlQuery,
+    std::shared_ptr<QueryInstance> i = sqlConnector->qSelect(sSqlQuery,
                                           {
                                               {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
                                               {":LIMIT",new Abstract::UINT64(limit)},
                                               {":OFFSET",new Abstract::UINT64(offset)}
                                           },
                                           { &sApplicationName, &sAppCreator, &description });
-    while (i.ok && i.query->step())
+    while (i->ok && i->query->step())
     {
         sApplicationSimpleDetails rDetail;
 
