@@ -1,5 +1,5 @@
-#ifndef VSTREAMACCEPTOR_H
-#define VSTREAMACCEPTOR_H
+#ifndef MULTITHREADEDACCEPTOR_H
+#define MULTITHREADEDACCEPTOR_H
 
 #include <list>
 #include <map>
@@ -155,4 +155,4 @@ private:
 
 
 }}}}
-#endif // VSTREAMACCEPTOR_H
+#endif // MULTITHREADEDACCEPTOR_H

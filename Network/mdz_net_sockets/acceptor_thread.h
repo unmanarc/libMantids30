@@ -1,5 +1,5 @@
-#ifndef VSTREAMTHREAD_H
-#define VSTREAMTHREAD_H
+#ifndef SATHREAD_H
+#define SATHREAD_H
 
 #include <thread>
 #include "socket_streambase.h"
@@ -77,4 +77,4 @@ private:
 }}}}
 
 
-#endif // VSTREAMTHREAD_H
+#endif // SATHREAD_H
