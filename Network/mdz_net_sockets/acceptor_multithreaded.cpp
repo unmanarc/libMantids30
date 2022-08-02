@@ -142,6 +142,16 @@ MultiThreaded::MultiThreaded()
     init();
 }
 
+MultiThreaded::MultiThreaded(Socket_StreamBase *acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj,  _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut, _callbackConnectionLimit _callbackOnMaxConnectionsPerIP)
+{
+    init();
+    setAcceptorSocket(acceptorSocket);
+    setCallbackOnConnect(_callbackOnConnect,obj);
+    setCallbackOnInitFail(_callbackOnInitFailed,obj);
+    setCallbackOnTimedOut(_callbackOnTimeOut,obj);
+    setCallbackOnMaxConnectionsPerIP(_callbackOnMaxConnectionsPerIP,obj);
+}
+
 MultiThreaded::~MultiThreaded()
 {
     stop();
@@ -233,25 +243,25 @@ void MultiThreaded::stop()
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj)
+void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _callbackOnConnect, void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void MultiThreaded::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj)
+void MultiThreaded::setCallbackOnInitFail(_callbackConnectionRB _callbackOnInitFailed, void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void MultiThreaded::setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj)
+void MultiThreaded::setCallbackOnTimedOut(_callbackConnectionRV _callbackOnTimeOut, void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimeOut;
     this->objOnTimedOut = obj;
 }
 
-void MultiThreaded::setCallbackOnMaxConnectionsPerIP(void (*_callbackOnMaxConnectionsPerIP)(void *, Sockets::Socket_StreamBase *, const char *), void *obj)
+void MultiThreaded::setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _callbackOnMaxConnectionsPerIP, void *obj)
 {
     this->callbackOnMaxConnectionsPerIP = _callbackOnMaxConnectionsPerIP;
     this->objOnMaxConnectionsPerIP = obj;

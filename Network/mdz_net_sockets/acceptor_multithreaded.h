@@ -17,10 +17,31 @@ namespace Mantids { namespace Network { namespace Sockets { namespace Acceptors 
 class MultiThreaded
 {
 public:
+    typedef bool (*_callbackConnectionRB)(void *, Sockets::Socket_StreamBase *, const char *, bool);
+    typedef void (*_callbackConnectionRV)(void *, Sockets::Socket_StreamBase *, const char *, bool);
+    typedef void (*_callbackConnectionLimit)(void *, Sockets::Socket_StreamBase *, const char *);
+
     /**
      * Constructor
      */
     MultiThreaded();
+    /**
+     * @brief MultiThreaded Integrated constructor with all the initial parameters (after that, you are safe to run startThreaded or startBlocking)
+     * @param acceptorSocket acceptor socket
+     * @param _callbackOnConnect callback function on connect (mandatory: this will handle the connection itself)
+     * @param obj object passed to all callbacks
+     * @param _callbackOnInitFailed callback function on failed initialization (default nullptr -> none)
+     * @param _callbackOnTimeOut callback function on time out (default nullptr -> none)
+     * @param _callbackOnMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
+     */
+    MultiThreaded(  Sockets::Socket_StreamBase *acceptorSocket,
+                    _callbackConnectionRB _callbackOnConnect,
+                    void *obj=nullptr,
+                    _callbackConnectionRB _callbackOnInitFailed=nullptr,
+                    _callbackConnectionRV _callbackOnTimeOut=nullptr,
+                    _callbackConnectionLimit _callbackOnMaxConnectionsPerIP=nullptr
+                    );
+
     /**
      * Destructor
      * WARN: when you finalize this class, the listening socket is closed. please open another one (don't reuse it)
@@ -42,19 +63,19 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj);
+    void setCallbackOnConnect(_callbackConnectionRB _callbackOnConnect, void *obj);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj);
+    void setCallbackOnInitFail(_callbackConnectionRB _callbackOnInitFailed, void *obj);
     /**
      * Set callback when timed out (max concurrent clients reached and timed out) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Sockets::Socket_StreamBase *, const char *, bool), void *obj);
+    void setCallbackOnTimedOut(_callbackConnectionRV _callbackOnTimeOut, void *obj);
     /**
      * Set callback when maximum connections per IP reached (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnMaxConnectionsPerIP(void (*_callbackOnMaxConnectionsPerIP)(void *, Sockets::Socket_StreamBase *, const char *), void *obj);
+    void setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _callbackOnMaxConnectionsPerIP, void *obj);
     /**
      * Set the socket that will be used to accept new clients.
      * WARNING: acceptorSocket will be deleted when this class finishes.
@@ -116,10 +137,10 @@ private:
     std::map<std::string, uint32_t> connectionsPerIP;
 
     // Callbacks:
-    bool (*callbackOnConnect)(void *,Sockets::Socket_StreamBase *, const char *, bool);
-    bool (*callbackOnInitFail)(void *,Sockets::Socket_StreamBase *, const char *, bool);
-    void (*callbackOnTimedOut)(void *,Sockets::Socket_StreamBase *, const char *, bool);
-    void (*callbackOnMaxConnectionsPerIP)(void *,Sockets::Socket_StreamBase *, const char *);
+    _callbackConnectionRB callbackOnConnect;
+    _callbackConnectionRB callbackOnInitFail;
+    _callbackConnectionRV callbackOnTimedOut;
+    _callbackConnectionLimit callbackOnMaxConnectionsPerIP;
 
     void *objOnConnect, *objOnInitFail, *objOnTimedOut, *objOnMaxConnectionsPerIP;
 

@@ -16,6 +16,10 @@ namespace Mantids { namespace Network { namespace Sockets { namespace Acceptors 
 class PoolThreaded : public Mantids::Threads::Threaded
 {
 public:
+
+    typedef bool (*_callbackConnectionRB)(void *, Sockets::Socket_StreamBase *, const char *, bool);
+    typedef void (*_callbackConnectionRV)(void *, Sockets::Socket_StreamBase *, const char *, bool);
+
     /**
      * @brief PoolThreaded Constructor
      * @param acceptorSocket Pre-initialized acceptor socket
@@ -24,6 +28,21 @@ public:
      * @param obj Object to be passed to callbacks
      */
     PoolThreaded();
+    /**
+     * @brief PoolThreaded Integrated constructor with all the initial parameters (after that, you are safe to run startThreaded or startBlocking)
+     * @param acceptorSocket acceptor socket
+     * @param _callbackOnConnect callback function on connect (mandatory: this will handle the connection itself)
+     * @param obj object passed to all callbacks
+     * @param _callbackOnInitFailed callback function on failed initialization (default nullptr -> none)
+     * @param _callbackOnTimeOut callback function on time out (default nullptr -> none)
+     * @param _callbackOnMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
+     */
+    PoolThreaded(Sockets::Socket_StreamBase *acceptorSocket,
+                    _callbackConnectionRB _callbackOnConnect,
+                    void *obj=nullptr,
+                    _callbackConnectionRB _callbackOnInitFailed=nullptr,
+                    _callbackConnectionRV _callbackOnTimeOut=nullptr
+                    );
 
     // Destructor:
     ~PoolThreaded() override;
@@ -39,15 +58,15 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj);
+    void setCallbackOnConnect(_callbackConnectionRB _callbackOnConnect, void *obj);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj);
+    void setCallbackOnInitFail(_callbackConnectionRB _callbackOnInitFailed, void *obj);
     /**
      * Set callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj);
+    void setCallbackOnTimedOut(_callbackConnectionRV _callbackOnTimeOut, void *obj);
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
@@ -134,12 +153,14 @@ private:
     static void stopper(void * data);
     static void acceptorTask(void * data);
 
+    void init();
+
     Mantids::Threads::Pool::ThreadPool * pool;
     Sockets::Socket_StreamBase * acceptorSocket;
 
-    bool (*callbackOnConnect)(void *,Sockets::Socket_StreamBase *, const char *,bool);
-    bool (*callbackOnInitFail)(void *,Sockets::Socket_StreamBase *, const char *,bool);
-    void (*callbackOnTimedOut)(void *,Sockets::Socket_StreamBase *, const char *,bool);
+    _callbackConnectionRB callbackOnConnect;
+    _callbackConnectionRB callbackOnInitFail;
+    _callbackConnectionRV callbackOnTimedOut;
 
     void *objOnConnect, *objOnInitFail, *objOnTimedOut;
 

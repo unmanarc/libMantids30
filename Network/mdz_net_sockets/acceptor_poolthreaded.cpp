@@ -1,16 +1,10 @@
 #include "acceptor_poolthreaded.h"
 #include <string.h>
 
-namespace Mantids { namespace Network { namespace Sockets { namespace Acceptors {
-
-
-}}}}
-
 using namespace Mantids::Network;
 using namespace Mantids::Network::Sockets::Acceptors;
 
-
-PoolThreaded::PoolThreaded()
+void PoolThreaded::init()
 {
     this->pool = nullptr;
     this->acceptorSocket = nullptr;
@@ -32,19 +26,34 @@ PoolThreaded::PoolThreaded()
     setQueuesKeyRatio(0.5);
 }
 
-void PoolThreaded::setCallbackOnConnect(bool (*_callbackOnConnect)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj)
+
+PoolThreaded::PoolThreaded()
+{
+    init();
+}
+
+PoolThreaded::PoolThreaded(Socket_StreamBase *acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj, _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut)
+{
+    init();
+    setAcceptorSocket(acceptorSocket);
+    setCallbackOnConnect(_callbackOnConnect,obj);
+    setCallbackOnInitFail(_callbackOnInitFailed,obj);
+    setCallbackOnTimedOut(_callbackOnTimeOut,obj);
+}
+
+void PoolThreaded::setCallbackOnConnect(_callbackConnectionRB _callbackOnConnect, void *obj)
 {
     this->callbackOnConnect = _callbackOnConnect;
     this->objOnConnect = obj;
 }
 
-void PoolThreaded::setCallbackOnInitFail(bool (*_callbackOnInitFailed)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj)
+void PoolThreaded::setCallbackOnInitFail(_callbackConnectionRB _callbackOnInitFailed, void *obj)
 {
     this->callbackOnInitFail = _callbackOnInitFailed;
     this->objOnInitFail = obj;
 }
 
-void PoolThreaded::setCallbackOnTimedOut(void (*_callbackOnTimeOut)(void *, Sockets::Socket_StreamBase *, const char *,bool), void *obj)
+void PoolThreaded::setCallbackOnTimedOut(_callbackConnectionRV _callbackOnTimeOut, void *obj)
 {
     this->callbackOnTimedOut = _callbackOnTimeOut;
     this->objOnTimedOut = obj;
