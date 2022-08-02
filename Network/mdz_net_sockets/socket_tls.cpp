@@ -101,7 +101,17 @@ bool Socket_TLS::postConnectSubInitialization()
     {
         parseErrors();
         return false;
+    }    
+
+    if ( !(keys.getCAPath().empty()) || keys.getVerifyDefaultLocations() )
+        SSL_set_verify(sslh, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (certValidation==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+    else
+    {
+        // If there is no CA...
+        certValidation=CERT_X509_NOVALIDATE;
+        //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
     }
+
 
     if (SSL_set_fd (sslh, sockfd) != 1)
     {
@@ -162,8 +172,14 @@ bool Socket_TLS::postAcceptSubInitialization()
         return false;
     }
 
-    if ( tlsParent->keys.getCAPath().size()>0 )
+    if ( !tlsParent->keys.getCAPath().empty() || tlsParent->keys.getVerifyDefaultLocations() )
         SSL_set_verify(sslh, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (certValidation==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+    else
+    {
+        // If there is no CA...
+        certValidation=CERT_X509_NOVALIDATE;
+        //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
+    }
 
     if (SSL_set_fd (sslh, sockfd) != 1)
     {
