@@ -11,8 +11,6 @@
 using namespace std;
 using namespace Mantids::Network::Sockets;
 
-
-
 #ifdef _WIN32
 #define FS_DIRSLASH "\\"
 #else
@@ -110,21 +108,43 @@ bool Socket_TLS::TLSKeyParameters::linkPSKWithTLSHandle(SSL *_sslh)
 
 bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::list<std::string> * keyErrors )
 {
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
     if (securityLevel!=-1)
         SSL_set_security_level(sslh,securityLevel);
-
     if (maxProtocolVersion!=-1)
         SSL_set_max_proto_version(sslh,maxProtocolVersion);
     if (minProtocolVersion!=-1)
         SSL_set_min_proto_version(sslh,minProtocolVersion);
+
+    SSL_clear_options(sslh,SSL_OP_PRIORITIZE_CHACHA);
+    SSL_clear_options(sslh,SSL_OP_ALLOW_NO_DHE_KEX);
+
+#else
+    if ( minProtocolVersion >= TLS1_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_SSLv3);
+
+    if ( minProtocolVersion >= TLS1_1_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_TLSv1);
+
+    if ( minProtocolVersion >= TLS1_2_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_TLSv1_1);
+
+    if ( maxProtocolVersion < TLS1_2_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_TLSv1_2);
+
+    if ( maxProtocolVersion < TLS1_1_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_TLSv1_1);
+
+    if ( maxProtocolVersion < TLS1_VERSION )
+        SSL_set_options(sslh, SSL_OP_NO_TLSv1);
+#endif
+
 
     if (!*bIsServer)
     {
         SSL_set_options(sslh, SSL_OP_CIPHER_SERVER_PREFERENCE);
     }
 
-    SSL_clear_options(sslh,SSL_OP_PRIORITIZE_CHACHA);
-    SSL_clear_options(sslh,SSL_OP_ALLOW_NO_DHE_KEX);
 
     // Validate:
     if ( pubKey && !privKey )
@@ -165,7 +185,7 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
     SSL_set_ecdh_auto(sslh,1);
 
     // TLSv1.3 parameters:
-#if TLS_MAX_VERSION >= TLS1_3_VERSION
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
     ERR_ON_ZERO(!sTLSSharedGroups.empty() && SSL_set1_groups_list(sslh,sTLSSharedGroups.c_str()), "SSL_set1_groups_list Failed for your shared groups.");
     ERR_ON_ZERO(!sTLSCipherSuites.empty() && SSL_set_ciphersuites(sslh,sTLSCipherSuites.c_str()), "SSL_set_ciphersuites Failed for your cipher suites.");
 #endif
@@ -311,6 +331,7 @@ void Socket_TLS::TLSKeyParameters::setTLSCipherList(const std::string &newSTLSCi
     sTLSCipherList = newSTLSCipherList;
 }
 
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
 DH *Socket_TLS::TLSKeyParameters::get_dh4096()
 {
     static unsigned char dhp_4096[] = {
@@ -386,6 +407,9 @@ DH *Socket_TLS::TLSKeyParameters::get_dh4096()
     }
     return dh;
 }
+#else
+DH *Socket_TLS::TLSKeyParameters::get_dh4096() { return nullptr; }
+#endif
 
 int Socket_TLS::TLSKeyParameters::getSecurityLevel() const
 {

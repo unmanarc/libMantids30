@@ -28,7 +28,6 @@
 #include <mdz_mem_vars/w32compat.h>
 #endif
 
-
 using namespace std;
 using namespace Mantids::Network::Sockets;
 
