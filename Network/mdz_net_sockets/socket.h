@@ -304,9 +304,6 @@ protected:
     bool shutdown_proto_wr;
 
 
-    bool shutdown_rd;
-    bool shutdown_wr;
-
 #ifdef _WIN32
     static bool winSockInitialized;
 #endif

@@ -57,9 +57,6 @@ void Socket::initVars()
     lastError = "";
     sockfd = -1;
 
-    shutdown_rd = false;
-    shutdown_wr = false;
-
     shutdown_proto_rd = false;
     shutdown_proto_wr = false;
 
@@ -400,29 +397,29 @@ int Socket::iShutdown(int mode)
     if ( rd_to_shutdown && wr_to_shutdown )
     {
         int x = _shutdownSocket(SHUT_RDWR);
-        if (x == 0)
-        {
+//        if (x == 0)
+//        {
             shutdown_proto_rd = true;
             shutdown_proto_wr = true;
-        }
+//        }
         return x;
     }
     else if ( rd_to_shutdown )
     {
         int x = _shutdownSocket(SHUT_RD);
-        if (x == 0)
-        {
+//        if (x == 0)
+//        {
             shutdown_proto_rd = true;
-        }
+//        }
         return x;
     }
     else if ( wr_to_shutdown )
     {
         int x = _shutdownSocket(SHUT_WR);
-        if (x == 0)
-        {
+//        if (x == 0)
+//        {
             shutdown_proto_wr = true;
-        }
+//        }
         return x;
     }
     else
