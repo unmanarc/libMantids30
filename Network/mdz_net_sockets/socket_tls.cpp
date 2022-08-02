@@ -160,9 +160,9 @@ bool Socket_TLS::postAcceptSubInitialization()
     // If the parent have any PSK key, pass everything to the current socket_tls.
     *(keys.getPSKServerWallet()) = *(tlsParent->keys.getPSKServerWallet());
 
-    auto * pskValues = tlsParent->keys.getPSKServerWallet();
+    bool usingPSK = getIsUsingPSK();
     // If there is any configured PSK, link the key in the static list...
-    if ( pskValues->usingPSK )
+    if ( usingPSK )
     {
         keys.linkPSKWithTLSHandle(sslh);
     }
@@ -200,7 +200,7 @@ bool Socket_TLS::postAcceptSubInitialization()
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(pskValues->usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
     }
     // no validate here...
     else
@@ -238,6 +238,14 @@ SSL_CTX *Socket_TLS::createClientSSLContext()
 bool Socket_TLS::getIsServer() const
 {
     return bIsServer;
+}
+
+bool Socket_TLS::getIsUsingPSK()
+{
+    if (bIsServer)
+        return tlsParent->keys.getPSKServerWallet()->usingPSK;
+    else
+        return keys.getPSKClientValue()->usingPSK;
 }
 
 
@@ -347,18 +355,30 @@ std::list<std::string> Socket_TLS::getTLSErrorsAndClear()
 string Socket_TLS::getTLSPeerCN()
 {
     if (!sslh) return "";
-    char certCNText[512]="";
-    X509 * cert = SSL_get_peer_certificate(sslh);
-    if(cert)
+
+    if (!getIsUsingPSK())
     {
-        X509_NAME * certName = X509_get_subject_name(cert);
-        if (certName)
+        char certCNText[512];
+        memset(certCNText,0,sizeof(certCNText));
+
+        X509 * cert = SSL_get_peer_certificate(sslh);
+        if(cert)
         {
-            X509_NAME_get_text_by_NID(certName,NID_commonName,certCNText,511);
+            X509_NAME * certName = X509_get_subject_name(cert);
+            if (certName)
+                X509_NAME_get_text_by_NID(certName,NID_commonName,certCNText,511);
+            X509_free(cert);
         }
-        X509_free(cert);
+        return std::string(certCNText);
     }
-    return std::string(certCNText);
+    else
+    {
+        // the remote host is the server... no configured id.
+        if (!bIsServer)
+            return "server";
+        else
+            return keys.getPSKServerWallet()->connectedClientID;
+    }
 }
 
 int Socket_TLS::iShutdown(int mode)

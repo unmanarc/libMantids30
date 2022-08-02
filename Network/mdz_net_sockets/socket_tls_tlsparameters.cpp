@@ -227,6 +227,10 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
     std::string _psk;
     if (pskValues->getPSKByClientID(identity,&_psk))
     {
+        // Set the provided ID.
+        pskValues->connectedClientID = identity;
+
+        // return the proper key for the iPSK negotiation.
         snprintf((char *)psk,max_psk_len,"%s",_psk.c_str());
         return strlen((char *)psk);
     }

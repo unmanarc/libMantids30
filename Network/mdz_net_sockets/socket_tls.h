@@ -118,6 +118,7 @@ public:
             }
 
             bool usingPSK;
+            std::string connectedClientID;
             std::map<std::string,std::string> pskById;
             std::mutex mt;
         };
@@ -136,10 +137,10 @@ public:
             PSKClientValue * pskClientValues;
             PSKServerWallet * pskServerValues;
             SSL * sslhForPSK;
+
             static std::map<void *,PSKClientValue *> cliPSKBySSLH;
             static std::map<void *,PSKServerWallet *> svrPSKBySSLH;
             static std::mutex mCLIPSKBySSLH, mSVRPSKBySSLH;
-
         };
 
 
@@ -544,13 +545,11 @@ public:
      * @return List of SSL Errors.
      */
     std::list<std::string> getTLSErrorsAndClear();
-
     /**
      * @brief getTLSPeerCN Get TLS Peer Common Name for PKI or identity for PSK
      * @return string with the CN or identity
      */
     std::string getTLSPeerCN();
-
     /**
      * @brief getCertValidation Get if we are accepting Invalid Server Certificates
      * @return Validation Option (validate, not validate or validate but ignore)
@@ -563,6 +562,8 @@ public:
     void setCertValidation(eCertValidationOptions newCertValidation);
 
     bool getIsServer() const;
+
+    bool getIsUsingPSK();
 
     ////////////////////////////////////////////////////////////////////
     // Socket Overrides:
