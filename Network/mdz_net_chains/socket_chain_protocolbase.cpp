@@ -42,7 +42,7 @@ bool Socket_Chain_ProtocolBase::isServerMode() const
     return serverMode;
 }
 
-void Socket_Chain_ProtocolBase::setServerMode(bool value)
+void Socket_Chain_ProtocolBase::setIsServerMode(bool value)
 {
     serverMode = value;
 }

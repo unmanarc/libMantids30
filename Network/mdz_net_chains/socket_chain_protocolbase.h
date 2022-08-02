@@ -16,7 +16,7 @@ public:
     virtual bool isEndPoint();
     std::pair<Mantids::Network::Sockets::Socket_StreamBase *, Mantids::Network::Sockets::Socket_StreamBase*> makeSocketChainPair();
     bool isServerMode() const;
-    void setServerMode(bool value);
+    void setIsServerMode(bool value);
 
 protected:
     virtual void * getThis() = 0;
