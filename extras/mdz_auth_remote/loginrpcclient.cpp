@@ -21,6 +21,9 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
     {
         Socket_TLS tlsClient;
 
+        // Set the SO default security level:
+        tlsClient.keys.setSecurityLevel(-1);
+
         // Authenticate that the server with X.509
         tlsClient.keys.loadCAFromPEMFile(rpcClient->getCaFile().c_str());
 

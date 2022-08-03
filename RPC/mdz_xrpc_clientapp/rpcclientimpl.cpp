@@ -41,6 +41,9 @@ void RPCClientImpl::runRPClient()
         std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
         std::string pubCertPath = Globals::getLC_TLSCertFilePath();
 
+        // Set the SO default security level:
+        sockRPCClient.keys.setSecurityLevel(-1);
+
         if (!sockRPCClient.keys.loadCAFromPEMFile(  caCertPath.c_str() ))
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
