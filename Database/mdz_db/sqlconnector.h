@@ -130,6 +130,16 @@ public:
                 const std::map<std::string,Memory::Abstract::Var *> & inputVars,
                 const std::vector<Memory::Abstract::Var *> & resultVars
                 );
+
+    bool reconnect(unsigned int magic);
+
+
+    uint32_t getReconnectSleepSeconds() const;
+    void setReconnectSleepSeconds(uint32_t newReconnectSleepSeconds);
+
+    uint32_t getMaxReconnectionAttempts() const;
+    void setMaxReconnectionAttempts(uint32_t newMaxReconnectionAttempts);
+
 protected:
     virtual Query * createQuery0() { return nullptr; };
     virtual bool connect0() { return false; }
@@ -138,7 +148,10 @@ protected:
     std::string host;
     std::string dbName;
     uint16_t port;
+    uint32_t reconnectSleepSeconds;
     AuthData auth;
+
+    uint32_t maxReconnectionAttempts;
 
     std::string lastSQLError;
 

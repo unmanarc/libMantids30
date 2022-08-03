@@ -1,5 +1,6 @@
 #include "sqlconnector_sqlite3.h"
 #include <mdz_mem_vars/a_string.h>
+#include <unistd.h>
 
 using namespace Mantids::Database;
 
@@ -28,9 +29,9 @@ bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
     std::shared_ptr<QueryInstance> i = qSelect("select sql from sqlite_master where tbl_name=:tbl;",
-          {{":tbl",new Memory::Abstract::STRING(table)}},
-          {}
-          );
+                                               {{":tbl",new Memory::Abstract::STRING(table)}},
+                                               {}
+                                               );
 
     if (i->ok)
         return i->query->step();
@@ -95,6 +96,12 @@ std::string SQLConnector_SQLite3::getEscaped(const std::string &v)
 
 bool SQLConnector_SQLite3::connect0()
 {
+    if (ppDb)
+    {
+        sqlite3_close(ppDb);
+        ppDb = nullptr;
+    }
+
     rc = sqlite3_open(dbFilePath.c_str(), &ppDb);
     if (rc)
     {

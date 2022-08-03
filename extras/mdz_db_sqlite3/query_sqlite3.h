@@ -12,8 +12,6 @@ public:
     Query_SQLite3();
     ~Query_SQLite3();
 
-    // Direct Query:
-    bool exec(const ExecType & execType);
 
     // Sqlite3 options...
 
@@ -21,6 +19,8 @@ public:
     void sqlite3SetDatabaseConnector( sqlite3 *ppDb );
     bool sqlite3IsDone() const;
 protected:
+    // Direct Query:
+    bool exec0(const ExecType & execType, bool recursion);
     bool step0();
 
 private:

@@ -10,7 +10,6 @@
 
 namespace Mantids { namespace Database {
 
-
 class Query
 {
 public:
@@ -37,7 +36,7 @@ public:
     // bool enqueue( void (*_callback)(Query *) = nullptr );
 
     // Query Execution:
-    virtual bool exec(const ExecType & execType) = 0;
+    bool exec(const ExecType & execType);
 
     // GET ROW FROM SELECT Results:
     bool step();
@@ -62,6 +61,7 @@ public:
     uint64_t getAffectedRows() const;
 
 protected:
+    virtual bool exec0(const ExecType & execType, bool recursion)=0;
     virtual bool step0() = 0;
 
     virtual bool postBindInputVars() { return true; }

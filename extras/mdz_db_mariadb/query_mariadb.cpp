@@ -4,6 +4,9 @@
 #include <mdz_mem_vars/a_allvars.h>
 #include <mdz_hlp_functions/mem.h>
 
+#include <errmsg.h>
+
+
 #include <stdexcept>
 
 // From: https://bugs.mysql.com/?id=87337
@@ -105,78 +108,6 @@ Query_MariaDB::~Query_MariaDB()
         stmt = NULL;
     }
 }
-
-bool Query_MariaDB::exec(const ExecType &execType)
-{
-    if (stmt)
-    {
-        throw std::runtime_error("Re-using queries is not supported.");
-        return false;
-    }
-
-    ((SQLConnector_MariaDB*)sqlConnector)->getDatabaseConnector(this);
-
-    if (!dbCnt)
-        return false;
-
-    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
-
-    // Prepare the query (will lock the db while using ppDb):
-    stmt = mysql_stmt_init(dbCnt);
-    if (stmt==nullptr)
-    {
-        return false;
-    }
-
-    /////////////////
-    // Prepare the statement
-    if ((lastSQLReturnValue = mysql_stmt_prepare(stmt, query.c_str(), query.size())) != 0)
-    {
-        lastSQLError = mysql_stmt_error(stmt);
-        return false;
-    }
-
-    ////////////////
-    // Count/convert the parameters into "?"
-    // Now we have an ordered array with the keys:
-    if (mysql_stmt_bind_param(stmt, bindedInputParams))
-    {
-        lastSQLError = mysql_stmt_error(stmt);
-        return false;
-    }
-
-    ///////////////
-    // Execute!!
-    if ((lastSQLReturnValue = mysql_stmt_execute(stmt)) != 0)
-    {
-        lastSQLError = mysql_stmt_error(stmt);
-        return false;
-    }
-
-    numRows=0;
-    affectedRows=0;
-
-    if(mysql_stmt_store_result(stmt)!=0)
-    {
-        lastSQLError = mysql_stmt_error(stmt);
-        return false;
-    }
-
-    ///////////////
-    if (execType != EXEC_TYPE_SELECT)
-    {
-        if (bFetchLastInsertRowID)
-            lastInsertRowID = mysql_stmt_insert_id(stmt);
-        affectedRows = mysql_stmt_num_rows(stmt);
-    }
-    else
-    {
-        numRows = mysql_stmt_num_rows(stmt);
-    }
-
-    return true;
-}
-
 bool Query_MariaDB::step0()
 {
     bool r = mysql_stmt_fetch (stmt) == 0;
@@ -542,6 +473,123 @@ bool Query_MariaDB::postBindInputVars()
             bindedInputParams[pos].is_null_value = 1;
             break;
         }
+    }
+
+    return true;
+}
+
+bool Query_MariaDB::connectionError()
+{
+    return (    lastSQLReturnValue == CR_CONN_HOST_ERROR
+            ||  lastSQLReturnValue == CR_SERVER_GONE_ERROR
+            ||  lastSQLReturnValue == CR_CONNECTION_ERROR
+                ||  lastSQLReturnValue == CR_SERVER_LOST
+                ||  lastSQLReturnValue ==CR_UNKNOWN_HOST
+                );
+}
+
+bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
+{
+    lastSQLReturnValue = 0;
+
+    if (stmt)
+    {
+        throw std::runtime_error("Re-using queries is not supported.");
+        return false;
+    }
+
+    ((SQLConnector_MariaDB*)sqlConnector)->getDatabaseConnector(this);
+
+    if (!dbCnt)
+        return false;
+
+    // Prepare the query (will lock the db while using ppDb):
+    stmt = mysql_stmt_init(dbCnt);
+    if (stmt==nullptr)
+    {
+        return false;
+    }
+
+    /////////////////
+    // Prepare the statement
+    if ((lastSQLReturnValue = mysql_stmt_prepare(stmt, query.c_str(), query.size())) != 0)
+    {
+        lastSQLError = mysql_stmt_error(stmt);
+        return false;
+    }
+
+    ////////////////
+    // Count/convert the parameters into "?"
+    // Now we have an ordered array with the keys:
+    if (mysql_stmt_bind_param(stmt, bindedInputParams))
+    {
+        lastSQLError = mysql_stmt_error(stmt);
+        return false;
+    }
+
+    ///////////////
+    // Execute!!
+    if ((lastSQLReturnValue = mysql_stmt_execute(stmt)) != 0)
+    {
+        // Reconnection:
+        while ( connectionError() && !recursion )
+        {
+            // Reconnect here until timeout...
+            if (((SQLConnector_MariaDB*)sqlConnector)->reconnect(0xFFFFABCD))
+            {
+                // Remove the prepared statement...
+                if (stmt)
+                {
+                    mysql_stmt_free_result(stmt);
+                    mysql_stmt_close(stmt);
+                    stmt = NULL;
+                }
+
+                // Reconnected... executing the query again...
+                bool result2 = exec0(execType,true);
+
+                // if Resulted in another error or success
+                if (!connectionError())
+                    return result2;
+
+                // Otherwise, keep reconnecting...
+
+                // ...
+                if (result2 == true)
+                    throw std::runtime_error("how this can be true?.");
+            }
+            else
+            {
+                // Not reconnected, timed out...
+                lastSQLError = "reconnection failed.";
+                return false;
+            }
+        }
+
+        // When failed with another error:
+        lastSQLError = mysql_stmt_error(stmt);
+        return false;
+    }
+
+    numRows=0;
+    affectedRows=0;
+
+    if(mysql_stmt_store_result(stmt)!=0)
+    {
+        lastSQLError = mysql_stmt_error(stmt);
+        return false;
+    }
+
+    ///////////////
+    if (execType != EXEC_TYPE_SELECT)
+    {
+        if (bFetchLastInsertRowID)
+            lastInsertRowID = mysql_stmt_insert_id(stmt);
+        affectedRows = mysql_stmt_num_rows(stmt);
+    }
+    else
+    {
+        numRows = mysql_stmt_num_rows(stmt);
     }
 
     return true;

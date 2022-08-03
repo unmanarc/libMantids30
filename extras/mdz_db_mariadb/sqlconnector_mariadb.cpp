@@ -1,6 +1,8 @@
 #include "sqlconnector_mariadb.h"
 
+#include <cstdint>
 #include <mdz_mem_vars/a_string.h>
+#include <unistd.h>
 
 using namespace Mantids::Database;
 
@@ -57,11 +59,20 @@ bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
 
 bool SQLConnector_MariaDB::connect0()
 {
-    dbCnt = mysql_init(nullptr);
+    if (dbCnt)
+    {
+        mysql_close(dbCnt);
+        dbCnt = nullptr;
+    }
+
     if (dbCnt == nullptr)
     {
-        lastSQLError = "mysql_init() failed";
-        return false;
+        dbCnt = mysql_init(nullptr);
+        if (dbCnt == nullptr)
+        {
+            lastSQLError = "mysql_init() failed";
+            return false;
+        }
     }
 
     if (mysql_real_connect(dbCnt, this->host.c_str(),
@@ -77,5 +88,5 @@ bool SQLConnector_MariaDB::connect0()
     }
 
     return true;
-
 }
+

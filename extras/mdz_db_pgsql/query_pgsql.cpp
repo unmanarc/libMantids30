@@ -34,61 +34,6 @@ Query_PostgreSQL::~Query_PostgreSQL()
     free(paramFormats);
 }
 
-bool Query_PostgreSQL::exec(const ExecType &execType)
-{
-    if (result)
-    {
-        throw std::runtime_error("Re-using queries is not supported.");
-        return false;
-    }
-
-
-    // Prepare the query (will lock the db while using ppDb):
-    ((SQLConnector_PostgreSQL*)sqlConnector)->getDatabaseConnector(this);
-
-    if (!dbCnt)
-        return false;
-
-    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
-
-    // Prepare the query:
-    result = PQexecPrepared(dbCnt,
-                            query.c_str(),
-                            paramCount,
-                            paramValues,
-                            paramLengths,
-                            paramFormats,
-                            0);
-
-    execStatus = PQresultStatus(result);
-
-    numRows=0;
-    affectedRows=0;
-
-    if (    execStatus==PGRES_BAD_RESPONSE
-            ||
-            execStatus==PGRES_FATAL_ERROR
-            )
-    {
-        PQclear(result);
-        result = nullptr;
-        return false;
-    }
-
-    if (execType==EXEC_TYPE_SELECT)
-    {
-        numRows = PQntuples(result);
-        return execStatus == PGRES_TUPLES_OK;
-    }
-    else
-    {
-        affectedRows = strtoull(PQcmdTuples(result),0,10);
-        if (bFetchLastInsertRowID)
-             lastInsertRowID = PQoidValue(result);
-        return execStatus == PGRES_COMMAND_OK;
-    }
-}
-
 bool Query_PostgreSQL::step0()
 {
     //  :)
@@ -332,4 +277,89 @@ bool Query_PostgreSQL::postBindInputVars()
         }
     }
     return true;
+}
+
+bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
+{
+    if (result)
+    {
+        throw std::runtime_error("Re-using queries is not supported.");
+        return false;
+    }
+
+    // Prepare the query (will lock the db while using ppDb):
+    ((SQLConnector_PostgreSQL*)sqlConnector)->getDatabaseConnector(this);
+
+    if (!dbCnt)
+        return false;
+
+    // Prepare the query:
+    result = PQexecPrepared(dbCnt,
+                            query.c_str(),
+                            paramCount,
+                            paramValues,
+                            paramLengths,
+                            paramFormats,
+                            0);
+
+
+    // Maybe is not connected or something failed very hard here.
+    if (!result)
+    {
+        // While not connected...
+        while (PQstatus(dbCnt) != CONNECTION_OK && !recursion)
+        {
+            // Reconnect...
+            if ( ((SQLConnector_PostgreSQL*)sqlConnector)->reconnect(0xFFFFABCD) )
+            {
+                // If reconnected... execute the query again
+                bool result2 = exec0(execType,true);
+
+                // If there is any result, return the result...
+                if (result)
+                    return result2;
+                // ...
+                if (result2 == true)
+                    throw std::runtime_error("how this can be true?.");
+
+                // If no result (eg. disconnected again), then, keep the loop reconnecting
+            }
+            else
+            {
+                // The connection reached the max limit
+                lastSQLError = "reconnection failed.";
+                return false;
+            }
+        }
+        lastSQLError = "connection failed.";
+        return false;
+    }
+
+    execStatus = PQresultStatus(result);
+
+    numRows=0;
+    affectedRows=0;
+
+    if (    execStatus==PGRES_BAD_RESPONSE
+            ||
+            execStatus==PGRES_FATAL_ERROR
+            )
+    {
+        PQclear(result);
+        result = nullptr;
+        return false;
+    }
+
+    if (execType==EXEC_TYPE_SELECT)
+    {
+        numRows = PQntuples(result);
+        return execStatus == PGRES_TUPLES_OK;
+    }
+    else
+    {
+        affectedRows = strtoull(PQcmdTuples(result),0,10);
+        if (bFetchLastInsertRowID)
+             lastInsertRowID = PQoidValue(result);
+        return execStatus == PGRES_COMMAND_OK;
+    }
 }

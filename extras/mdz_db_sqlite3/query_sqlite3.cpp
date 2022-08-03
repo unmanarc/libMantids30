@@ -24,7 +24,7 @@ Query_SQLite3::~Query_SQLite3()
     }
 }
 
-bool Query_SQLite3::exec(const ExecType &execType)
+bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
 {
     if (stmt)
     {
@@ -37,8 +37,6 @@ bool Query_SQLite3::exec(const ExecType &execType)
 
     if (!ppDb)
         return false;
-
-    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
 
     const char *tail;
     // TODO: querylenght isn't -1?

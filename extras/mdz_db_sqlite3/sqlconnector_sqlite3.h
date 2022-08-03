@@ -68,7 +68,6 @@ public:
     bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode & mode);
     bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode & mode);
 
-
     std::string getEscaped(const std::string & value);
 
 

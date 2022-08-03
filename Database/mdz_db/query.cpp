@@ -21,6 +21,7 @@ Query::~Query()
 {
     if (sqlConnector)
     {
+        // Detach me from the SQL connector...
         ((SQLConnector *)sqlConnector)->detachQuery(this);
     }
 
@@ -87,6 +88,12 @@ bool Query::getFetchLastInsertRowID() const
 void Query::setFetchLastInsertRowID(bool value)
 {
     bFetchLastInsertRowID = value;
+}
+
+bool Query::exec(const ExecType &execType)
+{
+    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
+    return exec0(execType,false);
 }
 
 bool Query::step()

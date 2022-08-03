@@ -1,10 +1,13 @@
 #include "sqlconnector.h"
 #include <memory>
+#include <unistd.h>
 
 using namespace Mantids::Database;
 
 SQLConnector::SQLConnector()
 {
+    maxReconnectionAttempts = 0;
+    reconnectSleepSeconds = 3;
     finalized = false;
     port = 0;
 }
@@ -175,6 +178,42 @@ std::shared_ptr<QueryInstance> SQLConnector::qSelect(const std::string &prepared
 std::shared_ptr<QueryInstance> SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
 {
     return qSelect(preparedQuery,inputVars,resultVars);
+}
+
+bool SQLConnector::reconnect(unsigned int magic)
+{
+    if (magic == 0xFFFFABCD)
+    {
+        bool connected = false;
+        for (uint32_t i =0; (!maxReconnectionAttempts || i<maxReconnectionAttempts) && connected == false ; i++)
+        {
+            connected = connect0();
+            if (!connected)
+                sleep(reconnectSleepSeconds);
+        }
+        return connected;
+    }
+    return false;
+}
+
+uint32_t SQLConnector::getReconnectSleepSeconds() const
+{
+    return reconnectSleepSeconds;
+}
+
+void SQLConnector::setReconnectSleepSeconds(uint32_t newReconnectSleepSeconds)
+{
+    reconnectSleepSeconds = newReconnectSleepSeconds;
+}
+
+uint32_t SQLConnector::getMaxReconnectionAttempts() const
+{
+    return maxReconnectionAttempts;
+}
+
+void SQLConnector::setMaxReconnectionAttempts(uint32_t newMaxReconnectionAttempts)
+{
+    maxReconnectionAttempts = newMaxReconnectionAttempts;
 }
 
 std::string SQLConnector::getDBName() const

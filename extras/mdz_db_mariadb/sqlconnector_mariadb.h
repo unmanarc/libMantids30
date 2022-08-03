@@ -32,7 +32,6 @@ public:
      * @return true if exist, otherwise false.
      */
     bool dbTableExist(const std::string & table);
-
     std::string getEscaped(const std::string &v);
 
 protected:

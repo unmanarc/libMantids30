@@ -22,10 +22,13 @@ public:
     my_ulonglong getLastInsertRowID() const;
 
 protected:
+    bool exec0(const ExecType & execType, bool recursion);
+
     bool step0();
     bool postBindInputVars();
 
 private:
+    bool connectionError();
     unsigned long mariaDBfetchVarSize(const size_t & col , const enum_field_types &fieldType = MYSQL_TYPE_STRING);
 
     MYSQL * dbCnt;

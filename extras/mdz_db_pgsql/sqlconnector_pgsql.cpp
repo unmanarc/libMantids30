@@ -1,6 +1,7 @@
 #include "sqlconnector_pgsql.h"
 #include <string.h>
 #include <mdz_mem_vars/a_string.h>
+#include <unistd.h>
 using namespace Mantids::Database;
 
 SQLConnector_PostgreSQL::SQLConnector_PostgreSQL()
@@ -67,6 +68,12 @@ std::string SQLConnector_PostgreSQL::getEscaped(const std::string &v)
 
 bool SQLConnector_PostgreSQL::connect0()
 {
+    if (conn)
+    {
+        PQfinish(conn);
+        conn =nullptr;
+    }
+
     fillConnectionArray();
 
     char ** ccKeys = getConnectionKeys();
@@ -77,7 +84,8 @@ bool SQLConnector_PostgreSQL::connect0()
     destroyArray(ccKeys);
     destroyArray(ccValues);
 
-    if (!conn) return false;
+    if (!conn)
+        return false;
 
     if (conn)
     {
@@ -94,6 +102,10 @@ bool SQLConnector_PostgreSQL::connect0()
 
     return false;
 }
+
+
+
+
 
 void SQLConnector_PostgreSQL::fillConnectionArray()
 {
