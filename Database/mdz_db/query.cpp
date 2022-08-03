@@ -13,6 +13,7 @@ Query::Query()
     sqlConnector = nullptr;
     bBindInputVars = false;
     bBindResultVars = false;
+    lastSQLErrno = 0;
     numRows=0;
     affectedRows=0;
 }
@@ -33,6 +34,9 @@ Query::~Query()
 
     clearDestroyableStringsForInput();
     clearDestroyableStringsForResults();
+
+    if (mtDatabaseLock)
+        mtDatabaseLock->unlock();
 }
 
 bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, Memory::Abstract::Var *> &vars)
@@ -92,7 +96,6 @@ void Query::setFetchLastInsertRowID(bool value)
 
 bool Query::exec(const ExecType &execType)
 {
-    std::unique_lock<std::mutex> lock(*mtDatabaseLock);
     return exec0(execType,false);
 }
 
@@ -192,4 +195,7 @@ void Query::setSqlConnector(void *value, std::mutex *mtDatabaseLock)
 {
     this->mtDatabaseLock = mtDatabaseLock;
     sqlConnector = value;
+
+    // Adquire the lock here (some DB's can only handle one query at time)
+    mtDatabaseLock->lock();
 }

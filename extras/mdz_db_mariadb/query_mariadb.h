@@ -28,6 +28,8 @@ protected:
     bool postBindInputVars();
 
 private:
+    int reconnection(const ExecType &execType, bool recursion);
+
     bool connectionError();
     unsigned long mariaDBfetchVarSize(const size_t & col , const enum_field_types &fieldType = MYSQL_TYPE_STRING);
 

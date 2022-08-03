@@ -86,6 +86,7 @@ protected:
 
     // Errors:
     std::string lastSQLError;
+    int lastSQLErrno;
     int lastSQLReturnValue;
 
     // Results:

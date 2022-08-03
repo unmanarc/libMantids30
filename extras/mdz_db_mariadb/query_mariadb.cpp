@@ -478,19 +478,61 @@ bool Query_MariaDB::postBindInputVars()
     return true;
 }
 
+int Query_MariaDB::reconnection(const ExecType &execType, bool recursion)
+{
+    // Reconnection:
+    while ( connectionError() && !recursion )
+    {
+        // Reconnect here until timeout...
+        if (((SQLConnector_MariaDB*)sqlConnector)->reconnect(0xFFFFABCD))
+        {
+            // Remove the prepared statement...
+            if (stmt)
+            {
+                mysql_stmt_free_result(stmt);
+                mysql_stmt_close(stmt);
+                stmt = NULL;
+            }
+
+            // Reconnected... executing the query again...
+            bool result2 = exec0(execType,true);
+
+            // if Resulted in another error or success
+            if (!connectionError())
+                return result2?1:0;
+
+            // Otherwise, keep reconnecting...
+
+            // ...
+            if (result2 == true)
+                throw std::runtime_error("how this can be true?.");
+        }
+        else
+        {
+            // Not reconnected, timed out...
+            lastSQLError = "reconnection failed.";
+            return 0;
+        }
+    }
+    return -1;
+}
+
 bool Query_MariaDB::connectionError()
 {
-    return (    lastSQLReturnValue == CR_CONN_HOST_ERROR
-            ||  lastSQLReturnValue == CR_SERVER_GONE_ERROR
-            ||  lastSQLReturnValue == CR_CONNECTION_ERROR
-                ||  lastSQLReturnValue == CR_SERVER_LOST
-                ||  lastSQLReturnValue ==CR_UNKNOWN_HOST
+    return (    lastSQLErrno == CR_CONN_HOST_ERROR
+            ||  lastSQLErrno == CR_SERVER_GONE_ERROR
+            ||  lastSQLErrno == CR_CONNECTION_ERROR
+                ||  lastSQLErrno == CR_SERVER_LOST
+                ||  lastSQLErrno ==CR_UNKNOWN_HOST
+                ||  lastSQLErrno == 1927
                 );
 }
+
 
 bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
 {
     lastSQLReturnValue = 0;
+    lastSQLErrno = 0;
 
     if (stmt)
     {
@@ -514,6 +556,11 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     // Prepare the statement
     if ((lastSQLReturnValue = mysql_stmt_prepare(stmt, query.c_str(), query.size())) != 0)
     {
+        lastSQLErrno = mysql_stmt_errno(stmt);
+        int i=0;
+        if ((i=reconnection(execType,recursion))>=0)
+            return i==1?true:false;
+
         lastSQLError = mysql_stmt_error(stmt);
         return false;
     }
@@ -531,40 +578,10 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     // Execute!!
     if ((lastSQLReturnValue = mysql_stmt_execute(stmt)) != 0)
     {
-        // Reconnection:
-        while ( connectionError() && !recursion )
-        {
-            // Reconnect here until timeout...
-            if (((SQLConnector_MariaDB*)sqlConnector)->reconnect(0xFFFFABCD))
-            {
-                // Remove the prepared statement...
-                if (stmt)
-                {
-                    mysql_stmt_free_result(stmt);
-                    mysql_stmt_close(stmt);
-                    stmt = NULL;
-                }
-
-                // Reconnected... executing the query again...
-                bool result2 = exec0(execType,true);
-
-                // if Resulted in another error or success
-                if (!connectionError())
-                    return result2;
-
-                // Otherwise, keep reconnecting...
-
-                // ...
-                if (result2 == true)
-                    throw std::runtime_error("how this can be true?.");
-            }
-            else
-            {
-                // Not reconnected, timed out...
-                lastSQLError = "reconnection failed.";
-                return false;
-            }
-        }
+        lastSQLErrno = mysql_stmt_errno(stmt);
+        int i=0;
+        if ((i=reconnection(execType,recursion))>=0)
+            return i==1?true:false;
 
         // When failed with another error:
         lastSQLError = mysql_stmt_error(stmt);

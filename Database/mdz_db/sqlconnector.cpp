@@ -6,7 +6,7 @@ using namespace Mantids::Database;
 
 SQLConnector::SQLConnector()
 {
-    maxReconnectionAttempts = 0;
+    maxReconnectionAttempts = 10;
     reconnectSleepSeconds = 3;
     finalized = false;
     port = 0;

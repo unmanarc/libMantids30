@@ -103,10 +103,6 @@ bool SQLConnector_PostgreSQL::connect0()
     return false;
 }
 
-
-
-
-
 void SQLConnector_PostgreSQL::fillConnectionArray()
 {
     connectionValues.clear();
