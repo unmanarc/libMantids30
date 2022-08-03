@@ -2,10 +2,12 @@
 #define SQLCONNECTOR_H
 
 #include <condition_variable>
+
 #include <mutex>
 #include <string>
 #include <queue>
 #include <set>
+#include <memory>
 
 #include "authdata.h"
 #include "query.h"
