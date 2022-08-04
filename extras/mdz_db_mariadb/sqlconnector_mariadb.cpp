@@ -1,4 +1,5 @@
 #include "sqlconnector_mariadb.h"
+#include "mdz_db/sqlconnector.h"
 
 #include <cstdint>
 #include <mdz_mem_vars/a_string.h>
@@ -21,8 +22,9 @@ SQLConnector_MariaDB::~SQLConnector_MariaDB()
 bool SQLConnector_MariaDB::isOpen()
 {
     if (!dbCnt) return false;
-    std::shared_ptr<QueryInstance> i = qSelect("SELECT 1;", {},{} );
-    if (i->ok) return i->query->step();
+    std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT 1;", {},{} );
+    if (i->getResultsOK())
+        return i->query->step();
     return true;
 }
 
@@ -44,14 +46,14 @@ std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
 {
     // Select Query:
-    std::shared_ptr<QueryInstance> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
     {
       { ":schema", new Memory::Abstract::STRING(dbName)},
       { ":table", new Memory::Abstract::STRING(table)}
     },
     {} );
 
-    if (i->ok)
+    if (i->getResultsOK())
         return i->query->step();
     else
         return false;
