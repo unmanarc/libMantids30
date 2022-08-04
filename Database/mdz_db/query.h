@@ -23,7 +23,7 @@ public:
     virtual ~Query();
 
     // Internal functions (don't use):
-    void setSqlConnector(void *value, std::mutex * mtDatabaseLock);
+    bool setSqlConnector(void *value, std::timed_mutex * mtDatabaseLock, const uint64_t & milliseconds);
 
     // Query Prepare:
     bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,Memory::Abstract::Var *> & vars = {} );
@@ -95,7 +95,7 @@ protected:
     unsigned long long lastInsertRowID;
     uint64_t numRows;
     uint64_t affectedRows;
-    std::mutex * mtDatabaseLock;
+    std::timed_mutex * mtDatabaseLock;
 
 private:
     // Memory cleaning:

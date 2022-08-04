@@ -191,11 +191,24 @@ uint64_t Query::getNumRows() const
     return numRows;
 }
 
-void Query::setSqlConnector(void *value, std::mutex *mtDatabaseLock)
+bool Query::setSqlConnector(void *value, std::timed_mutex *mtDatabaseLock, const uint64_t &milliseconds)
 {
     this->mtDatabaseLock = mtDatabaseLock;
     sqlConnector = value;
 
     // Adquire the lock here (some DB's can only handle one query at time)
-    mtDatabaseLock->lock();
+    if (milliseconds == 0)
+        mtDatabaseLock->lock();
+    else
+    {
+        if (mtDatabaseLock->try_lock_for( std::chrono::milliseconds(milliseconds) ))
+            return true;
+        else
+        {
+            // No need to unlock at the end...
+            this->mtDatabaseLock = nullptr;
+            return false;
+        }
+    }
+    return true;
 }
