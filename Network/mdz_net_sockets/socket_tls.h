@@ -67,9 +67,11 @@ public:
 
 
         struct PSKServerWallet {
+            typedef bool (*cbPSK)(void * data,const std::string & id, std::string * psk);
 
             PSKServerWallet()
             {
+                setPSKCallback(nullptr,nullptr);
                 usingPSK = false;
             }
 
@@ -117,10 +119,24 @@ public:
                 return r;
             }
 
+            /**
+             * @brief setPSKCallback Set PSK Callback, warn: you have to manage multithread environment there.
+             * @param newCbpsk Callback function
+             */
+            void setPSKCallback(cbPSK newCbpsk, void * data)
+            {
+                this->data = data;
+                cbpsk = newCbpsk;
+            }
+
+            void * data;
+            cbPSK cbpsk;
+
             bool usingPSK;
             std::string connectedClientID;
             std::map<std::string,std::string> pskById;
             std::mutex mt;
+
         };
 
         class PSKStaticHdlr {

@@ -545,6 +545,3 @@ int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
         }
     }
 }
-
-
-

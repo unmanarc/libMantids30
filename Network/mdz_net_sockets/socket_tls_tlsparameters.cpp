@@ -33,6 +33,7 @@ Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * bIsServer) : pskst(&pskCli
     // I want to stick to 1.2 (unless will be requested in the api)
     maxProtocolVersion = TLS1_2_VERSION;
 #elif TLS_MAX_VERSION > TLS1_3_VERSION
+    // Not established, unknown by now, use defaults...
     maxProtocolVersion = -1;
 #endif
 
@@ -213,7 +214,6 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
     return true;
 }
 
-
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len)
 {
     auto * pskValues = PSKStaticHdlr::getServerWallet(ssl);
@@ -225,7 +225,9 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
     strncpy((char *)psk,"",max_psk_len);
 
     std::string _psk;
-    if (pskValues->getPSKByClientID(identity,&_psk))
+
+    // Using callback strategy if callback is defined, otherwise use the local map...
+    if ( (pskValues->cbpsk? pskValues->cbpsk(pskValues->data,identity,&_psk) : pskValues->getPSKByClientID(identity,&_psk)) )
     {
         // Set the provided ID.
         pskValues->connectedClientID = identity;
@@ -234,7 +236,6 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
         snprintf((char *)psk,max_psk_len,"%s",_psk.c_str());
         return strlen((char *)psk);
     }
-
     // No ID found.
     return 0;
 }
@@ -521,7 +522,6 @@ void Socket_TLS::TLSKeyParameters::setVerifyDefaultLocations(bool newBVerifyDefa
 {
     bVerifyDefaultLocations = newBVerifyDefaultLocations;
 }
-
 
 const std::string &Socket_TLS::TLSKeyParameters::getTLSSharedGroups() const
 {
