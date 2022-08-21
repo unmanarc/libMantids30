@@ -79,7 +79,7 @@ public:
     uint16_t getRemotePort() const;
     /**
      * @brief setRemotePort Set remote TCP/IP Port for the RPC Login Server
-     * @param value numeric TCP/IP Port for the RPC Login Server (default: 30301)
+     * @param value numeric TCP/IP Port for the RPC Login Server (default: 30302)
      */
     void setRemotePort(const uint16_t &value);
     /**
@@ -135,11 +135,22 @@ public:
 
     Manager_Remote * getRemoteAuthManager();
 
+    /**
+     * @brief getUsingTLSPSK Get if the protocol must connect through TLS-PSK and ignore PKI Parameters (CA/CRT/KEY)
+     * @return true for TLS-PSK (default), false for TLS-PKI
+     */
+    bool getUsingTLSPSK() const;
+    /**
+     * @brief setUsingTLSPSK Set if the protocol must connect through TLS-PSK and ignore PKI Parameters (CA/CRT/KEY)
+     * @param newUsingTLSPSK  true for TLS-PSK (default), false for TLS-PKI
+     */
+    void setUsingTLSPSK(bool newUsingTLSPSK);
+
 private:
     Manager_Remote remoteAuthManager;
 
     std::string remoteHost;
-    bool useIPv6;
+    bool useIPv6,usingTLSPSK;
     uint16_t remotePort;
 
     std::string apiKey, appName, certFile, keyFile, caFile;

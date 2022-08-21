@@ -9,9 +9,9 @@ using namespace Mantids::Authentication;
 LoginRPCClient::LoginRPCClient()
 {
     remoteHost="127.0.0.1";
-    remotePort=30301;
+    remotePort=30302;
     useIPv6=false;
-
+    usingTLSPSK=true;
     caFile = "ca.crt";
 }
 
@@ -21,19 +21,26 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
     {
         Socket_TLS tlsClient;
 
-        // Set the SO default security level:
-        tlsClient.keys.setSecurityLevel(-1);
+        if (!rpcClient->getUsingTLSPSK())
+        {
+            // Set the SO default security level:
+            tlsClient.keys.setSecurityLevel(-1);
 
-        // Authenticate that the server with X.509
-        tlsClient.keys.loadCAFromPEMFile(rpcClient->getCaFile().c_str());
+            // Authenticate that the server with X.509
+            tlsClient.keys.loadCAFromPEMFile(rpcClient->getCaFile().c_str());
 
-        // If there is any client certificate, set the client certificate (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
-        if (!rpcClient->getCertFile().empty())
-            tlsClient.keys.loadPublicKeyFromPEMFile(rpcClient->getCertFile().c_str());
+            // If there is any client certificate, set the client certificate (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
+            if (!rpcClient->getCertFile().empty())
+                tlsClient.keys.loadPublicKeyFromPEMFile(rpcClient->getCertFile().c_str());
 
-        // If there is any client key file, set the key file (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
-        if (!rpcClient->getKeyFile().empty())
-            tlsClient.keys.loadPrivateKeyFromPEMFile(rpcClient->getKeyFile().c_str());
+            // If there is any client key file, set the key file (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
+            if (!rpcClient->getKeyFile().empty())
+                tlsClient.keys.loadPrivateKeyFromPEMFile(rpcClient->getKeyFile().c_str());
+        }
+        else
+        {
+            tlsClient.keys.loadPSKAsClient( rpcClient->getAppName(), rpcClient->getApiKey() );
+        }
 
         // Callback to notifyTLSConnecting which occurs just before the connection.
         rpcClient->notifyTLSConnecting(&tlsClient,rpcClient->getRemoteHost(),rpcClient->getRemotePort());
@@ -168,5 +175,15 @@ void LoginRPCClient::setCaFile(const std::string &value)
 Manager_Remote *LoginRPCClient::getRemoteAuthManager()
 {
     return &remoteAuthManager;
+}
+
+bool LoginRPCClient::getUsingTLSPSK() const
+{
+    return usingTLSPSK;
+}
+
+void LoginRPCClient::setUsingTLSPSK(bool newUsingTLSPSK)
+{
+    usingTLSPSK = newUsingTLSPSK;
 }
 
