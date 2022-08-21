@@ -75,7 +75,6 @@ public:
                 usingPSK = false;
             }
 
-
             ~PSKServerWallet()
             {
                 for ( auto &i : pskById )
@@ -93,6 +92,7 @@ public:
 
                 usingPSK = x.usingPSK;
                 pskById = x.pskById;
+                cbpsk = x.cbpsk;
             }
 
             bool getPSKByClientID(const std::string & id, std::string * psk)

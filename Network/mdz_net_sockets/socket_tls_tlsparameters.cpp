@@ -37,8 +37,8 @@ Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * bIsServer) : pskst(&pskCli
     maxProtocolVersion = -1;
 #endif
 
-    // Set the security level to 3.
-    securityLevel = 3;
+    // Set the security level to -1 (undefined).
+    securityLevel = 2;
 
     // Set the server parameter from the parent.
     this->bIsServer = bIsServer;
