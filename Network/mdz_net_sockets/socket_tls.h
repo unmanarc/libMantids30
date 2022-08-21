@@ -119,6 +119,7 @@ public:
                 return r;
             }
 
+
             /**
              * @brief setPSKCallback Set PSK Callback, warn: you have to manage multithread environment there.
              * @param newCbpsk Callback function
@@ -127,6 +128,7 @@ public:
             {
                 this->data = data;
                 cbpsk = newCbpsk;
+                usingPSK = true;
             }
 
             void * data;
@@ -164,13 +166,17 @@ public:
         ~TLSKeyParameters();
 
         /**
-        * @brief addPSKToServer Set to use PSK via DHE-PSK-AES256-GCM-SHA384 instead of using PKI (As Server)
+         * @brief setPSK Set to use PSK via DHE-PSK-AES256-GCM-SHA384 instead of using PKI (As Server)
+         */
+        void setPSK();
+        /**
+        * @brief addPSKToServer Add Key to the server wallet to use in PSK and call setPSK()
         * @param _psk Pre-shared key
         * @param clientIdentity client identity string (you can load multiple clients PSK's)
         */
         void addPSKToServer(const std::string &clientIdentity, const std::string & _psk);
         /**
-        * @brief loadPSKAsClient Set to use PSK via DHE-PSK-AES256-GCM-SHA384 instead of using PKI (As Server)
+        * @brief loadPSKAsClient Set to use PSK via DHE-PSK-AES256-GCM-SHA384 instead of using PKI (As Server) and add the key
         * @param _psk Pre-shared key
         * @param clientIdentity client identity string
         */
