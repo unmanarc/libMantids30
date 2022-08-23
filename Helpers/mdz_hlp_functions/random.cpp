@@ -40,3 +40,11 @@ void Random::createRandomSalt32(unsigned char *salt)
     std::uniform_int_distribution<uint32_t> pick;
     *((uint32_t *)salt) = pick(rg);
 }
+
+void Random::createRandomSalt128(unsigned char *salt)
+{
+    std::mt19937 rg{std::random_device{}()};
+    std::uniform_int_distribution<uint64_t> pick;
+    *((uint64_t *)salt) = pick(rg);
+    *((uint64_t *)(salt+8)) = pick(rg);
+}

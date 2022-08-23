@@ -30,6 +30,12 @@ public:
     static void createRandomSalt32(unsigned char * salt);
 
     /**
+     * @brief createRandomSalt128 Create a random number of 128bit into salt
+     * @param salt output variable.
+     */
+    static void createRandomSalt128(unsigned char * salt);
+
+    /**
      * @brief safe_random_shuffle Suffle a vector
      * @param first vector begin()
      * @param last vector end()
