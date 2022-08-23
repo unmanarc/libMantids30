@@ -68,15 +68,14 @@ string Encoders::fromBase64Obf(const string &sB64Buf, const uint64_t & seed)
     return decodedString;
 }
 
-string Encoders::toBase64Obf(const unsigned char *buf, uint32_t count,  const uint64_t & seed)
+string Encoders::toBase64Obf(const unsigned char *buf, uint64_t count,  const uint64_t & seed)
 {
     std::string r;
     std::mt19937_64 gen( seed );
     std::uniform_int_distribution<char> dis;
 
-    unsigned char * obfBuf = (unsigned char *)malloc(count+1);
+    unsigned char * obfBuf = (unsigned char *)malloc(count);
     if (!obfBuf) return "";
-    obfBuf[count] = 0;
 
     for ( size_t i=0; i<count; i++ )
         obfBuf[i] = buf[i]^dis(gen);
@@ -88,14 +87,70 @@ string Encoders::toBase64Obf(const unsigned char *buf, uint32_t count,  const ui
 
 string Encoders::toBase64Obf(const string &buf, const uint64_t & seed)
 {
-    return toBase64Obf((unsigned char *)buf.c_str(),buf.size(),seed);
+    return toBase64Obf((unsigned char *)buf.c_str(),buf.size()+1,seed);
+}
+
+std::shared_ptr<Mem::xBinContainer> Encoders::fromBase64ToBin(const std::string &sB64Buf)
+{
+    auto r = std::make_shared<Mem::xBinContainer>( sB64Buf.length() );
+    if (!r->data)
+        return r;
+
+    unsigned char cont4[4], cont3[3];
+    uint64_t count=sB64Buf.size(), x=0, y=0;
+    int bufPos=0;
+
+    while (     count-- &&
+                ( sB64Buf[bufPos] != '=')  &&
+                (isalnum(sB64Buf[bufPos]) || (sB64Buf[bufPos] == '/') || (sB64Buf[bufPos] == '+'))
+           )
+    {
+        cont4[x++]=sB64Buf[bufPos]; bufPos++;
+        if (x==4)
+        {
+            for (x=0; x <4; x++)
+            {
+                cont4[x]=(unsigned char)b64Chars.find(cont4[x]);
+            }
+
+            cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
+            cont3[1]=((cont4[1] & 0xf) << 4) + ((cont4[2] & 0x3c) >> 2);
+            cont3[2]=((cont4[2] & 0x3) << 6) + cont4[3];
+
+            for (x=0; (x < 3); x++)
+            {
+                *r += cont3[x];
+            }
+            x=0;
+        }
+    }
+
+    if (x)
+    {
+        for (y=x; y <4; y++)
+        {
+            cont4[y]=0;
+        }
+        for (y=0; y <4; y++)
+        {
+            cont4[y]=(unsigned char)b64Chars.find(cont4[y]);
+        }
+
+        cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
+        cont3[1]=((cont4[1] & 0xf) << 4) + ((cont4[2] & 0x3c) >> 2);
+        cont3[2]=((cont4[2] & 0x3) << 6) + cont4[3];
+
+        for (y=0; (y < x - 1); y++) *r += cont3[y];
+    }
+
+    return r;
 }
 
 string Encoders::fromBase64(const string &sB64Buf)
 {
     unsigned char cont4[4], cont3[3];
     std::string decodedString;
-    size_t count=sB64Buf.size(), x=0, y=0;
+    uint64_t count=sB64Buf.size(), x=0, y=0;
     int bufPos=0;
 
     while (     count-- &&
@@ -149,7 +204,7 @@ string Encoders::toBase64(const string &buf)
     return toBase64((unsigned char *)buf.c_str(),buf.size());
 }
 
-string Encoders::toBase64(const unsigned char *buf, uint32_t count)
+string Encoders::toBase64(const unsigned char *buf, uint64_t count)
 {
     unsigned char cont3[3],cont4[4];
     std::string encodedString;
