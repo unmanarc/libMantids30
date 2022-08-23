@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits>
+#include <string>
 
 namespace Mantids { namespace Helpers {
 
@@ -41,6 +42,24 @@ class Mem
 {
 public:
     Mem();
+
+    struct xBinContainer
+    {
+        xBinContainer(const char * data , const uint64_t &len);
+        xBinContainer(const uint64_t &len);
+        ~xBinContainer();
+
+        std::string toString()
+        {
+            std::string r((char *)data,len);
+            return r;
+        }
+
+        void operator+=( const unsigned char & c );
+
+        void * data;
+        uint64_t len, cur;
+    };
 
     static bool icharcmp(unsigned char c1,unsigned  char c2);
     static int memcmp64(const void *s1, const void *s2, uint64_t n);

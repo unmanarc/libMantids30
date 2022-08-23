@@ -1,4 +1,5 @@
 #include "mem.h"
+#include <cstdlib>
 #include <string.h>
 
 using namespace std;
@@ -18,6 +19,59 @@ unsigned char Mem::cmpMatrix[] =
 Mem::Mem()
 {
 }
+
+
+Mem::xBinContainer::xBinContainer(const char *data, const uint64_t &len)
+{
+    if (len)
+        this->data = malloc(len);
+    else
+        this->data = nullptr;
+
+    if (this->data)
+    {
+        this->len = len;
+        memcpy(this->data,data,len);
+    }
+    else
+        this->len = 0;
+
+    cur = 0;
+}
+
+Mem::xBinContainer::xBinContainer(const uint64_t &len)
+{
+    if (len)
+        data = malloc(len);
+    else
+        data = nullptr;
+
+    if (data)
+    {
+        this->len = len;
+        memset(data,0,len);
+    }
+    else
+        this->len = 0;
+
+    cur = 0;
+}
+
+Mem::xBinContainer::~xBinContainer()
+{
+    if (data)
+        free(data);
+    data = nullptr;
+    len = 0;
+    cur = 0;
+}
+
+void Mem::xBinContainer::operator+=(const unsigned char &c)
+{
+    unsigned char * data_c = (unsigned char *)(data);
+    data_c[cur++] = c;
+}
+
 
 bool Mem::icharcmp(unsigned char c1, unsigned char c2)
 {
