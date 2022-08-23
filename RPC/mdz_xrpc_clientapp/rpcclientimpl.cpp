@@ -3,7 +3,16 @@
 #include <inttypes.h>
 #include <thread>
 
+#include <mdz_hlp_functions/crypto.h>
+#include <mdz_hlp_functions/file.h>
 #include <mdz_net_sockets/streams_cryptochallenge.h>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string.hpp>
+
+using namespace boost;
+using namespace boost::algorithm;
+
 
 using namespace Mantids::RPC;
 using namespace Mantids::Application;
@@ -32,54 +41,89 @@ void RPCClientImpl::runRPClient()
     int secsBetweenConnections = Globals::getLC_C2TimeBetweenConnections();
 
     addMethods();
+    std::string caCertPath = Globals::getLC_TLSCAFilePath();
+    std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
+    std::string pubCertPath = Globals::getLC_TLSCertFilePath();
+
+    auto masterKey = Globals::getMasterKey();
 
     for (;;)
     {
         Mantids::Network::Sockets::Socket_TLS sockRPCClient;
 
-        std::string caCertPath = Globals::getLC_TLSCAFilePath();
-        std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
-        std::string pubCertPath = Globals::getLC_TLSCertFilePath();
+        if (!Globals::getLC_TLSUsePSK())
+        {
+            // Set the SO default security level:
+            sockRPCClient.keys.setSecurityLevel(-1);
 
-        // Set the SO default security level:
-        sockRPCClient.keys.setSecurityLevel(-1);
+            if (!sockRPCClient.keys.loadCAFromPEMFile(  caCertPath.c_str() ))
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
+                _exit(-3);
+            }
 
-        if (!sockRPCClient.keys.loadCAFromPEMFile(  caCertPath.c_str() ))
-        {
-            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
-            _exit(-3);
+            // Check if using passphrase
+            if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
+            {
+                bool ok = false;
+                // Load Key
+                std::string keyPassPhrase = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
+                                                                            ,(char *)masterKey->data,masterKey->len,&ok
+                                                                            );
+
+                if (!sockRPCClient.keys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), keyPassPhrase.c_str() ))
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
+                    _exit(-35);
+                }
+            }
+            else
+            {
+                if (!sockRPCClient.keys.loadPrivateKeyFromPEMFile(  privKeyPath.c_str() ))
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
+                    _exit(-3);
+                }
+            }
+            if (!sockRPCClient.keys.loadPublicKeyFromPEMFile(  pubCertPath.c_str() ))
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
+                _exit(-3);
+            }
         }
-        if (!sockRPCClient.keys.loadPrivateKeyFromPEMFile(  privKeyPath.c_str() ))
+        else
         {
-            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
-            _exit(-3);
-        }
-        if (!sockRPCClient.keys.loadPublicKeyFromPEMFile(  pubCertPath.c_str() ))
-        {
-            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
-            _exit(-3);
+            // Load Key
+            bool ok;
+            std::string key = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPSKSharedKeyFile() )
+                                                                        ,(char *)masterKey->data,masterKey->len,&ok
+                                                                        );
+            std::vector<std::string> keyParts;
+
+            split(keyParts,key,is_any_of(":"),token_compress_on);
+
+            if (keyParts.size()!=2)
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key not in ID:PSK format", remoteAddr.c_str(), remotePort);
+                _exit(-33);
+            }
+
+            sockRPCClient.keys.setPSK();
+            sockRPCClient.keys.loadPSKAsClient(keyParts.at(0), keyParts.at(1));
         }
 
         LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
 
         if ( sockRPCClient.connectTo( remoteAddr.c_str(), remotePort ) )
         {
-            LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "RPC Client Connected to server %s:%" PRIu16 " (CN=%s) Using %s", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str(),sockRPCClient.getTLSConnectionCipherName().c_str());
 
             if (postConnect(&sockRPCClient))
             {
-                Mantids::Network::Sockets::NetStreams::CryptoChallenge cstreams(&sockRPCClient);
-                if (cstreams.mutualChallengeResponseSHA256Auth(Globals::getLC_C2NetresApiKey(),false) == std::make_pair(true,true))
-                {
-                    // now is fully connected / authenticated...
-                    if (failedToRetrieveC2Config)
-                        connectedToC2AfterFailingToLoadC2Config();
-                    fastRPC.processConnection(&sockRPCClient,"SERVER");
-                }
-                else
-                {
-                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Invalid API Key @RPC connector to %s:%" PRIu16, remoteAddr.c_str(), remotePort);
-                }
+                // now is fully connected / authenticated...
+                if (failedToRetrieveC2Config)
+                    connectedToC2AfterFailingToLoadC2Config();
+                fastRPC.processConnection(&sockRPCClient,"SERVER");
             }
             LOG_APP->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient.getTLSPeerCN().c_str());
         }
@@ -152,9 +196,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
         if ( sRemoteConfig.size()>7 )
         {
             std::string sRemoteConfigEncrypted = encryptStr(sRemoteConfig);
-
             std::string localConfigPath = Globals::getLC_RemoteConfigFilePath();
-
 
             std::ofstream outfile;
             outfile.open(localConfigPath, std::ios_base::out);

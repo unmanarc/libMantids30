@@ -1,5 +1,10 @@
 #include "rpcclientapplication.h"
 #include "globals.h"
+#include "mdz_hlp_functions/crypto.h"
+#include "mdz_hlp_functions/encoders.h"
+#include "mdz_net_sockets/socket_tls.h"
+
+#include <mdz_hlp_functions/file.h>
 
 #include <sys/time.h>
 #include <boost/algorithm/string/replace.hpp>
@@ -39,15 +44,26 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids::Applicatio
 #endif
 
     globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , defaultConfigDir, Mantids::Memory::Abstract::Var::TYPE_STRING );
+    globalArguments->addCommandLineOption("Encoding", 0, "encode" , "Encode Configuration String"  , "", Mantids::Memory::Abstract::Var::TYPE_STRING );
 }
 
 bool RPCClientApplication::_config(int argc, char *argv[], Mantids::Application::Arguments::GlobalArguments *globalArguments)
 {
+    if ( !globalArguments->getCommandLineOptionValue("encode")->toString().empty() )
+    {
+        auto masterKey = Globals::getMasterKey();
+        sleep(1);
+        bool ok;
+        printf("%s\n", Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(),(char *)masterKey->data,masterKey->len,&ok).c_str());
+        fflush(stdout);
+        exit(0);
+    }
+
     std::string configDir = globalArguments->getCommandLineOptionValue("config-dir")->toString(),
-#ifdef _WIN32
-                            configPath = configDir + "\\config.ini";
+        #ifdef _WIN32
+            configPath = configDir + "\\config.ini";
 #else
-                            configPath = configDir + "/config.ini";
+            configPath = configDir + "/config.ini";
 #endif
     // process config here.
     unsigned int logMode = Mantids::Application::Logs::MODE_STANDARD;
@@ -60,10 +76,10 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids::Application:
 
     if (versionCodeName.empty())
         initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->getDescription() +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
-                                                               appVersionMajor, appVersionMinor, appVersionSubMinor,getpid());
+                    appVersionMajor, appVersionMinor, appVersionSubMinor,getpid());
     else
         initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->getDescription() +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
-                                                           appVersionMajor, appVersionMinor, appVersionSubMinor, versionCodeName.c_str() , getpid());
+                    appVersionMajor, appVersionMinor, appVersionSubMinor, versionCodeName.c_str() , getpid());
 
     initLog.log0(__func__,Logs::LEVEL_INFO, "Using config dir: %s", configDir.c_str());
     initLog.log0(__func__,Logs::LEVEL_INFO, "Loading configuration: %s", configPath.c_str());
@@ -112,24 +128,94 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids::Application:
 
 int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::Arguments::GlobalArguments *globalArguments)
 {
+    auto masterKey = Globals::getMasterKey();
 
     bool cont=true;
 
     // Check I will be able to connect:
-    if (access(Globals::getLC_TLSCAFilePath().c_str(),R_OK))
+    if (1)
     {
-        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
-        cont=false;
-    }
-    if (!Globals::getLC_TLSCertFilePath().empty() && access(Globals::getLC_TLSCertFilePath().c_str(),R_OK))
-    {
-        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
-        cont=false;
-    }
-    if (!Globals::getLC_TLSKeyFilePath().empty() && access(Globals::getLC_TLSKeyFilePath().c_str(),R_OK))
-    {
-        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
-        cont=false;
+        Network::Sockets::Socket_TLS tls;
+
+        if ( Globals::getLC_TLSUsePSK() )
+        {
+            // Check the PSK Itself...
+            if (Globals::getLC_TLSPSKSharedKeyFile().empty())
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "PSK File Not defined %s", Globals::getLC_TLSCAFilePath().c_str());
+                cont=false;
+            }
+            else
+            {
+                bool ok = false;
+                // Load Key
+                Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPSKSharedKeyFile() )
+                                                                            ,(char *)masterKey->data,masterKey->len,&ok
+                                                                            );
+
+                if (!ok)
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load PSK from %s", Globals::getLC_TLSPSKSharedKeyFile().c_str());
+                    cont=false;
+                }
+            }
+
+            // Check CA if present
+            if (!Globals::getLC_TLSCAFilePath().empty() && !tls.keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+                cont=false;
+            }
+        }
+        else
+        {
+            // Check CA always...
+            if (!tls.keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+                cont=false;
+            }
+        }
+
+        if (!Globals::getLC_TLSCertFilePath().empty() && !tls.keys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
+        {
+            LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
+            cont=false;
+        }
+
+        std::string keyPassPhrase;
+        // CHeck if the using passphrase for key
+        if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
+        {
+            bool ok = false;
+            // Load Key
+            keyPassPhrase = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
+                                                                        ,(char *)masterKey->data,masterKey->len,&ok
+                                                                        );
+            if (!ok)
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
+                cont=false;
+            }
+            else
+            {
+                // Key Passphrase Available...
+                if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
+                    cont=false;
+                }
+            }
+        }
+        else
+        {
+            // No Key Passphrase...
+            if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFile( Globals::getLC_TLSKeyFilePath().c_str() ) )
+            {
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
+                cont=false;
+            }
+        }
     }
 
     if (!cont)

@@ -3,14 +3,18 @@
 
 #include <mdz_prg_service/globalarguments.h>
 #include <mdz_prg_service/application.h>
-#include "rpcclientimpl.h"
+#include <mdz_hlp_functions/mem.h>
+#include <memory>
+#include "globals.h"
+//#include "rpcclientimpl.h"
 
 namespace Mantids { namespace RPC {
 
 class RPCClientApplication : public Mantids::Application::Application
 {
 public:
-    RPCClientApplication() {
+    RPCClientApplication( Mantids::Helpers::Mem::xBinContainer * masterKey ) {
+        Globals::setMasterKey(masterKey);
         retrieveConfig = false;
     }
     void _shutdown();
@@ -48,7 +52,6 @@ protected:
      */
     virtual int rpcStart(int argc, char *argv[], Mantids::Application::Arguments::GlobalArguments * globalArguments)=0;
 
-
     virtual void processRetrievedConfig() {};
 
     //
@@ -56,7 +59,6 @@ protected:
     std::string versionCodeName;
     std::string defaultConfigDir;
     bool retrieveConfig;
-
 };
 
 }}
