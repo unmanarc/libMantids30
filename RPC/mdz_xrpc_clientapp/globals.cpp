@@ -7,6 +7,9 @@ Logs::AppLog * Globals::applog = nullptr;
 boost::property_tree::ptree Globals::pLocalConfig;
 Mantids::RPC::RPCClientImpl * Globals::rpcImpl = nullptr;
 
+Mantids::Helpers::Mem::xBinContainer * Globals::masterKey=nullptr;
+
+
 Globals::Globals()
 {
 }
@@ -35,4 +38,14 @@ Mantids::RPC::RPCClientImpl *Globals::getRpcImpl()
 void Globals::setRpcImpl(Mantids::RPC::RPCClientImpl *value)
 {
     rpcImpl = value;
+}
+
+Mantids::Helpers::Mem::xBinContainer *Globals::getMasterKey()
+{
+    return masterKey;
+}
+
+void Globals::setMasterKey(Mantids::Helpers::Mem::xBinContainer *newMasterKey)
+{
+    masterKey = newMasterKey;
 }

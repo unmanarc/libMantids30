@@ -4,6 +4,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <mdz_prg_logs/applog.h>
 #include <mdz_hlp_functions/json.h>
+#include <mdz_hlp_functions/mem.h>
 
 #include "rpcclientimpl.h"
 
@@ -57,11 +58,6 @@ public:
         return pLocalConfig.get<std::string>("C2.RemoteAddr","127.0.0.1");
     }
 
-    static std::string getLC_C2NetresApiKey()
-    {
-        return pLocalConfig.get<std::string>("C2.AgentApiKey","_");
-    }
-
     static std::string getLC_RemoteConfigFilePath()
     {
         return pLocalConfig.get<std::string>("C2.LocalConfig", "remote.dat");
@@ -82,6 +78,21 @@ public:
         return pLocalConfig.get<std::string>("TLS.KeyFile",  "keys" + dirSlash + "priv.key");
     }
 
+    static std::string getLC_TLSPhraseFileForPrivateKey()
+    {
+        return pLocalConfig.get<std::string>("TLS.PhraseFile", "keys" + dirSlash + "phrase.key");
+    }
+
+    static bool getLC_TLSUsePSK()
+    {
+        return pLocalConfig.get<bool>("TLS.UsePSK", true);
+    }
+
+    static std::string getLC_TLSPSKSharedKeyFile()
+    {
+        return pLocalConfig.get<std::string>("TLS.SharedFile",  "keys" + dirSlash + "shared.key");
+    }
+
     ///////////////////////////////////////
     // LOGS...
     static Mantids::Application::Logs::AppLog *getAppLog();
@@ -91,10 +102,17 @@ public:
     static Mantids::RPC::RPCClientImpl *getRpcImpl();
     static void setRpcImpl(Mantids::RPC::RPCClientImpl *value);
 
+
+
+    static Mantids::Helpers::Mem::xBinContainer *getMasterKey();
+    static void setMasterKey(Mantids::Helpers::Mem::xBinContainer *newMasterKey);
+
 protected:
     static boost::property_tree::ptree pLocalConfig;
 
 private:
+    static Mantids::Helpers::Mem::xBinContainer * masterKey;
+
     // LOGS:
     static Mantids::Application::Logs::AppLog * applog;
     static Mantids::RPC::RPCClientImpl * rpcImpl;
