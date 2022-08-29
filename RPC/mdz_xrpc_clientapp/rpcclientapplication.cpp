@@ -164,7 +164,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
             if (!Globals::getLC_TLSCAFilePath().empty() && !tls.keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
-                cont=false;
+      //          cont=false;
             }
         }
         else
