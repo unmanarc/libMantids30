@@ -175,45 +175,45 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont=false;
             }
-        }
 
-        if (!Globals::getLC_TLSCertFilePath().empty() && !tls.keys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
-        {
-            LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
-            cont=false;
-        }
-
-        std::string keyPassPhrase;
-        // CHeck if the using passphrase for key
-        if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
-        {
-            bool ok = false;
-            // Load Key
-            keyPassPhrase = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
-                                                                        ,(char *)masterKey->data,masterKey->len,&ok
-                                                                        );
-            if (!ok)
+            if (!Globals::getLC_TLSCertFilePath().empty() && !tls.keys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
             {
-                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
+                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
                 cont=false;
+            }
+
+            std::string keyPassPhrase;
+            // CHeck if the using passphrase for key
+            if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
+            {
+                bool ok = false;
+                // Load Key
+                keyPassPhrase = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
+                                                                            ,(char *)masterKey->data,masterKey->len,&ok
+                                                                            );
+                if (!ok)
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
+                    cont=false;
+                }
+                else
+                {
+                    // Key Passphrase Available...
+                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
+                    {
+                        LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
+                        cont=false;
+                    }
+                }
             }
             else
             {
-                // Key Passphrase Available...
-                if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
+                // No Key Passphrase...
+                if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFile( Globals::getLC_TLSKeyFilePath().c_str() ) )
                 {
-                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
+                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
                     cont=false;
                 }
-            }
-        }
-        else
-        {
-            // No Key Passphrase...
-            if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.keys.loadPrivateKeyFromPEMFile( Globals::getLC_TLSKeyFilePath().c_str() ) )
-            {
-                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
-                cont=false;
             }
         }
     }
