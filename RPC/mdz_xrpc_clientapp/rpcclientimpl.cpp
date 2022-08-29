@@ -51,7 +51,7 @@ void RPCClientImpl::runRPClient()
     {
         Mantids::Network::Sockets::Socket_TLS sockRPCClient;
 
-        if (!Globals::getLC_TLSUsePSK())
+        if (!Globals::getLC_C2UsePSK())
         {
             // Set the SO default security level:
             sockRPCClient.keys.setSecurityLevel(-1);
@@ -95,7 +95,7 @@ void RPCClientImpl::runRPClient()
         {
             // Load Key
             bool ok;
-            std::string key = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPSKSharedKeyFile() )
+            std::string key = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() )
                                                                         ,(char *)masterKey->data,masterKey->len,&ok
                                                                         );
             std::vector<std::string> keyParts;

@@ -83,14 +83,14 @@ public:
         return pLocalConfig.get<std::string>("TLS.PhraseFile", "keys" + dirSlash + "phrase.key");
     }
 
-    static bool getLC_TLSUsePSK()
+    static bool getLC_C2UsePSK()
     {
-        return pLocalConfig.get<bool>("TLS.UsePSK", true);
+        return pLocalConfig.get<bool>("C2.UsePSK", true);
     }
 
-    static std::string getLC_TLSPSKSharedKeyFile()
+    static std::string getLC_C2PSKSharedKeyFile()
     {
-        return pLocalConfig.get<std::string>("TLS.SharedFile",  "keys" + dirSlash + "shared.key");
+        return pLocalConfig.get<std::string>("C2.SharedFile",  "keys" + dirSlash + "shared.key");
     }
 
     ///////////////////////////////////////

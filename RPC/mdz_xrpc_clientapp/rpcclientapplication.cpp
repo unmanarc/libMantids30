@@ -137,10 +137,10 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
     {
         Network::Sockets::Socket_TLS tls;
 
-        if ( Globals::getLC_TLSUsePSK() )
+        if ( Globals::getLC_C2UsePSK() )
         {
             // Check the PSK Itself...
-            if (Globals::getLC_TLSPSKSharedKeyFile().empty())
+            if (Globals::getLC_C2PSKSharedKeyFile().empty())
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "PSK File Not defined %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont=false;
@@ -149,13 +149,13 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
             {
                 bool ok = false;
                 // Load Key
-                Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_TLSPSKSharedKeyFile() )
+                Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() )
                                                                             ,(char *)masterKey->data,masterKey->len,&ok
                                                                             );
 
                 if (!ok)
                 {
-                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load PSK from %s", Globals::getLC_TLSPSKSharedKeyFile().c_str());
+                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load PSK from %s", Globals::getLC_C2PSKSharedKeyFile().c_str());
                     cont=false;
                 }
             }
