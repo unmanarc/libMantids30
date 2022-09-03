@@ -1,5 +1,5 @@
 %define name libMantids
-%define version 2.7.9
+%define version 2.7.10
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
@@ -33,20 +33,24 @@ Group:          Development/Libraries
 %define debug_package %{nil}
 %endif
 
+
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static sqlite-devel postgresql-devel gcc-c++
 %if 0%{?rhel} == 6
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
+BuildRequires:  mysql-devel
 %else
-%if 0%{?rhel} == 7
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl11-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
-%else
-BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++
+BuildRequires:  mariadb-devel
 %endif
+%if 0%{?rhel} == 7
+BuildRequires:  openssl11-devel
+%else
+BuildRequires:  openssl-devel
 %endif
 
+Requires: jsoncpp boost-regex boost-thread
 %if 0%{?rhel} == 7
-Requires:       jsoncpp boost-regex boost-thread openssl11-libs openssl11
+Requires:       openssl11
 %else
-Requires:       jsoncpp boost-regex boost-thread openssl
+Requires:       openssl
 %endif
 
 %description
