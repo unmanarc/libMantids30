@@ -1,5 +1,5 @@
 %define name libMantids
-%define version 2.7.8
+%define version 2.7.9
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
@@ -33,14 +33,21 @@ Group:          Development/Libraries
 %define debug_package %{nil}
 %endif
 
-
 %if 0%{?rhel} == 6
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
 %else
+%if 0%{?rhel} == 7
+BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl11-devel sqlite-devel mysql-devel postgresql-devel gcc-c++
+%else
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++
 %endif
+%endif
 
+%if 0%{?rhel} == 7
+Requires:       jsoncpp boost-regex boost-thread openssl11-libs openssl11
+%else
 Requires:       jsoncpp boost-regex boost-thread openssl
+%endif
 
 %description
 This package contains a enhancing C++11 framework libraries for services and network based projects
@@ -85,8 +92,15 @@ This package contains necessary header files for %{name} development.
 %autosetup -n %{name}-master
 
 %build
+
+%if 0%{?rhel} == 7
+%{cmake} -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
+%{cmake} -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
+%else
 %{cmake} -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
 %{cmake} -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
+%endif
+
 make %{?_smp_mflags}
 
 %clean

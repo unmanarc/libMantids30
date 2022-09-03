@@ -83,6 +83,8 @@ void Socket_TLS::TLSKeyParameters::setPSK()
 {
     // For TLSv1.2 use only secure PSK algorithms:
     sTLSCipherList = "DHE-PSK-AES256-GCM-SHA384:DHE-PSK-AES128-GCM-SHA256";
+
+
 }
 
 void Socket_TLS::TLSKeyParameters::addPSKToServer(const std::string &clientIdentity,const std::string &_psk)
