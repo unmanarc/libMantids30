@@ -129,7 +129,15 @@ void RPCClientImpl::runRPClient()
         }
         else
         {
-            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient.getLastError().c_str());
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s",
+                          remoteAddr.c_str(), remotePort,
+                          sockRPCClient.getLastError().c_str());
+
+            for (const auto & i :sockRPCClient.getTLSErrorsAndClear())
+            {
+                if (!strstr(i.c_str(),"certificate unknown"))
+                    LOG_APP->log1(__func__, remoteAddr.c_str(),Logs::LEVEL_ERR, ">>> TLS Error: %s", i.c_str());
+            }
         }
 
         sleep(secsBetweenConnections);
