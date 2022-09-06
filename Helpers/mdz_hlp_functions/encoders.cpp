@@ -10,7 +10,6 @@ const std::string Encoders::b64Chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnop
 
 Encoders::Encoders()
 {
-
 }
 
 string Encoders::fromBase64Obf(const string &sB64Buf, const uint64_t & seed)
@@ -87,7 +86,7 @@ string Encoders::toBase64Obf(const unsigned char *buf, uint64_t count,  const ui
 
 string Encoders::toBase64Obf(const string &buf, const uint64_t & seed)
 {
-    return toBase64Obf((unsigned char *)buf.c_str(),buf.size()+1,seed);
+    return toBase64Obf((unsigned char *)buf.c_str(),buf.size(),seed);
 }
 
 std::shared_ptr<Mem::xBinContainer> Encoders::fromBase64ToBin(const std::string &sB64Buf)
