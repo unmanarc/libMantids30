@@ -43,7 +43,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     lastSQLReturnValue = sqlite3_prepare_v2(ppDb, query.c_str(), query.length(), &stmt, &tail);
     if ( lastSQLReturnValue != SQLITE_OK)
     {
-        lastSQLError = "Error preparing the SQL query";
+        lastSQLError = "Error preparing the SQL query: " + std::string(sqlite3_errmsg(ppDb));
         return false;
     }
 

@@ -1,5 +1,5 @@
 %define name libMantids
-%define version 2.7.12
+%define version 2.7.13
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
@@ -32,7 +32,6 @@ Group:          Development/Libraries
 %if 0%{?fedora} >= 33
 %define debug_package %{nil}
 %endif
-
 
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static sqlite-devel postgresql-devel gcc-c++
 %if 0%{?rhel} == 6
