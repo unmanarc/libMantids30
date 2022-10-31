@@ -32,7 +32,8 @@ Bridge::~Bridge()
 
 bool Bridge::start(bool _autoDeleteStreamPipeOnExit, bool detach)
 {
-    if (!socket_peers[0] || !socket_peers[1]) return false;
+    if (!socket_peers[0] || !socket_peers[1])
+        return false;
 
     autoDeleteStreamPipeOnExit = _autoDeleteStreamPipeOnExit;
 
@@ -50,10 +51,10 @@ int Bridge::wait()
     return finishingPeer;
 }
 
-
 int Bridge::process()
 {
-    if (!socket_peers[0] || !socket_peers[1]) return -1;
+    if (!socket_peers[0] || !socket_peers[1])
+        return -1;
 
     if (!bridgeThreadPrc)
     {
@@ -89,7 +90,8 @@ int Bridge::process()
 
 bool Bridge::processPeer(unsigned char cur)
 {
-    if (cur>1) return false;
+    if (cur>1)
+        return false;
 
     unsigned char next = cur==0?1:0;
     std::atomic<uint64_t> * bytesCounter = cur==0?&sentBytes:&recvBytes;
@@ -112,14 +114,16 @@ bool Bridge::processPeer(unsigned char cur)
 
 bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s)
 {
-    if (i>1) return false;
+    if (i>1)
+        return false;
     socket_peers[i] = s;
     return true;
 }
 
 Socket_StreamBase *Bridge::getPeer(unsigned char i)
 {
-    if (i>1) return nullptr;
+    if (i>1)
+        return nullptr;
     return socket_peers[i];
 }
 
