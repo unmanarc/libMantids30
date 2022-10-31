@@ -5,6 +5,7 @@
 #include <mdz_net_sockets/socket_tls.h>
 
 #include <atomic>
+#include <string>
 
 namespace Mantids { namespace RPC {
 
@@ -39,6 +40,7 @@ public:
     json getJRetrievedConfig();
 
 protected:
+    virtual std::pair<std::string,std::string> onPSKNotFound();;
 
     /**
      * @brief connectedToC2AfterFailingToLoadC2Config This function is called back when the first connection to the C2 was not successful.

@@ -9,6 +9,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -95,21 +96,38 @@ void RPCClientImpl::runRPClient()
         {
             // Load Key
             bool ok;
-            std::string key = Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() )
-                                                                        ,(char *)masterKey->data,masterKey->len,&ok
-                                                                        );
-            std::vector<std::string> keyParts;
+            std::string clientId, clientPSK;
+            std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() );
 
-            split(keyParts,key,is_any_of(":"),token_compress_on);
-
-            if (keyParts.size()!=2)
+            if (encryptedKey.empty())
             {
-                LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key not in ID:PSK format", remoteAddr.c_str(), remotePort);
-                _exit(-33);
+                auto i = onPSKNotFound();
+                if (i.first.empty())
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key content/file not found", remoteAddr.c_str(), remotePort);
+                    exit(-330);
+                }
+
+                // Using program defaults:
+                clientId = i.first;
+                clientPSK = i.second;
+            }
+            else
+            {
+                std::string tokenizedKey = Mantids::Helpers::Crypto::AES256DecryptB64( encryptedKey,(char *)masterKey->data,masterKey->len,&ok );
+                std::vector<std::string> keyParts;
+                split(keyParts,tokenizedKey,is_any_of(":"),token_compress_on);
+                if (keyParts.size()!=2)
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key not in ID:PSK format", remoteAddr.c_str(), remotePort);
+                    _exit(-331);
+                }
+                clientId = keyParts.at(0);
+                clientPSK = keyParts.at(1);
             }
 
             sockRPCClient.keys.setPSK();
-            sockRPCClient.keys.loadPSKAsClient(keyParts.at(0), keyParts.at(1));
+            sockRPCClient.keys.loadPSKAsClient(clientId, clientPSK);
         }
 
         LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
@@ -258,3 +276,5 @@ json RPCClientImpl::getJRetrievedConfig()
 {
     return jRetrievedConfig;
 }
+
+std::pair<std::string, std::string> RPCClientImpl::onPSKNotFound() { return  std::make_pair("","");  }
