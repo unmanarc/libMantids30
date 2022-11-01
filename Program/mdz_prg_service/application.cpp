@@ -453,11 +453,14 @@ void pidCheck()
 void exitRoutine(int , siginfo_t *, void *)
 {
     fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-    if (appPTR) appPTR->_shutdown();
+    if (appPTR)
+        appPTR->_shutdown();
     fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-
+    fflush(stderr);
     fflush(stdout);
-    if (!pidFile.empty()) remove(pidFile.c_str());
+
+    if (!pidFile.empty())
+        remove(pidFile.c_str());
     free_lock();
 
     _exit(0);
@@ -471,21 +474,22 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
     switch (fdwCtrlType)
     {
-    // Handle the CTRL-C signal.
     case CTRL_C_EVENT:
-    case CTRL_CLOSE_EVENT:
-        fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-        if (appPTR) appPTR->_shutdown();
-        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
-        return TRUE;
-        // Pass other signals to the next handler.
     case CTRL_BREAK_EVENT:
-        return FALSE;
+    case CTRL_CLOSE_EVENT:
     case CTRL_LOGOFF_EVENT:
-        return FALSE;
     case CTRL_SHUTDOWN_EVENT:
-        return FALSE;
     default:
+        // All termination events:
+
+        fprintf(stderr, "Receiving termination signal for (%s) - pid %d, event %ld.\n",
+                globalArgs.getDaemonName().c_str(), getpid(), fdwCtrlType);
+        if (appPTR)
+            appPTR->_shutdown();
+        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        fflush(stdout);
+        fflush(stderr);
+
         return FALSE;
     }
 }
@@ -501,11 +505,8 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 //        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
 //        break;
 //    }
-
 //}
 #endif
-
-
 
 void catch_sigterm()
 {
