@@ -1,7 +1,7 @@
 #include "rpcclientapplication.h"
 #include "globals.h"
 #include "mdz_hlp_functions/crypto.h"
-#include "mdz_hlp_functions/encoders.h"
+//#include "mdz_hlp_functions/encoders.h"
 #include "mdz_net_sockets/socket_tls.h"
 
 #include <mdz_hlp_functions/file.h>
@@ -140,7 +140,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
         if ( Globals::getLC_C2UsePSK() )
         {
             // Check the PSK Itself...
-            if (Globals::getLC_C2PSKSharedKeyFile().empty())
+            /*if (Globals::getLC_C2PSKSharedKeyFile().empty())
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "PSK File Not defined %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont=false;
@@ -158,7 +158,10 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
                     LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load PSK from %s", Globals::getLC_C2PSKSharedKeyFile().c_str());
                     cont=false;
                 }
-            }
+            }*/
+
+            // If failed, the application will end here...
+            Globals::getRpcImpl()->loadPSK();
 
             // Check CA if present
             if (!Globals::getLC_TLSCAFilePath().empty() && !tls.keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))

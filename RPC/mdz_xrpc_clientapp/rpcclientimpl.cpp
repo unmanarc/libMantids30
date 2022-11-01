@@ -1,6 +1,8 @@
 #include "rpcclientimpl.h"
 #include "globals.h"
+#include <cstdint>
 #include <inttypes.h>
+#include <string>
 #include <thread>
 
 #include <mdz_hlp_functions/crypto.h>
@@ -46,7 +48,6 @@ void RPCClientImpl::runRPClient()
     std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
     std::string pubCertPath = Globals::getLC_TLSCertFilePath();
 
-    auto masterKey = Globals::getMasterKey();
 
     for (;;)
     {
@@ -62,6 +63,8 @@ void RPCClientImpl::runRPClient()
                 LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
                 _exit(-3);
             }
+
+            auto masterKey = Globals::getMasterKey();
 
             // Check if using passphrase
             if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
@@ -96,38 +99,9 @@ void RPCClientImpl::runRPClient()
         {
             // Load Key
             bool ok;
-            std::string clientId, clientPSK;
-            std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() );
-
-            if (encryptedKey.empty())
-            {
-                auto i = onPSKNotFound();
-                if (i.first.empty())
-                {
-                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key content/file not found", remoteAddr.c_str(), remotePort);
-                    exit(-330);
-                }
-
-                // Using program defaults:
-                clientId = i.first;
-                clientPSK = i.second;
-            }
-            else
-            {
-                std::string tokenizedKey = Mantids::Helpers::Crypto::AES256DecryptB64( encryptedKey,(char *)masterKey->data,masterKey->len,&ok );
-                std::vector<std::string> keyParts;
-                split(keyParts,tokenizedKey,is_any_of(":"),token_compress_on);
-                if (keyParts.size()!=2)
-                {
-                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": PSK Key not in ID:PSK format", remoteAddr.c_str(), remotePort);
-                    _exit(-331);
-                }
-                clientId = keyParts.at(0);
-                clientPSK = keyParts.at(1);
-            }
-
+            auto idpsk = loadPSK();
             sockRPCClient.keys.setPSK();
-            sockRPCClient.keys.loadPSKAsClient(clientId, clientPSK);
+            sockRPCClient.keys.loadPSKAsClient(idpsk.id, idpsk.psk);
         }
 
         LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
@@ -277,4 +251,38 @@ json RPCClientImpl::getJRetrievedConfig()
     return jRetrievedConfig;
 }
 
-std::pair<std::string, std::string> RPCClientImpl::onPSKNotFound() { return  std::make_pair("","");  }
+RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
+{
+    bool ok;
+    PSKIdKey r;
+    std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() );
+    auto masterKey = Globals::getMasterKey();
+    if (encryptedKey.empty())
+    {
+        r = defaultPSK();
+        if (r.id.empty())
+        {
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: PSK Key content/file not found");
+            exit(-330);
+        }
+    }
+    else
+    {
+        std::string tokenizedKey = Mantids::Helpers::Crypto::AES256DecryptB64( encryptedKey,(char *)masterKey->data,masterKey->len,&ok );
+        std::vector<std::string> keyParts;
+        split(keyParts,tokenizedKey,is_any_of(":"),token_compress_on);
+        if (!ok || keyParts.size()!=2)
+        {
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: PSK Key not in ID:PSK format");
+            _exit(-331);
+        }
+        r.id = keyParts.at(0);
+        r.psk = keyParts.at(1);
+    }
+    return r;
+}
+
+RPCClientImpl::PSKIdKey RPCClientImpl::defaultPSK()
+{
+    return  {"",""};
+}

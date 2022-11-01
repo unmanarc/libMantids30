@@ -12,6 +12,11 @@ namespace Mantids { namespace RPC {
 class RPCClientImpl
 {
 public:
+    struct PSKIdKey {
+        std::string id;
+        std::string psk;
+    };
+
     RPCClientImpl();
     virtual ~RPCClientImpl();
 
@@ -39,8 +44,17 @@ public:
     // you should not be able to modify it, and during the initialization, both components are running.
     json getJRetrievedConfig();
 
+
+    PSKIdKey loadPSK();
+
+    /**
+     * @brief defaultPSK Virtual Function to be called when PSK is not defined.
+     * @return pair with identity and default PSK
+     */
+    virtual PSKIdKey defaultPSK();
+
+
 protected:
-    virtual std::pair<std::string,std::string> onPSKNotFound();;
 
     /**
      * @brief connectedToC2AfterFailingToLoadC2Config This function is called back when the first connection to the C2 was not successful.
