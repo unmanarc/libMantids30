@@ -199,6 +199,18 @@ public:
      */
     void setRWTimeout(uint32_t _rwTimeout = 40);
 
+
+    /**
+     * @brief getOverwriteObject
+     * @return
+     */
+    void *getOverwriteObject() const;
+    /**
+     * @brief setOverwriteObject Set overwrite object for functions
+     * @param newOverwriteObject object.
+     */
+    void setOverwriteObject(void *newOverwriteObject);
+
 protected:
     virtual void eventUnexpectedAnswerReceived(FastRPC_Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(sFastRPCParameters * params);
@@ -222,6 +234,7 @@ private:
     Mantids::Threads::Pool::ThreadPool * threadPool;
 
     std::thread pinger;
+    void * overwriteObject;
 
     std::atomic<bool> finished;
     uint32_t pingIntvl, rwTimeout;

@@ -25,6 +25,7 @@ FastRPC::FastRPC(uint32_t threadsCount, uint32_t taskQueues)
     threadPool = new Mantids::Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
     finished = false;
+    overwriteObject = nullptr;
 
     setRWTimeout();
     setPingInterval();
@@ -116,7 +117,10 @@ json FastRPC::runLocalRPCMethod(const std::string &methodName, const std::string
     Threads::Sync::Lock_RD lock(smutexMethods);
     if (methods.find(methodName) != methods.end())
     {
-        r = methods[methodName].rpcMethod(methods[methodName].obj,connectionKey,payload);
+        r = methods[methodName].rpcMethod(
+                                            overwriteObject?overwriteObject:methods[methodName].obj
+
+                                          ,connectionKey,payload);
         if (found) *found =true;
     }
     else
@@ -251,6 +255,16 @@ int FastRPC::processQuery(Network::Sockets::Socket_StreamBase *stream, const std
         }
     }
     return 1;
+}
+
+void *FastRPC::getOverwriteObject() const
+{
+    return overwriteObject;
+}
+
+void FastRPC::setOverwriteObject(void *newOverwriteObject)
+{
+    overwriteObject = newOverwriteObject;
 }
 
 uint32_t FastRPC::getRWTimeout() const
