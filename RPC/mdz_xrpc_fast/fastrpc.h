@@ -22,7 +22,7 @@ struct sFastRPCMethod
     /**
      * @brief Function pointer.
      */
-    json (*rpcMethod)(void * obj, const std::string &key, const json & parameters);
+    json (*rpcMethod)(void * obj, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
     /**
      * @brief obj object to pass
      */
@@ -37,8 +37,12 @@ struct sFastRPCParameters
     Threads::Sync::Mutex * mtSocket;
     std::string methodName;
     json payload;
-    std::string key;
     uint64_t requestId;
+
+    // Accesible objects:
+    std::string key;
+    void * obj;
+    std::string data;
 };
 
 class FastRPC_Connection : public Mantids::Threads::Safe::MapItem
@@ -54,6 +58,10 @@ public:
     Mantids::Network::Sockets::Socket_StreamBase * stream;
     Threads::Sync::Mutex * mtSocket;
     std::string key;
+
+    // Accesible objects:
+    void * obj;
+    std::string data;
 
     // Request ID counter.
     uint64_t requestIdCounter;
@@ -125,9 +133,41 @@ public:
      * @param key Connection Name, used for running remote RPC methods.
      * @param keyDistFactor threadpool distribution usage by the key (0.5 = half, 1.0 = full, 0.NN = NN%)
      * @param callbackOnConnectedMethod On connect Method to be executed in background (new thread) when connection is accepted/processed.
+     * @param obj object memory to be passed everywhere in the connection
+     * @param data string to be passsed everywhere in the connection
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(Mantids::Network::Sockets::Socket_StreamBase * stream, const std::string & key, const sFastRPCOnConnectedMethod & callbackOnConnectedMethod = {nullptr,nullptr}, const float & keyDistFactor=1.0 );
+    int processConnection(Mantids::Network::Sockets::Socket_StreamBase * stream,
+                          const std::string & key,
+                          const sFastRPCOnConnectedMethod & callbackOnConnectedMethod = {nullptr,nullptr},
+                          const float & keyDistFactor=1.0,
+                          void * obj = nullptr,
+                          const std::string & data = ""
+                          );
+
+
+    /**
+     * @brief processConnection2 Same as processConnection with callbackOnConnectedMethod and keyDistFactor as defaults
+     * @param stream
+     * @param key
+     * @param obj
+     * @param data
+     * @return
+     */
+    int processConnection2(Mantids::Network::Sockets::Socket_StreamBase * stream,
+                                  const std::string & key,
+                                  void * obj = nullptr,
+                                  const std::string & data = ""
+                                  )
+    {
+        return  processConnection(stream,
+                                  key,
+                                  {nullptr,nullptr},
+                                  1.0,
+                                  obj,
+                                  data
+                                  );
+    }
 
     /**
      * @brief setTimeout Timeout in milliseconds to desist to put the execution task into the threadpool
@@ -175,7 +215,7 @@ public:
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const json &payload, bool * found);
+    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const std::string & data, void *obj, const json &payload, bool * found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
 
@@ -222,7 +262,8 @@ private:
     static void sendRPCAnswer(sFastRPCParameters * parameters, const std::string & answer, uint8_t execution);
 
     int processAnswer(FastRPC_Connection *connection);
-    int processQuery(Mantids::Network::Sockets::Socket_StreamBase * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket);
+    int processQuery(Mantids::Network::Sockets::Socket_StreamBase * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket,
+                     void * obj,const std::string & data);
 
     Mantids::Threads::Safe::Map<std::string> connectionsByKeyId;
 

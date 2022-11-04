@@ -48,7 +48,6 @@ void RPCClientImpl::runRPClient()
     std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
     std::string pubCertPath = Globals::getLC_TLSCertFilePath();
 
-
     for (;;)
     {
         Mantids::Network::Sockets::Socket_TLS sockRPCClient;
