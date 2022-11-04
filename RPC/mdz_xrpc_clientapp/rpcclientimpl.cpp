@@ -257,13 +257,15 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() );
     auto masterKey = Globals::getMasterKey();
     if (encryptedKey.empty())
-    {
+    {       
         r = defaultPSK();
         if (r.id.empty())
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: PSK Key content/file not found");
             exit(-330);
         }
+        else
+            LOG_APP->log0(__func__,Logs::LEVEL_WARN, "Using default RPC-PSK Credentials");
     }
     else
     {
