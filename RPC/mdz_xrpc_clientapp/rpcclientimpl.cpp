@@ -252,12 +252,17 @@ json RPCClientImpl::getJRetrievedConfig()
 
 RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
 {
-    bool ok;
+    bool ok = false;
     PSKIdKey r;
-    std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() );
+    std::string encryptedKey = Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() , &ok);
     auto masterKey = Globals::getMasterKey();
-    if (encryptedKey.empty())
-    {       
+    if (!ok || encryptedKey.empty())
+    {
+        if (!ok)
+        {
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Failed to read '%s' RPC-PSK Credentials",Globals::getLC_C2PSKSharedKeyFile().c_str() );
+        }
+
         r = defaultPSK();
         if (r.id.empty())
         {
@@ -265,7 +270,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
             exit(-330);
         }
         else
-            LOG_APP->log0(__func__,Logs::LEVEL_WARN, "Using default RPC-PSK Credentials");
+            LOG_APP->log0(__func__,Logs::LEVEL_WARN, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
     }
     else
     {
@@ -279,6 +284,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
         }
         r.id = keyParts.at(0);
         r.psk = keyParts.at(1);
+        LOG_APP->log0(__func__,Logs::LEVEL_INFO, "RPC-PSK credentials loaded with id='%s' from the internal storage", r.id.c_str());
     }
     return r;
 }

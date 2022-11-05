@@ -132,7 +132,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
 
     bool cont=true;
 
-    // Check I will be able to connect:
+    // Check keys:
     if (1)
     {
         Network::Sockets::Socket_TLS tls;
@@ -140,25 +140,6 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
         if ( Globals::getLC_C2UsePSK() )
         {
             // Check the PSK Itself...
-            /*if (Globals::getLC_C2PSKSharedKeyFile().empty())
-            {
-                LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "PSK File Not defined %s", Globals::getLC_TLSCAFilePath().c_str());
-                cont=false;
-            }
-            else
-            {
-                bool ok = false;
-                // Load Key
-                Mantids::Helpers::Crypto::AES256DecryptB64( Mantids::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFile() )
-                                                                            ,(char *)masterKey->data,masterKey->len,&ok
-                                                                            );
-
-                if (!ok)
-                {
-                    LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load PSK from %s", Globals::getLC_C2PSKSharedKeyFile().c_str());
-                    cont=false;
-                }
-            }*/
 
             // If failed, the application will end here...
             Globals::getRpcImpl()->loadPSK();
@@ -167,7 +148,6 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
             if (!Globals::getLC_TLSCAFilePath().empty() && !tls.keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
-      //          cont=false;
             }
         }
         else
