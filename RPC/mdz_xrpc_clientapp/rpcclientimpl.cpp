@@ -93,6 +93,8 @@ void RPCClientImpl::runRPClient()
                 LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
                 _exit(-3);
             }
+
+            LOG_APP->log0(__func__,Logs::LEVEL_INFO, "PKI X.509 credentials loaded from the internal storage");
         }
         else
         {
@@ -269,8 +271,8 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: PSK Key content/file not found");
             exit(-330);
         }
-        else
-            LOG_APP->log0(__func__,Logs::LEVEL_WARN, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
+
+        LOG_APP->log0(__func__,Logs::LEVEL_WARN, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
     }
     else
     {

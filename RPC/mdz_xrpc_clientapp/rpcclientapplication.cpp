@@ -198,6 +198,10 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids::Application::A
                     cont=false;
                 }
             }
+
+            if (cont)
+                LOG_APP->log0(__func__,Logs::LEVEL_INFO, "PKI X.509 credentials loaded from the internal storage");
+
         }
     }
 
