@@ -1,6 +1,9 @@
 #include "streams_bridge_thread.h"
 #include <cstdint>
+
+#ifndef WIN32
 #include <netinet/in.h>
+#endif
 
 using namespace Mantids::Network::Sockets;
 using namespace NetStreams;
