@@ -61,7 +61,7 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(unsigned char i, Sockets::Socket_StreamBase * s, const TransmitionMode & tm = TRANSMITION_MODE_STREAM);
+    bool setPeer(unsigned char i, Sockets::Socket_StreamBase * s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)

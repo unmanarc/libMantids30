@@ -184,7 +184,7 @@ bool Bridge::processPeer(unsigned char cur)
     return true;
 }
 
-bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s, const TransmitionMode & tm)
+bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s)
 {
     if (i>1)
         return false;
