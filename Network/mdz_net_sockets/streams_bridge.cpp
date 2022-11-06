@@ -5,16 +5,18 @@ using namespace NetStreams;
 
 Bridge::Bridge()
 {
+    pingEveryMS = 5000;
     bridgeThreadPrc = nullptr;
     sentBytes = 0;
     recvBytes = 0;
 
-    socket_peers[0] = nullptr;
-    socket_peers[1] = nullptr;
+    peers[0] = nullptr;
+    peers[1] = nullptr;
 
     finishingPeer = -1;
     autoDeleteSocketsOnExit = false;
     autoDeleteCustomPipeOnClose = false;
+    transmitionMode = TRANSMITION_MODE_STREAM;
 
     setAutoDeleteStreamPipeOnThreadExit(true);
     setToShutdownRemotePeer(true);
@@ -25,14 +27,45 @@ Bridge::~Bridge()
 {
     if (autoDeleteSocketsOnExit)
     {
-        if (socket_peers[0]) delete socket_peers[0];
-        if (socket_peers[1]) delete socket_peers[1];
+        if (peers[0])
+            delete peers[0];
+        if (peers[1])
+            delete peers[1];
     }
+}
+
+void Bridge::pipeThread(Bridge *stp)
+{
+    stp->process();
+    if (stp->isAutoDeleteStreamPipeOnThreadExit())
+    {
+        delete stp;
+    }
+}
+
+uint32_t Bridge::getPingEveryMS() const
+{
+    return pingEveryMS;
+}
+
+void Bridge::setPingEveryMS(uint32_t newPingEveryMS)
+{
+    pingEveryMS = newPingEveryMS;
+}
+
+void Bridge::remotePeerThread(Bridge *stp)
+{
+    stp->processPeer(1);
+}
+
+void Bridge::pingThread(Bridge *stp)
+{
+    stp->sendPing();
 }
 
 bool Bridge::start(bool _autoDeleteStreamPipeOnExit, bool detach)
 {
-    if (!socket_peers[0] || !socket_peers[1])
+    if (!peers[0] || !peers[1])
         return false;
 
     autoDeleteStreamPipeOnExit = _autoDeleteStreamPipeOnExit;
@@ -45,6 +78,25 @@ bool Bridge::start(bool _autoDeleteStreamPipeOnExit, bool detach)
     return true;
 }
 
+void Bridge::sendPing()
+{
+    std::unique_lock<std::mutex> lock(mutex_endPingLoop);
+    using Ms = std::chrono::milliseconds;
+
+    while(!pingFinished)
+    {
+        if (cond_endPing.wait_for(lock,Ms(pingEveryMS)) == std::cv_status::timeout)
+        {
+            // Send some ping...
+            bridgeThreadPrc->sendPing();
+        }
+        else
+        {
+            // notified to terminate pings...
+        }
+    }
+}
+
 int Bridge::wait()
 {
     pipeThreadP.join();
@@ -53,7 +105,7 @@ int Bridge::wait()
 
 int Bridge::process()
 {
-    if (!socket_peers[0] || !socket_peers[1])
+    if (!peers[0] || !peers[1])
         return -1;
 
     if (!bridgeThreadPrc)
@@ -62,21 +114,39 @@ int Bridge::process()
         autoDeleteCustomPipeOnClose = true;
     }
 
-    bridgeThreadPrc->setSocket_StreamBases(socket_peers[0],socket_peers[1]);
+    bridgeThreadPrc->setSocketEndpoints(peers[0],peers[1], transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
 
     if (bridgeThreadPrc->startPipeSync())
     {
+        pingFinished = false;
+        std::thread pingerThread;
+        if (transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        {
+             pingerThread = std::thread(pingThread, this);
+        }
+
         std::thread remotePeerThreadP = std::thread(remotePeerThread, this);
         processPeer(0);
         remotePeerThreadP.join();
+
+        // Wait until the ping loop is in "rest mode"
+        if (transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        {
+            std::unique_lock<std::mutex> lock(mutex_endPingLoop);
+            // and notify that there is no more pings
+            pingFinished = true;
+            cond_endPing.notify_one();
+            pingerThread.join();
+        }
+
     }
 
     // All connections terminated.
     if (closeRemotePeerOnFinish)
     {
         // close them also.
-        socket_peers[1]->closeSocket();
-        socket_peers[0]->closeSocket();
+        peers[1]->closeSocket();
+        peers[0]->closeSocket();
     }
 
     if ( autoDeleteCustomPipeOnClose )
@@ -99,12 +169,14 @@ bool Bridge::processPeer(unsigned char cur)
     int dataRecv=0;
     while ( dataRecv >= 0 )
     {
-        dataRecv = cur==0?bridgeThreadPrc->processPipeFWD():bridgeThreadPrc->processPipeREV();
+        dataRecv = bridgeThreadPrc->processPipe(cur==0); // ?bridgeThreadPrc->processPipeFWD():bridgeThreadPrc->processPipeREV();
 
-        if (dataRecv>=0) *bytesCounter+=dataRecv;
+        if (dataRecv>=0)
+            *bytesCounter+=dataRecv;
+
         else if (dataRecv==-1 && shutdownRemotePeerOnFinish)
         {
-            socket_peers[next]->shutdownSocket();
+            peers[next]->shutdownSocket();
             finishingPeer = cur;
         }
     }
@@ -112,11 +184,11 @@ bool Bridge::processPeer(unsigned char cur)
     return true;
 }
 
-bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s)
+bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s, const TransmitionMode & tm)
 {
     if (i>1)
         return false;
-    socket_peers[i] = s;
+    peers[i] = s;
     return true;
 }
 
@@ -124,7 +196,7 @@ Socket_StreamBase *Bridge::getPeer(unsigned char i)
 {
     if (i>1)
         return nullptr;
-    return socket_peers[i];
+    return peers[i];
 }
 
 void Bridge::setAutoDeleteStreamPipeOnThreadExit(bool value)
@@ -174,16 +246,13 @@ void Bridge::setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit)
     bridgeThreadPrc = value;
 }
 
-void Bridge::remotePeerThread(Bridge *stp)
+Bridge::TransmitionMode Bridge::getTransmitionMode() const
 {
-    stp->processPeer(1);
+    return transmitionMode;
 }
 
-void Bridge::pipeThread(Bridge *stp)
+void Bridge::setTransmitionMode(TransmitionMode newTransmitionMode)
 {
-    stp->process();
-    if (stp->isAutoDeleteStreamPipeOnThreadExit())
-    {
-        delete stp;
-    }
+    transmitionMode = newTransmitionMode;
 }
+

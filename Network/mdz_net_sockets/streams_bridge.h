@@ -4,10 +4,13 @@
 #include "socket_streambase.h"
 #include "streams_bridge_thread.h"
 
+#include <cstdint>
 #include <stdint.h>
 
 #include <atomic>
 #include <thread>
+#include <condition_variable>
+#include <mutex>
 
 namespace Mantids { namespace Network { namespace Sockets { namespace NetStreams {
 
@@ -17,6 +20,10 @@ namespace Mantids { namespace Network { namespace Sockets { namespace NetStreams
 class Bridge
 {
 public:
+    enum TransmitionMode {
+        TRANSMITION_MODE_STREAM=0,
+        TRANSMITION_MODE_CHUNKSANDPING=1
+    };
     /**
      * @brief Socket_Bridge constructor.
      */
@@ -54,7 +61,7 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(unsigned char i, Sockets::Socket_StreamBase * s);
+    bool setPeer(unsigned char i, Sockets::Socket_StreamBase * s, const TransmitionMode & tm = TRANSMITION_MODE_STREAM);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
@@ -107,18 +114,48 @@ public:
      */
     void setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit = false);
 
+    /**
+     * @brief getTransmitionMode Get Transmition Mode
+     * @return value with the mode (chunked or streamed)
+     */
+    TransmitionMode getTransmitionMode() const;
+    /**
+     * @brief setTransmitionMode set the transmition mode
+     * @param newTransmitionMode  value with the mode (chunked or streamed)
+     */
+    void setTransmitionMode(TransmitionMode newTransmitionMode);
+
+
+    /**
+     * @brief sendPing
+     */
+    void sendPing();
+
+
+    uint32_t getPingEveryMS() const;
+    void setPingEveryMS(uint32_t newPingEveryMS);
+
 private:
     static void remotePeerThread(Bridge * stp);
-
+    static void pingThread(Bridge * stp);
     static void pipeThread(Bridge * stp);
 
     Bridge_Thread *bridgeThreadPrc;
-    Sockets::Socket_StreamBase * socket_peers[2];
+
+    Sockets::Socket_StreamBase * peers[2];
+    TransmitionMode transmitionMode;
+
     std::atomic<uint64_t> sentBytes,recvBytes;
     std::atomic<int> finishingPeer;
     std::atomic<bool> shutdownRemotePeerOnFinish;
     std::atomic<bool> closeRemotePeerOnFinish;
 
+    std::mutex mutex_endPingLoop;
+    std::condition_variable cond_endPing;
+
+    uint32_t pingEveryMS;
+
+    bool pingFinished;
     bool autoDeleteStreamPipeOnExit;
     bool autoDeleteSocketsOnExit;
     bool autoDeleteCustomPipeOnClose;
