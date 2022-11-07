@@ -126,7 +126,7 @@ int Bridge_Thread::processPipe(bool fwd)
             bool readOK;
             bytesReceived = dst->readU<uint16_t>(&readOK);
             if (!readOK)
-                return -2;
+                return -1;
 
             // It's a ping! (do nothing)
             if (bytesReceived == 0)
@@ -134,7 +134,7 @@ int Bridge_Thread::processPipe(bool fwd)
 
             // Attempt to read from the dst
             if (!dst->readFull(curBlock,(uint16_t)bytesReceived))
-                return -2;
+                return -1;
 
             // Attempt to write to the src
             if (!src->writeFull(curBlock,(uint16_t)bytesReceived))
