@@ -139,6 +139,8 @@ int Bridge_Thread::processPipe(bool fwd)
             // Attempt to write to the src
             if (!src->writeFull(curBlock,(uint16_t)bytesReceived))
                 return -2;
+
+            return bytesReceived;
         }
     }
 
