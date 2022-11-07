@@ -348,7 +348,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
             else
             {
-                lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + ("failed with SELTMOUT: Timeout while connecting...");
+                lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
                 return false;
             }
         }
