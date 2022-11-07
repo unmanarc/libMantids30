@@ -136,6 +136,9 @@ int Bridge::process()
             // and notify that there is no more pings
             pingFinished = true;
             cond_endPing.notify_one();
+        }
+        if (transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        {
             pingerThread.join();
         }
 
