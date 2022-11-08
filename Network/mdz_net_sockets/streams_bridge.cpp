@@ -185,11 +185,11 @@ bool Bridge::processPeer(Side currentSide)
         // -1 : socket error
         // -2: write error (don't need to close or do nothing, just bye because the other peer will report the read error in the same socket)
         // -3: ping
-        if (dataRecv>0)
+        if (dataRecv>=0)
         {
             *bytesCounter+=dataRecv;
         }
-        else if ( (dataRecv==-1 || dataRecv==0 ) && shutdownRemotePeerOnFinish )
+        else if ( (dataRecv==-1 ) && shutdownRemotePeerOnFinish )
         {
             lastError[currentSide] = dataRecv;
             peers[oppositeSide]->shutdownSocket();
