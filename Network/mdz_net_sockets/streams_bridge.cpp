@@ -177,7 +177,7 @@ bool Bridge::processPeer(Side currentSide)
     std::atomic<uint64_t> * bytesCounter = currentSide==0?&sentBytes:&recvBytes;
 
     int dataRecv=0;
-    while ( dataRecv >= 0 )
+    while ( dataRecv > 0 )
     {
         dataRecv = bridgeThreadPrc->processPipe(currentSide);
         // >0 : data processed
@@ -185,11 +185,11 @@ bool Bridge::processPeer(Side currentSide)
         // -1 : socket error
         // -2: write error (don't need to close or do nothing, just bye because the other peer will report the read error in the same socket)
         // -3: ping
-        if (dataRecv>=0)
+        if (dataRecv>0)
         {
             *bytesCounter+=dataRecv;
         }
-        else if ( (dataRecv==-1 ) && shutdownRemotePeerOnFinish )
+        else if ( (dataRecv==-1 || dataRecv==0 ) && shutdownRemotePeerOnFinish )
         {
             lastError[currentSide] = dataRecv;
             peers[oppositeSide]->shutdownSocket();
@@ -199,6 +199,8 @@ bool Bridge::processPeer(Side currentSide)
         {
             std::unique_lock<std::mutex> l(mutex_lastPing);
             lastPing = time(nullptr);
+            // set to continue to iterate:
+            dataRecv = 1;
         }
     }
 
