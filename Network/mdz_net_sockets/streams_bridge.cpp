@@ -176,7 +176,7 @@ bool Bridge::processPeer(Side currentSide)
 
     std::atomic<uint64_t> * bytesCounter = currentSide==0?&sentBytes:&recvBytes;
 
-    int dataRecv=0;
+    int dataRecv=1;
     while ( dataRecv > 0 )
     {
         dataRecv = bridgeThreadPrc->processPipe(currentSide);
