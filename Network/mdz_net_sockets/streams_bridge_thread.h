@@ -43,6 +43,8 @@ public:
      */
     bool writeBlockL(const void *data, const uint32_t &datalen, bool fwd = true);
 
+    void terminate();
+
 protected:
     Sockets::Socket_StreamBase * src;
     char * block_fwd;
@@ -51,7 +53,7 @@ protected:
 
 private:
 
-
+    std::atomic<bool> terminated;
     bool chunked;
 
     Sockets::Socket_StreamBase * dst;

@@ -13,6 +13,7 @@ Bridge_Thread::Bridge_Thread()
     block_fwd = nullptr;
     block_bwd = nullptr;
     chunked = false;
+    terminated = false;
     setBlockSize(8192);
 }
 
@@ -52,6 +53,11 @@ void Bridge_Thread::setBlockSize(uint16_t value)
 
     block_fwd = new char[value];
     block_bwd = new char[value];
+}
+
+void Bridge_Thread::terminate()
+{
+    terminated = true;
 }
 
 int Bridge_Thread::processPipe(Side fwd)
@@ -111,9 +117,14 @@ int Bridge_Thread::processPipe(Side fwd)
             if (!readOK)
                 return -1;
 
-            // It's a ping! (do nothing)
+            // It's a ping! (do nothing, but validate that the connection is not terminated yet)
             if (bytesReceived == 0)
+            {
+                if (terminated)
+                    return -2;
+
                 return -3;
+            }
 
             // Attempt to read from the dst
             if (!dst->readFull(curBlock,(uint16_t)bytesReceived))

@@ -193,6 +193,7 @@ bool Bridge::processPeer(Side currentSide)
         {
             lastError[currentSide] = dataRecv;
             peers[oppositeSide]->shutdownSocket();
+            bridgeThreadPrc->terminate();
             finishingPeer = currentSide;
         }
         else if ( dataRecv==-3 ) // Only pings are received from one side.
