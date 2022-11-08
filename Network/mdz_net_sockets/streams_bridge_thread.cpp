@@ -69,6 +69,8 @@ int Bridge_Thread::processPipe(Side fwd)
     if ( !chunked )
     {
         // Stream mode: read and write from the both peers
+
+        // TODO: if writer is done...
         if ((bytesReceived=
              (fwd==SIDE_FORWARD?src:dst)->partialRead(curBlock,blockSize)
              )>0)
