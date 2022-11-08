@@ -11,7 +11,7 @@ using namespace NetStreams;
 Bridge_Thread::Bridge_Thread()
 {
     block_fwd = nullptr;
-    block_rev = nullptr;
+    block_bwd = nullptr;
     chunked = false;
     setBlockSize(8192);
 }
@@ -19,7 +19,7 @@ Bridge_Thread::Bridge_Thread()
 Bridge_Thread::~Bridge_Thread()
 {
     delete [] block_fwd;
-    delete [] block_rev;
+    delete [] block_bwd;
 }
 
 void Bridge_Thread::setSocketEndpoints(Socket_StreamBase *src, Socket_StreamBase *dst, bool chunked)
@@ -35,17 +35,7 @@ bool Bridge_Thread::sendPing()
     bool r = dst->writeU<uint16_t>((uint16_t)0);
     return r;
 }
-/*
-int Bridge_Thread::processPipeFWD()
-{
-    return simpleProcessPipe(true);
-}
 
-int Bridge_Thread::processPipeREV()
-{
-    return simpleProcessPipe(false);
-}
-*/
 bool Bridge_Thread::startPipeSync()
 {
     return true;
@@ -55,25 +45,18 @@ void Bridge_Thread::setBlockSize(uint16_t value)
 {
     if (block_fwd)
         delete [] block_fwd;
-    if (block_rev)
-        delete [] block_rev;
+    if (block_bwd)
+        delete [] block_bwd;
 
     blockSize = value;
 
     block_fwd = new char[value];
-    block_rev = new char[value];
+    block_bwd = new char[value];
 }
-/*
-bool Bridge_Thread::writeBlockL(const void *data, const uint32_t & datalen, bool fwd)
-{
-    std::lock_guard<std::mutex> lock(fwd?mt_fwd:mt_rev);
-    Socket_StreamBase *dstX=fwd?dst:src;
-    return dstX->writeFull(data,datalen);
-}*/
 
-int Bridge_Thread::processPipe(bool fwd)
+int Bridge_Thread::processPipe(Side fwd)
 {
-    char * curBlock = fwd?block_fwd:block_rev;
+    char * curBlock = fwd==SIDE_FORWARD?block_fwd:block_bwd;
 
     int bytesReceived;
 
@@ -81,13 +64,13 @@ int Bridge_Thread::processPipe(bool fwd)
     {
         // Stream mode: read and write from the both peers
         if ((bytesReceived=
-             (fwd?src:dst)->partialRead(curBlock,blockSize)
+             (fwd==SIDE_FORWARD?src:dst)->partialRead(curBlock,blockSize)
              )>0)
         {
             {
-                std::lock_guard<std::mutex> lock(fwd?mt_fwd:mt_rev);
+                std::lock_guard<std::mutex> lock(fwd==SIDE_FORWARD?mt_fwd:mt_rev);
 
-                if (!(fwd?dst:src)->writeFull(curBlock,bytesReceived))
+                if (!(fwd==SIDE_FORWARD?dst:src)->writeFull(curBlock,bytesReceived))
                     return -2;
             }
 
@@ -97,7 +80,7 @@ int Bridge_Thread::processPipe(bool fwd)
     }
     else
     {
-        if (fwd)
+        if (fwd == SIDE_FORWARD)
         {
             // 0->1 (encapsulate)
 
@@ -130,7 +113,7 @@ int Bridge_Thread::processPipe(bool fwd)
 
             // It's a ping! (do nothing)
             if (bytesReceived == 0)
-                return 0;
+                return -3;
 
             // Attempt to read from the dst
             if (!dst->readFull(curBlock,(uint16_t)bytesReceived))
@@ -146,8 +129,3 @@ int Bridge_Thread::processPipe(bool fwd)
 
     return -1;
 }
-/*
-int Bridge_Thread::partialReadL(void *data, const uint32_t &datalen, bool fwd)
-{
-    return (fwd?src:dst)->partialRead(data,datalen);
-}*/

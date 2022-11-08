@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 ##############################################################################################################################
 # Vars and Versions:
-set(SVERSION 2.8.5)
+set(SVERSION 2.8.6)
 
 set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids")
 set(PROJECT_CONTACT "Aaron G. Mizrachi P. <aaron@unmanarc.com>")

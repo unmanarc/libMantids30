@@ -6,6 +6,10 @@
 #include <mutex>
 
 namespace Mantids { namespace Network { namespace Sockets { namespace NetStreams {
+enum Side {
+    SIDE_FORWARD=1,
+    SIDE_BACKWARD=0
+};
 
 class Bridge_Thread
 {
@@ -14,20 +18,6 @@ public:
     virtual ~Bridge_Thread();
 
     void setSocketEndpoints(Sockets::Socket_StreamBase * src, Sockets::Socket_StreamBase * dst, bool chunked);
-    /**
-     * @brief processPipeFWD reads from SRC and write into DST making the proper transformations
-     * @param src socket to read from.
-     * @param dst socket to write into.
-     * @return -1 if src terminated the connection, -2 if dst terminated the connection, otherwise, bytes processed.
-     */
-  //  virtual int processPipeFWD();
-    /**
-     * @brief processPipeREV
-     * @param src socket to read from.
-     * @param dst socket to write into.
-     * @return -1 if src terminated the connection, -2 if dst terminated the connection, otherwise, bytes processed.
-     */
-//    virtual int processPipeREV();
 
     bool sendPing();
 
@@ -37,8 +27,7 @@ public:
      * @param dst socket to read from.
      * @return -1 if src terminated the connection, -2 if dst terminated the connection, otherwise, bytes processed.
      */
-    int processPipe(bool fwd);
-
+    int processPipe(Side fwd);
 
     virtual bool startPipeSync();
     /**
@@ -66,7 +55,7 @@ private:
     bool chunked;
 
     Sockets::Socket_StreamBase * dst;
-    char * block_rev;
+    char * block_bwd;
 
     std::mutex mt_fwd, mt_rev;
 };

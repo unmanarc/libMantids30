@@ -14,6 +14,7 @@
 
 namespace Mantids { namespace Network { namespace Sockets { namespace NetStreams {
 
+
 /**
  * @brief The Bridge class connect two pipe stream sockets.
  */
@@ -54,20 +55,20 @@ public:
      * @param i peer number (0 or 1)
      * @return true if transmitted and closed, false if failed.
      */
-    bool processPeer(unsigned char i);
+    bool processPeer(Side i);
     /**
      * @brief SetPeer Set Stream Socket Peer (0 or 1)
      * @param i peer number: 0 or 1.
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(unsigned char i, Sockets::Socket_StreamBase * s);
+    bool setPeer(Side i, Sockets::Socket_StreamBase * s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    Sockets::Socket_StreamBase * getPeer(unsigned char i);
+    Sockets::Socket_StreamBase * getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -124,13 +125,19 @@ public:
      * @param newTransmitionMode  value with the mode (chunked or streamed)
      */
     void setTransmitionMode(TransmitionMode newTransmitionMode);
+    /**
+     * @brief getLastPing Get Last Ping (in unix epoch time)
+     * @return last ping
+     */
+    time_t getLastPing();
 
+
+    int getLastError(Side side);
 
     /**
-     * @brief sendPing
+     * @brief sendPing (internal function)
      */
     void sendPing();
-
 
     uint32_t getPingEveryMS() const;
     void setPingEveryMS(uint32_t newPingEveryMS);
@@ -149,6 +156,11 @@ private:
     std::atomic<int> finishingPeer;
     std::atomic<bool> shutdownRemotePeerOnFinish;
     std::atomic<bool> closeRemotePeerOnFinish;
+
+    int lastError[2];
+
+    std::mutex mutex_lastPing;
+    time_t lastPing;
 
     std::mutex mutex_endPingLoop;
     std::condition_variable cond_endPing;

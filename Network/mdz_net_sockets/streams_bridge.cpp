@@ -1,4 +1,5 @@
 #include "streams_bridge.h"
+#include <mutex>
 
 using namespace Mantids::Network::Sockets;
 using namespace NetStreams;
@@ -12,6 +13,11 @@ Bridge::Bridge()
 
     peers[0] = nullptr;
     peers[1] = nullptr;
+
+    lastError[0] = 0;
+    lastError[1] = 0;
+
+    lastPing = 0;
 
     finishingPeer = -1;
     autoDeleteSocketsOnExit = false;
@@ -55,7 +61,7 @@ void Bridge::setPingEveryMS(uint32_t newPingEveryMS)
 
 void Bridge::remotePeerThread(Bridge *stp)
 {
-    stp->processPeer(1);
+    stp->processPeer(SIDE_BACKWARD);
 }
 
 void Bridge::pingThread(Bridge *stp)
@@ -105,7 +111,7 @@ int Bridge::wait()
 
 int Bridge::process()
 {
-    if (!peers[0] || !peers[1])
+    if (!peers[SIDE_FORWARD] || !peers[SIDE_BACKWARD])
         return -1;
 
     if (!bridgeThreadPrc)
@@ -126,7 +132,7 @@ int Bridge::process()
         }
 
         std::thread remotePeerThreadP = std::thread(remotePeerThread, this);
-        processPeer(0);
+        processPeer(SIDE_FORWARD);
         remotePeerThreadP.join();
 
         // Wait until the ping loop is in "rest mode"
@@ -161,33 +167,45 @@ int Bridge::process()
     return finishingPeer;
 }
 
-bool Bridge::processPeer(unsigned char cur)
+bool Bridge::processPeer(Side currentSide)
 {
-    if (cur>1)
+    if (currentSide>1)
         return false;
 
-    unsigned char next = cur==0?1:0;
-    std::atomic<uint64_t> * bytesCounter = cur==0?&sentBytes:&recvBytes;
+    Side oppositeSide = currentSide==SIDE_FORWARD?SIDE_BACKWARD:SIDE_FORWARD;
+
+    std::atomic<uint64_t> * bytesCounter = currentSide==0?&sentBytes:&recvBytes;
 
     int dataRecv=0;
     while ( dataRecv >= 0 )
     {
-        dataRecv = bridgeThreadPrc->processPipe(cur==0); // ?bridgeThreadPrc->processPipeFWD():bridgeThreadPrc->processPipeREV();
-
-        if (dataRecv>=0)
-            *bytesCounter+=dataRecv;
-
-        else if (dataRecv==-1 && shutdownRemotePeerOnFinish)
+        dataRecv = bridgeThreadPrc->processPipe(currentSide);
+        // >0 : data processed
+        //  0 : ordered socket shutdown
+        // -1 : socket error
+        // -2: write error (don't need to close or do nothing, just bye because the other peer will report the read error in the same socket)
+        // -3: ping
+        if (dataRecv>0)
         {
-            peers[next]->shutdownSocket();
-            finishingPeer = cur;
+            *bytesCounter+=dataRecv;
+        }
+        else if ( (dataRecv==-1 || dataRecv==0 ) && shutdownRemotePeerOnFinish )
+        {
+            lastError[currentSide] = dataRecv;
+            peers[oppositeSide]->shutdownSocket();
+            finishingPeer = currentSide;
+        }
+        else if ( dataRecv==-3 ) // Only pings are received from one side.
+        {
+            std::unique_lock<std::mutex> l(mutex_lastPing);
+            lastPing = time(nullptr);
         }
     }
 
     return true;
 }
 
-bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s)
+bool Bridge::setPeer(Side i, Socket_StreamBase *s)
 {
     if (i>1)
         return false;
@@ -195,7 +213,7 @@ bool Bridge::setPeer(unsigned char i, Socket_StreamBase *s)
     return true;
 }
 
-Socket_StreamBase *Bridge::getPeer(unsigned char i)
+Socket_StreamBase *Bridge::getPeer(Side i)
 {
     if (i>1)
         return nullptr;
@@ -243,7 +261,6 @@ void Bridge::setAutoDeleteSocketsOnExit(bool value)
 }
 
 // TODO: deleteOnExit
-
 void Bridge::setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit)
 {
     bridgeThreadPrc = value;
@@ -257,5 +274,18 @@ Bridge::TransmitionMode Bridge::getTransmitionMode() const
 void Bridge::setTransmitionMode(TransmitionMode newTransmitionMode)
 {
     transmitionMode = newTransmitionMode;
+}
+
+time_t Bridge::getLastPing()
+{
+    std::unique_lock<std::mutex> l(mutex_lastPing);
+    return lastPing;
+}
+
+int Bridge::getLastError(Side side)
+{
+    if (side>1)
+        return -1;
+    return lastError[side];
 }
 
