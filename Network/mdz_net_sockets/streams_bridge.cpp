@@ -120,7 +120,7 @@ int Bridge::process()
         autoDeleteCustomPipeOnClose = true;
     }
 
-    bridgeThreadPrc->setSocketEndpoints(peers[0],peers[1], transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
+    bridgeThreadPrc->setSocketEndpoints(peers[SIDE_BACKWARD],peers[SIDE_FORWARD], transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
 
     if (bridgeThreadPrc->startPipeSync())
     {
@@ -174,7 +174,7 @@ bool Bridge::processPeer(Side currentSide)
 
     Side oppositeSide = currentSide==SIDE_FORWARD?SIDE_BACKWARD:SIDE_FORWARD;
 
-    std::atomic<uint64_t> * bytesCounter = currentSide==0?&sentBytes:&recvBytes;
+    std::atomic<uint64_t> * bytesCounter = currentSide==SIDE_FORWARD?&sentBytes:&recvBytes;
 
     int dataRecv=1;
     while ( dataRecv > 0 )
@@ -191,10 +191,10 @@ bool Bridge::processPeer(Side currentSide)
         }
         else if ( (dataRecv==-1 || dataRecv==0 ) && shutdownRemotePeerOnFinish )
         {
-            lastError[currentSide] = dataRecv;
-            peers[oppositeSide]->shutdownSocket();
+            lastError[oppositeSide] = dataRecv;
+            peers[currentSide]->shutdownSocket();
             bridgeThreadPrc->terminate();
-            finishingPeer = currentSide;
+            finishingPeer = oppositeSide;
         }
         else if ( dataRecv==-3 ) // Only pings are received from one side.
         {
@@ -291,4 +291,3 @@ int Bridge::getLastError(Side side)
         return -1;
     return lastError[side];
 }
-
