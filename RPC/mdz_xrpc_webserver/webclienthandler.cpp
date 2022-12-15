@@ -1,4 +1,5 @@
 #include "webclienthandler.h"
+#include "mdz_auth/data.h"
 #include "mdz_proto_http/rsp_status.h"
 #include "mdz_xrpc_common/methodsmanager.h"
 
@@ -229,7 +230,7 @@ void replaceHexCodes( std::string &content )
 }
 
 // TODO: documentar los privilegios cargados de un usuario
-Status::eRetCode WebClientHandler::procResource_HTMLIEngine( const std::string & sRealFullPath, MultiAuths *extraAuths)
+Status::eRetCode WebClientHandler::procResource_HTMLIEngine( const std::string & sRealFullPath, Authentication::Multi *extraAuths)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -586,7 +587,7 @@ bool WebClientHandler::csrfValidate()
     return csrfValidationOK;
 }
 
-Status::eRetCode WebClientHandler::procResource_File(MultiAuths *extraAuths)
+Status::eRetCode WebClientHandler::procResource_File(Authentication::Multi *extraAuths)
 {
     // WEB RESOURCE MODE:
     HTTP::Status::eRetCode ret  = HTTP::Status::S_404_NOT_FOUND;
@@ -702,7 +703,7 @@ Status::eRetCode WebClientHandler::procJAPI_Session_CSRFTOKEN()
     return HTTP::Status::S_200_OK;
 }
 
-Status::eRetCode WebClientHandler::procJAPI_Session_LOGIN(const Authentication & auth)
+Status::eRetCode WebClientHandler::procJAPI_Session_LOGIN(const Authentication::Data & auth)
 {
     Mantids::Authentication::Reason authReason;
     uint64_t uMaxAge;
@@ -782,7 +783,7 @@ Status::eRetCode WebClientHandler::procJAPI_Session_LOGIN(const Authentication &
     return eHTTPResponseRetCode;
 }
 
-Status::eRetCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authentication &auth)
+Status::eRetCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authentication::Data &auth)
 {
     Mantids::Authentication::Reason authReason;
     Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
@@ -836,7 +837,7 @@ Status::eRetCode WebClientHandler::procJAPI_Session_POSTLOGIN(const Authenticati
     return eHTTPResponseRetCode;
 }
 
-Status::eRetCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
+Status::eRetCode WebClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
                                                      std::string sMethodName,
                                                      std::string sPayloadIn,
                                                      Memory::Streams::StreamableJSON * jPayloadOutStr
@@ -991,7 +992,7 @@ Status::eRetCode WebClientHandler::procJAPI_Exec(MultiAuths *extraAuths,
     return eHTTPResponseRetCode;
 }
 
-Status::eRetCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentication &oldAuth)
+Status::eRetCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authentication::Data &oldAuth)
 {
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
@@ -1001,7 +1002,7 @@ Status::eRetCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authenticatio
     Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(useFormattedJSONOutput);
 
-    Authentication newAuth;
+    Authentication::Data newAuth;
 
     // POST VARS / AUTH:
     if (!newAuth.fromString(clientRequest.getVars(HTTP_VARS_POST)->getStringValue("newAuth")))
@@ -1072,7 +1073,7 @@ Status::eRetCode WebClientHandler::procJAPI_Session_CHPASSWD(const Authenticatio
 
 }
 
-Status::eRetCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authentication &auth)
+Status::eRetCode WebClientHandler::procJAPI_Session_TESTPASSWD(const Authentication::Data &auth)
 {
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
@@ -1170,7 +1171,8 @@ void WebClientHandler::setUserIP(const std::string &value)
     userIP = value;
 }
 
-std::string WebClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication &authData, Mantids::Authentication::Session *lAuthSession, Mantids::Authentication::Reason * authReason)
+// TODO: pasar a Session
+std::string WebClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication::Data &authData, Mantids::Authentication::Session *lAuthSession, Mantids::Authentication::Reason * authReason)
 {
     json payload;
     std::string sessionId;
@@ -1234,7 +1236,7 @@ std::string WebClientHandler::persistentAuthentication(const string &userName, c
     return sessionId;
 }
 
-Mantids::Authentication::Reason WebClientHandler::temporaryAuthentication( const std::string & userName, const std::string & domainName,const Authentication &authData)
+Mantids::Authentication::Reason WebClientHandler::temporaryAuthentication(const std::string & userName, const std::string & domainName, const Authentication::Data &authData)
 {
     Mantids::Authentication::Reason eReason;
 

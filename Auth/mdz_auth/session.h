@@ -1,6 +1,8 @@
 #ifndef IAUTH_SESSION_H
 #define IAUTH_SESSION_H
 
+#include "data.h"
+#include "domains.h"
 #include "manager.h"
 #include "session_vars.h"
 
@@ -47,18 +49,7 @@ public:
     };
 
     Session(const std::string & appName);
-   /* Session& operator=(Session &value)
-    {
-        this->appName = value.appName;
-        this->authUser = value.authUser;
 
-        this->sessionId = value.sessionId;
-        this->authMatrix = value.authMatrix;
-        this->authPolicies = value.authPolicies;
-        this->firstActivity = value.firstActivity;
-
-        return *this;
-    }*/
     /**
      * @brief getIdxAuthenticationStatus
      * @param passIndex

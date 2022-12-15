@@ -1,13 +1,15 @@
 #ifndef XRPC_SERVER_H
 #define XRPC_SERVER_H
 
+#include "mdz_auth/data.h"
 #include "sessionsmanager.h"
 #include "resourcesfilter.h"
 
+#include <mdz_xrpc_common/streamablejson.h>
 #include <mdz_xrpc_common/methodsmanager.h>
 #include <mdz_auth/domains.h>
+#include <mdz_auth/multi.h>
 #include <mdz_proto_http/httpv1_server.h>
-#include <mdz_xrpc_common/multiauths.h>
 
 #include <mdz_prg_logs/rpclog.h>
 #include <mutex>
@@ -57,19 +59,19 @@ private:
     void sessionRelease();
     void sessionDestroy();
 
-    Protocols::HTTP::Status::eRetCode procResource_File(MultiAuths *extraAuths);
-    Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, MultiAuths *extraAuths);
+    Protocols::HTTP::Status::eRetCode procResource_File(Authentication::Multi *extraAuths);
+    Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, Authentication::Multi *extraAuths);
 
     Protocols::HTTP::Status::eRetCode procJAPI_Session();
     Protocols::HTTP::Status::eRetCode procJAPI_Session_AUTHINFO();
     Protocols::HTTP::Status::eRetCode procJAPI_Session_CSRFTOKEN();
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication & auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication & auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication &auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication &auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication::Data & auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication::Data & auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication::Data &auth);
+    Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication::Data &auth);
     Protocols::HTTP::Status::eRetCode procJAPI_Session_PASSWDLIST();
 
-    Protocols::HTTP::Status::eRetCode procJAPI_Exec( MultiAuths *extraAuths,
+    Protocols::HTTP::Status::eRetCode procJAPI_Exec( Authentication::Multi *extraAuths,
                                                        std::string sMethodName,
                                                        std::string sPayloadIn,
                                                        Memory::Streams::StreamableJSON * jPayloadOutStr = nullptr
@@ -79,8 +81,8 @@ private:
     Protocols::HTTP::Status::eRetCode procJAPI_Version();
 
 
-    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication &authData, Mantids::Authentication::Session *session, Mantids::Authentication::Reason *authReason);
-    Mantids::Authentication::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Authentication &authData);
+    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication::Data &authData, Mantids::Authentication::Session *session, Mantids::Authentication::Reason *authReason);
+    Mantids::Authentication::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Authentication::Data &authData);
 
     //std::string getAuthSessionID(Mantids::Authentication::Session *authSession);
 
@@ -99,8 +101,8 @@ private:
     std::string sSessionId;
     bool bDestroySession;
     bool bReleaseSessionHandler;
-    MultiAuths extraCredentials;
-    Authentication credentials;
+    Authentication::Multi extraCredentials;
+    Authentication::Data credentials;
 
     // Current User Security Vars:
     std::string sClientCSRFToken;

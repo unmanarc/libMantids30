@@ -1,7 +1,5 @@
 #include "methodsmanager.h"
-
-#include "multiauths.h"
-
+//#include "multiauths.h"
 #include <mdz_thr_mutex/lock_shared.h>
 
 using namespace Mantids::RPC;
