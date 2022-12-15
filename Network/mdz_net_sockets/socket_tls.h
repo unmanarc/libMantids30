@@ -65,7 +65,6 @@ public:
 
         };
 
-
         struct PSKServerWallet {
             typedef bool (*cbPSK)(void * data,const std::string & id, std::string * psk);
 
