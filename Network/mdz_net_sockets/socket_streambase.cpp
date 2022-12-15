@@ -16,12 +16,10 @@ using namespace Mantids::Network::Sockets;
 
 Socket_StreamBase::Socket_StreamBase()
 {
-    //printf("Creating streamsocket %p\n", this); fflush(stdout);
 }
 
 Socket_StreamBase::~Socket_StreamBase()
 {
-  //  printf("Removing streamsocket %p\n", this); fflush(stdout);
 }
 
 void Socket_StreamBase::writeEOF(bool)
