@@ -1,18 +1,18 @@
-#ifndef AUTHENTICATION_H
-#define AUTHENTICATION_H
+#ifndef DATA_H
+#define DATA_H
 
 #include <string>
 #include <mdz_hlp_functions/json.h>
-namespace Mantids { namespace RPC {
+namespace Mantids { namespace Authentication {
 
 /**
  * @brief The Authentication class
  */
-class Authentication
+class Data
 {
 public:
-    Authentication();
-    Authentication(const std::string & pass, const uint32_t & idx);
+    Data();
+    Data(const std::string & pass, const uint32_t & idx);
 
     bool fromString(const std::string & sAuth);
     bool fromJSON( const json & x );
@@ -34,4 +34,4 @@ private:
 };
 }}
 
-#endif // AUTHENTICATION_H
+#endif // DATA_H

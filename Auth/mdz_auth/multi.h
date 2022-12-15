@@ -3,21 +3,21 @@
 
 #include <mdz_hlp_functions/json.h>
 #include <set>
-#include <mdz_mem_vars/subparser.h>
-#include "streamablejson.h"
-#include "authentication.h"
+//#include <mdz_mem_vars/subparser.h>
+//#include "streamablejson.h"
+#include "data.h"
 
-namespace Mantids { namespace RPC {
+namespace Mantids { namespace Authentication {
 
-class MultiAuths
+class Multi
 {
 public:
-    MultiAuths();
+    Multi();
 
     /**
      * @brief print Print the request to console
      */
-    void print();
+  // void print();
     /**
      * @brief setAuthentications Set the authentication string.
      * @param sAuthentications string in JSON Format.
@@ -32,7 +32,7 @@ public:
      * @brief addAuthentication Manually add an authentication
      * @param auth Authentication object.
      */
-    void addAuthentication(const Authentication & auth);
+    void addAuthentication(const Data & auth);
     /**
      * @brief addAuthentication Add an authentication as passIndex+Secret
      * @param passIndex Authentication Secret Index
@@ -49,11 +49,11 @@ public:
      * @param idx Authentication Secret Index.
      * @return Authentication Object.
      */
-    Authentication getAuthentication( const uint32_t & idx );
+    Data getAuthentication( const uint32_t & idx );
 
 
 private:
-    std::map<uint32_t,Authentication> authentications;
+    std::map<uint32_t,Data> authentications;
 };
 
 }}

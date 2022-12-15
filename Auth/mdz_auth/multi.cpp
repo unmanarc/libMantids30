@@ -1,16 +1,16 @@
-#include "multiauths.h"
+#include "multi.h"
 //#include "retcodes.h"
 
-using namespace Mantids::RPC;
+using namespace Mantids::Authentication;
 using namespace Mantids;
 
-MultiAuths::MultiAuths()
+Multi::Multi()
 {
     clear();
 }
 
 
-std::set<uint32_t> MultiAuths::getAuthenticationsIdxs()
+std::set<uint32_t> Multi::getAuthenticationsIdxs()
 {
     std::set<uint32_t> r;
     for (const auto & i : authentications)
@@ -18,17 +18,17 @@ std::set<uint32_t> MultiAuths::getAuthenticationsIdxs()
     return r;
 }
 
-Authentication MultiAuths::getAuthentication(const uint32_t &idx)
+Data Multi::getAuthentication(const uint32_t &idx)
 {
     if (authentications.find(idx) != authentications.end())
         return authentications[idx];
 
-    Authentication r;
+    Data r;
     return r;
 }
+/*
 
-
-void MultiAuths::print()
+void Multi::print()
 {
     for (const auto & i : authentications)
     {
@@ -36,9 +36,9 @@ void MultiAuths::print()
         s.setValue(i.second.toJSON());
         std::cout << ">>>> With auth: " << s.getString() << std::endl << std::flush;
     }
-}
+}*/
 
-bool MultiAuths::setAuthentications(const std::string &sAuthentications)
+bool Multi::setAuthentications(const std::string &sAuthentications)
 {
     if (sAuthentications.empty()) return true;
 
@@ -62,17 +62,17 @@ bool MultiAuths::setAuthentications(const std::string &sAuthentications)
 }
 
 
-void MultiAuths::clear()
+void Multi::clear()
 {
     authentications.clear();
 }
 
-void MultiAuths::addAuthentication(const Authentication &auth)
+void Multi::addAuthentication(const Data &auth)
 {
     authentications[auth.getPassIndex()] = auth;
 }
 
-void MultiAuths::addAuthentication(uint32_t passIndex,const std::string &pass)
+void Multi::addAuthentication(uint32_t passIndex,const std::string &pass)
 {
     authentications[passIndex].setPassIndex(passIndex);
     authentications[passIndex].setPassword(pass);

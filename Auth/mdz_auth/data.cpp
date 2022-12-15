@@ -1,21 +1,20 @@
-#include "authentication.h"
+#include "data.h"
 
-
-using namespace Mantids::RPC;
+using namespace Mantids::Authentication;
 using namespace Mantids;
 
-Authentication::Authentication()
+Data::Data()
 {
     iPassIDX = 0;
 }
 
-Authentication::Authentication(const std::string &pass, const uint32_t &idx)
+Data::Data(const std::string &pass, const uint32_t &idx)
 {
     sPassword = pass;
     iPassIDX = idx;
 }
 
-bool Authentication::fromString(const std::string &sAuth)
+bool Data::fromString(const std::string &sAuth)
 {
      json x;
 
@@ -28,7 +27,7 @@ bool Authentication::fromString(const std::string &sAuth)
      return fromJSON(x);
 }
 
-bool Authentication::fromJSON(const json &x)
+bool Data::fromJSON(const json &x)
 {
 //    if (!x["user"].isNull()) userName = JSON_ASSTRING(x,"user","");
 
@@ -41,7 +40,7 @@ bool Authentication::fromJSON(const json &x)
     return true;
 }
 
-json Authentication::toJSON() const
+json Data::toJSON() const
 {
     json x;
     x["pass"] = sPassword;
@@ -49,32 +48,32 @@ json Authentication::toJSON() const
     return x;
 }
 
-std::string Authentication::getPassword() const
+std::string Data::getPassword() const
 {
     return sPassword;
 }
 
-void Authentication::setPassword(const std::string &value)
+void Data::setPassword(const std::string &value)
 {
     sPassword = value;
 }
 
-uint32_t Authentication::getPassIndex() const
+uint32_t Data::getPassIndex() const
 {
     return iPassIDX;
 }
 
-void Authentication::setPassIndex(const uint32_t &value)
+void Data::setPassIndex(const uint32_t &value)
 {
     iPassIDX = value;
 }
 /*
-std::string Authentication::getUserName() const
+std::string Data::getUserName() const
 {
     return userName;
 }
 
-void Authentication::setUserName(const std::string &value)
+void Data::setUserName(const std::string &value)
 {
     userName = value;
 }
