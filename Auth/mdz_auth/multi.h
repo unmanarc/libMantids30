@@ -24,6 +24,9 @@ public:
      * @return if the string have been correctly parsed, returns true, else false.
      */
     bool setAuthentications(const std::string & sAuthentications);
+
+    bool setJSON(const json & auths);
+
     /**
      * @brief clear Clear authentications
      */

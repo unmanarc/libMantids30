@@ -45,6 +45,12 @@ bool Multi::setAuthentications(const std::string &sAuthentications)
     json jAuthentications;
     Mantids::Helpers::JSONReader2 reader;
     if (!reader.parse(sAuthentications, jAuthentications)) return false;
+
+    return setJSON(jAuthentications);
+}
+
+bool Multi::setJSON(const json &jAuthentications)
+{
     if (!jAuthentications.isObject()) return false;
 
     if (jAuthentications.isObject())
