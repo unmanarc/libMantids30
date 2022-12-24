@@ -3,6 +3,7 @@
 
 #include <list>
 #include <map>
+#include <memory>
 #include <thread>
 #include <condition_variable>
 
@@ -34,7 +35,7 @@ public:
      * @param _callbackOnTimeOut callback function on time out (default nullptr -> none)
      * @param _callbackOnMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    MultiThreaded(  Sockets::Socket_StreamBase *acceptorSocket,
+    MultiThreaded(const std::shared_ptr<Socket_StreamBase> &acceptorSocket,
                     _callbackConnectionRB _callbackOnConnect,
                     void *obj=nullptr,
                     _callbackConnectionRB _callbackOnInitFailed=nullptr,
@@ -50,7 +51,7 @@ public:
     /**
      * @brief startThreaded Start accepting connections in a new thread (will wait for finalization in destructor)
      */
-    void startThreaded();
+    void startThreaded(const std::shared_ptr<MultiThreaded> & tc);
     /**
      * @brief startBlocking Start Accepting Connections in your own thread.
      * @return
@@ -80,7 +81,7 @@ public:
      * Set the socket that will be used to accept new clients.
      * WARNING: acceptorSocket will be deleted when this class finishes.
      */
-    void setAcceptorSocket(Sockets::Socket_StreamBase *acceptorSocket);
+    void setAcceptorSocket(const std::shared_ptr<Socket_StreamBase> &acceptorSocket);
     /**
      * Do accept on the acceptor socket.
      * @return true if we can still accept a new connection
@@ -122,7 +123,7 @@ public:
     void setMaxConnectionsPerIP(const uint32_t &value);
 
 private:
-    static void thread_streamaccept(MultiThreaded * threadMasterControl);
+    static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
     bool processClient(Sockets::Socket_StreamBase * clientSocket, SAThread * clientThread);
 
@@ -132,7 +133,7 @@ private:
     void init();
 
     bool initialized, finalized;
-    Sockets::Socket_StreamBase * acceptorSocket;
+    std::shared_ptr<Sockets::Socket_StreamBase> acceptorSocket;
     std::list<SAThread *> threadList;
     std::map<std::string, uint32_t> connectionsPerIP;
 

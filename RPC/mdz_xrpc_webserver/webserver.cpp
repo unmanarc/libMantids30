@@ -3,6 +3,7 @@
 #include <mdz_net_sockets/socket_tls.h>
 #include "webclienthandler.h"
 
+#include <memory>
 #include <stdexcept>
 
 using namespace Mantids::RPC::Web;
@@ -11,6 +12,9 @@ using namespace Mantids;
 
 WebServer::WebServer()
 {
+    multiThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::MultiThreaded>();
+    poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
+
     rpcLog = nullptr;
     resourceFilter = nullptr;
     obj = nullptr;
@@ -38,33 +42,33 @@ WebServer::~WebServer()
         delete resourceFilter;
 }
 
-void WebServer::acceptMultiThreaded(Network::Sockets::Socket_StreamBase *listenerSocket, const uint32_t &maxConcurrentConnections)
+void WebServer::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_StreamBase> & listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     if (!methodManagers) throw std::runtime_error("Don't Accept XRPC Web before setting some methodsmanager");
     if (!authenticator) throw std::runtime_error("Don't Accept XRPC Web before setting some authenticator");
 
     obj = this;
-    multiThreadedAcceptor.setAcceptorSocket(listenerSocket);
-    multiThreadedAcceptor.setCallbackOnConnect(_callbackOnConnect,obj);
-    multiThreadedAcceptor.setCallbackOnInitFail(_callbackOnInitFailed,obj);
-    multiThreadedAcceptor.setCallbackOnTimedOut(_callbackOnTimeOut,obj);
-    multiThreadedAcceptor.setMaxConcurrentClients(maxConcurrentConnections);
-    multiThreadedAcceptor.startThreaded();
+    multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    multiThreadedAcceptor->setCallbackOnConnect(_callbackOnConnect,obj);
+    multiThreadedAcceptor->setCallbackOnInitFail(_callbackOnInitFailed,obj);
+    multiThreadedAcceptor->setCallbackOnTimedOut(_callbackOnTimeOut,obj);
+    multiThreadedAcceptor->setMaxConcurrentClients(maxConcurrentConnections);
+    multiThreadedAcceptor->startThreaded(multiThreadedAcceptor);
 }
 
-void WebServer::acceptPoolThreaded(Network::Sockets::Socket_StreamBase *listenerSocket, const uint32_t &threadCount, const uint32_t &threadMaxQueuedElements)
+void WebServer::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_StreamBase> & listenerSocket, const uint32_t &threadCount, const uint32_t &threadMaxQueuedElements)
 {
     if (!methodManagers) throw std::runtime_error("Don't Accept XRPC Web before setting some methodsmanager");
     if (!authenticator) throw std::runtime_error("Don't Accept XRPC Web before setting some authenticator");
 
     obj = this;
-    poolThreadedAcceptor.setAcceptorSocket(listenerSocket);
-    poolThreadedAcceptor.setCallbackOnConnect(_callbackOnConnect,obj);
-    poolThreadedAcceptor.setCallbackOnInitFail(_callbackOnInitFailed,obj);
-    poolThreadedAcceptor.setCallbackOnTimedOut(_callbackOnTimeOut,obj);
-    poolThreadedAcceptor.setThreadsCount(threadCount);
-    poolThreadedAcceptor.setTaskQueues(threadMaxQueuedElements);
-    poolThreadedAcceptor.start();
+    poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    poolThreadedAcceptor->setCallbackOnConnect(_callbackOnConnect,obj);
+    poolThreadedAcceptor->setCallbackOnInitFail(_callbackOnInitFailed,obj);
+    poolThreadedAcceptor->setCallbackOnTimedOut(_callbackOnTimeOut,obj);
+    poolThreadedAcceptor->setThreadsCount(threadCount);
+    poolThreadedAcceptor->setTaskQueues(threadMaxQueuedElements);
+    poolThreadedAcceptor->start(poolThreadedAcceptor);
 }
 
 bool WebServer::_callbackOnConnect(void * obj, Network::Sockets::Socket_StreamBase * s, const char *cUserIP, bool isSecure)

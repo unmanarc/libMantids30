@@ -32,7 +32,7 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::PoolThreaded(Socket_StreamBase *acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj, _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut)
+PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_StreamBase> & acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj, _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut)
 {
     init();
     setAcceptorSocket(acceptorSocket);
@@ -64,8 +64,6 @@ PoolThreaded::~PoolThreaded()
 {
     if (this->pool)
         delete this->pool;
-    if (this->acceptorSocket)
-        delete acceptorSocket;
 }
 
 void PoolThreaded::run()
@@ -98,7 +96,8 @@ void PoolThreaded::run()
         else
             break;
     }
-    delete acceptorSocket;
+    // Destroy the acceptor socket:
+    acceptorSocket = nullptr;
 }
 
 void PoolThreaded::stop()
@@ -146,7 +145,7 @@ void PoolThreaded::setQueuesKeyRatio(float value)
     queuesKeyRatio = value;
 }
 
-void PoolThreaded::setAcceptorSocket(Sockets::Socket_StreamBase *value)
+void PoolThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_StreamBase> & value)
 {
     acceptorSocket = value;
 }

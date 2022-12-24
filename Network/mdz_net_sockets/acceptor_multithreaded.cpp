@@ -1,5 +1,6 @@
 #include "acceptor_multithreaded.h"
 #include <algorithm>
+#include <memory>
 #include <string.h>
 #include <stdexcept>
 
@@ -39,14 +40,14 @@ void MultiThreaded::setMaxConnectionsPerIP(const uint32_t &value)
     maxConnectionsPerIP = value;
 }
 
-void MultiThreaded::thread_streamaccept(MultiThreaded *threadMasterControl)
+void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & tc)
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "MT:StreamAccept");
 #endif
 
     // Accept until it fails:
-    while (threadMasterControl->acceptClient()) {}
+    while (tc->acceptClient()) {}
 }
 
 bool MultiThreaded::processClient(Sockets::Socket_StreamBase *clientSocket, SAThread *clientThread)
@@ -142,7 +143,7 @@ MultiThreaded::MultiThreaded()
     init();
 }
 
-MultiThreaded::MultiThreaded(Socket_StreamBase *acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj,  _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut, _callbackConnectionLimit _callbackOnMaxConnectionsPerIP)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_StreamBase> &acceptorSocket, _callbackConnectionRB _callbackOnConnect, void *obj,  _callbackConnectionRB _callbackOnInitFailed, _callbackConnectionRV _callbackOnTimeOut, _callbackConnectionLimit _callbackOnMaxConnectionsPerIP)
 {
     init();
     setAcceptorSocket(acceptorSocket);
@@ -189,10 +190,7 @@ MultiThreaded::~MultiThreaded()
 
     // Now we can safetly free the acceptor socket resource.
     if (acceptorSocket)
-    {
-        delete acceptorSocket;
         acceptorSocket = nullptr;
-    }
 }
 
 bool MultiThreaded::acceptClient()
@@ -227,22 +225,22 @@ bool MultiThreaded::finalizeThreadElement(SAThread *x)
     return false;
 }
 
-void MultiThreaded::setAcceptorSocket(Sockets::Socket_StreamBase * acceptorSocket)
+void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_StreamBase> & acceptorSocket)
 {
     this->acceptorSocket = acceptorSocket;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // NEVER DELETE THIS CLASS AFTER THE START, JUST STOP AND WILL BE DELETED
-void MultiThreaded::startThreaded()
+void MultiThreaded::startThreaded(const std::shared_ptr<MultiThreaded> & tc)
 {
     if (!acceptorSocket)
-        throw std::runtime_error("Acceptor Socket not defined in MultiThreadedAcceptor");
+        throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Socket not defined.");
     if (!callbackOnConnect)
-        throw std::runtime_error("Connection Callback not defined in MultiThreadedAcceptor");
+        throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
 
     initialized = true;
-    acceptorThread = std::thread(thread_streamaccept,this);
+    acceptorThread = std::thread(thread_streamaccept,tc);
 }
 
 void MultiThreaded::stop()
@@ -278,9 +276,10 @@ void MultiThreaded::setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _c
 bool MultiThreaded::startBlocking()
 {
     if (!acceptorSocket)
-        throw std::runtime_error("Acceptor Socket not defined in MultiThreadedAcceptor");
+        throw std::runtime_error("MultiThreaded::startBlocking() : Acceptor Socket not defined");
     if (!callbackOnConnect)
-        throw std::runtime_error("Connection Callback not defined in MultiThreadedAcceptor");
+        throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
+
     while (acceptClient()) {}
     stop();
     return true;

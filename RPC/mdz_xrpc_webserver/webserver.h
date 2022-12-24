@@ -11,6 +11,7 @@
 #include <mdz_xrpc_common/methodsmanager.h>
 #include <mdz_prg_logs/rpclog.h>
 #include <mdz_mem_vars/b_mem.h>
+#include <memory>
 
 namespace Mantids { namespace RPC { namespace Web {
 
@@ -50,14 +51,14 @@ public:
      * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
      * @param maxConcurrentConnections Max Number of allowed Connections/Threads
      */
-    void acceptMultiThreaded(Network::Sockets::Socket_StreamBase * listenerSocket, const uint32_t & maxConcurrentConnections = 10000);
+    void acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_StreamBase> &listenerSocket, const uint32_t & maxConcurrentConnections = 10000);
     /**
      * @brief acceptPoolThreaded Start Web Server as Pool-Threaded (threads are already started and consume clients from a queue)
      * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
      * @param threadCount Pre-started thread count
      * @param threadMaxQueuedElements Max queued connections per threads
      */
-    void acceptPoolThreaded(Network::Sockets::Socket_StreamBase * listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );   
+    void acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_StreamBase> &listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );
     /**
      * @brief setAuthenticator Set the Authenticator for Login
      * @param value Authenticator Object
@@ -174,8 +175,8 @@ public:
     void setRedirectOn404(const std::string &newRedirectOn404);
 
 private:
-    Network::Sockets::Acceptors::MultiThreaded multiThreadedAcceptor;
-    Network::Sockets::Acceptors::PoolThreaded poolThreadedAcceptor;
+    std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> multiThreadedAcceptor;
+    std::shared_ptr<Network::Sockets::Acceptors::PoolThreaded> poolThreadedAcceptor;
 
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)

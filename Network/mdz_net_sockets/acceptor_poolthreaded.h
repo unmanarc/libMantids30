@@ -6,6 +6,7 @@
 #include <mdz_hlp_functions/mem.h>
 #include <mdz_thr_threads/threaded.h>
 #include <mdz_thr_threads/threadpool.h>
+#include <memory>
 
 // TODO: statistics
 
@@ -37,7 +38,7 @@ public:
      * @param _callbackOnTimeOut callback function on time out (default nullptr -> none)
      * @param _callbackOnMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    PoolThreaded(Sockets::Socket_StreamBase *acceptorSocket,
+    PoolThreaded(const std::shared_ptr<Sockets::Socket_StreamBase> & acceptorSocket,
                     _callbackConnectionRB _callbackOnConnect,
                     void *obj=nullptr,
                     _callbackConnectionRB _callbackOnInitFailed=nullptr,
@@ -118,7 +119,7 @@ public:
      * @brief setAcceptorSocket Set Acceptor Socket, the acceptor socket is now in control of this class, deleting this class will delete the acceptor.
      * @param value acceptor socket
      */
-    void setAcceptorSocket(Sockets::Socket_StreamBase *value);
+    void setAcceptorSocket(const std::shared_ptr<Sockets::Socket_StreamBase> & value);
 
 private:
 
@@ -156,7 +157,7 @@ private:
     void init();
 
     Mantids::Threads::Pool::ThreadPool * pool;
-    Sockets::Socket_StreamBase * acceptorSocket;
+    std::shared_ptr<Sockets::Socket_StreamBase> acceptorSocket;
 
     _callbackConnectionRB callbackOnConnect;
     _callbackConnectionRB callbackOnInitFail;
