@@ -1,1 +1,0 @@
-ADD_SUBDIRECTORY(mdz_mem_vars)

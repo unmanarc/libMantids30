@@ -1,2 +1,0 @@
-ADD_SUBDIRECTORY(mdz_prg_logs)
-ADD_SUBDIRECTORY(mdz_prg_service)

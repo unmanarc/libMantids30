@@ -1,2 +1,0 @@
-ADD_SUBDIRECTORY(mdz_auth)
-ADD_SUBDIRECTORY(mdz_auth_db)

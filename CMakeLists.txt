@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 ##############################################################################################################################
 # Vars and Versions:
-set(SVERSION 2.8.11)
+set(SVERSION 2.9.0)
+set(LIBPREFIX "Mantids29")
 
-set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids")
+set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids29")
 set(PROJECT_CONTACT "Aaron G. Mizrachi P. <aaron@unmanarc.com>")
 ##############################################################################################################################
 
@@ -18,7 +19,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 
 ##############################################################################################################################
 # Project Settings:
-project(libMantids)
+project(libMantids29)
 project(${PROJECT_NAME} VERSION ${SVERSION} DESCRIPTION "Mini-Advanced Network Toolkit for Internet Services Development")
 ##############################################################################################################################
 
@@ -29,18 +30,7 @@ include(GNUInstallDirs)
 
 #############################################################################################################################
 # Subprojects:
-ADD_SUBDIRECTORY(Helpers)
-ADD_SUBDIRECTORY(Scripts)
-ADD_SUBDIRECTORY(Threads)
-ADD_SUBDIRECTORY(Filesystem)
-ADD_SUBDIRECTORY(Memory)
-ADD_SUBDIRECTORY(Database)
-ADD_SUBDIRECTORY(Network)
-ADD_SUBDIRECTORY(Protocols)
-ADD_SUBDIRECTORY(Auth)
-ADD_SUBDIRECTORY(Program)
-ADD_SUBDIRECTORY(RPC)
+ADD_SUBDIRECTORY(Mantids29)
 #ADD_SUBDIRECTORY(devel)
-ADD_SUBDIRECTORY(extras)
 #############################################################################################################################
 

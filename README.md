@@ -4,7 +4,7 @@ Mini-Advanced C++ Network Toolkit for Internet Services Development
   
 Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>   
 Main License: LGPLv3   
-WIN32 License for mdz_net_interfaces: GPLv2 (tap-windows.h is GPLv2)  
+WIN32 License for Net_Interfaces: GPLv2 (tap-windows.h is GPLv2)  
 
 
 ***

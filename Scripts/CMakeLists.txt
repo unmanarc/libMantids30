@@ -1,1 +1,0 @@
-ADD_SUBDIRECTORY(mdz_scripts_jsonexpreval)
