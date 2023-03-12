@@ -15,12 +15,6 @@ public:
     void logVA(eLogLevels logSeverity,const std::string & ip, const std::string & sessionId, const std::string & user,const std::string & domain, const std::string & module, const uint32_t &outSize, const char* fmtLog,  va_list args);
     void log(eLogLevels logSeverity,const std::string & ip, const std::string & sessionId, const std::string & user,const std::string & domain, const std::string & module, const uint32_t &outSize, const char* fmtLog,  ...);
 
-    bool getDisableDomain() const;
-    void setDisableDomain(bool value);
-
-    bool getDisableModule() const;
-    void setDisableModule(bool value);
-
     /////////////////////////////////////////////////////////
     // This is not thread safe: can't be changed during program execution
     uint32_t m_minUserFieldWidth; ///< The minimum width (in characters) that the user field will take on the screen. If the length of the user string is less than this, it will be padded with spaces.
