@@ -75,10 +75,10 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids29::Applicatio
     initLog.m_minUserFieldWidth = 1;
 
     if (versionCodeName.empty())
-        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->getDescription() +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
+        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->m_softwareDescription +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
                     appVersionMajor, appVersionMinor, appVersionSubMinor,getpid());
     else
-        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->getDescription() +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
+        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->m_softwareDescription +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
                     appVersionMajor, appVersionMinor, appVersionSubMinor, versionCodeName.c_str() , getpid());
 
     initLog.log0(__func__,Logs::LEVEL_INFO, "Using config dir: %s", configDir.c_str());
@@ -233,7 +233,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids29::Application:
     int r = rpcStart(argc,argv,globalArguments);
 
     // Everything is running ok here...
-    LOG_APP->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->getDescription() + " started up, PID: %d").c_str(), getpid());
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->m_softwareDescription + " started up, PID: %d").c_str(), getpid());
     return r;
 }
 

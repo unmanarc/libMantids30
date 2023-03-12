@@ -61,18 +61,6 @@ public:
     void setVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string & subText);
 
     /**
-     * Returns the program description.
-     * @return Program description.
-     */
-    std::string getDescription() const;
-
-    /**
-     * Sets the program description.
-     * @param value Program description.
-     */
-    void setDescription(const std::string &value);
-
-    /**
      * Returns the daemon name.
      * @return Daemon name.
      */
@@ -84,23 +72,14 @@ public:
      */
     void setDaemonName(const std::string &value);
 
-    /**
-     * Returns the program license.
-     * @return Program license.
-     */
-    std::string getLicense() const;
-
-    /**
-     * Sets the program license.
-     * @param value Program license.
-     */
-    void setLicense(const std::string &value);
 
     std::string m_softwareLicense; /**< Program license. */
     std::string m_softwareDescription; /**< Program description. */
     std::string m_programName; /**< Program name. */
 
 protected:
+    std::string m_daemonName; /**< Program name. */
+
     std::list<Author> m_authors; /**< List of authors. */
     std::string m_version; /**< Program version. */
 };
