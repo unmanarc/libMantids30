@@ -16,7 +16,7 @@ Manager_Remote::~Manager_Remote()
     m_fastRPC = nullptr;
 }
 
-Reason Manager_Remote::authenticate(const std::string &, const ClientDetails &clientDetails, const std::string &sAccountName, const std::string &sPassword, uint32_t passIndex, Mode authMode, const std::string &challengeSalt, std::map<uint32_t, std::string> *accountPassIndexesUsedForLogin)
+Reason Manager_Remote::authenticate(const std::string &, const ClientDetails &clientDetails, const std::string &accountName, const std::string &sPassword, uint32_t passIndex, Mode authMode, const std::string &challengeSalt, std::map<uint32_t, std::string> *accountPassIndexesUsedForLogin)
 {
     json payload;
 
@@ -25,7 +25,7 @@ Reason Manager_Remote::authenticate(const std::string &, const ClientDetails &cl
     payload["clientDetails"]["tlsCN"] = clientDetails.tlsCommonName;
     payload["clientDetails"]["userAgent"] = clientDetails.userAgent;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
     payload["password"] = sPassword;
     payload["passIndex"] = passIndex;
     payload["authMode"] = getStringFromAuthMode(authMode);
@@ -54,7 +54,7 @@ Reason Manager_Remote::authenticate(const std::string &, const ClientDetails &cl
     return (Reason)JSON_ASUINT(answer,"retCode",0);
 }
 
-bool Manager_Remote::accountChangeAuthenticatedSecret(const std::string &, const std::string &sAccountName, uint32_t passIndex, const std::string &sCurrentPassword, const Secret &newPasswordData, const ClientDetails &clientDetails, Mode authMode, const std::string &challengeSalt)
+bool Manager_Remote::accountChangeAuthenticatedSecret(const std::string &, const std::string &accountName, uint32_t passIndex, const std::string &sCurrentPassword, const Secret &newPasswordData, const ClientDetails &clientDetails, Mode authMode, const std::string &challengeSalt)
 {
     json payload;
 
@@ -63,7 +63,7 @@ bool Manager_Remote::accountChangeAuthenticatedSecret(const std::string &, const
     payload["clientDetails"]["tlsCN"] = clientDetails.tlsCommonName;
     payload["clientDetails"]["userAgent"] = clientDetails.userAgent;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
     payload["passIndex"] = passIndex;
     payload["currentPassword"] = sCurrentPassword;
     payload["authMode"] = getStringFromAuthMode(authMode);
@@ -82,13 +82,13 @@ bool Manager_Remote::accountChangeAuthenticatedSecret(const std::string &, const
     return JSON_ASBOOL(answer,"retCode",false);
 }
 
-std::map<uint32_t, Secret_PublicData> Manager_Remote::getAccountAllSecretsPublicData(const std::string &sAccountName)
+std::map<uint32_t, Secret_PublicData> Manager_Remote::getAccountAllSecretsPublicData(const std::string &accountName)
 {
     std::map<uint32_t, Secret_PublicData> r;
 
     json payload;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
 
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"getAccountAllSecretsPublicData",payload,nullptr);
 
@@ -105,11 +105,11 @@ std::map<uint32_t, Secret_PublicData> Manager_Remote::getAccountAllSecretsPublic
     return r;
 }
 
-std::set<uint32_t> Manager_Remote::passIndexesUsedByAccount(const std::string & sAccountName )
+std::set<uint32_t> Manager_Remote::passIndexesUsedByAccount(const std::string & accountName )
 {
     json payload;
     std::set<uint32_t> r;
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
 
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"passIndexesUsedByAccount",payload,nullptr), jNull;
 
@@ -152,12 +152,12 @@ std::string Manager_Remote::passIndexDescription(const uint32_t & passIndex)
     return answer.asString();
 }
 
-time_t Manager_Remote::accountExpirationDate(const std::string & sAccountName)
+time_t Manager_Remote::accountExpirationDate(const std::string & accountName)
 {
     json payload;
     Secret_PublicData r;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
 
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"accountExpirationDate",payload,nullptr), jNull;
 
@@ -179,12 +179,12 @@ bool Manager_Remote::passIndexLoginRequired(const uint32_t &passIndex )
     return answer.asBool();
 }
 
-Secret_PublicData Manager_Remote::getAccountSecretPublicData(const std::string &sAccountName, uint32_t passIndex)
+Secret_PublicData Manager_Remote::getAccountSecretPublicData(const std::string &accountName, uint32_t passIndex)
 {
     json payload;
     Secret_PublicData r;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
     payload["passIndex" ] = passIndex;
 
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"getAccountSecretPublicData",payload,nullptr), jNull;
@@ -201,11 +201,11 @@ Secret_PublicData Manager_Remote::getAccountSecretPublicData(const std::string &
     return r;
 }
 
-bool Manager_Remote::isAccountSuperUser(const std::string &sAccountName)
+bool Manager_Remote::isAccountSuperUser(const std::string &accountName)
 {
     json payload;
 
-    payload["accountName" ] = sAccountName;
+    payload["accountName" ] = accountName;
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"isAccountSuperUser",payload,nullptr), jNull;
 
     if (jNull == answer) return false;
@@ -213,12 +213,12 @@ bool Manager_Remote::isAccountSuperUser(const std::string &sAccountName)
     return JSON_ASBOOL(answer,"retCode",false);
 }
 
-bool Manager_Remote::validateAccountAttribute(const std::string &sAccountName, const ApplicationAttribute &applicationAttrib)
+bool Manager_Remote::validateAccountAttribute(const std::string &accountName, const ApplicationAttribute &applicationAttrib)
 {
     json payload;
 
     payload["attribName" ] = applicationAttrib.attribName;
-    payload["accountName"] = sAccountName;
+    payload["accountName"] = accountName;
 
     json answer = m_fastRPC->runRemoteRPCMethod(CKEY,"validateAccountAttribute",payload,nullptr), jNull;
 
@@ -306,11 +306,11 @@ int Manager_Remote::processFastRPCConnection(Mantids29::Network::Sockets::Socket
     return m_fastRPC->processConnection(stream,CKEY);
 }
 
-sAccountAttribs Manager_Remote::accountAttribs(const std::string & accountName)
+AccountBasicAttributes Manager_Remote::accountAttribs(const std::string & accountName)
 {
     json payload;
 
-    sAccountAttribs attribs;
+    AccountBasicAttributes attribs;
 
     payload["accountName"] = accountName;
 

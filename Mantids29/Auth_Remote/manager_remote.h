@@ -48,7 +48,7 @@ public:
     // authentication:
     /**
      * @brief authenticate Authenticate the password for an specific account/index.
-     * @param sAccountName Account Name
+     * @param accountName Account Name
      * @param password Password Text (PLAIN,HASHED,SALTED-HASHED,Challenge,CODE)
      * @param passIndex Password Index
      * @param authMode Authentication Mode (CHALLENGE, PLAIN)
@@ -57,7 +57,7 @@ public:
      */
     virtual Reason authenticate(const std::string & appName,
                                 const ClientDetails & clientDetails,
-                                const std::string & sAccountName,
+                                const std::string & accountName,
                                 const std::string & sPassword,
                                 uint32_t passIndex = 0,
                                 Mode authMode = MODE_PLAIN,
@@ -65,7 +65,7 @@ public:
                                 std::map<uint32_t,std::string> * accountPassIndexesUsedForLogin = nullptr ) override;
     /**
      * @brief accountChangeAuthenticatedSecret Change the password doing current password authentication
-     * @param sAccountName
+     * @param accountName
      * @param currentPassword
      * @param authMode
      * @param challengeSalt
@@ -74,7 +74,7 @@ public:
      * @return true if changed, false if not (bad password, etc)
      */
     bool accountChangeAuthenticatedSecret(const std::string & appName,
-                                                  const std::string & sAccountName,
+                                                  const std::string & accountName,
                                                   uint32_t passIndex,
                                                   const std::string & sCurrentPassword,
                                                   const Secret & newPasswordData,
@@ -85,19 +85,19 @@ public:
 
     /**
      * @brief getAccountAllSecretsPublicData Get a map with idx->public secret data for an account.
-     * @param sAccountName username string.
+     * @param accountName username string.
      * @return map with every defined and not defined password.
      */
-    std::map<uint32_t,Secret_PublicData> getAccountAllSecretsPublicData(const std::string & sAccountName);
+    std::map<uint32_t,Secret_PublicData> getAccountAllSecretsPublicData(const std::string & accountName);
 
 
-    Secret_PublicData getAccountSecretPublicData(const std::string & sAccountName, uint32_t passIndex=0) override;
+    Secret_PublicData getAccountSecretPublicData(const std::string & accountName, uint32_t passIndex=0) override;
 
     bool initScheme() override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return true; }
 
     /////////////////////////////////////////////////////////////////////////////////
     // Pass Indexes:
-    std::set<uint32_t> passIndexesUsedByAccount(const std::string & sAccountName) override;
+    std::set<uint32_t> passIndexesUsedByAccount(const std::string & accountName) override;
     std::set<uint32_t> passIndexesRequiredForLogin() override;
     bool passIndexAdd(const uint32_t & , const std::string & , const bool & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
     bool passIndexModify(const uint32_t & , const std::string & , const bool & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
@@ -110,9 +110,9 @@ public:
     // account:
     bool accountAdd(        const std::string & ,
                             const Secret &,
-                            const sAccountDetails &  = { "","","","","" },
+                            const AccountDetailsWExtraData &  = { "","","","","" },
                             time_t  = 0, // Note: use 1 to create an expired account.
-                            const sAccountAttribs &  = {true,true,false},
+                            const AccountBasicAttributes &  = {true,true,false},
                             const std::string &  = "") override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
 
     std::string getAccountConfirmationToken(const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return ""; }
@@ -127,28 +127,28 @@ public:
     bool accountChangeEmail(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool accountChangeExtraData(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool accountChangeExpiration(const std::string & , time_t  = 0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
-    sAccountAttribs accountAttribs(const std::string & ) override;
+    AccountBasicAttributes accountAttribs(const std::string & ) override;
     bool accountChangeGroupSet( const std::string & , const std::set<std::string> &  ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
-    bool accountChangeAttribs(const std::string & ,const sAccountAttribs & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
+    bool accountChangeAttribs(const std::string & ,const AccountBasicAttributes & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool isAccountDisabled(const std::string & ) override;
     bool isAccountConfirmed(const std::string & ) override;
-    bool isAccountSuperUser(const std::string & sAccountName) override;
+    bool isAccountSuperUser(const std::string & accountName) override;
     std::string accountGivenName(const std::string & ) override;
     std::string accountLastName(const std::string & ) override;
     std::string accountDescription(const std::string & ) override;
     std::string accountEmail(const std::string & ) override;
     std::string accountExtraData(const std::string & ) override;
-    time_t accountExpirationDate(const std::string & sAccountName ) override;
+    time_t accountExpirationDate(const std::string & accountName ) override;
 
     void updateLastLogin(const std::string &, const uint32_t & , const ClientDetails & ) override {}
 
-    bool validateAccountAttribute(const std::string & sAccountName, const ApplicationAttribute & applicationAttrib) override;
+    bool validateAccountAttribute(const std::string & accountName, const ApplicationAttribute & applicationAttrib) override;
 
     time_t accountLastLogin(const std::string & ) override  { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return 0; }
     void resetBadAttempts(const std::string & , const uint32_t & ) override {}
     void incrementBadAttempts(const std::string & , const uint32_t & ) override {}
 
-    std::list<sAccountSimpleDetails> accountsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override  { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
+    std::list<AccountDetails> accountsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override  { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     std::set<std::string> accountsList() override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     std::set<std::string> accountGroups(const std::string & , bool  = true) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     std::set<ApplicationAttribute> accountDirectAttribs(const std::string & , bool  = true) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
@@ -174,7 +174,7 @@ public:
     bool applicationAccountRemove(const std::string & , const std::string & ) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return false; }
     bool applicationOwnerAdd(const std::string & , const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
     bool applicationOwnerRemove(const std::string & , const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
-    std::list<sApplicationSimpleDetails> applicationsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
+    std::list<ApplicationDetails> applicationsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
 
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:
@@ -190,7 +190,7 @@ public:
     std::set<ApplicationAttribute> attribsList(const std::string &  = "") override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
     std::set<std::string> attribGroups(const ApplicationAttribute &, bool  = true) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     std::set<std::string> attribAccounts(const ApplicationAttribute &, bool  = true) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
-    std::list<sAttributeSimpleDetails> attribsBasicInfoSearch(const std::string & , std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
+    std::list<AttributeDetails> attribsBasicInfoSearch(const std::string & , std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
 
     /////////////////////////////////////////////////////////////////////////////////
     // group:
@@ -205,7 +205,7 @@ public:
     std::set<std::string> groupsList() override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
     std::set<ApplicationAttribute> groupAttribs(const std::string & , bool  = true) override { throw std::runtime_error("Remote Login - NOT IMPLEMENTED");return {}; }
     std::set<std::string> groupAccounts(const std::string & , bool  = true) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    std::list<sGroupSimpleDetails> groupsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
+    std::list<GroupDetails> groupsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
 
     /////////////////////////////////////////////////////////////////////////////////
     // Static Content:

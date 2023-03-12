@@ -20,7 +20,7 @@ Reason Session::getIdxAuthenticationStatus(uint32_t passIndex)
     return getIdxAuthenticationStatus_I(passIndex);
 }
 
-void Session::registerPersistentAuthentication(const std::string & sAccountName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
+void Session::registerPersistentAuthentication(const std::string & accountName, const std::string &accountDomain, uint32_t passIndex, const Reason & reason)
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
 
@@ -35,7 +35,7 @@ void Session::registerPersistentAuthentication(const std::string & sAccountName,
     // Authenticated with the main password:
     if (!passIndex && IS_PASSWORD_AUTHENTICATED( reason ) )
     {
-        m_authenticatedUser = sAccountName;
+        m_authenticatedUser = accountName;
         m_authenticatedDomain = accountDomain;
     }
 }

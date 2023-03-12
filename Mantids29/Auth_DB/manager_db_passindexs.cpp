@@ -14,14 +14,14 @@ using namespace Mantids29::Authentication;
 using namespace Mantids29::Memory;
 using namespace Mantids29::Database;
 
-std::set<uint32_t> Manager_DB::passIndexesUsedByAccount(const std::string &sAccountName)
+std::set<uint32_t> Manager_DB::passIndexesUsedByAccount(const std::string &accountName)
 {
     std::set<uint32_t> r;
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::UINT32 idx;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_secretIndex` FROM vauth_v3_accountsecrets WHERE `f_userName`=:f_userName;",
-                                          {  {":f_userName",             new Memory::Abstract::STRING(sAccountName)} },
+                                          {  {":f_userName",             new Memory::Abstract::STRING(accountName)} },
                                           { &idx });
 
     while (i->getResultsOK() && i->query->step())

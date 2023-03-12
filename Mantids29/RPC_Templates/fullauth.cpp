@@ -128,14 +128,14 @@ json FullAuth::accountAdd(void *obj, Authentication::Manager *auth, Authenticati
     // Create Expired SSHA256 password (require change)
     Mantids29::Authentication::Secret newSecretData = Mantids29::Authentication::createNewSecret(JSON_ASSTRING(payload,"secretTempPass",""),Mantids29::Authentication::FN_SSHA256,true);
 
-    Mantids29::Authentication::sAccountDetails accountDetails;
-    accountDetails.sDescription = JSON_ASSTRING(payload,"description","");
-    accountDetails.sEmail = JSON_ASSTRING(payload,"mail","");
+    Mantids29::Authentication::AccountDetailsWExtraData accountDetails;
+    accountDetails.description = JSON_ASSTRING(payload,"description","");
+    accountDetails.email = JSON_ASSTRING(payload,"mail","");
     accountDetails.extraData = JSON_ASSTRING(payload,"extraData","");
-    accountDetails.sGivenName = JSON_ASSTRING(payload,"givenName","");
-    accountDetails.sLastName = JSON_ASSTRING(payload,"lastName","");
+    accountDetails.givenName = JSON_ASSTRING(payload,"givenName","");
+    accountDetails.lastName = JSON_ASSTRING(payload,"lastName","");
 
-    Mantids29::Authentication::sAccountAttribs accountAttribs;
+    Mantids29::Authentication::AccountBasicAttributes accountAttribs;
     accountAttribs.confirmed  = JSON_ASBOOL(payload,"isConfirmed",false);
     accountAttribs.enabled  = JSON_ASBOOL(payload,"isEnabled",false);
     accountAttribs.superuser  = JSON_ASBOOL(payload,"isSuperuser",false);
@@ -197,7 +197,7 @@ json FullAuth::accountConfirm(void *, Mantids29::Authentication::Manager *auth,M
 json FullAuth::accountChangeBasicInfo(void *obj, Authentication::Manager *auth, Authentication::Session *session, const json &payload)
 {
     json payloadOut;
-    Mantids29::Authentication::sAccountAttribs attribs;
+    Mantids29::Authentication::AccountBasicAttributes attribs;
 
     attribs.enabled = JSON_ASBOOL(payload,"isEnabled",false);
     attribs.confirmed = JSON_ASBOOL(payload,"isConfirmed",false);
@@ -490,11 +490,11 @@ json FullAuth::accountsBasicInfoSearch(void *obj, Authentication::Manager *auth,
              JSON_ASUINT64(payload,"offset",0)
              ))
     {
-        x[i]["lastName"] = strVal.sLastName;
-        x[i]["givenName"] = strVal.sGivenName;
-        x[i]["email"] = strVal.sEmail;
-        x[i]["description"] = strVal.sDescription;
-        x[i]["accountName"] = strVal.sAccountName;
+        x[i]["lastName"] = strVal.lastName;
+        x[i]["givenName"] = strVal.givenName;
+        x[i]["email"] = strVal.email;
+        x[i]["description"] = strVal.description;
+        x[i]["accountName"] = strVal.accountName;
         x[i]["superuser"] = strVal.superuser;
         x[i]["expired"] = strVal.expired;
         x[i]["enabled"] = strVal.enabled;
@@ -701,9 +701,9 @@ json FullAuth::applicationsBasicInfoSearch(void *obj, Authentication::Manager *a
              JSON_ASUINT64(payload,"offset",0)
              ))
     {
-        x[i]["appCreator"] = strVal.sAppCreator;
-        x[i]["appName"] = strVal.sApplicationName;
-        x[i]["description"] = strVal.sDescription;
+        x[i]["appCreator"] = strVal.appCreator;
+        x[i]["appName"] = strVal.applicationName;
+        x[i]["description"] = strVal.description;
         i++;
     }
     return x;
@@ -821,8 +821,8 @@ json FullAuth::attribsBasicInfoSearch(void *obj, Authentication::Manager *auth, 
              JSON_ASUINT64(payload,"offset",0)
              ))
     {
-        payloadOut[i]["attribName"] = strVal.sAttributeName;
-        payloadOut[i]["description"] = strVal.sDescription;
+        payloadOut[i]["attribName"] = strVal.attributeName;
+        payloadOut[i]["description"] = strVal.description;
         i++;
     }
     return payloadOut;
@@ -926,8 +926,8 @@ json FullAuth::groupsBasicInfoSearch(void *obj, Authentication::Manager *auth, A
              JSON_ASUINT64(payload,"offset",0)
              ))
     {
-        x[i]["description"] = strVal.sDescription;
-        x[i]["groupName"] = strVal.sGroupName;
+        x[i]["description"] = strVal.description;
+        x[i]["groupName"] = strVal.groupName;
         i++;
     }
     return x;

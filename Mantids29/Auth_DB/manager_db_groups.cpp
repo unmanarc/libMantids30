@@ -35,24 +35,24 @@ bool Manager_DB::groupExist(const std::string &groupName)
     return (i->getResultsOK()) && i->query->step();
 }
 
-bool Manager_DB::groupAccountAdd(const std::string &sGroupName, const std::string &sAccountName)
+bool Manager_DB::groupAccountAdd(const std::string &groupName, const std::string &accountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
     return m_sqlConnector->query("INSERT INTO vauth_v3_groupsaccounts (`f_groupName`,`f_userName`) VALUES(:groupName,:userName);",
                                {
-                                   {":groupName",new Abstract::STRING(sGroupName)},
-                                   {":userName",new Abstract::STRING(sAccountName)}
+                                   {":groupName",new Abstract::STRING(groupName)},
+                                   {":userName",new Abstract::STRING(accountName)}
                                });
 }
 
-bool Manager_DB::groupAccountRemove(const std::string &sGroupName, const std::string &sAccountName, bool lock)
+bool Manager_DB::groupAccountRemove(const std::string &groupName, const std::string &accountName, bool lock)
 {
     bool ret = false;
     if (lock) mutex.lock();
     ret = m_sqlConnector->query("DELETE FROM vauth_v3_groupsaccounts WHERE `f_groupName`=:groupName AND `f_userName`=:userName;",
                               {
-                                  {":groupName",new Abstract::STRING(sGroupName)},
-                                  {":userName",new Abstract::STRING(sAccountName)}
+                                  {":groupName",new Abstract::STRING(groupName)},
+                                  {":userName",new Abstract::STRING(accountName)}
                               });
 
     if (lock) mutex.unlock();
@@ -69,7 +69,7 @@ bool Manager_DB::groupChangeDescription(const std::string &groupName, const std:
                                });
 }
 
-bool Manager_DB::groupValidateAttribute(const std::string &sGroupName, const ApplicationAttribute &attrib, bool lock)
+bool Manager_DB::groupValidateAttribute(const std::string &groupName, const ApplicationAttribute &attrib, bool lock)
 {
     bool ret = false;
     if (lock) mutex.lockShared();
@@ -78,7 +78,7 @@ bool Manager_DB::groupValidateAttribute(const std::string &sGroupName, const App
                                           {
                                               {":attribName",new Memory::Abstract::STRING(attrib.attribName)},
                                               {":appName",new Memory::Abstract::STRING(attrib.appName)},
-                                              {":groupName",new Memory::Abstract::STRING(sGroupName)}
+                                              {":groupName",new Memory::Abstract::STRING(groupName)}
                                           },
                                           {});
     ret = (i->getResultsOK()) && i->query->step();
@@ -87,12 +87,12 @@ bool Manager_DB::groupValidateAttribute(const std::string &sGroupName, const App
     return ret;
 }
 
-std::string Manager_DB::groupDescription(const std::string &sGroupName)
+std::string Manager_DB::groupDescription(const std::string &groupName)
 {
     Threads::Sync::Lock_RD lock(mutex);
     Abstract::STRING groupDescription;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `groupDescription` FROM vauth_v3_groups WHERE `groupName`=:groupName LIMIT 1;",
-                                          {{":groupName",new Memory::Abstract::STRING(sGroupName)}},
+                                          {{":groupName",new Memory::Abstract::STRING(groupName)}},
                                           { &groupDescription });
     if (i->getResultsOK() && i->query->step())
     {
@@ -106,25 +106,25 @@ std::set<std::string> Manager_DB::groupsList()
     std::set<std::string> ret;
     Threads::Sync::Lock_RD lock(mutex);
 
-    Abstract::STRING sGroupName;
+    Abstract::STRING groupName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `groupName` FROM vauth_v3_groups;",
                                           {},
-                                          { &sGroupName });
+                                          { &groupName });
     while (i->getResultsOK() && i->query->step())
     {
-        ret.insert(sGroupName.getValue());
+        ret.insert(groupName.getValue());
     }
     return ret;
 }
 
-std::set<ApplicationAttribute> Manager_DB::groupAttribs(const std::string &sGroupName, bool lock)
+std::set<ApplicationAttribute> Manager_DB::groupAttribs(const std::string &groupName, bool lock)
 {
     std::set<ApplicationAttribute> ret;
     if (lock) mutex.lockShared();
 
     Abstract::STRING sAppName,sAttribName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_appName`,`f_attribName` FROM vauth_v3_attribsgroups WHERE `f_groupName`=:groupName;",
-                                          { {":groupName",new Memory::Abstract::STRING(sGroupName)} },
+                                          { {":groupName",new Memory::Abstract::STRING(groupName)} },
                                           { &sAppName,&sAttribName });
     while (i->getResultsOK() && i->query->step())
     {
@@ -135,30 +135,30 @@ std::set<ApplicationAttribute> Manager_DB::groupAttribs(const std::string &sGrou
     return ret;
 }
 
-std::set<std::string> Manager_DB::groupAccounts(const std::string &sGroupName, bool lock)
+std::set<std::string> Manager_DB::groupAccounts(const std::string &groupName, bool lock)
 {
     std::set<std::string> ret;
     if (lock) mutex.lockShared();
 
-    Abstract::STRING sAccountName;
+    Abstract::STRING accountName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_groupsaccounts WHERE `f_groupName`=:groupName;",
-                                          { {":groupName",new Memory::Abstract::STRING(sGroupName)} },
-                                          { &sAccountName });
+                                          { {":groupName",new Memory::Abstract::STRING(groupName)} },
+                                          { &accountName });
     while (i->getResultsOK() && i->query->step())
     {
-        ret.insert(sAccountName.getValue());
+        ret.insert(accountName.getValue());
     }
 
     if (lock) mutex.unlockShared();
     return ret;
 }
 
-std::list<sGroupSimpleDetails> Manager_DB::groupsBasicInfoSearch(std::string sSearchWords, uint64_t limit, uint64_t offset)
+std::list<GroupDetails> Manager_DB::groupsBasicInfoSearch(std::string sSearchWords, uint64_t limit, uint64_t offset)
 {
-    std::list<sGroupSimpleDetails> ret;
+    std::list<GroupDetails> ret;
     Threads::Sync::Lock_RD lock(mutex);
 
-    Abstract::STRING sGroupName,description;
+    Abstract::STRING groupName,description;
 
     std::string sSqlQuery = "SELECT `groupName`,`groupDescription` FROM vauth_v3_groups";
 
@@ -179,13 +179,13 @@ std::list<sGroupSimpleDetails> Manager_DB::groupsBasicInfoSearch(std::string sSe
                                               {":LIMIT",new Abstract::UINT64(limit)},
                                               {":OFFSET",new Abstract::UINT64(offset)}
                                           },
-                                          { &sGroupName, &description });
+                                          { &groupName, &description });
     while (i->getResultsOK() && i->query->step())
     {
-        sGroupSimpleDetails rDetail;
+        GroupDetails rDetail;
 
-        rDetail.sDescription = description.getValue();
-        rDetail.sGroupName = sGroupName.getValue();
+        rDetail.description = description.getValue();
+        rDetail.groupName = groupName.getValue();
 
         ret.push_back(rDetail);
     }

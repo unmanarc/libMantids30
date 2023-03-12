@@ -39,7 +39,7 @@ bool Manager::initAccounts()
                       );
 }
 
-Reason Manager::authenticate(const std::string &appName, const ClientDetails &clientDetails, const std::string &sAccountName, const std::string &incommingPassword, uint32_t passwordIndex, Mode authMode, const std::string &challengeSalt, std::map<uint32_t,std::string> *stAccountPassIndexesUsedForLogin)
+Reason Manager::authenticate(const std::string &appName, const ClientDetails &clientDetails, const std::string &accountName, const std::string &incommingPassword, uint32_t passwordIndex, Mode authMode, const std::string &challengeSalt, std::map<uint32_t,std::string> *stAccountPassIndexesUsedForLogin)
 {
     Reason ret = REASON_BAD_ACCOUNT;
     bool accountFound=false, indexFound=false;
@@ -52,11 +52,11 @@ Reason Manager::authenticate(const std::string &appName, const ClientDetails &cl
         Threads::Sync::Lock_RD lock(mutex);
 
         // Check if the user is enabled to authenticate in this APP:
-        if (!applicationValidateAccount(appName,sAccountName))
+        if (!applicationValidateAccount(appName,accountName))
             return REASON_BAD_ACCOUNT; // Account not available for this application.
 
         // Check if the retrieved secret
-        pStoredSecretData = retrieveSecret(sAccountName,passwordIndex, &accountFound, &indexFound);
+        pStoredSecretData = retrieveSecret(accountName,passwordIndex, &accountFound, &indexFound);
         _bAuthPolicyMaxTries = bAuthPolicyMaxTries;
 
         if (accountFound == false)
@@ -65,15 +65,15 @@ Reason Manager::authenticate(const std::string &appName, const ClientDetails &cl
             ret = REASON_PASSWORD_INDEX_NOTFOUND;
         else
         {
-            time_t lastLogin = accountLastLogin(sAccountName);
+            time_t lastLogin = accountLastLogin(accountName);
 
-            if      (!isAccountConfirmed(sAccountName))
+            if      (!isAccountConfirmed(accountName))
                 return REASON_UNCONFIRMED_ACCOUNT;
 
-            else if (isAccountDisabled(sAccountName))
+            else if (isAccountDisabled(accountName))
                 return REASON_DISABLED_ACCOUNT;
 
-            else if (isAccountExpired(sAccountName))
+            else if (isAccountExpired(accountName))
                 return REASON_EXPIRED_ACCOUNT;
 
             else if (lastLogin+bAuthPolicyAbandonedAccountExpirationSeconds<time(nullptr))
@@ -86,7 +86,7 @@ Reason Manager::authenticate(const std::string &appName, const ClientDetails &cl
                 // On successfull first login, give all pass indexes used for login...
                 if ( IS_PASSWORD_AUTHENTICATED(ret) && stAccountPassIndexesUsedForLogin && passwordIndex == 0 )
                 {
-                    *stAccountPassIndexesUsedForLogin = accountPassIndexesUsedForLogin(sAccountName);
+                    *stAccountPassIndexesUsedForLogin = accountPassIndexesUsedForLogin(accountName);
 
                     // If can't retrieve well the pass indexes used for login, return an authentication error for any valid idx 0 password (preventing error).
                     if (stAccountPassIndexesUsedForLogin->find(0xFFFFFFFF)!=stAccountPassIndexesUsedForLogin->end())
@@ -103,18 +103,18 @@ Reason Manager::authenticate(const std::string &appName, const ClientDetails &cl
         if ( (pStoredSecretData.badAttempts + 1) >= _bAuthPolicyMaxTries )
         {
             // Disable the account...
-            accountDisable(sAccountName,true);
+            accountDisable(accountName,true);
         }
         else
         {
-            incrementBadAttempts(sAccountName,passwordIndex);
+            incrementBadAttempts(accountName,passwordIndex);
         }
     }
     else
     {
         // Authenticated:
-        updateLastLogin(sAccountName,passwordIndex,clientDetails);
-        resetBadAttempts(sAccountName,passwordIndex);
+        updateLastLogin(accountName,passwordIndex,clientDetails);
+        resetBadAttempts(accountName,passwordIndex);
     }
 
 
@@ -140,12 +140,12 @@ void Manager::setBAuthPolicyMaxTries(const uint32_t &value)
     bAuthPolicyMaxTries = value;
 }
 
-Secret_PublicData Manager::getAccountSecretPublicData(const std::string &sAccountName, uint32_t passIndex)
+Secret_PublicData Manager::getAccountSecretPublicData(const std::string &accountName, uint32_t passIndex)
 {
     // protective-limited method.
     bool bAccountFound = false;
     bool bIndexFound = false;
-    Secret pd = retrieveSecret(sAccountName, passIndex, &bAccountFound, &bIndexFound);
+    Secret pd = retrieveSecret(accountName, passIndex, &bAccountFound, &bIndexFound);
     Secret_PublicData pdb;
 
     if (bAccountFound && bIndexFound)
@@ -167,13 +167,13 @@ Secret_PublicData Manager::getAccountSecretPublicData(const std::string &sAccoun
     return pdb;
 }
 
-std::map<uint32_t, Secret_PublicData> Manager::getAccountAllSecretsPublicData(const std::string &sAccountName)
+std::map<uint32_t, Secret_PublicData> Manager::getAccountAllSecretsPublicData(const std::string &accountName)
 {
     std::map<uint32_t, Secret_PublicData> r;
 
     // Get every pass required for login (even if not present)
     std::set<uint32_t> indicesRequiredForLogin = passIndexesRequiredForLogin();
-    std::set<uint32_t> indicesUsedByAccount =  passIndexesUsedByAccount(sAccountName);
+    std::set<uint32_t> indicesUsedByAccount =  passIndexesUsedByAccount(accountName);
 
     std::set<uint32_t> combinatedIndices;
 
@@ -185,14 +185,14 @@ std::map<uint32_t, Secret_PublicData> Manager::getAccountAllSecretsPublicData(co
 
     for (const auto & passwordIndex: combinatedIndices)
     {
-        r[passwordIndex] = getAccountSecretPublicData(sAccountName,passwordIndex);
+        r[passwordIndex] = getAccountSecretPublicData(accountName,passwordIndex);
     }
 
     return r;
 
 }
 
-std::map<uint32_t,std::string> Manager::accountPassIndexesUsedForLogin(const std::string &sAccountName)
+std::map<uint32_t,std::string> Manager::accountPassIndexesUsedForLogin(const std::string &accountName)
 {
     std::map<uint32_t,std::string> r;
     std::set<uint32_t> indicesRequiredForLogin = passIndexesRequiredForLogin();
@@ -204,7 +204,7 @@ std::map<uint32_t,std::string> Manager::accountPassIndexesUsedForLogin(const std
         return r;
     }
 
-    for (const auto & indexUsedByTheAccount : passIndexesUsedByAccount(sAccountName))
+    for (const auto & indexUsedByTheAccount : passIndexesUsedByAccount(accountName))
     {
         if (indicesRequiredForLogin.find(indexUsedByTheAccount)!=indicesRequiredForLogin.end())
             r[indexUsedByTheAccount] = passIndexDescription(indexUsedByTheAccount);
@@ -213,16 +213,16 @@ std::map<uint32_t,std::string> Manager::accountPassIndexesUsedForLogin(const std
     return r;
 }
 
-bool Manager::accountChangeAuthenticatedSecret(const std::string & appName, const std::string &sAccountName, uint32_t passIndex, const std::string &sCurrentPassword, const Secret &passwordData, const ClientDetails & clientInfo, Mode authMode, const std::string &challengeSalt)
+bool Manager::accountChangeAuthenticatedSecret(const std::string & appName, const std::string &accountName, uint32_t passIndex, const std::string &sCurrentPassword, const Secret &passwordData, const ClientDetails & clientInfo, Mode authMode, const std::string &challengeSalt)
 {
     // Authenticate the current passIndex.
-    auto i = authenticate(appName,clientInfo,sAccountName,sCurrentPassword,passIndex,authMode,challengeSalt);
+    auto i = authenticate(appName,clientInfo,accountName,sCurrentPassword,passIndex,authMode,challengeSalt);
 
     // If this pass index is not found for this user, make the authentication with the 0 (master password)
     if (i == REASON_PASSWORD_INDEX_NOTFOUND)
     {
         // > We want to define a new password index if not exist.
-        i = authenticate(appName,clientInfo,sAccountName,sCurrentPassword,0,authMode,challengeSalt);
+        i = authenticate(appName,clientInfo,accountName,sCurrentPassword,0,authMode,challengeSalt);
         // Now i contains AUTHENTICATED if the password was validated agains index 0.
     }
 
@@ -232,29 +232,29 @@ bool Manager::accountChangeAuthenticatedSecret(const std::string & appName, cons
     if ( IS_PASSWORD_AUTHENTICATED(i) )
     {
         // Change the requested index.
-        return accountChangeSecret(sAccountName,passwordData,passIndex);
+        return accountChangeSecret(accountName,passwordData,passIndex);
     }
 
     return false;
 }
 
-bool Manager::isAccountExpired(const std::string &sAccountName)
+bool Manager::isAccountExpired(const std::string &accountName)
 {
-    time_t tAccountExpirationDate = accountExpirationDate(sAccountName);
+    time_t tAccountExpirationDate = accountExpirationDate(accountName);
     if (!tAccountExpirationDate) return false;
     return tAccountExpirationDate<time(nullptr);
 }
 
-std::set<ApplicationAttribute> Manager::accountUsableAttribs(const std::string &sAccountName)
+std::set<ApplicationAttribute> Manager::accountUsableAttribs(const std::string &accountName)
 {
     std::set<ApplicationAttribute> x;
     Threads::Sync::Lock_RD lock(mutex);
     // Take attribs from the account
-    for (const ApplicationAttribute & attrib : accountDirectAttribs(sAccountName,false))
+    for (const ApplicationAttribute & attrib : accountDirectAttribs(accountName,false))
         x.insert(attrib);
 
     // Take the attribs from the belonging groups
-    for (const std::string & groupName : accountGroups(sAccountName,false))
+    for (const std::string & groupName : accountGroups(accountName,false))
     {
         for (const ApplicationAttribute & attrib : groupAttribs(groupName,false))
             x.insert(attrib);
@@ -273,14 +273,14 @@ bool Manager::superUserAccountExist()
     return false;
 }
 
-bool Manager::validateAccountAttribute(const std::string &sAccountName, const ApplicationAttribute & applicationAttrib)
+bool Manager::validateAccountAttribute(const std::string &accountName, const ApplicationAttribute & applicationAttrib)
 {
     Threads::Sync::Lock_RD lock(mutex);
-    if (accountValidateDirectAttribute(sAccountName,applicationAttrib))
+    if (accountValidateDirectAttribute(accountName,applicationAttrib))
     {
         return true;
     }
-    for (const std::string & groupName : accountGroups(sAccountName,false))
+    for (const std::string & groupName : accountGroups(accountName,false))
     {
         if (groupValidateAttribute(groupName, applicationAttrib,false))
         {

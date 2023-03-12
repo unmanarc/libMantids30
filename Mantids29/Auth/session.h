@@ -69,12 +69,12 @@ public:
     void setIndexAuthenticationPolicy(uint32_t passIndex, const sAuthenticationPolicy & authPolicy);
     /**
      * @brief registerPersistentAuthentication
-     * @param sAccountName
+     * @param accountName
      * @param accountDomain
      * @param passIndex
      * @param reason
      */
-    void registerPersistentAuthentication(const std::string &sAccountName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
+    void registerPersistentAuthentication(const std::string &accountName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
     /**
      * @brief registerPersistentAuthentication
      * @param passIndex
