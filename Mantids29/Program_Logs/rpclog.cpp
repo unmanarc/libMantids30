@@ -1,4 +1,5 @@
 #include "rpclog.h"
+#include "loglevels.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #include <shlobj.h>
@@ -57,6 +58,8 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
         printStandardLog(logSeverity,stderr,ip,sessionId,user,domain,module,buffer,LOG_COLOR_GREEN,"DEBUG");
     else if (logSeverity == LEVEL_CRITICAL)
         printStandardLog(logSeverity,stderr,ip,sessionId,user,domain,module,buffer,LOG_COLOR_RED,"CRIT");
+    else if (logSeverity == LEVEL_SECURITY_ALERT)
+        printStandardLog(logSeverity,stderr,ip,sessionId,user,domain,module,buffer,LOG_COLOR_ORANGE,"SECU");
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,ip,sessionId,user,domain,module,buffer,LOG_COLOR_PURPLE,"ERR");
 
@@ -140,6 +143,8 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
             syslog( LOG_WARNING,"%s", logLine.c_str());
         else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "%s",logLine.c_str());
+        else if (logSeverity == LEVEL_SECURITY_ALERT)
+            syslog( LOG_WARNING, "%s",logLine.c_str());
         else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "%s",logLine.c_str());
 #endif
@@ -170,6 +175,8 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
                 printColorBlue(fp,getAlignedValue(logLevelText,6).c_str()); break;
             case LOG_COLOR_PURPLE:
                 printColorPurple(fp,getAlignedValue(logLevelText,6).c_str()); break;
+            case LOG_COLOR_ORANGE:
+                printColorOrange(fp,getAlignedValue(logLevelText,6).c_str()); break;
             }
             fprintf(fp, "%s", m_logFieldSeparator.c_str());
            // fflush(fp);

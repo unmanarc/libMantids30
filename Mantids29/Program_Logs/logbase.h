@@ -54,6 +54,7 @@ protected:
     void printColorGreen(FILE *fp, const char * str);
     void printColorRed(FILE *fp, const char * str);
     void printColorPurple(FILE *fp, const char * str);
+    void printColorOrange(FILE *fp, const char * str);
     void printColorForWin32(FILE *fp, unsigned short color, const char * str);
 
     static std::string getAlignedValue(const std::string & value, size_t sz);

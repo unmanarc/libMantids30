@@ -11,7 +11,8 @@ enum eLogLevels
     LEVEL_CRITICAL = 0x3,
     LEVEL_ERR = 0x4,
     LEVEL_DEBUG = 0x5,
-    LEVEL_DEBUG1 = 0x6
+    LEVEL_DEBUG1 = 0x6,
+    LEVEL_SECURITY_ALERT = 0x7
 };
 
 }}}

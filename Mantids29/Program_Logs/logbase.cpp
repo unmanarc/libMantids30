@@ -140,6 +140,16 @@ void LogBase::printColorPurple(FILE *fp, const char *str)
 #endif
 }
 
+void LogBase::printColorOrange(FILE *fp, const char *str)
+{
+#ifdef _WIN32
+    printColorForWin32(fp,FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,str);
+#else
+    fprintf(fp,"\033[1;33m%s\033[0m", str);
+#endif
+}
+
+
 void LogBase::printColorForWin32(FILE *fp, unsigned short color, const char *str)
 {
 #ifdef _WIN32

@@ -1,4 +1,6 @@
 #include "applog.h"
+#include "logcolors.h"
+#include "loglevels.h"
 #ifdef _WIN32
 #include <ws2tcpip.h>
 #include <shlobj.h>
@@ -87,6 +89,8 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
             syslog( LOG_WARNING,"S/%s", logLine.c_str());
         else if (logSeverity == LEVEL_CRITICAL)
             syslog( LOG_CRIT, "S/%s",logLine.c_str());
+        else if (logSeverity == LEVEL_SECURITY_ALERT)
+            syslog( LOG_WARNING, "S/%s",logLine.c_str());
         else if (logSeverity == LEVEL_ERR)
             syslog( LOG_ERR, "S/%s",logLine.c_str());
 #endif
@@ -118,6 +122,9 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
                 printColorBlue(fp,getAlignedValue(logLevelText,6).c_str()); break;
             case LOG_COLOR_PURPLE:
                 printColorPurple(fp,getAlignedValue(logLevelText,6).c_str()); break;
+            case LOG_COLOR_ORANGE:
+                printColorOrange(fp,getAlignedValue(logLevelText,6).c_str()); break;
+                break;
             }
             fprintf(fp, "%s", m_logFieldSeparator.c_str());
         }
@@ -157,6 +164,8 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_GREEN,"DEBUG");
     else if (logSeverity == LEVEL_CRITICAL)
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_RED,"CRIT");
+    else if (logSeverity == LEVEL_SECURITY_ALERT)
+        printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_ORANGE,"SECU");
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
 
@@ -183,6 +192,8 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_GREEN,"DEBUG");
     else if (logSeverity == LEVEL_CRITICAL)
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_RED,"CRIT");
+    else if (logSeverity == LEVEL_SECURITY_ALERT)
+        printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_ORANGE,"SECU");
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,module,user,ip,buffer,LOG_COLOR_PURPLE,"ERR");
 
@@ -207,6 +218,8 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
         printStandardLog(logSeverity,stderr,module,"",ip,buffer,LOG_COLOR_GREEN,"DEBUG");
     else if (logSeverity == LEVEL_CRITICAL)
         printStandardLog(logSeverity,stderr,module,"",ip,buffer,LOG_COLOR_RED,"CRIT");
+    else if (logSeverity == LEVEL_SECURITY_ALERT)
+        printStandardLog(logSeverity,stderr,module,"",ip,buffer,LOG_COLOR_ORANGE,"SECU");
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,module,"",ip,buffer,LOG_COLOR_PURPLE,"ERR");
 
@@ -234,6 +247,8 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
         printStandardLog(logSeverity,stderr,module,"","",buffer,LOG_COLOR_GREEN,"DEBUG");
     else if (logSeverity == LEVEL_CRITICAL)
         printStandardLog(logSeverity,stderr,module,"","",buffer,LOG_COLOR_RED,"CRIT");
+    else if (logSeverity == LEVEL_SECURITY_ALERT)
+        printStandardLog(logSeverity,stderr,module,"","",buffer,LOG_COLOR_ORANGE,"SECU");
     else if (logSeverity == LEVEL_ERR)
         printStandardLog(logSeverity,stderr,module,"","",buffer,LOG_COLOR_PURPLE,"ERR");
 

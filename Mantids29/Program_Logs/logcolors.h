@@ -10,7 +10,8 @@ enum eLogColors
     LOG_COLOR_RED = 2,
     LOG_COLOR_PURPLE = 3,
     LOG_COLOR_NORMAL = 4,
-    LOG_COLOR_GREEN = 5
+    LOG_COLOR_GREEN = 5,
+    LOG_COLOR_ORANGE = 6
 };
 
 }}}
