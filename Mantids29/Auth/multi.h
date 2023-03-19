@@ -3,8 +3,6 @@
 
 #include <Mantids29/Helpers/json.h>
 #include <set>
-//#include <Mantids29/Memory/subparser.h>
-//#include "streamablejson.h"
 #include "data.h"
 
 namespace Mantids29 { namespace Authentication {
