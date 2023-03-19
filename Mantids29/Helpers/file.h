@@ -30,6 +30,25 @@ public:
      * @return True if the content was successfully written to the file, false otherwise.
      */
     static bool writeStringToFile(const std::string &filePath, const std::string &content);
+
+    /**
+     * @brief Detects if the provided configuration file has insecure permissions
+     *
+     * @param configFilePath The path to the configuration file to check
+     * @param isInsecure A pointer to a boolean variable that will be set to true if the file's permissions are insecure, and false otherwise
+     * @return true if the function succeeds, false if you don't have access to this file
+     */
+    static bool isSensitiveConfigPermissionInsecure(const std::string &configFilePath, bool *isInsecure);
+
+    /**
+     * @brief Fixes the insecure permissions of the provided configuration file
+     *
+     * @param configFilePath The path to the configuration file to fix
+     * @return true if the function succeeds, false otherwise
+     */
+    static bool fixSensitiveConfigPermission(const std::string& configFilePath);
+
+
 };
 
 
