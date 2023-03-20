@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <atomic>
+#include <memory>
 
 namespace Mantids29 { namespace Threads {
 

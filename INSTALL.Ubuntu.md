@@ -14,7 +14,7 @@ Log as root and install the required programs/libraries...
 
 ```
 apt update
-apt install build-essential cmake
+apt install build-essential cmake pkg-config
 ```
 
 ### Install required devel libraries:
