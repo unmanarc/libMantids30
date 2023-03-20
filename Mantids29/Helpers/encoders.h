@@ -35,7 +35,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string fromBase64Obf(std::string const& sB64Buf, const uint64_t& seed = 0xAA12017BEA385A7B);
+    static std::string decodeFromBase64Obf(std::string const& sB64Buf, const uint64_t& seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on binary data.
@@ -46,7 +46,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string toBase64Obf(unsigned char const* buf, uint64_t count, const uint64_t& seed = 0xAA12017BEA385A7B);
+    static std::string encodeToBase64Obf(unsigned char const* buf, uint64_t count, const uint64_t& seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on a string.
@@ -56,7 +56,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string toBase64Obf(const std::string& buf, const uint64_t& seed = 0xAA12017BEA385A7B);
+    static std::string encodeToBase64Obf(const std::string& buf, const uint64_t& seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Decodes a base64-encoded string to binary data.
@@ -65,7 +65,7 @@ public:
      *
      * @return A shared pointer to a BinaryDataContainer object containing the decoded binary data.
      */
-    static std::shared_ptr<Mem::BinaryDataContainer> fromBase64ToBin(std::string const& sB64Buf);
+    static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string const& input, bool url = false);
 
     /**
      * @brief Decodes a base64-encoded string.
@@ -74,7 +74,7 @@ public:
      *
      * @return The decoded string.
      */
-    static std::string fromBase64(std::string const& sB64Buf);
+    static std::string decodeFromBase64(std::string const& input, bool url = false);
 
     /**
      * @brief Performs a base64 encoding on a string.
@@ -83,7 +83,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    static std::string toBase64(const std::string& buf);
+    static std::string encodeToBase64(const std::string& buf, bool url = false);
 
     /**
      * @brief Performs a base64 encoding on binary data.
@@ -93,7 +93,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    static std::string toBase64(unsigned char const* buf, uint64_t count);
+    static std::string encodeToBase64(unsigned char const* buf, uint64_t count, bool url = false);
 
     /**
      * @brief Encodes a string for use in a URL.

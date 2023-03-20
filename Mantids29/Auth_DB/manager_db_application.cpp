@@ -23,7 +23,7 @@ bool Manager_DB::applicationAdd(const std::string &appName, const std::string &a
                                    {":appName",new Abstract::STRING(appName)},
                                    {":appCreator",new Abstract::STRING(sOwnerAccountName)},
                                    {":description",new Abstract::STRING(applicationDescription)},
-                                   {":appKey",new Abstract::STRING( Encoders::toBase64Obf(sAppKey) )}
+                                   {":appKey",new Abstract::STRING( Encoders::encodeToBase64Obf(sAppKey) )}
                                });
 }
 
@@ -84,7 +84,7 @@ std::string Manager_DB::applicationKey(const std::string &appName)
                                           { &appKey });
     if (i->getResultsOK() && i->query->step())
     {
-        return Encoders::fromBase64Obf(appKey.getValue());
+        return Encoders::decodeFromBase64Obf(appKey.getValue());
     }
     return "";
 }
@@ -95,7 +95,7 @@ bool Manager_DB::applicationChangeKey(const std::string &appName, const std::str
     return m_sqlConnector->query("UPDATE vauth_v3_applications SET `appKey`=:appKey WHERE `appName`=:appName;",
                                {
                                    {":appName",new Abstract::STRING(appName)},
-                                   {":appKey",new Abstract::STRING( Abstract::STRING( Encoders::toBase64Obf(appKey)) )}
+                                   {":appKey",new Abstract::STRING( Abstract::STRING( Encoders::encodeToBase64Obf(appKey)) )}
                                });
 }
 

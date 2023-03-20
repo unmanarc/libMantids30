@@ -137,7 +137,7 @@ bool HTTPv1_Client::streamClientHeaders(Memory::Streams::StreamableObject::Statu
     // Put basic authentication on headers:
     if (clientRequest.basicAuth.bEnabled)
     {
-        clientRequest.headers.replace("Authentication", "Basic " + Helpers::Encoders::toBase64( clientRequest.basicAuth.user + ":" + clientRequest.basicAuth.pass));
+        clientRequest.headers.replace("Authentication", "Basic " + Helpers::Encoders::encodeToBase64( clientRequest.basicAuth.user + ":" + clientRequest.basicAuth.pass));
     }
 
     clientRequest.headers.replace("User-Agent", clientRequest.userAgent);

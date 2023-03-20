@@ -53,7 +53,7 @@ std::string Crypto::AES256EncryptB64(const unsigned char * input, uint32_t input
                         if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, gcmTag))
                         {
                             memcpy(cipherOutText+16,gcmTag,16);
-                            out = Helpers::Encoders::toBase64( cipherOutText, cipherOutLength );
+                            out = Helpers::Encoders::encodeToBase64( cipherOutText, cipherOutLength );
                             if (ok)
                                 *ok = true;
                         }
@@ -87,7 +87,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
     if (!r->data)
         return r;
 
-    auto dec = Helpers::Encoders::fromBase64ToBin(input);
+    auto dec = Helpers::Encoders::decodeFromBase64ToBin(input);
 
     if (dec->data && dec->cur>=32)
     {

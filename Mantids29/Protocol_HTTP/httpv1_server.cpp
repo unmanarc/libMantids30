@@ -477,7 +477,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         {
             if (authParts[0] == "Basic")
             {
-                auto bp = Helpers::Encoders::fromBase64(authParts[1]);
+                auto bp = Helpers::Encoders::decodeFromBase64(authParts[1]);
                 std::string::size_type pos = bp.find(':', 0);
                 if (pos != std::string::npos)
                 {
