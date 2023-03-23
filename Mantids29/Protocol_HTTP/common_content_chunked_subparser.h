@@ -3,7 +3,7 @@
 
 #include <Mantids29/Memory/streamableobject.h>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 class Content_Chunked_SubParser : public Memory::Streams::StreamableObject
 {
@@ -21,6 +21,6 @@ private:
     uint64_t pos;
 };
 
-}}}}
+}}}}}
 
 #endif // HTTP_HLP_CHUNKED_RETRIEVER_H

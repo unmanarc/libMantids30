@@ -1,6 +1,6 @@
 #include "httpv1_base.h"
 
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP;
 using namespace Mantids29;
 
 HTTPv1_Base::HTTPv1_Base(bool clientMode, Memory::Streams::StreamableObject *sobject) : Memory::Streams::Parser(sobject,clientMode)

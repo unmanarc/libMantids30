@@ -1,7 +1,7 @@
 #include "mime_sub_content.h"
 #include <Mantids29/Memory/subparser.h>
 
-using namespace Mantids29::Protocols::MIME;
+using namespace Mantids29::Network::Protocols::MIME;
 using namespace Mantids29;
 
 #ifdef _WIN32

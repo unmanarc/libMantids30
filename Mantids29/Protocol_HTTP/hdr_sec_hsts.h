@@ -2,7 +2,7 @@
 #define HTTP_SECURITY_HSTS_H
 
 #include <string>
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 
 /**
  * @brief The HSTS class provides functionality for HTTP Strict Transport Security (HSTS).
@@ -57,6 +57,6 @@ private:
 };
 
 
-}}}}}
+}}}}}}
 #endif // HTTP_SECURITY_HSTS_H
 

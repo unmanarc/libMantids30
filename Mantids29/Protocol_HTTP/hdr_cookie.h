@@ -4,7 +4,7 @@
 #include <string>
 #include "common_date.h"
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Headers {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers {
 
 class Cookie
 {
@@ -153,6 +153,6 @@ private:
     eSameSitePolicy sameSite;
 };
 
-}}}}
+}}}}}
 
 #endif // HTTP_COOKIE_VALUE_H

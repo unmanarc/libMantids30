@@ -7,7 +7,7 @@
 #include <Mantids29/Protocol_MIME/mime_sub_header.h>
 #include <stdint.h>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Response {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Response {
 
 class Cookies_ServerSide
 {
@@ -33,6 +33,6 @@ private:
     std::map<std::string,Headers::Cookie *> cookiesMap;
 
 };
-}}}}
+}}}}}
 
 #endif // HTTP_SETCOOKIES_H

@@ -22,8 +22,9 @@
 #endif
 
 using namespace Mantids29::Application::Logs;
-using namespace Mantids29::Protocols;
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network;
+using namespace Mantids29::Network::Protocols;
+using namespace Mantids29::Network::Protocols::HTTP;
 using namespace Mantids29::Memory;
 using namespace Mantids29::RPC::Web;
 using namespace Mantids29::RPC;

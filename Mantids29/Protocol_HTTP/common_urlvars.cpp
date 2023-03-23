@@ -5,8 +5,8 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids29::Protocols::HTTP;
-using namespace Mantids29::Protocols::HTTP::Common;
+using namespace Mantids29::Network::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Common;
 using namespace Mantids29;
 
 URLVars::URLVars(Memory::Streams::StreamableObject *value) : Memory::Streams::Parser(value,false)

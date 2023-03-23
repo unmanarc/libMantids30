@@ -4,7 +4,7 @@
 #include <string>
 #include <Mantids29/Memory/subparser.h>
 
-namespace Mantids29 { namespace Protocols { namespace MIME {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace MIME {
 
 class MIME_Sub_FirstBoundary : public Memory::Streams::SubParser
 {
@@ -22,6 +22,6 @@ private:
     std::string boundary;
 };
 
-}}}
+}}}}
 
 #endif // MIME_SUB_ENDPOINT_H

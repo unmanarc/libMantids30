@@ -4,7 +4,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 /**
  * @brief The Version class provides functionality for HTTP versions.
@@ -75,6 +75,6 @@ private:
 
 
 
-}}}}
+}}}}}
 
 #endif // HTTP_VERSION_H

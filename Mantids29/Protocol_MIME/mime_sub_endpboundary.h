@@ -3,7 +3,7 @@
 
 #include <Mantids29/Memory/subparser.h>
 
-namespace Mantids29 { namespace Protocols { namespace MIME {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace MIME {
 
 
 #define ENDP_STAT_UNINITIALIZED -1
@@ -27,6 +27,6 @@ private:
     int status;
 };
 
-}}}
+}}}}
 
 #endif // MIME_SUB_ENDPBOUNDARY_H

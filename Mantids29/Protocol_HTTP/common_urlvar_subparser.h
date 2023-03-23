@@ -3,7 +3,7 @@
 
 #include <Mantids29/Memory/subparser.h>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 class URLVar_SubParser : public Memory::Streams::SubParser
 {
@@ -25,6 +25,6 @@ protected:
 
 };
 
-}}}}
+}}}}}
 
 #endif // HTTP_SUB_URLVARPARSER_H

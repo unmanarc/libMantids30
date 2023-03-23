@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Headers {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers {
 
 class CacheControl
 {
@@ -48,5 +48,5 @@ private:
     uint32_t maxAge,sMaxAge;
 };
 
-}}}}
+}}}}}
 #endif // CACHECONTROL_H

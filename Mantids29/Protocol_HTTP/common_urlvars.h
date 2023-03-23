@@ -7,7 +7,7 @@
 
 #include "common_urlvar_subparser.h"
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
@@ -79,6 +79,6 @@ private:
 
     URLVar_SubParser _urlVarParser;
 };
-}}}}
+}}}}}
 
 #endif // HTTPURLFORMATTEDVARS_H

@@ -18,7 +18,7 @@
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 4
 
-namespace Mantids29 { namespace Protocols { namespace HTTP {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP {
 
 
 class HTTPv1_Base : public Memory::Streams::Parser
@@ -126,7 +126,7 @@ public:
         /**
          * @brief clientRequest - URL Request (Request type, URL, GET Vars, and HTTP version)
          */
-        Mantids29::Protocols::HTTP::Request::RequestLine requestLine;
+        Mantids29::Network::Protocols::HTTP::Request::RequestLine requestLine;
         /**
          * @brief content - Content Data.
          */
@@ -237,7 +237,7 @@ public:
         /**
          * @brief code Response - Server code response. (HTTP Version, Response code, message)
          */
-        Mantids29::Protocols::HTTP::Status status;
+        Mantids29::Network::Protocols::HTTP::Status status;
         /**
          * @brief content - Content Data.
          */
@@ -284,6 +284,6 @@ private:
     void setInternalProductVersion(const std::string & prodName, const std::string & extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR, const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 
-}}}
+}}}}
 
 #endif // HTTP1BASE_H

@@ -1,6 +1,6 @@
 #include "linerecv_subparser.h"
 
-using namespace Mantids29::Protocols::Line2Line;
+using namespace Mantids29::Network::Protocols::Line2Line;
 using namespace Mantids29;
 
 LineRecv_SubParser::LineRecv_SubParser()

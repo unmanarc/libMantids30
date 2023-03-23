@@ -11,7 +11,7 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace Mantids29 { namespace Protocols { namespace MIME {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace MIME {
 // ??
 /**
  * @brief The HeaderOption struct
@@ -172,6 +172,6 @@ private:
     size_t maxSubOptionCount, maxSubOptionSize;
 };
 
-}}}
+}}}}
 
 #endif // MIME_SUB_HEADER_H

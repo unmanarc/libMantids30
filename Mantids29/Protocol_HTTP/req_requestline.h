@@ -8,7 +8,7 @@
 #include "common_version.h"
 #include "common_urlvars.h"
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Request {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Request {
 
 
 class RequestLine : public Memory::Streams::SubParser
@@ -79,6 +79,6 @@ private:
     Common::URLVars getVars;
 };
 
-}}}}
+}}}}}
 
 #endif // HTTP_URL_REQUEST_H

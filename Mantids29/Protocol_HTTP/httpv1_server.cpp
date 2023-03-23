@@ -27,7 +27,8 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP;
+using namespace Mantids29::Network;
 using namespace Mantids29;
 
 HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(false, sobject)

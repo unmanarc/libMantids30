@@ -4,7 +4,7 @@
 #include <Mantids29/Memory/parser.h>
 #include "linerecv_subparser.h"
 
-namespace Mantids29 { namespace Protocols { namespace Line2Line {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace Line2Line {
 
 class LineRecv : public Memory::Streams::Parser
 {
@@ -22,6 +22,6 @@ protected:
     LineRecv_SubParser subParser;
 };
 
-}}}
+}}}}
 
 #endif // HTTP1BASE_H

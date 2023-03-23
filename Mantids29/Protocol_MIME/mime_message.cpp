@@ -10,7 +10,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids29::Protocols::MIME;
+using namespace Mantids29::Network::Protocols::MIME;
 using namespace Mantids29;
 
 MIME_Message::MIME_Message(Memory::Streams::StreamableObject *value) : Memory::Streams::Parser(value, false)

@@ -7,8 +7,8 @@
 #include <locale>
 #include <iomanip>
 
-using namespace Mantids29::Protocols::HTTP;
-using namespace Mantids29::Protocols::HTTP::Common;
+using namespace Mantids29::Network::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Common;
 using namespace Mantids29;
 using namespace boost::posix_time;
 

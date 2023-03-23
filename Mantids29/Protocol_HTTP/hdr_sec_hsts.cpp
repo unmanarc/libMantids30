@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 
-using namespace Mantids29::Protocols::HTTP::Headers::Security;
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Headers::Security;
+using namespace Mantids29::Network::Protocols::HTTP;
 using namespace Mantids29;
 using namespace std;
 using namespace boost;

@@ -8,7 +8,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP;
 using namespace Mantids29;
 
 const sHTTP_StatusCode Status::responseRetCodes[] = {

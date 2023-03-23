@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-using namespace Mantids29::Protocols::HTTP;
-using namespace Mantids29::Protocols::HTTP::Common;
+using namespace Mantids29::Network::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Common;
 using namespace Mantids29;
 
 Content_Chunked_SubParser::Content_Chunked_SubParser(Memory::Streams::StreamableObject *dst)

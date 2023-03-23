@@ -5,8 +5,8 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
-using namespace Mantids29::Protocols::HTTP::Headers::Security;
-using namespace Mantids29::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Headers::Security;
+using namespace Mantids29::Network::Protocols::HTTP;
 using namespace Mantids29;
 using namespace std;
 using namespace boost;

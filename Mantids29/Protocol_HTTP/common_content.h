@@ -7,7 +7,7 @@
 #include <Mantids29/Memory/b_base.h>
 #include <Mantids29/Protocol_MIME/mime_message.h>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 class Content : public Memory::Streams::SubParser
 {
@@ -161,6 +161,6 @@ private:
     URLVars urlPostVars;
 };
 
-}}}}
+}}}}}
 
 #endif // HTTP_CONTENT_H

@@ -8,7 +8,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids29::Protocols::MIME;
+using namespace Mantids29::Network::Protocols::MIME;
 using namespace Mantids29;
 using namespace std;
 

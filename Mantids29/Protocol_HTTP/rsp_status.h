@@ -4,7 +4,7 @@
 #include <Mantids29/Memory/subparser.h>
 #include "common_version.h"
 
-namespace Mantids29 { namespace Protocols { namespace HTTP {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP {
 
 struct sHTTP_StatusCode
 {
@@ -116,6 +116,6 @@ private:
 
 
 };
-}}}
+}}}}
 
 #endif // HTTP_CODE_RESPONSE_H

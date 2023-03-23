@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace Mantids29 { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 /*
 class XFrameOpts
 {
@@ -108,6 +108,6 @@ private:
 };
 
 
-}}}}}
+}}}}}}
 
 #endif // HTTP_SECURITY_XFRAMEOPTS_H

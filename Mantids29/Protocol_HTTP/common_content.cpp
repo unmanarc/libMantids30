@@ -5,8 +5,9 @@
 #include <stdexcept>
 
 // TODO: CHECK THIS CLASS
-using namespace Mantids29::Protocols::HTTP;
-using namespace Mantids29::Protocols::HTTP::Common;
+using namespace Mantids29::Network::Protocols::HTTP;
+using namespace Mantids29::Network::Protocols::HTTP::Common;
+using namespace Mantids29::Network;
 
 using namespace Mantids29;
 

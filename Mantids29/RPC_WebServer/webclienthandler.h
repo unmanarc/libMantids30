@@ -16,7 +16,7 @@
 
 namespace Mantids29 { namespace RPC { namespace Web {
 
-class WebClientHandler : public Protocols::HTTP::HTTPv1_Server
+class WebClientHandler : public Network::Protocols::HTTP::HTTPv1_Server
 {
 public:
     WebClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
@@ -53,32 +53,32 @@ protected:
      * @brief procHTTPClientContent Process web client request
      * @return http response code.
      */
-    Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
+    Network::Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
 private:
     void sessionOpen();
     void sessionRelease();
     void sessionDestroy();
 
-    Protocols::HTTP::Status::eRetCode procResource_File(Authentication::Multi *extraAuths);
-    Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, Authentication::Multi *extraAuths);
+    Network::Protocols::HTTP::Status::eRetCode procResource_File(Authentication::Multi *extraAuths);
+    Network::Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, Authentication::Multi *extraAuths);
 
-    Protocols::HTTP::Status::eRetCode procJAPI_Session();
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_AUTHINFO();
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_CSRFTOKEN();
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication::Data & auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication::Data & auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication::Data &auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication::Data &auth);
-    Protocols::HTTP::Status::eRetCode procJAPI_Session_PASSWDLIST();
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session();
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_AUTHINFO();
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_CSRFTOKEN();
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication::Data & auth);
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication::Data & auth);
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication::Data &auth);
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication::Data &auth);
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_PASSWDLIST();
 
-    Protocols::HTTP::Status::eRetCode procJAPI_Exec( Authentication::Multi *extraAuths,
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Exec( Authentication::Multi *extraAuths,
                                                        std::string sMethodName,
                                                        std::string sPayloadIn,
                                                        Memory::Streams::StreamableJSON * jPayloadOutStr = nullptr
                                                        );
     bool csrfValidate();
 
-    Protocols::HTTP::Status::eRetCode procJAPI_Version();
+    Network::Protocols::HTTP::Status::eRetCode procJAPI_Version();
 
 
     std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication::Data &authData, Mantids29::Authentication::Session *session, Mantids29::Authentication::Reason *authReason);

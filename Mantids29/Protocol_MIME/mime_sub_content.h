@@ -4,7 +4,7 @@
 //#include <Mantids29/Memory/streamableobject.h>
 #include <Mantids29/Memory/subparser.h>
 
-namespace Mantids29 { namespace Protocols { namespace MIME {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace MIME {
 
 
 class MIME_Sub_Content : public Memory::Streams::SubParser
@@ -41,6 +41,6 @@ private:
     uint64_t maxContentSizeUntilGoingToFS;
 };
 
-}}}
+}}}}
 
 #endif // MIME_SUB_CONTENT_H

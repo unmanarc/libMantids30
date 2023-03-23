@@ -9,7 +9,7 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
-namespace Mantids29 { namespace Protocols { namespace HTTP {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP {
 
 
 class HTTPv1_Server : public HTTPv1_Base
@@ -115,7 +115,7 @@ public:
      * @brief setResponseRedirect Redirect site to another URL
      * @param location URL string
      */
-    Mantids29::Protocols::HTTP::Status::eRetCode setResponseRedirect(const std::string & location, bool temporary = true);
+    Mantids29::Network::Protocols::HTTP::Status::eRetCode setResponseRedirect(const std::string & location, bool temporary = true);
     /**
      * @brief getCurrentFileExtension Get Current File Extension
      * @return File Extension
@@ -167,7 +167,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual Mantids29::Protocols::HTTP::Status::eRetCode procHTTPClientContent()
+    virtual Mantids29::Network::Protocols::HTTP::Status::eRetCode procHTTPClientContent()
     {
         return HTTP::Status::S_200_OK;
     }
@@ -200,6 +200,6 @@ private:
     std::map<std::string,std::string> m_mimeTypes;
 };
 
-}}}
+}}}}
 
 #endif // HTTP1SERVER_H

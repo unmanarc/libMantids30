@@ -6,7 +6,7 @@
 
 #include <Mantids29/Memory/streamableobject.h>
 
-namespace Mantids29 { namespace Protocols { namespace MIME {
+namespace Mantids29 { namespace Network { namespace Protocols { namespace MIME {
 
 class MIME_PartMessage
 {
@@ -23,6 +23,6 @@ private:
     MIME_Sub_Header header;
 };
 
-}}}
+}}}}
 
 #endif // MIME_PARTMESSAGE_H
