@@ -4,7 +4,7 @@
 #include "logbase.h"
 
 
-namespace Mantids29 { namespace Application { namespace Logs {
+namespace Mantids29 { namespace Program { namespace Logs {
 
 /**
  * Application Logs Class

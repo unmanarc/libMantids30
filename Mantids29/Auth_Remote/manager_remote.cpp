@@ -1,7 +1,7 @@
 #include "manager_remote.h"
 
 using namespace Mantids29::Authentication;
-using namespace Mantids29::RPC;
+//using namespace Mantids29::Network::Protocols::XCallRPC;
 
 #define CKEY "SERVER"
 

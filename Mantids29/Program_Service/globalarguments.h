@@ -9,7 +9,7 @@
 
 #include "programvalues.h"
 
-namespace Mantids29 { namespace Application { namespace Arguments {
+namespace Mantids29 { namespace Program { namespace Arguments {
 
 
 /**

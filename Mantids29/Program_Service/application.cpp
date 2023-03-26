@@ -61,7 +61,7 @@ void closelog() {}
 
 #endif
 
-using namespace Mantids29::Application;
+using namespace Mantids29::Program;
 
 static Application *appPTR = nullptr;
 

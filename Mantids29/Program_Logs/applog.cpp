@@ -23,7 +23,7 @@
 #include <Mantids29/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids29::Application::Logs;
+using namespace Mantids29::Program::Logs;
 
 AppLog::AppLog(unsigned int _logMode) : LogBase(_logMode)
 {

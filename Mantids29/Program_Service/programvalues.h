@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 
-namespace Mantids29 { namespace Application { namespace Values {
+namespace Mantids29 { namespace Program { namespace Values {
 
 /**
  * @brief The ProgramValues class contains information about a program.

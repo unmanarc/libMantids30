@@ -3,15 +3,15 @@
 
 #include <Mantids29/Auth/manager.h>
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
-#include <Mantids29/RPC_Fast/fastrpc.h>
+#include <Mantids29/Protocol_FastRPC1/fastrpc.h>
 #include <stdexcept>
 
 namespace Mantids29 { namespace Authentication {
 
-class FastRPCImpl : public Mantids29::RPC::Fast::FastRPC
+class FastRPCImpl : public Mantids29::Network::Protocols::FastRPC::FastRPC1
 {
 public:
-    FastRPCImpl(uint32_t threadsCount = 16, uint32_t taskQueues = 24) : Mantids29::RPC::Fast::FastRPC(threadsCount,taskQueues)
+    FastRPCImpl(uint32_t threadsCount = 16, uint32_t taskQueues = 24) : Mantids29::Network::Protocols::FastRPC::FastRPC1(threadsCount,taskQueues)
     {
     }
     virtual ~FastRPCImpl()
@@ -21,10 +21,10 @@ public:
 protected:
     // TODO: report back to the manager_remote.
 
-    void eventUnexpectedAnswerReceived(Mantids29::RPC::Fast::FastRPC::Connection *connection, const std::string &answer) override
+    void eventUnexpectedAnswerReceived(Mantids29::Network::Protocols::FastRPC::FastRPC1::Connection *connection, const std::string &answer) override
     {
     }
-    void eventFullQueueDrop(Mantids29::RPC::Fast::FastRPC::ThreadParameters * params) override
+    void eventFullQueueDrop(Mantids29::Network::Protocols::FastRPC::FastRPC1::ThreadParameters * params) override
     {
     }
     void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const json &payload) override

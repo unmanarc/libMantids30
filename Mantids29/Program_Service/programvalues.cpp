@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 
-using namespace Mantids29::Application::Values;
+using namespace Mantids29::Program::Values;
 
 ProgramValues::ProgramValues()
 {

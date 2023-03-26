@@ -1,7 +1,7 @@
 #ifndef LOGMODES_H
 #define LOGMODES_H
 
-namespace Mantids29 { namespace Application { namespace Logs {
+namespace Mantids29 { namespace Program { namespace Logs {
 
 enum eLogModes
 {

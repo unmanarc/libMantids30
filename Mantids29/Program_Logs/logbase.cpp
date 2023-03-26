@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-using namespace Mantids29::Application::Logs;
+using namespace Mantids29::Program::Logs;
 using namespace std;
 
 

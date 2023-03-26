@@ -1,7 +1,7 @@
 #ifndef LOGLEVELS_H
 #define LOGLEVELS_H
 
-namespace Mantids29 { namespace Application { namespace Logs {
+namespace Mantids29 { namespace Program { namespace Logs {
 
 enum eLogLevels
 {

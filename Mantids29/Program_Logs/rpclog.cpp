@@ -20,7 +20,7 @@
 
 #include <Mantids29/Helpers/encoders.h>
 
-using namespace Mantids29::Application::Logs;
+using namespace Mantids29::Program::Logs;
 
 RPCLog::RPCLog(unsigned int _logMode) : LogBase(_logMode)
 {

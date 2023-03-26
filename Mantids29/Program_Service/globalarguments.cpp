@@ -14,7 +14,7 @@
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace std;
-using namespace Mantids29::Application::Arguments;
+using namespace Mantids29::Program::Arguments;
 using namespace Mantids29::Memory::Abstract;
 
 
