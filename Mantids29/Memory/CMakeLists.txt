@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for Abstract Variables Library")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for Abstract Variables Library")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
@@ -57,6 +57,12 @@ elseif(WIN32)
     message("-- Using native WINDOWS_SOCKLIB")
     target_link_libraries(${LIB_NAME} "-lws2_32")
 endif()
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
+target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 
 include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
 target_link_libraries(${LIB_NAME} "${LIBPREFIX}_Helpers")
