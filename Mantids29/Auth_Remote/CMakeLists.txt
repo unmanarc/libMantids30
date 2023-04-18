@@ -9,7 +9,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for Remote Authentication Library")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for Remote Authentication Library")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")

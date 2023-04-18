@@ -25,7 +25,7 @@ else()
         message("-- PQ_INCLUDE_DIR found at [${PQ_INCLUDE_DIR}]")
 
         project(${LIB_NAME})
-        project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for PostgreSQL Database Connector")
+        project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for PostgreSQL Database Connector")
 
         file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
         file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")

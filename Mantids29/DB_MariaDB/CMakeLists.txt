@@ -26,7 +26,7 @@ else()
         message("-- MARIADB_INCLUDE_DIR found at [${MYSQL_INCLUDE_DIR}]")
 
         project(${LIB_NAME})
-        project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for MariaDB Database Connection")
+        project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for MariaDB Database Connection")
 
         file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
         file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
