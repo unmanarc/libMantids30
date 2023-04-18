@@ -30,44 +30,52 @@ public:
         HTTP_VARS_GET
     };
 
+    /**
+     * @brief A struct representing security settings for the web server.
+     *
+     * This struct is used to store various security settings for the web server, including X-Frame-Options, XSS protection,
+     * and HSTS (HTTP Strict Transport Security). These settings help protect against various security threats, such as
+     * clickjacking and cross-site scripting attacks.
+     */
     struct Security
     {
-        Security()
-        {
-            bNoSniffContentType = false;
-        }
-        Headers::Security::XFrameOpts XFrameOpts;
-        Headers::Security::XSSProtection XSSProtection;
-        Headers::Security::HSTS HSTS;
-        bool bNoSniffContentType;
+        Headers::Security::XFrameOpts XFrameOpts;   ///< The X-Frame-Options setting.
+        Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
+        Headers::Security::HSTS HSTS;               ///< The HSTS (HTTP Strict Transport Security) setting.
+        bool disableNoSniffContentType = false;     ///< Whether or not to disable the no-sniff content type header.
     };
 
+    /**
+     * @brief A struct representing basic authentication settings.
+     *
+     * This struct is used to store basic authentication settings, which include a username and password. These settings can
+     * be used to authenticate users before granting them access to certain resources.
+     */
     struct BasicAuth
     {
-        BasicAuth()
+        /**
+         * @brief Sets the username and password for basic authentication.
+         *
+         * This function sets the username and password for basic authentication. It also sets the bEnabled flag to true,
+         * indicating that basic authentication is now enabled.
+         *
+         * @param username The username to use for authentication.
+         * @param password The password to use for authentication.
+         */
+        void setAuthentication(const std::string& username, const std::string& password)
         {
-            bEnabled = false;
+            isEnabled = true;
+            this->username = username;
+            this->password = password;
         }
 
-        void setAuthentication(const std::string &user, const std::string &pass)
-        {
-            bEnabled = true;
-            this->user = user;
-            this->pass = pass;
-        }
-
-        std::string user,pass;
-        bool bEnabled;
+        std::string username; ///< The username to use for basic authentication.
+        std::string password; ///< The password to use for basic authentication.
+        bool isEnabled = false;       ///< Whether basic authentication is enabled or not.
     };
 
     struct Request
     {
-        Request()
-        {
-            virtualPort = 80;
-        }
-
-
         // HTTP Quick Access Functions:
         /**
          * @brief getVars Get Vars
@@ -150,7 +158,7 @@ public:
         /**
          * @brief virtualPort Requested Virtual Port
          */
-        uint16_t virtualPort;
+        uint16_t virtualPort = 80;
     };
     struct Response
     {
@@ -162,7 +170,7 @@ public:
         void setContentType(const std::string & contentType, bool bNoSniff = true)
         {
             this->contentType = contentType;
-            security.bNoSniffContentType = bNoSniff;
+            security.disableNoSniffContentType = bNoSniff;
         }
         /**
          * @brief setResponseDataStreamer Set the container used for transmiting data.
@@ -271,8 +279,8 @@ public:
     HTTPv1_Base(bool clientMode, Memory::Streams::StreamableObject *sobject);
     virtual ~HTTPv1_Base()  override {}
 
-    Request clientRequest;
-    Response serverResponse;
+    Request m_clientRequest;
+    Response m_serverResponse;
 protected:
     virtual bool initProtocol() override;
     virtual void endProtocol() override;
