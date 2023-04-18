@@ -1,5 +1,5 @@
-#ifndef XRPC_SESSIONS_MANAGER_H
-#define XRPC_SESSIONS_MANAGER_H
+#ifndef SERVERS_WEBSESSION_MANAGER_H
+#define SERVERS_WEBSESSION_MANAGER_H
 
 #include <Mantids29/Auth/session.h>
 #include <Mantids29/Threads/map.h>
@@ -94,4 +94,4 @@ private:
 
 }}}}
 
-#endif // XRPC_SESSIONS_MANAGER_H
+#endif // SERVERS_WEBSESSION_MANAGER_H
