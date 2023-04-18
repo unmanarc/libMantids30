@@ -28,7 +28,7 @@ public:
         /**
          * @brief Function pointer.
          */
-        json (*rpcMethod)(void * obj, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
+        json (*method)(void * obj, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
         /**
          * @brief obj object to pass
          */
@@ -101,9 +101,9 @@ public:
     /**
      * @brief addMethod Add Method
      * @param methodName Method Name
-     * @param rpcMethod Method function and Object
+     * @param method Method function and Object
      */
-    bool addMethod(const std::string & methodName, const FastRPC1::Method & rpcMethod);
+    bool addMethod(const std::string & methodName, const FastRPC1::Method & method);
 
 
     // Ping functions:

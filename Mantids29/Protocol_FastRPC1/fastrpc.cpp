@@ -65,13 +65,13 @@ void FastRPC1::setQueuePushTimeoutInMS(const uint32_t &value)
     this->queuePushTimeoutInMS = value;
 }
 
-bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &rpcMethod)
+bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &method)
 {
     Threads::Sync::Lock_RW lock(smutexMethods);
     if (methods.find(methodName) == methods.end() )
     {
         // Put the method.
-        methods[methodName] = rpcMethod;
+        methods[methodName] = method;
         return true;
     }
     return false;
@@ -117,7 +117,7 @@ json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::strin
     Threads::Sync::Lock_RD lock(smutexMethods);
     if (methods.find(methodName) != methods.end())
     {
-        r = methods[methodName].rpcMethod(overwriteObject?overwriteObject:methods[methodName].obj
+        r = methods[methodName].method(overwriteObject?overwriteObject:methods[methodName].obj
                                           ,connectionKey,payload,obj,data);
         if (found) *found =true;
     }
@@ -305,7 +305,7 @@ void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
 int FastRPC1::processConnection(Network::Sockets::Socket_Stream_Base *stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, void *obj, const std::string &data)
 {
 #ifndef _WIN32
-    pthread_setname_np(pthread_self(), "XRPC:ProcStream");
+    pthread_setname_np(pthread_self(), "FRPC:procCNT");
 #endif
 
     int ret = 1;
