@@ -1,16 +1,10 @@
 #include "jwt.h"
-#include "encoders.h"
-#include "json.h"
-
-#include <iostream>
-#include <memory>
+#include <Mantids29/Helpers/encoders.h>
+#include <Mantids29/Helpers/json.h>
+#include <openssl/hmac.h>
 #include <openssl/pem.h>
-#include <utility>
-#include <string>
-#include <stdexcept>
 
-
-using namespace Mantids29::Helpers;
+using namespace Mantids29::DataFormat;
 
 std::string JWT::createHeader() {
     Json::Value header;
@@ -40,9 +34,8 @@ std::string JWT::createHeader() {
     Json::StreamWriterBuilder writer;
     std::string header_str = Json::writeString(writer, header);
 
-    return Encoders::encodeToBase64(header_str, true);
+    return Helpers::Encoders::encodeToBase64(header_str, true);
 }
-
 
 bool JWT::isAlgorithmSupported(const std::string &algorithm)
 {
@@ -81,8 +74,6 @@ std::shared_ptr<JWT::RAWSignature> JWT::createSignature(const std::string& data)
 
     return r;
 }
-
-
 
 std::shared_ptr<JWT::RAWSignature> JWT::createHMACSignature(int hashType, const std::string &data)
 {
@@ -201,6 +192,7 @@ int JWT::validateRSASignature(int hashType, const std::string &data, const char 
                 EVP_DigestVerifyInit(mdctx, NULL, EVP_get_digestbynid(hashType), NULL, pkey);
                 EVP_DigestVerifyUpdate(mdctx, data.c_str(), data.length());
 
+                // TODO: signatureLength can be greater and don't affect the validation?
                 error = EVP_DigestVerifyFinal(mdctx, reinterpret_cast<const unsigned char*>(signature), signatureLength) == 1 ? 0 : -1;
 
                 // Liberar recursos
@@ -264,7 +256,6 @@ void JWT::setDefaultMaxExpirationTimeInSeconds(std::time_t newMaxExpirationTimeI
     m_defaultExpirationTimeInSeconds = newMaxExpirationTimeInSeconds;
 }
 
-
 void JWT::setPrivateSecret(const std::string &newPrivateSecret)
 {
     m_privateSecret = newPrivateSecret;
@@ -295,11 +286,13 @@ bool JWT::isRSAAlgorithm(const std::string &algorithm)
 void JWT::setPublicSecret(const std::string &newPublicSecret)
 {
     m_publicSecret = newPublicSecret;
+    m_cache.clear();
 }
 
 void JWT::setSharedSecret(const std::string &newSharedSecret)
 {
     m_sharedSecret = newSharedSecret;
+    m_cache.clear();
 }
 
 std::string JWT::sign(const Json::Value& payload)
@@ -309,12 +302,12 @@ std::string JWT::sign(const Json::Value& payload)
     std::string header_str = createHeader();
     std::string signature;
 
-    auto eSignature = createSignature(header_str + '.' + Encoders::encodeToBase64(payload_str, true));
+    auto eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
 
     if (eSignature->m_result == RAWSignature::SIG_OK)
-        signature = Encoders::encodeToBase64(eSignature->m_digest,eSignature->m_digestSize, true);
+        signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest,eSignature->m_digestSize, true);
 
-    return header_str + '.' + Encoders::encodeToBase64(payload_str, true) + '.' + signature;
+    return header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true) + '.' + signature;
 }
 
 std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
@@ -346,9 +339,17 @@ bool JWT::verify(const std::string& fullSignedToken, JWT::Token * tokenPayloadOu
     std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
 
     // Decode the base64-encoded header, payload, and signature strings
-    std::string header_str = Encoders::decodeFromBase64(header_b64, true);
-    std::string payload_str = Encoders::decodeFromBase64(payload_b64, true);
-    std::string signature_str = Encoders::decodeFromBase64(signature_b64, true);
+    std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
+    std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
+    std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
+
+    // Check if the token is already in the cache
+    if (m_cache.checkToken(payload_str))
+    {
+        tokenPayloadOutput->decodePayload(payload_str);
+        tokenPayloadOutput->setVerified(true);
+        return true;
+    }
 
     // Parse the JSON header using the JsonCpp library
     Json::CharReaderBuilder reader;
@@ -393,14 +394,15 @@ bool JWT::verify(const std::string& fullSignedToken, JWT::Token * tokenPayloadOu
     if (tokenPayloadOutput)
     {
         if (verified)
+        {
             tokenPayloadOutput->decodePayload(payload_str);
-
+            m_cache.add(fullSignedToken);
+        }
         tokenPayloadOutput->setVerified(verified);
+        tokenPayloadOutput->setRevoked( m_revocation.isSignatureRevoked(signature_str) );
     }
 
     return verified;
-
-
 }
 
 JWT::Token JWT::verifyAndDecodeTokenPayload(const std::string &fullSignedToken)
@@ -410,181 +412,3 @@ JWT::Token JWT::verifyAndDecodeTokenPayload(const std::string &fullSignedToken)
     return r;
 }
 
-///////////////////////////////
-
-JWT::Token::Token(const std::string &payload) {
-    m_verified = false;
-    decodePayload(payload);
-}
-
-void JWT::Token::setIssuer(const std::string &issuer) {
-    m_claims["iss"] = issuer;
-}
-
-void JWT::Token::setSubject(const std::string &subject) {
-    m_claims["sub"] = subject;
-}
-
-void JWT::Token::setAudience(const std::string &audience) {
-    m_claims["aud"] = audience;
-}
-
-void JWT::Token::setExpirationTime(std::time_t exp) {
-    m_claims["exp"] = static_cast<Json::Int64>(exp);
-}
-
-void JWT::Token::setNotBefore(time_t nbf) {
-    m_claims["nbf"] = static_cast<Json::Int64>(nbf);
-}
-
-void JWT::Token::setIssuedAt(time_t iat) {
-    m_claims["iat"] = static_cast<Json::Int64>(iat);
-}
-
-void JWT::Token::setJwtId(const std::string &jti) {
-    m_claims["jti"] = jti;
-}
-
-void JWT::Token::addClaim(const std::string &name, const Json::Value &value) {
-    m_claims[name] = value;
-}
-
-std::string JWT::Token::exportPayload() const
-{
-    Json::StreamWriterBuilder writerBuilder;
-    return Json::writeString(writerBuilder, m_claims);
-}
-
-bool JWT::Token::decodePayload(const std::string &payload)
-{
-    Json::CharReaderBuilder reader;
-    std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
-    std::string errs;
-
-    if (!charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs)) {
-        // If the header cannot be parsed, return false
-        return false;
-    }
-
-    return true;
-}
-
-std::string JWT::Token::getIssuer() const {
-    return JSON_ASSTRING(m_claims, "iss", "");
-}
-
-std::string JWT::Token::getSubject() const {
-    return JSON_ASSTRING(m_claims, "sub", "");
-}
-
-std::string JWT::Token::getAudience() const {
-    return JSON_ASSTRING(m_claims, "aud", "");
-}
-
-time_t JWT::Token::getExpirationTime() const {
-    // DEFULT: not expired...
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "exp", 0xFFFFFFFFFFFFFFFF));
-}
-
-time_t JWT::Token::getNotBefore() const {
-    // DEFAULT: not restriction....
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "nbf", 0x0));
-}
-
-time_t JWT::Token::getIssuedAt() const {
-    // DEFAULT: 1969...
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "iat", 0x0));
-}
-
-std::string JWT::Token::getJwtId() const {
-    return JSON_ASSTRING(m_claims, "jti", "");
-}
-
-Json::Value JWT::Token::getClaim(const std::string &name) const {
-    return m_claims[name];
-}
-
-bool JWT::Token::isValid() const {
-    std::time_t currentTime = std::time(nullptr);
-
-    if (m_claims.isMember("exp") && currentTime >= getExpirationTime()) {
-        return false;
-    }
-
-    if (m_claims.isMember("nbf") && currentTime < getNotBefore()) {
-        return false;
-    }
-
-    return m_verified;
-}
-
-void JWT::Token::setVerified(bool newVerified)
-{
-    m_verified = newVerified;
-}
-
-Json::Value *JWT::Token::getClaimsPTR()
-{
-    return &m_claims;
-}
-
-
-JWT::AlgorithmDetails::AlgorithmDetails(Algorithm algorithm)
-{
-    m_usingHMAC = false;
-    m_algorithm = algorithm;
-    m_usingRSA = false;
-    m_algorithmStr[0]=0;
-
-    switch (algorithm) {
-    case Algorithm::HS256:
-        m_nid = NID_sha256;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS256");
-        break;
-    case Algorithm::HS384:
-        m_nid = NID_sha384;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS384");
-        break;
-    case Algorithm::HS512:
-        m_nid = NID_sha512;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS512");
-        break;
-    case Algorithm::RS256:
-        m_nid = NID_sha256;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS256");
-        break;
-    case Algorithm::RS384:
-        m_nid = NID_sha384;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS384");
-        break;
-    case Algorithm::RS512:
-        m_nid = NID_sha512;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS512");
-        break;
-    }
-}
-
-JWT::AlgorithmDetails::AlgorithmDetails(const char *algorithm)
-{
-    if (strncmp(algorithm,"HS256",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::HS256);
-    else if (strncmp(algorithm,"HS384",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::HS384);
-    else if (strncmp(algorithm,"HS512",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::HS512);
-
-    else if (strncmp(algorithm,"RS256",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::RS256);
-    else if (strncmp(algorithm,"RS384",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::RS384);
-    else if (strncmp(algorithm,"RS512",16))
-        AlgorithmDetails(Helpers::JWT::Algorithm::RS512);
-    else
-        AlgorithmDetails(Helpers::JWT::Algorithm::HS256);
-}

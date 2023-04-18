@@ -1,13 +1,17 @@
 #ifndef JWT_H
 #define JWT_H
 
-#include <json/json.h>
-#include <memory>
-#include <string>
 #include <ctime>
-#include <openssl/hmac.h>
+#include <string>
+#include <set>
+#include <thread>
+#include <boost/thread/shared_mutex.hpp>
+#include <condition_variable>
+#include <json/json.h>
+#include <queue>
+#include <unordered_map>
 
-namespace Mantids29 { namespace Helpers {
+namespace Mantids29 { namespace DataFormat {
 
 /**
  * @brief Class for creating and verifying JSON Web Tokens (JWT)
@@ -40,9 +44,9 @@ public:
 
     class Token {
     public:
+
         Token()
         {
-            m_verified = false;
         }
 
         Token(const std::string &payload);
@@ -82,8 +86,19 @@ public:
 
         std::string getJwtId() const;
 
+        std::set<std::string> getAllAttributes();
+
+        void addAttribute(const std::string & attributeName);
+
+        bool hasAttribute(const std::string &attributeName) const;
+
+        std::map<std::string,Json::Value> getAllClaims();
+
         // Getter function for custom claims
         Json::Value getClaim(const std::string &name) const;
+
+        // Function to check if claim exist...
+        bool hasClaim(const std::string &name) const;
 
         // Function to validate if the token is still valid and verified...
         bool isValid() const;
@@ -93,9 +108,67 @@ public:
 
         Json::Value *getClaimsPTR();
 
+        bool isRevoked() const;
+
+        void setRevoked(bool newRevoked);
+
     private:
         Json::Value m_claims;
-        bool m_verified;
+        bool m_verified = false;
+        bool m_revoked = false;
+    };
+
+    class Cache {
+    public:
+        // Cache functions:
+        bool checkToken(const std::string& token);
+        void add(const std::string& token);
+        void evictCache();
+
+        void setCacheMaxByteCount(std::size_t maxByteCount);
+        std::size_t getCacheMaxByteCount();
+        void clear();
+
+        bool isEnabled();
+        void setEnabled(bool newEnabled);
+
+    private:
+        std::size_t m_cacheMaxByteCount = 1*1024*1024;
+        std::size_t m_cacheCurrentByteCount = 0;
+
+        bool m_enabled;
+
+        std::unordered_map<std::string, bool> m_tokenCache;
+        std::queue<std::string> m_cacheQueue;
+        boost::shared_mutex m_cachedTokensMutex;
+    };
+
+    class Revocation {
+    public:
+        Revocation();
+        ~Revocation();
+
+        // Revokation functions...
+        void addToRevocationList(const std::string& signature, std::time_t expirationTime);
+        bool isSignatureRevoked(const std::string& signature);
+        void removeExpiredTokensFromRevocationList();
+        void clear();
+
+        std::chrono::seconds garbageCollectorInterval() const;
+        void setGarbageCollectorInterval(const std::chrono::seconds &newGarbageCollectorInterval);
+
+    private:
+        void garbageCollector();
+
+        std::multimap<std::time_t, std::string> m_expirationSignatures;
+        std::set<std::string> m_revokedTokens;
+        boost::shared_mutex m_revokedTokensMutex;
+
+        std::thread m_garbageCollectorThread;
+        std::atomic_bool m_stopGarbageCollector;
+        std::condition_variable m_garbageCollectorCondition;
+        std::mutex m_garbageCollectorMutex;
+        std::chrono::seconds m_garbageCollectorInterval;
     };
 
     /**
@@ -137,7 +210,7 @@ public:
      *
      * @param algorithm Algorithm to use for JWT
      */
-    JWT(const Algorithm& algorithm) : m_algorithm(algorithm) , m_defaultExpirationTimeInSeconds(300), m_defaultMaxTimeBeforeInSeconds(60)
+    JWT(const Algorithm& algorithm) : m_algorithm(algorithm)
     {
     }
 
@@ -231,7 +304,12 @@ public:
      */
     std::time_t defaultMaxTimeBeforeInSeconds() const;
 
+
+    Cache m_cache;
+    Revocation m_revocation;
+
 private:
+
     /**
      * @brief Check if a given algorithm is an HMAC algorithm
      *
@@ -331,12 +409,12 @@ private:
     /**
      * @brief Max age of the token
      */
-    std::time_t m_defaultExpirationTimeInSeconds;
+    std::time_t m_defaultExpirationTimeInSeconds = 300;
 
     /**
      * @brief Max Time In Seconds in the past for non-synchronized servers/clients validating the token
      */
-    std::time_t m_defaultMaxTimeBeforeInSeconds;
+    std::time_t m_defaultMaxTimeBeforeInSeconds = 60;
 
 };
 
