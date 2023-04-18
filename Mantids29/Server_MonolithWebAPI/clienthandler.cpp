@@ -1,10 +1,10 @@
 #include "clienthandler.h"
 #include <Mantids29/Auth/data.h>
 #include <Mantids29/Protocol_HTTP/rsp_status.h>
-#include <Mantids29/API_Core/methodshandler.h>
+#include <Mantids29/API_Monolith/methodshandler.h>
 
 #include <Mantids29/Memory/b_mmap.h>
-#include <Mantids29/API_Core/streamablejson.h>
+#include <Mantids29/Memory/streamablejson.h>
 #include <Mantids29/Helpers/crypto.h>
 #include <Mantids29/Helpers/json.h>
 
@@ -33,14 +33,6 @@ using namespace std;
 ClientHandler::ClientHandler(void *parent, Memory::Streams::StreamableObject *sock) : HTTPv1_Server(sock)
 {
     // TODO: rpc logs?
-    m_releaseSessionHandler = false;
-    m_destroySession = false;
-    m_authSession = nullptr;
-    m_webSession = nullptr;
-    m_rpcLog = nullptr;
-    m_methodsHandler = nullptr;
-    m_authDomains = nullptr;
-    m_sessionsManager = nullptr;
     m_resourceFilter = nullptr;
 }
 
@@ -61,23 +53,23 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
     uint64_t uSessionMaxAge=0;
 
     // COOKIES:
-    m_sessionId = clientRequest.getCookie("sessionId");
+    m_sessionId = m_clientRequest.getCookie("sessionId");
     // TODO: filter invalid session id formats.
     // HEADERS:
-    m_clientCSRFToken = clientRequest.getHeaderOption("CSRFToken");
+    m_clientCSRFToken = m_clientRequest.getHeaderOption("CSRFToken");
 
     // POST VARS / EXTRA AUTHS:
-    if (!m_extraCredentials.setAuthentications(clientRequest.getVars(HTTP_VARS_POST)->getStringValue("extraAuth")))
+    if (!m_extraCredentials.setAuthentications(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("extraAuth")))
         return HTTP::Status::S_400_BAD_REQUEST;
 
     // POST VARS / AUTH:
-    if (!m_credentials.setJsonString(clientRequest.getVars(HTTP_VARS_POST)->getStringValue("auth")))
+    if (!m_credentials.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("auth")))
         return HTTP::Status::S_400_BAD_REQUEST;
 
     // OPEN THE SESSION HERE:
     sessionOpen();
 
-    std::string requestURI = clientRequest.getURI();
+    std::string requestURI = m_clientRequest.getURI();
 
     // Backward compatibility:
     // Detect if is /api, then process the JSON RPC Request.
@@ -86,7 +78,7 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
         // Warn about this.
         log(LEVEL_WARN, "fileServer", 2048, "Calling deprecated /api: %s", requestURI.c_str());
 
-        std::string mode = clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
+        std::string mode = m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
         if (mode == "EXEC")
             requestURI = "/japi_exec";
         else if (mode == "VERSION")
@@ -97,8 +89,8 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
 
     // Detect if is /japi_exec, then process the JSON RPC Request.
     if (requestURI == "/japi_exec") ret = procJAPI_Exec(&m_extraCredentials,
-                                                        clientRequest.getVars(HTTP_VARS_GET)->getStringValue("method"),
-                                                        clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload")
+                                                        m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("method"),
+                                                        m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload")
                                                         );
     // Detect if is /japi_version, then process the JSON RPC Request.
     else if (requestURI == "/japi_version") ret = procJAPI_Version();
@@ -109,15 +101,44 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
 
     /////////////////////////////////////////////////////////////////
     // CLEAN UPS...
-
     if (m_destroySession && m_webSession)
-        log(LEVEL_INFO, "rpcServer", 2048, "Logged Out");
+        log(LEVEL_INFO, "apiServer", 2048, "Logged Out");
 
     // Release/Close the openned session.
     sessionRelease();
     sessionDestroy();
 
     return ret;
+}
+
+void ClientHandler::replaceHexCodes(std::string &content)
+{
+    auto hex2uchar = [](const std::string &t1, const std::string &t2) -> unsigned char {
+        auto get16Value = [](unsigned char byte) -> unsigned char {
+            if (byte >= 'A' && byte <= 'F') return byte - 'A' + 10;
+            else if (byte >= 'a' && byte <= 'f') return byte - 'a' + 10;
+            else if (byte >= '0' && byte <= '9') return byte - '0';
+            return 0;
+        };
+
+        return get16Value(t1.c_str()[0]) * 0x10 + get16Value(t2.c_str()[0]);
+    };
+
+    boost::match_results<string::const_iterator> whatStaticText;
+    boost::regex exStaticJsonFunction("\\\\0*x(?<V1>[0123456789ABCDEF])(?<V2>[0123456789ABCDEF])",boost::regex::icase);
+    boost::match_flag_type flags = boost::match_default;
+
+    for (string::const_iterator start = content.begin(), end =  content.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticJsonFunction, flags); // FIND REGEXP
+         start = content.begin(), end =  content.end()) // RESET AND RECHECK EVERYTHING
+    {
+        string fulltag       = string(whatStaticText[0].first, whatStaticText[0].second);
+        string v1  = string(whatStaticText[1].first, whatStaticText[1].second);
+        string v2  = string(whatStaticText[2].first, whatStaticText[2].second);
+
+        std::string replSrc(1,hex2uchar(v1,v2));
+        boost::replace_all(content,fulltag, replSrc);
+    }
 }
 
 void ClientHandler::sessionOpen()
@@ -135,9 +156,9 @@ void ClientHandler::sessionOpen()
     {
         if (m_sessionId!="")
         {
-            log(LEVEL_WARN, "rpcServer", 2048, "Requested session not found {sessionId=%s}",RPCLog::truncateSessionId(m_sessionId).c_str());
-            serverResponse.addCookieClearSecure("sessionId");
-           // return HTTP::Status::S_404_NOT_FOUND;
+            log(LEVEL_WARN, "apiServer", 2048, "Requested session not found {sessionId=%s}",RPCLog::truncateSessionId(m_sessionId).c_str());
+            m_serverResponse.addCookieClearSecure("sessionId");
+            // return HTTP::Status::S_404_NOT_FOUND;
         }
         m_sessionId = ""; // INVALID SESSION ID.
     }
@@ -156,8 +177,8 @@ void ClientHandler::sessionRelease()
         simpleJSSecureCookie.setMaxAge(m_sessionMaxAge);
         simpleJSSecureCookie.setSameSite( Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
 
-        serverResponse.setCookie("jsSessionTimeout",simpleJSSecureCookie);
-        serverResponse.setSecureCookie("sessionId", m_sessionId, m_sessionMaxAge);
+        m_serverResponse.setCookie("jsSessionTimeout",simpleJSSecureCookie);
+        m_serverResponse.setSecureCookie("sessionId", m_sessionId, m_sessionMaxAge);
 
         m_sessionsManager->releaseSession(m_sessionId);
     }
@@ -167,9 +188,9 @@ void ClientHandler::sessionDestroy()
 {
     if (m_destroySession)
     {
-        serverResponse.addCookieClearSecure("jsSessionTimeout");
-        serverResponse.addCookieClearSecure("sessionId");
-        log(LEVEL_DEBUG, "rpcServer", 2048, "Destroying session {sessionId=%s}",RPCLog::truncateSessionId(m_sessionId).c_str());
+        m_serverResponse.addCookieClearSecure("jsSessionTimeout");
+        m_serverResponse.addCookieClearSecure("sessionId");
+        log(LEVEL_DEBUG, "apiServer", 2048, "Destroying session {sessionId=%s}",RPCLog::truncateSessionId(m_sessionId).c_str());
         // TODO: redirect on logout?
         m_sessionsManager->destroySession(m_sessionId);
     }
@@ -196,39 +217,6 @@ void replaceTagByJVar( std::string & content, const std::string & tag, const jso
 
 
 
-inline unsigned char get16Value(unsigned char byte)
-{
-    if (byte>='A' && byte<='F') return byte-'A'+10;
-    else if (byte>='a' && byte<='f') return byte-'a'+10;
-    else if (byte>='0' && byte<='9') return byte-'0';
-    return 0;
-}
-
-inline unsigned char hex2uchar(const std::string &t1, const std::string &t2)
-{
-    return get16Value(t1.c_str()[0])*0x10+get16Value(t2.c_str()[0]);
-}
-
-void replaceHexCodes( std::string &content )
-{
-    boost::match_results<string::const_iterator> whatStaticText;
-    boost::regex exStaticJsonFunction("\\\\0*x(?<V1>[0123456789ABCDEF])(?<V2>[0123456789ABCDEF])",boost::regex::icase);
-    boost::match_flag_type flags = boost::match_default;
-
-    for (string::const_iterator start = content.begin(), end =  content.end(); //
-         boost::regex_search(start, end, whatStaticText, exStaticJsonFunction, flags); // FIND REGEXP
-         start = content.begin(), end =  content.end()) // RESET AND RECHECK EVERYTHING
-    {
-        string fulltag       = string(whatStaticText[0].first, whatStaticText[0].second);
-        string v1  = string(whatStaticText[1].first, whatStaticText[1].second);
-        string v2  = string(whatStaticText[2].first, whatStaticText[2].second);
-
-        std::string replSrc(1,hex2uchar(v1,v2));
-        boost::replace_all(content,fulltag, replSrc);
-    }
-
-}
-
 // TODO: documentar los privilegios cargados de un usuario
 Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sRealFullPath, Authentication::Multi *extraAuths)
 {
@@ -239,11 +227,11 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
     {
         // Mem-Static resource.
         fileContent = ((Mantids29::Memory::Containers::B_MEM *)getResponseDataStreamer())->toString();
-        serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr,false);
     }
     else
     {
-        serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr,false);
         // Local resource.
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())
@@ -300,7 +288,7 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
     jVars["user"]              = m_authSession?m_authSession->getUserDomainPair().first:jNull;
     jVars["domain"]            = m_authSession?m_authSession->getUserDomainPair().second:jNull;
     jVars["maxAge"]            = (Json::UInt64)(m_webSession?m_sessionMaxAge:0);
-    jVars["userAgent"]         = clientRequest.userAgent;
+    jVars["userAgent"]         = m_clientRequest.userAgent;
     jVars["userIP"]            = m_userIP;
     jVars["userTLSCommonName"] = m_userTLSCommonName;
 
@@ -361,9 +349,9 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
         string varName       = string(whatStaticText[2].first, whatStaticText[2].second);
 
         // Obtain using POST Vars...
-        if (clientRequest.getVars(HTTP_VARS_POST)->exist(varName))
+        if (m_clientRequest.getVars(HTTP_VARS_POST)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,clientRequest.getVars(HTTP_VARS_POST)->getStringValue(varName));
+            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue(varName));
         }
         // Report as not found.
         else
@@ -385,9 +373,9 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
         string varName       = string(whatStaticText[2].first, whatStaticText[2].second);
 
         // Obtain using POST Vars...
-        if (clientRequest.getVars(HTTP_VARS_GET)->exist(varName))
+        if (m_clientRequest.getVars(HTTP_VARS_GET)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,clientRequest.getVars(HTTP_VARS_GET)->getStringValue(varName));
+            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue(varName));
         }
         // Report as not found.
         else
@@ -428,9 +416,6 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
         boost::ireplace_all(fileContent,fulltag, "");
     }*/
 
-
-
-
     // Update last activity on each page load.
     if (m_authSession)
         m_authSession->updateLastActivity();
@@ -446,12 +431,12 @@ Status::eRetCode ClientHandler::procJAPI_Session()
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
 
     // GET VARS:
-    sMode = clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
+    sMode = m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
 
     // In AUTHCSRF we take the session ID from post variable (not cookie).
     if (m_sessionId.empty() && m_usingCSRFToken && sMode == "AUTHCSRF")
     {
-        m_sessionId = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("sessionId");
+        m_sessionId = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("sessionId");
         // Open the session again (with the post value):
         sessionOpen();
     }
@@ -474,25 +459,25 @@ Status::eRetCode ClientHandler::procJAPI_Session()
                 if (m_webSession->confirmAuthCSRFToken(m_clientCSRFToken))
                 {
                     // Now this method will fixate the introduced session in the browser...
-                    log(LEVEL_DEBUG, "rpcServer", 2048, "CSRF Confirmation Token OK");
-                    serverResponse.setSecureCookie("sessionId", m_sessionId, m_sessionMaxAge);
+                    log(LEVEL_DEBUG, "apiServer", 2048, "CSRF Confirmation Token OK");
+                    m_serverResponse.setSecureCookie("sessionId", m_sessionId, m_sessionMaxAge);
                     eHTTPResponseRetCode = HTTP::Status::S_200_OK;
                 }
                 else
                 {
-                    log(LEVEL_ERR,  "rpcServer", 2048, "Invalid CSRF Confirmation Token {mode=%s}", sMode.c_str());
+                    log(LEVEL_ERR,  "apiServer", 2048, "Invalid CSRF Confirmation Token {mode=%s}", sMode.c_str());
                     eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
                 }
             }
             // Session found and auth token already confirmed, CSRF token must match session.
             else if (m_webSession->bAuthTokenConfirmed && m_webSession->validateCSRFToken(m_clientCSRFToken))
             {
-                log(LEVEL_DEBUG,  "rpcServer", 2048, "CSRF Token OK");
+                log(LEVEL_DEBUG,  "apiServer", 2048, "CSRF Token OK");
                 csrfValidationOK = true;
             }
             else if (m_webSession->bAuthTokenConfirmed && !m_webSession->validateCSRFToken(m_clientCSRFToken) && !(sMode == "CSRFTOKEN"))
             {
-                log(LEVEL_ERR,  "rpcServer", 2048, "Invalid CSRF Token {mode=%s}", sMode.c_str());
+                log(LEVEL_ERR,  "apiServer", 2048, "Invalid CSRF Token {mode=%s}", sMode.c_str());
             }
             // We are just going to obtain the CSRF Token
             else if (m_webSession->bAuthTokenConfirmed && (sMode == "CSRFTOKEN"))
@@ -574,12 +559,12 @@ bool ClientHandler::csrfValidate()
             // Session found and auth token already confirmed, CSRF token must match session.
             if (m_webSession->bAuthTokenConfirmed && m_webSession->validateCSRFToken(m_clientCSRFToken))
             {
-                log(LEVEL_DEBUG, "rpcServer", 2048, "CSRF Token OK");
+                log(LEVEL_DEBUG, "apiServer", 2048, "CSRF Token OK");
                 csrfValidationOK = true;
             }
             else if (m_webSession->bAuthTokenConfirmed && !m_webSession->validateCSRFToken(m_clientCSRFToken))
             {
-                log(LEVEL_ERR, "rpcServer", 2048, "Invalid CSRF Token {mode=EXEC}");
+                log(LEVEL_ERR, "apiServer", 2048, "Invalid CSRF Token {mode=EXEC}");
             }
         }
     }
@@ -606,7 +591,7 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
          )
     {
         // Evaluate...
-        ResourcesFilter::sFilterEvaluation e;
+        API::Web::ResourcesFilter::FilterEvaluationResult e;
 
         // If there is any session (hSession), then get the authorizer from the session
         // if not, the authorizer is null.
@@ -615,7 +600,7 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
         // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
         // it will proccess this according to the authorization session
         if ( m_resourceFilter )
-            e = m_resourceFilter->evaluateAction(fileInfo.sRealRelativePath, m_authSession, authorizer);
+            e = m_resourceFilter->evaluateURIWithSession(fileInfo.sRealRelativePath, m_authSession, authorizer);
 
         // If the element is accepted (during the filter)
         if (e.accept)
@@ -634,19 +619,19 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
     else
     {
         // File not found at this point (404)
-        log(LEVEL_WARN,"fileServer", 65535, "R/404: %s",clientRequest.getURI().c_str());
+        log(LEVEL_WARN,"fileServer", 65535, "R/404: %s",m_clientRequest.getURI().c_str());
     }
 
     if (ret != HTTP::Status::S_200_OK)
     {
         // For NON-200 responses, will stream nothing....
-        serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr,false);
     }
 
     // If the URL is going to process the Interactive HTML Engine,
     // and the document content is text/html, then, process it as HTMLIEngine:
-    if ( m_useHTMLIEngine && serverResponse.contentType == "text/html" ) // The content type has changed during the map.
-        procResource_HTMLIEngine(fileInfo.sRealFullPath,extraAuths);
+    if ( m_useHTMLIEngine && m_serverResponse.contentType == "text/html" ) // The content type has changed during the map.
+        ret = procResource_HTMLIEngine(fileInfo.sRealFullPath,extraAuths);
 
     // And if the file is not found and there are redirections, set the redirection:
     if (ret==HTTP::Status::S_404_NOT_FOUND && !m_redirectPathOn404.empty())
@@ -658,7 +643,7 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
     log(ret==HTTP::Status::S_200_OK?LEVEL_INFO:LEVEL_WARN,
         "fileServer", 2048, "R/%03d: %s",
         HTTP::Status::getHTTPStatusCodeTranslation(ret),
-        ret==HTTP::Status::S_200_OK?fileInfo.sRealRelativePath.c_str():clientRequest.getURI().c_str());
+        ret==HTTP::Status::S_200_OK?fileInfo.sRealRelativePath.c_str():m_clientRequest.getURI().c_str());
 
     return ret;
 }
@@ -668,8 +653,8 @@ Status::eRetCode ClientHandler::procJAPI_Version()
     Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["version"]  = m_softwareVersion;
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return HTTP::Status::S_200_OK;
 }
 
@@ -682,8 +667,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_AUTHINFO()
     (*(jPayloadOutStr->getValue()))["domain"] = !m_authSession?"":m_authSession->getUserDomainPair().second;
     (*(jPayloadOutStr->getValue()))["maxAge"] = (Json::UInt64)m_sessionMaxAge;
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return HTTP::Status::S_200_OK;
 }
 
@@ -693,8 +678,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_CSRFTOKEN()
     Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["csrfToken"] = m_webSession->sCSRFToken;
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
 
     // Update last activity on each page load.
     if (m_authSession)
@@ -712,8 +697,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
 
-    std::string user = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
-    std::string domain = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
+    std::string user = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
+    std::string domain = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
 
     // Authenticate...
     m_sessionId = persistentAuthentication( user,
@@ -734,7 +719,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
             if (!m_usingCSRFToken)
             {
                 // If not using CSRF Token, the session id will be fixated in the session cookie...
-                serverResponse.setSecureCookie("sessionId", m_sessionId, uMaxAge);
+                m_serverResponse.setSecureCookie("sessionId", m_sessionId, uMaxAge);
             }
             else
             {
@@ -754,12 +739,12 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
                 (*(jPayloadOutStr->getValue()))["nextPassReq"]["idx"] = i.first;
                 (*(jPayloadOutStr->getValue()))["nextPassReq"]["desc"] = i.second;
 
-                log(LEVEL_INFO,  "rpcServer", 2048, "Logged in, waiting for the next authentication factor {val=%d,txt=%s}",
+                log(LEVEL_INFO,  "apiServer", 2048, "Logged in, waiting for the next authentication factor {val=%d,txt=%s}",
                     JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
             }
             else
             {
-                log(LEVEL_INFO,  "rpcServer", 2048, "Logged in {val=%d,txt=%s}", JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
+                log(LEVEL_INFO,  "apiServer", 2048, "Logged in {val=%d,txt=%s}", JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""));
             }
 
             eHTTPResponseRetCode = HTTP::Status::S_200_OK;
@@ -770,7 +755,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
     else
     {
         // TODO: for better log, remove usage of , in user/domain
-        log(LEVEL_WARN,  "rpcServer", 2048, "Invalid Login Attempt {val=%d,txt=%s,user=%s,domain=%s}",
+        log(LEVEL_WARN,  "apiServer", 2048, "Invalid Login Attempt {val=%d,txt=%s,user=%s,domain=%s}",
             JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0),
             JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt",""),
             user.c_str(),
@@ -778,8 +763,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
 
     }
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
 
@@ -813,17 +798,17 @@ Status::eRetCode ClientHandler::procJAPI_Session_POSTLOGIN(const Authentication:
             (*(jPayloadOutStr->getValue()))["nextPassReq"]["idx"] = i.first;
             (*(jPayloadOutStr->getValue()))["nextPassReq"]["desc"] = i.second;
 
-            log(LEVEL_INFO,  "rpcServer", 2048, "Authentication factor (%d) OK, waiting for the next authentication factor {val=%d,txt=%s}", auth.m_passwordIndex, i.first, i.second.c_str());
+            log(LEVEL_INFO,  "apiServer", 2048, "Authentication factor (%d) OK, waiting for the next authentication factor {val=%d,txt=%s}", auth.m_passwordIndex, i.first, i.second.c_str());
         }
         else
         {
-            log(LEVEL_INFO,  "rpcServer", 2048, "Authentication factor (%d) OK, Logged in.", auth.m_passwordIndex);
+            log(LEVEL_INFO,  "apiServer", 2048, "Authentication factor (%d) OK, Logged in.", auth.m_passwordIndex);
         }
         eHTTPResponseRetCode = HTTP::Status::S_200_OK;
     }
     else
     {
-        log(LEVEL_WARN,  "rpcServer", 2048, "Authentication error on factor #(%d), Logged out {val=%d,txt=%s}",auth.m_passwordIndex,
+        log(LEVEL_WARN,  "apiServer", 2048, "Authentication error on factor #(%d), Logged out {val=%d,txt=%s}",auth.m_passwordIndex,
             JSON_ASUINT((*(jPayloadOutStr->getValue())),"val",0), JSON_ASCSTRING((*(jPayloadOutStr->getValue())),"txt","")
             );
 
@@ -832,8 +817,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_POSTLOGIN(const Authentication:
         eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
     }
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
 
@@ -859,8 +844,8 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
     json jPayloadIn;
     Mantids29::Helpers::JSONReader2 reader;
 
-    std::string  userName   = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
-    std::string domainName  = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
+    std::string  userName   = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
+    std::string domainName  = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
 
     // If there is a session, overwrite the user/domain inputs...
     if (m_authSession)
@@ -869,21 +854,21 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
         domainName = m_authSession->getAuthenticatedDomain();
     }
 
-    if (!clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(sPayloadIn, jPayloadIn))
+    if (!m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(sPayloadIn, jPayloadIn))
     {
-        log(LEVEL_ERR,  "rpcServer", 2048, "Invalid JSON Payload for execution {method=%s}", sMethodName.c_str());
+        log(LEVEL_ERR,  "apiServer", 2048, "Invalid JSON Payload for execution {method=%s}", sMethodName.c_str());
         return HTTP::Status::S_400_BAD_REQUEST;
     }
 
     if (!m_authDomains)
     {
-        log(LEVEL_CRITICAL,  "rpcServer", 2048, "No authentication domain list exist.");
+        log(LEVEL_CRITICAL,  "apiServer", 2048, "No authentication domain list exist.");
         return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
     }
 
     if (m_methodsHandler->getMethodRequireFullAuth(sMethodName) && !m_authSession)
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "This method requires full authentication {method=%s}", sMethodName.c_str());
+        log(LEVEL_ERR, "apiServer", 2048, "This method requires full authentication {method=%s}", sMethodName.c_str());
         // Method not available for this null session..
         return HTTP::Status::S_404_NOT_FOUND;
     }
@@ -900,12 +885,12 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
         // Include the pass idx in the Extra TMP Index.
         if ( Mantids29::Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
         {
-            log(LEVEL_INFO, "rpcServer", 2048, "Adding valid in-execution authentication factor {method=%s,idx=%d,reason=%s}", sMethodName.c_str(),passIdx,Mantids29::Authentication::getReasonText(authReason));
+            log(LEVEL_INFO, "apiServer", 2048, "Adding valid in-execution authentication factor {method=%s,idx=%d,reason=%s}", sMethodName.c_str(),passIdx,Mantids29::Authentication::getReasonText(authReason));
             extraTmpIndexes.insert(passIdx);
         }
         else
         {
-            log(LEVEL_WARN, "rpcServer", 2048, "Rejecting invalid in-execution authentication factor {method=%s,idx=%d,reason=%s}", sMethodName.c_str(),passIdx,Mantids29::Authentication::getReasonText(authReason));
+            log(LEVEL_WARN, "apiServer", 2048, "Rejecting invalid in-execution authentication factor {method=%s,idx=%d,reason=%s}", sMethodName.c_str(),passIdx,Mantids29::Authentication::getReasonText(authReason));
         }
     }
 
@@ -921,13 +906,13 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
 
         switch (i)
         {
-        case API::MethodsHandler::VALIDATION_OK:
+        case API::Monolith::MethodsHandler::VALIDATION_OK:
         {
             if (m_authSession)
                 m_authSession->updateLastActivity();
 
-            log(LEVEL_INFO, "rpcServer", 2048, "Executing Web Method {method=%s}", sMethodName.c_str());
-            log(LEVEL_DEBUG, "rpcServer", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(jPayloadIn).c_str());
+            log(LEVEL_INFO, "apiServer", 2048, "Executing Web Method {method=%s}", sMethodName.c_str());
+            log(LEVEL_DEBUG, "apiServer", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(jPayloadIn).c_str());
 
             auto start = chrono::high_resolution_clock::now();
             auto finish = chrono::high_resolution_clock::now();
@@ -935,42 +920,42 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
 
             switch (m_methodsHandler->invoke( m_authDomains,domainName, m_authSession, sMethodName, jPayloadIn, jPayloadOutStr->getValue()))
             {
-            case API::MethodsHandler::METHOD_RET_CODE_SUCCESS:
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
                 finish = chrono::high_resolution_clock::now();
                 elapsed = finish - start;
 
-                log(LEVEL_INFO, "rpcServer", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", sMethodName.c_str(),elapsed.count());
-                log(LEVEL_DEBUG, "rpcServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(jPayloadOutStr->getValue()).c_str());
+                log(LEVEL_INFO, "apiServer", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", sMethodName.c_str(),elapsed.count());
+                log(LEVEL_DEBUG, "apiServer", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(jPayloadOutStr->getValue()).c_str());
 
                 eHTTPResponseRetCode = HTTP::Status::S_200_OK;
                 break;
-            case API::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
-                log(LEVEL_ERR, "rpcServer", 2048, "Web Method not found {method=%s}", sMethodName.c_str());
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
+                log(LEVEL_ERR, "apiServer", 2048, "Web Method not found {method=%s}", sMethodName.c_str());
                 eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
                 break;
-            case API::MethodsHandler::METHOD_RET_CODE_INVALIDDOMAIN:
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_INVALIDDOMAIN:
                 // This code should never be executed... <
-                log(LEVEL_ERR, "rpcServer", 2048, "Domain not found during web method execution {method=%s}", sMethodName.c_str());
+                log(LEVEL_ERR, "apiServer", 2048, "Domain not found during web method execution {method=%s}", sMethodName.c_str());
                 eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
                 break;
             default:
-                log(LEVEL_ERR, "rpcServer", 2048, "Unknown error during web method execution {method=%s}", sMethodName.c_str());
+                log(LEVEL_ERR, "apiServer", 2048, "Unknown error during web method execution {method=%s}", sMethodName.c_str());
                 eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
                 break;
             }
         }break;
-        case API::MethodsHandler::VALIDATION_NOTAUTHORIZED:
+        case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
         {
             // not enough permissions.
             (*(jPayloadOutStr->getValue()))["auth"]["reasons"] = reasons;
-            log(LEVEL_ERR, "rpcServer", 8192, "Not authorized to execute method {method=%s,reasons=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(reasons).c_str());
+            log(LEVEL_ERR, "apiServer", 8192, "Not authorized to execute method {method=%s,reasons=%s}", sMethodName.c_str(),Mantids29::Helpers::jsonToString(reasons).c_str());
             eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
         }break;
-        case API::MethodsHandler::VALIDATION_METHODNOTFOUND:
+        case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
         default:
         {
-            log(LEVEL_ERR, "rpcServer", 2048, "Method not found {method=%s}", sMethodName.c_str());
+            log(LEVEL_ERR, "apiServer", 2048, "Method not found {method=%s}", sMethodName.c_str());
             // not enough permissions.
             eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
         }break;
@@ -978,7 +963,7 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
     }
     else
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "Domain not found {method=%s}", sMethodName.c_str());
+        log(LEVEL_ERR, "apiServer", 2048, "Domain not found {method=%s}", sMethodName.c_str());
 
         // Domain Not found.
         eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
@@ -986,8 +971,8 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
 
     if (!useExternalPayload)
     {
-        serverResponse.setDataStreamer(jPayloadOutStr,true);
-        serverResponse.setContentType("application/json",true);
+        m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+        m_serverResponse.setContentType("application/json",true);
     }
     return eHTTPResponseRetCode;
 }
@@ -1005,15 +990,15 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
     Authentication::Data newAuth;
 
     // POST VARS / AUTH:
-    if (!newAuth.setJsonString(clientRequest.getVars(HTTP_VARS_POST)->getStringValue("newAuth")))
+    if (!newAuth.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("newAuth")))
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "Invalid JSON Parsing for new credentials item");
+        log(LEVEL_ERR, "apiServer", 2048, "Invalid JSON Parsing for new credentials item");
         return HTTP::Status::S_400_BAD_REQUEST;
     }
 
     if (oldAuth.m_passwordIndex!=newAuth.m_passwordIndex)
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "Provided credential index differs from new credential index.");
+        log(LEVEL_ERR, "apiServer", 2048, "Provided credential index differs from new credential index.");
         return HTTP::Status::S_400_BAD_REQUEST;
     }
 
@@ -1025,7 +1010,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
         Mantids29::Authentication::ClientDetails clientDetails;
         clientDetails.ipAddress = m_userIP;
         clientDetails.tlsCommonName = m_userTLSCommonName;
-        clientDetails.userAgent = clientRequest.userAgent;
+        clientDetails.userAgent = m_clientRequest.userAgent;
 
         auto authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,m_authSession->getAuthUser(),oldAuth.m_password,credIdx);
 
@@ -1044,15 +1029,15 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
                                                                                                           );
 
             if ( JSON_ASBOOL((*(jPayloadOutStr->getValue())),"ok",false) == true)
-                log(LEVEL_INFO, "rpcServer", 2048, "Password change requested {index=%d,result=1}",credIdx);
+                log(LEVEL_INFO, "apiServer", 2048, "Password change requested {index=%d,result=1}",credIdx);
             else
-                log(LEVEL_ERR, "rpcServer", 2048, "Password change failed due to internal error {index=%d,result=0}",credIdx);
+                log(LEVEL_ERR, "apiServer", 2048, "Password change failed due to internal error {index=%d,result=0}",credIdx);
 
             eHTTPResponseRetCode = HTTP::Status::S_200_OK;
         }
         else
         {
-            log(LEVEL_ERR, "rpcServer", 2048, "Password change failed, bad incomming credentials {index=%d,reason=%s}",credIdx,Mantids29::Authentication::getReasonText(authReason));
+            log(LEVEL_ERR, "apiServer", 2048, "Password change failed, bad incomming credentials {index=%d,reason=%s}",credIdx,Mantids29::Authentication::getReasonText(authReason));
 
             // Mark to Destroy the session if the chpasswd is invalid...
             m_destroySession = true;
@@ -1064,11 +1049,11 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
     }
     else
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "Password change failed, domain authenticator not found {index=%d}",credIdx);
+        log(LEVEL_ERR, "apiServer", 2048, "Password change failed, domain authenticator not found {index=%d}",credIdx);
     }
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 
 }
@@ -1090,18 +1075,18 @@ Status::eRetCode ClientHandler::procJAPI_Session_TESTPASSWD(const Authentication
         Mantids29::Authentication::ClientDetails clientDetails;
         clientDetails.ipAddress = m_userIP;
         clientDetails.tlsCommonName = m_userTLSCommonName;
-        clientDetails.userAgent = clientRequest.userAgent;
+        clientDetails.userAgent = m_clientRequest.userAgent;
 
         auto authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,m_authSession->getAuthUser(),auth.m_password,credIdx);
         if (IS_PASSWORD_AUTHENTICATED(authReason))
         {
-            log(LEVEL_INFO, "rpcServer", 2048, "Password validation requested {index=%d,result=1}",auth.m_passwordIndex);
+            log(LEVEL_INFO, "apiServer", 2048, "Password validation requested {index=%d,result=1}",auth.m_passwordIndex);
             //(*(jPayloadOutStr->getValue()))["ok"] = true;
             eHTTPResponseRetCode = HTTP::Status::S_200_OK;
         }
         else
         {
-            log(LEVEL_ERR, "rpcServer", 2048, "Password validation failed, bad incomming credentials {index=%d,reason=%s}",auth.m_passwordIndex,Mantids29::Authentication::getReasonText(authReason));
+            log(LEVEL_ERR, "apiServer", 2048, "Password validation failed, bad incomming credentials {index=%d,reason=%s}",auth.m_passwordIndex,Mantids29::Authentication::getReasonText(authReason));
 
             // Mark to destroy the session if the test password is invalid...
             m_destroySession = true;
@@ -1114,11 +1099,11 @@ Status::eRetCode ClientHandler::procJAPI_Session_TESTPASSWD(const Authentication
     }
     else
     {
-        log(LEVEL_ERR, "rpcServer", 2048, "Password validation failed, domain authenticator not found {index=%d}",auth.m_passwordIndex);
+        log(LEVEL_ERR, "apiServer", 2048, "Password validation failed, domain authenticator not found {index=%d}",auth.m_passwordIndex);
     }
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
 
@@ -1158,8 +1143,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_PASSWDLIST()
     else
         eHTTPResponseRetCode = HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
 
-    serverResponse.setDataStreamer(jPayloadOutStr,true);
-    serverResponse.setContentType("application/json",true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
 
@@ -1197,7 +1182,7 @@ std::string ClientHandler::persistentAuthentication(const string &userName, cons
         Mantids29::Authentication::ClientDetails clientDetails;
         clientDetails.ipAddress = m_userIP;
         clientDetails.tlsCommonName = m_userTLSCommonName;
-        clientDetails.userAgent = clientRequest.userAgent;
+        clientDetails.userAgent = m_clientRequest.userAgent;
 
         *authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,userName,authData.m_password,authData.m_passwordIndex, Mantids29::Authentication::MODE_PLAIN,"",&stAccountPassIndexesUsedForLogin);
 
@@ -1250,7 +1235,7 @@ Mantids29::Authentication::Reason ClientHandler::temporaryAuthentication(const s
         Mantids29::Authentication::ClientDetails clientDetails;
         clientDetails.ipAddress = m_userIP;
         clientDetails.tlsCommonName = m_userTLSCommonName;
-        clientDetails.userAgent = clientRequest.userAgent;
+        clientDetails.userAgent = m_clientRequest.userAgent;
 
         eReason = auth->authenticate( m_applicationName, clientDetails, userName,authData.m_password,authData.m_passwordIndex); // Authenticate in a non-persistent fashion.
         m_authDomains->releaseDomain(domainName);
@@ -1342,7 +1327,7 @@ void ClientHandler::setDocumentRootPath(const std::string &value)
         m_resourcesLocalPath = value;
 }
 
-void ClientHandler::setResourceFilter(ResourcesFilter *value)
+void ClientHandler::setResourcesFilter(API::Monolith::ResourcesFilter *value)
 {
     m_resourceFilter = value;
 }
@@ -1352,7 +1337,7 @@ void ClientHandler::setUseFormattedJSONOutput(bool value)
     m_useFormattedJSONOutput = value;
 }
 
-void ClientHandler::setMethodsHandler(API::MethodsHandler *value)
+void ClientHandler::setMethodsHandler(API::Monolith::MethodsHandler *value)
 {
     m_methodsHandler = value;
 }

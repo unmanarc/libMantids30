@@ -3,10 +3,10 @@
 
 #include <Mantids29/Auth/data.h>
 #include "sessionsmanager.h"
-#include "resourcesfilter.h"
 
-#include <Mantids29/API_Core/streamablejson.h>
-#include <Mantids29/API_Core/methodshandler.h>
+#include "monolithresourcefilter.h"
+#include <Mantids29/Memory/streamablejson.h>
+#include <Mantids29/API_Monolith/methodshandler.h>
 #include <Mantids29/Auth/domains.h>
 #include <Mantids29/Auth/multi.h>
 #include <Mantids29/Protocol_HTTP/httpv1_server.h>
@@ -25,13 +25,13 @@ public:
     //////////////////////////////////////////////
     // Initialization:
     void setAuthenticators(Mantids29::Authentication::Domains * authenticator);
-    void setMethodsHandler(API::MethodsHandler *value);
+    void setMethodsHandler(API::Monolith::MethodsHandler *value);
     //////////////////////////////////////////////
 
     void setUserIP(const std::string &value);
     void setSessionsManagger(SessionsManager *value);
     void setUseFormattedJSONOutput(bool value);
-    void setResourceFilter(ResourcesFilter *value);
+    void setResourcesFilter(API::Monolith::ResourcesFilter *value);
     void setDocumentRootPath(const std::string &value);
     void setUsingCSRFToken(bool value);
     void setUseHTMLIEngine(bool value);
@@ -52,6 +52,8 @@ protected:
      */
     Network::Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
 private:
+    void replaceHexCodes( std::string &content );
+
     void sessionOpen();
     void sessionRelease();
     void sessionDestroy();
@@ -82,31 +84,33 @@ private:
 
     void log(Mantids29::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
 
-    Program::Logs::RPCLog * m_rpcLog;
+    Program::Logs::RPCLog * m_rpcLog = nullptr;
 
-    API::MethodsHandler * m_methodsHandler;
-    Mantids29::Authentication::Domains * m_authDomains;
-    SessionsManager * m_sessionsManager;
+    API::Monolith::MethodsHandler * m_methodsHandler = nullptr;
+    Mantids29::Authentication::Domains * m_authDomains = nullptr;
+    SessionsManager * m_sessionsManager = nullptr;
 
     // Current Session Vars:
-    WebSession * m_webSession;
-    Mantids29::Authentication::Session *m_authSession;
+    WebSession * m_webSession = nullptr;
+    Mantids29::Authentication::Session *m_authSession = nullptr;
     uint64_t m_sessionMaxAge;
     std::string m_sessionId;
-    bool m_destroySession;
-    bool m_releaseSessionHandler;
+    bool m_destroySession = false;
+    bool m_releaseSessionHandler = false;
     Authentication::Multi m_extraCredentials;
     Authentication::Data m_credentials;
 
     // Current User Security Vars:
     std::string m_clientCSRFToken;
 
-    ResourcesFilter * m_resourceFilter;
+    API::Monolith::ResourcesFilter * m_resourceFilter = nullptr;
     std::string m_applicationName;
     std::string m_userIP, m_userTLSCommonName;
     std::string m_resourcesLocalPath;
     std::string m_redirectPathOn404;
-    bool m_useFormattedJSONOutput, m_usingCSRFToken, m_useHTMLIEngine;
+    bool m_useFormattedJSONOutput = true;
+    bool m_usingCSRFToken = true;
+    bool m_useHTMLIEngine = true;
     std::string m_webServerName;
     std::string m_softwareVersion;
 };

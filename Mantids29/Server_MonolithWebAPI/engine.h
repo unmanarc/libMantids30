@@ -1,14 +1,15 @@
-#ifndef XRPC_WEBSERVER_H
-#define XRPC_WEBSERVER_H
+#ifndef SERVER_WEBAPI_MONOLITH_H
+#define SERVER_WEBAPI_MONOLITH_H
 
+#include "monolithresourcefilter.h"
 #include "sessionsmanager.h"
-#include "resourcesfilter.h"
+#include <Mantids29/Server_WebCore/resourcesfilter.h>
 
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
 #include <Mantids29/Net_Sockets/acceptor_poolthreaded.h>
 #include <Mantids29/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids29/Auth/domains.h>
-#include <Mantids29/API_Core/methodshandler.h>
+#include <Mantids29/API_Monolith/methodshandler.h>
 #include <Mantids29/Program_Logs/rpclog.h>
 #include <Mantids29/Memory/b_mem.h>
 #include <memory>
@@ -72,35 +73,34 @@ public:
      * @param value Resources Local Path
      * @return true if path is accessible from this application.
      */
-    bool setDocumentRootPath(const std::string &value, const bool & autoloadResourceFilter = true);
+    bool setDocumentRootPath(const std::string &value, const bool & autoloadResourcesFilter = true);
 
     /**
-     * @brief setSoftwareVersion Set Software Version (to display in `version` RPC method)
+     * @brief setSoftwareVersion Set Software Version (to display in the Server header)
      * @param value version string
      */
     void setSoftwareVersion(const std::string &value);
     /**
-     * @brief setSoftwareVersion
-     * @param major
-     * @param minor
-     * @param subminor
+     * @brief setSoftwareVersion Set Software Version (to display in the Server header)
+     * @param major software version major
+     * @param minor software version minor
+     * @param subminor software version subminor
      */
     void setSoftwareVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string & subText);
 
     /**
-     * @brief setUseHTMLIEngine Set Webserver Using HTMLI dynamic in-memory engine (default: true)
-     * @param value true for using, false for not.
+     * @brief addStaticContentElement Add Static Content Element...
+     * @param path
+     * @param content
      */
-    void setUseHTMLIEngine(bool value);
-
-    void addInternalContentElement(const std::string & path, const std::string & content);
+    void addStaticContentElement(const std::string & path, const std::string & content);
 
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks m_callbacks;
     Mantids29::Authentication::Domains * m_authenticator;
-    ResourcesFilter * m_resourceFilter;
-    API::MethodsHandler *m_methodsHandler;
+    API::Monolith::ResourcesFilter * m_resourceFilter;
+    API::Monolith::MethodsHandler *m_methodsHandler;
     Program::Logs::RPCLog * m_rpcLog;
     SessionsManager m_sessionsManager;
     std::string m_redirectOn404;
@@ -116,8 +116,6 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     std::string getDocumentRootPath() const;
     std::string getSoftwareVersion() const;
-    std::string getWebServerName() const;
-    bool getUseHTMLIEngine() const;
     std::string getApplicationName() const;
     std::map<std::string, Mantids29::Memory::Containers::B_MEM *> getStaticContentElements();
 
@@ -152,4 +150,4 @@ private:
 };
 
 }}}}
-#endif // XRPC_WEBSERVER_H
+#endif // SERVER_WEBAPI_MONOLITH_H

@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for XRPC Webserver Library")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for implementing a Monolith Web API Server")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
@@ -65,8 +65,11 @@ target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_HTTP)
 include_directories("${Mantids29_Protocol_MIME_SOURCE_DIR}/../../")
 target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_MIME)
 
-include_directories("${Mantids29_API_Core_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_API_Core)
+include_directories("${Mantids29_API_Monolith_SOURCE_DIR}/../../")
+target_link_libraries(${LIB_NAME} ${LIBPREFIX}_API_Monolith)
+
+include_directories("${Mantids29_Server_WebCore_SOURCE_DIR}/../../")
+target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Server_WebCore)
 
 include_directories("${Mantids29_Program_Logs_SOURCE_DIR}/../../")
 target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Program_Logs)

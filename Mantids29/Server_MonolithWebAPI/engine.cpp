@@ -93,11 +93,11 @@ bool Engine::_onConnect(void * obj, Network::Sockets::Socket_Stream_Base * s, co
     webHandler.setSessionsManagger(&(webserver->m_sessionsManager));
     webHandler.setUseFormattedJSONOutput(webserver->m_useFormattedJSONOutput);
     webHandler.setUsingCSRFToken(webserver->m_useCSRFToken);
-    webHandler.setResourceFilter(webserver->m_resourceFilter);
+    webHandler.setResourcesFilter(webserver->m_resourceFilter);
     webHandler.setDocumentRootPath(webserver->getDocumentRootPath());
-    webHandler.setWebServerName(webserver->getWebServerName());
+    webHandler.setWebServerName(webserver->m_webServerName);
     webHandler.setSoftwareVersion(webserver->getSoftwareVersion());
-    webHandler.setUseHTMLIEngine(webserver->getUseHTMLIEngine());
+    webHandler.setUseHTMLIEngine(webserver->m_useHTMLIEngine);
     webHandler.setStaticContentElements(webserver->getStaticContentElements());
     webHandler.setRedirectPathOn404(webserver->m_redirectOn404);
 
@@ -143,7 +143,7 @@ std::string Engine::getApplicationName() const
     return m_methodsHandler->getApplicationName();
 }
 
-void Engine::addInternalContentElement(const std::string &path, const std::string &content)
+void Engine::addStaticContentElement(const std::string &path, const std::string &content)
 {
     std::lock_guard<std::mutex> lck (m_internalContentMutex);
 
@@ -179,18 +179,18 @@ std::string Engine::getDocumentRootPath() const
     return m_documentRootPath;
 }
 
-bool Engine::setDocumentRootPath(const std::string &value, const bool &autoloadResourceFilter)
+bool Engine::setDocumentRootPath(const std::string &value, const bool &autoloadResourcesFilter)
 {
     if (access(value.c_str(), R_OK)) return false;
     m_documentRootPath = value;
 
-    if (autoloadResourceFilter)
+    if (autoloadResourcesFilter)
     {
         std::string resourceFilterPath = m_documentRootPath + "/resources.conf";
         if (!access(resourceFilterPath.c_str(), R_OK))
         {
-            ResourcesFilter * rf = new ResourcesFilter;
-            if (rf->loadFile(resourceFilterPath))
+            API::Monolith::ResourcesFilter * rf = new API::Monolith::ResourcesFilter;
+            if (rf->loadFiltersFromFile(resourceFilterPath))
             {
                 if (m_resourceFilter)
                     delete m_resourceFilter; // Remove the previous RF.
