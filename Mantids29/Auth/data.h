@@ -51,7 +51,7 @@ public:
 
 public:
     std::string m_password;
-    uint32_t m_passwordIndex;
+    uint32_t m_passwordIndex = 0;
 };
 
 }} // namespace Mantids29::Authentication

@@ -5,7 +5,6 @@ using namespace Mantids29;
 
 Data::Data()
 {
-    this->m_passwordIndex = 0;
 }
 
 Data::Data(const std::string& password, const uint32_t& passwordIndex)
