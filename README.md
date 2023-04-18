@@ -35,7 +35,8 @@ This framework provides C++11 based enhancing libraries for console and network 
   * JSON Expressions evaluation
 * File Formats
   * Vars File
-
+* Data Formats
+  * JWT
 
 
 ***
