@@ -1,6 +1,7 @@
 #ifndef VARSCONTAINER_H
 #define VARSCONTAINER_H
 
+#include <Mantids29/Helpers/json.h>
 #include "b_base.h"
 #include "streamableobject.h"
 #include <string>
@@ -14,6 +15,8 @@ class Vars
 public:
     Vars();
     virtual ~Vars();
+
+    json getVarsAsJSONMap();
 
     ///////////////////////////////////////
     // String conversion.

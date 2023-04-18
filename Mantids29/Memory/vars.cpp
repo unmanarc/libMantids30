@@ -12,6 +12,43 @@ Vars::~Vars()
 {
 }
 
+json Vars::getVarsAsJSONMap()
+{
+    Json::Value jsonMap;
+
+    // Get the list of keys from the container
+    std::set<std::string> keysList = getKeysList();
+
+    for (const std::string& key : keysList)
+    {
+        // Get the count of variables with this key
+        uint32_t count = varCount(key);
+
+        if (count == 1)
+        {
+            // If there's only one value, store it directly
+            Mantids29::Memory::Streams::StreamableObject* value = getValue(key);
+            jsonMap[key] = value->toString();
+        }
+        else if (count > 1)
+        {
+            // If there are multiple values, store them in an array
+            std::list<Mantids29::Memory::Streams::StreamableObject*> values = getValues(key);
+            Json::Value jsonArray;
+
+            for (Mantids29::Memory::Streams::StreamableObject* value : values)
+            {
+                jsonArray.append(value->toString());
+            }
+
+            jsonMap[key] = jsonArray;
+        }
+    }
+
+    return jsonMap;
+
+}
+
 std::string Vars::getStringValue(const std::string &varName)
 {
     auto * value = getValue(varName);
