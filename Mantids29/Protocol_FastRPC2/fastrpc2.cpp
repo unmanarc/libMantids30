@@ -6,7 +6,7 @@
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids29/Net_Sockets/socket_tls.h>
-#include <Mantids29/API_Core/methodshandler.h>
+#include <Mantids29/API_Monolith/methodshandler.h>
 #include <Mantids29/Threads/lock_shared.h>
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -449,7 +449,7 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
 
         switch (i)
         {
-        case API::MethodsHandler::VALIDATION_OK:
+        case API::Monolith::MethodsHandler::VALIDATION_OK:
         {
             if (session)
                 session->updateLastActivity();
@@ -463,7 +463,7 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
 
             switch (taskParams->currentMethodsHandlers->invoke(taskParams->currentAuthDomains,domainName, session.get(), taskParams->methodName, taskParams->payload, &rsp))
             {
-            case API::MethodsHandler::METHOD_RET_CODE_SUCCESS:
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
                 finish = chrono::high_resolution_clock::now();
                 elapsed = finish - start;
@@ -473,12 +473,12 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
                 found = true;
                 response["ret"] = 200;
                 break;
-            case API::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
 
                 CALLBACK(callbacks->CB_MethodExecution_MethodNotFound)(callbacks->obj, taskParams);
                 response["ret"] = 404;
                 break;
-            case API::MethodsHandler::METHOD_RET_CODE_INVALIDDOMAIN:
+            case API::Monolith::MethodsHandler::METHOD_RET_CODE_INVALIDDOMAIN:
                 // This code should never be executed... <
                 CALLBACK(callbacks->CB_MethodExecution_DomainNotFound)(callbacks->obj, taskParams);
                 response["ret"] = 404;
@@ -489,14 +489,14 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
                 break;
             }
         }break;
-        case API::MethodsHandler::VALIDATION_NOTAUTHORIZED:
+        case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
         {
             // not enough permissions.
             CALLBACK(callbacks->CB_MethodExecution_NotAuthorized)(callbacks->obj, taskParams, reasons);
             response["auth"]["reasons"] = reasons;
             response["ret"] = 401;
         }break;
-        case API::MethodsHandler::VALIDATION_METHODNOTFOUND:
+        case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
         default:
         {
             CALLBACK(callbacks->CB_MethodExecution_MethodNotFound)(callbacks->obj, taskParams);

@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Libraries for Virtual Synchronized API Client and Server v2")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for Virtual Synchronized API Client and Server v2")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
@@ -65,6 +65,8 @@ target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Auth_Remote)
 include_directories("${Mantids29_Auth_SOURCE_DIR}/../../")
 target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Auth)
 
+include_directories("${Mantids29_API_Monolith_SOURCE_DIR}/../../")
+target_link_libraries(${LIB_NAME} ${LIBPREFIX}_API_Monolith)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

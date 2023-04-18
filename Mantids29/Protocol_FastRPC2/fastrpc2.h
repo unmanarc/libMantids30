@@ -7,7 +7,7 @@
 
 #include <Mantids29/Auth_Remote/loginrpcclientcbm.h>
 #include <Mantids29/Auth/domains.h>
-#include <Mantids29/API_Core/methodshandler.h>
+#include <Mantids29/API_Monolith/methodshandler.h>
 
 #include <Mantids29/Threads/threadpool.h>
 #include <Mantids29/Threads/mutex_shared.h>
@@ -65,7 +65,7 @@ public:
         uint32_t maxMessageSize;
         void * caller;
         FastRPC2::SessionPTR * sessionHolder;
-        API::MethodsHandler *currentMethodsHandlers;
+        API::Monolith::MethodsHandler *currentMethodsHandlers;
         Authentication::Domains * currentAuthDomains;
         Threads::Sync::Mutex_Shared * done;
         Threads::Sync::Mutex * mtSocket;
@@ -178,7 +178,7 @@ public:
     public:
         ParametersDefinitions(
                 Authentication::LoginRPCClientCBM * currentLoginRPCClient,
-                API::MethodsHandler *currentMethodsHandlers,
+                API::Monolith::MethodsHandler *currentMethodsHandlers,
                 Authentication::Domains * currentAuthDomains
                 )
         {
@@ -250,14 +250,14 @@ public:
         /**
          * @brief currentMethodsHandlers current Methods Manager
          */
-        API::MethodsHandler *currentMethodsHandlers;
+        API::Monolith::MethodsHandler *currentMethodsHandlers;
         /**
          * @brief currentAuthDomains Current used domain authentication pool
          */
         Authentication::Domains * currentAuthDomains;
     private:
         Authentication::LoginRPCClientCBM * defaultLoginRPCClient;
-        API::MethodsHandler *defaultMethodsHandlers;
+        API::Monolith::MethodsHandler *defaultMethodsHandlers;
         Authentication::Domains *defaultAuthDomains;
     };
 
@@ -401,7 +401,7 @@ private:
 
     Authentication::LoginRPCClientCBM defaultLoginRPCClient;
     Authentication::Domains defaultAuthDomain;
-    API::MethodsHandler defaultMethodsHandlers;
+    API::Monolith::MethodsHandler defaultMethodsHandlers;
 
 };
 
