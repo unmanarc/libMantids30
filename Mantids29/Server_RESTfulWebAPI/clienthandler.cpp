@@ -17,7 +17,7 @@ using namespace std;
 
 ClientHandler::ClientHandler(void *parent, Memory::Streams::StreamableObject *sock) : Servers::Web::APIClientHandler(parent,sock)
 {
-    // TODO: pasar la version como un parametro...
+    // TODO: pasar la version como un parametro y soportar multiples versiones...
     m_APIURLs.insert("/api/v1");
 }
 
