@@ -11,7 +11,7 @@ using namespace Mantids29::Database;
 bool Manager_DB::attribAdd(const ApplicationAttribute & applicationAttrib, const std::string &sAttribDescription)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("INSERT INTO vauth_v3_attribs (`f_appName`,`attribName`,`attribDescription`) VALUES(:appName,:attribName,:attribDescription);",
+    return m_sqlConnector->query("INSERT INTO vauth_v4_attribs (`f_appName`,`attribName`,`attribDescription`) VALUES(:appName,:attribName,:attribDescription);",
                                {
                                    {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                    {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -22,7 +22,7 @@ bool Manager_DB::attribAdd(const ApplicationAttribute & applicationAttrib, const
 bool Manager_DB::attribRemove(const ApplicationAttribute & applicationAttrib)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("DELETE FROM vauth_v3_attribs WHERE `attribName`=:attribName and `f_appName`=:appName;",
+    return m_sqlConnector->query("DELETE FROM vauth_v4_attribs WHERE `attribName`=:attribName and `f_appName`=:appName;",
                                {
                                    {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                    {":attribName",new Abstract::STRING(applicationAttrib.attribName)}
@@ -34,7 +34,7 @@ bool Manager_DB::attribExist(const ApplicationAttribute & applicationAttrib)
     bool ret = false;
     Threads::Sync::Lock_RD lock(mutex);
 
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `attribDescription` FROM vauth_v3_attribs WHERE `attribName`=:attribName and `f_appName`=:appName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `attribDescription` FROM vauth_v4_attribs WHERE `attribName`=:attribName and `f_appName`=:appName LIMIT 1;",
                                           {
                                               {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                               {":attribName",new Abstract::STRING(applicationAttrib.attribName)}
@@ -51,7 +51,7 @@ bool Manager_DB::attribGroupAdd(const ApplicationAttribute & applicationAttrib, 
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    return m_sqlConnector->query("INSERT INTO vauth_v3_attribsgroups (`f_appName`,`f_attribName`,`f_groupName`) VALUES(:appName,:attribName,:groupName);",
+    return m_sqlConnector->query("INSERT INTO vauth_v4_attribsgroups (`f_appName`,`f_attribName`,`f_groupName`) VALUES(:appName,:attribName,:groupName);",
                                {
                                    {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                    {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -63,7 +63,7 @@ bool Manager_DB::attribGroupRemove(const ApplicationAttribute & applicationAttri
 {
     bool ret = false;
     if (lock) mutex.lock();
-    ret = m_sqlConnector->query("DELETE FROM vauth_v3_attribsgroups WHERE `f_attribName`=:attribName and `f_appName`=:appName AND `f_groupName`=:groupName;",
+    ret = m_sqlConnector->query("DELETE FROM vauth_v4_attribsgroups WHERE `f_attribName`=:attribName and `f_appName`=:appName AND `f_groupName`=:groupName;",
                               {
                                   {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                   {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -76,7 +76,7 @@ bool Manager_DB::attribGroupRemove(const ApplicationAttribute & applicationAttri
 bool Manager_DB::attribAccountAdd(const ApplicationAttribute & applicationAttrib, const std::string &accountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("INSERT INTO vauth_v3_attribsaccounts (`f_appName`,`f_attribName`,`f_userName`) VALUES(:appName,:attribName,:userName);",
+    return m_sqlConnector->query("INSERT INTO vauth_v4_attribsaccounts (`f_appName`,`f_attribName`,`f_userName`) VALUES(:appName,:attribName,:userName);",
                                {
                                    {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                    {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -88,7 +88,7 @@ bool Manager_DB::attribAccountRemove(const ApplicationAttribute & applicationAtt
 {
     bool ret = false;
     if (lock) mutex.lock();
-    ret = m_sqlConnector->query("DELETE FROM vauth_v3_attribsaccounts WHERE `f_attribName`=:attribName AND `f_appName`=:appName AND `f_userName`=:userName;",
+    ret = m_sqlConnector->query("DELETE FROM vauth_v4_attribsaccounts WHERE `f_attribName`=:attribName AND `f_appName`=:appName AND `f_userName`=:userName;",
                               {
                                   {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                   {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -101,7 +101,7 @@ bool Manager_DB::attribAccountRemove(const ApplicationAttribute & applicationAtt
 bool Manager_DB::attribChangeDescription(const ApplicationAttribute & applicationAttrib, const std::string &attribDescription)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("UPDATE vauth_v3_attribs SET `attribDescription`=:attribDescription WHERE `attribName`=:attribName AND `f_appName`=:appName;",
+    return m_sqlConnector->query("UPDATE vauth_v4_attribs SET `attribDescription`=:attribDescription WHERE `attribName`=:attribName AND `f_appName`=:appName;",
                                {
                                    {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                    {":attribName",new Abstract::STRING(applicationAttrib.attribName)},
@@ -115,7 +115,7 @@ std::string Manager_DB::attribDescription(const ApplicationAttribute & applicati
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::STRING attribDescription;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `attribDescription` FROM vauth_v3_attribs WHERE `attribName`=:attribName AND `f_appName`=:appName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `attribDescription` FROM vauth_v4_attribs WHERE `attribName`=:attribName AND `f_appName`=:appName LIMIT 1;",
                                           {
                                               {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                               {":attribName",new Abstract::STRING(applicationAttrib.attribName)}
@@ -135,9 +135,9 @@ std::set<ApplicationAttribute> Manager_DB::attribsList(const std::string & appli
 
     Abstract::STRING sAppName,sAttribName;
 
-    std::string sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v3_attribs;";
+    std::string sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v4_attribs;";
     if (!applicationName.empty())
-        sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v3_attribs WHERE `f_appName`=:appName;";
+        sqlQuery = "SELECT `f_appName`,`attribName` FROM vauth_v4_attribs WHERE `f_appName`=:appName;";
 
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect(sqlQuery,
                                           { {":appName", new Abstract::STRING(applicationName)} },
@@ -155,7 +155,7 @@ std::set<std::string> Manager_DB::attribGroups(const ApplicationAttribute & appl
     if (lock) mutex.lockShared();
 
     Abstract::STRING groupName;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_groupName` FROM vauth_v3_attribsgroups WHERE `f_attribName`=:attribName AND `f_appName`=:appName;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_groupName` FROM vauth_v4_attribsgroups WHERE `f_attribName`=:attribName AND `f_appName`=:appName;",
                                           {
                                               {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                               {":attribName",new Abstract::STRING(applicationAttrib.attribName)}
@@ -177,7 +177,7 @@ std::set<std::string> Manager_DB::attribAccounts(const ApplicationAttribute & ap
 
 
     Abstract::STRING accountName;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_attribsaccounts WHERE `f_attribName`=:attribName AND `f_appName`=:appName;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v4_attribsaccounts WHERE `f_attribName`=:attribName AND `f_appName`=:appName;",
                                           {
                                               {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                               {":attribName",new Abstract::STRING(applicationAttrib.attribName)}
@@ -199,7 +199,7 @@ std::list<AttributeDetails> Manager_DB::attribsBasicInfoSearch(const std::string
 
     Abstract::STRING attributeName,description;
 
-    std::string sSqlQuery = "SELECT `attribName`,`attribDescription` FROM vauth_v3_applications WHERE `f_appName`=:APPNAME";
+    std::string sSqlQuery = "SELECT `attribName`,`attribDescription` FROM vauth_v4_applications WHERE `f_appName`=:APPNAME";
 
     if (!sSearchWords.empty())
     {
@@ -237,7 +237,7 @@ bool Manager_DB::accountValidateDirectAttribute(const std::string &accountName, 
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v3_attribsaccounts WHERE `f_attribName`=:attribName AND `f_userName`=:userName AND `f_appName`=:appName;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v4_attribsaccounts WHERE `f_attribName`=:attribName AND `f_userName`=:userName AND `f_appName`=:appName;",
                                           { {":attribName",new Memory::Abstract::STRING(applicationAttrib.attribName)},
                                             {":appName",new Abstract::STRING(applicationAttrib.appName)},
                                             {":userName",new Memory::Abstract::STRING(accountName)}
