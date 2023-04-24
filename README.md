@@ -43,7 +43,7 @@ WIN32 License for Net_Interfaces: GPLv2 (tap-windows.h is GPLv2)
 ***
 ## Installing packages (HOWTO)
 
-- COPR (Fedora/CentOS/etc):  
+- COPR (Fedora/RHEL/etc):  
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids29/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids29/)
 
 
