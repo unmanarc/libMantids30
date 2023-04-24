@@ -26,19 +26,22 @@ struct AccountBasicAttributes{
     }
     AccountBasicAttributes()
     {
-        enabled=confirmed=superuser=false;
     }
-    bool enabled,confirmed,superuser;
+
+    bool enabled=false;
+    bool confirmed=false;
+    bool superuser=false;
 };
 struct AccountDetails {
     AccountDetails()
     {
-        expired=true;
-        enabled=confirmed=superuser=false;
     }
     std::string accountName;
     std::string givenName,lastName,email,description;
-    bool enabled,confirmed,superuser,expired;
+    bool enabled = false;
+    bool confirmed = false;
+    bool superuser = false;
+    bool expired = true;
 };
 
 struct GroupDetails {
@@ -201,13 +204,15 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////
     // applications:
-    virtual bool applicationAdd(const std::string & appName, const std::string & applicationDescription, const std::string &sAppKey, const std::string & sOwnerAccountName)=0;
+    virtual bool applicationAdd(const std::string & appName, const std::string & applicationDescription, const std::string &apiKey, const std::string & sOwnerAccountName)=0;
     virtual bool applicationRemove(const std::string & appName)=0;
     virtual bool applicationExist(const std::string & appName)=0;
+
     virtual std::string applicationDescription(const std::string & appName)=0;
     virtual std::string applicationKey(const std::string & appName)=0;
     virtual bool applicationChangeDescription(const std::string & appName, const std::string & applicationDescription)=0;
-    virtual bool applicationChangeKey(const std::string & appName, const std::string & appKey)=0;
+    virtual bool applicationChangeKey(const std::string & appName, const std::string & apiKey)=0;
+
     virtual std::set<std::string> applicationList()=0;
     virtual bool applicationValidateOwner(const std::string & appName, const std::string & accountName)=0;
     virtual bool applicationValidateAccount(const std::string & appName, const std::string & accountName)=0;
@@ -219,6 +224,25 @@ public:
     virtual bool applicationOwnerAdd(const std::string & appName, const std::string & accountName)=0;
     virtual bool applicationOwnerRemove(const std::string & appName, const std::string & accountName)=0;
     virtual std::list<ApplicationDetails> applicationsBasicInfoSearch(std::string sSearchWords, uint64_t limit=0, uint64_t offset=0)=0;
+
+    // Application weblogin:
+    virtual bool applicationWebLoginConfigure(const std::string &appName, const std::string &loginHTMLPage, const std::string &loginSuccessUrl, const std::string &loginFailUrl)=0;
+    virtual bool applicationWebLoginChangeHTMLPage(const std::string &appName, const std::string &loginHTMLPage)=0;
+    virtual bool applicationWebLoginChangeSuccessUrl(const std::string &appName, const std::string &loginSuccessUrl)=0;
+    virtual bool applicationWebLoginChangeFailUrl(const std::string &appName, const std::string &loginFailUrl)=0;
+    virtual std::string applicationWebLoginHTMLPage(const std::string &appName)=0;
+    virtual std::string applicationWebLoginSuccessUrl(const std::string &appName)=0;
+    virtual std::string applicationWebLoginFailUrl(const std::string &appName)=0;
+
+    // Weblogin return urls:
+    virtual bool applicationWebLoginAddReturnUrl(const std::string &appName, const std::string &loginReturnUrl)=0;
+    virtual bool applicationWebLoginRemoveReturnUrl(const std::string &appName, const std::string &loginReturnUrl)=0;
+    virtual std::list<std::string> applicationWebLoginReturnUrls(const std::string &appName)=0;
+
+    // Application admited origin URLS:
+    virtual bool applicationWebLoginAddOriginUrl(const std::string &appName, const std::string &originUrl)=0;
+    virtual bool applicationWebLoginRemoveOriginUrl(const std::string &appName, const std::string &originUrl)=0;
+    virtual std::list<std::string> applicationWebLoginOriginUrls(const std::string &appName)=0;
 
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:

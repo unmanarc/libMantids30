@@ -15,25 +15,26 @@ using namespace Mantids29::Memory;
 using namespace Mantids29::Database;
 using namespace Mantids29::Helpers;
 
-bool Manager_DB::applicationAdd(const std::string &appName, const std::string &applicationDescription, const std::string & sAppKey, const std::string & sOwnerAccountName)
+bool Manager_DB::applicationAdd(const std::string& appName, const std::string& applicationDescription, const std::string& apiKey, const std::string& sOwnerAccountName)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("INSERT INTO vauth_v4_applications (`appName`,`f_appCreator`,`appDescription`,`appKey`) VALUES(:appName,:appCreator,:description,:appKey);",
-                               {
-                                   {":appName",new Abstract::STRING(appName)},
-                                   {":appCreator",new Abstract::STRING(sOwnerAccountName)},
-                                   {":description",new Abstract::STRING(applicationDescription)},
-                                   {":appKey",new Abstract::STRING( Encoders::encodeToBase64Obf(sAppKey) )}
-                               });
+    return m_sqlConnector->query("INSERT INTO vauth_v4_applications (`appName`, `f_appCreator`, `appDescription`, `apiKey`) VALUES (:appName, :appCreator, :description, :apiKey);",
+                                 {
+                                     { ":appName", new Abstract::STRING(appName) },
+                                     { ":appCreator", new Abstract::STRING(sOwnerAccountName) },
+                                     { ":description", new Abstract::STRING(applicationDescription) },
+                                     { ":apiKey", new Abstract::STRING(Encoders::encodeToBase64Obf(apiKey)) },
+                                 });
 }
+
 
 bool Manager_DB::applicationRemove(const std::string &appName)
 {
     Threads::Sync::Lock_RW lock(mutex);
     return m_sqlConnector->query("DELETE FROM vauth_v4_applications WHERE `appName`=:appName;",
-                               {
-                                   {":appName",new Abstract::STRING(appName)}
-                               });
+                                 {
+                                     {":appName",new Abstract::STRING(appName)}
+                                 });
 }
 
 bool Manager_DB::applicationExist(const std::string &appName)
@@ -42,10 +43,10 @@ bool Manager_DB::applicationExist(const std::string &appName)
     Threads::Sync::Lock_RD lock(mutex);
 
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v4_applications WHERE `appName`=:appName LIMIT 1;",
-                                          {
-                                              {":appName",new Abstract::STRING(appName)}
-                                          },
-                                          { });
+                                                                             {
+                                                                                 {":appName",new Abstract::STRING(appName)}
+                                                                             },
+                                                                             { });
     if (i->getResultsOK() && i->query->step())
     {
         ret = true;
@@ -60,10 +61,10 @@ std::string Manager_DB::applicationDescription(const std::string &appName)
 
     Abstract::STRING description;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `appDescription` FROM vauth_v4_applications WHERE `appName`=:appName LIMIT 1;",
-                                          {
-                                              {":appName",new Abstract::STRING(appName)}
-                                          },
-                                          { &description });
+                                                                             {
+                                                                                 {":appName",new Abstract::STRING(appName)}
+                                                                             },
+                                                                             { &description });
     if (i->getResultsOK() && i->query->step())
     {
         return description.getValue();
@@ -76,37 +77,37 @@ std::string Manager_DB::applicationKey(const std::string &appName)
     std::string ret;
     Threads::Sync::Lock_RD lock(mutex);
 
-    Abstract::STRING appKey;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `appKey` FROM vauth_v4_applications WHERE `appName`=:appName LIMIT 1;",
-                                          {
-                                              {":appName",new Abstract::STRING(appName)}
-                                          },
-                                          { &appKey });
+    Abstract::STRING apiKey;
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `apiKey` FROM vauth_v4_applications WHERE `appName`=:appName LIMIT 1;",
+                                                                             {
+                                                                                 {":appName",new Abstract::STRING(appName)}
+                                                                             },
+                                                                             { &apiKey });
     if (i->getResultsOK() && i->query->step())
     {
-        return Encoders::decodeFromBase64Obf(appKey.getValue());
+        return Encoders::decodeFromBase64Obf(apiKey.getValue());
     }
     return "";
 }
 
-bool Manager_DB::applicationChangeKey(const std::string &appName, const std::string &appKey)
+bool Manager_DB::applicationChangeKey(const std::string &appName, const std::string &apiKey)
 {
     Threads::Sync::Lock_RW lock(mutex);
-    return m_sqlConnector->query("UPDATE vauth_v4_applications SET `appKey`=:appKey WHERE `appName`=:appName;",
-                               {
-                                   {":appName",new Abstract::STRING(appName)},
-                                   {":appKey",new Abstract::STRING( Abstract::STRING( Encoders::encodeToBase64Obf(appKey)) )}
-                               });
+    return m_sqlConnector->query("UPDATE vauth_v4_applications SET `apiKey`=:apiKey WHERE `appName`=:appName;",
+                                 {
+                                     {":appName",new Abstract::STRING(appName)},
+                                     {":apiKey",new Abstract::STRING( Abstract::STRING( Encoders::encodeToBase64Obf(apiKey)) )}
+                                 });
 }
 
 bool Manager_DB::applicationChangeDescription(const std::string &appName, const std::string &applicationDescription)
 {
     Threads::Sync::Lock_RW lock(mutex);
     return m_sqlConnector->query("UPDATE vauth_v4_applications SET `appDescription`=:description WHERE `appName`=:appName;",
-                               {
-                                   {":appName",new Abstract::STRING(appName)},
-                                   {":description",new Abstract::STRING(applicationDescription)}
-                               });
+                                 {
+                                     {":appName",new Abstract::STRING(appName)},
+                                     {":description",new Abstract::STRING(applicationDescription)}
+                                 });
 }
 
 std::set<std::string> Manager_DB::applicationList()
@@ -116,8 +117,8 @@ std::set<std::string> Manager_DB::applicationList()
 
     Abstract::STRING sAppName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `appName` FROM vauth_v4_applications;",
-                                          {},
-                                          { &sAppName });
+                                                                             {},
+                                                                             { &sAppName });
     while (i->getResultsOK() && i->query->step())
     {
         ret.insert(sAppName.getValue());
@@ -130,10 +131,10 @@ bool Manager_DB::applicationValidateOwner(const std::string &appName, const std:
     Threads::Sync::Lock_RD lock(mutex);
 
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_applicationManaged` FROM vauth_v4_applicationmanagers WHERE `f_userNameManager`=:userName AND `f_applicationManaged`=:appName;",
-                                          { {":appName",new Abstract::STRING(appName)},
-                                            {":userName",new Memory::Abstract::STRING(accountName)}
-                                          },
-                                          { });
+                                                                             { {":appName",new Abstract::STRING(appName)},
+                                                                               {":userName",new Memory::Abstract::STRING(accountName)}
+                                                                             },
+                                                                             { });
     return (i->getResultsOK() && i->query->step());
 }
 
@@ -142,10 +143,10 @@ bool Manager_DB::applicationValidateAccount(const std::string &appName, const st
     Threads::Sync::Lock_RD lock(mutex);
 
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v4_applicationusers WHERE `f_userName`=:userName AND `f_appName`=:appName;",
-                                          { {":appName",new Abstract::STRING(appName)},
-                                            {":userName",new Memory::Abstract::STRING(accountName)}
-                                          },
-                                          { });
+                                                                             { {":appName",new Abstract::STRING(appName)},
+                                                                               {":userName",new Memory::Abstract::STRING(accountName)}
+                                                                             },
+                                                                             { });
     return (i->getResultsOK() && i->query->step());
 }
 
@@ -156,10 +157,10 @@ std::set<std::string> Manager_DB::applicationOwners(const std::string &appName)
 
     Abstract::STRING accountName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userNameManager` FROM vauth_v4_applicationmanagers WHERE `f_applicationManaged`=:appName;",
-                                          {
-                                              {":appName",new Abstract::STRING(appName)}
-                                          },
-                                          { &accountName });
+                                                                             {
+                                                                                 {":appName",new Abstract::STRING(appName)}
+                                                                             },
+                                                                             { &accountName });
     while (i->getResultsOK() && i->query->step())
     {
         ret.insert(accountName.getValue());
@@ -175,10 +176,10 @@ std::set<std::string> Manager_DB::applicationAccounts(const std::string &appName
 
     Abstract::STRING accountName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_userName` FROM vauth_v4_applicationusers WHERE `f_appName`=:appName;",
-                                          {
-                                              {":appName",new Abstract::STRING(appName)}
-                                          },
-                                          { &accountName });
+                                                                             {
+                                                                                 {":appName",new Abstract::STRING(appName)}
+                                                                             },
+                                                                             { &accountName });
     while (i->getResultsOK() && i->query->step())
     {
         ret.insert(accountName.getValue());
@@ -194,10 +195,10 @@ std::set<std::string> Manager_DB::accountApplications(const std::string &account
 
     Abstract::STRING applicationName;
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `f_appName` FROM vauth_v4_applicationusers WHERE `f_userName`=:userName;",
-                                          {
-                                              {":userName",new Abstract::STRING(accountName)}
-                                          },
-                                          { &applicationName });
+                                                                             {
+                                                                                 {":userName",new Abstract::STRING(accountName)}
+                                                                             },
+                                                                             { &applicationName });
     while (i->getResultsOK() && i->query->step())
     {
         ret.insert(applicationName.getValue());
@@ -210,10 +211,10 @@ bool Manager_DB::applicationAccountAdd(const std::string &appName, const std::st
 {
     Threads::Sync::Lock_RW lock(mutex);
     return m_sqlConnector->query("INSERT INTO vauth_v4_applicationusers (`f_userName`,`f_appName`) VALUES(:userName,:appName);",
-                               {
-                                   {":appName",new Abstract::STRING(appName)},
-                                   {":userName",new Abstract::STRING(accountName)}
-                               });
+                                 {
+                                     {":appName",new Abstract::STRING(appName)},
+                                     {":userName",new Abstract::STRING(accountName)}
+                                 });
 }
 
 bool Manager_DB::applicationAccountRemove(const std::string &appName, const std::string &accountName)
@@ -222,10 +223,10 @@ bool Manager_DB::applicationAccountRemove(const std::string &appName, const std:
 
     bool ret = false;
     ret = m_sqlConnector->query("DELETE FROM vauth_v4_applicationusers WHERE `f_appName`=:appName AND `f_userName`=:userName;",
-                              {
-                                  {":appName",new Abstract::STRING(appName)},
-                                  {":userName",new Abstract::STRING(accountName)}
-                              });
+                                {
+                                    {":appName",new Abstract::STRING(appName)},
+                                    {":userName",new Abstract::STRING(accountName)}
+                                });
     return ret;
 }
 
@@ -233,10 +234,10 @@ bool Manager_DB::applicationOwnerAdd(const std::string &appName, const std::stri
 {
     Threads::Sync::Lock_RW lock(mutex);
     return m_sqlConnector->query("INSERT INTO vauth_v4_applicationmanagers (`f_userNameManager`,`f_applicationManaged`) VALUES(:userName,:appName);",
-                               {
-                                   {":appName",new Abstract::STRING(appName)},
-                                   {":userName",new Abstract::STRING(accountName)}
-                               });
+                                 {
+                                     {":appName",new Abstract::STRING(appName)},
+                                     {":userName",new Abstract::STRING(accountName)}
+                                 });
 }
 
 bool Manager_DB::applicationOwnerRemove(const std::string &appName, const std::string &accountName)
@@ -245,10 +246,10 @@ bool Manager_DB::applicationOwnerRemove(const std::string &appName, const std::s
 
     bool ret = false;
     ret = m_sqlConnector->query("DELETE FROM vauth_v4_applicationmanagers WHERE `f_applicationManaged`=:appName AND `f_userNameManager`=:userName;",
-                              {
-                                  {":appName",new Abstract::STRING(appName)},
-                                  {":userName",new Abstract::STRING(accountName)}
-                              });
+                                {
+                                    {":appName",new Abstract::STRING(appName)},
+                                    {":userName",new Abstract::STRING(accountName)}
+                                });
     return ret;
 }
 
@@ -273,12 +274,12 @@ std::list<ApplicationDetails> Manager_DB::applicationsBasicInfoSearch(std::strin
     sSqlQuery+=";";
 
     std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect(sSqlQuery,
-                                          {
-                                              {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
-                                              {":LIMIT",new Abstract::UINT64(limit)},
-                                              {":OFFSET",new Abstract::UINT64(offset)}
-                                          },
-                                          { &applicationName, &appCreator, &description });
+                                                                             {
+                                                                                 {":SEARCHWORDS",new Abstract::STRING(sSearchWords)},
+                                                                                 {":LIMIT",new Abstract::UINT64(limit)},
+                                                                                 {":OFFSET",new Abstract::UINT64(offset)}
+                                                                             },
+                                                                             { &applicationName, &appCreator, &description });
     while (i->getResultsOK() && i->query->step())
     {
         ApplicationDetails rDetail;
@@ -292,3 +293,172 @@ std::list<ApplicationDetails> Manager_DB::applicationsBasicInfoSearch(std::strin
 
     return ret;
 }
+
+
+
+
+bool Manager_DB::applicationWebLoginConfigure(const std::string &appName, const std::string &loginHTMLPage, const std::string &loginSuccessUrl, const std::string &loginFailUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+
+    // Remove existing web login configuration for the application
+    m_sqlConnector->query("DELETE FROM vauth_v4_applications_weblogin WHERE `f_appName`=:appName;", { {":appName", new Abstract::STRING(appName)} });
+
+    // Insert the new web login configuration
+    return m_sqlConnector->query("INSERT INTO vauth_v4_applications_weblogin (`f_appName`, `loginHTMLPage`, `loginSuccessUrl`, `loginFailUrl`) VALUES (:appName, :loginHTMLPage, :loginSuccessUrl, :loginFailUrl);",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginHTMLPage", new Abstract::STRING(loginHTMLPage)},
+                                     {":loginSuccessUrl", new Abstract::STRING(loginSuccessUrl)},
+                                     {":loginFailUrl", new Abstract::STRING(loginFailUrl)}
+                                 });
+}
+
+
+bool Manager_DB::applicationWebLoginChangeHTMLPage(const std::string &appName, const std::string &loginHTMLPage)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("UPDATE vauth_v4_applications_weblogin SET `loginHTMLPage`=:loginHTMLPage WHERE `f_appName`=:appName;",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginHTMLPage", new Abstract::STRING(loginHTMLPage)}
+                                 });
+}
+
+bool Manager_DB::applicationWebLoginChangeSuccessUrl(const std::string &appName, const std::string &loginSuccessUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("UPDATE vauth_v4_applications_weblogin SET `loginSuccessUrl`=:loginSuccessUrl WHERE `f_appName`=:appName;",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginSuccessUrl", new Abstract::STRING(loginSuccessUrl)}
+                                 });
+}
+
+bool Manager_DB::applicationWebLoginChangeFailUrl(const std::string &appName, const std::string &loginFailUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("UPDATE vauth_v4_applications_weblogin SET `loginFailUrl`=:loginFailUrl WHERE `f_appName`=:appName;",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginFailUrl", new Abstract::STRING(loginFailUrl)}
+                                 });
+}
+
+std::string Manager_DB::applicationWebLoginHTMLPage(const std::string &appName)
+{
+    return applicationWebLoginField(appName, "loginHTMLPage");
+}
+
+std::string Manager_DB::applicationWebLoginSuccessUrl(const std::string &appName)
+{
+    return applicationWebLoginField(appName, "loginSuccessUrl");
+}
+
+std::string Manager_DB::applicationWebLoginFailUrl(const std::string &appName)
+{
+    return applicationWebLoginField(appName, "loginFailUrl");
+}
+
+std::string Manager_DB::applicationWebLoginField(const std::string &appName, const std::string &fieldName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING fieldValue;
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `" + fieldName + "` FROM vauth_v4_applications_weblogin WHERE `f_appName`=:appName LIMIT 1;",
+                                                                             {
+                                                                                 {":appName", new Abstract::STRING(appName)}
+                                                                             },
+                                                                             {&fieldValue});
+    if (i->getResultsOK() && i->query->step())
+    {
+        return fieldValue.getValue();
+    }
+    return "";
+}
+
+
+
+
+bool Manager_DB::applicationWebLoginAddReturnUrl(const std::string &appName, const std::string &loginReturnUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("INSERT INTO vauth_v4_applications_weblogin_returls (`f_appName`, `loginReturnUrl`) VALUES (:appName, :loginReturnUrl);",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginReturnUrl", new Abstract::STRING(loginReturnUrl)}
+                                 });
+}
+
+bool Manager_DB::applicationWebLoginRemoveReturnUrl(const std::string &appName, const std::string &loginReturnUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("DELETE FROM vauth_v4_applications_weblogin_returls WHERE `f_appName`=:appName AND `loginReturnUrl`=:loginReturnUrl;",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":loginReturnUrl", new Abstract::STRING(loginReturnUrl)}
+                                 });
+}
+
+std::list<std::string> Manager_DB::applicationWebLoginReturnUrls(const std::string &appName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING loginReturnUrl;
+    std::list<std::string> returnUrls;
+
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `loginReturnUrl` FROM vauth_v4_applications_weblogin_returls WHERE `f_appName`=:appName;",
+                                                                             {
+                                                                                 {":appName", new Abstract::STRING(appName)}
+                                                                             },
+                                                                             {&loginReturnUrl});
+    while (i->getResultsOK() && i->query->step())
+    {
+        returnUrls.push_back(loginReturnUrl.getValue());
+    }
+    return returnUrls;
+}
+
+
+
+bool Manager_DB::applicationWebLoginAddOriginUrl(const std::string &appName, const std::string &originUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("INSERT INTO vauth_v4_applications_login_origins (`f_appName`, `originUrl`) VALUES (:appName, :originUrl);",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":originUrl", new Abstract::STRING(originUrl)}
+                                 });
+}
+
+bool Manager_DB::applicationWebLoginRemoveOriginUrl(const std::string &appName, const std::string &originUrl)
+{
+    Threads::Sync::Lock_RW lock(mutex);
+    return m_sqlConnector->query("DELETE FROM vauth_v4_applications_login_origins WHERE `f_appName`=:appName AND `originUrl`=:originUrl;",
+                                 {
+                                     {":appName", new Abstract::STRING(appName)},
+                                     {":originUrl", new Abstract::STRING(originUrl)}
+                                 });
+}
+
+std::list<std::string> Manager_DB::applicationWebLoginOriginUrls(const std::string &appName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    Abstract::STRING originUrl;
+    std::list<std::string> originUrls;
+
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `originUrl` FROM vauth_v4_applications_login_origins WHERE `f_appName`=:appName;",
+                                                                             {
+                                                                                 {":appName", new Abstract::STRING(appName)}
+                                                                             },
+                                                                             {&originUrl});
+    while (i->getResultsOK() && i->query->step())
+    {
+        originUrls.push_back(originUrl.getValue());
+    }
+    return originUrls;
+}
+
+
+

@@ -19,7 +19,7 @@ bool Manager_DB::accountAdd(const std::string &accountName, const Secret &secret
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    return m_sqlConnector->query("INSERT INTO vauth_v4_accounts (`userName`,`givenName`,`lastName`,`email`,`description`,`extraData`,`superuser`,`enabled`,`expiration`,`confirmed`,`creator`) "
+    return m_sqlConnector->query("INSERT INTO vauth_v4_accounts (`userName`,`givenName`,`lastName`,`email`,`description`,`extraData`,`isSuperuser`,`isEnabled`,`expiration`,`isConfirmed`,`creator`) "
                                                        "VALUES(:userName ,:givenname ,:lastname ,:email ,:description ,:extraData ,:superuser ,:enabled ,:expiration ,:confirmed ,:creator);",
                                {
                                    {":userName",new Abstract::STRING(accountName)},
@@ -95,7 +95,7 @@ bool Manager_DB::accountExist(const std::string &accountName)
     bool ret = false;
     Threads::Sync::Lock_RD lock(mutex);
 
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `enabled` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
                                           {{":userName",new Memory::Abstract::STRING(accountName)}},
                                           { });
     if (i->getResultsOK() && i->query->step())
@@ -114,7 +114,7 @@ bool Manager_DB::accountDisable(const std::string &accountName, bool disabled)
         return false;
     }
 
-    return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `enabled`=:enabled WHERE `userName`=:userName;",
+    return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `isEnabled`=:enabled WHERE `userName`=:userName;",
                                {
                                    {":enabled",new Abstract::BOOL(!disabled)},
                                    {":userName",new Abstract::STRING(accountName)}
@@ -134,7 +134,7 @@ bool Manager_DB::accountConfirm(const std::string &accountName, const std::strin
     {
         if (!token.getValue().empty() && token.getValue() == confirmationToken)
         {
-            return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `confirmed`='1' WHERE `userName`=:userName;",
+            return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `isConfirmed`='1' WHERE `userName`=:userName;",
                                        {
                                            {":userName",new Abstract::STRING(accountName)}
                                        });
@@ -238,7 +238,7 @@ AccountBasicAttributes Manager_DB::accountAttribs(const std::string &accountName
     AccountBasicAttributes r;
 
     Abstract::BOOL enabled,confirmed,superuser;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `enabled`,`confirmed`,`superuser` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled`,`isConfirmed`,`isSuperuser` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
                                           { {":userName",new Memory::Abstract::STRING(accountName)} },
                                           { &enabled,&confirmed,&superuser});
 
@@ -284,7 +284,7 @@ bool Manager_DB::accountChangeAttribs(const std::string &accountName, const Acco
         return false;
     }
 
-    return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `enabled`=:enabled,`confirmed`=:confirmed,`superuser`=:superuser WHERE `userName`=:userName;",
+    return m_sqlConnector->query("UPDATE vauth_v4_accounts SET `isEnabled`=:enabled,`isConfirmed`=:confirmed,`isSuperuser`=:superuser WHERE `userName`=:userName;",
                                {
                                    {":enabled",new Abstract::BOOL(accountAttribs.enabled)},
                                    {":confirmed",new Abstract::BOOL(accountAttribs.confirmed)},
@@ -298,7 +298,7 @@ bool Manager_DB::isAccountDisabled(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL enabled;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `enabled` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
                                           { {":userName",new Memory::Abstract::STRING(accountName)} },
                                           { &enabled });
 
@@ -314,7 +314,7 @@ bool Manager_DB::isAccountConfirmed(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL confirmed;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `confirmed` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isConfirmed` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
                                           { {":userName",new Memory::Abstract::STRING(accountName)} },
                                           { &confirmed });
 
@@ -330,7 +330,7 @@ bool Manager_DB::isAccountSuperUser(const std::string &accountName)
     Threads::Sync::Lock_RD lock(mutex);
 
     Abstract::BOOL superuser;
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `superuser` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isSuperuser` FROM vauth_v4_accounts WHERE `userName`=:userName LIMIT 1;",
                                           { {":userName",new Memory::Abstract::STRING(accountName)} },
                                           { &superuser });
 
@@ -508,7 +508,7 @@ std::list<AccountDetails> Manager_DB::accountsBasicInfoSearch(std::string sSearc
     Abstract::BOOL superuser,enabled,confirmed;
     Abstract::DATETIME expiration;
 
-    std::string sSqlQuery = "SELECT `userName`,`givenName`,`lastName`,`email`,`description`,`superuser`,`enabled`,`expiration`,`confirmed` FROM vauth_v4_accounts";
+    std::string sSqlQuery = "SELECT `userName`,`givenName`,`lastName`,`email`,`description`,`isSuperuser`,`isEnabled`,`expiration`,`isConfirmed` FROM vauth_v4_accounts";
 
     if (!sSearchWords.empty())
     {
@@ -605,7 +605,7 @@ bool Manager_DB::superUserAccountExist()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `superuser` FROM vauth_v4_accounts WHERE `superuser`=:superuser LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isSuperuser` FROM vauth_v4_accounts WHERE `isSuperuser`=:superuser LIMIT 1;",
                                           { {":superuser",new Memory::Abstract::BOOL(true)} },
                                           { });
 
@@ -658,7 +658,7 @@ Secret Manager_DB::retrieveSecret(const std::string &accountName, uint32_t passI
 bool Manager_DB::isThereAnotherSuperUser(const std::string &accountName)
 {
     // Check if there is any superuser acount beside this "to be deleted" account...
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `enabled` FROM vauth_v4_accounts WHERE `userName`!=:userName and `superuser`=:superUser and enabled=:enabled LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled` FROM vauth_v4_accounts WHERE `userName`!=:userName and `isSuperuser`=:superUser and enabled=:enabled LIMIT 1;",
                                           {
                                               {":userName",new Memory::Abstract::STRING(accountName)},
                                               {":superUser",new Memory::Abstract::BOOL(true)},
