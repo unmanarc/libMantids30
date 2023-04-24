@@ -34,7 +34,7 @@ public:
         INTERNAL_ERROR = -5
     };
 
-    struct RESTfulAPIMethod
+    struct RESTfulAPIDefinition
     {
         struct Security {
             bool requireUserAuthentication = true;
@@ -48,15 +48,15 @@ public:
     };
     MethodsHandler();
 
-    bool addResource(const MethodMode & mode, const std::string & resourceName, const RESTfulAPIMethod & method);
+    bool addResource(const MethodMode & mode, const std::string & resourceName, const RESTfulAPIDefinition & method);
     ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut);
     ErrorCodes invokeResource(const std::string & modeStr, const std::string & resourceName, const RESTful::Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut);
 
 private:
-    std::map<std::string,RESTfulAPIMethod> m_methodsGET;
-    std::map<std::string,RESTfulAPIMethod> m_methodsPOST;
-    std::map<std::string,RESTfulAPIMethod> m_methodsPUT;
-    std::map<std::string,RESTfulAPIMethod> m_methodsDELETE;
+    std::map<std::string,RESTfulAPIDefinition> m_methodsGET;
+    std::map<std::string,RESTfulAPIDefinition> m_methodsPOST;
+    std::map<std::string,RESTfulAPIDefinition> m_methodsPUT;
+    std::map<std::string,RESTfulAPIDefinition> m_methodsDELETE;
 
     Threads::Sync::Mutex_Shared m_methodsMutex;
 };

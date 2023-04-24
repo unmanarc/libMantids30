@@ -9,6 +9,7 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <stdarg.h>
+#include <regex>
 
 #ifdef _WIN32
 #include <stdlib.h>
@@ -46,14 +47,29 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
     std::string requestURI = m_clientRequest.getURI();
     bool isAPIURI = false;
 
-    for ( const auto & apiURL : m_APIURLs)
+    for ( const auto & baseApiUrl : m_APIURLs)
     {
-        if (requestURI == apiURL || boost::starts_with(requestURI,apiURL + "/"))
+        if (boost::starts_with(requestURI,baseApiUrl + "/"))
         {
-            // It's an API Request.
-            ret = handleAPIRequest(apiURL,requestURI == apiURL? "" : requestURI.substr(apiURL.size()+1) );
-            isAPIURI = true;
-            break;
+            std::string apiUrlWithoutBase = requestURI.substr(baseApiUrl.size()+1);
+
+            std::regex apiVersionResourcePattern("/v(\\d+)/(.+)"); // regex to match "/vN/resource" pattern
+            std::smatch pathMatch;
+            if (std::regex_match(apiUrlWithoutBase, pathMatch, apiVersionResourcePattern))
+            {
+                // It's an API request (with resource).
+                size_t apiVersion = std::stoul(pathMatch[1].str());
+                std::string resourceAndPathParameters = pathMatch[2].str();
+
+                ret = handleAPIRequest(baseApiUrl, apiVersion, resourceAndPathParameters);
+                isAPIURI = true;
+                break;
+            }
+            else
+            {
+                // Invalid Format...
+                return HTTP::Status::S_404_NOT_FOUND;
+            }
         }
     }
 

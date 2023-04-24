@@ -4,6 +4,7 @@
 #include "methodshandler.h"
 #include <Mantids29/Server_WebCore/apiclienthandler.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
+#include <cstdint>
 
 namespace Mantids29 { namespace Network { namespace Servers { namespace RESTful {
 
@@ -13,8 +14,10 @@ public:
     ClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
     ~ClientHandler() override;
 
+    // JWT Validator...
     std::shared_ptr<DataFormat::JWT> m_jwtEngine;
-    std::shared_ptr<MethodsHandler> m_methodsHandler;
+    // API Version -> MethodsHandler
+    std::map<uint32_t,std::shared_ptr<MethodsHandler>> m_methodsHandler;
 
 protected:
     /**
@@ -52,7 +55,7 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & apiURL, const std::string & resourceAndPathParameters) override;
+    Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & baseApiUrl,const uint32_t & apiVersion, const std::string & resourceAndPathParameters) override;
 
     DataFormat::JWT::Token m_jwtToken;
     bool m_tokenVerified = false;

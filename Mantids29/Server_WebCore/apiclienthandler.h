@@ -78,8 +78,7 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & apiURL, const std::string & resource) { return Protocols::HTTP::Status::S_404_NOT_FOUND; }
-
+    virtual Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & baseApiUrl,const uint32_t & apiVersion, const std::string & resourceAndPathParameters) { return Protocols::HTTP::Status::S_404_NOT_FOUND; }
 
     struct ServerConfig {
         API::Web::ResourcesFilter * resourceFilter = nullptr;

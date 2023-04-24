@@ -15,12 +15,14 @@ public:
     ~Engine();
 
     std::shared_ptr<DataFormat::JWT> m_jwtEngine;
-    std::shared_ptr<MethodsHandler> m_methodsHandler;
+    std::map<uint32_t,std::shared_ptr<MethodsHandler>> m_methodsHandler;
 
     // TODO: max variable size
-
 protected:
     Web::APIClientHandler * createNewAPIClientHandler(APIEngineCore * webServer, Network::Sockets::Socket_Stream_Base * s) override;
+
+private:
+    static Json::Value revokeJWT(void * obj, const RESTful::Parameters &inputParameters );
 
 };
 

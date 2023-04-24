@@ -17,8 +17,7 @@ using namespace std;
 
 ClientHandler::ClientHandler(void *parent, Memory::Streams::StreamableObject *sock) : Servers::Web::APIClientHandler(parent,sock)
 {
-    // TODO: pasar la version como un parametro y soportar multiples versiones...
-    m_APIURLs.insert("/api/v1");
+    m_APIURLs.insert("/api");
 }
 
 ClientHandler::~ClientHandler()
@@ -98,9 +97,7 @@ json ClientHandler::getSessionVariableValue(const std::string &varName)
     }
     return {};
 }
-
-
-Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const std::string &apiURL, const std::string &resourceAndPathParameters)
+Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const std::string &baseApiUrl,const uint32_t & apiVersion, const std::string &resourceAndPathParameters)
 {
 
     std::set<std::string> currentAttributes;
@@ -126,8 +123,15 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
 
     std::string methodMode = m_clientRequest.requestLine.getRequestMethod().c_str();
 
+    if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
+    {
+        log(eLogLevels::LEVEL_WARN, "restful", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
+        *(jPayloadOutStr->getValue()) = "Resource not found";
+        return Protocols::HTTP::Status::S_404_NOT_FOUND;
+    }
+
     json x;
-    MethodsHandler::ErrorCodes result = m_methodsHandler->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn,jPayloadOutStr->getValue());
+    MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn,jPayloadOutStr->getValue());
 
     switch (result)
     {

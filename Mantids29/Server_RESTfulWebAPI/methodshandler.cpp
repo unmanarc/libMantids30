@@ -9,7 +9,7 @@ MethodsHandler::MethodsHandler()
 
 }
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, const RESTfulAPIMethod &method)
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, const RESTfulAPIDefinition &method)
 {
     Threads::Sync::Lock_RW lock(m_methodsMutex);
 
@@ -37,7 +37,7 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
 MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut) {
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
-    RESTfulAPIMethod method;
+    RESTfulAPIDefinition method;
     auto it = m_methodsGET.end();
 
     switch (mode)
