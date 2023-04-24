@@ -1,4 +1,4 @@
-# libMantids Install Guide for Ubuntu 20.04/22.04 (RHEL7)
+# libMantids29 Install Guide for Ubuntu 20.04/22.04 (RHEL7)
 
 Simple instructions for building this library in Ubuntu 20.04/22.04
 

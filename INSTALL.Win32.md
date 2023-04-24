@@ -1,4 +1,4 @@
-# libMantids Install Guide for Win32/64 via MSYS
+# libMantids29 Install Guide for Win32/64 via MSYS
 
 Simple instructions for building this library in Win32/64 via MSYS with g++
 

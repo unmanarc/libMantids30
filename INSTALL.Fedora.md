@@ -1,4 +1,4 @@
-# libMantids Install Guide for Fedora 3x
+# libMantids29 Install Guide for Fedora 3x
 
 Simple instructions for building this library in Fedora
 
