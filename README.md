@@ -1,4 +1,4 @@
-# libMantids 
+# libMantids29 
 
 Mini-Advanced C++ Network Toolkit for Internet Services Development
   
@@ -8,11 +8,12 @@ WIN32 License for Net_Interfaces: GPLv2 (tap-windows.h is GPLv2)
 
 
 ***
-## Functionality
 
-This framework provides C++11 based enhancing libraries for console and network based projects
+## Overview
 
-### Components:
+`libMantids29` is a C++11-based framework designed to enhance console and network-based projects. It offers a comprehensive set of libraries and tools for user authentication, network programming, database abstraction, data handling, and more.
+
+## Features
 
 * Program User Authentication
 * Network Programming
@@ -43,7 +44,7 @@ This framework provides C++11 based enhancing libraries for console and network 
 ## Installing packages (HOWTO)
 
 - COPR (Fedora/CentOS/etc):  
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids/)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids29/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids29/)
 
 
 
@@ -60,7 +61,7 @@ yum -y install yum-plugin-copr
 # Install unmanarc's copr
 yum copr enable amizrachi/unmanarc -y
 # Install the required software:
-yum -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake3
+yum -y install libMantids29-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake3
 ```
 
 In RHEL8:
@@ -73,7 +74,7 @@ dnf -y install epel-release
 # Install unmanarc's copr
 dnf copr enable amizrachi/unmanarc -y
 # Install the required software:
-dnf -y install libMantids-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
+dnf -y install libMantids29-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
 ```
 
 
@@ -108,13 +109,13 @@ This library was tested so far in:
 * Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
 
 ***
-## Building libMantids
+## Building libMantids29
 
 Building instructions
 
 ### Instructions (CentOS 7.x):
 
-[Building Instructions for CentOS-7 / RHEL7](INSTALL.CentOS7.md)
+[Building Instructions for CentOS/RHEL](INSTALL.CentOS.md)
 
 ### Instructions (Fedora):
 

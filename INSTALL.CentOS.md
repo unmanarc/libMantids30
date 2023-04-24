@@ -1,6 +1,6 @@
-# libMantids Install Guide for CentOS 7.x (RHEL7)
+# libMantids Install Guide for CentOS (RHEL) Based Distributions...
 
-Simple instructions for building this library in CentOS 7.x
+Simple instructions for building this library in CentOS
 
 ***
 
@@ -8,26 +8,25 @@ Simple instructions for building this library in CentOS 7.x
 
 ### Install epel (required for cmake3):
 *This is required to install cmake3 (only for build)*
-```
+```bash
 yum -y install epel-release
 ```
-
-
 
 ### Install build essentials (gcc, g++, etc) and cmake3:
 
 *These are the compiler and other build tools*
 
-```
+```bash
 yum -y groupinstall "Development Tools"
-yum -y install cmake3
+# for centos7 use cmake3 instead of cmake:
+yum -y install cmake
 ```
 
 ### Install required devel libraries:
 
 *These are the required (mandatory) libraries*
 
-```
+```bash
 yum -y install openssl-devel jsoncpp-devel
 ```
 
@@ -35,7 +34,7 @@ yum -y install openssl-devel jsoncpp-devel
 
 *These are the optional libraries for database compatibility*
 
-```
+```bash
 yum -y install sqlite-devel postgresql-devel mysql-devel
 ```
 
@@ -43,17 +42,17 @@ yum -y install sqlite-devel postgresql-devel mysql-devel
 
 This is the default build for the library:
 
-```
+```bash
 PREFIXPATH=/opt/osslibs
 
 prjdir=$(pwd)
-cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids-Build-Shared
-cd ~/builds/libMantids-Build-Shared
+cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids29-Build-Shared
+cd ~/builds/libMantids29-Build-Shared
 make clean
 make -j12 install
 cd "$prjdir"
-cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids-Build-Static
-cd ~/builds/libMantids-Build-Static
+cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids29-Build-Static
+cd ~/builds/libMantids29-Build-Static
 make clean
 make -j12 install
 cd "$prjdir"
@@ -65,16 +64,12 @@ cd "$prjdir"
 
 You can build this in one system, and you only need install the following runtimes:
 
-```
+```bash
 yum -y install jsoncpp openssl 
 ```
 
 If you need database support:
 
-```
+```bash
 yum -y install sqlite mysql postgresql
 ```
-
-
-
-

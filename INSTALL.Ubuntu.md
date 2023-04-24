@@ -12,7 +12,7 @@ Log as root and install the required programs/libraries...
 
 *These are the compiler and other build tools*
 
-```
+```bash
 apt update
 apt install build-essential cmake pkg-config
 ```
@@ -21,7 +21,7 @@ apt install build-essential cmake pkg-config
 
 *These are the required (mandatory) libraries*
 
-```
+```bash
 apt -y install libboost-all-dev libssl-dev libjsoncpp-dev
 ```
 
@@ -29,7 +29,7 @@ apt -y install libboost-all-dev libssl-dev libjsoncpp-dev
 
 *These are the optional libraries for database compatibility*
 
-```
+```bash
 apt -y install libsqlite3-dev libpq-dev libmariadb-dev
 ```
 
@@ -37,17 +37,17 @@ apt -y install libsqlite3-dev libpq-dev libmariadb-dev
 
 This is the default build for the library:
 
-```
+```bash
 PREFIXPATH=/opt/osslibs
 
 prjdir=$(pwd)
-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids-Build-Shared
-cd ~/builds/libMantids-Build-Shared
+cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids29-Build-Shared
+cd ~/builds/libMantids29-Build-Shared
 make clean
 make -j12 install
 cd "$prjdir"
-cmake . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids-Build-Static
-cd ~/builds/libMantids-Build-Static
+cmake . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids29-Build-Static
+cd ~/builds/libMantids29-Build-Static
 make clean
 make -j12 install
 cd "$prjdir"
