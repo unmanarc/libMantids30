@@ -86,8 +86,8 @@ This library was tested so far in:
 * OpenSUSE Tumbleweed
 * Fedora Linux 35
 * Ubuntu 18.04/20.04/22.04
-* CentOS/RHEL 7/8/9
-* CentOS/RHEL 5/6, but may require special/external C++11 compilers, we don't recommend it
+* RHEL-like 7/8/9
+* RHEL-like 5/6, but may require special/external C++11 compilers, we don't recommend it
 
 ### Overall Pre-requisites:
 
@@ -113,13 +113,13 @@ This library was tested so far in:
 
 Building instructions
 
-### Instructions (CentOS 7.x):
+### Instructions (RHEL Based Distros):
 
-[Building Instructions for CentOS/RHEL](INSTALL.CentOS.md)
+[Building Instructions for RHEL Based Distros](INSTALL.RHEL.md)
 
 ### Instructions (Fedora):
 
-[Building Instructions for Fedora 3x](INSTALL.Fedora.md)
+[Building Instructions for Fedora](INSTALL.Fedora.md)
 
 ### Instructions (Ubuntu):
 

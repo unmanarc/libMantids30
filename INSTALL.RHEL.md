@@ -1,6 +1,6 @@
-# libMantids29 Install Guide for CentOS (RHEL) Based Distributions...
+# libMantids29 Install Guide for RHEL Based Distributions...
 
-Simple instructions for building this library in CentOS
+Simple instructions for building this library in RHEL Based Distributions
 
 ***
 
@@ -18,7 +18,7 @@ yum -y install epel-release
 
 ```bash
 yum -y groupinstall "Development Tools"
-# for centos7 use cmake3 instead of cmake:
+# for rhel 7.x use cmake3 instead of cmake:
 yum -y install cmake
 ```
 
