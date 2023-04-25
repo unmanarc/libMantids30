@@ -38,7 +38,9 @@ WIN32 License for Net_Interfaces: GPLv2 (tap-windows.h is GPLv2)
   * Vars File
 * Data Formats
   * JWT
-
+* Servers
+  * Monolithic JSON WEB API Server
+  * RESTful WEB API Server
 
 ***
 ## Installing packages (HOWTO)
