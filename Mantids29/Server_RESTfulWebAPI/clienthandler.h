@@ -1,7 +1,7 @@
 #ifndef RESTFUL_CLIENT_HANDLER_H
 #define RESTFUL_CLIENT_HANDLER_H
 
-#include "methodshandler.h"
+#include <Mantids29/API_RESTful/methodshandler.h>
 #include <Mantids29/Server_WebCore/apiclienthandler.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
 #include <cstdint>
@@ -17,7 +17,7 @@ public:
     // JWT Validator...
     std::shared_ptr<DataFormat::JWT> m_jwtEngine;
     // API Version -> MethodsHandler
-    std::map<uint32_t,std::shared_ptr<MethodsHandler>> m_methodsHandler;
+    std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
 
 protected:
     /**

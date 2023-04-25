@@ -7,7 +7,7 @@
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Threads/mutex_shared.h>
 
-namespace Mantids29 { namespace Network { namespace Servers { namespace RESTful {
+namespace Mantids29 { namespace API { namespace RESTful {
 
 struct Parameters {
     Json::Value postParameters;
@@ -60,6 +60,6 @@ private:
 
     Threads::Sync::Mutex_Shared m_methodsMutex;
 };
-}}}}
+}}}
 
 #endif // METHODS_HANDLER_H

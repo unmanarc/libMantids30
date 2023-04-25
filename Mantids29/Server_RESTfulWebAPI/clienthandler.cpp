@@ -1,6 +1,5 @@
 #include "clienthandler.h"
 #include "Mantids29/Program_Logs/loglevels.h"
-#include "methodshandler.h"
 #include <json/config.h>
 #include <string>
 #include <sstream>
@@ -14,6 +13,7 @@ using namespace Mantids29::Program::Logs;
 using namespace Mantids29::Network::Servers::RESTful;
 using namespace Mantids29;
 using namespace std;
+
 
 ClientHandler::ClientHandler(void *parent, Memory::Streams::StreamableObject *sock) : Servers::Web::APIClientHandler(parent,sock)
 {
@@ -103,7 +103,7 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
     std::set<std::string> currentAttributes;
     bool authenticated =false;
     std::string resourceName;
-    RESTful::Parameters inputParameters;
+    API::RESTful::Parameters inputParameters;
 
     // TODO: process parameters..
     processPathParameters(resourceAndPathParameters,resourceName,inputParameters.pathParameters);
@@ -131,26 +131,26 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
     }
 
     json x;
-    MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn,jPayloadOutStr->getValue());
+    API::RESTful::MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn,jPayloadOutStr->getValue());
 
     switch (result)
     {
-    case MethodsHandler::SUCCESS:
+    case API::RESTful::MethodsHandler::SUCCESS:
         log(eLogLevels::LEVEL_DEBUG, "restful", 2048, "Method Executed {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_200_OK;
-    case MethodsHandler::INVALID_METHOD_MODE:
+    case API::RESTful::MethodsHandler::INVALID_METHOD_MODE:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Invalid Method Mode {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_400_BAD_REQUEST;
-    case MethodsHandler::RESOURCE_NOT_FOUND:
+    case API::RESTful::MethodsHandler::RESOURCE_NOT_FOUND:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Method Not Found {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_404_NOT_FOUND;
-    case MethodsHandler::AUTHENTICATION_REQUIRED:
+    case API::RESTful::MethodsHandler::AUTHENTICATION_REQUIRED:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Authentication Not Provided {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_403_FORBIDDEN;
-    case MethodsHandler::INSUFFICIENT_PERMISSIONS:
+    case API::RESTful::MethodsHandler::INSUFFICIENT_PERMISSIONS:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Insufficient permissions {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_401_UNAUTHORIZED;
-    case MethodsHandler::INTERNAL_ERROR:
+    case API::RESTful::MethodsHandler::INTERNAL_ERROR:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Internal Error {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
     default:

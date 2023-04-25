@@ -2,7 +2,7 @@
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace Mantids29;
-using namespace Network::Servers::RESTful;
+using namespace API::RESTful;
 
 MethodsHandler::MethodsHandler()
 {
