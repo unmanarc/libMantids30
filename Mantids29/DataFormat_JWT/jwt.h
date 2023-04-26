@@ -32,14 +32,32 @@ public:
         RS512  /**< RSA with SHA-512 */
     };
 
+    /**
+     * @brief Struct that contains information about a JWT algorithm.
+     *
+     * This struct is used to hold the details of a JWT algorithm, including
+     * its name, OpenSSL NID, and whether it uses HMAC or RSA encryption.
+     */
     struct AlgorithmDetails {
+        /**
+         * @brief Construct a new AlgorithmDetails object from an algorithm enum.
+         *
+         * @param algorithm The algorithm enum value to construct from.
+         */
         AlgorithmDetails( Algorithm algorithm );
+
+        /**
+         * @brief Construct a new AlgorithmDetails object from an algorithm name.
+         *
+         * @param algorithm The name of the algorithm to construct from.
+         */
         AlgorithmDetails( const char * algorithm );
 
-        int m_nid;
-        bool m_usingHMAC,m_usingRSA;
-        char m_algorithmStr[16];
-        Algorithm m_algorithm;
+        int m_nid; ///< The OpenSSL NID of the algorithm.
+        bool m_usingHMAC; ///< True if the algorithm uses HMAC encryption, false otherwise.
+        bool m_usingRSA; ///< True if the algorithm uses RSA encryption, false otherwise.
+        char m_algorithmStr[16]; ///< The name of the algorithm, as a null-terminated string.
+        Algorithm m_algorithm; ///< The algorithm enum value.
     };
 
     class Token {
