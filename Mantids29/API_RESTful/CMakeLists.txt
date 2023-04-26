@@ -53,6 +53,9 @@ target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
 include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
 target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
 
+include_directories("${Mantids29_DataFormat_JWT_SOURCE_DIR}/../../")
+target_link_libraries(${LIB_NAME} ${LIBPREFIX}_DataFormat_JWT)
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})

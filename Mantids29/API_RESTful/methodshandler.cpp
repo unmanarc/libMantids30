@@ -9,6 +9,16 @@ MethodsHandler::MethodsHandler()
 
 }
 
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, Json::Value (*method)(void *, const RESTful::Parameters &), void *obj, bool requireUserAuthentication, const std::set<std::string> requiredAttributes)
+{
+    RESTfulAPIDefinition def;
+    def.method = method;
+    def.obj = obj;
+    def.security.requireUserAuthentication = requireUserAuthentication;
+    def.security.requiredAttributes = requiredAttributes;
+    return addResource(mode, resourceName, def);
+}
+
 bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, const RESTfulAPIDefinition &method)
 {
     Threads::Sync::Lock_RW lock(m_methodsMutex);

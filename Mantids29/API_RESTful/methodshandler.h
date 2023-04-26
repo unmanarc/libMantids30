@@ -6,13 +6,17 @@
 #include <list>
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Threads/mutex_shared.h>
+#include <Mantids29/DataFormat_JWT/jwt.h>
 
 namespace Mantids29 { namespace API { namespace RESTful {
 
+// Struct to hold HTTP request parameters
 struct Parameters {
-    Json::Value postParameters;
-    Json::Value getParameters;
-    Json::Value pathParameters;
+    Json::Value postParameters;     // Holds POST parameters
+    Json::Value getParameters;      // Holds GET parameters
+    Json::Value pathParameters;     // Holds parameters from the URL path
+    DataFormat::JWT::Token emptyToken;
+    DataFormat::JWT::Token * jwtToken = &emptyToken;    // Holds JWT token data, if present and validated the pointer will be changed.
 };
 
 class MethodsHandler
@@ -47,6 +51,14 @@ public:
         void * obj = nullptr;
     };
     MethodsHandler();
+
+
+    bool addResource(const MethodMode & mode, const std::string & resourceName,
+                      Json::Value (*method)(void * obj, const RESTful::Parameters &inputParameters ),
+                     void * obj,
+                     bool requireUserAuthentication,
+                     const std::set<std::string> requiredAttributes
+                     );
 
     bool addResource(const MethodMode & mode, const std::string & resourceName, const RESTfulAPIDefinition & method);
     ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut);

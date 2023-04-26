@@ -113,6 +113,7 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
     if (m_tokenVerified)
     {
         currentAttributes = m_jwtToken.getAllAttributes();
+        inputParameters.jwtToken = &m_jwtToken;
     }
 
     Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
