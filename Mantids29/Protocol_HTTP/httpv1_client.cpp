@@ -4,6 +4,7 @@
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
+#include <memory>
 #include <string>
 
 using namespace boost;
@@ -171,7 +172,8 @@ HTTPv1_Client::PostMIMERequest HTTPv1_Client::prepareRequestAsPostMIME(const std
 
     m_clientRequest.requestLine.setRequestMethod("POST");
     m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
-    req.urlVars = (Common::URLVars *)m_clientRequest.requestLine.urlVars();
+
+    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars());
     req.postVars = m_clientRequest.content.getMultiPartVars();
 
     return req;
@@ -184,7 +186,7 @@ HTTPv1_Client::PostURLRequest HTTPv1_Client::prepareRequestAsPostURL(const std::
     setClientRequest(hostName,uriPath);
     m_clientRequest.requestLine.setRequestMethod("POST");
     m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
-    req.urlVars = (Common::URLVars *)m_clientRequest.requestLine.urlVars();
+    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars());
     req.postVars = m_clientRequest.content.getUrlPostVars();
 
     return req;
@@ -203,7 +205,7 @@ void HTTPv1_Client::setReferer(const std::string &refererURL)
 
 void HTTPv1_Client::addURLVar(const std::string &varName, const std::string &varValue)
 {
-    ((Common::URLVars *)m_clientRequest.requestLine.urlVars())->addVar(varName, new Memory::Containers::B_Chunks(varValue));
+    std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars())->addVar(varName, new Memory::Containers::B_Chunks(varValue));
 }
 
 void HTTPv1_Client::addCookie(const std::string &cookieName, const std::string &cookieVal)

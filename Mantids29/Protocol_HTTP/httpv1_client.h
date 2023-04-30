@@ -23,8 +23,8 @@ public:
     void setClientRequest(const std::string & hostName, const std::string & uriPath);
 
     struct PostMIMERequest {
-        Protocols::MIME::MIME_Message * postVars;
-        Common::URLVars * urlVars;
+        std::shared_ptr<Protocols::MIME::MIME_Message> postVars;
+        std::shared_ptr<Common::URLVars> urlVars;
     };
     /**
      * @brief prepareRequestAsPostMIME Prepare a POST MIME Request (by default we use GET)
@@ -34,8 +34,8 @@ public:
     PostMIMERequest prepareRequestAsPostMIME( const std::string & hostName, const std::string & uriPath );
 
     struct PostURLRequest {
-        Common::URLVars * postVars;
-        Common::URLVars * urlVars;
+        std::shared_ptr<Common::URLVars> postVars;
+        std::shared_ptr<Common::URLVars> urlVars;
     };
     /**
      * @brief prepareRequestAsPostURL Prepare a POST URL Request (by default we use GET)

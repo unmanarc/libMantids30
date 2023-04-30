@@ -2,6 +2,7 @@
 #define HTTP1SERVER_H
 
 #include "httpv1_base.h"
+#include <memory>
 
 // TODO: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
 
@@ -46,7 +47,7 @@ public:
         char REMOTE_ADDR[INET6_ADDRSTRLEN];
 
         // Proceced information:
-        Memory::Abstract::Vars *VARS_GET, *VARS_POST;
+        std::shared_ptr<Memory::Abstract::Vars> VARS_GET, VARS_POST;
         MIME::MIME_HeaderOption * VARS_COOKIES;
     };
 
@@ -99,7 +100,7 @@ public:
      * @brief getResponseDataStreamer Get the response data streamer
      * @return
      */
-    Memory::Streams::StreamableObject *getResponseDataStreamer();
+    std::shared_ptr<Memory::Streams::StreamableObject> getResponseDataStreamer();
     /**
      * @brief getResponseTransmissionStatus Get the response transmitted byte count after the request was completed.
      * @return
@@ -135,8 +136,8 @@ public:
     bool isSecure() const;
     void setSecure(bool value);
 
-    void addStaticContent(const std::string & path, Mantids29::Memory::Containers::B_MEM * contentElement);
-    void setStaticContentElements(const std::map<std::string, Mantids29::Memory::Containers::B_MEM *> &value);
+    void addStaticContent(const std::string & path, std::shared_ptr<Mantids29::Memory::Containers::B_MEM> contentElement);
+    void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM> > &value);
 
     static std::string htmlEncode(const std::string& rawStr);
 
@@ -190,7 +191,7 @@ private:
 
     bool answer(Memory::Streams::StreamableObject::Status &wrStat);
 
-    std::map<std::string,Mantids29::Memory::Containers::B_MEM *> m_staticContentElements;
+    std::map<std::string, std::shared_ptr<Mantids29::Memory::Containers::B_MEM>> m_staticContentElements;
 
     bool badAnswer;
     Memory::Streams::StreamableObject::Status m_answerBytes;

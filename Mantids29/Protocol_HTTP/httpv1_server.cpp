@@ -2,6 +2,7 @@
 
 #include "hdr_cookie.h"
 
+#include <memory>
 #include <vector>
 #include <stdexcept>
 
@@ -188,7 +189,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
 
-            m_serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath],false);
+            m_serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath]);
             return true;
         }
         else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
@@ -270,13 +271,13 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
         }
         else
         {
-            Mantids29::Memory::Containers::B_MMAP * bFile = new Mantids29::Memory::Containers::B_MMAP;
+            std::shared_ptr<Mantids29::Memory::Containers::B_MMAP> bFile = std::make_shared<Mantids29::Memory::Containers::B_MMAP>();
             if (bFile->referenceFile(sFullComputedPath.c_str(),true,false))
             {
                 // File Found / Readable.
                 info->sRealFullPath = sFullComputedPath;
                 info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
-                m_serverResponse.setDataStreamer(bFile,true);
+                m_serverResponse.setDataStreamer(bFile);
                 setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
                 struct stat attrib;
@@ -298,12 +299,6 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                 m_serverResponse.cacheControl.setMaxAge(3600);
                 m_serverResponse.cacheControl.setOptionImmutable(true);
                 return true;
-            }
-            else
-            {
-                // File not found / Readable...
-                delete bFile;
-                return false;
             }
         }
     }
@@ -695,27 +690,30 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
     fillRequestDataStruct();
 
     // Process client petition here.
-    if (!badAnswer) m_serverResponse.status.setRetCode(procHTTPClientContent());
+    if (!badAnswer)
+    {
+        m_serverResponse.status.setRetCode(procHTTPClientContent());
+    }
 
     // Answer is the last... close the connection after it.
     currentParser = nullptr;
 
     if (!m_serverResponse.status.stream(wrStat))
-        return false;
-    if (!streamServerHeaders(wrStat))
-        return false;
-    if (!m_serverResponse.content.stream(wrStat))
     {
-        m_serverResponse.content.preemptiveDestroyStreamableObj();
+        return false;
+    }
+    if (!streamServerHeaders(wrStat))
+    {
         return false;
     }
 
-    // If all the data was sent OK, ret true, and destroy the external container.
-    m_serverResponse.content.preemptiveDestroyStreamableObj();
-    return true;
+    bool streamedOK = m_serverResponse.content.stream(wrStat);
+    // Destroy the binary content container here:
+    m_serverResponse.content.setStreamableObj(nullptr);
+    return streamedOK;
 }
 
-void HTTPv1_Server::setStaticContentElements(const std::map<std::string, Mantids29::Memory::Containers::B_MEM *> &value)
+void HTTPv1_Server::setStaticContentElements(const std::map<std::string, std::shared_ptr<Mantids29::Memory::Containers::B_MEM>> &value)
 {
     m_staticContentElements = value;
 }
@@ -777,7 +775,7 @@ void HTTPv1_Server::setSecure(bool value)
     m_isSecure = value;
 }
 
-void HTTPv1_Server::addStaticContent(const string &path, Memory::Containers::B_MEM *contentElement)
+void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {
     m_staticContentElements[path] = contentElement;
 }
@@ -797,7 +795,8 @@ Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(Memory::
         return stat;
     }
 
-    source->streamTo( m_serverResponse.content.getStreamableObj(), stat);
+    // Stream in place:
+    source->streamTo( m_serverResponse.content.getStreamableObj().get(), stat);
     return stat;
 }
 
@@ -814,7 +813,7 @@ Protocols::HTTP::Status::eRetCode HTTPv1_Server::setResponseRedirect(const strin
         return HTTP::Status::S_308_PERMANENT_REDIRECT;
 }
 
-Memory::Streams::StreamableObject *HTTPv1_Server::getResponseDataStreamer()
+std::shared_ptr<Memory::Streams::StreamableObject> HTTPv1_Server::getResponseDataStreamer()
 {
     return m_serverResponse.content.getStreamableObj();
 }

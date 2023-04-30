@@ -29,10 +29,6 @@ Engine::Engine()
 
 Engine::~Engine()
 {
-    for (const auto & i : m_staticContentElements)
-    {
-        delete i.second;
-    }
     for (const auto & i : m_memToBeFreed)
     {
         free(i);
@@ -130,7 +126,7 @@ void Engine::_onTimeOut(void * obj, Network::Sockets::Socket_Stream_Base *s, con
     }
 }
 
-std::map<std::string, Mantids29::Memory::Containers::B_MEM *> Engine::getStaticContentElements()
+std::map<std::string, std::shared_ptr<Mantids29::Memory::Containers::B_MEM>> Engine::getStaticContentElements()
 {
     std::lock_guard<std::mutex> lck (m_internalContentMutex);
     return m_staticContentElements;
@@ -154,7 +150,7 @@ void Engine::addStaticContentElement(const std::string &path, const std::string 
         char * xmem = (char *)malloc(content.size()+1);
         xmem[content.size()]=0;
         memcpy(xmem,content.c_str(),content.size());
-        m_staticContentElements[path] = new Mantids29::Memory::Containers::B_MEM(xmem,content.size());
+        m_staticContentElements[path] = std::make_shared<Mantids29::Memory::Containers::B_MEM>(xmem,content.size());
         m_memToBeFreed.push_back(xmem);
     }
 }

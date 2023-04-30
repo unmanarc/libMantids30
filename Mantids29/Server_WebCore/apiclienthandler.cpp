@@ -147,7 +147,7 @@ Status::eRetCode APIClientHandler::handleFileRequest()
     if (ret != HTTP::Status::S_200_OK)
     {
         // For NON-200 responses, will stream nothing....
-        m_serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr);
     }
 
     // If the URL is going to process the Interactive HTML Engine,

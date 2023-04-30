@@ -12,6 +12,7 @@
 #include <Mantids29/Protocol_HTTP/httpv1_server.h>
 
 #include <Mantids29/Program_Logs/rpclog.h>
+#include <memory>
 #include <mutex>
 
 namespace Mantids29 { namespace Network { namespace Servers { namespace WebMonolith {
@@ -73,7 +74,7 @@ private:
     Network::Protocols::HTTP::Status::eRetCode procJAPI_Exec( Authentication::Multi *extraAuths,
                                                        std::string sMethodName,
                                                        std::string sPayloadIn,
-                                                       Memory::Streams::StreamableJSON * jPayloadOutStr = nullptr
+                                                       std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = nullptr
                                                        );
     bool csrfValidate();
 

@@ -8,12 +8,14 @@
 #include <Mantids29/Helpers/crypto.h>
 #include <Mantids29/Helpers/json.h>
 
+#include <memory>
 #include <stdarg.h>
 #include <fstream>
 #include <streambuf>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <utility>
 
 #ifdef _WIN32
 #include <stdlib.h>
@@ -226,12 +228,12 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
     if (boost::starts_with(sRealFullPath,"MEM:"))
     {
         // Mem-Static resource.
-        fileContent = ((Mantids29::Memory::Containers::B_MEM *)getResponseDataStreamer())->toString();
-        m_serverResponse.setDataStreamer(nullptr,false);
+        fileContent = ((Mantids29::Memory::Containers::B_MEM *)getResponseDataStreamer().get())->toString();
+        m_serverResponse.setDataStreamer(nullptr);
     }
     else
     {
-        m_serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr);
         // Local resource.
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())
@@ -400,11 +402,10 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
 
         replaceHexCodes(functionInput);
 
-        Memory::Streams::StreamableJSON jPayloadOutStr;
-        procJAPI_Exec(extraAuths,functionName,functionInput, &jPayloadOutStr);
-        replaceTagByJVar(fileContent,fulltag,*(jPayloadOutStr.getValue()),true,scriptVarName);
+        std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
+        procJAPI_Exec(extraAuths,functionName,functionInput, jPayloadOutStr);
+        replaceTagByJVar(fileContent,fulltag,*(jPayloadOutStr->getValue()),true,scriptVarName);
     }
-
 
     // Sanitize <script></script>
   /*  boost::regex exStaticScriptSanitizer("</script>[\\ \n\r\t]*<script>[\n]?",boost::regex::icase);
@@ -625,7 +626,7 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
     if (ret != HTTP::Status::S_200_OK)
     {
         // For NON-200 responses, will stream nothing....
-        m_serverResponse.setDataStreamer(nullptr,false);
+        m_serverResponse.setDataStreamer(nullptr);
     }
 
     // If the URL is going to process the Interactive HTML Engine,
@@ -650,24 +651,24 @@ Status::eRetCode ClientHandler::procResource_File(Authentication::Multi *extraAu
 
 Status::eRetCode ClientHandler::procJAPI_Version()
 {
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["version"]  = m_softwareVersion;
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return HTTP::Status::S_200_OK;
 }
 
 Status::eRetCode ClientHandler::procJAPI_Session_AUTHINFO()
 {
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
 
     (*(jPayloadOutStr->getValue()))["user"]   = !m_authSession?"":m_authSession->getUserDomainPair().first;
     (*(jPayloadOutStr->getValue()))["domain"] = !m_authSession?"":m_authSession->getUserDomainPair().second;
     (*(jPayloadOutStr->getValue()))["maxAge"] = (Json::UInt64)m_sessionMaxAge;
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return HTTP::Status::S_200_OK;
 }
@@ -675,10 +676,10 @@ Status::eRetCode ClientHandler::procJAPI_Session_AUTHINFO()
 Status::eRetCode ClientHandler::procJAPI_Session_CSRFTOKEN()
 {
     // On Page Load...
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     (*(jPayloadOutStr->getValue()))["csrfToken"] = m_webSession->sCSRFToken;
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
 
     // Update last activity on each page load.
@@ -692,7 +693,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
 {
     Mantids29::Authentication::Reason authReason;
     uint64_t uMaxAge;
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
@@ -763,7 +764,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
 
     }
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
@@ -771,7 +772,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
 Status::eRetCode ClientHandler::procJAPI_Session_POSTLOGIN(const Authentication::Data &auth)
 {
     Mantids29::Authentication::Reason authReason;
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
@@ -817,7 +818,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_POSTLOGIN(const Authentication:
         eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
     }
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
@@ -825,19 +826,20 @@ Status::eRetCode ClientHandler::procJAPI_Session_POSTLOGIN(const Authentication:
 Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
                                                      std::string sMethodName,
                                                      std::string sPayloadIn,
-                                                     Memory::Streams::StreamableJSON * jPayloadOutStr
+                                                     std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr
                                                      )
 {
-    bool useExternalPayload = jPayloadOutStr?true:false;
+    bool useExternalPayload = !jPayloadOutStr?false:true;
 
     // External payloads does not csrf validate. (eg. inline html execution)
     if (!useExternalPayload)
     {
         if (!csrfValidate())
             return HTTP::Status::S_404_NOT_FOUND;
+
+        jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     }
 
-    if (!useExternalPayload) jPayloadOutStr = new Memory::Streams::StreamableJSON;
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
 
@@ -971,7 +973,7 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
 
     if (!useExternalPayload)
     {
-        m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+        m_serverResponse.setDataStreamer(jPayloadOutStr);
         m_serverResponse.setContentType("application/json",true);
     }
     return eHTTPResponseRetCode;
@@ -984,7 +986,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
     if (!m_authSession)
         return eHTTPResponseRetCode;
 
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
 
     Authentication::Data newAuth;
@@ -1052,7 +1054,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
         log(LEVEL_ERR, "apiServer", 2048, "Password change failed, domain authenticator not found {index=%d}",credIdx);
     }
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 
@@ -1064,7 +1066,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_TESTPASSWD(const Authentication
 
     if (!m_authSession) return eHTTPResponseRetCode;
 
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
 
     auto domainAuthenticator = m_authDomains->openDomain(m_authSession->getAuthenticatedDomain());
@@ -1102,7 +1104,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_TESTPASSWD(const Authentication
         log(LEVEL_ERR, "apiServer", 2048, "Password validation failed, domain authenticator not found {index=%d}",auth.m_passwordIndex);
     }
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }
@@ -1114,7 +1116,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_PASSWDLIST()
     if (!m_authSession) return eHTTPResponseRetCode;
 
     eHTTPResponseRetCode = HTTP::Status::S_200_OK;
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+    std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
     jPayloadOutStr->setFormatted(m_useFormattedJSONOutput);
 
     auto domainAuthenticator = m_authDomains->openDomain(m_authSession->getAuthenticatedDomain());
@@ -1143,7 +1145,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_PASSWDLIST()
     else
         eHTTPResponseRetCode = HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    m_serverResponse.setDataStreamer(jPayloadOutStr);
     m_serverResponse.setContentType("application/json",true);
     return eHTTPResponseRetCode;
 }

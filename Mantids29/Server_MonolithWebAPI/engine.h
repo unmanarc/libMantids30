@@ -117,7 +117,7 @@ public:
     std::string getDocumentRootPath() const;
     std::string getSoftwareVersion() const;
     std::string getApplicationName() const;
-    std::map<std::string, Mantids29::Memory::Containers::B_MEM *> getStaticContentElements();
+    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM> > getStaticContentElements();
 
 
 private:
@@ -138,7 +138,7 @@ private:
     static void _onTimeOut(void *, Network::Sockets::Socket_Stream_Base *, const char *, bool);
 
 
-    std::map<std::string,Mantids29::Memory::Containers::B_MEM *> m_staticContentElements;
+    std::map<std::string,std::shared_ptr<Memory::Containers::B_MEM>> m_staticContentElements;
     std::list<char *> m_memToBeFreed;
     std::mutex m_internalContentMutex;
 

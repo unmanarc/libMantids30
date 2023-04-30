@@ -33,12 +33,14 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
     if (boost::starts_with(sRealFullPath,"MEM:"))
     {
         // Mem-Static resource.
-        fileContent = ((Mantids29::Memory::Containers::B_MEM *)clientHandler->getResponseDataStreamer())->toString();
-        clientHandler->m_serverResponse.setDataStreamer(nullptr,false);
+        fileContent = ((Mantids29::Memory::Containers::B_MEM *)clientHandler->getResponseDataStreamer().get())->toString();
+        // the server response will be the default data chunk (reset):
+        clientHandler->m_serverResponse.setDataStreamer(nullptr);
     }
     else
     {
-        clientHandler->m_serverResponse.setDataStreamer(nullptr,false);
+        // the server response will be the default data chunk (reset):
+        clientHandler->m_serverResponse.setDataStreamer(nullptr);
         // Local resource.
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())

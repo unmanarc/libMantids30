@@ -16,8 +16,6 @@ using namespace Mantids29;
 
 RequestLine::RequestLine()
 {
-    requestMethod = "GET"; // Default Method.
-
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K
@@ -30,10 +28,10 @@ bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
     Memory::Streams::StreamableObject::Status cur;
     // Act as a client. Send data from here.
     if (!(cur+=upStream->writeString(requestMethod + " " + requestURI, wrStat )).succeed) return false;
-    if (!getVars.isEmpty())
+    if (!getVars->isEmpty())
     {
         if (!(cur+=upStream->writeString("?",wrStat)).succeed) return false;
-        if (!getVars.streamTo(upStream,wrStat)) return false;
+        if (!getVars->streamTo(upStream,wrStat)) return false;
     }
     if (!(cur+=upStream->writeString(" " + httpVersion.toString() + string("\r\n"), wrStat )).succeed) return false;
     return true;
@@ -83,7 +81,7 @@ void RequestLine::parseGETParameters()
     Memory::Streams::StreamableObject::Status x;
     Memory::Containers::B_Chunks bc;
     bc.append(requestURIParameters.c_str(),requestURIParameters.size());
-    bc.streamTo(&getVars,x);
+    bc.streamTo(getVars.get(),x);
 }
 
 std::string RequestLine::getRequestURIParameters() const
@@ -96,9 +94,9 @@ Common::Version * RequestLine::getHTTPVersion()
     return &httpVersion;
 }
 
-Memory::Abstract::Vars *RequestLine::urlVars()
+std::shared_ptr<Memory::Abstract::Vars> RequestLine::urlVars()
 {
-    return &getVars;
+    return getVars;
 }
 
 std::string RequestLine::getRequestMethod() const

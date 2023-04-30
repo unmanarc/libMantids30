@@ -122,7 +122,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     std::string getDocumentRootPath() const;
     std::string getSoftwareVersion() const;
-    std::map<std::string, Mantids29::Memory::Containers::B_MEM *> getStaticContentElements();
+    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM> > getStaticContentElements();
 protected:
     virtual APIClientHandler * createNewAPIClientHandler(APIEngineCore * webServer, Network::Sockets::Socket_Stream_Base * s ) { return nullptr; }
 
@@ -144,7 +144,7 @@ private:
     static void _onTimeOut(void *, Network::Sockets::Socket_Stream_Base *, const char *, bool);
 
 
-    std::map<std::string,Mantids29::Memory::Containers::B_MEM *> m_staticContentElements;
+    std::map<std::string,std::shared_ptr<Mantids29::Memory::Containers::B_MEM>> m_staticContentElements;
     std::list<char *> m_memToBeFreed;
     std::mutex m_internalContentMutex;
 

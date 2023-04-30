@@ -13,36 +13,26 @@ using namespace Mantids29;
 
 Content::Content()
 {
-    transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
-    currentMode = PROCMODE_CONTENT_LENGTH;
-    currentContentLengthSize = 0;
-    securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
-    securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
-    containerType = CONTENT_TYPE_BIN;
-    outStream = &binDataContainer;
-    deleteOutStream = false;
     subParserName = "Content";
 }
 
 Content::~Content()
 {
-    if (deleteOutStream) delete outStream;
 }
 
 bool Content::isDefaultStreamableObj()
 {
-    return outStream==&binDataContainer || outStream==&urlPostVars || outStream==&multiPartVars;
+    return m_usingInternalOutStream;
 }
 
 void Content::setSecurityMaxPostDataSize(const uint64_t &value)
 {
-    securityMaxPostDataSize = value;
+    m_securityMaxPostDataSize = value;
 }
-
 
 Memory::Streams::SubParser::ParseStatus Content::parse()
 {
-    switch (currentMode)
+    switch (m_currentMode)
     {
         case PROCMODE_CHUNK_SIZE:
         {
@@ -53,14 +43,14 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
                 {
                     setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
                     setParseDataTargetSize(targetChunkSize);
-                    currentMode = PROCMODE_CHUNK_DATA;
+                    m_currentMode = PROCMODE_CHUNK_DATA;
                     return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
                 }
                 else
                 {
                     // Done... last chunk.
                     // report that is last chunk.
-                    outStream->writeEOF(true);
+                    m_outStream->writeEOF(true);
                     return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
                 }
             }
@@ -71,10 +61,10 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
             // Ok, continue
             setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
             setParseDataTargetSize(2); // for CRLF.
-            currentMode = PROCMODE_CHUNK_CRLF;
+            m_currentMode = PROCMODE_CHUNK_CRLF;
             // Proccess chunk into mem...
             // TODO: validate when outstream is filled up.
-            getParsedBuffer()->appendTo(*outStream);
+            getParsedBuffer()->appendTo(*m_outStream);
             return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
         }
         case PROCMODE_CHUNK_CRLF:
@@ -82,13 +72,13 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
             setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
             setParseDelimiter("\r\n");
             setParseDataTargetSize(1*KB_MULT); // !1kb max (until fails).
-            currentMode = PROCMODE_CHUNK_SIZE;
+            m_currentMode = PROCMODE_CHUNK_SIZE;
             return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
         }
         case PROCMODE_CONTENT_LENGTH:
         {
             // TODO: validate when outstream is filled up.
-            getParsedBuffer()->appendTo(*outStream);
+            getParsedBuffer()->appendTo(*m_outStream);
             if (getLeftToparse()>0)
             {
 #ifdef DEBUG
@@ -102,7 +92,7 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
                 printf("%p Content PROCMODE_CONTENT_LENGTH - EOS\n",this);
 #endif
                 // End of stream reached...
-                outStream->writeEOF(true);
+                m_outStream->writeEOF(true);
                 return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
             }
         }
@@ -113,13 +103,13 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
             {
                 // Parsing data...
                 // TODO: validate when outstream is filled up.
-                getParsedBuffer()->appendTo(*outStream);
+                getParsedBuffer()->appendTo(*m_outStream);
                 return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
             }
             else
             {
                 // No more data to parse, ending and processing it...
-                outStream->writeEOF(true);
+                m_outStream->writeEOF(true);
                 return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
             }
         }
@@ -130,7 +120,7 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
 uint32_t Content::parseHttpChunkSize()
 {
     uint32_t parsedSize = getParsedBuffer()->toUInt32(16);
-    if ( parsedSize == std::numeric_limits<uint32_t>::max() || parsedSize>securityMaxHttpChunkSize)
+    if ( parsedSize == std::numeric_limits<uint32_t>::max() || parsedSize>m_securityMaxHttpChunkSize)
         return std::numeric_limits<uint32_t>::max();
     else
         return parsedSize;
@@ -138,58 +128,62 @@ uint32_t Content::parseHttpChunkSize()
 
 Content::eTransmitionMode Content::getTransmitionMode() const
 {
-    return transmitionMode;
+    return m_transmitionMode;
 }
 
-URLVars *Content::getUrlPostVars()
+std::shared_ptr<URLVars> Content::getUrlPostVars()
 {
-    if (containerType == CONTENT_TYPE_URL)
-        return &urlPostVars;
-    throw std::runtime_error("Don't call getUrlPostVars when the content is not URL.");
+    if (m_containerType == CONTENT_TYPE_URL && m_usingInternalOutStream )
+        return std::dynamic_pointer_cast<URLVars>(m_outStream);
+    throw std::runtime_error("Invalid operation: getUrlPostVars should not be called when the content type is not URL.");
 }
 
-Protocols::MIME::MIME_Message *Content::getMultiPartVars()
+std::shared_ptr<Protocols::MIME::MIME_Message> Content::getMultiPartVars()
 {
-    if ( containerType != CONTENT_TYPE_MIME )
-        throw std::runtime_error("Don't call getMultiPartVars when the content is not MIME.");
-    return &multiPartVars;
+    if (m_containerType == CONTENT_TYPE_MIME && m_usingInternalOutStream )
+        return std::dynamic_pointer_cast<Protocols::MIME::MIME_Message>(m_outStream);
+    throw std::runtime_error("Invalid operation: getMultiPartVars should not be called when the content type is not MIME.");
 }
 
 Content::eDataType Content::getContainerType() const
 {
-    return containerType;
+    return m_containerType;
 }
 
-Memory::Abstract::Vars *Content::postVars()
+std::shared_ptr<Memory::Abstract::Vars> Content::postVars()
 {
-    switch (containerType)
+    if (!m_usingInternalOutStream)
     {
-    case CONTENT_TYPE_MIME:
-        return &multiPartVars;
-    case CONTENT_TYPE_URL:
-    case CONTENT_TYPE_BIN:
-        return &urlPostVars; // url vars should be empty here...
+        throw std::runtime_error("Error: not using internal output stream");
     }
-    return &urlPostVars;
+    if (m_containerType == CONTENT_TYPE_BIN)
+    {
+        throw std::runtime_error("Error: container type is binary");
+    }
+
+    std::shared_ptr<Memory::Abstract::Vars> vars = std::dynamic_pointer_cast<Memory::Abstract::Vars>(m_outStream);
+    if (!vars)
+    {
+        throw std::runtime_error("Error: outStream cannot be cast to Vars");
+    }
+    return vars;
 }
-
-
 
 void Content::setContainerType(const eDataType &value)
 {
-    containerType = value;
-    if (isDefaultStreamableObj())
+    m_containerType = value;
+    if (m_usingInternalOutStream)
     {
-        switch (containerType)
+        switch (m_containerType)
         {
         case CONTENT_TYPE_MIME:
-            outStream = &multiPartVars;
+            m_outStream = std::make_shared<MIME::MIME_Message>();
             break;
         case CONTENT_TYPE_URL:
-            outStream = &urlPostVars;
+            m_outStream = std::make_shared<URLVars>();
             break;
         case CONTENT_TYPE_BIN:
-            outStream = &binDataContainer;
+            m_outStream = std::make_shared<Memory::Containers::B_Chunks>();
             break;
         }
     }
@@ -197,23 +191,23 @@ void Content::setContainerType(const eDataType &value)
 
 void Content::setSecurityMaxHttpChunkSize(const uint32_t &value)
 {
-    securityMaxHttpChunkSize = value;
+    m_securityMaxHttpChunkSize = value;
 }
 
 bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     // Act as a client. Send data from here.
-    switch (transmitionMode)
+    switch (m_transmitionMode)
     {
     case TRANSMIT_MODE_CHUNKS:
     {
         Content_Chunked_SubParser retr(upStream);
-        return outStream->streamTo(&retr,wrStat) && upStream->getFailedWriteState()==0;
+        return m_outStream->streamTo(&retr,wrStat) && upStream->getFailedWriteState()==0;
     }
     case TRANSMIT_MODE_CONTENT_LENGTH:
     case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
-        return outStream->streamTo(upStream, wrStat) && upStream->getFailedWriteState()==0;
+        return m_outStream->streamTo(upStream, wrStat) && upStream->getFailedWriteState()==0;
     }
     }
     return true;
@@ -221,16 +215,16 @@ bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
 
 void Content::setTransmitionMode(const eTransmitionMode &value)
 {
-    transmitionMode = value;
+    m_transmitionMode = value;
 
-    switch (transmitionMode)
+    switch (m_transmitionMode)
     {
     case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
         // TODO: disable connection-close for client->server
         setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
-        setParseDataTargetSize(securityMaxPostDataSize); // !1kb max (until fails).
-        currentMode = PROCMODE_CONNECTION_CLOSE;
+        setParseDataTargetSize(m_securityMaxPostDataSize); // !1kb max (until fails).
+        m_currentMode = PROCMODE_CONNECTION_CLOSE;
     }break;
     case TRANSMIT_MODE_CHUNKS:
     {
@@ -238,37 +232,43 @@ void Content::setTransmitionMode(const eTransmitionMode &value)
         setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(64); // 64 bytes max (until fails).
-        currentMode = PROCMODE_CHUNK_SIZE;
+        m_currentMode = PROCMODE_CHUNK_SIZE;
     }break;
     case TRANSMIT_MODE_CONTENT_LENGTH:
     {
         setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
-        currentMode = PROCMODE_CONTENT_LENGTH;
+        m_currentMode = PROCMODE_CONTENT_LENGTH;
     }break;
     }
 }
 
 bool Content::setContentLenSize(const uint64_t &contentLengthSize)
 {
-    if (contentLengthSize>securityMaxPostDataSize)
+    if (contentLengthSize>m_securityMaxPostDataSize)
     {
         // Can't receive this data...
-        currentContentLengthSize = 0;
+        m_currentContentLengthSize = 0;
         setParseDataTargetSize(0);
         return false;
     }
 
     // The content length specified in the header
-    currentContentLengthSize=contentLengthSize;
+    m_currentContentLengthSize=contentLengthSize;
     setParseDataTargetSize(contentLengthSize);
 
     return true;
 }
 
-void Content::setMaxPostSizeInMemBeforeGoingToFS(const uint64_t &value)
+void Content::setMaxBinPostMemoryBeforeFS(const uint64_t& value)
 {
-    //getParsedBuffer()->setMaxContainerSizeUntilGoingToFS(value);
-    binDataContainer.setMaxContainerSizeUntilGoingToFS(value);
+    if (m_containerType == CONTENT_TYPE_BIN && m_usingInternalOutStream)
+    {
+        std::dynamic_pointer_cast<Memory::Containers::B_Chunks>(m_outStream)->setMaxContainerSizeUntilGoingToFS(value);
+    }
+    else
+    {
+        throw std::runtime_error("This method is only meant for the internal container. Custom containers should be configured externally.");
+    }
 }
 /*
 void Content::useFilesystem(const std::string &fsFilePath)
@@ -277,41 +277,31 @@ void Content::useFilesystem(const std::string &fsFilePath)
     //binDataContainer.setFsBaseFileName();
 }
 */
-void Content::preemptiveDestroyStreamableObj()
+
+std::shared_ptr<Memory::Streams::StreamableObject> Content::getStreamableObj()
 {
-    binDataContainer.clear();
-    if (this->deleteOutStream)
-    {
-        this->deleteOutStream = false;
-        delete outStream;
-        outStream = &binDataContainer;
-    }
+    return m_outStream;
 }
 
-Memory::Streams::StreamableObject *Content::getStreamableObj()
-{
-    return outStream;
-}
-
-void Content::setStreamableObj(Memory::Streams::StreamableObject *outDataContainer, bool deleteOutStream)
+void Content::setStreamableObj(std::shared_ptr<Memory::Streams::StreamableObject> outDataContainer)
 {
     // This stream has been setted up before...
-    // Delete the previous stream/data before replacing...
-    preemptiveDestroyStreamableObj();
+    this->m_usingInternalOutStream = false;
 
-    this->deleteOutStream = deleteOutStream;
-    this->outStream = outDataContainer;
+    // The previous stream is destroyed after the assignation...
+    this->m_outStream = outDataContainer;
 
-    if (this->outStream == nullptr)
+    if (!outDataContainer)
     {
         // Point to empty container...
-        outStream = &binDataContainer;
-        this->deleteOutStream = false;
+        this->m_usingInternalOutStream = true;
+        // Create a new streamable object with the last content type...
+        setContainerType(m_containerType);
     }
 }
 
 uint64_t Content::getStreamSize()
 {
-    return outStream->size();
+    return m_outStream->size();
 }
 

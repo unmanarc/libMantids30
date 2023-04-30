@@ -35,7 +35,7 @@ public:
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
      */
-    Memory::Abstract::Vars * urlVars();
+    std::shared_ptr<Memory::Abstract::Vars> urlVars();
 
     //////////////////////////////////////////////////
     // Local getters/setters.
@@ -65,7 +65,7 @@ private:
     /**
      * @brief requestMethod - method requested: GET/POST/HEAD/...
      */
-    std::string requestMethod;
+    std::string requestMethod = "GET"; // Default Method.
     /**
      * @brief requestURL - URL Requested (without vars) E.g. /index.html
      */
@@ -76,7 +76,7 @@ private:
     std::string requestURIParameters;
 
     Common::Version httpVersion;
-    Common::URLVars getVars;
+    std::shared_ptr<Common::URLVars> getVars = std::make_shared<Common::URLVars>();;
 };
 
 }}}}}

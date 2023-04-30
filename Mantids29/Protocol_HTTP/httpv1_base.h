@@ -4,6 +4,7 @@
 #include <Mantids29/Memory/parser.h>
 #include <Mantids29/Memory/vars.h>
 #include <Mantids29/Protocol_MIME/mime_sub_header.h>
+#include <memory>
 
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
@@ -82,7 +83,7 @@ public:
          * @param source
          * @return
          */
-        Memory::Abstract::Vars *getVars(const HTTP_VarSource &source)
+        std::shared_ptr<Memory::Abstract::Vars> getVars(const HTTP_VarSource &source)
         {
             switch (source)
             {
@@ -172,14 +173,14 @@ public:
             this->contentType = contentType;
             security.disableNoSniffContentType = bNoSniff;
         }
+
         /**
-         * @brief setResponseDataStreamer Set the container used for transmiting data.
-         * @param outStream stream used (or nullptr to default empty streamer)
-         * @param deleteOutStream delete the container after usage.
+         * @brief Set the container used for transmitting data.
+         * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-        void setDataStreamer(Memory::Streams::StreamableObject * dsOut, bool bDeleteAfter = false)
+        void setDataStreamer(std::shared_ptr<Memory::Streams::StreamableObject> dataStream)
         {
-            if (dsOut == nullptr)
+            if (!dataStream)
             {
                 // Set default headers (lost previous ones):
                 headers.remove("Last-Modified");
@@ -187,11 +188,10 @@ public:
                 cacheControl.setOptionNoCache(true);
                 cacheControl.setOptionNoStore(true);
                 cacheControl.setOptionMustRevalidate(true);
-                setContentType("",false);
+                setContentType("", false);
             }
-            content.setStreamableObj(dsOut,bDeleteAfter);
+            content.setStreamableObj(dataStream);
         }
-
         /**
          * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
          * @param cookieName

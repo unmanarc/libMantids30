@@ -6,6 +6,7 @@
 #include <Mantids29/Memory/subparser.h>
 #include <Mantids29/Memory/b_base.h>
 #include <Mantids29/Protocol_MIME/mime_message.h>
+#include <memory>
 
 namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
@@ -51,25 +52,20 @@ public:
      */
     bool isDefaultStreamableObj();
     /**
-     * @brief preemptiveDestroyStreamableObj Destroy the current streamable output (if marked for deletion) and use the internal one.
-     */
-    void preemptiveDestroyStreamableObj();
-    /**
      * @brief writer Same of getStreamableObj
      * @return current streamable output
      */
-    Memory::Streams::StreamableObject * writer() { return outStream; }
+    std::shared_ptr<Memory::Streams::StreamableObject> writer() { return m_outStream; }
     /**
      * @brief getStreamableObj Get the current streamable output
      * @return current streamable output
      */
-    Memory::Streams::StreamableObject * getStreamableObj();
+    std::shared_ptr<Memory::Streams::StreamableObject> getStreamableObj();
     /**
      * @brief setStreamableObj Set the streamable output (eg. a file?)
-     * @param outStream stream that will be used for the content trnasmission
-     * @param deleteOutStream delete the stream after deleting this class
+     * @param outDataContainer stream that will be used for the content trnasmission
      */
-    void setStreamableObj(Memory::Streams::StreamableObject * outStream, bool deleteOutStream = false);
+    void setStreamableObj(std::shared_ptr<Memory::Streams::StreamableObject> outDataContainer);
     /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<uint64_t>::max() if size not defined, or >=0 if size defined.
@@ -79,17 +75,17 @@ public:
      * @brief postVars Get the post vars (read-only)... Useful for decoding received content
      * @return Variable
      */
-    Memory::Abstract::Vars * postVars();
+    std::shared_ptr<Memory::Abstract::Vars> postVars();
     /**
      * @brief getMultiPartVars Get the MultiPart POST vars (read/write), call only when the ContainerType is CONTENT_TYPE_MIME, otherwise, runtime error will be triggered
      * @return full MIME message
      */
-    MIME::MIME_Message * getMultiPartVars();
+    std::shared_ptr<MIME::MIME_Message> getMultiPartVars();
     /**
      * @brief getUrlPostVars Get URL formatted POST Vars (read/write), call only when the ContainerType is CONTENT_TYPE_URL, otherwise, runtime error will be triggered
      * @return URL Var object
      */
-    URLVars * getUrlPostVars();
+    std::shared_ptr<URLVars> getUrlPostVars();
 
     //////////////////////////////////////////////////////////////////
     // ------------------ TRANSMISSION AND CONTENT ------------------
@@ -129,36 +125,32 @@ public:
 
     //////////////////////////////////////////////////
     // Security:
-    void setMaxPostSizeInMemBeforeGoingToFS(const uint64_t &value);
+    /**
+     * @brief Sets the maximum size of the internal memory buffer used to store HTTP POST data before the data is written to disk instead.
+     * @param value The maximum size of the buffer, in bytes.
+     */
+    void setMaxBinPostMemoryBeforeFS(const uint64_t &value);
     void setSecurityMaxPostDataSize(const uint64_t &value);
     void setSecurityMaxHttpChunkSize(const uint32_t &value);
-
-
-
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    Memory::Streams::StreamableObject * outStream;
-    bool deleteOutStream;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_outStream = std::make_shared<Memory::Containers::B_Chunks>();
+    bool m_usingInternalOutStream = true;
 
     uint32_t parseHttpChunkSize();
 
     // Parsing Optimization:
-    eTransmitionMode transmitionMode;
-    eProcessingMode currentMode;
-    eDataType containerType;
+    eTransmitionMode m_transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
+    eProcessingMode m_currentMode = PROCMODE_CONTENT_LENGTH;
+    eDataType m_containerType = CONTENT_TYPE_BIN;
 
     // Security Parameters (for parsing):
-    uint64_t securityMaxPostDataSize;
-    uint64_t currentContentLengthSize;
-    uint32_t securityMaxHttpChunkSize;
-
-    Memory::Containers::B_Chunks binDataContainer;
-
-    MIME::MIME_Message multiPartVars;
-    URLVars urlPostVars;
+    uint64_t m_securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
+    uint64_t m_currentContentLengthSize = 0;
+    uint32_t m_securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
 };
 
 }}}}}
