@@ -8,13 +8,13 @@
 
 namespace Mantids29 { namespace Authentication {
 
-class FastRPCImpl : public Mantids29::Network::Protocols::FastRPC::FastRPC1
+class Monolith_LoginAuthFastRPC1Connector : public Mantids29::Network::Protocols::FastRPC::FastRPC1
 {
 public:
-    FastRPCImpl(uint32_t threadsCount = 16, uint32_t taskQueues = 24) : Mantids29::Network::Protocols::FastRPC::FastRPC1(threadsCount,taskQueues)
+    Monolith_LoginAuthFastRPC1Connector(uint32_t threadsCount = 16, uint32_t taskQueues = 24) : Mantids29::Network::Protocols::FastRPC::FastRPC1(threadsCount,taskQueues)
     {
     }
-    virtual ~FastRPCImpl()
+    virtual ~Monolith_LoginAuthFastRPC1Connector()
     {
     }
 
@@ -244,7 +244,7 @@ protected:
 
 
 private:
-    FastRPCImpl * m_fastRPC;
+    Monolith_LoginAuthFastRPC1Connector * m_fastRPC;
 
 };
 
