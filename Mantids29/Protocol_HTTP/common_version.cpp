@@ -15,8 +15,6 @@ using namespace Mantids29;
 
 Version::Version()
 {
-    m_majorVersion = 1;
-    m_minorVersion = 1;
 }
 
 void Version::parse(const std::string &version)

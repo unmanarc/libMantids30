@@ -69,8 +69,8 @@ public:
     void setMajor(const uint16_t& value);
 
 private:
-    uint16_t m_minorVersion; ///< The minor version number.
-    uint16_t m_majorVersion; ///< The major version number.
+    uint16_t m_minorVersion = 1; ///< The minor version number.
+    uint16_t m_majorVersion = 1; ///< The major version number.
 };
 
 
