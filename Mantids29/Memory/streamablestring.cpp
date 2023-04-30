@@ -40,6 +40,11 @@ StreamableObject::Status StreamableString::write(const void *buf, const size_t &
     return  cur;
 }
 
+StreamableString &StreamableString::operator=(const std::string &str) {
+    setValue(str);
+    return *this;
+}
+
 const std::string &StreamableString::getValue() const
 {
     return value;

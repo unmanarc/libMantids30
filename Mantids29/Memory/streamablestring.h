@@ -29,6 +29,8 @@ public:
      */
     virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd) override;
 
+    StreamableString& operator=(const std::string& str);
+
     const std::string &getValue() const;
     void setValue(const std::string &newValue);
 
