@@ -1,4 +1,5 @@
 #include "methodshandler.h"
+#include "Mantids29/Protocol_HTTP/rsp_status.h"
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace Mantids29;
@@ -9,7 +10,7 @@ MethodsHandler::MethodsHandler()
 
 }
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, Json::Value (*method)(void *, const RESTful::Parameters &), void *obj, bool requireUserAuthentication, const std::set<std::string> requiredAttributes)
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, APIReturn (*method)(void *, const RESTful::InputParameters &), void *obj, bool requireUserAuthentication, const std::set<std::string> requiredAttributes)
 {
     RESTfulAPIDefinition def;
     def.method = method;
@@ -44,8 +45,8 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
     return true;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut) {
-    Threads::Sync::Lock_RD lock(m_methodsMutex);
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::InputParameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, APIReturn *payloadOut)
+{    Threads::Sync::Lock_RD lock(m_methodsMutex);
 
     RESTfulAPIDefinition method;
     auto it = m_methodsGET.end();
@@ -83,7 +84,8 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     default:
         if (payloadOut != nullptr)
         {
-            *payloadOut = "Invalid method mode";
+            *payloadOut->body = "Invalid method mode";
+            payloadOut->code = Network::Protocols::HTTP::Status::S_400_BAD_REQUEST;
         }
         return INVALID_METHOD_MODE;
     }
@@ -92,7 +94,8 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (payloadOut != nullptr)
         {
-            *payloadOut = "Resource not found";
+            *payloadOut->body = "Resource not found";
+            payloadOut->code = Network::Protocols::HTTP::Status::S_404_NOT_FOUND;
         }
         return RESOURCE_NOT_FOUND;
     }
@@ -101,7 +104,8 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (payloadOut != nullptr)
         {
-            *payloadOut = "Authentication required";
+            *payloadOut->body = "Authentication required";
+            payloadOut->code = Network::Protocols::HTTP::Status::S_403_FORBIDDEN;
         }
         return AUTHENTICATION_REQUIRED;
     }
@@ -112,7 +116,8 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         {
             if (payloadOut != nullptr)
             {
-                *payloadOut = "Insufficient permissions";
+                *payloadOut->body = "Insufficient permissions";
+                payloadOut->code = Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED;
             }
             return INSUFFICIENT_PERMISSIONS;
         }
@@ -126,13 +131,14 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
 
     if (payloadOut != nullptr)
     {
-        *payloadOut = "Internal error";
+        *payloadOut->body = "Internal error";
+        payloadOut->code = Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
     }
 
     return INTERNAL_ERROR;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, const Parameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, Json::Value *payloadOut)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, const InputParameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, APIReturn *payloadOut)
 {
     MethodMode mode;
 
@@ -156,7 +162,8 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
     {
         if (payloadOut != nullptr)
         {
-            *payloadOut = "Invalid method mode string";
+            *payloadOut->body = "Invalid method mode string";
+            payloadOut->code = Network::Protocols::HTTP::Status::S_400_BAD_REQUEST;
         }
         return INVALID_METHOD_MODE;
     }

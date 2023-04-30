@@ -1,4 +1,5 @@
 #include "engine.h"
+#include "Mantids29/API_RESTful/methodshandler.h"
 #include "Mantids29/Helpers/json.h"
 #include "clienthandler.h"
 
@@ -12,7 +13,7 @@ Engine::Engine()
     // This method handler will be used for IAM inter-process communication (like token revokations)
     std::shared_ptr<API::RESTful::MethodsHandler> handler = std::make_shared<API::RESTful::MethodsHandler>();
 
-    API::RESTful::MethodsHandler::RESTfulAPIDefinition jwtRevokeDef;
+    API::RESTful::RESTfulAPIDefinition jwtRevokeDef;
     jwtRevokeDef.method = &revokeJWT;
     jwtRevokeDef.security.requiredAttributes = {"IAM"};
     jwtRevokeDef.obj = this;
@@ -25,13 +26,13 @@ Engine::~Engine()
 {
 }
 
-Json::Value Engine::revokeJWT(void *obj, const API::RESTful::Parameters &inputParameters)
+API::RESTful::APIReturn Engine::revokeJWT(void *obj, const API::RESTful::InputParameters &inputParameters)
 {
     std::string jwtSignature = Helpers::Encoders::decodeFromBase64(JSON_ASSTRING(inputParameters.pathParameters, "signature",""),true);
     time_t expirationTime = JSON_ASUINT64(inputParameters.pathParameters, "expiration",0);
     ((Engine *)obj)->m_jwtEngine->m_revocation.addToRevocationList( jwtSignature, expirationTime );
 
-    return true;
+    return (json)true;
 }
 
 Web::APIClientHandler *Engine::createNewAPIClientHandler(APIEngineCore * webServer, Network::Sockets::Socket_Stream_Base * s)

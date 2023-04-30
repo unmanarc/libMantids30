@@ -22,7 +22,7 @@ protected:
     Web::APIClientHandler * createNewAPIClientHandler(APIEngineCore * webServer, Network::Sockets::Socket_Stream_Base * s) override;
 
 private:
-    static Json::Value revokeJWT(void * obj, const API::RESTful::Parameters &inputParameters );
+    static API::RESTful::APIReturn revokeJWT(void * obj, const API::RESTful::InputParameters &inputParameters );
 
 };
 

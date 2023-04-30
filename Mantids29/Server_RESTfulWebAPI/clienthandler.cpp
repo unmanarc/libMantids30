@@ -1,4 +1,5 @@
 #include "clienthandler.h"
+#include "Mantids29/API_RESTful/methodshandler.h"
 #include "Mantids29/Program_Logs/loglevels.h"
 #include <json/config.h>
 #include <string>
@@ -103,7 +104,7 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
     std::set<std::string> currentAttributes;
     bool authenticated =false;
     std::string resourceName;
-    API::RESTful::Parameters inputParameters;
+    API::RESTful::InputParameters inputParameters;
 
     // TODO: process parameters..
     processPathParameters(resourceAndPathParameters,resourceName,inputParameters.pathParameters);
@@ -116,10 +117,15 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
         inputParameters.jwtToken = &m_jwtToken;
     }
 
-    Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
-    jPayloadOutStr->setFormatted(m_config.useFormattedJSONOutput);
 
-    m_serverResponse.setDataStreamer(jPayloadOutStr,true);
+    //Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
+
+    API::RESTful::APIReturn apiReturn;
+    apiReturn.body->setFormatted(m_config.useFormattedJSONOutput);
+
+
+    // TODO: mmm, this should be a shared pointer no?
+    m_serverResponse.setDataStreamer(apiReturn.body);
     m_serverResponse.setContentType("application/json",true);
 
     std::string methodMode = m_clientRequest.requestLine.getRequestMethod().c_str();
@@ -127,37 +133,40 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
     if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        *(jPayloadOutStr->getValue()) = "Resource not found";
+        *apiReturn.body = "Resource not found";
         return Protocols::HTTP::Status::S_404_NOT_FOUND;
     }
 
     json x;
-    API::RESTful::MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn,jPayloadOutStr->getValue());
+    API::RESTful::MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode, resourceName, inputParameters, currentAttributes, m_userData.loggedIn, &apiReturn);
 
     switch (result)
     {
     case API::RESTful::MethodsHandler::SUCCESS:
         log(eLogLevels::LEVEL_DEBUG, "restful", 2048, "Method Executed {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_200_OK;
+        break;
     case API::RESTful::MethodsHandler::INVALID_METHOD_MODE:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Invalid Method Mode {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_400_BAD_REQUEST;
+        break;
     case API::RESTful::MethodsHandler::RESOURCE_NOT_FOUND:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Method Not Found {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_404_NOT_FOUND;
+        break;
     case API::RESTful::MethodsHandler::AUTHENTICATION_REQUIRED:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Authentication Not Provided {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_403_FORBIDDEN;
+        break;
     case API::RESTful::MethodsHandler::INSUFFICIENT_PERMISSIONS:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Insufficient permissions {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_401_UNAUTHORIZED;
+        break;
     case API::RESTful::MethodsHandler::INTERNAL_ERROR:
         log(eLogLevels::LEVEL_WARN, "restful", 2048, "Internal Error {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
-        return Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+        break;
     default:
         log(eLogLevels::LEVEL_ERR, "restful", 2048, "Unknown Error {method=%s, mode=%s}", resourceName.c_str(), methodMode.c_str());
         return Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+        break;
     }
+
+    return apiReturn.code;
 }
 
 void ClientHandler::processPathParameters(const std::string &request, std::string &resourceName, Json::Value &pathParameters)
