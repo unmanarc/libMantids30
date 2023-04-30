@@ -75,6 +75,12 @@ json *StreamableJSON::getValue()
     return &root;
 }
 
+StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
+    setValue(value);
+    return *this;
+}
+
+
 void StreamableJSON::setValue(const json &value)
 {
     root=value;

@@ -22,6 +22,9 @@ public:
     json * processValue();
     json * getValue();
 
+
+    StreamableJSON& operator=(const Json::Value& value);
+
     void setValue(const json & value);
 
     void setMaxSize(const uint64_t &value);
