@@ -235,6 +235,51 @@ string Encoders::decodeFromBase64(const string &input, bool url)
     return result;
 }
 
+string Encoders::decodeFromBase32(const std::string &base32Value)
+{
+    std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    std::string binarySecret;
+    int currentByte = 0, bitsRemaining = 8;
+    for (char c : base32Value)
+    {
+        if (c == '=')
+        {
+            break;
+        }
+
+        int val = chars.find(c);
+        if (val == std::string::npos)
+        {
+            // Invalid character in base32 input
+            return "";
+        }
+
+        // Assume that the base32 strings are well-formed
+        int bits = 5;
+        while (bits > 0)
+        {
+            int bit = (val >> (bits - 1)) & 1;
+            currentByte = (currentByte << 1) | bit;
+            bits--;
+            bitsRemaining--;
+            if (bitsRemaining == 0)
+            {
+                binarySecret.push_back(currentByte);
+                bitsRemaining = 8;
+                currentByte = 0;
+            }
+        }
+    }
+
+    if (bitsRemaining != 8 && bitsRemaining < 5)
+    {
+        currentByte = currentByte << (bitsRemaining + 3);
+        binarySecret.push_back(currentByte);
+    }
+
+    return binarySecret;
+}
+
 string Encoders::encodeToBase64(const string &buf, bool url)
 {
     return encodeToBase64((unsigned char *)buf.c_str(),buf.size(),url);

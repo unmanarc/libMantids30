@@ -76,6 +76,19 @@ public:
      */
     static std::string decodeFromBase64(std::string const& input, bool url = false);
 
+
+    /**
+     * @brief Decodes a base32-encoded string.
+     *
+     * @param base32Value The base32-encoded string to decode.
+     *
+     * @return The decoded string.
+     */
+    static std::string decodeFromBase32(const std::string &base32Value);
+
+
+
+
     /**
      * @brief Performs a base64 encoding on a string.
      *

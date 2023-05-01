@@ -112,7 +112,7 @@ private:
      * @return Authentication Response Reason (authenticated or bad password)
      */
     Reason validateChallenge(const std::string & passwordFromDB, const std::string & challengeInput, const std::string &challengeSalt);
-    Reason validateGAuth(const std::string & seed, const std::string & token);
+    Reason validateGAuth(const std::string & seed, const std::string & tokenInput);
 };
 
 }}

@@ -1,4 +1,6 @@
 #include "accountsecretvalidator.h"
+#include "Mantids29/Helpers/googleauthenticator.h"
+#include "ds_auth_reason.h"
 
 #include <Mantids29/Helpers/encoders.h>
 #include <Mantids29/Helpers/crypto.h>
@@ -77,8 +79,8 @@ Reason AccountSecretValidator::validateChallenge(const std::string &passwordFrom
                  REASON_AUTHENTICATED:REASON_BAD_PASSWORD;
 }
 
-Reason AccountSecretValidator::validateGAuth(const std::string &seed, const std::string &token)
+Reason AccountSecretValidator::validateGAuth(const std::string &seed, const std::string &tokenInput)
 {
-    // TODO: (liboath)
-    return REASON_NOT_IMPLEMENTED;
+    // TODO: if token is validated, keep a cache of used tokens...
+    return Helpers::TOTP::GoogleAuthenticator::verifyToken(seed,tokenInput)? REASON_AUTHENTICATED : REASON_BAD_PASSWORD;
 }
