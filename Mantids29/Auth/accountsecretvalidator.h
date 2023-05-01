@@ -1,5 +1,5 @@
-#ifndef IAUTH_VALIDATION_ACCOUNT_H
-#define IAUTH_VALIDATION_ACCOUNT_H
+#ifndef ACCOUNT_SECRET_VALIDATOR_H
+#define ACCOUNT_SECRET_VALIDATOR_H
 
 #include <string>
 #include <set>
@@ -49,11 +49,11 @@ struct ClientDetails {
 };
 
 
-class AccountSecretValidation : public Mantids29::Threads::Safe::MapItem
+class AccountSecretValidator : public Mantids29::Threads::Safe::MapItem
 {
 public:
-    AccountSecretValidation();
-    virtual ~AccountSecretValidation();
+    AccountSecretValidator();
+    virtual ~AccountSecretValidator();
 
     /**
      * @brief Returns the account confirmation token for a given account name.
@@ -117,4 +117,4 @@ private:
 
 }}
 
-#endif // IAUTH_VALIDATION_ACCOUNT_H
+#endif // ACCOUNT_SECRET_VALIDATOR_H

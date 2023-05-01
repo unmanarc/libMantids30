@@ -8,7 +8,7 @@
 #include <Mantids29/Auth/manager.h>
 #include <Mantids29/Auth/session.h>
 
-#include <Mantids29/Auth/accountsecret_validation.h>
+#include <Mantids29/Auth/accountsecretvalidator.h>
 
 namespace Mantids29 { namespace Authentication {
 

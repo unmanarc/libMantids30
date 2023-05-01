@@ -5,7 +5,7 @@
 #include <list>
 #include <set>
 
-#include "accountsecret_validation.h"
+#include "accountsecretvalidator.h"
 #include <time.h>
 
 #include <Mantids29/Threads/mutex_shared.h>
@@ -68,7 +68,7 @@ struct AttributeDetails {
     std::string attributeName;
     std::string description;
 };
-class Manager : public AccountSecretValidation
+class Manager : public AccountSecretValidator
 {
 public:
     Manager();

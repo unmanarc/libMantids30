@@ -1,4 +1,4 @@
-#include "accountsecret_validation.h"
+#include "accountsecretvalidator.h"
 
 #include <Mantids29/Helpers/encoders.h>
 #include <Mantids29/Helpers/crypto.h>
@@ -7,18 +7,16 @@ using namespace Mantids29::Authentication;
 
 
 
-AccountSecretValidation::AccountSecretValidation()
+AccountSecretValidator::AccountSecretValidator()
 {
 }
 
-AccountSecretValidation::~AccountSecretValidation()
+AccountSecretValidator::~AccountSecretValidator()
 {
 
 }
 
-
-
-Reason AccountSecretValidation::validateStoredSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &challengeSalt, Mode authMode)
+Reason AccountSecretValidator::validateStoredSecret(const Secret &storedSecret, const std::string &passwordInput, const std::string &challengeSalt, Mode authMode)
 {
     Reason r =REASON_NOT_IMPLEMENTED;
   //  bool saltedHash = false;
@@ -73,13 +71,13 @@ skipAuthMode:;
     return r;
 }
 
-Reason AccountSecretValidation::validateChallenge(const std::string &passwordFromDB, const std::string &challengeInput, const std::string &challengeSalt)
+Reason AccountSecretValidator::validateChallenge(const std::string &passwordFromDB, const std::string &challengeInput, const std::string &challengeSalt)
 {
     return challengeInput == Helpers::Crypto::calcSHA256(passwordFromDB + challengeSalt) ?
                  REASON_AUTHENTICATED:REASON_BAD_PASSWORD;
 }
 
-Reason AccountSecretValidation::validateGAuth(const std::string &seed, const std::string &token)
+Reason AccountSecretValidator::validateGAuth(const std::string &seed, const std::string &token)
 {
     // TODO: (liboath)
     return REASON_NOT_IMPLEMENTED;
