@@ -300,6 +300,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                 m_serverResponse.cacheControl.setOptionImmutable(true);
                 return true;
             }
+            return false;
         }
     }
     else
