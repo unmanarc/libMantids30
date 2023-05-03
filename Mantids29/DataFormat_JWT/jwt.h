@@ -239,7 +239,7 @@ public:
      * @return true if algorithm is supported
      * @return false if algorithm is not supported
      */
-    bool isAlgorithmSupported(const std::string & algorithm);
+    static bool isAlgorithmSupported(const std::string & algorithm);
 
     /**
      * @brief Create a JWT token from a JSON payload
