@@ -55,15 +55,17 @@ elseif(WIN32)
     target_link_libraries(${LIB_NAME} "-lws2_32")
 endif()
 
+set(MANTIDS29_LIBRARIES
+    Memory
+    Threads
+    Helpers
+)
 
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
-
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
 
 option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 find_package(PkgConfig REQUIRED)

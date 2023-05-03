@@ -8,14 +8,12 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for Core API Server Functions")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids29 Library for RESTful API Server Functions")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
 add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
-
-
 
 set_target_properties(  ${LIB_NAME}
                         PROPERTIES VERSION ${PROJECT_VERSION}
@@ -44,17 +42,18 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
+set(MANTIDS29_LIBRARIES
+    Memory
+    Threads
+    Helpers
+    DataFormat_JWT
+)
 
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
-
-include_directories("${Mantids29_DataFormat_JWT_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_DataFormat_JWT)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

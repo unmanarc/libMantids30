@@ -43,14 +43,17 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
 
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
+set(MANTIDS29_LIBRARIES
+    Memory
+    Helpers
+    Net_Sockets
+)
 
-include_directories("${Mantids29_Net_Sockets_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Net_Sockets)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
 message("Chain found...: ${Mantids29_Net_Sockets_SOURCE_DIR}")
 

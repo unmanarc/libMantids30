@@ -15,32 +15,36 @@ file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
 
 add_library(${LIB_NAME} ${EDV_INCLUDE_FILES} ${EDV_SOURCE_FILES})
 
-
-
 set_target_properties(  ${LIB_NAME}
-                        PROPERTIES VERSION ${PROJECT_VERSION}
-                        SOVERSION 2
-                        PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
-                      )
+    PROPERTIES VERSION ${PROJECT_VERSION}
+    SOVERSION 2
+    PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
+)
 
 configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
-        TARGETS ${LIB_NAME}
-        ARCHIVE COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        LIBRARY COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        PUBLIC_HEADER COMPONENT dev DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIBPREFIX}/${RLIB_NAME}
-        )
+    TARGETS ${LIB_NAME}
+    ARCHIVE COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER COMPONENT dev DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIBPREFIX}/${RLIB_NAME}
+)
 
 install(
-        FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${RLIB_NAME}/${LIB_NAME}.pc
-        DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
-        )
+    FILES ${CMAKE_BINARY_DIR}/${PARENT_DIR}/${RLIB_NAME}/${LIB_NAME}.pc
+    DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
+)
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
+set(MANTIDS29_LIBRARIES
+    Helpers
+)
+
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
 if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)

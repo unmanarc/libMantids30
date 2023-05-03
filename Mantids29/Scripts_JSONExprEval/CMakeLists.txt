@@ -44,9 +44,15 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
+set(MANTIDS29_LIBRARIES
+    Helpers
+)
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
+
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

@@ -64,9 +64,13 @@ link_libraries(${JSONCPP_LIBRARIES})
 target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
 target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} "${LIBPREFIX}_Helpers")
+set(MANTIDS29_LIBRARIES
+    Threads
+    Helpers
+)
 
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} "${LIBPREFIX}_Threads")
-message("-- TRG LIB LIBRARY: ${Mantids29_Threads_SOURCE_DIR}")
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
+

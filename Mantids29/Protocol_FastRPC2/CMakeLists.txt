@@ -44,29 +44,22 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
+set(MANTIDS29_LIBRARIES
+    Threads
+    Helpers
+    Net_Sockets
+    Memory
+    Protocol_FastRPC1
+    Auth_Remote
+    Auth
+    API_Monolith
+)
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
-include_directories("${Mantids29_Net_Sockets_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Net_Sockets)
-
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
-
-include_directories("${Mantids29_Protocol_FastRPC1_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_FastRPC1)
-
-include_directories("${Mantids29_Auth_Remote_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Auth_Remote)
-
-include_directories("${Mantids29_Auth_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Auth)
-
-include_directories("${Mantids29_API_Monolith_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_API_Monolith)
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

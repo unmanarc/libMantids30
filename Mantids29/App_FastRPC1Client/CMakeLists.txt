@@ -44,20 +44,20 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-include_directories("${Mantids29_Protocol_FastRPC1_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Program_Logs_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Net_Sockets_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Program_Service_SOURCE_DIR}/../../")
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_FastRPC1)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Program_Logs)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Net_Sockets)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Program_Service)
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
+set(MANTIDS29_LIBRARIES
+    Protocol_FastRPC1
+    Threads
+    Memory
+    Program_Logs
+    Net_Sockets
+    Program_Service
+    Helpers
+)
+
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
 
 find_package(PkgConfig REQUIRED)

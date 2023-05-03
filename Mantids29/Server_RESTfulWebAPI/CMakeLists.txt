@@ -44,38 +44,24 @@ if (EXTRAPREFIX)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
-include_directories("${Mantids29_Threads_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Threads)
+set(MANTIDS29_LIBRARIES
+    Threads
+    Helpers
+    DataFormat_JWT
+    Auth
+    Memory
+    Net_Sockets
+    Protocol_HTTP
+    Protocol_MIME
+    API_RESTful
+    Server_WebCore
+    Program_Logs
+)
 
-include_directories("${Mantids29_Helpers_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Helpers)
-
-include_directories("${Mantids29_DataFormat_JWT_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_DataFormat_JWT)
-
-include_directories("${Mantids29_Auth_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Auth)
-
-include_directories("${Mantids29_Memory_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Memory)
-
-include_directories("${Mantids29_Net_Sockets_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Net_Sockets)
-
-include_directories("${Mantids29_Protocol_HTTP_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_HTTP)
-
-include_directories("${Mantids29_Protocol_MIME_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Protocol_MIME)
-
-include_directories("${Mantids29_API_RESTful_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_API_RESTful)
-
-include_directories("${Mantids29_Server_WebCore_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Server_WebCore)
-
-include_directories("${Mantids29_Program_Logs_SOURCE_DIR}/../../")
-target_link_libraries(${LIB_NAME} ${LIBPREFIX}_Program_Logs)
+foreach(LIB ${MANTIDS29_LIBRARIES})
+    include_directories("${Mantids29_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)
