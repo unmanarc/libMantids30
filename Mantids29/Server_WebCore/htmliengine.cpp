@@ -94,7 +94,7 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
     json jVars,jNull;
     jVars["softwareVersion"]   = clientHandler->m_config.softwareVersion;
     jVars["userAgent"]         = clientHandler->m_clientRequest.userAgent;
-    jVars["userTLSCommonName"] = clientHandler->m_userData.tlsCommonName;
+    jVars["userTLSCommonName"] = clientHandler->m_clientRequest.networkClientInfo.tlsCommonName;
 
     clientHandler->fillUserDataVars(jVars);
     clientHandler->fillSessionVars(jVars);
@@ -158,7 +158,7 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
         // Obtain using POST Vars...
         if (clientHandler->m_clientRequest.getVars(HTTPv1_Base::HTTP_VARS_POST)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,clientHandler->m_clientRequest.getVars(HTTPv1_Base::HTTP_VARS_POST)->getStringValue(varName));
+            replaceTagByJVar(fileContent,fulltag,clientHandler->m_clientRequest.getVars(HTTPv1_Base::HTTP_VARS_POST)->getTValue<std::string>(varName));
         }
         // Report as not found.
         else
@@ -184,7 +184,7 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
         {
            replaceTagByJVar(fileContent,
                              fulltag,
-                             clientHandler->m_clientRequest.getVars(HTTPv1_Base::HTTP_VARS_GET)->getStringValue(varName)
+                             clientHandler->m_clientRequest.getVars(HTTPv1_Base::HTTP_VARS_GET)->getTValue<std::string>(varName)
                              );
         }
         // Report as not found.

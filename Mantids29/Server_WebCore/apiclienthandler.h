@@ -17,7 +17,6 @@ public:
     APIClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
     ~APIClientHandler() override;
 
-    void setUserIP(const std::string &value);
     void setUseFormattedJSONOutput(bool value);
     void setResourcesFilter(API::Web::ResourcesFilter *value);
     void setDocumentRootPath(const std::string &value);
@@ -29,7 +28,7 @@ public:
 
     std::string getApplicationName() const;
     void setAppName(const std::string &value);
-    void setRemoteTLSCN(const std::string &value);
+    //void setRemoteTLSCN(const std::string &value);
     void setRPCLog(Program::Logs::RPCLog *value);
 
 protected:

@@ -81,9 +81,7 @@ bool Engine::_onConnect(void * obj, Network::Sockets::Socket_Stream_Base * s, co
 
     webHandler.setRPCLog(webserver->m_rpcLog);
     webHandler.setAppName(webserver->getApplicationName());
-    webHandler.setSecure(isSecure);
-    webHandler.setUserIP(cUserIP);
-    webHandler.setRemoteTLSCN(tlsCN);
+    webHandler.setClientInfoVars( cUserIP, isSecure, tlsCN );
     webHandler.setMethodsHandler(webserver->m_methodsHandler);
     webHandler.setAuthenticators(webserver->m_authenticator);
     webHandler.setSessionsManagger(&(webserver->m_sessionsManager));

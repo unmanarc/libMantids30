@@ -5,6 +5,7 @@
 #include <Mantids29/Memory/vars.h>
 #include <Mantids29/Protocol_MIME/mime_sub_header.h>
 #include <memory>
+#include <netinet/in.h>
 
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
@@ -93,7 +94,12 @@ public:
                 return requestLine.urlVars();
             }
             return nullptr;
+        }        
+        MIME::MIME_HeaderOption * getCookies()
+        {
+            return headers.getOptionByName("Cookie");
         }
+
         /**
          * @brief getCookie Get Cookie
          * @param sCookieName
@@ -131,6 +137,14 @@ public:
         {
             return headers.getOptionRawStringByName(optionName);
         }
+
+        struct NetworkClientInfo {
+            char REMOTE_ADDR[INET6_ADDRSTRLEN] = "";
+            bool isSecure = false;
+            std::string tlsCommonName = "";
+        };
+
+        NetworkClientInfo networkClientInfo;
 
         /**
          * @brief clientRequest - URL Request (Request type, URL, GET Vars, and HTTP version)

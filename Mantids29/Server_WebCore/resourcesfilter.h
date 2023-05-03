@@ -15,16 +15,17 @@ namespace Mantids29 { namespace API { namespace Web {
 
 struct UserData {
 
-    std::string ipAddress = "";
+//    std::string ipAddress = "";
     std::string userName = "";
     std::string domainName = "";
-    std::string tlsCommonName = "";
+  //  std::string tlsCommonName = "";
 
     std::set<std::string> attributes;
     std::map<std::string, json> claims;
 
     std::string halfSessionId = "";
     std::string sessionId = "";
+
     bool sessionActive = false;
     bool loggedIn = false;
 };

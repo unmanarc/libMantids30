@@ -14,7 +14,7 @@ using namespace Mantids29;
 
 HTTPv1_Client::HTTPv1_Client(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(true,sobject)
 {
-    currentParser = (Memory::Streams::SubParser *)(&m_serverResponse.status);
+    m_currentParser = (Memory::Streams::SubParser *)(&m_serverResponse.status);
     m_clientRequest.requestLine.getHTTPVersion()->setMajor(1);
     m_clientRequest.requestLine.getHTTPVersion()->setMinor(0);
 
@@ -39,9 +39,9 @@ bool HTTPv1_Client::initProtocol()
 
 bool HTTPv1_Client::changeToNextParser()
 {
-    if (currentParser == &m_serverResponse.status)
-        currentParser = &m_serverResponse.headers;
-    else if (currentParser == &m_serverResponse.headers)
+    if (m_currentParser == &m_serverResponse.status)
+        m_currentParser = &m_serverResponse.headers;
+    else if (m_currentParser == &m_serverResponse.headers)
     {
         // Process incomming server headers here:
         /////////////////////////////////////////////////////////////////////////
@@ -85,10 +85,10 @@ bool HTTPv1_Client::changeToNextParser()
         // Parse server cookies...
         parseHeaders2ServerCookies();
         // Parse the transmition mode requested and act according it.
-        currentParser = parseHeaders2TransmitionMode();
+        m_currentParser = parseHeaders2TransmitionMode();
     }
     else // END.
-        currentParser = nullptr;
+        m_currentParser = nullptr;
     return true;
 }
 

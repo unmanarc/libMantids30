@@ -91,11 +91,11 @@ void APIClientHandler::fillUserDataVars(json &jVars)
 {
     jVars["user"]              = m_userData.userName;
     jVars["domain"]            = m_userData.domainName;
-    jVars["userTLSCommonName"] = m_userData.tlsCommonName;
+    jVars["userTLSCommonName"] = m_clientRequest.networkClientInfo.tlsCommonName;
     jVars["domain"]            = m_userData.domainName;
     jVars["loggedIn"]          = m_userData.loggedIn;
     jVars["sessionActive"]     = m_userData.sessionActive;
-    jVars["userIP"]            = m_userData.ipAddress;
+    jVars["userIP"]            = m_clientRequest.networkClientInfo.REMOTE_ADDR;
 }
 
 Status::eRetCode APIClientHandler::handleFileRequest()
@@ -172,18 +172,13 @@ Status::eRetCode APIClientHandler::handleFileRequest()
     return ret;
 }
 
-void APIClientHandler::setUserIP(const std::string &value)
-{
-    m_userData.ipAddress = value;
-}
-
 void APIClientHandler::log(eLogLevels logSeverity,  const std::string & module, const uint32_t &outSize, const char *fmtLog,...)
 {
     va_list args;
     va_start(args, fmtLog);
 
     if (m_rpcLog) m_rpcLog->logVA( logSeverity,
-                               m_userData.ipAddress,
+                               m_clientRequest.networkClientInfo.REMOTE_ADDR,
                                m_userData.halfSessionId,
                                m_userData.userName,
                                m_userData.domainName,
@@ -202,10 +197,10 @@ void APIClientHandler::setRPCLog(Program::Logs::RPCLog *value)
     m_rpcLog = value;
 }
 
-void APIClientHandler::setRemoteTLSCN(const std::string &value)
+/*void APIClientHandler::setRemoteTLSCN(const std::string &value)
 {
     m_userData.tlsCommonName = value;
-}
+}*/
 
 std::string APIClientHandler::getApplicationName() const
 {

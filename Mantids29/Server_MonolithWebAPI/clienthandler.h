@@ -29,7 +29,6 @@ public:
     void setMethodsHandler(API::Monolith::MethodsHandler *value);
     //////////////////////////////////////////////
 
-    void setUserIP(const std::string &value);
     void setSessionsManagger(SessionsManager *value);
     void setUseFormattedJSONOutput(bool value);
     void setResourcesFilter(API::Monolith::ResourcesFilter *value);
@@ -43,7 +42,6 @@ public:
 
     std::string getApplicationName() const;
     void setAppName(const std::string &value);
-    void setRemoteTLSCN(const std::string &value);
     void setRPCLog(Program::Logs::RPCLog *value);
 
 protected:
@@ -106,7 +104,6 @@ private:
 
     API::Monolith::ResourcesFilter * m_resourceFilter = nullptr;
     std::string m_applicationName;
-    std::string m_userIP, m_userTLSCommonName;
     std::string m_resourcesLocalPath;
     std::string m_redirectPathOn404;
     bool m_useFormattedJSONOutput = true;

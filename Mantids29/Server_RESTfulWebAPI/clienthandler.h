@@ -14,8 +14,8 @@ public:
     ClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
     ~ClientHandler() override;
 
-    // JWT Validator...
-    std::shared_ptr<DataFormat::JWT> m_jwtEngine;
+    // JWT Validator and signer...
+    std::shared_ptr<DataFormat::JWT> m_jwtValidator, m_jwtSigner;
     // API Version -> MethodsHandler
     std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
 

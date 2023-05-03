@@ -43,11 +43,8 @@ public:
     Status parseObject(ErrorMSG * err);
 
     //////////////////////////////////////////
-
     virtual bool streamTo(Memory::Streams::StreamableObject * out, Status & wrsStat) override;
     virtual Status write(const void * buf, const size_t &count, Status &wrStat) override;
-
-
     /**
      * @brief writeEOF Receive this when the connection is ended.
      */
@@ -69,13 +66,14 @@ protected:
     virtual void endProtocol() = 0;
     virtual bool changeToNextParser() = 0;
 
-    Memory::Streams::StreamableObject * streamableObject;
+    Memory::Streams::StreamableObject * m_streamableObject;
 
     void initSubParser(SubParser * subparser);
-    SubParser * currentParser;
-    size_t maxTTL;
-    bool initialized;
-    bool clientMode;
+
+    SubParser * m_currentParser;
+    size_t m_maxTTL;
+    bool m_initialized;
+    bool m_clientMode;
 
 private:
     /**

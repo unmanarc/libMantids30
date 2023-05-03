@@ -14,14 +14,14 @@ URLVars::URLVars(Memory::Streams::StreamableObject *value) : Memory::Streams::Pa
     initSubParser(&_urlVarParser);
 
     // TODO: virtual method during constructor...
-    initialized = initProtocol();
+    m_initialized = initProtocol();
     currentStat = URLV_STAT_WAITING_NAME;
     _urlVarParser.setVarType(true);
 
     setMaxVarNameSize(4096);
     setMaxVarContentSize(4096);
 
-    currentParser = &_urlVarParser;
+    m_currentParser = &_urlVarParser;
 }
 
 URLVars::~URLVars()

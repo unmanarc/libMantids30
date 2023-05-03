@@ -6,11 +6,11 @@ using namespace Mantids29::Memory::Streams;
 
 Parser::Parser(Memory::Streams::StreamableObject *value, bool clientMode)
 {
-    this->clientMode = clientMode;
-    currentParser = nullptr;
-    maxTTL = 4096;
-    initialized = false;
-    this->streamableObject = value;
+    this->m_clientMode = clientMode;
+    m_currentParser = nullptr;
+    m_maxTTL = 4096;
+    m_initialized = false;
+    this->m_streamableObject = value;
 }
 
 Parser::~Parser()
@@ -23,10 +23,10 @@ StreamableObject::Status Parser::parseObject(Parser::ErrorMSG *err)
     Status upd;
 
     *err = PARSING_SUCCEED;
-    initialized = initProtocol();
-    if (initialized)
+    m_initialized = initProtocol();
+    if (m_initialized)
     {
-        if (!(ret=streamableObject->streamTo(this,upd)) || !upd.succeed)
+        if (!(ret=m_streamableObject->streamTo(this,upd)) || !upd.succeed)
         {
             upd.succeed=false;
             *err=getFailedWriteState()!=0?PARSING_ERR_READ:PARSING_ERR_PARSE;
@@ -84,7 +84,7 @@ void Parser::writeEOF(bool)
 
 std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_t *ttl, bool *finished)
 {
-    if (*ttl>maxTTL)
+    if (*ttl>m_maxTTL)
     {
         // TODO: reset TTL?
 #ifdef DEBUG
@@ -99,15 +99,15 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
     // displace bytes is the number of bytes that the subparser have taken from the incomming buffer, so we have to displace them.
     std::pair<bool, uint64_t> writtenBytes;
 
-    if (currentParser!=nullptr)
+    if (m_currentParser!=nullptr)
     {
         // Default state: get more data...
-        currentParser->setParseStatus(SubParser::PARSE_STAT_GET_MORE_DATA);
+        m_currentParser->setParseStatus(SubParser::PARSE_STAT_GET_MORE_DATA);
         // Here, the parser should call the sub stream parser parse function and set the new status.
-        if ((writtenBytes=currentParser->writeIntoParser(buf,count)).first==false)
+        if ((writtenBytes=m_currentParser->writeIntoParser(buf,count)).first==false)
             return std::make_pair(false,(uint64_t)0);
         // TODO: what if error? how to tell the parser that it should analize the connection up to there (without correctness).
-        switch (currentParser->getParseStatus())
+        switch (m_currentParser->getParseStatus())
         {
         case SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER:
         {
@@ -122,9 +122,9 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 #endif
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
-            if (currentParser==nullptr)
+            if (m_currentParser==nullptr)
                 *finished = true;
-            if (currentParser==nullptr || writtenBytes.second == count)
+            if (m_currentParser==nullptr || writtenBytes.second == count)
                 return writtenBytes;
         } break;
         case SubParser::PARSE_STAT_GET_MORE_DATA:
@@ -167,16 +167,16 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 
 void Parser::initSubParser(SubParser *subparser)
 {
-    subparser->initElemParser(streamableObject?streamableObject:this,clientMode);
+    subparser->initElemParser(m_streamableObject?m_streamableObject:this,m_clientMode);
 }
 
 void Parser::setMaxTTL(const size_t &value)
 {
-    maxTTL = value;
+    m_maxTTL = value;
 }
 
 void Parser::setStreamable(Memory::Streams::StreamableObject *value)
 {
-    streamableObject = value;
+    m_streamableObject = value;
 }
 

@@ -34,14 +34,14 @@ using namespace Mantids29;
 
 HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(false, sobject)
 {
-    badAnswer = false;
+    m_badAnswer = false;
 
     // All request will have no-cache activated.... (unless it's a real file and it's not overwritten)
     m_serverResponse.cacheControl.setOptionNoCache(true);
     m_serverResponse.cacheControl.setOptionNoStore(true);
     m_serverResponse.cacheControl.setOptionMustRevalidate(true);
 
-    currentParser = (Memory::Streams::SubParser *)(&m_clientRequest.requestLine);
+    m_currentParser = (Memory::Streams::SubParser *)(&m_clientRequest.requestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
     m_mimeTypes[".aac"]    = "audio/aac";
@@ -123,19 +123,6 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv
 
     m_includeServerDate = true;
 }
-
-void HTTPv1_Server::fillRequestDataStruct()
-{
-    clientVars.VARS_GET = m_clientRequest.getVars(HTTP_VARS_GET);
-    clientVars.VARS_POST = m_clientRequest.getVars(HTTP_VARS_POST);
-    clientVars.VARS_COOKIES = m_clientRequest.headers.getOptionByName("Cookie");
-}
-
-void HTTPv1_Server::setRemotePairAddress(const char *value)
-{
-    SecBACopy(clientVars.REMOTE_ADDR,value);
-}
-
 
 void HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
@@ -450,9 +437,16 @@ void HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const
 bool HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
-    if (currentParser == &m_clientRequest.requestLine) return changeToNextParserOnClientRequest();
-    else if (currentParser == &m_clientRequest.headers) return changeToNextParserOnClientHeaders();
+    if (m_currentParser == &m_clientRequest.requestLine) return changeToNextParserOnClientRequest();
+    else if (m_currentParser == &m_clientRequest.headers) return changeToNextParserOnClientHeaders();
     else return changeToNextParserOnClientContentData();
+}
+
+void HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
+{
+    m_clientRequest.networkClientInfo.tlsCommonName = tlsCommonName;
+    strncpy(m_clientRequest.networkClientInfo.REMOTE_ADDR,ipAddr,sizeof(m_clientRequest.networkClientInfo.REMOTE_ADDR));
+    m_clientRequest.networkClientInfo.isSecure = secure;
 }
 
 bool HTTPv1_Server::changeToNextParserOnClientHeaders()
@@ -492,7 +486,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         m_clientRequest.userAgent = m_clientRequest.headers.getOptionRawStringByName("User-Agent");
 
     // PARSE CONTENT TYPE/LENGHT OPTIONS
-    if (badAnswer)
+    if (m_badAnswer)
         return answer(m_answerBytes);
     else
     {
@@ -507,7 +501,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
             if (!m_clientRequest.content.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
-                badAnswer = true;
+                m_badAnswer = true;
                 m_serverResponse.status.setRetCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
                 return answer(m_answerBytes);
             }
@@ -528,16 +522,16 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         }
 
         // Process the client header options
-        if (!badAnswer)
+        if (!m_badAnswer)
         {
-            fillRequestDataStruct();
+            //setClientInfoVars();
 
             if (!procHTTPClientHeaders())
-                currentParser = nullptr; // Don't continue with parsing (close the connection)
+                m_currentParser = nullptr; // Don't continue with parsing (close the connection)
             else
             {
                 // OK, we are ready.
-                if (contentLength) currentParser = &m_clientRequest.content;
+                if (contentLength) m_currentParser = &m_clientRequest.content;
                 else
                 {
                     // Answer here:
@@ -553,15 +547,15 @@ bool HTTPv1_Server::changeToNextParserOnClientRequest()
 {
     // Internal checks when URL request has received.
     prepareServerVersionOnURI();
-    if (badAnswer)
+    if (m_badAnswer)
         return answer(m_answerBytes);
     else
     {
-        fillRequestDataStruct();
+        //setClientInfoVars();
 
         if (!procHTTPClientURI())
-            currentParser = nullptr; // Don't continue with parsing.
-        else currentParser = &m_clientRequest.headers;
+            m_currentParser = nullptr; // Don't continue with parsing.
+        else m_currentParser = &m_clientRequest.headers;
     }
     return true;
 }
@@ -638,7 +632,7 @@ void HTTPv1_Server::prepareServerVersionOnURI()
     if (m_clientRequest.requestLine.getHTTPVersion()->getMajor()!=1)
     {
         m_serverResponse.status.setRetCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
-        badAnswer = true;
+        m_badAnswer = true;
     }
     else
     {
@@ -654,7 +648,7 @@ void HTTPv1_Server::prepareServerVersionOnOptions()
         {
             // TODO: does really need the VHost?
             m_serverResponse.status.setRetCode(HTTP::Status::S_400_BAD_REQUEST);
-            badAnswer = true;
+            m_badAnswer = true;
         }
     }
 }
@@ -688,16 +682,16 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
 
-    fillRequestDataStruct();
+    //setClientInfoVars();
 
     // Process client petition here.
-    if (!badAnswer)
+    if (!m_badAnswer)
     {
         m_serverResponse.status.setRetCode(procHTTPClientContent());
     }
 
     // Answer is the last... close the connection after it.
-    currentParser = nullptr;
+    m_currentParser = nullptr;
 
     if (!m_serverResponse.status.stream(wrStat))
     {
@@ -766,15 +760,6 @@ void HTTPv1_Server::setResponseIncludeServerDate(bool value)
     m_includeServerDate = value;
 }
 
-bool HTTPv1_Server::isSecure() const
-{
-    return m_isSecure;
-}
-
-void HTTPv1_Server::setSecure(bool value)
-{
-    m_isSecure = value;
-}
 
 void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {

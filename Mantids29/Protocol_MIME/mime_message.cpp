@@ -35,7 +35,7 @@ MIME_Message::MIME_Message(Memory::Streams::StreamableObject *value) : Memory::S
 
     setMultiPartBoundary(Helpers::Random::createRandomString(64));
 
-    currentParser = &subFirstBoundary;
+    m_currentParser = &subFirstBoundary;
     currentState = MP_STATE_FIRST_BOUNDARY;
 }
 
@@ -197,7 +197,7 @@ bool MIME_Message::changeToNextParser()
     {
         // FIRST_BOUNDARY IS READY
         currentState = MP_STATE_HEADERS;
-        currentParser = currentPart->getHeader();
+        m_currentParser = currentPart->getHeader();
     }break;
     case MP_STATE_ENDPOINT:
     {
@@ -205,10 +205,10 @@ bool MIME_Message::changeToNextParser()
         if (subEndPBoundary.getStatus() == ENDP_STAT_CONTINUE)
         {
             currentState = MP_STATE_HEADERS;
-            currentParser = currentPart->getHeader();
+            m_currentParser = currentPart->getHeader();
         }
         else
-            currentParser = nullptr;
+            m_currentParser = nullptr;
     }break;
     case MP_STATE_HEADERS:
     {
@@ -217,7 +217,7 @@ bool MIME_Message::changeToNextParser()
         onHeaderReady.call(getMultiPartMessageName(currentPart),currentPart);
         // GOTO CONTENT:
         currentState = MP_STATE_CONTENT;
-        currentParser = currentPart->getContent();
+        m_currentParser = currentPart->getContent();
     }break;
     case MP_STATE_CONTENT:
     {
@@ -231,13 +231,13 @@ bool MIME_Message::changeToNextParser()
         renewCurrentPart();
         // Check if the max parts target is reached.
         if (allParts.size()==maxNumberOfParts)
-            currentParser = nullptr; // End here.
+            m_currentParser = nullptr; // End here.
         else
         {
             // Goto boundary.
             currentState = MP_STATE_ENDPOINT;
             subEndPBoundary.reset();
-            currentParser = &subEndPBoundary;
+            m_currentParser = &subEndPBoundary;
         }
     }break;
     default:

@@ -64,9 +64,7 @@ bool APIEngineCore::_onConnect(void * obj, Network::Sockets::Socket_Stream_Base 
 
     webHandler->setRPCLog(webserver->m_rpcLog);
     webHandler->setAppName(webserver->m_applicationName);
-    webHandler->setSecure(isSecure);
-    webHandler->setUserIP(cUserIP);
-    webHandler->setRemoteTLSCN(tlsCN);
+    webHandler->setClientInfoVars( cUserIP, isSecure, tlsCN );
     webHandler->setUseFormattedJSONOutput(webserver->m_useFormattedJSONOutput);
     webHandler->setResourcesFilter(webserver->m_resourceFilter);
     webHandler->setDocumentRootPath(webserver->getDocumentRootPath());

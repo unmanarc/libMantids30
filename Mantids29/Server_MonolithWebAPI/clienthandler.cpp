@@ -61,11 +61,11 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
     m_clientCSRFToken = m_clientRequest.getHeaderOption("CSRFToken");
 
     // POST VARS / EXTRA AUTHS:
-    if (!m_extraCredentials.setAuthentications(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("extraAuth")))
+    if (!m_extraCredentials.setAuthentications(m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("extraAuth")))
         return HTTP::Status::S_400_BAD_REQUEST;
 
     // POST VARS / AUTH:
-    if (!m_credentials.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("auth")))
+    if (!m_credentials.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("auth")))
         return HTTP::Status::S_400_BAD_REQUEST;
 
     // OPEN THE SESSION HERE:
@@ -80,7 +80,7 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
         // Warn about this.
         log(LEVEL_WARN, "fileServer", 2048, "Calling deprecated /api: %s", requestURI.c_str());
 
-        std::string mode = m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
+        std::string mode = m_clientRequest.getVars(HTTP_VARS_GET)->getTValue<std::string>("mode");
         if (mode == "EXEC")
             requestURI = "/japi_exec";
         else if (mode == "VERSION")
@@ -91,8 +91,8 @@ Status::eRetCode ClientHandler::procHTTPClientContent()
 
     // Detect if is /japi_exec, then process the JSON RPC Request.
     if (requestURI == "/japi_exec") ret = procJAPI_Exec(&m_extraCredentials,
-                                                        m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("method"),
-                                                        m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload")
+                                                        m_clientRequest.getVars(HTTP_VARS_GET)->getTValue<std::string>("method"),
+                                                        m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("payload")
                                                         );
     // Detect if is /japi_version, then process the JSON RPC Request.
     else if (requestURI == "/japi_version") ret = procJAPI_Version();
@@ -291,8 +291,8 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
     jVars["domain"]            = m_authSession?m_authSession->getUserDomainPair().second:jNull;
     jVars["maxAge"]            = (Json::UInt64)(m_webSession?m_sessionMaxAge:0);
     jVars["userAgent"]         = m_clientRequest.userAgent;
-    jVars["userIP"]            = m_userIP;
-    jVars["userTLSCommonName"] = m_userTLSCommonName;
+    jVars["userIP"]            = m_clientRequest.networkClientInfo.REMOTE_ADDR;
+    jVars["userTLSCommonName"] = m_clientRequest.networkClientInfo.tlsCommonName;
 
     // %JVAR PROCESSOR:
     boost::regex exStaticJsonInputVar("<\\%?jvar(?<SCRIPT_VAR_NAME>[^\\:]*):[ ]*(?<VAR_NAME>[^\\%]+)[ ]*\\%>",boost::regex::icase);
@@ -353,7 +353,7 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
         // Obtain using POST Vars...
         if (m_clientRequest.getVars(HTTP_VARS_POST)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue(varName));
+            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>(varName));
         }
         // Report as not found.
         else
@@ -377,7 +377,7 @@ Status::eRetCode ClientHandler::procResource_HTMLIEngine( const std::string & sR
         // Obtain using POST Vars...
         if (m_clientRequest.getVars(HTTP_VARS_GET)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue(varName));
+            replaceTagByJVar(fileContent,fulltag,m_clientRequest.getVars(HTTP_VARS_GET)->getTValue<std::string>(varName));
         }
         // Report as not found.
         else
@@ -432,12 +432,12 @@ Status::eRetCode ClientHandler::procJAPI_Session()
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_404_NOT_FOUND;
 
     // GET VARS:
-    sMode = m_clientRequest.getVars(HTTP_VARS_GET)->getStringValue("mode");
+    sMode = m_clientRequest.getVars(HTTP_VARS_GET)->getTValue<std::string>("mode");
 
     // In AUTHCSRF we take the session ID from post variable (not cookie).
     if (m_sessionId.empty() && m_usingCSRFToken && sMode == "AUTHCSRF")
     {
-        m_sessionId = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("sessionId");
+        m_sessionId = m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("sessionId");
         // Open the session again (with the post value):
         sessionOpen();
     }
@@ -698,8 +698,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_LOGIN(const Authentication::Dat
     HTTP::Status::eRetCode eHTTPResponseRetCode = HTTP::Status::S_401_UNAUTHORIZED;
 
 
-    std::string user = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
-    std::string domain = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
+    std::string user = m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("user");
+    std::string domain = m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("domain");
 
     // Authenticate...
     m_sessionId = persistentAuthentication( user,
@@ -846,8 +846,8 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
     json jPayloadIn;
     Mantids29::Helpers::JSONReader2 reader;
 
-    std::string  userName   = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("user");
-    std::string domainName  = m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("domain");
+    std::string  userName   = m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("user");
+    std::string domainName  = m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("domain");
 
     // If there is a session, overwrite the user/domain inputs...
     if (m_authSession)
@@ -856,7 +856,7 @@ Status::eRetCode ClientHandler::procJAPI_Exec(Authentication::Multi *extraAuths,
         domainName = m_authSession->getAuthenticatedDomain();
     }
 
-    if (!m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("payload").empty() && !reader.parse(sPayloadIn, jPayloadIn))
+    if (!m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("payload").empty() && !reader.parse(sPayloadIn, jPayloadIn))
     {
         log(LEVEL_ERR,  "apiServer", 2048, "Invalid JSON Payload for execution {method=%s}", sMethodName.c_str());
         return HTTP::Status::S_400_BAD_REQUEST;
@@ -992,7 +992,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
     Authentication::Data newAuth;
 
     // POST VARS / AUTH:
-    if (!newAuth.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getStringValue("newAuth")))
+    if (!newAuth.setJsonString(m_clientRequest.getVars(HTTP_VARS_POST)->getTValue<std::string>("newAuth")))
     {
         log(LEVEL_ERR, "apiServer", 2048, "Invalid JSON Parsing for new credentials item");
         return HTTP::Status::S_400_BAD_REQUEST;
@@ -1010,8 +1010,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
     if (domainAuthenticator)
     {
         Mantids29::Authentication::ClientDetails clientDetails;
-        clientDetails.ipAddress = m_userIP;
-        clientDetails.tlsCommonName = m_userTLSCommonName;
+        clientDetails.ipAddress = m_clientRequest.networkClientInfo.REMOTE_ADDR;
+        clientDetails.tlsCommonName = m_clientRequest.networkClientInfo.tlsCommonName;
         clientDetails.userAgent = m_clientRequest.userAgent;
 
         auto authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,m_authSession->getAuthUser(),oldAuth.m_password,credIdx);
@@ -1075,8 +1075,8 @@ Status::eRetCode ClientHandler::procJAPI_Session_TESTPASSWD(const Authentication
         uint32_t credIdx = auth.m_passwordIndex;
 
         Mantids29::Authentication::ClientDetails clientDetails;
-        clientDetails.ipAddress = m_userIP;
-        clientDetails.tlsCommonName = m_userTLSCommonName;
+        clientDetails.ipAddress = m_clientRequest.networkClientInfo.REMOTE_ADDR;
+        clientDetails.tlsCommonName = m_clientRequest.networkClientInfo.tlsCommonName;
         clientDetails.userAgent = m_clientRequest.userAgent;
 
         auto authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,m_authSession->getAuthUser(),auth.m_password,credIdx);
@@ -1155,11 +1155,6 @@ void ClientHandler::setSessionsManagger(SessionsManager *value)
     m_sessionsManager = value;
 }
 
-void ClientHandler::setUserIP(const std::string &value)
-{
-    m_userIP = value;
-}
-
 // TODO: pasar a Session
 std::string ClientHandler::persistentAuthentication(const string &userName, const string &domainName, const Authentication::Data &authData, Mantids29::Authentication::Session *lAuthSession, Mantids29::Authentication::Reason * authReason)
 {
@@ -1182,8 +1177,8 @@ std::string ClientHandler::persistentAuthentication(const string &userName, cons
     {
 
         Mantids29::Authentication::ClientDetails clientDetails;
-        clientDetails.ipAddress = m_userIP;
-        clientDetails.tlsCommonName = m_userTLSCommonName;
+        clientDetails.ipAddress = m_clientRequest.networkClientInfo.REMOTE_ADDR;
+        clientDetails.tlsCommonName = m_clientRequest.networkClientInfo.tlsCommonName;
         clientDetails.userAgent = m_clientRequest.userAgent;
 
         *authReason = domainAuthenticator->authenticate(m_applicationName,clientDetails,userName,authData.m_password,authData.m_passwordIndex, Mantids29::Authentication::MODE_PLAIN,"",&stAccountPassIndexesUsedForLogin);
@@ -1235,8 +1230,8 @@ Mantids29::Authentication::Reason ClientHandler::temporaryAuthentication(const s
     else
     {
         Mantids29::Authentication::ClientDetails clientDetails;
-        clientDetails.ipAddress = m_userIP;
-        clientDetails.tlsCommonName = m_userTLSCommonName;
+        clientDetails.ipAddress = m_clientRequest.networkClientInfo.REMOTE_ADDR;
+        clientDetails.tlsCommonName = m_clientRequest.networkClientInfo.tlsCommonName;
         clientDetails.userAgent = m_clientRequest.userAgent;
 
         eReason = auth->authenticate( m_applicationName, clientDetails, userName,authData.m_password,authData.m_passwordIndex); // Authenticate in a non-persistent fashion.
@@ -1252,7 +1247,7 @@ void ClientHandler::log(eLogLevels logSeverity,  const std::string & module, con
     va_start(args, fmtLog);
 
     if (m_rpcLog) m_rpcLog->logVA( logSeverity,
-                               m_userIP,
+                               m_clientRequest.networkClientInfo.REMOTE_ADDR,
                                !m_authSession?"" : m_authSession->getSessionId(),
                                !m_authSession?"" : m_authSession->getAuthUser(),
                                !m_authSession?"" : m_authSession->getAuthenticatedDomain(),
@@ -1269,12 +1264,6 @@ void ClientHandler::setRedirectPathOn404(const std::string &newRedirectOn404)
 void ClientHandler::setRPCLog(Program::Logs::RPCLog *value)
 {
     m_rpcLog = value;
-}
-
-
-void ClientHandler::setRemoteTLSCN(const std::string &value)
-{
-    m_userTLSCommonName = value;
 }
 
 std::string ClientHandler::getApplicationName() const

@@ -36,10 +36,10 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
     // Read the first two words from the input string
     iss >> keyword >> token;
 
-    // TODO: Encrypted bearer...
+    // TODO: Encrypted bearer support (you may don't want your client to know what is going on there...)
     if (keyword == "Bearer")
     {
-        m_tokenVerified = m_jwtEngine->verify( token, &m_jwtToken );
+        m_tokenVerified = m_jwtValidator->verify( token, &m_jwtToken );
 
         if (m_tokenVerified && m_jwtToken.isValid())
         {
@@ -100,16 +100,16 @@ json ClientHandler::getSessionVariableValue(const std::string &varName)
 }
 Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const std::string &baseApiUrl,const uint32_t & apiVersion, const std::string &resourceAndPathParameters)
 {
-
     std::set<std::string> currentAttributes;
     bool authenticated =false;
     std::string resourceName;
     API::RESTful::InputParameters inputParameters;
 
-    // TODO: process parameters..
     processPathParameters(resourceAndPathParameters,resourceName,inputParameters.pathParameters);
-    inputParameters.getParameters = m_clientRequest.getVars(HTTP_VARS_GET)->getVarsAsJSONMap();
-    inputParameters.postParameters = m_clientRequest.getVars(HTTP_VARS_POST)->getVarsAsJSONMap();
+    inputParameters.jwtSigner = m_jwtSigner;
+    inputParameters.jwtValidator = m_jwtValidator;
+    inputParameters.clientRequest = &m_clientRequest;
+    //inputParameters.REMOTE_ADDR = clientVars.REMOTE_ADDR;
 
     if (m_tokenVerified)
     {
@@ -117,14 +117,9 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const
         inputParameters.jwtToken = &m_jwtToken;
     }
 
-
-    //Memory::Streams::StreamableJSON * jPayloadOutStr = new Memory::Streams::StreamableJSON;
-
     API::RESTful::APIReturn apiReturn;
     apiReturn.body->setFormatted(m_config.useFormattedJSONOutput);
 
-
-    // TODO: mmm, this should be a shared pointer no?
     m_serverResponse.setDataStreamer(apiReturn.body);
     m_serverResponse.setContentType("application/json",true);
 

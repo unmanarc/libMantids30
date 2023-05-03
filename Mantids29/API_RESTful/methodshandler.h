@@ -1,6 +1,7 @@
 #ifndef METHODS_HANDLER_H
 #define METHODS_HANDLER_H
 
+#include "Mantids29/Protocol_HTTP/httpv1_base.h"
 #include <map>
 #include <memory>
 #include <set>
@@ -9,17 +10,22 @@
 #include <Mantids29/Threads/mutex_shared.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
 #include <Mantids29/Protocol_HTTP/rsp_status.h>
+#include <Mantids29/Protocol_HTTP/httpv1_server.h>
 #include <Mantids29/Memory/streamablejson.h>
 
 namespace Mantids29 { namespace API { namespace RESTful {
 
 // Struct to hold HTTP request parameters
-struct InputParameters {
-    Json::Value postParameters;     // Holds POST parameters
-    Json::Value getParameters;      // Holds GET parameters
-    Json::Value pathParameters;     // Holds parameters from the URL path
-    DataFormat::JWT::Token emptyToken;
-    DataFormat::JWT::Token * jwtToken = &emptyToken;    // Holds JWT token data, if present and validated the pointer will be changed.
+struct InputParameters
+{
+    Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Request * clientRequest = nullptr; ///< Holds all the information from the client request
+    Json::Value pathParameters;     ///< Holds parameters from the URL path
+
+    DataFormat::JWT::Token emptyToken; ///< Holds a default empty token
+    DataFormat::JWT::Token * jwtToken = &emptyToken;    ///< Holds JWT token data, if present and validated the pointer will be changed.
+
+    std::shared_ptr<DataFormat::JWT> jwtValidator; ///< Holds the JWT Validator
+    std::shared_ptr<DataFormat::JWT> jwtSigner; ///< Holds the JWT Signer
 };
 
 /**

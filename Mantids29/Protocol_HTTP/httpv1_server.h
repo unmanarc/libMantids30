@@ -35,21 +35,23 @@ public:
         std::string sRealFullPath;
         bool isDir, isExecutable, isTransversal, pathExist;
     };
+/*
 
-
-    struct sClientVars
+    struct ClientVars
     {
-        sClientVars()
+        ClientVars()
         {
-            memset(REMOTE_ADDR,0,sizeof(REMOTE_ADDR));
+//            memset(REMOTE_ADDR,0,sizeof(REMOTE_ADDR));
         }
         // Host Information:
-        char REMOTE_ADDR[INET6_ADDRSTRLEN];
+//        char REMOTE_ADDR[INET6_ADDRSTRLEN];
+//        std::string tlsCommonName;
 
         // Proceced information:
         std::shared_ptr<Memory::Abstract::Vars> VARS_GET, VARS_POST;
         MIME::MIME_HeaderOption * VARS_COOKIES;
     };
+*/
 
     HTTPv1_Server(Memory::Streams::StreamableObject * sobject);
 
@@ -131,16 +133,12 @@ public:
      * @brief setRemotePairAddress Internal function to set the remote pair address... (don't use)
      * @param value ip address
      */
-    void setRemotePairAddress(const char * value);
-
-    bool isSecure() const;
-    void setSecure(bool value);
-
     void addStaticContent(const std::string & path, std::shared_ptr<Mantids29::Memory::Containers::B_MEM> contentElement);
     void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM> > &value);
 
     static std::string htmlEncode(const std::string& rawStr);
 
+    void setClientInfoVars( const char * ipAddr, const bool & secure, const std::string & tlsCommonName);
 
 protected:
 
@@ -176,10 +174,9 @@ protected:
     void * getThis() override { return this; }
     bool changeToNextParser() override;
 
-    sClientVars clientVars;
+    //ClientVars clientVars;
 
 private:
-    void fillRequestDataStruct();
     bool changeToNextParserOnClientHeaders();
     bool changeToNextParserOnClientRequest();
     bool changeToNextParserOnClientContentData();
@@ -193,11 +190,11 @@ private:
 
     std::map<std::string, std::shared_ptr<Mantids29::Memory::Containers::B_MEM>> m_staticContentElements;
 
-    bool badAnswer;
+    bool m_badAnswer;
     Memory::Streams::StreamableObject::Status m_answerBytes;
 
     std::string m_currentFileExtension;
-    bool m_isSecure, m_includeServerDate;
+    bool m_includeServerDate;
     std::map<std::string,std::string> m_mimeTypes;
 };
 

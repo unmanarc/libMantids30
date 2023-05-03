@@ -14,7 +14,7 @@ public:
     Engine();
     ~Engine();
 
-    std::shared_ptr<DataFormat::JWT> m_jwtEngine;
+    std::shared_ptr<DataFormat::JWT> m_jwtValidator, m_jwtSigner;
     std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
 
     // TODO: max variable size
