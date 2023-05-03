@@ -19,19 +19,59 @@ public:
     json getVarsAsJSONMap();
 
     ///////////////////////////////////////
-    // String conversion.
+    // Generic conversion.
     /**
-     * @brief getStringValue Get the string value (converted from the binary container) for an specific variable
+     * @brief getTValue Get the <template> value (converted from the binary container) for an specific variable
      * @param varName Variable name
-     * @return string value
+     * @return T value
      */
-    std::string getStringValue(const std::string & varName);
+    template<typename T>
+    T getTValue(const std::string& varName)
+    {
+        auto * value = getValue(varName);
+        if (value)
+        {
+            std::istringstream iss(value->toString());
+            T value;
+            iss >> value;
+            if (iss.fail())
+            {
+                // Conversion failed, return default value
+                return T{}; // For numeric types, T{} will be 0
+            }
+            return value;
+        }
+        // Variable not found, return default value
+        return T{};
+    }
+
     /**
-     * @brief getStringValues Get the all the string values (converted from the binary containers) for an specific variable
+     * @brief getTValues Get the all the T values (converted from the binary containers) for an specific variable
      * @param varName Variable Name
-     * @return list of strings values
+     * @return list of T values
      */
-    std::list<std::string> getStringValues(const std::string & varName);
+    template<typename T>
+    std::list<T> getTValues(const std::string& varName)
+    {
+        std::list<T> resultList;
+        auto contList = getValues(varName);
+
+        for (const auto &value : contList)
+        {
+            std::istringstream iss(value->toString());
+            T valueResult;
+            iss >> valueResult;
+
+            if (!iss.fail()) {
+                // Only add to the list if the conversion succeeded
+                resultList.push_back(valueResult);
+            } else {
+                // If the conversion failed, don't add.
+            }
+        }
+
+        return resultList;
+    }
 
     ///////////////////////////////////////
     // Var Existence.

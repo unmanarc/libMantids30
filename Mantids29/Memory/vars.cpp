@@ -48,13 +48,13 @@ json Vars::getVarsAsJSONMap()
     return jsonMap;
 
 }
-
+/*
 std::string Vars::getStringValue(const std::string &varName)
 {
     auto * value = getValue(varName);
     return !value?"":value->toString();
-}
-
+}*/
+/*
 std::list<std::string> Vars::getStringValues(const std::string &varName)
 {
     std::list<std::string> r;
@@ -62,7 +62,7 @@ std::list<std::string> Vars::getStringValues(const std::string &varName)
     for (auto * b : contList)
         r.push_back(b->toString());
     return r;
-}
+}*/
 
 bool Vars::exist(const std::string &varName)
 {
