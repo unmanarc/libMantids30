@@ -45,6 +45,26 @@ public:
         return T{};
     }
 
+    template<typename T>
+    T getTValue(const std::string& varName, const T & defaultValue)
+    {
+        auto * value = getValue(varName);
+        if (value)
+        {
+            std::istringstream iss(value->toString());
+            T value;
+            iss >> value;
+            if (iss.fail())
+            {
+                // Conversion failed, return default value
+                return defaultValue; // Parsing failed, return the default value
+            }
+            return value;
+        }
+        // Variable not found, return default value
+        return defaultValue;
+    }
+
     /**
      * @brief getTValues Get the all the T values (converted from the binary containers) for an specific variable
      * @param varName Variable Name

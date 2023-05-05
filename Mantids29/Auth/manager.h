@@ -154,7 +154,6 @@ public:
 
     /////////////////////////////////////////////////////////////////////////////////
     // account:
-
     virtual     bool accountAdd(const std::string & accountName,
                                 const Secret &secretData,
                                 const AccountDetailsWExtraData & accountDetails = { "","","","","" },
