@@ -2,6 +2,7 @@
 #include <Mantids29/DataFormat_JWT/jwt.h>
 #include <Mantids29/Helpers/random.h>
 #include <memory>
+#include <fstream>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 
@@ -23,16 +24,26 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
 
     if (algorithmDetails.m_usingHMAC)
     {
-        std::string hmacSecret = ptr->get<std::string>( configClassName + ".HMACSecret", "");
-
-        if (hmacSecret.empty())
+        // HMACSecret is a file, read the hmacSecret variable from file to file and report error if failed to read or if permissions are not secure.
+        std::ifstream hmacFile(ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key").c_str());
+        if (!hmacFile.is_open())
         {
-            log->log0(__func__,Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Signing Key.");
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
             return jwtNull;
         }
 
+        std::string hmacSecret;
+        hmacFile >> hmacSecret;
+
+        if (hmacSecret.empty()) {
+            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Signing Key.");
+            return jwtNull;
+        }
+
+        // Set HMAC secret key on jwtSigner object
         jwtSigner->setSharedSecret(hmacSecret);
-        log->log0(__func__,Program::Logs::LEVEL_INFO, "JWT HMAC Signing Key Loaded.");
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC Signing Key Loaded.");
+
         return jwtSigner;
     }
     else
@@ -102,14 +113,26 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
 
     if (algorithmDetails.m_usingHMAC)
     {
-        std::string hmacSecret = ptr->get<std::string>( configClassName + ".HMACSecret", "");
-        if (hmacSecret.empty())
+        // HMACSecret is a file, read the hmacSecret variable from file to file and report error if failed to read or if permissions are not secure.
+        std::ifstream hmacFile(ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key").c_str());
+        if (!hmacFile.is_open())
         {
-            log->log0(__func__,Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
             return jwtNull;
         }
+
+        std::string hmacSecret;
+        hmacFile >> hmacSecret;
+
+        if (hmacSecret.empty()) {
+            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
+            return jwtNull;
+        }
+
+        // Set HMAC secret key on jwtSigner object
         jwtValidator->setSharedSecret(hmacSecret);
-        log->log0(__func__,Program::Logs::LEVEL_INFO, "JWT HMAC Validation Key Loaded.");
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC Validation Key Loaded.");
+
         return jwtValidator;
     }
     else
