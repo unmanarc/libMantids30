@@ -73,6 +73,8 @@ bool APIEngineCore::_onConnect(void * obj, Network::Sockets::Socket_Stream_Base 
     webHandler->setUseHTMLIEngine(webserver->m_useHTMLIEngine);
     webHandler->setStaticContentElements(webserver->getStaticContentElements());
     webHandler->setRedirectPathOn404(webserver->m_redirectOn404);
+    webHandler->m_handleDynamicRequest = webserver->m_handleDynamicRequest;
+    webHandler->m_dynamicContentPath = webserver->m_dynamicContentPath;
 
     if (webserver->m_callbacks.m_onConnect.call(obj,s,cUserIP,isSecure))
     {

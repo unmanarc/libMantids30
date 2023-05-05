@@ -31,6 +31,9 @@ public:
     //void setRemoteTLSCN(const std::string &value);
     void setRPCLog(Program::Logs::RPCLog *value);
 
+    Protocols::HTTP::Status::eRetCode (*m_handleDynamicRequest)(const std::string & internalPath, Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Request * request,Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Response * response ) = nullptr;
+    std::string m_dynamicContentPath;
+
 protected:
     /**
      * @brief procHTTPClientContent Process web client request
@@ -96,7 +99,6 @@ protected:
     ServerConfig m_config;
 
     void log(Mantids29::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
-
     Program::Logs::RPCLog * m_rpcLog = nullptr;
 
 private:

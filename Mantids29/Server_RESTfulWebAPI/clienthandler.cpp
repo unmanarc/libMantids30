@@ -98,6 +98,7 @@ json ClientHandler::getSessionVariableValue(const std::string &varName)
     }
     return {};
 }
+
 Network::Protocols::HTTP::Status::eRetCode ClientHandler::handleAPIRequest(const std::string &baseApiUrl,const uint32_t & apiVersion, const std::string &resourceAndPathParameters)
 {
     std::set<std::string> currentAttributes;

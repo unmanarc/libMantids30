@@ -117,6 +117,9 @@ public:
     void * m_obj=nullptr;                                    ///< A void pointer to an object used by the web server.
     std::string m_applicationName;
 
+    Protocols::HTTP::Status::eRetCode (*m_handleDynamicRequest)(const std::string & internalPath, Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Request * request,Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Response * response ) = nullptr;
+    std::string m_dynamicContentPath;
+
     ////////////////////////////////////////////////////////////////////////////////
     // Internal Methods (ClientHandler->Webserver), don't use them
     ////////////////////////////////////////////////////////////////////////////////

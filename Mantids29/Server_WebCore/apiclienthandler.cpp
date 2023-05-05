@@ -1,4 +1,5 @@
 #include "apiclienthandler.h"
+#include "Mantids29/Protocol_HTTP/httpv1_base.h"
 #include "htmliengine.h"
 
 #include <Mantids29/Auth/data.h>
@@ -47,6 +48,7 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
     std::string requestURI = m_clientRequest.getURI();
     bool isAPIURI = false;
 
+
     for ( const auto & baseApiUrl : m_APIURLs)
     {
         if (boost::starts_with(requestURI,baseApiUrl + "/"))
@@ -75,8 +77,17 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
 
     if ( !isAPIURI )
     {
-        // It's a file request.
-        ret = handleFileRequest();
+        if (m_handleDynamicRequest && boost::starts_with(requestURI,m_dynamicContentPath + "/"))
+        {
+            std::string dynUrlWithoutBase = requestURI.substr(m_dynamicContentPath.size()+1);
+            // It's a dynamic request...
+            ret = m_handleDynamicRequest( dynUrlWithoutBase, &m_clientRequest, &m_serverResponse );
+        }
+        else
+        {
+            // It's a file request.
+            ret = handleFileRequest();
+        }
     }
 
     if ((rtmp = sessionCleanup()) != HTTP::Status::S_200_OK)
