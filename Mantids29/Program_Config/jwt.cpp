@@ -1,5 +1,5 @@
 #include "jwt.h"
-#include "Mantids29/Program_Logs/loglevels.h"
+#include <Mantids29/Program_Logs/loglevels.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
 #include <Mantids29/Helpers/random.h>
 #include <Mantids29/Helpers/file.h>

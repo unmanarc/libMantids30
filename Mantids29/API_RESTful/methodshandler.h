@@ -1,7 +1,7 @@
 #ifndef METHODS_HANDLER_H
 #define METHODS_HANDLER_H
 
-#include "Mantids29/Protocol_HTTP/httpv1_base.h"
+#include <Mantids29/Protocol_HTTP/httpv1_base.h>
 #include <map>
 #include <memory>
 #include <set>

@@ -1,6 +1,6 @@
 #include "clienthandler.h"
-#include "Mantids29/API_RESTful/methodshandler.h"
-#include "Mantids29/Program_Logs/loglevels.h"
+#include <Mantids29/API_RESTful/methodshandler.h>
+#include <Mantids29/Program_Logs/loglevels.h>
 #include <json/config.h>
 #include <string>
 #include <sstream>

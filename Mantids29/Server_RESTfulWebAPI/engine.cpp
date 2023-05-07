@@ -1,6 +1,6 @@
 #include "engine.h"
-#include "Mantids29/API_RESTful/methodshandler.h"
-#include "Mantids29/Helpers/json.h"
+#include <Mantids29/API_RESTful/methodshandler.h>
+#include <Mantids29/Helpers/json.h>
 #include "clienthandler.h"
 
 using namespace Mantids29;

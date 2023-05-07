@@ -1,5 +1,5 @@
 #include "methodshandler.h"
-#include "Mantids29/Protocol_HTTP/rsp_status.h"
+#include <Mantids29/Protocol_HTTP/rsp_status.h>
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace Mantids29;

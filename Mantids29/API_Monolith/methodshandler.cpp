@@ -1,5 +1,5 @@
 #include "methodshandler.h"
-#include "Mantids29/Helpers/json.h"
+#include <Mantids29/Helpers/json.h>
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace Mantids29::API::Monolith;

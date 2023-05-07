@@ -1,5 +1,5 @@
 #include "accountsecretvalidator.h"
-#include "Mantids29/Helpers/googleauthenticator.h"
+#include <Mantids29/Helpers/googleauthenticator.h>
 
 #include "ds_auth_reason.h"
 
