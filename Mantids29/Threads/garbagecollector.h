@@ -49,6 +49,11 @@ public:
      */
     void setGarbageCollectorInterval(const uint32_t& msInterval);
 
+    /**
+     * @brief stopGarbageCollector Stop the garbage collector (manually)
+     */
+    void stopGarbageCollector();
+
 private:
     /**
      * @brief The gcLoop function runs the garbage collector thread loop.

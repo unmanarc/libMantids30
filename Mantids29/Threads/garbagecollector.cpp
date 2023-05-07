@@ -22,11 +22,7 @@ void GarbageCollector::startGarbageCollector(void (*garbageCollectorFunction)(vo
 
 GarbageCollector::~GarbageCollector()
 {
-    std::unique_lock<std::mutex> lock(m_endNotificationMutex);
-    m_gcFinished = true;
-    m_endNotificationCondition.notify_one();
-    lock.unlock();
-
+    stopGarbageCollector();
     m_gcThreadObject.join();
 }
 
@@ -49,6 +45,13 @@ void GarbageCollector::loopGarbageCollector()
 void GarbageCollector::setGarbageCollectorInterval(const uint32_t &intervalMs)
 {
     m_gcIntervalMs = intervalMs;
+}
+
+void GarbageCollector::stopGarbageCollector()
+{
+    std::unique_lock<std::mutex> lock(m_endNotificationMutex);
+    m_gcFinished = true;
+    m_endNotificationCondition.notify_one();
 }
 
 void GarbageCollector::backgroundGarbageCollectorLoop(GarbageCollector *threadClass, const char * threadName)
