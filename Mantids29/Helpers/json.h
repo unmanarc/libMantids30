@@ -6,6 +6,7 @@
 
 #include <json/json.h>
 #include <list>
+#include <set>
 
 // Define a shorthand for the Json::Value type
 typedef Json::Value json;
@@ -54,6 +55,24 @@ namespace Mantids29 { namespace Helpers {
      * @return A list of strings containing the elements of the JSON array.
      */
     std::list<std::string> jsonToStringList(const json &value, const std::string &sub = "");
+
+    /**
+     * Converts a set of strings to a JSON array.
+     *
+     * @param t The set of strings to convert.
+     *
+     * @return A JSON array containing the elements of the input set.
+     */
+    json setToJson(const std::set<std::string> &t);
+
+    /**
+     * Converts a set of unsigned 32-bit integers to a JSON array.
+     *
+     * @param t The set of uint32_t values to convert.
+     *
+     * @return A JSON array containing the elements of the input set.
+     */
+    json setToJson(const std::set<uint32_t> &t);
 
     /**
      * A replacement for the deprecated Json::Reader class.

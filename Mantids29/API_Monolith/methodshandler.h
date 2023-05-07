@@ -104,12 +104,9 @@ public:
 private:
     std::set<Mantids29::Authentication::ApplicationAttribute> getAppAttribs(const std::set<std::string> & reqAttribs);
 
-    json toValue(const std::set<Mantids29::Authentication::ApplicationAttribute> &t);
+    json attributeSetToJson(const std::set<Mantids29::Authentication::ApplicationAttribute> &t);
 
-    // TODO: move to some helper
-    json toValue(const std::set<std::string> &t);
-    json toValue(const std::set<uint32_t> &t);
-
+    /////////////////////////////////
     // Methods:
 
     // method name -> method.

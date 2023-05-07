@@ -1,4 +1,5 @@
 #include "methodshandler.h"
+#include "Mantids29/Helpers/json.h"
 #include <Mantids29/Threads/lock_shared.h>
 
 using namespace Mantids29::API::Monolith;
@@ -46,7 +47,6 @@ int MethodsHandler::invoke(Mantids29::Authentication::Domains * authDomain, cons
         {
             return METHOD_RET_CODE_INVALIDDOMAIN;
         }
-
     }
 }
 
@@ -76,8 +76,8 @@ MethodsHandler::eMethodValidationCodes MethodsHandler::validatePermissions(Manti
     else
     {
         // The method is not authorized for this authentication level.. Report what is failing.
-        (*reasons)["passIndexesLeft"] = toValue(passIndexesLeft);
-        (*reasons)["attribsLeft"] = toValue(attribsLeft);
+        (*reasons)["passIndexesLeft"] = Helpers::setToJson(passIndexesLeft);
+        (*reasons)["attribsLeft"] = attributeSetToJson(attribsLeft);
         return VALIDATION_NOTAUTHORIZED;
     }
 
@@ -104,7 +104,7 @@ std::set<Mantids29::Authentication::ApplicationAttribute> MethodsHandler::getApp
     return r;
 }
 
-json MethodsHandler::toValue(const std::set<Mantids29::Authentication::ApplicationAttribute> &t)
+json MethodsHandler::attributeSetToJson(const std::set<Mantids29::Authentication::ApplicationAttribute> &t)
 {
     json x;
     int v=0;
@@ -112,24 +112,6 @@ json MethodsHandler::toValue(const std::set<Mantids29::Authentication::Applicati
     {
         x[v++] = i.attribName;
     }
-    return x;
-}
-
-json MethodsHandler::toValue(const std::set<std::string> &t)
-{
-    json x;
-    int v=0;
-    for (const std::string & i : t)
-        x[v++] = i;
-    return x;
-}
-
-json MethodsHandler::toValue(const std::set<uint32_t> &t)
-{
-    json x;
-    int v=0;
-    for (const uint32_t & i : t)
-        x[v++] = i;
     return x;
 }
 

@@ -57,3 +57,21 @@ std::list<std::string> Mantids29::Helpers::jsonToStringList(const json &value, c
     }
     return r;
 }
+
+json Mantids29::Helpers::setToJson(const std::set<std::string> &t)
+{
+    json x;
+    int v=0;
+    for (const std::string & i : t)
+        x[v++] = i;
+    return x;
+}
+
+json Mantids29::Helpers::setToJson(const std::set<uint32_t> &t)
+{
+    json x;
+    int v=0;
+    for (const uint32_t & i : t)
+        x[v++] = i;
+    return x;
+}
