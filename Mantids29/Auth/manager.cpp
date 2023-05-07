@@ -81,7 +81,7 @@ Reason Manager::authenticate(const std::string &appName, const ClientDetails &cl
 
             else
             {
-                ret = validateStoredSecret(pStoredSecretData, incommingPassword, challengeSalt, authMode);
+                ret = validateStoredSecret(accountName,pStoredSecretData, incommingPassword, challengeSalt, authMode);
 
                 // On successfull first login, give all pass indexes used for login...
                 if ( IS_PASSWORD_AUTHENTICATED(ret) && stAccountPassIndexesUsedForLogin && passwordIndex == 0 )

@@ -1,8 +1,12 @@
 #ifndef ACCOUNT_SECRET_VALIDATOR_H
 #define ACCOUNT_SECRET_VALIDATOR_H
 
+#include <Mantids29/Threads/garbagecollector.h>
+
+#include <mutex>
 #include <string>
 #include <set>
+#include <unordered_map>
 
 #include "ds_auth_mode.h"
 #include "ds_auth_reason.h"
@@ -10,6 +14,38 @@
 #include "ds_auth_secret.h"
 
 #include <Mantids29/Threads/mapitem.h>
+
+namespace Mantids29 { namespace Authentication {
+
+struct TokenCacheKey
+{
+    /*   bool operator<(const TokenCacheKey & x) const
+        {
+            if (x.accountName < accountName) return true;
+            else if (x.accountName == accountName && x.token < token) return true;
+            else return false;
+        }*/
+    bool operator==(const TokenCacheKey & x) const
+    {
+        return (x.accountName == accountName && x.token == token);
+    }
+    size_t hash() const {
+        return std::hash<std::string>{}(accountName) ^ std::hash<std::string>{}(token);
+    }
+
+    std::string accountName;
+    std::string token;
+};
+}}
+// Define the specialization of std::hash for TokenCacheKey inside the Mantids29::Authentication namespace
+namespace std {
+template <>
+struct hash<Mantids29::Authentication::TokenCacheKey> {
+    size_t operator()(const Mantids29::Authentication::TokenCacheKey& key) const {
+        return key.hash();
+    }
+};
+}
 
 namespace Mantids29 { namespace Authentication {
 
@@ -53,7 +89,7 @@ class AccountSecretValidator : public Mantids29::Threads::Safe::MapItem
 {
 public:
     AccountSecretValidator();
-    virtual ~AccountSecretValidator();
+    virtual ~AccountSecretValidator() = default;
 
     /**
      * @brief Returns the account confirmation token for a given account name.
@@ -92,16 +128,27 @@ public:
      */
     virtual bool validateAccountAttribute(const std::string& accountName, const ApplicationAttribute& applicationAttribute) = 0;
 
+    // Cleanup function to remove expired google authenticator tokens
+    void cleanupExpiredTokens();
+    // Static function to be called from the garbage collector.
+    static void cleanupExpiredTokens(void * asv);
+
+
+
+    bool getUseTokenCache();
+    void setUseTokenCache(bool newUseTokenCache);
+
 protected:
     /**
      * @brief Validates a stored secret against an input password and challenge salt.
+     * @param accountName any unique descriptor for the account (eg. UUID, UID, username)
      * @param storedSecret The stored secret to validate.
      * @param passwordInput The input password to use for validation.
      * @param challengeSalt The challenge salt to use for validation.
      * @param authMode The mode to use for authentication.
      * @return A reason indicating whether the stored secret was valid or not.
      */
-    Reason validateStoredSecret(const Secret& storedSecret, const std::string& passwordInput, const std::string& challengeSalt, Mode authMode);
+    Reason validateStoredSecret(const std::string &accountName, const Secret& storedSecret, const std::string& passwordInput, const std::string& challengeSalt, Mode authMode);
 
 private:
     /**
@@ -112,9 +159,39 @@ private:
      * @return Authentication Response Reason (authenticated or bad password)
      */
     Reason validateChallenge(const std::string & passwordFromDB, const std::string & challengeInput, const std::string &challengeSalt);
-    Reason validateGAuth(const std::string & seed, const std::string & tokenInput);
+
+    /**
+    * @brief Validates a Google Authenticator token for a given account and seed.
+    *
+    * This function validates the Google Authenticator token by comparing it with the expected token
+    * generated using the account name and seed. If the token matches, the function returns true; otherwise, it returns false.
+    *
+    * @param accountName The account name associated with the token.
+    * @param seed        The secret seed used for generating the token.
+    * @param tokenInput  The Google Authenticator token to be validated.
+    *
+    * @return True if the token is valid, false otherwise.
+    */
+    Reason validateGAuth(const std::string &accountName,const std::string & seed, const std::string & tokenInput);
+
+    // Add a cache to store used tokens with timestamps
+    std::unordered_map<TokenCacheKey, time_t> usedTokensCache;
+
+    // Ordered data structure to efficiently remove expired tokens
+    std::multimap<time_t, TokenCacheKey> expirationQueue;
+
+    // Mutex for synchronizing access to the cache and expirationQueue
+    std::mutex cacheMutex;
+
+    // Garbage collector for authentication tokens cache...
+    Threads::GarbageCollector usedTokensCacheGC;
+
+    bool useTokenCache = true;
 };
 
 }}
+
+
+
 
 #endif // ACCOUNT_SECRET_VALIDATOR_H
