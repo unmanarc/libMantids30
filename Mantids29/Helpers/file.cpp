@@ -63,7 +63,7 @@ bool Mantids29::Helpers::File::isSensitiveConfigPermissionInsecure(const std::st
     return true;
 #else
     // TODO: win32 check for secure file permissions...
-    return false;
+    return true;
 #endif
 }
 
