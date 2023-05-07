@@ -4,20 +4,6 @@
 
 using namespace Mantids29::Database;
 
-Query::Query()
-{
-    m_databaseLockMutex = nullptr;
-    m_lastInsertRowID = 0;
-    m_lastSQLReturnValue = 0;
-    m_fetchLastInsertRowID = true;
-    m_pSQLConnector = nullptr;
-    m_bindInputVars = false;
-    m_bindResultVars = false;
-    m_lastSQLErrno = 0;
-    m_numRows=0;
-    m_affectedRows=0;
-}
-
 Query::~Query()
 {
     if (m_pSQLConnector)
@@ -84,15 +70,6 @@ unsigned long long Query::getLastInsertRowID() const
     return m_lastInsertRowID;
 }
 
-bool Query::getFetchLastInsertRowID() const
-{
-    return m_fetchLastInsertRowID;
-}
-
-void Query::setFetchLastInsertRowID(bool value)
-{
-    m_fetchLastInsertRowID = value;
-}
 
 bool Query::exec(const ExecType &execType)
 {
