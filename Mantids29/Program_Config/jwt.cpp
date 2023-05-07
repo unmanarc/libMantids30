@@ -1,14 +1,22 @@
 #include "jwt.h"
+#include "Mantids29/Program_Logs/loglevels.h"
 #include <Mantids29/DataFormat_JWT/jwt.h>
 #include <Mantids29/Helpers/random.h>
+#include <Mantids29/Helpers/file.h>
 #include <memory>
 #include <fstream>
 #include <openssl/pem.h>
 #include <openssl/evp.h>
 
-std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSigner(Program::Logs::AppLog *log, boost::property_tree::ptree *ptr, const std::string &configClassName)
+// TODO:
+//isSensitiveConfigPermissionInsecure
+
+using namespace Mantids29;
+
+std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::AppLog *log, boost::property_tree::ptree *ptr, const std::string &configClassName)
 {
-    std::shared_ptr<Mantids29::DataFormat::JWT> jwtNull;
+    bool insecureFile;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
 
     std::string algorithmName = ptr->get<std::string>( configClassName + ".Algorithm", "HS256");
 
@@ -20,12 +28,25 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtSigner = std::make_shared<Mantids29::DataFormat::JWT>( algorithmDetails.m_algorithm );
+    auto jwtSigner = std::make_shared<DataFormat::JWT>( algorithmDetails.m_algorithm );
 
     if (algorithmDetails.m_usingHMAC)
     {
+        auto hmacFilePath = ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key");
+        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
+        {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (insecureFile)
+        {
+            log->log0(__func__, Program::Logs::LEVEL_SECURITY_ALERT, "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot the service.");
+            return jwtNull;
+        }
+
         // HMACSecret is a file, read the hmacSecret variable from file to file and report error if failed to read or if permissions are not secure.
-        std::ifstream hmacFile(ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key").c_str());
+        std::ifstream hmacFile(hmacFilePath.c_str());
         if (!hmacFile.is_open())
         {
             log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
@@ -35,7 +56,8 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
         std::string hmacSecret;
         hmacFile >> hmacSecret;
 
-        if (hmacSecret.empty()) {
+        if (hmacSecret.empty())
+        {
             log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Signing Key.");
             return jwtNull;
         }
@@ -48,15 +70,30 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
     }
     else
     {
-        std::string privateKeyFile = ptr->get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
+        std::string privateKeyFilePath = ptr->get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
 
-        if (privateKeyFile.empty())
+        if (privateKeyFilePath.empty())
+        {
+            log->log0(__func__,Program::Logs::LEVEL_INFO, "No JWT RSA Signing Key Configured.");
             return jwtNull;
+        }
+
+        if (!Helpers::File::isSensitiveConfigPermissionInsecure(privateKeyFilePath, &insecureFile))
+        {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open JWT RSA Signing Key secret file.");
+            return jwtNull;
+        }
+
+        if (insecureFile)
+        {
+            log->log0(__func__, Program::Logs::LEVEL_SECURITY_ALERT, "Insecure JWT RSA Signing Key secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot the service.");
+            return jwtNull;
+        }
 
         bool loaded = false;
         std::string fileContent;
 
-        FILE* privateKeyFP = fopen(privateKeyFile.c_str(), "r");
+        FILE* privateKeyFP = fopen(privateKeyFilePath.c_str(), "r");
         if (privateKeyFP != nullptr)
         {
             EVP_PKEY* evpPrivateKey = PEM_read_PrivateKey(privateKeyFP, nullptr, nullptr, nullptr);
@@ -78,7 +115,7 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
             }
             else
             {
-                log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFile.c_str());
+                log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
             }
 
             EVP_PKEY_free(evpPrivateKey);
@@ -86,7 +123,7 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
         }
         else
         {
-            log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFile.c_str());
+            log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
         }
 
         if (loaded)
@@ -96,9 +133,10 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTSig
     }
 }
 
-std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTValidator(Program::Logs::AppLog *log, boost::property_tree::ptree *ptr, const std::string &configClassName)
+std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::AppLog *log, boost::property_tree::ptree *ptr, const std::string &configClassName)
 {
-    std::shared_ptr<Mantids29::DataFormat::JWT> jwtNull;
+    bool insecureFile;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
     std::string algorithmName = ptr->get<std::string>( configClassName + ".Algorithm", "HS256");
 
     if ( !DataFormat::JWT::isAlgorithmSupported(algorithmName) )
@@ -109,12 +147,26 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<Mantids29::DataFormat::JWT>(algorithmDetails.m_algorithm);
+    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.m_algorithm);
 
     if (algorithmDetails.m_usingHMAC)
     {
         // HMACSecret is a file, read the hmacSecret variable from file to file and report error if failed to read or if permissions are not secure.
-        std::ifstream hmacFile(ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key").c_str());
+
+        auto hmacFilePath = ptr->get<std::string>( configClassName + ".HMACSecret", "jwt_secret.key");
+        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
+        {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (insecureFile)
+        {
+            log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot the service.");
+            return jwtNull;
+        }
+
+        std::ifstream hmacFile(hmacFilePath.c_str());
         if (!hmacFile.is_open())
         {
             log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
@@ -124,7 +176,8 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
         std::string hmacSecret;
         hmacFile >> hmacSecret;
 
-        if (hmacSecret.empty()) {
+        if (hmacSecret.empty())
+        {
             log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
             return jwtNull;
         }
@@ -137,15 +190,18 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
     }
     else
     {
-        std::string publicKeyFile = ptr->get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
+        std::string publicKeyFilePath = ptr->get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
 
-        if (publicKeyFile.empty())
+        if (publicKeyFilePath.empty())
+        {
+            log->log0(__func__,Program::Logs::LEVEL_CRITICAL, "No JWT RSA Validation Key Configured.");
             return jwtNull;
+        }
 
         bool loaded = false;
         std::string fileContent;
 
-        FILE* publicKeyFP = fopen(publicKeyFile.c_str(), "r");
+        FILE* publicKeyFP = fopen(publicKeyFilePath.c_str(), "r");
         if (publicKeyFP != nullptr)
         {
             EVP_PKEY* evpPublicKey = PEM_read_PUBKEY(publicKeyFP, nullptr, nullptr, nullptr);
@@ -167,7 +223,7 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
             }
             else
             {
-                log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to load the JWT Public Key from file '%s'.", publicKeyFile.c_str());
+                log->log0(__func__,Program::Logs::LEVEL_CRITICAL, "Failed to load the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
             }
 
             EVP_PKEY_free(evpPublicKey);
@@ -175,7 +231,7 @@ std::shared_ptr<Mantids29::DataFormat::JWT> Mantids29::Config::JWT::createJWTVal
         }
         else
         {
-            log->log0(__func__,Program::Logs::LEVEL_ERR, "Failed to read the JWT Public Key from file '%s'.", publicKeyFile.c_str());
+            log->log0(__func__,Program::Logs::LEVEL_CRITICAL, "Failed to read the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
         }
 
         if (loaded)
