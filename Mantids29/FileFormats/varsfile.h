@@ -1,5 +1,4 @@
-#ifndef VARSFILE_H
-#define VARSFILE_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -100,4 +99,3 @@ private:
 }}}
 
 
-#endif // VARSFILE_H

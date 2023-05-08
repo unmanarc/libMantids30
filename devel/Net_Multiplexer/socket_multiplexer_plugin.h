@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_PLUGINS_H
-#define SOCKET_MULTIPLEXER_PLUGINS_H
+#pragma once
 
 #include <string>
 #include <Helpers/json.h>
@@ -49,4 +48,3 @@ private:
 
 }}}
 
-#endif // SOCKET_MULTIPLEXER_PLUGINS_H

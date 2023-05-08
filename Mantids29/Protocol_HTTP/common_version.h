@@ -1,5 +1,4 @@
-#ifndef HTTP_VERSION_H
-#define HTTP_VERSION_H
+#pragma once
 
 #include <string>
 #include <stdint.h>
@@ -77,4 +76,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_VERSION_H

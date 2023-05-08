@@ -1,5 +1,4 @@
-#ifndef A_BIN_H
-#define A_BIN_H
+#pragma once
 
 #include "a_var.h"
 #include <Mantids29/Threads/mutex_shared.h>
@@ -69,4 +68,3 @@ private:
 };
 }}}
 
-#endif // A_BIN_H

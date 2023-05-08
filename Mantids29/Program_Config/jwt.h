@@ -1,5 +1,4 @@
-#ifndef JWT_CONFIG_H
-#define JWT_CONFIG_H
+#pragma once
 
 #include <memory>
 #include <Mantids29/DataFormat_JWT/jwt.h>
@@ -26,4 +25,3 @@ public:
 
 }}
 
-#endif // JWT_CONFIG_H

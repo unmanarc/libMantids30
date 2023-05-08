@@ -1,5 +1,4 @@
-#ifndef IAUTH_DOMAINS_H
-#define IAUTH_DOMAINS_H
+#pragma once
 
 #include <Mantids29/Threads/map.h>
 #include "manager.h"
@@ -49,4 +48,3 @@ private:
 
 }}
 
-#endif // IAUTH_DOMAINS_H

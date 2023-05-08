@@ -1,5 +1,4 @@
-#ifndef LOGINRPCCLIENT_H
-#define LOGINRPCCLIENT_H
+#pragma once
 
 #include "manager_remote.h"
 
@@ -115,4 +114,3 @@ private:
 
 };
 }}
-#endif // LOGINRPCCLIENT_H

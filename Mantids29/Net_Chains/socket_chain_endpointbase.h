@@ -1,5 +1,4 @@
-#ifndef SOCKETCHAINENDPOINTBASE_H
-#define SOCKETCHAINENDPOINTBASE_H
+#pragma once
 
 #include "socket_chain_protocolbase.h"
 
@@ -19,4 +18,3 @@ protected:
 
 }}}}
 
-#endif // SOCKETCHAINENDPOINTBASE_H

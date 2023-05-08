@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINER_BASE_H
-#define BINARYCONTAINER_BASE_H
+#pragma once
 
 
 #include "b_chunk.h"
@@ -420,4 +419,3 @@ private:
 
 }}}
 
-#endif // BINARYCONTAINER_BASE_H

@@ -1,5 +1,4 @@
-#ifndef IAUTH_SESSION_H
-#define IAUTH_SESSION_H
+#pragma once
 
 #include "data.h"
 #include "domains.h"
@@ -241,4 +240,3 @@ private:
 
 }}
 
-#endif // IAUTH_SESSION_H

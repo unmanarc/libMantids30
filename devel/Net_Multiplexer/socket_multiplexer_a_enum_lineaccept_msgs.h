@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_A_ENUM_LINEACCEPT_MSGS_H
-#define SOCKET_MULTIPLEXER_A_ENUM_LINEACCEPT_MSGS_H
+#pragma once
 
 
 namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
@@ -18,4 +17,3 @@ enum eLineAcceptAnswerMSG {
 
 }}}}
 
-#endif // SOCKET_MULTIPLEXER_A_ENUM_LINEACCEPT_MSGS_H

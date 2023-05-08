@@ -1,5 +1,4 @@
-#ifndef HTMLIENGINE_H
-#define HTMLIENGINE_H
+#pragma once
 
 #include <Mantids29/Protocol_HTTP/httpv1_base.h>
 #include <Mantids29/Helpers/json.h>
@@ -21,4 +20,3 @@ private:
 
 }}}}
 
-#endif // HTMLIENGINE_H

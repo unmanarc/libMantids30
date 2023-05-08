@@ -1,5 +1,4 @@
-#ifndef STDLIST_H
-#define STDLIST_H
+#pragma once
 
 #include <list>
 
@@ -23,4 +22,3 @@ bool contains(const std::list<T> &haystack, const T &needle)
 }}
 
 
-#endif // STDLIST_H

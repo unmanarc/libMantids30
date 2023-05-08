@@ -1,5 +1,4 @@
-#ifndef A_INT64_H
-#define A_INT64_H
+#pragma once
 
 #include "a_var.h"
 #include <stdint.h>
@@ -35,4 +34,3 @@ private:
 
 }}}
 
-#endif // A_INT64_H

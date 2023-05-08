@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINER_MEM_H
-#define BINARYCONTAINER_MEM_H
+#pragma once
 
 #include "b_base.h"
 
@@ -87,4 +86,3 @@ private:
 
 }}}
 
-#endif // BINARYCONTAINER_MEM_H

@@ -1,5 +1,4 @@
-#ifndef SOCKET_TCP_H
-#define SOCKET_TCP_H
+#pragma once
 
 #include "socket_stream_base.h"
 #include <unistd.h>
@@ -87,4 +86,3 @@ typedef std::shared_ptr<Socket_TCP> Socket_TCP_SP;
 
 }}}
 
-#endif // SOCKET_TCP_H

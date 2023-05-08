@@ -1,5 +1,4 @@
-#ifndef RESTFUL_CLIENT_HANDLER_H
-#define RESTFUL_CLIENT_HANDLER_H
+#pragma once
 
 #include <Mantids29/API_RESTful/methodshandler.h>
 #include <Mantids29/Server_WebCore/apiclienthandler.h>
@@ -68,4 +67,3 @@ private:
 
 }}}}
 
-#endif // RESTFUL_CLIENT_HANDLER_H

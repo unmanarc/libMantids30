@@ -1,5 +1,4 @@
-#ifndef STREAMURL_H
-#define STREAMURL_H
+#pragma once
 
 #include <Mantids29/Memory/streamableobject.h>
 
@@ -25,4 +24,3 @@ private:
 
 }}}}
 
-#endif // STREAMURL_H

@@ -1,5 +1,4 @@
-#ifndef HTTP_CODE_RESPONSE_H
-#define HTTP_CODE_RESPONSE_H
+#pragma once
 
 #include <Mantids29/Memory/subparser.h>
 #include "common_version.h"
@@ -118,4 +117,3 @@ private:
 };
 }}}}
 
-#endif // HTTP_CODE_RESPONSE_H

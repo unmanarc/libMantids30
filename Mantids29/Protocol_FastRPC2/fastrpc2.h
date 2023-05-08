@@ -1,5 +1,4 @@
-#ifndef FastRPC2_H
-#define FastRPC2_H
+#pragma once
 
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Auth/session.h>
@@ -403,6 +402,5 @@ private:
 };
 
 }}}}
-#endif // FastRPC2_H
 
 

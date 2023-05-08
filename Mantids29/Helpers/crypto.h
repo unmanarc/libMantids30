@@ -1,5 +1,4 @@
-#ifndef CRYPTO_H
-#define CRYPTO_H
+#pragma once
 
 
 #include <memory>
@@ -133,4 +132,3 @@ public:
 
 }}
 
-#endif // CRYPTO_H

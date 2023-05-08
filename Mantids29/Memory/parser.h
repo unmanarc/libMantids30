@@ -1,5 +1,4 @@
-#ifndef INTERNALMAINPARSER_H
-#define INTERNALMAINPARSER_H
+#pragma once
 
 #include "streamableobject.h"
 #include "subparser.h"
@@ -92,5 +91,4 @@ private:
 }}}
 
 
-#endif // INTERNALMAINPARSER_H
 

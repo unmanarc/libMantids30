@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_A_STRUCT_LINEID_H
-#define SOCKET_MULTIPLEXER_A_STRUCT_LINEID_H
+#pragma once
 
 #include "vars.h"
 #include <limits>
@@ -20,4 +19,3 @@ struct sLineID
 
 }}}}
 
-#endif // SOCKET_MULTIPLEXER_A_STRUCT_LINEID_H

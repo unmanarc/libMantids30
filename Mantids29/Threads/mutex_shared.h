@@ -1,5 +1,4 @@
-#ifndef MUTEX_RW_H
-#define MUTEX_RW_H
+#pragma once
 
 #include <pthread.h>
 
@@ -54,4 +53,3 @@ private:
 
 }}}
 
-#endif // MUTEX_RW_H

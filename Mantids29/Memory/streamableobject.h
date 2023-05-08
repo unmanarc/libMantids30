@@ -1,5 +1,4 @@
-#ifndef STREAMABLEOBJECT_H
-#define STREAMABLEOBJECT_H
+#pragma once
 
 #include <string>
 #include <stdlib.h>
@@ -104,4 +103,3 @@ private:
 
 
 
-#endif // STREAMABLEOBJECT_H

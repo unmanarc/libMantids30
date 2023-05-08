@@ -1,5 +1,4 @@
-#ifndef RESOURCESFILTER_H
-#define RESOURCESFILTER_H
+#pragma once
 
 #include <string>
 #include <list>
@@ -92,4 +91,3 @@ protected:
 
 }}}
 
-#endif // RESOURCESFILTER_H

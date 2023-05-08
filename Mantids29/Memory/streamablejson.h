@@ -1,5 +1,4 @@
-#ifndef JSON_STREAMABLEOBJECT_H
-#define JSON_STREAMABLEOBJECT_H
+#pragma once
 
 #include <Mantids29/Memory/streamableobject.h>
 #include <Mantids29/Helpers/json.h>
@@ -43,4 +42,3 @@ private:
 }}}
 
 
-#endif // JSON_STREAMABLEOBJECT_H

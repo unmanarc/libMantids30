@@ -1,5 +1,4 @@
-#ifndef SQLCONNECTOR_MARIADB_H
-#define SQLCONNECTOR_MARIADB_H
+#pragma once
 
 #include <mysql.h>
 #include <Mantids29/DB/sqlconnector.h>
@@ -71,4 +70,3 @@ private:
 
 }}
 
-#endif // SQLCONNECTOR_MARIADB_H

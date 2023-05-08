@@ -1,5 +1,4 @@
-#ifndef MIME_SUB_ENDPOINT_H
-#define MIME_SUB_ENDPOINT_H
+#pragma once
 
 #include <string>
 #include <Mantids29/Memory/subparser.h>
@@ -24,4 +23,3 @@ private:
 
 }}}}
 
-#endif // MIME_SUB_ENDPOINT_H

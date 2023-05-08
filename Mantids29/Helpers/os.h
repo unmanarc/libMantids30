@@ -1,5 +1,4 @@
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include <string>
 
@@ -54,4 +53,3 @@ public:
 
 
 }}
-#endif // OS_H

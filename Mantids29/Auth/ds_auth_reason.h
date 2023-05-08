@@ -1,5 +1,4 @@
-#ifndef AUTH_REASONS_H
-#define AUTH_REASONS_H
+#pragma once
 
 
 namespace Mantids29 { namespace Authentication {
@@ -76,4 +75,3 @@ static const char * getReasonText(const Reason & reason)
 
 }}
 
-#endif // AUTH_REASONS_H

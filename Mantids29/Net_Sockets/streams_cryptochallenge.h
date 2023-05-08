@@ -1,5 +1,4 @@
-#ifndef CRYPTOCHALLENGE_H
-#define CRYPTOCHALLENGE_H
+#pragma once
 
 #include "socket_stream_base.h"
 
@@ -24,4 +23,3 @@ private:
 
 }}}}
 
-#endif // CRYPTOCHALLENGE_H

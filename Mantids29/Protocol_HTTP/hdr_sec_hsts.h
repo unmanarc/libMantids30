@@ -1,5 +1,4 @@
-#ifndef HTTP_SECURITY_HSTS_H
-#define HTTP_SECURITY_HSTS_H
+#pragma once
 
 #include <string>
 namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
@@ -58,5 +57,4 @@ private:
 
 
 }}}}}}
-#endif // HTTP_SECURITY_HSTS_H
 

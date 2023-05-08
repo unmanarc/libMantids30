@@ -1,5 +1,4 @@
-#ifndef PROGRAMVALUES_H
-#define PROGRAMVALUES_H
+#pragma once
 
 #include <string>
 #include <list>
@@ -86,4 +85,3 @@ protected:
 
 }}}
 
-#endif // PROGRAMVALUES_H

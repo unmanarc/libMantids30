@@ -1,5 +1,4 @@
-#ifndef JWT_H
-#define JWT_H
+#pragma once
 
 #include <ctime>
 #include <string>
@@ -438,4 +437,3 @@ private:
 
 }}
 
-#endif // JWT_H

@@ -1,5 +1,4 @@
-#ifndef SOCKET_TLSCLIENT_CALLBACKS_H
-#define SOCKET_TLSCLIENT_CALLBACKS_H
+#pragma once
 
 #include "callbacks_socket_tls.h"
 
@@ -32,4 +31,3 @@ public:
 };
 }}}
 
-#endif // SOCKET_TLSCLIENT_CALLBACKS_H

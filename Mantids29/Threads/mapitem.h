@@ -1,5 +1,4 @@
-#ifndef XMAPELEMENT_H
-#define XMAPELEMENT_H
+#pragma once
 
 #include <atomic>
 
@@ -30,4 +29,3 @@ protected:
 
 }}}
 
-#endif // XMAPELEMENT_H

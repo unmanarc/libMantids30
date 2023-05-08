@@ -1,5 +1,4 @@
-#ifndef VARCHAR_H
-#define VARCHAR_H
+#pragma once
 
 
 #include "a_var.h"
@@ -67,4 +66,3 @@ private:
 
 }}}
 
-#endif // VARCHAR_H

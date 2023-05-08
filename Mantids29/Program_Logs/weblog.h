@@ -1,5 +1,4 @@
-#ifndef WEBLOG_H
-#define WEBLOG_H
+#pragma once
 
 namespace Mantids29 { namespace Program { namespace Logs {
 
@@ -11,4 +10,3 @@ public:
 };
 }}}
 
-#endif // WEBLOG_H

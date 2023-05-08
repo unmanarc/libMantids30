@@ -1,5 +1,4 @@
-#ifndef LOGCOLORS_H
-#define LOGCOLORS_H
+#pragma once
 
 namespace Mantids29 { namespace Program { namespace Logs {
 
@@ -16,4 +15,3 @@ enum eLogColors
 
 }}}
 
-#endif // LOGCOLORS_H

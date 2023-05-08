@@ -1,5 +1,4 @@
-#ifndef A_ALLVARS_H
-#define A_ALLVARS_H
+#pragma once
 
 #include "a_var.h"
 
@@ -28,4 +27,3 @@
 #include "a_datetime.h"
 
 
-#endif // A_ALLVARS_H

@@ -1,5 +1,4 @@
-#ifndef SOCKET_UNIX_H
-#define SOCKET_UNIX_H
+#pragma once
 
 #ifndef _WIN32
 #include "socket_stream_base.h"
@@ -44,4 +43,3 @@ typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
 }}}
 
 #endif
-#endif // SOCKET_UNIX_H

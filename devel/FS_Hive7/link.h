@@ -1,5 +1,4 @@
-#ifndef HIVE7_LINK_H
-#define HIVE7_LINK_H
+#pragma once
 
 #include "permissions.h"
 #include "attributes.h"
@@ -14,4 +13,3 @@ public:
 
 }}}
 
-#endif // HIVE7_LINK_H

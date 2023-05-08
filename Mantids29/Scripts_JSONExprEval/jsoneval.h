@@ -1,5 +1,4 @@
-#ifndef JSONEXPREVAL_H
-#define JSONEXPREVAL_H
+#pragma once
 
 #include "atomicexpression.h"
 #include <Mantids29/Helpers/json.h>
@@ -52,4 +51,3 @@ private:
 
 }}}
 
-#endif // JSONEXPREVAL_H

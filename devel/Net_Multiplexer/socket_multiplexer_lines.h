@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_LINES_H
-#define SOCKET_MULTIPLEXER_LINES_H
+#pragma once
 
 #include <map>
 #include <random>
@@ -52,4 +51,3 @@ private:
 
 }}}
 
-#endif // SOCKET_MULTIPLEXER_LINES_H

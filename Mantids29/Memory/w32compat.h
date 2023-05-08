@@ -1,5 +1,4 @@
-#ifndef WIN32NETCOMPAT_H
-#define WIN32NETCOMPAT_H
+#pragma once
 
 #ifdef _WIN32
 typedef int socklen_t;
@@ -15,4 +14,3 @@ const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 #endif
 
 
-#endif // WIN32NETCOMPAT_H

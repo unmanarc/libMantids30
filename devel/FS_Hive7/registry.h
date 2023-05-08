@@ -1,5 +1,4 @@
-#ifndef HIVE7_REGISTRY_H
-#define HIVE7_REGISTRY_H
+#pragma once
 
 #include "attributes.h"
 #include "permissions.h"
@@ -73,4 +72,3 @@ private:
 
 }}}
 
-#endif // HIVE7_REGISTRY_H

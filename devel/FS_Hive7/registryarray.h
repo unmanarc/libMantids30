@@ -1,5 +1,4 @@
-#ifndef HIVE7_REGARRAY_H
-#define HIVE7_REGARRAY_H
+#pragma once
 
 #include "attributes.h"
 #include "permissions.h"
@@ -13,4 +12,3 @@ public:
 
 }}}
 
-#endif // HIVE7_REGARRAY_H

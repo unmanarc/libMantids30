@@ -1,5 +1,4 @@
-#ifndef MUTEX_H
-#define MUTEX_H
+#pragma once
 
 #include <mutex>
 
@@ -10,4 +9,3 @@ typedef std::mutex Mutex;
 
 }}}
 
-#endif // MUTEX_H

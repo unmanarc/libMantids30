@@ -1,5 +1,4 @@
-#ifndef WEB_API_CORE_H
-#define WEB_API_CORE_H
+#pragma once
 
 #include "resourcesfilter.h"
 
@@ -159,4 +158,3 @@ private:
 };
 
 }}}}
-#endif // WEB_API_CORE_H

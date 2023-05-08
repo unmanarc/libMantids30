@@ -1,5 +1,4 @@
-#ifndef MANAGER_DB_H
-#define MANAGER_DB_H
+#pragma once
 
 #include <Mantids29/Auth/manager.h>
 #include <Mantids29/DB/sqlconnector.h>
@@ -150,4 +149,3 @@ private:
 
 
 }}
-#endif // MANAGER_DB_H

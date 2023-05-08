@@ -1,5 +1,4 @@
-#ifndef keyValueMap_H
-#define keyValueMap_H
+#pragma once
 
 #include <mutex>
 #include <condition_variable>
@@ -215,4 +214,3 @@ void Map<T>::waitForEmptyMap()
 
 }}}
 
-#endif // keyValueMap_H

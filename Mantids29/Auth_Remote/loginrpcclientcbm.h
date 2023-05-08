@@ -1,5 +1,4 @@
-#ifndef LOGINRPCCLIENTCBM_H
-#define LOGINRPCCLIENTCBM_H
+#pragma once
 
 #include "loginrpcclient.h"
 #include <Mantids29/Net_Sockets/callbacks_socket_tls_client.h>
@@ -59,4 +58,3 @@ private:
 
 }}
 
-#endif // LOGINRPCCLIENTCBM_H

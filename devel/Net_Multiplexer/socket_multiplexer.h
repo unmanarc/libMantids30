@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_H
-#define SOCKET_MULTIPLEXER_H
+#pragma once
 
 #include "vars.h"
 
@@ -118,4 +117,3 @@ private:
 
 }}}
 
-#endif // SOCKET_MULTIPLEXER_H

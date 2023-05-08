@@ -1,5 +1,4 @@
-#ifndef METHODS_HANDLER_H
-#define METHODS_HANDLER_H
+#pragma once
 
 #include <Mantids29/Protocol_HTTP/httpv1_base.h>
 #include <map>
@@ -185,4 +184,3 @@ private:
 
 }}}
 
-#endif // METHODS_HANDLER_H

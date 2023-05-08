@@ -1,5 +1,4 @@
-#ifndef SOCKET_TCP_SSL_H
-#define SOCKET_TCP_SSL_H
+#pragma once
 
 #include "socket_tcp.h"
 #include <map>
@@ -618,5 +617,4 @@ private:
 };
 }}}
 
-#endif // SOCKET_TCP_SSL_H
 

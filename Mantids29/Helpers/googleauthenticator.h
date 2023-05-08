@@ -1,5 +1,4 @@
-#ifndef GOOGLEAUTHENTICATOR_H
-#define GOOGLEAUTHENTICATOR_H
+#pragma once
 
 #include <string>
 
@@ -45,4 +44,3 @@ public:
 };
 
 }}}
-#endif // GOOGLEAUTHENTICATOR_H

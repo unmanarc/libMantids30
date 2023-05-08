@@ -1,5 +1,4 @@
-#ifndef STREAMABLENULL_H
-#define STREAMABLENULL_H
+#pragma once
 
 #include "streamableobject.h"
 #include <unistd.h>
@@ -23,4 +22,3 @@ private:
 
 }}}
 
-#endif // STREAMABLENULL_H

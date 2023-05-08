@@ -1,5 +1,4 @@
-#ifndef LINERECV_SUBPARSER_H
-#define LINERECV_SUBPARSER_H
+#pragma once
 
 #include <Mantids29/Memory/subparser.h>
 
@@ -23,4 +22,3 @@ protected:
 };
 }}}}
 
-#endif // LINERECV_SUBPARSER_H

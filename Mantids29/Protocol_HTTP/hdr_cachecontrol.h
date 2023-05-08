@@ -1,5 +1,4 @@
-#ifndef CACHECONTROL_H
-#define CACHECONTROL_H
+#pragma once
 
 #include <stdint.h>
 #include <string>
@@ -49,4 +48,3 @@ private:
 };
 
 }}}}}
-#endif // CACHECONTROL_H

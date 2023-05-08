@@ -125,4 +125,3 @@ private:
 
 }}}
 
-#endif // SOCKET_MULTIPLEXED_LINE

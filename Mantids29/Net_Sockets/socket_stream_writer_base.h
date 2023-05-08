@@ -1,5 +1,4 @@
-#ifndef STREAM_WRITER_H
-#define STREAM_WRITER_H
+#pragma once
 
 #include <stdint.h>
 #include <string>
@@ -125,4 +124,3 @@ private:
 
 }}}
 
-#endif // STREAM_WRITER_H

@@ -1,5 +1,4 @@
-#ifndef SQLCONNECTOR_H
-#define SQLCONNECTOR_H
+#pragma once
 
 #include <condition_variable>
 
@@ -244,4 +243,3 @@ private:
 
 }}
 
-#endif // SQLCONNECTOR_H

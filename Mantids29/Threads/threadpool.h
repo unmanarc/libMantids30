@@ -1,5 +1,4 @@
-#ifndef THREADPOOL_H
-#define THREADPOOL_H
+#pragma once
 
 #include <atomic>
 #include <string>
@@ -124,7 +123,6 @@ private:
 
 }}
 
-#endif // THREADPOOL_H
 
 // TODO: Failed task what to do?, using
 

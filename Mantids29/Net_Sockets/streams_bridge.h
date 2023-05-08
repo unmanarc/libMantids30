@@ -176,4 +176,3 @@ private:
 };
 
 }}}}
-#endif // SOCKET_BRIDGE

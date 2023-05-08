@@ -1,8 +1,7 @@
+#pragma once
 /**
  * Provides utility functions for working with JSON data.
  */
-#ifndef JSON_H
-#define JSON_H
 
 #include <json/json.h>
 #include <list>
@@ -115,4 +114,3 @@ namespace Mantids29 { namespace Helpers {
 
 }}; // End namespace Mantids29::Helpers
 
-#endif // JSON_H

@@ -1,5 +1,4 @@
-#ifndef SESSION_VARS_H
-#define SESSION_VARS_H
+#pragma once
 
 #include <Mantids29/Threads/mutex_shared.h>
 #include <string>
@@ -56,4 +55,3 @@ private:
 }} // namespace Mantids29::Authentication
 
 
-#endif // SESSION_VARS_H

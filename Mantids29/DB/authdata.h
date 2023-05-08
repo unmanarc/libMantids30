@@ -1,5 +1,4 @@
-#ifndef AUTHINFO_H
-#define AUTHINFO_H
+#pragma once
 
 #include <string>
 
@@ -17,4 +16,3 @@ struct AuthData {
 }  // namespace Database
 }  // namespace Mantids
 
-#endif // AUTHINFO_H

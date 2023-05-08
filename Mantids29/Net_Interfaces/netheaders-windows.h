@@ -1,5 +1,4 @@
-#ifndef NETHEADERSWINDOWS_H
-#define NETHEADERSWINDOWS_H
+#pragma once
 
 #ifdef _WIN32
 
@@ -110,4 +109,3 @@ struct tcphdr {
 #endif
 
 
-#endif // NETHEADERSWINDOWS_H

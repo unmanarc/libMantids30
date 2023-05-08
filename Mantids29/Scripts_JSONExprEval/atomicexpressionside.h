@@ -1,5 +1,4 @@
-#ifndef ATOMICEXPRESSIONSIDE_H
-#define ATOMICEXPRESSIONSIDE_H
+#pragma once
 
 #include <boost/regex.hpp>
 #include <vector>
@@ -48,4 +47,3 @@ private:
     eExpressionSideMode mode;
 };
 }}}
-#endif // ATOMICEXPRESSIONSIDE_H

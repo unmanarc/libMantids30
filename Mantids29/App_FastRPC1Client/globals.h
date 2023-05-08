@@ -1,5 +1,4 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#pragma once
 
 #include <boost/property_tree/ini_parser.hpp>
 #include <Mantids29/Program_Logs/applog.h>
@@ -121,4 +120,3 @@ private:
 };
 }}}
 
-#endif // GLOBALS_H

@@ -1,5 +1,4 @@
-#ifndef SOCKETCHAIN_AES_H
-#define SOCKETCHAIN_AES_H
+#pragma once
 
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
 #include "socket_chain_protocolbase.h"
@@ -166,4 +165,3 @@ private:
 };
 
 }}}}
-#endif // SOCKETCHAIN_AES_H

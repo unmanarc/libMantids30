@@ -1,5 +1,4 @@
-#ifndef HTTP_HLP_CHUNKED_RETRIEVER_H
-#define HTTP_HLP_CHUNKED_RETRIEVER_H
+#pragma once
 
 #include <Mantids29/Memory/streamableobject.h>
 
@@ -23,4 +22,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_HLP_CHUNKED_RETRIEVER_H

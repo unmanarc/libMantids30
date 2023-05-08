@@ -1,5 +1,4 @@
-#ifndef A_MACADDR_H
-#define A_MACADDR_H
+#pragma once
 
 #include "a_var.h"
 #include "endian2.h"
@@ -58,4 +57,3 @@ private:
 
 }}}
 
-#endif // A_MACADDR_H

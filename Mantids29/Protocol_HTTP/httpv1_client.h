@@ -1,5 +1,4 @@
-#ifndef HTTP1CLIENT_H
-#define HTTP1CLIENT_H
+#pragma once
 
 #include "httpv1_base.h"
 
@@ -114,4 +113,3 @@ private:
 
 }}}}
 
-#endif // HTTP1CLIENT_H

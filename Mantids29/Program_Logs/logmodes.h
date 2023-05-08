@@ -1,5 +1,4 @@
-#ifndef LOGMODES_H
-#define LOGMODES_H
+#pragma once
 
 namespace Mantids29 { namespace Program { namespace Logs {
 
@@ -12,4 +11,3 @@ enum eLogModes
 
 }}}
 
-#endif // LOGMODES_H

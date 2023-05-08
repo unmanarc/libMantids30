@@ -1,5 +1,4 @@
 ﻿#ifndef INTERNALPARSER_H
-#define INTERNALPARSER_H
 
 #include "b_chunks.h"
 #include "b_ref.h"
@@ -159,4 +158,3 @@ private:
 
 }}}
 
-#endif // INTERNALPARSER_H

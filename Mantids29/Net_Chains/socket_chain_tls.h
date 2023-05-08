@@ -1,5 +1,4 @@
-#ifndef SOCKETCHAIN_TLS_H
-#define SOCKETCHAIN_TLS_H
+#pragma once
 
 #include <Mantids29/Net_Sockets/socket_tls.h>
 #include "socket_chain_protocolbase.h"
@@ -18,4 +17,3 @@ protected:
 
 }}}}
 
-#endif // SOCKETCHAIN_TLS_H

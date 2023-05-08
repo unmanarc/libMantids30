@@ -1,5 +1,4 @@
-#ifndef ABSTRACTVAR_H
-#define ABSTRACTVAR_H
+#pragma once
 
 #include <string>
 
@@ -69,4 +68,3 @@ private:
 
 
 
-#endif // ABSTRACTVAR_H

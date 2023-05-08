@@ -1,5 +1,4 @@
-#ifndef STDLISTS_H
-#define STDLISTS_H
+#pragma once
 
 #include <set>
 
@@ -24,4 +23,3 @@ bool contains( const std::set<T>& haystack, const T& needle )
 }}
 
 
-#endif // STDLISTS_H

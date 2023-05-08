@@ -1,5 +1,4 @@
-#ifndef LOGLEVELS_H
-#define LOGLEVELS_H
+#pragma once
 
 namespace Mantids29 { namespace Program { namespace Logs {
 
@@ -17,4 +16,3 @@ enum eLogLevels
 
 }}}
 
-#endif // LOGLEVELS_H

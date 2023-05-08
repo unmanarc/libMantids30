@@ -1,5 +1,4 @@
-#ifndef A_IPV6_H
-#define A_IPV6_H
+#pragma once
 
 #include "a_var.h"
 #ifdef _WIN32
@@ -46,4 +45,3 @@ private:
 
 }}}
 
-#endif // A_IPV6_H

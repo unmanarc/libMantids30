@@ -1,5 +1,4 @@
-#ifndef QUERY_SQLITE3_H
-#define QUERY_SQLITE3_H
+#pragma once
 
 #include <Mantids29/DB/query.h>
 #include <sqlite3.h>
@@ -52,4 +51,3 @@ private:
 
 }}
 
-#endif // QUERY_SQLITE3_H

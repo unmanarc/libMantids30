@@ -1,5 +1,4 @@
-#ifndef A_UINT32_H
-#define A_UINT32_H
+#pragma once
 
 #include "a_var.h"
 #include <stdint.h>
@@ -36,4 +35,3 @@ private:
 
 }}}
 
-#endif // A_UINT32_H

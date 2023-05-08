@@ -1,5 +1,4 @@
-#ifndef STREAMABLEFD_H
-#define STREAMABLEFD_H
+#pragma once
 
 #include "streamableobject.h"
 #include <unistd.h>
@@ -46,4 +45,3 @@ private:
 
 }}}
 
-#endif // STREAMABLEFD_H

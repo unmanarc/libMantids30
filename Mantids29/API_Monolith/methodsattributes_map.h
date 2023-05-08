@@ -1,5 +1,4 @@
-#ifndef IAUTH_VALIDATION_METHODS_H
-#define IAUTH_VALIDATION_METHODS_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -54,4 +53,3 @@ private:
 
 }}
 
-#endif // IAUTH_VALIDATION_METHODS_H

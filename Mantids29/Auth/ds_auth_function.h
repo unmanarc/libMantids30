@@ -1,5 +1,4 @@
-#ifndef PASSWORD_MODES_H
-#define PASSWORD_MODES_H
+#pragma once
 
 #include <stdint.h>
 namespace Mantids29 { namespace Authentication {
@@ -30,4 +29,3 @@ enum Function
 };
 }}
 
-#endif // PASSWORD_MODES_H

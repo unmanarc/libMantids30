@@ -1,5 +1,4 @@
-#ifndef MANAGER_REMOTE_H
-#define MANAGER_REMOTE_H
+#pragma once
 
 #include <Mantids29/Auth/manager.h>
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
@@ -241,4 +240,3 @@ private:
 
 
 }}
-#endif // MANAGER_REMOTE_H

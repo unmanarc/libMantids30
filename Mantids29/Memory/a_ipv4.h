@@ -1,5 +1,4 @@
-#ifndef A_IPV4_H
-#define A_IPV4_H
+#pragma once
 
 #include "a_var.h"
 #ifdef _WIN32
@@ -64,4 +63,3 @@ private:
 
 }}}
 
-#endif // A_IPV4_H

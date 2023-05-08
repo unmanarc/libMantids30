@@ -1,5 +1,4 @@
-#ifndef QUERY_H
-#define QUERY_H
+#pragma once
 
 #include <Mantids29/Memory/a_var.h>
 #include <map>
@@ -197,4 +196,3 @@ private:
 
 }}
 
-#endif // QUERY_H

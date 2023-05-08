@@ -1,5 +1,4 @@
-#ifndef HIVE7_DIRECTORY_H
-#define HIVE7_DIRECTORY_H
+#pragma once
 
 #include "registryarray.h"
 #include "registry.h"
@@ -49,4 +48,3 @@ public:
 
 }}}
 
-#endif // HIVE7_DIRECTORY_H

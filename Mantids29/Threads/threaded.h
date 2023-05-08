@@ -1,5 +1,4 @@
-#ifndef THREADED_H
-#define THREADED_H
+#pragma once
 
 #include <thread>
 #include <atomic>
@@ -80,4 +79,3 @@ private:
 
 }}
 
-#endif // THREADED_H

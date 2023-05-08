@@ -1,5 +1,4 @@
-#ifndef SOCKET_H
-#define SOCKET_H
+#pragma once
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -313,4 +312,3 @@ typedef std::shared_ptr<Socket> Socket_SP;
 
 }}}
 
-#endif // SOCKET_H

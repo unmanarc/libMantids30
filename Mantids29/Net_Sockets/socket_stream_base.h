@@ -1,5 +1,4 @@
-#ifndef SOCKET_STREAM_BASE_H
-#define SOCKET_STREAM_BASE_H
+#pragma once
 
 #include "socket.h"
 #include "socket_stream_reader_base.h"
@@ -90,4 +89,3 @@ typedef std::shared_ptr<Socket_Stream_Base> Socket_Stream_Base_SP;
 }}}
 
 
-#endif /* SOCKET_STREAM_BASE_H */

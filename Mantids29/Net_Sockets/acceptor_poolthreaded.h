@@ -1,5 +1,4 @@
-#ifndef POOLTHREADEDACCEPTOR_H
-#define POOLTHREADEDACCEPTOR_H
+#pragma once
 
 #include "socket_stream_base.h"
 
@@ -173,4 +172,3 @@ private:
 
 }}}}
 
-#endif // POOLTHREADEDACCEPTOR_H

@@ -1,5 +1,4 @@
-#ifndef MIME_SUB_CONTENT_H
-#define MIME_SUB_CONTENT_H
+#pragma once
 
 //#include <Mantids29/Memory/streamableobject.h>
 #include <Mantids29/Memory/subparser.h>
@@ -43,4 +42,3 @@ private:
 
 }}}}
 
-#endif // MIME_SUB_CONTENT_H

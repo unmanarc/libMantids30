@@ -1,5 +1,4 @@
-#ifndef GarbageCollector_H
-#define GarbageCollector_H
+#pragma once
 
 #include "threaded.h"
 
@@ -78,4 +77,3 @@ private:
 
 }}
 
-#endif // GarbageCollector_H

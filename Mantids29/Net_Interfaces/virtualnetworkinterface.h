@@ -1,5 +1,4 @@
-#ifndef VIRTUALNETWORKINTERFACE_H
-#define VIRTUALNETWORKINTERFACE_H
+#pragma once
 
 #include "netifconfig.h"
 #include <string>
@@ -172,4 +171,3 @@ private:
 
 }}}
 
-#endif // VIRTUALNETWORKINTERFACE_H

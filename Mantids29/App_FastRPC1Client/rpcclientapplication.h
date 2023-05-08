@@ -1,5 +1,4 @@
-#ifndef RPCCLIENTAPPLICATION_H
-#define RPCCLIENTAPPLICATION_H
+#pragma once
 
 #include <Mantids29/Program_Service/globalarguments.h>
 #include <Mantids29/Program_Service/application.h>
@@ -64,4 +63,3 @@ protected:
 }}}
 
 
-#endif // RPCCLIENTAPPLICATION_H

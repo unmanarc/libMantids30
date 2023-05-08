@@ -1,5 +1,4 @@
-#ifndef SATHREAD_H
-#define SATHREAD_H
+#pragma once
 
 #include <thread>
 #include "socket_stream_base.h"
@@ -77,4 +76,3 @@ private:
 }}}}
 
 
-#endif // SATHREAD_H

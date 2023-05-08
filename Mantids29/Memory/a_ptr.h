@@ -1,5 +1,4 @@
-#ifndef A_NULL_H
-#define A_NULL_H
+#pragma once
 
 #include "a_var.h"
 #include <Mantids29/Threads/mutex_shared.h>
@@ -34,4 +33,3 @@ private:
 
 };
 }}}
-#endif // A_NULL_H

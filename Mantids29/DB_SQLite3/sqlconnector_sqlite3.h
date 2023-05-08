@@ -1,5 +1,4 @@
-#ifndef SQLCONNECTOR_SQLITE3_H
-#define SQLCONNECTOR_SQLITE3_H
+#pragma once
 
 #include <Mantids29/DB/sqlconnector.h>
 #include "query_sqlite3.h"
@@ -82,4 +81,3 @@ private:
 };
 }}
 
-#endif // SQLCONNECTOR_SQLITE3_H

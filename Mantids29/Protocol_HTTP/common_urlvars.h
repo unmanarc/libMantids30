@@ -1,5 +1,4 @@
-#ifndef HTTPURLFORMATTEDVARS_H
-#define HTTPURLFORMATTEDVARS_H
+#pragma once
 
 #include <Mantids29/Memory/parser.h>
 #include <Mantids29/Memory/vars.h>
@@ -81,4 +80,3 @@ private:
 };
 }}}}}
 
-#endif // HTTPURLFORMATTEDVARS_H

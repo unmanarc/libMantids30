@@ -1,5 +1,4 @@
-#ifndef SOCKET_TLS_CALLBACKS_H
-#define SOCKET_TLS_CALLBACKS_H
+#pragma once
 
 #include "socket_tls.h"
 
@@ -19,4 +18,3 @@ public:
 
 }}}
 
-#endif // SOCKET_TLS_CALLBACKS_H

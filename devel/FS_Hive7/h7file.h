@@ -1,5 +1,4 @@
-#ifndef HIVE7_H
-#define HIVE7_H
+#pragma once
 
 #include <string>
 #include "filereader.h"
@@ -41,4 +40,3 @@ private:
 
 }}}
 
-#endif // HIVE7_H

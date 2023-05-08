@@ -1,5 +1,4 @@
-#ifndef BRIDGE_THREAD_BASE_H
-#define BRIDGE_THREAD_BASE_H
+#pragma once
 
 #include "socket_stream_base.h"
 #include <atomic>
@@ -64,4 +63,3 @@ private:
 
 }}}}
 
-#endif // BRIDGE_THREAD_BASE_H

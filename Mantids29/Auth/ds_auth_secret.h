@@ -1,5 +1,4 @@
-#ifndef IAUTH_PASSWORDDATA_H
-#define IAUTH_PASSWORDDATA_H
+#pragma once
 
 #include <limits>
 #include <string>
@@ -257,5 +256,4 @@ static Secret createNewSecret(const std::string & passwordInput, const Function 
 
 
 }}
-#endif // IAUTH_PASSWORDDATA_H
 

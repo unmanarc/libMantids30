@@ -1,5 +1,4 @@
-#ifndef MULTITHREADEDACCEPTOR_H
-#define MULTITHREADEDACCEPTOR_H
+#pragma once
 
 #include <list>
 #include <map>
@@ -156,4 +155,3 @@ private:
 
 
 }}}}
-#endif // MULTITHREADEDACCEPTOR_H

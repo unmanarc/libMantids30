@@ -1,5 +1,4 @@
-#ifndef HLP_RANDOM_H
-#define HLP_RANDOM_H
+#pragma once
 
 #include <string>
 #include <random>
@@ -57,4 +56,3 @@ private:
 
 }}
 
-#endif // HLP_RANDOM_H

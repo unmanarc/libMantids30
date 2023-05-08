@@ -1,5 +1,4 @@
-#ifndef FASTRPC_H
-#define FASTRPC_H
+#pragma once
 
 #include <Mantids29/Helpers/json.h>
 
@@ -287,4 +286,3 @@ private:
 };
 
 }}}}
-#endif // FASTRPC_H

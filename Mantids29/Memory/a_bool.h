@@ -1,5 +1,4 @@
-#ifndef A_BOOL_H
-#define A_BOOL_H
+#pragma once
 
 #include "a_var.h"
 #include <stdint.h>
@@ -32,4 +31,3 @@ private:
 
 };
 }}}
-#endif // A_BOOL_H

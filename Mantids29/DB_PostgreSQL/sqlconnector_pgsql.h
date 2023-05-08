@@ -1,5 +1,4 @@
-#ifndef SQLCONNECTOR_PGSQL_H
-#define SQLCONNECTOR_PGSQL_H
+#pragma once
 
 #include <Mantids29/DB/sqlconnector.h>
 #include "query_pgsql.h"
@@ -67,4 +66,3 @@ private:
 };
 }}
 
-#endif // SQLCONNECTOR_PGSQL_H

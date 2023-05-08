@@ -1,5 +1,4 @@
-#ifndef STREAMABLEPROCESS_H
-#define STREAMABLEPROCESS_H
+#pragma once
 
 #ifndef _WIN32
 
@@ -29,4 +28,3 @@ private:
 }}}
 #endif
 
-#endif // STREAMABLEPROCESS_H

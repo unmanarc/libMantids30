@@ -1,5 +1,4 @@
-#ifndef ATOMICEXPRESSION_H
-#define ATOMICEXPRESSION_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -45,4 +44,3 @@ private:
 };
 
 }}}
-#endif // ATOMICEXPRESSION_H

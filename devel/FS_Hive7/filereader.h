@@ -1,5 +1,4 @@
-#ifndef HIVE7_READER_H
-#define HIVE7_READER_H
+#pragma once
 
 #include <string>
 
@@ -32,4 +31,3 @@ protected:
 
 }}}
 
-#endif // HIVE7_READER_H

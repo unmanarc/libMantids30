@@ -1,5 +1,4 @@
-#ifndef HTTP_SETCOOKIES_H
-#define HTTP_SETCOOKIES_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -35,4 +34,3 @@ private:
 };
 }}}}}
 
-#endif // HTTP_SETCOOKIES_H

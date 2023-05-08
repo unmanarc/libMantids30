@@ -1,5 +1,4 @@
-#ifndef APPLOGS_H
-#define APPLOGS_H
+#pragma once
 
 #include "logbase.h"
 
@@ -75,4 +74,3 @@ private:
 
 }}}
 
-#endif // APPLOGS_H

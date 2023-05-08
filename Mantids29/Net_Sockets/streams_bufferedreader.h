@@ -1,5 +1,4 @@
-#ifndef BUFFERED_READER_H
-#define BUFFERED_READER_H
+#pragma once
 
 #include "socket_stream_base.h"
 
@@ -45,4 +44,3 @@ typedef std::shared_ptr<BufferedReader> Stream_Buffer_SP;
 
 }}}}
 
-#endif // BUFFERED_READER_H

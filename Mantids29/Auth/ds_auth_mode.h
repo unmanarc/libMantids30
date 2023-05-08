@@ -1,5 +1,4 @@
-#ifndef AUTH_MODES_H
-#define AUTH_MODES_H
+#pragma once
 
 #include <string>
 
@@ -37,4 +36,3 @@ static std::string getStringFromAuthMode( const Mode & mode )
 
 
 
-#endif // AUTH_MODES_H

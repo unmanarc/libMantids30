@@ -1,5 +1,4 @@
-#ifndef FILEMAP_H
-#define FILEMAP_H
+#pragma once
 
 #include <stdint.h>
 #include <string>
@@ -107,4 +106,3 @@ private:
 
 }}}
 
-#endif // FILEMAP_H

@@ -1,5 +1,4 @@
-#ifndef HLP_ENCODERS_H
-#define HLP_ENCODERS_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -203,4 +202,3 @@ private:
 
 }}
 
-#endif // HLP_ENCODERS_H

@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINER_REF_H
-#define BINARYCONTAINER_REF_H
+#pragma once
 
 #include "b_base.h"
 
@@ -111,4 +110,3 @@ private:
 
 }}}
 
-#endif // BINARYCONTAINER_REF_H

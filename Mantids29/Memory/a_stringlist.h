@@ -1,5 +1,4 @@
-#ifndef A_STRINGLIST_H
-#define A_STRINGLIST_H
+#pragma once
 
 #include "a_var.h"
 #include <list>
@@ -34,4 +33,3 @@ private:
 
 }}}
 
-#endif // A_STRINGLIST_H

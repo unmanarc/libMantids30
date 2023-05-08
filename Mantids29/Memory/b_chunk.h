@@ -129,5 +129,4 @@ struct BinaryContainerChunk {
 };
 }}}
 
-#endif // BINARYCONTAINERCHUNK
 

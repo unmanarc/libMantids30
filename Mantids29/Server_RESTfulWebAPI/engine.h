@@ -1,5 +1,4 @@
-#ifndef SERVER_WEBAPI_RESTFUL_H
-#define SERVER_WEBAPI_RESTFUL_H
+#pragma once
 
 #include <Mantids29/Server_WebCore/apienginecore.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
@@ -27,4 +26,3 @@ private:
 };
 
 }}}}
-#endif // SERVER_WEBAPI_RESTFUL_H

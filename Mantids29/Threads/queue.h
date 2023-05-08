@@ -1,5 +1,4 @@
-#ifndef TS_QUEUE_H
-#define TS_QUEUE_H
+#pragma once
 
 #include <queue>
 #include <atomic>
@@ -135,4 +134,3 @@ size_t Queue<T>::size()
 
 }}}
 
-#endif // TS_QUEUE_H

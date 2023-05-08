@@ -1,5 +1,4 @@
-#ifndef A_DOUBLE_H
-#define A_DOUBLE_H
+#pragma once
 #include "a_var.h"
 
 #include <Mantids29/Threads/mutex_shared.h>
@@ -36,4 +35,3 @@ private:
 
 }}}
 
-#endif // A_DOUBLE_H

@@ -1,5 +1,4 @@
-#ifndef FILE_H
-#define FILE_H
+#pragma once
 
 #include <string>
 
@@ -54,4 +53,3 @@ public:
 
 }};
 
-#endif // FILE_H

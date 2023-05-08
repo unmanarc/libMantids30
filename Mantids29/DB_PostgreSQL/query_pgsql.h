@@ -1,5 +1,4 @@
-#ifndef QUERY_PGSQL_H
-#define QUERY_PGSQL_H
+#pragma once
 
 #include <Mantids29/DB/query.h>
 
@@ -83,4 +82,3 @@ private:
 
 }} // Mantids29::Database
 
-#endif // QUERY_PGSQL_H

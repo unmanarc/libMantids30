@@ -1,5 +1,4 @@
-#ifndef DATETIME_H
-#define DATETIME_H
+#pragma once
 
 #include "a_var.h"
 #include <time.h>
@@ -40,4 +39,3 @@ private:
 };
 }}}
 
-#endif // DATETIME_H

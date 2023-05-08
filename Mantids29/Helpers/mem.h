@@ -1,5 +1,4 @@
-#ifndef HLP_MEM_H
-#define HLP_MEM_H
+#pragma once
 
 #include <string.h>
 #include <stdint.h>
@@ -114,4 +113,3 @@ private:
 
 }}
 
-#endif // HLP_MEM_H

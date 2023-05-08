@@ -1,5 +1,4 @@
-#ifndef A_STRING_H
-#define A_STRING_H
+#pragma once
 
 #include "a_var.h"
 #include <Mantids29/Threads/mutex_shared.h>
@@ -35,4 +34,3 @@ private:
 
 }}}
 
-#endif // A_STRING_H

@@ -1,5 +1,4 @@
-#ifndef LOCK_MUTEX_RD_H
-#define LOCK_MUTEX_RD_H
+#pragma once
 
 #include "mutex_shared.h"
 
@@ -39,4 +38,3 @@ private:
 }}}
 
 
-#endif // LOCK_MUTEX_RD_H

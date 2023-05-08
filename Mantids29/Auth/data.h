@@ -1,5 +1,4 @@
-#ifndef DATA_H
-#define DATA_H
+#pragma once
 
 #include <string>
 #include <Mantids29/Helpers/json.h>
@@ -57,4 +56,3 @@ public:
 }} // namespace Mantids29::Authentication
 
 
-#endif // DATA_H

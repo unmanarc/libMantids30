@@ -1,5 +1,4 @@
-#ifndef WEB_CLIENT_HANDLER_H
-#define WEB_CLIENT_HANDLER_H
+#pragma once
 
 #include "resourcesfilter.h"
 
@@ -109,4 +108,3 @@ private:
 
 }}}}
 
-#endif // WEB_CLIENT_HANDLER_H

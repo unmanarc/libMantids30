@@ -1,5 +1,4 @@
-#ifndef A_INT8_H
-#define A_INT8_H
+#pragma once
 
 #include "a_var.h"
 #include <stdint.h>
@@ -36,4 +35,3 @@ private:
 
 }}}
 
-#endif // A_INT8_H

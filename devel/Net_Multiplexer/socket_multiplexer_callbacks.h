@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_CALLBACKS_H
-#define SOCKET_MULTIPLEXER_CALLBACKS_H
+#pragma once
 
 #include <stdint.h>
 #include <memory>
@@ -93,4 +92,3 @@ protected:
 
 }}}
 
-#endif // SOCKET_MULTIPLEXER_CALLBACKS_H

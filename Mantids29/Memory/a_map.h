@@ -1,5 +1,4 @@
-#ifndef ABSTRACTVARS_H
-#define ABSTRACTVARS_H
+#pragma once
 
 #include "a_var.h"
 #include <map>
@@ -63,4 +62,3 @@ private:
 
 }}}
 
-#endif // ABSTRACTVARS_H

@@ -18,4 +18,3 @@ enum eMultiplexedSocketMessage {
 
 }}}}
 
-#endif // SOCKET_MULTIPLEXER_A_ENUM_MPLX_MSGS

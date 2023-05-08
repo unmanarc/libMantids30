@@ -1,5 +1,4 @@
-#ifndef HTTP_COOKIE_VALUE_H
-#define HTTP_COOKIE_VALUE_H
+#pragma once
 
 #include <string>
 #include "common_date.h"
@@ -155,4 +154,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_COOKIE_VALUE_H

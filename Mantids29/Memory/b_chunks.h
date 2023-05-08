@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINER_CHUNKS_H
-#define BINARYCONTAINER_CHUNKS_H
+#pragma once
 
 #include "b_base.h"
 #include "b_mmap.h"
@@ -158,4 +157,3 @@ private:
 
 }}}
 
-#endif // BINARYCONTAINER_CHUNKS_H

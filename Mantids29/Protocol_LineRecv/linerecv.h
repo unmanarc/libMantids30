@@ -1,5 +1,4 @@
-#ifndef HTTP1BASE_H
-#define HTTP1BASE_H
+#pragma once
 
 #include <Mantids29/Memory/parser.h>
 #include "linerecv_subparser.h"
@@ -24,4 +23,3 @@ protected:
 
 }}}}
 
-#endif // HTTP1BASE_H

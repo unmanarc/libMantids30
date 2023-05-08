@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_A_STRUCT_DATABUFFER_H
-#define SOCKET_MULTIPLEXER_A_STRUCT_DATABUFFER_H
+#pragma once
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -38,4 +37,3 @@ struct sDataBuffer {
 
 }}}}
 
-#endif // SOCKET_MULTIPLEXER_A_STRUCT_DATABUFFER_H

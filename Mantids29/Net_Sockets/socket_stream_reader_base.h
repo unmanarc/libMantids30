@@ -1,5 +1,4 @@
-#ifndef STREAM_READER_H
-#define STREAM_READER_H
+#pragma once
 
 #include <stdint.h>
 #include <string.h>
@@ -228,4 +227,3 @@ private:
 
 }}}
 
-#endif // STREAM_READER_H

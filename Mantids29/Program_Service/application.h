@@ -1,5 +1,4 @@
-#ifndef APPLICATION_H
-#define APPLICATION_H
+#pragma once
 
 #include "globalarguments.h"
 #include <unistd.h>
@@ -54,4 +53,3 @@ virtual int _start(int argc, char *argv[], Mantids29::Program::Arguments::Global
 
 int StartApplication(int argc, char *argv[], Mantids29::Program::Application * _app);
 
-#endif // APPLICATION_H

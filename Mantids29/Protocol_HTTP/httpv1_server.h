@@ -1,5 +1,4 @@
-#ifndef HTTP1SERVER_H
-#define HTTP1SERVER_H
+#pragma once
 
 #include "httpv1_base.h"
 #include <memory>
@@ -200,4 +199,3 @@ private:
 
 }}}}
 
-#endif // HTTP1SERVER_H

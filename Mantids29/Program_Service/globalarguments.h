@@ -1,5 +1,4 @@
-#ifndef GLOBALARGUMENTS_H
-#define GLOBALARGUMENTS_H
+#pragma once
 
 #include <string>
 #include <list>
@@ -168,4 +167,3 @@ private:
 
 }}}
 
-#endif // GLOBALARGUMENTS_H

@@ -1,5 +1,4 @@
-#ifndef HTTP_SUB_URLVARPARSER_H
-#define HTTP_SUB_URLVARPARSER_H
+#pragma once
 
 #include <Mantids29/Memory/subparser.h>
 
@@ -27,4 +26,3 @@ protected:
 
 }}}}}
 
-#endif // HTTP_SUB_URLVARPARSER_H

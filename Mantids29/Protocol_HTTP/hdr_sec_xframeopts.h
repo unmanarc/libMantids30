@@ -1,5 +1,4 @@
-#ifndef HTTP_SECURITY_XFRAMEOPTS_H
-#define HTTP_SECURITY_XFRAMEOPTS_H
+#pragma once
 
 #include <string>
 
@@ -110,4 +109,3 @@ private:
 
 }}}}}}
 
-#endif // HTTP_SECURITY_XFRAMEOPTS_H

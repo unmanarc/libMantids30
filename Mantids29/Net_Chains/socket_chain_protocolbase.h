@@ -1,5 +1,4 @@
-#ifndef SOCKETCHAINBASE_H
-#define SOCKETCHAINBASE_H
+#pragma once
 
 #include <utility>
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
@@ -27,4 +26,3 @@ private:
 
 }}}}
 
-#endif // SOCKETCHAINBASE_H

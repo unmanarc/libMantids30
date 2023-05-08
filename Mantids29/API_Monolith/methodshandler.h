@@ -1,5 +1,4 @@
-#ifndef METHODS_HANDLER_H
-#define METHODS_HANDLER_H
+#pragma once
 
 #include <map>
 #include <list>
@@ -124,4 +123,3 @@ private:
 
 }}}
 
-#endif // METHODS_HANDLER_H

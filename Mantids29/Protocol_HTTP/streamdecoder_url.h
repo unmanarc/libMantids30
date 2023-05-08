@@ -1,5 +1,4 @@
-#ifndef STREAMDECURL_H
-#define STREAMDECURL_H
+#pragma once
 
 #include <Mantids29/Memory/streamableobject.h>
 
@@ -34,4 +33,3 @@ private:
 
 }}}}
 
-#endif // STREAMDECURL_H

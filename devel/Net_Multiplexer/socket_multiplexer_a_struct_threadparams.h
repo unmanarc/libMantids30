@@ -1,5 +1,4 @@
-#ifndef SOCKET_MULTIPLEXER_A_STRUCT_THREADPARAMS_H
-#define SOCKET_MULTIPLEXER_A_STRUCT_THREADPARAMS_H
+#pragma once
 
 
 #include <memory>
@@ -33,4 +32,3 @@ struct sConnectionThreadParams {
 
 }}}}
 
-#endif // SOCKET_MULTIPLEXER_A_STRUCT_THREADPARAMS_H

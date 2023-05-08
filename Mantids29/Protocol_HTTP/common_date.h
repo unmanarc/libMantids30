@@ -1,5 +1,4 @@
-#ifndef HTTP_DATE_H
-#define HTTP_DATE_H
+#pragma once
 
 #include <time.h>
 #include <string>
@@ -68,4 +67,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_DATE_H

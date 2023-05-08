@@ -1,5 +1,4 @@
-#ifndef VARSCONTAINER_H
-#define VARSCONTAINER_H
+#pragma once
 
 #include <Mantids29/Helpers/json.h>
 #include "b_base.h"
@@ -168,4 +167,3 @@ protected:
 
 }}}
 
-#endif // VARSCONTAINER_H

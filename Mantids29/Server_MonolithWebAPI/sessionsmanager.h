@@ -1,5 +1,4 @@
-#ifndef SERVERS_WEBSESSION_MANAGER_H
-#define SERVERS_WEBSESSION_MANAGER_H
+#pragma once
 
 #include <Mantids29/Auth/session.h>
 #include <Mantids29/Threads/map.h>
@@ -94,4 +93,3 @@ private:
 
 }}}}
 
-#endif // SERVERS_WEBSESSION_MANAGER_H

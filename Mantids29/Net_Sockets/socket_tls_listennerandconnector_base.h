@@ -1,5 +1,4 @@
-#ifndef SOCKET_TLS_LISTENNERANDCONNECTOR_BASE_H
-#define SOCKET_TLS_LISTENNERANDCONNECTOR_BASE_H
+#pragma once
 
 #include "callbacks_socket_tls_client.h"
 #include "callbacks_socket_tls_server.h"
@@ -106,4 +105,3 @@ private:
 }}}
 
 
-#endif // SOCKET_TLS_LISTENNERANDCONNECTOR_BASE_H

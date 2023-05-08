@@ -1,5 +1,4 @@
-#ifndef LOGBASE_H
-#define LOGBASE_H
+#pragma once
 
 #include "loglevels.h"
 #include "logcolors.h"
@@ -75,4 +74,3 @@ private:
 
 }}}
 
-#endif // LOGBASE_H

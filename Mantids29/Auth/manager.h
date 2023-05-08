@@ -1,5 +1,4 @@
-#ifndef IAUTH_H
-#define IAUTH_H
+#pragma once
 
 #include <map>
 #include <list>
@@ -283,4 +282,3 @@ protected:
 
 }}
 
-#endif // IAUTH_H

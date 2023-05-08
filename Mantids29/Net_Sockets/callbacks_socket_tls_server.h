@@ -1,5 +1,4 @@
-#ifndef SOCKET_TLSSERVER_CALLBACKS_H
-#define SOCKET_TLSSERVER_CALLBACKS_H
+#pragma once
 
 #include "socket_stream_base.h"
 #include "callbacks_socket_tls.h"
@@ -45,4 +44,3 @@ public:
 
 }}}
 
-#endif // SOCKET_TLSSERVER_CALLBACKS_H

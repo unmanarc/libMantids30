@@ -1,5 +1,4 @@
-#ifndef NULLCONTAINER_H
-#define NULLCONTAINER_H
+#pragma once
 
 #include "streamableobject.h"
 
@@ -21,4 +20,3 @@ private:
 
 }}}
 
-#endif // NULLCONTAINER_H

@@ -63,4 +63,3 @@ typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;
 
 }}}
 
-#endif /* SOCKET_BASE_DATAGRAM_H_ */

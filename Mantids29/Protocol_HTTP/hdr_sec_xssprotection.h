@@ -1,5 +1,4 @@
-#ifndef HTTP_SECURITY_XSSPROTECTION_H
-#define HTTP_SECURITY_XSSPROTECTION_H
+#pragma once
 
 #include <string>
 
@@ -53,4 +52,3 @@ public:
 
 
 
-#endif // HTTP_SECURITY_XSSPROTECTION_H

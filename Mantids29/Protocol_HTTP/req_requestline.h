@@ -1,5 +1,4 @@
-#ifndef HTTP_URL_REQUEST_H
-#define HTTP_URL_REQUEST_H
+#pragma once
 
 #include <Mantids29/Memory/subparser.h>
 #include <Mantids29/Memory/b_base.h>
@@ -81,4 +80,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_URL_REQUEST_H

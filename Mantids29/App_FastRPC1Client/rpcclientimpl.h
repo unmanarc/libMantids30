@@ -1,5 +1,4 @@
-#ifndef RPCCLIENTIMPL_H
-#define RPCCLIENTIMPL_H
+#pragma once
 
 #include <Mantids29/Protocol_FastRPC1/fastrpc.h>
 #include <Mantids29/Net_Sockets/socket_tls.h>
@@ -86,4 +85,3 @@ protected:
 }}}
 
 
-#endif // RPCCLIENTIMPL_H

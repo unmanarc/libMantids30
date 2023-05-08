@@ -1,5 +1,4 @@
-#ifndef STDLISTS_H
-#define STDLISTS_H
+#pragma once
 
 #include <map>
 
@@ -23,4 +22,3 @@ bool contains( const std::map<T,Y>& haystack, const T& needle )
 }}
 
 
-#endif // STDLISTS_H

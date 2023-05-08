@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINER_MMAP_H
-#define BINARYCONTAINER_MMAP_H
+#pragma once
 
 #include "b_base.h"
 #include "filemap.h"
@@ -122,4 +121,3 @@ private:
 
 }}}
 
-#endif // BINARYCONTAINER_MMAP_H

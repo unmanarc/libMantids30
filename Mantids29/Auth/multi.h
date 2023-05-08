@@ -1,5 +1,4 @@
-#ifndef REQUEST_H
-#define REQUEST_H
+#pragma once
 
 #include <Mantids29/Helpers/json.h>
 #include <set>
@@ -57,4 +56,3 @@ private:
 };
 
 }}
-#endif // REQUEST_H

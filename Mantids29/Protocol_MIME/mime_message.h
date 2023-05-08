@@ -1,5 +1,4 @@
-#ifndef MIME_MESSAGE_H
-#define MIME_MESSAGE_H
+#pragma once
 
 #include <map>
 
@@ -256,4 +255,3 @@ private:
 
 }}}}
 
-#endif // MIME_MESSAGE_H

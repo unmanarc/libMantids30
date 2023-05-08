@@ -1,5 +1,4 @@
-#ifndef STREAMABLE_STRING_H
-#define STREAMABLE_STRING_H
+#pragma once
 
 #include "streamableobject.h"
 #include <string>
@@ -40,4 +39,3 @@ private:
 
 }}}
 
-#endif // STREAMABLE_STRING_H

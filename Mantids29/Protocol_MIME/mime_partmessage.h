@@ -1,5 +1,4 @@
-#ifndef MIME_PARTMESSAGE_H
-#define MIME_PARTMESSAGE_H
+#pragma once
 
 #include "mime_sub_content.h"
 #include "mime_sub_header.h"
@@ -25,4 +24,3 @@ private:
 
 }}}}
 
-#endif // MIME_PARTMESSAGE_H

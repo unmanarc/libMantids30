@@ -1,5 +1,4 @@
-#ifndef HIVE7_PERMISSIONS_H
-#define HIVE7_PERMISSIONS_H
+#pragma once
 
 #include <string>
 #include <map>
@@ -31,4 +30,3 @@ protected:
 
 }}}
 
-#endif // HIVE7_PERMISSIONS_H

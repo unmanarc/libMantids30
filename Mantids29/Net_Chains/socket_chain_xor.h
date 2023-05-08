@@ -1,5 +1,4 @@
-#ifndef SOCKETCHAINXOR_H
-#define SOCKETCHAINXOR_H
+#pragma once
 
 #include <Mantids29/Net_Sockets/socket_stream_base.h>
 #include "socket_chain_protocolbase.h"
@@ -34,4 +33,3 @@ private:
 
 }}}}
 
-#endif // SOCKETCHAINXOR_H

@@ -1,5 +1,4 @@
-#ifndef WEBMONOLITH_CLIENT_HANDLER_H
-#define WEBMONOLITH_CLIENT_HANDLER_H
+#pragma once
 
 #include <Mantids29/Auth/data.h>
 #include "sessionsmanager.h"
@@ -115,4 +114,3 @@ private:
 
 }}}}
 
-#endif // WEBMONOLITH_CLIENT_HANDLER_H

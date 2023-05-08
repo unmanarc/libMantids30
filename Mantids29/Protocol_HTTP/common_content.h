@@ -1,5 +1,4 @@
-#ifndef HTTP_CONTENT_H
-#define HTTP_CONTENT_H
+#pragma once
 
 #include "common_urlvars.h"
 
@@ -155,4 +154,3 @@ private:
 
 }}}}}
 
-#endif // HTTP_CONTENT_H

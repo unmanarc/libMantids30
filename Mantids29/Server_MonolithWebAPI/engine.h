@@ -1,5 +1,4 @@
-#ifndef SERVER_WEBAPI_MONOLITH_H
-#define SERVER_WEBAPI_MONOLITH_H
+#pragma once
 
 #include "monolithresourcefilter.h"
 #include "sessionsmanager.h"
@@ -150,4 +149,3 @@ private:
 };
 
 }}}}
-#endif // SERVER_WEBAPI_MONOLITH_H

@@ -1,5 +1,4 @@
-#ifndef ENDIAN_H
-#define ENDIAN_H
+#pragma once
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -16,4 +15,3 @@
 #endif
 
 
-#endif // ENDIAN_H

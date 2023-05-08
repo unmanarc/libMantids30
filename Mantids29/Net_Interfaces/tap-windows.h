@@ -1,3 +1,4 @@
+#pragma once
 /*
  *  TAP-Windows -- A kernel driver to provide virtual tap
  *                 device functionality on Windows.
@@ -22,8 +23,6 @@
  *  distribution); if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-#ifndef __TAP_WIN_H
-#define __TAP_WIN_H
 
 /*
  * =============
@@ -79,4 +78,3 @@
 #define USERDEVICEDIR     "\\DosDevices\\Global\\"
 #define TAP_WIN_SUFFIX    ".tap"
 
-#endif // __TAP_WIN_H

@@ -1,5 +1,4 @@
-#ifndef NETIFCONFIG_H
-#define NETIFCONFIG_H
+#pragma once
 
 #include <string>
 
@@ -131,4 +130,3 @@ private:
 
 }}}
 
-#endif // NETIFCONFIG_H

@@ -1,5 +1,4 @@
-#ifndef QUERY_MARIADB_H
-#define QUERY_MARIADB_H
+#pragma once
 
 #include <Mantids29/DB/query.h>
 #include <mysql.h>
@@ -95,4 +94,3 @@ private:
 };
 }}
 
-#endif // QUERY_MARIADB_H

@@ -1,5 +1,4 @@
-#ifndef HTTP1BASE_H
-#define HTTP1BASE_H
+#pragma once
 
 #include <Mantids29/Memory/parser.h>
 #include <Mantids29/Memory/vars.h>
@@ -308,4 +307,3 @@ private:
 
 }}}}
 
-#endif // HTTP1BASE_H

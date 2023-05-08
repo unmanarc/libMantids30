@@ -1,5 +1,4 @@
-#ifndef RPCLOG_H
-#define RPCLOG_H
+#pragma once
 
 #include "logbase.h"
 
@@ -33,4 +32,3 @@ private:
 
 }}}
 
-#endif // RPCLOG_H

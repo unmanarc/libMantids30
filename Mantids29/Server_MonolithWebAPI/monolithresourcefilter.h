@@ -1,5 +1,4 @@
-#ifndef RESOURCEFILTERWITHSESSIONS_H
-#define RESOURCEFILTERWITHSESSIONS_H
+#pragma once
 
 #include <Mantids29/Server_WebCore/resourcesfilter.h>
 
@@ -26,4 +25,3 @@ public:
 
 }}}
 
-#endif // RESOURCEFILTERWITHSESSIONS_H

@@ -1,5 +1,4 @@
-#ifndef HIVE7_ATTRIBUTES_H
-#define HIVE7_ATTRIBUTES_H
+#pragma once
 
 #include <string>
 
@@ -34,4 +33,3 @@ protected:
 
 }}}
 
-#endif // HIVE7_ATTRIBUTES_H

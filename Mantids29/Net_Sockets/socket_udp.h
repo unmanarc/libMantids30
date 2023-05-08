@@ -1,5 +1,4 @@
-#ifndef SOCKET_UDP_H
-#define SOCKET_UDP_H
+#pragma once
 
 #include "socket_datagrambase.h"
 
@@ -79,4 +78,3 @@ private:
 typedef std::shared_ptr<Socket_UDP> Socket_UDP_SP;
 
 }}}
-#endif // SOCKET_UDP_H

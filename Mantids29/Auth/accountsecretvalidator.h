@@ -1,5 +1,4 @@
-#ifndef ACCOUNT_SECRET_VALIDATOR_H
-#define ACCOUNT_SECRET_VALIDATOR_H
+#pragma once
 
 #include <Mantids29/Threads/garbagecollector.h>
 
@@ -194,4 +193,3 @@ private:
 
 
 
-#endif // ACCOUNT_SECRET_VALIDATOR_H
