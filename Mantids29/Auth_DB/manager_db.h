@@ -93,27 +93,15 @@ public:
     bool applicationOwnerRemove(const std::string & appName, const std::string & accountName) override;
     std::list<ApplicationDetails> applicationsBasicInfoSearch(std::string sSearchWords, uint64_t limit=0, uint64_t offset=0) override;
 
-
-    // application WebLogin:
-    bool applicationWebLoginConfigure(const std::string &appName, const std::string &loginHTMLPage, const std::string &loginSuccessUrl, const std::string &loginFailUrl) override;
-    bool applicationWebLoginChangeHTMLPage(const std::string &appName, const std::string &loginHTMLPage) override;
-    bool applicationWebLoginChangeSuccessUrl(const std::string &appName, const std::string &loginSuccessUrl) override;
-    bool applicationWebLoginChangeFailUrl(const std::string &appName, const std::string &loginFailUrl) override;
-    std::string applicationWebLoginHTMLPage(const std::string &appName) override;
-    std::string applicationWebLoginSuccessUrl(const std::string &appName) override;
-    std::string applicationWebLoginFailUrl(const std::string &appName) override;
-
     // Weblogin return urls:
     bool applicationWebLoginAddReturnUrl(const std::string &appName, const std::string &loginReturnUrl) override;
     bool applicationWebLoginRemoveReturnUrl(const std::string &appName, const std::string &loginReturnUrl) override;
     std::list<std::string> applicationWebLoginReturnUrls(const std::string &appName) override;
 
-
     // Weblogin origin urls:
     bool applicationWebLoginAddOriginUrl(const std::string &appName, const std::string &originUrl) override;
     bool applicationWebLoginRemoveOriginUrl(const std::string &appName, const std::string &originUrl) override;
     std::list<std::string> applicationWebLoginOriginUrls(const std::string &appName) override;
-
 
     /////////////////////////////////////////////////////////////////////////////////
     // attributes:
@@ -154,7 +142,6 @@ protected:
     Secret retrieveSecret(const std::string &accountName, uint32_t passIndex, bool * accountFound, bool * indexFound) override;
 
 private:
-    std::string applicationWebLoginField(const std::string &appName, const std::string &fieldName);
     bool isThereAnotherSuperUser(const std::string &accountName);
 
     std::list<std::string> m_sqlErrorList;

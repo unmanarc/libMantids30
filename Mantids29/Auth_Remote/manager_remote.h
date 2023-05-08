@@ -176,15 +176,6 @@ public:
     bool applicationOwnerRemove(const std::string & , const std::string & ) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return false; }
     std::list<ApplicationDetails> applicationsBasicInfoSearch(std::string , uint64_t =0, uint64_t =0) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
 
-    // application WebLogin:
-    bool applicationWebLoginConfigure(const std::string &appName, const std::string &loginHTMLPage, const std::string &loginSuccessUrl, const std::string &loginFailUrl) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    bool applicationWebLoginChangeHTMLPage(const std::string &appName, const std::string &loginHTMLPage) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    bool applicationWebLoginChangeSuccessUrl(const std::string &appName, const std::string &loginSuccessUrl) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    bool applicationWebLoginChangeFailUrl(const std::string &appName, const std::string &loginFailUrl) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    std::string applicationWebLoginHTMLPage(const std::string &appName) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    std::string applicationWebLoginSuccessUrl(const std::string &appName) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-    std::string applicationWebLoginFailUrl(const std::string &appName) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
-
     // Weblogin return urls:
     bool applicationWebLoginAddReturnUrl(const std::string &appName, const std::string &loginReturnUrl) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
     bool applicationWebLoginRemoveReturnUrl(const std::string &appName, const std::string &loginReturnUrl) override {throw std::runtime_error("Remote Login - NOT IMPLEMENTED"); return {}; }
