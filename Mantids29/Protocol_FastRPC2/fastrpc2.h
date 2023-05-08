@@ -1,7 +1,6 @@
 #ifndef FastRPC2_H
 #define FastRPC2_H
 
-
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Auth/session.h>
 
@@ -65,7 +64,7 @@ public:
         uint32_t maxMessageSize;
         void * caller;
         FastRPC2::SessionPTR * sessionHolder;
-        API::Monolith::MethodsHandler *currentMethodsHandlers;
+        Mantids29::API::Monolith::MethodsHandler *currentMethodsHandlers;
         Authentication::Domains * currentAuthDomains;
         Threads::Sync::Mutex_Shared * done;
         Threads::Sync::Mutex * mtSocket;
@@ -379,8 +378,6 @@ private:
 
     Mantids29::Threads::Safe::Map<std::string> connectionsByKeyId;
 
-
-
     std::map<std::string,std::string> connectionKeyToLogin;
     std::mutex mtConnectionKeyToLogin;
 
@@ -401,7 +398,7 @@ private:
 
     Authentication::LoginRPCClientCBM defaultLoginRPCClient;
     Authentication::Domains defaultAuthDomain;
-    API::Monolith::MethodsHandler defaultMethodsHandlers;
+    Mantids29::API::Monolith::MethodsHandler defaultMethodsHandlers;
 
 };
 
