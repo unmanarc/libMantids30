@@ -1,5 +1,4 @@
-#ifndef BINARYCONTAINERCHUNK
-#define BINARYCONTAINERCHUNK
+#pragma once
 
 #include <string.h>
 #include <stdint.h>

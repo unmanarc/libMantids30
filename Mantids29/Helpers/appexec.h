@@ -1,5 +1,4 @@
-#ifndef APPEXEC_H
-#define APPEXEC_H
+#pragma once
 
 #ifndef _WIN32
 #include <spawn.h>
@@ -20,7 +19,6 @@
 #define APPEXEC_ERR_WAITFORSINGLEOBJECT 3
 #define APPEXEC_UNKNOWN 4
 #define APPEXEC_ERR_CREATEPROCESS 5
-
 
 namespace Mantids29 { namespace Helpers {
 
@@ -133,8 +131,6 @@ private:
     int piStdErr[2];
     std::vector<pollfd> plist;
 };
-
-
 #endif
 
 }}

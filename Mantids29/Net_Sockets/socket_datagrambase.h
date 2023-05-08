@@ -1,5 +1,4 @@
-#ifndef SOCKET_BASE_DATAGRAM_H_
-#define SOCKET_BASE_DATAGRAM_H_
+#pragma once
 
 #include "socket.h"
 #include <memory>
@@ -62,4 +61,3 @@ public:
 typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;
 
 }}}
-

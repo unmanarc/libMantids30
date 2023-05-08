@@ -1,4 +1,4 @@
-﻿#ifndef INTERNALPARSER_H
+﻿#pragma once
 
 #include "b_chunks.h"
 #include "b_ref.h"

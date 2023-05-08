@@ -1,5 +1,4 @@
-#ifndef SOCKET_BRIDGE
-#define SOCKET_BRIDGE
+#pragma once
 
 #include "socket_stream_base.h"
 #include "streams_bridge_thread.h"
