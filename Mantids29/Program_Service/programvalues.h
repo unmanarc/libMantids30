@@ -2,6 +2,7 @@
 
 #include <string>
 #include <list>
+#include <stdint.h>
 
 namespace Mantids29 { namespace Program { namespace Values {
 

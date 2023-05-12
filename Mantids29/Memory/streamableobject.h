@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdlib.h>
+#include <stdint.h>
 #include <limits>
 
 namespace Mantids29 { namespace Memory { namespace Streams {

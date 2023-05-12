@@ -2,6 +2,7 @@
 
 #include <time.h>
 #include <string>
+#include <stdint.h>
 
 namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 

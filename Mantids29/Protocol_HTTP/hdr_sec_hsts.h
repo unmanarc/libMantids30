@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <stdint.h>
+
 namespace Mantids29 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
 
 /**
