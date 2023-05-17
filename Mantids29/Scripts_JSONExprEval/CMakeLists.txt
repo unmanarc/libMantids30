@@ -54,23 +54,20 @@ foreach(LIB ${MANTIDS29_LIBRARIES})
 endforeach()
 
 
+################################################################################
+# PKG-CONFIG INIT:
 find_package(PkgConfig REQUIRED)
+################################################################################
+
+################################################################################
+# Find jsoncpp
 pkg_check_modules(JSONCPP jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
 target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
 target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 
-
-######################################
-
-find_library (
-    BOOST_REGEX_LIB
-    NAMES boost_regex-mt-x32 libboost_regex-mt-x32 boost_regex-mt libboost_regex-mt boost_regex libboost_regex # what to look for
-)
-if (NOT BOOST_REGEX_LIB)
-    message("ERROR: Did not found lib BOOST_REGEX_LIB")
-else()
-    message("-- BOOST_REGEX_LIB found at [${BOOST_REGEX_LIB}] for ${LIB_NAME}")
-endif()
-
-target_link_libraries(${LIB_NAME} ${BOOST_REGEX_LIB})
+################################################################################
+# Boost Packages:
+find_package(Boost REQUIRED COMPONENTS regex)
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})
