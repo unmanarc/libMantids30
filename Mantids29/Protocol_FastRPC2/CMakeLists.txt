@@ -47,8 +47,6 @@ set(MANTIDS29_LIBRARIES
     Helpers
     Net_Sockets
     Memory
-    Protocol_FastRPC1
-    Auth_Remote
     Auth
     API_Monolith
 )

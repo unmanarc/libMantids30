@@ -3,7 +3,6 @@
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Auth/session.h>
 
-#include <Mantids29/Auth_Remote/loginrpcclientcbm.h>
 #include <Mantids29/Auth/domains.h>
 #include <Mantids29/API_Monolith/methodshandler.h>
 
@@ -18,15 +17,6 @@
 #include <memory>
 
 namespace Mantids29 { namespace Network { namespace Protocols { namespace FastRPC {
-
-/*
- * Server Example code:
- *
- * FastRPC2 vsrpc(obj,"MYAPP");
- * vsrpc.getCurrentLoginRPCClient()-> ...
- * vsrpc.getCurrentLoginRPCClient()->start();
- *
- */
 
 /**
  * @brief The FastRPC2 class: Bidirectional client-sync/server-async-thread-pooled auth RPC Manager with sessions...
@@ -143,16 +133,13 @@ public:
     class ParametersDefinitions {
     public:
         ParametersDefinitions(
-                Authentication::LoginRPCClientCBM * currentLoginRPCClient,
                 API::Monolith::MethodsHandler *currentMethodsHandlers,
                 Authentication::Domains * currentAuthDomains
                 )
         {
-            this->currentLoginRPCClient = currentLoginRPCClient;
             this->currentAuthDomains = currentAuthDomains;
             this->currentMethodsHandlers = currentMethodsHandlers;
 
-            this->defaultLoginRPCClient = currentLoginRPCClient;
             this->defaultAuthDomains = currentAuthDomains;
             this->defaultMethodsHandlers = currentMethodsHandlers;
 
@@ -163,9 +150,6 @@ public:
         }
         ~ParametersDefinitions()
         {
-            if ( defaultLoginRPCClient != currentLoginRPCClient )
-                delete currentLoginRPCClient;
-
             if ( defaultMethodsHandlers != currentMethodsHandlers )
                 delete currentMethodsHandlers;
 
@@ -207,10 +191,6 @@ public:
          */
         uint32_t rwTimeoutInSeconds = 40;
         /**
-         * @brief currentLoginRPCClient Current login RPC client (in cbm)
-         */
-        Authentication::LoginRPCClientCBM * currentLoginRPCClient;
-        /**
          * @brief currentMethodsHandlers current Methods Manager
          */
         API::Monolith::MethodsHandler *currentMethodsHandlers;
@@ -219,7 +199,6 @@ public:
          */
         Authentication::Domains * currentAuthDomains;
     private:
-        Authentication::LoginRPCClientCBM * defaultLoginRPCClient;
         API::Monolith::MethodsHandler *defaultMethodsHandlers;
         Authentication::Domains *defaultAuthDomains;
     };
@@ -231,7 +210,7 @@ public:
      * @param threadsCount number of preloaded threads
      * @param taskQueues number of max queued tasks for each thread
      */
-    FastRPC2( const std::string & appName = "",void *callbacksObj = nullptr, uint32_t threadsCount = 16, uint32_t taskQueues = 24);
+    FastRPC2(const std::string & appName = "", uint32_t threadsCount = 16, uint32_t taskQueues = 24);
     ~FastRPC2();
     /**
      * @brief stop Stop the thread pool.
@@ -351,19 +330,17 @@ private:
     // Methods:
     // method name -> method.
     // ? TP or
-    Mantids29::Threads::Pool::ThreadPool * threadPool;
+    Mantids29::Threads::Pool::ThreadPool * m_threadPool;
 
-    std::thread pinger;
+    std::thread m_pingerThread;
   //  void * overwriteObject;
 
-    std::atomic<bool> finished;
-    std::mutex mtPing;
-    std::condition_variable cvPing;
+    std::atomic<bool> m_isFinished;
+    std::mutex m_pingMutex;
+    std::condition_variable m_pingCondition;
 
-    Authentication::LoginRPCClientCBM defaultLoginRPCClient;
-    Authentication::Domains defaultAuthDomain;
-    Mantids29::API::Monolith::MethodsHandler defaultMethodsHandlers;
-
+    Authentication::Domains m_defaultAuthDomain;
+    Mantids29::API::Monolith::MethodsHandler m_defaultMethodsHandlers;
 };
 
 }}}}

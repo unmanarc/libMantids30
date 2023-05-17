@@ -35,43 +35,40 @@ void vrsyncRPCPingerThread( FastRPC2 * obj )
     }
 }
 
-FastRPC2::FastRPC2(const string &appName, void * callbacksObj, uint32_t threadsCount, uint32_t taskQueues) :
-    defaultLoginRPCClient(callbacksObj), defaultMethodsHandlers(appName),
-    parameters(&defaultLoginRPCClient,&defaultMethodsHandlers,&defaultAuthDomain)
+FastRPC2::FastRPC2(const string &appName, uint32_t threadsCount, uint32_t taskQueues) :
+    m_defaultMethodsHandlers(appName),
+    parameters(&m_defaultMethodsHandlers,&m_defaultAuthDomain)
 {
-    threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
+    m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
-    finished = false;
+    m_isFinished = false;
 
-    // Configure the domain "" with the auth manager of the fast rpc client for authentication...
-    defaultAuthDomain.addDomain("",defaultLoginRPCClient.getRemoteAuthManager());
-
-    threadPool->start();
-    pinger = thread(vrsyncRPCPingerThread,this);
+    m_threadPool->start();
+    m_pingerThread = thread(vrsyncRPCPingerThread,this);
 }
 
 FastRPC2::~FastRPC2()
 {
     // Set pings to cease (the current one will continue)
-    finished=true;
+    m_isFinished=true;
 
     // Notify that pings should stop now... This can take a while (while pings are cycled)...
     {
-        unique_lock<mutex> lk(mtPing);
-        cvPing.notify_all();
+        unique_lock<mutex> lk(m_pingMutex);
+        m_pingCondition.notify_all();
     }
 
     // Wait until the loop ends...
-    pinger.join();
+    m_pingerThread.join();
 
-    delete threadPool;
+    delete m_threadPool;
 
 
 }
 
 void FastRPC2::stop()
 {
-    threadPool->stop();
+    m_threadPool->stop();
 }
 
 void FastRPC2::sendPings()
@@ -81,7 +78,7 @@ void FastRPC2::sendPings()
     for (const auto & i : keys)
     {
         // Avoid to ping more hosts during program finalization...
-        if (finished)
+        if (m_isFinished)
             return;
         // Run unexistant remote function
         runRemoteRPCMethod(i,"_pingNotFound_",{},nullptr,false);
@@ -90,8 +87,8 @@ void FastRPC2::sendPings()
 
 bool FastRPC2::waitPingInterval()
 {
-    unique_lock<mutex> lk(mtPing);
-    if (cvPing.wait_for(lk,S(parameters.pingIntervalInSeconds)) == cv_status::timeout )
+    unique_lock<mutex> lk(m_pingMutex);
+    if (m_pingCondition.wait_for(lk,S(parameters.pingIntervalInSeconds)) == cv_status::timeout )
     {
         return true;
     }
@@ -230,7 +227,7 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
         else if (params->methodName == "SESSION.LISTPASSWD")
             currentTask = executeRPCListPassword;
 
-        if (!threadPool->pushTask(currentTask,params,parameters.queuePushTimeoutInMS,priority,key))
+        if (!m_threadPool->pushTask(currentTask,params,parameters.queuePushTimeoutInMS,priority,key))
         {
             // Can't push the task in the queue. Null answer.
             CALLBACK(callbacks.CB_Incomming_DroppingOnFullQueue)(params);
