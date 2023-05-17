@@ -7,7 +7,7 @@ using namespace Mantids29::Authentication;
 
 Manager_Remote::Manager_Remote()
 {
-    m_fastRPC = new Monolith_LoginAuthFastRPC1Connector(1);
+    m_fastRPC = new LoginAuthFastRPC1_Connector(1);
 }
 
 Manager_Remote::~Manager_Remote()
