@@ -59,18 +59,18 @@ public:
 
     struct TaskParameters
     {
-        Network::Sockets::Socket_Stream_Base *streamBack;
-        uint32_t maxMessageSize;
-        void * caller;
-        FastRPC2::SessionPTR * sessionHolder;
+        Network::Sockets::Socket_Stream_Base *streamBack = nullptr;
+        uint32_t maxMessageSize=0;
+        void * caller = nullptr;
+        FastRPC2::SessionPTR * sessionHolder = nullptr;
         Mantids29::API::Monolith::MethodsHandler *currentMethodsHandlers;
-        Authentication::Domains * currentAuthDomains;
-        Threads::Sync::Mutex_Shared * done;
-        Threads::Sync::Mutex * mtSocket;
+        Authentication::Domains * currentAuthDomains = nullptr;
+        Threads::Sync::Mutex_Shared * done = nullptr;
+        Threads::Sync::Mutex * mtSocket = nullptr;
         std::string methodName, ipAddr, cn;
         json payload;
-        uint64_t requestId;
-        void * callbacks;
+        uint64_t requestId = 0;
+        void * callbacks = nullptr;
     };
 
     class Connection : public Mantids29::Threads::Safe::MapItem
@@ -78,19 +78,18 @@ public:
     public:
         Connection()
         {
-            requestIdCounter = 1;
             terminated = false;
         }
 
-        void * callbacks;
+        void * callbacks = nullptr;
 
         // Socket
-        Mantids29::Network::Sockets::Socket_Stream_Base * stream;
-        Threads::Sync::Mutex * mtSocket;
+        Mantids29::Network::Sockets::Socket_Stream_Base * stream = nullptr;
+        Threads::Sync::Mutex * mtSocket = nullptr;
         std::string key;
 
         // Request ID counter.
-        uint64_t requestIdCounter;
+        uint64_t requestIdCounter = 1;
         Threads::Sync::Mutex mtReqIdCt;
 
         // Answers:
@@ -106,69 +105,38 @@ public:
     };
 
     struct CallbackDefinitions {
-        CallbackDefinitions()
-        {
-            CB_MethodExecution_RequiredSessionNotProvided = nullptr;
-            CB_MethodExecution_ValidatedTemporaryAuthFactor = nullptr;
-            CB_MethodExecution_FailedValidationOnTemporaryAuthFactor = nullptr;
-            CB_MethodExecution_Starting = nullptr;
-            CB_MethodExecution_NotAuthorized = nullptr;
-            CB_MethodExecution_MethodNotFound = nullptr;
-            CB_MethodExecution_DomainNotFound = nullptr;
-            CB_MethodExecution_ExecutedOK = nullptr;
-            CB_MethodExecution_UnknownError = nullptr;
 
-            CB_Login_HalfAuthenticationRequireNextFactor = nullptr;
-            CB_Login_LoggedIn = nullptr;
-            CB_Login_InvalidDomain = nullptr;
-            CB_Login_AuthenticationFailed = nullptr;
+        void (*CB_MethodExecution_RequiredAuthorizerNotProvided)( void * obj, TaskParameters * parameters ) = nullptr;
+        void (*CB_MethodExecution_RequiredSessionNotProvided)( void * obj, TaskParameters * parameters ) = nullptr;
+        void (*CB_MethodExecution_ValidatedTemporaryAuthFactor)(void * obj, TaskParameters * parameters,const uint32_t & passIdx, const Mantids29::Authentication::Reason & authReason) = nullptr;
+        void (*CB_MethodExecution_FailedValidationOnTemporaryAuthFactor)(void * obj, TaskParameters * parameters,const uint32_t & passIdx, const Mantids29::Authentication::Reason & authReason) = nullptr;
+        void (*CB_MethodExecution_Starting)(void * obj, TaskParameters * parameters,const json & payloadIn) = nullptr;
+        void (*CB_MethodExecution_NotAuthorized)(void * obj, TaskParameters * parameters,const json & reasons) = nullptr;
+        void (*CB_MethodExecution_MethodNotFound)(void * obj, TaskParameters * parameters) = nullptr;
+        void (*CB_MethodExecution_DomainNotFound)(void * obj, TaskParameters * parameters) = nullptr;
+        void (*CB_MethodExecution_ExecutedOK)(void * obj, TaskParameters * parameters, const double & elapsedMS,const json & payloadOut ) = nullptr;
+        void (*CB_MethodExecution_UnknownError)(void * obj, TaskParameters * parameters ) = nullptr;
 
-            CB_PasswordChange_RequestedOK = nullptr;
-            CB_PasswordChange_RequestFailed = nullptr;
-            CB_PasswordChange_BadCredentials = nullptr;
-            CB_PasswordChange_InvalidDomain = nullptr;
+        void (*CB_Login_HalfAuthenticationRequireNextFactor)(void * obj, TaskParameters * parameters,const json & nextFactorResponse ) = nullptr;
+        void (*CB_Login_LoggedIn)(void * obj, TaskParameters * parameters,const json & nextFactorResponse, const std::string & user, const std::string & domain ) = nullptr;
+        void (*CB_Login_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain ) = nullptr;
+        void (*CB_Login_AuthenticationFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const Mantids29::Authentication::Reason & authReason ) = nullptr;
+        void (*CB_PasswordChange_RequestedOK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordChange_RequestFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordChange_BadCredentials)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx , const Mantids29::Authentication::Reason & authReason) = nullptr;
+        void (*CB_PasswordChange_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
-            CB_PasswordValidation_OK = nullptr;
-            CB_PasswordValidation_Failed = nullptr;
-            CB_PasswordValidation_InvalidDomain = nullptr;
+        void (*CB_PasswordValidation_OK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason ) = nullptr;
+        void (*CB_PasswordValidation_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
-            CB_RemotePeer_UnexpectedAnswerReceived = nullptr;
-            CB_RemotePeer_Disconnected = nullptr;
-            CB_Incomming_DroppingOnFullQueue=nullptr;
-            CB_Outgoing_ExecutionTimedOut=nullptr;
-        }
-
-        void (*CB_MethodExecution_RequiredSessionNotProvided)( void * obj, TaskParameters * parameters );
-        void (*CB_MethodExecution_ValidatedTemporaryAuthFactor)(void * obj, TaskParameters * parameters,const uint32_t & passIdx, const Mantids29::Authentication::Reason & authReason);
-        void (*CB_MethodExecution_FailedValidationOnTemporaryAuthFactor)(void * obj, TaskParameters * parameters,const uint32_t & passIdx, const Mantids29::Authentication::Reason & authReason);
-        void (*CB_MethodExecution_Starting)(void * obj, TaskParameters * parameters,const json & payloadIn);
-        void (*CB_MethodExecution_NotAuthorized)(void * obj, TaskParameters * parameters,const json & reasons);
-        void (*CB_MethodExecution_MethodNotFound)(void * obj, TaskParameters * parameters);
-        void (*CB_MethodExecution_DomainNotFound)(void * obj, TaskParameters * parameters);
-        void (*CB_MethodExecution_ExecutedOK)(void * obj, TaskParameters * parameters, const double & elapsedMS,const json & payloadOut );
-        void (*CB_MethodExecution_UnknownError)(void * obj, TaskParameters * parameters );
-
-        void (*CB_Login_HalfAuthenticationRequireNextFactor)(void * obj, TaskParameters * parameters,const json & nextFactorResponse );
-        void (*CB_Login_LoggedIn)(void * obj, TaskParameters * parameters,const json & nextFactorResponse, const std::string & user, const std::string & domain );
-        void (*CB_Login_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain );
-        void (*CB_Login_AuthenticationFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const Mantids29::Authentication::Reason & authReason );
-
-        void (*CB_PasswordChange_RequestedOK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx );
-        void (*CB_PasswordChange_RequestFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx );
-        void (*CB_PasswordChange_BadCredentials)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx , const Mantids29::Authentication::Reason & authReason);
-        void (*CB_PasswordChange_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx );
-
-        void (*CB_PasswordValidation_OK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx );
-        void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason );
-        void (*CB_PasswordValidation_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx );
-
-        void (*CB_RemotePeer_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer);
-        void (*CB_RemotePeer_Disconnected)(const std::string &connectionKey, const std::string &methodName, const json &payload);
-        void (*CB_Incomming_DroppingOnFullQueue)(FastRPC2::TaskParameters * params);
-        void (*CB_Outgoing_ExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload);
+        void (*CB_RemotePeer_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer) = nullptr;
+        void (*CB_RemotePeer_Disconnected)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
+        void (*CB_Incomming_DroppingOnFullQueue)(FastRPC2::TaskParameters * params) = nullptr;
+        void (*CB_Outgoing_ExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
 
 
-        void * obj;
+        void * obj = nullptr;
         // Mantids29::Authentication::getReasonText(authReason) < - to obtain the auth reason.
     };
 
@@ -188,13 +156,10 @@ public:
             this->defaultAuthDomains = currentAuthDomains;
             this->defaultMethodsHandlers = currentMethodsHandlers;
 
-            pingIntervalInSeconds = 20;
-            keyDistFactor = 1.0;
-            queuePushTimeoutInMS = 2000;
             maxMessageSize = 10*1024*1024;
+            queuePushTimeoutInMS = 2000;
             remoteExecutionTimeoutInMS = 5000;
             remoteExecutionDisconnectedTries = 10;
-            rwTimeoutInSeconds = 40;
         }
         ~ParametersDefinitions()
         {
@@ -210,11 +175,11 @@ public:
         /**
          * @brief pingIntvl Ping Interval (in seconds) - Set before connect / not thread safe.
          */
-        uint32_t pingIntervalInSeconds;
+        uint32_t pingIntervalInSeconds = 20;
         /**
          * @brief keyDistFactor float value from 0 to 1, 0 is no threads used, and 1 to allow in every thread. - Set before connect / not thread safe.
          */
-        float keyDistFactor;
+        float keyDistFactor = 1.0;
         /**
          * @brief queuePushTimeoutInMS Queue Timeout in milliseconds to desist to put the execution task into the threadpool
          */
@@ -240,7 +205,7 @@ public:
                             Write timeout is also important, since we are using blocking sockets, if the peer is full
                             just before having a network problem, the writes (including the ping one) may block the pinging process forever.
          */
-        uint32_t rwTimeoutInSeconds;
+        uint32_t rwTimeoutInSeconds = 40;
         /**
          * @brief currentLoginRPCClient Current login RPC client (in cbm)
          */

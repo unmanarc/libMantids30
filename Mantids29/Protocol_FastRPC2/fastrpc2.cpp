@@ -13,9 +13,9 @@
 #include <cstdint>
 #include <memory>
 
-using namespace Mantids29::Network::Sockets;
-using namespace Mantids29::Network::Protocols::FastRPC;
 using namespace Mantids29;
+using namespace Network::Sockets;
+using namespace Network::Protocols::FastRPC;
 using namespace std;
 
 using Ms = chrono::milliseconds;
@@ -39,15 +39,9 @@ FastRPC2::FastRPC2(const string &appName, void * callbacksObj, uint32_t threadsC
     defaultLoginRPCClient(callbacksObj), defaultMethodsHandlers(appName),
     parameters(&defaultLoginRPCClient,&defaultMethodsHandlers,&defaultAuthDomain)
 {
-    threadPool = new Mantids29::Threads::Pool::ThreadPool(threadsCount, taskQueues);
+    threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
     finished = false;
-//    overwriteObject = nullptr;
-
-    // Configure current methods:
-  /*  currentMethodsHandlers = ;
-    currentLoginRPCClient = ;
-    currentAuthDomains = ;*/
 
     // Configure the domain "" with the auth manager of the fast rpc client for authentication...
     defaultAuthDomain.addDomain("",defaultLoginRPCClient.getRemoteAuthManager());
@@ -139,7 +133,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
         {
             connection->executionStatus[requestId] = executionStatus;
 
-            Mantids29::Helpers::JSONReader2 reader;
+            Helpers::JSONReader2 reader;
             bool parsingSuccessful = reader.parse( payloadBytes, connection->answers[requestId] );
             if (parsingSuccessful)
             {
@@ -194,7 +188,7 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Mantids29::Helpers::JSONReader2 reader;
+    Helpers::JSONReader2 reader;
     FastRPC2::TaskParameters * params = new FastRPC2::TaskParameters;
     params->sessionHolder = sessionHolder;
     params->currentMethodsHandlers = parameters.currentMethodsHandlers;
@@ -356,16 +350,17 @@ int FastRPC2::connectionHandler(Network::Sockets::Socket_TLS *stream, bool remot
     return ret;
 }
 
-Mantids29::Authentication::Reason temporaryAuthentication(FastRPC2::TaskParameters * params ,const std::string & userName, const std::string & domainName, const Authentication::Data &authData)
+Authentication::Reason temporaryAuthentication(FastRPC2::TaskParameters * params ,const std::string & userName, const std::string & domainName, const Authentication::Data &authData)
 {
-    Mantids29::Authentication::Reason eReason;
+    Authentication::Reason eReason;
 
+    // Current Auth Domains is already checked for existence in executeRPCTask:
     auto auth = params->currentAuthDomains->openDomain(domainName);
     if (!auth)
-        eReason = Mantids29::Authentication::REASON_INVALID_DOMAIN;
+        eReason = Authentication::REASON_INVALID_DOMAIN;
     else
     {
-        Mantids29::Authentication::ClientDetails clientDetails;
+        Authentication::ClientDetails clientDetails;
         clientDetails.ipAddress = params->ipAddr;
         clientDetails.tlsCommonName = params->cn;
         clientDetails.userAgent = "FastRPC2";
@@ -387,7 +382,7 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
     json rsp;
     response["ret"] = 0;
 
-    Mantids29::Helpers::JSONReader2 reader;
+    Helpers::JSONReader2 reader;
 
     std::string  userName   = JSON_ASSTRING(taskParams->payload["extraAuth"],"user","");
     std::string domainName  = JSON_ASSTRING(taskParams->payload["extraAuth"],"domain","");
@@ -404,6 +399,7 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
 
     if (!taskParams->currentAuthDomains)
     {
+        CALLBACK(callbacks->CB_MethodExecution_RequiredAuthorizerNotProvided)(callbacks->obj, taskParams);
         return;
     }
 
@@ -418,13 +414,13 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
     std::set<uint32_t> extraTmpIndexes;
     for (const uint32_t & passIdx : extraAuths.getAvailableIndices())
     {
-        Mantids29::Authentication::Reason authReason=temporaryAuthentication( taskParams,
+        Authentication::Reason authReason=temporaryAuthentication( taskParams,
                                                                             userName,
                                                                             domainName,
                                                                             extraAuths.getAuthentication(passIdx) );
 
         // Include the pass idx in the Extra TMP Index.
-        if ( Mantids29::Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
+        if ( Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
         {
             CALLBACK(callbacks->CB_MethodExecution_ValidatedTemporaryAuthFactor)(callbacks->obj, taskParams, passIdx, authReason);
             extraTmpIndexes.insert(passIdx);
@@ -527,7 +523,7 @@ void FastRPC2::executeRPCLogin(void *taskData)
 
     // CREATE NEW SESSION:
     json response;
-    Mantids29::Authentication::Reason authReason = Authentication::REASON_INTERNAL_ERROR;
+    Authentication::Reason authReason = Authentication::REASON_INTERNAL_ERROR;
 
     auto session = taskParams->sessionHolder->get();
 
@@ -540,6 +536,18 @@ void FastRPC2::executeRPCLogin(void *taskData)
     if (session == nullptr && authData.m_passwordIndex!=0)
     {
         // Why are you trying to authenticate this way?
+        response["txt"] = getReasonText(authReason);
+        response["val"] = static_cast<Json::UInt>(authReason);
+        response["nextPassReq"] = false;
+
+    }
+    else if ( !taskParams->currentAuthDomains )
+    {
+        // You should not be trying to authenticate against me...
+        authReason = Authentication::REASON_NOT_IMPLEMENTED;
+        response["txt"] = getReasonText(authReason);
+        response["val"] = static_cast<Json::UInt>(authReason);
+        response["nextPassReq"] = false;
     }
     else
     {
@@ -548,7 +556,7 @@ void FastRPC2::executeRPCLogin(void *taskData)
         auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(domain);
         if (domainAuthenticator)
         {
-            Mantids29::Authentication::ClientDetails clientDetails;
+            Authentication::ClientDetails clientDetails;
             clientDetails.ipAddress = taskParams->ipAddr;
             clientDetails.tlsCommonName = taskParams->cn;
             clientDetails.userAgent = "FastRPC2 AGENT";
@@ -556,7 +564,7 @@ void FastRPC2::executeRPCLogin(void *taskData)
             authReason = domainAuthenticator->authenticate(taskParams->currentMethodsHandlers->getApplicationName(),clientDetails,
                                                            user,authData.m_password,
                                                            authData.m_passwordIndex,
-                                                           Mantids29::Authentication::MODE_PLAIN,
+                                                           Authentication::MODE_PLAIN,
                                                            "",
                                                            &stAccountPassIndexesUsedForLogin);
             taskParams->currentAuthDomains->releaseDomain(domain);
@@ -564,10 +572,10 @@ void FastRPC2::executeRPCLogin(void *taskData)
         else
         {
             CALLBACK(callbacks->CB_Login_InvalidDomain)(callbacks->obj, taskParams, domain);
-            authReason = Mantids29::Authentication::REASON_INVALID_DOMAIN;
+            authReason = Authentication::REASON_INVALID_DOMAIN;
         }
 
-        if ( Mantids29::Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
+        if ( Authentication::IS_PASSWORD_AUTHENTICATED( authReason ) )
         {
             // If not exist an authenticated session, create a new one.
             if (!session)
@@ -639,7 +647,11 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
     auto session = taskParams->sessionHolder->get();
     Authentication::Data newAuth, oldAuth;
 
-    if (!session || !session->isFullyAuthenticated(Mantids29::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
+    if (!taskParams->currentAuthDomains)
+    {
+        response["reason"] = "NOT_AUTHENTICABLE";
+    }
+    else if (!session || !session->isFullyAuthenticated(Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
     {
         // TODO: what if expired?
         response["reason"] = "BAD_SESSION";
@@ -660,7 +672,7 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
         auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(session->getAuthenticatedDomain());
         if (domainAuthenticator)
         {
-            Mantids29::Authentication::ClientDetails clientDetails;
+            Authentication::ClientDetails clientDetails;
             clientDetails.ipAddress = taskParams->ipAddr;
             clientDetails.tlsCommonName = taskParams->cn;
             clientDetails.userAgent = "FastRPC2 AGENT";
@@ -671,7 +683,7 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
             {
                 // TODO: alternative/configurable password storage...
                 // TODO: check password policy.
-                Mantids29::Authentication::Secret newSecretData = Mantids29::Authentication::createNewSecret(newAuth.m_password,Mantids29::Authentication::FN_SSHA256);
+                Authentication::Secret newSecretData = Authentication::createNewSecret(newAuth.m_password,Authentication::FN_SSHA256);
 
                 response["ok"] = domainAuthenticator->accountChangeAuthenticatedSecret(taskParams->currentMethodsHandlers->getApplicationName(),
                                                                                                               session->getAuthUser(),
@@ -727,7 +739,11 @@ void FastRPC2::executeRPCTestPassword(void *taskData)
     response["ok"] = false;
 
     // TODO:
-    if (!session || !session->isFullyAuthenticated(Mantids29::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
+    if (!taskParams->currentAuthDomains)
+    {
+        response["reason"] = "NOT_AUTHENTICABLE";
+    }
+    else if (!session || !session->isFullyAuthenticated(Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
     {
         // TODO: what if expired?
         response["reason"] = "BAD_SESSION";
@@ -744,7 +760,7 @@ void FastRPC2::executeRPCTestPassword(void *taskData)
         auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(session->getAuthenticatedDomain());
         if (domainAuthenticator)
         {
-            Mantids29::Authentication::ClientDetails clientDetails;
+            Authentication::ClientDetails clientDetails;
             clientDetails.ipAddress = taskParams->ipAddr;
             clientDetails.tlsCommonName = taskParams->cn;
             clientDetails.userAgent = "FastRPC2 AGENT";
@@ -787,7 +803,11 @@ void FastRPC2::executeRPCListPassword(void *taskData)
     response["ok"] = false;
     auto session = taskParams->sessionHolder->get();
 
-    if (!session || !session->isFullyAuthenticated(Mantids29::Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
+    if (!taskParams->currentAuthDomains)
+    {
+        response["reason"] = "NOT_AUTHENTICABLE";
+    }
+    else if (!session || !session->isFullyAuthenticated(Authentication::Session::CHECK_ALLOW_EXPIRED_PASSWORDS))
     {
         response["reason"] = "BAD_SESSION";
     }
@@ -796,7 +816,7 @@ void FastRPC2::executeRPCListPassword(void *taskData)
         auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(session->getAuthenticatedDomain());
         if (domainAuthenticator)
         {
-            std::map<uint32_t, Mantids29::Authentication::Secret_PublicData> publics = domainAuthenticator->getAccountAllSecretsPublicData(session->getAuthUser());
+            std::map<uint32_t, Authentication::Secret_PublicData> publics = domainAuthenticator->getAccountAllSecretsPublicData(session->getAuthUser());
             response["ok"] = true;
 
             uint32_t ix=0;
