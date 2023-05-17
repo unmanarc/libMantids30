@@ -37,7 +37,7 @@ void vrsyncRPCPingerThread( FastRPC2 * obj )
 
 FastRPC2::FastRPC2(const string &appName, uint32_t threadsCount, uint32_t taskQueues) :
     m_defaultMethodsHandlers(appName),
-    parameters(&m_defaultMethodsHandlers,&m_defaultAuthDomain)
+    m_parameters(&m_defaultMethodsHandlers,&m_defaultAuthDomain)
 {
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
@@ -74,7 +74,7 @@ void FastRPC2::stop()
 void FastRPC2::sendPings()
 {
     // This will create some traffic:
-    auto keys = connectionsByKeyId.getKeys();
+    auto keys = m_connectionsByKeyId.getKeys();
     for (const auto & i : keys)
     {
         // Avoid to ping more hosts during program finalization...
@@ -88,7 +88,7 @@ void FastRPC2::sendPings()
 bool FastRPC2::waitPingInterval()
 {
     unique_lock<mutex> lk(m_pingMutex);
-    if (m_pingCondition.wait_for(lk,S(parameters.pingIntervalInSeconds)) == cv_status::timeout )
+    if (m_pingCondition.wait_for(lk,S(m_parameters.pingIntervalInSeconds)) == cv_status::timeout )
     {
         return true;
     }
@@ -99,7 +99,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
 {
     CallbackDefinitions * callbacks = ((CallbackDefinitions *)connection->callbacks);
 
-    uint32_t maxAlloc = parameters.maxMessageSize;
+    uint32_t maxAlloc = m_parameters.maxMessageSize;
     uint64_t requestId;
     uint8_t executionStatus;
     char * payloadBytes;
@@ -125,7 +125,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
     ////////////////////////////////////////////////////////////
     if (true)
     {
-        unique_lock<mutex> lk(connection->mtAnswers);
+        unique_lock<mutex> lk(connection->answersMutex);
         if ( connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
         {
             connection->executionStatus[requestId] = executionStatus;
@@ -135,7 +135,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
             if (parsingSuccessful)
             {
                 // Notify that there is a new answer... everyone have to check if it's for him.
-                connection->cvAnswers.notify_all();
+                connection->answersCondition.notify_all();
             }
             else
             {
@@ -158,7 +158,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
 
 int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, FastRPC2::SessionPTR * sessionHolder)
 {
-    uint32_t maxAlloc = parameters.maxMessageSize;
+    uint32_t maxAlloc = m_parameters.maxMessageSize;
     uint64_t requestId;
     char * payloadBytes;
     bool ok;
@@ -188,18 +188,18 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
     Helpers::JSONReader2 reader;
     FastRPC2::TaskParameters * params = new FastRPC2::TaskParameters;
     params->sessionHolder = sessionHolder;
-    params->currentMethodsHandlers = parameters.currentMethodsHandlers;
-    params->currentAuthDomains = parameters.currentAuthDomains;
+    params->currentMethodsHandlers = m_parameters.currentMethodsHandlers;
+    params->currentAuthDomains = m_parameters.currentAuthDomains;
     params->requestId = requestId;
     params->methodName = methodName;
     params->ipAddr = stream->getRemotePairStr();
     params->cn = stream->getTLSPeerCN();
-    params->done = mtDone;
-    params->mtSocket = mtSocket;
+    params->doneSharedMutex = mtDone;
+    params->socketMutex = mtSocket;
     params->streamBack = stream;
     params->caller = this;
-    params->maxMessageSize = parameters.maxMessageSize;
-    params->callbacks = &callbacks;
+    params->maxMessageSize = m_parameters.maxMessageSize;
+    params->callbacks = &m_callbacks;
 
     bool parsingSuccessful = reader.parse( payloadBytes, params->payload );
     delete [] payloadBytes;
@@ -212,7 +212,7 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
     }
     else
     {
-        params->done->lockShared();
+        params->doneSharedMutex->lockShared();
 
         void (*currentTask)(void *) = executeRPCTask;
 
@@ -227,12 +227,12 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
         else if (params->methodName == "SESSION.LISTPASSWD")
             currentTask = executeRPCListPassword;
 
-        if (!m_threadPool->pushTask(currentTask,params,parameters.queuePushTimeoutInMS,priority,key))
+        if (!m_threadPool->pushTask(currentTask,params,m_parameters.queuePushTimeoutInMS,priority,key))
         {
             // Can't push the task in the queue. Null answer.
-            CALLBACK(callbacks.CB_Incomming_DroppingOnFullQueue)(params);
+            CALLBACK(m_callbacks.CB_Incomming_DroppingOnFullQueue)(params);
             sendRPCAnswer(params,"",3);
-            params->done->unlockShared();
+            params->doneSharedMutex->unlockShared();
             delete params;
         }
     }
@@ -286,20 +286,20 @@ int FastRPC2::connectionHandler(Network::Sockets::Socket_TLS *stream, bool remot
     Threads::Sync::Mutex mtSocket;
 
     FastRPC2::Connection * connection = new FastRPC2::Connection;
-    connection->callbacks = &callbacks;
-    connection->mtSocket = &mtSocket;
+    connection->callbacks = &m_callbacks;
+    connection->socketMutex = &mtSocket;
     connection->key = !remotePeerIsServer? stream->getTLSPeerCN() + "?" + Helpers::Random::createRandomHexString(8) : stream->getTLSPeerCN();
     connection->stream = stream;
 
     // TODO: multiple connections from the same key?
-    if (!connectionsByKeyId.addElement(connection->key,connection))
+    if (!m_connectionsByKeyId.addElement(connection->key,connection))
     {
         delete connection;
         return -2;
     }
 
-    stream->setReadTimeout(parameters.rwTimeoutInSeconds);
-    stream->setWriteTimeout(parameters.rwTimeoutInSeconds);
+    stream->setReadTimeout(m_parameters.rwTimeoutInSeconds);
+    stream->setWriteTimeout(m_parameters.rwTimeoutInSeconds);
 
     FastRPC2::SessionPTR session;
 
@@ -316,7 +316,7 @@ int FastRPC2::connectionHandler(Network::Sockets::Socket_TLS *stream, bool remot
             break;
         case 'Q':
             // Process Query, incomming query...
-            ret = processQuery(stream,connection->key,parameters.keyDistFactor,&mtDone,&mtSocket,&session);
+            ret = processQuery(stream,connection->key,m_parameters.keyDistFactor,&mtDone,&mtSocket,&session);
             break;
         case 0:
             // Remote shutdown
@@ -341,8 +341,8 @@ int FastRPC2::connectionHandler(Network::Sockets::Socket_TLS *stream, bool remot
     stream->shutdownSocket();
 
     connection->terminated = true;
-    connection->cvAnswers.notify_all();
-    connectionsByKeyId.destroyElement(connection->key);
+    connection->answersCondition.notify_all();
+    m_connectionsByKeyId.destroyElement(connection->key);
 
     return ret;
 }
@@ -510,7 +510,7 @@ void FastRPC2::executeRPCTask(void *vTaskParams)
     //
     response["payload"] = rsp;
     sendRPCAnswer(taskParams,response.toStyledString(),found?2:4);
-    taskParams->done->unlockShared();
+    taskParams->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::executeRPCLogin(void *taskData)
@@ -619,7 +619,7 @@ void FastRPC2::executeRPCLogin(void *taskData)
     }
 
     sendRPCAnswer(taskParams,response.toStyledString(),2);
-    taskParams->done->unlockShared();
+    taskParams->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::executeRPCLogout(void *taskData)
@@ -630,7 +630,7 @@ void FastRPC2::executeRPCLogout(void *taskData)
     response["ok"] = params->sessionHolder->destroy();
 
     sendRPCAnswer(params,response.toStyledString(),2);
-    params->done->unlockShared();
+    params->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::executeRPCChangePassword(void *taskData)
@@ -722,7 +722,7 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
     }
 
     sendRPCAnswer(taskParams,response.toStyledString(),2);
-    taskParams->done->unlockShared();
+    taskParams->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::executeRPCTestPassword(void *taskData)
@@ -788,7 +788,7 @@ void FastRPC2::executeRPCTestPassword(void *taskData)
     }
 
     sendRPCAnswer(taskParams,response.toStyledString(),2);
-    taskParams->done->unlockShared();
+    taskParams->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::executeRPCListPassword(void *taskData)
@@ -837,20 +837,20 @@ void FastRPC2::executeRPCListPassword(void *taskData)
     }
 
     sendRPCAnswer(taskParams,response.toStyledString(),2);
-    taskParams->done->unlockShared();
+    taskParams->doneSharedMutex->unlockShared();
 }
 
 void FastRPC2::sendRPCAnswer(FastRPC2::TaskParameters *params, const string &answer,uint8_t execution)
 {
     // Send a block.
-    params->mtSocket->lock();
+    params->socketMutex->lock();
     if (    params->streamBack->writeU<uint8_t>('A') && // ANSWER
             params->streamBack->writeU<uint64_t>(params->requestId) &&
             params->streamBack->writeU<uint8_t>(execution) &&
             params->streamBack->writeStringEx<uint32_t>(answer.size()<=params->maxMessageSize?answer:"",params->maxMessageSize ) )
     {
     }
-    params->mtSocket->unlock();
+    params->socketMutex->unlock();
 }
 
 json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &methodName, const json &payload, json *error, bool retryIfDisconnected, bool passSessionCommands)
@@ -864,7 +864,7 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
     builder.settings_["indentation"] = "";
     string output = Json::writeString(builder, payload);
 
-    if (output.size()>parameters.maxMessageSize)
+    if (output.size()>m_parameters.maxMessageSize)
     {
         if (error)
         {
@@ -878,12 +878,12 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
     FastRPC2::Connection * connection;
 
     uint32_t _tries=0;
-    while ( (connection=(FastRPC2::Connection *)connectionsByKeyId.openElement(connectionKey))==nullptr )
+    while ( (connection=(FastRPC2::Connection *)m_connectionsByKeyId.openElement(connectionKey))==nullptr )
     {
         _tries++;
-        if (_tries >= parameters.remoteExecutionDisconnectedTries || !retryIfDisconnected)
+        if (_tries >= m_parameters.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(callbacks.CB_RemotePeer_Disconnected)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_RemotePeer_Disconnected)(connectionKey,methodName,payload);
             if (error)
             {
                 (*error)["succeed"] = false;
@@ -903,31 +903,31 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
 
     if (1)
     {
-        unique_lock<mutex> lk(connection->mtAnswers);
+        unique_lock<mutex> lk(connection->answersMutex);
         // Create authorization to be inserted:
         connection->pendingRequests.insert(requestId);
     }
 
-    connection->mtSocket->lock();
+    connection->socketMutex->lock();
     if (    connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
             connection->stream->writeU<uint64_t>(requestId) &&
             connection->stream->writeStringEx<uint8_t>(methodName) &&
-            connection->stream->writeStringEx<uint32_t>( output,parameters.maxMessageSize ) )
+        connection->stream->writeStringEx<uint32_t>( output,m_parameters.maxMessageSize ) )
     {
     }
-    connection->mtSocket->unlock();
+    connection->socketMutex->unlock();
 
     // Time to wait for answers...
     for (;;)
     {
-        unique_lock<mutex> lk(connection->mtAnswers);
+        unique_lock<mutex> lk(connection->answersMutex);
 
         // Process multiple signals until our answer comes...
 
-        if (connection->cvAnswers.wait_for(lk,Ms(parameters.remoteExecutionTimeoutInMS)) == cv_status::timeout )
+        if (connection->answersCondition.wait_for(lk,Ms(m_parameters.remoteExecutionTimeoutInMS)) == cv_status::timeout )
         {
             // break by timeout. (no answer)
-            CALLBACK(callbacks.CB_Outgoing_ExecutionTimedOut)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_Outgoing_ExecutionTimedOut)(connectionKey,methodName,payload);
 
             if (error)
             {
@@ -984,14 +984,14 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
 
     if (1)
     {
-        unique_lock<mutex> lk(connection->mtAnswers);
+        unique_lock<mutex> lk(connection->answersMutex);
         // Revoke authorization to be inserted, clean results...
         connection->answers.erase(requestId);
         connection->executionStatus.erase(requestId);
         connection->pendingRequests.erase(requestId);
     }
 
-    connectionsByKeyId.releaseElement(connectionKey);
+    m_connectionsByKeyId.releaseElement(connectionKey);
 
     if (error)
     {
@@ -1011,32 +1011,32 @@ bool FastRPC2::runRemoteClose(const string &connectionKey)
     bool r = false;
 
     FastRPC2::Connection * connection;
-    if ((connection=(FastRPC2::Connection *)connectionsByKeyId.openElement(connectionKey))!=nullptr)
+    if ((connection=(FastRPC2::Connection *)m_connectionsByKeyId.openElement(connectionKey))!=nullptr)
     {
 
-        connection->mtSocket->lock();
+        connection->socketMutex->lock();
         if (    connection->stream->writeU<uint8_t>(0) )
         {
         }
-        connection->mtSocket->unlock();
+        connection->socketMutex->unlock();
 
-        connectionsByKeyId.releaseElement(connectionKey);
+        m_connectionsByKeyId.releaseElement(connectionKey);
     }
     else
     {
-        CALLBACK(callbacks.CB_RemotePeer_Disconnected)(connectionKey,"",{});
+        CALLBACK(m_callbacks.CB_RemotePeer_Disconnected)(connectionKey,"",{});
     }
     return r;
 }
 
 set<string> FastRPC2::getConnectionKeys()
 {
-    return connectionsByKeyId.getKeys();
+    return m_connectionsByKeyId.getKeys();
 }
 
 bool FastRPC2::checkConnectionKey(const string &connectionKey)
 {
-    return connectionsByKeyId.isMember(connectionKey);
+    return m_connectionsByKeyId.isMember(connectionKey);
 }
 
 

@@ -55,8 +55,8 @@ public:
         FastRPC2::SessionPTR * sessionHolder = nullptr;
         Mantids29::API::Monolith::MethodsHandler *currentMethodsHandlers;
         Authentication::Domains * currentAuthDomains = nullptr;
-        Threads::Sync::Mutex_Shared * done = nullptr;
-        Threads::Sync::Mutex * mtSocket = nullptr;
+        Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
+        Threads::Sync::Mutex * socketMutex = nullptr;
         std::string methodName, ipAddr, cn;
         json payload;
         uint64_t requestId = 0;
@@ -75,7 +75,7 @@ public:
 
         // Socket
         Mantids29::Network::Sockets::Socket_Stream_Base * stream = nullptr;
-        Threads::Sync::Mutex * mtSocket = nullptr;
+        Threads::Sync::Mutex * socketMutex = nullptr;
         std::string key;
 
         // Request ID counter.
@@ -84,9 +84,13 @@ public:
 
         // Answers:
         std::map<uint64_t,json> answers;
+        std::mutex answersMutex;
+        std::condition_variable answersCondition;
+
+        // Execution Status:
         std::map<uint64_t,uint8_t> executionStatus;
-        std::mutex mtAnswers;
-        std::condition_variable cvAnswers;
+
+        // Pending Requests:
         std::set<uint64_t> pendingRequests;
 
         // Finalization:
@@ -298,11 +302,11 @@ public:
     /**
      * @brief callbacks This is where you define the callbacks before using this class...
      */
-    CallbackDefinitions callbacks;
+    CallbackDefinitions m_callbacks;
     /**
      * @brief parameters All configuration Parameters...
      */
-    ParametersDefinitions parameters;
+    ParametersDefinitions m_parameters;
 
 
 private:
@@ -319,13 +323,14 @@ private:
                      const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, FastRPC2::SessionPTR *session
                      );
 
-    Mantids29::Threads::Safe::Map<std::string> connectionsByKeyId;
+    Mantids29::Threads::Safe::Map<std::string> m_connectionsByKeyId;
 
-    std::map<std::string,std::string> connectionKeyToLogin;
-    std::mutex mtConnectionKeyToLogin;
+    // TODO:
+    std::map<std::string,std::string> m_connectionKeyToLogin;
+    std::mutex m_connectionKeyToLoginMutex;
+    std::multimap<std::string,std::string> m_loginToConnectionKey;
+    std::mutex m_loginToConnectionKeyMutex;
 
-    std::multimap<std::string,std::string> loginToConnectionKey;
-    std::mutex mtLoginToConnectionKey;
 
     // Methods:
     // method name -> method.
