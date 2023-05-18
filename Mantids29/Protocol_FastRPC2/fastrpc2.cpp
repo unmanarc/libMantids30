@@ -148,7 +148,7 @@ int FastRPC2::processAnswer(FastRPC2::Connection * connection)
         }
         else
         {
-            CALLBACK(callbacks->CB_RemotePeer_UnexpectedAnswerReceived)(connection,payloadBytes);
+            CALLBACK(callbacks->CB_Protocol_UnexpectedAnswerReceived)(connection,payloadBytes);
         }
     }
 
@@ -233,7 +233,7 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
         if (!m_threadPool->pushTask(currentTask,params,m_parameters.queuePushTimeoutInMS,priority,key))
         {
             // Can't push the task in the queue. Null answer.
-            CALLBACK(m_callbacks.CB_Incomming_DroppingOnFullQueue)(params);
+            CALLBACK(m_callbacks.CB_IncommingTask_DroppingOnFullQueue)(params);
             sendRPCAnswer(params,"",3);
             params->doneSharedMutex->unlockShared();
             delete params;
@@ -886,7 +886,7 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
         _tries++;
         if (_tries >= m_parameters.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionOnDisconnectedPeer)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_OutgoingTask_FailedExecutionOnDisconnectedPeer)(connectionKey,methodName,payload);
             if (error)
             {
                 (*error)["succeed"] = false;
@@ -930,7 +930,7 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
         if (connection->answersCondition.wait_for(lk,Ms(m_parameters.remoteExecutionTimeoutInMS)) == cv_status::timeout )
         {
             // break by timeout. (no answer)
-            CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionTimedOut)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_OutgoingTask_FailedExecutionTimedOut)(connectionKey,methodName,payload);
 
             if (error)
             {
@@ -1027,7 +1027,7 @@ bool FastRPC2::runRemoteClose(const string &connectionKey)
     }
     else
     {
-        CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionOnDisconnectedPeer)(connectionKey,"CLOSE",{});
+        CALLBACK(m_callbacks.CB_OutgoingTask_FailedExecutionOnDisconnectedPeer)(connectionKey,"CLOSE",{});
     }
     return r;
 }

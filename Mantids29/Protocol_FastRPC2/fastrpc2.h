@@ -124,10 +124,10 @@ public:
         void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason ) = nullptr;
         void (*CB_PasswordValidation_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
-        void (*CB_RemotePeer_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer) = nullptr;
-        void (*CB_Outgoing_FailedExecutionOnDisconnectedPeer)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
-        void (*CB_Incomming_DroppingOnFullQueue)(FastRPC2::TaskParameters * params) = nullptr;
-        void (*CB_Outgoing_FailedExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
+        void (*CB_Protocol_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer) = nullptr;
+        void (*CB_OutgoingTask_FailedExecutionOnDisconnectedPeer)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
+        void (*CB_IncommingTask_DroppingOnFullQueue)(FastRPC2::TaskParameters * params) = nullptr;
+        void (*CB_OutgoingTask_FailedExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
 
 
         void * obj = nullptr;
