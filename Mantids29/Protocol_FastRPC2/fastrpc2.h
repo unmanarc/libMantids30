@@ -57,7 +57,7 @@ public:
         Authentication::Domains * currentAuthDomains = nullptr;
         Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
         Threads::Sync::Mutex * socketMutex = nullptr;
-        std::string methodName, ipAddr, cn;
+        std::string methodName, ipAddr, cn, userId;
         json payload;
         uint64_t requestId = 0;
         void * callbacks = nullptr;
@@ -125,9 +125,9 @@ public:
         void (*CB_PasswordValidation_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
         void (*CB_RemotePeer_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer) = nullptr;
-        void (*CB_RemotePeer_Disconnected)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
+        void (*CB_Outgoing_FailedExecutionOnDisconnectedPeer)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
         void (*CB_Incomming_DroppingOnFullQueue)(FastRPC2::TaskParameters * params) = nullptr;
-        void (*CB_Outgoing_ExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
+        void (*CB_Outgoing_FailedExecutionTimedOut)(const std::string &connectionKey, const std::string &methodName, const json &payload) = nullptr;
 
 
         void * obj = nullptr;

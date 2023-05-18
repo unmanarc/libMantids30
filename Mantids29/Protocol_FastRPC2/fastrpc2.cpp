@@ -183,6 +183,8 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
         return -3;
     }
 
+    auto session = sessionHolder->get();
+
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
     Helpers::JSONReader2 reader;
@@ -200,6 +202,7 @@ int FastRPC2::processQuery(Socket_TLS *stream, const string &key, const float &p
     params->caller = this;
     params->maxMessageSize = m_parameters.maxMessageSize;
     params->callbacks = &m_callbacks;
+    params->userId = session?session->getAuthUser():"";
 
     bool parsingSuccessful = reader.parse( payloadBytes, params->payload );
     delete [] payloadBytes;
@@ -883,7 +886,7 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
         _tries++;
         if (_tries >= m_parameters.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(m_callbacks.CB_RemotePeer_Disconnected)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionOnDisconnectedPeer)(connectionKey,methodName,payload);
             if (error)
             {
                 (*error)["succeed"] = false;
@@ -927,7 +930,7 @@ json FastRPC2::runRemoteRPCMethod(const string &connectionKey, const string &met
         if (connection->answersCondition.wait_for(lk,Ms(m_parameters.remoteExecutionTimeoutInMS)) == cv_status::timeout )
         {
             // break by timeout. (no answer)
-            CALLBACK(m_callbacks.CB_Outgoing_ExecutionTimedOut)(connectionKey,methodName,payload);
+            CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionTimedOut)(connectionKey,methodName,payload);
 
             if (error)
             {
@@ -1024,7 +1027,7 @@ bool FastRPC2::runRemoteClose(const string &connectionKey)
     }
     else
     {
-        CALLBACK(m_callbacks.CB_RemotePeer_Disconnected)(connectionKey,"",{});
+        CALLBACK(m_callbacks.CB_Outgoing_FailedExecutionOnDisconnectedPeer)(connectionKey,"CLOSE",{});
     }
     return r;
 }
