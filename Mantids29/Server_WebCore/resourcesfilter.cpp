@@ -53,10 +53,10 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
             }
         }
 
-        auto pRejectedAppAttribs =  i.second.get_child_optional("rejectedAppAtrribs");
-        if (pRejectedAppAttribs)
+        auto pDisallowedAppAttribs =  i.second.get_child_optional("disallowedAppAtrribs");
+        if (pDisallowedAppAttribs)
         {
-            for (const auto & i : pRejectedAppAttribs.get())
+            for (const auto & i : pDisallowedAppAttribs.get())
             {
                 filter.rejAttrib.push_back(i.second.get_value<std::string>());
             }
@@ -71,8 +71,11 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
 
         filter.redirectLocation = i.second.get_optional<std::string>("redirectLocation")?i.second.get<std::string>("redirectLocation"):"";
 
-        filter.requireLogin = i.second.get<bool>("requireLogin");
-        filter.requireSession = i.second.get<bool>("requireSession");
+        filter.requireLogin = i.second.get<bool>("requireLogin",false);
+        filter.requireSession = i.second.get<bool>("requireSession",false);
+
+        filter.disallowLogin = i.second.get<bool>("disallowLogin",false);
+        filter.disallowSession = i.second.get<bool>("disallowSession",false);
 
         addFilter( filter );
     }
@@ -129,6 +132,14 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
 
         // Check if the user needs to have an active session
         if (filter.requireSession && !userData->sessionActive)
+            filterMatchesRequirements = false;
+
+        // Check if the user needs not to be logged in
+        if (filter.disallowLogin && userData->loggedIn)
+            filterMatchesRequirements = false;
+
+        // Check if the user needs not to have an active session
+        if (filter.disallowSession && userData->sessionActive)
             filterMatchesRequirements = false;
 
         // If the filter doesn't match the requirements, continue with the next filter

@@ -60,8 +60,11 @@ public:
         std::list<boost::regex> regexPatterns;
         std::string redirectLocation = "";
         std::list<std::string> reqAttrib, rejAttrib, sRegexs;
-        bool requireSession = true;
-        bool requireLogin = true;
+        bool requireSession = false;
+        bool requireLogin = false;
+        bool disallowSession = false;
+        bool disallowLogin = false;
+
         FilterAction action = RFILTER_ACCEPT;
     };
 
