@@ -22,8 +22,8 @@ public:
                                                                           const std::string &configClassName);
 
 private:
-    static bool createHMACSecret(const std::string &filePath);
-    static bool createRSASecret(const std::string &keyPath, const std::string &crtPath, uint16_t keySize = 4096);
+    static bool createHMACSecret(Program::Logs::AppLog *log,const std::string &filePath);
+    static bool createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize = 4096);
 };
 
 } // namespace Config

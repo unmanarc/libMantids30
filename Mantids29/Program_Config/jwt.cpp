@@ -45,7 +45,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
         // report error if failed to read or if permissions are not secure.
         std::ifstream hmacFile(hmacFilePath.c_str());
 
-        if (!hmacFile.is_open() && createIfNotPresent && createHMACSecret(hmacFilePath))
+        if (!hmacFile.is_open() && createIfNotPresent && createHMACSecret(log,hmacFilePath))
         {
             hmacFile.open(hmacFilePath.c_str());
         }
@@ -110,7 +110,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
 
         FILE *privateKeyFP = fopen(privateKeyFilePath.c_str(), "r");
 
-        if (privateKeyFP == nullptr && createIfNotPresent && createRSASecret(privateKeyFilePath, publicKeyFilePath, createRSASize))
+        if (privateKeyFP == nullptr && createIfNotPresent && createRSASecret(log,privateKeyFilePath, publicKeyFilePath, createRSASize))
         {
             privateKeyFP = fopen(privateKeyFilePath.c_str(), "r");
         }
@@ -199,7 +199,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
 
         std::ifstream hmacFile(hmacFilePath.c_str());
 
-        if (!hmacFile.is_open() && createIfNotPresent && createHMACSecret(hmacFilePath))
+        if (!hmacFile.is_open() && createIfNotPresent && createHMACSecret(log,hmacFilePath))
         {
             hmacFile.open(hmacFilePath.c_str());
         }
@@ -263,7 +263,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
 
         FILE *publicKeyFP = fopen(publicKeyFilePath.c_str(), "r");
 
-        if (publicKeyFP == nullptr && createIfNotPresent && createRSASecret(privateKeyFilePath, publicKeyFilePath, createRSASize))
+        if (publicKeyFP == nullptr && createIfNotPresent && createRSASecret(log,privateKeyFilePath, publicKeyFilePath, createRSASize))
         {
             publicKeyFP = fopen(publicKeyFilePath.c_str(), "r");
         }
@@ -307,7 +307,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
     }
 }
 
-bool Config::JWT::createHMACSecret(const std::string &filePath)
+bool Config::JWT::createHMACSecret(Program::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
@@ -317,18 +317,32 @@ bool Config::JWT::createHMACSecret(const std::string &filePath)
         if (pkeyFile)
         {
             auto rndstr = Helpers::Random::createRandomString(32);
-            r = fwrite(rndstr.c_str(), 32, 1, pkeyFile) == 32;
+            r = fwrite(rndstr.c_str(), 32, 1, pkeyFile) == 1;
+
+            if (r)
+            {
+                log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT HMAC Secret File: %s", filePath.c_str());
+            }
+            else
+            {
+                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
+            }
+
             fclose(pkeyFile);
         }
         else
         {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
             close(fd);
         }
     }
+    else
+        log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
+
     return r;
 }
 
-bool Config::JWT::createRSASecret(const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool Config::JWT::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *ctx = NULL;
@@ -348,22 +362,45 @@ bool Config::JWT::createRSASecret(const std::string &keyPath, const std::string 
                 {
                     if (PEM_write_PrivateKey(pkeyFile, pkey, NULL, NULL, 0, NULL, NULL))
                     {
+                        log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
+
                         // Save public key
                         FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
                         if (pubkeyFile)
                         {
                             success = PEM_write_PUBKEY(pubkeyFile, pkey) > 0;
+                            if (success)
+                            {
+                                log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
+                            }
+                            else
+                            {
+                                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
+                            }
                             fclose(pubkeyFile);
                         }
+                        else
+                        {
+                            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
+                        }
+                    }
+                    else
+                    {
+                        log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
                     }
                     fclose(pkeyFile);
                 }
                 else
                 {
+                    log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
                     close(fd);
                 }
             }
+            else
+                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (2)");
         }
+        else
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (1)");
     }
 
     if (pkey)
