@@ -72,7 +72,14 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
         }
 
         std::string hmacSecret;
-        hmacFile >> hmacSecret;
+
+        std::getline(hmacFile, hmacSecret);
+
+        // Remove the newline character if it exists
+        if (!hmacSecret.empty() && hmacSecret.back() == '\n')
+        {
+            hmacSecret.pop_back();
+        }
 
         if (hmacSecret.empty())
         {
@@ -219,7 +226,13 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
         }
 
         std::string hmacSecret;
-        hmacFile >> hmacSecret;
+        std::getline(hmacFile, hmacSecret);
+
+        // Remove the newline character if it exists
+        if (!hmacSecret.empty() && hmacSecret.back() == '\n')
+        {
+            hmacSecret.pop_back();
+        }
 
         if (hmacSecret.empty())
         {
