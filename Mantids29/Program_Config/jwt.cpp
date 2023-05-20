@@ -40,20 +40,6 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
     if (algorithmDetails.m_usingHMAC)
     {
         auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecret", "jwt_secret.key");
-        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
-        {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
-            return jwtNull;
-        }
-
-        if (insecureFile)
-        {
-            log->log0(__func__,
-                      Program::Logs::LEVEL_SECURITY_ALERT,
-                      "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
-                      "the service.");
-            return jwtNull;
-        }
 
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
@@ -67,6 +53,21 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
         if (!hmacFile.is_open())
         {
             log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
+        {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (insecureFile)
+        {
+            log->log0(__func__,
+                      Program::Logs::LEVEL_SECURITY_ALERT,
+                      "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
+                      "the service.");
             return jwtNull;
         }
 
@@ -97,21 +98,6 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
             return jwtNull;
         }
 
-        if (!Helpers::File::isSensitiveConfigPermissionInsecure(privateKeyFilePath, &insecureFile))
-        {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open JWT RSA Signing Key secret file.");
-            return jwtNull;
-        }
-
-        if (insecureFile)
-        {
-            log->log0(__func__,
-                      Program::Logs::LEVEL_SECURITY_ALERT,
-                      "Insecure JWT RSA Signing Key secret file permissions detected. For security reasons, it is crucial to change this key "
-                      "immediately and reboot the service.");
-            return jwtNull;
-        }
-
         bool loaded = false;
         std::string fileContent;
 
@@ -124,6 +110,23 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
 
         if (privateKeyFP != nullptr)
         {
+            if (!Helpers::File::isSensitiveConfigPermissionInsecure(privateKeyFilePath, &insecureFile))
+            {
+                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on JWT RSA Signing Key secret file.");
+                fclose(privateKeyFP);
+                return jwtNull;
+            }
+
+            if (insecureFile)
+            {
+                log->log0(__func__,
+                          Program::Logs::LEVEL_SECURITY_ALERT,
+                          "Insecure JWT RSA Signing Key secret file permissions detected. For security reasons, it is crucial to change this key "
+                          "immediately and reboot the service.");
+                fclose(privateKeyFP);
+                return jwtNull;
+            }
+
             EVP_PKEY *evpPrivateKey = PEM_read_PrivateKey(privateKeyFP, nullptr, nullptr, nullptr);
             if (evpPrivateKey)
             {
@@ -186,20 +189,6 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
         // report error if failed to read or if permissions are not secure.
 
         auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecret", "jwt_secret.key");
-        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
-        {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
-            return jwtNull;
-        }
-
-        if (insecureFile)
-        {
-            log->log0(__func__,
-                      Program::Logs::LEVEL_CRITICAL,
-                      "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
-                      "the service.");
-            return jwtNull;
-        }
 
         std::ifstream hmacFile(hmacFilePath.c_str());
 
@@ -211,6 +200,21 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
         if (!hmacFile.is_open())
         {
             log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
+        {
+            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
+            return jwtNull;
+        }
+
+        if (insecureFile)
+        {
+            log->log0(__func__,
+                      Program::Logs::LEVEL_SECURITY_ALERT,
+                      "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
+                      "the service.");
             return jwtNull;
         }
 
