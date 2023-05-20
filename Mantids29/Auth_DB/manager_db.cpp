@@ -52,14 +52,14 @@ bool Manager_DB::initScheme()
 
                 m_sqlConnector->query("CREATE TABLE `vauth_v4_applications_weblogin_returls` (\n"
                                       "       `f_appName`             VARCHAR(256)  NOT NULL,\n"
-                                      "       `loginReturnUrl         VARCHAR(2048) NOT NULL,\n"
+                                      "       `loginReturnUrl`         VARCHAR(2048) NOT NULL,\n"
                                       "       FOREIGN KEY(`f_appName`)   REFERENCES vauth_v4_applications(`appName`) ON DELETE CASCADE\n"
                                       "       PRIMARY KEY(`f_appName`,`loginReturnURL`)\n"
                                       ");\n") &&
 
                 m_sqlConnector->query("CREATE TABLE `vauth_v4_applications_login_origins` (\n"
                                       "       `f_appName`             VARCHAR(256)  NOT NULL,\n"
-                                      "       `originUrl              VARCHAR(2048) NOT NULL,\n"
+                                      "       `originUrl`              VARCHAR(2048) NOT NULL,\n"
                                       "       FOREIGN KEY(`f_appName`)   REFERENCES vauth_v4_applications(`appName`) ON DELETE CASCADE\n"
                                       "       PRIMARY KEY(`f_appName`,`originUrl`)\n"
                                       ");\n") &&
