@@ -296,74 +296,67 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
 
 bool Config::JWT::createHMACSecret(const std::string &filePath)
 {
-    return Helpers::File::writeStringToFile(filePath, Helpers::Random::createRandomString(32));
+    bool r = false;
+    int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
+    if (fd != -1)
+    {
+        FILE *pkeyFile = fdopen(fd, "w");
+        if (pkeyFile)
+        {
+            auto rndstr = Helpers::Random::createRandomString(32);
+            r = fwrite(rndstr.c_str(), 32, 1, pkeyFile) == 32;
+            fclose(pkeyFile);
+        }
+        else
+        {
+            close(fd);
+        }
+    }
+    return r;
 }
 
 bool Config::JWT::createRSASecret(const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *ctx = NULL;
+    bool success = false;
 
-    if (!access(keyPath.c_str(), F_OK) || !access(crtPath.c_str(), F_OK))
+    if (access(keyPath.c_str(), F_OK) && access(crtPath.c_str(), F_OK))
     {
-        return false;
+        ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
+        if (ctx && EVP_PKEY_keygen_init(ctx) > 0 && EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keySize) > 0 && EVP_PKEY_keygen(ctx, &pkey) > 0)
+        {
+            // Save private key
+            int fd = open(keyPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
+            if (fd != -1)
+            {
+                FILE *pkeyFile = fdopen(fd, "w");
+                if (pkeyFile)
+                {
+                    if (PEM_write_PrivateKey(pkeyFile, pkey, NULL, NULL, 0, NULL, NULL))
+                    {
+                        // Save public key
+                        FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
+                        if (pubkeyFile)
+                        {
+                            success = PEM_write_PUBKEY(pubkeyFile, pkey) > 0;
+                            fclose(pubkeyFile);
+                        }
+                    }
+                    fclose(pkeyFile);
+                }
+                else
+                {
+                    close(fd);
+                }
+            }
+        }
     }
 
-    ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_RSA, NULL);
-    if (!ctx)
-    {
-        return false;
-    }
+    if (pkey)
+        EVP_PKEY_free(pkey);
+    if (ctx)
+        EVP_PKEY_CTX_free(ctx);
 
-    if (EVP_PKEY_keygen_init(ctx) <= 0)
-    {
-        return false;
-    }
-
-    if (EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, keySize) <= 0)
-    {
-        return false;
-    }
-
-    if (EVP_PKEY_keygen(ctx, &pkey) <= 0)
-    {
-        return false;
-    }
-
-    // Save private key
-    int fd = open(keyPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
-    if (fd == -1)
-    {
-        // handle error, for example print errno
-        return false;
-    }
-
-    FILE *pkeyFile = fdopen(fd, "w");
-    if (!pkeyFile)
-    {
-        close(fd);
-        return false;
-    }
-
-    if (!PEM_write_PrivateKey(pkeyFile, pkey, NULL, NULL, 0, NULL, NULL))
-    {
-        return false;
-    }
-    fclose(pkeyFile);
-
-    // Save public key
-    FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
-    if (!pubkeyFile)
-    {
-        return false;
-    }
-    if (!PEM_write_PUBKEY(pubkeyFile, pkey))
-    {
-        return false;
-    }
-    fclose(pubkeyFile);
-
-    EVP_PKEY_free(pkey);
-    EVP_PKEY_CTX_free(ctx);
-    return true;
+    return success;
 }
