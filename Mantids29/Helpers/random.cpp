@@ -1,50 +1,62 @@
 #include "random.h"
 
-#include <random>
+#include <openssl/rand.h>
+#include <stdexcept>
 
 using namespace std;
 using namespace Mantids29::Helpers;
 
-Random::Random()
+Random::Random() {}
+
+std::string Random::createRandomString(size_t length)
 {
+    const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const size_t max_index = (sizeof(charset) - 1);
+
+    std::string randomString(length, '\0');
+    unsigned char buffer[length];
+
+    if (RAND_bytes(buffer, length)) {
+        for (size_t i = 0; i < length; ++i) {
+            randomString[i] = charset[buffer[i] % max_index];
+        }
+    } else {
+        throw std::runtime_error("RAND_bytes failed.");
+    }
+
+    return randomString;
 }
 
-string Random::createRandomString(string::basic_string::size_type length)
+std::string Random::createRandomHexString(size_t length)
 {
-    // TODO: check randomness for crypto!
-    char baseChars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    std::string randomStr;
-    std::mt19937 rg{std::random_device{}()};
-    std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(baseChars)-2);
-    randomStr.reserve(length);
-    while(length--) randomStr += baseChars[pick(rg)];
-    return randomStr;
-}
+    length = length * 2;
+    const char charset[] = "ABCDEF0123456789";
+    const size_t max_index = (sizeof(charset) - 1);
 
-string Random::createRandomHexString(string::basic_string::size_type bytes)
-{
-    bytes = bytes*2;
+    std::string randomString(length, '\0');
+    unsigned char buffer[length];
 
-    char baseChars[] = "ABCDEF0123456789";
-    std::string randomStr;
-    std::mt19937 rg{std::random_device{}()};
-    std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(baseChars)-2);
-    randomStr.reserve(bytes);
-    while(bytes--) randomStr += baseChars[pick(rg)];
-    return randomStr;
+    if (RAND_bytes(buffer, length)) {
+        for (size_t i = 0; i < length; ++i) {
+            randomString[i] = charset[buffer[i] % max_index];
+        }
+    } else {
+        throw std::runtime_error("RAND_bytes failed.");
+    }
+
+    return randomString;
 }
 
 void Random::createRandomSalt32(unsigned char *salt)
 {
-    std::mt19937 rg{std::random_device{}()};
-    std::uniform_int_distribution<uint32_t> pick;
-    *((uint32_t *)salt) = pick(rg);
+    if (!RAND_bytes(salt, sizeof(uint32_t))) {
+        throw std::runtime_error("RAND_bytes failed.");
+    }
 }
 
 void Random::createRandomSalt128(unsigned char *salt)
 {
-    std::mt19937 rg{std::random_device{}()};
-    std::uniform_int_distribution<uint64_t> pick;
-    *((uint64_t *)salt) = pick(rg);
-    *((uint64_t *)(salt+8)) = pick(rg);
+    if (!RAND_bytes(salt, 16)) {
+        throw std::runtime_error("RAND_bytes failed.");
+    }
 }
