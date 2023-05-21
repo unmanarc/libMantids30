@@ -70,6 +70,8 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
 {
     if (isActive()) closeSocket(); // close and release first
 
+    m_remoteServerHostname = remoteHost;
+
     // Clean up any previously resolved addrinfo.
     freeAddrInfo();
     

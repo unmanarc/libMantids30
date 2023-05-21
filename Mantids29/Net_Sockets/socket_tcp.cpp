@@ -51,6 +51,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         return false;
     }
 
+    m_remoteServerHostname = remoteHost;
     setRemotePort(port);
 
     bool connected = false;
@@ -317,7 +318,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 if (valopt)
                 {
                     char cError[1024]="Unknown Error";
-                    m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
+                    m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
                     return false;
                 }
 
@@ -348,7 +349,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
             else
             {
-                m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
+                m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
                 return false;
             }
         }
@@ -421,7 +422,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
 
             char cError[1024]="Unknown Error";
             
-            m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
+            m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
 #endif
             return false;
         }

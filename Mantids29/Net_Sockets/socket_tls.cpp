@@ -111,9 +111,18 @@ bool Socket_TLS::postConnectSubInitialization()
     {
         // If there is no CA...
         m_certValidationOptions=CERT_X509_NOVALIDATE;
-        //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
     }
 
+    // Set hostname for SNI extension
+    if (m_keys.getUseSystemCertificates() || m_keys.getValidateServerHostname())
+    {
+        // Using system certificates...
+        if (!SSL_set_tlsext_host_name(m_sslHandler, m_remoteServerHostname.c_str()))
+        {
+            m_sslErrorList.push_back("Unable to set TLS extension host name.");
+            return false;
+        }
+    }
 
     if (SSL_set_fd (m_sslHandler, m_sockFD) != 1)
     {
@@ -545,3 +554,4 @@ int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
         }
     }
 }
+

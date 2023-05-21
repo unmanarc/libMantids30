@@ -60,7 +60,7 @@ void Socket::initVars()
     m_shutdownProtocolOnRead = false;
     m_shutdownProtocolOnWrite = false;
 
-    ZeroBArray(remotePair);
+    ZeroBArray(m_remotePair);
 }
 
 bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
@@ -244,7 +244,7 @@ bool Socket::win32Init()
 }
 #endif
 
-void Socket::setUseWrite()
+void Socket::setUseWriteInsteadRecv()
 {
     // prevent the application from crash, ignore the sigpipes:
 #ifndef _WIN32
@@ -314,7 +314,7 @@ std::string Socket::getLastError() const
 
 std::string Socket::getRemotePairStr()
 {
-    return std::string(remotePair);
+    return std::string(m_remotePair);
 }
 
 uint16_t Socket::getPort()
@@ -466,12 +466,12 @@ void Socket::socketSystemInitialization()
 
 unsigned short Socket::getRemotePort() const
 {
-    return remotePort;
+    return m_remotePort;
 }
 
 void Socket::setRemotePort(unsigned short value)
 {
-    remotePort = value;
+    m_remotePort = value;
 }
 
 int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *optlen)
@@ -566,12 +566,12 @@ int Socket::adquireSocketFD()
 void Socket::getRemotePair(char * address) const
 {
     memset(address,0,INET6_ADDRSTRLEN);
-    strncpy(address, remotePair, INET6_ADDRSTRLEN-1);
+    strncpy(address, m_remotePair, INET6_ADDRSTRLEN-1);
 }
 
 void Socket::setRemotePair(const char * address)
 {
-    SecBACopy(remotePair, address);
+    SecBACopy(m_remotePair, address);
 }
 
 int Socket::shutdownSocket(int mode)

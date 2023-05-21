@@ -71,6 +71,8 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
 
     int         len;
     sockaddr_un address;
+
+    m_remoteServerHostname = path;
     
     m_sockFD = socket(AF_UNIX, SOCK_STREAM, 0);
     if (!isActive())

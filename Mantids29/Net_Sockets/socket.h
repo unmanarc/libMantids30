@@ -19,11 +19,14 @@
 
 namespace Mantids29 { namespace Network { namespace Sockets {
 
+class Socket_TCP;
+
 /**
  * Socket base class
  * Manipulates all kind of sockets (udp,tcp,unix, etc)
  */
 class Socket {
+    friend class Socket_TCP;
 public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors/Destructors/Copy:
@@ -46,7 +49,7 @@ public:
      * Set to use write
      * use write instead send.
      */
-    void setUseWrite();
+    void setUseWriteInsteadRecv();
     /**
      * Set Read timeout.
      * @param _timeout timeout in seconds
@@ -118,12 +121,7 @@ public:
      * @param address pair address char * (should contain at least 64 bytes)
      */
     void getRemotePair(char * address) const;
-    /**
-     * Set remote pair address
-     * Used by internal functions...
-     * @param address pair address char * (should contain at least 64 bytes)
-     */
-    void setRemotePair(const char * address);
+
     /**
      * @brief getRemotePort Get Remote Port for listening connections
      * @return remote port 0-65535
@@ -259,6 +257,13 @@ private:
     void initVars();
 
 protected:
+    /**
+     * Set remote pair address
+     * Used by internal functions...
+     * @param address pair address char * (should contain at least 64 bytes)
+     */
+    void setRemotePair(const char * address);
+
     bool bindTo(const char * bindAddress = nullptr, const uint16_t &port = 0);
     bool getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void ** res);
 
@@ -274,11 +279,15 @@ protected:
     /**
      * buffer with the remote pair address.
      */
-    char remotePair[INET6_ADDRSTRLEN];
+    char m_remotePair[INET6_ADDRSTRLEN];
     /**
      * @brief remotePort remote port when accepting connections.
      */
-    unsigned short remotePort;
+    unsigned short m_remotePort;
+    /**
+     * @brief m_remoteServerHostname The server hostname configured when connecting...
+     */
+    std::string m_remoteServerHostname;
 
     static bool m_globalSocketInitialized;
     //static bool badSocket;

@@ -193,6 +193,16 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
     return true;
 }
 
+bool Socket_TLS::TLSKeyParameters::getValidateServerHostname() const
+{
+    return m_validateServerHostname;
+}
+
+void Socket_TLS::TLSKeyParameters::setValidateServerHostname(bool newValidateServerHostname)
+{
+    m_validateServerHostname = newValidateServerHostname;
+}
+
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len)
 {
     auto * pskValues = PSKStaticHdlr::getServerWallet(ssl);
