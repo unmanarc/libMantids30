@@ -7,10 +7,7 @@ using namespace Mantids29::Network::Sockets;
 using namespace Mantids29;
 using namespace std;
 
-Socket_TLS_ListennerAndConnector_Base::Socket_TLS_ListennerAndConnector_Base()
-{
-
-}
+Socket_TLS_ListennerAndConnector_Base::Socket_TLS_ListennerAndConnector_Base() {}
 
 bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameters &parameters, void *obj)
 {
@@ -19,34 +16,34 @@ bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameter
     shared_ptr<Socket_TLS> tlsSocket = std::make_shared<Socket_TLS>();
 
     bool cont = true;
-    
+
     if (!parameters.caCertPath.empty() && !tlsSocket->m_keys.loadCAFromPEMFile(parameters.caCertPath))
     {
         // Error loading Optional CA PEM file...
-        CALLBACK(parameters.onTLSKeyInvalidCA)(parameters.obj,tlsSocket.get(),parameters.caCertPath);
+        CALLBACK(parameters.onTLSKeyInvalidCA)(parameters.obj, tlsSocket.get(), parameters.caCertPath);
         cont = false;
     }
     if (!parameters.keyPath.empty() && !parameters.crtPath.empty())
     {
         if (!tlsSocket->m_keys.loadPrivateKeyFromPEMFile(parameters.keyPath.c_str()))
         {
-            CALLBACK(parameters.onTLSKeyInvalidPrivateKey)(parameters.obj,tlsSocket.get(),parameters.keyPath);
+            CALLBACK(parameters.onTLSKeyInvalidPrivateKey)(parameters.obj, tlsSocket.get(), parameters.keyPath);
             cont = false;
         }
         if (!tlsSocket->m_keys.loadPublicKeyFromPEMFile(parameters.crtPath.c_str()))
         {
-            CALLBACK(parameters.onTLSKeyInvalidCertificate)(parameters.obj,tlsSocket.get(),parameters.crtPath);
+            CALLBACK(parameters.onTLSKeyInvalidCertificate)(parameters.obj, tlsSocket.get(), parameters.crtPath);
             cont = false;
         }
     }
 
-    if (!cont || !tlsSocket->listenOn(parameters.listenPort,parameters.listenAddr.c_str(),true))
+    if (!cont || !tlsSocket->listenOn(parameters.listenPort, parameters.listenAddr.c_str(), true))
     {
-        CALLBACK(parameters.onTLSListeningFailed)(parameters.obj,tlsSocket.get());
+        CALLBACK(parameters.onTLSListeningFailed)(parameters.obj, tlsSocket.get());
         return false;
     }
 
-    CALLBACK(parameters.onTLSListeningSuccess)(parameters.obj,tlsSocket.get());
+    CALLBACK(parameters.onTLSListeningSuccess)(parameters.obj, tlsSocket.get());
 
     auto params = new IncommingConnectionParams;
     params->thisObj = this;
@@ -63,45 +60,66 @@ bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameter
     return true;
 }
 
-bool Socket_TLS_ListennerAndConnector_Base::incommingConnection(void *obj, Mantids29::Network::Sockets::Socket_Stream_Base *bsocket, const char *ip, bool secure)
+bool Socket_TLS_ListennerAndConnector_Base::incommingConnection(void *obj,
+                                                                Mantids29::Network::Sockets::Socket_Stream_Base *bsocket,
+                                                                const char *ip,
+                                                                bool secure)
 {
-    Socket_TLS * tlsSocket = (Socket_TLS *)bsocket;
-    auto pararms = (IncommingConnectionParams *)obj;
+    Socket_TLS *tlsSocket = (Socket_TLS *) bsocket;
+    auto pararms = (IncommingConnectionParams *) obj;
 
-    CALLBACK(pararms->parameters.onTLSClientConnected)(pararms->parameters.obj,tlsSocket,tlsSocket->getTLSPeerCN());
+    CALLBACK(pararms->parameters.onTLSClientConnected)(pararms->parameters.obj, tlsSocket, tlsSocket->getTLSPeerCN());
 
-    auto i = pararms->thisObj->connectionHandler( tlsSocket, false, ip );
+    auto i = pararms->thisObj->connectionHandler(tlsSocket, false, ip);
 
-    CALLBACK(pararms->parameters.onTLSClientDisconnected)(pararms->parameters.obj,tlsSocket,tlsSocket->getTLSPeerCN(),i);
+    CALLBACK(pararms->parameters.onTLSClientDisconnected)(pararms->parameters.obj, tlsSocket, tlsSocket->getTLSPeerCN(), i);
 
     delete pararms;
     return true;
 }
 
-void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base * parent, const shared_ptr<Socket_TLS_ListennerAndConnector_Base::ClientParameters> & parameters)
+void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
+                          const shared_ptr<Socket_TLS_ListennerAndConnector_Base::ClientParameters> &parameters)
 {
     for (;;)
     {
         Socket_TLS tlsSocket;
 
         bool cont = true;
-        
-        if (!tlsSocket.m_keys.loadCAFromPEMFile(parameters->caCertPath))
+
+        // CA Cert Path Defined.
+        if (!parameters->caCertPath.empty())
         {
-            // Error loading Mandatory CA PEM file...
-            CALLBACK(parameters->onTLSKeyInvalidCA)(parameters->obj,&tlsSocket,parameters->caCertPath);
-            cont = false;
+            if (!tlsSocket.m_keys.loadCAFromPEMFile(parameters->caCertPath))
+            {
+                // Error loading Mandatory CA PEM file...
+                CALLBACK(parameters->onTLSKeyInvalidCA)(parameters->obj, &tlsSocket, parameters->caCertPath);
+                cont = false;
+            }
         }
+        else if (parameters->useSystemX509Certificates)
+        {
+            tlsSocket.m_keys.setUseSystemCertificates(true);
+        }
+        else if (!parameters->userCACertificateText.empty())
+        {
+            if (!tlsSocket.m_keys.loadCAFromPEMMemory(parameters->userCACertificateText.c_str()))
+            {
+                CALLBACK(parameters->onTLSKeyInvalidCA)(parameters->obj, &tlsSocket, parameters->caCertPath);
+                cont = false;
+            }
+        }
+
         if (!parameters->keyPath.empty() && !parameters->crtPath.empty())
         {
             if (!tlsSocket.m_keys.loadPrivateKeyFromPEMFile(parameters->keyPath.c_str()))
             {
-                CALLBACK(parameters->onTLSKeyInvalidPrivateKey)(parameters->obj,&tlsSocket,parameters->keyPath);
+                CALLBACK(parameters->onTLSKeyInvalidPrivateKey)(parameters->obj, &tlsSocket, parameters->keyPath);
                 cont = false;
             }
             if (!tlsSocket.m_keys.loadPublicKeyFromPEMFile(parameters->crtPath.c_str()))
             {
-                CALLBACK(parameters->onTLSKeyInvalidCertificate)(parameters->obj,&tlsSocket,parameters->crtPath);
+                CALLBACK(parameters->onTLSKeyInvalidCertificate)(parameters->obj, &tlsSocket, parameters->crtPath);
                 cont = false;
             }
         }
@@ -109,10 +127,10 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base * parent, const 
         if (cont)
         {
             // Use connection loop...
-            if (!tlsSocket.connectTo(parameters->host.c_str(),parameters->port))
+            if (!tlsSocket.connectTo(parameters->host.c_str(), parameters->port))
             {
                 // Error connecting...
-                CALLBACK(parameters->onTLSConnectionFailed)(parameters->obj, &tlsSocket, parameters->host.c_str(),parameters->port );
+                CALLBACK(parameters->onTLSConnectionFailed)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port);
             }
             else
             {
@@ -121,9 +139,9 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base * parent, const 
 
                 char remotePair[65];
                 tlsSocket.getRemotePair(remotePair);
-                auto i = parent->connectionHandler( &tlsSocket, true, remotePair );
+                auto i = parent->connectionHandler(&tlsSocket, true, remotePair);
 
-                CALLBACK(parameters->onTLSDisconnected)(parameters->obj, &tlsSocket, parameters->host.c_str(),parameters->port, i);
+                CALLBACK(parameters->onTLSDisconnected)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port, i);
             }
         }
     }

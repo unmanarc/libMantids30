@@ -49,7 +49,6 @@ public:
     public:
         ClientParameters(void * obj = nullptr) : Callbacks_Socket_TLS_Client(obj)
         {
-            port = 11000;
         }
 
         /**
@@ -67,7 +66,7 @@ public:
         /**
          * @brief port
          */
-        uint16_t port;
+        uint16_t port = 9443;
         /**
          * @brief keyPath
          */
@@ -76,6 +75,9 @@ public:
          * @brief crtPath
          */
         std::string crtPath;
+
+        bool useSystemX509Certificates = false;
+        std::string userCACertificateText;
     };
 
     /**
