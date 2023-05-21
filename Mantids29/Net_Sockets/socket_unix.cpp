@@ -27,11 +27,11 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
    int         server_len;
 
    unlink(path);
-
-   sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+   
+   m_sockFD = socket(AF_UNIX, SOCK_STREAM, 0);
    if (!isActive())
    {
-      lastError = "socket() failed";
+       m_lastError = "socket() failed";
       return false;
    }
 
@@ -42,21 +42,21 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
    SecBACopy(server_address.sun_path, path);
 
    server_len = sizeof(server_address);
-
-   if (bind(sockfd,(struct sockaddr *)&server_address,server_len) < 0)
+   
+   if (bind(m_sockFD,(struct sockaddr *)&server_address,server_len) < 0)
    {
-       lastError = "bind() failed";
+      m_lastError = "bind() failed";
        closeSocket();
        return false;
    }
-   if (listen(sockfd, backlog) < 0)
+   if (listen(m_sockFD, backlog) < 0)
    {
-       lastError = "bind() failed";
+       m_lastError = "bind() failed";
        closeSocket();
        return false;
    }
 
-   listenMode = true;
+   m_isInListenMode = true;
    return true;
 }
 
@@ -71,11 +71,11 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
 
     int         len;
     sockaddr_un address;
-
-    sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+    
+    m_sockFD = socket(AF_UNIX, SOCK_STREAM, 0);
     if (!isActive())
     {
-        lastError = "socket() failed";
+       m_lastError = "socket() failed";
         return false;
     }
 
@@ -85,8 +85,8 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
 
     // Set the timeout here.
     setReadTimeout(timeout);
-
-    if(connect(sockfd, (sockaddr*)&address, len) == -1)
+    
+    if(connect(m_sockFD, (sockaddr*)&address, len) == -1)
     {
         int valopt=0;
         // Socket selected for write
@@ -94,7 +94,7 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
         lon = sizeof(int);
         if (getSocketOption(SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0)
         {
-            lastError = "Error in getsockopt(SOL_SOCKET)";
+            m_lastError = "Error in getsockopt(SOL_SOCKET)";
             return false;
         }
 
@@ -103,12 +103,12 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
         {
 
             char cError[1024]="Unknown Error";
-
-            lastError = std::string("Connection to AF_UNIX Socket failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
+            
+            m_lastError = std::string("Connection to AF_UNIX Socket failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
             return false;
         }
-
-        lastError = "Connect(AF_UNIX) failed";
+        
+        m_lastError = "Connect(AF_UNIX) failed";
         return false;
     }
 
@@ -119,8 +119,8 @@ Sockets::Socket_Stream_Base * Socket_UNIX::acceptConnection()
 {
     int sdconn;
     Socket_Stream_Base * cursocket = nullptr;
-
-    if ((sdconn = accept(sockfd, nullptr, nullptr)) >= 0)
+    
+    if ((sdconn = accept(m_sockFD, nullptr, nullptr)) >= 0)
     {
         cursocket = new Socket_Stream_Base;
         // Set the proper socket-
@@ -129,7 +129,7 @@ Sockets::Socket_Stream_Base * Socket_UNIX::acceptConnection()
     else
     {
         // Establish the error.
-        lastError = "accept() failed";
+        m_lastError = "accept() failed";
     }
 
     // return the socket class.

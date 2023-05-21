@@ -266,11 +266,11 @@ protected:
     /**
      * if true, Use write instead send and read instead recv.
      */
-    bool useWrite;
+    bool m_useWriteInsteadRecv;
     /**
      * last error message.
      */
-    std::string lastError;
+    std::string m_lastError;
     /**
      * buffer with the remote pair address.
      */
@@ -280,27 +280,26 @@ protected:
      */
     unsigned short remotePort;
 
-    static bool socketInitialized;
-    static bool badSocket;
+    static bool m_globalSocketInitialized;
+    //static bool badSocket;
 
-    std::atomic<unsigned int> readTimeout;
-    std::atomic<unsigned int> writeTimeout;
-    std::atomic<unsigned int> recvBuffer;
+    std::atomic<unsigned int> m_readTimeout;
+    std::atomic<unsigned int> m_writeTimeout;
+    std::atomic<unsigned int> m_recvBuffer;
 
     /**
-     * @brief listenMode The socket is in listen mode.
+     * @brief m_isInListenMode The socket is in listen mode.
      */
-    bool listenMode;
-
+    bool m_isInListenMode;
 
     /**
      * @brief sockfd Socket descriptor
      */
-    int sockfd;
+    int m_sockFD;
 
 
-    bool shutdown_proto_rd;
-    bool shutdown_proto_wr;
+    bool m_shutdownProtocolOnRead;
+    bool m_shutdownProtocolOnWrite;
 
 
 #ifdef _WIN32

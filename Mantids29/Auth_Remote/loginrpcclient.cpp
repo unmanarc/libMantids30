@@ -24,22 +24,22 @@ void LoginRPCClient::process(LoginRPCClient *rpcClient,uint16_t sleepBetweenConn
         if (!rpcClient->m_usePreSharedKeyForTLS)
         {
             // Set the SO default security level:
-            tlsClient.keys.setSecurityLevel(-1);
+            tlsClient.m_keys.setSecurityLevel(-1);
 
             // Authenticate that the server with X.509
-            tlsClient.keys.loadCAFromPEMFile(rpcClient->m_CertificateAuthorityFilePath.c_str());
+            tlsClient.m_keys.loadCAFromPEMFile(rpcClient->m_CertificateAuthorityFilePath.c_str());
 
             // If there is any client certificate, set the client certificate (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
             if (!rpcClient->m_certificateFilePath.empty())
-                tlsClient.keys.loadPublicKeyFromPEMFile(rpcClient->m_certificateFilePath.c_str());
+                tlsClient.m_keys.loadPublicKeyFromPEMFile(rpcClient->m_certificateFilePath.c_str());
 
             // If there is any client key file, set the key file (Usually this is not needed because it's sufficient to use the API LOGINRPC CONNECTION KEY to authenticate)
             if (!rpcClient->m_keyFilePath.empty())
-                tlsClient.keys.loadPrivateKeyFromPEMFile(rpcClient->m_keyFilePath.c_str());
+                tlsClient.m_keys.loadPrivateKeyFromPEMFile(rpcClient->m_keyFilePath.c_str());
         }
         else
         {
-            tlsClient.keys.loadPSKAsClient( rpcClient->m_applicationName, rpcClient->m_apiKey );
+            tlsClient.m_keys.loadPSKAsClient( rpcClient->m_applicationName, rpcClient->m_apiKey );
         }
 
         // Callback to notifyTLSConnecting which occurs just before the connection.

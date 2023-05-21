@@ -76,10 +76,10 @@ protected:
 private:
     bool tcpConnect(const unsigned short &addrType, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
-    bool tcpNoDelayOption;
-    bool tcpForceKeepAlive;
-    int tcpKeepIdle,tcpKeepCnt,tcpKeepIntvl;
-    int32_t ovrReadTimeout,ovrWriteTimeout;
+    bool m_useTcpNoDelayOption;
+    bool m_useTCPForceKeepAlive;
+    int m_tcpKeepIdle,m_tcpKeepCnt,m_tcpKeepInterval;
+    int32_t m_overwriteReadTimeout,m_overwriteWriteTimeout;
 };
 
 typedef std::shared_ptr<Socket_TCP> Socket_TCP_SP;

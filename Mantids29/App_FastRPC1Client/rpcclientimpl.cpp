@@ -53,9 +53,9 @@ void RPCClientImpl::runRPClient()
         if (!Globals::getLC_C2UsePSK())
         {
             // Set the SO default security level:
-            sockRPCClient.keys.setSecurityLevel(-1);
-
-            if (!sockRPCClient.keys.loadCAFromPEMFile(  caCertPath.c_str() ))
+            sockRPCClient.m_keys.setSecurityLevel(-1);
+            
+            if (!sockRPCClient.m_keys.loadCAFromPEMFile(  caCertPath.c_str() ))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort, caCertPath.c_str());
                 _exit(-3);
@@ -71,8 +71,8 @@ void RPCClientImpl::runRPClient()
                 std::string keyPassPhrase = Mantids29::Helpers::Crypto::AES256DecryptB64( Mantids29::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
                                                                             ,(char *)masterKey->data,masterKey->length,&ok
                                                                             );
-
-                if (!sockRPCClient.keys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), keyPassPhrase.c_str() ))
+                
+                if (!sockRPCClient.m_keys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), keyPassPhrase.c_str() ))
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
                     _exit(-35);
@@ -80,13 +80,13 @@ void RPCClientImpl::runRPClient()
             }
             else
             {
-                if (!sockRPCClient.keys.loadPrivateKeyFromPEMFile(  privKeyPath.c_str() ))
+                if (!sockRPCClient.m_keys.loadPrivateKeyFromPEMFile(  privKeyPath.c_str() ))
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
                     _exit(-3);
                 }
             }
-            if (!sockRPCClient.keys.loadPublicKeyFromPEMFile(  pubCertPath.c_str() ))
+            if (!sockRPCClient.m_keys.loadPublicKeyFromPEMFile(  pubCertPath.c_str() ))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort, pubCertPath.c_str());
                 _exit(-3);
@@ -99,8 +99,8 @@ void RPCClientImpl::runRPClient()
             // Load Key
             bool ok;
             auto idpsk = loadPSK();
-            sockRPCClient.keys.setPSK();
-            sockRPCClient.keys.loadPSKAsClient(idpsk.id, idpsk.psk);
+            sockRPCClient.m_keys.setUsingPSK();
+            sockRPCClient.m_keys.loadPSKAsClient(idpsk.id, idpsk.psk);
         }
 
         LOG_APP->log0(__func__,Logs::LEVEL_INFO,  "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);

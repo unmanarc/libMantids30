@@ -217,7 +217,7 @@ bool Socket_Stream_Base::isConnected()
     struct sockaddr peer;
     socklen_t peer_len;
     peer_len = sizeof(peer);
-    if (getpeername(sockfd, &peer, &peer_len) == -1)
+    if (getpeername(m_sockFD, &peer, &peer_len) == -1)
     {
         closeSocket();
         return false;

@@ -72,7 +72,7 @@ public:
 
 private:
     void freeAddrInfo();
-    addrinfo *res;
+    addrinfo *m_addressInfoResolution;
 };
 
 typedef std::shared_ptr<Socket_UDP> Socket_UDP_SP;

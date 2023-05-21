@@ -22,10 +22,10 @@ public:
     struct sCipherBits
     {
         sCipherBits() {
-            aSymBits = 0;
-            symBits = 0;
+            asymmetricBits = 0;
+            symmetricBits = 0;
         }
-        int aSymBits, symBits;
+        int asymmetricBits, symmetricBits;
     };
 
     class TLSKeyParameters
@@ -35,47 +35,41 @@ public:
         struct PSKClientValue {
             PSKClientValue()
             {
-                usingPSK = false;
+                m_isUsingPSK = false;
             }
 
             ~PSKClientValue()
             {
-                std::unique_lock<std::mutex> lock(mt);
+                std::unique_lock<std::mutex> lock(m_mutex);
 
                 // Erase the PSK data from memory.
-                psk.resize(psk.capacity(), 0);
-                memset(&psk[0],0x7F, psk.size());
+                m_psk.resize(m_psk.capacity(), 0);
+                memset(&m_psk[0],0x7F, m_psk.size());
             }
 
             void setValues(const std::string & identity,const std::string & psk)
             {
-                std::unique_lock<std::mutex> lock(mt);
+                std::unique_lock<std::mutex> lock(m_mutex);
 
-                usingPSK = true;
-                this->psk = psk;
-                this->identity = identity;
+                m_isUsingPSK = true;
+                this->m_psk = psk;
+                this->m_identity = identity;
             }
 
 
-            bool usingPSK;
-            std::string psk;
-            std::string identity;
-            std::mutex mt;
+            bool m_isUsingPSK;
+            std::string m_psk;
+            std::string m_identity;
+            std::mutex m_mutex;
 
         };
 
         struct PSKServerWallet {
             typedef bool (*cbPSK)(void * data,const std::string & id, std::string * psk);
 
-            PSKServerWallet()
-            {
-                setPSKCallback(nullptr,nullptr);
-                usingPSK = false;
-            }
-
             ~PSKServerWallet()
             {
-                for ( auto &i : pskById )
+                for ( auto &i : m_pskByClientIdMap )
                 {
                     // Erase the PSK data from memory.
                     i.second.resize(i.second.capacity(), 0);
@@ -85,34 +79,34 @@ public:
 
             void operator=(PSKServerWallet & x)
             {
-                std::unique_lock<std::mutex> lock1(mt);
-                std::unique_lock<std::mutex> lock2(x.mt);
+                std::unique_lock<std::mutex> lock1(m_mutex);
+                std::unique_lock<std::mutex> lock2(x.m_mutex);
 
-                usingPSK = x.usingPSK;
-                pskById = x.pskById;
-                cbpsk = x.cbpsk;
+                m_isUsingPSK = x.m_isUsingPSK;
+                m_pskByClientIdMap = x.m_pskByClientIdMap;
+                m_pskCallback = x.m_pskCallback;
             }
 
             bool getPSKByClientID(const std::string & id, std::string * psk)
             {
                 bool r = false;
-                std::unique_lock<std::mutex> lock(mt);
-                if (pskById.find(id) != pskById.end())
+                std::unique_lock<std::mutex> lock(m_mutex);
+                if (m_pskByClientIdMap.find(id) != m_pskByClientIdMap.end())
                 {
                     r = true;
-                    *psk = pskById[id];
+                    *psk = m_pskByClientIdMap[id];
                 }
                 return r;
             }
             bool setPSKByClientID(const std::string & id, const std::string & psk)
             {
                 bool r = false;
-                std::unique_lock<std::mutex> lock(mt);
-                usingPSK = true;
-                if (pskById.find(id) == pskById.end())
+                std::unique_lock<std::mutex> lock(m_mutex);
+                m_isUsingPSK = true;
+                if (m_pskByClientIdMap.find(id) == m_pskByClientIdMap.end())
                 {
                     r = true;
-                    pskById[id]=psk;
+                    m_pskByClientIdMap[id]=psk;
                 }
                 return r;
             }
@@ -124,18 +118,18 @@ public:
              */
             void setPSKCallback(cbPSK newCbpsk, void * data)
             {
-                this->data = data;
-                cbpsk = newCbpsk;
-                usingPSK = true;
+                this->m_data = data;
+                m_pskCallback = newCbpsk;
+                m_isUsingPSK = true;
             }
 
-            void * data;
-            cbPSK cbpsk;
+            void * m_data = nullptr;
+            cbPSK m_pskCallback = nullptr;
 
-            bool usingPSK;
-            std::string connectedClientID;
-            std::map<std::string,std::string> pskById;
-            std::mutex mt;
+            bool m_isUsingPSK = false;
+            std::string m_connectedClientID;
+            std::map<std::string,std::string> m_pskByClientIdMap;
+            std::mutex m_mutex;
 
         };
 
@@ -150,25 +144,25 @@ public:
 
 
         private:
-            PSKClientValue * pskClientValues;
-            PSKServerWallet * pskServerValues;
-            SSL * sslhForPSK;
+            PSKClientValue * m_pskClientValues;
+            PSKServerWallet * m_pskServerValues;
+            SSL * m_sslHandlerForPSK;
 
-            static std::map<void *,PSKClientValue *> cliPSKBySSLH;
-            static std::map<void *,PSKServerWallet *> svrPSKBySSLH;
-            static std::mutex mCLIPSKBySSLH, mSVRPSKBySSLH;
+            static std::map<void *,PSKClientValue *> m_clientPSKBySSLHandlerMap;
+            static std::map<void *,PSKServerWallet *> m_serverPSKBySSLHandlerMap;
+            static std::mutex m_clientPSKBySSLHandlerMapMutex, m_serverPSKBySSLHandlerMapMutex;
         };
 
 
-        TLSKeyParameters(bool *bIsServer);
+        TLSKeyParameters(bool *isServer);
         ~TLSKeyParameters();
 
         /**
          * @brief setPSK Set to use PSK via DHE-PSK-AES256-GCM-SHA384 instead of using PKI (As Server)
          */
-        void setPSK();
+        void setUsingPSK();
         /**
-        * @brief addPSKToServer Add Key to the server wallet to use in PSK and call setPSK()
+        * @brief addPSKToServer Add Key to the server wallet to use in PSK and call setUsingPSK()
         * @param _psk Pre-shared key
         * @param clientIdentity client identity string (you can load multiple clients PSK's)
         */
@@ -383,15 +377,15 @@ public:
          */
         void setMaxProtocolVersion(int newMaxProtocolVersion);
         /**
-         * @brief getVerifyDefaultLocations Get if using default verify locations
+         * @brief getUseSystemCertificates Get if using default verify locations
          * @return true for using default verify locations
          */
-        bool getVerifyDefaultLocations() const;
+        bool getUseSystemCertificates() const;
         /**
-         * @brief setVerifyDefaultLocations Set to use default verify locations (default: false)
+         * @brief setUseSystemCertificates Set to use default verify locations (default: false)
          * @param newBVerifyDefaultLocations true to use default verify locations
          */
-        void setVerifyDefaultLocations(bool newBVerifyDefaultLocations);
+        void setUseSystemCertificates(bool newBVerifyDefaultLocations);
         /**
          * @brief getTLSSharedGroups Get the locally configured TLSv1.3 Shared Groups
          * @return locally configured groups by setTLSSharedGroups
@@ -421,50 +415,53 @@ public:
         static DH *get_dh4096(void);
 
         // SSL Key Parameters
-        DH *dh;
-        EVP_PKEY *privKey;
-        X509 *pubKey;
+        DH *m_dhParameter = nullptr;
 
-        int minProtocolVersion;
-        int maxProtocolVersion;
-        int securityLevel;
+        // Default: No private/public keys
+        EVP_PKEY *m_privateKey = nullptr;
+        X509 *m_publicKey = nullptr;
 
-        PSKClientValue pskClientValues;
-        PSKServerWallet pskServerValues;
-        PSKStaticHdlr pskst;
+        // Other TLS protocols are insecure (we use from 1.2)...
+        int m_minProtocolVersion = TLS1_2_VERSION;
+        // Defined in the constructor
+        int m_maxProtocolVersion;
 
-        //std::string sPSK;
-        std::string sTLSCertificateAuthorityPath, sTLSCertificateAuthorityMemory;
+        // TLS Security Level:
+        int m_securityLevel = 2;
 
+        PSKClientValue m_pskClientValues;
+        PSKServerWallet m_pskServerValues;
+        PSKStaticHdlr m_pskStaticHandler;
+
+        std::string m_TLSCertificateAuthorityPath, m_TLSCertificateAuthorityMemory;
 
         /**
          * @brief sTLSCipherSuites TLSv1.3 cipher suites...
          */
-        std::string sTLSCipherSuites;
+        std::string m_TLSCipherSuites;
         /**
          * @brief sTLSCipherList TLSv1.2 (or lesser) Cipher List
          */
-        std::string sTLSCipherList;
+        std::string m_TLSCipherList = "DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305";
 
         /**
          * @brief sTLSSharedGroups TLSv1.3 (or greater) Shared groups List
          */
-        std::string sTLSSharedGroups;
+        std::string m_TLSSharedGroups;
 
         /**
-         * @brief iVerifyMaxDepth Verify Max Depth value (-1 to not define)
+         * @brief iVerifyMaxDepth Verify Max Depth value (-1: use default)
          */
-        int iVerifyMaxDepth;
+        int m_maxVerifyDepth = -1;
 
         // Parent objects:
-        bool * bIsServer;
+        bool * m_isServer;
 
 
-        bool bVerifyDefaultLocations;
+        bool m_useSystemCertificates = false;
     };
 
-    TLSKeyParameters keys;
-
+    TLSKeyParameters m_keys;
 
     enum eCertValidationOptions
     {
@@ -472,7 +469,6 @@ public:
         CERT_X509_CHECKANDPASS,
         CERT_X509_NOVALIDATE
     };
-
 
     /**
      * Class constructor.
@@ -482,8 +478,6 @@ public:
      * Class destructor.
      */
     virtual ~Socket_TLS();
-
-
 
     /**
      * TLS server function for protocol initialization , it runs in blocking mode and should be called apart to avoid tcp accept while block
@@ -603,17 +597,17 @@ private:
     bool validateTLSConnection(const bool &usingPSK);
 
 
-    Socket_TLS *tlsParent;
+    Socket_TLS *m_tlsParentConnection;
 
-    eCertValidationOptions certValidation;
-    SSL *sslh;
-    SSL_CTX * ctx;
+    eCertValidationOptions m_certValidationOptions;
+    SSL *m_sslHandler;
+    SSL_CTX * m_sslContext;
     SSL_CTX * createServerSSLContext();
     SSL_CTX * createClientSSLContext();
 
-    std::list<std::string> sslErrors;
+    std::list<std::string> m_sslErrorList;
 
-    bool bIsServer;
+    bool m_isServer;
 };
 }}}
 

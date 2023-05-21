@@ -19,8 +19,8 @@ bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameter
     shared_ptr<Socket_TLS> tlsSocket = std::make_shared<Socket_TLS>();
 
     bool cont = true;
-
-    if (!parameters.caCertPath.empty() && !tlsSocket->keys.loadCAFromPEMFile(parameters.caCertPath))
+    
+    if (!parameters.caCertPath.empty() && !tlsSocket->m_keys.loadCAFromPEMFile(parameters.caCertPath))
     {
         // Error loading Optional CA PEM file...
         CALLBACK(parameters.onTLSKeyInvalidCA)(parameters.obj,tlsSocket.get(),parameters.caCertPath);
@@ -28,12 +28,12 @@ bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameter
     }
     if (!parameters.keyPath.empty() && !parameters.crtPath.empty())
     {
-        if (!tlsSocket->keys.loadPrivateKeyFromPEMFile(parameters.keyPath.c_str()))
+        if (!tlsSocket->m_keys.loadPrivateKeyFromPEMFile(parameters.keyPath.c_str()))
         {
             CALLBACK(parameters.onTLSKeyInvalidPrivateKey)(parameters.obj,tlsSocket.get(),parameters.keyPath);
             cont = false;
         }
-        if (!tlsSocket->keys.loadPublicKeyFromPEMFile(parameters.crtPath.c_str()))
+        if (!tlsSocket->m_keys.loadPublicKeyFromPEMFile(parameters.crtPath.c_str()))
         {
             CALLBACK(parameters.onTLSKeyInvalidCertificate)(parameters.obj,tlsSocket.get(),parameters.crtPath);
             cont = false;
@@ -85,8 +85,8 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base * parent, const 
         Socket_TLS tlsSocket;
 
         bool cont = true;
-
-        if (!tlsSocket.keys.loadCAFromPEMFile(parameters->caCertPath))
+        
+        if (!tlsSocket.m_keys.loadCAFromPEMFile(parameters->caCertPath))
         {
             // Error loading Mandatory CA PEM file...
             CALLBACK(parameters->onTLSKeyInvalidCA)(parameters->obj,&tlsSocket,parameters->caCertPath);
@@ -94,12 +94,12 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base * parent, const 
         }
         if (!parameters->keyPath.empty() && !parameters->crtPath.empty())
         {
-            if (!tlsSocket.keys.loadPrivateKeyFromPEMFile(parameters->keyPath.c_str()))
+            if (!tlsSocket.m_keys.loadPrivateKeyFromPEMFile(parameters->keyPath.c_str()))
             {
                 CALLBACK(parameters->onTLSKeyInvalidPrivateKey)(parameters->obj,&tlsSocket,parameters->keyPath);
                 cont = false;
             }
-            if (!tlsSocket.keys.loadPublicKeyFromPEMFile(parameters->crtPath.c_str()))
+            if (!tlsSocket.m_keys.loadPublicKeyFromPEMFile(parameters->crtPath.c_str()))
             {
                 CALLBACK(parameters->onTLSKeyInvalidCertificate)(parameters->obj,&tlsSocket,parameters->crtPath);
                 cont = false;

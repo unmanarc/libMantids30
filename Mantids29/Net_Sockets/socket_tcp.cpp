@@ -25,16 +25,16 @@ using namespace Mantids29::Network::Sockets;
 
 Socket_TCP::Socket_TCP()
 {
-    tcpForceKeepAlive = false;
-
-    tcpKeepIdle=10;
-    tcpKeepCnt=5;
-    tcpKeepIntvl=5;
-
-    tcpNoDelayOption = true;
-
-    ovrReadTimeout = -1;
-    ovrWriteTimeout = -1;
+    m_useTCPForceKeepAlive = false;
+    
+    m_tcpKeepIdle=10;
+    m_tcpKeepCnt=5;
+    m_tcpKeepInterval=5;
+    
+    m_useTcpNoDelayOption = true;
+    
+    m_overwriteReadTimeout = -1;
+    m_overwriteWriteTimeout = -1;
 }
 
 Socket_TCP::~Socket_TCP()
@@ -44,7 +44,7 @@ Socket_TCP::~Socket_TCP()
 bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     addrinfo *res = nullptr;
-    lastError = "";
+    m_lastError = "";
     if (!getAddrInfo(remoteHost,port,SOCK_STREAM,(void **)&res))
     {
         // Bad name resolution...
@@ -58,11 +58,11 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     // Iterate over DNS
     for (struct addrinfo *resiter=res; resiter && !connected; resiter = resiter->ai_next)
     {
-        if (sockfd >=0 ) closeSocket();
-        sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        if (m_sockFD >=0 ) closeSocket();
+        m_sockFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (!isActive())
         {
-            lastError = "socket() failed, " + std::string(strerror(errno));
+            m_lastError = "socket() failed, " + std::string(strerror(errno));
             break;
         }
 
@@ -103,10 +103,10 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
             // Connect...
             if (tcpConnect(resiter->ai_addr->sa_family,curAddr, resiter->ai_addrlen,timeout))
             {
-                if (ovrReadTimeout!=-1)
-                    setReadTimeout(ovrReadTimeout);
-                if (ovrWriteTimeout!=-1)
-                    setWriteTimeout(ovrWriteTimeout);
+                if (m_overwriteReadTimeout!=-1)
+                    setReadTimeout(m_overwriteReadTimeout);
+                if (m_overwriteWriteTimeout!=-1)
+                    setWriteTimeout(m_overwriteWriteTimeout);
 
                 // now it's connected...
                 if (postConnectSubInitialization())
@@ -135,8 +135,8 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
 
     if (!connected)
     {
-        if (lastError == "")
-            lastError = std::string("Protocol Initialization Error.");
+        if (m_lastError == "")
+            m_lastError = std::string("Protocol Initialization Error.");
         return false;
     }
 
@@ -156,10 +156,10 @@ Sockets::Socket_Stream_Base * Socket_TCP::acceptConnection()
     int32_t clilen;
     struct sockaddr_in cli_addr;
     clilen = sizeof(cli_addr);
-
-    if ((sdconn = accept(sockfd, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen)) >= 0)
+    
+    if ((sdconn = accept(m_sockFD, (struct sockaddr *) &cli_addr, (socklen_t *)&clilen)) >= 0)
     {
-        if (tcpForceKeepAlive)
+        if (m_useTCPForceKeepAlive)
         {
             int flags =1;
 #ifdef _WIN32
@@ -179,20 +179,20 @@ Sockets::Socket_Stream_Base * Socket_TCP::acceptConnection()
         inet_ntop(AF_INET, &cli_addr.sin_addr, ipAddr, sizeof(ipAddr)-1);
         cursocket->setRemotePort(ntohs(cli_addr.sin_port));
         cursocket->setRemotePair(ipAddr);
+        
+        ((Socket_TCP *)cursocket)->setTcpNoDelayOption(m_useTcpNoDelayOption);
 
-        ((Socket_TCP *)cursocket)->setTcpNoDelayOption(tcpNoDelayOption);
-
-        if (readTimeout)
-            cursocket->setReadTimeout(readTimeout);
-        if (writeTimeout)
-            cursocket->setWriteTimeout(writeTimeout);
-        if (recvBuffer)
-            cursocket->setRecvBuffer(recvBuffer);
+        if (m_readTimeout)
+            cursocket->setReadTimeout(m_readTimeout);
+        if (m_writeTimeout)
+            cursocket->setWriteTimeout(m_writeTimeout);
+        if (m_recvBuffer)
+            cursocket->setRecvBuffer(m_recvBuffer);
     }
     // Establish the error.
     else
     {
-        lastError = "accept() failed";
+        m_lastError = "accept() failed";
         return nullptr;
     }
 
@@ -215,35 +215,35 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
         timeout = 365*24*3600; // how about 1 year.
     }
 #endif
-
-    if (tcpForceKeepAlive)
+    
+    if (m_useTCPForceKeepAlive)
     {
         // From: https://bz.apache.org/bugzilla/show_bug.cgi?id=57955#c2
         // https://linux.die.net/man/7/tcp
 #ifdef TCP_KEEPIDLE
         //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        if (setTCPOptionBool(TCP_KEEPIDLE,tcpKeepIdle))
+        if (setTCPOptionBool(TCP_KEEPIDLE,m_tcpKeepIdle))
         {
         }
 #endif
 
 #ifdef TCP_KEEPCNT
         //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setTCPOptionBool(TCP_KEEPCNT,tcpKeepCnt))
+        if (setTCPOptionBool(TCP_KEEPCNT,m_tcpKeepCnt))
         {
         }
 #endif
 
 #ifdef TCP_KEEPINTVL
         //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setTCPOptionBool(TCP_KEEPINTVL,tcpKeepIntvl))
+        if (setTCPOptionBool(TCP_KEEPINTVL,m_tcpKeepInterval))
         {
         }
 #endif
     }
 
     // Trying to connect with timeout.
-    res2 = connect(sockfd, addr, addrlen);
+    res2 = connect(m_sockFD, addr, addrlen);
     if (res2 < 0)
     {
 #ifdef _WIN32
@@ -259,9 +259,9 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             tv.tv_sec = timeout;
             tv.tv_usec = 0;
             FD_ZERO(&myset);
-            FD_SET(sockfd, &myset);
-
-            res2 = select(sockfd+1, nullptr, &myset, nullptr, timeout?&tv:nullptr);
+            FD_SET(m_sockFD, &myset);
+            
+            res2 = select(m_sockFD+1, nullptr, &myset, nullptr, timeout?&tv:nullptr);
 #ifdef _WIN32
             if (res2 < 0 && WSAGetLastError() != WSAEINTR)
 #else
@@ -299,7 +299,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 }
 #else
                 // TODO: specific message.
-                lastError = "select() - error (" + std::to_string(errno) + ")";
+                m_lastError = "select() - error (" + std::to_string(errno) + ")";
 #endif
                 return false;
             }
@@ -310,14 +310,14 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 lon = sizeof(int);
                 if (getSocketOption(SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0)
                 {
-                    lastError = "Error in getsockopt(SOL_SOCKET)";
+                    m_lastError = "Error in getsockopt(SOL_SOCKET)";
                     return false;
                 }
                 // Check the value returned...
                 if (valopt)
                 {
                     char cError[1024]="Unknown Error";
-                    lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
+                    m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt,cError,sizeof(cError));
                     return false;
                 }
 
@@ -327,19 +327,19 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
                 {
                     return false;
                 }
-
-                if (tcpForceKeepAlive)
+                
+                if (m_useTCPForceKeepAlive)
                 {
                     if (setSocketOptionBool(SOL_SOCKET, SO_KEEPALIVE, true))
                     {
-                        lastError = "setsocketopt(SO_KEEPALIVE)";
+                        m_lastError = "setsocketopt(SO_KEEPALIVE)";
                         return false;
                     }
                 }
-
-                if (setTCPOptionBool(TCP_NODELAY,tcpNoDelayOption))
+                
+                if (setTCPOptionBool(TCP_NODELAY,m_useTcpNoDelayOption))
                 {
-                    lastError = "setsocketopt(TCP_NODELAY)";
+                    m_lastError = "setsocketopt(TCP_NODELAY)";
                     return false;
                 }
 
@@ -348,7 +348,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
             }
             else
             {
-                lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
+                m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
                 return false;
             }
         }
@@ -420,8 +420,8 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
 #else
 
             char cError[1024]="Unknown Error";
-
-            lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
+            
+            m_lastError = std::string("Connection using TCP Socket to ") + remotePair + (":") + std::to_string(remotePort) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
 #endif
             return false;
         }
@@ -433,61 +433,61 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
 
 bool Socket_TCP::getTcpNoDelayOption() const
 {
-    return tcpNoDelayOption;
+    return m_useTcpNoDelayOption;
 }
 
 void Socket_TCP::setTcpNoDelayOption(bool newTcpNoDelayOption)
 {
-    tcpNoDelayOption = newTcpNoDelayOption;
-    setTCPOptionBool(TCP_NODELAY,tcpNoDelayOption);
+    m_useTcpNoDelayOption = newTcpNoDelayOption;
+    setTCPOptionBool(TCP_NODELAY,m_useTcpNoDelayOption);
 }
 
 bool Socket_TCP::getTcpUseKeepAlive() const
 {
-    return tcpForceKeepAlive;
+    return m_useTCPForceKeepAlive;
 }
 
 void Socket_TCP::setTcpUseKeepAlive(bool newTcpUseKeepAlive)
 {
-    tcpForceKeepAlive = newTcpUseKeepAlive;
+    m_useTCPForceKeepAlive = newTcpUseKeepAlive;
 }
 
 int Socket_TCP::getTcpKeepIntvl() const
 {
-    return tcpKeepIntvl;
+    return m_tcpKeepInterval;
 }
 
 void Socket_TCP::setTcpKeepIntvl(int newTcpKeepIntvl)
 {
-    tcpKeepIntvl = newTcpKeepIntvl;
+    m_tcpKeepInterval = newTcpKeepIntvl;
 }
 
 int Socket_TCP::getTcpKeepCnt() const
 {
-    return tcpKeepCnt;
+    return m_tcpKeepCnt;
 }
 
 void Socket_TCP::setTcpKeepCnt(int newTcpKeepCnt)
 {
-    tcpKeepCnt = newTcpKeepCnt;
+    m_tcpKeepCnt = newTcpKeepCnt;
 }
 
 int Socket_TCP::getTcpKeepIdle() const
 {
-    return tcpKeepIdle;
+    return m_tcpKeepIdle;
 }
 
 void Socket_TCP::setTcpKeepIdle(int newTcpKeepIdle)
 {
-    tcpKeepIdle = newTcpKeepIdle;
+    m_tcpKeepIdle = newTcpKeepIdle;
 }
 
 bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, const int32_t & recvbuffer,const int32_t & backlog)
 {
-    sockfd = socket(m_useIPv6?AF_INET6:AF_INET, SOCK_STREAM, 0);
+    m_sockFD = socket(m_useIPv6?AF_INET6:AF_INET, SOCK_STREAM, 0);
     if (!isActive())
     {
-        lastError = "socket() failed";
+        m_lastError = "socket() failed";
         return false;
     }
 
@@ -495,32 +495,32 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, cons
 
     if (setSocketOptionBool(SOL_SOCKET, SO_REUSEADDR, true))
     {
-        lastError = "setsockopt(SO_REUSEADDR) failed";
+        m_lastError = "setsockopt(SO_REUSEADDR) failed";
         closeSocket();
         return false;
     }
-
-    if (tcpForceKeepAlive)
+    
+    if (m_useTCPForceKeepAlive)
     {
         // From: https://bz.apache.org/bugzilla/show_bug.cgi?id=57955#c2
         // https://linux.die.net/man/7/tcp
 #ifdef TCP_KEEPIDLE
         //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        if (setTCPOptionBool(TCP_KEEPIDLE, tcpKeepIdle))
+        if (setTCPOptionBool(TCP_KEEPIDLE, m_tcpKeepIdle))
         {
         }
 #endif
 
 #ifdef TCP_KEEPCNT
         //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setTCPOptionBool(TCP_KEEPCNT, tcpKeepCnt))
+        if (setTCPOptionBool(TCP_KEEPCNT, m_tcpKeepCnt))
         {
         }
 #endif
 
 #ifdef TCP_KEEPINTVL
         //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setTCPOptionBool(TCP_KEEPINTVL, tcpKeepIntvl))
+        if (setTCPOptionBool(TCP_KEEPINTVL, m_tcpKeepInterval))
         {
         }
 #endif
@@ -530,15 +530,15 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, cons
     {
         return false;
     }
-
-    if (listen(sockfd, backlog) < 0)
+    
+    if (listen(m_sockFD, backlog) < 0)
     {
-        lastError = "listen() failed";
+        m_lastError = "listen() failed";
         closeSocket();
         return false;
     }
 
-    listenMode = true;
+    m_isInListenMode = true;
 
     return true;
 }
@@ -584,12 +584,12 @@ int Socket_TCP::getTCPOption(const int32_t & optname, void *optval, socklen_t *o
 
 void Socket_TCP::overrideReadTimeout(int32_t tout)
 {
-    ovrReadTimeout = tout;
+    m_overwriteReadTimeout = tout;
 }
 
 void Socket_TCP::overrideWriteTimeout(int32_t tout)
 {
-    ovrWriteTimeout = tout;
+    m_overwriteWriteTimeout = tout;
 }
 
 bool Socket_TCP::isSecure()

@@ -31,7 +31,7 @@
 using namespace std;
 using namespace Mantids29::Network::Sockets;
 
-Socket_TLS::Socket_TLS() : keys(&bIsServer)
+Socket_TLS::Socket_TLS() : m_keys(&m_isServer)
 {
 #ifndef WIN32
     // Ignore sigpipes in this thread (eg. SSL_Write on closed socket):
@@ -42,18 +42,18 @@ Socket_TLS::Socket_TLS() : keys(&bIsServer)
 #endif
 
     setCertValidation(CERT_X509_VALIDATE);
-    tlsParent = nullptr;
-    bIsServer = false;
-    sslh = nullptr;
-    ctx = nullptr;
+    m_tlsParentConnection = nullptr;
+    m_isServer = false;
+    m_sslHandler = nullptr;
+    m_sslContext = nullptr;
 }
 
 Socket_TLS::~Socket_TLS()
 {
-    if (sslh)
-        SSL_free (sslh);
-    if (ctx)
-        SSL_CTX_free(ctx);
+    if (m_sslHandler)
+        SSL_free (m_sslHandler);
+    if (m_sslContext)
+        SSL_CTX_free(m_sslContext);
 }
 
 void Socket_TLS::prepareTLS()
@@ -74,64 +74,64 @@ void Socket_TLS::prepareTLS()
 
 void Socket_TLS::setTLSParent(Socket_TLS *parent)
 {
-    tlsParent = parent;
+    m_tlsParentConnection = parent;
 }
 
 bool Socket_TLS::postConnectSubInitialization()
 {
-    if (sslh!=nullptr)
+    if (m_sslHandler!=nullptr)
         return false; // already connected (don't connect again)
 
-    bIsServer = false;
+    m_isServer = false;
 
     if (!createTLSContext())
     {
         return false;
     }
 
-    if (!(sslh = SSL_new(ctx)))
+    if (!(m_sslHandler = SSL_new(m_sslContext)))
     {
-        sslErrors.push_back("SSL_new failed.");
+        m_sslErrorList.push_back("SSL_new failed.");
         return false;
     }
 
     // If there is any configured PSK, put the key in the static list here...
-    bool usingPSK = keys.linkPSKWithTLSHandle(sslh);
+    bool usingPSK = m_keys.linkPSKWithTLSHandle(m_sslHandler);
 
     // Initialize TLS client certificates and keys
-    if (!keys.initTLSKeys(ctx,sslh, &sslErrors))
+    if (!m_keys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
-    }    
-
-    if ( !(keys.getCAPath().empty()) || keys.getVerifyDefaultLocations() )
-        SSL_set_verify(sslh, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (certValidation==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+    }
+    
+    if ( !(m_keys.getCAPath().empty()) || m_keys.getUseSystemCertificates() )
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
     else
     {
         // If there is no CA...
-        certValidation=CERT_X509_NOVALIDATE;
+        m_certValidationOptions=CERT_X509_NOVALIDATE;
         //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
     }
 
 
-    if (SSL_set_fd (sslh, sockfd) != 1)
+    if (SSL_set_fd (m_sslHandler, m_sockFD) != 1)
     {
-        sslErrors.push_back("SSL_set_fd failed.");
+        m_sslErrorList.push_back("SSL_set_fd failed.");
         return false;
     }
 
-    if ( SSL_get_error(sslh, SSL_connect (sslh)) != SSL_ERROR_NONE )
+    if ( SSL_get_error(m_sslHandler, SSL_connect (m_sslHandler)) != SSL_ERROR_NONE )
     {
         parseErrors();
         return false;
     }
-
-    if ( certValidation!=CERT_X509_NOVALIDATE )
+    
+    if ( m_certValidationOptions!=CERT_X509_NOVALIDATE )
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions==CERT_X509_CHECKANDPASS;
     }
     // no validate here...
     else
@@ -140,10 +140,10 @@ bool Socket_TLS::postConnectSubInitialization()
 
 bool Socket_TLS::postAcceptSubInitialization()
 {
-    if (sslh!=nullptr)
+    if (m_sslHandler!=nullptr)
         return false; // already connected (don't connect again)
 
-    bIsServer = true;
+    m_isServer = true;
 
     if (!createTLSContext())
     {
@@ -151,56 +151,56 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
 
     // ssl empty, create a new one.
-    if (!(sslh = SSL_new(ctx)))
+    if (!(m_sslHandler = SSL_new(m_sslContext)))
     {
-        sslErrors.push_back("SSL_new failed.");
+        m_sslErrorList.push_back("SSL_new failed.");
         return false;
     }
 
     // If the parent have any PSK key, pass everything to the current socket_tls.
-    *(keys.getPSKServerWallet()) = *(tlsParent->keys.getPSKServerWallet());
+    *(m_keys.getPSKServerWallet()) = *(m_tlsParentConnection->m_keys.getPSKServerWallet());
 
     bool usingPSK = isUsingPSK();
     // If there is any configured PSK, link the key in the static list...
     if ( usingPSK )
     {
-        keys.linkPSKWithTLSHandle(sslh);
+        m_keys.linkPSKWithTLSHandle(m_sslHandler);
     }
 
     // in server mode, use the parent keys...
-    if (!tlsParent->keys.initTLSKeys(ctx,sslh, &sslErrors))
+    if (!m_tlsParentConnection->m_keys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
     }
-
-    if ( !tlsParent->keys.getCAPath().empty() || tlsParent->keys.getVerifyDefaultLocations() )
-        SSL_set_verify(sslh, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (certValidation==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+    
+    if ( !m_tlsParentConnection->m_keys.getCAPath().empty() || m_tlsParentConnection->m_keys.getUseSystemCertificates() )
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
     else
     {
         // If there is no CA...
-        certValidation=CERT_X509_NOVALIDATE;
+        m_certValidationOptions=CERT_X509_NOVALIDATE;
         //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
     }
 
-    if (SSL_set_fd (sslh, sockfd) != 1)
+    if (SSL_set_fd (m_sslHandler, m_sockFD) != 1)
     {
-        sslErrors.push_back("SSL_set_fd failed.");
+        m_sslErrorList.push_back("SSL_set_fd failed.");
         return false;
     }
 
     int err;
-    if ((err=SSL_accept(sslh)) != 1)
+    if ((err=SSL_accept(m_sslHandler)) != 1)
     {
         parseErrors();
         return false;
     }
-
-    if ( certValidation!=CERT_X509_NOVALIDATE )
+    
+    if ( m_certValidationOptions!=CERT_X509_NOVALIDATE )
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || certValidation==CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions==CERT_X509_CHECKANDPASS;
     }
     // no validate here...
     else
@@ -237,15 +237,15 @@ SSL_CTX *Socket_TLS::createClientSSLContext()
 
 bool Socket_TLS::isServer() const
 {
-    return bIsServer;
+    return m_isServer;
 }
 
 bool Socket_TLS::isUsingPSK()
 {
-    if (bIsServer)
-        return tlsParent->keys.getPSKServerWallet()->usingPSK;
+    if (m_isServer)
+        return m_tlsParentConnection->m_keys.getPSKServerWallet()->m_isUsingPSK;
     else
-        return keys.getPSKClientValue()->usingPSK;
+        return m_keys.getPSKClientValue()->m_isUsingPSK;
 }
 
 
@@ -253,27 +253,27 @@ bool Socket_TLS::createTLSContext()
 {
     // create new SSL Context.
 
-    if (ctx)
+    if (m_sslContext)
     {
         throw std::runtime_error("Can't reuse the TLS socket. Create a new one.");
         return false;
     }
 
-    if (bIsServer)
+    if (m_isServer)
     {
-        ctx = createServerSSLContext();
-        if (!ctx)
+        m_sslContext = createServerSSLContext();
+        if (!m_sslContext)
         {
-            sslErrors.push_back("TLS_server_method() Failed.");
+            m_sslErrorList.push_back("TLS_server_method() Failed.");
             return false;
         }
     }
     else
     {
-        ctx = createClientSSLContext();
-        if (!ctx)
+        m_sslContext = createClientSSLContext();
+        if (!m_sslContext)
         {
-            sslErrors.push_back("TLS_client_method() Failed.");
+            m_sslErrorList.push_back("TLS_client_method() Failed.");
             return false;
         }
     }
@@ -289,13 +289,13 @@ void Socket_TLS::parseErrors()
     while ((err = ERR_get_error()) != 0)
     {
         ERR_error_string_n(err, buf, sizeof(buf));
-        sslErrors.push_back(buf);
+        m_sslErrorList.push_back(buf);
     }
 }
 
 bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
 {
-    if (!sslh)
+    if (!m_sslHandler)
         return false;
 
     bool bValid  = false;
@@ -303,22 +303,22 @@ bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
     if (!usingPSK)
     {
         X509 *cert;
-        cert = SSL_get_peer_certificate(sslh);
+        cert = SSL_get_peer_certificate(m_sslHandler);
         if ( cert != nullptr )
         {
-            long res = SSL_get_verify_result(sslh);
+            long res = SSL_get_verify_result(m_sslHandler);
             if (res == X509_V_OK)
             {
                 bValid = true;
             }
             else
             {
-                sslErrors.push_back("Peer TLS/SSL Certificate Verification Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));
+                m_sslErrorList.push_back("Peer TLS/SSL Certificate Verification Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));
             }
             X509_free(cert);
         }
         else
-            sslErrors.push_back("Peer TLS/SSL Certificate does not exist.");
+            m_sslErrorList.push_back("Peer TLS/SSL Certificate does not exist.");
     }
     else
     {
@@ -330,38 +330,38 @@ bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
 
 Socket_TLS::eCertValidationOptions Socket_TLS::getCertValidation() const
 {
-    return certValidation;
+    return m_certValidationOptions;
 }
 
 void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
 {
-    certValidation = newCertValidation;
+    m_certValidationOptions = newCertValidation;
 }
 
 
 string Socket_TLS::getTLSConnectionCipherName()
 {
-    if (!sslh) return "";
-    return SSL_get_cipher_name(sslh);
+    if (!m_sslHandler) return "";
+    return SSL_get_cipher_name(m_sslHandler);
 }
 
 std::list<std::string> Socket_TLS::getTLSErrorsAndClear()
 {
-    std::list<std::string> sslErrors2 = sslErrors;
-    sslErrors.clear();
+    std::list<std::string> sslErrors2 = m_sslErrorList;
+    m_sslErrorList.clear();
     return sslErrors2;
 }
 
 string Socket_TLS::getTLSPeerCN()
 {
-    if (!sslh) return "";
+    if (!m_sslHandler) return "";
 
     if (!isUsingPSK())
     {
         char certCNText[512];
         memset(certCNText,0,sizeof(certCNText));
 
-        X509 * cert = SSL_get_peer_certificate(sslh);
+        X509 * cert = SSL_get_peer_certificate(m_sslHandler);
         if(cert)
         {
             X509_NAME * certName = X509_get_subject_name(cert);
@@ -374,25 +374,25 @@ string Socket_TLS::getTLSPeerCN()
     else
     {
         // the remote host is the server... no configured id.
-        if (!bIsServer)
+        if (!m_isServer)
             return "server";
         else
-            return keys.getPSKServerWallet()->connectedClientID;
+            return m_keys.getPSKServerWallet()->m_connectedClientID;
     }
 }
 
 int Socket_TLS::iShutdown(int mode)
 {
-    if (!sslh && isServer())
+    if (!m_sslHandler && isServer())
     {
         // Then is a listening socket... (shutdown like a normal tcp/ip connection)
         return Socket::iShutdown(mode);
     }
-    else if (!sslh)
+    else if (!m_sslHandler)
     {
         return -4;
     }
-    else if (shutdown_proto_wr || (SSL_get_shutdown(sslh) & SSL_SENT_SHUTDOWN))
+    else if (m_shutdownProtocolOnWrite || (SSL_get_shutdown(m_sslHandler) & SSL_SENT_SHUTDOWN))
     {
         // Already shutted down.
         return -1;
@@ -401,7 +401,7 @@ int Socket_TLS::iShutdown(int mode)
     {
 
         // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
-        switch (SSL_shutdown (sslh))
+        switch (SSL_shutdown (m_sslHandler))
         {
         case 0:
             // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
@@ -409,7 +409,7 @@ int Socket_TLS::iShutdown(int mode)
         case 1:
             // The write shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
             //shutdown_proto_rd = true;
-            shutdown_proto_wr = true;
+            m_shutdownProtocolOnWrite = true;
             return 0;
             // Call the private TCP iShutdown to shutdown RD on the socket ?...
             //return Socket_TCP::iShutdown(mode);
@@ -424,28 +424,28 @@ bool Socket_TLS::isSecure() { return true; }
 
 void Socket_TLS::setServerMode(bool value)
 {
-    bIsServer = value;
+    m_isServer = value;
 }
 
 Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
-    if (!sslh) return cb;
-    cb.aSymBits = SSL_get_cipher_bits(sslh, &cb.symBits);
+    if (!m_sslHandler) return cb;
+    cb.asymmetricBits = SSL_get_cipher_bits(m_sslHandler, &cb.symmetricBits);
     return cb;
 }
 
 string Socket_TLS::getTLSConnectionProtocolVersion()
 {
-    if (!sslh) return "";
-    return SSL_get_version(sslh);
+    if (!m_sslHandler) return "";
+    return SSL_get_version(m_sslHandler);
 }
 
 Mantids29::Network::Sockets::Socket_Stream_Base * Socket_TLS::acceptConnection()
 {
     char remotePair[INET6_ADDRSTRLEN];
 
-    bIsServer = true;
+    m_isServer = true;
 
     Socket_Stream_Base * acceptedTCPSock = Socket_TCP::acceptConnection();
 
@@ -463,7 +463,7 @@ Mantids29::Network::Sockets::Socket_Stream_Base * Socket_TLS::acceptConnection()
     acceptedTLSSock->setTLSParent(this);
 
     // Set contexts and modes...
-    acceptedTLSSock->setServerMode(bIsServer);
+    acceptedTLSSock->setServerMode(m_isServer);
 
     // now we should copy the file descriptor:
     acceptedTLSSock->setSocketFD(acceptedTCPSock->adquireSocketFD());
@@ -475,10 +475,10 @@ Mantids29::Network::Sockets::Socket_Stream_Base * Socket_TLS::acceptConnection()
 
 int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 {
-    if (!sslh) return -1;
+    if (!m_sslHandler) return -1;
     char cError[1024]="Unknown Error";
 
-    int readBytes = SSL_read(sslh, data, datalen);
+    int readBytes = SSL_read(m_sslHandler, data, datalen);
     if (readBytes > 0)
     {
         return readBytes;
@@ -488,7 +488,7 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
         // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
         Socket_TCP::iShutdown();
 
-        int err = SSL_get_error(sslh, readBytes);
+        int err = SSL_get_error(m_sslHandler, readBytes);
         switch(err)
         {
         case SSL_ERROR_WANT_WRITE:
@@ -502,7 +502,7 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
         case SSL_ERROR_SYSCALL:
             // Common error (maybe tcp error).
             parseErrors();
-            lastError = "Error " + std::to_string(errno) + " during read: " + strerror_r(errno,cError,sizeof(cError));
+            m_lastError = "Error " + std::to_string(errno) + " during read: " + strerror_r(errno,cError,sizeof(cError));
             return -1;
         default:
             parseErrors();
@@ -513,10 +513,10 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 
 int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 {
-    if (!sslh) return -1;
+    if (!m_sslHandler) return -1;
 
     // TODO: sigpipe here?
-    int sentBytes = SSL_write(sslh, data, datalen);
+    int sentBytes = SSL_write(m_sslHandler, data, datalen);
     if (sentBytes > 0)
     {
         return sentBytes;
@@ -526,7 +526,7 @@ int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
         // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
         Socket_TCP::iShutdown();
 
-        switch(SSL_get_error(sslh, sentBytes))
+        switch(SSL_get_error(m_sslHandler, sentBytes))
         {
         case SSL_ERROR_WANT_WRITE:
         case SSL_ERROR_WANT_READ:

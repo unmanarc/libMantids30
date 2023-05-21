@@ -37,8 +37,8 @@ using namespace Mantids29::Network::Sockets;
 bool Socket::winSockInitialized = Socket::win32Init();
 #endif
 
-bool Socket::socketInitialized = false;
-bool Socket::badSocket = false;
+bool Socket::m_globalSocketInitialized = false;
+//bool Socket::badSocket = false;
 
 #define DEFAULT_SOCKRW_TIMEOUT 60*5
 
@@ -46,19 +46,19 @@ void Socket::initVars()
 {
     m_useIPv6 = false;
 
-    listenMode = false;
+    m_isInListenMode = false;
 
     // default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
-    readTimeout = DEFAULT_SOCKRW_TIMEOUT;
-    writeTimeout = DEFAULT_SOCKRW_TIMEOUT;
-
-    recvBuffer = 0;
-    useWrite = false;
-    lastError = "";
-    sockfd = -1;
-
-    shutdown_proto_rd = false;
-    shutdown_proto_wr = false;
+    m_readTimeout = DEFAULT_SOCKRW_TIMEOUT;
+    m_writeTimeout = DEFAULT_SOCKRW_TIMEOUT;
+    
+    m_recvBuffer = 0;
+    m_useWriteInsteadRecv = false;
+    m_lastError = "";
+    m_sockFD = -1;
+    
+    m_shutdownProtocolOnRead = false;
+    m_shutdownProtocolOnWrite = false;
 
     ZeroBArray(remotePair);
 }
@@ -82,10 +82,10 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
             inet_pton(AF_INET, "0.0.0.0", &saBindServer.sin_addr);
         else
             inet_pton(AF_INET, bindAddress, &saBindServer.sin_addr);
-
-        if (bind(sockfd,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
+        
+        if (bind(m_sockFD,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
         {
-            lastError = "bind() failed";
+            m_lastError = "bind() failed";
             closeSocket();
             return false;
         }
@@ -102,10 +102,10 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
             inet_pton(AF_INET6, "::", &saBindServer.sin6_addr);
         else
             inet_pton(AF_INET6, bindAddress, &saBindServer.sin6_addr);
-
-        if (bind(sockfd,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
+        
+        if (bind(m_sockFD,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
         {
-            lastError = "bind() failed";
+            m_lastError = "bind() failed";
             closeSocket();
             return false;
         }
@@ -161,43 +161,43 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
         return true;
 #ifndef _WIN32
     case EAI_ADDRFAMILY:
-        lastError = "getaddrinfo() - The specified network host does not have any network addresses in the requested address family.";
+        m_lastError = "getaddrinfo() - The specified network host does not have any network addresses in the requested address family.";
         return false;
 #endif
     case EAI_AGAIN:
-        lastError = "getaddrinfo() - The name server returned a temporary failure indication. Try again later.";
+        m_lastError = "getaddrinfo() - The name server returned a temporary failure indication. Try again later.";
         return false;
     case EAI_BADFLAGS:
-        lastError = "getaddrinfo() - hints.ai_flags contains invalid flags; or, hints.ai_flags included AI_CANONNAME and name was NULL.";
+        m_lastError = "getaddrinfo() - hints.ai_flags contains invalid flags; or, hints.ai_flags included AI_CANONNAME and name was NULL.";
         return false;
     case EAI_FAIL:
-        lastError = "getaddrinfo() - The name server returned a permanent failure indication.";
+        m_lastError = "getaddrinfo() - The name server returned a permanent failure indication.";
         return false;
     case EAI_FAMILY:
-        lastError = "getaddrinfo() - The requested address family is not supported.";
+        m_lastError = "getaddrinfo() - The requested address family is not supported.";
         return false;
     case EAI_MEMORY:
-        lastError = "getaddrinfo() - Out of memory during name resolution.";
+        m_lastError = "getaddrinfo() - Out of memory during name resolution.";
         return false;
     case EAI_NODATA:
-        lastError = "getaddrinfo() - The specified network host exists, but does not have any network addresses defined.";
+        m_lastError = "getaddrinfo() - The specified network host exists, but does not have any network addresses defined.";
         return false;
     case EAI_NONAME:
-        lastError = "getaddrinfo() - The node or service is not known"; //; or both node and service are NULL; or AI_NUMERICSERV was specified in hints.ai_flags and service was not a numeric port-number string.";
+        m_lastError = "getaddrinfo() - The node or service is not known"; //; or both node and service are NULL; or AI_NUMERICSERV was specified in hints.ai_flags and service was not a numeric port-number string.";
         return false;
     case EAI_SERVICE:
-        lastError = "getaddrinfo() - The requested service is not available for the requested socket type.";
+        m_lastError = "getaddrinfo() - The requested service is not available for the requested socket type.";
         return false;
     case EAI_SOCKTYPE:
-        lastError = "getaddrinfo() - The requested socket type is not supported.";
+        m_lastError = "getaddrinfo() - The requested socket type is not supported.";
         return false;
 #ifndef _WIN32
     case EAI_SYSTEM:
-        lastError = "getaddrinfo() - System Error duing name resolution.";
+        m_lastError = "getaddrinfo() - System Error duing name resolution.";
         return false;
 #endif
     default:
-        lastError = "getaddrinfo() - Unknown name resolution error.";
+        m_lastError = "getaddrinfo() - Unknown name resolution error.";
         break;
     }
 
@@ -251,18 +251,18 @@ void Socket::setUseWrite()
     signal(SIGPIPE, SIG_IGN);
 #endif
     // use write/read functions instead send/recv
-    useWrite = true;
+    m_useWriteInsteadRecv = true;
 }
 
 void Socket::setRecvBuffer(int buffsize)
 {
-    recvBuffer = buffsize;
+    m_recvBuffer = buffsize;
 
     if (!isActive()) return;
 #ifdef _WIN32
     setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
 #else
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &buffsize, sizeof(buffsize));
+    setsockopt(m_sockFD, SOL_SOCKET, SO_RCVBUF, &buffsize, sizeof(buffsize));
 #endif
 }
 
@@ -301,15 +301,15 @@ int Socket::closeSocket()
 #ifdef _WIN32
     int i = closesocket(sockfd);
 #else
-    int i = close(sockfd);
+    int i = close(m_sockFD);
 #endif
-    sockfd = -1;
+    m_sockFD = -1;
     return i;
 }
 
 std::string Socket::getLastError() const
 {
-    return lastError;
+    return m_lastError;
 }
 
 std::string Socket::getRemotePairStr()
@@ -323,9 +323,9 @@ uint16_t Socket::getPort()
 
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
-    if (getsockname(sockfd, (struct sockaddr *) &sin, &len) == -1)
+    if (getsockname(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
     {
-        lastError = "Error resolving port";
+        m_lastError = "Error resolving port";
         return 0;
     }
     return ntohs(sin.sin_port);
@@ -335,14 +335,14 @@ int Socket::partialRead(void *data, const uint32_t &datalen)
 {
     if (!isActive()) return -1;
     if (!datalen) return 0;
-    if (!useWrite)
+    if (!m_useWriteInsteadRecv)
     {
-        ssize_t recvLen = recv(sockfd, (char *) data, datalen, 0);
+        ssize_t recvLen = recv(m_sockFD, (char *) data, datalen, 0);
         return recvLen;
     }
     else
     {
-        ssize_t recvLen = read(sockfd, (char *) data, datalen);
+        ssize_t recvLen = read(m_sockFD, (char *) data, datalen);
         return recvLen;
     }
 }
@@ -351,18 +351,18 @@ int Socket::partialWrite(const void *data, const uint32_t &datalen)
 {
     if (!isActive()) return -1;
     if (!datalen) return 0;
-    if (!useWrite)
+    if (!m_useWriteInsteadRecv)
     {
 #ifdef _WIN32
         ssize_t sendLen = send(sockfd, (char *) data, datalen, 0);
 #else
-        ssize_t sendLen = send(sockfd, (char *) data, datalen, MSG_NOSIGNAL);
+        ssize_t sendLen = send(m_sockFD, (char *) data, datalen, MSG_NOSIGNAL);
 #endif
         return sendLen;
     }
     else
     {
-        ssize_t sendLen = write(sockfd, (char *) data, datalen);
+        ssize_t sendLen = write(m_sockFD, (char *) data, datalen);
         return sendLen;
     }
 }
@@ -389,9 +389,9 @@ int Socket::iShutdown(int mode)
     }
 
     // Already shutted down:
-    if (shutdown_proto_rd == true)
+    if (m_shutdownProtocolOnRead == true)
         rd_to_shutdown = false;
-    if (shutdown_proto_wr == true)
+    if (m_shutdownProtocolOnWrite == true)
         wr_to_shutdown = false;
 
     if ( rd_to_shutdown && wr_to_shutdown )
@@ -399,8 +399,8 @@ int Socket::iShutdown(int mode)
         int x = _shutdownSocket(SHUT_RDWR);
 //        if (x == 0)
 //        {
-            shutdown_proto_rd = true;
-            shutdown_proto_wr = true;
+        m_shutdownProtocolOnRead = true;
+        m_shutdownProtocolOnWrite = true;
 //        }
         return x;
     }
@@ -409,7 +409,7 @@ int Socket::iShutdown(int mode)
         int x = _shutdownSocket(SHUT_RD);
 //        if (x == 0)
 //        {
-            shutdown_proto_rd = true;
+        m_shutdownProtocolOnRead = true;
 //        }
         return x;
     }
@@ -418,7 +418,7 @@ int Socket::iShutdown(int mode)
         int x = _shutdownSocket(SHUT_WR);
 //        if (x == 0)
 //        {
-            shutdown_proto_wr = true;
+        m_shutdownProtocolOnWrite = true;
 //        }
         return x;
     }
@@ -434,7 +434,7 @@ int Socket::iShutdown(int mode)
 
 void Socket::socketSystemInitialization()
 {
-    if (!socketInitialized)
+    if (!m_globalSocketInitialized)
     {
 #ifdef _WIN32
         int wsaerr;
@@ -459,7 +459,7 @@ void Socket::socketSystemInitialization()
             return;
         }
 #endif
-        socketInitialized = true;
+        m_globalSocketInitialized = true;
     }
 }
 
@@ -479,7 +479,7 @@ int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *opt
 #ifdef _WIN32
     return getsockopt(sockfd, level, optname, (char *)optval, optlen);
 #else
-    return getsockopt(sockfd, level, optname, optval, optlen);
+    return getsockopt(m_sockFD, level, optname, optval, optlen);
 #endif
 }
 
@@ -488,7 +488,7 @@ int Socket::setSocketOption(int level, int optname, const void *optval, socklen_
 #ifdef _WIN32
     return setsockopt(sockfd,  level, optname, (char *)optval, optlen);
 #else
-    return setsockopt(sockfd,  level, optname, optval, optlen);
+    return setsockopt(m_sockFD,  level, optname, optval, optlen);
 #endif
 }
 
@@ -502,9 +502,9 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 {
     if (!isActive()) return false;
 
-    readTimeout = _timeout;
+    m_readTimeout = _timeout;
 
-    if (listenMode) return true;
+    if (m_isInListenMode) return true;
 
 #ifdef _WIN32
     DWORD tout = _timeout*1000;
@@ -513,7 +513,7 @@ bool Socket::setReadTimeout(unsigned int _timeout)
     struct timeval timeout;
     timeout.tv_sec = _timeout;
     timeout.tv_usec = 0;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) == -1)
+    if ((setsockopt(m_sockFD, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) == -1)
 #endif
     {
         return false;
@@ -524,8 +524,8 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 bool Socket::setWriteTimeout(unsigned int _timeout)
 {
     if (!isActive()) return false;
-    writeTimeout = _timeout;
-    if (listenMode) return true;
+    m_writeTimeout = _timeout;
+    if (m_isInListenMode) return true;
 #ifdef _WIN32
     int tout = _timeout*1000;
     if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tout, sizeof(int))) == -1)
@@ -533,7 +533,7 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
     struct timeval timeout;
     timeout.tv_sec = _timeout;
     timeout.tv_usec = 0;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) == -1)
+    if ((setsockopt(m_sockFD, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) == -1)
 #endif
     {
         return false;
@@ -543,23 +543,23 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
 
 bool Socket::isActive() const
 {
-    return sockfd!=-1;
+    return m_sockFD!=-1;
 }
 
 
 void Socket::setSocketFD(int _sockfd)
 {
-    if (sockfd != -1)
+    if (m_sockFD != -1)
     {
         throw std::runtime_error("Assiging a file descriptor to an initialized Socket.");
     }
-    sockfd = _sockfd;
+    m_sockFD = _sockfd;
 }
 
 int Socket::adquireSocketFD()
 {
-    int sockret = sockfd;
-    sockfd = -1;
+    int sockret = m_sockFD;
+    m_sockFD = -1;
     return sockret;
 }
 
@@ -591,7 +591,7 @@ int Socket::shutdownSocket(int mode)
 int Socket::_shutdownSocket(int mode)
 {
     //printf("Shutting down socket: %i in mode %s @%p\n", sockfd, mode==SHUT_RD?"RD": ( mode==SHUT_WR?"WR":"RDWR") ,this); fflush(stdout);
-    int x = shutdown(sockfd, mode);
+    int x = shutdown(m_sockFD, mode);
     return x;
 }
 
@@ -607,22 +607,22 @@ bool Socket::setBlockingMode(bool blocking)
         switch (WSAGetLastError())
         {
         case WSANOTINITIALISED:
-            lastError = "A successful WSAStartup call must occur before using ioctlsocket.";
+            m_lastError = "A successful WSAStartup call must occur before using ioctlsocket.";
             break;
         case WSAENETDOWN:
-            lastError = "The network subsystem has failed. (ioctlsocket)";
+            m_lastError = "The network subsystem has failed. (ioctlsocket)";
             break;
         case WSAEINPROGRESS:
-            lastError = "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function. (ioctlsocket)";
+            m_lastError = "A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function. (ioctlsocket)";
             break;
         case WSAENOTSOCK:
-            lastError = "The socket descriptor is not a socket. (ioctlsocket)";
+            m_lastError = "The socket descriptor is not a socket. (ioctlsocket)";
             break;
         case WSAEFAULT:
-            lastError = "The argp parameter is not a valid part of the user address space. (ioctlsocket)";
+            m_lastError = "The argp parameter is not a valid part of the user address space. (ioctlsocket)";
             break;
         default:
-            lastError = "Uknown error in ioctlsocket.";
+            m_lastError = "Uknown error in ioctlsocket.";
             break;
         }
     }
@@ -631,19 +631,19 @@ bool Socket::setBlockingMode(bool blocking)
 #else
     long arg;
     // Set to blocking mode again...
-    if( (arg = fcntl(sockfd, F_GETFL, nullptr)) < 0)
+    if( (arg = fcntl(m_sockFD, F_GETFL, nullptr)) < 0)
     {
-        lastError = "Error getting blocking mode... ";
+        m_lastError = "Error getting blocking mode... ";
         return false;
     }
     if (blocking)
         arg &= (~O_NONBLOCK);
     else
         arg |= (O_NONBLOCK);
-
-    if( fcntl(sockfd, F_SETFL, arg) < 0)
+    
+    if( fcntl(m_sockFD, F_SETFL, arg) < 0)
     {
-        lastError = "Error setting blocking...";
+        m_lastError = "Error setting blocking...";
         return false;
     }
     return true;

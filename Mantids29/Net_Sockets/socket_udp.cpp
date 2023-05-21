@@ -21,7 +21,7 @@ using namespace Mantids29::Network::Sockets;
 
 Socket_UDP::Socket_UDP()
 {
-    res = nullptr;
+    m_addressInfoResolution = nullptr;
 }
 
 Socket_UDP::~Socket_UDP()
@@ -40,17 +40,17 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
 
     if (isActive()) closeSocket(); // close and release first
     // Socket initialization.
-    sockfd = socket(m_useIPv6?AF_INET6:AF_INET, SOCK_DGRAM, 0);
+    m_sockFD = socket(m_useIPv6?AF_INET6:AF_INET, SOCK_DGRAM, 0);
     if (!isActive())
     {
-        lastError = "socket() failed";
+        m_lastError = "socket() failed";
         return false;
     }
 
     // Set to reuse address (if released and wait)..
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on)) < 0)
+    if (setsockopt(m_sockFD, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on)) < 0)
     {
-        lastError = "setsockopt(SO_REUSEADDR) failed";
+        m_lastError = "setsockopt(SO_REUSEADDR) failed";
         closeSocket();
         return false;
     }
@@ -60,7 +60,7 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
         return false;
     }
 
-    listenMode = true;
+    m_isInListenMode = true;
 
     // Done!
     return true;
@@ -72,18 +72,18 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
 
     // Clean up any previously resolved addrinfo.
     freeAddrInfo();
-
-    if (!getAddrInfo(remoteHost,port,SOCK_DGRAM,(void **)&res))
+    
+    if (!getAddrInfo(remoteHost,port,SOCK_DGRAM,(void **)&m_addressInfoResolution))
     {
         // Bad name resolution...
         return false;
     }
 
     // Initialize the socket...
-    sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    m_sockFD = socket(m_addressInfoResolution->ai_family, m_addressInfoResolution->ai_socktype, m_addressInfoResolution->ai_protocol);
     if (!isActive())
     {
-        lastError = "socket() failed";
+        m_lastError = "socket() failed";
         return false;
     }
 
@@ -93,12 +93,12 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
     }
 
     // UDP connection does not establish the connection. is enough to have the remote address resolved and the socket file descriptor...
-    bool connected = (res ? true : false);
+    bool connected = (m_addressInfoResolution ? true : false);
     if (!connected)
     {
         char cError[1024]="Unknown Error";
-
-        lastError = std::string("Connection using UDP Socket to ") + remoteHost + (":") + std::to_string(port) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
+        
+        m_lastError = std::string("Connection using UDP Socket to ") + remoteHost + (":") + std::to_string(port) + (" Failed with error #") + std::to_string(errno) + ": " + strerror_r(errno,cError,sizeof(cError));
         return false;
     }
 
@@ -111,11 +111,11 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
 bool Socket_UDP::writeBlock(const void *data, const uint32_t & datalen)
 {
     if (!isActive()) return false;
-    if (!res) return false;
+    if (!m_addressInfoResolution) return false;
 #ifdef _WIN32
     if (sendto(sockfd, (char *)data, datalen, 0, res->ai_addr, res->ai_addrlen) == -1)
 #else
-    if (sendto(sockfd, data, datalen, 0, res->ai_addr, res->ai_addrlen) == -1)
+    if (sendto(m_sockFD, data, datalen, 0, m_addressInfoResolution->ai_addr, m_addressInfoResolution->ai_addrlen) == -1)
 #endif
     {
         return false;
@@ -132,9 +132,9 @@ uint32_t Socket_UDP::getMinReadSize()
 
 void Socket_UDP::freeAddrInfo()
 {
-    if (res)
-        freeaddrinfo(res);
-    res = nullptr;
+    if (m_addressInfoResolution)
+        freeaddrinfo(m_addressInfoResolution);
+    m_addressInfoResolution = nullptr;
 }
 
 bool Socket_UDP::readBlock(void *, const uint32_t &)
@@ -156,10 +156,10 @@ std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
 #ifdef _WIN32
     (*datagramBlock).datalen = recvfrom(sockfd, bigBlock, 65536, 0, &((*datagramBlock).addr) , &fromlen);
 #else
-    (*datagramBlock).datalen = recvfrom(sockfd, (void *) bigBlock, 65536, 0, &((*datagramBlock).addr) , &fromlen);
+    (*datagramBlock).m_dataLength = recvfrom(m_sockFD, (void *) bigBlock, 65536, 0, &((*datagramBlock).m_socketAddress) , &fromlen);
 #endif
-
-    (*datagramBlock).copy(bigBlock, (*datagramBlock).datalen);
+    
+    (*datagramBlock).copy(bigBlock, (*datagramBlock).m_dataLength);
     return datagramBlock;
 }
 

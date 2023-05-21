@@ -17,11 +17,8 @@ using namespace Mantids29::Network::Sockets;
 #endif
 
 
-Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * bIsServer) : pskst(&pskClientValues, &pskServerValues)
+Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * isServer) : m_pskStaticHandler(&m_pskClientValues, &m_pskServerValues)
 {
-    // Other TLS protocols are insecure...
-    minProtocolVersion = TLS1_2_VERSION;
-
 #if TLS_MAX_VERSION == TLS1_VERSION
     maxProtocolVersion = TLS1_VERSION;
 #elif TLS_MAX_VERSION == TLS1_1_VERSION
@@ -30,77 +27,56 @@ Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * bIsServer) : pskst(&pskCli
     maxProtocolVersion = TLS1_2_VERSION;
 #elif TLS_MAX_VERSION == TLS1_3_VERSION
     // I want to stick to 1.2 (unless will be requested in the api)
-    maxProtocolVersion = TLS1_2_VERSION;
+    m_maxProtocolVersion = TLS1_2_VERSION;
 #elif TLS_MAX_VERSION > TLS1_3_VERSION
     // Not established, unknown by now, use defaults...
     maxProtocolVersion = -1;
 #endif
 
-    // Set the security level to -1 (undefined).
-    securityLevel = 2;
-
     // Set the server parameter from the parent.
-    this->bIsServer = bIsServer;
-
-    // -1: use default depth
-    iVerifyMaxDepth = -1;
+    this->m_isServer = isServer;
 
     // Set the default DH parameter as 4096bit
-    dh =get_dh4096();
-
-    // No private/Public Keys
-    privKey = nullptr;
-    pubKey = nullptr;
-
-    // TLS Cipher List for TLSv1.2:
-    sTLSCipherList = "DHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305";
-
-    // TLS Groups for TLSv1.3
-    //sTLSSharedGroups = "ffdhe4096";
-
-    // Verify default locations (use the local keystore)
-    bVerifyDefaultLocations = false;
+    m_dhParameter =get_dh4096();
 }
 
 Socket_TLS::TLSKeyParameters::~TLSKeyParameters()
 {
-    if (dh)
-        DH_free(dh);
-    if (privKey)
-        EVP_PKEY_free(privKey);
-    if (pubKey)
-        X509_free(pubKey);
+    if (m_dhParameter)
+        DH_free(m_dhParameter);
+    if (m_privateKey)
+        EVP_PKEY_free(m_privateKey);
+    if (m_publicKey)
+        X509_free(m_publicKey);
 
     // Remove the PSK from the static list...
-    if (!sTLSCertificateAuthorityMemory.empty())
+    if (!m_TLSCertificateAuthorityMemory.empty())
     {
-        remove(sTLSCertificateAuthorityPath.c_str());
+        remove(m_TLSCertificateAuthorityPath.c_str());
     }
 }
 
-void Socket_TLS::TLSKeyParameters::setPSK()
+void Socket_TLS::TLSKeyParameters::setUsingPSK()
 {
     // For TLSv1.2 use only secure PSK algorithms:
-    sTLSCipherList = "DHE-PSK-AES256-GCM-SHA384:DHE-PSK-AES128-GCM-SHA256";
-
-
+    m_TLSCipherList = "DHE-PSK-AES256-GCM-SHA384:DHE-PSK-AES128-GCM-SHA256";
 }
 
 void Socket_TLS::TLSKeyParameters::addPSKToServer(const std::string &clientIdentity,const std::string &_psk)
 {
-    setPSK();
-    pskServerValues.setPSKByClientID(clientIdentity,_psk);
+    setUsingPSK();
+    m_pskServerValues.setPSKByClientID(clientIdentity,_psk);
 }
 
 void Socket_TLS::TLSKeyParameters::loadPSKAsClient(const std::string &clientIdentity, const std::string &_psk)
 {
-    setPSK();
-    pskClientValues.setValues(clientIdentity,_psk);
+    setUsingPSK();
+    m_pskClientValues.setValues(clientIdentity,_psk);
 }
 
 bool Socket_TLS::TLSKeyParameters::linkPSKWithTLSHandle(SSL *_sslh)
 {
-    return this->pskst.setSSLHandler(_sslh);
+    return this->m_pskStaticHandler.setSSLHandler(_sslh);
 }
 
 #define ERR_ON_ZERO( func, err ) { if ( func == 0 ) \
@@ -113,12 +89,12 @@ bool Socket_TLS::TLSKeyParameters::linkPSKWithTLSHandle(SSL *_sslh)
 bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::list<std::string> * keyErrors )
 {
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL
-    if (securityLevel!=-1)
-        SSL_set_security_level(sslh,securityLevel);
-    if (maxProtocolVersion!=-1)
-        SSL_set_max_proto_version(sslh,maxProtocolVersion);
-    if (minProtocolVersion!=-1)
-        SSL_set_min_proto_version(sslh,minProtocolVersion);
+    if (m_securityLevel!=-1)
+        SSL_set_security_level(sslh,m_securityLevel);
+    if (m_maxProtocolVersion!=-1)
+        SSL_set_max_proto_version(sslh,m_maxProtocolVersion);
+    if (m_minProtocolVersion!=-1)
+        SSL_set_min_proto_version(sslh,m_minProtocolVersion);
 
     SSL_clear_options(sslh,SSL_OP_PRIORITIZE_CHACHA);
     SSL_clear_options(sslh,SSL_OP_ALLOW_NO_DHE_KEX);
@@ -144,71 +120,71 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
 #endif
 
 
-    if (!*bIsServer)
+    if (!*m_isServer)
     {
         SSL_set_options(sslh, SSL_OP_CIPHER_SERVER_PREFERENCE);
     }
 
 
     // Validate:
-    if ( pubKey && !privKey )
+    if ( m_publicKey && !m_privateKey )
     {
         keyErrors->push_back("If there is a X.509 certificate, a private key must be provided.");
         return false;
     }
-    else if ( !pubKey && privKey )
+    else if ( !m_publicKey && m_privateKey )
     {
         keyErrors->push_back("If there is a X.509 private key, a certificate key must be provided.");
         return false;
     }
 
-    if (!sTLSCertificateAuthorityPath.empty())
+    if (!m_TLSCertificateAuthorityPath.empty())
     {
-        ERR_ON_ZERO( SSL_CTX_load_verify_locations(ctx, sTLSCertificateAuthorityPath.c_str(),nullptr), "SSL_load_verify_locations Failed for CA.");
+        ERR_ON_ZERO( SSL_CTX_load_verify_locations(ctx, m_TLSCertificateAuthorityPath.c_str(),nullptr), "SSL_load_verify_locations Failed for CA.");
         STACK_OF(X509_NAME) *list;
-        list = SSL_load_client_CA_file( sTLSCertificateAuthorityPath.c_str() );
+        list = SSL_load_client_CA_file( m_TLSCertificateAuthorityPath.c_str() );
         if( list != nullptr )
         {
             // It takes ownership. (list now belongs to sslContext, no need to free)
             SSL_set_client_CA_list( sslh, list );
-            if (iVerifyMaxDepth >=0 -1)
-                SSL_set_verify_depth( sslh, iVerifyMaxDepth);
+            if (m_maxVerifyDepth >=0 -1)
+                SSL_set_verify_depth( sslh, m_maxVerifyDepth);
         }
         // TODO: warn if the list is zero.
     }
 
-    if (bVerifyDefaultLocations)
+    if (m_useSystemCertificates)
     {
         ERR_ON_ZERO( SSL_CTX_set_default_verify_paths(ctx), "SSL_CTX_set_default_verify_paths Failed.");
     }
 
     // Setup Diffie-Hellman
-    ERR_ON_ZERO(dh && SSL_set_tmp_dh(sslh,dh), "SSL_set_tmp_dh Failed for you temporary DH key.");
+    ERR_ON_ZERO(m_dhParameter && SSL_set_tmp_dh(sslh,m_dhParameter), "SSL_set_tmp_dh Failed for you temporary DH key.");
 
     //SSL_set_dh_auto(sslh,1);
     SSL_set_ecdh_auto(sslh,1);
 
     // TLSv1.3 parameters:
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL
-    ERR_ON_ZERO(!sTLSSharedGroups.empty() && SSL_set1_groups_list(sslh,sTLSSharedGroups.c_str()), "SSL_set1_groups_list Failed for your shared groups.");
-    ERR_ON_ZERO(!sTLSCipherSuites.empty() && SSL_set_ciphersuites(sslh,sTLSCipherSuites.c_str()), "SSL_set_ciphersuites Failed for your cipher suites.");
+    ERR_ON_ZERO(!m_TLSSharedGroups.empty() && SSL_set1_groups_list(sslh,m_TLSSharedGroups.c_str()), "SSL_set1_groups_list Failed for your shared groups.");
+    ERR_ON_ZERO(!m_TLSCipherSuites.empty() && SSL_set_ciphersuites(sslh,m_TLSCipherSuites.c_str()), "SSL_set_ciphersuites Failed for your cipher suites.");
 #endif
     // TLSv1.2 Cipher List
-    ERR_ON_ZERO(!sTLSCipherList.empty() && SSL_set_cipher_list( sslh, sTLSCipherList.c_str()), "SSL_set_cipher_list Failed for your cipher list.");
+    ERR_ON_ZERO(!m_TLSCipherList.empty() && SSL_set_cipher_list( sslh, m_TLSCipherList.c_str()), "SSL_set_cipher_list Failed for your cipher list.");
 
-    bool usingPSK = (pskClientValues.usingPSK || pskServerValues.usingPSK);
+    bool usingPSK = (m_pskClientValues.m_isUsingPSK || m_pskServerValues.m_isUsingPSK);
 
     if (!usingPSK)
     {
         // X509 mode.
         // Setup CRT/KEY for file:
-        ERR_ON_ZERO(pubKey && SSL_use_certificate( sslh, pubKey), "SSL_use_certificate Failed for local Certificate.");
-        ERR_ON_ZERO(privKey && SSL_use_PrivateKey( sslh, privKey), "SSL_use_PrivateKey Failed for private key.");
+        ERR_ON_ZERO(m_publicKey && SSL_use_certificate( sslh, m_publicKey), "SSL_use_certificate Failed for local Certificate.");
+        ERR_ON_ZERO(m_privateKey && SSL_use_PrivateKey( sslh, m_privateKey), "SSL_use_PrivateKey Failed for private key.");
     }
     else
     {
         // PSK Mode.
-        if (!*bIsServer) // Client identity is set up in the callback:
+        if (!*m_isServer) // Client identity is set up in the callback:
             SSL_set_psk_client_callback( sslh, cbPSKClient );
         else // Server receives the identity from client:
             SSL_set_psk_server_callback( sslh, cbPSKServer );
@@ -230,10 +206,10 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
     std::string _psk;
 
     // Using callback strategy if callback is defined, otherwise use the local map...
-    if ( (pskValues->cbpsk? pskValues->cbpsk(pskValues->data,identity,&_psk) : pskValues->getPSKByClientID(identity,&_psk)) )
+    if ( (pskValues->m_pskCallback? pskValues->m_pskCallback(pskValues->m_data,identity,&_psk) : pskValues->getPSKByClientID(identity,&_psk)) )
     {
         // Set the provided ID.
-        pskValues->connectedClientID = identity;
+        pskValues->m_connectedClientID = identity;
 
         // return the proper key for the iPSK negotiation.
         snprintf((char *)psk,max_psk_len,"%s",_psk.c_str());
@@ -246,19 +222,19 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKClient(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len)
 {  
     auto * pskValue = PSKStaticHdlr::getClientValue(ssl);
-    snprintf((char *)psk,max_psk_len,"%s",  pskValue->psk.c_str() );
-    snprintf(identity,max_identity_len,"%s", pskValue->identity.c_str() );
+    snprintf((char *)psk,max_psk_len,"%s",  pskValue->m_psk.c_str() );
+    snprintf(identity,max_identity_len,"%s", pskValue->m_identity.c_str() );
     return strlen((char *)psk);
 }
 
 Socket_TLS::TLSKeyParameters::PSKClientValue *Socket_TLS::TLSKeyParameters::getPSKClientValue()
 {
-    return &pskClientValues;
+    return &m_pskClientValues;
 }
 
 Socket_TLS::TLSKeyParameters::PSKServerWallet *Socket_TLS::TLSKeyParameters::getPSKServerWallet()
 {
-    return &pskServerValues;
+    return &m_pskServerValues;
 }
 
 bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMFile(const char *filePath, pem_password_cb * cbPass, void *u)
@@ -267,11 +243,11 @@ bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMFile(const char *filePat
     FILE *fp = fopen(filePath,"r");
     if (fp)
     {
-        if (privKey)
-            EVP_PKEY_free(privKey);
-        privKey = nullptr;
-        PEM_read_PrivateKey(fp,&privKey, cbPass, u );
-        if (privKey)
+        if (m_privateKey)
+            EVP_PKEY_free(m_privateKey);
+        m_privateKey = nullptr;
+        PEM_read_PrivateKey(fp,&m_privateKey, cbPass, u );
+        if (m_privateKey)
             r=true;
         fclose(fp);
     }
@@ -284,11 +260,11 @@ bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMFile(const char *filePath
     FILE *fp = fopen(filePath,"r");
     if (fp)
     {
-        if (pubKey)
-            X509_free(pubKey);
-        pubKey = nullptr;
-        PEM_read_X509(fp,&pubKey, cbPass, u );
-        if (pubKey)
+        if (m_publicKey)
+            X509_free(m_publicKey);
+        m_publicKey = nullptr;
+        PEM_read_X509(fp,&m_publicKey, cbPass, u );
+        if (m_publicKey)
             r=true;
         fclose(fp);
     }
@@ -301,11 +277,11 @@ bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMMemory(const char *privK
     BIO * buf = BIO_new_mem_buf( privKeyPEMData, strlen(privKeyPEMData));
     if (buf)
     {
-        if (privKey)
-            EVP_PKEY_free(privKey);
-        privKey = nullptr;
-        PEM_read_bio_PrivateKey(buf,&privKey, cbPass, u );
-        if (privKey)
+        if (m_privateKey)
+            EVP_PKEY_free(m_privateKey);
+        m_privateKey = nullptr;
+        PEM_read_bio_PrivateKey(buf,&m_privateKey, cbPass, u );
+        if (m_privateKey)
             r=true;
         BIO_free(buf);
     }
@@ -318,11 +294,11 @@ bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMMemory(const char *pubKey
     BIO * buf = BIO_new_mem_buf( pubKeyPEMData, strlen(pubKeyPEMData));
     if (buf)
     {
-        if (pubKey)
-            X509_free(pubKey);
-        pubKey = nullptr;
-        PEM_read_bio_X509(buf,&pubKey, cbPass, u );
-        if (pubKey)
+        if (m_publicKey)
+            X509_free(m_publicKey);
+        m_publicKey = nullptr;
+        PEM_read_bio_X509(buf,&m_publicKey, cbPass, u );
+        if (m_publicKey)
             r=true;
         BIO_free(buf);
     }
@@ -331,12 +307,12 @@ bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMMemory(const char *pubKey
 
 const std::string &Socket_TLS::TLSKeyParameters::getTLSCipherList() const
 {
-    return sTLSCipherList;
+    return m_TLSCipherList;
 }
 
 void Socket_TLS::TLSKeyParameters::setTLSCipherList(const std::string &newSTLSCipherList)
 {
-    sTLSCipherList = newSTLSCipherList;
+    m_TLSCipherList = newSTLSCipherList;
 }
 
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL
@@ -421,12 +397,12 @@ DH *Socket_TLS::TLSKeyParameters::get_dh4096() { return nullptr; }
 
 int Socket_TLS::TLSKeyParameters::getSecurityLevel() const
 {
-    return securityLevel;
+    return m_securityLevel;
 }
 
 void Socket_TLS::TLSKeyParameters::setSecurityLevel(int newSecurityLevel)
 {
-    securityLevel = newSecurityLevel;
+    m_securityLevel = newSecurityLevel;
 }
 /*
 const std::string &Socket_TLS::TLSKeyParameters::getPSK() const
@@ -437,27 +413,27 @@ const std::string &Socket_TLS::TLSKeyParameters::getPSK() const
 */
 int Socket_TLS::TLSKeyParameters::getVerifyMaxDepth() const
 {
-    return iVerifyMaxDepth;
+    return m_maxVerifyDepth;
 }
 
 void Socket_TLS::TLSKeyParameters::setVerifyMaxDepth(int newIVerifyMaxDepth)
 {
-    iVerifyMaxDepth = newIVerifyMaxDepth;
+    m_maxVerifyDepth = newIVerifyMaxDepth;
 }
 
 const std::string &Socket_TLS::TLSKeyParameters::getCAPath() const
 {
-    return sTLSCertificateAuthorityPath;
+    return m_TLSCertificateAuthorityPath;
 }
 
 bool Socket_TLS::TLSKeyParameters::loadCAFromPEMFile(const std::string &newSTLSCertificateAuthorityPath)
 {
-    if (!sTLSCertificateAuthorityMemory.empty())
+    if (!m_TLSCertificateAuthorityMemory.empty())
         throw std::runtime_error("Can't load a CA from path if there is a established CA memory.");
 
     if ( !access(newSTLSCertificateAuthorityPath.c_str(),R_OK) )
     {
-        sTLSCertificateAuthorityPath = newSTLSCertificateAuthorityPath;
+        m_TLSCertificateAuthorityPath = newSTLSCertificateAuthorityPath;
         return true;
     }
     return false;
@@ -465,10 +441,10 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMFile(const std::string &newSTLSC
 
 bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData, const char * suffix)
 {
-    if (!sTLSCertificateAuthorityPath.empty())
+    if (!m_TLSCertificateAuthorityPath.empty())
         throw std::runtime_error("Can't load a CA into memory if there is a established CA path.");
 
-    sTLSCertificateAuthorityMemory = caCrtPEMData;
+    m_TLSCertificateAuthorityMemory = caCrtPEMData;
     std::string fsDirectoryPath;
 
 #ifdef _WIN32
@@ -479,18 +455,18 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData,
     fsDirectoryPath = "/tmp";
 #endif
 
-    sTLSCertificateAuthorityPath =
+    m_TLSCertificateAuthorityPath =
             fsDirectoryPath + std::string(FS_DIRSLASH) + "ca_" + (suffix? std::string(suffix) : Mantids29::Helpers::Random::createRandomHexString(8)) + ".crt";
 
     Memory::Streams::StreamableFile sFile;
-    if (sFile.open( sTLSCertificateAuthorityPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600 )==-1)
+    if (sFile.open( m_TLSCertificateAuthorityPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600 )==-1)
     {
-        sTLSCertificateAuthorityPath = "";
-        sTLSCertificateAuthorityMemory = "";
-        remove(sTLSCertificateAuthorityPath.c_str());
+        m_TLSCertificateAuthorityPath = "";
+        m_TLSCertificateAuthorityMemory = "";
+        remove(m_TLSCertificateAuthorityPath.c_str());
         return false;
     }
-    sFile.writeString(sTLSCertificateAuthorityMemory);
+    sFile.writeString(m_TLSCertificateAuthorityMemory);
 
     return true;
 }
@@ -498,50 +474,50 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData,
 
 int Socket_TLS::TLSKeyParameters::getMinProtocolVersion() const
 {
-    return minProtocolVersion;
+    return m_minProtocolVersion;
 }
 
 void Socket_TLS::TLSKeyParameters::setMinProtocolVersion(int newMinProtocolVersion)
 {
-    minProtocolVersion = newMinProtocolVersion;
+    m_minProtocolVersion = newMinProtocolVersion;
 }
 
 int Socket_TLS::TLSKeyParameters::getMaxProtocolVersion() const
 {
-    return maxProtocolVersion;
+    return m_maxProtocolVersion;
 }
 
 void Socket_TLS::TLSKeyParameters::setMaxProtocolVersion(int newMaxProtocolVersion)
 {
-    maxProtocolVersion = newMaxProtocolVersion;
+    m_maxProtocolVersion = newMaxProtocolVersion;
 }
 
-bool Socket_TLS::TLSKeyParameters::getVerifyDefaultLocations() const
+bool Socket_TLS::TLSKeyParameters::getUseSystemCertificates() const
 {
-    return bVerifyDefaultLocations;
+    return m_useSystemCertificates;
 }
 
-void Socket_TLS::TLSKeyParameters::setVerifyDefaultLocations(bool newBVerifyDefaultLocations)
+void Socket_TLS::TLSKeyParameters::setUseSystemCertificates(bool newBVerifyDefaultLocations)
 {
-    bVerifyDefaultLocations = newBVerifyDefaultLocations;
+    m_useSystemCertificates = newBVerifyDefaultLocations;
 }
 
 const std::string &Socket_TLS::TLSKeyParameters::getTLSSharedGroups() const
 {
-    return sTLSSharedGroups;
+    return m_TLSSharedGroups;
 }
 
 void Socket_TLS::TLSKeyParameters::setTLSSharedGroups(const std::string &newSTLSSharedGroups)
 {
-    sTLSSharedGroups = newSTLSSharedGroups;
+    m_TLSSharedGroups = newSTLSSharedGroups;
 }
 
 const std::string &Socket_TLS::TLSKeyParameters::getSTLSCipherSuites() const
 {
-    return sTLSCipherSuites;
+    return m_TLSCipherSuites;
 }
 
 void Socket_TLS::TLSKeyParameters::setSTLSCipherSuites(const std::string &newSTLSCipherSuites)
 {
-    sTLSCipherSuites = newSTLSCipherSuites;
+    m_TLSCipherSuites = newSTLSCipherSuites;
 }

@@ -19,8 +19,8 @@ public:
     {
         Block()
         {
-            data = nullptr;
-            datalen = -1;
+            m_data = nullptr;
+            m_dataLength = -1;
         }
         ~Block()
         {
@@ -28,20 +28,20 @@ public:
         }
         void free()
         {
-            if (data) delete [] data;
+            if (m_data) delete [] m_data;
         }
         void copy(void * _data, int dlen)
         {
             if (dlen>0 && dlen<1024*1024) // MAX: 1Mb.
             {
                 this->free();
-                data = new unsigned char[dlen];
-                memcpy(data,_data,dlen);
+                m_data = new unsigned char[dlen];
+                memcpy(m_data,_data,dlen);
             }
         }
-        struct sockaddr addr;
-        unsigned char * data;
-        int datalen;
+        struct sockaddr m_socketAddress;
+        unsigned char * m_data;
+        int m_dataLength;
     };
 
     Socket_DatagramBase();
