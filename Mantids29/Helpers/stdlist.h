@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <string>
 
 namespace Mantids29 { namespace Helpers {
 
@@ -16,6 +17,17 @@ template <typename T>
 bool contains(const std::list<T> &haystack, const T &needle)
 {
     return find(haystack.begin(), haystack.end(), needle) != haystack.end();
+}
+
+std::string listToString(const std::list<std::string> & a)
+{
+    std::string result;
+
+    for (const std::string& str : a) {
+        result += str + "\n";
+    }
+
+    return result;
 }
 
 
