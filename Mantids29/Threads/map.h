@@ -79,7 +79,7 @@ public:
      * @param key The key for the element.
      * @return true if the element was destroyed successfully, false otherwise.
      */
-    bool destroyElement(const T& key);
+    bool destroyElement(const T key);
 
     /**
      * @brief Waits until the map is empty.
@@ -176,7 +176,7 @@ bool Map<T>::releaseElement(const T &key)
 }
 
 template<class T>
-bool Map<T>::destroyElement(const T &key)
+bool Map<T>::destroyElement(const T key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
 
