@@ -4,8 +4,4 @@ using namespace Mantids29::Network::Sockets;
 
 Callbacks_Socket_TLS_Client::Callbacks_Socket_TLS_Client(void * obj) : Callbacks_Socket_TLS(obj)
 {
-    onTLSConnectionStart = nullptr;
-    onTLSDisconnected = nullptr;
-    onTLSConnectionSuccess = nullptr;
-    onTLSConnectionFailed = nullptr;
 }

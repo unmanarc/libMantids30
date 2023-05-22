@@ -14,19 +14,19 @@ public:
     /**
      * @brief onTLSConnectionStart Callback to Notify just before the TLS/TCP-IP Connection
      */
-    void (*onTLSConnectionStart)(void * obj, Mantids29::Network::Sockets::Socket_TLS * , const std::string & , const uint16_t &);
+    void (*onTLSConnectionStart)(void * obj, Mantids29::Network::Sockets::Socket_TLS * , const std::string & , const uint16_t &) = nullptr;
     /**
      * @brief onTLSDisconnected Callback to Notify just after the TLS/TCP-IP Connection (with the error code as integer)
      */
-    void (*onTLSDisconnected)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & , const uint16_t &, int);
+    void (*onTLSDisconnected)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & , const uint16_t &, int) = nullptr;
     /**
      * @brief onTLSConnectionSuccess Callback to Notify when the TLS/TCP-IP connection is established and we are about to authenticate
      */
-    void (*onTLSConnectionSuccess)(void * obj, Mantids29::Network::Sockets::Socket_TLS * );
+    void (*onTLSConnectionSuccess)(void * obj, Mantids29::Network::Sockets::Socket_TLS * ) = nullptr;
     /**
      * @brief onTLSConnectionFailed Callback to Notify when there is an error during the TLS/TCP-IP Connection
      */
-    void (*onTLSConnectionFailed)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string &, const uint16_t & );
+    bool (*onTLSConnectionFailed)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string &, const uint16_t & ) = nullptr;
 
 };
 }}}

@@ -9,9 +9,9 @@ class Callbacks_Socket_TLS
 public:
     Callbacks_Socket_TLS(void * obj);
 
-    void (*onTLSKeyInvalidCA)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & );
-    void (*onTLSKeyInvalidCertificate)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & );
-    void (*onTLSKeyInvalidPrivateKey)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & );
+    void (*onTLSKeyInvalidCA)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
+    void (*onTLSKeyInvalidCertificate)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
+    void (*onTLSKeyInvalidPrivateKey)(void * obj, Mantids29::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
 
     void * obj;
 };
