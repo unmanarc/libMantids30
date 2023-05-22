@@ -309,6 +309,9 @@ public:
     ParametersDefinitions m_parameters;
 
 
+    bool useCNAsServerKey() const;
+    void setUseCNAsServerKey(bool newUseCNAsServerKey);
+
 private:
     static void executeRPCTask(void * taskData);
     static void executeRPCLogin(void * taskData);
@@ -346,6 +349,7 @@ private:
 
     Authentication::Domains m_defaultAuthDomain;
     Mantids29::API::Monolith::MethodsHandler m_defaultMethodsHandlers;
+    bool m_useCNAsServerKey = false;
 };
 
 }}}}
