@@ -81,11 +81,21 @@ bool Socket_TLS_ListennerAndConnector_Base::incommingConnection(void *obj,
 void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
                           const shared_ptr<Socket_TLS_ListennerAndConnector_Base::ClientParameters> &parameters)
 {
-    for (;;)
+    bool cont = true;
+
+    int retries=0;
+
+    for (;cont;)
     {
         Socket_TLS tlsSocket;
 
-        bool cont = true;
+        if (retries == parameters->maxRetries)
+        {
+            CALLBACK(parameters->onTLSConnectionRetriesReached)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port);
+            break;
+        }
+
+        CALLBACK(parameters->onTLSConnectionStart)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port);
 
         // CA Cert Path Defined.
         if (!parameters->caCertPath.empty())
@@ -129,11 +139,17 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
             // Use connection loop...
             if (!tlsSocket.connectTo(parameters->host.c_str(), parameters->port))
             {
+                retries++;
                 // Error connecting...
-                CALLBACK(parameters->onTLSConnectionFailed)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port);
+                if (!(CALLBACK_B(parameters->onTLSConnectionFailed, true)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port)))
+                {
+                    cont = false;
+                }
             }
             else
             {
+                retries=0;
+
                 // Connected OK...
                 CALLBACK(parameters->onTLSConnectionSuccess)(parameters->obj, &tlsSocket);
 

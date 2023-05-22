@@ -52,6 +52,11 @@ public:
         }
 
         /**
+        * @brief Callback to notify when the maximum number of TLS/TCP-IP connection retries has been reached.
+        */
+        void (*onTLSConnectionRetriesReached)(void * obj, Mantids29::Network::Sockets::Socket_TLS * , const std::string & , const uint16_t &);
+
+        /**
          * @brief caCertPath
          */
         std::string caCertPath;
@@ -78,6 +83,8 @@ public:
 
         bool useSystemX509Certificates = false;
         std::string userCACertificateText;
+
+        uint32_t maxRetries = 5;
     };
 
     /**
