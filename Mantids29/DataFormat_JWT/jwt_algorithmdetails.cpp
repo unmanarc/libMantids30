@@ -46,19 +46,18 @@ JWT::AlgorithmDetails::AlgorithmDetails(Algorithm algorithm)
 
 JWT::AlgorithmDetails::AlgorithmDetails(const char *algorithm)
 {
-    if (strncmp(algorithm,"HS256",16))
-        AlgorithmDetails(JWT::Algorithm::HS256);
-    else if (strncmp(algorithm,"HS384",16))
-        AlgorithmDetails(JWT::Algorithm::HS384);
-    else if (strncmp(algorithm,"HS512",16))
-        AlgorithmDetails(JWT::Algorithm::HS512);
-
-    else if (strncmp(algorithm,"RS256",16))
-        AlgorithmDetails(JWT::Algorithm::RS256);
-    else if (strncmp(algorithm,"RS384",16))
-        AlgorithmDetails(JWT::Algorithm::RS384);
-    else if (strncmp(algorithm,"RS512",16))
-        AlgorithmDetails(JWT::Algorithm::RS512);
+    if (!strncmp(algorithm,"HS256",16))
+        *this = AlgorithmDetails(JWT::Algorithm::HS256);
+    else if (!strncmp(algorithm,"HS384",16))
+        *this = AlgorithmDetails(JWT::Algorithm::HS384);
+    else if (!strncmp(algorithm,"HS512",16))
+        *this = AlgorithmDetails(JWT::Algorithm::HS512);
+    else if (!strncmp(algorithm,"RS256",16))
+        *this = AlgorithmDetails(JWT::Algorithm::RS256);
+    else if (!strncmp(algorithm,"RS384",16))
+        *this = AlgorithmDetails(JWT::Algorithm::RS384);
+    else if (!strncmp(algorithm,"RS512",16))
+        *this = AlgorithmDetails(JWT::Algorithm::RS512);
     else
-        AlgorithmDetails(JWT::Algorithm::HS256);
+        *this = AlgorithmDetails(JWT::Algorithm::HS256);
 }
