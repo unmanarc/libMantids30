@@ -1018,6 +1018,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_CHPASSWD(const Authentication::
 
         if (IS_PASSWORD_AUTHENTICATED(authReason))
         {
+            // TODO: impersonation.
             // TODO: alternative/configurable password storage...
             // TODO: check password policy.
             Mantids29::Authentication::Secret newSecretData = Mantids29::Authentication::createNewSecret(newAuth.m_password,Mantids29::Authentication::FN_SSHA256);
@@ -1141,6 +1142,7 @@ Status::eRetCode ClientHandler::procJAPI_Session_PASSWDLIST()
 
             ix++;
         }
+        m_authDomains->releaseDomain(m_authSession->getAuthenticatedDomain());
     }
     else
         eHTTPResponseRetCode = HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
