@@ -115,13 +115,15 @@ public:
         void (*CB_Login_LoggedIn)(void * obj, TaskParameters * parameters,const json & nextFactorResponse, const std::string & user, const std::string & domain ) = nullptr;
         void (*CB_Login_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain ) = nullptr;
         void (*CB_Login_AuthenticationFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const Mantids29::Authentication::Reason & authReason ) = nullptr;
-        void (*CB_PasswordChange_RequestedOK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
-        void (*CB_PasswordChange_RequestFailed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
-        void (*CB_PasswordChange_BadCredentials)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx , const Mantids29::Authentication::Reason & authReason) = nullptr;
-        void (*CB_PasswordChange_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
-        void (*CB_PasswordValidation_OK)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx ) = nullptr;
-        void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters, const std::string & user, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason ) = nullptr;
+        void (*CB_PasswordChange_RequestedOK)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordChange_RequestFailed)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordChange_BadCredentials)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx , const Mantids29::Authentication::Reason & authReason) = nullptr;
+        void (*CB_PasswordChange_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordChange_ImpersonationFailed)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+
+        void (*CB_PasswordValidation_OK)(void * obj, TaskParameters * parameters,  const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters,  const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason ) = nullptr;
         void (*CB_PasswordValidation_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
         void (*CB_Protocol_UnexpectedAnswerReceived)(FastRPC2::Connection *connection, const std::string &answer) = nullptr;
@@ -247,9 +249,7 @@ public:
                          const Authentication::Data & authData,
                          json *error = nullptr );
 
-    json runRemoteListPasswords( const std::string &connectionKey,
-                         const Authentication::Data & authData,
-                         json *error = nullptr );
+    json runRemoteListPasswords(const std::string &connectionKey, json *error = nullptr );
 
     bool runRemoteLogout(  const std::string &connectionKey, json *error = nullptr  );
 
@@ -298,7 +298,6 @@ public:
      */
     bool waitPingInterval();
 
-
     /**
      * @brief callbacks This is where you define the callbacks before using this class...
      */
@@ -307,7 +306,6 @@ public:
      * @brief parameters All configuration Parameters...
      */
     ParametersDefinitions m_parameters;
-
 
     bool useCNAsServerKey() const;
     void setUseCNAsServerKey(bool newUseCNAsServerKey);
@@ -327,6 +325,9 @@ private:
                      );
 
     Mantids29::Threads::Safe::Map<std::string> m_connectionsByKeyId;
+
+
+    static json passwordPublicDataToJSON(const uint32_t &idx, const Authentication::Secret_PublicData &publicData);
 
     // TODO:
     std::map<std::string,std::string> m_connectionKeyToLogin;
