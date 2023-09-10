@@ -120,7 +120,7 @@ public:
         void (*CB_PasswordChange_RequestFailed)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
         void (*CB_PasswordChange_BadCredentials)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx , const Mantids29::Authentication::Reason & authReason) = nullptr;
         void (*CB_PasswordChange_InvalidDomain)(void * obj, TaskParameters * parameters, const std::string & domain, const uint32_t & credIdx ) = nullptr;
-        void (*CB_PasswordChange_ImpersonationFailed)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
+        void (*CB_ImpersonationFailed)(void * obj, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
 
         void (*CB_PasswordValidation_OK)(void * obj, TaskParameters * parameters,  const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx ) = nullptr;
         void (*CB_PasswordValidation_Failed)(void * obj, TaskParameters * parameters,  const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & credIdx, const Mantids29::Authentication::Reason & authReason ) = nullptr;
@@ -239,17 +239,33 @@ public:
                          const std::string & domain = "",
                          json *error = nullptr );
 
+
+
     json runRemoteChangePassword( const std::string &connectionKey,
-                         const Authentication::Data & oldAuthData,
-                         const Authentication::Data & newAuthData,
+                                 const Authentication::Data & oldAuthData,
+                                 const Authentication::Data & newAuthData,
+                                 json *error = nullptr );
+
+
+    json runRemoteTestPassword( const std::string &connectionKey,
+                               const Authentication::Data & authData,
+                               json *error = nullptr );
+
+
+    json runRemoteChangePassword( const std::string &connectionKey,
+                                 const std::string & user,
+                                 const Authentication::Data & oldAuthData,
+                                const Authentication::Data & newAuthData,
                          json *error = nullptr );
 
 
     json runRemoteTestPassword( const std::string &connectionKey,
-                         const Authentication::Data & authData,
-                         json *error = nullptr );
+                               const std::string & user,
+                             const Authentication::Data & authData,
+                             json *error = nullptr );
 
     json runRemoteListPasswords(const std::string &connectionKey, json *error = nullptr );
+    json runRemoteListPasswords(const std::string &connectionKey, const std::string & user, json *error = nullptr );
 
     bool runRemoteLogout(  const std::string &connectionKey, json *error = nullptr  );
 

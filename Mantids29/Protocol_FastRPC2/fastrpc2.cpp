@@ -1,4 +1,5 @@
 #include "fastrpc2.h"
+#include "Mantids29/Auth/ds_auth_reason.h"
 
 #include <Mantids29/API_Monolith/methodshandler.h>
 #include <Mantids29/Auth/multi.h>
@@ -261,22 +262,59 @@ json FastRPC2::runRemoteLogin(const std::string &connectionKey, const std::strin
 
 json FastRPC2::runRemoteChangePassword(const std::string &connectionKey, const Authentication::Data &oldAuthData, const Authentication::Data &newAuthData, json *error)
 {
+    return runRemoteChangePassword(connectionKey, "", oldAuthData, newAuthData, error);
+}
+
+json FastRPC2::runRemoteTestPassword(const std::string &connectionKey, const Authentication::Data &authData, json *error)
+{
+    return runRemoteTestPassword(connectionKey,"",authData,error);
+}
+
+json FastRPC2::runRemoteChangePassword(const std::string &connectionKey, const string &user, const Authentication::Data &oldAuthData, const Authentication::Data &newAuthData, json *error)
+{
     json jAuthData;
+
+    if (!user.empty())
+    {
+        jAuthData["impersonate"] = true;
+        jAuthData["user"] = user;
+    }
+
     jAuthData["newAuth"] = newAuthData.toJson();
     jAuthData["oldAuth"] = oldAuthData.toJson();
     return runRemoteRPCMethod(connectionKey, "SESSION.CHPASSWD", jAuthData, error, true, true);
 }
 
-json FastRPC2::runRemoteTestPassword(const std::string &connectionKey, const Authentication::Data &authData, json *error)
+json FastRPC2::runRemoteTestPassword(const std::string &connectionKey, const string &user, const Authentication::Data &authData, json *error)
 {
     json jAuthData;
+
+    if (!user.empty())
+    {
+        jAuthData["impersonate"] = true;
+        jAuthData["user"] = user;
+    }
+
     jAuthData["auth"] = authData.toJson();
     return runRemoteRPCMethod(connectionKey, "SESSION.TSTPASSWD", jAuthData, error, true, true);
 }
 
 json FastRPC2::runRemoteListPasswords(const std::string &connectionKey, json *error)
 {
-    return runRemoteRPCMethod(connectionKey, "SESSION.LISTPASSWD", {}, error, true, true);
+    return runRemoteListPasswords(connectionKey, "", error);
+}
+
+json FastRPC2::runRemoteListPasswords(const std::string &connectionKey, const string &user, json *error)
+{
+    json jAuthData;
+
+    if (!user.empty())
+    {
+        jAuthData["impersonate"] = true;
+        jAuthData["user"] = user;
+    }
+
+    return runRemoteRPCMethod(connectionKey, "SESSION.LISTPASSWD", jAuthData, error, true, true);
 }
 
 bool FastRPC2::runRemoteLogout(const string &connectionKey, json *error)
@@ -681,7 +719,12 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
         // TODO: what if expired?, here we admit expired password to pass...
         response["reason"] = "BAD_SESSION";
     }
-    else if (!newAuth.setJson(taskParams->payload["newAuth"]) || !newAuth.setJson(taskParams->payload["oldAuth"]))
+    else if (!newAuth.setJson(taskParams->payload["newAuth"]))
+    {
+        // Error parsing credentials...
+        response["reason"] = "ERROR_PARSING_AUTH";
+    }
+    else if (!oldAuth.setJson(taskParams->payload["oldAuth"]))
     {
         // Error parsing credentials...
         response["reason"] = "ERROR_PARSING_AUTH";
@@ -701,7 +744,7 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
         auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(authDomain);
         if (domainAuthenticator)
         {
-            bool ok = true;
+            bool ok = true, impersonated = false;
 
             if (JSON_ASBOOL(taskParams->payload, "impersonate", false) == true)
             {
@@ -710,13 +753,14 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
                 if (domainAuthenticator->isAccountSuperUser(userCaller))
                 {
                     ok = true;
+                    impersonated = true;
                 }
                 else
                 {
                     ok = false;
 
                     response["reason"] = "ERROR_IMPERSONATION_FAILED";
-                    CALLBACK(callbacks->CB_PasswordChange_ImpersonationFailed)
+                    CALLBACK(callbacks->CB_ImpersonationFailed)
                     (callbacks->obj, taskParams, userCaller, userCalled, authDomain, credIdx);
                 }
             }
@@ -728,7 +772,12 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
                 clientDetails.tlsCommonName = taskParams->cn;
                 clientDetails.userAgent = "FastRPC2 AGENT";
 
-                auto authReason = domainAuthenticator->authenticate(taskParams->currentMethodsHandlers->getApplicationName(), clientDetails, userCalled, oldAuth.m_password, credIdx);
+                Authentication::Reason authReason;
+
+                if (impersonated)
+                    authReason = Authentication::REASON_AUTHENTICATED;
+                else
+                    authReason = domainAuthenticator->authenticate(taskParams->currentMethodsHandlers->getApplicationName(), clientDetails, userCalled, oldAuth.m_password, credIdx);
 
                 if (IS_PASSWORD_AUTHENTICATED(authReason))
                 {
@@ -736,20 +785,19 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
                     // TODO: check password policy.
                     Authentication::Secret newSecretData = Authentication::createNewSecret(newAuth.m_password, Authentication::FN_SSHA256);
 
-                    response["ok"] = domainAuthenticator->accountChangeAuthenticatedSecret(taskParams->currentMethodsHandlers->getApplicationName(),
-                                                                                           userCalled,
-                                                                                           credIdx,
-                                                                                           oldAuth.m_password,
-                                                                                           newSecretData,
-                                                                                           clientDetails);
+                    if (impersonated)
+                        response["ok"] = domainAuthenticator->accountChangeSecret(userCalled, newSecretData, credIdx);
+                    else
+                        response["ok"] = domainAuthenticator->accountChangeAuthenticatedSecret(taskParams->currentMethodsHandlers->getApplicationName(),
+                                                                                                userCalled,
+                                                                                                credIdx,
+                                                                                                oldAuth.m_password,
+                                                                                                newSecretData,
+                                                                                                clientDetails);
 
                     if (JSON_ASBOOL(response, "ok", false) == true)
                     {
                         response["reason"] = "OK";
-
-                        // I should resend all the password information here...
-                        //domainAuthenticator->pa
-
                         CALLBACK(callbacks->CB_PasswordChange_RequestedOK)
                         (callbacks->obj, taskParams, userCaller, userCalled, authDomain, credIdx);
                     }
@@ -845,7 +893,7 @@ void FastRPC2::executeRPCTestPassword(void *taskData)
                     ok = false;
 
                     response["reason"] = "ERROR_IMPERSONATION_FAILED";
-                    CALLBACK(callbacks->CB_PasswordChange_ImpersonationFailed)
+                    CALLBACK(callbacks->CB_ImpersonationFailed)
                     (callbacks->obj, taskParams, userCaller, userCalled, authDomain, credIdx);
                 }
             }
@@ -918,7 +966,7 @@ json FastRPC2::passwordPublicDataToJSON(const uint32_t &idx, const Authenticatio
 void FastRPC2::executeRPCListPassword(void *taskData)
 {
     FastRPC2::TaskParameters *taskParams = (FastRPC2::TaskParameters *) (taskData);
-    //TaskCallbacks * callbacks = ((TaskCallbacks *)taskParams->callbacks);
+    CallbackDefinitions *callbacks = ((CallbackDefinitions *) taskParams->callbacks);
 
     json response;
     response["ok"] = false;
@@ -934,18 +982,47 @@ void FastRPC2::executeRPCListPassword(void *taskData)
     }
     else
     {
-        auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(session->getAuthenticatedDomain());
+
+        auto userCaller = session->getAuthUser();
+        auto userCalled = session->getAuthUser();
+        auto authDomain = session->getAuthenticatedDomain();
+
+        auto domainAuthenticator = taskParams->currentAuthDomains->openDomain(authDomain);
         if (domainAuthenticator)
         {
-            std::map<uint32_t, Authentication::Secret_PublicData> publics = domainAuthenticator->getAccountAllSecretsPublicData(session->getAuthUser());
-            response["ok"] = true;
-
-            uint32_t ix = 0;
-            for (const auto &i : publics)
+            bool ok = true;
+            if (JSON_ASBOOL(taskParams->payload, "impersonate", false) == true)
             {
-                response["list"][ix] = passwordPublicDataToJSON(i.first, i.second);
-                ix++;
+                userCalled = JSON_ASSTRING(taskParams->payload, "user", userCaller);
+
+                if (domainAuthenticator->isAccountSuperUser(userCaller))
+                {
+                    ok = true;
+                }
+                else
+                {
+                    ok = false;
+
+                    response["reason"] = "ERROR_IMPERSONATION_FAILED";
+                    CALLBACK(callbacks->CB_ImpersonationFailed)
+                    (callbacks->obj, taskParams, userCaller, userCalled, authDomain, 0);
+                }
             }
+
+            if (ok)
+            {
+                std::map<uint32_t, Authentication::Secret_PublicData> publics = domainAuthenticator->getAccountAllSecretsPublicData(userCalled);
+                response["ok"] = true;
+
+                uint32_t ix = 0;
+                for (const auto &i : publics)
+                {
+                    response["list"][ix] = passwordPublicDataToJSON(i.first, i.second);
+                    ix++;
+                }
+            }
+
+            taskParams->currentAuthDomains->releaseDomain(authDomain);
         }
         else
             response["reason"] = "BAD_DOMAIN";
