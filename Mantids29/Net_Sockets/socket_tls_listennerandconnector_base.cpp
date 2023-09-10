@@ -7,7 +7,10 @@ using namespace Mantids29::Network::Sockets;
 using namespace Mantids29;
 using namespace std;
 
-Socket_TLS_ListennerAndConnector_Base::Socket_TLS_ListennerAndConnector_Base() {}
+Socket_TLS_ListennerAndConnector_Base::Socket_TLS_ListennerAndConnector_Base()
+{
+    m_stopReconnecting = false;
+}
 
 bool Socket_TLS_ListennerAndConnector_Base::startListening(const ServerParameters &parameters, void *obj)
 {
@@ -77,6 +80,7 @@ bool Socket_TLS_ListennerAndConnector_Base::incommingConnection(void *obj,
     delete pararms;
     return true;
 }
+
 
 void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
                           const shared_ptr<Socket_TLS_ListennerAndConnector_Base::ClientParameters> &parameters)
@@ -158,12 +162,18 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
                 auto i = parent->connectionHandler(&tlsSocket, true, remotePair);
 
                 CALLBACK(parameters->onTLSDisconnected)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port, i);
+
+                if (parent->m_stopReconnecting)
+                {
+                    cont = false;
+                    parent->m_stopReconnecting = true;
+                }
             }
         }
     }
 }
 
-void Socket_TLS_ListennerAndConnector_Base::startConnectionLoop(const ClientParameters &parameters)
+void Socket_TLS_ListennerAndConnector_Base::startConnectionLoopThread(const ClientParameters &parameters)
 {
     thread t = thread(connectionLoopThread, this, make_shared<ClientParameters>(parameters));
     t.detach();

@@ -2,6 +2,7 @@
 
 #include "callbacks_socket_tls_client.h"
 #include "callbacks_socket_tls_server.h"
+#include <atomic>
 
 namespace Mantids29 { namespace Network { namespace Sockets {
 
@@ -99,15 +100,19 @@ public:
      *                        The server will be called "SERVER"
      * @param parameters client connection parameters (including callbacks)
      */
-    void startConnectionLoop(const ClientParameters &parameters);
+    void startConnectionLoopThread(const ClientParameters &parameters);
+
 
 
     // Callbacks from thread:
     virtual int connectionHandler(Mantids29::Network::Sockets::Socket_TLS * stream, bool remotePeerIsServer, const char * remotePair) = 0;
 
 
+    std::atomic_bool m_stopReconnecting;
+
 private:
     static bool incommingConnection(void *obj, Mantids29::Network::Sockets::Socket_Stream_Base * bsocket, const char *, bool secure);
+
 
 };
 
