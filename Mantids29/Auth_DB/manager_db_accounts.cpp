@@ -658,11 +658,12 @@ Secret Manager_DB::retrieveSecret(const std::string &accountName, uint32_t passI
 bool Manager_DB::isThereAnotherSuperUser(const std::string &accountName)
 {
     // Check if there is any superuser acount beside this "to be deleted" account...
-    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled` FROM vauth_v4_accounts WHERE `userName`!=:userName and `isSuperuser`=:superUser and enabled=:enabled LIMIT 1;",
+    std::shared_ptr<SQLConnector::QueryInstance> i = m_sqlConnector->qSelect("SELECT `isEnabled` FROM vauth_v4_accounts WHERE `userName`!=:userName and `isSuperuser`=:superUser and `isEnabled`=:enabled and `isConfirmed`=:confirmed LIMIT 1;",
                                           {
                                               {":userName",new Memory::Abstract::STRING(accountName)},
                                               {":superUser",new Memory::Abstract::BOOL(true)},
-                                              {":enabled",new Memory::Abstract::BOOL(true)}
+                                              {":enabled",new Memory::Abstract::BOOL(true)},
+                                              {":confirmed",new Memory::Abstract::BOOL(true)}
                                           },
                                           { });
 
