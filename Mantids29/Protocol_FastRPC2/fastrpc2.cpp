@@ -280,8 +280,8 @@ json FastRPC2::runRemoteChangePassword(const std::string &connectionKey, const s
         jAuthData["user"] = user;
     }
 
-    jAuthData["newAuth"] = newAuthData.toJson();
     jAuthData["oldAuth"] = oldAuthData.toJson();
+    jAuthData["newAuth"] = newAuthData.toJson();
     return runRemoteRPCMethod(connectionKey, "SESSION.CHPASSWD", jAuthData, error, true, true);
 }
 
@@ -825,7 +825,7 @@ void FastRPC2::executeRPCChangePassword(void *taskData)
                     }
                 }
 
-                Authentication::Secret_PublicData publicData = domainAuthenticator->getAccountSecretPublicData(session->getAuthUser(), credIdx);
+                Authentication::Secret_PublicData publicData = domainAuthenticator->getAccountSecretPublicData(userCalled, credIdx);
                 response["credPublicData"] = passwordPublicDataToJSON(credIdx, publicData);
             }
 
@@ -931,7 +931,7 @@ void FastRPC2::executeRPCTestPassword(void *taskData)
                     (callbacks->obj, taskParams,userCaller, userCalled, authDomain, credIdx, authReason);
                 }
 
-                Authentication::Secret_PublicData publicData = domainAuthenticator->getAccountSecretPublicData(session->getAuthUser(), credIdx);
+                Authentication::Secret_PublicData publicData = domainAuthenticator->getAccountSecretPublicData(userCalled, credIdx);
                 response["credPublicData"] = passwordPublicDataToJSON(credIdx, publicData);
             }
             taskParams->currentAuthDomains->releaseDomain(authDomain);
