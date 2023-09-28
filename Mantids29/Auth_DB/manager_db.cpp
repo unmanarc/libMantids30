@@ -147,13 +147,14 @@ bool Manager_DB::initScheme()
                                       "       FOREIGN KEY(`f_appName`,`f_attribName`) REFERENCES vauth_v4_attribs(`f_appName`,`attribName`) ON DELETE CASCADE,\n"
                                       "       FOREIGN KEY(`f_groupName`)              REFERENCES vauth_v4_groups(`groupName`) ON DELETE CASCADE\n"
                                       ");\n") &&
-                m_sqlConnector->query("CREATE TABLE `vauth_v4_attribsaccounts` (\n"
-                                      "       `f_appName`             VARCHAR(256) NOT NULL,\n"
-                                      "       `f_attribName`          VARCHAR(256) NOT NULL,\n"
-                                      "       `f_userName`            VARCHAR(256) NOT NULL,\n"
-                                      "       FOREIGN KEY(`f_appName`,`f_attribName`) REFERENCES vauth_v4_attribs(`f_appName`,`attribName`) ON DELETE CASCADE,\n"
-                                      "       FOREIGN KEY(`f_userName`)               REFERENCES vauth_v4_accounts(`userName`) ON DELETE CASCADE\n"
-                                      ");\n") &&
+                 m_sqlConnector->query("CREATE TABLE `vauth_v4_attribsaccounts` ("
+                                       "       `f_appName`             VARCHAR(256) NOT NULL,"
+                                       "       `f_attribName`          VARCHAR(256) NOT NULL,"
+                                       "       `f_userName`            VARCHAR(256) NOT NULL,"
+                                       "       FOREIGN KEY(`f_appName`,`f_attribName`) REFERENCES vauth_v4_attribs(`f_appName`,`attribName`) ON DELETE CASCADE,"
+                                       "       FOREIGN KEY(`f_userName`, `f_appName`) REFERENCES vauth_v4_applicationusers(`f_userName`, `f_appName`) ON DELETE CASCADE"
+                                       ");")
+                 &&
                 // TODO: check if this needs different implementation across different databases, by now this works on SQLite3
                 m_sqlConnector->query("CREATE UNIQUE INDEX `idx_groups_accounts` ON `vauth_v4_groupsaccounts` (`f_groupName` ,`f_userName`);\n") &&
                 m_sqlConnector->query("CREATE UNIQUE INDEX `idx_attribs_groups` ON `vauth_v4_attribsgroups` (`f_appName`,`f_attribName`,`f_groupName` );\n") &&
