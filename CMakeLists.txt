@@ -17,6 +17,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 ##############################################################################################################################
 
+
+##############################################################################################################################
+# CMAKE Options:
+option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
+option(BUILD_SHARED_LIBS "Enable building the library as a shared library instead of a static one." ON)
+
+##############################################################################################################################
+
 ##############################################################################################################################
 # Project Settings:
 project(libMantids29)

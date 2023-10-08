@@ -49,7 +49,7 @@ link_libraries(${JSONCPP_LIBRARIES})
 target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
 target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 
-option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
+#option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 find_package(PkgConfig REQUIRED)
 if (SSLRHEL7)
     pkg_check_modules(OPENSSLCRYPTO REQUIRED libcrypto11)

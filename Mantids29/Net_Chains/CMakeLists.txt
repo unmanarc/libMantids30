@@ -57,7 +57,7 @@ endforeach()
 
 message("Chain found...: ${Mantids29_Net_Sockets_SOURCE_DIR}")
 
-option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
+#option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 find_package(PkgConfig REQUIRED)
 if (SSLRHEL7)
     pkg_check_modules(OPENSSL REQUIRED libssl11)
