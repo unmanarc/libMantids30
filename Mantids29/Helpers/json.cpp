@@ -58,7 +58,32 @@ std::list<std::string> Mantids29::Helpers::jsonToStringList(const json &value, c
     return r;
 }
 
-json Mantids29::Helpers::setToJson(const std::set<std::string> &t)
+std::set<std::string> Mantids29::Helpers::jsonToStringSet(const json &value, const std::string &sub)
+{
+    std::set<std::string> r;
+
+    if (sub.empty() && value.isArray())
+    {
+        for (size_t x = 0; x < value.size(); x++)
+        {
+            if (value[(int)x].isString())
+                r.insert(value[(int)x].asString());
+        }
+    }
+    else if (!sub.empty() && JSON_ISARRAY(value,sub))
+    {
+        for (size_t x = 0; x < value[sub].size(); x++)
+        {
+            if (value[sub][(int)x].isString())
+                r.insert(value[sub][(int)x].asString());
+        }
+    }
+
+    return r;
+}
+
+
+json Mantids29::Helpers::setToJSON(const std::set<std::string> &t)
 {
     json x;
     int v=0;
@@ -67,11 +92,22 @@ json Mantids29::Helpers::setToJson(const std::set<std::string> &t)
     return x;
 }
 
-json Mantids29::Helpers::setToJson(const std::set<uint32_t> &t)
+json Mantids29::Helpers::setToJSON(const std::set<uint32_t> &t)
 {
     json x;
     int v=0;
     for (const uint32_t & i : t)
+        x[v++] = i;
+    return x;
+}
+
+
+
+json Mantids29::Helpers::listToJSON(const std::list<std::string> &t)
+{
+    json x;
+    int v = 0;
+    for (const std::string &i : t)
         x[v++] = i;
     return x;
 }

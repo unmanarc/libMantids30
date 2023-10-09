@@ -56,13 +56,32 @@ namespace Mantids29 { namespace Helpers {
     std::list<std::string> jsonToStringList(const json &value, const std::string &sub = "");
 
     /**
+     * Converts a JSON array to a set of strings.
+     *
+     * @param value The JSON array to convert.
+     * @param sub The name of the sub-element to extract from each array element (optional).
+     *
+     * @return A list of strings containing the elements of the JSON array.
+     */
+    std::set<std::string> jsonToStringSet(const json &value, const std::string &sub = "");
+
+    /**
      * Converts a set of strings to a JSON array.
      *
      * @param t The set of strings to convert.
      *
      * @return A JSON array containing the elements of the input set.
      */
-    json setToJson(const std::set<std::string> &t);
+    json setToJSON(const std::set<std::string> &t);
+
+    /**
+     * Converts a list of strings to a JSON array.
+     *
+     * @param t The list of strings to convert.
+     *
+     * @return A JSON array containing the elements of the input list.
+     */
+    json listToJSON(const std::list<std::string> &t);
 
     /**
      * Converts a set of unsigned 32-bit integers to a JSON array.
@@ -71,7 +90,10 @@ namespace Mantids29 { namespace Helpers {
      *
      * @return A JSON array containing the elements of the input set.
      */
-    json setToJson(const std::set<uint32_t> &t);
+    json setToJSON(const std::set<uint32_t> &t);
+
+    json setToJSON(const std::set<std::string> &t);
+
 
     /**
      * A replacement for the deprecated Json::Reader class.
@@ -113,4 +135,5 @@ namespace Mantids29 { namespace Helpers {
     };
 
 }}; // End namespace Mantids29::Helpers
+
 
