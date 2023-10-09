@@ -5,8 +5,8 @@
 #include <openssl/sha.h>
 #include <cstring>
 #include <ctime>
-#include <cmath>
-#include <vector>
+//#include <cmath>
+//#include <vector>
 
 using namespace Mantids29::Helpers::TOTP;
 
