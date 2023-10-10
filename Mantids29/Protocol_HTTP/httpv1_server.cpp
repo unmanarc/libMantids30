@@ -516,6 +516,10 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
             {
                 m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
             }
+            else if ( icontains(contentType,"application/json") )
+            {
+                m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_JSON);
+            }
             else
                 m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////

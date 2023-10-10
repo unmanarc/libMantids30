@@ -5,14 +5,16 @@
 #include <Mantids29/Protocol_MIME/mime_sub_header.h>
 #include <memory>
 #include <netinet/in.h>
+#include <string>
 
+#include "Mantids29/Memory/streamablejson.h"
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
 #include "hdr_sec_hsts.h"
 #include "hdr_sec_xssprotection.h"
 #include "hdr_sec_xframeopts.h"
 #include "req_requestline.h"
-#include "req_cookies.h"
+//#include "req_cookies.h"
 #include "rsp_cookies.h"
 #include "rsp_status.h"
 
@@ -100,6 +102,27 @@ public:
         }
 
         /**
+         * @brief getJSONContent Get the JSON Content if any...
+         * @return object to the unparsed json streamer if JSON was requested (or set as request)
+         */
+        std::shared_ptr<Mantids29::Memory::Streams::StreamableJSON> getJSONStreamerContent()
+        {
+            if (content.getContainerType() == Common::Content::CONTENT_TYPE_JSON)
+            {
+                return content.getJSONVars();
+            }
+            return nullptr;
+        }
+
+        std::multimap<std::string, std::string> getAllCookies()
+        {
+            MIME::MIME_HeaderOption *cookiesSubVars = headers.getOptionByName("Cookie");
+            if (!cookiesSubVars)
+                return {};
+            return cookiesSubVars->getAllSubVars();
+        }
+
+        /**
          * @brief getCookie Get Cookie
          * @param sCookieName
          * @return
@@ -107,7 +130,8 @@ public:
         std::string getCookie(const std::string &sCookieName)
         {
             MIME::MIME_HeaderOption * cookiesSubVars = headers.getOptionByName("Cookie");
-            if (!cookiesSubVars) return "";
+            if (!cookiesSubVars)
+                return "";
             // TODO: mayus
             return cookiesSubVars->getSubVar(sCookieName);
         }
