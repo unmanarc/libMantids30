@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Mantids29/Memory/streamablejson.h"
 #include "common_urlvars.h"
 
 #include <Mantids29/Memory/subparser.h>
@@ -15,7 +16,8 @@ public:
     enum eDataType {
         CONTENT_TYPE_BIN,
         CONTENT_TYPE_MIME,
-        CONTENT_TYPE_URL
+        CONTENT_TYPE_URL,
+        CONTENT_TYPE_JSON
     };
 
     enum eProcessingMode {
@@ -85,6 +87,12 @@ public:
      * @return URL Var object
      */
     std::shared_ptr<URLVars> getUrlPostVars();
+    /**
+     * @brief getJSONVars Get JSON Stream
+     * @return Unparsed JSON Stream
+     */
+    std::shared_ptr<Mantids29::Memory::Streams::StreamableJSON> getJSONVars();
+
 
     //////////////////////////////////////////////////////////////////
     // ------------------ TRANSMISSION AND CONTENT ------------------

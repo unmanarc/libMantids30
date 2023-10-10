@@ -1,4 +1,5 @@
 #include "common_content.h"
+#include "Mantids29/Memory/streamablejson.h"
 #include "common_content_chunked_subparser.h"
 
 #include <limits>
@@ -138,6 +139,13 @@ std::shared_ptr<URLVars> Content::getUrlPostVars()
     throw std::runtime_error("Invalid operation: getUrlPostVars should not be called when the content type is not URL.");
 }
 
+std::shared_ptr<Memory::Streams::StreamableJSON> Content::getJSONVars()
+{
+    if (m_containerType == CONTENT_TYPE_JSON && m_usingInternalOutStream )
+        return std::dynamic_pointer_cast<Memory::Streams::StreamableJSON>(m_outStream);
+    throw std::runtime_error("Invalid operation: getJSONVars should not be called when the content type is not JSON.");
+}
+
 std::shared_ptr<Protocols::MIME::MIME_Message> Content::getMultiPartVars()
 {
     if (m_containerType == CONTENT_TYPE_MIME && m_usingInternalOutStream )
@@ -160,6 +168,10 @@ std::shared_ptr<Memory::Abstract::Vars> Content::postVars()
     {
         throw std::runtime_error("Error: container type is binary");
     }
+    if (m_containerType == CONTENT_TYPE_JSON)
+    {
+        throw std::runtime_error("Error: container type is JSON");
+    }
 
     std::shared_ptr<Memory::Abstract::Vars> vars = std::dynamic_pointer_cast<Memory::Abstract::Vars>(m_outStream);
     if (!vars)
@@ -181,6 +193,9 @@ void Content::setContainerType(const eDataType &value)
             break;
         case CONTENT_TYPE_URL:
             m_outStream = std::make_shared<URLVars>();
+            break;
+        case CONTENT_TYPE_JSON:
+            m_outStream = std::make_shared<Mantids29::Memory::Streams::StreamableJSON>();
             break;
         case CONTENT_TYPE_BIN:
             m_outStream = std::make_shared<Memory::Containers::B_Chunks>();
