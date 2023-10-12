@@ -322,14 +322,15 @@ std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
     return sign(*(token.getClaimsPTR()));
 }
 
-bool JWT::verify(const std::string& fullSignedToken, JWT::Token * tokenPayloadOutput )
+bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOutput)
 {
     // Find the positions of the '.' characters that separate the header, payload, and signature
     size_t pos_header = fullSignedToken.find('.');
     size_t pos_payload = fullSignedToken.rfind('.');
 
     // If any of the '.' characters are not found or are in the wrong order, return false
-    if (pos_header == std::string::npos || pos_payload == std::string::npos || pos_header >= pos_payload) {
+    if (pos_header == std::string::npos || pos_payload == std::string::npos || pos_header >= pos_payload)
+    {
         return false;
     }
 
@@ -346,8 +347,11 @@ bool JWT::verify(const std::string& fullSignedToken, JWT::Token * tokenPayloadOu
     // Check if the token is already in the cache
     if (m_cache.checkToken(payload_str))
     {
-        tokenPayloadOutput->decodePayload(payload_str);
-        tokenPayloadOutput->setVerified(true);
+        if (tokenPayloadOutput)
+        {
+            tokenPayloadOutput->decodePayload(payload_str);
+            tokenPayloadOutput->setVerified(true);
+        }
         return true;
     }
 
@@ -357,58 +361,86 @@ bool JWT::verify(const std::string& fullSignedToken, JWT::Token * tokenPayloadOu
     Json::Value header;
     std::string errs;
 
-    if (!charReader->parse(header_str.data(), header_str.data() + header_str.size(), &header, &errs)) {
+    if (!charReader->parse(header_str.data(), header_str.data() + header_str.size(), &header, &errs))
+    {
         // If the header cannot be parsed, return false
         return false;
     }
 
-    bool verified = false;
+    bool isSignatureVerified = false;
 
     // Check that the header algorithm is supported
-    auto incommingAlgorithm = JSON_ASSTRING(header,"alg","");
-    if ( !isAlgorithmSupported( incommingAlgorithm  ) )
+    auto incommingAlgorithm = JSON_ASSTRING(header, "alg", "");
+    if (!isAlgorithmSupported(incommingAlgorithm))
     {
         return false;
     }
 
-    if ( isHMACAlgorithm( incommingAlgorithm ) )
+    if (isHMACAlgorithm(incommingAlgorithm))
     {
         // Create the signature using the header and payload, and compare with the decoded signature
         auto computed_signature = createSignature(header_b64 + '.' + payload_b64);
-        if (computed_signature->m_result != RAWSignature::SIG_OK )
+        if (computed_signature->m_result != RAWSignature::SIG_OK)
             return false;
 
-        verified = false;
+        isSignatureVerified = false;
 
-        if (computed_signature->m_digestSize>0 && computed_signature->m_digestSize == signature_str.size())
-            verified = memcmp(computed_signature->m_digest,signature_str.data(),computed_signature->m_digestSize) == 0;
+        if (computed_signature->m_digestSize > 0 && computed_signature->m_digestSize == signature_str.size())
+            isSignatureVerified = memcmp(computed_signature->m_digest, signature_str.data(), computed_signature->m_digestSize) == 0;
     }
     else if (isRSAAlgorithm(incommingAlgorithm))
     {
         // Create the signature using the header and payload, and compare with the decoded signature
 
         // TODO: return specific problems...
-        verified = validateRSASignature( getHashTypeNumber(), header_b64 + '.' + payload_b64, signature_str.data(), signature_str.size()) == 0;
+        isSignatureVerified = validateRSASignature(getHashTypeNumber(), header_b64 + '.' + payload_b64, signature_str.data(), signature_str.size()) == 0;
     }
 
     if (tokenPayloadOutput)
     {
-        if (verified)
+        if (isSignatureVerified)
         {
             tokenPayloadOutput->decodePayload(payload_str);
             m_cache.add(fullSignedToken);
         }
-        tokenPayloadOutput->setVerified(verified);
-        tokenPayloadOutput->setRevoked( m_revocation.isSignatureRevoked(signature_str) );
+        tokenPayloadOutput->setVerified(isSignatureVerified);
+        tokenPayloadOutput->setRevoked(m_revocation.isSignatureRevoked(signature_str));
     }
 
-    return verified;
+    return isSignatureVerified;
+}
+
+bool JWT::decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayloadOutput)
+{
+    // Find the positions of the '.' characters that separate the header, payload, and signature
+    size_t pos_header = fullSignedToken.find('.');
+    size_t pos_payload = fullSignedToken.rfind('.');
+
+    // If any of the '.' characters are not found or are in the wrong order, return false
+    if (pos_header == std::string::npos || pos_payload == std::string::npos || pos_header >= pos_payload)
+    {
+        return false;
+    }
+
+    // Extract the base64-encoded header, payload, and signature substrings from the token
+    std::string header_b64 = fullSignedToken.substr(0, pos_header);
+    std::string payload_b64 = fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1);
+    //std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
+
+    // Decode the base64-encoded header, payload, and signature strings
+    std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
+    std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
+    //std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
+
+    return tokenPayloadOutput->decodePayload(payload_str);
 }
 
 JWT::Token JWT::verifyAndDecodeTokenPayload(const std::string &fullSignedToken)
 {
-    JWT::Token r;
-    verify(fullSignedToken, &r);
-    return r;
+    JWT::Token r,empty;
+    if (verify(fullSignedToken, &r) && r.isValid())
+        return r;
+    else
+        return empty;
 }
 

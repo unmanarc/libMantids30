@@ -103,11 +103,11 @@ public:
 
         std::string getJwtId() const;
 
-        std::set<std::string> getAllAttributes();
+        std::set<std::string> getAllPermissions();
 
-        void addAttribute(const std::string & attributeName);
+        void addPermission(const std::string & permissionId);
 
-        bool hasAttribute(const std::string &attributeName) const;
+        bool hasPermission(const std::string &permissionId) const;
 
         std::map<std::string,Json::Value> getAllClaims();
 
@@ -227,7 +227,7 @@ public:
      *
      * @param algorithm Algorithm to use for JWT
      */
-    JWT(const Algorithm& algorithm) : m_algorithm(algorithm)
+    JWT(const Algorithm& algorithm = Algorithm::HS256) : m_algorithm(algorithm)
     {
     }
 
@@ -259,11 +259,23 @@ public:
     /**
      * @brief Verify the signature of a JWT token
      *
-     * @param token JWT token to verify
+     * @param fullSignedToken JWT token String to verify
+     * @param tokenPayloadOutput Optional parameter where the token will be decoded to
      * @return true if signature is valid
      * @return false if signature is invalid
      */
     bool verify(const std::string& fullSignedToken, Token *tokenPayloadOutput = nullptr);
+
+
+    /**
+     * @brief Decode the string into a JWT token without verifying it.
+     *
+     * @param fullSignedToken JWT token String to decode
+     * @param tokenPayloadOutput Mandatory parameter where the token will be decoded to
+     * @return true if signature is valid
+     * @return false if signature is invalid
+     */
+    static bool decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayloadOutput);
 
     /**
      * @brief verifyAndDecodeTokenPayload Return an object with the verified token (or empty token if not verified)

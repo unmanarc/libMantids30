@@ -90,45 +90,45 @@ std::string JWT::Token::getJwtId() const {
     return JSON_ASSTRING(m_claims, "jti", "");
 }
 
-std::set<std::string> JWT::Token::getAllAttributes()
+std::set<std::string> JWT::Token::getAllPermissions()
 {
-    std::set<std::string> attributes;
+    std::set<std::string> permissions;
 
-    if (m_claims.isMember("attributes"))
+    if (m_claims.isMember("permissions"))
     {
-        const Json::Value& attributesValue = m_claims["attributes"];
-        if (attributesValue.isArray())
+        const Json::Value& permissionsClaims = m_claims["permissions"];
+        if (permissionsClaims.isArray())
         {
-            for (const auto& attribute : attributesValue)
+            for (const auto& permission : permissionsClaims)
             {
-                attributes.insert(JSON_ASSTRING_D(attribute,""));
+                permissions.insert(JSON_ASSTRING_D(permission,""));
             }
         }
     }
 
-    return attributes;
+    return permissions;
 }
 
-void JWT::Token::addAttribute(const std::string &attributeName)
+void JWT::Token::addPermission(const std::string &permissionId)
 {
-    if (!m_claims.isMember("attributes"))
+    if (!m_claims.isMember("permissions"))
     {
-        m_claims["attributes"] = Json::Value(Json::arrayValue);
+        m_claims["permissions"] = Json::Value(Json::arrayValue);
     }
 
-    m_claims["attributes"].append(attributeName);
+    m_claims["permissions"].append(permissionId);
 }
 
-bool JWT::Token::hasAttribute(const std::string &attributeName) const
+bool JWT::Token::hasPermission(const std::string &permissionId) const
 {
-    if (m_claims.isMember("attributes"))
+    if (m_claims.isMember("permissions"))
     {
-        const Json::Value& attributesValue = m_claims["attributes"];
-        if (attributesValue.isArray())
+        const Json::Value& permissionsClaims = m_claims["permissions"];
+        if (permissionsClaims.isArray())
         {
-            for (const auto& attribute : attributesValue)
+            for (const auto& permission : permissionsClaims)
             {
-                if (JSON_ASSTRING_D(attribute,"") == attributeName)
+                if (JSON_ASSTRING_D(permission,"") == permissionId)
                 {
                     return true;
                 }
