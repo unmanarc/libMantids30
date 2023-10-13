@@ -49,6 +49,7 @@ set(MANTIDS29_LIBRARIES
     Memory
     Auth
     API_Monolith
+    DataFormat_JWT
 )
 
 foreach(LIB ${MANTIDS29_LIBRARIES})
