@@ -6,7 +6,6 @@
 #include <Mantids29/Protocol_HTTP/httpv1_server.h>
 
 #include <Mantids29/Program_Logs/rpclog.h>
-#include <mutex>
 
 namespace Mantids29 { namespace Network { namespace Servers { namespace Web {
 
