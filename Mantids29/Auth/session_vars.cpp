@@ -2,7 +2,7 @@
 #include <Mantids29/Threads/lock_rd.h>
 #include <Mantids29/Threads/lock_rw.h>
 
-using namespace Mantids29::Authentication;
+using namespace Mantids29::Auth;
 
 Session_Vars::Session_Vars()
 {
