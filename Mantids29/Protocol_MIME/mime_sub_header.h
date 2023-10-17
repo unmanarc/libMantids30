@@ -42,6 +42,9 @@ public:
         return r;
     }
 
+    std::multimap<std::string, std::string> getAllSubVars() { return subVar;
+    }
+
     std::string getString();
 
     void addSubVar(const std::string & varName, const std::string & varValue);
