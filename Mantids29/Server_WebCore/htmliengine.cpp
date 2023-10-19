@@ -211,7 +211,7 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
         replaceHexCodes(functionInput);
 
         Memory::Streams::StreamableJSON jPayloadOutStr;
-        //procJAPI_Exec(extraAuths,functionName,functionInput, &jPayloadOutStr);
+        //procJSONWebAPI_Exec(extraAuths,functionName,functionInput, &jPayloadOutStr);
         replaceTagByJVar(fileContent,fulltag,*(jPayloadOutStr.getValue()),true,scriptVarName);
     }
 
