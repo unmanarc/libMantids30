@@ -6,7 +6,7 @@
 #include <memory>
 
 namespace Mantids29 {
-namespace Config {
+namespace ConfigBuilder {
 
 class JWT
 {

@@ -17,7 +17,7 @@
 
 using namespace Mantids29;
 
-std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::AppLog *log,
+std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Logs::AppLog *log,
                                                               boost::property_tree::ptree *ptr,
                                                               const std::string &configClassName)
 {
@@ -171,7 +171,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTSigner(Program::Logs::App
     }
 }
 
-std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::AppLog *log,
+std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program::Logs::AppLog *log,
                                                                  boost::property_tree::ptree *ptr,
                                                                  const std::string &configClassName)
 {
@@ -307,7 +307,7 @@ std::shared_ptr<DataFormat::JWT> Config::JWT::createJWTValidator(Program::Logs::
     }
 }
 
-bool Config::JWT::createHMACSecret(Program::Logs::AppLog *log, const std::string &filePath)
+bool ConfigBuilder::JWT::createHMACSecret(Program::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
@@ -342,7 +342,7 @@ bool Config::JWT::createHMACSecret(Program::Logs::AppLog *log, const std::string
     return r;
 }
 
-bool Config::JWT::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool ConfigBuilder::JWT::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *ctx = NULL;
