@@ -44,21 +44,21 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         filter.compileRegex();
 
 
-        auto pRequiredAppAttribs = i.second.get_child_optional("requiredAppAtrribs");
-        if (pRequiredAppAttribs)
+        auto pRequiredApplicationPermissions = i.second.get_child_optional("requiredApplicationPermissions");
+        if (pRequiredApplicationPermissions)
         {
-            for (const auto & i : pRequiredAppAttribs.get())
+            for (const auto & i : pRequiredApplicationPermissions.get())
             {
-                filter.reqAttrib.push_back(i.second.get_value<std::string>());
+                filter.requiredPermissions.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pDisallowedAppAttribs =  i.second.get_child_optional("disallowedAppAtrribs");
-        if (pDisallowedAppAttribs)
+        auto pDisallowedApplicationPermissions =  i.second.get_child_optional("disallowedApplicationPermissions");
+        if (pDisallowedApplicationPermissions)
         {
-            for (const auto & i : pDisallowedAppAttribs.get())
+            for (const auto & i : pDisallowedApplicationPermissions.get())
             {
-                filter.rejAttrib.push_back(i.second.get_value<std::string>());
+                filter.rejectedPermissions.push_back(i.second.get_value<std::string>());
             }
         }
 
@@ -106,23 +106,23 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
         // Set the match to true...
         bool filterMatchesRequirements=true;
 
-        // Check required attributes
-        for (const auto & requiredAttribute : filter.reqAttrib)
+        // Check required permissions
+        for (const auto & requiredPermission : filter.requiredPermissions)
         {
             if (!filterMatchesRequirements)
                 break;
 
-            if ( userData->attributes.find(requiredAttribute) == userData->attributes.end() )
+            if ( userData->permissions.find(requiredPermission) == userData->permissions.end() )
                 filterMatchesRequirements = false;
         }
 
-        // Check rejected attributes
-        for (const auto & rejectedAttribute : filter.rejAttrib)
+        // Check rejected permissions
+        for (const auto & rejectedPermission : filter.rejectedPermissions)
         {
             if (!filterMatchesRequirements)
                 break;
 
-            if ( userData->attributes.find(rejectedAttribute) != userData->attributes.end() )
+            if ( userData->permissions.find(rejectedPermission) != userData->permissions.end() )
                 filterMatchesRequirements = false;
         }
 

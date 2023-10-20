@@ -18,8 +18,8 @@ struct UserData {
     std::string userName = "";
     std::string domainName = "";
   //  std::string tlsCommonName = "";
-
-    std::set<std::string> attributes;
+    
+    std::set<std::string> permissions;
     std::map<std::string, json> claims;
 
     std::string halfSessionId = "";
@@ -59,11 +59,11 @@ public:
 
         std::list<boost::regex> regexPatterns;
         std::string redirectLocation = "";
-        std::list<std::string> reqAttrib, rejAttrib, sRegexs;
+        std::list<std::string> requiredPermissions, rejectedPermissions, sRegexs;
         bool requireSession = false;
-        bool requireLogin = false;
+        //bool requireLogin = false;
         bool disallowSession = false;
-        bool disallowLogin = false;
+        //bool disallowLogin = false;
 
         FilterAction action = RFILTER_ACCEPT;
     };
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Evaluates a given URI against a set of filters to determine the appropriate action.
      *
-     * This function checks the URI against filters, each containing required attributes, rejected attributes,
+     * This function checks the URI against filters, each containing required permissions, rejected permissions,
      * regex patterns, and a specified action. If a filter matches the user's data and the URI,
      * the function performs the corresponding action (accept, redirect, or deny). If no filters match,
      * the function accepts the URI by default.
