@@ -70,7 +70,6 @@ unsigned long long Query::getLastInsertRowID() const
     return m_lastInsertRowID;
 }
 
-
 bool Query::exec(const ExecType &execType)
 {
     return exec0(execType,false);
