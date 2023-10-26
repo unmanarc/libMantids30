@@ -1,19 +1,20 @@
 #pragma once
 
-#include "data.h"
-#include "domains.h"
-#include "manager.h"
+#include "ds_authentication.h"
 #include "session_vars.h"
+
+#include <Mantids29/Helpers/json.h>
 
 #include <mutex>
 #include <atomic>
+#include <string>
 
-namespace Mantids29 { namespace Authentication {
+namespace Mantids29 { namespace Auth {
 
 
-struct sAuthenticationPolicy
+struct SlotAuthenticationPolicy
 {
-    sAuthenticationPolicy()
+    SlotAuthenticationPolicy()
     {
         validTime = 0;
     }
@@ -22,9 +23,9 @@ struct sAuthenticationPolicy
 };
 
 
-struct sCurrentAuthentication
+struct CurrentAuthenticationStatus
 {
-    sCurrentAuthentication()
+    CurrentAuthenticationStatus()
     {
         lastAuthStatus = REASON_UNAUTHENTICATED;
     }
@@ -47,39 +48,19 @@ public:
         CHECK_DISALLOW_EXPIRED_PASSWORDS
     };
 
-    Session(const std::string & appName);
+    Session();
 
     /**
-     * @brief getIdxAuthenticationStatus
-     * @param passIndex
-     * @return
+     * @brief getEffectiveUser Get effective user (if impersonated, use the impersonated user...)
+     * @return effective user
      */
-    Reason getIdxAuthenticationStatus(uint32_t passIndex = 0);
+    std::string getEffectiveUser();
+
     /**
      * @brief getAuthUser
      * @return
      */
-    std::string getAuthUser();
-    /**
-     * @brief setIndexAuthenticationPolicy
-     * @param passIndex
-     * @param authPolicy
-     */
-    void setIndexAuthenticationPolicy(uint32_t passIndex, const sAuthenticationPolicy & authPolicy);
-    /**
-     * @brief registerPersistentAuthentication
-     * @param accountName
-     * @param accountDomain
-     * @param passIndex
-     * @param reason
-     */
-    void registerPersistentAuthentication(const std::string &accountName, const std::string &accountDomain, uint32_t passIndex, const Reason &reason);
-    /**
-     * @brief registerPersistentAuthentication
-     * @param passIndex
-     * @param reason
-     */
-    void registerPersistentAuthentication(uint32_t passIndex, const Reason &reason);
+    //std::string getAuthUser();
     /**
      * @brief updateLastActivity Set las activity to current time
      */
@@ -120,123 +101,76 @@ public:
      */
     std::string getSessionId();
     /**
-     * @brief getUserDomainPair Get User and Domain in string pair
-     * @return
-     */
-    std::pair<std::string,std::string> getUserDomainPair() const;
-    /**
      * @brief getUserID Get the user ID
      * @return user id string (userName)
      */
     std::string getUserID();
     /**
-     * @brief setAuthUser Set/Change the authenticated user
+     * @brief setAuthenticatedUser Set/Change the authenticated user
      * @param value user that authenticated
      */
-    void setAuthUser(const std::string &value);
+    void setAuthenticatedUser(const std::string &value);
     /**
      * @brief getFirstActivity Get the unix time from where you created this session
      * @return unix time
      */
     time_t getFirstActivity();
-
-    /**
-     * @brief Sets the authenticated domain for the session.
-     * @param domain The authenticated domain to set.
-     */
-    void setAuthenticatedDomain(const std::string& domain);
-
-    /**
-     * @brief Returns the authenticated domain for the session.
-     * @return The authenticated domain for the session.
-     */
-    std::string getAuthenticatedDomain();
-
     /**
      * @brief Returns the application name associated with the authenticated session.
      * @return The application name associated with the authenticated session.
      */
-    std::string getApplicationName();
-
+   // std::string getApplicationName();
     /**
      * @brief Sets the application name associated with the authenticated session.
      * @param name The application name to set.
      */
-    void setApplicationName(const std::string& name);
-
-    /**
-     * @brief Sets the required basic authentication indices for the session.
-     *
-     * This method sets the required basic authentication indices for the session, which are used to authenticate the user.
-     * @param authenticationIndices The required basic authentication indices to set.
-     */
-    void setRequiredBasicAuthenticationIndices(const std::map<uint32_t, std::string>& authenticationIndices);
-
-    /**
-     * @brief Checks if the session is fully authenticated.
-     *
-     * This method checks whether all required authenticated indices have been successfully authenticated for the session.
-     * @param checkMode The check mode to use for the authentication.
-     * @return true if the session is fully authenticated, false otherwise.
-     */
-    bool isFullyAuthenticated(const eCheckMode& checkMode);
-
-    /**
-     * @brief Returns the required authentication indices for the session.
-     * @return A map of the required authentication indices for the session.
-     */
-    std::map<uint32_t, std::string> getRequiredAuthenticationIndices();
-
-    /**
-     * @brief Returns the next required authentication index for the session.
-     * @return A pair containing the index and text value of the next required authentication index.
-     */
-    std::pair<uint32_t, std::string> getNextRequiredAuthenticationIndex();
-
+    //void setApplicationName(const std::string& name);
     /**
      * @brief Checks whether the session is persistent.
      *
      * This method checks whether the session is persistent, i.e., whether it should persist across multiple application launches.
      * @return true if the session is persistent, false otherwise.
      */
-    bool isPersistentSession();
-
+    //bool isPersistentSession();
     /**
      * @brief Sets whether the session is persistent.
      * @param value The value to set.
      */
-    void setPersistentSession(bool value);
+    //void setIsPersistentSession(bool value);
 
+    std::map<std::string, json> getClaims();
+    json getClaim(const std::string &claimName);
+    void setClaims(const std::map<std::string, json> &newClaims);
+    void addClaims(const std::map<std::string, json> &newClaims);
+
+    bool validateAppPermissionInClaim(const std::string &permissionName);
+    bool isAdmin();
+
+    std::set<std::string> getActivities();
+
+    // TODO: validate que la sesión no haya sido revocada..
+    bool validateSession() { return true; }
+
+
+    //std::string impersonatedUser();
+    void setImpersonatedUser(const std::string &newImpersonatedUser);
 
 private:
-    sCurrentAuthentication getCurrentAuthenticationStatus(const uint32_t &passIndex);
-    /**
-     * @brief getIdxAuthenticationStatus
-     * @param passIndex
-     * @return
-     */
-    Reason getIdxAuthenticationStatus_I(uint32_t passIndex = 0);
-
     void iUpdateLastActivity();
 
+    std::map<std::string,json> m_claims;
 
-    std::string m_authenticatedUser;
-    std::string m_authenticatedDomain;
-    std::string m_applicationName;
+    std::string m_authenticatedUser, m_impersonatedUser;
     std::string m_sessionID;
+    //std::string m_applicationName;
 
-    std::map<uint32_t,std::string> m_requiredLoginIndices;
-
-    std::map<uint32_t,sCurrentAuthentication> m_authenticationMatrix;
-    std::map<uint32_t,sAuthenticationPolicy> m_authenticationPolicies;
-
-    time_t m_firstActivityTimestamp;
+    time_t m_firstActivityTimestamp = 0;
     std::atomic<time_t> m_lastActivityTimestamp;
-
     std::mutex m_authenticationMutex;
 
-    bool m_isPersistentSession;
+    //bool m_isPersistentSession;
 };
 
 }}
+
 

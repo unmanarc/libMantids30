@@ -1,6 +1,6 @@
 #include "domains.h"
 
-using namespace Mantids29::Authentication;
+using namespace Mantids29::Auth;
 using namespace Mantids29;
 
 Domains::Domains()
@@ -8,14 +8,14 @@ Domains::Domains()
 
 }
 
-bool Domains::addDomain(const std::string &domainName, Manager *auth)
+bool Domains::addDomain(const std::string &domainName, IdentityManager *identityManager)
 {
-    return m_domainMap.addElement(domainName,auth);
+    return m_domainMap.addElement(domainName, identityManager);
 }
 
-Manager *Domains::openDomain(const std::string &domainName)
+IdentityManager *Domains::openDomain(const std::string &domainName)
 {
-    Manager * i = (Manager *)m_domainMap.openElement(domainName);;
+    IdentityManager * i = (IdentityManager *)m_domainMap.openElement(domainName);;
     if (i) i->checkConnection();
     return i;
 }

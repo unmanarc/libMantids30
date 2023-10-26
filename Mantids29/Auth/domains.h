@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Mantids29/Threads/map.h>
-#include "manager.h"
+#include "identitymanager.h"
 
-namespace Mantids29 { namespace Authentication {
+namespace Mantids29 { namespace Auth {
 
 /**
  * @brief The Domains class provides a manager for managing authentication domains.
@@ -21,14 +21,14 @@ public:
      * @param auth The Manager object to associate with the new domain.
      * @return true if the domain was successfully added, false otherwise.
      */
-    bool addDomain(const std::string& domainName, Manager* auth);
+    bool addDomain(const std::string& domainName, IdentityManager* identityManager);
 
     /**
      * @brief Opens the authentication domain with the given domain name.
      * @param domainName The name of the authentication domain to open.
-     * @return The Manager associated with the opened domain, or nullptr if the domain was not found.
+     * @return The IdentityManager associated with the opened domain, or nullptr if the domain was not found.
      */
-    Manager* openDomain(const std::string& domainName);
+    IdentityManager* openDomain(const std::string& domainName);
 
     /**
      * @brief Releases the authentication domain with the given domain name.
