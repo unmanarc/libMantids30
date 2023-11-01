@@ -97,7 +97,7 @@ public:
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks m_callbacks;
-    Mantids29::Authentication::Domains * m_authenticator;
+    Mantids29::Auth::Domains * m_authenticator;
     API::Monolith::ResourcesFilter * m_resourceFilter;
     API::Monolith::MethodsHandler *m_methodsHandler;
     Program::Logs::RPCLog * m_rpcLog;
