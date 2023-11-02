@@ -73,7 +73,7 @@ bool Socket_TLS_ListennerAndConnector_Base::incommingConnection(void *obj,
 
     CALLBACK(pararms->parameters.onTLSClientConnected)(pararms->parameters.obj, tlsSocket, tlsSocket->getTLSPeerCN());
 
-    auto i = pararms->thisObj->connectionHandler(tlsSocket, false, ip);
+    auto i = pararms->thisObj->handleConnection(tlsSocket, false, ip);
 
     CALLBACK(pararms->parameters.onTLSClientDisconnected)(pararms->parameters.obj, tlsSocket, tlsSocket->getTLSPeerCN(), i);
 
@@ -159,7 +159,7 @@ void connectionLoopThread(Socket_TLS_ListennerAndConnector_Base *parent,
 
                 char remotePair[65];
                 tlsSocket.getRemotePair(remotePair);
-                auto i = parent->connectionHandler(&tlsSocket, true, remotePair);
+                auto i = parent->handleConnection(&tlsSocket, true, remotePair);
 
                 CALLBACK(parameters->onTLSDisconnected)(parameters->obj, &tlsSocket, parameters->host.c_str(), parameters->port, i);
 

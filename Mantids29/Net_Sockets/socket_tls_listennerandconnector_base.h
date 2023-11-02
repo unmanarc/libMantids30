@@ -105,7 +105,7 @@ public:
 
 
     // Callbacks from thread:
-    virtual int connectionHandler(Mantids29::Network::Sockets::Socket_TLS * stream, bool remotePeerIsServer, const char * remotePair) = 0;
+    virtual int handleConnection(Mantids29::Network::Sockets::Socket_TLS * stream, bool remotePeerIsServer, const char * remotePair) = 0;
 
 
     std::atomic_bool m_stopReconnecting;
