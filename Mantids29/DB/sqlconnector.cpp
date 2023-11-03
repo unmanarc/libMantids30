@@ -37,7 +37,7 @@ std::string SQLConnector::getDBHostname() const
     return m_host;
 }
 
-AuthData SQLConnector::getDBAuthenticationData() const
+AuthData SQLConnector::getDBCredentialData() const
 {
     AuthData x = m_auth;
     // Remove password ;)
@@ -45,7 +45,7 @@ AuthData SQLConnector::getDBAuthenticationData() const
     return x;
 }
 
-AuthData SQLConnector::getDBFullAuthenticationData() const
+AuthData SQLConnector::getDBFullCredentialData() const
 {
     return m_auth;
 }

@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <mutex>
 #include <string>
-#include <queue>
 #include <set>
 #include <memory>
 
@@ -114,9 +113,9 @@ public:
 
     std::string getDBHostname() const;
 
-    AuthData getDBAuthenticationData() const;
+    AuthData getDBCredentialData() const;
 
-    AuthData getDBFullAuthenticationData() const;
+    AuthData getDBFullCredentialData() const;
 
     uint16_t getDBPort() const;
 
