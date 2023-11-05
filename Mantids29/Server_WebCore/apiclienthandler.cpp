@@ -2,7 +2,7 @@
 #include <Mantids29/Protocol_HTTP/httpv1_base.h>
 #include "htmliengine.h"
 
-#include <Mantids29/Auth/data.h>
+#include <Mantids29/Auth/credentialdata.h>
 #include <Mantids29/Protocol_HTTP/rsp_status.h>
 #include <Mantids29/Memory/b_mmap.h>
 #include <Mantids29/Helpers/crypto.h>
