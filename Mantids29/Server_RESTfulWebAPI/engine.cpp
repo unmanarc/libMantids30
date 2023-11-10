@@ -15,7 +15,7 @@ Engine::Engine()
 
     API::RESTful::RESTfulAPIDefinition jwtRevokeDef;
     jwtRevokeDef.method = &revokeJWT;
-    jwtRevokeDef.security.requiredAttributes = {"IAM"};
+    jwtRevokeDef.security.requiredPermissions = {"IAM"};
     jwtRevokeDef.obj = this;
 
     handler->addResource(API::RESTful::MethodsHandler::POST, "revokeJWT", jwtRevokeDef);
@@ -26,14 +26,19 @@ Engine::~Engine()
 {
 }
 
-API::RESTful::APIReturn Engine::revokeJWT(void *obj, const API::RESTful::InputParameters &inputParameters)
+void Engine::revokeJWT(API::RESTful::APIReturn &response,
+                                          void *context,
+                                          Mantids29::Auth::ClientDetails &authClientDetails,
+                                          const json &inputData,
+                                          json &responseData,
+                                          const DataFormat::JWT::Token &authToken,
+                                          const API::RESTful::RequestParameters &requestParams)
 {
     // TODO: pasar a parametros POST...
-    std::string jwtSignature = Helpers::Encoders::decodeFromBase64(JSON_ASSTRING(inputParameters.pathParameters, "signature",""),true);
-    time_t expirationTime = JSON_ASUINT64(inputParameters.pathParameters, "expiration",0);
-    ((Engine *)obj)->m_jwtValidator->m_revocation.addToRevocationList( jwtSignature, expirationTime );
-
-    return (json)true;
+    std::string jwtSignature = Helpers::Encoders::decodeFromBase64(JSON_ASSTRING(requestParams.pathParameters, "signature",""),true);
+    time_t expirationTime = JSON_ASUINT64(requestParams.pathParameters, "expiration",0);
+    ((Engine *)context)->m_jwtValidator->m_revocation.addToRevocationList( jwtSignature, expirationTime );
+    responseData = (json)true;
 }
 
 Web::APIClientHandler *Engine::createNewAPIClientHandler(APIEngineCore * webServer, Network::Sockets::Socket_Stream_Base * s)

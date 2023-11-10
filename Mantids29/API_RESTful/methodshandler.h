@@ -1,10 +1,11 @@
 #pragma once
 
+#include <Mantids29/Auth/credentialvalidator.h>
 #include <Mantids29/Protocol_HTTP/httpv1_base.h>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
-#include <list>
 #include <Mantids29/Helpers/json.h>
 #include <Mantids29/Threads/mutex_shared.h>
 #include <Mantids29/DataFormat_JWT/jwt.h>
@@ -15,16 +16,20 @@
 namespace Mantids29 { namespace API { namespace RESTful {
 
 // Struct to hold HTTP request parameters
-struct InputParameters
+struct RequestParameters
 {
     Mantids29::Network::Protocols::HTTP::HTTPv1_Base::Request * clientRequest = nullptr; ///< Holds all the information from the client request
     Json::Value pathParameters;     ///< Holds parameters from the URL path
+    Json::Value emptyJSON;
+    Json::Value * inputJSON = &emptyJSON;     ///< Holds the input JSON that came from the request body.
 
     DataFormat::JWT::Token emptyToken; ///< Holds a default empty token
     DataFormat::JWT::Token * jwtToken = &emptyToken;    ///< Holds JWT token data, if present and validated the pointer will be changed.
 
     std::shared_ptr<DataFormat::JWT> jwtValidator; ///< Holds the JWT Validator
     std::shared_ptr<DataFormat::JWT> jwtSigner; ///< Holds the JWT Signer
+
+    //std::multimap<std::string, std::string> cookies;
 };
 
 /**
@@ -55,6 +60,34 @@ struct APIReturn {
         return *this;
     }
 
+    void setSuccess(const bool & success)
+    {
+        if (body)
+        {
+            (*body->getValue())["success"] = success;
+        }
+    }
+
+    void setFullStatus( const bool & success, const int64_t & code, const std::string & message )
+    {
+        if (body)
+        {
+            (*body->getValue())["success"] = success;
+            (*body->getValue())["statusCode"] = code;
+            (*body->getValue())["statusMessage"] = message;
+        }
+    }
+
+    void setFullStatus( bool success, const std::string & message )
+    {
+        if (body)
+        {
+            (*body->getValue())["success"] = success;
+            (*body->getValue())["statusMessage"] = message;
+        }
+    }
+
+    std::map<std::string,Mantids29::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
     Network::Protocols::HTTP::Status::eRetCode code = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
 };
@@ -68,11 +101,14 @@ struct APIReturn {
 struct RESTfulAPIDefinition
 {
     struct Security {
-        bool requireUserAuthentication = true;
-        std::set<std::string> requiredAttributes;
+        bool requireJWTHeaderAuthentication = true;
+        bool requireJWTCookieAuthentication = true;
+        bool requireGenericAntiCSRFToken = true;
+        //bool requireJWTCookieHash = true;
+        std::set<std::string> requiredPermissions;
     };
 
-    APIReturn (*method)(void * obj, const RESTful::InputParameters &inputParameters ) = nullptr;
+    void (*method)(APIReturn & response, void * context,Mantids29::Auth::ClientDetails &authClientDetails,const json &inputData,json &responseData,const DataFormat::JWT::Token & authToken, const RESTful::RequestParameters &requestParams) = nullptr;
     Security security;
 
     void * obj = nullptr;
@@ -114,6 +150,22 @@ public:
         INTERNAL_ERROR = -5
     };
 
+
+    enum SecurityOptions {
+        NO_AUTH=0,
+        REQUIRE_JWT_HEADER_AUTH=1,
+        REQUIRE_JWT_COOKIE_AUTH=2,
+        REQUIRE_GENERIC_ANTICSRF_TOKEN=4//,
+        //REQUIRE_JWT_COOKIE_HASH=8
+    };
+
+    struct SecurityParameters
+    {
+        bool haveJWTAuthHeader = false;
+        bool haveJWTAuthCookie = false;
+        std::string genCSRFToken;
+    };
+
     /**
      * @brief Default constructor for MethodsHandler.
      */
@@ -126,15 +178,15 @@ public:
      * @param resourceName The name of the resource.
      * @param method The function pointer to the method.
      * @param obj The object pointer for the method.
-     * @param requireUserAuthentication If true, user authentication is required.
-     * @param requiredAttributes The set of required attributes for the resource.
+     * @param requireJWTHeaderAuthentication If true, user authentication is required.
+     * @param requiredPermissions The set of required permissions for the resource.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
     bool addResource(const MethodMode & mode, const std::string & resourceName,
-                     APIReturn (*method)(void * obj, const RESTful::InputParameters &inputParameters ),
+                     void (*method)(APIReturn & response, void * context,Mantids29::Auth::ClientDetails &authClientDetails,const json &inputData,json &responseData,const DataFormat::JWT::Token & authToken, const RESTful::RequestParameters &requestParams ),
                      void * obj,
-                     bool requireUserAuthentication,
-                     const std::set<std::string> requiredAttributes
+                     const uint32_t & SecurityOptions,
+                     const std::set<std::string> requiredPermissions
                      );
 
     /**
@@ -153,12 +205,12 @@ public:
      * @param mode The RESTful method mode (GET, POST, PUT, DELETE).
      * @param resourceName The name of the resource.
      * @param inputParameters The input parameters for the method.
-     * @param currentAttributes The set of current attributes for the user.
+     * @param currentPermissions The set of current permissions for the user.
      * @param authenticated If true, the user is authenticated.
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, const RESTful::InputParameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, APIReturn *payloadOut);
+    ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *payloadOut);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
@@ -166,12 +218,12 @@ public:
      * @param modeStr The string representation of the RESTful method mode (e.g. "GET", "POST", "PUT", "DELETE").
      * @param resourceName The name of the resource.
      * @param inputParameters The input parameters for the method.
-     * @param currentAttributes The set of current attributes for the user.
+     * @param currentPermissions The set of current permissions for the user.
      * @param authenticated If true, the user is authenticated.
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const std::string & modeStr, const std::string & resourceName, const RESTful::InputParameters &inputParameters, const std::set<std::string> &currentAttributes, bool authenticated, APIReturn *payloadOut);
+    ErrorCodes invokeResource(const std::string & modeStr, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *payloadOut);
 
 private:
     std::map<std::string, RESTfulAPIDefinition> m_methodsGET;    ///< Map of GET resources.
@@ -180,6 +232,9 @@ private:
     std::map<std::string, RESTfulAPIDefinition> m_methodsDELETE; ///< Map of DELETE resources.
 
     Threads::Sync::Mutex_Shared m_methodsMutex; ///< Mutex for protecting access to the maps of resources.
+
+
+    Auth::ClientDetails extractClientDetails(const RequestParameters &inputParameters);
 };
 
 }}}

@@ -56,13 +56,15 @@ protected:
      */
     Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & baseApiUrl,const uint32_t & apiVersion, const std::string & resourceAndPathParameters) override;
 
-    DataFormat::JWT::Token m_jwtToken;
-    bool m_tokenVerified = false;
 private:
 
+    bool m_JWTHeaderTokenVerified = false;
+    bool m_JWTCookieTokenVerified = false;
+
+    DataFormat::JWT::Token m_JWTToken;
 
     void processPathParameters(const std::string &request, std::string &resourceName, Json::Value &pathParameters);
-
+    bool verifyToken(const std::string &strToken);
 };
 
 }}}}
