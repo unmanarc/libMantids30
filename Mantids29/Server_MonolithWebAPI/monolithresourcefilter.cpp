@@ -9,7 +9,7 @@ ResourcesFilter::ResourcesFilter()
 
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(const std::string &uri, Authentication::Session *userSession, Authentication::Manager *authorizer)
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(const std::string &uri, Auth::Session *session)
 {
     FilterEvaluationResult evaluationResult;
 
@@ -17,53 +17,67 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(
     for (const auto & filter : filters)
     {
         ruleIndex++;
-        bool allAttributesValid=true;
+        bool allPermissionsAreValid=true;
 
-        for (const auto & requiredAttribute : filter.reqAttrib)
+        // If the filter require a session and there is no session, it does not match...
+        if (allPermissionsAreValid && filter.requireSession && !session)
+            allPermissionsAreValid=false;
+
+        // To check for required attributes, we have to have a session, then, if no session, not match:
+        if (allPermissionsAreValid && !filter.requiredPermissions.empty() && !session)
+            allPermissionsAreValid=false;
+
+        // To check for rejected attributes, we have to have a session, then, if no session, not match:
+        if (allPermissionsAreValid && !filter.rejectedPermissions.empty() && !session)
+            allPermissionsAreValid=false;
+
+        // If there is any missing permission:
+        if (allPermissionsAreValid)
         {
-            if (!userSession || !authorizer) // Any attribute without the session is marked as false
-                allAttributesValid = false;
-            else if (requiredAttribute == "loggedin" && userSession->getAuthUser() == "")
-                allAttributesValid = false;
-            else if (!authorizer->validateAccountAttribute(userSession->getAuthUser(),{userSession->getApplicationName(), requiredAttribute}))
-                allAttributesValid = false;
-        }
-        for (const auto & rejectedAttribute : filter.rejAttrib)
-        {
-            if (userSession && authorizer)
+            for (const auto &requiredPermission : filter.requiredPermissions)
             {
-                if (rejectedAttribute == "loggedin" && userSession->getAuthUser() != "")
-                    allAttributesValid = false;
-                else if (authorizer->validateAccountAttribute(userSession->getAuthUser(),{userSession->getApplicationName(), rejectedAttribute}))
-                    allAttributesValid = false;
+                if (!session->validateAppPermissionInClaim(requiredPermission))
+                {
+                    allPermissionsAreValid = false;
+                    break;
+                }
             }
         }
 
-        if (!allAttributesValid)
+        // If there is any rejected permission:
+        if (allPermissionsAreValid)
         {
-            continue; // Rule does not match
+            for (const auto &rejectedPermission : filter.rejectedPermissions)
+            {
+                if (session->validateAppPermissionInClaim(rejectedPermission))
+                    allPermissionsAreValid = false;
+            }
         }
 
-        boost::cmatch matchedRegex;
-        for (const auto & regexPattern : filter.regexPatterns)
+        if (!allPermissionsAreValid)
         {
-            if (boost::regex_match(uri.c_str(), matchedRegex, regexPattern))
+            // Rule match
+            boost::cmatch matchedRegex;
+            for (const auto & regexPattern : filter.regexPatterns)
             {
-                switch (  filter.action  )
+                if (boost::regex_match(uri.c_str(), matchedRegex, regexPattern))
                 {
-                case RFILTER_ACCEPT:
-                    evaluationResult.accept = true;
-                    break;
-                case RFILTER_REDIRECT:
-                    evaluationResult.accept = true;
-                    evaluationResult.redirectLocation = filter.redirectLocation;
-                    break;
-                case RFILTER_DENY:
-                default:
-                    evaluationResult.accept = false;
-                    break;
+                    switch (  filter.action  )
+                    {
+                    case RFILTER_ACCEPT:
+                        evaluationResult.accept = true;
+                        break;
+                    case RFILTER_REDIRECT:
+                        evaluationResult.accept = true;
+                        evaluationResult.redirectLocation = filter.redirectLocation;
+                        break;
+                    case RFILTER_DENY:
+                    default:
+                        evaluationResult.accept = false;
+                        break;
+                    }
+                    return evaluationResult;
                 }
-                return evaluationResult;
             }
         }
     }
@@ -73,7 +87,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(
 }
 
 /*
-ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids29::Authentication::Session * hSession, Mantids29::Authentication::Manager * authorizer)
+ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids29::Auth::Session * hSession, Mantids29::Auth::IdentityManager *  identityManager)
 {
     sFilterEvaluation evalRet;
 
@@ -81,29 +95,29 @@ ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::st
     for (const auto & filter : filters)
     {
         ruleId++;
-        bool allAttribsDone=true;
+        bool allPermissionsDone=true;
 
-        for (const auto & attrib : filter.reqAttrib)
+        for (const auto & permission : filter.requiredPermissions)
         {
-            if (!hSession || !authorizer) // Any attribute without the session is marked as false
-                allAttribsDone = false;
-            else if (attrib == "loggedin" && hSession->getAuthUser() == "")
-                allAttribsDone = false;
-            else if (!authorizer->validateAccountAttribute(hSession->getAuthUser(),{hSession->getApplicationName(), attrib}))
-                allAttribsDone = false;
+            if (!hSession || ! identityManager) // Any Permission without the session is marked as false
+                allPermissionsDone = false;
+            else if (permission == "loggedin" && hSession->getAuthUser() == "")
+                allPermissionsDone = false;
+            else if (! identityManager->validateAccountApplicationPermission(hSession->getAuthUser(),{hSession->getApplicationName(), permission}))
+                allPermissionsDone = false;
         }
-        for (const auto & attrib : filter.rejAttrib)
+        for (const auto & permission : filter.rejectedPermissions)
         {
-            if (hSession && authorizer)
+            if (hSession &&  identityManager)
             {
-                if (attrib == "loggedin" && hSession->getAuthUser() != "")
-                    allAttribsDone = false;
-                else if (authorizer->validateAccountAttribute(hSession->getAuthUser(),{hSession->getApplicationName(), attrib}))
-                    allAttribsDone = false;
+                if (permission == "loggedin" && hSession->getAuthUser() != "")
+                    allPermissionsDone = false;
+                else if ( identityManager->validateAccountApplicationPermission(hSession->getAuthUser(),{hSession->getApplicationName(), permission}))
+                    allPermissionsDone = false;
             }
         }
 
-        if (!allAttribsDone)
+        if (!allPermissionsDone)
         {
             continue; // Rule does not match
         }

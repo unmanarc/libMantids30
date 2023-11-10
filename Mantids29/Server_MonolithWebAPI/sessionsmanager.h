@@ -13,8 +13,8 @@ public:
     WebSession()
     {
         authSession = nullptr;
-        bAuthTokenConfirmed = false;
-        sCSRFAuthConfirmToken = Mantids29::Helpers::Random::createRandomString(32);
+      //  bAuthTokenConfirmed = false;
+        //sCSRFAuthConfirmToken = Mantids29::Helpers::Random::createRandomString(32);
         sCSRFToken = Mantids29::Helpers::Random::createRandomString(32);
     }
     ~WebSession() { delete authSession; }
@@ -23,15 +23,15 @@ public:
     {
         return token == sCSRFToken;
     }
-    bool confirmAuthCSRFToken(const std::string & token)
+    /*bool confirmAuthCSRFToken(const std::string & token)
     {
         bAuthTokenConfirmed = (token == sCSRFAuthConfirmToken);
         return bAuthTokenConfirmed;
-    }
+    }*/
 
-    Mantids29::Authentication::Session * authSession;
-    std::string sCSRFAuthConfirmToken, sCSRFToken;
-    std::atomic<bool> bAuthTokenConfirmed;
+    Mantids29::Auth::Session * authSession;
+    std::string sCSRFToken; //  sCSRFAuthConfirmToken,
+    //std::atomic<bool> bAuthTokenConfirmed;
 };
 
 class SessionsManager : public Threads::GarbageCollector
@@ -57,7 +57,7 @@ public:
      * @param session Session element to be introduced to the session pool
      * @return Session ID
      */
-    std::string createWebSession(Mantids29::Authentication::Session * session);
+    std::string createWebSession(Mantids29::Auth::Session * session);
 
     /**
      * @brief destroySession destroy the session element and session ID
@@ -81,7 +81,7 @@ public:
 
 
 private:
-    std::map<std::pair<std::string,std::string>,uint32_t> sessionPerUser;
+    std::map<std::string,uint32_t> sessionPerUser;
     std::mutex mutex;
 
     Threads::Safe::Map<std::string> sessions;

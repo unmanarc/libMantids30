@@ -1,5 +1,4 @@
 #include "sessionsmanager.h"
-#include <thread>
 #include <Mantids29/Helpers/random.h>
 
 #include <stdexcept>
@@ -54,20 +53,20 @@ void SessionsManager::setSessionExpirationTime(const uint32_t &value)
     sessionExpirationTime = value;
 }
 
-std::string SessionsManager::createWebSession(Mantids29::Authentication::Session *session)
+std::string SessionsManager::createWebSession(Mantids29::Auth::Session *session)
 {
-    auto userDomain = session->getUserDomainPair();
+    std::string effectiveUser = session->getEffectiveUser();
     {
         std::unique_lock<std::mutex> lock(mutex);
 
-        if (sessionPerUser.find(userDomain) == sessionPerUser.end()) sessionPerUser[userDomain] = 1;
+        if (sessionPerUser.find(effectiveUser) == sessionPerUser.end()) sessionPerUser[userDomain] = 1;
         else
         {
-            if (sessionPerUser[userDomain] >= maxSessionsPerUser)
+            if (sessionPerUser[effectiveUser] >= maxSessionsPerUser)
             {
                 return "";
             }
-            else sessionPerUser[userDomain]++;
+            else sessionPerUser[effectiveUser]++;
         }
     }
 
@@ -85,11 +84,11 @@ std::string SessionsManager::createWebSession(Mantids29::Authentication::Session
 
 bool SessionsManager::destroySession(const std::string &sessionID)
 {
-    std::pair<std::string,std::string> userDomain;
+    std::string effectiveUser;
     WebSession * sess;
     if ((sess=(WebSession *)sessions.openElement(sessionID))!=nullptr)
     {
-        userDomain = sess->authSession->getUserDomainPair();
+        effectiveUser = sess->authSession->getEffectiveUser();
         sessions.releaseElement(sessionID);
     }
     else return false;
@@ -97,14 +96,14 @@ bool SessionsManager::destroySession(const std::string &sessionID)
     if (sessions.destroyElement(sessionID))
     {
         std::unique_lock<std::mutex> lock(mutex);
-        if (sessionPerUser.find(userDomain) == sessionPerUser.end())
+        if (sessionPerUser.find(effectiveUser) == sessionPerUser.end())
         {
             throw std::runtime_error("Unregistered Session??");
         }
         else
         {
-            sessionPerUser[userDomain]--;
-            if (sessionPerUser[userDomain] == 0) sessionPerUser.erase(userDomain);
+            sessionPerUser[effectiveUser]--;
+            if (sessionPerUser[effectiveUser] == 0) sessionPerUser.erase(effectiveUser);
         }
         return true;
     }

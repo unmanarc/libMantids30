@@ -3,7 +3,6 @@
 #include <Mantids29/Server_WebCore/resourcesfilter.h>
 
 // FOR SESSION:
-#include <Mantids29/Auth/manager.h>
 #include <Mantids29/Auth/session.h>
 
 namespace Mantids29 { namespace API { namespace Monolith {
@@ -20,7 +19,7 @@ public:
      * @param authorizer A pointer to the authentication manager.
      * @return FilterEvaluationResult The result of the evaluation, including whether the URI is accepted or not and an optional redirect location.
      */
-    FilterEvaluationResult evaluateURIWithSession(const std::string &uri, Mantids29::Authentication::Session * userSession, Mantids29::Authentication::Manager * authorizer);
+    FilterEvaluationResult evaluateURIWithSession(const std::string &uri, Mantids29::Auth::Session * userSession);
 };
 
 }}}

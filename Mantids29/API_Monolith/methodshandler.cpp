@@ -10,7 +10,7 @@ MethodsHandler::MethodsHandler(const std::string &appName)
     this->m_applicationName = appName;
 }
 
-bool MethodsHandler::addMethod(const std::string &methodName, const std::set<std::string> &reqAttribs, const MonolithAPIMethod &method, bool requireFullAuth)
+bool MethodsHandler::addMethod(const std::string &methodName, const std::set<std::string> &reqPermissions, const MonolithAPIMethod &method, const std::set<std::string> &reqActivities, bool requireActiveSession)
 {
     Threads::Sync::Lock_RW lock(m_methodsMutex);
     if (m_methods.find(methodName) == m_methods.end() )
@@ -18,17 +18,18 @@ bool MethodsHandler::addMethod(const std::string &methodName, const std::set<std
         // Put the method.
         m_methods[methodName] = method;
 
-        // Configure methodsAttribs with this info.
-        m_methodsAttribs.addMethodAttributes(methodName,getAppAttribs(reqAttribs));
+        // Configure methodsPermissions with this info.
+        m_methodsPermissions.addMethodRequiredPermissions(methodName,reqPermissions);
+        m_methodsPermissions.addMethodRequiredActivities(methodName,reqActivities);
 
-        m_methodRequireFullAuth[methodName] = requireFullAuth;
+        m_methodRequireActiveSession[methodName] = requireActiveSession;
 
         return true;
     }
     return false;
 }
 
-int MethodsHandler::invoke(Mantids29::Authentication::Domains * authDomain, const std::string & domainName,Mantids29::Authentication::Session * session, const std::string & methodName, const json & payload,  json *payloadOut)
+int MethodsHandler::invoke(Mantids29::Auth::Session * session, const std::string & methodName, const json & payload,  json *payloadOut)
 {
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
@@ -36,24 +37,14 @@ int MethodsHandler::invoke(Mantids29::Authentication::Domains * authDomain, cons
         return METHOD_RET_CODE_METHODNOTFOUND;
     else
     {
-        Mantids29::Authentication::Manager * auth;
-        if ((auth=authDomain->openDomain(domainName))!=nullptr)
-        {
-            *payloadOut = m_methods[methodName].method(m_methods[methodName].obj, auth, session,payload);
-            authDomain->releaseDomain(domainName);
+            *payloadOut = m_methods[methodName].method(m_methods[methodName].obj, session, payload);
             return METHOD_RET_CODE_SUCCESS;
-        }
-        else
-        {
-            return METHOD_RET_CODE_INVALIDDOMAIN;
-        }
     }
 }
 
-MethodsHandler::eMethodValidationCodes MethodsHandler::validatePermissions(Mantids29::Authentication::Manager * auth, Mantids29::Authentication::Session *session, const std::string &methodName, const std::set<uint32_t> & extraTmpIndexes, json *reasons)
+MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirements(Mantids29::Auth::Session *session, const std::string & methodName, json * reasons)
 {
-    std::set<uint32_t> passIndexesLeft;
-    std::set<Mantids29::Authentication::ApplicationAttribute> attribsLeft;
+    std::set<std::string> permissionsLeft, activitiesLeft;
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
     // Check if the method exist at all:
@@ -61,59 +52,47 @@ MethodsHandler::eMethodValidationCodes MethodsHandler::validatePermissions(Manti
         return VALIDATION_METHODNOTFOUND;
 
     // If requires full authentication, check that the session report that is fully authenticated (all required ID's) and it's also a persistent session.
-    if (m_methodRequireFullAuth[methodName])
+    if (m_methodRequireActiveSession[methodName])
     {
-        if (!session || !session->isFullyAuthenticated(Mantids29::Authentication::Session::CHECK_DISALLOW_EXPIRED_PASSWORDS) || !session->isPersistentSession())
+        if (!session)
             return VALIDATION_NOTAUTHORIZED;
     }
-    // else: otherwise, the method will only be validated against authenticated attribs/indexes
 
-    // Validate that the method haves the required attribs/pass indexes:
-    if (m_methodsAttribs.validateMethod(auth,session,methodName,extraTmpIndexes,&passIndexesLeft,&attribsLeft))
+    // Validate that the method haves the required permissions/auth slot ids:
+    if (m_methodsPermissions.validateMethod(session,methodName,activitiesLeft,permissionsLeft))
     {
         return VALIDATION_OK;
     }
     else
     {
         // The method is not authorized for this authentication level.. Report what is failing.
-        (*reasons)["passIndexesLeft"] = Helpers::setToJson(passIndexesLeft);
-        (*reasons)["attribsLeft"] = attributeSetToJson(attribsLeft);
+        (*reasons)["activitiesLeft"] = Helpers::setToJSON(activitiesLeft);
+        (*reasons)["permissionsLeft"] = Helpers::setToJSON(permissionsLeft);
         return VALIDATION_NOTAUTHORIZED;
     }
 
 }
 
-Mantids29::Authentication::MethodsAttributes_Map *MethodsHandler::getMethodsAttribs()
+Mantids29::Auth::MethodsRequirements_Map *MethodsHandler::methodsRequirements()
 {
-    return &m_methodsAttribs;
+    return &m_methodsPermissions;
 }
 
-bool MethodsHandler::getMethodRequireFullAuth(const std::string &methodName)
+bool MethodsHandler::doesMethodRequireActiveSession(const std::string &methodName)
 {
     Threads::Sync::Lock_RD lock(m_methodsMutex);
-    return m_methodRequireFullAuth[methodName];
+    return m_methodRequireActiveSession[methodName];
 }
-
-std::set<Mantids29::Authentication::ApplicationAttribute> MethodsHandler::getAppAttribs(const std::set<std::string> &reqAttribs)
+/*
+std::set<std::string> MethodsHandler::getApplicationPermissions(const std::set<std::string> &reqPermissions)
 {
-    std::set<Mantids29::Authentication::ApplicationAttribute> r;
-    for (const auto &i : reqAttribs)
+    std::set<std::string> r;
+    for (const auto &i : reqPermissions)
     {
         r.insert({m_applicationName,i});
     }
     return r;
-}
-
-json MethodsHandler::attributeSetToJson(const std::set<Mantids29::Authentication::ApplicationAttribute> &t)
-{
-    json x;
-    int v=0;
-    for (const auto &i : t)
-    {
-        x[v++] = i.attribName;
-    }
-    return x;
-}
+}*/
 
 std::string MethodsHandler::getApplicationName() const
 {

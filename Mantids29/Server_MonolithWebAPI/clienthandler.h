@@ -1,18 +1,17 @@
 #pragma once
 
-#include <Mantids29/Auth/data.h>
+#include <Mantids29/Auth/credentialdata.h>
 #include "sessionsmanager.h"
 
 #include "monolithresourcefilter.h"
 #include <Mantids29/Memory/streamablejson.h>
 #include <Mantids29/API_Monolith/methodshandler.h>
-#include <Mantids29/Auth/domains.h>
-#include <Mantids29/Auth/multi.h>
+//#include <Mantids29/Auth/domains.h>
+#include <Mantids29/Auth/multicredentialdata.h>
 #include <Mantids29/Protocol_HTTP/httpv1_server.h>
 
 #include <Mantids29/Program_Logs/rpclog.h>
 #include <memory>
-#include <mutex>
 
 namespace Mantids29 { namespace Network { namespace Servers { namespace WebMonolith {
 
@@ -24,7 +23,7 @@ public:
 
     //////////////////////////////////////////////
     // Initialization:
-    void setAuthenticators(Mantids29::Authentication::Domains * authenticator);
+    //void setAuthenticators(Mantids29::Auth::Domains * authenticator);
     void setMethodsHandler(API::Monolith::MethodsHandler *value);
     //////////////////////////////////////////////
 
@@ -55,48 +54,41 @@ private:
     void sessionOpen();
     void sessionRelease();
     void sessionDestroy();
+    
+    Network::Protocols::HTTP::Status::eRetCode procResource_File();
+    Network::Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath);
 
-    Network::Protocols::HTTP::Status::eRetCode procResource_File(Authentication::Multi *extraAuths);
-    Network::Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath, Authentication::Multi *extraAuths);
-
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session();
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_AUTHINFO();
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_CSRFTOKEN();
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_LOGIN(const Authentication::Data & auth);
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_POSTLOGIN(const Authentication::Data & auth);
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_CHPASSWD(const Authentication::Data &auth);
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_TESTPASSWD(const Authentication::Data &auth);
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Session_PASSWDLIST();
-
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Exec( Authentication::Multi *extraAuths,
-                                                       std::string sMethodName,
-                                                       std::string sPayloadIn,
-                                                       std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = nullptr
-                                                       );
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session(const std::string & methodName);
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_AUTHINFO();
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_CSRFTOKEN();
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_LoginCallback();
+    //Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_POSTLOGIN(const Auth::CredentialData & auth);
+    
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Exec( std::string sMethodName, const json & jPayloadIn, std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = nullptr );
     bool csrfValidate();
 
-    Network::Protocols::HTTP::Status::eRetCode procJAPI_Version();
-
-    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Authentication::Data &authData, Mantids29::Authentication::Session *session, Mantids29::Authentication::Reason *authReason);
-    Mantids29::Authentication::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Authentication::Data &authData);
-
+    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Version();
+    /*
+    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Auth::CredentialData &authData, Mantids29::Auth::Session *session, Mantids29::Auth::Reason *authReason);
+    Mantids29::Auth::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Auth::CredentialData &authData);
+*/
     void log(Mantids29::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
 
     Program::Logs::RPCLog * m_rpcLog = nullptr;
 
     API::Monolith::MethodsHandler * m_methodsHandler = nullptr;
-    Mantids29::Authentication::Domains * m_authDomains = nullptr;
+    //Mantids29::Auth::Domains * m_authDomains = nullptr;
     SessionsManager * m_sessionsManager = nullptr;
 
     // Current Session Vars:
     WebSession * m_webSession = nullptr;
-    Mantids29::Authentication::Session *m_authSession = nullptr;
+    Mantids29::Auth::Session *m_session = nullptr;
     uint64_t m_sessionMaxAge;
     std::string m_sessionId;
     bool m_destroySession = false;
     bool m_releaseSessionHandler = false;
-    Authentication::Multi m_extraCredentials;
-    Authentication::Data m_credentials;
+/*    Auth::MultiCredentialData m_extraCredentials;
+    Auth::CredentialData m_credentials;*/
 
     // Current User Security Vars:
     std::string m_clientCSRFToken;
