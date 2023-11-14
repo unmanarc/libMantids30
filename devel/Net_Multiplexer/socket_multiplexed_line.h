@@ -9,13 +9,13 @@
 #include <condition_variable>
 #include <Helpers/json.h>
 
-#include <Mantids29/Threads/mutex.h>
-#include <Mantids29/Threads/mutex_shared.h>
+#include <Mantids30/Threads/mutex.h>
+#include <Mantids30/Threads/mutex_shared.h>
 
 #include "socket_multiplexer_a_struct_databuffer.h"
 #include "socket_multiplexer_a_struct_lineid.h"
 
-#include <Mantids29/Net_Sockets/streamsocket.h>
+#include <Mantids30/Net_Sockets/streamsocket.h>
 
 namespace Mantids { namespace Network { namespace Multiplexor {
 

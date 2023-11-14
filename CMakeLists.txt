@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 3.10)
 
 ##############################################################################################################################
 # Vars and Versions:
-set(SVERSION 2.9.0)
-set(LIBPREFIX "Mantids29")
+set(SVERSION 3.0.0)
+set(LIBPREFIX "Mantids30")
 
-set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids29")
+set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids30")
 set(PROJECT_CONTACT "Aaron G. Mizrachi P. <aaron@unmanarc.com>")
 ##############################################################################################################################
 
@@ -27,7 +27,7 @@ option(BUILD_SHARED_LIBS "Enable building the library as a shared library instea
 
 ##############################################################################################################################
 # Project Settings:
-project(libMantids29)
+project(libMantids30)
 project(${PROJECT_NAME} VERSION ${SVERSION} DESCRIPTION "Mini-Advanced Network Toolkit for Internet Services Development")
 ##############################################################################################################################
 
@@ -38,7 +38,7 @@ include(GNUInstallDirs)
 
 #############################################################################################################################
 # Subprojects:
-ADD_SUBDIRECTORY(Mantids29)
+ADD_SUBDIRECTORY(Mantids30)
 #ADD_SUBDIRECTORY(devel)
 #############################################################################################################################
 

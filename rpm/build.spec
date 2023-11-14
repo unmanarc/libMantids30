@@ -1,5 +1,5 @@
 %define name libMantids
-%define version 2.9.0
+%define version 3.0.0
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 
 Name:           %{name}
@@ -7,8 +7,8 @@ Version:        %{version}
 Release:        %{build_timestamp}.git%{?dist}
 Summary:        Mini-Advanced C++11 Network Toolkit for Internet Services Development
 License:        LGPLv3
-URL:            https://github.com/unmanarc/libMantids29
-Source0:        https://github.com/unmanarc/libMantids29/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
+URL:            https://github.com/unmanarc/libMantids30
+Source0:        https://github.com/unmanarc/libMantids30/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
 Group:          Development/Libraries
 
 %define cmake cmake
@@ -141,22 +141,22 @@ ln -s . s390x-redhat-linux-gnu
 
 %files
 %doc
-%{_libdir}/libMantids29_*
-%exclude %{_libdir}/libMantids29_DB_SQLite*
-%exclude %{_libdir}/libMantids29_DB_PGSQL*
-%exclude %{_libdir}/libMantids29_DB_MariaDB*
+%{_libdir}/libMantids30_*
+%exclude %{_libdir}/libMantids30_DB_SQLite*
+%exclude %{_libdir}/libMantids30_DB_PGSQL*
+%exclude %{_libdir}/libMantids30_DB_MariaDB*
 
 %files devel
-/usr/include/Mantids29*
-/usr/share/pkgconfig/Mantids29*
+/usr/include/Mantids30*
+/usr/share/pkgconfig/Mantids30*
 
 %files sqlite
-%{_libdir}/libMantids29_DB_SQLite*
+%{_libdir}/libMantids30_DB_SQLite*
 
 %files postgresql
-%{_libdir}/libMantids29_DB_pgsql*
+%{_libdir}/libMantids30_DB_pgsql*
 
 %files mariadb
-%{_libdir}/libMantids29_DB_mariadb*
+%{_libdir}/libMantids30_DB_mariadb*
 
 %changelog

@@ -1,4 +1,4 @@
-# libMantids29 Install Guide for RHEL Based Distributions...
+# libMantids30 Install Guide for RHEL Based Distributions...
 
 Simple instructions for building this library in RHEL Based Distributions
 
@@ -46,13 +46,13 @@ This is the default build for the library:
 PREFIXPATH=/opt/osslibs
 
 prjdir=$(pwd)
-cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids29-Build-Shared
-cd ~/builds/libMantids29-Build-Shared
+cmake3 . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids30-Build-Shared
+cd ~/builds/libMantids30-Build-Shared
 make clean
 make -j12 install
 cd "$prjdir"
-cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids29-Build-Static
-cd ~/builds/libMantids29-Build-Static
+cmake3 . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -DCMAKE_INSTALL_LIBDIR=lib -B~/builds/libMantids30-Build-Static
+cd ~/builds/libMantids30-Build-Static
 make clean
 make -j12 install
 cd "$prjdir"

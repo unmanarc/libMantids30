@@ -1,6 +1,6 @@
 #include "socket_multiplexer_lines.h"
 #include "socket_multiplexer.h"
-#include <Mantids29/Threads/lock_shared.h>
+#include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids::Network::Multiplexor;
 

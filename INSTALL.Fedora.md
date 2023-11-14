@@ -1,4 +1,4 @@
-# libMantids29 Install Guide for Fedora 3x
+# libMantids30 Install Guide for Fedora 3x
 
 Simple instructions for building this library in Fedora
 
@@ -45,13 +45,13 @@ This is the default build for the library:
 PREFIXPATH=/opt/osslibs
 
 prjdir=$(pwd)
-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids29-Build-Shared
-cd ~/builds/libMantids29-Build-Shared
+cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids30-Build-Shared
+cd ~/builds/libMantids30-Build-Shared
 make clean
 make -j12 install
 cd "$prjdir"
-cmake . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids29-Build-Static
-cd ~/builds/libMantids29-Build-Static
+cmake . -DCMAKE_INSTALL_PREFIX:PATH=${PREFIXPATH} -B~/builds/libMantids30-Build-Static
+cd ~/builds/libMantids30-Build-Static
 make clean
 make -j12 install
 cd "$prjdir"

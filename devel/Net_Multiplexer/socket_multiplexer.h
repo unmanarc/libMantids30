@@ -8,7 +8,7 @@
 #include "socket_multiplexer_a_enum_lineaccept_msgs.h"
 #include "socket_multiplexer_plugin.h"
 
-#include <Mantids29/Net_Sockets/streamsocket.h>
+#include <Mantids30/Net_Sockets/streamsocket.h>
 
 namespace Mantids { namespace Network { namespace Multiplexor {
 
