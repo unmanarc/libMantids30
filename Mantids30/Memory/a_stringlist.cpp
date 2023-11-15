@@ -14,7 +14,6 @@ STRINGLIST::STRINGLIST(const std::list<std::string> &value)
     this->value = value;
 }
 
-
 std::list<std::string> STRINGLIST::getValue()
 {
     Threads::Sync::Lock_RD lock(mutex);
@@ -27,7 +26,7 @@ bool STRINGLIST::setValue(const std::list<std::string> &value)
     this->value = value;
     return true;
 }
-
+/*
 std::string STRINGLIST::toString()
 {
     std::list<std::string> xvalue = getValue();
@@ -40,6 +39,54 @@ std::string STRINGLIST::toString()
         if (first) first = false;
     }
     return r;
+}*/
+
+std::string STRINGLIST::toString()
+{
+    std::list<std::string> xvalue = getValue();
+    std::string r;
+    bool first = true;
+
+    for (const std::string &element : xvalue)
+    {
+        // Check if double quotes are needed
+        bool needsQuotes = (element.find(',') != std::string::npos || element.find('"') != std::string::npos);
+
+        // If it's not the first element, add comma
+        if (!first)
+        {
+            r += ",";
+        }
+        else
+        {
+            first = false;
+        }
+
+        // If quotes are needed...
+        if (needsQuotes)
+        {
+            // Encapsulate the field
+            r += '"';
+            // Escape double quotes if needed
+            for (char c : element)
+            {
+                if (c == '"')
+                {
+                    r += "\"\"";
+                }
+                else
+                {
+                    r += c;
+                }
+            }
+            // Close the encapsulation
+            r += '"';
+        }
+        else // If not, introduce the element.
+            r+=element;
+    }
+
+    return r;
 }
 
 bool STRINGLIST::fromString(const std::string &value)
@@ -49,14 +96,14 @@ bool STRINGLIST::fromString(const std::string &value)
     std::string::size_type curpos = 0, pos = std::string::npos;
     while (1)
     {
-        pos = value.find_first_of(',',curpos);
+        pos = value.find_first_of(',', curpos);
         // Last word....
         std::string svalue;
         if (pos != std::string::npos)
         {
-            svalue = value.substr(curpos, pos-curpos);
+            svalue = value.substr(curpos, pos - curpos);
             strs.push_back(svalue);
-            curpos=pos+1;
+            curpos = pos + 1;
         }
         else
         {
@@ -70,7 +117,8 @@ bool STRINGLIST::fromString(const std::string &value)
 
 Var *STRINGLIST::protectedCopy()
 {
-    STRINGLIST * var = new STRINGLIST;
-    if (var) *var = getValue();
+    STRINGLIST *var = new STRINGLIST;
+    if (var)
+        *var = getValue();
     return var;
 }
