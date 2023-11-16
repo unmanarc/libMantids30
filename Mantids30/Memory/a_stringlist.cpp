@@ -26,20 +26,6 @@ bool STRINGLIST::setValue(const std::list<std::string> &value)
     this->value = value;
     return true;
 }
-/*
-std::string STRINGLIST::toString()
-{
-    std::list<std::string> xvalue = getValue();
-    // TODO:  use "" and escape seq CSV format.
-    std::string r;
-    bool first = true;
-    for (const std::string & element : xvalue)
-    {
-        r += (!first? "," : "") + element;
-        if (first) first = false;
-    }
-    return r;
-}*/
 
 std::string STRINGLIST::toString()
 {
@@ -83,36 +69,115 @@ std::string STRINGLIST::toString()
             result += '"';
         }
         else // If not, introduce the element.
-            result+=element;
+            result += element;
     }
 
     return result;
 }
 
-bool STRINGLIST::fromString(const std::string &value)
+bool STRINGLIST::fromString(const std::string &inputString)
 {
-    // TODO:  use "" and escape seq CSV format.
-    std::list<std::string> strs;
-    std::string::size_type curpos = 0, pos = std::string::npos;
-    while (1)
+    std::list<std::string> finalValues;
+    std::string::size_type currentPosition = 0, startOfCurrentField = 0;
+    bool inQuotes = false, processWithoutQuotes = false;
+    std::string currentFieldValue;
+
+    while (currentPosition < inputString.size())
     {
-        pos = value.find_first_of(',', curpos);
-        // Last word....
-        std::string svalue;
-        if (pos != std::string::npos)
+        currentFieldValue = "";
+
+        if (!inQuotes)
         {
-            svalue = value.substr(curpos, pos - curpos);
-            strs.push_back(svalue);
-            curpos = pos + 1;
+            if (!processWithoutQuotes && inputString.at(currentPosition) == '"')
+            {
+                // Inside Quotes begin...
+                inQuotes = true;
+                startOfCurrentField = currentPosition;
+                currentPosition++;
+            }
+            else
+            {
+                // if processWithoutQuotes is true, change to false.
+                processWithoutQuotes = false;
+
+                // Not Inside Quotes... find the coma value and put the current value...
+                std::string::size_type commaPosition = inputString.find_first_of(',', currentPosition);
+                // Last word....
+                if (commaPosition != std::string::npos)
+                {
+                    // Others fields left...
+                    currentFieldValue = inputString.substr(currentPosition, commaPosition - currentPosition);
+                    finalValues.push_back(currentFieldValue);
+                    currentPosition = commaPosition + 1;
+                }
+                else
+                {
+                    // End of string Field (not any other comma)...
+                    currentFieldValue = inputString.substr(currentPosition, std::string::npos);
+                    finalValues.push_back(currentFieldValue);
+                    //currentPosition+=currentFieldValue.size();
+                    break;
+                }
+            }
         }
         else
         {
-            svalue = value.substr(curpos, std::string::npos);
-            strs.push_back(svalue);
-            break;
+            // In Quotes...
+            while (currentPosition < inputString.size())
+            {
+                char currentChar = inputString.at(currentPosition);
+                if ( currentChar == '\"' )
+                {
+                    if (currentPosition+1==inputString.size())
+                    {
+                        // End of String (not any other comma)...
+                        finalValues.push_back(currentFieldValue);
+                        currentPosition++;
+                        currentFieldValue = "";
+                        inQuotes=false;
+                        break;
+                    }
+                    else if ( inputString.at(currentPosition+1) == ',' )
+                    {
+                        // Field completed on ", now take the field and push into the values.
+                        // Process this field...
+                        finalValues.push_back(currentFieldValue);
+                        currentFieldValue = "";
+                        inQuotes=false;
+                        currentPosition+=2;
+                        startOfCurrentField = currentPosition;
+                    }
+                    else if ( inputString.at(currentPosition+1) == '\"' && currentPosition+2!=inputString.size() )
+                    {
+                        // Double Quote... take only one..
+                        currentFieldValue += currentChar;
+                        currentPosition+=2;
+                    }
+                    else
+                    {
+                        // 1. the " is followed by unknown bytes... revert the escaping?
+                        // 2. the "" is followed by the end of the string... revert the escaping?
+                        currentFieldValue="IGN";
+                        break;
+                    }
+                }
+                else
+                {
+                    currentFieldValue+=currentChar;
+                    currentPosition++;
+                }
+            }
+
+            if (!currentFieldValue.empty())
+            {
+                // the processing var was not completed. Revert the current Position...
+                currentPosition = startOfCurrentField;
+                processWithoutQuotes = true;
+                inQuotes = false;
+            }
         }
     }
-    return setValue(strs);
+    return setValue(finalValues);
 }
 
 Var *STRINGLIST::protectedCopy()
