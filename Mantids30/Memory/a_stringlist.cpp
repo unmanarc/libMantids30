@@ -43,50 +43,50 @@ std::string STRINGLIST::toString()
 
 std::string STRINGLIST::toString()
 {
-    std::list<std::string> xvalue = getValue();
-    std::string r;
-    bool first = true;
+    std::list<std::string> values = getValue();
+    std::string result;
+    bool isFirst = true;
 
-    for (const std::string &element : xvalue)
+    for (const std::string &element : values)
     {
         // Check if double quotes are needed
         bool needsQuotes = (element.find(',') != std::string::npos || element.find('"') != std::string::npos);
 
         // If it's not the first element, add comma
-        if (!first)
+        if (!isFirst)
         {
-            r += ",";
+            result += ",";
         }
         else
         {
-            first = false;
+            isFirst = false;
         }
 
         // If quotes are needed...
         if (needsQuotes)
         {
             // Encapsulate the field
-            r += '"';
+            result += '"';
             // Escape double quotes if needed
             for (char c : element)
             {
                 if (c == '"')
                 {
-                    r += "\"\"";
+                    result += "\"\"";
                 }
                 else
                 {
-                    r += c;
+                    result += c;
                 }
             }
             // Close the encapsulation
-            r += '"';
+            result += '"';
         }
         else // If not, introduce the element.
-            r+=element;
+            result+=element;
     }
 
-    return r;
+    return result;
 }
 
 bool STRINGLIST::fromString(const std::string &value)
