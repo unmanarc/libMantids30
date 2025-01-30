@@ -91,9 +91,6 @@ public:
 
 
 private:
-    //static bool incomingConnection(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> bsocket, const char *, bool secure);
-
-
     struct ThreadParameters {
         Config parameters;
         Connector * thisObj;

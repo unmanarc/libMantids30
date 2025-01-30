@@ -131,18 +131,23 @@ private:
 
     void init();
 
-    bool initialized, finalized;
+    bool initialized=false;
+        bool finalized=false;
     std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
     std::list<std::shared_ptr<SAThread>> threadList;
     std::map<std::string, uint32_t> connectionsPerIP;
 
     // Callbacks:
-    _callbackConnectionRB onConnect;
-    _callbackConnectionRB onInitFail;
-    _callbackConnectionRV onTimedOut;
-    _callbackConnectionLimit onMaxConnectionsPerIP;
+    _callbackConnectionRB onConnect = nullptr;
+    _callbackConnectionRB onInitFail = nullptr;
+    _callbackConnectionRV onTimedOut = nullptr;
+    _callbackConnectionLimit onMaxConnectionsPerIP = nullptr;
 
-    std::shared_ptr<void> contextOnConnect, contextOnInitFail, contextOnTimedOut, contextOnMaxConnectionsPerIP;
+    std::shared_ptr<void> contextOnConnect = nullptr;
+    std::shared_ptr<void> contextOnInitFail = nullptr;
+    std::shared_ptr<void> contextOnTimedOut = nullptr;
+    std::shared_ptr<void> contextOnMaxConnectionsPerIP = nullptr;
+
 
     // thread objects:
     std::thread acceptorThread;

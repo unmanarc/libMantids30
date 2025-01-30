@@ -79,9 +79,9 @@ Memory::Streams::StreamableObject::Status Socket_Stream_Base::write(const void *
     return cur;
 }
 
-std::pair<Socket_Stream_Base *, Socket_Stream_Base *> Socket_Stream_Base::GetSocketPair()
+std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Base>> Socket_Stream_Base::GetSocketPair()
 {
-    std::pair<Socket_Stream_Base *,Socket_Stream_Base *> p;
+    std::pair<std::shared_ptr<Socket_Stream_Base>,std::shared_ptr<Socket_Stream_Base>> p;
 
     p.first = nullptr;
     p.second = nullptr;
@@ -94,8 +94,8 @@ std::pair<Socket_Stream_Base *, Socket_Stream_Base *> Socket_Stream_Base::GetSoc
     }
     else
     {
-        p.first = new Socket_Stream_Base();
-        p.second = new Socket_Stream_Base();
+        p.first = std::make_shared<Socket_Stream_Base>();
+        p.second = std::make_shared<Socket_Stream_Base>();
 
         p.first->setSocketFD(sockets[0]);
         p.second->setSocketFD(sockets[1]);
@@ -103,8 +103,8 @@ std::pair<Socket_Stream_Base *, Socket_Stream_Base *> Socket_Stream_Base::GetSoc
 #else
     // Emulate via TCP. (EXPERIMENTAL)
 
-    std::shared_ptr<Sockets::Socket_TCP> llsock = new Sockets::Socket_TCP();
-    std::shared_ptr<Sockets::Socket_TCP> rsock = new Sockets::Socket_TCP();
+    std::shared_ptr<Sockets::Socket_TCP> llsock = std::make_shared<Socket_TCP>();
+    std::shared_ptr<Sockets::Socket_TCP> rsock = std::make_shared<Socket_TCP>();
     std::shared_ptr<Sockets::Socket_TCP> lsock = nullptr;
 
     llsock->listenOn(0,"127.0.0.1",true);
@@ -112,7 +112,7 @@ std::pair<Socket_Stream_Base *, Socket_Stream_Base *> Socket_Stream_Base::GetSoc
     lsock = std::dynamic_pointer_cast<Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
 
-    delete llsock;
+    //delete llsock;
 
     p.first = lsock;
     p.second = rsock;

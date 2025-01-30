@@ -25,7 +25,7 @@ public:
      * @brief GetSocketPair Create a Pair of interconnected sockets
      * @return pair of interconnected Socket_Stream_Bases. (remember to delete them)
     */
-    static std::pair<Socket_Stream_Base *, Socket_Stream_Base *> GetSocketPair();
+    static std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Base> > GetSocketPair();
 
     /**
      * @brief isConnected Get if the socket is connected. In case the socket is openned but the connection is down, the function will close the socket

@@ -22,8 +22,8 @@ SAThread::SAThread()
     m_onConnect = nullptr;
     m_onInitFail = nullptr;
 
-    m_objectOnConnect = nullptr;
-    m_objectOnInitFail = nullptr;
+    m_contextOnConnect = nullptr;
+    m_contextOnInitFail = nullptr;
     //m_parent = nullptr;
     m_pClientSocket = nullptr;
 }
@@ -47,16 +47,16 @@ void SAThread::stopSocket()
     m_pClientSocket->shutdownSocket();
 }
 
-void SAThread::setCallbackOnConnect(bool(*_onConnect)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void>contextOnConnected)
+void SAThread::setCallbackOnConnect(bool(*_onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool),std::shared_ptr<void> contextOnConnected)
 {
     this->m_onConnect = _onConnect;
-    this->m_objectOnConnect = contextOnConnected;
+    this->m_contextOnConnect = contextOnConnected;
 }
 
-void SAThread::setCallbackOnInitFail(bool (*_onInitFailed)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnInitFailed)
+void SAThread::setCallbackOnInitFail(bool (*_onInitFailed)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnInitFailed)
 {
     this->m_onInitFail = _onInitFailed;
-    this->m_objectOnInitFail = contextOnInitFailed;
+    this->m_contextOnInitFail = contextOnInitFailed;
 }
 
 /*
@@ -73,7 +73,7 @@ void SAThread::postInitConnection()
         // Start
         if (m_onConnect)
         {
-            if (!this->m_onConnect(m_objectOnConnect, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->m_onConnect(m_contextOnConnect, m_pClientSocket, m_remotePair,m_isSecure))
             {
                 m_pClientSocket = nullptr;
             }
@@ -83,7 +83,7 @@ void SAThread::postInitConnection()
     {
         if (m_onInitFail)
         {
-            if (!this->m_onInitFail(m_objectOnInitFail, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->m_onInitFail(m_contextOnInitFail, m_pClientSocket, m_remotePair,m_isSecure))
             {
                 m_pClientSocket = nullptr;
             }

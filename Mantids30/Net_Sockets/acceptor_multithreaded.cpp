@@ -13,19 +13,6 @@ void MultiThreaded::init()
     maxConnectionsPerIP = 16;
     maxConcurrentClients = 4096; // 4096 maximum concurrent connections (too many connections will cause too many threads, check your ulimit)
     maxWaitMSTime = 500; // wait 500ms to check if someone left
-    acceptorSocket = nullptr;
-    initialized = false;
-    finalized = false;
-
-    //Callbacks:
-    onConnect = nullptr;
-    onInitFail = nullptr;
-    onTimedOut = nullptr;
-    onMaxConnectionsPerIP = nullptr;
-    contextOnConnect = nullptr;
-    contextOnInitFail = nullptr;
-    contextOnTimedOut = nullptr;
-    contextOnMaxConnectionsPerIP = nullptr;
 }
 
 uint32_t MultiThreaded::getMaxConnectionsPerIP()
@@ -251,7 +238,7 @@ void MultiThreaded::stop()
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context)
+void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect,std::shared_ptr<void> context)
 {
     this->onConnect = _onConnect;
     this->contextOnConnect = context;

@@ -1,5 +1,6 @@
 #include "streams_bridge_thread.h"
 #include <cstdint>
+#include <memory>
 
 #ifndef WIN32
 #include <netinet/in.h>
@@ -23,7 +24,7 @@ Bridge_Thread::~Bridge_Thread()
     delete [] block_bwd;
 }
 
-void Bridge_Thread::setSocketEndpoints(Socket_Stream_Base *src, Socket_Stream_Base *dst, bool chunked)
+void Bridge_Thread::setSocketEndpoints(std::shared_ptr<Socket_Stream_Base> src, std::shared_ptr<Socket_Stream_Base> dst, bool chunked)
 {
     this->src = src;
     this->dst = dst;

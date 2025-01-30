@@ -18,8 +18,8 @@ class FastRPC1
 public:
     struct CallBackOnConnected
     {
-        void (*fastRPCCB_OnConnected)(const std::string &, void * context);
-        void * context;
+        void (*fastRPCCB_OnConnected)(const std::string &, std::shared_ptr<void> context);
+        std::shared_ptr<void> context;
     };
 
     struct Method
@@ -27,11 +27,11 @@ public:
         /**
          * @brief Function pointer.
          */
-        json (*method)(void * context, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
+        json (*method)(std::shared_ptr<void> context, const std::string &key, const json & parameters, std::shared_ptr<void> cntObj, const std::string & cntData);
         /**
          * @brief obj object to pass
          */
-        void * context = nullptr;
+        std::shared_ptr<void> context = nullptr;
     };
 
     struct ThreadParameters
@@ -47,7 +47,7 @@ public:
 
         // Accesible objects:
         std::string key;
-        void * context;
+        std::shared_ptr<void> context;
         std::string data;
     };
 
@@ -66,7 +66,7 @@ public:
         std::string key;
 
         // Accesible objects:
-        void * context;
+        std::shared_ptr<void> context;
         std::string data;
 
         // Request ID counter.
@@ -143,7 +143,7 @@ public:
                           const std::string & key,
                           const FastRPC1::CallBackOnConnected & _cb_OnConnected = {nullptr,nullptr},
                           const float & keyDistFactor=1.0,
-                          void * context = nullptr,
+                          std::shared_ptr<void> context = nullptr,
                           const std::string & data = ""
                           );
 
@@ -158,7 +158,7 @@ public:
      */
     int processConnection2(std::shared_ptr<Sockets::Socket_Stream_Base> stream,
                                   const std::string & key,
-                                  void * context = nullptr,
+                                  std::shared_ptr<void> context = nullptr,
                                   const std::string & data = ""
                                   )
     {
@@ -217,7 +217,7 @@ public:
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const std::string & data, void *context, const json &payload, bool * found);
+    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const std::string & data, std::shared_ptr<void> context, const json &payload, bool * found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
 
@@ -246,12 +246,12 @@ public:
      * @brief getOverwriteObject
      * @return
      */
-    void *getOverwriteObject() const;
+    std::shared_ptr<void>getOverwriteObject() const;
     /**
      * @brief setOverwriteObject Set overwrite object for functions
      * @param newOverwriteObject object.
      */
-    void setOverwriteObject(void *newOverwriteObject);
+    void setOverwriteObject(std::shared_ptr<void>newOverwriteObject);
 
 protected:
     virtual void eventUnexpectedAnswerReceived(FastRPC1::Connection *connection, const std::string &answer);
@@ -264,7 +264,7 @@ private:
     static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t execution);
 
     int processAnswer(FastRPC1::Connection *connection);
-    int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, void *context, const std::string &data);
+    int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, std::shared_ptr<void> context, const std::string &data);
 
     Mantids30::Threads::Safe::Map<std::string> connectionsByKeyId;
 
@@ -276,7 +276,7 @@ private:
     Mantids30::Threads::Pool::ThreadPool * threadPool;
 
     std::thread pinger;
-    void * overwriteContext;
+    std::shared_ptr<void> overwriteContext;
 
     std::atomic<bool> finished;
     uint32_t pingIntvl, rwTimeout;

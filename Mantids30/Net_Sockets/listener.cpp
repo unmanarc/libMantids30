@@ -16,7 +16,7 @@ bool Listener::incomingConnection(std::shared_ptr<void> context,
                                   const char *clientIp,
                                   bool isSecure)
 {
-    ThreadParameters * threadParams = (ThreadParameters *)context.get();
+    ThreadParameters *threadParams = (ThreadParameters *)(context.get());
 
     CALLBACK(threadParams->parameters.tcpCallbacks.onClientConnected)(threadParams->parameters.context, socketStream);
 

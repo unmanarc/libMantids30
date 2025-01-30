@@ -53,7 +53,7 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context);
+    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void>  context);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
@@ -131,13 +131,14 @@ private:
             ZeroBArray(remotePair);
         }
 
-        bool (*onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool);
-        bool (*onInitFail)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool);
-        std::shared_ptr<void> contextOnConnect, contextOnInitFail;
+        bool (*onConnect)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool) = nullptr;
+        bool (*onInitFail)(std::shared_ptr<void>,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool) = nullptr;
+        std::shared_ptr<void> contextOnConnect = nullptr;
+        std::shared_ptr<void> contextOnInitFail = nullptr;
 
         std::string key;
 
-        std::shared_ptr<void> context;
+        std::shared_ptr<void> context = nullptr;
         std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket;
         char remotePair[INET6_ADDRSTRLEN];
         bool isSecure;
@@ -150,19 +151,21 @@ private:
 
     void init();
 
-    Mantids30::Threads::Pool::ThreadPool * pool;
+    Mantids30::Threads::Pool::ThreadPool * pool = nullptr;
     std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
 
-    _callbackConnectionRB onConnect;
-    _callbackConnectionRB onInitFail;
-    _callbackConnectionRV onTimedOut;
+    _callbackConnectionRB onConnect= nullptr;
+    _callbackConnectionRB onInitFail = nullptr;
+    _callbackConnectionRV onTimedOut = nullptr;
 
-    std::shared_ptr<void> contextOnConnect, contextOnInitFail, contextOnTimedOut;
+    std::shared_ptr<void> contextOnConnect = nullptr;
+    std::shared_ptr<void> contextOnInitFail = nullptr;
+    std::shared_ptr<void> contextOnTimedOut = nullptr;
 
-    float queuesKeyRatio;
-    uint32_t timeoutMS;
-    uint32_t threadsCount;
-    uint32_t taskQueues;
+    float queuesKeyRatio = 0.5;
+    uint32_t timeoutMS = 5000;
+    uint32_t threadsCount = 52;
+    uint32_t taskQueues = 36;
 };
 
 }}}}

@@ -14,7 +14,7 @@ public:
     virtual ~Socket_Chain_ProtocolBase();
 
     virtual bool isEndPoint();
-    std::pair<Mantids30::Network::Sockets::Socket_Stream_Base *, Mantids30::Network::Sockets::Socket_Stream_Base *> makeSocketChainPair();
+    std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> , std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> > makeSocketChainPair();
     bool isServerMode() const;
     void setServerMode(bool value);
 

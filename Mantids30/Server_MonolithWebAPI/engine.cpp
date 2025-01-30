@@ -35,7 +35,7 @@ std::shared_ptr<Network::Servers::Web::APIClientHandler> Engine::createNewAPICli
     return webHandler;
 }
 /*
-bool Engine::_onConnect(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char *cUserIP, bool isSecure)
+bool Engine::_onConnect(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char *cUserIP, bool isSecure)
 {
     Engine * webserver = ((Engine *)context);
 
@@ -74,14 +74,14 @@ bool Engine::_onConnect(void * context, std::shared_ptr<Sockets::Socket_Stream_B
     return true;
 }*/
 /*
-bool Engine::_onInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+bool Engine::_onInitFailed(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
 {
     Engine * webserver = ((Engine *)context);
     webserver->m_callbacks.m_onInitFailed.call(context,s,cUserIP,isSecure);
     return true;
 }
 
-void Engine::_onTimeOut(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+void Engine::_onTimeOut(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
 {
     Engine * webserver = ((Engine *)context);
     if (webserver->m_callbacks.m_onTimeOut.call(context,s,cUserIP,isSecure))

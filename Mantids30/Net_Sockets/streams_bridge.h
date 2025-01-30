@@ -61,13 +61,13 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(Side i, Sockets::Socket_Stream_Base * s);
+    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream_Base>  s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    Sockets::Socket_Stream_Base * getPeer(Side i);
+    std::shared_ptr<Sockets::Socket_Stream_Base>  getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -148,7 +148,7 @@ private:
 
     Bridge_Thread *bridgeThreadPrc;
 
-    Sockets::Socket_Stream_Base * peers[2];
+    std::shared_ptr<Sockets::Socket_Stream_Base>  peers[2];
     TransmitionMode transmitionMode;
 
     std::atomic<uint64_t> sentBytes,recvBytes;
@@ -168,7 +168,7 @@ private:
 
     bool pingFinished;
     bool autoDeleteStreamPipeOnExit;
-    bool autoDeleteSocketsOnExit;
+    //bool autoDeleteSocketsOnExit;
     bool autoDeleteCustomPipeOnClose;
 
     std::thread pipeThreadP;

@@ -36,7 +36,7 @@ public:
     /**
      * Set callback when connection is fully established (if your function returns false, the socket will not be destroyed by this)
      */
-    void setCallbackOnConnect(bool (*_onConnect)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnConnected);
+    void setCallbackOnConnect(bool (*_onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnConnected);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS)
      */
@@ -66,13 +66,14 @@ private:
 
 
     std::shared_ptr<Sockets::Socket_Stream_Base> m_pClientSocket;
-    bool (*m_onConnect)(std::shared_ptr<void>,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    bool (*m_onInitFail)(std::shared_ptr<void>,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    bool (*m_onConnect)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    bool (*m_onInitFail)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
     char m_remotePair[INET6_ADDRSTRLEN];
     bool m_isSecure;
 
-    std::shared_ptr<void> m_objectOnConnect, m_objectOnInitFail;
+    std::shared_ptr<void> m_contextOnConnect = nullptr;
+    std::shared_ptr<void> m_contextOnInitFail = nullptr;
   //  void * m_parent;
 };
 

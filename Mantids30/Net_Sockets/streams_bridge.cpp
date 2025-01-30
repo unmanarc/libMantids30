@@ -20,7 +20,7 @@ Bridge::Bridge()
     lastPing = 0;
 
     finishingPeer = -1;
-    autoDeleteSocketsOnExit = false;
+    //autoDeleteSocketsOnExit = false;
     autoDeleteCustomPipeOnClose = false;
     transmitionMode = TRANSMITION_MODE_STREAM;
 
@@ -31,13 +31,13 @@ Bridge::Bridge()
 
 Bridge::~Bridge()
 {
-    if (autoDeleteSocketsOnExit)
+   /* if (autoDeleteSocketsOnExit)
     {
         if (peers[0])
             delete peers[0];
         if (peers[1])
             delete peers[1];
-    }
+    }*/
 }
 
 void Bridge::pipeThread(Bridge *stp)
@@ -208,7 +208,7 @@ bool Bridge::processPeer(Side currentSide)
     return true;
 }
 
-bool Bridge::setPeer(Side i, Socket_Stream_Base *s)
+bool Bridge::setPeer(Side i, std::shared_ptr<Socket_Stream_Base> s)
 {
     if (i>1)
         return false;
@@ -216,7 +216,7 @@ bool Bridge::setPeer(Side i, Socket_Stream_Base *s)
     return true;
 }
 
-Socket_Stream_Base *Bridge::getPeer(Side i)
+std::shared_ptr<Socket_Stream_Base> Bridge::getPeer(Side i)
 {
     if (i>1)
         return nullptr;
@@ -252,7 +252,7 @@ bool Bridge::isAutoDeleteStreamPipeOnThreadExit() const
 {
     return autoDeleteStreamPipeOnExit;
 }
-
+/*
 bool Bridge::isAutoDeleteSocketsOnExit() const
 {
     return autoDeleteSocketsOnExit;
@@ -262,7 +262,7 @@ void Bridge::setAutoDeleteSocketsOnExit(bool value)
 {
     autoDeleteSocketsOnExit = value;
 }
-
+*/
 // TODO: deleteOnExit
 void Bridge::setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit)
 {

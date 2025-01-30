@@ -111,7 +111,7 @@ bool FastRPC1::waitPingInterval()
     return false;
 }
 
-json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string & data, void *context, const json & payload, bool *found)
+json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string & data, std::shared_ptr<void> context, const json & payload, bool *found)
 {
     json r;
     Threads::Sync::Lock_RD lock(smutexMethods);
@@ -191,7 +191,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection * connection)
     return 1;
 }
 
-int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, void *context, const std::string &data)
+int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, std::shared_ptr<void> context, const std::string &data)
 {
     uint32_t maxAlloc = maxMessageSize;
     uint64_t requestId;
@@ -257,12 +257,12 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
     return 1;
 }
 
-void *FastRPC1::getOverwriteObject() const
+std::shared_ptr<void> FastRPC1::getOverwriteObject() const
 {
     return overwriteContext;
 }
 
-void FastRPC1::setOverwriteObject(void *newOverwriteObject)
+void FastRPC1::setOverwriteObject(std::shared_ptr<void> newOverwriteObject)
 {
     overwriteContext = newOverwriteObject;
 }
@@ -302,7 +302,7 @@ void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
     remoteExecutionTimeoutInMS = value;
 }
 
-int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, void *context, const std::string &data)
+int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, std::shared_ptr<void> context, const std::string &data)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "FRPC:procCNT");

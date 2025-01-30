@@ -10,21 +10,10 @@ void PoolThreaded::init()
     this->pool = nullptr;
     this->acceptorSocket = nullptr;
 
-    onConnect = nullptr;
-    onInitFail = nullptr;
-    onTimedOut = nullptr;
-
-    contextOnConnect = nullptr;
-    contextOnInitFail = nullptr;
-    contextOnTimedOut = nullptr;
 
     setThreadRunner(runner,this);
     setThreadStopper(stopper,this);
 
-    setThreadsCount(52);
-    setTaskQueues(36);
-    setTimeoutMS(5000);
-    setQueuesKeyRatio(0.5);
 }
 
 
