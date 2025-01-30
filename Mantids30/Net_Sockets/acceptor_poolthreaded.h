@@ -17,8 +17,8 @@ class PoolThreaded : public Mantids30::Threads::Threaded
 {
 public:
 
-    typedef bool (*_callbackConnectionRB)(void *, Sockets::Socket_Stream_Base *, const char *, bool);
-    typedef void (*_callbackConnectionRV)(void *, Sockets::Socket_Stream_Base *, const char *, bool);
+    typedef bool (*_callbackConnectionRB)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    typedef void (*_callbackConnectionRV)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
     /**
      * @brief PoolThreaded Constructor
@@ -32,17 +32,12 @@ public:
      * @brief PoolThreaded Integrated constructor with all the initial parameters (after that, you are safe to run startThreaded or startBlocking)
      * @param acceptorSocket acceptor socket
      * @param _onConnect callback function on connect (mandatory: this will handle the connection itself)
-     * @param obj object passed to all callbacks
+     * @param context object passed to all callbacks
      * @param _onInitFailed callback function on failed initialization (default nullptr -> none)
      * @param _onTimeOut callback function on time out (default nullptr -> none)
      * @param _onMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket,
-                    _callbackConnectionRB _onConnect,
-                    void *obj=nullptr,
-                    _callbackConnectionRB _onInitFailed=nullptr,
-                    _callbackConnectionRV _onTimeOut=nullptr
-                    );
+    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context = nullptr, _callbackConnectionRB _onInitFailed = nullptr, _callbackConnectionRV _onTimeOut = nullptr);
 
     // Destructor:
     ~PoolThreaded() override;
@@ -58,15 +53,15 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(_callbackConnectionRB _onConnect, void *obj);
+    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, void *obj);
+    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context);
     /**
      * Set callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, void *obj);
+    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context);
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
@@ -129,21 +124,21 @@ private:
             if (clientSocket)
             {
                 clientSocket->shutdownSocket();
-                delete clientSocket;
-                clientSocket = nullptr;
+//                delete clientSocket;
+//                clientSocket = nullptr;
             }
             isSecure = false;
             ZeroBArray(remotePair);
         }
 
-        bool (*onConnect)(void *,Sockets::Socket_Stream_Base *, const char *,bool);
-        bool (*onInitFail)(void *,Sockets::Socket_Stream_Base *, const char *,bool);
-        void *objOnConnect, *objOnInitFail;
+        bool (*onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool);
+        bool (*onInitFail)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool);
+        std::shared_ptr<void> contextOnConnect, contextOnInitFail;
 
         std::string key;
 
-        void * obj;
-        Sockets::Socket_Stream_Base * clientSocket;
+        std::shared_ptr<void> context;
+        std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket;
         char remotePair[INET6_ADDRSTRLEN];
         bool isSecure;
         char pad;
@@ -162,7 +157,7 @@ private:
     _callbackConnectionRB onInitFail;
     _callbackConnectionRV onTimedOut;
 
-    void *objOnConnect, *objOnInitFail, *objOnTimedOut;
+    std::shared_ptr<void> contextOnConnect, contextOnInitFail, contextOnTimedOut;
 
     float queuesKeyRatio;
     uint32_t timeoutMS;

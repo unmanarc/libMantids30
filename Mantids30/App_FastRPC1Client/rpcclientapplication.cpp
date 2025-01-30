@@ -69,16 +69,16 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     unsigned int logMode = Mantids30::Program::Logs::MODE_STANDARD;
 
     Logs::AppLog initLog(Mantids30::Program::Logs::MODE_STANDARD);
-    initLog.m_printEmptyFields = true;
-    initLog.m_printAttributeName = false;
-    initLog.m_minModuleFieldWidth = 36;
-    initLog.m_minUserFieldWidth = 1;
+    initLog.enableEmptyFieldLogging = true;
+    initLog.enableAttributeNameLogging = false;
+    initLog.moduleFieldMinWidth = 36;
+    initLog.userFieldMinWidth = 1;
 
     if (versionCodeName.empty())
-        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->m_softwareDescription +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
+        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
                     appVersionMajor, appVersionMinor, appVersionSubMinor,getpid());
     else
-        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->m_softwareDescription +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
+        initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
                     appVersionMajor, appVersionMinor, appVersionSubMinor, versionCodeName.c_str() , getpid());
 
     initLog.log0(__func__,Logs::LEVEL_INFO, "Using config dir: %s", configDir.c_str());
@@ -111,12 +111,12 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     if ( Globals::getLC_LogsUsingSyslog() ) logMode|=Mantids30::Program::Logs::MODE_SYSLOG;
     // Applog instance
     Globals::setAppLog(new Logs::AppLog(logMode));
-    LOG_APP->m_printEmptyFields = true;
-    LOG_APP->m_printAttributeName = false;
-    LOG_APP->m_useColors = Globals::getLC_LogsShowColors();
-    LOG_APP->m_printDate = Globals::getLC_LogsShowDate();
-    LOG_APP->m_minUserFieldWidth = 1;
-    LOG_APP->m_minModuleFieldWidth = 36;
+    LOG_APP->enableEmptyFieldLogging = true;
+    LOG_APP->enableAttributeNameLogging = false;
+    LOG_APP->enableColorLogging = Globals::getLC_LogsShowColors();
+    LOG_APP->enableDateLogging = Globals::getLC_LogsShowDate();
+    LOG_APP->userFieldMinWidth = 1;
+    LOG_APP->moduleFieldMinWidth = 36;
 
     bool cont=true;
 
@@ -233,7 +233,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
     int r = rpcStart(argc,argv,globalArguments);
 
     // Everything is running ok here...
-    LOG_APP->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->m_softwareDescription + " started up, PID: %d").c_str(), getpid());
+    LOG_APP->log0(__func__,Logs::LEVEL_INFO,  (globalArguments->softwareDescription + " started up, PID: %d").c_str(), getpid());
     return r;
 }
 

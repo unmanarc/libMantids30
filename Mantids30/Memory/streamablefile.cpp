@@ -38,7 +38,7 @@ int StreamableFile::open(const char *path, int oflag, mode_t __mode)
     return fd;
 }
 
-bool StreamableFile::streamTo(Memory::Streams::StreamableObject *out, StreamableObject::Status &wrStatUpd)
+bool StreamableFile::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
 {
     StreamableObject::Status cur;
 

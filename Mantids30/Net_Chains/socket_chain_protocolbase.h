@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <utility>
 #include <Mantids30/Net_Sockets/socket_stream_base.h>
 
@@ -13,7 +14,7 @@ public:
     virtual ~Socket_Chain_ProtocolBase();
 
     virtual bool isEndPoint();
-    std::pair<Mantids30::Network::Sockets::Socket_Stream_Base *, Mantids30::Network::Sockets::Socket_Stream_Base*> makeSocketChainPair();
+    std::pair<Mantids30::Network::Sockets::Socket_Stream_Base *, Mantids30::Network::Sockets::Socket_Stream_Base *> makeSocketChainPair();
     bool isServerMode() const;
     void setServerMode(bool value);
 

@@ -73,9 +73,9 @@ public:
     void setDaemonName(const std::string &value);
 
 
-    std::string m_softwareLicense; /**< Program license. */
-    std::string m_softwareDescription; /**< Program description. */
-    std::string m_programName; /**< Program name. */
+    std::string softwareLicense; /**< Program license. */
+    std::string softwareDescription; /**< Program description. */
+    std::string softwareName; /**< Program name. */
 
 protected:
     std::string m_daemonName; /**< Program name. */

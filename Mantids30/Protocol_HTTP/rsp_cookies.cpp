@@ -3,7 +3,6 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <vector>
 #include <string>
 
 using namespace std;
@@ -17,26 +16,21 @@ Cookies_ServerSide::Cookies_ServerSide()
 {
 }
 
-Cookies_ServerSide::~Cookies_ServerSide()
-{
-    for (auto & cookie : cookiesMap) delete cookie.second;
-}
-
 void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
     for (const auto & cookie :cookiesMap )
     {
-        headers->add("Set-Cookie",((Headers::Cookie *)cookie.second)->toSetCookieString(cookie.first));
+        headers->add("Set-Cookie",(cookie.second)->toSetCookieString(cookie.first));
     }
 }
 
 string Cookies_ServerSide::getCookieValueByName(const string &cookieName)
 {
-    Headers::Cookie * cookieValue = getCookieByName(cookieName);
+    std::shared_ptr<Headers::Cookie> cookieValue = getCookieByName(cookieName);
     return !cookieValue?"":cookieValue->getValue();
 }
 
-Headers::Cookie * Cookies_ServerSide::getCookieByName(const string &cookieName)
+std::shared_ptr<Headers::Cookie> Cookies_ServerSide::getCookieByName(const string &cookieName)
 {
     if (cookiesMap.find(cookieName) == cookiesMap.end()) return nullptr;
     return cookiesMap[cookieName];
@@ -45,11 +39,10 @@ Headers::Cookie * Cookies_ServerSide::getCookieByName(const string &cookieName)
 bool Cookies_ServerSide::parseCookie(const string &cookie_str)
 {
     std::string cookieName;
-    Headers::Cookie * cookieValue = new Headers::Cookie;
+    std::shared_ptr<Headers::Cookie> cookieValue = std::make_shared<Headers::Cookie>();
     cookieValue->fromSetCookieString(cookie_str,&cookieName);
     if (cookieName.empty() || cookiesMap.find(cookieName) != cookiesMap.end())
     {
-        delete cookieValue;
         return false;
     }
     else
@@ -63,11 +56,18 @@ bool Cookies_ServerSide::addCookieVal(const string &cookieName, const Headers::C
 {
     if (cookiesMap.find(cookieName) != cookiesMap.end()) return false;
 
-    Headers::Cookie * val = new Headers::Cookie;
+    std::shared_ptr<Headers::Cookie> val = std::make_shared<Headers::Cookie>();
     *val = cookieValue;
 
     cookiesMap[cookieName] = val;
 
+    return true;
+}
+
+bool Cookies_ServerSide::removeCookie(const std::string &cookieName)
+{
+    if (cookiesMap.find(cookieName) == cookiesMap.end()) return false;
+    cookiesMap.erase(cookieName);
     return true;
 }
 
@@ -83,7 +83,6 @@ void Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
 
     if (cookiesMap.find(cookieName) != cookiesMap.end())
     {
-        delete cookiesMap[cookieName];
         cookiesMap.erase(cookieName);
     }
 

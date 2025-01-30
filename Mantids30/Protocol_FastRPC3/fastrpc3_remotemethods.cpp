@@ -1,7 +1,5 @@
 #include "fastrpc3.h"
-#include <Mantids30/Auth/ds_authentication.h>
 #include <Mantids30/API_Monolith/methodshandler.h>
-#include <Mantids30/Auth/multicredentialdata.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -43,7 +41,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
     builder.settings_["indentation"] = "";
     string output = Json::writeString(builder, payload);
 
-    if (output.size() > parent->m_parameters.maxMessageSize)
+    if (output.size() > parent->config.maxMessageSize)
     {
         if (error)
         {
@@ -60,9 +58,9 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
     while ((connection = (FastRPC3::Connection *) parent->m_connectionMapById.openElement(connectionId)) == nullptr)
     {
         _tries++;
-        if (_tries >= parent->m_parameters.remoteExecutionDisconnectedTries || !retryIfDisconnected)
+        if (_tries >= parent->config.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(parent->m_callbacks.CB_OutgoingTask_FailedExecutionOnDisconnectedPeer)(connectionId, methodName, payload);
+            CALLBACK(parent->callbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, methodName, payload);
             if (error)
             {
                 (*error)["succeed"] = false;
@@ -98,7 +96,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         connection->stream->writeU<uint64_t>(requestId) &&
         connection->stream->writeU<uint8_t>(flags) &&
         connection->stream->writeStringEx<uint8_t>(methodName) &&
-        connection->stream->writeStringEx<uint32_t>(output, parent->m_parameters.maxMessageSize))
+        connection->stream->writeStringEx<uint32_t>(output, parent->config.maxMessageSize))
     {
     }
     else
@@ -138,10 +136,10 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
 
         // Process multiple signals until our answer comes...
 
-        if (connection->answersCondition.wait_for(lk, Ms(parent->m_parameters.remoteExecutionTimeoutInMS)) == cv_status::timeout)
+        if (connection->answersCondition.wait_for(lk, Ms(parent->config.remoteExecutionTimeoutInMS)) == cv_status::timeout)
         {
             // break by timeout. (no answer)
-            CALLBACK(parent->m_callbacks.CB_OutgoingTask_FailedExecutionTimedOut)(connectionId, methodName, payload);
+            CALLBACK(parent->callbacks.onOutgoingTaskFailureTimeout)(connectionId, methodName, payload);
 
             if (error)
             {
@@ -225,6 +223,12 @@ bool FastRPC3::RemoteMethods::logout(json *error)
     return JSON_ASBOOL_D(x, false);
 }
 
+json FastRPC3::RemoteMethods::getSSOData(json *error)
+{
+    json x = parent->remote(connectionId).executeTask( "SESSION.GETSSODATA", {}, error, true, true);
+    return JSON_ASBOOL_D(x, false);
+}
+
 bool FastRPC3::RemoteMethods::close()
 {
     bool r = false;
@@ -242,7 +246,7 @@ bool FastRPC3::RemoteMethods::close()
     }
     else
     {
-        CALLBACK(parent->m_callbacks.CB_OutgoingTask_FailedExecutionOnDisconnectedPeer)(connectionId, "CLOSE", {});
+        CALLBACK(parent->callbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, "CLOSE", {});
     }
     return r;
 }

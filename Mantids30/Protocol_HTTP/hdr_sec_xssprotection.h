@@ -43,9 +43,9 @@ public:
      */
     void setDefaults();
 
-    bool m_parameterActivated; ///< Whether the X-XSS-Protection header is activated.
-    bool m_modeBlocking; ///< Whether blocking is enabled for the X-XSS-Protection header.
-    std::string m_reportURL; ///< The URL to report violations to for the X-XSS-Protection header.
+    bool isActivated = true; ///< Whether the X-XSS-Protection header is activated.
+    bool enableBlockingMode = true; ///< Whether blocking is enabled for the X-XSS-Protection header.
+    std::string reportURL; ///< The URL to report violations to for the X-XSS-Protection header.
 };
 
 }}}}}}

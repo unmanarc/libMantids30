@@ -270,7 +270,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Streamable
-    bool streamTo(Memory::Streams::StreamableObject * out, Streams::StreamableObject::Status & wrStatUpd) override;
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Streams::StreamableObject::Status & wrStatUpd) override;
     Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Streams::StreamableObject::Status & wrStatUpd) override;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FS options:

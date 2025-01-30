@@ -1,4 +1,5 @@
 #include "socket_chain_protocolbase.h"
+#include <memory>
 
 using namespace Mantids30::Network;
 using namespace Sockets::ChainProtocols;

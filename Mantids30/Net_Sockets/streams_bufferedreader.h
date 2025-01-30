@@ -17,7 +17,7 @@ public:
         E_STREAMBUFFER_READ_MAXSIZEEXCEED = 4
     };
 
-    BufferedReader( Network::Sockets::Socket_Stream_Base * stream, const size_t & maxBufferSize );
+    BufferedReader( std::shared_ptr<Sockets::Socket_Stream_Base> stream, const size_t & maxBufferSize );
     ~BufferedReader();
 
     eStreamBufferReadErrors bufferedReadUntil(void *data, size_t * len, int delimiter );
@@ -36,7 +36,7 @@ private:
 
     bool bufferOK;
     void * buffer;
-    Network::Sockets::Socket_Stream_Base * stream;
+    std::shared_ptr<Sockets::Socket_Stream_Base> stream;
     size_t maxBufferSize, currentBufferSize;
 };
 

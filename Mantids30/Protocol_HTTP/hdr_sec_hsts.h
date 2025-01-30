@@ -47,14 +47,11 @@ public:
      */
     bool fromString(const std::string& sValue);
 
-
-    bool m_activated; ///< Whether the HSTS policy is activated.
-    bool m_preloadEnabled; ///< Whether to use the preload option.
-    bool m_subdomainIncluded; ///< Whether to include subdomains in the HSTS policy.
-
-
+    bool isActivated = false; ///< Whether the HSTS policy is activated.
+    bool isPreloadEnabled = false; ///< Whether to use the preload option.
+    bool isSubdomainIncluded = false; ///< Whether to include subdomains in the HSTS policy.
 private:
-    uint32_t m_maxAge; ///< The maximum age in seconds for which the HSTS policy is enforced.
+    uint32_t m_maxAge = 0; ///< The maximum age in seconds for which the HSTS policy is enforced.
 };
 
 

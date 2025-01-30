@@ -52,13 +52,13 @@ size_t B_Chunks::getMaxChunks() const
 
 void B_Chunks::setMaxChunks(const size_t &value)
 {
-    if (value<std::numeric_limits<uint32_t>::max())
+    if (value<UINT32_MAX)
     {
         maxChunks = value;
     }
     else
     {
-        maxChunks = std::numeric_limits<uint32_t>::max();
+        maxChunks = UINT32_MAX;
     }
 }
 

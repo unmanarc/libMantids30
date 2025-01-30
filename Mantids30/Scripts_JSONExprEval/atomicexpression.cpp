@@ -1,7 +1,6 @@
 #include "atomicexpression.h"
 #include <boost/regex.hpp>
 #include <string>
-#include <algorithm>
 
 #include <boost/algorithm/string/predicate.hpp>
 

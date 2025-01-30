@@ -27,7 +27,7 @@ public:
     template<typename T>
     T getTValue(const std::string& varName)
     {
-        auto * value = getValue(varName);
+        auto value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -47,7 +47,7 @@ public:
     template<typename T>
     T getTValue(const std::string& varName, const T & defaultValue)
     {
-        auto * value = getValue(varName);
+        auto value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -114,13 +114,13 @@ public:
      * @param varName variable name
      * @return first memory container abstract
      */
-    virtual Mantids30::Memory::Streams::StreamableObject * getValue(const std::string & varName) = 0;
+    virtual std::shared_ptr<Memory::Streams::StreamableObject>  getValue(const std::string & varName) = 0;
     /**
      * @brief getValues Get all the memory containers associated with a variable name
      * @param varName variable name
      * @return list of memory containers abstracts
      */
-    virtual std::list<Mantids30::Memory::Streams::StreamableObject *> getValues(const std::string & varName) = 0;
+    virtual std::list<std::shared_ptr<Memory::Streams::StreamableObject> > getValues(const std::string & varName) = 0;
     /**
      * @brief getKeysList Get a set of all the registered variable names
      * @return set of all registered variable names

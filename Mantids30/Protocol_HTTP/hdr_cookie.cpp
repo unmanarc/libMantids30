@@ -20,10 +20,12 @@ void Cookie::setDefaults()
 {
     // Don't expire.
     expires.setUnixTime(0);
-    max_age=std::numeric_limits<uint32_t>::max();
-    secure=false;
-    httpOnly=false;
-    sameSite = HTTP_COOKIE_SAMESITE_LAX;
+    max_age=UINT32_MAX;
+
+    // Default: the cookie will be secure. If you want to downgrade, do it manually.
+    secure=true;
+    httpOnly=true;
+    sameSite = HTTP_COOKIE_SAMESITE_STRICT;
 
     value="";
     domain="";
@@ -35,7 +37,7 @@ std::string Cookie::toSetCookieString(const std::string &cookieName)
     std::string opts = cookieName + "=" + value + "; ";
 
     if (expires.getUnixTime()) opts+= "Expires=" + expires.toString() + "; ";
-    if (max_age!=std::numeric_limits<uint32_t>::max()) opts+= "Max-Age=" + std::to_string(max_age) + "; ";
+    if (max_age!=UINT32_MAX) opts+= "Max-Age=" + std::to_string(max_age) + "; ";
     if (secure) opts+= "Secure; ";
     if (httpOnly) opts+= "HttpOnly; ";
     if (!domain.empty()) opts+= "Domain=" + domain + "; ";

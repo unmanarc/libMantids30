@@ -4,7 +4,7 @@
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;
 
-BufferedReader::BufferedReader(Socket_Stream_Base *stream, const size_t &bufferSize)
+BufferedReader::BufferedReader( std::shared_ptr<Sockets::Socket_Stream_Base> stream, const size_t &bufferSize)
 {
     this->stream = stream;
     buffer = malloc(bufferSize);

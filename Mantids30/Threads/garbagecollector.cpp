@@ -1,11 +1,8 @@
 #include "garbagecollector.h"
-#include <errno.h>
-#include <iostream>
 
 using namespace Mantids30::Threads;
 
 using Ms = std::chrono::milliseconds;
-
 
 GarbageCollector::GarbageCollector(const uint32_t &intervalMS)
 {

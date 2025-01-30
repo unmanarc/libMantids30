@@ -1,5 +1,5 @@
 #include "common_content.h"
-#include "Mantids30/Memory/streamablejson.h"
+#include <Mantids30/Memory/streamablejson.h>
 #include "common_content_chunked_subparser.h"
 
 #include <limits>
@@ -38,7 +38,7 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
         case PROCMODE_CHUNK_SIZE:
         {
             size_t targetChunkSize;
-            if ((targetChunkSize=parseHttpChunkSize())!=std::numeric_limits<uint32_t>::max())
+            if ((targetChunkSize=parseHttpChunkSize())!=UINT32_MAX)
             {
                 if (targetChunkSize>0)
                 {
@@ -121,8 +121,8 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
 uint32_t Content::parseHttpChunkSize()
 {
     uint32_t parsedSize = getParsedBuffer()->toUInt32(16);
-    if ( parsedSize == std::numeric_limits<uint32_t>::max() || parsedSize>m_securityMaxHttpChunkSize)
-        return std::numeric_limits<uint32_t>::max();
+    if ( parsedSize == UINT32_MAX || parsedSize>m_securityMaxHttpChunkSize)
+        return UINT32_MAX;
     else
         return parsedSize;
 }
@@ -216,8 +216,8 @@ bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
     {
     case TRANSMIT_MODE_CHUNKS:
     {
-        Content_Chunked_SubParser retr(upStream);
-        return m_outStream->streamTo(&retr,wrStat) && upStream->getFailedWriteState()==0;
+        std::shared_ptr<Content_Chunked_SubParser> retr = std::make_shared<Content_Chunked_SubParser>(upStream);
+        return m_outStream->streamTo(retr,wrStat) && upStream->getFailedWriteState()==0;
     }
     case TRANSMIT_MODE_CONTENT_LENGTH:
     case TRANSMIT_MODE_CONNECTION_CLOSE:

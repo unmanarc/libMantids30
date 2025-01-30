@@ -8,7 +8,7 @@ StreamableString::StreamableString()
 {
 }
 
-bool StreamableString::streamTo(Memory::Streams::StreamableObject *out, StreamableObject::Status &wrStatUpd)
+bool StreamableString::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
 {
     StreamableObject::Status cur;
     if (!(cur=out->writeFullStream(value.c_str(),value.size(),wrStatUpd)).succeed || cur.finish)

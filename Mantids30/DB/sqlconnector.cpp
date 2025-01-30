@@ -6,11 +6,6 @@ using namespace Mantids30::Database;
 
 SQLConnector::SQLConnector()
 {
-    m_maxQueryLockMilliseconds = 10000;
-    m_maxReconnectionAttempts = 10;
-    m_reconnectIntervalSeconds = 3;
-    m_finalized = false;
-    m_port = 0;
 }
 
 SQLConnector::~SQLConnector()
@@ -37,17 +32,17 @@ std::string SQLConnector::getDBHostname() const
     return m_host;
 }
 
-AuthData SQLConnector::getDBCredentialData() const
+DatabaseCredentials SQLConnector::getDBCredentialData() const
 {
-    AuthData x = m_auth;
+    DatabaseCredentials x = m_credentials;
     // Remove password ;)
-    x.password = "";
+    x.userPassword = "";
     return x;
 }
 
-AuthData SQLConnector::getDBFullCredentialData() const
+DatabaseCredentials SQLConnector::getDBFullCredentialData() const
 {
-    return m_auth;
+    return m_credentials;
 }
 
 uint16_t SQLConnector::getDBPort() const
@@ -60,24 +55,24 @@ std::string SQLConnector::getDBFilePath() const
     return m_dbFilePath;
 }
 
-Query *SQLConnector::createQuery(eQueryPTRErrors *error)
+std::shared_ptr<Query> SQLConnector::createQuery(eQueryPTRErrors *error)
 {
-    Query * query = createQuery0();
+    std::shared_ptr<Query> query = createQuery0();
     if (!query) return nullptr;
 
-    if (!attachQuery(query))
+    if (!attachQuery(query.get()))
     {
         // Query no attached, destroying it...
         *error = QUERY_SQLCONNECTORFINISHED;
-        delete query;
         return nullptr;
     }
+
+    query->m_throwCPPErrorOnQueryFailure = m_throwCPPErrorOnQueryFailure;
 
     if (!query->setSqlConnector(this, &m_databaseLockMutex, m_maxQueryLockMilliseconds))
     {
         // Query will be detached by itself...
         *error = QUERY_UNABLETOADQUIRELOCK;
-        delete query;
         return nullptr;
     }
 
@@ -93,7 +88,7 @@ std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::createQuerySharedPTR(
     return q;
 }
 
-void SQLConnector::detachQuery(Query *query)
+void SQLConnector::detachQuery(Query * query)
 {
     std::unique_lock<std::mutex> lock(this->m_querySetMutex);
 
@@ -105,7 +100,7 @@ void SQLConnector::detachQuery(Query *query)
         m_emptyQuerySetCondition.notify_all();
 }
 
-bool SQLConnector::query(std::string *lastError, const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars)
+bool SQLConnector::query(std::string *lastError, const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars)
 {
     auto i = qInsert(preparedQuery,inputVars);
     if (!(i->getResultsOK()))
@@ -115,13 +110,13 @@ bool SQLConnector::query(std::string *lastError, const std::string &preparedQuer
     return i->getResultsOK();
 }
 
-bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars)
+bool SQLConnector::query(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars)
 {
     auto i = qInsert(preparedQuery,inputVars);
     return i->getResultsOK();
 }
 
-std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, Mantids30::Memory::Abstract::Var *> &inputVars, const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
+std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars, const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<SQLConnector::QueryInstance> q = createQuerySharedPTR();
 
@@ -143,7 +138,7 @@ std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qSelect(const std::st
     return q;
 }
 
-std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qInsert(const std::string &preparedQuery, const std::map<std::string, Memory::Abstract::Var *> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
+std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qInsert(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<SQLConnector::QueryInstance> q = createQuerySharedPTR();
 
@@ -161,7 +156,7 @@ std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qInsert(const std::st
     return q;
 }
 
-bool SQLConnector::attachQuery(Query *query)
+bool SQLConnector::attachQuery(Query * query)
 {
     std::unique_lock<std::mutex> lock(this->m_querySetMutex);
     if (m_finalized)
@@ -170,11 +165,21 @@ bool SQLConnector::attachQuery(Query *query)
     return true;
 }
 
-bool Mantids30::Database::SQLConnector::connect(const std::string &host, const uint16_t &port, const Mantids30::Database::AuthData &auth, const std::string &dbName)
+bool SQLConnector::throwCPPErrorOnQueryFailure() const
+{
+    return m_throwCPPErrorOnQueryFailure;
+}
+
+void SQLConnector::setThrowCPPErrorOnQueryFailure(bool newThrowCPPErrorOnQueryFailure)
+{
+    m_throwCPPErrorOnQueryFailure = newThrowCPPErrorOnQueryFailure;
+}
+
+bool Mantids30::Database::SQLConnector::connect(const std::string &host, const uint16_t &port, const Mantids30::Database::DatabaseCredentials &credentials, const std::string &dbName)
 {
     this->m_host = host;
     this->m_port = port;
-    this->m_auth = auth;
+    this->m_credentials = credentials;
     this->m_dbName = dbName;
     return connect0();
 }

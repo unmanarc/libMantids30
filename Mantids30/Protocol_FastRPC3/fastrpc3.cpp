@@ -1,7 +1,6 @@
 #include "fastrpc3.h"
-#include <Mantids30/Auth/ds_authentication.h>
+#include "Mantids30/Net_Sockets/socket_stream_base.h"
 #include <Mantids30/API_Monolith/methodshandler.h>
-#include <Mantids30/Auth/multicredentialdata.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -26,7 +25,7 @@ using S = chrono::seconds;
 void vrsyncRPCPingerThread(FastRPC3 *obj)
 {
 #ifndef WIN32
-    pthread_setname_np(pthread_self(), "fRPC2:Pinger");
+    pthread_setname_np(pthread_self(), "fRPC3:Pinger");
 #endif
 
     while (obj->waitPingInterval())
@@ -35,9 +34,19 @@ void vrsyncRPCPingerThread(FastRPC3 *obj)
     }
 }
 
-FastRPC3::FastRPC3(DataFormat::JWT *jwtValidator, const string &appName, uint32_t threadsCount, uint32_t taskQueues)
-    : m_defaultMethodsHandlers(appName)
-    , m_parameters(&m_defaultMethodsHandlers, jwtValidator)
+FastRPC3::FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
+    : m_defaultMethodsHandlers()
+    , config(&m_defaultMethodsHandlers, jwtValidator)
+{
+    m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
+    m_isFinished = false;
+    m_threadPool->start();
+    m_pingerThread = thread(vrsyncRPCPingerThread, this);
+}
+
+FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
+    : m_defaultMethodsHandlers()
+    , config(&m_defaultMethodsHandlers, std::make_shared<Mantids30::DataFormat::JWT>())
 {
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
     m_isFinished = false;
@@ -84,18 +93,18 @@ void FastRPC3::pingAllActiveConnections()
 bool FastRPC3::waitPingInterval()
 {
     unique_lock<mutex> lk(m_pingMutex);
-    if (m_pingCondition.wait_for(lk, S(m_parameters.pingIntervalInSeconds)) == cv_status::timeout)
+    if (m_pingCondition.wait_for(lk, S(config.pingIntervalInSeconds)) == cv_status::timeout)
     {
         return true;
     }
     return false;
 }
 
-int FastRPC3::processIncommingAnswer(FastRPC3::Connection *connection)
+int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
 {
     CallbackDefinitions *callbacks = ((CallbackDefinitions *) connection->callbacks);
 
-    uint32_t maxAlloc = m_parameters.maxMessageSize;
+    uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId;
     uint8_t executionStatus;
     char *payloadBytes;
@@ -144,7 +153,7 @@ int FastRPC3::processIncommingAnswer(FastRPC3::Connection *connection)
         }
         else
         {
-            CALLBACK(callbacks->CB_Protocol_UnexpectedAnswerReceived)(connection, payloadBytes);
+            CALLBACK(callbacks->onProtocolUnexpectedResponse)(connection, payloadBytes);
         }
     }
 
@@ -152,9 +161,9 @@ int FastRPC3::processIncommingAnswer(FastRPC3::Connection *connection)
     return 1;
 }
 
-int FastRPC3::processIncommingExecutionRequest(Socket_TLS *stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
+int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
 {
-    uint32_t maxAlloc = m_parameters.maxMessageSize;
+    uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId = 0;
     uint8_t flags = 0;
     char *payloadBytes = nullptr, *extraAuthToken = nullptr;
@@ -197,34 +206,35 @@ int FastRPC3::processIncommingExecutionRequest(Socket_TLS *stream, const string 
         }
     }
     
-    std::shared_ptr<Auth::Session> session = sessionHolder->getSharedPointer();
+    std::shared_ptr<Sessions::Session> session = sessionHolder->getSharedPointer();
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
     Helpers::JSONReader2 reader;
     FastRPC3::TaskParameters *params = new FastRPC3::TaskParameters;
     params->sessionHolder = sessionHolder;
-    params->methodsHandler = m_parameters.methodHandlers;
-    params->jwtValidator = m_parameters.jwtValidator;
+    params->methodsHandler = config.methodHandlers;
+    params->jwtValidator = config.jwtValidator;
     params->requestId = requestId;
     params->methodName = methodName;
     params->extraTokenAuth = extraAuthToken;
     params->remotePeerIPAddress = stream->getRemotePairStr();
-    params->remotePeerTLSCommonName = stream->getTLSPeerCN();
+    params->remotePeerTLSCommonName = stream->getPeerName();
     params->doneSharedMutex = mtDone;
     params->socketMutex = mtSocket;
     params->streamBack = stream;
     params->caller = this;
-    params->maxMessageSize = m_parameters.maxMessageSize;
-    params->callbacks = &m_callbacks;
-    params->userId = session ? session->getAuthUser() : "";
+    params->maxMessageSize = config.maxMessageSize;
+    params->callbacks = &callbacks;
+    params->userId = session ? session->getUser() : "";
+    params->domain = session ? session->getDomain() : "";
 
     bool parsingSuccessful = reader.parse(payloadBytes, params->payload);
     delete[] payloadBytes;
 
     if (!parsingSuccessful)
     {
-        // Bad Incomming JSON... Disconnect
+        // Bad Incoming JSON... Disconnect
         delete params;
         return CONNECTION_FAILED_PARSING_PAYLOAD;
     }
@@ -238,11 +248,13 @@ int FastRPC3::processIncommingExecutionRequest(Socket_TLS *stream, const string 
             currentTask = LocalRPCTasks::login;
         else if (params->methodName == "SESSION.LOGOUT")
             currentTask =  LocalRPCTasks::logout;
+        else if (params->methodName == "SESSION.GETSSODATA")
+            currentTask =  LocalRPCTasks::getSSOData;
 
-        if (!m_threadPool->pushTask(currentTask, params, m_parameters.queuePushTimeoutInMS, priority, key))
+        if (!m_threadPool->pushTask(currentTask, params, config.queuePushTimeoutInMS, priority, key))
         {
             // Can't push the task in the queue. Null answer.
-            CALLBACK(m_callbacks.CB_IncommingTask_DroppingOnFullQueue)(params);
+            CALLBACK(callbacks.onIncomingTaskDroppedQueueFull)(params);
             sendRPCAnswer(params, "", 3);
             params->doneSharedMutex->unlockShared();
             delete params;
@@ -261,7 +273,7 @@ void FastRPC3::setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAs
     m_usingRemotePeerCommonNameAsConnectionId = newUseCNAsServerKey;
 }
 
-int FastRPC3::handleConnection(Network::Sockets::Socket_TLS *stream, bool remotePeerIsServer, const char *remotePair)
+int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer, const char *remotePair)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "VSRPC:ProcStr");
@@ -273,13 +285,34 @@ int FastRPC3::handleConnection(Network::Sockets::Socket_TLS *stream, bool remote
     Threads::Sync::Mutex mtSocket;
 
     FastRPC3::Connection *connection = new FastRPC3::Connection;
-    connection->callbacks = &m_callbacks;
+    connection->callbacks = &callbacks;
     connection->socketMutex = &mtSocket;
 
-    if (remotePeerIsServer && !m_usingRemotePeerCommonNameAsConnectionId)
-        connection->key = "SERVER";
+    if (remotePeerIsServer)
+    {
+        if (m_usingRemotePeerCommonNameAsConnectionId)
+        {
+            connection->key = stream->getPeerName();
+        }
+        else
+        {
+            connection->key = "SERVER";
+        }
+    }
     else
-        connection->key = !remotePeerIsServer ? stream->getTLSPeerCN() + "?" + Helpers::Random::createRandomHexString(8) : stream->getTLSPeerCN();
+    {
+        connection->key = stream->getConnectionName();
+    }
+
+    /*
+    if (remotePeerIsServer && !m_usingRemotePeerCommonNameAsConnectionId)
+    {
+        connection->key = "SERVER";
+    }
+    else
+    {
+        connection->key = !remotePeerIsServer ? stream->getPeerName() + "?" + Helpers::Random::createRandomHexString(8) : stream->getPeerName();
+    }*/
 
     connection->stream = stream;
 
@@ -290,8 +323,8 @@ int FastRPC3::handleConnection(Network::Sockets::Socket_TLS *stream, bool remote
         return -2;
     }
 
-    stream->setReadTimeout(m_parameters.rwTimeoutInSeconds);
-    stream->setWriteTimeout(m_parameters.rwTimeoutInSeconds);
+    stream->setReadTimeout(config.rwTimeoutInSeconds);
+    stream->setWriteTimeout(config.rwTimeoutInSeconds);
 
     FastRPC3::SessionPTR session;
 
@@ -303,12 +336,12 @@ int FastRPC3::handleConnection(Network::Sockets::Socket_TLS *stream, bool remote
         switch (stream->readU<uint8_t>(&readOK))
         {
         case 'A':
-            // Process Answer, incomming answer for query, report to the caller...
-            ret = processIncommingAnswer(connection);
+            // Process Answer, incoming answer for query, report to the caller...
+            ret = processIncomingAnswer(connection);
             break;
         case 'Q':
-            // Process Query, incomming query...
-            ret = processIncommingExecutionRequest(stream, connection->key, m_parameters.keyDistFactor, &mtDone, &mtSocket, &session);
+            // Process Query, incoming query...
+            ret = processIncomingExecutionRequest(stream, connection->key, config.keyDistFactor, &mtDone, &mtSocket, &session);
             break;
         case 0:
             // Remote shutdown
@@ -340,17 +373,17 @@ int FastRPC3::handleConnection(Network::Sockets::Socket_TLS *stream, bool remote
 }
 
 /*
-Auth::Reason temporaryAuthentication(FastRPC3::TaskParameters *params, const std::string &userName, const std::string &domainName, const Auth::CredentialData &authData)
+Sessions::Reason temporaryAuthentication(FastRPC3::TaskParameters *params, const std::string &userName, const std::string &domainName, const Sessions::CredentialData &authData)
 {
-    Auth::Reason eReason;
+    Sessions::Reason eReason;
 
     // Current Auth Domains is already checked for existence in executeRPCTask:
     auto identityManager = params->currentAuthDomains->openDomain(domainName);
     if (!identityManager)
-        eReason = Auth::REASON_INVALID_DOMAIN;
+        eReason = Sessions::REASON_INVALID_DOMAIN;
     else
     {
-        Auth::ClientDetails clientDetails;
+        Sessions::ClientDetails clientDetails;
         clientDetails.ipAddress = params->remotePeerIPAddress;
         clientDetails.tlsCommonName = params->remotePeerTLSCommonName;
         clientDetails.userAgent = "FastRPC3";

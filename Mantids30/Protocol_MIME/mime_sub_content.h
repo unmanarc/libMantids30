@@ -20,8 +20,8 @@ public:
     std::string getFsTmpFolder() const;
     void setFsTmpFolder(const std::string &value);
 
-    Memory::Streams::StreamableObject *getContentContainer() const;
-    void replaceContentContainer(Memory::Streams::StreamableObject *value);
+    std::shared_ptr<Memory::Streams::StreamableObject> getContentContainer() const;
+    void replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value);
 
     std::string getBoundary() const;
     void setBoundary(const std::string &value);
@@ -33,7 +33,7 @@ public:
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 private:
-    Memory::Streams::StreamableObject * contentContainer;
+    std::shared_ptr<Memory::Streams::StreamableObject>  contentContainer;
 
     std::string fsTmpFolder, boundary;
     uint64_t maxContentSize;

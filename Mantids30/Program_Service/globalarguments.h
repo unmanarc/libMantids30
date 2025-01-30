@@ -1,21 +1,25 @@
 #pragma once
 
-#include <string>
-#include <list>
-#include <map>
 #include <Mantids30/Memory/a_var.h>
 #include <Mantids30/Threads/mutex_shared.h>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
 
 #include "programvalues.h"
 
-namespace Mantids30 { namespace Program { namespace Arguments {
-
+namespace Mantids30 {
+namespace Program {
+namespace Arguments {
 
 /**
  * @brief Options structure for a command line program
  */
-struct CommandLineOption {
-    CommandLineOption() {
+struct CommandLineOption
+{
+    CommandLineOption()
+    {
         defaultValVar = nullptr;
         shortOption = 0;
         isMandatory = true;
@@ -23,18 +27,17 @@ struct CommandLineOption {
     }
 
     std::string defaultValue; /**< The default value for the option. */
-    std::string description; /**< The description of the option. */
-    bool isMandatory; /**< Indicates whether the option is mandatory. */
+    std::string description;  /**< The description of the option. */
+    bool isMandatory;         /**< Indicates whether the option is mandatory. */
 
     Mantids30::Memory::Abstract::Var::Type optionType; /**< The type of the variable for the option. */
 
-    Mantids30::Memory::Abstract::Var* defaultValVar; /**< A pointer to the variable holding the default value. */
-    std::list<Mantids30::Memory::Abstract::Var*> parsedOption; /**< A list of pointers to variables holding the parsed option values. */
+    std::shared_ptr<Mantids30::Memory::Abstract::Var> defaultValVar;           /**< A pointer to the variable holding the default value. */
+    std::list<std::shared_ptr<Mantids30::Memory::Abstract::Var>> parsedOption; /**< A list of pointers to variables holding the parsed option values. */
 
     std::string name; /**< The name of the option. */
-    int shortOption; /**< The short option character. */
+    int shortOption;  /**< The short option character. */
 };
-
 
 class GlobalArguments : public Values::ProgramValues
 {
@@ -53,25 +56,25 @@ public:
      * @param isMandatory Mandatory argument (required to start)
      * @return true if added, otherwise false.
      */
-    bool addCommandLineOption(const std::string & optGroup, char shortOption, const std::string & optName, const std::string & description, const std::string & defaultValue, const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
+    bool addCommandLineOption(const std::string &optGroup, char shortOption, const std::string &optName, const std::string &description, const std::string &defaultValue, const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
     /**
      * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced Value
      * @param optionName Option Name (Full name)
      * @return option value (true or false)
      */
-    bool getCommandLineOptionBooleanValue( const std::string & optionName );
+    bool getCommandLineOptionBooleanValue(const std::string &optionName);
     /**
      * @brief getCommandLineOptionValue Get Command Line Option Value (As abstract)
      * @param optionName Option Name (Full name)
      * @return option value (as an abstract, will match with defined optionType in addCommandLineOption)
      */
-    Mantids30::Memory::Abstract::Var * getCommandLineOptionValue(const std::string & optionName );
+    std::shared_ptr<Mantids30::Memory::Abstract::Var> getCommandLineOptionValue(const std::string &optionName);
     /**
      * @brief getCommandLineOptionValues Get Command Line Option Values (As list of abstracts)
      * @param optionName Option Name (Full name)
      * @return option values list
      */
-    std::list<Mantids30::Memory::Abstract::Var *> getCommandLineOptionValues(const std::string & optionName );
+    std::list<std::shared_ptr<Mantids30::Memory::Abstract::Var>> getCommandLineOptionValues(const std::string &optionName);
 
     // Program variables.
     /**
@@ -80,13 +83,13 @@ public:
      * @param var Add Variable Pointer (abstract)
      * @return true if added, false if not
      */
-    bool addStaticVariable(const std::string & name, Mantids30::Memory::Abstract::Var * var);
+    bool addStaticVariable(const std::string &name, std::shared_ptr<Memory::Abstract::Var> var);
     /**
      * @brief getStaticVariable Get static variable
      * @param name Variable Name
      * @return nullptr if not found or pointer to Abstract Variable Pointer (will keep the same introduced pointer)
      */
-    Mantids30::Memory::Abstract::Var * getStaticVariable(const std::string & name);
+    std::shared_ptr<Mantids30::Memory::Abstract::Var> getStaticVariable(const std::string &name);
 
     // Print Help options
     /**
@@ -100,7 +103,6 @@ public:
      */
     void printProgramHeader();
 
-
     /**
      * @brief printCurrentProgramOptionsValues Print introduced/available program options
      */
@@ -110,7 +112,6 @@ public:
      * @brief getCurrentProgramOptionsValuesAsBashLine Print introduced/available program options in one line with bash escapes
      */
     std::string getCurrentProgramOptionsValuesAsBashLine(bool removeInstall = false);
-
 
     // Wait forever functions:
     bool isInifiniteWaitAtEnd() const;
@@ -137,33 +138,33 @@ public:
     void setDefaultDaemonOption(const std::string &value);
 #endif
 
-// INTERNAL FUNCTIONS:
+    // INTERNAL FUNCTIONS:
     bool parseCommandLineOptions(int argc, char *argv[]);
-
 
 private:
     int m_extraOptChars;
     std::string m_sDefaultHelpOption;
 #ifndef _WIN32
     std::string m_sDefaultDaemonOption;
-    uint16_t m_uid,m_gid;
+    uint16_t m_uid, m_gid;
 #endif
-    std::list<CommandLineOption *> getAllCommandLineOptions();
-    uint32_t getMaxOptNameSize(std::list<CommandLineOption *> options);
+    std::list<std::shared_ptr<CommandLineOption>> getAllCommandLineOptions();
+    uint32_t getMaxOptNameSize(std::list<std::shared_ptr<CommandLineOption>> options);
     std::string getLine(const uint32_t &size);
 
-    CommandLineOption * getProgramOption(int shortOption);
-    CommandLineOption * getProgramOption(const std::string & optName);
+    std::shared_ptr<CommandLineOption> getProgramOption(int shortOption);
+    std::shared_ptr<CommandLineOption> getProgramOption(const std::string &optName);
 
     bool m_inifiniteWaitAtEnd;
 
-    std::map<std::string,std::list<CommandLineOption *>> m_commandOptions; // group->list of command options
+    std::map<std::string, std::list<std::shared_ptr<CommandLineOption>>> m_commandOptions; // group->list of command options
     // TODO: multimap
 
     // Variables:
-    std::map<std::string,Mantids30::Memory::Abstract::Var *> m_variables; // variable name -> variable
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> m_variables; // variable name -> variable
     Mantids30::Threads::Sync::Mutex_Shared m_variablesMutex;
 };
 
-}}}
-
+} // namespace Arguments
+} // namespace Program
+} // namespace Mantids30

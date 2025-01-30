@@ -1,4 +1,5 @@
 #include "mime_message.h"
+#include "Mantids30/Memory/parser.h"
 
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/random.h>
@@ -7,13 +8,14 @@
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <memory>
 
 using namespace boost;
 using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::MIME;
 using namespace Mantids30;
 
-MIME_Message::MIME_Message(Memory::Streams::StreamableObject *value) : Memory::Streams::Parser(value, false)
+MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value, false)
 {
     initSubParser(&subFirstBoundary);
     initSubParser(&subEndPBoundary);
@@ -45,7 +47,7 @@ MIME_Message::~MIME_Message()
     for (MIME_PartMessage * i : allParts) delete i;
 }
 
-bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrStat)
+bool MIME_Message::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrStat)
 {
     Memory::Streams::StreamableObject::Status cur;
     // first boundary:
@@ -72,7 +74,7 @@ uint32_t MIME_Message::varCount(const std::string &varName)
     return ix;
 }
 
-Memory::Streams::StreamableObject *MIME_Message::getValue(const std::string &varName)
+std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const std::string &varName)
 {
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i)
@@ -80,9 +82,9 @@ Memory::Streams::StreamableObject *MIME_Message::getValue(const std::string &var
     return nullptr;
 }
 
-std::list<Memory::Streams::StreamableObject *> MIME_Message::getValues(const std::string &varName)
+std::list<std::shared_ptr<Memory::Streams::StreamableObject> > MIME_Message::getValues(const std::string &varName)
 {
-    std::list<Memory::Streams::StreamableObject *> values;
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > values;
     auto range = partsByName.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i)
         values.push_back(((MIME_PartMessage *)i->second)->getContent()->getContentContainer());
@@ -276,31 +278,35 @@ MIME_PartMessage *MIME_Message::getFirstMessageByName(const std::string &varName
     return partsByName.find(boost::to_upper_copy(varName))->second;
 }
 
-bool MIME_Message::addStringVar(const std::string &varName, const std::string &varValue)
+bool MIME_Message::addStringVar(const std::string &key, const std::string &value)
 {
     // TODO: check max size?
     if (    currentPart->getHeader()->add("Content-Disposition", "form-data") &&
-            currentPart->getHeader()->add("name", varName)
-            )
+        currentPart->getHeader()->add("name", key)
+        )
     {
-        auto * fContainer = new Memory::Containers::B_Chunks;
-        fContainer->append(varValue.c_str(),varValue.size());
-        currentPart->getContent()->replaceContentContainer(fContainer);
+        auto contentBuffer = std::make_shared<Memory::Containers::B_Chunks>();
+        contentBuffer->append(value.c_str(), value.size());
+        currentPart->getContent()->replaceContentContainer(contentBuffer);
+
         addMultiPartMessage(currentPart);
         renewCurrentPart();
     }
     else
+    {
         return false;
+    }
+
     return true;
 }
 
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
     // TODO: check max size?
-    auto * fContainer = new Memory::Containers::B_MMAP;
+    auto fContainer = std::make_shared<Memory::Containers::B_MMAP>();
     if (!fContainer->referenceFile(filePath,true,false))
     {
-        delete fContainer;
+        //delete fContainer;
         return false;
     }
 
@@ -314,7 +320,7 @@ bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::st
     }
     else
     {
-        delete fContainer;
+        //delete fContainer;
         return false;
     }
     return true;

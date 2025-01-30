@@ -1,107 +1,135 @@
 #pragma once
 
-#include <Mantids30/Auth/credentialdata.h>
+
+#include <Mantids30/Server_WebCore/apiclienthandler.h>
+#include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "sessionsmanager.h"
 
-#include "monolithresourcefilter.h"
 #include <Mantids30/Memory/streamablejson.h>
 #include <Mantids30/API_Monolith/methodshandler.h>
-//#include <Mantids30/Auth/domains.h>
-#include <Mantids30/Auth/multicredentialdata.h>
-#include <Mantids30/Protocol_HTTP/httpv1_server.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace WebMonolith {
 
-class ClientHandler : public Network::Protocols::HTTP::HTTPv1_Server
+class ClientHandler : public Servers::Web::APIClientHandler
 {
 public:
-    ClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
+    ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
     ~ClientHandler() override;
-
-    //////////////////////////////////////////////
-    // Initialization:
-    //void setAuthenticators(Mantids30::Auth::Domains * authenticator);
-    void setMethodsHandler(API::Monolith::MethodsHandler *value);
-    //////////////////////////////////////////////
-
-    void setSessionsManagger(SessionsManager *value);
-    void setUseFormattedJSONOutput(bool value);
-    void setResourcesFilter(API::Monolith::ResourcesFilter *value);
-    void setDocumentRootPath(const std::string &value);
-    void setUsingCSRFToken(bool value);
-    void setUseHTMLIEngine(bool value);
-    void setRedirectPathOn404(const std::string &newRedirectOn404);
-
-    void setWebServerName(const std::string &value);
-    void setSoftwareVersion(const std::string &value);
-
-    std::string getApplicationName() const;
-    void setAppName(const std::string &value);
-    void setRPCLog(Program::Logs::RPCLog *value);
-
 protected:
     /**
-     * @brief procHTTPClientContent Process web client request
-     * @return http response code.
+     * @brief sessionStart Retrieve/Start the session
+     * @return S_200_OK for everything ok, any other value will return with that code immediatly.
      */
-    Network::Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
+    Protocols::HTTP::Status::eRetCode sessionStart() override;
+    /**
+     * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
+     * @return S_200_OK for good cleaning.
+     */
+    void sessionCleanup() override;
+
+    /**
+     * @brief Handles an API request and writes the response to the client.
+     *
+     * This method processes an API request by interpreting the provided parameters,
+     * executing the appropriate logic for the specified API version, method, and mode,
+     * and preparing a response that is written back to the client.
+     *
+     * @param apiReturn Pointer to an object where the result of the API request will be stored.
+     * @param baseApiUrl The base URL for the API, used to construct resource paths or endpoints.
+     * @param apiVersion The version of the API being requested.
+     * @param methodMode The mode of the API method, such as GET, POST, PUT, DELETE, etc.
+     * @param methodName The name of the API method to execute.
+     * @param pathParameters A JSON object containing parameters parsed from the URL path.
+     * @param postParameters A JSON object containing parameters sent in the POST body.
+     *
+     * @return Returns an appropriate API return code indicating success or the type of error encountered.
+     */
+    void handleAPIRequest(API::APIReturn *apiReturn, const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+
+    /**
+     * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
+     * @return return code for api request
+     */
+    Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
+
+    /**
+     * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
+     * @return return code for api request
+     */
+    json handleAPIInfo(const std::string & baseApiUrl) override;
+
+    /**
+     * @brief doesSessionVariableExist check if a sesion variable exist.
+     * @param varName variable name
+     * @return return true if variable exist, else otherwise
+     */
+    bool doesSessionVariableExist( const std::string & varName ) override;
+    /**
+     * @brief getSessionVariableValue Get the session variable by name
+     * @param varName variable name
+     * @return return the session variable
+     */
+    json getSessionVariableValue( const std::string & varName  ) override;
+
+
+    /**
+     * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
+     * @param jVars vars to be filled
+     */
+    void fillSessionExtraInfo( json & jVars ) override;
+
+    bool getIsInActiveSession() override;
+    std::set<std::string> getSessionPermissions() override;
+    std::set<std::string> getSessionRoles() override;
+
+
 private:
-    void replaceHexCodes( std::string &content );
+    void updateActivityOnImpersonatorSession();
 
-    void sessionOpen();
-    void sessionRelease();
-    void sessionDestroy();
-    
-    Network::Protocols::HTTP::Status::eRetCode procResource_File();
-    Network::Protocols::HTTP::Status::eRetCode procResource_HTMLIEngine(const std::string &sRealFullPath);
+    /**
+     * This function sets a JavaScript-readable cookie named "jsSessionTimeout" to track the session's remaining time.
+     * The cookie is configured to be secure (transmitted only over HTTPS), readable by client-side JavaScript, and set
+     * with an expiration and maximum age based on the given `maxAge` parameter. The cookie's SameSite attribute is
+     * set to "Strict" to enhance security by limiting cross-site requests.
+     */
+    void setJSSessionTimeOutCookie(const uint64_t & maxAge);
 
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session(const std::string & methodName);
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_AUTHINFO();
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_CSRFTOKEN();
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_LoginCallback();
-    //Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Session_POSTLOGIN(const Auth::CredentialData & auth);
-    
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Exec( std::string sMethodName, const json & jPayloadIn, std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = nullptr );
-    bool csrfValidate();
+    /**
+     * This function sets a JavaScript-readable cookie named "jsHalfIDCookie" that gives the half visible part of the session id
+     * This part should be sent in the X-HalfSession-ID header for anti-csrf purposes during sessions.
+     *
+     * The cookie is configured to be secure (transmitted only over HTTPS), readable by client-side JavaScript, and set
+     * with an expiration and maximum age based on the given `maxAge` parameter. The cookie's SameSite attribute is
+     * set to "Strict" to enhance security by limiting cross-site requests.
+     */
+    void setJSSessionHalfIDCookie(const std::string &sessionID);
 
-    Network::Protocols::HTTP::Status::eRetCode procJSONWebAPI_Version();
-    /*
-    std::string persistentAuthentication(const std::string & userName, const std::string &domainName, const Auth::CredentialData &authData, Mantids30::Auth::Session *session, Mantids30::Auth::Reason *authReason);
-    Mantids30::Auth::Reason temporaryAuthentication(const std::string &userName, const std::string &domainName, const Auth::CredentialData &authData);
-*/
-    void log(Mantids30::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
 
-    Program::Logs::RPCLog * m_rpcLog = nullptr;
+    void sessionLogout();
 
-    API::Monolith::MethodsHandler * m_methodsHandler = nullptr;
-    //Mantids30::Auth::Domains * m_authDomains = nullptr;
-    SessionsManager * m_sessionsManager = nullptr;
+    Protocols::HTTP::Status::eRetCode handleAuthUpdateLastActivityFunction();
+    Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();
+    Protocols::HTTP::Status::eRetCode handleAuthRetrieveInfoFunction();
+    Protocols::HTTP::Status::eRetCode handleAuthLogoutFunction();
+
+    bool validateSessionAntiCSRFMechanism();
+
+    Program::Logs::RPCLog * rpcLog = nullptr;
+    std::map<uint32_t,API::Monolith::MethodsHandler *> m_methodsHandlerByAPIVersion;
+    WebSessionsManager * m_sessionsManager = nullptr;
 
     // Current Session Vars:
-    WebSession * m_webSession = nullptr;
-    Mantids30::Auth::Session *m_session = nullptr;
-    uint64_t m_sessionMaxAge;
-    std::string m_sessionId;
+    WebSession * m_currentWebSession = nullptr;
+    //std::shared_ptr<Mantids30::Sessions::Session> m_session = nullptr;
+    uint64_t m_sessionMaxAge = 0;
+    std::string m_sessionID, m_impersonatorSessionID;
     bool m_destroySession = false;
-    bool m_releaseSessionHandler = false;
-/*    Auth::MultiCredentialData m_extraCredentials;
-    Auth::CredentialData m_credentials;*/
+    //bool m_isSessionLoaded = false;
 
-    // Current User Security Vars:
-    std::string m_clientCSRFToken;
-
-    API::Monolith::ResourcesFilter * m_resourceFilter = nullptr;
-    std::string m_applicationName;
-    std::string m_resourcesLocalPath;
-    std::string m_redirectPathOn404;
-    bool m_useFormattedJSONOutput = true;
-    bool m_usingCSRFToken = true;
-    bool m_useHTMLIEngine = true;
-    std::string m_webServerName;
-    std::string m_softwareVersion;
+    friend class Engine;
 };
 
 }}}}

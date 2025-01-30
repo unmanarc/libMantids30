@@ -12,7 +12,7 @@ StreamableJSON::StreamableJSON()
     setFormatted(false);
 }
 
-bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrStatUpd)
+bool StreamableJSON::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrStatUpd)
 {
     Memory::Streams::StreamableObject::Status cur;
     if (!formatted)

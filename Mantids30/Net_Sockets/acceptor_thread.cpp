@@ -1,4 +1,5 @@
 #include "acceptor_thread.h"
+#include <memory>
 
 #ifndef _WIN32
 #include <netinet/in.h>
@@ -23,46 +24,46 @@ SAThread::SAThread()
 
     m_objectOnConnect = nullptr;
     m_objectOnInitFail = nullptr;
-    m_parent = nullptr;
+    //m_parent = nullptr;
     m_pClientSocket = nullptr;
 }
 
 SAThread::~SAThread()
 {
-    if (m_pClientSocket)
+/*    if (m_pClientSocket)
     {
         delete m_pClientSocket;
         m_pClientSocket = nullptr;
-    }
+    }*/
 }
-
+/*
 void SAThread::start()
 {
-    std::thread(thread_streamclient,this,(MultiThreaded *)m_parent).detach();
-}
+    std::thread(thread_streamclient,this,m_parent).detach();
+}*/
 
 void SAThread::stopSocket()
 {
     m_pClientSocket->shutdownSocket();
 }
 
-void SAThread::setCallbackOnConnect(bool(*_onConnect)(void *, Sockets::Socket_Stream_Base *, const char *, bool), void *objectOnConnected)
+void SAThread::setCallbackOnConnect(bool(*_onConnect)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void>contextOnConnected)
 {
     this->m_onConnect = _onConnect;
-    this->m_objectOnConnect = objectOnConnected;
+    this->m_objectOnConnect = contextOnConnected;
 }
 
-void SAThread::setCallbackOnInitFail(bool (*_onInitFailed)(void *, Sockets::Socket_Stream_Base *, const char *, bool), void *objectOnInitFailed)
+void SAThread::setCallbackOnInitFail(bool (*_onInitFailed)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnInitFailed)
 {
     this->m_onInitFail = _onInitFailed;
-    this->m_objectOnInitFail = objectOnInitFailed;
+    this->m_objectOnInitFail = contextOnInitFailed;
 }
 
-
-void SAThread::setParent(void *parent)
+/*
+void SAThread::setParent(void * parent)
 {
     this->m_parent = parent;
-}
+}*/
 
 void SAThread::postInitConnection()
 {
@@ -90,7 +91,7 @@ void SAThread::postInitConnection()
     }
 }
 
-void SAThread::setClientSocket(Sockets::Socket_Stream_Base * _clientSocket)
+void SAThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket)
 {
     m_pClientSocket = _clientSocket;
     m_pClientSocket->getRemotePair(m_remotePair);
@@ -101,7 +102,7 @@ const char *SAThread::getRemotePair()
     return m_remotePair;
 }
 
-void SAThread::thread_streamclient(SAThread *threadClient, void *threadedAcceptedControl)
+void SAThread::thread_streamclient(std::shared_ptr<SAThread> threadClient, void *threadedAcceptedControl)
 {
     threadClient->postInitConnection();
     ((MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);

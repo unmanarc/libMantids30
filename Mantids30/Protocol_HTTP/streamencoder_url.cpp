@@ -9,13 +9,13 @@
 using namespace Mantids30::Memory::Streams;
 using namespace Mantids30::Memory::Streams::Encoders;
 
-URL::URL(Memory::Streams::StreamableObject * orig)
+URL::URL(std::shared_ptr<StreamableObject> orig)
 {
     this->orig = orig;
     finalBytesWritten =0;
 }
 
-bool URL::streamTo(Memory::Streams::StreamableObject *, Status & )
+bool URL::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Status & )
 {
     return false;
 }
@@ -91,16 +91,16 @@ uint64_t URL::getFinalBytesWritten() const
 std::string URL::encodeURLStr(const std::string &url)
 {
     Mantids30::Memory::Containers::B_MEM uriDecoded( url.c_str(), url.size() );
-    Memory::Containers::B_Chunks uriEncoded;
+    std::shared_ptr<Memory::Containers::B_Chunks> uriEncoded = std::make_shared<Memory::Containers::B_Chunks>();
 
     // Encode URI...
-    Memory::Streams::Encoders::URL uriEncoder(&uriEncoded);
+    std::shared_ptr<Memory::Streams::Encoders::URL> uriEncoder = std::make_shared<Memory::Streams::Encoders::URL>(uriEncoded);
     Memory::Streams::StreamableObject::Status cur;
     Memory::Streams::StreamableObject::Status wrsStat;
 
-    if ((cur+=uriDecoded.streamTo(&uriEncoder, wrsStat)).succeed)
+    if ((cur+=uriDecoded.streamTo(uriEncoder, wrsStat)).succeed)
     {
-        return uriEncoded.toString();
+        return uriEncoded->toString();
     }
     return url;
 }

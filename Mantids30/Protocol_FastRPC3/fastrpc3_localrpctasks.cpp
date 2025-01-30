@@ -1,8 +1,6 @@
-#include "Mantids30/DataFormat_JWT/jwt.h"
+#include <Mantids30/DataFormat_JWT/jwt.h>
 #include "fastrpc3.h"
 #include <Mantids30/API_Monolith/methodshandler.h>
-#include <Mantids30/Auth/ds_authentication.h>
-#include <Mantids30/Auth/multicredentialdata.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -26,89 +24,90 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
 
     TaskParameters *taskParams = (TaskParameters *) (vTaskParams);
     CallbackDefinitions *callbacks = ((CallbackDefinitions *) taskParams->callbacks);
-    std::shared_ptr<Auth::Session> session = taskParams->sessionHolder->getSharedPointer();
+    std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
     json fullResponse;
     json responsePayload;
     fullResponse["statusCode"] = ELT_RET_SUCCESS;
 
     Helpers::JSONReader2 reader;
-    bool errorInExtraToken = false;
-    std::string effectiveUserName;
+    bool sessionFailed = false;
+    DataFormat::JWT::Token extraJWT;
 
-    // TODO: copy this to monolith...
-    // Invalidate bad sessions...
-    if (session && !session->validateSession())
+    // Process the extra token
+    if (taskParams->extraTokenAuth)
     {
-        errorInExtraToken = true;
-        session = nullptr;
-        CALLBACK(callbacks->CB_TokenValidation_Failed)(callbacks->obj, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::TOKEN_REVOKED);
-        fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
-    }
-
-    // If there is a session, overwrite the user/domain inputs...
-    if (session)
-    {
-        effectiveUserName = session->getEffectiveUser();
-    }    
-
-    if (!taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) || (taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) && session))
-    {
-        if (taskParams->extraTokenAuth && !errorInExtraToken)
+        extraJWT = taskParams->jwtValidator->verifyAndDecodeTokenPayload(taskParams->extraTokenAuth);
+        if (extraJWT.isValid())
         {
-            // EXTRA TOKEN...
-            DataFormat::JWT::Token token = taskParams->jwtValidator->verifyAndDecodeTokenPayload(taskParams->extraTokenAuth);
-            if (token.isValid())
+            // valid extra token...
+            if (extraJWT.getImpersonator().empty())
             {
+                // if no session, and the token is not for impersonation, use as session token.
                 if (!session)
                 {
+                    // there is no session... by example, the method does not require active session
                     // <<< SESSION DOES NOT EXIST HERE...
-                    // Create a new session here:
-                    session = std::make_shared<Auth::Session>();
-                    effectiveUserName = token.getSubject();
-                    session->setAuthenticatedUser(effectiveUserName);
-                    session->setClaims(token.getAllClaims());
+                    // Create a new virtual session here:
+                    session = std::make_shared<Sessions::Session>(extraJWT);
+                    // Set the token info/claims...
+                    //session->setJWTAuthenticatedInfo(extraJWT);
                 }
                 else
                 {
-                    // <<< PREVIOUS SESSION EXIST HERE... SET THE NEW TOKEN CLAIMS
-                    // Copy the session in a new context (create new session for this)...
-                    session = std::make_shared<Auth::Session>(session);
-                    // Set new claims:
-                    session->setClaims(token.getAllClaims());
-
-                    // If you want to impersonate, you need to send the impersonation token to each request...
-                    if (token.getSubject() != effectiveUserName)
-                    {
-                        // <<< THIS IS AN IMPERSONATION TOKEN...
-                        if (JSON_ASSTRING_D(token.getClaim("impersonator"), "") == effectiveUserName)
-                        {
-                            session->setImpersonatedUser(token.getSubject());
-                            effectiveUserName = session->getEffectiveUser();
-                        }
-                        else
-                        {
-                            // This is not an impersonator token.
-                            errorInExtraToken = true;
-                            CALLBACK(callbacks->CB_TokenValidation_Failed)(callbacks->obj, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_IMPERSONATION_ERROR);
-                            fullResponse["statusCode"] = ELT_RET_INVALIDIMPERSONATOR;
-                        }
-                    }
+                    sessionFailed = true;
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_NOTREQUIRED_ERROR);
+                    fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
                 }
             }
             else
             {
-                errorInExtraToken = true;
-                CALLBACK(callbacks->CB_TokenValidation_Failed)(callbacks->obj, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_VALIDATION_ERROR);
-                fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+                // If it's impersonation, check that the impersonator is the current session owner, and temporary change the session...
+                if (session->getUser() == extraJWT.getImpersonator() && extraJWT.getDomain() == session->getDomain())
+                {
+                    // Create a new impersonated session here:
+                    session = std::make_shared<Sessions::Session>(extraJWT);
+                    // Set the token info/claims...
+                    //session->setJWTAuthenticatedInfo(extraJWT);
+                }
+                else
+                {
+                    // report the problem...
+                    // This is not an impersonator token.
+                    sessionFailed = true;
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_IMPERSONATION_ERROR);
+                    fullResponse["statusCode"] = ELT_RET_INVALIDIMPERSONATOR;
+                }
             }
         }
+        else
+        {
+            sessionFailed = true;
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_VALIDATION_ERROR);
+            fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+        }
+    }
 
-        if (!errorInExtraToken)
+    // Invalidate current revoked sessions...
+    if (!sessionFailed && session && session->isSessionRevoked())
+    {
+        sessionFailed = true;
+        session = nullptr;
+        CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::TOKEN_REVOKED);
+        fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+    }
+
+    if (  !taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) // method does not require session.
+        || // OR
+        (taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) && session) // method require session and there is session.
+        )
+    {
+        // There is an extra authentication token and session is OK.
+        if (!sessionFailed)
         {
             json reasons;
 
-            auto i = taskParams->methodsHandler->validateMethodRequirements(session.get(), taskParams->methodName, &reasons);
+            auto i = taskParams->methodsHandler->validateMethodRequirements(session, taskParams->methodName, &reasons);
 
             switch (i)
             {
@@ -118,31 +117,31 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
                     session->updateLastActivity();
 
                 // Report:
-                CALLBACK(callbacks->CB_MethodExecution_Starting)(callbacks->obj, taskParams, taskParams->payload);
+                CALLBACK(callbacks->onMethodExecutionStart)(callbacks->context, taskParams, taskParams->payload);
 
                 auto start = chrono::high_resolution_clock::now();
                 auto finish = chrono::high_resolution_clock::now();
                 chrono::duration<double, milli> elapsed = finish - start;
 
-                switch (taskParams->methodsHandler->invoke(session.get(), taskParams->methodName, taskParams->payload, &responsePayload))
+                switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
                 {
                 case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
                     finish = chrono::high_resolution_clock::now();
                     elapsed = finish - start;
 
-                    CALLBACK(callbacks->CB_MethodExecution_ExecutedOK)(callbacks->obj, taskParams, elapsed.count(), responsePayload);
+                    CALLBACK(callbacks->onMethodExecutionSuccess)(callbacks->context, taskParams, elapsed.count(), responsePayload);
 
                     functionFound = true;
                     fullResponse["statusCode"] = 200;
                     break;
                 case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
 
-                    CALLBACK(callbacks->CB_MethodExecution_MethodNotFound)(callbacks->obj, taskParams);
+                    CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
                     fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
                     break;
                 default:
-                    CALLBACK(callbacks->CB_MethodExecution_UnknownError)(callbacks->obj, taskParams);
+                    CALLBACK(callbacks->onMethodExecutionUnknownError)(callbacks->context, taskParams);
                     fullResponse["statusCode"] = ELT_RET_INTERNALERROR;
                     break;
                 }
@@ -151,7 +150,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
             case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
             {
                 // not enough permissions.
-                CALLBACK(callbacks->CB_MethodExecution_NotAuthorized)(callbacks->obj, taskParams, reasons);
+                CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
                 fullResponse["auth"]["reasons"] = reasons;
                 fullResponse["statusCode"] = ELT_RET_NOTAUTHORIZED;
             }
@@ -159,7 +158,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
             case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
             default:
             {
-                CALLBACK(callbacks->CB_MethodExecution_MethodNotFound)(callbacks->obj, taskParams);
+                CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
                 fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
             }
             break;
@@ -168,7 +167,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
     }
     else
     {
-        CALLBACK(callbacks->CB_MethodExecution_RequiredSessionNotProvided)(callbacks->obj, taskParams);
+        CALLBACK(callbacks->onMethodExecutionSessionMissing)(callbacks->context, taskParams);
         fullResponse["statusCode"] = ELT_RET_REQSESSION;
     }
 
@@ -182,6 +181,20 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
     taskParams->doneSharedMutex->unlockShared();
 }
 
+void FastRPC3::LocalRPCTasks::getSSOData(void *taskData)
+{
+    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData);
+    FastRPC3 * caller = (FastRPC3 *)taskParams->caller;
+
+    json data;
+    data["loginURL"] = caller->config.loginURL;
+    data["returnURI"] = caller->config.returnURI;
+    data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
+
+    sendRPCAnswer(taskParams, data.toStyledString(), 2);
+    taskParams->doneSharedMutex->unlockShared();
+}
+
 void FastRPC3::LocalRPCTasks::login(void *taskData)
 {
     FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData);
@@ -189,7 +202,7 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
 
     // CREATE NEW SESSION:
     json response;
-    Auth::Reason authReason = Auth::REASON_INTERNAL_ERROR;
+    LoginReason loginReason;
 
     auto session = taskParams->sessionHolder->getSharedPointer();
 
@@ -198,7 +211,7 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
     if (session)
     {
         // Close the session before.
-        authReason = Auth::REASON_DUPLICATED_SESSION;
+        loginReason.reason = LoginReason::SESSION_DUPLICATE;
     }
     else
     {
@@ -206,30 +219,29 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
         DataFormat::JWT::Token token = taskParams->jwtValidator->verifyAndDecodeTokenPayload(sJWTToken);
         if (token.isValid())
         {
-            session = taskParams->sessionHolder->create();
+            session = taskParams->sessionHolder->create(token);
             if (session)
             {
-                session->setAuthenticatedUser(token.getSubject());
+                //session->setUser(token.getSubject());
                 session->updateLastActivity();
 
-                authReason = Auth::REASON_AUTHENTICATED;
-                CALLBACK(callbacks->CB_TokenValidation_OK)(callbacks->obj, taskParams, sJWTToken);
+                loginReason.reason = LoginReason::TOKEN_VALIDATED;
+                CALLBACK(callbacks->onTokenValidationSuccess)(callbacks->context, taskParams, sJWTToken);
             }
             else
             {
-                authReason = Auth::REASON_INTERNAL_ERROR;
-                CALLBACK(callbacks->CB_MethodExecution_UnknownError)(callbacks->obj, taskParams);
+                loginReason.reason = LoginReason::INTERNAL_ERROR;
+                CALLBACK(callbacks->onMethodExecutionUnknownError)(callbacks->context, taskParams);
             }
         }
         else
         {
-            authReason = Auth::REASON_UNAUTHENTICATED;
-            CALLBACK(callbacks->CB_TokenValidation_Failed)(callbacks->obj, taskParams, sJWTToken, CallbackDefinitions::TOKEN_VALIDATION_ERROR);
+            loginReason.reason = LoginReason::TOKEN_FAILED;
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, sJWTToken, CallbackDefinitions::TOKEN_VALIDATION_ERROR);
         }
     }
 
-    response["txt"] = getReasonText(authReason);
-    response["val"] = static_cast<Json::UInt>(authReason);
+    response = loginReason.toJsonResponse();
     sendRPCAnswer(taskParams, response.toStyledString(), 2);
     taskParams->doneSharedMutex->unlockShared();
 }

@@ -1,10 +1,14 @@
 #pragma once
 
+#include <memory>
 #include <string>
 
 namespace Mantids30 { namespace Memory { namespace Abstract {
 
-#define ABSTRACT_PTR_AS(x,y) ((Mantids30::Memory::Abstract::x *)y)
+#define ABSTRACT_PTR_AS(x,y) ((Mantids30::Memory::Abstract::x *)(y))
+#define ABSTRACT_SPTR_AS(x,y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
+#define MAKE_VAR(x,y)  std::make_shared<Mantids30::Memory::Abstract::x>(y)
+#define MAKE_NULL_VAR  std::make_shared<Mantids30::Memory::Abstract::Var>()
 
 class Var
 {
@@ -39,7 +43,7 @@ public:
     // NON-THREADSAFE ACCESS TO THE RAW MEMORY:
     virtual void * getDirectMemory();
 
-    static Var * makeAbstract(Type type, const std::string & defValue = "");
+    static std::shared_ptr<Var> makeAbstract(Type type, const std::string & defValue = "");
 
     /**
      * @brief toString Transform the Variable To a Readable string.

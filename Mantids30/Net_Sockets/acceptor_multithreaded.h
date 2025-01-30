@@ -17,9 +17,9 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptor
 class MultiThreaded
 {
 public:
-    typedef bool (*_callbackConnectionRB)(void *, Sockets::Socket_Stream_Base *, const char *, bool);
-    typedef void (*_callbackConnectionRV)(void *, Sockets::Socket_Stream_Base *, const char *, bool);
-    typedef void (*_callbackConnectionLimit)(void *, Sockets::Socket_Stream_Base *, const char *);
+    typedef bool (*_callbackConnectionRB)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    typedef void (*_callbackConnectionRV)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    typedef void (*_callbackConnectionLimit)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
 
     /**
      * Constructor
@@ -29,14 +29,14 @@ public:
      * @brief MultiThreaded Integrated constructor with all the initial parameters (after that, you are safe to run startThreaded or startBlocking)
      * @param acceptorSocket acceptor socket
      * @param _onConnect callback function on connect (mandatory: this will handle the connection itself)
-     * @param obj object passed to all callbacks
+     * @param context object passed to all callbacks
      * @param _onInitFailed callback function on failed initialization (default nullptr -> none)
      * @param _onTimeOut callback function on time out (default nullptr -> none)
      * @param _onMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
      */
     MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket,
                     _callbackConnectionRB _onConnect,
-                    void *obj=nullptr,
+                    std::shared_ptr<void> context=nullptr,
                     _callbackConnectionRB _onInitFailed=nullptr,
                     _callbackConnectionRV _onTimeOut=nullptr,
                     _callbackConnectionLimit _onMaxConnectionsPerIP=nullptr
@@ -63,19 +63,19 @@ public:
     /**
      * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnConnect(_callbackConnectionRB _onConnect, void *obj);
+    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context);
     /**
      * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, void *obj);
+    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context);
     /**
      * Set callback when timed out (max concurrent clients reached and timed out) (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, void *obj);
+    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context);
     /**
      * Set callback when maximum connections per IP reached (this callback is called from acceptor thread, you should use it very quick)
      */
-    void setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, void *obj);
+    void setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, std::shared_ptr<void> context);
     /**
      * Set the socket that will be used to accept new clients.
      * WARNING: acceptorSocket will be deleted when this class finishes.
@@ -89,7 +89,7 @@ public:
     /**
      * Finalize/Catch the client thread element (when it finishes).
      */
-    bool finalizeThreadElement(SAThread * x);
+    bool finalizeThreadElement(std::shared_ptr<SAThread> x);
     /**
      * @brief getMaxConcurrentClients Get maximum number of concurrent client threads are accepted
      * @return maximum current clients accepted
@@ -124,7 +124,7 @@ public:
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
-    bool processClient(Sockets::Socket_Stream_Base * clientSocket, SAThread * clientThread);
+    bool processClient(std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket, std::shared_ptr<SAThread> clientThread);
 
     uint32_t incrementIPUsage(const std::string & ipAddr);
     void decrementIPUsage(const std::string & ipAddr);
@@ -133,7 +133,7 @@ private:
 
     bool initialized, finalized;
     std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
-    std::list<SAThread *> threadList;
+    std::list<std::shared_ptr<SAThread>> threadList;
     std::map<std::string, uint32_t> connectionsPerIP;
 
     // Callbacks:
@@ -142,7 +142,7 @@ private:
     _callbackConnectionRV onTimedOut;
     _callbackConnectionLimit onMaxConnectionsPerIP;
 
-    void *objOnConnect, *objOnInitFail, *objOnTimedOut, *objOnMaxConnectionsPerIP;
+    std::shared_ptr<void> contextOnConnect, contextOnInitFail, contextOnTimedOut, contextOnMaxConnectionsPerIP;
 
     // thread objects:
     std::thread acceptorThread;

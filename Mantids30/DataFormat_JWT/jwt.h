@@ -1,5 +1,6 @@
 #pragma once
 
+#include "json/value.h"
 #include <ctime>
 #include <string>
 #include <set>
@@ -52,11 +53,11 @@ public:
          */
         AlgorithmDetails( const char * algorithm );
 
-        int m_nid; ///< The OpenSSL NID of the algorithm.
-        bool m_usingHMAC; ///< True if the algorithm uses HMAC encryption, false otherwise.
-        bool m_usingRSA; ///< True if the algorithm uses RSA encryption, false otherwise.
-        char m_algorithmStr[16]; ///< The name of the algorithm, as a null-terminated string.
-        Algorithm m_algorithm; ///< The algorithm enum value.
+        int nid; ///< The OpenSSL NID of the algorithm.
+        bool isUsingHMAC; ///< True if the algorithm uses HMAC encryption, false otherwise.
+        bool usingRSA; ///< True if the algorithm uses RSA encryption, false otherwise.
+        char algorithmStr[16]; ///< The name of the algorithm, as a null-terminated string.
+        Algorithm algorithm; ///< The algorithm enum value.
     };
 
     class Token {
@@ -71,6 +72,8 @@ public:
         void setIssuer(const std::string &issuer);
 
         void setSubject(const std::string &subject);
+
+        void setDomain(const std::string &domain);
 
         void setAudience(const std::string &audience);
 
@@ -91,7 +94,11 @@ public:
         // Getter functions for standard claims
         std::string getIssuer() const;
 
+        std::string getImpersonator() const;
+
         std::string getSubject() const;
+
+        std::string getDomain() const;
 
         std::string getAudience() const;
 
@@ -105,11 +112,25 @@ public:
 
         std::set<std::string> getAllPermissions();
 
+        Json::Value getAllPermissionsAsJSON();
+
         void addPermission(const std::string & permissionId);
 
         bool hasPermission(const std::string &permissionId) const;
 
+        std::set<std::string> getAllRoles();
+
+        Json::Value getAllRolesAsJSON();
+
+        void addRole(const std::string &roleId);
+
+        bool hasRole(const std::string &roleId) const;
+
         std::map<std::string,Json::Value> getAllClaims();
+
+        Json::Value getAllClaimsAsJSON();
+
+        bool isAdmin() const;
 
         // Getter function for custom claims
         Json::Value getClaim(const std::string &name) const;
@@ -121,25 +142,33 @@ public:
         bool isValid() const;
 
         // Internal function to set the verified status...
-        void setVerified(bool newVerified);
+        void setSignatureVerified(bool newVerified);
 
         Json::Value *getClaimsPTR();
 
+        /**
+         * @brief isRevoked Return true if the signature was revoked, false otherwise
+         * @return
+         */
         bool isRevoked() const;
 
+        /**
+         * @brief setRevoked Set true if the signature was revoked
+         * @param newRevoked
+         */
         void setRevoked(bool newRevoked);
 
     private:
         Json::Value m_claims;
-        bool m_verified = false;
+        bool m_signatureVerified = false;
         bool m_revoked = false;
     };
 
     class Cache {
     public:
         // Cache functions:
-        bool checkToken(const std::string& token);
-        void add(const std::string& token);
+        bool checkToken( const std::string& payload);
+        void add(const std::string &payload);
         void evictCache();
 
         void setCacheMaxByteCount(std::size_t maxByteCount);
@@ -266,7 +295,6 @@ public:
      */
     bool verify(const std::string& fullSignedToken, Token *tokenPayloadOutput = nullptr);
 
-
     /**
      * @brief Decode the string into a JWT token without verifying it.
      *
@@ -334,6 +362,8 @@ public:
     std::time_t defaultMaxTimeBeforeInSeconds() const;
 
 
+
+    bool (*verificationCallback)(const std::string &fullSignedToken) = 0;
     Cache m_cache;
     Revocation m_revocation;
 

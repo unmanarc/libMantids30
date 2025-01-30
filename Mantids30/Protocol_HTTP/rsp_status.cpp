@@ -60,15 +60,6 @@ const sHTTP_StatusCode Status::responseRetCodes[] = {
 };
 
 
-Status::Status()
-{
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
-    setParseDelimiter("\r\n");
-    setParseDataTargetSize(128);
-    subParserName = "Status";
-
-}
-
 uint16_t Status::getHTTPStatusCodeTranslation(const Status::eRetCode &code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
@@ -76,6 +67,16 @@ uint16_t Status::getHTTPStatusCodeTranslation(const Status::eRetCode &code)
         return responseRetCodes[code].code;
     }
     return 999;
+}
+
+
+Status::Status()
+{
+    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+    setParseDelimiter("\r\n");
+    setParseDataTargetSize(128);
+    subParserName = "Status";
+
 }
 
 Memory::Streams::SubParser::ParseStatus Status::parse()

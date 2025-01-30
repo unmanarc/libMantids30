@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
-#include <stdlib.h>
-#include <stdint.h>
 #include <limits>
+#include <memory>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string>
 
 namespace Mantids30 { namespace Memory { namespace Streams {
 
@@ -11,7 +12,7 @@ namespace Mantids30 { namespace Memory { namespace Streams {
  * StreamableObject base class
  * This is a base class for streamable objects that can be retrieved or parsed trough read/write functions.
  */
-class StreamableObject
+class StreamableObject : public std::enable_shared_from_this<StreamableObject>
 {
 public:
 
@@ -61,8 +62,9 @@ public:
     // TODO: what if the protocol reached std::numeric_limits<uint64_t>::max() ? enforce 64bit max. (on streamTo)
     // TODO: report percentage completed
 
-    virtual std::string toString();
+    virtual std::string getPeerName() const { return  ""; }
 
+    virtual std::string toString();
     /**
      * @brief writeEOF proccess the end of the stream (should be implemented on streamTo)
      */
@@ -72,7 +74,7 @@ public:
      * @return std::numeric_limits<uint64_t>::max() if the stream is not fixed size
      */
     virtual uint64_t size() const { return std::numeric_limits<uint64_t>::max(); }
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, Status & wrStatUpd)=0;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrStatUpd)=0;
     virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd)=0;
 
     Status writeFullStream(const void *buf, const size_t &count, Status & wrStatUpd);

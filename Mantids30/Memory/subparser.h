@@ -3,6 +3,7 @@
 #include "b_chunks.h"
 #include "b_ref.h"
 #include "streamableobject.h"
+#include <memory>
 
 //#define DEBUG 1
 
@@ -38,7 +39,7 @@ public:
 
     SubParser();
     virtual ~SubParser();
-    void initElemParser(Memory::Streams::StreamableObject *upstreamObj, bool clientMode);
+    void initElemParser(std::shared_ptr<StreamableObject> upstreamObj, bool clientMode);
 
     ///////////////////
     /**
@@ -129,7 +130,7 @@ protected:
 
     ////////////////////////////
     bool clientMode;
-    Memory::Streams::StreamableObject * upStream;
+    std::shared_ptr<Memory::Streams::StreamableObject> upStream;
     bool streamEnded;
     std::string subParserName;
 

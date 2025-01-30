@@ -112,6 +112,12 @@ public:
     std::string getLastError() const;
 
     /**
+     * @brief Get the last bind address and port in normalized string format.
+     * @return A string in the format "IP:Port".
+     */
+    std::string getLastBindAddress() const;
+
+    /**
      * @brief getRemotePairStr Non-Efficient get remote pair string (useful only for cheap print operations)
      * @return remote pair as string.
      */
@@ -252,6 +258,31 @@ public:
      */
     void setUseIPv6(bool value);
 
+    /**
+     * @brief Retrieve the name associated with this connection.
+     *
+     * This name is used to uniquely identify a connection. It can be a random string,
+     * a mnemonic name, or any identifier that helps distinguish this socket connection
+     * from others. For example, it could be a randomly generated key or a human-readable
+     * identifier.
+     *
+     * @return The name associated with this connection.
+     */
+    std::string getConnectionName() const;
+
+    /**
+     * @brief Set a name for this connection.
+     *
+     * Assigns a custom name or identifier to this socket connection. This can be useful
+     * for logging, debugging, or tracking specific connections. The value can be
+     * anything meaningful, such as a random key, a session identifier, or a descriptive
+     * label for the connection.
+     *
+     * @param newConnectionName The name or identifier to associate with this connection.
+     */
+    void setConnectionName(const std::string &newConnectionName);
+
+
 private:
     static void socketSystemInitialization();
     void initVars();
@@ -289,12 +320,20 @@ protected:
      */
     std::string m_remoteServerHostname;
 
+    // Store the last bind information as normalized structs
+    struct sockaddr_in m_lastBindIPv4;
+    struct sockaddr_in6 m_lastBindIPv6;
+    // Keep track of whether there was a successful bind
+    bool m_lastBindValid = false;
+
     static bool m_globalSocketInitialized;
     //static bool badSocket;
 
     std::atomic<unsigned int> m_readTimeout;
     std::atomic<unsigned int> m_writeTimeout;
     std::atomic<unsigned int> m_recvBuffer;
+
+    std::string m_connectionName;
 
     /**
      * @brief m_isInListenMode The socket is in listen mode.

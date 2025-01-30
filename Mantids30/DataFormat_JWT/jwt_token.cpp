@@ -15,6 +15,11 @@ void JWT::Token::setSubject(const std::string &subject) {
     m_claims["sub"] = subject;
 }
 
+void JWT::Token::setDomain(const std::string &domain)
+{
+    m_claims["domain"] = domain;
+}
+
 void JWT::Token::setAudience(const std::string &audience) {
     m_claims["aud"] = audience;
 }
@@ -51,7 +56,8 @@ bool JWT::Token::decodePayload(const std::string &payload)
     std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
     std::string errs;
 
-    if (!charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs)) {
+    if (!charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs))
+    {
         // If the header cannot be parsed, return false
         return false;
     }
@@ -63,8 +69,18 @@ std::string JWT::Token::getIssuer() const {
     return JSON_ASSTRING(m_claims, "iss", "");
 }
 
+std::string JWT::Token::getImpersonator() const
+{
+    return JSON_ASSTRING(m_claims, "impersonator", "");
+}
+
 std::string JWT::Token::getSubject() const {
     return JSON_ASSTRING(m_claims, "sub", "");
+}
+
+std::string JWT::Token::getDomain() const
+{
+    return JSON_ASSTRING(m_claims, "domain", "");
 }
 
 std::string JWT::Token::getAudience() const {
@@ -90,6 +106,63 @@ std::string JWT::Token::getJwtId() const {
     return JSON_ASSTRING(m_claims, "jti", "");
 }
 
+std::set<std::string> JWT::Token::getAllRoles()
+{
+    std::set<std::string> roles;
+
+    if (m_claims.isMember("roles"))
+    {
+        const Json::Value& rolesClaims = m_claims["roles"];
+        if (rolesClaims.isArray())
+        {
+            for (const auto& role : rolesClaims)
+            {
+                roles.insert(JSON_ASSTRING_D(role,""));
+            }
+        }
+    }
+
+    return roles;
+}
+
+Json::Value JWT::Token::getAllRolesAsJSON()
+{
+    if (m_claims.isMember("roles"))
+    {
+        return m_claims["roles"];
+    }
+
+    return {};
+}
+
+void JWT::Token::addRole(const std::string &roleId)
+{
+    if (!m_claims.isMember("roles"))
+    {
+        m_claims["roles"] = Json::Value(Json::arrayValue);
+    }
+    m_claims["roles"].append(roleId);
+}
+
+bool JWT::Token::hasRole(const std::string &roleId) const
+{
+    if (m_claims.isMember("roles"))
+    {
+        const Json::Value& rolesClaims = m_claims["roles"];
+        if (rolesClaims.isArray())
+        {
+            for (const auto& role : rolesClaims)
+            {
+                if (JSON_ASSTRING_D(role,"") == roleId)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 std::set<std::string> JWT::Token::getAllPermissions()
 {
     std::set<std::string> permissions;
@@ -107,6 +180,16 @@ std::set<std::string> JWT::Token::getAllPermissions()
     }
 
     return permissions;
+}
+
+Json::Value JWT::Token::getAllPermissionsAsJSON()
+{
+    if (m_claims.isMember("permissions"))
+    {
+        return m_claims["permissions"];
+    }
+
+    return {};
 }
 
 void JWT::Token::addPermission(const std::string &permissionId)
@@ -149,6 +232,16 @@ std::map<std::string, Json::Value> JWT::Token::getAllClaims()
     return claimsMap;
 }
 
+Json::Value JWT::Token::getAllClaimsAsJSON()
+{
+    return m_claims;
+}
+
+bool JWT::Token::isAdmin() const
+{
+    return m_claims.isMember("isAdmin") && JSON_ASBOOL_D(getClaim("isAdmin"),false);
+}
+
 Json::Value JWT::Token::getClaim(const std::string &name) const {
     return m_claims[name];
 }
@@ -169,12 +262,12 @@ bool JWT::Token::isValid() const {
         return false;
     }
 
-    return m_verified && !m_revoked;
+    return m_signatureVerified && !m_revoked;
 }
 
-void JWT::Token::setVerified(bool newVerified)
+void JWT::Token::setSignatureVerified(bool newVerified)
 {
-    m_verified = newVerified;
+    m_signatureVerified = newVerified;
 }
 
 Json::Value *JWT::Token::getClaimsPTR()

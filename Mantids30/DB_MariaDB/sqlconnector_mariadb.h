@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <mysql.h>
 #include <Mantids30/DB/sqlconnector.h>
 #include "query_mariadb.h"
@@ -56,7 +57,7 @@ protected:
      * @brief createQuery0 Creates a new instance of the Query_MariaDB class.
      * @return A new instance of the Query_MariaDB class.
      */
-    Query * createQuery0() { return new Query_MariaDB; };
+    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_MariaDB>(); };
 
     /**
      * @brief connect0 Establishes a connection to the MariaDB database.

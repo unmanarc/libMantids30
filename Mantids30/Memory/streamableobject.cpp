@@ -1,7 +1,9 @@
 #include "streamableobject.h"
 #include "streamablestring.h"
+#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
+
 
 #ifdef _WIN32
 #include <stdlib.h>
@@ -18,12 +20,13 @@ StreamableObject::~StreamableObject()
 {
 }
 
+
 std::string StreamableObject::toString()
 {
-    StreamableString s;
+    std::shared_ptr<StreamableString> s;
     Status x;
-    this->streamTo(&s, x);
-    return s.getValue();
+    this->streamTo(s, x);
+    return s->getValue();
 
 }
 

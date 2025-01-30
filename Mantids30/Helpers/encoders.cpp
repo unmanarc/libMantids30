@@ -1,12 +1,12 @@
 #include "encoders.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <string.h>
-#include <random>
 #include <inttypes.h>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
-#include <boost/algorithm/string.hpp>
+#include <random>
+#include <string.h>
 
 using namespace std;
 using namespace Mantids30::Helpers;
@@ -370,7 +370,7 @@ string Encoders::fromURL(const string &urlEncodedStr)
 
     for (size_t i=0; i<urlEncodedStr.size();i++)
     {
-        if ( urlEncodedStr[i] == '%' && i+3<=urlEncodedStr.size() && isHex(urlEncodedStr[i+1]) && isHex(urlEncodedStr[i+2]) )
+        if ( urlEncodedStr[i] == '%' && i+3<=urlEncodedStr.size() && isxdigit(urlEncodedStr[i+1]) && isxdigit(urlEncodedStr[i+2]) )
         {
             char v = hexToValue(urlEncodedStr[i+1])*0x10 + hexToValue(urlEncodedStr[i+2]);
             r+=v;
@@ -394,6 +394,31 @@ string Encoders::toHex(const unsigned char *data, size_t len)
         r.append( buf );
     }
     return r;
+}
+
+
+void Encoders::replaceHexCodes(std::string &content) {
+    size_t pos = 0;
+
+    // Manually search for the pattern "\\0x" followed by two hexadecimal characters
+    while ((pos = content.find("\\0x", pos)) != std::string::npos) {
+
+        // Verify that there are two hexadecimal characters following "\\0x"
+        if (pos + 4 < content.size() && std::isxdigit(content[pos + 3]) && std::isxdigit(content[pos + 4])) {
+
+            // Extract the two hexadecimal characters
+            char hexcodes[3] = { content[pos + 3], content[pos + 4], 0 };
+
+            // Convert the two hexadecimal characters to an ASCII character
+            unsigned char replSrc = hexPairToByte(hexcodes);
+
+            // Replace the pattern "\\0xXX" with the corresponding ASCII character
+            content.replace(pos, 5, std::string(1, replSrc));
+        } else {
+            // Advance if a valid pattern is not found
+            pos += 3;
+        }
+    }
 }
 
 void Encoders::fromHex(const string &hexValue, unsigned char *data, size_t maxlen)
@@ -427,17 +452,23 @@ char Encoders::toHexFrom4bitChar(char nibble, char position)
     }
 }
 
-bool Encoders::isHex(char v)
-{
-    return (v>='0' && v<='9') || (v>='A' && v<='F');
-}
-
 char Encoders::hexToValue(char v)
 {
     if (v>='0' && v<='9') return v-'0';
     if (v>='A' && v<='F') return v-'A'+10;
     if (v>='a' && v<='f') return v-'a'+10;
     return 0;
+}
+
+unsigned char Encoders::hexPairToByte(const char *bytes)
+{
+    // Invalid HEX Code:
+    if (!isxdigit(bytes[0]) || !isxdigit(bytes[1]))
+        return 0;
+
+    // Valid HEX Code:
+    char hexStr[3] = {static_cast<char>(bytes[0]), static_cast<char>(bytes[1]), '\0'};
+    return (unsigned char) strtol(hexStr, NULL, 16);
 }
 
 bool Encoders::getIfMustBeURLEncoded(char c,const URL_ENCODING_TYPE & urlEncodingType)

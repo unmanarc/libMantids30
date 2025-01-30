@@ -2,22 +2,22 @@
 
 #include "a_bin.h"
 #include "a_bool.h"
+#include "a_datetime.h"
 #include "a_double.h"
-#include "a_int8.h"
 #include "a_int16.h"
 #include "a_int32.h"
 #include "a_int64.h"
+#include "a_int8.h"
 #include "a_ipv4.h"
-#include "a_macaddr.h"
 #include "a_ipv6.h"
+#include "a_macaddr.h"
 #include "a_string.h"
 #include "a_stringlist.h"
-#include "a_uint8.h"
 #include "a_uint16.h"
 #include "a_uint32.h"
 #include "a_uint64.h"
+#include "a_uint8.h"
 #include "a_varchar.h"
-#include "a_datetime.h"
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -28,88 +28,87 @@ Var::Var()
 
 Var *Var::copy()
 {
-    Var * var = protectedCopy();
-    if (var) var->setVarType(this->getVarType());
+    Var *var = protectedCopy();
+    if (var)
+        var->setVarType(this->getVarType());
     return var;
 }
 
-Var::~Var()
-{
-
-}
+Var::~Var() {}
 
 void *Var::getDirectMemory()
 {
     return nullptr;
 }
 
-Var *Var::makeAbstract(Type type, const std::string &defValue)
+std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defValue)
 {
-    Var * v = nullptr;
+    std::shared_ptr<Var> v = nullptr;
     switch (type)
     {
-    case TYPE_NULL:
-        v=new Var;
+    case Var::TYPE_NULL:
+        v = std::make_shared<Var>();
         break;
-    case TYPE_BOOL:
-        v=new BOOL;
+    case Var::TYPE_BOOL:
+        v = std::make_shared<BOOL>();
         break;
-    case TYPE_INT8:
-        v=new INT8;
+    case Var::TYPE_INT8:
+        v = std::make_shared<INT8>();
         break;
-    case TYPE_INT16:
-        v=new INT16;
+    case Var::TYPE_INT16:
+        v = std::make_shared<INT16>();
         break;
-    case TYPE_INT32:
-        v=new INT32;
+    case Var::TYPE_INT32:
+        v = std::make_shared<INT32>();
         break;
-    case TYPE_INT64:
-        v=new INT64;
+    case Var::TYPE_INT64:
+        v = std::make_shared<INT64>();
         break;
-    case TYPE_UINT8:
-        v=new UINT8;
+    case Var::TYPE_UINT8:
+        v = std::make_shared<UINT8>();
         break;
-    case TYPE_UINT16:
-        v=new UINT16;
+    case Var::TYPE_UINT16:
+        v = std::make_shared<UINT16>();
         break;
-    case TYPE_UINT32:
-        v=new UINT32;
+    case Var::TYPE_UINT32:
+        v = std::make_shared<UINT32>();
         break;
-    case TYPE_UINT64:
-        v=new UINT64;
+    case Var::TYPE_UINT64:
+        v = std::make_shared<UINT64>();
         break;
-    case TYPE_DOUBLE:
-        v=new DOUBLE;
+    case Var::TYPE_DOUBLE:
+        v = std::make_shared<DOUBLE>();
         break;
-    case TYPE_DATETIME:
-        v=new DATETIME;
+    case Var::TYPE_DATETIME:
+        v = std::make_shared<DATETIME>();
         break;
-    case TYPE_BIN:
-        v=new BINARY;
+    case Var::TYPE_BIN:
+        v = std::make_shared<BINARY>();
         break;
-    case TYPE_STRING:
-        v=new STRING;
+    case Var::TYPE_STRING:
+        v = std::make_shared<STRING>();
         break;
-    case TYPE_STRINGLIST:
-        v=new STRINGLIST;
+    case Var::TYPE_STRINGLIST:
+        v = std::make_shared<STRINGLIST>();
         break;
-    case TYPE_IPV4:
-        v=new IPV4;
+    case Var::TYPE_IPV4:
+        v = std::make_shared<IPV4>();
         break;
-    case TYPE_MACADDR:
-        v=new MACADDR;
+    case Var::TYPE_MACADDR:
+        v = std::make_shared<MACADDR>();
         break;
-    case TYPE_IPV6:
-        v=new IPV6;
+    case Var::TYPE_IPV6:
+        v = std::make_shared<IPV6>();
         break;
-    case TYPE_VARCHAR:
-        v=new VARCHAR(defValue.size()+1024);
+    case Var::TYPE_VARCHAR:
+        v = std::make_shared<VARCHAR>(defValue.size() + 1024);
         break;
     default:
         break;
     }
 
-    if (v) v->fromString(defValue);
+    if (v)
+        v->fromString(defValue);
 
     return v;
 }
@@ -136,6 +135,6 @@ void Var::setVarType(const Type &value)
 
 Var *Var::protectedCopy()
 {
-    Var * var = new Var;
+    Var *var = new Var;
     return var;
 }

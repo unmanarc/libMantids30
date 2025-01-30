@@ -1,15 +1,17 @@
 #include "monolithresourcefilter.h"
-
+/*
 
 using namespace boost;
 using namespace Mantids30::API::Monolith;
+
+// TODO: destroy this class or compare with the resource filter from webcore.
 
 ResourcesFilter::ResourcesFilter()
 {
 
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(const std::string &uri, Auth::Session *session)
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(const std::string &uri, Sessions::Session *session)
 {
     FilterEvaluationResult evaluationResult;
 
@@ -85,9 +87,9 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(
     evaluationResult.accept = true;
     return evaluationResult;
 }
-
+*/
 /*
-ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids30::Auth::Session * hSession, Mantids30::Auth::IdentityManager *  identityManager)
+ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::string &uri, Mantids30::Sessions::Session * hSession, Mantids30::Sessions::IdentityManager *  identityManager)
 {
     sFilterEvaluation evalRet;
 

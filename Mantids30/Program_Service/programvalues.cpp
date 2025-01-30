@@ -1,7 +1,6 @@
 #include "programvalues.h"
 #include <vector>
 #include <sstream>
-#include <iostream>
 
 using namespace Mantids30::Program::Values;
 
@@ -19,9 +18,9 @@ void ProgramValues::initProgramName(const std::string &value)
     std::string s;
     while (getline(f, s, '/')) paths.push_back(s);
 
-    m_programName = !paths.size()? "unknownprogram" : paths.at(paths.size()-1);
-    m_softwareDescription = m_programName;
-    m_daemonName = m_programName;
+    softwareName = !paths.size()? "unknownprogram" : paths.at(paths.size()-1);
+    softwareDescription = softwareName;
+    m_daemonName = softwareName;
 }
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mantids30/Memory/streamablejson.h"
+#include <Mantids30/Memory/streamablejson.h>
 #include "common_urlvars.h"
 
 #include <Mantids30/Memory/subparser.h>

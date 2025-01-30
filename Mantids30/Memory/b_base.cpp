@@ -627,7 +627,7 @@ void B_Base::reduceMaxSizeBy(const uint64_t &value)
     setMaxSize( getMaxSize() - value );
 }
 
-bool B_Base::streamTo(Memory::Streams::StreamableObject *out, Streams::StreamableObject::Status &wrStatUpd)
+bool B_Base::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Streams::StreamableObject::Status &wrStatUpd)
 {
     std::pair<bool,uint64_t> bytesAppended = appendTo(*out,wrStatUpd);
     if (bytesAppended.first==false)

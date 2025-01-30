@@ -18,7 +18,7 @@ public:
      * @param wrStatUpd write status counter
      * @return true if streamed ok
      */
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, Status & wrStatUpd) override;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrStatUpd) override;
     /**
      * @brief write Write/Append into the file
      * @param buf buffer to be written

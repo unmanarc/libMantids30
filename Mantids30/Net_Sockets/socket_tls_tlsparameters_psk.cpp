@@ -62,19 +62,19 @@ bool Socket_TLS::TLSKeyParameters::PSKStaticHdlr::setSSLHandler(SSL *sslh)
     
     m_sslHandlerForPSK = sslh;
     
-    if (m_pskServerValues->m_isUsingPSK)
+    if (m_pskServerValues->isUsingPSK)
     {
         std::unique_lock<std::mutex> lock(m_serverPSKBySSLHandlerMapMutex);
         if (m_serverPSKBySSLHandlerMap.find( m_sslHandlerForPSK ) == m_serverPSKBySSLHandlerMap.end())
             m_serverPSKBySSLHandlerMap[m_sslHandlerForPSK] = m_pskServerValues;
     }
     
-    if (m_pskClientValues->m_isUsingPSK)
+    if (m_pskClientValues->isUsingPSK)
     {
         std::unique_lock<std::mutex> lock(m_clientPSKBySSLHandlerMapMutex);
         if (m_clientPSKBySSLHandlerMap.find( m_sslHandlerForPSK ) == m_clientPSKBySSLHandlerMap.end())
             m_clientPSKBySSLHandlerMap[m_sslHandlerForPSK] = m_pskClientValues;
     }
     
-    return (m_pskClientValues->m_isUsingPSK || m_pskServerValues->m_isUsingPSK);
+    return (m_pskClientValues->isUsingPSK || m_pskServerValues->isUsingPSK);
 }

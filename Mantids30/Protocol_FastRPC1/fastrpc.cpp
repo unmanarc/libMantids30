@@ -25,7 +25,7 @@ FastRPC1::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
     threadPool = new Mantids30::Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
     finished = false;
-    overwriteObject = nullptr;
+    overwriteContext = nullptr;
 
     setRWTimeout();
     setPingInterval();
@@ -111,14 +111,14 @@ bool FastRPC1::waitPingInterval()
     return false;
 }
 
-json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string & data, void *obj, const json & payload, bool *found)
+json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string & data, void *context, const json & payload, bool *found)
 {
     json r;
     Threads::Sync::Lock_RD lock(smutexMethods);
     if (methods.find(methodName) != methods.end())
     {
-        r = methods[methodName].method(overwriteObject?overwriteObject:methods[methodName].obj
-                                          ,connectionKey,payload,obj,data);
+        r = methods[methodName].method(overwriteContext?overwriteContext:methods[methodName].context
+                                          ,connectionKey,payload,context,data);
         if (found) *found =true;
     }
     else
@@ -191,7 +191,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection * connection)
     return 1;
 }
 
-int FastRPC1::processQuery(Network::Sockets::Socket_Stream_Base *stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, void *obj, const std::string &data)
+int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, void *context, const std::string &data)
 {
     uint32_t maxAlloc = maxMessageSize;
     uint64_t requestId;
@@ -230,7 +230,7 @@ int FastRPC1::processQuery(Network::Sockets::Socket_Stream_Base *stream, const s
     params->caller = this;
     params->key = key;
     params->data = data;
-    params->obj = obj;
+    params->context = context;
     params->maxMessageSize = maxMessageSize;
 
     bool parsingSuccessful = reader.parse( payloadBytes, params->payload );
@@ -238,7 +238,7 @@ int FastRPC1::processQuery(Network::Sockets::Socket_Stream_Base *stream, const s
 
     if ( !parsingSuccessful )
     {
-        // Bad Incomming JSON... Disconnect
+        // Bad Incoming JSON... Disconnect
         delete params;
         return -3;
     }
@@ -259,12 +259,12 @@ int FastRPC1::processQuery(Network::Sockets::Socket_Stream_Base *stream, const s
 
 void *FastRPC1::getOverwriteObject() const
 {
-    return overwriteObject;
+    return overwriteContext;
 }
 
 void FastRPC1::setOverwriteObject(void *newOverwriteObject)
 {
-    overwriteObject = newOverwriteObject;
+    overwriteContext = newOverwriteObject;
 }
 
 uint32_t FastRPC1::getRWTimeout() const
@@ -302,7 +302,7 @@ void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
     remoteExecutionTimeoutInMS = value;
 }
 
-int FastRPC1::processConnection(Network::Sockets::Socket_Stream_Base *stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, void *obj, const std::string &data)
+int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, void *context, const std::string &data)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "FRPC:procCNT");
@@ -314,7 +314,7 @@ int FastRPC1::processConnection(Network::Sockets::Socket_Stream_Base *stream, co
     Threads::Sync::Mutex mtSocket;
 
     FastRPC1::Connection * connection = new FastRPC1::Connection;
-    connection->obj = obj;
+    connection->context = context;
     connection->data = data;
     connection->mtSocket = &mtSocket;
     connection->key = key;
@@ -329,7 +329,7 @@ int FastRPC1::processConnection(Network::Sockets::Socket_Stream_Base *stream, co
     // Now here is connected....
     if (_cb_OnConnected.fastRPCCB_OnConnected != nullptr)
     {
-        auto i = std::thread(_cb_OnConnected.fastRPCCB_OnConnected, key, _cb_OnConnected.obj);
+        auto i = std::thread(_cb_OnConnected.fastRPCCB_OnConnected, key, _cb_OnConnected.context);
         i.detach();
     }
 
@@ -349,7 +349,7 @@ int FastRPC1::processConnection(Network::Sockets::Socket_Stream_Base *stream, co
             break;
         case 'Q':
             // Process Query
-            ret = processQuery(stream,key,keyDistFactor,&mtDone,&mtSocket,obj,data);
+            ret = processQuery(stream,key,keyDistFactor,&mtDone,&mtSocket,context,data);
             break;
         case 0:
             // Remote shutdown
@@ -389,7 +389,7 @@ void FastRPC1::executeRPCTask(void *taskData)
     builder.settings_["indentation"] = "";
 
     bool found;
-    json r = ((FastRPC1 *)params->caller)->runLocalRPCMethod(params->methodName,params->key,params->data,params->obj,params->payload,&found);
+    json r = ((FastRPC1 *)params->caller)->runLocalRPCMethod(params->methodName,params->key,params->data,params->context,params->payload,&found);
     std::string output = Json::writeString(builder, r);
     sendRPCAnswer(params,output,found?2:4);
     params->done->unlockShared();

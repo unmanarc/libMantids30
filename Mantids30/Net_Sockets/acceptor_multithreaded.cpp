@@ -22,10 +22,10 @@ void MultiThreaded::init()
     onInitFail = nullptr;
     onTimedOut = nullptr;
     onMaxConnectionsPerIP = nullptr;
-    objOnConnect = nullptr;
-    objOnInitFail = nullptr;
-    objOnTimedOut = nullptr;
-    objOnMaxConnectionsPerIP = nullptr;
+    contextOnConnect = nullptr;
+    contextOnInitFail = nullptr;
+    contextOnTimedOut = nullptr;
+    contextOnMaxConnectionsPerIP = nullptr;
 }
 
 uint32_t MultiThreaded::getMaxConnectionsPerIP()
@@ -50,7 +50,7 @@ void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & t
     while (tc->acceptClient()) {}
 }
 
-bool MultiThreaded::processClient(Sockets::Socket_Stream_Base *clientSocket, SAThread *clientThread)
+bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>clientSocket, std::shared_ptr<SAThread> clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(mutex_clients);
@@ -61,16 +61,16 @@ bool MultiThreaded::processClient(Sockets::Socket_Stream_Base *clientSocket, SAT
         {
             if (onTimedOut)
             {
-                onTimedOut(objOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->isSecure());
+                onTimedOut(contextOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->isSecure());
             }
-            delete clientThread;
+            //delete clientThread;
             return true;
         }
     }
     if (finalized)
     {
         // Don't introduce or start... delete it (close).
-        delete clientThread;
+        //delete clientThread;
         return false;
     }
     // update the counter
@@ -78,15 +78,17 @@ bool MultiThreaded::processClient(Sockets::Socket_Stream_Base *clientSocket, SAT
     {
         if (onMaxConnectionsPerIP)
         {
-            onMaxConnectionsPerIP(objOnMaxConnectionsPerIP, clientSocket, clientThread->getRemotePair());
+            onMaxConnectionsPerIP(contextOnMaxConnectionsPerIP, clientSocket, clientThread->getRemotePair());
         }
         decrementIPUsage(clientThread->getRemotePair());
-        delete clientThread;
+        //delete clientThread;
         return true;
     }
 
     threadList.push_back(clientThread);
-    clientThread->start();
+
+    std::thread(SAThread::thread_streamclient,clientThread,this).detach();
+
     return true;
 }
 
@@ -96,7 +98,7 @@ uint32_t MultiThreaded::incrementIPUsage(const std::string &ipAddr)
         connectionsPerIP[ipAddr] = 1;
     else
     {
-        if (connectionsPerIP[ipAddr] != std::numeric_limits<uint32_t>::max())
+        if (connectionsPerIP[ipAddr] != UINT32_MAX)
             connectionsPerIP[ipAddr]++;
     }
     return connectionsPerIP[ipAddr];
@@ -143,14 +145,14 @@ MultiThreaded::MultiThreaded()
     init();
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void *obj,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onMaxConnectionsPerIP)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onMaxConnectionsPerIP)
 {
     init();
     setAcceptorSocket(acceptorSocket);
-    setCallbackOnConnect(_onConnect,obj);
-    setCallbackOnInitFail(_onInitFailed,obj);
-    setCallbackOnTimedOut(_onTimeOut,obj);
-    setCallbackOnMaxConnectionsPerIP(_onMaxConnectionsPerIP,obj);
+    setCallbackOnConnect(_onConnect,context);
+    setCallbackOnInitFail(_onInitFailed,context);
+    setCallbackOnTimedOut(_onTimeOut,context);
+    setCallbackOnMaxConnectionsPerIP(_onMaxConnectionsPerIP,context);
 }
 
 MultiThreaded::~MultiThreaded()
@@ -180,7 +182,7 @@ MultiThreaded::~MultiThreaded()
     {
         std::unique_lock<std::mutex> lock(mutex_clients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<SAThread *>::iterator it=threadList.begin(); it != threadList.end(); ++it)
+        for (std::list<std::shared_ptr<SAThread>>::iterator it=threadList.begin(); it != threadList.end(); ++it)
             (*it)->stopSocket();
         // unlock until there is no threads left.
         while ( !threadList.empty() )
@@ -194,29 +196,29 @@ MultiThreaded::~MultiThreaded()
 }
 
 bool MultiThreaded::acceptClient()
-{    
-    Sockets::Socket_Stream_Base * clientSocket = acceptorSocket->acceptConnection();
+{
+    std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = acceptorSocket->acceptConnection();
     if (clientSocket)
     {
-        SAThread * clientThread = new SAThread;
+        std::shared_ptr<SAThread> clientThread = std::make_shared<SAThread>();
         clientThread->setClientSocket(clientSocket);
-        clientThread->setCallbackOnConnect(this->onConnect, objOnConnect);
-        clientThread->setCallbackOnInitFail(this->onInitFail, objOnInitFail);
-        clientThread->setParent(this);
+        clientThread->setCallbackOnConnect(this->onConnect, contextOnConnect);
+        clientThread->setCallbackOnInitFail(this->onInitFail, contextOnInitFail);
+        //clientThread->setParent(this);
         clientThread->setSecure(clientSocket->isSecure());
         return processClient(clientSocket,clientThread);
     }
     return false; // no more connections. (abandon)
 }
 
-bool MultiThreaded::finalizeThreadElement(SAThread *x)
+bool MultiThreaded::finalizeThreadElement(std::shared_ptr<SAThread> x)
 {
     std::unique_lock<std::mutex> lock(mutex_clients);
     if (std::find(threadList.begin(), threadList.end(), x) != threadList.end())
     {
         threadList.remove(x);
         decrementIPUsage(x->getRemotePair());
-        delete x;
+        //delete x;
         cond_clients_notfull.notify_one();
         if (threadList.empty())
             cond_clients_empty.notify_one();
@@ -249,28 +251,28 @@ void MultiThreaded::stop()
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, void *obj)
+void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context)
 {
     this->onConnect = _onConnect;
-    this->objOnConnect = obj;
+    this->contextOnConnect = context;
 }
 
-void MultiThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, void *obj)
+void MultiThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context)
 {
     this->onInitFail = _onInitFailed;
-    this->objOnInitFail = obj;
+    this->contextOnInitFail = context;
 }
 
-void MultiThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, void *obj)
+void MultiThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context)
 {
     this->onTimedOut = _onTimeOut;
-    this->objOnTimedOut = obj;
+    this->contextOnTimedOut = context;
 }
 
-void MultiThreaded::setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, void *obj)
+void MultiThreaded::setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, std::shared_ptr<void> context)
 {
     this->onMaxConnectionsPerIP = _onMaxConnectionsPerIP;
-    this->objOnMaxConnectionsPerIP = obj;
+    this->contextOnMaxConnectionsPerIP = context;
 }
 
 bool MultiThreaded::startBlocking()

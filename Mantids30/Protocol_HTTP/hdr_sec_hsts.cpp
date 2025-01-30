@@ -1,5 +1,4 @@
 #include "hdr_sec_hsts.h"
-#include <stdexcept>
 #include <vector>
 
 #include <boost/algorithm/string/split.hpp>
@@ -21,31 +20,31 @@ HSTS::HSTS()
 
 HSTS::HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
 {
-    this->m_activated=true;
-    this->m_preloadEnabled=preload;
-    this->m_subdomainIncluded=includeSubDomains;
+    this->isActivated=true;
+    this->isPreloadEnabled=preload;
+    this->isSubdomainIncluded=includeSubDomains;
     this->m_maxAge=maxAge;
 }
 
 void HSTS::setDefaults()
 {
-    m_activated=false;
-    m_preloadEnabled=false;
-    m_subdomainIncluded=false;
+    isActivated=false;
+    isPreloadEnabled=false;
+    isSubdomainIncluded=false;
     m_maxAge=0;
 }
 
 std::string HSTS::toString()
 {
-    if (m_activated)
+    if (isActivated)
     {
         string r = "";
 
         if (m_maxAge)
             r+= "; max-age=" + std::to_string(m_maxAge);
-        if (m_subdomainIncluded)
+        if (isSubdomainIncluded)
             r+= "; includeSubDomains";
-        if (m_preloadEnabled)
+        if (isPreloadEnabled)
             r+= "; preload";
 
         if (r.size()>2)
@@ -62,16 +61,16 @@ bool HSTS::fromString(const std::string &sValue)
     setDefaults();
 
     if (sValue.empty())
-        m_activated = false;
+        isActivated = false;
     else
     {
-        m_activated = true;
+        isActivated = true;
         for ( size_t i=0; i<parts.size();i++ )
         {
             if (iequals(parts[i],"preload"))
-                m_preloadEnabled = true;
+                isPreloadEnabled = true;
             else if (iequals(parts[i],"includeSubDomains"))
-                m_subdomainIncluded = true;
+                isSubdomainIncluded = true;
             else if (istarts_with(parts[i],"max-age="))
                 m_maxAge = strtoul(parts[i].substr(0).c_str(),nullptr,10);
         }

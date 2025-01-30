@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Abstract Authentication Layer")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Session Management")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
@@ -27,6 +27,7 @@ target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
     TARGETS ${LIB_NAME}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
     ARCHIVE COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER COMPONENT dev DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIBPREFIX}/${RLIB_NAME}
@@ -45,6 +46,7 @@ endif()
 set(Mantids30_LIBRARIES
     Helpers
     Threads
+    DataFormat_JWT
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})
@@ -62,8 +64,6 @@ endif()
 target_include_directories(${LIB_NAME} PUBLIC ${OPENSSLCRYPTO_INCLUDE_DIRS})
 target_compile_options(${LIB_NAME} PUBLIC ${OPENSSLCRYPTO_CFLAGS_OTHER})
 target_link_libraries(${LIB_NAME} ${OPENSSLCRYPTO_LIBRARIES})
-
-
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP jsoncpp)

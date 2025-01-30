@@ -40,7 +40,6 @@ unsigned char Socket_Stream_BaseReader::readU8(bool* readOK)
     return rsp[0];
 }
 
-
 uint16_t Socket_Stream_BaseReader::readU16(bool* readOK)
 {
     uint16_t ret = 0;

@@ -71,7 +71,7 @@ public:
 
 
 protected:
-    Query * createQuery0() { return new Query_SQLite3; };
+    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_SQLite3>(); };
     bool connect0();
 
 private:

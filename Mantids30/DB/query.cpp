@@ -1,5 +1,6 @@
 #include "query.h"
 #include "sqlconnector.h"
+#include <memory>
 #include <stdexcept>
 
 using namespace Mantids30::Database;
@@ -12,10 +13,6 @@ Query::~Query()
         ((SQLConnector *)m_pSQLConnector)->detachQuery(this);
     }
 
-    // Destroy Input Vars...
-    for (auto & i : m_inputVars)
-        delete i.second;
-
     m_inputVars.clear();
 
     clearDestroyableStringsForInput();
@@ -25,21 +22,28 @@ Query::~Query()
         m_databaseLockMutex->unlock();
 }
 
-bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, Memory::Abstract::Var *> &vars)
+bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars)
 {
     m_query = value;
 
     if (!bindInputVars(vars))
+    {
         return false;
+    }
 
     return true;
 }
 
-bool Query::bindInputVars(const std::map<std::string, Mantids30::Memory::Abstract::Var *> &vars)
+bool Query::bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)
 {
-    if (vars.empty()) return true;
+    if (vars.empty())
+    {
+        return true;
+    }
     if (m_bindInputVars)
+    {
         throw std::runtime_error("Don't call bindInputVars twice.");
+    }
     m_bindInputVars = true;
     m_inputVars = vars;
     return postBindInputVars();
@@ -47,9 +51,14 @@ bool Query::bindInputVars(const std::map<std::string, Mantids30::Memory::Abstrac
 
 bool Query::bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *> &vars)
 {
-    if (vars.empty()) return true;
+    if (vars.empty())
+    {
+        return true;
+    }
     if (m_bindResultVars)
+        {
         throw std::runtime_error("Don't call bindResultVars twice.");
+        }
     m_bindResultVars = true;
     m_resultVars = vars;
     return postBindResultVars();
@@ -157,6 +166,16 @@ void Query::clearDestroyableStringsForResults()
     m_destroyableStringsForResults.clear();
 }
 
+bool Query::getFetchLastInsertRowID() const
+{
+    return m_fetchLastInsertRowID;
+}
+
+void Query::setFetchLastInsertRowID(bool newFetchLastInsertRowID)
+{
+    m_fetchLastInsertRowID = newFetchLastInsertRowID;
+}
+
 uint64_t Query::getAffectedRows() const
 {
     return m_affectedRows;
@@ -167,17 +186,17 @@ uint64_t Query::getNumRows() const
     return m_numRows;
 }
 
-bool Query::setSqlConnector(void *value, std::timed_mutex *m_databaseLockMutex, const uint64_t &milliseconds)
+bool Query::setSqlConnector(void *value, std::timed_mutex *mtDatabaseLockMutex, const uint64_t &milliseconds)
 {
-    this->m_databaseLockMutex = m_databaseLockMutex;
+    this->m_databaseLockMutex = mtDatabaseLockMutex;
     m_pSQLConnector = value;
 
     // Adquire the lock here (some DB's can only handle one query at time)
     if (milliseconds == 0)
-        m_databaseLockMutex->lock();
+        mtDatabaseLockMutex->lock();
     else
     {
-        if (m_databaseLockMutex->try_lock_for( std::chrono::milliseconds(milliseconds) ))
+        if (mtDatabaseLockMutex->try_lock_for( std::chrono::milliseconds(milliseconds) ))
             return true;
         else
         {

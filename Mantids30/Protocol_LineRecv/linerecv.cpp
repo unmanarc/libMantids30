@@ -1,8 +1,9 @@
 #include "linerecv.h"
+#include <memory>
 
 using namespace Mantids30::Network::Protocols::Line2Line;
 
-LineRecv::LineRecv(Memory::Streams::StreamableObject *sobject) : Memory::Streams::Parser(sobject,false)
+LineRecv::LineRecv(std::shared_ptr<Memory::Streams::StreamableObject> sobject) : Memory::Streams::Parser(sobject,false)
 {
     m_initialized = initProtocol();
     m_currentParser = (Memory::Streams::SubParser *)(&subParser);

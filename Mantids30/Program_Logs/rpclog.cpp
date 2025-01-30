@@ -11,10 +11,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
-
 #include <stdarg.h>
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -24,12 +21,6 @@ using namespace Mantids30::Program::Logs;
 
 RPCLog::RPCLog(unsigned int _logMode) : LogBase(_logMode)
 {
-    m_disableDomain = false;
-    m_disableModule = false;
-
-    m_minModuleFieldWidth = 13;
-    m_minUserFieldWidth = 13;
-    m_minDomainFieldWidth = 13;
 }
 
 void RPCLog::log(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize, const char *fmtLog,...)
@@ -81,7 +72,7 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     domain = Helpers::Encoders::toURL(domain,Helpers::Encoders::QUOTEPRINT_ENCODING);
     sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId),Helpers::Encoders::QUOTEPRINT_ENCODING);
 
-    if (!m_printAttributeName && m_printEmptyFields)
+    if (!enableAttributeNameLogging && enableEmptyFieldLogging)
     {
         if (ip.empty()) ip="-";
         if (sessionId.empty()) sessionId="-";
@@ -92,39 +83,39 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
 
     std::string logLine;
 
-    if (m_printAttributeName)
+    if (enableAttributeNameLogging)
     {
-        if ((ip.empty() && m_printEmptyFields) || !ip.empty())
-            logLine += "IPADDR=" + getAlignedValue("\"" + ip + "\"",INET_ADDRSTRLEN) + m_logFieldSeparator;
-        if ((sessionId.empty() && m_printEmptyFields) || !sessionId.empty())
-            logLine += "SESSID=" + getAlignedValue("\"" + sessionId + "\"",15) + m_logFieldSeparator;
-        if ((user.empty() && m_printEmptyFields) || !user.empty())
-            logLine += "USER=" + getAlignedValue("\"" + user + "\"",m_minUserFieldWidth) +  m_logFieldSeparator;
-        if (((domain.empty() && m_printEmptyFields) || !domain.empty()) && !m_disableDomain)
-            logLine += "DOMAIN=" + getAlignedValue("\"" + domain + "\"",m_minDomainFieldWidth) +  m_logFieldSeparator;
-        if (((module.empty() && m_printEmptyFields) || !module.empty()) && !m_disableModule)
-            logLine += "MODULE=" + getAlignedValue("\"" + module + "\"",m_minModuleFieldWidth)+ "" + m_logFieldSeparator;
-        if ((!buffer[0] && m_printEmptyFields) || buffer[0])
+        if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+            logLine += "IPADDR=" + getAlignedValue("\"" + ip + "\"",INET_ADDRSTRLEN) + fieldSeparator;
+        if ((sessionId.empty() && enableEmptyFieldLogging) || !sessionId.empty())
+            logLine += "SESSID=" + getAlignedValue("\"" + sessionId + "\"",15) + fieldSeparator;
+        if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+            logLine += "USER=" + getAlignedValue("\"" + user + "\"",userFieldMinWidth) +  fieldSeparator;
+        if (((domain.empty() && enableEmptyFieldLogging) || !domain.empty()) && enableDomainLogging)
+            logLine += "DOMAIN=" + getAlignedValue("\"" + domain + "\"",domainFieldMinWidth) +  fieldSeparator;
+        if (((module.empty() && enableEmptyFieldLogging) || !module.empty()) && enableModuleLogging)
+            logLine += "MODULE=" + getAlignedValue("\"" + module + "\"",moduleFieldMinWidth)+ "" + fieldSeparator;
+        if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
             logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
     }
     else
     {
-        if ((ip.empty() && m_printEmptyFields) || !ip.empty())
-            logLine +=  getAlignedValue("\"" +ip+ "\"",INET_ADDRSTRLEN) + m_logFieldSeparator ;
+        if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+            logLine +=  getAlignedValue("\"" +ip+ "\"",INET_ADDRSTRLEN) + fieldSeparator ;
 
-        if ((sessionId.empty() && m_printEmptyFields) || !sessionId.empty())
-            logLine += getAlignedValue("\"" +sessionId+ "\"",15) + m_logFieldSeparator;
+        if ((sessionId.empty() && enableEmptyFieldLogging) || !sessionId.empty())
+            logLine += getAlignedValue("\"" +sessionId+ "\"",15) + fieldSeparator;
 
-        if ((user.empty() && m_printEmptyFields) || !user.empty())
-            logLine += getAlignedValue("\"" +user+ "\"",m_minUserFieldWidth) +  m_logFieldSeparator;
+        if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+            logLine += getAlignedValue("\"" +user+ "\"",userFieldMinWidth) +  fieldSeparator;
 
-        if (((domain.empty() && m_printEmptyFields) || !domain.empty()) && !m_disableDomain)
-            logLine += getAlignedValue("\"" +domain+ "\"",m_minDomainFieldWidth)+  m_logFieldSeparator;
+        if (((domain.empty() && enableEmptyFieldLogging) || !domain.empty()) && enableDomainLogging)
+            logLine += getAlignedValue("\"" +domain+ "\"",domainFieldMinWidth)+  fieldSeparator;
 
-        if (((module.empty() && m_printEmptyFields) || !module.empty()) && !m_disableModule)
-            logLine +=getAlignedValue("\"" +module+ "\"",m_minModuleFieldWidth) + m_logFieldSeparator;
+        if (((module.empty() && enableEmptyFieldLogging) || !module.empty()) && enableModuleLogging)
+            logLine +=getAlignedValue("\"" +module+ "\"",moduleFieldMinWidth) + fieldSeparator;
 
-        if ((!buffer[0] && m_printEmptyFields) || buffer[0])
+        if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
             logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
     }
 
@@ -153,14 +144,14 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     if (isUsingStandardLog())
     {
         fprintf(fp,"R/");
-        if (m_printDate)
+        if (enableDateLogging)
         {
             printDate(fp);
         }
 
-        if (m_useColors)
+        if (enableColorLogging)
         {
-            if (m_printAttributeName) fprintf(fp, "LEVEL=");
+            if (enableAttributeNameLogging) fprintf(fp, "LEVEL=");
             switch (color)
             {
             case LOG_COLOR_NORMAL:
@@ -178,14 +169,14 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
             case LOG_COLOR_ORANGE:
                 printColorOrange(fp,getAlignedValue(logLevelText,6).c_str()); break;
             }
-            fprintf(fp, "%s", m_logFieldSeparator.c_str());
+            fprintf(fp, "%s", fieldSeparator.c_str());
            // fflush(fp);
 
         }
         else
         {
             fprintf(fp, "%s", getAlignedValue(logLevelText,6).c_str());
-            fprintf(fp, "%s", m_logFieldSeparator.c_str());
+            fprintf(fp, "%s", fieldSeparator.c_str());
           //  fflush(fp);
 
         }

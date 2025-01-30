@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Mantids30/Memory/subparser.h>
+#include <memory>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
@@ -14,13 +15,13 @@ public:
 
     void setVarType(bool varName = true);
     void setMaxObjectSize(const uint32_t &size);
-    Memory::Containers::B_Chunks *flushRetrievedContentAsBC();
+    std::shared_ptr<Memory::Containers::B_Chunks> flushRetrievedContentAsBC();
     std::string flushRetrievedContentAsString();
-    Memory::Containers::B_Chunks *getPData();
+    std::shared_ptr<Memory::Containers::B_Chunks> getPData();
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
-    Memory::Containers::B_Chunks * pData;
+    std::shared_ptr<Memory::Containers::B_Chunks> pData;
 
 };
 

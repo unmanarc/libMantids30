@@ -58,9 +58,8 @@ public:
 
     /////////////////////////////////////////////////////////
     // This is not thread safe: can't be changed during program execution
-    uint32_t m_minUserFieldWidth; ///< The minimum width (in characters) that the user field will take on the screen. If the length of the user string is less than this, it will be padded with spaces.
-    uint32_t m_minModuleFieldWidth; ///< The minimum width (in characters) that the module field will take on the screen. If the length of the module string is less than this, it will be padded with spaces.
-
+    uint32_t userFieldMinWidth = 13; ///< The minimum width (in characters) that the user field will take on the screen. If the length of the user string is less than this, it will be padded with spaces.
+    uint32_t moduleFieldMinWidth = 13; ///< The minimum width (in characters) that the module field will take on the screen. If the length of the module string is less than this, it will be padded with spaces.
 
 private:
     // Print functions:

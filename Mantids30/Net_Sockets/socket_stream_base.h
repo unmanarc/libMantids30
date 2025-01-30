@@ -3,6 +3,7 @@
 #include "socket.h"
 #include "socket_stream_reader_base.h"
 #include "socket_stream_writer_base.h"
+#include <memory>
 #include <utility>
 #include <Mantids30/Memory/streamableobject.h>
 
@@ -16,7 +17,7 @@ public:
 
     virtual void writeEOF(bool) override;
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::StreamableObject::Status & wrsStat) override;
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrsStat) override;
 
     Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Memory::Streams::StreamableObject::Status & wrStatUpd) override;
 
@@ -36,7 +37,7 @@ public:
     // TODO: virtual redefinition?
     virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
     virtual bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
-    virtual Socket_Stream_Base * acceptConnection();
+    virtual std::shared_ptr<Socket_Stream_Base> acceptConnection();
 
     /**
      * Virtual function for protocol initialization after the connection starts...
@@ -79,6 +80,9 @@ public:
      */
     virtual bool readFull(void * data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount = nullptr) override;
 
+
+
+    void deriveConnectionName();
 
 protected:
     void writeDeSync() override;

@@ -3,6 +3,7 @@
 #include <Mantids30/Memory/a_var.h>
 #include <map>
 #include <list>
+#include <memory>
 #include <vector>
 #include <mutex>
 #include <string>
@@ -47,11 +48,11 @@ public:
     /**
      * @brief (Internal use) Sets the SQL connector, database lock mutex, and timeout.
      * @param value A pointer to the SQL connector object.
-     * @param m_databaseLockMutex A pointer to the timed mutex used for database locking.
+     * @param mtDatabaseLockMutex A pointer to the timed mutex used for database locking.
      * @param milliseconds The number of milliseconds for the lock timeout.
      * @return True if successful, false otherwise.
      */
-    bool setSqlConnector(void *value, std::timed_mutex * m_databaseLockMutex, const uint64_t & milliseconds);
+    bool setSqlConnector(void *value, std::timed_mutex * mtDatabaseLockMutex, const uint64_t & milliseconds);
 
     // Query Prepare:
     /**
@@ -60,27 +61,22 @@ public:
      * @param vars Optional input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,Memory::Abstract::Var *> & vars = {} );
+    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars = {} );
     /**
      * @brief Binds input variables to the prepared SQL query.
      * @param vars The map of input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool bindInputVars(const std::map<std::string, Memory::Abstract::Var *> &vars);
+    bool bindInputVars(const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars);
     /**
      * @brief Binds result variables to the prepared SQL query.
      * @param vars The vector of result variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool bindResultVars(const std::vector<Memory::Abstract::Var *> & vars);
-
-    /**
-     * @brief m_fetchLastInsertRowID if true, the query will retrieve/update the last inserted RowID. (modify before the query)
-     */
-    bool m_fetchLastInsertRowID = true;
+    bool bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *> &vars);
 
     // TODO:
-    // bool enqueue( void (*_callback)(Query *) = nullptr );
+    // bool enqueue( void (*_callback)(std::shared_ptr<Query>) = nullptr );
 
     // Query Execution:
     /**
@@ -133,6 +129,9 @@ public:
      */
     uint64_t getAffectedRows() const;
 
+    bool getFetchLastInsertRowID() const;
+    void setFetchLastInsertRowID(bool newFetchLastInsertRowID);
+
 protected:
     /**
     * @brief (Internal use) Executes the prepared SQL query.
@@ -169,7 +168,7 @@ protected:
     // Query:
     bool m_bindInputVars = false;
     bool m_bindResultVars = false;
-    std::map<std::string,Memory::Abstract::Var *> m_inputVars;
+    std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> m_inputVars;
     std::string m_query;
 
     // Internals:
@@ -188,10 +187,17 @@ protected:
     uint64_t m_affectedRows = 0;
     std::timed_mutex * m_databaseLockMutex = nullptr;
 
+    /**
+     * @brief m_fetchLastInsertRowID if true, the query will retrieve/update the last inserted RowID. (modify before the query)
+     */
+    bool m_fetchLastInsertRowID = true;
+
+    bool m_throwCPPErrorOnQueryFailure = false;
 private:
     // Memory cleaning:
     std::list<std::string *> m_destroyableStringsForInput, m_destroyableStringsForResults;
 
+    friend class SQLConnector;
 };
 
 }}

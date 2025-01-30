@@ -44,21 +44,39 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         filter.compileRegex();
 
 
-        auto pRequiredApplicationPermissions = i.second.get_child_optional("requiredApplicationPermissions");
-        if (pRequiredApplicationPermissions)
+        auto pRequiredPermissions = i.second.get_child_optional("requiredPermissions");
+        if (pRequiredPermissions)
         {
-            for (const auto & i : pRequiredApplicationPermissions.get())
+            for (const auto & i : pRequiredPermissions.get())
             {
                 filter.requiredPermissions.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pDisallowedApplicationPermissions =  i.second.get_child_optional("disallowedApplicationPermissions");
-        if (pDisallowedApplicationPermissions)
+        auto pDisallowedPermissions =  i.second.get_child_optional("disallowedPermissions");
+        if (pDisallowedPermissions)
         {
-            for (const auto & i : pDisallowedApplicationPermissions.get())
+            for (const auto & i : pDisallowedPermissions.get())
             {
                 filter.rejectedPermissions.push_back(i.second.get_value<std::string>());
+            }
+        }
+
+        auto pRequiredRoles = i.second.get_child_optional("requiredRoles");
+        if (pRequiredRoles)
+        {
+            for (const auto & i : pRequiredRoles.get())
+            {
+                filter.requiredRoles.push_back(i.second.get_value<std::string>());
+            }
+        }
+
+        auto pDisallowedRoles =  i.second.get_child_optional("disallowedRoles");
+        if (pDisallowedRoles)
+        {
+            for (const auto & i : pDisallowedRoles.get())
+            {
+                filter.rejectedRoles.push_back(i.second.get_value<std::string>());
             }
         }
 
@@ -68,13 +86,12 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         if ( sAction == "DENY" ) filter.action = RFILTER_DENY;
         if ( sAction == "ACCEPT" ) filter.action = RFILTER_ACCEPT;
 
-
         filter.redirectLocation = i.second.get_optional<std::string>("redirectLocation")?i.second.get<std::string>("redirectLocation"):"";
 
-        filter.requireLogin = i.second.get<bool>("requireLogin",false);
+        //filter.requireLogin = i.second.get<bool>("requireLogin",false);
         filter.requireSession = i.second.get<bool>("requireSession",false);
 
-        filter.disallowLogin = i.second.get<bool>("disallowLogin",false);
+        //filter.disallowLogin = i.second.get<bool>("disallowLogin",false);
         filter.disallowSession = i.second.get<bool>("disallowSession",false);
 
         addFilter( filter );
@@ -95,7 +112,7 @@ void ResourcesFilter::addFilter(const Filter &filter)
     filters.push_back(filter);
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, UserData *userData)
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> & permissions,const std::set<std::string> & roles, bool isSessionActive)
 {
     FilterEvaluationResult evaluationResult;
 
@@ -112,7 +129,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
             if (!filterMatchesRequirements)
                 break;
 
-            if ( userData->permissions.find(requiredPermission) == userData->permissions.end() )
+            if ( permissions.find(requiredPermission) == permissions.end() )
                 filterMatchesRequirements = false;
         }
 
@@ -122,25 +139,47 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
             if (!filterMatchesRequirements)
                 break;
 
-            if ( userData->permissions.find(rejectedPermission) != userData->permissions.end() )
+            if ( permissions.find(rejectedPermission) != permissions.end() )
                 filterMatchesRequirements = false;
         }
 
-        // Check if the user needs to be logged in
-        if (filter.requireLogin && !userData->loggedIn)
-            filterMatchesRequirements = false;
+
+        // Check required roles
+        for (const auto & requiredRole : filter.requiredRoles)
+        {
+            if (!filterMatchesRequirements)
+                break;
+
+            if ( roles.find(requiredRole) == roles.end() )
+                filterMatchesRequirements = false;
+        }
+
+        // Check rejected roles
+        for (const auto & rejectedRole : filter.rejectedRoles)
+        {
+            if (!filterMatchesRequirements)
+                break;
+
+            if ( roles.find(rejectedRole) != roles.end() )
+                filterMatchesRequirements = false;
+        }
+
 
         // Check if the user needs to have an active session
-        if (filter.requireSession && !userData->sessionActive)
-            filterMatchesRequirements = false;
-
-        // Check if the user needs not to be logged in
-        if (filter.disallowLogin && userData->loggedIn)
+        if (filter.requireSession && !isSessionActive)
             filterMatchesRequirements = false;
 
         // Check if the user needs not to have an active session
-        if (filter.disallowSession && userData->sessionActive)
+        if (filter.disallowSession && isSessionActive)
             filterMatchesRequirements = false;
+
+        // Check if the user needs not to be logged in
+/*        if (filter.disallowLogin && userData->loggedIn)
+            filterMatchesRequirements = false;*/
+
+        // Check if the user needs to be logged in
+        /*        if (filter.requireLogin && !userData->loggedIn)
+            filterMatchesRequirements = false;*/
 
         // If the filter doesn't match the requirements, continue with the next filter
         if (!filterMatchesRequirements)

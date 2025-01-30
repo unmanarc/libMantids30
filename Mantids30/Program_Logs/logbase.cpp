@@ -17,13 +17,6 @@ LogBase::LogBase(unsigned int _logMode)
 {
     // variable initialization.
     m_logMode = _logMode;
-    m_printDate = true;
-    m_printAttributeName = true;
-    m_printEmptyFields = false;
-    m_useColors = true;
-    m_debug = false;
-    m_logFieldSeparator = " ";
-
     initialize();
 }
 
@@ -92,7 +85,7 @@ void LogBase::printDate(FILE *fp)
 #else
     strftime(xdate, 64, "%Y-%m-%dT%H:%M:%S", tmp);
 #endif
-    fprintf(fp,"%s%s", xdate, m_logFieldSeparator.c_str());
+    fprintf(fp,"%s%s", xdate, fieldSeparator.c_str());
 }
 
 void LogBase::printColorBold(FILE *fp, const char *str)

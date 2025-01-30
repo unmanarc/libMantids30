@@ -311,7 +311,7 @@ void Socket_Multiplexed_Line::addBufferElement( DataStructs::sDataBuffer * dbuf 
 {
     std::unique_lock<std::mutex> lock(mtLock_BufferHeap);
 
-    // TODO restrict incomming packets > to the whole localWindowSize (terminate the connection)
+    // TODO restrict incoming packets > to the whole localWindowSize (terminate the connection)
     while (  (dbuf->len+localWindowUsedBuffer) >=  ((localWindowSize*2)+1) )
     {
         psigBufferNotFull.wait(lock);

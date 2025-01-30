@@ -81,7 +81,7 @@ void RequestLine::parseGETParameters()
     Memory::Streams::StreamableObject::Status x;
     Memory::Containers::B_Chunks bc;
     bc.append(requestURIParameters.c_str(),requestURIParameters.size());
-    bc.streamTo(getVars.get(),x);
+    bc.streamTo(getVars,x);
 }
 
 std::string RequestLine::getRequestURIParameters() const

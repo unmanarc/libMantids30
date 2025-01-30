@@ -1,151 +1,219 @@
 #include "sessionsmanager.h"
 #include <Mantids30/Helpers/random.h>
+#include <Mantids30/Program_Logs/rpclog.h>
 
+#include <memory>
 #include <stdexcept>
+#include <regex>
 
 using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30;
 
-SessionsManager::SessionsManager()
+WebSessionsManager::WebSessionsManager()
 {
     setGcWaitTime(1); // 1 sec.
-    setSessionExpirationTime(900); // 15 min
+    setMaxInactiveSeconds(900); // 15 min
     setMaxSessionsPerUser(100); // 100 sessions
 }
 
-SessionsManager::~SessionsManager()
+WebSessionsManager::~WebSessionsManager()
 {
-
 }
 
-void SessionsManager::gc()
+void WebSessionsManager::gc()
 {
-    auto i = sessions.getKeys();
+    auto i = m_sessions.getKeys();
     for (const auto & key : i)
     {
-        WebSession * s = (WebSession *)sessions.openElement(key);
-        if (s && s->authSession->isLastActivityExpired(sessionExpirationTime))
+        WebSession * s = (WebSession *)m_sessions.openElement(key);
+        if (s && s->getAuthSession()->isLastActivityExpired(m_MaxInactiveSeconds))
         {
-            sessions.releaseElement( key );
-            sessions.destroyElement( key );
+            m_sessions.releaseElement( key );
+            m_sessions.destroyElement( key );
+            // TODO: log?
         }
         else if (s)
         {
-            sessions.releaseElement( key );
+            m_sessions.releaseElement( key );
         }
-
     }
 }
 
-void SessionsManager::threadGC(void *sessManager)
+void WebSessionsManager::threadGC(void *sessManager)
 {
-    SessionsManager * _sessManager = (SessionsManager *)sessManager;
+    WebSessionsManager * _sessManager = (WebSessionsManager *)sessManager;
     _sessManager->gc();
 }
 
-uint32_t SessionsManager::getSessionExpirationTime() const
+uint32_t WebSessionsManager::getMaxInactiveSeconds() const
 {
-    return sessionExpirationTime;
+    return m_MaxInactiveSeconds;
 }
 
-void SessionsManager::setSessionExpirationTime(const uint32_t &value)
+void WebSessionsManager::setMaxInactiveSeconds(const uint32_t &value)
 {
-    sessionExpirationTime = value;
+    m_MaxInactiveSeconds = value;
 }
 
-std::string SessionsManager::createWebSession(Mantids30::Auth::Session *session)
+std::string WebSessionsManager::createSession(std::shared_ptr<Mantids30::Sessions::Session> session, const json & networkClientInfo, uint64_t *maxAge)
 {
-    std::string effectiveUser = session->getEffectiveUser();
+    std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
+
+    *maxAge = 0;
+    std::string effectiveUser = session->getUser();
     {
-        std::unique_lock<std::mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(m_mutex);
 
-        if (sessionPerUser.find(effectiveUser) == sessionPerUser.end()) sessionPerUser[userDomain] = 1;
+        if (m_sessionClientInfo.find(effectiveUser) == m_sessionClientInfo.end())
+        {
+            m_sessionClientInfo[effectiveUser][sessionId] = networkClientInfo;
+        }
         else
         {
-            if (sessionPerUser[effectiveUser] >= maxSessionsPerUser)
+            if (m_sessionClientInfo[effectiveUser].size() >= m_maxSessionsPerUser)
             {
+                // Max sessions per user reached.
                 return "";
             }
-            else sessionPerUser[effectiveUser]++;
+            else
+            {
+                m_sessionClientInfo[effectiveUser][sessionId] = networkClientInfo;
+            }
         }
     }
 
-    std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
-    WebSession * webSession = new WebSession;
-    session->setSessionId(sessionId);
-    webSession->authSession = session;
-    if (!sessions.addElement(sessionId,webSession))
+    WebSession * webSession = new WebSession(session,networkClientInfo);
+    // New session, full time.
+    *maxAge = m_MaxInactiveSeconds;
+
+    if (!m_sessions.addElement(sessionId,webSession))
     {
+        // Session ID Already exist... (far too rare condition)
         delete webSession;
         return "";
     }
+
     return sessionId;
 }
 
-bool SessionsManager::destroySession(const std::string &sessionID)
+bool WebSessionsManager::destroySession(const std::string &sessionID)
 {
     std::string effectiveUser;
     WebSession * sess;
-    if ((sess=(WebSession *)sessions.openElement(sessionID))!=nullptr)
+    if ((sess=(WebSession *)m_sessions.openElement(sessionID))!=nullptr)
     {
-        effectiveUser = sess->authSession->getEffectiveUser();
-        sessions.releaseElement(sessionID);
+        // Race condition?
+        effectiveUser = sess->getAuthSession()->getUser();
+        m_sessions.releaseElement(sessionID);
     }
     else return false;
 
-    if (sessions.destroyElement(sessionID))
+    if (m_sessions.destroyElement(sessionID))
     {
-        std::unique_lock<std::mutex> lock(mutex);
-        if (sessionPerUser.find(effectiveUser) == sessionPerUser.end())
+        std::unique_lock<std::mutex> lock(m_mutex);
+        if (
+            m_sessionClientInfo.find(effectiveUser) == m_sessionClientInfo.end()
+            || m_sessionClientInfo[effectiveUser].find(sessionID) == m_sessionClientInfo[effectiveUser].end()
+            )
         {
             throw std::runtime_error("Unregistered Session??");
         }
         else
         {
-            sessionPerUser[effectiveUser]--;
-            if (sessionPerUser[effectiveUser] == 0) sessionPerUser.erase(effectiveUser);
+            m_sessionClientInfo[effectiveUser].erase(sessionID);
+            if (m_sessionClientInfo[effectiveUser].empty())
+            {
+                m_sessionClientInfo.erase(effectiveUser);
+            }
         }
         return true;
     }
     return false;
 }
 
-WebSession *SessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
+WebSession *WebSessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
 {
     WebSession *xs;
-    if ((xs=(WebSession *)sessions.openElement(sessionID))!=nullptr)
+    if ((xs=(WebSession *)m_sessions.openElement(sessionID))!=nullptr)
     {
-        if (xs->authSession->isLastActivityExpired(sessionExpirationTime))
+        uint64_t lastActivity = xs->getAuthSession()->getLastActivity();
+
+        if (xs->getAuthSession()->isLastActivityExpired(m_MaxInactiveSeconds))
+        {
             *maxAge = 0;
+        }
         else
-            *maxAge = (xs->authSession->getLastActivity()+sessionExpirationTime)-time(nullptr);
+        {
+            uint64_t expirationTime = lastActivity + m_MaxInactiveSeconds;
+            uint64_t currentTime = static_cast<uint64_t>(time(nullptr));
+
+            // Ensure no underflow
+            *maxAge = (expirationTime > currentTime) ? (expirationTime - currentTime) : 0;
+        }
         return xs;
     }
     return nullptr;
 }
 
-bool SessionsManager::releaseSession(const std::string &sessionID)
+bool WebSessionsManager::releaseSession(const std::string &sessionID)
 {
-    return sessions.releaseElement(sessionID);
+    return m_sessions.releaseElement(sessionID);
 }
 
-uint32_t SessionsManager::getMaxSessionsPerUser() const
+bool WebSessionsManager::validateSessionIDFormat(const std::string &sessionID)
 {
-    return maxSessionsPerUser;
+    if (sessionID.empty())
+        return true;
+
+    // Regular expression for 12 alphanumeric characters, followed by ":", and another 12 alphanumeric characters.
+    static const std::regex pattern("^[a-zA-Z0-9]{12}:[a-zA-Z0-9]{12}$");
+    return std::regex_match(sessionID, pattern);
 }
 
-void SessionsManager::setMaxSessionsPerUser(const uint32_t &value)
+json WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserName)
 {
-    std::unique_lock<std::mutex> lock(mutex);
-    maxSessionsPerUser = value;
+    std::unique_lock<std::mutex> lock(m_mutex);
+    json r;
+    auto sessionsMap = m_sessionClientInfo[effectiveUserName];
+
+    for ( const auto & sessions : sessionsMap )
+    {
+        // provide truncated session information.
+        r[Program::Logs::RPCLog::truncateSessionId(sessions.first)] =  sessions.second;
+    }
+
+    return r;
 }
 
-uint32_t SessionsManager::getGcWaitTime() const
+uint32_t WebSessionsManager::getMaxSessionsPerUser() const
 {
-    return gcWaitTime;
+    return m_maxSessionsPerUser;
 }
 
-void SessionsManager::setGcWaitTime(const uint32_t &value)
+void WebSessionsManager::setMaxSessionsPerUser(const uint32_t &value)
 {
-    gcWaitTime = value;
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_maxSessionsPerUser = value;
 }
+/*
+void WebSessionsManager::impersonateSession(const std::string &sessionID, std::shared_ptr<Sessions::Session> impersonatedSession)
+{
+    uint64_t maxAge;
+    WebSession *session = openSession(sessionID, &maxAge);
+    if (session)
+    {
+        session->setImpersonatedAuthSession(impersonatedSession);
+        releaseSession(sessionID);
+    }
+}*/
+
+uint32_t WebSessionsManager::getGcWaitTime() const
+{
+    return m_gcWaitTime;
+}
+
+void WebSessionsManager::setGcWaitTime(const uint32_t &value)
+{
+    m_gcWaitTime = value;
+}
+

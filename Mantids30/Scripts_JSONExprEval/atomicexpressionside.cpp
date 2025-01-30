@@ -1,7 +1,6 @@
 #include "atomicexpressionside.h"
 #include <boost/algorithm/string.hpp>
 #include <json/value.h>
-#include <iostream>
 
 using namespace Mantids30::Scripts::Expressions;
 

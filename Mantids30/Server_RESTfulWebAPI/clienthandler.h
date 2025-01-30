@@ -10,13 +10,8 @@ namespace Mantids30 { namespace Network { namespace Servers { namespace RESTful 
 class ClientHandler : public Servers::Web::APIClientHandler
 {
 public:
-    ClientHandler(void *parent, Memory::Streams::StreamableObject *sock);
+    ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
     ~ClientHandler() override;
-
-    // JWT Validator and signer...
-    std::shared_ptr<DataFormat::JWT> m_jwtValidator, m_jwtSigner;
-    // API Version -> MethodsHandler
-    std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
 
 protected:
     /**
@@ -26,18 +21,13 @@ protected:
     Protocols::HTTP::Status::eRetCode sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
-     * @return S_200_OK for good cleaning.
      */
-    Protocols::HTTP::Status::eRetCode sessionCleanup() override;
+    void sessionCleanup() override;
     /**
-     * @brief sessionRenew Renew the session
-     */
-    void sessionRenew() override;
-    /**
-     * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
+     * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    void fillSessionVars( json & jVars ) override;
+    void fillSessionExtraInfo( json & jVars ) override;
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
@@ -54,17 +44,33 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    Protocols::HTTP::Status::eRetCode handleAPIRequest(const std::string & baseApiUrl,const uint32_t & apiVersion, const std::string & resourceAndPathParameters) override;
+    void handleAPIRequest(API::APIReturn *apiReturn, const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+
+    /**
+     * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
+     * @return return code for api request
+     */
+    Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
+
+
+    bool getIsInActiveSession() override;
+    std::set<std::string> getSessionPermissions() override;
+    std::set<std::string> getSessionRoles() override;
 
 private:
 
+    void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
+    Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();
+
+    void sessionLogout();
+
+    // API Version -> MethodsHandler
+    std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
+    bool m_destroySession = false;
     bool m_JWTHeaderTokenVerified = false;
     bool m_JWTCookieTokenVerified = false;
 
-    DataFormat::JWT::Token m_JWTToken;
-
-    void processPathParameters(const std::string &request, std::string &resourceName, Json::Value &pathParameters);
-    bool verifyToken(const std::string &strToken);
+    friend class Engine;
 };
 
 }}}}

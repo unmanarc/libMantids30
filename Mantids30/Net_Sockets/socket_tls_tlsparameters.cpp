@@ -17,7 +17,7 @@ using namespace Mantids30::Network::Sockets;
 #endif
 
 
-Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * isServer) : m_pskStaticHandler(&m_pskClientValues, &m_pskServerValues)
+Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool * isServer) : m_pskStaticHandler(&m_pskClientValues, &m_pskServerWallet)
 {
 #if TLS_MAX_VERSION == TLS1_VERSION
     maxProtocolVersion = TLS1_VERSION;
@@ -65,7 +65,7 @@ void Socket_TLS::TLSKeyParameters::setUsingPSK()
 void Socket_TLS::TLSKeyParameters::addPSKToServer(const std::string &clientIdentity,const std::string &_psk)
 {
     setUsingPSK();
-    m_pskServerValues.setPSKByClientID(clientIdentity,_psk);
+    m_pskServerWallet.setPSKByClientID(clientIdentity,_psk);
 }
 
 void Socket_TLS::TLSKeyParameters::loadPSKAsClient(const std::string &clientIdentity, const std::string &_psk)
@@ -172,7 +172,7 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
     // TLSv1.2 Cipher List
     ERR_ON_ZERO(!m_TLSCipherList.empty() && SSL_set_cipher_list( sslh, m_TLSCipherList.c_str()), "SSL_set_cipher_list Failed for your cipher list.");
 
-    bool usingPSK = (m_pskClientValues.m_isUsingPSK || m_pskServerValues.m_isUsingPSK);
+    bool usingPSK = (m_pskClientValues.isUsingPSK || m_pskServerWallet.isUsingPSK);
 
     if (!usingPSK)
     {
@@ -216,10 +216,10 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
     std::string _psk;
 
     // Using callback strategy if callback is defined, otherwise use the local map...
-    if ( (pskValues->m_pskCallback? pskValues->m_pskCallback(pskValues->m_data,identity,&_psk) : pskValues->getPSKByClientID(identity,&_psk)) )
+    if ( (pskValues->pskCallback? pskValues->pskCallback(pskValues->data,identity,&_psk) : pskValues->getPSKByClientID(identity,&_psk)) )
     {
         // Set the provided ID.
-        pskValues->m_connectedClientID = identity;
+        pskValues->connectedClientID = identity;
 
         // return the proper key for the iPSK negotiation.
         snprintf((char *)psk,max_psk_len,"%s",_psk.c_str());
@@ -232,8 +232,8 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKClient(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len)
 {  
     auto * pskValue = PSKStaticHdlr::getClientValue(ssl);
-    snprintf((char *)psk,max_psk_len,"%s",  pskValue->m_psk.c_str() );
-    snprintf(identity,max_identity_len,"%s", pskValue->m_identity.c_str() );
+    snprintf((char *)psk,max_psk_len,"%s",  pskValue->psk.c_str() );
+    snprintf(identity,max_identity_len,"%s", pskValue->identity.c_str() );
     return strlen((char *)psk);
 }
 
@@ -242,9 +242,19 @@ Socket_TLS::TLSKeyParameters::PSKClientValue *Socket_TLS::TLSKeyParameters::getP
     return &m_pskClientValues;
 }
 
+const Socket_TLS::TLSKeyParameters::PSKClientValue *Socket_TLS::TLSKeyParameters::getPSKClientValue() const
+{
+    return &m_pskClientValues;
+}
+
 Socket_TLS::TLSKeyParameters::PSKServerWallet *Socket_TLS::TLSKeyParameters::getPSKServerWallet()
 {
-    return &m_pskServerValues;
+    return &m_pskServerWallet;
+}
+
+const Socket_TLS::TLSKeyParameters::PSKServerWallet *Socket_TLS::TLSKeyParameters::getPSKServerWallet() const
+{
+    return &m_pskServerWallet;
 }
 
 bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMFile(const char *filePath, pem_password_cb * cbPass, void *u)

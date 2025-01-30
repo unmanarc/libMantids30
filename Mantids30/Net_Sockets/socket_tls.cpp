@@ -3,6 +3,7 @@
 #include "socket_stream_base.h"
 
 
+#include <memory>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -249,12 +250,12 @@ bool Socket_TLS::isServer() const
     return m_isServer;
 }
 
-bool Socket_TLS::isUsingPSK()
+bool Socket_TLS::isUsingPSK() const
 {
     if (m_isServer)
-        return m_tlsParentConnection->m_keys.getPSKServerWallet()->m_isUsingPSK;
+        return m_tlsParentConnection->m_keys.getPSKServerWallet()->isUsingPSK;
     else
-        return m_keys.getPSKClientValue()->m_isUsingPSK;
+        return m_keys.getPSKClientValue()->isUsingPSK;
 }
 
 
@@ -361,9 +362,15 @@ std::list<std::string> Socket_TLS::getTLSErrorsAndClear()
     return sslErrors2;
 }
 
-string Socket_TLS::getTLSPeerCN()
+string Socket_TLS::getPeerName() const
 {
-    if (!m_sslHandler) return "";
+    return getTLSPeerCN();
+}
+
+string Socket_TLS::getTLSPeerCN() const
+{
+    if (!m_sslHandler)
+        return "";
 
     if (!isUsingPSK())
     {
@@ -386,7 +393,7 @@ string Socket_TLS::getTLSPeerCN()
         if (!m_isServer)
             return "server";
         else
-            return m_keys.getPSKServerWallet()->m_connectedClientID;
+            return m_keys.getPSKServerWallet()->connectedClientID;
     }
 }
 
@@ -429,7 +436,10 @@ int Socket_TLS::iShutdown(int mode)
     }
 }
 
-bool Socket_TLS::isSecure() { return true; }
+bool Socket_TLS::isSecure()
+{
+    return true;
+}
 
 void Socket_TLS::setServerMode(bool value)
 {
@@ -450,18 +460,18 @@ string Socket_TLS::getTLSConnectionProtocolVersion()
     return SSL_get_version(m_sslHandler);
 }
 
-Mantids30::Network::Sockets::Socket_Stream_Base * Socket_TLS::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> Socket_TLS::acceptConnection()
 {
     char remotePair[INET6_ADDRSTRLEN];
 
     m_isServer = true;
 
-    Socket_Stream_Base * acceptedTCPSock = Socket_TCP::acceptConnection();
+    std::shared_ptr<Socket_Stream_Base>  acceptedTCPSock = Socket_TCP::acceptConnection();
 
     if (!acceptedTCPSock)
         return nullptr;
 
-    Socket_TLS * acceptedTLSSock = new Socket_TLS; // Convert to this thing...
+    std::shared_ptr<Socket_TLS> acceptedTLSSock = std::make_shared<Socket_TLS>(); // Convert to this thing...
 
     // Set current retrieved socket info.
     acceptedTCPSock->getRemotePair(remotePair);
@@ -476,7 +486,7 @@ Mantids30::Network::Sockets::Socket_Stream_Base * Socket_TLS::acceptConnection()
 
     // now we should copy the file descriptor:
     acceptedTLSSock->setSocketFD(acceptedTCPSock->adquireSocketFD());
-    delete acceptedTCPSock;
+    //delete acceptedTCPSock;
 
     // After this, the postInitialization will be called by the acceptor thread.
     return acceptedTLSSock;

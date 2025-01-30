@@ -7,7 +7,7 @@ NullContainer::NullContainer()
     bytes = 0;
 }
 
-bool NullContainer::streamTo(Memory::Streams::StreamableObject *, Streams::StreamableObject::Status &)
+bool NullContainer::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Streams::StreamableObject::Status &)
 {
     return false;
 }

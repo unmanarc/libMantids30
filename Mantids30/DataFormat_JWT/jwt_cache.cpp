@@ -48,7 +48,7 @@ void JWT::Cache::setEnabled(bool newEnabled)
     m_enabled = newEnabled;
 }
 
-bool JWT::Cache::checkToken(const std::string& token)
+bool JWT::Cache::checkToken(const std::string &payload)
 {
     boost::shared_lock<boost::shared_mutex> readLock(m_cachedTokensMutex);
 
@@ -56,22 +56,24 @@ bool JWT::Cache::checkToken(const std::string& token)
     if (!m_enabled)
         return false;
 
-    auto it = m_tokenCache.find(token);
+    auto it = m_tokenCache.find(payload);
     return it != m_tokenCache.end();
 }
 
-void JWT::Cache::add(const std::string& token)
+void JWT::Cache::add(const std::string &payload)
 {
     {
         boost::unique_lock<boost::shared_mutex> writeLock(m_cachedTokensMutex);
+
+        // TODO: use hash instead? / payload can be huge.
 
         // Don't add anything to the cache...
         if (!m_enabled)
             return;
 
-        m_cacheQueue.push(token);
-        m_tokenCache[token] = true;
-        m_cacheCurrentByteCount += token.size();
+        m_cacheQueue.push(payload);
+        m_tokenCache[payload] = true;
+        m_cacheCurrentByteCount += payload.size();
     }
     evictCache();
 }

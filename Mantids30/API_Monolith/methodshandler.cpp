@@ -1,35 +1,37 @@
 #include "methodshandler.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/lock_shared.h>
+#include <memory>
 
 using namespace Mantids30::API::Monolith;
 using namespace Mantids30;
 
-MethodsHandler::MethodsHandler(const std::string &appName)
+MethodsHandler::MethodsHandler(/*const std::string &appName*/)
 {
-    this->m_applicationName = appName;
+    //this->m_applicationName = appName;
 }
 
-bool MethodsHandler::addMethod(const std::string &methodName, const std::set<std::string> &reqPermissions, const MonolithAPIMethod &method, const std::set<std::string> &reqActivities, bool requireActiveSession)
+bool MethodsHandler::addMethod(const MethodDefinition &methodDefinition)
 {
     Threads::Sync::Lock_RW lock(m_methodsMutex);
-    if (m_methods.find(methodName) == m_methods.end() )
+    if (m_methods.find(methodDefinition.methodName) == m_methods.end() )
     {
         // Put the method.
-        m_methods[methodName] = method;
+        m_methods[methodDefinition.methodName] = methodDefinition.method;
 
         // Configure methodsPermissions with this info.
-        m_methodsPermissions.addMethodRequiredPermissions(methodName,reqPermissions);
-        m_methodsPermissions.addMethodRequiredActivities(methodName,reqActivities);
+        m_methodsPermissions.addMethodRequiredPermissions(methodDefinition.methodName,methodDefinition.reqPermissions);
+        m_methodsPermissions.addMethodRequiredRoles(methodDefinition.methodName,methodDefinition.reqRoles);
 
-        m_methodRequireActiveSession[methodName] = requireActiveSession;
+        m_methodRequireActiveSession[methodDefinition.methodName] = methodDefinition.isActiveSessionRequired;
+        m_methodUpdateSessionLastActivityOnUsage[methodDefinition.methodName] = methodDefinition.doUsageUpdateLastSessionActivity;
 
         return true;
     }
     return false;
 }
 
-int MethodsHandler::invoke(Mantids30::Auth::Session * session, const std::string & methodName, const json & payload,  json *payloadOut)
+int MethodsHandler::invoke(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & methodName, const json & payload,  json * payloadOut)
 {
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
@@ -37,14 +39,20 @@ int MethodsHandler::invoke(Mantids30::Auth::Session * session, const std::string
         return METHOD_RET_CODE_METHODNOTFOUND;
     else
     {
-            *payloadOut = m_methods[methodName].method(m_methods[methodName].obj, session, payload);
-            return METHOD_RET_CODE_SUCCESS;
+        *payloadOut = m_methods[methodName].method(m_methods[methodName].context, session, payload);
+
+        if ( m_methodUpdateSessionLastActivityOnUsage[methodName] )
+        {
+            session->updateLastActivity();
+        }
+
+        return METHOD_RET_CODE_SUCCESS;
     }
 }
 
-MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirements(Mantids30::Auth::Session *session, const std::string & methodName, json * reasons)
+MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & methodName, json * reasons)
 {
-    std::set<std::string> permissionsLeft, activitiesLeft;
+    std::set<std::string> permissionsLeft, rolesLeft;
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
     // Check if the method exist at all:
@@ -59,21 +67,21 @@ MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirement
     }
 
     // Validate that the method haves the required permissions/auth slot ids:
-    if (m_methodsPermissions.validateMethod(session,methodName,activitiesLeft,permissionsLeft))
+    if (m_methodsPermissions.validateMethod(session,methodName,rolesLeft,permissionsLeft))
     {
         return VALIDATION_OK;
     }
     else
     {
         // The method is not authorized for this authentication level.. Report what is failing.
-        (*reasons)["activitiesLeft"] = Helpers::setToJSON(activitiesLeft);
+        (*reasons)["rolesLeft"] = Helpers::setToJSON(rolesLeft);
         (*reasons)["permissionsLeft"] = Helpers::setToJSON(permissionsLeft);
         return VALIDATION_NOTAUTHORIZED;
     }
 
 }
 
-Mantids30::Auth::MethodsRequirements_Map *MethodsHandler::methodsRequirements()
+MethodsRequirements_Map *MethodsHandler::methodsRequirements()
 {
     return &m_methodsPermissions;
 }
@@ -93,8 +101,8 @@ std::set<std::string> MethodsHandler::getApplicationPermissions(const std::set<s
     }
     return r;
 }*/
-
+/*
 std::string MethodsHandler::getApplicationName() const
 {
     return m_applicationName;
-}
+}*/

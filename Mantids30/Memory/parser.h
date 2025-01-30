@@ -4,6 +4,7 @@
 #include "subparser.h"
 #include "b_chunks.h"
 #include "streamableobject.h"
+#include <memory>
 
 namespace Mantids30 { namespace Memory { namespace Streams {
 
@@ -26,7 +27,7 @@ namespace Mantids30 { namespace Memory { namespace Streams {
 class Parser : public Memory::Streams::StreamableObject
 {
 public:
-    Parser(Memory::Streams::StreamableObject *value, bool clientMode);
+    Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
     virtual ~Parser() override;
     enum ErrorMSG {
         PARSING_SUCCEED = 0,
@@ -42,7 +43,7 @@ public:
     Status parseObject(ErrorMSG * err);
 
     //////////////////////////////////////////
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, Status & wrsStat) override;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrsStat) override;
     virtual Status write(const void * buf, const size_t &count, Status &wrStat) override;
     /**
      * @brief writeEOF Receive this when the connection is ended.
@@ -56,7 +57,7 @@ public:
      */
     void setMaxTTL(const size_t &value);
 
-    void setStreamable(Memory::Streams::StreamableObject *value);
+    void setStreamable(std::shared_ptr<StreamableObject> value);
 
 protected:
     //////////////////////////////////////////
@@ -65,7 +66,7 @@ protected:
     virtual void endProtocol() = 0;
     virtual bool changeToNextParser() = 0;
 
-    Memory::Streams::StreamableObject * m_streamableObject;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_streamableObject;
 
     void initSubParser(SubParser * subparser);
 

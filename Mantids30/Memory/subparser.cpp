@@ -20,7 +20,7 @@ SubParser::~SubParser()
 {
 }
 
-void SubParser::initElemParser(Memory::Streams::StreamableObject *upstreamObj, bool clientMode)
+void SubParser::initElemParser(std::shared_ptr<Memory::Streams::StreamableObject> upstreamObj, bool clientMode)
 {
     this->upStream = upstreamObj;
     this->clientMode = clientMode;

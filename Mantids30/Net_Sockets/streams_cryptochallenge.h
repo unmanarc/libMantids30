@@ -7,7 +7,7 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace NetStrea
 class CryptoChallenge
 {
 public:
-    CryptoChallenge( Sockets::Socket_Stream_Base * socket );
+    CryptoChallenge( std::shared_ptr<Sockets::Socket_Stream_Base> socket );
     /**
      * @brief mutualChallengeResponseSHA256Auth Create a Mutual Challenge-Reponse Authentication with the remote host
      * @param localKey Local Key
@@ -18,7 +18,7 @@ public:
 
 
 private:
-    Sockets::Socket_Stream_Base * socket;
+    std::shared_ptr<Sockets::Socket_Stream_Base> socket;
 };
 
 }}}}

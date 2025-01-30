@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <string>
 
-#include "Mantids30/Memory/streamablejson.h"
+#include <Mantids30/Memory/streamablejson.h>
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
 #include "hdr_sec_hsts.h"
@@ -123,6 +123,44 @@ public:
         }
 
         /**
+         * @brief Retrieves the bearer token from the Authorization header.
+         *
+         * This function extracts the bearer token from the "Authorization" header, assuming the
+         * format "Bearer <token>". It ensures no exceptions are thrown during parsing, returning
+         * an empty string if the parsing fails or the format is incorrect.
+         *
+         * @return The extracted bearer token as a string, or an empty string if the Authorization
+         * header is missing, incorrectly formatted, or any parsing error occurs.
+         */
+        std::string getAuthorizationBearer()
+        {
+            std::string authorization = getHeaderOption("Authorization");
+            if (!authorization.empty())
+            {
+                std::istringstream iss(authorization);
+                std::string keyword, headerBearerToken;
+
+                // Parse expected format "Bearer <token>"
+                iss >> keyword >> headerBearerToken;
+
+                if (keyword == "Bearer" && !headerBearerToken.empty())
+                    return headerBearerToken;
+            }
+            return ""; // Return empty if format is invalid or parsing fails
+        }
+
+        std::string getOrigin()
+        {
+            return getHeaderOption("Origin");
+        }
+
+        std::string getReferer()
+        {
+            return getHeaderOption("Referer");
+        }
+
+
+        /**
          * @brief getCookie Get Cookie
          * @param sCookieName
          * @return
@@ -162,6 +200,16 @@ public:
         }
 
         struct NetworkClientInfo {
+
+            json getNetworkClientInfo()
+            {
+                json sessionInfo;
+                sessionInfo["remoteAddress"] = REMOTE_ADDR;
+                sessionInfo["isSecureConnection"] = isSecure;
+                sessionInfo["tls"]["commonName"] = tlsCommonName;
+                return sessionInfo;
+            }
+
             char REMOTE_ADDR[INET6_ADDRSTRLEN] = "";
             bool isSecure = false;
             std::string tlsCommonName = "";
@@ -245,7 +293,7 @@ public:
          * @param uMaxAge
          * @return
          */
-        bool setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
+        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
         {
             Headers::Cookie val;
             val.setValue(cookieValue);
@@ -254,7 +302,7 @@ public:
             val.setExpirationFromNow(uMaxAge);
             val.setMaxAge(uMaxAge);
             val.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
-            return setCookie(cookieName,val);
+            setCookie(cookieName,val);
         }
         /**
          * @brief setInsecureCookie Set HTTP Simple Cookie (don't use, very insecure)
@@ -262,22 +310,40 @@ public:
          * @param cookieValue value of the cookie.
          * @return false if already exist
          */
-        bool setInsecureCookie( const std::string &sCookieName, const std::string & sCookieValue )
+        void setInsecureCookie( const std::string &sCookieName, const std::string & sCookieValue )
         {
             Headers::Cookie val;
             val.setValue(sCookieValue);
-            return setCookie(sCookieName,val);
+            setCookie(sCookieName,val);
         }
         /**
          * @brief setCookie Set HTTP Cookie with full options
          * @param cookieName name of the cookie variable
          * @param cookieValue value of the cookie.
-         * @return false if already exist
          */
-        bool setCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue )
+        void setCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue )
         {
-            return cookies.addCookieVal(sCookieName,sCookieValue);
+            // Remove cookie
+            cookies.removeCookie(sCookieName);
+            cookies.addCookieVal(sCookieName,sCookieValue);
         }
+        /**
+         * @brief setRedirectLocation Redirect site to another URL
+         * @param location URL string
+         */
+        Mantids30::Network::Protocols::HTTP::Status::eRetCode setRedirectLocation(const std::string & location, bool temporary = true)
+        {
+            headers.replace("Location", location);
+
+            // Remove previous data streamer:
+            setDataStreamer(nullptr);
+
+            if (temporary)
+                return HTTP::Status::S_307_TEMPORARY_REDIRECT;
+            else
+                return HTTP::Status::S_308_PERMANENT_REDIRECT;
+        }
+
 
         /**
          * @brief code Response - Server code response. (HTTP Version, Response code, message)
@@ -313,11 +379,11 @@ public:
         std::string contentType;
     };
 
-    HTTPv1_Base(bool clientMode, Memory::Streams::StreamableObject *sobject);
+    HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);
     virtual ~HTTPv1_Base()  override {}
 
-    Request m_clientRequest;
-    Response m_serverResponse;
+    Request clientRequest;
+    Response serverResponse;
 protected:
     virtual bool initProtocol() override;
     virtual void endProtocol() override;

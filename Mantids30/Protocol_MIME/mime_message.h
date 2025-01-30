@@ -4,6 +4,7 @@
 
 #include <Mantids30/Memory/vars.h>
 #include <Mantids30/Memory/parser.h>
+#include <memory>
 
 #include "mime_partmessage.h"
 #include "mime_sub_firstboundary.h"
@@ -16,10 +17,10 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
 class MIME_Message : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
 public:
-    MIME_Message(Memory::Streams::StreamableObject *value= nullptr);
+    MIME_Message(std::shared_ptr<StreamableObject> value= nullptr);
     ~MIME_Message() override;
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::StreamableObject::Status & wrStat) override;
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrStat) override;
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- VARIABLE GET FUNCTIONS -------------
@@ -35,13 +36,13 @@ public:
      * @param varName Variable Name
      * @return Memory Container Base
      */
-    StreamableObject *getValue(const std::string & varName) override;
+    std::shared_ptr<StreamableObject> getValue(const std::string & varName) override;
     /**
      * @brief getValues Get memory containers for an specific variable name (if one variable name contains multiple definitions)
      * @param varName Variable Name
      * @return list of memory containers
      */
-    std::list<StreamableObject *> getValues(const std::string & varName) override;
+    std::list<std::shared_ptr<StreamableObject>> getValues(const std::string & varName) override;
     /**
      * @brief getKeysList Get Variable Name List
      * @return Variable Name List
@@ -91,26 +92,26 @@ public:
 
     struct sMIMECallback
     {
-        sMIMECallback( void (*callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * obj)
+        sMIMECallback( void (*callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * context)
         {
            this->callbackFunction = callbackFunction;
-           this->obj = obj;
+           this->context = context;
         }
 
         sMIMECallback()
         {
            callbackFunction = nullptr;
-           obj = nullptr;
+           context = nullptr;
         }
 
         void call(const std::string & partName, MIME_PartMessage *partMessage)
         {
             if (callbackFunction!=nullptr)
-                callbackFunction(obj,partName,partMessage);
+                callbackFunction(context,partName,partMessage);
         }
 
-        void (*callbackFunction)(void *obj, const std::string & partName, MIME_PartMessage *partMessage);
-        void * obj;
+        void (*callbackFunction)(void *context, const std::string & partName, MIME_PartMessage *partMessage);
+        void * context;
     };
 
     /**

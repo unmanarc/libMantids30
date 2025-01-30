@@ -25,16 +25,16 @@ bool FastRPC3::SessionPTR::destroy()
     return true;
 }
 
-std::shared_ptr<Auth::Session> FastRPC3::SessionPTR::create()
+std::shared_ptr<Sessions::Session> FastRPC3::SessionPTR::create(const DataFormat::JWT::Token & jwt)
 {
     std::lock_guard<std::mutex> lock(mt);
     if (session != nullptr)
         return nullptr;
-    session = std::make_shared<Auth::Session>();
+    session = std::make_shared<Sessions::Session>(jwt);
     return session;
 }
 
-std::shared_ptr<Auth::Session> FastRPC3::SessionPTR::getSharedPointer()
+std::shared_ptr<Sessions::Session> FastRPC3::SessionPTR::getSharedPointer()
 {
     std::lock_guard<std::mutex> lock(mt);
     return session;

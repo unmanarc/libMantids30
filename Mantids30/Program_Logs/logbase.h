@@ -36,11 +36,11 @@ public:
 
     // ------------------------------------------------------------------------------------------
     // Non Thread-safe attributes (to initialize before printing anything):
-    bool m_printDate;                   ///< Flag for printing the date in the log
-    bool m_printAttributeName;          ///< Flag for printing the attribute name in the log
-    bool m_printEmptyFields;            ///< Flag for printing empty fields in the log
-    bool m_useColors;                   ///< Flag for printing in color in the log
-    std::string m_logFieldSeparator;    ///< Log separator string
+    bool enableDateLogging = true;           ///< Indicates whether to include the date in the log.
+    bool enableAttributeNameLogging = true;  ///< Indicates whether to include attribute names in the log.
+    bool enableEmptyFieldLogging = false;     ///< Indicates whether to include empty fields in the log.
+    bool enableColorLogging = true;          ///< Indicates whether to use colors in the log output.
+    std::string fieldSeparator = " ";       ///< The string used to separate log fields.
 
 protected:
     bool isUsingWindowsEventLog();
@@ -59,8 +59,8 @@ protected:
     static std::string getAlignedValue(const std::string & value, size_t sz);
 
     // Thread-safe:
-    bool m_debug;                       ///< Debug flag
-    unsigned int m_logMode;             ///< Log mode (MODE_SYSLOG,MODE_STANDARD,MODE_WINEVENTS)
+    bool m_debug = false;                       ///< Debug flag
+    unsigned int m_logMode = MODE_STANDARD;             ///< Log mode (MODE_SYSLOG,MODE_STANDARD,MODE_WINEVENTS)
     std::mutex m_logMutex;              ///< Mutex for the log
 
     // Modules Exclusion.

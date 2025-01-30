@@ -18,7 +18,6 @@
 #define SLASH "\\"
 #include <boost/algorithm/string/predicate.hpp>
 #include <stdlib.h>
-// TODO: check if _fullpath mitigate transversal.
 #define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
 #else
 #define SLASH "/"
@@ -32,16 +31,16 @@ using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(false, sobject)
+HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1_Base(false, sobject)
 {
     m_badAnswer = false;
 
     // All request will have no-cache activated.... (unless it's a real file and it's not overwritten)
-    m_serverResponse.cacheControl.setOptionNoCache(true);
-    m_serverResponse.cacheControl.setOptionNoStore(true);
-    m_serverResponse.cacheControl.setOptionMustRevalidate(true);
+    serverResponse.cacheControl.setOptionNoCache(true);
+    serverResponse.cacheControl.setOptionNoStore(true);
+    serverResponse.cacheControl.setOptionMustRevalidate(true);
 
-    m_currentParser = (Memory::Streams::SubParser *)(&m_clientRequest.requestLine);
+    m_currentParser = (Memory::Streams::SubParser *)(&clientRequest.requestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
     m_mimeTypes[".aac"]    = "audio/aac";
@@ -126,7 +125,7 @@ HTTPv1_Server::HTTPv1_Server(Memory::Streams::StreamableObject *sobject) : HTTPv
 
 void HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
-    m_serverResponse.headers.replace("Server", sServerName);
+    serverResponse.headers.replace("Server", sServerName);
 }
 
 bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
@@ -152,7 +151,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
     // Compute the requested path:
     string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + (m_clientRequest.getURI().empty()?"":m_clientRequest.getURI().substr(1)) // Put the Request URI (without the first character / slash)
+            + (clientRequest.getURI().empty()?"":clientRequest.getURI().substr(1)) // Put the Request URI (without the first character / slash)
             + defaultFileAppend; // Append option...
 
     struct stat stats;
@@ -161,22 +160,22 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
     std::string sFullComputedPath;
     {
         char *cFullPath;
-        if (  m_staticContentElements.find(std::string(m_clientRequest.getURI()+defaultFileAppend)) != m_staticContentElements.end() )
+        if (  staticContentElements.find(std::string(clientRequest.getURI()+defaultFileAppend)) != staticContentElements.end() )
         {
             // STATIC CONTENT:
-            m_serverResponse.cacheControl.setOptionNoCache(false);
-            m_serverResponse.cacheControl.setOptionNoStore(false);
-            m_serverResponse.cacheControl.setOptionMustRevalidate(false);
-            m_serverResponse.cacheControl.setMaxAge(3600);
-            m_serverResponse.cacheControl.setOptionImmutable(true);
+            serverResponse.cacheControl.setOptionNoCache(false);
+            serverResponse.cacheControl.setOptionNoStore(false);
+            serverResponse.cacheControl.setOptionMustRevalidate(false);
+            serverResponse.cacheControl.setMaxAge(3600);
+            serverResponse.cacheControl.setOptionImmutable(true);
 
-            info->sRealRelativePath = m_clientRequest.getURI()+defaultFileAppend;
+            info->sRealRelativePath = clientRequest.getURI()+defaultFileAppend;
 
             setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
 
-            m_serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath]);
+            serverResponse.setDataStreamer(staticContentElements[info->sRealRelativePath]);
             return true;
         }
         else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
@@ -264,7 +263,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                 // File Found / Readable.
                 info->sRealFullPath = sFullComputedPath;
                 info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
-                m_serverResponse.setDataStreamer(bFile);
+                serverResponse.setDataStreamer(bFile);
                 setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
                 struct stat attrib;
@@ -277,14 +276,14 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                     fileModificationDate.setUnixTime(attrib.st_mtim.tv_sec);
 #endif
                     if (m_includeServerDate)
-                        m_serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
+                        serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
                 }
 
-                m_serverResponse.cacheControl.setOptionNoCache(false);
-                m_serverResponse.cacheControl.setOptionNoStore(false);
-                m_serverResponse.cacheControl.setOptionMustRevalidate(false);
-                m_serverResponse.cacheControl.setMaxAge(3600);
-                m_serverResponse.cacheControl.setOptionImmutable(true);
+                serverResponse.cacheControl.setOptionNoCache(false);
+                serverResponse.cacheControl.setOptionNoStore(false);
+                serverResponse.cacheControl.setOptionMustRevalidate(false);
+                serverResponse.cacheControl.setMaxAge(3600);
+                serverResponse.cacheControl.setOptionImmutable(true);
                 return true;
             }
             return false;
@@ -422,10 +421,10 @@ bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePat
 
     if (m_mimeTypes.find(m_currentFileExtension) != m_mimeTypes.end())
     {
-        m_serverResponse.setContentType(m_mimeTypes[m_currentFileExtension],true);
+        serverResponse.setContentType(m_mimeTypes[m_currentFileExtension],true);
         return true;
     }
-    m_serverResponse.setContentType("",false);
+    serverResponse.setContentType("",false);
     return false;
 }
 
@@ -437,16 +436,16 @@ void HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const
 bool HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
-    if (m_currentParser == &m_clientRequest.requestLine) return changeToNextParserOnClientRequest();
-    else if (m_currentParser == &m_clientRequest.headers) return changeToNextParserOnClientHeaders();
+    if (m_currentParser == &clientRequest.requestLine) return changeToNextParserOnClientRequest();
+    else if (m_currentParser == &clientRequest.headers) return changeToNextParserOnClientHeaders();
     else return changeToNextParserOnClientContentData();
 }
 
 void HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
 {
-    m_clientRequest.networkClientInfo.tlsCommonName = tlsCommonName;
-    strncpy(m_clientRequest.networkClientInfo.REMOTE_ADDR,ipAddr,sizeof(m_clientRequest.networkClientInfo.REMOTE_ADDR));
-    m_clientRequest.networkClientInfo.isSecure = secure;
+    clientRequest.networkClientInfo.tlsCommonName = tlsCommonName;
+    strncpy(clientRequest.networkClientInfo.REMOTE_ADDR,ipAddr,sizeof(clientRequest.networkClientInfo.REMOTE_ADDR));
+    clientRequest.networkClientInfo.isSecure = secure;
 }
 
 bool HTTPv1_Server::changeToNextParserOnClientHeaders()
@@ -458,11 +457,11 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
     prepareServerVersionOnOptions();
 
     // PARSE CLIENT BASIC AUTHENTICATION:
-    m_clientRequest.basicAuth.isEnabled = false;
-    if (m_clientRequest.headers.exist("Authorization"))
+    clientRequest.basicAuth.isEnabled = false;
+    if (clientRequest.headers.exist("Authorization"))
     {
         vector<string> authParts;
-        string f1 = m_clientRequest.headers.getOptionValueStringByName("Authorization");
+        string f1 = clientRequest.headers.getOptionValueStringByName("Authorization");
         split(authParts,f1,is_any_of(" "),token_compress_on);
         if (authParts.size()==2)
         {
@@ -472,9 +471,9 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
                 std::string::size_type pos = bp.find(':', 0);
                 if (pos != std::string::npos)
                 {
-                    m_clientRequest.basicAuth.isEnabled = true;
-                    m_clientRequest.basicAuth.username = bp.substr(0,pos);
-                    m_clientRequest.basicAuth.password = bp.substr(pos+1,bp.size());
+                    clientRequest.basicAuth.isEnabled = true;
+                    clientRequest.basicAuth.username = bp.substr(0,pos);
+                    clientRequest.basicAuth.password = bp.substr(pos+1,bp.size());
                 }
 
             }
@@ -482,46 +481,46 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
     }
 
     // PARSE USER-AGENT
-    if (m_clientRequest.headers.exist("User-Agent"))
-        m_clientRequest.userAgent = m_clientRequest.headers.getOptionRawStringByName("User-Agent");
+    if (clientRequest.headers.exist("User-Agent"))
+        clientRequest.userAgent = clientRequest.headers.getOptionRawStringByName("User-Agent");
 
     // PARSE CONTENT TYPE/LENGHT OPTIONS
     if (m_badAnswer)
         return answer(m_answerBytes);
     else
     {
-        uint64_t contentLength = m_clientRequest.headers.getOptionAsUINT64("Content-Length");
-        string contentType = m_clientRequest.headers.getOptionValueStringByName("Content-Type");
+        uint64_t contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
+        string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
         /////////////////////////////////////////////////////////////////////////////////////
         // Content-Length...
         if (contentLength)
         {
             // Content length defined.
-            m_clientRequest.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
-            if (!m_clientRequest.content.setContentLenSize(contentLength))
+            clientRequest.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+            if (!clientRequest.content.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
                 m_badAnswer = true;
-                m_serverResponse.status.setRetCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
+                serverResponse.status.setRetCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
                 return answer(m_answerBytes);
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
             if ( icontains(contentType,"multipart/form-data") )
             {
-                m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
-                m_clientRequest.content.getMultiPartVars()->setMultiPartBoundary(m_clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
+                clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
             else if ( icontains(contentType,"application/x-www-form-urlencoded") )
             {
-                m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
             }
             else if ( icontains(contentType,"application/json") )
             {
-                m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_JSON);
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_JSON);
             }
             else
-                m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_BIN);
+                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -535,7 +534,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
             else
             {
                 // OK, we are ready.
-                if (contentLength) m_currentParser = &m_clientRequest.content;
+                if (contentLength) m_currentParser = &clientRequest.content;
                 else
                 {
                     // Answer here:
@@ -559,7 +558,7 @@ bool HTTPv1_Server::changeToNextParserOnClientRequest()
 
         if (!procHTTPClientURI())
             m_currentParser = nullptr; // Don't continue with parsing.
-        else m_currentParser = &m_clientRequest.headers;
+        else m_currentParser = &clientRequest.headers;
     }
     return true;
 }
@@ -574,84 +573,84 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::StreamableObject::Statu
     // Act as a server. Send data from here.
     uint64_t strsize;
 
-    if ((strsize=m_serverResponse.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
+    if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
     {
         // TODO: connection keep alive.
-        m_serverResponse.headers.add("Connetion", "Close");
-        m_serverResponse.headers.remove("Content-Length");
+        serverResponse.headers.add("Connetion", "Close");
+        serverResponse.headers.remove("Content-Length");
         /////////////////////
-        if (m_serverResponse.content.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
-            m_serverResponse.headers.replace("Transfer-Encoding", "Chunked");
+        if (serverResponse.content.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
+            serverResponse.headers.replace("Transfer-Encoding", "Chunked");
     }
     else
     {
-        m_serverResponse.headers.remove("Connetion");
-        m_serverResponse.headers.replace("Content-Length", std::to_string(strsize));
+        serverResponse.headers.remove("Connetion");
+        serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
     HTTP::Common::Date currentDate;
     currentDate.setCurrentTime();
     if (m_includeServerDate)
-        m_serverResponse.headers.add("Date", currentDate.toString());
+        serverResponse.headers.add("Date", currentDate.toString());
 
-    if (!m_serverResponse.sWWWAuthenticateRealm.empty())
+    if (!serverResponse.sWWWAuthenticateRealm.empty())
     {
-        m_serverResponse.headers.add("WWW-Authenticate", "Basic realm=\""+ m_serverResponse.sWWWAuthenticateRealm + "\"");
+        serverResponse.headers.add("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");
     }
 
     // Establish the cookies
-    m_serverResponse.headers.remove("Set-Cookie");
-    m_serverResponse.cookies.putOnHeaders(&m_serverResponse.headers);
+    serverResponse.headers.remove("Set-Cookie");
+    serverResponse.cookies.putOnHeaders(&serverResponse.headers);
 
     // Security Options...
-    m_serverResponse.headers.replace("X-XSS-Protection", m_serverResponse.security.XSSProtection.toString());
+    serverResponse.headers.replace("X-XSS-Protection", serverResponse.security.XSSProtection.toString());
 
-    std::string cacheOptions = m_serverResponse.cacheControl.toString();
+    std::string cacheOptions = serverResponse.cacheControl.toString();
     if (!cacheOptions.empty())
-        m_serverResponse.headers.replace("Cache-Control", cacheOptions);
+        serverResponse.headers.replace("Cache-Control", cacheOptions);
 
-    if (!m_serverResponse.security.XFrameOpts.isNotActivated())
-        m_serverResponse.headers.replace("X-Frame-Options", m_serverResponse.security.XFrameOpts.toString());
+    if (!serverResponse.security.XFrameOpts.isNotActivated())
+        serverResponse.headers.replace("X-Frame-Options", serverResponse.security.XFrameOpts.toString());
 
     // TODO: check if this is a secure connection.. (Over TLS?)
-    if (m_serverResponse.security.HSTS.m_activated)
-        m_serverResponse.headers.replace("Strict-Transport-Security", m_serverResponse.security.HSTS.toString());
+    if (serverResponse.security.HSTS.isActivated)
+        serverResponse.headers.replace("Strict-Transport-Security", serverResponse.security.HSTS.toString());
 
     // Content Type...
-    if (!m_serverResponse.contentType.empty())
+    if (!serverResponse.contentType.empty())
     {
-        m_serverResponse.headers.replace("Content-Type", m_serverResponse.contentType);
-        if (m_serverResponse.security.disableNoSniffContentType)
-            m_serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
+        serverResponse.headers.replace("Content-Type", serverResponse.contentType);
+        if (serverResponse.security.disableNoSniffContentType)
+            serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
     }
 
-    return m_serverResponse.headers.stream(wrStat);
+    return serverResponse.headers.stream(wrStat);
 }
 
 void HTTPv1_Server::prepareServerVersionOnURI()
 {
-    m_serverResponse.status.getHttpVersion()->setMajor(1);
-    m_serverResponse.status.getHttpVersion()->setMinor(0);
+    serverResponse.status.getHttpVersion()->setMajor(1);
+    serverResponse.status.getHttpVersion()->setMinor(0);
 
-    if (m_clientRequest.requestLine.getHTTPVersion()->getMajor()!=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getMajor()!=1)
     {
-        m_serverResponse.status.setRetCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        serverResponse.status.setRetCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
         m_badAnswer = true;
     }
     else
     {
-        m_serverResponse.status.getHttpVersion()->setMinor(m_clientRequest.requestLine.getHTTPVersion()->getMinor());
+        serverResponse.status.getHttpVersion()->setMinor(clientRequest.requestLine.getHTTPVersion()->getMinor());
     }
 }
 
 void HTTPv1_Server::prepareServerVersionOnOptions()
 {
-    if (m_clientRequest.requestLine.getHTTPVersion()->getMinor()>=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getMinor()>=1)
     {
-        if (m_clientRequest.virtualHost=="")
+        if (clientRequest.virtualHost=="")
         {
             // TODO: does really need the VHost?
-            m_serverResponse.status.setRetCode(HTTP::Status::S_400_BAD_REQUEST);
+            serverResponse.status.setRetCode(HTTP::Status::S_400_BAD_REQUEST);
             m_badAnswer = true;
         }
     }
@@ -659,20 +658,20 @@ void HTTPv1_Server::prepareServerVersionOnOptions()
 
 void HTTPv1_Server::parseHostOptions()
 {
-    string hostVal = m_clientRequest.headers.getOptionValueStringByName("HOST");
+    string hostVal = clientRequest.headers.getOptionValueStringByName("HOST");
     if (!hostVal.empty())
     {
-        m_clientRequest.virtualPort = 80;
+        clientRequest.virtualPort = 80;
         vector<string> hostParts;
         split(hostParts,hostVal,is_any_of(":"),token_compress_on);
         if (hostParts.size()==1)
         {
-            m_clientRequest.virtualHost = hostParts[0];
+            clientRequest.virtualHost = hostParts[0];
         }
         else if (hostParts.size()>1)
         {
-            m_clientRequest.virtualHost = hostParts[0];
-            m_clientRequest.virtualPort = (uint16_t)strtoul(hostParts[1].c_str(),nullptr,10);
+            clientRequest.virtualHost = hostParts[0];
+            clientRequest.virtualPort = (uint16_t)strtoul(hostParts[1].c_str(),nullptr,10);
         }
     }
 }
@@ -691,13 +690,13 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
     // Process client petition here.
     if (!m_badAnswer)
     {
-        m_serverResponse.status.setRetCode(procHTTPClientContent());
+        serverResponse.status.setRetCode(procHTTPClientContent());
     }
 
     // Answer is the last... close the connection after it.
     m_currentParser = nullptr;
 
-    if (!m_serverResponse.status.stream(wrStat))
+    if (!serverResponse.status.stream(wrStat))
     {
         return false;
     }
@@ -706,15 +705,15 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
         return false;
     }
 
-    bool streamedOK = m_serverResponse.content.stream(wrStat);
+    bool streamedOK = serverResponse.content.stream(wrStat);
     // Destroy the binary content container here:
-    m_serverResponse.content.setStreamableObj(nullptr);
+    serverResponse.content.setStreamableObj(nullptr);
     return streamedOK;
 }
 
 void HTTPv1_Server::setStaticContentElements(const std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> &value)
 {
-    m_staticContentElements = value;
+    staticContentElements = value;
 }
 
 std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
@@ -750,7 +749,7 @@ std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
 
 bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
 {
-    return !(m_staticContentElements.find(path) == m_staticContentElements.end());
+    return !(staticContentElements.find(path) == staticContentElements.end());
 }
 
 
@@ -767,7 +766,7 @@ void HTTPv1_Server::setResponseIncludeServerDate(bool value)
 
 void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {
-    m_staticContentElements[path] = contentElement;
+    staticContentElements[path] = contentElement;
 }
 
 Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmissionStatus() const
@@ -775,36 +774,25 @@ Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmission
     return m_answerBytes;
 }
 
-Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(Memory::Streams::StreamableObject *source)
+Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
     Memory::Streams::StreamableObject::Status stat;
 
-    if (!m_serverResponse.content.getStreamableObj())
+    if (!serverResponse.content.getStreamableObj())
     {
         stat.succeed = false;
         return stat;
     }
 
     // Stream in place:
-    source->streamTo( m_serverResponse.content.getStreamableObj().get(), stat);
+    source->streamTo( serverResponse.content.getStreamableObj(), stat);
     return stat;
 }
 
-Protocols::HTTP::Status::eRetCode HTTPv1_Server::setResponseRedirect(const string &location, bool temporary)
-{
-    m_serverResponse.headers.replace("Location", location);
 
-    // Remove previous data streamer:
-    m_serverResponse.setDataStreamer(nullptr);
-
-    if (temporary)
-        return HTTP::Status::S_307_TEMPORARY_REDIRECT;
-    else
-        return HTTP::Status::S_308_PERMANENT_REDIRECT;
-}
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTPv1_Server::getResponseDataStreamer()
 {
-    return m_serverResponse.content.getStreamableObj();
+    return serverResponse.content.getStreamableObj();
 }
 

@@ -1,5 +1,6 @@
 #include "globalarguments.h"
 #include <iostream>
+#include <memory>
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
@@ -30,10 +31,16 @@ GlobalArguments::GlobalArguments()
 
 bool GlobalArguments::addCommandLineOption(const string &optGroup, char shortOption, const string &optName, const string &description, const string &defaultValue, const Var::Type & optionType, bool isMandatory)
 {
-    if (getProgramOption(shortOption)) return false;
-    if (getProgramOption(optName)) return false;
+    if (getProgramOption(shortOption))
+    {
+        return false;
+    }
+    if (getProgramOption(optName))
+    {
+        return false;
+    }
 
-    CommandLineOption * opts = new CommandLineOption;
+    std::shared_ptr<CommandLineOption> opts = std::make_shared<CommandLineOption>();
     opts->shortOption = shortOption?shortOption:(m_extraOptChars++);
     opts->name = optName;
     opts->defaultValue = defaultValue;
@@ -53,27 +60,42 @@ bool GlobalArguments::addCommandLineOption(const string &optGroup, char shortOpt
 
 bool GlobalArguments::getCommandLineOptionBooleanValue(const string &optionName)
 {
-    Var * var = getCommandLineOptionValue(optionName);
-    if (!var) return false;
-    if (var->getVarType() != Var::TYPE_BOOL) return false;
-    return ((BOOL *)var)->getValue();
+    std::shared_ptr<Var> var = getCommandLineOptionValue(optionName);
+    if (!var)
+    {
+        return false;
+    }
+    if (var->getVarType() != Var::TYPE_BOOL)
+    {
+        return false;
+    }
+    return std::dynamic_pointer_cast<BOOL>(var)->getValue();
 }
 
-Var *GlobalArguments::getCommandLineOptionValue(const string &optionName)
+std::shared_ptr<Var> GlobalArguments::getCommandLineOptionValue(const string &optionName)
 {
-    CommandLineOption * opt = getProgramOption(optionName);
+    std::shared_ptr<CommandLineOption> opt = getProgramOption(optionName);
 
-    if (!opt) return nullptr;
-    if (opt->parsedOption.size()==0) return opt->defaultValVar;
+    if (!opt)
+    {
+        return nullptr;
+    }
+    if (opt->parsedOption.size()==0)
+    {
+        return opt->defaultValVar;
+    }
     return opt->parsedOption.front();
 }
 
-std::list<Var *> GlobalArguments::getCommandLineOptionValues(const string &optionName)
+std::list<std::shared_ptr<Var>> GlobalArguments::getCommandLineOptionValues(const string &optionName)
 {
-    CommandLineOption * opt = getProgramOption(optionName);
+    std::shared_ptr<CommandLineOption> opt = getProgramOption(optionName);
 
-    std::list<Var *> v;
-    if (!opt) return v;
+    std::list<std::shared_ptr<Var>> v;
+    if (!opt)
+    {
+        return v;
+    }
 
     if (!opt->parsedOption.size())
     {
@@ -86,12 +108,12 @@ std::list<Var *> GlobalArguments::getCommandLineOptionValues(const string &optio
 
 bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
 {
-    std::list<CommandLineOption *> cmdOptions  = getAllCommandLineOptions();
+    std::list<std::shared_ptr<CommandLineOption>> cmdOptions  = getAllCommandLineOptions();
 
     static string optString;
     static struct option * longOpts = new option[cmdOptions.size()+1];
     size_t iLongOptPos=0;
-    for (CommandLineOption * optIter : cmdOptions)
+    for (std::shared_ptr<CommandLineOption> optIter : cmdOptions)
     {
         if (optIter->shortOption && optIter->shortOption < 256)
         {
@@ -113,7 +135,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     }
     longOpts[cmdOptions.size()] = { nullptr       , no_argument      , nullptr, 0 };
 
-    std::set<CommandLineOption *> cmdOptionsFulfilled;
+    std::set<std::shared_ptr<CommandLineOption>> cmdOptionsFulfilled;
 
     int longIndex;
     int curOptChar = getopt_long(argc, argv, optString.c_str(), longOpts, &longIndex);
@@ -130,10 +152,10 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
         }
         else
         {
-            CommandLineOption * optValue = getProgramOption(curOptChar);
+            std::shared_ptr<CommandLineOption> optValue = getProgramOption(curOptChar);
             if (optValue)
             {
-                Var * absVar = Var::makeAbstract(optValue->optionType, "");
+                std::shared_ptr<Var> absVar = Var::makeAbstract(optValue->optionType, "");
 
                 if (( (optarg!=nullptr && !optarg[0]) || !optarg) && optValue->optionType == Var::TYPE_BOOL)
                 {
@@ -163,7 +185,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     // Check if all
     bool fulfilled = true;
 
-    for ( CommandLineOption * optIter : cmdOptions )
+    for ( std::shared_ptr<CommandLineOption> optIter : cmdOptions )
     {
         if (optIter->isMandatory && cmdOptionsFulfilled.find(optIter) == cmdOptionsFulfilled.end())
         {
@@ -215,7 +237,7 @@ void GlobalArguments::printHelp()
         cout << getLine(i.first.size()+1) << endl;
 
         uint32_t msize = getMaxOptNameSize(i.second);
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             if (v->shortOption && v->shortOption<256)
             {
@@ -252,7 +274,7 @@ void GlobalArguments::printHelp()
     }
 }
 
-bool GlobalArguments::addStaticVariable(const string &name, Var *var)
+bool GlobalArguments::addStaticVariable(const string &name, std::shared_ptr<Var> var)
 {
     Threads::Sync::Lock_RW lock(m_variablesMutex);
     if (m_variables.find(name) == m_variables.end())
@@ -263,7 +285,7 @@ bool GlobalArguments::addStaticVariable(const string &name, Var *var)
     return true;
 }
 
-Var *GlobalArguments::getStaticVariable(const string &name)
+std::shared_ptr<Var> GlobalArguments::getStaticVariable(const string &name)
 {
     Threads::Sync::Lock_RD lock(m_variablesMutex);
     if (m_variables.find(name) == m_variables.end())
@@ -276,14 +298,14 @@ Var *GlobalArguments::getStaticVariable(const string &name)
 
 void GlobalArguments::printProgramHeader()
 {
-    cout << "# " << m_softwareDescription << " (" <<  m_programName << ") v" << m_version << endl;
+    cout << "# " << softwareDescription << " (" <<  softwareName << ") v" << m_version << endl;
 
     for ( const auto & i : m_authors )
     {
         cout << "# " << "Author:  " << i.name << " (" << i.email << ")" << endl;
     }
 
-    cout << "# " << "License: " << m_softwareLicense << endl;
+    cout << "# " << "License: " << softwareLicense << endl;
     cout << "# " << endl <<  flush;
 }
 
@@ -291,7 +313,7 @@ void GlobalArguments::printCurrentProgramOptionsValues()
 {
     for ( auto & i : m_commandOptions )
     {
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             std::string varNameToPrint = "";
             if (v->shortOption>0 && v->shortOption<256)
@@ -330,7 +352,7 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool remov
     std::string r;
     for ( auto & i : m_commandOptions )
     {
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             std::string varNameToPrint = "";
             if (v->shortOption>0 && v->shortOption<256)
@@ -398,12 +420,12 @@ void GlobalArguments::setDefaultDaemonOption(const std::string &value)
     m_sDefaultDaemonOption = value;
 }
 #endif
-std::list<CommandLineOption *> GlobalArguments::getAllCommandLineOptions()
+std::list<std::shared_ptr<CommandLineOption>> GlobalArguments::getAllCommandLineOptions()
 {
-    std::list<CommandLineOption *> x;
+    std::list<std::shared_ptr<CommandLineOption>> x;
     for ( auto & i : m_commandOptions )
     {
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             x.push_back(v);
         }
@@ -411,10 +433,10 @@ std::list<CommandLineOption *> GlobalArguments::getAllCommandLineOptions()
     return x;
 }
 
-uint32_t GlobalArguments::getMaxOptNameSize(std::list<CommandLineOption *> options)
+uint32_t GlobalArguments::getMaxOptNameSize(std::list<std::shared_ptr<CommandLineOption>> options)
 {
     unsigned int max = 1;
-    for (CommandLineOption * x : options)
+    for (std::shared_ptr<CommandLineOption> x : options)
     {
         uint32_t cursize = x->name.size(); // + (x->optionType!=TYPE_BOOL? strlen(" <value>") : 0 );
         if (cursize>max) max = cursize;
@@ -430,12 +452,12 @@ string GlobalArguments::getLine(const uint32_t & size)
 }
 
 // TODO: unicode?
-CommandLineOption * GlobalArguments::getProgramOption(int shortOption)
+std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(int shortOption)
 {
     if (!shortOption) return nullptr;
     for ( auto & i : m_commandOptions )
     {
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             if (shortOption == v->shortOption) return v;
 
@@ -450,11 +472,11 @@ CommandLineOption * GlobalArguments::getProgramOption(int shortOption)
     return nullptr;
 }
 
-CommandLineOption * GlobalArguments::getProgramOption(const std::string &optName)
+std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(const std::string &optName)
 {
     for ( auto & i : m_commandOptions )
     {
-        for ( CommandLineOption * v : i.second )
+        for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
             if (optName == v->name) return v;
             if (optName.size() == 1 && v->shortOption>0 && v->shortOption<256 && optName.at(0) == v->shortOption) return v;

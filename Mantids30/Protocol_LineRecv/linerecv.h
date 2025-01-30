@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace Line2L
 class LineRecv : public Memory::Streams::Parser
 {
 public:
-    LineRecv(Memory::Streams::StreamableObject *sobject);
+    LineRecv(std::shared_ptr<StreamableObject> sobject);
     virtual ~LineRecv()  override {}
     void setMaxLineSize(const uint32_t & maxLineSize);
 

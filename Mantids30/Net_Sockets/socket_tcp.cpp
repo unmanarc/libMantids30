@@ -1,5 +1,6 @@
 #include "socket_tcp.h"
 
+#include <memory>
 #include <sys/types.h>
 
 #ifdef _WIN32
@@ -146,13 +147,13 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     return true;
 }
 
-Sockets::Socket_Stream_Base * Socket_TCP::acceptConnection()
+std::shared_ptr<Sockets::Socket_Stream_Base> Socket_TCP::acceptConnection()
 {
     int sdconn;
 
     if (!isActive()) return nullptr;
 
-    Socket_Stream_Base * cursocket;
+    std::shared_ptr<Socket_Stream_Base> cursocket;
 
     int32_t clilen;
     struct sockaddr_in cli_addr;
@@ -173,7 +174,7 @@ Sockets::Socket_Stream_Base * Socket_TCP::acceptConnection()
             }
         }
 
-        cursocket = new Socket_TCP;
+        cursocket = std::make_shared<Socket_TCP>();
         // Set the proper socket-
         cursocket->setSocketFD(sdconn);
         char ipAddr[INET6_ADDRSTRLEN];
@@ -181,7 +182,7 @@ Sockets::Socket_Stream_Base * Socket_TCP::acceptConnection()
         cursocket->setRemotePort(ntohs(cli_addr.sin_port));
         cursocket->setRemotePair(ipAddr);
         
-        ((Socket_TCP *)cursocket)->setTcpNoDelayOption(m_useTcpNoDelayOption);
+        std::dynamic_pointer_cast<Socket_TCP>(cursocket)->setTcpNoDelayOption(m_useTcpNoDelayOption);
 
         if (m_readTimeout)
             cursocket->setReadTimeout(m_readTimeout);

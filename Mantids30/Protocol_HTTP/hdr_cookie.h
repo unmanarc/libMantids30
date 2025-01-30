@@ -81,7 +81,7 @@ public:
     uint32_t getMaxAge() const;
     /**
      * @brief setMaxAge Set Max Age (Maximum time that the cookie can survive)
-     * @param value Max Age in seconds, or std::numeric_limits<uint32_t>::max() to disable this field (default)
+     * @param value Max Age in seconds, or UINT32_MAX to disable this field (default)
      */
     void setMaxAge(const uint32_t &value);
 

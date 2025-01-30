@@ -62,7 +62,7 @@ void Socket::initVars()
 
     ZeroBArray(m_remotePair);
 }
-
+/*
 bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
 {
     if (bindAddress == nullptr)
@@ -70,20 +70,19 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
 
     if (!m_useIPv6)
     {
-        struct sockaddr_in saBindServer;
-        ZeroBStruct(saBindServer);
+        ZeroBStruct(m_lastBindIPv4);
 
-        saBindServer.sin_family = AF_INET;
-        saBindServer.sin_port   = htons(port);
+        m_lastBindIPv4.sin_family = AF_INET;
+        m_lastBindIPv4.sin_port   = htons(port);
 
         // Accept * or :: as a generic listen address
         if (    (bindAddress[0] == '*' && bindAddress[1] == 0) ||
                 (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0) )
-            inet_pton(AF_INET, "0.0.0.0", &saBindServer.sin_addr);
+            inet_pton(AF_INET, "0.0.0.0", &m_lastBindIPv4.sin_addr);
         else
-            inet_pton(AF_INET, bindAddress, &saBindServer.sin_addr);
+            inet_pton(AF_INET, bindAddress, &m_lastBindIPv4.sin_addr);
         
-        if (bind(m_sockFD,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
+        if (bind(m_sockFD,(struct sockaddr *)&m_lastBindIPv4,sizeof(m_lastBindIPv4)) < 0)
         {
             m_lastError = "bind() failed";
             closeSocket();
@@ -92,18 +91,17 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
     }
     else
     {
-        struct sockaddr_in6 saBindServer;
-        ZeroBStruct(saBindServer);
+        ZeroBStruct(m_lastBindIPv6);
 
-        saBindServer.sin6_family = AF_INET6;
-        saBindServer.sin6_port   = htons(port);
+        m_lastBindIPv6.sin6_family = AF_INET6;
+        m_lastBindIPv6.sin6_port   = htons(port);
 
         if (bindAddress[0] == '*' && bindAddress[1] == 0)
-            inet_pton(AF_INET6, "::", &saBindServer.sin6_addr);
+            inet_pton(AF_INET6, "::", &m_lastBindIPv6.sin6_addr);
         else
-            inet_pton(AF_INET6, bindAddress, &saBindServer.sin6_addr);
+            inet_pton(AF_INET6, bindAddress, &m_lastBindIPv6.sin6_addr);
         
-        if (bind(m_sockFD,(struct sockaddr *)&saBindServer,sizeof(saBindServer)) < 0)
+        if (bind(m_sockFD,(struct sockaddr *)&m_lastBindIPv6,sizeof(m_lastBindIPv6)) < 0)
         {
             m_lastError = "bind() failed";
             closeSocket();
@@ -112,7 +110,79 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
     }
 
     return true;
+}*/
+
+
+
+bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
+{
+    if (bindAddress == nullptr)
+        return true;
+
+    if (!m_useIPv6)
+    {
+        ZeroBStruct(m_lastBindIPv4);
+
+        m_lastBindIPv4.sin_family = AF_INET;
+        m_lastBindIPv4.sin_port = htons(port);
+
+        // Accept * or :: as a generic listen address
+        if ((bindAddress[0] == '*' && bindAddress[1] == 0) ||
+            (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0))
+        {
+            inet_pton(AF_INET, "0.0.0.0", &m_lastBindIPv4.sin_addr);
+        }
+        else
+        {
+            if (inet_pton(AF_INET, bindAddress, &m_lastBindIPv4.sin_addr) <= 0)
+            {
+                m_lastError = "bind() failed / Invalid IPv4 address format";
+                return false;
+            }
+        }
+
+        if (bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
+        {
+            m_lastError = "bind() failed";
+            close(m_sockFD);
+            m_lastBindValid = false;
+            return false;
+        }
+    }
+    else
+    {
+        ZeroBStruct(m_lastBindIPv6);
+
+        m_lastBindIPv6.sin6_family = AF_INET6;
+        m_lastBindIPv6.sin6_port = htons(port);
+
+        if (bindAddress[0] == '*' && bindAddress[1] == 0)
+        {
+            inet_pton(AF_INET6, "::", &m_lastBindIPv6.sin6_addr);
+        }
+        else
+        {
+            if (inet_pton(AF_INET6, bindAddress, &m_lastBindIPv6.sin6_addr) <= 0)
+            {
+                m_lastError = "bind() failed / Invalid IPv6 address format";
+                return false;
+            }
+        }
+
+        if (bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
+        {
+            m_lastError = "bind() failed";
+            close(m_sockFD);
+            m_lastBindValid = false;
+            return false;
+        }
+    }
+
+    m_lastBindValid = true; // Successfully bound
+    return true;
 }
+
+
 
 bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void **res)
 {
@@ -202,6 +272,16 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     }
 
     return false;
+}
+
+std::string Socket::getConnectionName() const
+{
+    return m_connectionName;
+}
+
+void Socket::setConnectionName(const std::string &newConnectionName)
+{
+    m_connectionName = newConnectionName;
 }
 
 bool Socket::getUseIPv6() const
@@ -310,6 +390,28 @@ int Socket::closeSocket()
 std::string Socket::getLastError() const
 {
     return m_lastError;
+}
+
+std::string Socket::getLastBindAddress() const
+{
+    /*if (!m_lastBindValid)
+        return "";*/
+
+    char addrStr[INET6_ADDRSTRLEN];
+    uint16_t port;
+
+    if (!m_useIPv6)
+    {
+        inet_ntop(AF_INET, &m_lastBindIPv4.sin_addr, addrStr, sizeof(addrStr));
+        port = ntohs(m_lastBindIPv4.sin_port);
+    }
+    else
+    {
+        inet_ntop(AF_INET6, &m_lastBindIPv6.sin6_addr, addrStr, sizeof(addrStr));
+        port = ntohs(m_lastBindIPv6.sin6_port);
+    }
+
+    return std::string(addrStr) + ":" + std::to_string(port);
 }
 
 std::string Socket::getRemotePairStr()

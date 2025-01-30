@@ -4,6 +4,7 @@
 #include <Mantids30/Net_Sockets/socket_tls.h>
 
 #include <atomic>
+#include <memory>
 #include <string>
 
 namespace Mantids30 { namespace Applications { namespace FastRPC1 {
@@ -70,7 +71,7 @@ protected:
      * @param sockRPCClient TLS Socket
      * @return if false, the connection will not continue
      */
-    virtual bool postConnect(Mantids30::Network::Sockets::Socket_TLS * sockRPCClient) { return  true; }
+    virtual bool postConnect(std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> sockRPCClient) { return  true; }
 
     virtual std::string decryptStr(const std::string & src) { return src; };
     virtual std::string encryptStr(const std::string & src) { return src; };

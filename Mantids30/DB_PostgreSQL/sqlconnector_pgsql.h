@@ -46,7 +46,7 @@ public:
     void psqlSetConnectionSSLMode(const std::string &value);
 
 protected:
-    Query * createQuery0() { return new Query_PostgreSQL; };
+    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_PostgreSQL>(); };
     bool connect0();
 private:
     void fillConnectionArray();

@@ -1,4 +1,5 @@
 #include "common_content_chunked_subparser.h"
+#include <memory>
 #include <stdio.h>
 #include <string.h>
 
@@ -6,7 +7,7 @@ using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30::Network::Protocols::HTTP::Common;
 using namespace Mantids30;
 
-Content_Chunked_SubParser::Content_Chunked_SubParser(Memory::Streams::StreamableObject *dst)
+Content_Chunked_SubParser::Content_Chunked_SubParser(std::shared_ptr<Memory::Streams::StreamableObject> dst)
 {
     this->dst = dst;
     pos = 0;
@@ -17,7 +18,7 @@ Content_Chunked_SubParser::~Content_Chunked_SubParser()
     endBuffer();
 }
 
-bool Content_Chunked_SubParser::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrsStat)
+bool Content_Chunked_SubParser::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrsStat)
 {
     return false;
 }

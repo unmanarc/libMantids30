@@ -7,9 +7,9 @@ using namespace Mantids30::Threads;
 Threaded::Threaded()
 {
     threadRunner = nullptr;
-    runnerArg = nullptr;
+    contextRunner = nullptr;
     threadStopper = nullptr;
-    stopperArg = nullptr;
+    contextStopper = nullptr;
 
     running = false;
 }
@@ -26,7 +26,7 @@ void Threaded::start(const std::shared_ptr<Threaded> & tc)
 
 void Threaded::stop()
 {
-    threadStopper(stopperArg);
+    threadStopper(contextStopper);
 }
 
 void Threaded::join()
@@ -39,16 +39,16 @@ void Threaded::detach()
     threadObj.detach();
 }
 
-void Threaded::setThreadRunner(void (*threadRunner)(void *), void *obj)
+void Threaded::setThreadRunner(void (*threadRunner)(void *), void *context)
 {
     this->threadRunner = threadRunner;
-    this->runnerArg = obj;
+    this->contextRunner = context;
 }
 
-void Threaded::setThreadStopper(void (*threadStopper)(void *), void *obj)
+void Threaded::setThreadStopper(void (*threadStopper)(void *), void *context)
 {
     this->threadStopper = threadStopper;
-    this->stopperArg = obj;
+    this->contextStopper = context;
 }
 
 void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
@@ -59,7 +59,7 @@ void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
 void Threaded::execRun()
 {
     running = true;
-    threadRunner(runnerArg);
+    threadRunner(contextRunner);
     running = false;
 }
 

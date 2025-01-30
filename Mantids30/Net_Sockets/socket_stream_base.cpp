@@ -1,4 +1,5 @@
 #include "socket_stream_base.h"
+#include <memory>
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -10,6 +11,8 @@
 #endif
 #include <string.h>
 #include <unistd.h>
+
+#include <Mantids30/Helpers/random.h>
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
@@ -27,7 +30,7 @@ void Socket_Stream_Base::writeEOF(bool)
     shutdownSocket(SHUT_RDWR);
 }
 
-bool Socket_Stream_Base::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrsStat)
+bool Socket_Stream_Base::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrsStat)
 {
     char data[8192];
     Memory::Streams::StreamableObject::Status cur;
@@ -76,7 +79,7 @@ Memory::Streams::StreamableObject::Status Socket_Stream_Base::write(const void *
     return cur;
 }
 
-std::pair<Socket_Stream_Base *,Socket_Stream_Base *> Socket_Stream_Base::GetSocketPair()
+std::pair<Socket_Stream_Base *, Socket_Stream_Base *> Socket_Stream_Base::GetSocketPair()
 {
     std::pair<Socket_Stream_Base *,Socket_Stream_Base *> p;
 
@@ -100,11 +103,15 @@ std::pair<Socket_Stream_Base *,Socket_Stream_Base *> Socket_Stream_Base::GetSock
 #else
     // Emulate via TCP. (EXPERIMENTAL)
 
-    Sockets::Socket_TCP * llsock = new Sockets::Socket_TCP, * lsock = nullptr, * rsock = new Sockets::Socket_TCP;
+    std::shared_ptr<Sockets::Socket_TCP> llsock = new Sockets::Socket_TCP();
+    std::shared_ptr<Sockets::Socket_TCP> rsock = new Sockets::Socket_TCP();
+    std::shared_ptr<Sockets::Socket_TCP> lsock = nullptr;
+
     llsock->listenOn(0,"127.0.0.1",true);
     rsock->connectTo("127.0.0.1",lsock->getPort());
-    lsock = (Sockets::Socket_TCP *)llsock->acceptConnection();
+    lsock = std::dynamic_pointer_cast<Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
+
     delete llsock;
 
     p.first = lsock;
@@ -148,7 +155,7 @@ bool Socket_Stream_Base::writeFull(const void *data, const uint64_t &datalen)
     return true;
 }
 
-Socket_Stream_Base * Socket_Stream_Base::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> Socket_Stream_Base::acceptConnection()
 {
     return nullptr;
 }
@@ -195,6 +202,26 @@ bool Socket_Stream_Base::readFull(void *data, const uint64_t &expectedDataBytesC
 
     // Otherwise... return true.
     return true;
+}
+
+void Socket_Stream_Base::deriveConnectionName()
+{
+    std::string rpcClientKey;
+    std::string remotePair = getRemotePairStr();
+
+    // TLS peer name:
+    std::string peerName = getPeerName();
+
+    if (peerName.empty())
+    {
+        // TCP connection or TLS without cert/CN? use the remote IP/port...
+        peerName = remotePair + ":" + std::to_string(getRemotePort());
+    }
+
+    // Multiple client connection using this peer name? give a random suffix...
+    rpcClientKey = peerName + "?" + Helpers::Random::createRandomHexString(8);
+
+    setConnectionName(rpcClientKey);
 }
 
 void Socket_Stream_Base::writeDeSync()

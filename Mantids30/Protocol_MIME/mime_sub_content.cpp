@@ -1,5 +1,6 @@
 #include "mime_sub_content.h"
 #include <Mantids30/Memory/subparser.h>
+#include <memory>
 
 using namespace Mantids30::Network::Protocols::MIME;
 using namespace Mantids30;
@@ -19,7 +20,7 @@ MIME_Sub_Content::MIME_Sub_Content()
 #endif
 
     contentContainer = nullptr;
-    replaceContentContainer(new Memory::Containers::B_Chunks);
+    replaceContentContainer(std::make_shared<Memory::Containers::B_Chunks>());
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
@@ -28,7 +29,8 @@ MIME_Sub_Content::MIME_Sub_Content()
 
 MIME_Sub_Content::~MIME_Sub_Content()
 {
-    if (contentContainer) delete contentContainer;
+    //if (contentContainer)
+//        delete contentContainer;
 }
 
 bool MIME_Sub_Content::stream(Memory::Streams::StreamableObject::Status &wrStat)
@@ -101,13 +103,13 @@ void MIME_Sub_Content::setBoundary(const std::string &value)
     setParseDataTargetSize(maxContentSize+boundary.size()+4);
 }
 
-Memory::Streams::StreamableObject *MIME_Sub_Content::getContentContainer() const
+std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentContainer() const
 {
     return contentContainer;
 }
 
-void MIME_Sub_Content::replaceContentContainer(Memory::Streams::StreamableObject *value)
+void MIME_Sub_Content::replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value)
 {
-    if (contentContainer) delete contentContainer;
+//    if (contentContainer) delete contentContainer;
     contentContainer = value;
 }

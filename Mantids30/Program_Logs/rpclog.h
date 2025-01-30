@@ -16,18 +16,15 @@ public:
 
     /////////////////////////////////////////////////////////
     // This is not thread safe: can't be changed during program execution
-    uint32_t m_minUserFieldWidth; ///< The minimum width (in characters) that the user field will take on the screen. If the length of the user string is less than this, it will be padded with spaces.
-    uint32_t m_minModuleFieldWidth; ///< The minimum width (in characters) that the module field will take on the screen. If the length of the module string is less than this, it will be padded with spaces.
-    uint32_t m_minDomainFieldWidth; ///< The minimum width (in characters) that the domain field will take on the screen. If the length of the module string is less than this, it will be padded with spaces.
-    bool m_disableDomain;
-    bool m_disableModule;
-
+    uint32_t userFieldMinWidth = 13; ///< Minimum width (in characters) of the user field on the screen. Strings shorter than this will be padded with spaces.
+    uint32_t moduleFieldMinWidth = 13; ///< Minimum width (in characters) of the module field on the screen. Strings shorter than this will be padded with spaces.
+    uint32_t domainFieldMinWidth = 13; ///< Minimum width (in characters) of the domain field on the screen. Strings shorter than this will be padded with spaces.
+    bool enableDomainLogging = true; ///< Indicates whether to include the domain in the log.
+    bool enableModuleLogging = true; ///< Indicates whether to include the module in the log.
 
 private:
     // Print functions:
     void printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char * buffer, eLogColors color, const char *logLevelText);
-
-
 };
 
 }}}

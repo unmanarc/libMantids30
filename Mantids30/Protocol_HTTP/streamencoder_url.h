@@ -1,14 +1,15 @@
 #pragma once
 
 #include <Mantids30/Memory/streamableobject.h>
+#include <memory>
 
 namespace Mantids30 { namespace Memory { namespace Streams { namespace Encoders {
 
 class URL : public Memory::Streams::StreamableObject
 {
 public:
-    URL(Memory::Streams::StreamableObject * orig);
-    bool streamTo(Memory::Streams::StreamableObject *, Streams::StreamableObject::Status & ) override;
+    URL(std::shared_ptr<Memory::Streams::StreamableObject> orig);
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Streams::StreamableObject::Status & ) override;
     Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Streams::StreamableObject::Status &wrStat) override;
     uint64_t getFinalBytesWritten() const;
     static std::string encodeURLStr(const std::string &url);
@@ -18,7 +19,7 @@ private:
     inline bool shouldEncodeThisByte(const unsigned char & byte) const;
 
     uint64_t finalBytesWritten;
-    Memory::Streams::StreamableObject * orig;
+    std::shared_ptr<Memory::Streams::StreamableObject>  orig;
 };
 
 

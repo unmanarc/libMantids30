@@ -1,4 +1,5 @@
 #include "vars.h"
+#include <memory>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -27,16 +28,16 @@ json Vars::getVarsAsJSONMap()
         if (count == 1)
         {
             // If there's only one value, store it directly
-            Mantids30::Memory::Streams::StreamableObject* value = getValue(key);
+            std::shared_ptr<Mantids30::Memory::Streams::StreamableObject> value = getValue(key);
             jsonMap[key] = value->toString();
         }
         else if (count > 1)
         {
             // If there are multiple values, store them in an array
-            std::list<Mantids30::Memory::Streams::StreamableObject*> values = getValues(key);
+            std::list<std::shared_ptr<Mantids30::Memory::Streams::StreamableObject>> values = getValues(key);
             Json::Value jsonArray;
 
-            for (Mantids30::Memory::Streams::StreamableObject* value : values)
+            for (std::shared_ptr<Mantids30::Memory::Streams::StreamableObject> value : values)
             {
                 jsonArray.append(value->toString());
             }

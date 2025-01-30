@@ -1,10 +1,11 @@
 #include "parser.h"
 #include "b_ref.h"
+#include <memory>
 
 
 using namespace Mantids30::Memory::Streams;
 
-Parser::Parser(Memory::Streams::StreamableObject *value, bool clientMode)
+Parser::Parser(std::shared_ptr<StreamableObject> value, bool clientMode)
 {
     this->m_clientMode = clientMode;
     m_currentParser = nullptr;
@@ -26,7 +27,7 @@ StreamableObject::Status Parser::parseObject(Parser::ErrorMSG *err)
     m_initialized = initProtocol();
     if (m_initialized)
     {
-        if (!(ret=m_streamableObject->streamTo(this,upd)) || !upd.succeed)
+        if (!(ret=m_streamableObject->streamTo(shared_from_this(),upd)) || !upd.succeed)
         {
             upd.succeed=false;
             *err=getFailedWriteState()!=0?PARSING_ERR_READ:PARSING_ERR_PARSE;
@@ -41,7 +42,7 @@ StreamableObject::Status Parser::parseObject(Parser::ErrorMSG *err)
     return upd;
 }
 
-bool Parser::streamTo(Memory::Streams::StreamableObject *out, Status &wrsStat)
+bool Parser::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Status &wrsStat)
 {
     return false;
 }
@@ -96,7 +97,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 
     // We are parsing data here...
     // written bytes will be filled with first=error, and second=displacebytes
-    // displace bytes is the number of bytes that the subparser have taken from the incomming buffer, so we have to displace them.
+    // displace bytes is the number of bytes that the subparser have taken from the incoming buffer, so we have to displace them.
     std::pair<bool, uint64_t> writtenBytes;
 
     if (m_currentParser!=nullptr)
@@ -167,7 +168,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 
 void Parser::initSubParser(SubParser *subparser)
 {
-    subparser->initElemParser(m_streamableObject?m_streamableObject:this,m_clientMode);
+    subparser->initElemParser((m_streamableObject!=nullptr)?m_streamableObject:shared_from_this(),m_clientMode);
 }
 
 void Parser::setMaxTTL(const size_t &value)
@@ -175,7 +176,7 @@ void Parser::setMaxTTL(const size_t &value)
     m_maxTTL = value;
 }
 
-void Parser::setStreamable(Memory::Streams::StreamableObject *value)
+void Parser::setStreamable(std::shared_ptr<Memory::Streams::StreamableObject> value)
 {
     m_streamableObject = value;
 }

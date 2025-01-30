@@ -17,7 +17,7 @@ public:
      * @param objDst pointer to the destination object.
      * @return false if failed, true otherwise.
      */
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, Status & wrStatUpd) override;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrStatUpd) override;
     virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd) override;
 
 private:

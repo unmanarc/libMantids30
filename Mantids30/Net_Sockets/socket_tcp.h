@@ -38,7 +38,7 @@ public:
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.
      */
-    virtual Socket_Stream_Base *acceptConnection() override;
+    virtual std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
 
     /**
      * Virtual function for protocol initialization after the connection starts...

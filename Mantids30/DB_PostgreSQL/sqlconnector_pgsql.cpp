@@ -43,7 +43,7 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
     // Select Query:
     std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT to_regclass(:table);",
                    {
-                     { ":table", new Memory::Abstract::STRING(realTableName)}
+                      { ":table", std::make_shared<Memory::Abstract::STRING>(realTableName)}
                    },
                    {} );
 
@@ -113,10 +113,10 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
 
     if (m_port!=5432) m_connectionValues["port"] = m_port;
 
-    if (!m_auth.username.empty())
+    if (!m_credentials.userName.empty())
     {
-        m_connectionValues["user"] = m_auth.username;
-        m_connectionValues["password"] = m_auth.password;
+        m_connectionValues["user"] = m_credentials.userName;
+        m_connectionValues["password"] = m_credentials.userPassword;
     }
 
     m_connectionValues["connect_timeout"] = m_connectionTimeout;

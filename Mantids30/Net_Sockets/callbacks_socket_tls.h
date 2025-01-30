@@ -1,19 +1,21 @@
 #pragma once
 
 #include "socket_tls.h"
+#include <memory>
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
 class Callbacks_Socket_TLS
 {
 public:
-    Callbacks_Socket_TLS(void * obj);
+    Callbacks_Socket_TLS() {}
 
-    void (*onTLSKeyInvalidCA)(void * obj, Mantids30::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
-    void (*onTLSKeyInvalidCertificate)(void * obj, Mantids30::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
-    void (*onTLSKeyInvalidPrivateKey)(void * obj, Mantids30::Network::Sockets::Socket_TLS *, const std::string & ) = nullptr;
+    // Generic TLS Callbacks:
 
-    void * obj;
+    void (*onInvalidCACertificate)(std::shared_ptr<void> context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+    void (*onInvalidClientCertificate)(std::shared_ptr<void> context,std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+    void (*onInvalidPrivateKey)(std::shared_ptr<void> context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+
 };
 
 }}}

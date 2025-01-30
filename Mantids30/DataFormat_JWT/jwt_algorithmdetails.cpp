@@ -5,41 +5,41 @@ using namespace Mantids30::DataFormat;
 
 JWT::AlgorithmDetails::AlgorithmDetails(Algorithm algorithm)
 {
-    m_usingHMAC = false;
-    m_algorithm = algorithm;
-    m_usingRSA = false;
-    m_algorithmStr[0]=0;
+    isUsingHMAC = false;
+    this->algorithm = algorithm;
+    usingRSA = false;
+    algorithmStr[0]=0;
 
     switch (algorithm) {
     case Algorithm::HS256:
-        m_nid = NID_sha256;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS256");
+        nid = NID_sha256;
+        isUsingHMAC = true;
+        strcpy(algorithmStr,"HS256");
         break;
     case Algorithm::HS384:
-        m_nid = NID_sha384;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS384");
+        nid = NID_sha384;
+        isUsingHMAC = true;
+        strcpy(algorithmStr,"HS384");
         break;
     case Algorithm::HS512:
-        m_nid = NID_sha512;
-        m_usingHMAC = true;
-        strcpy(m_algorithmStr,"HS512");
+        nid = NID_sha512;
+        isUsingHMAC = true;
+        strcpy(algorithmStr,"HS512");
         break;
     case Algorithm::RS256:
-        m_nid = NID_sha256;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS256");
+        nid = NID_sha256;
+        usingRSA = true;
+        strcpy(algorithmStr,"RS256");
         break;
     case Algorithm::RS384:
-        m_nid = NID_sha384;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS384");
+        nid = NID_sha384;
+        usingRSA = true;
+        strcpy(algorithmStr,"RS384");
         break;
     case Algorithm::RS512:
-        m_nid = NID_sha512;
-        m_usingRSA = true;
-        strcpy(m_algorithmStr,"RS512");
+        nid = NID_sha512;
+        usingRSA = true;
+        strcpy(algorithmStr,"RS512");
         break;
     }
 }

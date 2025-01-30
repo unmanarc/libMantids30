@@ -16,21 +16,25 @@ public:
     Engine();
     ~Engine();
 
-    std::shared_ptr<DataFormat::JWT> m_jwtValidator, m_jwtSigner;
-    std::map<uint32_t, std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
+    /**
+     * @brief methodsHandler Methods handler per API Version.
+     */
+    std::map<uint32_t, std::shared_ptr<API::RESTful::MethodsHandler>> methodsHandler;
 
     // TODO: max variable size
 protected:
-    Web::APIClientHandler *createNewAPIClientHandler(APIEngineCore *webServer, Network::Sockets::Socket_Stream_Base *s) override;
+    std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s) override;
 
 private:
-    static void revokeJWT(API::RESTful::APIReturn &response,
-                          void *context,
-                          Auth::ClientDetails &authClientDetails,
-                          const json &inputData,
-                          json &responseData,
-                          const DataFormat::JWT::Token &authToken,
-                          const API::RESTful::RequestParameters &requestParams);
+    static void revokeJWT(
+        void *context,                                          // Context pointer
+        API::APIReturn &response,                               // The API return object
+        json &responseData,                                     // Response data (JSON format)
+        const API::RESTful::RequestParameters &requestParams,   // Parameters from the RESTful request
+        const json &inputData,                                  // Input data (JSON format)
+        const DataFormat::JWT::Token &authToken,                // Authentication token (JWT)
+        Mantids30::Sessions::ClientDetails &authClientDetails   // Client authentication details
+        );
 };
 
 } // namespace RESTful

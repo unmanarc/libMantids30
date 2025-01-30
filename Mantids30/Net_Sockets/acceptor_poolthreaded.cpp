@@ -1,4 +1,5 @@
 #include "acceptor_poolthreaded.h"
+#include <memory>
 #include <string.h>
 
 using namespace Mantids30::Network;
@@ -13,9 +14,9 @@ void PoolThreaded::init()
     onInitFail = nullptr;
     onTimedOut = nullptr;
 
-    objOnConnect = nullptr;
-    objOnInitFail = nullptr;
-    objOnTimedOut = nullptr;
+    contextOnConnect = nullptr;
+    contextOnInitFail = nullptr;
+    contextOnTimedOut = nullptr;
 
     setThreadRunner(runner,this);
     setThreadStopper(stopper,this);
@@ -32,31 +33,31 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket, _callbackConnectionRB _onConnect, void *obj, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
+PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
 {
     init();
     setAcceptorSocket(acceptorSocket);
-    setCallbackOnConnect(_onConnect,obj);
-    setCallbackOnInitFail(_onInitFailed,obj);
-    setCallbackOnTimedOut(_onTimeOut,obj);
+    setCallbackOnConnect(_onConnect,context);
+    setCallbackOnInitFail(_onInitFailed,context);
+    setCallbackOnTimedOut(_onTimeOut,context);
 }
 
-void PoolThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, void *obj)
+void PoolThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context)
 {
     this->onConnect = _onConnect;
-    this->objOnConnect = obj;
+    this->contextOnConnect = context;
 }
 
-void PoolThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, void *obj)
+void PoolThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context)
 {
     this->onInitFail = _onInitFailed;
-    this->objOnInitFail = obj;
+    this->contextOnInitFail = context;
 }
 
-void PoolThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, void *obj)
+void PoolThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context)
 {
     this->onTimedOut = _onTimeOut;
-    this->objOnTimedOut = obj;
+    this->contextOnTimedOut = context;
 }
 
 
@@ -72,15 +73,15 @@ void PoolThreaded::run()
     pool->start();
     for(;;)
     {
-        Sockets::Socket_Stream_Base * clientSocket = acceptorSocket->acceptConnection();
+        std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = acceptorSocket->acceptConnection();
         if (clientSocket)
         {
             sAcceptorTaskData * taskData = new sAcceptorTaskData;
             clientSocket->getRemotePair(taskData->remotePair);
             taskData->onConnect = onConnect;
             taskData->onInitFail = onInitFail;
-            taskData->objOnConnect = objOnConnect;
-            taskData->objOnInitFail = objOnInitFail;
+            taskData->contextOnConnect = contextOnConnect;
+            taskData->contextOnInitFail = contextOnInitFail;
             taskData->clientSocket = clientSocket;
             taskData->isSecure = acceptorSocket->isSecure();
 
@@ -89,7 +90,7 @@ void PoolThreaded::run()
             if (!pool->pushTask( &acceptorTask, taskData, timeoutMS, queuesKeyRatio, taskData->key))
             {
                 if (onTimedOut!=nullptr)
-                    onTimedOut(objOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
+                    onTimedOut(contextOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
                 delete taskData;
             }
         }
@@ -172,7 +173,7 @@ void PoolThreaded::acceptorTask(void *data)
         // Start
         if (taskData->onConnect)
         {
-            if (!taskData->onConnect(taskData->objOnConnect, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
+            if (!taskData->onConnect(taskData->contextOnConnect, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
             {
                 taskData->clientSocket = nullptr;
             }
@@ -182,7 +183,7 @@ void PoolThreaded::acceptorTask(void *data)
     {
         if (taskData->onInitFail)
         {
-            if (!taskData->onInitFail(taskData->objOnInitFail, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
+            if (!taskData->onInitFail(taskData->contextOnInitFail, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
             {
                 taskData->clientSocket = nullptr;
             }

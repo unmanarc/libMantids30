@@ -4,60 +4,85 @@
 #include <map>
 #include <list>
 #include <Mantids30/Threads/mutex_shared.h>
+#include <memory>
 
 // TODO: limits...
 namespace Mantids30 { namespace Memory { namespace Abstract {
 
-class Map
+
+class VariableMap
 {
 public:
-    Map();
-    virtual ~Map();
+    VariableMap();
+    virtual ~VariableMap();
 
     /**
-     * @brief set Set the variable (as a list of variables / submap)
-     * @param varName variable name.
-     * @param vars variables values.
+     * @brief Insert or update a submap in the variable map.
+     * @param variableName The name of the variable.
+     * @param submap A shared pointer to the submap.
      */
-    void set(const std::string & varName, Map * vars);
+    void insertOrUpdateSubmap(const std::string &variableName, std::shared_ptr<VariableMap> submap);
 
-    void setFromString(const std::string & varName, Mantids30::Memory::Abstract::Var::Type varType, const std::string & str);
     /**
-     * @brief set Set variable.
-     *               The variable will be destroyed
-     * @param varName variable name.
-     * @param var variable value.
+     * @brief Create or update a variable from a string representation based on its type.
+     * @param variableName The name of the variable.
+     * @param variableType The type of the variable as defined in Var::Type.
+     * @param valueString The string representation of the variable's value.
      */
-    void set(const std::string & varName, Mantids30::Memory::Abstract::Var * var);
-    /**
-     * @brief getAsString Get variable as string.
-     * @param varName variable name.
-     * @return string if found, or empty string if not.
-     */
-    std::string getAsString(const std::string & varName);
-    /**
-     * @brief rem remove variable.
-     * @param varName variable name
-     */
-    void rem(const std::string & varName, bool lock = true);
-    /**
-     * @brief get Get variable as abstract
-     * @param varName variable name.
-     * @return nullptr if not found,  Abstract if found.
-     */
-    Mantids30::Memory::Abstract::Var * get(const std::string & varName);
+    void setVariableFromString(const std::string &variableName, Mantids30::Memory::Abstract::Var::Type variableType, const std::string &valueString);
 
-    Map * getSubMap(const std::string & varName);
+    /**
+     * @brief Insert or update a variable in the map.
+     * @param variableName The name of the variable.
+     * @param variable A shared pointer to the variable.
+     */
+    void insertOrUpdateVariable(const std::string &variableName, std::shared_ptr<Var> variable);
 
-    std::list<std::string> getVarKeys();
-    std::list<std::string> getVarListKeys();
+    /**
+     * @brief Retrieve the string representation of a variable.
+     * @param variableName The name of the variable.
+     * @return The string representation if found, otherwise an empty string.
+     */
+    std::string getVariableAsString(const std::string &variableName);
+
+    /**
+     * @brief Remove a variable from the map.
+     * @param variableName The name of the variable.
+     * @param lock Optional parameter to lock the operation.
+     */
+    void removeVariable(const std::string &variableName, bool lock = true);
+
+    /**
+     * @brief Retrieve a variable as an abstract type.
+     * @param variableName The name of the variable.
+     * @return A shared pointer to the variable if found, otherwise nullptr.
+     */
+    std::shared_ptr<Mantids30::Memory::Abstract::Var> getVariable(const std::string &variableName);
+
+    /**
+     * @brief Retrieve a submap from the map.
+     * @param variableName The name of the variable that maps to the submap.
+     * @return A shared pointer to the submap if found, otherwise nullptr.
+     */
+    std::shared_ptr<VariableMap> getSubmap(const std::string &variableName);
+
+    /**
+     * @brief List all keys of variables stored in the map.
+     * @return A list of variable names.
+     */
+    std::list<std::string> listVariableKeys();
+
+    /**
+     * @brief List all keys that are mapped to submaps.
+     * @return A list of keys that are submaps.
+     */
+    std::list<std::string> listSubmapKeys();
 
 private:
-    std::map<std::string, Mantids30::Memory::Abstract::Var *> vars;
-    std::map<std::string, Map *> varsSubMap;
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> variables;
+    std::map<std::string, std::shared_ptr<VariableMap>> submaps;
 
     Threads::Sync::Mutex_Shared mutex;
-
 };
 
 }}}

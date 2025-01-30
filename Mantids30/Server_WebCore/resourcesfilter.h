@@ -2,8 +2,6 @@
 
 #include <string>
 #include <list>
-#include <set>
-#include <map>
 #include <Mantids30/Helpers/json.h>
 
 
@@ -11,7 +9,7 @@
 #include <boost/regex.hpp>
 
 namespace Mantids30 { namespace API { namespace Web {
-
+/*
 struct UserData {
 
 //    std::string ipAddress = "";
@@ -27,7 +25,7 @@ struct UserData {
 
     bool sessionActive = false;
     bool loggedIn = false;
-};
+};*/
 
 class ResourcesFilter
 {
@@ -59,7 +57,9 @@ public:
 
         std::list<boost::regex> regexPatterns;
         std::string redirectLocation = "";
-        std::list<std::string> requiredPermissions, rejectedPermissions, sRegexs;
+        std::list<std::string> requiredPermissions, rejectedPermissions;
+        std::list<std::string> requiredRoles, rejectedRoles;
+        std::list<std::string> sRegexs;
         bool requireSession = false;
         //bool requireLogin = false;
         bool disallowSession = false;
@@ -85,7 +85,7 @@ public:
      * @return A FilterEvaluationResult object containing the evaluation results, including whether to accept
      *         or deny the URI, and an optional redirect location.
      */
-    FilterEvaluationResult evaluateURI(const std::string & uri, UserData * userData);
+    FilterEvaluationResult evaluateURI(const std::string & uri, const std::set<std::string> & permissions,const std::set<std::string> & roles, bool isSessionActive );
 
 protected:
 

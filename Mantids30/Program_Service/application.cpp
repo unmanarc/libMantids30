@@ -196,7 +196,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
                 }
 
                 outfile  <<   "[Unit]\n"
-                              "Description=" << globalArgs.m_softwareDescription << "\n"
+                              "Description=" << globalArgs.softwareDescription << "\n"
                               "After=network.target\n"
                               "\n"
                               "[Service]\n"

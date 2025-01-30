@@ -1,16 +1,16 @@
 #pragma once
-
+/*
 #include <Mantids30/Server_WebCore/resourcesfilter.h>
 
 // FOR SESSION:
-#include <Mantids30/Auth/session.h>
+#include <Mantids30/Sessions/session.h>
 
 namespace Mantids30 { namespace API { namespace Monolith {
 
 class ResourcesFilter : public Web::ResourcesFilter
 {
 public:
-    ResourcesFilter();
+    ResourcesFilter();*/
     /**
      * @brief Evaluates a URI based on the filters and user session.
      *
@@ -18,9 +18,10 @@ public:
      * @param userSession A pointer to the user's authentication session.
      * @param authorizer A pointer to the authentication manager.
      * @return FilterEvaluationResult The result of the evaluation, including whether the URI is accepted or not and an optional redirect location.
-     */
-    FilterEvaluationResult evaluateURIWithSession(const std::string &uri, Mantids30::Auth::Session * userSession);
+     *//*
+    FilterEvaluationResult evaluateURIWithSession(const std::string &uri, Mantids30::Sessions::Session * userSession);
 };
 
 }}}
 
+*/

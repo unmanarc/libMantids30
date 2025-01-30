@@ -29,6 +29,7 @@ target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
         TARGETS ${LIB_NAME}
+		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
         ARCHIVE COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY COMPONENT lib DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER COMPONENT dev DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${LIBPREFIX}/${RLIB_NAME}
@@ -48,7 +49,6 @@ set(Mantids30_LIBRARIES
     Threads
     Helpers
     DataFormat_JWT
-    Auth
     Memory
     Net_Sockets
     Protocol_HTTP

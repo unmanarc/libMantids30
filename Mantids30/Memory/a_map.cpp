@@ -1,99 +1,99 @@
 #include "a_map.h"
 #include <Mantids30/Threads/lock_shared.h>
+#include <memory>
 
 using namespace Mantids30::Memory::Abstract;
 
-Map::Map()
-{
+VariableMap::VariableMap() {}
 
+VariableMap::~VariableMap()
+{
+    variables.clear();
+    submaps.clear();
 }
 
-Map::~Map()
-{
-    for (const auto & i : vars) delete i.second;
-    for (const auto & i : varsSubMap) delete i.second;
-    vars.clear();
-    varsSubMap.clear();
-}
-
-void Map::set(const std::string &varName, Map *vars)
+void VariableMap::insertOrUpdateSubmap(const std::string &variableName, std::shared_ptr<VariableMap> vars)
 {
     Threads::Sync::Lock_RW lock(mutex);
 
-    rem(varName,false);
-    varsSubMap[varName] = vars;
+    removeVariable(variableName, false);
+    submaps[variableName] = vars;
 }
 
-void Map::setFromString(const std::string &varName, Var::Type varType, const std::string &str)
+void VariableMap::setVariableFromString(const std::string &variableName, Var::Type varType, const std::string &str)
 {
-    set(varName, Var::makeAbstract(varType,str));
+    insertOrUpdateVariable(variableName, Var::makeAbstract(varType, str));
 }
 
-void Map::set(const std::string &varName, Var *var)
-{
-    Threads::Sync::Lock_RD lock(mutex);
-
-    rem(varName,false);
-    vars[varName] = var;
-}
-
-std::string Map::getAsString(const std::string &varName)
+void VariableMap::insertOrUpdateVariable(const std::string &variableName, std::shared_ptr<Var> var)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    if (vars.find(varName) == vars.end())
+    removeVariable(variableName, false);
+    variables[variableName] = var;
+}
+
+std::string VariableMap::getVariableAsString(const std::string &variableName)
+{
+    Threads::Sync::Lock_RD lock(mutex);
+
+    if (variables.find(variableName) == variables.end())
         return "";
-    return vars[varName]->toString();
+    return variables[variableName]->toString();
 }
 
-void Map::rem(const std::string &varName, bool lock)
+void VariableMap::removeVariable(const std::string &variableName, bool lock)
 {
-    if (lock) mutex.lock();
+    if (lock)
+        mutex.lock();
 
-    if (vars.find(varName) != vars.end())
+    if (variables.find(variableName) != variables.end())
     {
-        delete vars[varName];
-        vars.erase(varName);
+        variables.erase(variableName);
     }
-    if (varsSubMap.find(varName) != varsSubMap.end())
+    if (submaps.find(variableName) != submaps.end())
     {
-        delete varsSubMap[varName];
-        varsSubMap.erase(varName);
+        submaps.erase(variableName);
     }
 
-    if (lock) mutex.unlock();
+    if (lock)
+        mutex.unlock();
 }
 
-Var *Map::get(const std::string &varName)
+std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    if (vars.find(varName) == vars.end()) return nullptr;
-    return vars[varName];
+    if (variables.find(variableName) == variables.end())
+        return nullptr;
+    return variables[variableName];
 }
 
-Map *Map::getSubMap(const std::string &varName)
+std::shared_ptr<VariableMap> VariableMap::getSubmap(const std::string &variableName)
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    if (varsSubMap.find(varName) == varsSubMap.end()) return nullptr;
-    return varsSubMap[varName];
+    if (submaps.find(variableName) == submaps.end())
+        return nullptr;
+    return submaps[variableName];
 }
 
-std::list<std::string> Map::getVarKeys()
+std::list<std::string> VariableMap::listVariableKeys()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     std::list<std::string> r;
-    for ( const auto & i : vars ) r.push_back(i.first);
+    for (const auto &i : variables)
+        r.push_back(i.first);
     return r;
 }
 
-std::list<std::string> Map::getVarListKeys()
+std::list<std::string> VariableMap::listSubmapKeys()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
     std::list<std::string> r;
-    for ( const auto & i : varsSubMap ) r.push_back(i.first);
+    for (const auto &i : submaps)
+        r.push_back(i.first);
     return r;
 }

@@ -36,30 +36,30 @@ public:
     public:
         struct PSKClientValue
         {
-            PSKClientValue() { m_isUsingPSK = false; }
+            PSKClientValue() { isUsingPSK = false; }
 
             ~PSKClientValue()
             {
-                std::unique_lock<std::mutex> lock(m_mutex);
+                std::unique_lock<std::mutex> lock(mtMutex);
 
                 // Erase the PSK data from memory.
-                m_psk.resize(m_psk.capacity(), 0);
-                memset(&m_psk[0], 0x7F, m_psk.size());
+                psk.resize(psk.capacity(), 0);
+                memset(&psk[0], 0x7F, psk.size());
             }
 
             void setValues(const std::string &identity, const std::string &psk)
             {
-                std::unique_lock<std::mutex> lock(m_mutex);
+                std::unique_lock<std::mutex> lock(mtMutex);
 
-                m_isUsingPSK = true;
-                this->m_psk = psk;
-                this->m_identity = identity;
+                isUsingPSK = true;
+                this->psk = psk;
+                this->identity = identity;
             }
 
-            bool m_isUsingPSK;
-            std::string m_psk;
-            std::string m_identity;
-            std::mutex m_mutex;
+            bool isUsingPSK;
+            std::string psk;
+            std::string identity;
+            std::mutex mtMutex;
         };
 
         struct PSKServerWallet
@@ -68,7 +68,7 @@ public:
 
             ~PSKServerWallet()
             {
-                for (auto &i : m_pskByClientIdMap)
+                for (auto &i : pskByClientIdMap)
                 {
                     // Erase the PSK data from memory.
                     i.second.resize(i.second.capacity(), 0);
@@ -78,34 +78,34 @@ public:
 
             void operator=(PSKServerWallet &x)
             {
-                std::unique_lock<std::mutex> lock1(m_mutex);
-                std::unique_lock<std::mutex> lock2(x.m_mutex);
+                std::unique_lock<std::mutex> lock1(mtMutex);
+                std::unique_lock<std::mutex> lock2(x.mtMutex);
 
-                m_isUsingPSK = x.m_isUsingPSK;
-                m_pskByClientIdMap = x.m_pskByClientIdMap;
-                m_pskCallback = x.m_pskCallback;
+                isUsingPSK = x.isUsingPSK;
+                pskByClientIdMap = x.pskByClientIdMap;
+                pskCallback = x.pskCallback;
             }
 
             bool getPSKByClientID(const std::string &id, std::string *psk)
             {
                 bool r = false;
-                std::unique_lock<std::mutex> lock(m_mutex);
-                if (m_pskByClientIdMap.find(id) != m_pskByClientIdMap.end())
+                std::unique_lock<std::mutex> lock(mtMutex);
+                if (pskByClientIdMap.find(id) != pskByClientIdMap.end())
                 {
                     r = true;
-                    *psk = m_pskByClientIdMap[id];
+                    *psk = pskByClientIdMap[id];
                 }
                 return r;
             }
             bool setPSKByClientID(const std::string &id, const std::string &psk)
             {
                 bool r = false;
-                std::unique_lock<std::mutex> lock(m_mutex);
-                m_isUsingPSK = true;
-                if (m_pskByClientIdMap.find(id) == m_pskByClientIdMap.end())
+                std::unique_lock<std::mutex> lock(mtMutex);
+                isUsingPSK = true;
+                if (pskByClientIdMap.find(id) == pskByClientIdMap.end())
                 {
                     r = true;
-                    m_pskByClientIdMap[id] = psk;
+                    pskByClientIdMap[id] = psk;
                 }
                 return r;
             }
@@ -116,18 +116,17 @@ public:
              */
             void setPSKCallback(cbPSK newCbpsk, void *data)
             {
-                this->m_data = data;
-                m_pskCallback = newCbpsk;
-                m_isUsingPSK = true;
+                this->data = data;
+                pskCallback = newCbpsk;
+                isUsingPSK = true;
             }
 
-            void *m_data = nullptr;
-            cbPSK m_pskCallback = nullptr;
-
-            bool m_isUsingPSK = false;
-            std::string m_connectedClientID;
-            std::map<std::string, std::string> m_pskByClientIdMap;
-            std::mutex m_mutex;
+            void *data = nullptr;
+            cbPSK pskCallback = nullptr;
+            bool isUsingPSK = false;
+            std::string connectedClientID;
+            std::map<std::string, std::string> pskByClientIdMap;
+            std::mutex mtMutex;
         };
 
         class PSKStaticHdlr
@@ -303,11 +302,19 @@ public:
          * @return
          */
         PSKClientValue *getPSKClientValue();
+
+
+        const PSKClientValue *getPSKClientValue() const;
+
         /**
          * @brief getPSKServerWallet
          * @return
          */
         PSKServerWallet *getPSKServerWallet();
+
+
+        const PSKServerWallet *getPSKServerWallet() const;
+
 
         /**
          * @brief getSecurityLevel Get OpenSSL Security Level
@@ -423,7 +430,7 @@ public:
         int m_securityLevel = 2;
 
         PSKClientValue m_pskClientValues;
-        PSKServerWallet m_pskServerValues;
+        PSKServerWallet m_pskServerWallet;
         PSKStaticHdlr m_pskStaticHandler;
 
         std::string m_TLSCertificateAuthorityPath, m_TLSCertificateAuthorityMemory;
@@ -482,7 +489,7 @@ public:
      * Accept a new TCP connection on a listening socket. The connection should be initialized with "postAcceptSubInitialization"
      * @return returns a socket with the new established tcp connection.
      */
-    Socket_Stream_Base *acceptConnection() override;
+    std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
     /**
      * Read a data block from the TLS socket
      * Receive the data block in only one command (without chunks).
@@ -553,11 +560,16 @@ public:
      * @return List of SSL Errors.
      */
     std::list<std::string> getTLSErrorsAndClear();
+
+
+    std::string getPeerName() const override;
+
+
     /**
      * @brief getTLSPeerCN Get TLS Peer Common Name for PKI or identity for PSK
      * @return string with the CN or identity
      */
-    std::string getTLSPeerCN();
+    std::string getTLSPeerCN() const;
     /**
      * @brief getCertValidation Get if we are accepting Invalid Server Certificates
      * @return Validation Option (validate, not validate or validate but ignore)
@@ -571,7 +583,7 @@ public:
 
     bool isServer() const;
 
-    bool isUsingPSK();
+    bool isUsingPSK() const;
 
     ////////////////////////////////////////////////////////////////////
     // Socket Overrides:

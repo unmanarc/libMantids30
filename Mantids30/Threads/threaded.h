@@ -44,15 +44,15 @@ public:
     /**
      * Sets the function to be executed in the thread.
      * @param threadRunner The function to be executed.
-     * @param runnerArg The object to be passed to the function.
+     * @param context The object to be passed to the function.
      */
-    void setThreadRunner(void (*threadRunner)(void *runnerArg), void *runnerArg);
+    void setThreadRunner(void (*threadRunner)(void *context), void *context);
     /**
      * Sets the function to be called when stopping the thread (cleanups?).
      * @param threadStopper The function to be called.
-     * @param stopperArg The object to be passed to the function.
+     * @param context The object to be passed to the function.
      */
-    void setThreadStopper(void (*threadStopper)(void *stopperArg), void *stopperArg);
+    void setThreadStopper(void (*threadStopper)(void *context), void *context);
 
 private:
     /**
@@ -67,9 +67,9 @@ private:
 
     // Member variables:
     void (*threadRunner)(void *runnerArg);  // The function executed in the thread.
-    void * runnerArg;  // The object passed to the threadRunner function.
+    void * contextRunner;  // The object passed to the threadRunner function.
     void (*threadStopper)(void *stopperArg);  // The function called when stopping the thread.
-    void * stopperArg;  // The object passed to the threadStopper function.
+    void * contextStopper;  // The object passed to the threadStopper function.
     std::atomic<bool> running;  // Whether the thread is currently running.
     std::thread threadObj;  // The thread object.
 };

@@ -12,25 +12,25 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30;
 
-HTTPv1_Client::HTTPv1_Client(Memory::Streams::StreamableObject *sobject) : HTTPv1_Base(true,sobject)
+HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject> sobject) : HTTPv1_Base(true,sobject)
 {
-    m_currentParser = (Memory::Streams::SubParser *)(&m_serverResponse.status);
-    m_clientRequest.requestLine.getHTTPVersion()->setMajor(1);
-    m_clientRequest.requestLine.getHTTPVersion()->setMinor(0);
+    m_currentParser = (Memory::Streams::SubParser *)(&serverResponse.status);
+    clientRequest.requestLine.getHTTPVersion()->setMajor(1);
+    clientRequest.requestLine.getHTTPVersion()->setMinor(0);
 
-    m_clientRequest.requestLine.setRequestMethod("GET");
-    m_clientRequest.userAgent = std::string("libMantids/") + std::to_string(HTTP_PRODUCT_VERSION_MAJOR) + std::string(".") + std::to_string(HTTP_PRODUCT_VERSION_MINOR);
+    clientRequest.requestLine.setRequestMethod("GET");
+    clientRequest.userAgent = std::string("libMantids/") + std::to_string(HTTP_PRODUCT_VERSION_MAJOR) + std::string(".") + std::to_string(HTTP_PRODUCT_VERSION_MINOR);
 }
 
 bool HTTPv1_Client::initProtocol()
 {
     Memory::Streams::StreamableObject::Status wrStat;
 
-    if (!m_clientRequest.requestLine.stream(wrStat))
+    if (!clientRequest.requestLine.stream(wrStat))
         return false;
     if (!streamClientHeaders(wrStat))
         return false;
-    if (!m_clientRequest.content.stream(wrStat))
+    if (!clientRequest.content.stream(wrStat))
         return false;
 
     // Succesfully initialized...
@@ -39,29 +39,29 @@ bool HTTPv1_Client::initProtocol()
 
 bool HTTPv1_Client::changeToNextParser()
 {
-    if (m_currentParser == &m_serverResponse.status)
-        m_currentParser = &m_serverResponse.headers;
-    else if (m_currentParser == &m_serverResponse.headers)
+    if (m_currentParser == &serverResponse.status)
+        m_currentParser = &serverResponse.headers;
+    else if (m_currentParser == &serverResponse.headers)
     {
-        // Process incomming server headers here:
+        // Process incoming server headers here:
         /////////////////////////////////////////////////////////////////////////
 
         // Parse Cache-Control
-        m_serverResponse.cacheControl.fromString(m_serverResponse.headers.getOptionRawStringByName("Cache-Control"));
+        serverResponse.cacheControl.fromString(serverResponse.headers.getOptionRawStringByName("Cache-Control"));
 
         // Security:
         // Parse Xframeopts...
-        m_serverResponse.security.XFrameOpts.fromString(m_serverResponse.headers.getOptionRawStringByName("X-Frame-Options"));
+        serverResponse.security.XFrameOpts.fromString(serverResponse.headers.getOptionRawStringByName("X-Frame-Options"));
         // Parse XSS Protection.
-        m_serverResponse.security.XSSProtection.fromString(m_serverResponse.headers.getOptionRawStringByName("X-XSS-Protection"));
+        serverResponse.security.XSSProtection.fromString(serverResponse.headers.getOptionRawStringByName("X-XSS-Protection"));
         // Parse HSTS Configuration.
-        m_serverResponse.security.HSTS.fromString(m_serverResponse.headers.getOptionRawStringByName("Strict-Transport-Security"));
+        serverResponse.security.HSTS.fromString(serverResponse.headers.getOptionRawStringByName("Strict-Transport-Security"));
         // Content No Sniff
-        m_serverResponse.security.disableNoSniffContentType = iequals(m_serverResponse.headers.getOptionRawStringByName("X-Content-Type-Options"),"nosniff");
+        serverResponse.security.disableNoSniffContentType = iequals(serverResponse.headers.getOptionRawStringByName("X-Content-Type-Options"),"nosniff");
 
         // TODO: validate/check if using HSTS with SSL
         // TODO: get the preload list.
-        auto fullWWWAuthenticate = m_serverResponse.headers.getOptionRawStringByName("WWW-Authenticate");
+        auto fullWWWAuthenticate = serverResponse.headers.getOptionRawStringByName("WWW-Authenticate");
         if (!fullWWWAuthenticate.empty())
         {
             // TODO: charset...
@@ -75,12 +75,12 @@ bool HTTPv1_Client::changeToNextParser()
                  start = whatStaticText[0].second) // RESET AND RECHECK EVERYTHING
             {
                 // TODO: url enconded
-                m_serverResponse.sWWWAuthenticateRealm = std::string(whatStaticText[1].first, whatStaticText[1].second);
+                serverResponse.sWWWAuthenticateRealm = std::string(whatStaticText[1].first, whatStaticText[1].second);
             }
         }
 
         // Parse content-type...
-        m_serverContentType = m_serverResponse.headers.getOptionRawStringByName("Content-Type");
+        m_serverContentType = serverResponse.headers.getOptionRawStringByName("Content-Type");
 
         // Parse server cookies...
         parseHeaders2ServerCookies();
@@ -94,28 +94,28 @@ bool HTTPv1_Client::changeToNextParser()
 
 void HTTPv1_Client::parseHeaders2ServerCookies()
 {
-    std::list<MIME::MIME_HeaderOption *> setCookies = m_serverResponse.headers.getOptionsByName("");
+    std::list<MIME::MIME_HeaderOption *> setCookies = serverResponse.headers.getOptionsByName("");
     for (MIME::MIME_HeaderOption * serverCookie : setCookies)
-        m_serverResponse.cookies.parseCookie(serverCookie->getOrigValue());
+        serverResponse.cookies.parseCookie(serverCookie->getOrigValue());
 }
 
 Memory::Streams::SubParser * HTTPv1_Client::parseHeaders2TransmitionMode()
 {
-    m_serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONNECTION_CLOSE);
+    serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONNECTION_CLOSE);
     // Set Content Data Reception Mode.
-    if (m_serverResponse.headers.exist("Content-Length"))
+    if (serverResponse.headers.exist("Content-Length"))
     {
-        uint64_t len = m_serverResponse.headers.getOptionAsUINT64("Content-Length");
-        m_serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+        uint64_t len = serverResponse.headers.getOptionAsUINT64("Content-Length");
+        serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
-        if (!len || !m_serverResponse.content.setContentLenSize(len))
+        if (!len || !serverResponse.content.setContentLenSize(len))
             return nullptr;
     }
-    else if (icontains(m_serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"),"CHUNKED"))
-        m_serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CHUNKS);
+    else if (icontains(serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"),"CHUNKED"))
+        serverResponse.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CHUNKS);
 
-    return &m_serverResponse.content;
+    return &serverResponse.content;
 }
 
 bool HTTPv1_Client::streamClientHeaders(Memory::Streams::StreamableObject::Status &wrStat)
@@ -124,31 +124,31 @@ bool HTTPv1_Client::streamClientHeaders(Memory::Streams::StreamableObject::Statu
     uint64_t strsize;
 
     // Can't use chunked mode on client.
-    if ((strsize=m_clientRequest.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
+    if ((strsize=clientRequest.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
         return false;
     else
     {
-        m_clientRequest.headers.remove("Connetion");
-        m_clientRequest.headers.replace("Content-Length", std::to_string(strsize));
+        clientRequest.headers.remove("Connetion");
+        clientRequest.headers.replace("Content-Length", std::to_string(strsize));
     }
 
     // Put client cookies:
-    m_clientCookies.putOnHeaders(&m_clientRequest.headers);
+    m_clientCookies.putOnHeaders(&clientRequest.headers);
 
     // Put basic authentication on headers:
-    if (m_clientRequest.basicAuth.isEnabled)
+    if (clientRequest.basicAuth.isEnabled)
     {
-        m_clientRequest.headers.replace("Authentication", "Basic " + Helpers::Encoders::encodeToBase64( m_clientRequest.basicAuth.username + ":" + m_clientRequest.basicAuth.password));
+        clientRequest.headers.replace("Authentication", "Basic " + Helpers::Encoders::encodeToBase64( clientRequest.basicAuth.username + ":" + clientRequest.basicAuth.password));
     }
 
-    m_clientRequest.headers.replace("User-Agent", m_clientRequest.userAgent);
+    clientRequest.headers.replace("User-Agent", clientRequest.userAgent);
 
     // Put Virtual Host And Port (if exist)
-    if (!m_clientRequest.virtualHost.empty())
-        m_clientRequest.headers.replace("Host", m_clientRequest.virtualHost + (m_clientRequest.virtualPort==80?"":
-                                                            ":"+std::to_string(m_clientRequest.virtualPort)) );
+    if (!clientRequest.virtualHost.empty())
+        clientRequest.headers.replace("Host", clientRequest.virtualHost + (clientRequest.virtualPort==80?"":
+                                                            ":"+std::to_string(clientRequest.virtualPort)) );
     // Stream it..
-    return m_clientRequest.headers.stream(wrStat);
+    return clientRequest.headers.stream(wrStat);
 }
 
 
@@ -159,9 +159,9 @@ std::string HTTPv1_Client::getServerContentType() const
 
 void HTTPv1_Client::setClientRequest(const std::string &hostName, const std::string &uriPath)
 {
-    if (!hostName.empty()) m_clientRequest.requestLine.getHTTPVersion()->upgradeMinor(1);
-    m_clientRequest.requestLine.setRequestURI(uriPath);
-    m_clientRequest.virtualHost = hostName;
+    if (!hostName.empty()) clientRequest.requestLine.getHTTPVersion()->upgradeMinor(1);
+    clientRequest.requestLine.setRequestURI(uriPath);
+    clientRequest.virtualHost = hostName;
 }
 
 HTTPv1_Client::PostMIMERequest HTTPv1_Client::prepareRequestAsPostMIME(const std::string &hostName, const std::string &uriPath)
@@ -170,11 +170,11 @@ HTTPv1_Client::PostMIMERequest HTTPv1_Client::prepareRequestAsPostMIME(const std
 
     setClientRequest(hostName,uriPath);
 
-    m_clientRequest.requestLine.setRequestMethod("POST");
-    m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
+    clientRequest.requestLine.setRequestMethod("POST");
+    clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
 
-    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars());
-    req.postVars = m_clientRequest.content.getMultiPartVars();
+    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(clientRequest.requestLine.urlVars());
+    req.postVars = clientRequest.content.getMultiPartVars();
 
     return req;
 }
@@ -184,28 +184,28 @@ HTTPv1_Client::PostURLRequest HTTPv1_Client::prepareRequestAsPostURL(const std::
     HTTPv1_Client::PostURLRequest req;
 
     setClientRequest(hostName,uriPath);
-    m_clientRequest.requestLine.setRequestMethod("POST");
-    m_clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
-    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars());
-    req.postVars = m_clientRequest.content.getUrlPostVars();
+    clientRequest.requestLine.setRequestMethod("POST");
+    clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
+    req.urlVars = std::dynamic_pointer_cast<Common::URLVars>(clientRequest.requestLine.urlVars());
+    req.postVars = clientRequest.content.getUrlPostVars();
 
     return req;
 }
 
 std::string HTTPv1_Client::getResponseHeader(const std::string &headerName)
 {
-    return m_serverResponse.headers.getOptionValueStringByName(headerName);
+    return serverResponse.headers.getOptionValueStringByName(headerName);
 }
 
 void HTTPv1_Client::setReferer(const std::string &refererURL)
 {
-    m_clientRequest.requestLine.getHTTPVersion()->upgradeMinor(1);
-    m_clientRequest.headers.replace("Referer", refererURL);
+    clientRequest.requestLine.getHTTPVersion()->upgradeMinor(1);
+    clientRequest.headers.replace("Referer", refererURL);
 }
 
 void HTTPv1_Client::addURLVar(const std::string &varName, const std::string &varValue)
 {
-    std::dynamic_pointer_cast<Common::URLVars>(m_clientRequest.requestLine.urlVars())->addVar(varName, new Memory::Containers::B_Chunks(varValue));
+    std::dynamic_pointer_cast<Common::URLVars>(clientRequest.requestLine.urlVars())->addVar(varName, std::make_shared<Memory::Containers::B_Chunks>(varValue));
 }
 
 void HTTPv1_Client::addCookie(const std::string &cookieName, const std::string &cookieVal)

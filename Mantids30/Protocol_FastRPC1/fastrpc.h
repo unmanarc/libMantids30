@@ -18,8 +18,8 @@ class FastRPC1
 public:
     struct CallBackOnConnected
     {
-        void (*fastRPCCB_OnConnected)(const std::string &, void * obj);
-        void * obj;
+        void (*fastRPCCB_OnConnected)(const std::string &, void * context);
+        void * context;
     };
 
     struct Method
@@ -27,16 +27,16 @@ public:
         /**
          * @brief Function pointer.
          */
-        json (*method)(void * obj, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
+        json (*method)(void * context, const std::string &key, const json & parameters, void * cntObj, const std::string & cntData);
         /**
          * @brief obj object to pass
          */
-        void * obj;
+        void * context = nullptr;
     };
 
     struct ThreadParameters
     {
-        Network::Sockets::Socket_Stream_Base *streamBack;
+        std::shared_ptr<Sockets::Socket_Stream_Base> streamBack;
         uint32_t maxMessageSize;
         void * caller;
         Threads::Sync::Mutex_Shared * done;
@@ -47,7 +47,7 @@ public:
 
         // Accesible objects:
         std::string key;
-        void * obj;
+        void * context;
         std::string data;
     };
 
@@ -61,12 +61,12 @@ public:
             terminated = false;
         }
         // Socket
-        Mantids30::Network::Sockets::Socket_Stream_Base * stream;
+        std::shared_ptr<Sockets::Socket_Stream_Base> stream;
         Threads::Sync::Mutex * mtSocket;
         std::string key;
 
         // Accesible objects:
-        void * obj;
+        void * context;
         std::string data;
 
         // Request ID counter.
@@ -135,15 +135,15 @@ public:
      * @param key Connection Name, used for running remote RPC methods.
      * @param keyDistFactor threadpool distribution usage by the key (0.5 = half, 1.0 = full, 0.NN = NN%)
      * @param _cb_OnConnected On connect Method to be executed in background (new thread) when connection is accepted/processed.
-     * @param obj object memory to be passed everywhere in the connection
+     * @param context object memory to be passed everywhere in the connection
      * @param data string to be passsed everywhere in the connection
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(Mantids30::Network::Sockets::Socket_Stream_Base * stream,
+    int processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream,
                           const std::string & key,
                           const FastRPC1::CallBackOnConnected & _cb_OnConnected = {nullptr,nullptr},
                           const float & keyDistFactor=1.0,
-                          void * obj = nullptr,
+                          void * context = nullptr,
                           const std::string & data = ""
                           );
 
@@ -152,13 +152,13 @@ public:
      * @brief processConnection2 Same as processConnection with _cb_OnConnected and keyDistFactor as defaults
      * @param stream
      * @param key
-     * @param obj
+     * @param context
      * @param data
      * @return
      */
-    int processConnection2(Mantids30::Network::Sockets::Socket_Stream_Base * stream,
+    int processConnection2(std::shared_ptr<Sockets::Socket_Stream_Base> stream,
                                   const std::string & key,
-                                  void * obj = nullptr,
+                                  void * context = nullptr,
                                   const std::string & data = ""
                                   )
     {
@@ -166,7 +166,7 @@ public:
                                   key,
                                   {nullptr,nullptr},
                                   1.0,
-                                  obj,
+                                  context,
                                   data
                                   );
     }
@@ -217,7 +217,7 @@ public:
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const std::string & data, void *obj, const json &payload, bool * found);
+    json runLocalRPCMethod(const std::string & methodName, const std::string &key, const std::string & data, void *context, const json &payload, bool * found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
 
@@ -264,8 +264,7 @@ private:
     static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t execution);
 
     int processAnswer(FastRPC1::Connection *connection);
-    int processQuery(Mantids30::Network::Sockets::Socket_Stream_Base * stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket,
-                     void * obj,const std::string & data);
+    int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, void *context, const std::string &data);
 
     Mantids30::Threads::Safe::Map<std::string> connectionsByKeyId;
 
@@ -277,7 +276,7 @@ private:
     Mantids30::Threads::Pool::ThreadPool * threadPool;
 
     std::thread pinger;
-    void * overwriteObject;
+    void * overwriteContext;
 
     std::atomic<bool> finished;
     uint32_t pingIntvl, rwTimeout;

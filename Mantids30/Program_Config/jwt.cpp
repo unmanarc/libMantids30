@@ -35,9 +35,9 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Lo
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.m_algorithm);
+    auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
-    if (algorithmDetails.m_usingHMAC)
+    if (algorithmDetails.isUsingHMAC)
     {
         auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecret", "jwt_secret.key");
 
@@ -89,7 +89,8 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Lo
 
         // Set HMAC secret key on jwtSigner object
         jwtSigner->setSharedSecret(hmacSecret);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC Signing Key Loaded.");
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC signing key successfully loaded with algorithm: '%s'.", algorithmName.c_str());
+
 
         return jwtSigner;
     }
@@ -188,9 +189,9 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program:
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.m_algorithm);
+    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
-    if (algorithmDetails.m_usingHMAC)
+    if (algorithmDetails.isUsingHMAC)
     {
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
@@ -242,7 +243,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program:
 
         // Set HMAC secret key on jwtSigner object
         jwtValidator->setSharedSecret(hmacSecret);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC Validation Key Loaded.");
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
 
         return jwtValidator;
     }

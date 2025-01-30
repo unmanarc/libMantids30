@@ -10,7 +10,7 @@ class StreamableJSON : public Memory::Streams::StreamableObject
 public:
     StreamableJSON();
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::StreamableObject::Status & wrStatUpd) override;
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrStatUpd) override;
     Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Memory::Streams::StreamableObject::Status & wrStatUpd)  override;
     void writeEOF(bool) override;
 

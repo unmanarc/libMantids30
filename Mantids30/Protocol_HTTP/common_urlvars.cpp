@@ -2,6 +2,7 @@
 
 #include "streamencoder_url.h"
 #include <boost/algorithm/string.hpp>
+#include <memory>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -9,7 +10,7 @@ using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30::Network::Protocols::HTTP::Common;
 using namespace Mantids30;
 
-URLVars::URLVars(Memory::Streams::StreamableObject *value) : Memory::Streams::Parser(value,false)
+URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value,false)
 {
     initSubParser(&_urlVarParser);
 
@@ -26,7 +27,7 @@ URLVars::URLVars(Memory::Streams::StreamableObject *value) : Memory::Streams::Pa
 
 URLVars::~URLVars()
 {
-    for (auto & i : vars) delete i.second;
+    //for (auto & i : vars) delete i.second;
 }
 
 bool URLVars::isEmpty()
@@ -34,7 +35,9 @@ bool URLVars::isEmpty()
     return vars.empty();
 }
 
-bool URLVars::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::StreamableObject::Status &wrsStat)
+//(Memory::Containers::B_Chunks *)
+
+bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrsStat)
 {
     Memory::Streams::StreamableObject::Status cur;
     bool firstVar = true;
@@ -50,22 +53,22 @@ bool URLVars::streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::
         Memory::Containers::B_Chunks varName;
         varName.append(i.first.c_str(), i.first.size());
 
-        Memory::Streams::Encoders::URL varNameEncoder(out);
+        std::shared_ptr<Memory::Streams::Encoders::URL> varNameEncoder = std::make_shared<Memory::Streams::Encoders::URL>(out);
         //bytesWritten+=varNameEncoder.getFinalBytesWritten();
-        if (!(cur+=varName.streamTo(&varNameEncoder, wrsStat)).succeed)
+        if (!(cur+=varName.streamTo(varNameEncoder, wrsStat)).succeed)
         {
             out->writeEOF(false);
             return false;
         }
 
-        if (((Memory::Containers::B_Chunks *)i.second)->size())
+        if ((i.second)->size())
         {
             if (!(cur+=out->writeString("=",wrsStat)).succeed)
                 return false;
 
-            Memory::Streams::Encoders::URL varNameEncoder2(out);
+            std::shared_ptr<Memory::Streams::Encoders::URL> varNameEncoder2 = std::make_shared<Memory::Streams::Encoders::URL>(out);
             //writtenBytes+=varNameEncoder2.getFinalBytesWritten();
-            if (!((Memory::Containers::B_Chunks *)i.second)->streamTo(&varNameEncoder2,wrsStat))
+            if (!(i.second)->streamTo(varNameEncoder2,wrsStat))
             {
                 out->writeEOF(false);
                 return false;
@@ -84,18 +87,23 @@ uint32_t URLVars::varCount(const std::string &varName)
     return i;
 }
 
-Memory::Streams::StreamableObject *URLVars::getValue(const std::string &varName)
+std::shared_ptr<Memory::Streams::StreamableObject> URLVars::getValue(const std::string &varName)
 {
     auto range = vars.equal_range(boost::to_upper_copy(varName));
-    for (auto iterator = range.first; iterator != range.second;) return iterator->second;
+
+    for (auto iterator = range.first; iterator != range.second;)
+        return iterator->second;
+
     return nullptr;
 }
 
-std::list<Memory::Streams::StreamableObject *> URLVars::getValues(const std::string &varName)
+std::list<std::shared_ptr<Memory::Streams::StreamableObject> > URLVars::getValues(const std::string &varName)
 {
-    std::list<Memory::Streams::StreamableObject *> r;
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > r;
     auto range = vars.equal_range(boost::to_upper_copy(varName));
-    for (auto iterator = range.first; iterator != range.second;) r.push_back(iterator->second);
+
+    for (auto iterator = range.first; iterator != range.second;)
+        r.push_back(iterator->second);
     return r;
 }
 
@@ -149,13 +157,13 @@ bool URLVars::changeToNextParser()
     return true;
 }
 
-void URLVars::addVar(const std::string &varName, Memory::Containers::B_Chunks *data)
+void URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
     //vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(currentVarName, _urlVarParser.flushRetrievedContentAsBC()));
     if (!varName.empty())
-        vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(boost::to_upper_copy(varName), data));
-    else
-        delete data;
+        vars.insert(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(boost::to_upper_copy(varName), data));
+/*    else
+        delete data;*/
 }
 
 

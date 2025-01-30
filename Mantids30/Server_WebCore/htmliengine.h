@@ -15,7 +15,6 @@ public:
 
 private:
     static void replaceTagByJVar( std::string & content, const std::string & tag, const json & value, bool replaceFirst = false, const std::string & varName = "" );
-    static void replaceHexCodes( std::string &content );
 };
 
 }}}}

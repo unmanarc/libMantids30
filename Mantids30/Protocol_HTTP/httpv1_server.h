@@ -52,7 +52,7 @@ public:
     };
 */
 
-    HTTPv1_Server(Memory::Streams::StreamableObject * sobject);
+    HTTPv1_Server(std::shared_ptr<Memory::Streams::StreamableObject> sobject);
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,12 +112,8 @@ public:
      * @brief streamResponse Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
      */
-    Memory::Streams::StreamableObject::Status streamResponse(Memory::Streams::StreamableObject * source);
-    /**
-     * @brief setResponseRedirect Redirect site to another URL
-     * @param location URL string
-     */
-    Mantids30::Network::Protocols::HTTP::Status::eRetCode setResponseRedirect(const std::string & location, bool temporary = true);
+    Memory::Streams::StreamableObject::Status streamResponse(std::shared_ptr<Memory::Streams::StreamableObject>  source);
+
     /**
      * @brief getCurrentFileExtension Get Current File Extension
      * @return File Extension
@@ -187,7 +183,7 @@ private:
 
     bool answer(Memory::Streams::StreamableObject::Status &wrStat);
 
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> staticContentElements;
 
     bool m_badAnswer;
     Memory::Streams::StreamableObject::Status m_answerBytes;

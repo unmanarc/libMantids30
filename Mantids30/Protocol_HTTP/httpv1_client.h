@@ -1,6 +1,7 @@
 #pragma once
 
 #include "httpv1_base.h"
+#include "req_cookies.h"
 
 // TODO: https://en.wikipedia.org/wiki/Media_type
 // TODO: cuando el request para doh5 este listo, pre-procesar primero el request y luego recibir los datos.
@@ -13,7 +14,7 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 class HTTPv1_Client : public HTTPv1_Base
 {
 public:
-    HTTPv1_Client(Memory::Streams::StreamableObject * sobject);
+    HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject>  sobject);
     /**
      * @brief setClientRequest Set client request
      * @param hostName host name

@@ -1,4 +1,5 @@
 #include "streamableprocess.h"
+#include <memory>
 #ifndef _WIN32
 #include <string.h>
 
@@ -12,7 +13,7 @@ Mantids30::Memory::Streams::StreamableProcess::~StreamableProcess()
     delete this->spawner;
 }
 
-bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject *out, Status &wrStatUpd)
+bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<StreamableObject> out, Status &wrStatUpd)
 {
     Status cur;
     for (;;)

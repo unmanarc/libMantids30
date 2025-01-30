@@ -3,6 +3,7 @@
 #include <Mantids30/Memory/parser.h>
 #include <Mantids30/Memory/vars.h>
 #include <map>
+#include <memory>
 
 #include "common_urlvar_subparser.h"
 
@@ -18,12 +19,12 @@ public:
         URLV_STAT_WAITING_CONTENT
     };
 
-    URLVars(Memory::Streams::StreamableObject *value = nullptr);
+    URLVars(std::shared_ptr<StreamableObject> value = nullptr);
     ~URLVars() override;
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::StreamableObject::Status & wrsStat) override;
+    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrsStat) override;
 
     /////////////////////////////////////////////////////
     // Variables Container:
@@ -38,13 +39,13 @@ public:
      * @param varName Variable Name
      * @return binary container with the variable
      */
-    Memory::Streams::StreamableObject * getValue(const std::string & varName) override;
+    std::shared_ptr<Memory::Streams::StreamableObject>  getValue(const std::string & varName) override;
     /**
      * @brief getValues Get the values for an specific variable name
      * @param varName variable name
      * @return list of binary containers containing the data of each value of the variable
      */
-    std::list<Memory::Streams::StreamableObject *> getValues(const std::string & varName) override;
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > getValues(const std::string & varName) override;
     /**
      * @brief getKeysList Get set of Variable Names
      * @return set of variables names
@@ -60,7 +61,7 @@ public:
      * @param varName Var Name
      * @param data Variable Data (will be destroyed during URLVars destruction)
      */
-    void addVar(const std::string & varName, Memory::Containers::B_Chunks * data);
+    void addVar(const std::string & varName, std::shared_ptr<Memory::Containers::B_Chunks> data);
 
 protected:
     void iSetMaxVarContentSize() override;
@@ -74,7 +75,7 @@ private:
     eHTTP_URLVarStat currentStat;
 
     std::string currentVarName;
-    std::multimap<std::string, Memory::Containers::B_Chunks *> vars;
+    std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> vars;
 
     URLVar_SubParser _urlVarParser;
 };

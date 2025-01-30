@@ -1,5 +1,4 @@
 #include "hdr_sec_xssprotection.h"
-#include <stdexcept>
 #include <vector>
 
 #include <boost/algorithm/string/split.hpp>
@@ -19,17 +18,17 @@ XSSProtection::XSSProtection()
 
 string XSSProtection::toString()
 {
-    if (!m_parameterActivated)
+    if (!isActivated)
     {
         return "0";
     }
     else
     {
         string r = "1";
-        if (m_modeBlocking)
+        if (enableBlockingMode)
             r+= "; mode=block";
-        if (!m_reportURL.empty())
-            r+= "; report=" + m_reportURL;
+        if (!reportURL.empty())
+            r+= "; report=" + reportURL;
         return r;
     }
 }
@@ -43,24 +42,24 @@ bool XSSProtection::fromString(const string &sValue)
 
     if (parts.empty())
     {
-        m_parameterActivated = false;
+        isActivated = false;
     }
     else if (parts.size() == 1)
     {
-        m_parameterActivated = parts[0]=="1";
+        isActivated = parts[0]=="1";
     }
     else if (parts.size() >= 2)
     {
-        m_parameterActivated = parts[0]=="1";
-        if (m_parameterActivated)
+        isActivated = parts[0]=="1";
+        if (isActivated)
         {
-            m_modeBlocking = false;
+            enableBlockingMode = false;
             for ( size_t i=1; i<parts.size();i++ )
             {
                 if (iequals(parts[i],"mode=block"))
-                    m_modeBlocking = true;
+                    enableBlockingMode = true;
                 else if (istarts_with(parts[i],"report="))
-                    m_reportURL = parts[i].substr(7);
+                    reportURL = parts[i].substr(7);
             }
         }
     }
@@ -69,7 +68,7 @@ bool XSSProtection::fromString(const string &sValue)
 
 void XSSProtection::setDefaults()
 {
-    m_parameterActivated = true;
-    m_modeBlocking = true;
-    m_reportURL = "";
+    isActivated = true;
+    enableBlockingMode = true;
+    reportURL = "";
 }

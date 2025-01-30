@@ -5,7 +5,6 @@
 
 using namespace Mantids30::Threads::Pool;
 
-
 ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
 {
     std::random_device rd;
@@ -90,7 +89,7 @@ ThreadPool::Task ThreadPool::popTask()
      pthread_setname_np(pthread_self(), "tp_poptask");
 #endif
 
-    // lock and wait for an incomming task
+    // lock and wait for an incoming task
     std::unique_lock<std::mutex> lk(mutexQueues);
 
     TasksQueue * tq = getRandomTaskQueueWithElements();

@@ -1,5 +1,5 @@
 #include "methodshandler.h"
-#include "Mantids30/Helpers/json.h"
+#include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
 
@@ -11,15 +11,15 @@ MethodsHandler::MethodsHandler()
 
 }
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName,void (*method)(APIReturn & ,void * ,Mantids30::Auth::ClientDetails &,const json &,json &,const DataFormat::JWT::Token & , const RESTful::RequestParameters & ), void *obj, const uint32_t & SecurityOptions, const std::set<std::string> requiredPermissions)
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredPermissions)
 {
     RESTfulAPIDefinition def;
     def.method = method;
-    def.obj = obj;
+    def.context = context;
     def.security.requireJWTHeaderAuthentication = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
     def.security.requireJWTCookieAuthentication = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
     //def.security.requireJWTCookieHash = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_HASH;
-    def.security.requireGenericAntiCSRFToken = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
+    //def.security.requireGenericAntiCSRFToken = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
     def.security.requiredPermissions = requiredPermissions;
     return addResource(mode, resourceName, def);
 }
@@ -49,9 +49,9 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
     return true;
 }
 
-Auth::ClientDetails MethodsHandler::extractClientDetails(const RequestParameters &inputParameters)
+Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParameters &inputParameters)
 {
-    Mantids30::Auth::ClientDetails clientDetails;
+    Mantids30::Sessions::ClientDetails clientDetails;
     clientDetails.ipAddress = inputParameters.clientRequest->networkClientInfo.REMOTE_ADDR;
     clientDetails.tlsCommonName = inputParameters.clientRequest->networkClientInfo.tlsCommonName;
     clientDetails.userAgent = inputParameters.clientRequest->userAgent;
@@ -59,7 +59,12 @@ Auth::ClientDetails MethodsHandler::extractClientDetails(const RequestParameters
 }
 
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *apiResponse)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode,
+                                                          const std::string & resourceName,
+                                                          RESTful::RequestParameters &inputParameters,
+                                                          const std::set<std::string> &currentPermissions,
+                                                          const SecurityParameters & securityParameters,
+                                                          APIReturn *apiResponse)
 {    Threads::Sync::Lock_RD lock(m_methodsMutex);
 
     RESTfulAPIDefinition method;
@@ -131,8 +136,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     }
 
     //authMode.haveGenericCSRFToken = !m_clientRequest.getCookie("GenCSRFToken").empty() &&  == m_clientRequest.getCookie("GenCSRFToken");
-
-    if (method.security.requireGenericAntiCSRFToken)
+    /*if (method.security.requireGenericAntiCSRFToken)
     {
         auto cookies = inputParameters.clientRequest->getAllCookies();
         auto it = cookies.find("GenCSRFToken");
@@ -147,7 +151,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
             }
             return AUTHENTICATION_REQUIRED;
         }
-    }
+    }*/
 
     for (const auto &attr : method.security.requiredPermissions)
     {
@@ -200,8 +204,14 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
 
     if (method.method != nullptr && apiResponse != nullptr)
     {
-        Mantids30::Auth::ClientDetails clientDetails = extractClientDetails(inputParameters);
-        method.method(*apiResponse, method.obj, clientDetails, *(inputParameters.inputJSON),*(apiResponse->body->getValue()),*(inputParameters.jwtToken),inputParameters );
+        Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(inputParameters);
+        method.method(method.context, // Context
+                      *apiResponse, // The API return object
+                      *(apiResponse->body->getValue()), // JSON Response data pointer (JSON format)
+                      inputParameters, // Parameters from the RESTful request in JSON format
+                      *(inputParameters.inputJSON), // Input data
+                      *(inputParameters.jwtToken), // JWT Token
+                      clientDetails);
         return SUCCESS;
     }
 

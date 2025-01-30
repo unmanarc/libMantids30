@@ -1,4 +1,5 @@
 #include "socket_unix.h"
+#include <memory>
 
 #ifndef _WIN32
 
@@ -117,14 +118,14 @@ bool Socket_UNIX::connectFrom(const char *, const char * path, const uint16_t &,
     return true;
 }
 
-Sockets::Socket_Stream_Base * Socket_UNIX::acceptConnection()
+std::shared_ptr<Sockets::Socket_Stream_Base> Socket_UNIX::acceptConnection()
 {
     int sdconn;
-    Socket_Stream_Base * cursocket = nullptr;
+    std::shared_ptr<Sockets::Socket_Stream_Base> cursocket = nullptr;
     
     if ((sdconn = accept(m_sockFD, nullptr, nullptr)) >= 0)
     {
-        cursocket = new Socket_Stream_Base;
+        cursocket = std::make_shared<Socket_Stream_Base>();
         // Set the proper socket-
         cursocket->setSocketFD(sdconn);
     }

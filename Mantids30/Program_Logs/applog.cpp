@@ -10,13 +10,9 @@
 #include <syslog.h>
 #endif
 
-
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
-
 #include <stdarg.h>
-#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -27,8 +23,6 @@ using namespace Mantids30::Program::Logs;
 
 AppLog::AppLog(unsigned int _logMode) : LogBase(_logMode)
 {
-    m_minModuleFieldWidth = 13;
-    m_minUserFieldWidth = 13;
 }
 
 void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, string user, string ip, const char *buffer, eLogColors color, const char * logLevelText)
@@ -42,7 +36,7 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
     user = Helpers::Encoders::toURL(user,Helpers::Encoders::QUOTEPRINT_ENCODING);
 
 
-    if (!m_printAttributeName)
+    if (!enableAttributeNameLogging)
     {
         if (module.empty()) module="-";
         if (user.empty()) user="-";
@@ -51,26 +45,26 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
 
     std::string logLine;
 
-    if (m_printAttributeName)
+    if (enableAttributeNameLogging)
     {
-        if ((module.empty() && m_printEmptyFields) || !module.empty())
-            logLine += "MODULE=" + getAlignedValue(module,m_minModuleFieldWidth) + m_logFieldSeparator;
-        if ((ip.empty() && m_printEmptyFields) || !ip.empty())
-            logLine += "IPADDR=" + getAlignedValue(ip,INET_ADDRSTRLEN) + m_logFieldSeparator;
-        if ((user.empty() && m_printEmptyFields) || !user.empty())
-            logLine += "USER=" + getAlignedValue( "\"" + user + "\"",m_minUserFieldWidth) +  m_logFieldSeparator;
-        if ((!buffer[0] && m_printEmptyFields) || buffer[0])
+        if ((module.empty() && enableEmptyFieldLogging) || !module.empty())
+            logLine += "MODULE=" + getAlignedValue(module,moduleFieldMinWidth) + fieldSeparator;
+        if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+            logLine += "IPADDR=" + getAlignedValue(ip,INET_ADDRSTRLEN) + fieldSeparator;
+        if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+            logLine += "USER=" + getAlignedValue( "\"" + user + "\"",userFieldMinWidth) +  fieldSeparator;
+        if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
             logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
     }
     else
     {
-        if ((module.empty() && m_printEmptyFields) || !module.empty())
-            logLine += getAlignedValue(module,m_minModuleFieldWidth) + m_logFieldSeparator;
-        if ((ip.empty() && m_printEmptyFields) || !ip.empty())
-            logLine +=  getAlignedValue(ip,INET_ADDRSTRLEN) + m_logFieldSeparator;
-        if ((user.empty() && m_printEmptyFields) || !user.empty())
-            logLine +=  getAlignedValue( "\"" + user +  "\"",m_minUserFieldWidth) +  m_logFieldSeparator;
-        if ((!buffer[0] && m_printEmptyFields) || buffer[0])
+        if ((module.empty() && enableEmptyFieldLogging) || !module.empty())
+            logLine += getAlignedValue(module,moduleFieldMinWidth) + fieldSeparator;
+        if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+            logLine +=  getAlignedValue(ip,INET_ADDRSTRLEN) + fieldSeparator;
+        if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+            logLine +=  getAlignedValue( "\"" + user +  "\"",userFieldMinWidth) +  fieldSeparator;
+        if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
             logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer),Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
     }
 
@@ -99,15 +93,14 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
     if (isUsingStandardLog())
     {
         fprintf(fp,"S/");
-        if (m_printDate)
+        if (enableDateLogging)
         {
             printDate(fp);
-      //      fprintf(fp, "%s", standardLogSeparator.c_str());
         }
 
-        if (m_useColors)
+        if (enableColorLogging)
         {
-            if (m_printAttributeName) fprintf(fp, "LEVEL=");
+            if (enableAttributeNameLogging) fprintf(fp, "LEVEL=");
             switch (color)
             {
             case LOG_COLOR_NORMAL:
@@ -126,12 +119,12 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
                 printColorOrange(fp,getAlignedValue(logLevelText,6).c_str()); break;
                 break;
             }
-            fprintf(fp, "%s", m_logFieldSeparator.c_str());
+            fprintf(fp, "%s", fieldSeparator.c_str());
         }
         else
         {
             fprintf(fp, "%s", getAlignedValue(logLevelText,6).c_str());
-            fprintf(fp, "%s", m_logFieldSeparator.c_str());
+            fprintf(fp, "%s", fieldSeparator.c_str());
         }
 
 
