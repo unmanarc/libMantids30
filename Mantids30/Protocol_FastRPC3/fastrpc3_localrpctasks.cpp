@@ -23,7 +23,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
     bool functionFound = false;
 
     TaskParameters *taskParams = (TaskParameters *) (vTaskParams);
-    CallbackDefinitions *callbacks = ((CallbackDefinitions *) taskParams->callbacks);
+    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
     json fullResponse;
@@ -56,7 +56,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
                 else
                 {
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_NOTREQUIRED_ERROR);
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_NOTREQUIRED_ERROR);
                     fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
                 }
             }
@@ -75,7 +75,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
                     // report the problem...
                     // This is not an impersonator token.
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_IMPERSONATION_ERROR);
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_IMPERSONATION_ERROR);
                     fullResponse["statusCode"] = ELT_RET_INVALIDIMPERSONATOR;
                 }
             }
@@ -83,7 +83,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
         else
         {
             sessionFailed = true;
-            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::EXTRATOKEN_VALIDATION_ERROR);
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_VALIDATION_ERROR);
             fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
         }
     }
@@ -93,7 +93,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
     {
         sessionFailed = true;
         session = nullptr;
-        CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, CallbackDefinitions::TOKEN_REVOKED);
+        CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TOKEN_REVOKED);
         fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
     }
 
@@ -198,7 +198,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(void *taskData)
 void FastRPC3::LocalRPCTasks::login(void *taskData)
 {
     FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData);
-    CallbackDefinitions *callbacks = ((CallbackDefinitions *) taskParams->callbacks);
+    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
 
     // CREATE NEW SESSION:
     json response;
@@ -237,7 +237,7 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
         else
         {
             loginReason.reason = LoginReason::TOKEN_FAILED;
-            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, sJWTToken, CallbackDefinitions::TOKEN_VALIDATION_ERROR);
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, sJWTToken, RPC3CallbackDefinitions::TOKEN_VALIDATION_ERROR);
         }
     }
 

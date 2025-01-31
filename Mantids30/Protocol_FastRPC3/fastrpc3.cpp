@@ -85,7 +85,7 @@ void FastRPC3::pingAllActiveConnections()
         // Avoid to ping more hosts during program finalization...
         if (m_isFinished)
             return;
-        // Run unexistant remote function
+        // Run unexistant remote function to update the las received message.
         remote(i).executeTask("_pingNotFound_", {}, nullptr, false);
     }
 }
@@ -102,7 +102,7 @@ bool FastRPC3::waitPingInterval()
 
 int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
 {
-    CallbackDefinitions *callbacks = ((CallbackDefinitions *) connection->callbacks);
+    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) connection->callbacks);
 
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId;
@@ -225,7 +225,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
     params->streamBack = stream;
     params->caller = this;
     params->maxMessageSize = config.maxMessageSize;
-    params->callbacks = &callbacks;
+    params->callbacks = &rpcCallbacks;
     params->userId = session ? session->getUser() : "";
     params->domain = session ? session->getDomain() : "";
 
@@ -254,7 +254,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
         if (!m_threadPool->pushTask(currentTask, params, config.queuePushTimeoutInMS, priority, key))
         {
             // Can't push the task in the queue. Null answer.
-            CALLBACK(callbacks.onIncomingTaskDroppedQueueFull)(params);
+            CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params);
             sendRPCAnswer(params, "", 3);
             params->doneSharedMutex->unlockShared();
             delete params;
@@ -285,7 +285,7 @@ int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stre
     Threads::Sync::Mutex mtSocket;
 
     FastRPC3::Connection *connection = new FastRPC3::Connection;
-    connection->callbacks = &callbacks;
+    connection->callbacks = &rpcCallbacks;
     connection->socketMutex = &mtSocket;
 
     if (remotePeerIsServer)

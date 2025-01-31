@@ -60,7 +60,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         _tries++;
         if (_tries >= parent->config.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(parent->callbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, methodName, payload);
+            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, methodName, payload);
             if (error)
             {
                 (*error)["succeed"] = false;
@@ -86,7 +86,8 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
     }
 
     uint8_t flags = EXEC_FLAG_NORMAL;
-    if (!extraJWTTokenAuth.empty()) flags|=EXEC_FLAG_EXTRAAUTH;
+    if (!extraJWTTokenAuth.empty())
+        flags|=EXEC_FLAG_EXTRAAUTH;
 
     connection->socketMutex->lock();
 
@@ -104,14 +105,17 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         dataTransmitOK = false;
     }
 
-    if (dataTransmitOK
-        && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size())
-        )
+    if ((flags&EXEC_FLAG_EXTRAAUTH)!=0)
     {
-    }
-    else
-    {
-        dataTransmitOK = false;
+        if (dataTransmitOK
+            && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size())
+            )
+        {
+        }
+        else
+        {
+            dataTransmitOK = false;
+        }
     }
 
     if (!dataTransmitOK)
@@ -125,8 +129,6 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         return r;
     }
 
-
-
     connection->socketMutex->unlock();
 
     // Time to wait for answers...
@@ -139,7 +141,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         if (connection->answersCondition.wait_for(lk, Ms(parent->config.remoteExecutionTimeoutInMS)) == cv_status::timeout)
         {
             // break by timeout. (no answer)
-            CALLBACK(parent->callbacks.onOutgoingTaskFailureTimeout)(connectionId, methodName, payload);
+            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureTimeout)(connectionId, methodName, payload);
 
             if (error)
             {
@@ -246,7 +248,7 @@ bool FastRPC3::RemoteMethods::close()
     }
     else
     {
-        CALLBACK(parent->callbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, "CLOSE", {});
+        CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, "CLOSE", {});
     }
     return r;
 }

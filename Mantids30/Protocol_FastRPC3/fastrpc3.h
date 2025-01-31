@@ -139,7 +139,7 @@ public:
 
     };
 
-    struct CallbackDefinitions {
+    struct RPC3CallbackDefinitions {
 
         enum eTokenValidationFailedErrors
         {
@@ -431,7 +431,7 @@ public:
     /**
      * @brief callbacks This is where you define the callbacks before using this class...
      */
-    CallbackDefinitions callbacks;
+    RPC3CallbackDefinitions rpcCallbacks;
     /**
      * @brief parameters All configuration Parameters...
      */
@@ -500,9 +500,6 @@ private:
             ELT_RET_NOTAUTHORIZED = 403,
             ELT_RET_INTERNALERROR = 500
         };
-
-
-
 
         static void executeLocalTask(void * taskData);
         static void getSSOData(void * taskData);
