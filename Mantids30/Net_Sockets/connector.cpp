@@ -2,6 +2,7 @@
 #include "Mantids30/Helpers/callbacks.h"
 #include "socket_stream_base.h"
 #include <memory>
+#include <netinet/in.h>
 
 using namespace Mantids30::Network::Sockets;
 using namespace Mantids30;
@@ -100,7 +101,7 @@ void connectionLoopThread(Connector *parent,
                 // Connected OK...
                 CALLBACK(config->tcpCallbacks.onConnectionEstablished)(config->context, clientSocket);
 
-                char remotePair[65];
+                char remotePair[INET6_ADDRSTRLEN+2];
                 clientSocket->getRemotePair(remotePair);
                 int i = parent->handleServerConnection(clientSocket, remotePair);
 
