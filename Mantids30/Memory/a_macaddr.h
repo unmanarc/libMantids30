@@ -47,7 +47,7 @@ public:
     static std::string _fromHASHToString(const uint64_t &value);
 
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 
 private:
     unsigned char macaddr[ETH_ALEN];

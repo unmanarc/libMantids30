@@ -48,12 +48,11 @@ bool INT8::fromString(const std::string &value)
 
     return true;
 }
-
-Var *INT8::protectedCopy()
+std::shared_ptr<Var> INT8::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    INT8 * var = new INT8;
+    auto var = std::make_shared<INT8>();
     if (var) *var = this->value;
     return var;
 }

@@ -55,11 +55,11 @@ bool UINT16::fromString(const std::string &value)
     return true;
 }
 
-Var *UINT16::protectedCopy()
+std::shared_ptr<Var> UINT16::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    UINT16 * var = new UINT16;
+    auto var = std::make_shared<UINT16>();
     if (var) *var = this->value;
     return var;
 }

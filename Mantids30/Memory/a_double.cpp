@@ -52,12 +52,11 @@ bool DOUBLE::fromString(const std::string &value)
         return false;
     }
 }
-
-Var *DOUBLE::protectedCopy()
+std::shared_ptr<Var> DOUBLE::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    DOUBLE * var = new DOUBLE;
+    auto var = std::make_shared<DOUBLE>();
     if (var) *var = this->value;
     return var;
 }

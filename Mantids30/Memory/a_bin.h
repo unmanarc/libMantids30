@@ -60,7 +60,7 @@ public:
     void * getDirectMemory() override { return &value; }
 
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 
 private:
     sBinContainer value;

@@ -53,11 +53,11 @@ bool INT64::fromString(const std::string &value)
     return true;
 }
 
-Var *INT64::protectedCopy()
+std::shared_ptr<Var> INT64::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    INT64 * var = new INT64;
+    auto var = std::make_shared<INT64>();
     if (var) *var = this->value;
     return var;
 }

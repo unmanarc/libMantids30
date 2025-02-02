@@ -47,13 +47,13 @@ bool BINARY::fromString(const std::string &value)
     return true;
 }
 
-Var *BINARY::protectedCopy()
+std::shared_ptr<Var> BINARY::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(this->value.mutex);
-    BINARY * var = new BINARY;
+
+    auto var = std::make_shared<BINARY>();
     if (!var->setValue(&(this->value)))
     {
-        delete var;
         return nullptr;
     }
     return var;

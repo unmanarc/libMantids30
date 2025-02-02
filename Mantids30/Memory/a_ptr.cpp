@@ -54,11 +54,12 @@ bool PTR::fromString(const std::string &value)
     return true;
 }
 
-Var *PTR::protectedCopy()
+std::shared_ptr<Var> PTR::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    PTR * var = new PTR;
+    auto var = std::make_shared<PTR>();
     if (var) *var = this->value;
     return var;
 }
+

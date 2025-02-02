@@ -35,7 +35,7 @@ public:
     static in6_addr _fromString(const std::string & value, bool * ok = nullptr);
 
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 
 private:
     in6_addr value;

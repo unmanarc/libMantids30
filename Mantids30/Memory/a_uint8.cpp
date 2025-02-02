@@ -54,11 +54,11 @@ bool UINT8::fromString(const std::string &value)
     return true;
 }
 
-Var *UINT8::protectedCopy()
+std::shared_ptr<Var> UINT8::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    UINT8 * var = new UINT8;
+    auto var = std::make_shared<UINT8>();
     if (var) *var = this->value;
     return var;
 }

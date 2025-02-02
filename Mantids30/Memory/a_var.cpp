@@ -18,6 +18,7 @@
 #include "a_uint64.h"
 #include "a_uint8.h"
 #include "a_varchar.h"
+#include <memory>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -26,9 +27,9 @@ Var::Var()
     varType = TYPE_NULL;
 }
 
-Var *Var::copy()
+std::shared_ptr<Var> Var::copy()
 {
-    Var *var = protectedCopy();
+    std::shared_ptr<Var> var = protectedCopy();
     if (var)
         var->setVarType(this->getVarType());
     return var;
@@ -133,8 +134,8 @@ void Var::setVarType(const Type &value)
     varType = value;
 }
 
-Var *Var::protectedCopy()
+std::shared_ptr<Var> Var::protectedCopy()
 {
-    Var *var = new Var;
+    auto var = std::make_shared<Var>();
     return var;
 }

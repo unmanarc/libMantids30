@@ -180,9 +180,9 @@ bool STRINGLIST::fromString(const std::string &inputString)
     return setValue(finalValues);
 }
 
-Var *STRINGLIST::protectedCopy()
+std::shared_ptr<Var> STRINGLIST::protectedCopy()
 {
-    STRINGLIST *var = new STRINGLIST;
+    auto var = std::make_shared<STRINGLIST>();
     if (var)
         *var = getValue();
     return var;

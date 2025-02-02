@@ -125,9 +125,9 @@ unsigned long VARCHAR::getFillSize() const
     return fillSize;
 }
 
-Var *VARCHAR::protectedCopy()
+std::shared_ptr<Var> VARCHAR::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(this->mutex);
-    VARCHAR * var = new VARCHAR(this->varSize,this->value);
+    auto var = std::make_shared<VARCHAR>(this->varSize, this->value);
     return var;
 }

@@ -67,11 +67,11 @@ bool DATETIME::fromString(const std::string &value)
     return true;
 }
 
-Var *DATETIME::protectedCopy()
+std::shared_ptr<Var> DATETIME::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    DATETIME * var = new DATETIME;
+    auto var = std::make_shared<DATETIME>();
     if (var) *var = this->value;
     return var;
 }

@@ -47,10 +47,11 @@ bool STRING::fromString(const std::string &value)
     return true;
 }
 
-Var *STRING::protectedCopy()
+std::shared_ptr<Var> STRING::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
-    STRING * var = new STRING;
+
+    auto var = std::make_shared<STRING>();
     if (var) *var = this->value;
     return var;
 }

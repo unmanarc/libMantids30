@@ -53,11 +53,11 @@ bool INT32::fromString(const std::string &value)
     return true;
 }
 
-Var *INT32::protectedCopy()
+std::shared_ptr<Var> INT32::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    INT32 * var = new INT32;
+    auto var = std::make_shared<INT32>();
     if (var) *var = this->value;
     return var;
 }

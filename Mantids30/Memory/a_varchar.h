@@ -54,7 +54,7 @@ public:
     unsigned long * getFillSizePTR() { return &fillSize; }
 
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 private:
     bool wasTruncated;
     char * value;

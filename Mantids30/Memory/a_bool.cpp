@@ -43,10 +43,11 @@ bool BOOL::fromString(const std::string &value)
     return true;
 }
 
-Var *BOOL::protectedCopy()
+std::shared_ptr<Var> BOOL::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
-    BOOL * var = new BOOL;
+
+    auto var = std::make_shared<BOOL>();
     if (var) *var = this->value;
     return var;
 }

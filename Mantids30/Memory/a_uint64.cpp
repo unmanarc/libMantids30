@@ -64,11 +64,11 @@ bool UINT64::fromString(const std::string &value)
     return true;
 }
 
-Var *UINT64::protectedCopy()
+std::shared_ptr<Var> UINT64::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    UINT64 * var = new UINT64;
+    auto var = std::make_shared<UINT64>();
     if (var) *var = this->value;
     return var;
 }

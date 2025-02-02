@@ -37,7 +37,7 @@ public:
     };
 
     Var();
-    Var * copy();
+    std::shared_ptr<Var> copy();
     virtual ~Var();
 
     // NON-THREADSAFE ACCESS TO THE RAW MEMORY:
@@ -62,7 +62,7 @@ public:
     void setVarType(const Type &value);
 
 protected:
-    virtual Var * protectedCopy();
+    virtual std::shared_ptr<Var> protectedCopy();
 
 private:
     Type varType;

@@ -255,10 +255,10 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
     return r;
 }
 
-Var *IPV4::protectedCopy()
+std::shared_ptr<Var> IPV4::protectedCopy()
 {
-    IPV4 * var = new IPV4;
+    auto var = std::make_shared<IPV4>();
     if (var)
-        var->setValue( getValue(),getCidrMask() );
+        var->setValue(getValue(), getCidrMask());
     return var;
 }

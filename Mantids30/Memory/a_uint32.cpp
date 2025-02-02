@@ -54,11 +54,11 @@ bool UINT32::fromString(const std::string &value)
     return true;
 }
 
-Var *UINT32::protectedCopy()
+std::shared_ptr<Var> UINT32::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(mutex);
 
-    UINT32 * var = new UINT32;
+    auto var = std::make_shared<UINT32>();
     if (var) *var = this->value;
     return var;
 }

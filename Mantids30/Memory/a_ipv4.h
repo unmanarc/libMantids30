@@ -50,7 +50,7 @@ public:
     static std::pair<in_addr, uint8_t> _fromStringWithNetmask( const std::string &value, bool * ok = nullptr );
 
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 
 private:
     static uint64_t u64pow(uint32_t base, uint32_t exponent);

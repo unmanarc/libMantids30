@@ -28,7 +28,7 @@ public:
     std::string toString() override;
     bool fromString(const std::string & value) override;
 protected:
-    Var * protectedCopy() override;
+    std::shared_ptr<Var> protectedCopy() override;
 
 private:
     uint64_t value;

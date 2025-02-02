@@ -86,9 +86,9 @@ in6_addr IPV6::_fromString(const std::string &value, bool *ok)
     return xvalue;
 }
 
-Var *IPV6::protectedCopy()
+std::shared_ptr<Var> IPV6::protectedCopy()
 {
-    IPV6 * var = new IPV6;
+    auto var = std::make_shared<IPV6>();
     if (var) *var = getValue();
     return var;
 }
