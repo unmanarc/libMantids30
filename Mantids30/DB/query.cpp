@@ -10,7 +10,7 @@ Query::~Query()
     if (m_pSQLConnector)
     {
         // Detach me from the SQL connector...
-        ((SQLConnector *)m_pSQLConnector)->detachQuery(this);
+        ((SQLConnector *) m_pSQLConnector)->detachQuery(this);
     }
 
     m_inputVars.clear();
@@ -22,7 +22,7 @@ Query::~Query()
         m_databaseLockMutex->unlock();
 }
 
-bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars)
+bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)
 {
     m_query = value;
 
@@ -56,9 +56,9 @@ bool Query::bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *>
         return true;
     }
     if (m_bindResultVars)
-        {
+    {
         throw std::runtime_error("Don't call bindResultVars twice.");
-        }
+    }
     m_bindResultVars = true;
     m_resultVars = vars;
     return postBindResultVars();
@@ -81,7 +81,7 @@ unsigned long long Query::getLastInsertRowID() const
 
 bool Query::exec(const ExecType &execType)
 {
-    return exec0(execType,false);
+    return exec0(execType, false);
 }
 
 bool Query::step()
@@ -93,7 +93,7 @@ bool Query::step()
 
 bool Query::isNull(const size_t &column)
 {
-    if ((column+1) > m_fieldIsNull.size())
+    if ((column + 1) > m_fieldIsNull.size())
     {
         return true;
     }
@@ -108,10 +108,10 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
     std::size_t firstKeyPos = std::string::npos;
     std::string firstKeyFound;
 
-    for ( auto & key : keysIn )
+    for (auto &key : keysIn)
     {
         std::size_t pos = sqlQuery.find(key);
-        if (pos!=std::string::npos)
+        if (pos != std::string::npos)
         {
             if (pos <= firstKeyPos)
             {
@@ -120,15 +120,15 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
             }
         }
         else
-            toDelete.push_back( key );
+            toDelete.push_back(key);
     }
 
     // not used needles will be deleted.
-    for ( auto & needle : toDelete )
+    for (auto &needle : toDelete)
         keysIn.remove(needle);
 
     // If there is a key, replace.
-    if (firstKeyPos!=std::string::npos)
+    if (firstKeyPos != std::string::npos)
     {
         keysOutByPos.push_back(firstKeyFound);
         sqlQuery.replace(firstKeyPos, firstKeyFound.length(), replaceBy);
@@ -137,9 +137,9 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
     return false;
 }
 
-std::string *Query::createDestroyableStringForInput(const std::string &str)
+std::shared_ptr<std::string> Query::createDestroyableStringForInput(const std::string &str)
 {
-    std::string * i = new std::string;
+    std::shared_ptr<std::string> i = std::make_shared<std::string>();
     *i = str;
     m_destroyableStringsForInput.push_back(i);
     return i;
@@ -148,12 +148,12 @@ std::string *Query::createDestroyableStringForInput(const std::string &str)
 void Query::clearDestroyableStringsForInput()
 {
     // Destroy strings.
-    for (auto * i : m_destroyableStringsForInput) delete i;
+    m_destroyableStringsForInput.clear();
 }
 
-std::string *Query::createDestroyableStringForResults(const std::string &str)
+std::shared_ptr<std::string> Query::createDestroyableStringForResults(const std::string &str)
 {
-    std::string * i = new std::string;
+    std::shared_ptr<std::string> i = std::make_shared<std::string>();
     *i = str;
     m_destroyableStringsForResults.push_back(i);
     return i;
@@ -162,7 +162,6 @@ std::string *Query::createDestroyableStringForResults(const std::string &str)
 void Query::clearDestroyableStringsForResults()
 {
     // Destroy strings.
-    for (auto * i : m_destroyableStringsForResults) delete i;
     m_destroyableStringsForResults.clear();
 }
 
@@ -196,7 +195,7 @@ bool Query::setSqlConnector(void *value, std::timed_mutex *mtDatabaseLockMutex, 
         mtDatabaseLockMutex->lock();
     else
     {
-        if (mtDatabaseLockMutex->try_lock_for( std::chrono::milliseconds(milliseconds) ))
+        if (mtDatabaseLockMutex->try_lock_for(std::chrono::milliseconds(milliseconds)))
             return true;
         else
         {

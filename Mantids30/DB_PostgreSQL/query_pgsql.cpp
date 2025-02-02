@@ -177,7 +177,7 @@ bool Query_PostgreSQL::postBindInputVars()
 
     for (size_t pos=0; pos<keysByPos.size(); pos++)
     {
-        std::string * str = nullptr;
+        std::shared_ptr<std::string> str = nullptr;
         m_paramFormats[pos] = 0;
         std::string key = keysByPos[pos];
 
@@ -251,7 +251,7 @@ bool Query_PostgreSQL::postBindInputVars()
         } break;
         case Memory::Abstract::Var::TYPE_STRING:
         {
-            str = (std::string *)ABSTRACT_SPTR_AS(STRING,m_inputVars[key])->getDirectMemory();
+            str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(STRING,m_inputVars[key])->toString());
         } break;
         case Memory::Abstract::Var::TYPE_STRINGLIST:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(STRINGLIST,m_inputVars[key])->toString());

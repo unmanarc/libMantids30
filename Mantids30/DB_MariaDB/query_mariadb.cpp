@@ -428,7 +428,7 @@ bool Query_MariaDB::postBindInputVars()
         case Memory::Abstract::Var::TYPE_IPV4:
         case Memory::Abstract::Var::TYPE_IPV6:
         {
-            std::string * str = nullptr;
+            std::shared_ptr<std::string> str = nullptr;
 
             switch (m_inputVars[ m_keysByPos[pos] ]->getVarType())
             {

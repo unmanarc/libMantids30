@@ -159,10 +159,10 @@ protected:
 
     bool replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string replaceBy);
 
-    std::string *createDestroyableStringForInput(const std::string &str);
+    std::shared_ptr<std::string> createDestroyableStringForInput(const std::string &str);
     void clearDestroyableStringsForInput();
 
-    std::string *createDestroyableStringForResults(const std::string &str);
+    std::shared_ptr<std::string> createDestroyableStringForResults(const std::string &str);
     void clearDestroyableStringsForResults();
 
     // Query:
@@ -195,7 +195,7 @@ protected:
     bool m_throwCPPErrorOnQueryFailure = false;
 private:
     // Memory cleaning:
-    std::list<std::string *> m_destroyableStringsForInput, m_destroyableStringsForResults;
+    std::list<std::shared_ptr<std::string>> m_destroyableStringsForInput, m_destroyableStringsForResults;
 
     friend class SQLConnector;
 };
