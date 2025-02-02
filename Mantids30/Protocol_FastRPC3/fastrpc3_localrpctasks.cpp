@@ -177,7 +177,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
 
     //
     fullResponse["payload"] = responsePayload;
-    sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ? 2 : 4);
+    sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ? EXEC_STATUS_SUCCESS : EXEC_STATUS_ERR_METHOD_NOT_FOUND);
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -191,7 +191,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(void *taskData)
     data["returnURI"] = caller->config.returnURI;
     data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
 
-    sendRPCAnswer(taskParams, data.toStyledString(), 2);
+    sendRPCAnswer(taskParams, data.toStyledString(), EXEC_STATUS_SUCCESS);
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -242,7 +242,7 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
     }
 
     response = loginReason.toJsonResponse();
-    sendRPCAnswer(taskParams, response.toStyledString(), 2);
+    sendRPCAnswer(taskParams, response.toStyledString(), EXEC_STATUS_SUCCESS);
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -251,6 +251,6 @@ void FastRPC3::LocalRPCTasks::logout(void *taskData)
     FastRPC3::TaskParameters *params = (FastRPC3::TaskParameters *) (taskData);
     json response;
     response = params->sessionHolder->destroy();
-    sendRPCAnswer(params, response.toStyledString(), 2);
+    sendRPCAnswer(params, response.toStyledString(), EXEC_STATUS_SUCCESS);
     params->doneSharedMutex->unlockShared();
 }

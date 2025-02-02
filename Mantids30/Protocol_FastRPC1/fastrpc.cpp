@@ -249,7 +249,7 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
         {
             // Can't push the task in the queue. Null answer.
             eventFullQueueDrop(params);
-            sendRPCAnswer(params,"",3);
+            sendRPCAnswer(params,"", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
             params->done->unlockShared();
             delete params;
         }
@@ -388,20 +388,20 @@ void FastRPC1::executeRPCTask(void *taskData)
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
 
-    bool found;
+    bool found=false;
     json r = ((FastRPC1 *)params->caller)->runLocalRPCMethod(params->methodName,params->key,params->data,params->context,params->payload,&found);
     std::string output = Json::writeString(builder, r);
-    sendRPCAnswer(params,output,found?2:4);
+    sendRPCAnswer(params,output,found? EXEC_STATUS_SUCCESS : EXEC_STATUS_ERR_METHOD_NOT_FOUND);
     params->done->unlockShared();
 }
 
-void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::string &answer,uint8_t execution)
+void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::string &answer, uint8_t executionStatus)
 {
     // Send a block.
     params->mtSocket->lock();
     if (    params->streamBack->writeU<uint8_t>('A') && // ANSWER
             params->streamBack->writeU<uint64_t>(params->requestId) &&
-            params->streamBack->writeU<uint8_t>(execution) &&
+            params->streamBack->writeU<uint8_t>(executionStatus) &&
             params->streamBack->writeStringEx<uint32_t>(answer.size()<=params->maxMessageSize?answer:"",params->maxMessageSize ) )
     {
     }

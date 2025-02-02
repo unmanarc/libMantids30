@@ -255,7 +255,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
         {
             // Can't push the task in the queue. Null answer.
             CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params);
-            sendRPCAnswer(params, "", 3);
+            sendRPCAnswer(params, "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
             params->doneSharedMutex->unlockShared();
             delete params;
         }
@@ -399,12 +399,12 @@ Sessions::Reason temporaryAuthentication(FastRPC3::TaskParameters *params, const
     return eReason;
 }*/
 
-void FastRPC3::sendRPCAnswer(FastRPC3::TaskParameters *params, const string &answer, uint8_t execution)
+void FastRPC3::sendRPCAnswer(FastRPC3::TaskParameters *params, const string &answer, uint8_t executionStatus)
 {
     // Send a block.
     params->socketMutex->lock();
     if (params->streamBack->writeU<uint8_t>('A') && // ANSWER
-        params->streamBack->writeU<uint64_t>(params->requestId) && params->streamBack->writeU<uint8_t>(execution)
+        params->streamBack->writeU<uint64_t>(params->requestId) && params->streamBack->writeU<uint8_t>(executionStatus)
         && params->streamBack->writeStringEx<uint32_t>(answer.size() <= params->maxMessageSize ? answer : "", params->maxMessageSize))
     {
     }

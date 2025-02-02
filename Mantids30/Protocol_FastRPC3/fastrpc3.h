@@ -62,6 +62,14 @@ public:
         EXEC_ERR_UNKNOWN = 99,
     };
 
+    enum eTaskExecutionStatus {
+        EXEC_STATUS_ERR_GENERIC = 1,
+        EXEC_STATUS_SUCCESS = 2,
+        EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW = 3,
+        EXEC_STATUS_ERR_METHOD_NOT_FOUND = 4
+    };
+
+
     class SessionPTR {
     public:
         SessionPTR();
@@ -150,22 +158,22 @@ public:
             TOKEN_REVOKED=4,
         };
 
-        void (*onMethodExecutionAuthorizerMissing)( std::shared_ptr<void> context, TaskParameters * parameters ) = nullptr;
-        void (*onMethodExecutionSessionMissing)( std::shared_ptr<void> context, TaskParameters * parameters ) = nullptr;
-        void (*onMethodExecutionStart)(std::shared_ptr<void> context, TaskParameters * parameters,const json & payloadIn) = nullptr;
-        void (*onMethodExecutionNotAuthorized)(std::shared_ptr<void> context, TaskParameters * parameters,const json & reasons) = nullptr;
-        void (*onMethodExecutionNotFound)(std::shared_ptr<void> context, TaskParameters * parameters) = nullptr;
-        void (*onMethodExecutionSuccess)(std::shared_ptr<void> context, TaskParameters * parameters, const double & elapsedMS,const json & payloadOut ) = nullptr;
-        void (*onMethodExecutionUnknownError)(std::shared_ptr<void> context, TaskParameters * parameters ) = nullptr;
-        void (*onImpersonationFailure)(std::shared_ptr<void> context, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & authSlotId ) = nullptr;
-        void (*onTokenValidationSuccess)(std::shared_ptr<void> context, TaskParameters * parameters,  const std::string & jwtToken) = nullptr;
-        void (*onTokenValidationFailure)(std::shared_ptr<void> context, TaskParameters * parameters,  const std::string & jwtToken, eTokenValidationFailedErrors err ) = nullptr;
+        void (*onMethodExecutionAuthorizerMissing)( void * context, TaskParameters * parameters ) = nullptr;
+        void (*onMethodExecutionSessionMissing)( void * context, TaskParameters * parameters ) = nullptr;
+        void (*onMethodExecutionStart)(void * context, TaskParameters * parameters,const json & payloadIn) = nullptr;
+        void (*onMethodExecutionNotAuthorized)(void * context, TaskParameters * parameters,const json & reasons) = nullptr;
+        void (*onMethodExecutionNotFound)(void * context, TaskParameters * parameters) = nullptr;
+        void (*onMethodExecutionSuccess)(void * context, TaskParameters * parameters, const double & elapsedMS,const json & payloadOut ) = nullptr;
+        void (*onMethodExecutionUnknownError)(void * context, TaskParameters * parameters ) = nullptr;
+        void (*onImpersonationFailure)(void * context, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & authSlotId ) = nullptr;
+        void (*onTokenValidationSuccess)(void * context, TaskParameters * parameters,  const std::string & jwtToken) = nullptr;
+        void (*onTokenValidationFailure)(void * context, TaskParameters * parameters,  const std::string & jwtToken, eTokenValidationFailedErrors err ) = nullptr;
         void (*onProtocolUnexpectedResponse)(FastRPC3::Connection *connection, const std::string &answer) = nullptr;
         void (*onOutgoingTaskFailureDisconnectedPeer)(const std::string &connectionId, const std::string &methodName, const json &payload) = nullptr;
         void (*onIncomingTaskDroppedQueueFull)(FastRPC3::TaskParameters * params) = nullptr;
         void (*onOutgoingTaskFailureTimeout)(const std::string &connectionId, const std::string &methodName, const json &payload) = nullptr;
 
-        std::shared_ptr<void> context = nullptr;
+        void * context = nullptr;
         // Mantids30::Sessions::getReasonText(authReason) < - to obtain the auth reason.
     };
 
@@ -508,7 +516,7 @@ private:
     };
 
 
-    static void sendRPCAnswer(FastRPC3::TaskParameters * parameters, const std::string & answer, uint8_t execution);
+    static void sendRPCAnswer(FastRPC3::TaskParameters * parameters, const std::string & answer, uint8_t executionStatus);
 
     int processIncomingAnswer(FastRPC3::Connection *connection);
     int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
@@ -544,5 +552,6 @@ private:
 };
 
 }}}}
+
 
 

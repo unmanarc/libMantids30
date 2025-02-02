@@ -84,6 +84,12 @@ public:
         std::atomic<bool> terminated;
     };
 
+    enum eTaskExecutionStatus {
+        EXEC_STATUS_ERR_GENERIC = 1,
+        EXEC_STATUS_SUCCESS = 2,
+        EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW = 3,
+        EXEC_STATUS_ERR_METHOD_NOT_FOUND = 4
+    };
 
 
     /**
@@ -261,7 +267,7 @@ protected:
 
 private:
     static void executeRPCTask(void * taskData);
-    static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t execution);
+    static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t executionStatus);
 
     int processAnswer(FastRPC1::Connection *connection);
     int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, std::shared_ptr<void> context, const std::string &data);
