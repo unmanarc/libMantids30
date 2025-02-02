@@ -1,13 +1,11 @@
 #pragma once
 
-#include "socket_stream_base.h"
 #include <memory>
+
+#include "acceptor_callbacks.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptors {
 
-typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
 
 /**
  * Class for managing the client on his thread.
@@ -24,16 +22,8 @@ public:
      */
     ~SAThread();
 
-    class Callbacks {
-    public:
-        _callbackConnectionRB onConnect;
-        _callbackConnectionRB onInitFail;
 
-        void * contextOnConnect = nullptr;
-        void * contextOnInitFail = nullptr;
-    };
-
-    Callbacks callbacks;
+    SAThreadCallbacks callbacks;
 
 
     // /**

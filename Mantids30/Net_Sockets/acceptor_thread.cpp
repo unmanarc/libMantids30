@@ -17,35 +17,17 @@ SAThread::SAThread()
 {
     ZeroBArray(m_remotePair);
 
-    //m_parent = nullptr;
     m_pClientSocket = nullptr;
 }
 
 SAThread::~SAThread()
 {
-/*    if (m_pClientSocket)
-    {
-        delete m_pClientSocket;
-        m_pClientSocket = nullptr;
-    }*/
 }
-/*
-void SAThread::start()
-{
-    std::thread(thread_streamclient,this,m_parent).detach();
-}*/
 
 void SAThread::stopSocket()
 {
     m_pClientSocket->shutdownSocket();
 }
-
-
-/*
-void SAThread::setParent(void * parent)
-{
-    this->m_parent = parent;
-}*/
 
 void SAThread::postInitConnection()
 {

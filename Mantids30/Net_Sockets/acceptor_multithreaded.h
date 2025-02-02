@@ -44,32 +44,7 @@ public:
      */
     ~MultiThreaded();
 
-
-    class Callbacks
-    {
-    public:
-
-        void setAllContexts(void * context){
-            contextOnConnect = context;
-            contextOnInitFail = context;
-            contextOnTimedOut = context;
-            contextOnMaxConnectionsPerIP = context;
-        }
-
-        // Callbacks:
-        _callbackConnectionRB onConnect = nullptr;
-        _callbackConnectionRB onInitFail = nullptr;
-        _callbackConnectionRV onTimedOut = nullptr;
-        _callbackConnectionLimit onMaxConnectionsPerIP = nullptr;
-
-        void * contextOnConnect = nullptr;
-        void * contextOnInitFail = nullptr;
-        void * contextOnTimedOut = nullptr;
-        void * contextOnMaxConnectionsPerIP = nullptr;
-    };
-
-    Callbacks callbacks;
-
+    MultiThreadCallbacks callbacks;
 
     /**
      * @brief startThreaded Start accepting connections in a new thread (will wait for finalization in destructor)

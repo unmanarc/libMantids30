@@ -1,6 +1,7 @@
 #pragma once
 
 #include "socket_stream_base.h"
+#include "acceptor_callbacks.h"
 
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Threads/threaded.h>
@@ -16,10 +17,6 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptor
 class PoolThreaded : public Mantids30::Threads::Threaded
 {
 public:
-
-    typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-
     /**
      * @brief PoolThreaded Constructor
      * @param acceptorSocket Pre-initialized acceptor socket
@@ -105,20 +102,8 @@ public:
 
     // TODO: pasar todo el tunning a Config / parameters;
 
-    class Callbacks
-    {
-    public:
-        void setAllContexts(void *context) { contextOnConnect = contextOnInitFail = contextOnTimedOut = context; }
 
-        _callbackConnectionRB onConnect = nullptr;
-        _callbackConnectionRB onInitFail = nullptr;
-        _callbackConnectionRV onTimedOut = nullptr;
-        void *contextOnConnect = nullptr;
-        void *contextOnInitFail = nullptr;
-        void *contextOnTimedOut = nullptr;
-    };
-
-    Callbacks callbacks;
+    ThreadPoolCallbacks callbacks;
 
 private:
 
