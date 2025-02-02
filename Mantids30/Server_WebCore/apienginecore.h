@@ -23,7 +23,6 @@ public:
         {
             NotificationCallback()
             {
-                callbackFunction=nullptr;
             }
 
             NotificationCallback( bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool) )
@@ -33,18 +32,20 @@ public:
 
             bool call(void *x, std::shared_ptr<Sockets::Socket_Stream_Base>y, const char *z, bool q) const
             {
-                if (!callbackFunction) return true;
+                if (!callbackFunction)
+                    return true;
                 return callbackFunction(x,y,z,q);
             }
             /**
              * return false to cancel the connection, true to continue...
              */
-            bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+            bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool) = nullptr;
         };
 
         NotificationCallback onConnect;
         NotificationCallback onInitFailed;
         NotificationCallback onTimeOut;
+        NotificationCallback onConnectionLimit;
     };
 
     APIEngineCore();
@@ -86,16 +87,20 @@ private:
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _onConnect(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _onInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void _onTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static void handleTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
+    /**
+     * @brief _onConnectionLimit
+     */
+    static void handleConnectionLimit(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
 
 
 };
