@@ -25,28 +25,29 @@ public:
             {
             }
 
-            NotificationCallback( bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool) )
+            NotificationCallback( bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>) )
             {
                 this->callbackFunction=callbackFunction;
             }
 
-            bool call(void *x, std::shared_ptr<Sockets::Socket_Stream_Base>y, const char *z, bool q) const
+            bool call(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> sock) const
             {
                 if (!callbackFunction)
                     return true;
-                return callbackFunction(x,y,z,q);
+                return callbackFunction(context, sock);
             }
             /**
              * return false to cancel the connection, true to continue...
              */
-            bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool) = nullptr;
+            bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>) = nullptr;
         };
 
-        NotificationCallback onConnect;
-        NotificationCallback onInitFailed;
-        NotificationCallback onTimeOut;
-        NotificationCallback onConnectionLimit;
+        NotificationCallback onClientConnected;
+        NotificationCallback onProtocolInitializationFailure;
+        NotificationCallback onClientAcceptTimeoutOccurred;
+        NotificationCallback onClientConnectionLimitPerIPReached;
     };
+
 
     APIEngineCore();
     ~APIEngineCore();
@@ -61,9 +62,9 @@ public:
      * @brief acceptPoolThreaded Start Web Server as Pool-Threaded (threads are already started and consume clients from a queue)
      * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
      * @param threadCount Pre-started thread count
-     * @param threadMaxQueuedElements Max queued connections per threads
+     * @param taskQueues Max queued connections per threads
      */
-    void acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> &listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );
+    void acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> &listenerSocket, const uint32_t & threadCount = 20, const uint32_t & taskQueues = 100 );
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
@@ -87,20 +88,20 @@ private:
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void handleTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static void handleTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
 
     /**
      * @brief _onConnectionLimit
      */
-    static void handleConnectionLimit(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
+    static void handleConnectionLimit(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
 
 
 };

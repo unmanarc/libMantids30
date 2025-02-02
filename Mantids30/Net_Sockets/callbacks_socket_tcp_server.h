@@ -30,11 +30,11 @@ public:
     /**
      * @brief onClientAcceptTimeoutOccurred Callback to Notify when the acceptor failed to allocate a thread
      */
-    void (*onClientAcceptTimeoutOccurred)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool) = nullptr;
+    void (*onClientAcceptTimeoutOccurred)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>) = nullptr;
     /**
      * @brief onClientConnectionLimitPerIPReached Callback to Notify that the connection can't accepted due to max connections reached by this IP source.
      */
-    void (*onClientConnectionLimitPerIPReached)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *) = nullptr;
+    void (*onClientConnectionLimitPerIPReached)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>) = nullptr;
 };
 
 }}}

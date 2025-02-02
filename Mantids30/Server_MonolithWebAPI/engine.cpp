@@ -35,7 +35,7 @@ std::shared_ptr<Network::Servers::Web::APIClientHandler> Engine::createNewAPICli
     return webHandler;
 }
 /*
-bool Engine::_onConnect(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char *cUserIP, bool isSecure)
+bool Engine::_onConnect(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     Engine * webserver = ((Engine *)context);
 
@@ -65,7 +65,7 @@ bool Engine::_onConnect(std::shared_ptr<void> context, std::shared_ptr<Sockets::
     webHandler.setStaticContentElements(webserver->getStaticContentElements());
     webHandler.setRedirectPathOn404(webserver->redirectPathOn404);
 
-    if (webserver->m_callbacks.m_onConnect.call(context,s,cUserIP,isSecure))
+    if (webserver->m_callbacks.m_onConnect.call(context,s))
     {
         // Handle the webservice.
         Memory::Streams::Parser::ErrorMSG err;
@@ -74,17 +74,17 @@ bool Engine::_onConnect(std::shared_ptr<void> context, std::shared_ptr<Sockets::
     return true;
 }*/
 /*
-bool Engine::_onInitFailed(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+bool Engine::_onInitFailed(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     Engine * webserver = ((Engine *)context);
-    webserver->m_callbacks.m_onInitFailed.call(context,s,cUserIP,isSecure);
+    webserver->m_callbacks.m_onInitFailed.call(context,s);
     return true;
 }
 
-void Engine::_onTimeOut(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+void Engine::_onTimeOut(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     Engine * webserver = ((Engine *)context);
-    if (webserver->m_callbacks.m_onTimeOut.call(context,s,cUserIP,isSecure))
+    if (webserver->m_callbacks.m_onTimeOut.call(context,s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");

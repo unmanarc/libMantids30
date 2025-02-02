@@ -33,11 +33,11 @@ void connectionLoopThread(Connector *parent,
 
         if (retries == config->maxRetries || parent->m_stopReconnecting)
         {
-            CALLBACK(config->tcpCallbacks.onMaxRetryLimitReached)(config->context, clientSocket, config->host.c_str(), config->port);
+            CALLBACK(config->tcpCallbacks.onMaxRetryLimitReached)(config->context, config);
             break;
         }
 
-        CALLBACK(config->tcpCallbacks.onPreConnectionAttempt)(config->context, clientSocket, config->host.c_str(), config->port);
+        CALLBACK(config->tcpCallbacks.onPreConnectionAttempt)(config->context, config);
 
         if (config->useTLS)
         {
@@ -47,7 +47,7 @@ void connectionLoopThread(Connector *parent,
                 // CA Cert Path Defined.
                 if (!config->tlsCACertificatePath.empty())
                 {
-                    if (!tlsSocket->m_keys.loadCAFromPEMFile(config->tlsCACertificatePath))
+                    if (!tlsSocket->tlsKeys.loadCAFromPEMFile(config->tlsCACertificatePath))
                     {
                         // Error loading Mandatory CA PEM file...
                         CALLBACK(config->tlsCallbacks.onInvalidCACertificate)(config->context, tlsSocket, config->tlsCACertificatePath);
@@ -56,11 +56,11 @@ void connectionLoopThread(Connector *parent,
                 }
                 else if (config->tlsUseSystemX509Certificates)
                 {
-                    tlsSocket->m_keys.setUseSystemCertificates(true);
+                    tlsSocket->tlsKeys.setUseSystemCertificates(true);
                 }
                 else if (!config->tlsCustomCACertificateText.empty())
                 {
-                    if (!tlsSocket->m_keys.loadCAFromPEMMemory(config->tlsCustomCACertificateText.c_str()))
+                    if (!tlsSocket->tlsKeys.loadCAFromPEMMemory(config->tlsCustomCACertificateText.c_str()))
                     {
                         CALLBACK(config->tlsCallbacks.onInvalidCACertificate)(config->context, tlsSocket, config->tlsCACertificatePath);
                         cont = false;
@@ -68,12 +68,12 @@ void connectionLoopThread(Connector *parent,
                 }
                 if (!config->tlsPrivateKeyPath.empty() && !config->tlsCertificatePath.empty())
                 {
-                    if (!tlsSocket->m_keys.loadPrivateKeyFromPEMFile(config->tlsPrivateKeyPath.c_str()))
+                    if (!tlsSocket->tlsKeys.loadPrivateKeyFromPEMFile(config->tlsPrivateKeyPath.c_str()))
                     {
                         CALLBACK(config->tlsCallbacks.onInvalidPrivateKey)(config->context, tlsSocket, config->tlsPrivateKeyPath);
                         cont = false;
                     }
-                    if (!tlsSocket->m_keys.loadPublicKeyFromPEMFile(config->tlsCertificatePath.c_str()))
+                    if (!tlsSocket->tlsKeys.loadPublicKeyFromPEMFile(config->tlsCertificatePath.c_str()))
                     {
                         CALLBACK(config->tlsCallbacks.onInvalidClientCertificate)(config->context, tlsSocket, config->tlsCertificatePath);
                         cont = false;
@@ -89,7 +89,7 @@ void connectionLoopThread(Connector *parent,
             {
                 retries++;
                 // Error connecting...
-                if (!(CALLBACK_B(config->tcpCallbacks.onConnectionFailure, true)(config->context, clientSocket, config->host.c_str(), config->port)))
+                if (!(CALLBACK_B(config->tcpCallbacks.onConnectionFailure, true)(config->context, clientSocket, config)))
                 {
                     cont = false;
                 }
@@ -101,11 +101,12 @@ void connectionLoopThread(Connector *parent,
                 // Connected OK...
                 CALLBACK(config->tcpCallbacks.onConnectionEstablished)(config->context, clientSocket);
 
-                char remotePair[INET6_ADDRSTRLEN+2];
-                clientSocket->getRemotePair(remotePair);
-                int i = parent->handleServerConnection(clientSocket, remotePair);
+/*                char remotePair[INET6_ADDRSTRLEN+2];
+                clientSocket->getRemotePair(remotePair);*/
 
-                CALLBACK(config->tcpCallbacks.onConnectionTerminated)(config->context, clientSocket, config->host.c_str(), config->port, i);
+                int i = parent->handleServerConnection(clientSocket);
+
+                CALLBACK(config->tcpCallbacks.onConnectionTerminated)(config->context, clientSocket, config, i);
                 cont = false;
 
                 /**
@@ -120,8 +121,8 @@ void connectionLoopThread(Connector *parent,
 
 
 
-std::thread Mantids30::Network::Sockets::Connector::startConnectionLoopThread(const Config &parameters)
+std::thread Mantids30::Network::Sockets::Connector::startConnectionLoopThread(const Connector::Config &parameters)
 {
-    thread t = thread(connectionLoopThread, this, make_shared<Config>(parameters));
+    thread t = thread(connectionLoopThread, this, make_shared<Connector::Config>(parameters));
     return t;
 }

@@ -13,9 +13,9 @@ public:
 
     // Server Callback implementations
     /**
-     * @brief onClientAuthenticationError Callback to Notify when there is an authentication error during the incoming TLS/TCP-IP Connection
+     * @brief onProtocolInitializationFailure Callback to Notify when there is an authentication error during the incoming TLS/TCP-IP Connection
      */
-    bool (*onClientAuthenticationError)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>,const char *, bool) = nullptr;
+    bool (*onProtocolInitializationFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>) = nullptr;
 };
 
 }}}

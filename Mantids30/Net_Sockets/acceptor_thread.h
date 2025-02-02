@@ -54,10 +54,10 @@ public:
      * @brief getRemotePair Get Remote Host Address
      * @return remote pair null terminated string.
      */
-    const char * getRemotePair();
-
+    std::string getRemotePair() const;
+/*
     bool isSecure() const;
-    void setSecure(bool value);
+    void setSecure(bool value);*/
 
     static void thread_streamclient(std::shared_ptr<SAThread> threadClient, void *threadedAcceptedControl);
 
@@ -65,10 +65,10 @@ private:
 
 
     std::shared_ptr<Sockets::Socket_Stream_Base> m_pClientSocket;
-
+/*
     char m_remotePair[INET6_ADDRSTRLEN];
     bool m_isSecure;
-
+*/
   //  void * m_parent;
 };
 

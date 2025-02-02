@@ -9,6 +9,7 @@
 #include <Mantids30/Threads/lock_shared.h>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <memory>
 
 using namespace Mantids30;
 using namespace Network::Sockets;
@@ -18,11 +19,11 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
+void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams)
 {
     bool functionFound = false;
 
-    TaskParameters *taskParams = (TaskParameters *) (vTaskParams);
+    TaskParameters *taskParams = (TaskParameters *) (vTaskParams.get());
     RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
@@ -181,9 +182,9 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(void *vTaskParams)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::getSSOData(void *taskData)
+void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData);
+    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData.get());
     FastRPC3 * caller = (FastRPC3 *)taskParams->caller;
 
     json data;
@@ -195,9 +196,9 @@ void FastRPC3::LocalRPCTasks::getSSOData(void *taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::login(void *taskData)
+void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData);
+    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData.get());
     RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
 
     // CREATE NEW SESSION:
@@ -246,9 +247,9 @@ void FastRPC3::LocalRPCTasks::login(void *taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::logout(void *taskData)
+void FastRPC3::LocalRPCTasks::logout(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *params = (FastRPC3::TaskParameters *) (taskData);
+    FastRPC3::TaskParameters *params = (FastRPC3::TaskParameters *) (taskData.get());
     json response;
     response = params->sessionHolder->destroy();
     sendRPCAnswer(params, response.toStyledString(), EXEC_STATUS_SUCCESS);

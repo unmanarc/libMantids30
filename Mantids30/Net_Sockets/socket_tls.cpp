@@ -32,7 +32,7 @@
 using namespace std;
 using namespace Mantids30::Network::Sockets;
 
-Socket_TLS::Socket_TLS() : m_keys(&m_isServer)
+Socket_TLS::Socket_TLS() : tlsKeys(&m_isServer)
 {
 #ifndef WIN32
     // Ignore sigpipes in this thread (eg. SSL_Write on closed socket):
@@ -97,16 +97,16 @@ bool Socket_TLS::postConnectSubInitialization()
     }
 
     // If there is any configured PSK, put the key in the static list here...
-    bool usingPSK = m_keys.linkPSKWithTLSHandle(m_sslHandler);
+    bool usingPSK = tlsKeys.linkPSKWithTLSHandle(m_sslHandler);
 
     // Initialize TLS client certificates and keys
-    if (!m_keys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
+    if (!tlsKeys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
     }
     
-    if ( !(m_keys.getCAPath().empty()) || m_keys.getUseSystemCertificates() )
+    if ( !(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates() )
         SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
     else
     {
@@ -115,7 +115,7 @@ bool Socket_TLS::postConnectSubInitialization()
     }
 
     // Set hostname for SNI extension
-    if (m_keys.getUseSystemCertificates() || m_keys.getValidateServerHostname())
+    if (tlsKeys.getUseSystemCertificates() || tlsKeys.getValidateServerHostname())
     {
         // Using system certificates...
         if (!SSL_set_tlsext_host_name(m_sslHandler, m_remoteServerHostname.c_str()))
@@ -168,23 +168,23 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
 
     // If the parent have any PSK key, pass everything to the current socket_tls.
-    *(m_keys.getPSKServerWallet()) = *(m_tlsParentConnection->m_keys.getPSKServerWallet());
+    *(tlsKeys.getPSKServerWallet()) = *(m_tlsParentConnection->tlsKeys.getPSKServerWallet());
 
     bool usingPSK = isUsingPSK();
     // If there is any configured PSK, link the key in the static list...
     if ( usingPSK )
     {
-        m_keys.linkPSKWithTLSHandle(m_sslHandler);
+        tlsKeys.linkPSKWithTLSHandle(m_sslHandler);
     }
 
     // in server mode, use the parent keys...
-    if (!m_tlsParentConnection->m_keys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
+    if (!m_tlsParentConnection->tlsKeys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
     }
     
-    if ( !m_tlsParentConnection->m_keys.getCAPath().empty() || m_tlsParentConnection->m_keys.getUseSystemCertificates() )
+    if ( !m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates() )
         SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
     else
     {
@@ -253,9 +253,9 @@ bool Socket_TLS::isServer() const
 bool Socket_TLS::isUsingPSK() const
 {
     if (m_isServer)
-        return m_tlsParentConnection->m_keys.getPSKServerWallet()->isUsingPSK;
+        return m_tlsParentConnection->tlsKeys.getPSKServerWallet()->isUsingPSK;
     else
-        return m_keys.getPSKClientValue()->isUsingPSK;
+        return tlsKeys.getPSKClientValue()->isUsingPSK;
 }
 
 
@@ -393,7 +393,7 @@ string Socket_TLS::getTLSPeerCN() const
         if (!m_isServer)
             return "server";
         else
-            return m_keys.getPSKServerWallet()->connectedClientID;
+            return tlsKeys.getPSKServerWallet()->connectedClientID;
     }
 }
 

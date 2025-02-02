@@ -6,9 +6,8 @@ using namespace Mantids30::Network::Sockets::Acceptors;
 
 void PoolThreaded::init()
 {
-    this->pool = nullptr;
-    this->acceptorSocket = nullptr;
-
+    this->m_pool = nullptr;
+    this->m_acceptorSocket = nullptr;
 
     setThreadRunner(runner,this);
     setThreadStopper(stopper,this);
@@ -26,103 +25,63 @@ PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & 
     setAcceptorSocket(acceptorSocket);
 
     callbacks.setAllContexts( context );
-    callbacks.onConnect = _onConnect;
-    callbacks.onInitFail = _onInitFailed;
-    callbacks.onTimedOut = _onTimeOut;
+    callbacks.onClientConnected = _onConnect;
+    callbacks.onProtocolInitializationFailure = _onInitFailed;
+    callbacks.onClientAcceptTimeoutOccurred = _onTimeOut;
 }
 
 
 PoolThreaded::~PoolThreaded()
 {
-    if (this->pool)
-        delete this->pool;
+    if (this->m_pool)
+        delete this->m_pool;
 }
 
 void PoolThreaded::run()
 {
-    // TODO: shared_ptr
-    // TODO: prevent double run.
-    this->pool = new Mantids30::Threads::Pool::ThreadPool(threadsCount,taskQueues);
-    pool->start();
+    std::unique_lock<std::mutex> lock(this->m_runMutex);
+
+    this->m_pool = new Mantids30::Threads::Pool::ThreadPool(parameters.threadsCount,parameters.taskQueues);
+    m_pool->start();
+
     for(;;)
     {
-        std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = acceptorSocket->acceptConnection();
+        std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = m_acceptorSocket->acceptConnection();
         if (clientSocket)
         {
             // TODO: shared_ptr
-            sAcceptorTaskData * taskData = new sAcceptorTaskData;
-            clientSocket->getRemotePair(taskData->remotePair);
-            taskData->onConnect = callbacks.onConnect;
-            taskData->onInitFail = callbacks.onInitFail;
+            std::shared_ptr<sAcceptorTaskData> taskData = std::make_shared<sAcceptorTaskData>();
+
+            taskData->onConnect = callbacks.onClientConnected;
+            taskData->onInitFail = callbacks.onProtocolInitializationFailure;
             taskData->contextOnConnect = callbacks.contextOnConnect;
             taskData->contextOnInitFail = callbacks.contextOnInitFail;
             taskData->clientSocket = clientSocket;
-            taskData->isSecure = acceptorSocket->isSecure();
 
-            taskData->key = taskData->remotePair;
+            taskData->key = clientSocket->getRemotePairStr();
 
-            if (!pool->pushTask( &acceptorTask, taskData, timeoutMS, queuesKeyRatio, taskData->key))
+            if (!m_pool->pushTask( &acceptorTask, taskData, parameters.timeoutMS, parameters.queuesKeyRatio, taskData->key))
             {
-                if (callbacks.onTimedOut!=nullptr)
-                    callbacks.onTimedOut(callbacks.contextOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
-                delete taskData;
+                if (callbacks.onClientAcceptTimeoutOccurred!=nullptr)
+                    callbacks.onClientAcceptTimeoutOccurred(callbacks.contextOnTimedOut,clientSocket);
             }
         }
         else
             break;
     }
+
     // Destroy the acceptor socket:
-    acceptorSocket = nullptr;
+    m_acceptorSocket = nullptr;
 }
 
 void PoolThreaded::stop()
 {
-    acceptorSocket->shutdownSocket();
-}
-
-uint32_t PoolThreaded::getTimeoutMS() const
-{
-    return timeoutMS;
-}
-
-void PoolThreaded::setTimeoutMS(const uint32_t &value)
-{
-    timeoutMS = value;
-}
-
-uint32_t PoolThreaded::getThreadsCount() const
-{
-    return threadsCount;
-}
-
-void PoolThreaded::setThreadsCount(const uint32_t &value)
-{
-    threadsCount = value;
-}
-
-uint32_t PoolThreaded::getTaskQueues() const
-{
-    return taskQueues;
-}
-
-void PoolThreaded::setTaskQueues(const uint32_t &value)
-{
-    taskQueues = value;
-}
-
-float PoolThreaded::getQueuesKeyRatio() const
-{
-    return queuesKeyRatio;
-}
-
-void PoolThreaded::setQueuesKeyRatio(float value)
-{
-    queuesKeyRatio = value;
+    m_acceptorSocket->shutdownSocket();
 }
 
 void PoolThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> & value)
 {
-    acceptorSocket = value;
+    m_acceptorSocket = value;
 }
 
 void PoolThreaded::runner(void *data)
@@ -135,20 +94,19 @@ void PoolThreaded::stopper(void *data)
     ((PoolThreaded *)data)->stop();
 }
 
-void PoolThreaded::acceptorTask(void *data)
+void PoolThreaded::acceptorTask(std::shared_ptr<void> data)
 {
 #ifndef _WIN32
      pthread_setname_np(pthread_self(), "poolthr:sckacpt");
 #endif
 
-     // TODO cambiar a shared_ptr
-    sAcceptorTaskData * taskData = ((sAcceptorTaskData *)data);
+     sAcceptorTaskData * taskData = (sAcceptorTaskData *)data.get();
     if (taskData->clientSocket->postAcceptSubInitialization())
     {
         // Start
         if (taskData->onConnect)
         {
-            if (!taskData->onConnect(taskData->contextOnConnect, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
+            if (!taskData->onConnect(taskData->contextOnConnect, taskData->clientSocket))
             {
                 taskData->clientSocket = nullptr;
             }
@@ -158,11 +116,10 @@ void PoolThreaded::acceptorTask(void *data)
     {
         if (taskData->onInitFail)
         {
-            if (!taskData->onInitFail(taskData->contextOnInitFail, taskData->clientSocket, taskData->remotePair, taskData->isSecure))
+            if (!taskData->onInitFail(taskData->contextOnInitFail, taskData->clientSocket))
             {
                 taskData->clientSocket = nullptr;
             }
         }
     }
-    delete taskData;
 }

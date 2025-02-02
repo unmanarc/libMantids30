@@ -1,7 +1,7 @@
 #pragma once
 
-#include "callbacks_socket_tls.h"
 #include "callbacks_socket_tcp_client.h"
+#include "callbacks_socket_tls.h"
 #include "socket_stream_base.h"
 #include <thread>
 
@@ -12,11 +12,13 @@ class Connector
 public:
     Connector() { m_stopReconnecting = false; }
 
-    class Config {
+
+    class Config
+    {
     public:
-        Config(void * context = nullptr) : context(context)
-        {
-        }
+        Config(void *context = nullptr)
+            : context(context)
+        {}
 
         // TLS:
         /**
@@ -54,7 +56,6 @@ public:
          */
         std::string tlsCustomCACertificateText;
 
-
         bool useTLS = true;
 
         // TCP:
@@ -73,7 +74,7 @@ public:
         Callbacks_Socket_TLS tlsCallbacks;
         Callbacks_Socket_TCP_Client tcpCallbacks;
 
-        void * context;
+        void *context;
     };
 
 
@@ -85,17 +86,17 @@ public:
     std::thread startConnectionLoopThread(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const char * remotePair) = 0;
+    virtual int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> sock) = 0;
 
     std::atomic_bool m_stopReconnecting;
 
 
-private:
+private:/*
     struct ThreadParameters {
         Config parameters;
         Connector * thisObj;
     };
-
+*/
 };
 
 }}}

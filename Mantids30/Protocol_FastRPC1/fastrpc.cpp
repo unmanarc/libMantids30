@@ -1,5 +1,6 @@
 #include "fastrpc.h"
 #include <Mantids30/Threads/lock_shared.h>
+#include <memory>
 
 using namespace Mantids30::Network::Protocols::FastRPC;
 using namespace Mantids30;
@@ -221,7 +222,7 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
     Mantids30::Helpers::JSONReader2 reader;
-    FastRPC1::ThreadParameters * params = new FastRPC1::ThreadParameters;
+    std::shared_ptr<FastRPC1::ThreadParameters> params = std::make_shared<FastRPC1::ThreadParameters>();
     params->requestId = requestId;
     params->methodName = methodName;
     params->done = mtDone;
@@ -239,7 +240,7 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
     if ( !parsingSuccessful )
     {
         // Bad Incoming JSON... Disconnect
-        delete params;
+        //delete params;
         return -3;
     }
     else
@@ -248,10 +249,10 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
         if (!threadPool->pushTask(executeRPCTask,params,queuePushTimeoutInMS,priority,key))
         {
             // Can't push the task in the queue. Null answer.
-            eventFullQueueDrop(params);
-            sendRPCAnswer(params,"", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
+            eventFullQueueDrop(params.get());
+            sendRPCAnswer(params.get(),"", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
             params->done->unlockShared();
-            delete params;
+            //delete params;
         }
     }
     return 1;
@@ -381,9 +382,9 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> str
     return ret;
 }
 
-void FastRPC1::executeRPCTask(void *taskData)
+void FastRPC1::executeRPCTask(std::shared_ptr<void> taskData)
 {
-    FastRPC1::ThreadParameters * params = (FastRPC1::ThreadParameters *)(taskData);
+    FastRPC1::ThreadParameters * params = (FastRPC1::ThreadParameters *)(taskData.get());
 
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";

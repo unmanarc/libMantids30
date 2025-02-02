@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -29,14 +30,14 @@ public:
      * @param context object passed to all callbacks
      * @param _onInitFailed callback function on failed initialization (default nullptr -> none)
      * @param _onTimeOut callback function on time out (default nullptr -> none)
-     * @param _onMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
+     * @param _onClientConnectionLimitPerIPReached callback function when an ip reached the max number of connections (default nullptr -> none)
      */
     MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket,
                     _callbackConnectionRB _onConnect,
                     void * context=nullptr,
                     _callbackConnectionRB _onInitFailed=nullptr,
                     _callbackConnectionRV _onTimeOut=nullptr,
-                    _callbackConnectionLimit _onMaxConnectionsPerIP=nullptr
+                    _callbackConnectionLimit _onClientConnectionLimitPerIPReached=nullptr
                     );
     /**
      * Destructor
@@ -74,39 +75,85 @@ public:
      * Finalize/Catch the client thread element (when it finishes).
      */
     bool finalizeThreadElement(std::shared_ptr<SAThread> x);
-    /**
-     * @brief getMaxConcurrentClients Get maximum number of concurrent client threads are accepted
-     * @return maximum current clients accepted
-     */
-    uint32_t getMaxConcurrentClients();
-    /**
-     * @brief setMaxConcurrentClients Set maximum number of client threads accepted at the same time. Beware that too many concurrent threads could lead to an unhandled exception an program fault (check your ulimits).
-     * @param value maximum current clients accepted
-     */
-    void setMaxConcurrentClients(const uint32_t &value);
-    /**
-     * @brief getMaxWaitMSTime Get maximum time to wait if maximum concurrent limit reached
-     * @return time in milliseconds
-     */
-    uint32_t getMaxWaitMSTime();
-    /**
-     * @brief setMaxWaitMSTime Set maximum time to wait if maximum concurrent limit reached
-     * @param value time in milliseconds
-     */
-    void setMaxWaitMSTime(const uint32_t &value);
-    /**
-     * @brief getMaxConnectionsPerIP Get maximum concurrent connections per client IP
-     * @return maximum number of connections allowed
-     */
-    uint32_t getMaxConnectionsPerIP();
-    /**
-     * @brief setMaxConnectionsPerIP Set maximum concurrent connections per client IP
-     * @param value maximum number of connections allowed
-     */
-    void setMaxConnectionsPerIP(const uint32_t &value);
 
 
-    // TODO: pasar tdo le tunning a Config / paramters;
+
+
+
+    /**
+     * @brief The Config class holds configuration parameters for managing concurrency,
+     *        connection limits, and timeout settings in a multithreaded environment.
+     */
+    class Config {
+    public:
+        friend class MultiThreaded;
+        Config()
+        {
+            maxConcurrentClients = 100;
+            maxWaitMSTime = 5000;
+            maxConnectionsPerIP = 10;
+        }
+
+        /**
+         * @brief getMaxConcurrentClients Get maximum number of concurrent client threads are accepted
+         * @return maximum current clients accepted
+         */
+        uint32_t getMaxConcurrentClients();
+        /**
+         * @brief setMaxConcurrentClients Set maximum number of client threads accepted at the same time. Beware that too many concurrent threads could lead to an unhandled exception an program fault (check your ulimits).
+         * @param value maximum current clients accepted
+         */
+        void setMaxConcurrentClients(const uint32_t &value);
+        /**
+         * @brief getMaxWaitMSTime Get maximum time to wait if maximum concurrent limit reached
+         * @return time in milliseconds
+         */
+        uint32_t getMaxWaitMSTime();
+        /**
+         * @brief setMaxWaitMSTime Set maximum time to wait if maximum concurrent limit reached
+         * @param value time in milliseconds
+         */
+        void setMaxWaitMSTime(const uint32_t &value);
+        /**
+         * @brief getMaxConnectionsPerIP Get maximum concurrent connections per client IP
+         * @return maximum number of connections allowed
+         */
+        uint32_t getMaxConnectionsPerIP();
+        /**
+         * @brief setMaxConnectionsPerIP Set maximum concurrent connections per client IP
+         * @param value maximum number of connections allowed
+         */
+        void setMaxConnectionsPerIP(const uint32_t &value);
+
+        void setParent(MultiThreaded *newParent);
+
+    private:
+        /**
+         * @brief maxConcurrentClients Defines the maximum number of client threads that can be handled concurrently.
+         *        If the number of active clients exceeds this limit, new connections may be rejected or queued.
+         *        Be cautious when increasing this value, as too many concurrent threads could lead to system instability
+         *        or crashes due to resource exhaustion (check your ulimits).
+         */
+        std::atomic<uint32_t> maxConcurrentClients;
+
+        /**
+         * @brief maxWaitMSTime Defines the maximum time (in milliseconds) a new client connection will wait
+         *        if the maximum concurrent client limit is reached.
+         *        If the wait time is exceeded, the connection attempt will be aborted.
+         */
+        std::atomic<uint32_t> maxWaitMSTime;
+
+        /**
+         * @brief maxConnectionsPerIP Defines the maximum number of concurrent connections allowed per unique client IP.
+         *        This helps prevent a single IP from monopolizing server resources and ensures fair distribution.
+         */
+        std::atomic<uint32_t> maxConnectionsPerIP;
+
+        MultiThreaded * parent = nullptr;
+    };
+
+    Config parameters;
+
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
@@ -115,7 +162,6 @@ private:
     uint32_t incrementIPUsage(const std::string & ipAddr);
     void decrementIPUsage(const std::string & ipAddr);
 
-    void init();
 
     bool initialized=false;
         bool finalized=false;
@@ -127,7 +173,6 @@ private:
     std::thread acceptorThread;
 
     //
-    uint32_t maxConcurrentClients, maxWaitMSTime, maxConnectionsPerIP;
     std::mutex mutex_clients;
     std::condition_variable cond_clients_empty, cond_clients_notfull;
 };

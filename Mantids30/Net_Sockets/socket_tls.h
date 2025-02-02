@@ -462,7 +462,7 @@ public:
         bool m_validateServerHostname = false;
     };
 
-    TLSKeyParameters m_keys;
+    TLSKeyParameters tlsKeys;
 
     enum eCertValidationOptions
     {
@@ -561,10 +561,11 @@ public:
      */
     std::list<std::string> getTLSErrorsAndClear();
 
-
+    /**
+     * @brief getPeerName Get the remote TLS Common Name
+     * @return string with the remote TLS common name.
+     */
     std::string getPeerName() const override;
-
-
     /**
      * @brief getTLSPeerCN Get TLS Peer Common Name for PKI or identity for PSK
      * @return string with the CN or identity

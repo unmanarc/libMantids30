@@ -7,6 +7,7 @@
 #include <Mantids30/Threads/mutex.h>
 #include <Mantids30/Net_Sockets/socket_stream_base.h>
 #include <Mantids30/Threads/map.h>
+#include <memory>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace FastRPC { 
 
@@ -266,7 +267,7 @@ protected:
     virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const json &payload);
 
 private:
-    static void executeRPCTask(void * taskData);
+    static void executeRPCTask(std::shared_ptr<void> taskData);
     static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t executionStatus);
 
     int processAnswer(FastRPC1::Connection *connection);

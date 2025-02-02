@@ -12,15 +12,13 @@ using namespace std;
 Listener::Listener() {}
 
 bool Listener::incomingConnection(void * context,
-                                  std::shared_ptr<Sockets::Socket_Stream_Base> socketStream,
-                                  const char *clientIp,
-                                  bool isSecure)
+                                  std::shared_ptr<Sockets::Socket_Stream_Base> socketStream)
 {
     Listener *threadParams = (Listener *)(context);
 
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
 
-    auto connectionStatus = threadParams->handleClientConnection(socketStream, clientIp);
+    auto connectionStatus = threadParams->handleClientConnection(socketStream);
 
     CALLBACK(threadParams->tcpCallbacks.onClientDisconnected)(threadParams->listenerContext, socketStream, connectionStatus);
 
@@ -28,7 +26,7 @@ bool Listener::incomingConnection(void * context,
 }
 
 
-bool Listener::startListeningOnThread( const Config &parameters )
+bool Listener::startListeningInBackground( const Config &parameters )
 {
     // TODO: this is repeated code... we should pass this to socket_tls? and personalize the socket options...
     shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = make_shared<Acceptors::MultiThreaded>();
@@ -42,7 +40,7 @@ bool Listener::startListeningOnThread( const Config &parameters )
         auto tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(listenerSocket);
         if (tlsSocket)
         {
-            if (!parameters.tlsCACertificatePath.empty() && !tlsSocket->m_keys.loadCAFromPEMFile(parameters.tlsCACertificatePath))
+            if (!parameters.tlsCACertificatePath.empty() && !tlsSocket->tlsKeys.loadCAFromPEMFile(parameters.tlsCACertificatePath))
             {
                 // Error loading Optional CA PEM file...
                 CALLBACK(tlsCallbacks.onInvalidCACertificate)(listenerContext, tlsSocket, parameters.tlsCACertificatePath);
@@ -50,12 +48,12 @@ bool Listener::startListeningOnThread( const Config &parameters )
             }
             if (!parameters.tlsPrivateKeyPath.empty() && !parameters.tlsCertificatePath.empty())
             {
-                if (!tlsSocket->m_keys.loadPrivateKeyFromPEMFile(parameters.tlsPrivateKeyPath.c_str()))
+                if (!tlsSocket->tlsKeys.loadPrivateKeyFromPEMFile(parameters.tlsPrivateKeyPath.c_str()))
                 {
                     CALLBACK(tlsCallbacks.onInvalidPrivateKey)(listenerContext, tlsSocket, parameters.tlsPrivateKeyPath);
                     cont = false;
                 }
-                if (!tlsSocket->m_keys.loadPublicKeyFromPEMFile(parameters.tlsCertificatePath.c_str()))
+                if (!tlsSocket->tlsKeys.loadPublicKeyFromPEMFile(parameters.tlsCertificatePath.c_str()))
                 {
                     CALLBACK(tlsCallbacks.onInvalidClientCertificate)(listenerContext, tlsSocket, parameters.tlsCertificatePath);
                     cont = false;
@@ -77,24 +75,25 @@ bool Listener::startListeningOnThread( const Config &parameters )
     // STREAM MANAGER:
     multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
 
-    multiThreadedAcceptor->setMaxConcurrentClients(parameters.maxConcurrentClients);
-    multiThreadedAcceptor->setMaxConnectionsPerIP(parameters.maxConnectionsPerIP);
+    multiThreadedAcceptor->parameters.setMaxConcurrentClients(parameters.maxConcurrentClients);
+    multiThreadedAcceptor->parameters.setMaxConnectionsPerIP(parameters.maxConnectionsPerIP);
     //multiThreadedAcceptor->setMaxWaitMSTime();
 
     // Set callbacks:
     multiThreadedAcceptor->callbacks.contextOnConnect = this;
     multiThreadedAcceptor->callbacks.contextOnInitFail = listenerContext;
-    multiThreadedAcceptor->callbacks.contextOnMaxConnectionsPerIP = listenerContext;
+    multiThreadedAcceptor->callbacks.contextonClientConnectionLimitPerIPReached = listenerContext;
     multiThreadedAcceptor->callbacks.contextOnTimedOut = listenerContext;
 
-    multiThreadedAcceptor->callbacks.onConnect = &incomingConnection;
-    multiThreadedAcceptor->callbacks.onTimedOut = tcpCallbacks.onClientAcceptTimeoutOccurred;
-    multiThreadedAcceptor->callbacks.onMaxConnectionsPerIP = tcpCallbacks.onClientConnectionLimitPerIPReached;
-    multiThreadedAcceptor->callbacks.onInitFail = tlsCallbacks.onClientAuthenticationError;
+    multiThreadedAcceptor->callbacks.onClientConnected = &incomingConnection;
+    multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = tcpCallbacks.onClientAcceptTimeoutOccurred;
+    multiThreadedAcceptor->callbacks.onClientConnectionLimitPerIPReached = tcpCallbacks.onClientConnectionLimitPerIPReached;
+    multiThreadedAcceptor->callbacks.onProtocolInitializationFailure = tlsCallbacks.onProtocolInitializationFailure;
+
 /*
     multiThreadedAcceptor->setCallbackOnConnect(&incomingConnection, threadParams);
-    multiThreadedAcceptor->setCallbackOnMaxConnectionsPerIP(parameters.tcpCallbacks.onClientConnectionLimitPerIPReached, listenerContext);
-    multiThreadedAcceptor->setCallbackOnInitFail(parameters.tlsCallbacks.onClientAuthenticationError, listenerContext);
+    multiThreadedAcceptor->setCallbackonClientConnectionLimitPerIPReached(parameters.tcpCallbacks.onClientConnectionLimitPerIPReached, listenerContext);
+    multiThreadedAcceptor->setCallbackOnInitFail(parameters.tlsCallbacks.onProtocolInitializationFailure, listenerContext);
     multiThreadedAcceptor->setCallbackOnTimedOut(, listenerContext);*/
 
     multiThreadedAcceptor->startInBackground();

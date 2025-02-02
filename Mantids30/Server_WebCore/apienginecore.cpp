@@ -25,51 +25,52 @@ void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::
     m_multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
-    m_multiThreadedAcceptor->callbacks.onConnect = handleConnect;
-    m_multiThreadedAcceptor->callbacks.onInitFail = handleInitFailed;
-    m_multiThreadedAcceptor->callbacks.onTimedOut = handleTimeOut;
-    m_multiThreadedAcceptor->callbacks.onMaxConnectionsPerIP = handleConnectionLimit;
+    m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
+    m_multiThreadedAcceptor->callbacks.onProtocolInitializationFailure = handleInitFailed;
+    m_multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
+    m_multiThreadedAcceptor->callbacks.onClientConnectionLimitPerIPReached = handleConnectionLimit;
 
-    m_multiThreadedAcceptor->setMaxConcurrentClients(maxConcurrentConnections);
+    m_multiThreadedAcceptor->parameters.setMaxConcurrentClients(maxConcurrentConnections);
     m_multiThreadedAcceptor->startInBackground();
 }
 
-void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &threadCount, const uint32_t &threadMaxQueuedElements)
+void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
 {
     checkEngineStatus();
 
     m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
-    m_multiThreadedAcceptor->callbacks.onConnect = handleConnect;
-    m_multiThreadedAcceptor->callbacks.onInitFail = handleInitFailed;
-    m_multiThreadedAcceptor->callbacks.onTimedOut = handleTimeOut;
+    m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
+    m_multiThreadedAcceptor->callbacks.onProtocolInitializationFailure = handleInitFailed;
+    m_multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
 
-    m_poolThreadedAcceptor->setThreadsCount(threadCount);
-    m_poolThreadedAcceptor->setTaskQueues(threadMaxQueuedElements);
+    m_poolThreadedAcceptor->parameters.threadsCount = threadCount;
+    m_poolThreadedAcceptor->parameters.taskQueues = taskQueues;
+
     m_poolThreadedAcceptor->startInBackground();
 }
 
-bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char *cUserIP, bool isSecure)
+bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> sock)
 {
     APIEngineCore * webserver = ((APIEngineCore *)context);
 
     std::string tlsCN;
-    if (s->isSecure())
+    if (sock->isSecure())
     {
-        std::shared_ptr<Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TLS>( s );
+        std::shared_ptr<Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TLS>( sock );
         tlsCN = tlsSock->getTLSPeerCN();
     }
 
     // Prepare the web services handler.
-    auto webHandler = webserver->createNewAPIClientHandler(webserver,s);
+    auto webHandler = webserver->createNewAPIClientHandler(webserver,sock);
 
-    webHandler->setClientInfoVars( cUserIP, isSecure, tlsCN );
+    webHandler->setClientInfoVars( sock->getRemotePairStr().c_str(), sock->isSecure(), tlsCN );
 
     // Set the configuration:
     webHandler->config = &(webserver->config);
 
-    if (webserver->callbacks.onConnect.call(webserver,s,cUserIP,isSecure))
+    if (webserver->callbacks.onClientConnected.call(webserver,sock))
     {
         // Handle the webservice.
         Memory::Streams::Parser::ErrorMSG err;
@@ -79,17 +80,17 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     return true;
 }
 
-bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     APIEngineCore * webserver = ((APIEngineCore *)context);
-    webserver->callbacks.onInitFailed.call(webserver,s,cUserIP,isSecure);
+    webserver->callbacks.onProtocolInitializationFailure.call(webserver,s);
     return true;
 }
 
-void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char * cUserIP, bool isSecure)
+void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     APIEngineCore * webserver = ((APIEngineCore *)context);
-    if (webserver->callbacks.onTimeOut.call(webserver,s,cUserIP,isSecure))
+    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");
@@ -99,10 +100,10 @@ void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket
     }
 }
 
-void APIEngineCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s, const char *)
+void APIEngineCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
     APIEngineCore * webserver = ((APIEngineCore *)context);
-    if (webserver->callbacks.onTimeOut.call(webserver,s,s->getRemotePairStr().c_str(),s->isSecure()))
+    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");

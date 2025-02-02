@@ -62,10 +62,10 @@ public:
      * @param parameters server parameters (port/listenaddr/keys/callbacks)
      * @return true if listening, false otherwise.
      */
-    bool startListeningOnThread(const Config &parameters);
+    bool startListeningInBackground(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const char * remotePair) = 0;
+    virtual int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream) = 0;
 
     // Parameters:
     Config parameters;
@@ -90,7 +90,7 @@ public:
     void * listenerContext;
 
 private:
-    static bool incomingConnection(void *, std::shared_ptr<Sockets::Socket_Stream_Base> bsocket, const char *, bool secure);
+    static bool incomingConnection(void *, std::shared_ptr<Sockets::Socket_Stream_Base> bsocket);
 /*
     class ThreadParameters {
     public:

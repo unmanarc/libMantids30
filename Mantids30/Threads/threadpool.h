@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 #include <string>
 #include <random>
 #include <thread>
@@ -34,8 +35,8 @@ public:
             return task == nullptr && data == nullptr;
         }
 
-        void (*task) (void *);
-        void * data;
+        void (*task) (std::shared_ptr<void>);
+        std::shared_ptr<void> data;
     };
 
     struct TasksQueue
@@ -67,27 +68,33 @@ public:
     /**
      * @brief addTask Add Task
      * @param task task function
-     * @param data data passed to task
+     * @param taskData taskData passed to task
      * @param timeoutMS timeout if insertion queue is full
      * @param key key used to determine the priority schema
      * @param priority value between (0-1] to determine how many queues are available for insertion
      * @return true if inserted, false if timed out or during stop
      */
-    bool pushTask( void (*task)(void *), void * data , uint32_t timeoutMS = static_cast<uint32_t>(-1), const float & priority=0.5, const std::string & key = "");
+    bool pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData , uint32_t timeoutMS = static_cast<uint32_t>(-1), const float & priority=0.5, const std::string & key = "");
     /**
      * @brief popTask function used by thread processor
      * @return task
      */
     Task popTask();
+
     /**
-     * @brief getTasksByQueueLimit Get how many task will receive a queue
-     * @return max task count
+     * @brief getMaxTasksPerQueue Retrieves the maximum number of tasks a single queue can hold before it reaches capacity.
+     *        Each queue operates in a wait mode and will reject additional tasks if this limit is exceeded.
+     * @return Maximum number of tasks per queue.
      */
-    uint32_t getTasksByQueueLimit() const;
+    uint32_t getMaxTasksPerQueue() const;
     /**
-     * @brief getTasksByQueueLimit Set max tasks will receive a queue
+     * @brief setMaxTasksPerQueue Sets the maximum number of tasks that a single queue can store.
+     *        This value determines the queue capacity and helps prevent overload by limiting queued tasks.
+     * @param value Maximum number of tasks per queue.
      */
-    void setTasksByQueueLimit(const uint32_t &value);
+    void setMaxTasksPerQueue(const uint32_t &value);
+
+
 
 private:
 
@@ -100,7 +107,7 @@ private:
     bool terminate;
 
     // LIMITS:
-    std::atomic<uint32_t> tasksByQueueLimit;
+    std::atomic<uint32_t> maxTasksPerQueue;
 
     // THREADS:
     std::map<size_t,std::thread> threads;

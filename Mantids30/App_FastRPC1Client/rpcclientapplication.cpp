@@ -135,7 +135,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
     // Check keys:
     if (1)
     {
-        Network::Sockets::Socket_TLS tls;
+        Network::Sockets::Socket_TLS sock;
 
         if ( Globals::getLC_C2UsePSK() )
         {
@@ -145,7 +145,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
             Globals::getRpcImpl()->loadPSK();
 
             // Check CA if present
-            if (!Globals::getLC_TLSCAFilePath().empty() && !tls.m_keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
             }
@@ -153,13 +153,13 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
         else
         {
             // Check CA always...
-            if (!tls.m_keys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            if (!sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont=false;
             }
             
-            if (!Globals::getLC_TLSCertFilePath().empty() && !tls.m_keys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
+            if (!Globals::getLC_TLSCertFilePath().empty() && !sock.tlsKeys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
             {
                 LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
                 cont=false;
@@ -182,7 +182,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
                 else
                 {
                     // Key Passphrase Available...
-                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.m_keys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
+                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
                     {
                         LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
                         cont=false;
@@ -192,7 +192,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
             else
             {
                 // No Key Passphrase...
-                if ( !Globals::getLC_TLSKeyFilePath().empty() && !tls.m_keys.loadPrivateKeyFromPEMFile( Globals::getLC_TLSKeyFilePath().c_str() ) )
+                if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFile( Globals::getLC_TLSKeyFilePath().c_str() ) )
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
                     cont=false;

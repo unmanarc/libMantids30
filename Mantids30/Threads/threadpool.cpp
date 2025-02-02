@@ -1,7 +1,6 @@
 #include "threadpool.h"
 
 #include <Mantids30/Helpers/random.h>
-#include <iostream>
 
 using namespace Mantids30::Threads::Pool;
 
@@ -10,7 +9,7 @@ ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
     std::random_device rd;
     lRand.seed(rd());
 
-    setTasksByQueueLimit(100);
+    setMaxTasksPerQueue(100);
 
     terminate = false;
     queuedElements = 0;
@@ -44,7 +43,7 @@ void ThreadPool::stop()
     cond_insertedElement.notify_all();
 }
 
-bool ThreadPool::pushTask(void (*task)(void *), void *data, uint32_t timeoutMS,  const float &priority, const std::string &key)
+bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData, uint32_t timeoutMS,  const float &priority, const std::string &key)
 {
     size_t currentQueue = getRandomQueueByKey(key,priority);
 
@@ -56,7 +55,7 @@ bool ThreadPool::pushTask(void (*task)(void *), void *data, uint32_t timeoutMS, 
         return false;
 
     // Check if the queue is up the limit
-    while ( queues[currentQueue].tasks.size() > tasksByQueueLimit  )
+    while ( queues[currentQueue].tasks.size() > maxTasksPerQueue  )
     {
         if (timeoutMS == static_cast<uint32_t>(-1))
         {
@@ -73,7 +72,7 @@ bool ThreadPool::pushTask(void (*task)(void *), void *data, uint32_t timeoutMS, 
 
     // Now is not full, insert it.
     Task toInsert;
-    toInsert.data = data;
+    toInsert.data = taskData;
     toInsert.task = task;
     queues[currentQueue].tasks.push( toInsert );
 
@@ -165,15 +164,17 @@ size_t ThreadPool::getRandomQueueByKey(const std::string &key, const float &prio
     return x;
 }
 
-uint32_t ThreadPool::getTasksByQueueLimit() const
+uint32_t ThreadPool::getMaxTasksPerQueue() const
 {
-    return tasksByQueueLimit;
+    return maxTasksPerQueue;
 }
 
-void ThreadPool::setTasksByQueueLimit(const uint32_t &value)
+void ThreadPool::setMaxTasksPerQueue(const uint32_t &value)
 {
-    tasksByQueueLimit = value;
-    for (auto & i : queues) i.second.cond_removedElement.notify_all();
+    maxTasksPerQueue = value;
+
+    for (auto & i : queues)
+        i.second.cond_removedElement.notify_all();
 }
 
 void ThreadPool::taskProcessor(ThreadPool *tp)

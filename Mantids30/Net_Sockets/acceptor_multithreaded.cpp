@@ -1,31 +1,57 @@
 #include "acceptor_multithreaded.h"
 #include <algorithm>
 #include <memory>
-#include <string.h>
 #include <stdexcept>
 
 using namespace Mantids30::Network::Sockets::Acceptors;
 using Ms = std::chrono::milliseconds;
 
 
-void MultiThreaded::init()
+uint32_t MultiThreaded::Config::getMaxConnectionsPerIP()
 {
-    maxConnectionsPerIP = 16;
-    maxConcurrentClients = 4096; // 4096 maximum concurrent connections (too many connections will cause too many threads, check your ulimit)
-    maxWaitMSTime = 500; // wait 500ms to check if someone left
-}
-
-uint32_t MultiThreaded::getMaxConnectionsPerIP()
-{
-    std::unique_lock<std::mutex> lock(mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
     return maxConnectionsPerIP;
 }
 
-void MultiThreaded::setMaxConnectionsPerIP(const uint32_t &value)
+void MultiThreaded::Config::setMaxConnectionsPerIP(const uint32_t &value)
 {
-    std::unique_lock<std::mutex> lock(mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
     maxConnectionsPerIP = value;
 }
+
+void MultiThreaded::Config::setParent(MultiThreaded *newParent)
+{
+    parent = newParent;
+}
+
+uint32_t MultiThreaded::Config::getMaxWaitMSTime()
+{
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    return maxWaitMSTime;
+}
+
+void MultiThreaded::Config::setMaxWaitMSTime(const uint32_t &value)
+{
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    maxWaitMSTime = value;
+    lock.unlock();
+    parent->cond_clients_notfull.notify_all();
+}
+
+uint32_t MultiThreaded::Config::getMaxConcurrentClients()
+{
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    return maxConcurrentClients;
+}
+
+void MultiThreaded::Config::setMaxConcurrentClients(const uint32_t &value)
+{
+    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    maxConcurrentClients = value;
+    lock.unlock();
+    parent->cond_clients_notfull.notify_all();
+}
+
 
 void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & tc)
 {
@@ -42,13 +68,13 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(mutex_clients);
     // free the lock (wait until another thread finish)...
-    while(threadList.size()>=maxConcurrentClients && !finalized)
+    while(threadList.size()>=parameters.maxConcurrentClients && !finalized)
     {
-        if (cond_clients_notfull.wait_for(lock,Ms(maxWaitMSTime)) == std::cv_status::timeout )
+        if (cond_clients_notfull.wait_for(lock,Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout )
         {
-            if (callbacks.onTimedOut)
+            if (callbacks.onClientAcceptTimeoutOccurred)
             {
-                callbacks.onTimedOut(callbacks.contextOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->isSecure());
+                callbacks.onClientAcceptTimeoutOccurred(callbacks.contextOnTimedOut, clientSocket);
             }
             //delete clientThread;
             return true;
@@ -61,11 +87,11 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
         return false;
     }
     // update the counter
-    if (incrementIPUsage(clientThread->getRemotePair())>maxConnectionsPerIP)
+    if (incrementIPUsage(clientThread->getRemotePair())>parameters.maxConnectionsPerIP)
     {
-        if (callbacks.onMaxConnectionsPerIP)
+        if (callbacks.onClientConnectionLimitPerIPReached)
         {
-            callbacks.onMaxConnectionsPerIP(callbacks.contextOnMaxConnectionsPerIP, clientSocket, clientThread->getRemotePair());
+            callbacks.onClientConnectionLimitPerIPReached(callbacks.contextonClientConnectionLimitPerIPReached, clientSocket);
         }
         decrementIPUsage(clientThread->getRemotePair());
         //delete clientThread;
@@ -99,49 +125,22 @@ void MultiThreaded::decrementIPUsage(const std::string &ipAddr)
     else connectionsPerIP[ipAddr]--;
 }
 
-uint32_t MultiThreaded::getMaxWaitMSTime()
-{
-    std::unique_lock<std::mutex> lock(mutex_clients);
-    return maxWaitMSTime;
-}
-
-void MultiThreaded::setMaxWaitMSTime(const uint32_t &value)
-{
-    std::unique_lock<std::mutex> lock(mutex_clients);
-    maxWaitMSTime = value;
-    lock.unlock();
-    cond_clients_notfull.notify_all();
-}
-
-uint32_t MultiThreaded::getMaxConcurrentClients()
-{
-    std::unique_lock<std::mutex> lock(mutex_clients);
-    return maxConcurrentClients;
-}
-
-void MultiThreaded::setMaxConcurrentClients(const uint32_t &value)
-{
-    std::unique_lock<std::mutex> lock(mutex_clients);
-    maxConcurrentClients = value;
-    lock.unlock();
-    cond_clients_notfull.notify_all();
-}
-
 MultiThreaded::MultiThreaded()
 {
-    init();
+    parameters.setParent(this);
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onMaxConnectionsPerIP)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
 {
-    init();
+    parameters.setParent(this);
+
     setAcceptorSocket(acceptorSocket);
 
-    callbacks.onConnect = _onConnect;
-    callbacks.onMaxConnectionsPerIP = _onMaxConnectionsPerIP;
-    callbacks.onInitFail = _onInitFailed;
-    callbacks.onTimedOut = _onTimeOut;
-    callbacks.contextOnInitFail = callbacks.contextOnTimedOut = callbacks.contextOnConnect = callbacks.contextOnMaxConnectionsPerIP = context;
+    callbacks.onClientConnected = _onConnect;
+    callbacks.onClientConnectionLimitPerIPReached = _onClientConnectionLimitPerIPReached;
+    callbacks.onProtocolInitializationFailure = _onInitFailed;
+    callbacks.onClientAcceptTimeoutOccurred = _onTimeOut;
+    callbacks.contextOnInitFail = callbacks.contextOnTimedOut = callbacks.contextOnConnect = callbacks.contextonClientConnectionLimitPerIPReached = context;
 }
 
 MultiThreaded::~MultiThreaded()
@@ -195,11 +194,11 @@ bool MultiThreaded::acceptClient()
         clientThread->callbacks.contextOnConnect = this->callbacks.contextOnConnect;
         clientThread->callbacks.contextOnInitFail = this->callbacks.contextOnInitFail;
 
-        clientThread->callbacks.onConnect = this->callbacks.onConnect;
-        clientThread->callbacks.onInitFail = this->callbacks.onInitFail;
+        clientThread->callbacks.onClientConnected = this->callbacks.onClientConnected;
+        clientThread->callbacks.onProtocolInitializationFailure = this->callbacks.onProtocolInitializationFailure;
 
         //clientThread->setParent(this);
-        clientThread->setSecure(clientSocket->isSecure());
+        //clientThread->setSecure(clientSocket->isSecure());
 
 
         return processClient(clientSocket,clientThread);
@@ -234,7 +233,7 @@ void MultiThreaded::startInBackground()
 {
     if (!acceptorSocket)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Socket not defined.");
-    if (!callbacks.onConnect)
+    if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
 
     initialized = true;
@@ -252,7 +251,7 @@ bool MultiThreaded::startBlocking()
 {
     if (!acceptorSocket)
         throw std::runtime_error("MultiThreaded::startBlocking() : Acceptor Socket not defined");
-    if (!callbacks.onConnect)
+    if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
 
     while (acceptClient()) {}

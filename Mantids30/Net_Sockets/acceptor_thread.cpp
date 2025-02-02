@@ -15,7 +15,7 @@ using namespace Mantids30::Network::Sockets::Acceptors;
 
 SAThread::SAThread()
 {
-    ZeroBArray(m_remotePair);
+    //ZeroBArray(m_remotePair);
 
     m_pClientSocket = nullptr;
 }
@@ -35,9 +35,9 @@ void SAThread::postInitConnection()
     if (m_pClientSocket->postAcceptSubInitialization())
     {
         // Start
-        if (callbacks.onConnect)
+        if (callbacks.onClientConnected)
         {
-            if (!this->callbacks.onConnect(callbacks.contextOnConnect, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->callbacks.onClientConnected(callbacks.contextOnConnect, m_pClientSocket))
             {
                 m_pClientSocket = nullptr;
             }
@@ -45,9 +45,9 @@ void SAThread::postInitConnection()
     }
     else
     {
-        if (callbacks.onInitFail)
+        if (callbacks.onProtocolInitializationFailure)
         {
-            if (!this->callbacks.onInitFail(callbacks.contextOnInitFail, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->callbacks.onProtocolInitializationFailure(callbacks.contextOnInitFail, m_pClientSocket))
             {
                 m_pClientSocket = nullptr;
             }
@@ -58,20 +58,26 @@ void SAThread::postInitConnection()
 void SAThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket)
 {
     m_pClientSocket = _clientSocket;
-    m_pClientSocket->getRemotePair(m_remotePair);
+//    m_pClientSocket->getRemotePair(m_remotePair);
 }
 
+std::string SAThread::getRemotePair() const
+{
+    return m_pClientSocket->getRemotePairStr();
+}
+
+/*
 const char *SAThread::getRemotePair()
 {
     return m_remotePair;
-}
+}*/
 
 void SAThread::thread_streamclient(std::shared_ptr<SAThread> threadClient, void *threadedAcceptedControl)
 {
     threadClient->postInitConnection();
     ((MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
 }
-
+/*
 bool SAThread::isSecure() const
 {
     return m_isSecure;
@@ -81,3 +87,4 @@ void SAThread::setSecure(bool value)
 {
     m_isSecure = value;
 }
+*/

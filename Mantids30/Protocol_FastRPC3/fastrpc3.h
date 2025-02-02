@@ -385,14 +385,14 @@ public:
      */
     void stop();
 
-    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const char * remotePair) override
+    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream) override
     {
-        return handleConnection(stream, false, remotePair);
+        return handleConnection(stream, false);
     }
 
-    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const char * remotePair) override
+    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream) override
     {
-        return handleConnection(stream, true, remotePair);
+        return handleConnection(stream, true);
     }
 
     /**
@@ -402,7 +402,7 @@ public:
      * @param remotePair remote pair IP address detected by the acceptor
      * @return
      */
-    int handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer, const char * remotePair);
+    int handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer);
 
 
     // TODO: runRemoteRPCMethod for sending message to an specific connected user...
@@ -509,10 +509,10 @@ private:
             ELT_RET_INTERNALERROR = 500
         };
 
-        static void executeLocalTask(void * taskData);
-        static void getSSOData(void * taskData);
-        static void login(void * taskData);
-        static void logout(void * taskData);
+        static void executeLocalTask(std::shared_ptr<void> taskData);
+        static void getSSOData(std::shared_ptr<void> taskData);
+        static void login(std::shared_ptr<void> taskData);
+        static void logout(std::shared_ptr<void> taskData);
     };
 
 

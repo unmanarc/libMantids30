@@ -211,7 +211,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
     Helpers::JSONReader2 reader;
-    FastRPC3::TaskParameters *params = new FastRPC3::TaskParameters;
+    std::shared_ptr<FastRPC3::TaskParameters> params = std::make_shared<FastRPC3::TaskParameters>();
     params->sessionHolder = sessionHolder;
     params->methodsHandler = config.methodHandlers;
     params->jwtValidator = config.jwtValidator;
@@ -235,14 +235,13 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
     if (!parsingSuccessful)
     {
         // Bad Incoming JSON... Disconnect
-        delete params;
         return CONNECTION_FAILED_PARSING_PAYLOAD;
     }
     else
     {
         params->doneSharedMutex->lockShared();
 
-        void (*currentTask)(void *) = LocalRPCTasks::executeLocalTask;
+        void (*currentTask)(std::shared_ptr<void>) = LocalRPCTasks::executeLocalTask;
 
         if (params->methodName == "SESSION.LOGIN")
             currentTask = LocalRPCTasks::login;
@@ -254,10 +253,10 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base
         if (!m_threadPool->pushTask(currentTask, params, config.queuePushTimeoutInMS, priority, key))
         {
             // Can't push the task in the queue. Null answer.
-            CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params);
-            sendRPCAnswer(params, "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
+            CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params.get());
+            sendRPCAnswer(params.get(), "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
             params->doneSharedMutex->unlockShared();
-            delete params;
+//            delete params;
         }
     }
     return CONNECTION_CONTINUE;
@@ -273,7 +272,7 @@ void FastRPC3::setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAs
     m_usingRemotePeerCommonNameAsConnectionId = newUseCNAsServerKey;
 }
 
-int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer, const char *remotePair)
+int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "VSRPC:ProcStr");

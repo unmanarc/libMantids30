@@ -14,15 +14,15 @@ public:
     /**
         * @brief onMaxRetryLimitReached Callback to notify when the maximum number of TLS/TCP-IP connection retries has been reached.
         */
-    void (*onMaxRetryLimitReached)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> , const std::string & , const uint16_t &) = nullptr;
+    void (*onMaxRetryLimitReached)(void *context,  const std::shared_ptr<void> &config ) = nullptr;
     /**
      * @brief onPreConnectionAttempt Callback to Notify just before the TCP/TCP-IP Connection
      */
-    void (*onPreConnectionAttempt)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> , const std::string & , const uint16_t &) = nullptr;
+    void (*onPreConnectionAttempt)(void *context, const std::shared_ptr<void> &config ) = nullptr;
     /**
      * @brief onConnectionTerminated Callback to Notify just after the TCP/TCP-IP Connection (with the error code as integer)
      */
-    void (*onConnectionTerminated)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const std::string & , const uint16_t &, int) = nullptr;
+    void (*onConnectionTerminated)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const std::shared_ptr<void> &config, int) = nullptr;
     /**
      * @brief onConnectionEstablished Callback to Notify when the TCP/TCP-IP connection is established and we are about to authenticate
      */
@@ -30,7 +30,7 @@ public:
     /**
      * @brief onConnectionFailure Callback to Notify when there is an error during the TCP/TCP-IP Connection
      */
-    bool (*onConnectionFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const std::string &, const uint16_t & ) = nullptr;
+    bool (*onConnectionFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>, const std::shared_ptr<void> &config ) = nullptr;
 
 };
 }}}
