@@ -18,7 +18,6 @@ public:
             this->context = context;
         }
 
-
         /**
          * @brief Address to listen on for incoming connections.
          *        Use "*" to listen on all available network interfaces. Default is "*".
