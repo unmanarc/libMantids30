@@ -13,9 +13,8 @@ public:
 
     class Config {
     public:
-        Config(std::shared_ptr<void> context = nullptr)
+        Config()
         {
-            this->context = context;
         }
 
         /**
@@ -46,23 +45,7 @@ public:
          */
         std::string tlsCertificatePath;
 
-        /**
-         * @brief TLS-specific server-side callback configuration.
-         *        Contains callbacks to handle TLS events (e.g., certificate validation, errors).
-         */
-        Mantids30::Network::Sockets::Callbacks_Socket_TLS_Server tlsCallbacks;
 
-        /**
-         * @brief TCP-specific server-side callback configuration.
-         *        Contains callbacks to handle TCP events (e.g., connection establishment, disconnection).
-         */
-        Mantids30::Network::Sockets::Callbacks_Socket_TCP_Server tcpCallbacks;
-
-        /**
-         * @brief User-defined context passed to all configured callbacks.
-         *        This allows maintaining application-specific state during callback execution.
-         */
-        std::shared_ptr<void> context;
 
         bool useTLS = true;
 
@@ -79,19 +62,41 @@ public:
      * @param parameters server parameters (port/listenaddr/keys/callbacks)
      * @return true if listening, false otherwise.
      */
-    bool startListening(const Config &parameters);
+    bool startListeningOnThread(const Config &parameters);
 
     // Callbacks from thread:
     virtual int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const char * remotePair) = 0;
 
-private:
-    static bool incomingConnection(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base> bsocket, const char *, bool secure);
+    // Parameters:
+    Config parameters;
 
+
+    /**
+         * @brief TLS-specific server-side callback configuration.
+         *        Contains callbacks to handle TLS events (e.g., certificate validation, errors).
+         */
+    Mantids30::Network::Sockets::Callbacks_Socket_TLS_Server tlsCallbacks;
+
+    /**
+         * @brief TCP-specific server-side callback configuration.
+         *        Contains callbacks to handle TCP events (e.g., connection establishment, disconnection).
+         */
+    Mantids30::Network::Sockets::Callbacks_Socket_TCP_Server tcpCallbacks;
+
+    /**
+         * @brief User-defined context passed to all configured callbacks.
+         *        This allows maintaining application-specific state during callback execution.
+         */
+    void * listenerContext;
+
+private:
+    static bool incomingConnection(void *, std::shared_ptr<Sockets::Socket_Stream_Base> bsocket, const char *, bool secure);
+/*
     class ThreadParameters {
     public:
         Config parameters;
         Listener * thisObj;
-    };
+    };*/
 
 };
 

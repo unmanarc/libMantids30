@@ -12,9 +12,9 @@ public:
 
     // Generic TLS Callbacks:
 
-    void (*onInvalidCACertificate)(std::shared_ptr<void> context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
-    void (*onInvalidClientCertificate)(std::shared_ptr<void> context,std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
-    void (*onInvalidPrivateKey)(std::shared_ptr<void> context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+    void (*onInvalidCACertificate)(void *context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+    void (*onInvalidClientCertificate)(void *context,std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
+    void (*onInvalidPrivateKey)(void *context, std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS>, const std::string & ) = nullptr;
 
 };
 

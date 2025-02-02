@@ -1,6 +1,5 @@
 #include "acceptor_poolthreaded.h"
 #include <memory>
-#include <string.h>
 
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Sockets::Acceptors;
@@ -13,7 +12,6 @@ void PoolThreaded::init()
 
     setThreadRunner(runner,this);
     setThreadStopper(stopper,this);
-
 }
 
 
@@ -22,31 +20,15 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
+PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket, _callbackConnectionRB _onConnect, void * context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
 {
     init();
     setAcceptorSocket(acceptorSocket);
-    setCallbackOnConnect(_onConnect,context);
-    setCallbackOnInitFail(_onInitFailed,context);
-    setCallbackOnTimedOut(_onTimeOut,context);
-}
 
-void PoolThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context)
-{
-    this->onConnect = _onConnect;
-    this->contextOnConnect = context;
-}
-
-void PoolThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context)
-{
-    this->onInitFail = _onInitFailed;
-    this->contextOnInitFail = context;
-}
-
-void PoolThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context)
-{
-    this->onTimedOut = _onTimeOut;
-    this->contextOnTimedOut = context;
+    callbacks.setAllContexts( context );
+    callbacks.onConnect = _onConnect;
+    callbacks.onInitFail = _onInitFailed;
+    callbacks.onTimedOut = _onTimeOut;
 }
 
 
@@ -58,6 +40,8 @@ PoolThreaded::~PoolThreaded()
 
 void PoolThreaded::run()
 {
+    // TODO: shared_ptr
+    // TODO: prevent double run.
     this->pool = new Mantids30::Threads::Pool::ThreadPool(threadsCount,taskQueues);
     pool->start();
     for(;;)
@@ -65,12 +49,13 @@ void PoolThreaded::run()
         std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = acceptorSocket->acceptConnection();
         if (clientSocket)
         {
+            // TODO: shared_ptr
             sAcceptorTaskData * taskData = new sAcceptorTaskData;
             clientSocket->getRemotePair(taskData->remotePair);
-            taskData->onConnect = onConnect;
-            taskData->onInitFail = onInitFail;
-            taskData->contextOnConnect = contextOnConnect;
-            taskData->contextOnInitFail = contextOnInitFail;
+            taskData->onConnect = callbacks.onConnect;
+            taskData->onInitFail = callbacks.onInitFail;
+            taskData->contextOnConnect = callbacks.contextOnConnect;
+            taskData->contextOnInitFail = callbacks.contextOnInitFail;
             taskData->clientSocket = clientSocket;
             taskData->isSecure = acceptorSocket->isSecure();
 
@@ -78,8 +63,8 @@ void PoolThreaded::run()
 
             if (!pool->pushTask( &acceptorTask, taskData, timeoutMS, queuesKeyRatio, taskData->key))
             {
-                if (onTimedOut!=nullptr)
-                    onTimedOut(contextOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
+                if (callbacks.onTimedOut!=nullptr)
+                    callbacks.onTimedOut(callbacks.contextOnTimedOut,clientSocket,taskData->remotePair,acceptorSocket->isSecure());
                 delete taskData;
             }
         }
@@ -156,6 +141,7 @@ void PoolThreaded::acceptorTask(void *data)
      pthread_setname_np(pthread_self(), "poolthr:sckacpt");
 #endif
 
+     // TODO cambiar a shared_ptr
     sAcceptorTaskData * taskData = ((sAcceptorTaskData *)data);
     if (taskData->clientSocket->postAcceptSubInitialization())
     {

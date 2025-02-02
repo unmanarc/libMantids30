@@ -14,12 +14,9 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptor
 /**
  * @brief The MultiThreadedAcceptor class Accept streams on thread from a listening socket.
  */
-class MultiThreaded
+class MultiThreaded : public std::enable_shared_from_this<MultiThreaded>
 {
 public:
-    typedef bool (*_callbackConnectionRB)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    typedef void (*_callbackConnectionRV)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    typedef void (*_callbackConnectionLimit)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
 
     /**
      * Constructor
@@ -36,21 +33,48 @@ public:
      */
     MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket,
                     _callbackConnectionRB _onConnect,
-                    std::shared_ptr<void> context=nullptr,
+                    void * context=nullptr,
                     _callbackConnectionRB _onInitFailed=nullptr,
                     _callbackConnectionRV _onTimeOut=nullptr,
                     _callbackConnectionLimit _onMaxConnectionsPerIP=nullptr
                     );
-
     /**
      * Destructor
      * WARN: when you finalize this class, the listening socket is closed. please open another one (don't reuse it)
      */
     ~MultiThreaded();
+
+
+    class Callbacks
+    {
+    public:
+
+        void setAllContexts(void * context){
+            contextOnConnect = context;
+            contextOnInitFail = context;
+            contextOnTimedOut = context;
+            contextOnMaxConnectionsPerIP = context;
+        }
+
+        // Callbacks:
+        _callbackConnectionRB onConnect = nullptr;
+        _callbackConnectionRB onInitFail = nullptr;
+        _callbackConnectionRV onTimedOut = nullptr;
+        _callbackConnectionLimit onMaxConnectionsPerIP = nullptr;
+
+        void * contextOnConnect = nullptr;
+        void * contextOnInitFail = nullptr;
+        void * contextOnTimedOut = nullptr;
+        void * contextOnMaxConnectionsPerIP = nullptr;
+    };
+
+    Callbacks callbacks;
+
+
     /**
      * @brief startThreaded Start accepting connections in a new thread (will wait for finalization in destructor)
      */
-    void startThreaded(const std::shared_ptr<MultiThreaded> & tc);
+    void startInBackground();
     /**
      * @brief startBlocking Start Accepting Connections in your own thread.
      * @return
@@ -60,22 +84,7 @@ public:
      * @brief stop Stop Acceptor
      */
     void stop();
-    /**
-     * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
-     */
-    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void> context);
-    /**
-     * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
-     */
-    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context);
-    /**
-     * Set callback when timed out (max concurrent clients reached and timed out) (this callback is called from acceptor thread, you should use it very quick)
-     */
-    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context);
-    /**
-     * Set callback when maximum connections per IP reached (this callback is called from acceptor thread, you should use it very quick)
-     */
-    void setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, std::shared_ptr<void> context);
+
     /**
      * Set the socket that will be used to accept new clients.
      * WARNING: acceptorSocket will be deleted when this class finishes.
@@ -121,6 +130,8 @@ public:
      */
     void setMaxConnectionsPerIP(const uint32_t &value);
 
+
+    // TODO: pasar tdo le tunning a Config / paramters;
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
@@ -136,18 +147,6 @@ private:
     std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
     std::list<std::shared_ptr<SAThread>> threadList;
     std::map<std::string, uint32_t> connectionsPerIP;
-
-    // Callbacks:
-    _callbackConnectionRB onConnect = nullptr;
-    _callbackConnectionRB onInitFail = nullptr;
-    _callbackConnectionRV onTimedOut = nullptr;
-    _callbackConnectionLimit onMaxConnectionsPerIP = nullptr;
-
-    std::shared_ptr<void> contextOnConnect = nullptr;
-    std::shared_ptr<void> contextOnInitFail = nullptr;
-    std::shared_ptr<void> contextOnTimedOut = nullptr;
-    std::shared_ptr<void> contextOnMaxConnectionsPerIP = nullptr;
-
 
     // thread objects:
     std::thread acceptorThread;

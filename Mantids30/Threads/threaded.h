@@ -9,7 +9,7 @@ namespace Mantids30 { namespace Threads {
 /**
  * The Threaded class provides a wrapper for creating and managing threads.
  */
-class Threaded
+class Threaded : public std::enable_shared_from_this<Threaded>
 {
 public:
     Threaded();
@@ -17,10 +17,9 @@ public:
 
     // THREAD ASSOCIATED:
     /**
-     * Starts the thread with the specified Threaded object.
-     * @param tc The shared pointer to the Threaded object to be passed in the new thread.
+     * Starts the thread with the specified Threaded object. (this class should always be declared as a shared_ptr)
      */
-    void start(const std::shared_ptr<Threaded> &threadedObject);
+    void startInBackground();
     /**
      * Stops the thread.
      */

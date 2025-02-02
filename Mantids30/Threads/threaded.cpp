@@ -1,5 +1,4 @@
 #include "threaded.h"
-#include <iostream>
 #include <memory>
 
 using namespace Mantids30::Threads;
@@ -19,9 +18,9 @@ Threaded::~Threaded()
     join();
 }
 
-void Threaded::start(const std::shared_ptr<Threaded> & tc)
+void Threaded::startInBackground()
 {
-    threadObj = std::thread(Threaded::bgRunner, tc);
+    threadObj = std::thread(Threaded::bgRunner, shared_from_this());
 }
 
 void Threaded::stop()

@@ -5,6 +5,10 @@
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptors {
 
+typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *);
+
 /**
  * Class for managing the client on his thread.
  */
@@ -19,6 +23,19 @@ public:
      * destructor
      */
     ~SAThread();
+
+    class Callbacks {
+    public:
+        _callbackConnectionRB onConnect;
+        _callbackConnectionRB onInitFail;
+
+        void * contextOnConnect = nullptr;
+        void * contextOnInitFail = nullptr;
+    };
+
+    Callbacks callbacks;
+
+
     // /**
     //  * Start the thread of the client.
     //  */
@@ -33,14 +50,6 @@ public:
     // * @param parent parent
     // */
     //void setParent(void *parent);
-    /**
-     * Set callback when connection is fully established (if your function returns false, the socket will not be destroyed by this)
-     */
-    void setCallbackOnConnect(bool (*_onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnConnected);
-    /**
-     * Set callback when protocol initialization failed (like bad X.509 on TLS)
-     */
-    void setCallbackOnInitFail(bool (*_onInitFailed)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnInitFailed);
     /**
      * Call callback
      * to be used from the client thread.
@@ -66,14 +75,10 @@ private:
 
 
     std::shared_ptr<Sockets::Socket_Stream_Base> m_pClientSocket;
-    bool (*m_onConnect)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    bool (*m_onInitFail)(std::shared_ptr<void> ,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
     char m_remotePair[INET6_ADDRSTRLEN];
     bool m_isSecure;
 
-    std::shared_ptr<void> m_contextOnConnect = nullptr;
-    std::shared_ptr<void> m_contextOnInitFail = nullptr;
   //  void * m_parent;
 };
 

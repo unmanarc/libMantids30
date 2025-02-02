@@ -8,8 +8,6 @@
 #include <ws2tcpip.h>
 #endif
 
-#include <string.h>
-
 #include "acceptor_multithreaded.h"
 #include <Mantids30/Helpers/mem.h>
 
@@ -19,11 +17,6 @@ SAThread::SAThread()
 {
     ZeroBArray(m_remotePair);
 
-    m_onConnect = nullptr;
-    m_onInitFail = nullptr;
-
-    m_contextOnConnect = nullptr;
-    m_contextOnInitFail = nullptr;
     //m_parent = nullptr;
     m_pClientSocket = nullptr;
 }
@@ -47,17 +40,6 @@ void SAThread::stopSocket()
     m_pClientSocket->shutdownSocket();
 }
 
-void SAThread::setCallbackOnConnect(bool(*_onConnect)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool),std::shared_ptr<void> contextOnConnected)
-{
-    this->m_onConnect = _onConnect;
-    this->m_contextOnConnect = contextOnConnected;
-}
-
-void SAThread::setCallbackOnInitFail(bool (*_onInitFailed)(std::shared_ptr<void> , std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool), std::shared_ptr<void> contextOnInitFailed)
-{
-    this->m_onInitFail = _onInitFailed;
-    this->m_contextOnInitFail = contextOnInitFailed;
-}
 
 /*
 void SAThread::setParent(void * parent)
@@ -71,9 +53,9 @@ void SAThread::postInitConnection()
     if (m_pClientSocket->postAcceptSubInitialization())
     {
         // Start
-        if (m_onConnect)
+        if (callbacks.onConnect)
         {
-            if (!this->m_onConnect(m_contextOnConnect, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->callbacks.onConnect(callbacks.contextOnConnect, m_pClientSocket, m_remotePair,m_isSecure))
             {
                 m_pClientSocket = nullptr;
             }
@@ -81,9 +63,9 @@ void SAThread::postInitConnection()
     }
     else
     {
-        if (m_onInitFail)
+        if (callbacks.onInitFail)
         {
-            if (!this->m_onInitFail(m_contextOnInitFail, m_pClientSocket, m_remotePair,m_isSecure))
+            if (!this->callbacks.onInitFail(callbacks.contextOnInitFail, m_pClientSocket, m_remotePair,m_isSecure))
             {
                 m_pClientSocket = nullptr;
             }

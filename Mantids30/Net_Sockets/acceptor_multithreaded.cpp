@@ -46,9 +46,9 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
     {
         if (cond_clients_notfull.wait_for(lock,Ms(maxWaitMSTime)) == std::cv_status::timeout )
         {
-            if (onTimedOut)
+            if (callbacks.onTimedOut)
             {
-                onTimedOut(contextOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->isSecure());
+                callbacks.onTimedOut(callbacks.contextOnTimedOut, clientSocket, clientThread->getRemotePair(), clientThread->isSecure());
             }
             //delete clientThread;
             return true;
@@ -63,9 +63,9 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
     // update the counter
     if (incrementIPUsage(clientThread->getRemotePair())>maxConnectionsPerIP)
     {
-        if (onMaxConnectionsPerIP)
+        if (callbacks.onMaxConnectionsPerIP)
         {
-            onMaxConnectionsPerIP(contextOnMaxConnectionsPerIP, clientSocket, clientThread->getRemotePair());
+            callbacks.onMaxConnectionsPerIP(callbacks.contextOnMaxConnectionsPerIP, clientSocket, clientThread->getRemotePair());
         }
         decrementIPUsage(clientThread->getRemotePair());
         //delete clientThread;
@@ -132,14 +132,16 @@ MultiThreaded::MultiThreaded()
     init();
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onMaxConnectionsPerIP)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onMaxConnectionsPerIP)
 {
     init();
     setAcceptorSocket(acceptorSocket);
-    setCallbackOnConnect(_onConnect,context);
-    setCallbackOnInitFail(_onInitFailed,context);
-    setCallbackOnTimedOut(_onTimeOut,context);
-    setCallbackOnMaxConnectionsPerIP(_onMaxConnectionsPerIP,context);
+
+    callbacks.onConnect = _onConnect;
+    callbacks.onMaxConnectionsPerIP = _onMaxConnectionsPerIP;
+    callbacks.onInitFail = _onInitFailed;
+    callbacks.onTimedOut = _onTimeOut;
+    callbacks.contextOnInitFail = callbacks.contextOnTimedOut = callbacks.contextOnConnect = callbacks.contextOnMaxConnectionsPerIP = context;
 }
 
 MultiThreaded::~MultiThreaded()
@@ -189,10 +191,17 @@ bool MultiThreaded::acceptClient()
     {
         std::shared_ptr<SAThread> clientThread = std::make_shared<SAThread>();
         clientThread->setClientSocket(clientSocket);
-        clientThread->setCallbackOnConnect(this->onConnect, contextOnConnect);
-        clientThread->setCallbackOnInitFail(this->onInitFail, contextOnInitFail);
+
+        clientThread->callbacks.contextOnConnect = this->callbacks.contextOnConnect;
+        clientThread->callbacks.contextOnInitFail = this->callbacks.contextOnInitFail;
+
+        clientThread->callbacks.onConnect = this->callbacks.onConnect;
+        clientThread->callbacks.onInitFail = this->callbacks.onInitFail;
+
         //clientThread->setParent(this);
         clientThread->setSecure(clientSocket->isSecure());
+
+
         return processClient(clientSocket,clientThread);
     }
     return false; // no more connections. (abandon)
@@ -220,16 +229,16 @@ void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stre
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// NEVER DELETE THIS CLASS AFTER THE START, JUST STOP AND WILL BE DELETED
-void MultiThreaded::startThreaded(const std::shared_ptr<MultiThreaded> & tc)
+// This class should be declared always as a shared_ptr...
+void MultiThreaded::startInBackground()
 {
     if (!acceptorSocket)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Socket not defined.");
-    if (!onConnect)
+    if (!callbacks.onConnect)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
 
     initialized = true;
-    acceptorThread = std::thread(thread_streamaccept,tc);
+    acceptorThread = std::thread(thread_streamaccept,shared_from_this());
 }
 
 void MultiThreaded::stop()
@@ -238,35 +247,12 @@ void MultiThreaded::stop()
         acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-void MultiThreaded::setCallbackOnConnect(_callbackConnectionRB _onConnect,std::shared_ptr<void> context)
-{
-    this->onConnect = _onConnect;
-    this->contextOnConnect = context;
-}
-
-void MultiThreaded::setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context)
-{
-    this->onInitFail = _onInitFailed;
-    this->contextOnInitFail = context;
-}
-
-void MultiThreaded::setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context)
-{
-    this->onTimedOut = _onTimeOut;
-    this->contextOnTimedOut = context;
-}
-
-void MultiThreaded::setCallbackOnMaxConnectionsPerIP(_callbackConnectionLimit _onMaxConnectionsPerIP, std::shared_ptr<void> context)
-{
-    this->onMaxConnectionsPerIP = _onMaxConnectionsPerIP;
-    this->contextOnMaxConnectionsPerIP = context;
-}
 
 bool MultiThreaded::startBlocking()
 {
     if (!acceptorSocket)
         throw std::runtime_error("MultiThreaded::startBlocking() : Acceptor Socket not defined");
-    if (!onConnect)
+    if (!callbacks.onConnect)
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
 
     while (acceptClient()) {}

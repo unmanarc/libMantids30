@@ -17,8 +17,8 @@ class PoolThreaded : public Mantids30::Threads::Threaded
 {
 public:
 
-    typedef bool (*_callbackConnectionRB)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
-    typedef void (*_callbackConnectionRV)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
     /**
      * @brief PoolThreaded Constructor
@@ -37,7 +37,7 @@ public:
      * @param _onTimeOut callback function on time out (default nullptr -> none)
      * @param _onMaxConnectionsPerIP callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, std::shared_ptr<void> context = nullptr, _callbackConnectionRB _onInitFailed = nullptr, _callbackConnectionRV _onTimeOut = nullptr);
+    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void * context = nullptr, _callbackConnectionRB _onInitFailed = nullptr, _callbackConnectionRV _onTimeOut = nullptr);
 
     // Destructor:
     ~PoolThreaded() override;
@@ -50,18 +50,6 @@ public:
      * @brief stop Call to stop the acceptor and automatically delete/destroy this class (don't call anything after this).
      */
     void stop();
-    /**
-     * Set callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
-     */
-    void setCallbackOnConnect(_callbackConnectionRB _onConnect, std::shared_ptr<void>  context);
-    /**
-     * Set callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
-     */
-    void setCallbackOnInitFail(_callbackConnectionRB _onInitFailed, std::shared_ptr<void> context);
-    /**
-     * Set callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
-     */
-    void setCallbackOnTimedOut(_callbackConnectionRV _onTimeOut, std::shared_ptr<void> context);
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
@@ -115,6 +103,23 @@ public:
      */
     void setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> & value);
 
+    // TODO: pasar todo el tunning a Config / parameters;
+
+    class Callbacks
+    {
+    public:
+        void setAllContexts(void *context) { contextOnConnect = contextOnInitFail = contextOnTimedOut = context; }
+
+        _callbackConnectionRB onConnect = nullptr;
+        _callbackConnectionRB onInitFail = nullptr;
+        _callbackConnectionRV onTimedOut = nullptr;
+        void *contextOnConnect = nullptr;
+        void *contextOnInitFail = nullptr;
+        void *contextOnTimedOut = nullptr;
+    };
+
+    Callbacks callbacks;
+
 private:
 
     struct sAcceptorTaskData
@@ -131,14 +136,15 @@ private:
             ZeroBArray(remotePair);
         }
 
-        bool (*onConnect)(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool) = nullptr;
-        bool (*onInitFail)(std::shared_ptr<void>,std::shared_ptr<Sockets::Socket_Stream_Base>, const char *,bool) = nullptr;
-        std::shared_ptr<void> contextOnConnect = nullptr;
-        std::shared_ptr<void> contextOnInitFail = nullptr;
+        _callbackConnectionRB onConnect = nullptr;
+        _callbackConnectionRB onInitFail = nullptr;
+
+        void * contextOnConnect = nullptr;
+        void * contextOnInitFail = nullptr;
 
         std::string key;
 
-        std::shared_ptr<void> context = nullptr;
+     //   std::shared_ptr<void> context = nullptr;
         std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket;
         char remotePair[INET6_ADDRSTRLEN];
         bool isSecure;
@@ -154,13 +160,6 @@ private:
     Mantids30::Threads::Pool::ThreadPool * pool = nullptr;
     std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
 
-    _callbackConnectionRB onConnect= nullptr;
-    _callbackConnectionRB onInitFail = nullptr;
-    _callbackConnectionRV onTimedOut = nullptr;
-
-    std::shared_ptr<void> contextOnConnect = nullptr;
-    std::shared_ptr<void> contextOnInitFail = nullptr;
-    std::shared_ptr<void> contextOnTimedOut = nullptr;
 
     float queuesKeyRatio = 0.5;
     uint32_t timeoutMS = 5000;

@@ -47,12 +47,6 @@ public:
         NotificationCallback onTimeOut;
     };
 
-    struct CallbackParams
-    {
-        APIEngineCore * parent;
-    };
-
-
     APIEngineCore();
     ~APIEngineCore();
 
@@ -69,7 +63,6 @@ public:
      * @param threadMaxQueuedElements Max queued connections per threads
      */
     void acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> &listenerSocket, const uint32_t & threadCount = 20, const uint32_t & threadMaxQueuedElements = 1000 );
-
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
@@ -93,15 +86,15 @@ private:
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _onConnect(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool _onConnect(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool _onInitFailed(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static bool _onInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void _onTimeOut(std::shared_ptr<void>, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
+    static void _onTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream_Base>, const char *, bool);
 
 
 

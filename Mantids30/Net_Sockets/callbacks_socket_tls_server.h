@@ -15,7 +15,7 @@ public:
     /**
      * @brief onClientAuthenticationError Callback to Notify when there is an authentication error during the incoming TLS/TCP-IP Connection
      */
-    bool (*onClientAuthenticationError)(std::shared_ptr<void> context, std::shared_ptr<Sockets::Socket_Stream_Base>,const char *, bool) = nullptr;
+    bool (*onClientAuthenticationError)(void *context, std::shared_ptr<Sockets::Socket_Stream_Base>,const char *, bool) = nullptr;
 };
 
 }}}

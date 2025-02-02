@@ -14,7 +14,7 @@ public:
 
     class Config {
     public:
-        Config(std::shared_ptr<void> context = nullptr) : context(context)
+        Config(void * context = nullptr) : context(context)
         {
         }
 
@@ -73,7 +73,7 @@ public:
         Callbacks_Socket_TLS tlsCallbacks;
         Callbacks_Socket_TCP_Client tcpCallbacks;
 
-        std::shared_ptr<void> context;
+        void * context;
     };
 
 
