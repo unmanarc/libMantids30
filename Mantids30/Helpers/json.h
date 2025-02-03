@@ -172,11 +172,6 @@ namespace Mantids30 { namespace Helpers {
         JSONReader2();
 
         /**
-         * Destroys the JSON reader.
-         */
-        ~JSONReader2();
-
-        /**
          * Parses a JSON document into a JSON value.
          *
          * @param document The JSON document to parse.
@@ -194,7 +189,7 @@ namespace Mantids30 { namespace Helpers {
         std::string getFormattedErrorMessages();
 
     private:
-        Json::CharReader *m_reader;
+        std::shared_ptr<Json::CharReader> m_reader;
         std::string m_errors;
     };
 

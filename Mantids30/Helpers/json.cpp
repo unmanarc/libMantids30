@@ -17,12 +17,7 @@ std::string Mantids30::Helpers::jsonToString(const json &value)
 Mantids30::Helpers::JSONReader2::JSONReader2()
 {
     Json::CharReaderBuilder builder;
-    m_reader = builder.newCharReader();
-}
-
-Mantids30::Helpers::JSONReader2::~JSONReader2()
-{
-    delete m_reader;
+    m_reader.reset(builder.newCharReader());
 }
 
 bool Mantids30::Helpers::JSONReader2::parse(const std::string &document, Json::Value &root)
@@ -82,7 +77,6 @@ std::set<std::string> Mantids30::Helpers::jsonToStringSet(const json &value, con
     return r;
 }
 
-
 json Mantids30::Helpers::setToJSON(const std::set<std::string> &t)
 {
     json x;
@@ -100,8 +94,6 @@ json Mantids30::Helpers::setToJSON(const std::set<uint32_t> &t)
         x[v++] = i;
     return x;
 }
-
-
 
 json Mantids30::Helpers::listToJSON(const std::list<std::string> &t)
 {
