@@ -3,10 +3,6 @@
 using namespace Mantids30::Network::Protocols::MIME;
 
 
-MIME_PartMessage::MIME_PartMessage()
-{
-}
-
 bool MIME_PartMessage::stream(Memory::Streams::StreamableObject::Status &wrStat)
 {
     if (!m_header.stream(wrStat)) return false;

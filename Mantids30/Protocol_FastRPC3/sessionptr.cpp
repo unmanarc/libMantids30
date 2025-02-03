@@ -3,18 +3,6 @@
 using namespace Mantids30::Network::Protocols::FastRPC;
 using namespace Mantids30;
 
-FastRPC3::SessionPTR::SessionPTR()
-{
-    // Initialize with nullptr.
-    session = nullptr;
-}
-
-FastRPC3::SessionPTR::~SessionPTR()
-{
-    // Destroy the session
-    session = nullptr;
-}
-
 bool FastRPC3::SessionPTR::destroy()
 {
     std::lock_guard<std::mutex> lock(mt);

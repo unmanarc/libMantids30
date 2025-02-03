@@ -35,7 +35,7 @@ public:
     };
 
     Content();
-    ~Content() override;
+    ~Content() override = default;
 
 
     //////////////////////////////////////////////////////////////////

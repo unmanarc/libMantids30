@@ -12,8 +12,8 @@ namespace Mantids30 { namespace Network { namespace Sockets {
 class Socket_Stream_Base : public Memory::Streams::StreamableObject, public Sockets::Socket, public Socket_Stream_BaseReader, public Socket_Stream_BaseWriter
 {
 public:
-    Socket_Stream_Base();
-    virtual ~Socket_Stream_Base()override;
+    Socket_Stream_Base() = default;
+    virtual ~Socket_Stream_Base() override = default;
 
     virtual void writeEOF(bool) override;
 

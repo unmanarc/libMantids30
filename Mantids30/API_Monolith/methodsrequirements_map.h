@@ -11,7 +11,7 @@ namespace Mantids30 { namespace API { namespace Monolith {
 class MethodsRequirements_Map
 {
 public:
-    MethodsRequirements_Map();
+    MethodsRequirements_Map() = default;
 
     /**
      * @brief addMethodRequiredPermissions

@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Memory { namespace Streams {
 class StreamableNull : public Memory::Streams::StreamableObject
 {
 public:
-    StreamableNull();
+    StreamableNull() = default;
     /**
      * Retrieve Stream to another Streamable.
      * @param objDst pointer to the destination object.

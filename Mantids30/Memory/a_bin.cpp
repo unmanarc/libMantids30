@@ -9,10 +9,6 @@ BINARY::BINARY()
     setVarType(TYPE_BIN);
 }
 
-BINARY::~BINARY()
-{
-
-}
 
 BINARY::sBinContainer *BINARY::getValue()
 {

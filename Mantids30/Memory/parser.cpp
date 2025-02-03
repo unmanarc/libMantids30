@@ -14,10 +14,6 @@ Parser::Parser(std::shared_ptr<StreamableObject> value, bool clientMode)
     this->m_streamableObject = value;
 }
 
-Parser::~Parser()
-{
-}
-
 StreamableObject::Status Parser::parseObject(Parser::ErrorMSG *err)
 {
     bool ret;

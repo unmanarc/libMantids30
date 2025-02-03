@@ -6,42 +6,20 @@
 
 #include <cctype>
 #include <clocale>
+#include <utility>
 
 using namespace std;
 using namespace Mantids30::Scripts::Expressions;
 
-JSONEval::JSONEval()
-{
-    m_negativeExpression = false;
-    m_staticTextsOwner = false;
-    m_staticTexts = nullptr;
-    m_isCompiled = false;
-    m_evaluationMode = EVAL_MODE_UNDEFINED;
-}
-
-JSONEval::~JSONEval()
-{
-    for (const auto&i: m_subExpressions)
-        delete i;
-    for (const auto&i: m_atomExpressions)
-    {
-        if (i.first) delete i.first;
-    }
-    if (m_staticTextsOwner) delete m_staticTexts;
-}
 
 JSONEval::JSONEval(const std::string &expr)
 {
-    m_negativeExpression = false;
-    m_staticTextsOwner = false;
-    m_staticTexts = nullptr; // create on compile.
     m_isCompiled = compile(expr);
 }
 
-JSONEval::JSONEval(const string &expr, std::vector<string> *staticTexts, bool negativeExpression)
+JSONEval::JSONEval(const string &expr, std::shared_ptr<std::vector<std::string>> staticTexts, bool negativeExpression)
 {
     this->m_negativeExpression = negativeExpression;
-    m_staticTextsOwner = false;
     this->m_staticTexts = staticTexts;
     m_isCompiled = compile(expr);
 }
@@ -50,8 +28,7 @@ bool JSONEval::compile(std::string expr)
 {
     if (!m_staticTexts)
     {
-        m_staticTextsOwner = true;
-        m_staticTexts = new std::vector<std::string>;
+        m_staticTexts = std::make_shared<std::vector<std::string>>();
     }
 
     boost::trim(expr);
@@ -158,12 +135,11 @@ bool JSONEval::compile(std::string expr)
             }
             else
             {
-                AtomicExpression * atomExpression = new AtomicExpression(m_staticTexts);
+                std::shared_ptr<AtomicExpression> atomExpression = std::make_shared<AtomicExpression>(m_staticTexts);
                 if (!atomExpression->compile(atomicExpr))
                 {
                     m_lastError = "Invalid Atomic Expression";
                     m_evaluationMode = EVAL_MODE_UNDEFINED;
-                    delete atomExpression;
                     return false;
                 }
                 m_atomExpressions.push_back(std::make_pair(atomExpression,0));
@@ -262,13 +238,13 @@ size_t JSONEval::detectSubExpr(string &expr, size_t start)
                 }
                 else if (firstByte>0 && expr.at(firstByte-1)=='!')
                 {
-                    m_subExpressions.push_back(new JSONEval(subexpr,m_staticTexts,true));
+                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr,m_staticTexts,true));
                     boost::replace_first(expr,"!(" + subexpr + ")" ,_staticmsg);
                     return 0;
                 }
                 else
                 {
-                    m_subExpressions.push_back(new JSONEval(subexpr,m_staticTexts,false));
+                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr,m_staticTexts,false));
                     boost::replace_first(expr,"(" + subexpr + ")" ,_staticmsg);
                     return 0;
                 }

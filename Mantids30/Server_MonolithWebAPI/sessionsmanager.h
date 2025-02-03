@@ -52,7 +52,6 @@ class WebSessionsManager : public Threads::GarbageCollector
 {
 public:
     WebSessionsManager();
-    ~WebSessionsManager();
 
     static void threadGC(void * sessManager);
     void gc();
@@ -136,11 +135,8 @@ private:
     Threads::Safe::Map<std::string> m_sessions;
 
     std::mutex m_mutex;
-//    std::map<std::string,uint32_t> m_userSessionCount;
 
-    // user->sessionId->info.
     std::map<std::string, std::map<std::string, json> > m_sessionClientInfo;
-
 
 
     uint32_t m_gcWaitTime = 10;

@@ -16,7 +16,7 @@ public:
     /**
      * @brief Constructs a new Version object with version 1.0.
      */
-    Version();
+    Version() = default;
 
     /**
      * @brief Parses the given version string into the major and minor version numbers.

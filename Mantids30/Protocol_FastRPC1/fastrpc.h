@@ -261,6 +261,7 @@ public:
     void setOverwriteObject(std::shared_ptr<void>newOverwriteObject);
 
 protected:
+    // TODO pasar a callbacks
     virtual void eventUnexpectedAnswerReceived(FastRPC1::Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(FastRPC1::ThreadParameters * params);
     virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const json &payload);

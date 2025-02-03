@@ -16,43 +16,52 @@ unsigned char Mem::m_cmpMatrix[] =
     123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255
 };
 
-Mem::Mem()
-{
-}
-
-
-Mem::BinaryDataContainer::BinaryDataContainer(const char *data, const uint64_t &len)
+Mem::BinaryDataContainer::BinaryDataContainer(
+    const char *data, const uint64_t &len)
 {
     if (len)
+    {
         this->data = malloc(len);
+    }
     else
+    {
         this->data = nullptr;
+    }
 
     if (this->data)
     {
         this->length = len;
-        memcpy(this->data,data,len);
+        memcpy(this->data, data, len);
     }
     else
+    {
         this->length = 0;
+    }
 
     cur = 0;
 }
 
-Mem::BinaryDataContainer::BinaryDataContainer(const uint64_t &len)
+Mem::BinaryDataContainer::BinaryDataContainer(
+    const uint64_t &len)
 {
     if (len)
+    {
         data = malloc(len);
+    }
     else
+    {
         data = nullptr;
+    }
 
     if (data)
     {
         this->length = len;
-        memset(data,0,len);
+        memset(data, 0, len);
     }
     else
+    {
         this->length = 0;
+    }
 
     cur = 0;
 }
@@ -60,90 +69,90 @@ Mem::BinaryDataContainer::BinaryDataContainer(const uint64_t &len)
 Mem::BinaryDataContainer::~BinaryDataContainer()
 {
     if (data)
+    {
         free(data);
+    }
     data = nullptr;
     length = 0;
     cur = 0;
 }
 
-void Mem::BinaryDataContainer::operator+=(const unsigned char &c)
+void Mem::BinaryDataContainer::operator+=(
+    const unsigned char &c)
 {
-    unsigned char * data_c = (unsigned char *)(data);
+    unsigned char *data_c = (unsigned char *) (data);
     data_c[cur++] = c;
 }
 
-
-bool Mem::icharcmp(unsigned char c1, unsigned char c2)
+bool Mem::icharcmp(
+    unsigned char c1, unsigned char c2)
 {
-    return m_cmpMatrix[c1]==m_cmpMatrix[c2];
+    return m_cmpMatrix[c1] == m_cmpMatrix[c2];
 }
 
-int Mem::memcmp64(const void *s1, const void *s2, uint64_t n)
+int Mem::memcmp64(
+    const void *s1, const void *s2, uint64_t n)
 {
-    uint64_t curOffset = 0;
-    for (size_t curBlock = (n>64*KB_MULT?64*KB_MULT:n);n;n-=curBlock)
+    uint64_t currentOffset = 0;
+    for (size_t currentBlock = (n > 64 * KB_MULT ? 64 * KB_MULT : n); n; n -= currentBlock)
     {
-        int v = memcmp(((const char *)s1)+curOffset,
-                       ((const char *)s2)+curOffset,curBlock);
-        if (v!=0) return v;
-        curOffset+=curBlock;
+        int result = memcmp(((const char *) s1) + currentOffset, ((const char *) s2) + currentOffset, currentBlock);
+        if (result != 0)
+            return result;
+        currentOffset += currentBlock;
     }
     return 0;
 }
 
-int Mem::memicmp2(const void *s1, const void *s2, const uint64_t &n, const bool &caseSensitive)
+int Mem::memicmp2(
+    const void *s1, const void *s2, const uint64_t &n, const bool &caseSensitive)
 {
     if (caseSensitive)
     {
-        return memcmp64(s1,s2,n);
+        return memcmp64(s1, s2, n);
     }
     else
     {
-        for (uint64_t i=0;i<n;i++)
+        for (uint64_t i = 0; i < n; i++)
         {
-            if (!icharcmp(((const unsigned char *)s1)[i],
-                          ((const unsigned char *)s2)[i])) return -1;
+            if (!icharcmp(((const unsigned char *) s1)[i], ((const unsigned char *) s2)[i]))
+                return -1;
         }
         return 0;
     }
 }
 
-void *Mem::memcpy64(void *dest, const void *src, uint64_t n)
+void *Mem::memcpy64(
+    void *destination, const void *source, uint64_t numBytes)
 {
-    uint64_t curOffset = 0;
-    while (n)
+    uint64_t currentOffset = 0;
+    while (numBytes > 0)
     {
-        size_t curBlock = n>64*KB_MULT?64*KB_MULT:n;
-
-        memcpy(((char *)dest)+curOffset,
-               ((const char *)src)+curOffset, curBlock);
-        curOffset+=curBlock;
-        n-=curBlock;
+        size_t blockSizeToCopy = (numBytes > 64 * KB_MULT ? 64 * KB_MULT : numBytes);
+        memcpy(((char *) destination) + currentOffset, ((const char *) source) + currentOffset, blockSizeToCopy);
+        currentOffset += blockSizeToCopy;
+        numBytes -= blockSizeToCopy;
     }
-    return dest;
+    return destination;
 }
-
-void *Mem::memmove64(void *dest, const void *src, uint64_t n)
+void *Mem::memmove64(
+    void *dest, const void *src, uint64_t numBytes)
 {
-    size_t blockSize = 64*KB_MULT;
-    if (dest>src)
+    size_t blockSize = 64 * KB_MULT;
+    if (dest > src)
     {
-        for (size_t curBlock = (n>blockSize?blockSize:n); n ;n-=curBlock)
+        for (size_t currentBlock = (numBytes > blockSize ? blockSize : numBytes); numBytes; numBytes -= currentBlock)
         {
-            memmove(((char *)dest)+n-curBlock,
-                    ((const char *)src)+n-curBlock,
-                    curBlock);
+            memmove(((char *) dest) + numBytes - currentBlock, ((const char *) src) + numBytes - currentBlock, currentBlock);
         }
     }
-    else if (dest<src)
+    else if (dest < src)
     {
-        uint64_t curOffset = 0;
-        for (size_t curBlock = (n>blockSize?blockSize:n);n;n-=curBlock)
+        uint64_t currentOffset = 0;
+        for (size_t currentBlock = (numBytes > blockSize ? blockSize : numBytes); numBytes; numBytes -= currentBlock)
         {
-            memmove(((char *)dest)+curOffset,
-                    ((const char *)src)+curOffset,
-                    curBlock);
-            curOffset+=curBlock;
+            memmove(((char *) dest) + currentOffset, ((const char *) src) + currentOffset, currentBlock);
+            currentOffset += currentBlock;
         }
     }
     return dest;

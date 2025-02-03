@@ -11,9 +11,7 @@ Mantids30::Applications::FastRPC1::RPCClientImpl * Globals::m_rpcImpl = nullptr;
 Mantids30::Helpers::Mem::BinaryDataContainer * Globals::m_masterKey=nullptr;
 
 
-Globals::Globals()
-{
-}
+
 
 void Globals::setLocalInitConfig(const boost::property_tree::ptree &config)
 {

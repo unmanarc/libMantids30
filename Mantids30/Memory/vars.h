@@ -13,7 +13,7 @@ class Vars
 {
 public:
     Vars();
-    virtual ~Vars();
+    virtual ~Vars() = default;
 
     json getVarsAsJSONMap();
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -24,18 +25,18 @@ public:
         EVAL_OPERATOR_UNDEFINED
     };
 
-    AtomicExpression(std::vector<std::string> *staticTexts );
+    AtomicExpression( std::shared_ptr<std::vector<std::string>> staticTexts );
 
     bool compile( std::string expr );
     bool evaluate(const json & values);
 
-    void setStaticTexts(std::vector<std::string> *value);
+    void setStaticTexts(std::shared_ptr<std::vector<std::string>> value);
 
 private:
     bool calcNegative(bool r);
     bool substractExpressions(const std::string &regex, const eEvalOperator & op);
 
-    std::vector<std::string> *m_staticTexts;
+    std::shared_ptr<std::vector<std::string>> m_staticTexts;
     std::string m_expr;
     AtomicExpressionSide m_left,m_right;
     eEvalOperator m_evalOperator;

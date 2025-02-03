@@ -17,10 +17,6 @@ Content::Content()
     m_subParserName = "Content";
 }
 
-Content::~Content()
-{
-}
-
 bool Content::isDefaultStreamableObj()
 {
     return m_usingInternalOutStream;

@@ -29,7 +29,7 @@ public:
     /**
      * @brief Constructs a new Map object.
      */
-    Map() {}
+    Map() = default;
 
     /**
      * @brief Gets the set of keys in the map.

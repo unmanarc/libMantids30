@@ -13,9 +13,7 @@ using namespace Mantids30::Helpers;
 
 const std::string Encoders::m_b64Chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-Encoders::Encoders()
-{
-}
+
 
 string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t & seed)
 {

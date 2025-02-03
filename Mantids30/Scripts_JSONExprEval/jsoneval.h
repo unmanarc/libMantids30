@@ -2,6 +2,7 @@
 
 #include "atomicexpression.h"
 #include <Mantids30/Helpers/json.h>
+#include <memory>
 
 namespace Mantids30 { namespace Scripts { namespace Expressions {
 
@@ -15,10 +16,10 @@ public:
         EVAL_MODE_UNDEFINED
     };
 
-    JSONEval();
+    JSONEval() = default;
     JSONEval(const std::string & expr);
-    JSONEval(const std::string & expr, std::vector<std::string> * staticTexts, bool negativeExpression);
-    ~JSONEval();
+    JSONEval(const std::string & expr, std::shared_ptr<std::vector<std::string>> staticTexts, bool negativeExpression);
+
 
     bool compile( std::string expr );
     bool evaluate( const json & values );
@@ -39,14 +40,15 @@ private:
     size_t detectSubExpr(std::string & expr, size_t start);
 
     std::string m_expression, m_lastError;
-    std::vector<std::string> * m_staticTexts;
-    std::vector<JSONEval *> m_subExpressions;
-    std::vector<std::pair<AtomicExpression *,size_t>> m_atomExpressions;
+    std::shared_ptr<std::vector<std::string>> m_staticTexts = nullptr;
+    std::vector<std::shared_ptr<JSONEval>> m_subExpressions;
+    std::vector<std::pair<std::shared_ptr<AtomicExpression>,size_t>> m_atomExpressions;
 
-    bool m_staticTextsOwner;
-    bool m_negativeExpression;
-    bool m_isCompiled;
-    eEvalMode m_evaluationMode;
+    bool m_negativeExpression = false;
+    bool m_isCompiled = false;
+    eEvalMode m_evaluationMode = EVAL_MODE_UNDEFINED;
+
+
 };
 
 }}}

@@ -3,7 +3,6 @@
 #include <openssl/err.h>
 #include <openssl/sha.h>
 #include <random>
-#include <chrono>
 
 #ifdef _WIN32
 //#pragma comment(lib, "crypt32.lib")
@@ -21,14 +20,9 @@ const EVP_CIPHER * Socket_Chain_AES::m_cipher = openSSLInit();
 
 Socket_Chain_AES::Socket_Chain_AES()
 {
-    m_initialized = false;
-    m_cipher = nullptr;
     setAESRegenBlockSize();
 }
 
-Socket_Chain_AES::~Socket_Chain_AES()
-{
-}
 
 void Socket_Chain_AES::setAESRegenBlockSize(const size_t &value)
 {

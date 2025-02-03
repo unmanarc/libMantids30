@@ -17,14 +17,6 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
 
-Socket_Stream_Base::Socket_Stream_Base()
-{
-}
-
-Socket_Stream_Base::~Socket_Stream_Base()
-{
-}
-
 void Socket_Stream_Base::writeEOF(bool)
 {
     shutdownSocket(SHUT_RDWR);

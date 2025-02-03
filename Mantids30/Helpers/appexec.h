@@ -43,7 +43,7 @@ public:
     };
 
 
-    AppExec() {}
+    AppExec() = default;
     /**
      * @brief blexec blocking command execution
      * @param cmd
@@ -124,9 +124,9 @@ private:
     std::vector<std::string> m_environment;
     pid_t m_childPid;
     posix_spawnattr_t m_attr;
-    posix_spawnattr_t *m_attrp;
+    posix_spawnattr_t *m_attrp = nullptr;
     posix_spawn_file_actions_t m_fileActions;
-    posix_spawn_file_actions_t *m_fileActionsp;
+    posix_spawn_file_actions_t *m_fileActionsp = nullptr;
     int m_piStdOut[2];
     int m_piStdErr[2];
     std::vector<pollfd> m_plist;

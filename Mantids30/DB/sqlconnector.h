@@ -16,7 +16,7 @@ namespace Mantids30 { namespace Database {
 class SQLConnector
 {
 public:
-    SQLConnector();
+    SQLConnector() = default;
     virtual ~SQLConnector();
 
     enum eQueryPTRErrors

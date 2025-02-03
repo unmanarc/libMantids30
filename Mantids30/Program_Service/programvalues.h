@@ -19,7 +19,7 @@ public:
     /**
      * Class constructor.
      */
-    ProgramValues();
+    ProgramValues() = default;
 
     /**
      * Initializes the program name.

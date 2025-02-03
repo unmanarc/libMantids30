@@ -4,10 +4,6 @@
 
 using namespace Mantids30::API::Monolith;
 
-MethodsRequirements_Map::MethodsRequirements_Map()
-{
-}
-
 void MethodsRequirements_Map::addMethodRequiredPermissions(const std::string &methodName, const std::set<std::string> &applicationPermissions)
 {
     for (const std::string & permission : applicationPermissions)

@@ -15,8 +15,7 @@ struct APIReturn {
     /**
      * @brief Default constructor for APIReturn.
      */
-    APIReturn() {
-    }
+    APIReturn() = default;
 
     APIReturn(Network::Protocols::HTTP::Status::eRetCode code)
     {

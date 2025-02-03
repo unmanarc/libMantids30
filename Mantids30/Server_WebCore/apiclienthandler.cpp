@@ -38,10 +38,6 @@ APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObjec
 {
 }
 
-APIClientHandler::~APIClientHandler()
-{
-}
-
 void APIClientHandler::processPathParameters(const std::string &request, std::string &methodName, Json::Value &pathParameters)
 {
     using Tokenizer = boost::tokenizer<boost::char_separator<char>>;

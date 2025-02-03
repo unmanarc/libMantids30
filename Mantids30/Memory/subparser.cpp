@@ -16,9 +16,6 @@ SubParser::SubParser()
     m_parseDelimiter = "\r\n";
 }
 
-SubParser::~SubParser()
-{
-}
 
 void SubParser::initElemParser(std::shared_ptr<Memory::Streams::StreamableObject> upstreamObj, bool clientMode)
 {

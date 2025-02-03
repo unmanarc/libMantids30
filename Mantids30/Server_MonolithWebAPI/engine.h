@@ -18,7 +18,6 @@ class Engine : public Web::APIEngineCore
 {
 public:
     Engine();
-    ~Engine();
 
     // Seteables (before starting the acceptor, non-thread safe):
     std::map<uint32_t,API::Monolith::MethodsHandler *> methodsHandlerByAPIVersion;
@@ -26,7 +25,6 @@ public:
     WebSessionsManager sessionsManager;
 
 protected:
-    void checkEngineStatus() override;
     std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s ) override;
 };
 

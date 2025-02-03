@@ -605,15 +605,15 @@ private:
 
     Socket_TLS *m_tlsParentConnection;
 
-    eCertValidationOptions m_certValidationOptions;
-    SSL *m_sslHandler;
-    SSL_CTX *m_sslContext;
+    eCertValidationOptions m_certValidationOptions = CERT_X509_VALIDATE;
+    SSL *m_sslHandler = nullptr;
+    SSL_CTX *m_sslContext = nullptr;
     SSL_CTX *createServerSSLContext();
     SSL_CTX *createClientSSLContext();
 
     std::list<std::string> m_sslErrorList;
 
-    bool m_isServer;
+    bool m_isServer = false;
 };
 } // namespace Sockets
 } // namespace Network

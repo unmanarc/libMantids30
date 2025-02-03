@@ -15,13 +15,12 @@
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Sockets;
 
-Socket_UNIX::Socket_UNIX()
-{
-}
-
 bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &recvbuffer, const int32_t &backlog)
 {
-   if (isActive()) closeSocket(); // close first
+   if (isActive()) 
+    {
+        closeSocket(); // close first
+    }
 
    // use the addr as path.
    sockaddr_un server_address;

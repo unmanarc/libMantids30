@@ -25,9 +25,6 @@ ClientHandler::ClientHandler(void *parent, std::shared_ptr<Memory::Streams::Stre
 {
 }
 
-ClientHandler::~ClientHandler()
-{
-}
 
 Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
 {

@@ -150,7 +150,6 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
 
 Mantids30::Helpers::AppSpawn::AppSpawn()
 {
-    m_attrp = nullptr;
     m_fileActionsp = &m_fileActions;
 
     if ((posix_spawn_file_actions_init (m_fileActionsp)) != 0)

@@ -29,10 +29,6 @@ public:
      */
     Bridge();
     /**
-     * @brief Socket_Bridge destructor.
-     */
-    ~Bridge();
-    /**
      * @brief start, begin the communication between peers in threaded mode.
      * @param autoDelete true (default) if going to delete the whole pipe when finish.
      * @return true if initialized, false if not.
@@ -146,30 +142,30 @@ private:
     static void pingThread(Bridge * stp);
     static void pipeThread(Bridge * stp);
 
-    Bridge_Thread *m_bridgeThreadPrc;
+    Bridge_Thread *m_bridgeThreadPrc = nullptr;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base>  m_peers[2];
-    TransmitionMode m_transmitionMode;
+    std::shared_ptr<Sockets::Socket_Stream_Base>  m_peers[2] = {nullptr, nullptr};
+    TransmitionMode m_transmitionMode = TRANSMITION_MODE_STREAM;
 
-    std::atomic<uint64_t> m_sentBytes,m_recvBytes;
-    std::atomic<int> m_finishingPeer;
-    std::atomic<bool> m_shutdownRemotePeerOnFinish;
-    std::atomic<bool> m_closeRemotePeerOnFinish;
+    std::atomic<uint64_t> m_sentBytes{0}, m_recvBytes{0};
+    std::atomic<int> m_finishingPeer{-1};
+    std::atomic<bool> m_shutdownRemotePeerOnFinish{false};
+    std::atomic<bool> m_closeRemotePeerOnFinish{false};
 
-    int m_lastError[2];
+    int m_lastError[2] = {0, 0};
 
     std::mutex m_lastPingMutex;
-    time_t m_lastPingTimestamp;
+    time_t m_lastPingTimestamp{0};
 
     std::mutex m_endPingLoopMutex;
     std::condition_variable m_endPingCond;
 
-    uint32_t m_pingEveryMS;
+    uint32_t m_pingEveryMS{5000};
 
-    bool m_isPingFinished;
-    bool m_autoDeleteStreamPipeOnExit;
+    bool m_isPingFinished = false;
+    bool m_autoDeleteStreamPipeOnExit = true;
     //bool autoDeleteSocketsOnExit;
-    bool m_autoDeleteCustomPipeOnClose;
+    bool m_autoDeleteCustomPipeOnClose = false;
 
     std::thread m_pipeThreadP;
 };

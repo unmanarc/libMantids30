@@ -11,15 +11,6 @@
 
 using namespace Mantids30::Memory::Streams;
 
-StreamableObject::StreamableObject()
-{
-    m_failedWriteState = 0;
-}
-
-StreamableObject::~StreamableObject()
-{
-}
-
 
 std::string StreamableObject::toString()
 {

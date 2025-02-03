@@ -10,7 +10,6 @@ namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
 class HTMLIEngine
 {
 public:
-    HTMLIEngine();
     static Protocols::HTTP::Status::eRetCode processResourceFile( APIClientHandler * clientHandler, const std::string & sRealFullPath );
 
 private:

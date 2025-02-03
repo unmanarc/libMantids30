@@ -4,15 +4,7 @@
 using namespace Mantids30::Network;
 using namespace Sockets::ChainProtocols;
 
-Socket_Chain_ProtocolBase::Socket_Chain_ProtocolBase()
-{
-    m_serverMode = false;
-}
 
-Socket_Chain_ProtocolBase::~Socket_Chain_ProtocolBase()
-{
-
-}
 
 bool Socket_Chain_ProtocolBase::isEndPoint()
 {

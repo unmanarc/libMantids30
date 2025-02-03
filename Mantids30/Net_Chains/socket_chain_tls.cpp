@@ -2,7 +2,3 @@
 
 using namespace Mantids30::Network::Sockets::ChainProtocols;
 
-Socket_Chain_TLS::Socket_Chain_TLS()
-{
-
-}

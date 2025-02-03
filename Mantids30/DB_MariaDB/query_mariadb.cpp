@@ -20,15 +20,6 @@ typedef bool my_bool;
 
 using namespace Mantids30::Database;
 
-Query_MariaDB::Query_MariaDB()
-{
-    m_stmt = nullptr;
-    m_bindedInputParams = nullptr;
-    m_bindedResultsParams = nullptr;
-
-    m_databaseConnectionHandler = nullptr;
-}
-
 Query_MariaDB::~Query_MariaDB()
 {
     // Destroy binded values.

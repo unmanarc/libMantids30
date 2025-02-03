@@ -11,7 +11,7 @@ typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_St
 typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
 typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
 
-class SAThreadCallbacks
+class StreamAcceptorThreadCallbacks
 {
 public:
     _callbackConnectionRB onClientConnected = nullptr;

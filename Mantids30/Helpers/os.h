@@ -39,11 +39,6 @@ class OS
 {
 public:
     /**
-     * Constructs a new OS object.
-     */
-    OS();
-
-    /**
      * Gets system information about the local machine.
      *
      * @return A LocalSysInfo object containing system information about the local machine.

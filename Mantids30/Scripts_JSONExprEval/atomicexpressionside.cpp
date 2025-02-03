@@ -1,22 +1,17 @@
 #include "atomicexpressionside.h"
 #include <boost/algorithm/string.hpp>
 #include <json/value.h>
+#include <memory>
 
 using namespace Mantids30::Scripts::Expressions;
 
 using namespace std;
 
-AtomicExpressionSide::AtomicExpressionSide(vector<string> *staticTexts)
+AtomicExpressionSide::AtomicExpressionSide(std::shared_ptr<vector<string>> staticTexts)
 {
     this->m_staticTexts = staticTexts;
-    m_mode=EXPR_MODE_UNDEFINED;
-    m_regexp = nullptr;
 }
 
-AtomicExpressionSide::~AtomicExpressionSide()
-{
-    if (m_regexp) delete m_regexp;
-}
 
 bool AtomicExpressionSide::calcMode()
 {
@@ -91,12 +86,12 @@ set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool
     }
 }
 
-boost::regex *AtomicExpressionSide::getRegexp() const
+std::shared_ptr<boost::regex> AtomicExpressionSide::getRegexp() const
 {
     return m_regexp;
 }
 
-void AtomicExpressionSide::setRegexp(boost::regex *value)
+void AtomicExpressionSide::setRegexp(std::shared_ptr<boost::regex> value)
 {
     m_regexp = value;
 }
@@ -110,7 +105,7 @@ set<string> AtomicExpressionSide::recompileRegex(const string &r, bool ignoreCas
 {
     if (!m_regexp)
     {
-        m_regexp = new boost::regex(r.c_str(),
+        m_regexp = std::make_shared<boost::regex>(r.c_str(),
                                   ignoreCase? (boost::regex::extended|boost::regex::icase) : (boost::regex::extended) );
     }
     return {};

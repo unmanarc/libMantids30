@@ -74,7 +74,7 @@ public:
     /**
      * Finalize/Catch the client thread element (when it finishes).
      */
-    bool finalizeThreadElement(std::shared_ptr<SAThread> x);
+    bool finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> x);
 
 
 
@@ -157,7 +157,7 @@ public:
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
-    bool processClient(std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket, std::shared_ptr<SAThread> clientThread);
+    bool processClient(std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
 
     uint32_t incrementIPUsage(const std::string & ipAddr);
     void decrementIPUsage(const std::string & ipAddr);
@@ -166,7 +166,7 @@ private:
     bool m_initialized=false;
     bool m_finalized=false;
     std::shared_ptr<Sockets::Socket_Stream_Base> m_acceptorSocket;
-    std::list<std::shared_ptr<SAThread>> m_threadList;
+    std::list<std::shared_ptr<StreamAcceptorThread>> m_threadList;
     std::map<std::string, uint32_t> m_connectionsPerIP;
 
     // thread objects:

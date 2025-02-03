@@ -10,7 +10,6 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
-#include <limits>
 #include <string>
 #include <stdexcept>
 
@@ -43,10 +42,6 @@ Socket_TLS::Socket_TLS() : tlsKeys(&m_isServer)
 #endif
 
     setCertValidation(CERT_X509_VALIDATE);
-    m_tlsParentConnection = nullptr;
-    m_isServer = false;
-    m_sslHandler = nullptr;
-    m_sslContext = nullptr;
 }
 
 Socket_TLS::~Socket_TLS()

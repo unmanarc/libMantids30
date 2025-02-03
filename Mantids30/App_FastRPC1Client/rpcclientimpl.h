@@ -18,7 +18,7 @@ public:
     };
 
     RPCClientImpl();
-    virtual ~RPCClientImpl();
+    virtual ~RPCClientImpl() = default;
 
     /**
      * @brief runRPClient0 Run the class RPC Client (to be called from a thread)

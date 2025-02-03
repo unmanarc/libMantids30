@@ -10,8 +10,8 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainPro
 class Socket_Chain_ProtocolBase
 {
 public:
-    Socket_Chain_ProtocolBase();
-    virtual ~Socket_Chain_ProtocolBase();
+    Socket_Chain_ProtocolBase() = default;
+    virtual ~Socket_Chain_ProtocolBase() = default;
 
     virtual bool isEndPoint();
     std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> , std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> > makeSocketChainPair();
@@ -22,7 +22,7 @@ protected:
     virtual void * getThis() = 0;
 
 private:
-    bool m_serverMode;
+    bool m_serverMode = false;
 };
 
 }}}}

@@ -9,28 +9,11 @@
 #include <boost/regex.hpp>
 
 namespace Mantids30 { namespace API { namespace Web {
-/*
-struct UserData {
-
-//    std::string ipAddress = "";
-    std::string userName = "";
-    std::string domainName = "";
-  //  std::string tlsCommonName = "";
-    
-    std::set<std::string> permissions;
-    std::map<std::string, json> claims;
-
-    std::string halfSessionId = "";
-    std::string sessionId = "";
-
-    bool sessionActive = false;
-    bool loggedIn = false;
-};*/
 
 class ResourcesFilter
 {
 public:
-    ResourcesFilter();
+    ResourcesFilter() = default;
 
     struct FilterEvaluationResult
     {

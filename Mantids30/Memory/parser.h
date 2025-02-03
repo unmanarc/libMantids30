@@ -28,7 +28,7 @@ class Parser : public Memory::Streams::StreamableObject
 {
 public:
     Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
-    virtual ~Parser() override;
+    virtual ~Parser() override = default;
     enum ErrorMSG {
         PARSING_SUCCEED = 0,
         PARSING_ERR_INIT = -1,

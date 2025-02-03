@@ -277,21 +277,6 @@ void FastRPC1::setRWTimeout(uint32_t _rwTimeout)
 {
     m_rwTimeout = _rwTimeout;
 }
-/*
-
-bool FastRPC1::shutdownConnection(const std::string &connectionKey)
-{
-    FastRPC1::Connection * connection =(FastRPC1::Connection *)connectionsByKeyId.openElement(connectionKey);
-    if (connection!=nullptr)
-    {
-        connection->stream->shutdownSocket();
-        connectionsByKeyId.releaseElement(connectionKey);
-        return true;
-    }
-    return false;
-}
-
-*/
 
 void FastRPC1::setRemoteExecutionDisconnectedTries(const uint32_t &value)
 {

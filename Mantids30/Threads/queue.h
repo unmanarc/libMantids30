@@ -75,13 +75,13 @@ private:
 template<class T>
 void Queue<T>::setMaxItemsAsExternalPointer(std::atomic<size_t> *maxItems)
 {
-    this->maxItems = maxItems;
+    this->m_maxItems = maxItems;
 }
 
 template<class T>
 void Queue<T>::setMaxItems(const size_t &maxItems)
 {
-    (*this->maxItems) = maxItems;
+    (*this->m_maxItems) = maxItems;
 }
 
 template<class T>

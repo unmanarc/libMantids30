@@ -2,16 +2,6 @@
 
 using namespace Mantids30::Threads::Safe;
 
-MapItem::MapItem()
-{
-    m_mapFinished = false;
-}
-
-MapItem::~MapItem()
-{
-
-}
-
 void MapItem::stopReaders()
 {
     m_mapFinished = true;

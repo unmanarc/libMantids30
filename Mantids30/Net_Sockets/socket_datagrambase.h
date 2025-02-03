@@ -44,8 +44,8 @@ public:
         int dataLength;
     };
 
-    Socket_DatagramBase();
-    virtual ~Socket_DatagramBase();
+    Socket_DatagramBase() = default;
+    virtual ~Socket_DatagramBase() = default;
 
     // Datagram Specific Functions.
     virtual std::shared_ptr<Block> readBlock() = 0;

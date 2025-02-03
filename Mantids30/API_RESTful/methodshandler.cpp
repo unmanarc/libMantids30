@@ -6,11 +6,6 @@
 using namespace Mantids30;
 using namespace API::RESTful;
 
-MethodsHandler::MethodsHandler()
-{
-
-}
-
 bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredPermissions)
 {
     RESTfulAPIDefinition def;

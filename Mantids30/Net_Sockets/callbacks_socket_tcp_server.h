@@ -7,7 +7,7 @@ namespace Mantids30 { namespace Network { namespace Sockets {
 class Callbacks_Socket_TCP_Server
 {
 public:
-    Callbacks_Socket_TCP_Server( ) {}
+    Callbacks_Socket_TCP_Server( )  = default;
 
     // Callback implementations
 

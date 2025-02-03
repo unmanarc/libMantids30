@@ -17,15 +17,7 @@
 
 using namespace Mantids30::Network::Sockets;
 
-Socket_Stream_BaseWriter::Socket_Stream_BaseWriter()
-{
 
-}
-
-Socket_Stream_BaseWriter::~Socket_Stream_BaseWriter()
-{
-
-}
 
 bool Socket_Stream_BaseWriter::writeU8(const unsigned char& c)
 {

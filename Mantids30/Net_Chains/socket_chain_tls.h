@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainPro
 class Socket_Chain_TLS : public Sockets::Socket_TLS, public Socket_Chain_ProtocolBase
 {
 public:
-    Socket_Chain_TLS();
+    Socket_Chain_TLS() = default;
 
 protected:
     void * getThis() override { return this; }

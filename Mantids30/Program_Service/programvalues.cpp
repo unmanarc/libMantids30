@@ -4,10 +4,6 @@
 
 using namespace Mantids30::Program::Values;
 
-ProgramValues::ProgramValues()
-{
-
-}
 
 void ProgramValues::initProgramName(const std::string &value)
 {

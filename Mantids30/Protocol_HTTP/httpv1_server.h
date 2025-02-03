@@ -48,7 +48,7 @@ public:
 
         // Proceced information:
         std::shared_ptr<Memory::Abstract::Vars> VARS_GET, VARS_POST;
-        MIME::MIME_HeaderOption * VARS_COOKIES;
+        std::shared_ptr<MIME::MIME_HeaderOption> VARS_COOKIES;
     };
 */
 

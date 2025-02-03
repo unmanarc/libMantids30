@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 class CacheControl
 {
 public:
-    CacheControl();
+    CacheControl() = default;
 
     std::string toString();
     void fromString(const std::string & str);

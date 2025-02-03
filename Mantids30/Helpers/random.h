@@ -8,7 +8,6 @@ namespace Mantids30 { namespace Helpers {
 class Random
 {
 public:
-    Random();
     /**
      * @brief createRandomString Create a Random String (letters and numbers)
      * @param length output lenght
@@ -51,7 +50,6 @@ public:
             std::swap (first[i],first[dis(gen)]);
         }
     }
-private:
 };
 
 }}

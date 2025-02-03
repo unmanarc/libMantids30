@@ -6,7 +6,6 @@
 using namespace std;
 using namespace Mantids30::Helpers;
 
-Random::Random() {}
 
 std::string Random::createRandomString(size_t length)
 {

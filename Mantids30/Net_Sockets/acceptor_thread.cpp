@@ -13,23 +13,13 @@
 
 using namespace Mantids30::Network::Sockets::Acceptors;
 
-SAThread::SAThread()
-{
-    //ZeroBArray(m_remotePair);
 
-    m_pClientSocket = nullptr;
-}
-
-SAThread::~SAThread()
-{
-}
-
-void SAThread::stopSocket()
+void StreamAcceptorThread::stopSocket()
 {
     m_pClientSocket->shutdownSocket();
 }
 
-void SAThread::postInitConnection()
+void StreamAcceptorThread::postInitConnection()
 {
     // Accept (internal protocol)
     if (m_pClientSocket->postAcceptSubInitialization())
@@ -55,35 +45,35 @@ void SAThread::postInitConnection()
     }
 }
 
-void SAThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket)
+void StreamAcceptorThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket)
 {
     m_pClientSocket = _clientSocket;
 //    m_pClientSocket->getRemotePair(m_remotePair);
 }
 
-std::string SAThread::getRemotePair() const
+std::string StreamAcceptorThread::getRemotePair() const
 {
     return m_pClientSocket->getRemotePairStr();
 }
 
 /*
-const char *SAThread::getRemotePair()
+const char *StreamAcceptorThread::getRemotePair()
 {
     return m_remotePair;
 }*/
 
-void SAThread::thread_streamclient(std::shared_ptr<SAThread> threadClient, void *threadedAcceptedControl)
+void StreamAcceptorThread::thread_streamclient(std::shared_ptr<StreamAcceptorThread> threadClient, void *threadedAcceptedControl)
 {
     threadClient->postInitConnection();
     ((MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
 }
 /*
-bool SAThread::isSecure() const
+bool StreamAcceptorThread::isSecure() const
 {
     return m_isSecure;
 }
 
-void SAThread::setSecure(bool value)
+void StreamAcceptorThread::setSecure(bool value)
 {
     m_isSecure = value;
 }

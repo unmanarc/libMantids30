@@ -11,7 +11,7 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 class Cookies_ServerSide
 {
 public:
-    Cookies_ServerSide();
+    Cookies_ServerSide() = default;
 
     void putOnHeaders(MIME::MIME_Sub_Header * headers) const;
 

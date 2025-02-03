@@ -56,8 +56,8 @@ public:
         uint64_t bytesWritten;
     };
 
-    StreamableObject();
-    virtual ~StreamableObject();
+    StreamableObject() = default;
+    virtual ~StreamableObject() = default;
 
     // TODO: what if the protocol reached std::numeric_limits<uint64_t>::max() ? enforce 64bit max. (on streamTo)
     // TODO: report percentage completed
@@ -93,7 +93,7 @@ public:
 
 protected:
     bool setFailedWriteState(const uint16_t &value = 1);
-    uint16_t m_failedWriteState;
+    uint16_t m_failedWriteState = 0;
 
 #ifdef _WIN32
 private:

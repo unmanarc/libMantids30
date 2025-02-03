@@ -63,9 +63,7 @@ public:
     class Token {
     public:
 
-        Token()
-        {
-        }
+        Token() = default;
 
         Token(const std::string &payload);
 

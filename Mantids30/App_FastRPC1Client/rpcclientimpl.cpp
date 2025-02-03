@@ -26,10 +26,6 @@ RPCClientImpl::RPCClientImpl()
     m_failedToRetrieveC2Config = false;
 }
 
-RPCClientImpl::~RPCClientImpl()
-{
-
-}
 
 void RPCClientImpl::runRPClient0(RPCClientImpl *rpcImpl)
 {

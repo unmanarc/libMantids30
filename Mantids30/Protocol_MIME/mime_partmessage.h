@@ -10,7 +10,7 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
 class MIME_PartMessage
 {
 public:
-    MIME_PartMessage();
+    MIME_PartMessage() = default;
 
     bool stream(Memory::Streams::StreamableObject::Status &wrStat);
 

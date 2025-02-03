@@ -72,8 +72,8 @@ public:
 
     class SessionPTR {
     public:
-        SessionPTR();
-        ~SessionPTR();
+        SessionPTR() = default;
+        ~SessionPTR() = default;
 
         // Destroy a session
         bool destroy();

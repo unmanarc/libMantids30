@@ -13,9 +13,7 @@ using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30::Network::Protocols::HTTP::Common;
 using namespace Mantids30;
 
-Version::Version()
-{
-}
+
 
 void Version::parse(const std::string &version)
 {

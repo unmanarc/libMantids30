@@ -12,9 +12,6 @@ using namespace Mantids30::Network::Protocols::HTTP::Response;
 using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30;
 
-Cookies_ServerSide::Cookies_ServerSide()
-{
-}
 
 void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {

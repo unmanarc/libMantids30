@@ -14,10 +14,6 @@ APIEngineCore::APIEngineCore()
     m_poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
 }
 
-APIEngineCore::~APIEngineCore()
-{
-}
-
 void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     checkEngineStatus();

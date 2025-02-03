@@ -95,8 +95,8 @@ public:
                 return requestLine.urlVars();
             }
             return nullptr;
-        }        
-        MIME::MIME_HeaderOption * getCookies()
+        }
+        std::shared_ptr<MIME::MIME_HeaderOption> getCookies()
         {
             return headers.getOptionByName("Cookie");
         }
@@ -116,7 +116,7 @@ public:
 
         std::multimap<std::string, std::string> getAllCookies()
         {
-            MIME::MIME_HeaderOption *cookiesSubVars = headers.getOptionByName("Cookie");
+            std::shared_ptr<MIME::MIME_HeaderOption>cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
                 return {};
             return cookiesSubVars->getAllSubVars();
@@ -167,7 +167,7 @@ public:
          */
         std::string getCookie(const std::string &sCookieName)
         {
-            MIME::MIME_HeaderOption * cookiesSubVars = headers.getOptionByName("Cookie");
+            std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
                 return "";
             // TODO: mayus

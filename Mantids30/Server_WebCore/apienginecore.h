@@ -50,7 +50,7 @@ public:
 
 
     APIEngineCore();
-    ~APIEngineCore();
+
 
     /**
      * @brief acceptMultiThreaded Start Web Server as Multi-Threaded (thread number grows as receive connections)

@@ -12,9 +12,6 @@ LineRecv_SubParser::LineRecv_SubParser()
 
 }
 
-LineRecv_SubParser::~LineRecv_SubParser()
-{
-}
 
 void LineRecv_SubParser::setMaxObjectSize(const uint32_t &size)
 {

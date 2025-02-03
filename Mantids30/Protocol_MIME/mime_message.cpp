@@ -254,13 +254,19 @@ void MIME_Message::addMultiPartMessage(MIME_PartMessage *part)
     m_allParts.push_back(part);
     // Insert by name:
     std::string varName = getMultiPartMessageName(part);
-    if (varName!="") m_partsByName.insert(std::pair<std::string,MIME_PartMessage*>(boost::to_upper_copy(varName),part));
+    if (varName!="")
+    {
+        m_partsByName.insert(std::pair<std::string,MIME_PartMessage*>(boost::to_upper_copy(varName),part));
+    }
 }
 
 std::string MIME_Message::getMultiPartMessageName(MIME_PartMessage *part)
 {
-    MIME_HeaderOption * opt = part->getHeader()->getOptionByName("content-disposition");
-    if (opt) return opt->getSubVar("name");
+    std::shared_ptr<MIME_HeaderOption> opt = part->getHeader()->getOptionByName("content-disposition");
+    if (opt)
+    {
+        return opt->getSubVar("name");
+    }
     return "";
 }
 

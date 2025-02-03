@@ -3,14 +3,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 
-
-
 using namespace boost;
 using namespace Mantids30::API::Web;
-
-ResourcesFilter::ResourcesFilter()
-{
-}
 
 bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
 {

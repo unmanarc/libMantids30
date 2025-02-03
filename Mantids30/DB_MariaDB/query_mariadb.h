@@ -14,7 +14,7 @@ public:
     /**
      * @brief Query_MariaDB constructor.
      */
-    Query_MariaDB();
+    Query_MariaDB() = default;
 
     /**
      * @brief ~Query_MariaDB destructor.
@@ -84,12 +84,12 @@ private:
      */
     unsigned long mariaDBfetchVarSize(const size_t & col , const enum_field_types &fieldType = MYSQL_TYPE_STRING);
 
-    MYSQL * m_databaseConnectionHandler; /**< Pointer to a MYSQL object. */
-    MYSQL_STMT * m_stmt; /**< Pointer to a MYSQL_STMT object. */
-    MYSQL_BIND * m_bindedInputParams; /**< Pointer to a MYSQL_BIND object for input parameters. */
-    MYSQL_BIND * m_bindedResultsParams; /**< Pointer to a MYSQL_BIND object for result set parameters. */
-    std::vector<unsigned long> m_bindedResultVarSizes; /**< Vector of variable sizes for the result set. */
-    bool m_fetchLastInsertRowID; /**< Whether or not to fetch the last inserted row ID. */
+    MYSQL * m_databaseConnectionHandler = nullptr; /**< Pointer to a MYSQL object. */
+    MYSQL_STMT * m_stmt = nullptr; /**< Pointer to a MYSQL_STMT object. */
+    MYSQL_BIND * m_bindedInputParams = nullptr; /**< Pointer to a MYSQL_BIND object for input parameters. */
+    MYSQL_BIND * m_bindedResultsParams = nullptr; /**< Pointer to a MYSQL_BIND object for result set parameters. */
+    std::vector<unsigned long> m_bindedResultVarSizes = {}; /**< Vector of variable sizes for the result set. */
+    bool m_fetchLastInsertRowID = true; /**< Whether or not to fetch the last inserted row ID. */
     std::vector<std::string> m_keysByPos; /**< Vector of keys for the result set. */
 };
 }}

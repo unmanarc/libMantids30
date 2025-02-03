@@ -4,9 +4,6 @@
 
 using namespace Mantids30::Database;
 
-SQLConnector::SQLConnector()
-{
-}
 
 SQLConnector::~SQLConnector()
 {

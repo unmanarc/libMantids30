@@ -2,10 +2,6 @@
 
 using namespace Mantids30::Memory::Streams;
 
-StreamableNull::StreamableNull()
-{
-}
-
 bool StreamableNull::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
 {
     return true;

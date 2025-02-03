@@ -8,7 +8,7 @@ class LineRecv_SubParser : public Memory::Streams::SubParser
 {
 public:
     LineRecv_SubParser();
-    ~LineRecv_SubParser() override;
+    ~LineRecv_SubParser() override = default;
 
     void setMaxObjectSize(const uint32_t &size);
     bool stream(Memory::Streams::StreamableObject::Status &) override;

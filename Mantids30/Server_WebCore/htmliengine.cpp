@@ -21,10 +21,6 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-HTMLIEngine::HTMLIEngine()
-{
-
-}
 
 // TODO: documentar los privilegios cargados de un usuario
 Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandler, const std::string &sRealFullPath)

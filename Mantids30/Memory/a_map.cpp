@@ -4,8 +4,6 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-VariableMap::VariableMap() {}
-
 VariableMap::~VariableMap()
 {
     m_variables.clear();

@@ -116,7 +116,7 @@ public:
     /**
      * @brief Default constructor for MethodsHandler.
      */
-    MethodsHandler();
+    MethodsHandler() = default;
 
     /**
      * @brief Add a new resource to the MethodsHandler.

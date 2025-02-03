@@ -13,7 +13,7 @@ namespace Mantids30 { namespace Memory { namespace Abstract {
 class VariableMap
 {
 public:
-    VariableMap();
+    VariableMap() = default;
     virtual ~VariableMap();
 
     /**

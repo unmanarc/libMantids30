@@ -63,7 +63,7 @@ void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & t
     while (tc->acceptClient()) {}
 }
 
-bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>clientSocket, std::shared_ptr<SAThread> clientThread)
+bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(m_mutexClients);
@@ -100,7 +100,7 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
 
     m_threadList.push_back(clientThread);
 
-    std::thread(SAThread::thread_streamclient,clientThread,this).detach();
+    std::thread(StreamAcceptorThread::thread_streamclient,clientThread,this).detach();
 
     return true;
 }
@@ -170,7 +170,7 @@ MultiThreaded::~MultiThreaded()
     {
         std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<std::shared_ptr<SAThread>>::iterator it=m_threadList.begin(); it != m_threadList.end(); ++it)
+        for (std::list<std::shared_ptr<StreamAcceptorThread>>::iterator it=m_threadList.begin(); it != m_threadList.end(); ++it)
             (*it)->stopSocket();
         // unlock until there is no threads left.
         while ( !m_threadList.empty() )
@@ -188,7 +188,7 @@ bool MultiThreaded::acceptClient()
     std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = m_acceptorSocket->acceptConnection();
     if (clientSocket)
     {
-        std::shared_ptr<SAThread> clientThread = std::make_shared<SAThread>();
+        std::shared_ptr<StreamAcceptorThread> clientThread = std::make_shared<StreamAcceptorThread>();
         clientThread->setClientSocket(clientSocket);
 
         clientThread->callbacks.contextOnConnect = this->callbacks.contextOnConnect;
@@ -206,7 +206,7 @@ bool MultiThreaded::acceptClient()
     return false; // no more connections. (abandon)
 }
 
-bool MultiThreaded::finalizeThreadElement(std::shared_ptr<SAThread> x)
+bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> x)
 {
     std::unique_lock<std::mutex> lock(m_mutexClients);
     if (std::find(m_threadList.begin(), m_threadList.end(), x) != m_threadList.end())

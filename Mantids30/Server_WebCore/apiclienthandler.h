@@ -25,7 +25,6 @@ public:
     APIServerParameters * config;
 
     APIClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
-    ~APIClientHandler() override;
 
 protected:
 

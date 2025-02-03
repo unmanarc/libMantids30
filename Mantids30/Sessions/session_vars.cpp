@@ -5,10 +5,6 @@
 
 using namespace Mantids30::Sessions;
 
-Session_Vars::Session_Vars()
-{
-    // TODO: create centralized variables.
-}
 
 void Session_Vars::setSessionVariable(const std::string &varName, const json &varValue)
 {

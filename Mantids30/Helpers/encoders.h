@@ -23,11 +23,6 @@ public:
     };
 
     /**
-     * @brief Constructs a new Encoders object.
-     */
-    Encoders();
-
-    /**
      * @brief Performs an obfuscated base64 encoding on binary data.
      *
      * @param sB64Buf The input binary data to encode.

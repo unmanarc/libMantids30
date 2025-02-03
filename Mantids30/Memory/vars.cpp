@@ -9,9 +9,6 @@ Vars::Vars()
     m_maxVarContentSize = 128*1024; // 128Kb.
 }
 
-Vars::~Vars()
-{
-}
 
 json Vars::getVarsAsJSONMap()
 {

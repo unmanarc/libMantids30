@@ -35,7 +35,6 @@ std::shared_ptr<Var> Var::copy()
     return var;
 }
 
-Var::~Var() {}
 
 void *Var::getDirectMemory()
 {

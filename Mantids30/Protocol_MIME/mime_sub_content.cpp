@@ -27,11 +27,6 @@ MIME_Sub_Content::MIME_Sub_Content()
     m_subParserName = "MIME_Sub_Content";
 }
 
-MIME_Sub_Content::~MIME_Sub_Content()
-{
-    //if (contentContainer)
-//        delete contentContainer;
-}
 
 bool MIME_Sub_Content::stream(Memory::Streams::StreamableObject::Status &wrStat)
 {

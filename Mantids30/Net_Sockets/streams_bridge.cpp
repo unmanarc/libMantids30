@@ -6,39 +6,11 @@ using namespace NetStreams;
 
 Bridge::Bridge()
 {
-    m_pingEveryMS = 5000;
-    m_bridgeThreadPrc = nullptr;
-    m_sentBytes = 0;
-    m_recvBytes = 0;
-
-    m_peers[0] = nullptr;
-    m_peers[1] = nullptr;
-
-    m_lastError[0] = 0;
-    m_lastError[1] = 0;
-
-    m_lastPingTimestamp = 0;
-
-    m_finishingPeer = -1;
-    //autoDeleteSocketsOnExit = false;
-    m_autoDeleteCustomPipeOnClose = false;
-    m_transmitionMode = TRANSMITION_MODE_STREAM;
-
     setAutoDeleteStreamPipeOnThreadExit(true);
     setToShutdownRemotePeer(true);
     setToCloseRemotePeer(true);
 }
 
-Bridge::~Bridge()
-{
-   /* if (autoDeleteSocketsOnExit)
-    {
-        if (peers[0])
-            delete peers[0];
-        if (peers[1])
-            delete peers[1];
-    }*/
-}
 
 void Bridge::pipeThread(Bridge *stp)
 {

@@ -3,7 +3,6 @@
 
 using namespace Mantids30::Network::Servers::Web;
 
-APIServerParameters::APIServerParameters() {}
 
 APIServerParameters::~APIServerParameters()
 {

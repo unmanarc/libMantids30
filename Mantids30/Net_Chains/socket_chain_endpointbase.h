@@ -8,8 +8,8 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainPro
 class Socket_Chain_EndPointBase : public Socket_Chain_ProtocolBase
 {
 public:
-    Socket_Chain_EndPointBase();
-    virtual ~Socket_Chain_EndPointBase();
+    Socket_Chain_EndPointBase() = default;
+    virtual ~Socket_Chain_EndPointBase() = default;
     bool isEndPoint();
 
 protected:

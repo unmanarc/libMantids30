@@ -9,7 +9,7 @@ class LineRecv : public Memory::Streams::Parser
 {
 public:
     LineRecv(std::shared_ptr<StreamableObject> sobject);
-    virtual ~LineRecv()  override {}
+    virtual ~LineRecv()  override = default;
     void setMaxLineSize(const uint32_t & maxLineSize);
 
 protected:

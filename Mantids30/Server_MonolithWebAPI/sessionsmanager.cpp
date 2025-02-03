@@ -16,9 +16,6 @@ WebSessionsManager::WebSessionsManager()
     setMaxSessionsPerUser(100); // 100 sessions
 }
 
-WebSessionsManager::~WebSessionsManager()
-{
-}
 
 void WebSessionsManager::gc()
 {
@@ -195,17 +192,6 @@ void WebSessionsManager::setMaxSessionsPerUser(const uint32_t &value)
     std::unique_lock<std::mutex> lock(m_mutex);
     m_maxSessionsPerUser = value;
 }
-/*
-void WebSessionsManager::impersonateSession(const std::string &sessionID, std::shared_ptr<Sessions::Session> impersonatedSession)
-{
-    uint64_t maxAge;
-    WebSession *session = openSession(sessionID, &maxAge);
-    if (session)
-    {
-        session->setImpersonatedAuthSession(impersonatedSession);
-        releaseSession(sessionID);
-    }
-}*/
 
 uint32_t WebSessionsManager::getGcWaitTime() const
 {

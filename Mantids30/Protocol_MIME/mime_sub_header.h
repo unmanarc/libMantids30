@@ -2,6 +2,7 @@
 
 #include <Mantids30/Memory/subparser.h>
 
+#include <memory>
 #include <string>
 #include <map>
 #include <list>
@@ -80,7 +81,6 @@ class MIME_Sub_Header : public Memory::Streams::SubParser
 {
 public:
     MIME_Sub_Header();
-    ~MIME_Sub_Header() override;
 
     bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
 
@@ -118,13 +118,13 @@ public:
      * @param varName value name.
      * @return list of HeaderOption's
      */
-    std::list<MIME_HeaderOption *> getOptionsByName(const std::string & varName) const;
+    std::list<std::shared_ptr<MIME_HeaderOption>> getOptionsByName(const std::string &varName) const;
     /**
      * @brief getOptionByName Get the first value
      * @param varName
      * @return nullptr if not exist.
      */
-    MIME_HeaderOption * getOptionByName(const std::string & varName) const;
+    std::shared_ptr<MIME_HeaderOption> getOptionByName(const std::string & varName) const;
     /**
      * @brief getOptionRawStringByName Get Option STD String By Name (raw, as came from the input)
      * @param varName variable name.
@@ -147,7 +147,7 @@ public:
     uint64_t getOptionAsUINT64(const std::string & varName, uint16_t base = 10, bool * optExist = nullptr) const;
     //////////////////////////////////////////////////
 
-    bool addHeaderOption(MIME_HeaderOption *opt);
+    bool addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt);
 
     //////////////////////////////////////////////////
     // Security:
@@ -164,12 +164,12 @@ protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    void parseSubValues(MIME_HeaderOption *opt, const std::string & strName);
+    void parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName);
 
-    MIME_HeaderOption * m_lastOpt;
+    std::shared_ptr<MIME_HeaderOption> m_lastOpt;
     void parseOptionValue(std::string optionValue);
 
-    std::multimap<std::string,MIME_HeaderOption *> m_headers;
+    std::multimap<std::string,std::shared_ptr<MIME_HeaderOption>> m_headers;
     size_t m_maxOptions;
     size_t m_maxSubOptionCount, m_maxSubOptionSize;
 };

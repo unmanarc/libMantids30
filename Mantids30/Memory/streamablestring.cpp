@@ -1,12 +1,7 @@
 #include "streamablestring.h"
 #include <string.h>
-#include <vector>
 
 using namespace Mantids30::Memory::Streams;
-
-StreamableString::StreamableString()
-{
-}
 
 bool StreamableString::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
 {

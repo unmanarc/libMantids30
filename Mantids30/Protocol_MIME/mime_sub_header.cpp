@@ -5,6 +5,7 @@
 #include <boost/algorithm/string/split.hpp>
 
 #include <Mantids30/Helpers/random.h>
+#include <memory>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -21,11 +22,7 @@ MIME_Sub_Header::MIME_Sub_Header()
     m_lastOpt = nullptr;
     m_subParserName = "MIME_Sub_Header";
 }
-MIME_Sub_Header::~MIME_Sub_Header()
-{
-    for ( auto & i : m_headers )
-        delete i.second;
-}
+
 
 bool MIME_Sub_Header::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
@@ -52,7 +49,7 @@ void MIME_Sub_Header::remove(const std::string &optionName)
 
     for (auto it = range.first; it != range.second; )
     {
-        delete it->second;
+        //delete it->second;
         it = m_headers.erase(it);
     }
 }
@@ -66,13 +63,12 @@ void MIME_Sub_Header::replace(const std::string &optionName, const std::string &
 // TODO: sanitize inputs when client...
 bool MIME_Sub_Header::add(const std::string &optionName, const std::string &optionValue, int state)
 {
-    MIME_HeaderOption * optP;
+    std::shared_ptr<MIME_HeaderOption> optP;
     if (state == 0)
     {
-        optP = new MIME_HeaderOption;
+        optP = std::make_shared<MIME_HeaderOption>();
         if (m_headers.size()==m_maxOptions)
         {
-            delete optP;
             return false; // Can't exceed.
         }
 
@@ -81,7 +77,6 @@ bool MIME_Sub_Header::add(const std::string &optionName, const std::string &opti
 
         if (!addHeaderOption(optP))
         {
-            delete optP;
             return false;
         }
         m_lastOpt = optP;
@@ -99,23 +94,24 @@ size_t MIME_Sub_Header::getOptionsSize()
     return m_headers.size();
 }
 
-bool MIME_Sub_Header::addHeaderOption(MIME_HeaderOption *opt)
+bool MIME_Sub_Header::addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt)
 {
     if (m_headers.size()==m_maxOptions)
         return false; // Can't exceed.
-    m_headers.insert(std::pair<std::string,MIME_HeaderOption *>(opt->getUpperName(),opt));
+    m_headers.insert(std::pair<std::string,std::shared_ptr<MIME_HeaderOption>>(opt->getUpperName(),opt));
     return true;
 }
 
-std::list<MIME_HeaderOption *> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
+std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
 {
-    std::list<MIME_HeaderOption *> values;
+    std::list<std::shared_ptr<MIME_HeaderOption>> values;
     auto range = m_headers.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i) values.push_back(i->second);
     return values;
 }
 
-MIME_HeaderOption *MIME_Sub_Header::getOptionByName(const std::string &varName) const
+std::shared_ptr<MIME_HeaderOption> MIME_Sub_Header::getOptionByName(
+    const std::string &varName) const
 {
     if (m_headers.find(boost::to_upper_copy(varName)) == m_headers.end()) return nullptr;
     return m_headers.find(boost::to_upper_copy(varName))->second;
@@ -123,13 +119,13 @@ MIME_HeaderOption *MIME_Sub_Header::getOptionByName(const std::string &varName) 
 
 std::string MIME_Sub_Header::getOptionRawStringByName(const std::string &varName) const
 {
-    MIME_HeaderOption * opt  = getOptionByName(varName);
+    std::shared_ptr<MIME_HeaderOption> opt  = getOptionByName(varName);
     return opt?opt->getOrigValue():"";
 }
 
 std::string MIME_Sub_Header::getOptionValueStringByName(const std::string &varName) const
 {
-    MIME_HeaderOption * opt  = getOptionByName(varName);
+    std::shared_ptr<MIME_HeaderOption> opt  = getOptionByName(varName);
     return opt?opt->getValue():"";
 }
 
@@ -138,7 +134,7 @@ uint64_t MIME_Sub_Header::getOptionAsUINT64(const std::string &varName, uint16_t
     uint64_t r=0;
     bool lOptExist;
     if (!optExist) optExist = &lOptExist;
-    MIME_HeaderOption * opt  = getOptionByName(varName);
+    std::shared_ptr<MIME_HeaderOption> opt  = getOptionByName(varName);
     *optExist = opt!=nullptr?true:false;
     if (*optExist) r = strtoull(opt->getValue().c_str(),nullptr,base);
     return r;
@@ -170,7 +166,7 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
     return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
 }
 
-void MIME_Sub_Header::parseSubValues(MIME_HeaderOption * opt, const std::string &strName)
+void MIME_Sub_Header::parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName)
 {
     // hello weo; doaie; fa = "hello world;" hehe; asd=399; aik=""
     std::vector<std::string> vStaticTexts;

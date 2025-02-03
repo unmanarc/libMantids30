@@ -11,7 +11,6 @@ class ClientHandler : public Servers::Web::APIClientHandler
 {
 public:
     ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
-    ~ClientHandler() override;
 
 protected:
     /**

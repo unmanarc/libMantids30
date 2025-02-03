@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Network { namespace Sockets {
 class Callbacks_Socket_TLS
 {
 public:
-    Callbacks_Socket_TLS() {}
+    Callbacks_Socket_TLS() = default;
 
     // Generic TLS Callbacks:
 

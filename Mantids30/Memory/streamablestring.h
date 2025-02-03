@@ -11,7 +11,7 @@ namespace Mantids30 { namespace Memory { namespace Streams {
 class StreamableString : public Memory::Streams::StreamableObject
 {
 public:
-    StreamableString();
+    StreamableString() = default;
     /**
      * @brief streamTo Stream all the content to another StreamableObject
      * @param out output

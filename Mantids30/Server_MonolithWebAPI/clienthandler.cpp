@@ -34,7 +34,6 @@ ClientHandler::ClientHandler(void *parent, std::shared_ptr<StreamableObject> soc
 {
 }
 
-ClientHandler::~ClientHandler() {}
 
 // This function is called at the beggining.
 Status::eRetCode ClientHandler::sessionStart()

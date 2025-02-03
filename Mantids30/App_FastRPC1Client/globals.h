@@ -20,7 +20,7 @@ namespace Mantids30 { namespace Applications { namespace FastRPC1 {
 class Globals
 {
 public:
-    Globals();
+    Globals() = default;
 
     static void setLocalInitConfig(const boost::property_tree::ptree &config);
 

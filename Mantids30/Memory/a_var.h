@@ -38,7 +38,7 @@ public:
 
     Var();
     std::shared_ptr<Var> copy();
-    virtual ~Var();
+    virtual ~Var() = default;
 
     // NON-THREADSAFE ACCESS TO THE RAW MEMORY:
     virtual void * getDirectMemory();

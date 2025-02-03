@@ -38,7 +38,8 @@ public:
     };
 
     SubParser();
-    virtual ~SubParser();
+    virtual ~SubParser() = default;
+    
     void initElemParser(std::shared_ptr<StreamableObject> upstreamObj, bool clientMode);
 
     ///////////////////

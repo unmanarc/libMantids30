@@ -18,7 +18,7 @@ namespace Web {
 class APIServerParameters
 {
 public:
-    APIServerParameters();
+    APIServerParameters() = default;
     ~APIServerParameters();
 
     // JWT Validator and signer...

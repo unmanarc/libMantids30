@@ -16,7 +16,8 @@ namespace Sessions {
 class Session_Vars
 {
 public:
-    Session_Vars();
+    // TODO: create centralized variables.
+    Session_Vars() = default;
     /**
      * @brief Sets the value of a session variable.
      * @param varName The name of the session variable to set.

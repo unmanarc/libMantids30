@@ -5,41 +5,74 @@
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
-
 /**
- * Unix Socket Class
+ * @brief Socket_UNIX Class for handling UNIX domain sockets.
+ *
+ * This class provides methods to listen on and connect using UNIX domain sockets.
  */
 class  Socket_UNIX : public Sockets::Socket_Stream_Base {
 public:
-	/**
-	 * Class constructor.
-	 */
-    Socket_UNIX();
     /**
-     * @brief listenOn Listen on an specific path and address
-     * @param path Unix Path
-     * @param recvbuffer size in bytes of recv buffer.
-     * @param backlog connection backlog of unattended incoming connections.
-     * @return true if listening
+     * @brief Constructor for the Socket_UNIX class.
      */
-    bool listenOn(const char * path, const int32_t & recvbuffer = 0, const int32_t &backlog = 10);
-    bool listenOn(const uint16_t &, const char * path, const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
+    Socket_UNIX() = default;
+
     /**
-     * Connect to remote host using an UNIX socket.
-     * @param path local path to connect to.
-     * @param port 16-bit unsigned integer with the remote port
-     * @param timeout timeout in seconds to desist the connection.
-     * @return true if successfully connected
+     * @brief Listen on a specific UNIX socket path.
+     *
+     * This method sets up the UNIX socket to listen for incoming connections.
+     * 
+     * @param path The path of the UNIX socket file.
+     * @param recvbuffer Size in bytes of the receive buffer.
+     * @param backlog Number of unaccepted connections that the system will allow before refusing new connections.
+     * @return True if the socket is successfully set to listen, false otherwise.
      */
-    bool connectFrom(const char *,const char * path, const uint16_t &, const uint32_t & timeout = 30) override;
+    bool listenOn(const char* path, const int32_t& recvbuffer = 0, const int32_t& backlog = 10);
+    
     /**
-     * Accept a new connection on a listening socket.
-     * @return returns a socket with the new connection.
+     * @brief Overridden method for listening on a specific UNIX socket path and port.
+     *
+     * This method is overridden from the base class but does not apply to UNIX domain sockets, which do not use ports.
+     * The method still takes a port parameter for compatibility reasons but it will be ignored.
+     * 
+     * @param port Port number (unused in UNIX domain sockets).
+     * @param path The path of the UNIX socket file.
+     * @param recvbuffer Size in bytes of the receive buffer.
+     * @param backlog Number of unaccepted connections that the system will allow before refusing new connections.
+     * @return True if the socket is successfully set to listen, false otherwise.
+     */
+    bool listenOn(const uint16_t& port, const char* path, const int32_t& recvbuffer = 0, const int32_t& backlog = 10) override;
+
+    /**
+     * @brief Connect to a remote UNIX socket.
+     *
+     * This method attempts to connect to the specified UNIX socket file.
+     * 
+     * @param localPath Local path of the UNIX socket (unused in client connections).
+     * @param remotePath Path of the remote UNIX socket to which the connection is attempted.
+     * @param port Port number (unused in UNIX domain sockets).
+     * @param timeout Timeout in seconds for the connection attempt.
+     * @return True if the connection is successful, false otherwise.
+     */
+    bool connectFrom(const char* localPath, const char* remotePath, const uint16_t& port, const uint32_t& timeout = 30) override;
+
+    /**
+     * @brief Accept an incoming connection on a listening UNIX socket.
+     *
+     * This method accepts the next incoming connection on a listening UNIX socket and returns a new Socket_UNIX object
+     * representing the accepted connection.
+     * 
+     * @return A shared pointer to a new Socket_UNIX object if a connection is successfully accepted, or nullptr if an error occurs.
      */
     std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
 };
 
+/**
+ * @brief Shared pointer type for Socket_UNIX instances.
+ *
+ * This typedef simplifies the usage of shared pointers with Socket_UNIX objects.
+ */
 typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
-}}}
 
+}}}  // namespace Mantids30::Network::Sockets
 #endif

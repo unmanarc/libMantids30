@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/regex.hpp>
+#include <memory>
 #include <vector>
 #include <string>
 #include <set>
@@ -23,8 +24,7 @@ public:
     };
 
 
-    AtomicExpressionSide(std::vector<std::string> * staticTexts);
-    ~AtomicExpressionSide();
+    AtomicExpressionSide(std::shared_ptr<std::vector<std::string>> staticTexts);
 
     bool calcMode();
     std::string getExpr() const;
@@ -32,18 +32,18 @@ public:
 
     std::set<std::string> resolve(const json & v, bool resolveRegex, bool ignoreCase);
 
-    boost::regex *getRegexp() const;
-    void setRegexp(boost::regex *value);
+    std::shared_ptr<boost::regex> getRegexp() const;
+    void setRegexp(std::shared_ptr<boost::regex> value);
 
     eExpressionSideMode getMode() const;
 
 private:
     std::set<std::string> recompileRegex(const std::string & r, bool ignoreCase);
 
-    boost::regex * m_regexp;
-    std::vector<std::string> * m_staticTexts;
+    std::shared_ptr<boost::regex> m_regexp;
+    std::shared_ptr<std::vector<std::string>> m_staticTexts;
     uint32_t m_staticIndex;
     std::string m_expr;
-    eExpressionSideMode m_mode;
+    eExpressionSideMode m_mode=EXPR_MODE_UNDEFINED;
 };
 }}}

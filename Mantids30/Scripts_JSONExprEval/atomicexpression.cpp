@@ -1,5 +1,6 @@
 #include "atomicexpression.h"
 #include <boost/regex.hpp>
+#include <memory>
 #include <string>
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -7,7 +8,7 @@
 using namespace std;
 using namespace Mantids30::Scripts::Expressions;
 
-AtomicExpression::AtomicExpression(std::vector<string> *staticTexts) : m_left(staticTexts), m_right(staticTexts)
+AtomicExpression::AtomicExpression(std::shared_ptr<std::vector<std::string>> staticTexts) : m_left(staticTexts), m_right(staticTexts)
 {
     m_evalOperator = EVAL_OPERATOR_UNDEFINED;
     m_ignoreCase = false;
@@ -179,7 +180,7 @@ bool AtomicExpression::substractExpressions(const std::string &regex, const eEva
     return false;
 }
 
-void AtomicExpression::setStaticTexts(std::vector<std::string> *value)
+void AtomicExpression::setStaticTexts(std::shared_ptr<std::vector<std::string>> value)
 {
     m_staticTexts = value;
 }

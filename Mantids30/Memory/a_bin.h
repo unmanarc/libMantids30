@@ -45,7 +45,7 @@ public:
     };
 
     BINARY();
-    virtual ~BINARY() override;
+    virtual ~BINARY() override = default;
 
     /**
      * @brief getValue Get container memory position

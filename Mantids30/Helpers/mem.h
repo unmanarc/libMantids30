@@ -40,7 +40,6 @@ namespace Mantids30 { namespace Helpers {
 class Mem
 {
 public:
-    Mem();
 
     struct BinaryDataContainer
     {

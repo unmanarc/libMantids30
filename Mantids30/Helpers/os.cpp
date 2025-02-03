@@ -20,10 +20,7 @@ using namespace boost::algorithm;
 
 using namespace Mantids30::Helpers;
 
-OS::OS()
-{
 
-}
 
 LocalSysInfo OS::getLocalSystemInfo()
 {
