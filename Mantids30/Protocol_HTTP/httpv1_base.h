@@ -380,7 +380,7 @@ public:
     };
 
     HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);
-    virtual ~HTTPv1_Base()  override {}
+    virtual ~HTTPv1_Base()  override  = default;
 
     Request clientRequest;
     Response serverResponse;

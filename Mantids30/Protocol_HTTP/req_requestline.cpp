@@ -16,6 +16,7 @@ using namespace Mantids30;
 
 RequestLine::RequestLine()
 {
+    m_getVars = Common::URLVars::create();
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K

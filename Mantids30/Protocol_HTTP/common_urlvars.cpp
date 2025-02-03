@@ -12,11 +12,6 @@ using namespace Mantids30;
 
 URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value,false)
 {
-    initSubParser(&m_urlVarParser);
-
-    // TODO: virtual method during constructor...
-    m_initialized = initProtocol();
-    m_currentStat = URLV_STAT_WAITING_NAME;
     m_urlVarParser.setVarType(true);
 
     setMaxVarNameSize(4096);
@@ -25,9 +20,13 @@ URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value) : Mem
     m_currentParser = &m_urlVarParser;
 }
 
-URLVars::~URLVars()
+std::shared_ptr<URLVars> URLVars::create(
+    std::shared_ptr<StreamableObject> value)
 {
-    //for (auto & i : vars) delete i.second;
+    auto x = std::shared_ptr<URLVars>(new URLVars(value));
+    x->initSubParser(&x->m_urlVarParser);
+    x->m_initialized = x->initProtocol();
+    return x;
 }
 
 bool URLVars::isEmpty()

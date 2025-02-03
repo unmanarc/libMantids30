@@ -2,7 +2,6 @@
 #include <Mantids30/Memory/streamablejson.h>
 #include "common_content_chunked_subparser.h"
 
-#include <limits>
 #include <stdexcept>
 
 // TODO: CHECK THIS CLASS
@@ -185,10 +184,10 @@ void Content::setContainerType(const eDataType &value)
         switch (m_containerType)
         {
         case CONTENT_TYPE_MIME:
-            m_outStream = std::make_shared<MIME::MIME_Message>();
+            m_outStream = MIME::MIME_Message::create();
             break;
         case CONTENT_TYPE_URL:
-            m_outStream = std::make_shared<URLVars>();
+            m_outStream = URLVars::create();
             break;
         case CONTENT_TYPE_JSON:
             m_outStream = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();

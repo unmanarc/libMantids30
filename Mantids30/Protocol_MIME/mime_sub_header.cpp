@@ -18,8 +18,6 @@ MIME_Sub_Header::MIME_Sub_Header()
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setMaxOptionSize(2*KB_MULT); // 2K per option
-    m_maxOptions = 32; // 32 Max options
-    m_lastOpt = nullptr;
     m_subParserName = "MIME_Sub_Header";
 }
 

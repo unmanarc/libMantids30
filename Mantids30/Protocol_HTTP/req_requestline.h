@@ -75,7 +75,7 @@ private:
     std::string m_requestURIParameters;
 
     Common::Version m_httpVersion;
-    std::shared_ptr<Common::URLVars> m_getVars = std::make_shared<Common::URLVars>();;
+    std::shared_ptr<Common::URLVars> m_getVars;
 };
 
 }}}}}

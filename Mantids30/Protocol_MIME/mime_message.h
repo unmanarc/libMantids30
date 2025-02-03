@@ -17,7 +17,8 @@ namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
 class MIME_Message : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
 public:
-    MIME_Message(std::shared_ptr<StreamableObject> value= nullptr);
+    static std::shared_ptr<MIME_Message> create(std::shared_ptr<StreamableObject> value = nullptr);
+
     ~MIME_Message() override;
 
     bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrStat) override;
@@ -204,6 +205,7 @@ public:
     void setMaxHeaderOptionSize(const size_t &value);
 
 
+
 protected:
     bool initProtocol() override;
     void endProtocol() override;
@@ -215,6 +217,7 @@ protected:
     ///////////////////////////////////////
 
 private:
+    MIME_Message(std::shared_ptr<StreamableObject> value= nullptr);
 
     enum eMIME_VarStat
     {
@@ -228,22 +231,24 @@ private:
     std::string getMultiPartMessageName(MIME_PartMessage * part);
 
     void renewCurrentPart();
-
-    // Constraints:
-    size_t m_maxNumberOfParts;
-    size_t m_maxHeaderSubOptionsCount, m_maxHeaderSubOptionsSize;
-    size_t m_maxHeaderOptionsCount, m_maxHeaderOptionSize;
+    size_t m_maxNumberOfParts = 128;
+    size_t m_maxHeaderSubOptionsCount = 16;
+    size_t m_maxHeaderSubOptionsSize = 8 * KB_MULT;
+    size_t m_maxHeaderOptionsCount = 64;
+    size_t m_maxHeaderOptionSize = 8 * KB_MULT;
 
     // MIME Message Options:
-    std::string m_multiPartType, m_multiPartBoundary;
+    std::string m_multiPartType = "multipart/mixed";
+    std::string m_multiPartBoundary;
 
     // Status:
-    eMIME_VarStat m_currentState;
+    eMIME_VarStat m_currentState = MP_STATE_FIRST_BOUNDARY;
+
 
     // Message Parts:
     std::list<MIME_PartMessage *> m_allParts;
     std::multimap<std::string,MIME_PartMessage *> m_partsByName;
-    MIME_PartMessage * m_currentPart;
+    MIME_PartMessage * m_currentPart = nullptr;
     MIME_Sub_FirstBoundary m_subFirstBoundary;
     MIME_Sub_EndPBoundary m_subEndPBoundary;
 
@@ -255,4 +260,6 @@ private:
 
 
 }}}}
+
+    
 

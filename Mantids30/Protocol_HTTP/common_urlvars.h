@@ -19,8 +19,8 @@ public:
         URLV_STAT_WAITING_CONTENT
     };
 
-    URLVars(std::shared_ptr<StreamableObject> value = nullptr);
-    ~URLVars() override;
+    static std::shared_ptr<URLVars> create(std::shared_ptr<StreamableObject> value = nullptr);
+    ~URLVars() override = default;
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
@@ -71,8 +71,9 @@ protected:
     void endProtocol() override;
     bool changeToNextParser() override;
 private:
+    URLVars(std::shared_ptr<StreamableObject> value = nullptr);
 
-    eHTTP_URLVarStat m_currentStat;
+    eHTTP_URLVarStat m_currentStat = URLV_STAT_WAITING_NAME;
 
     std::string m_currentVarName;
     std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> m_vars;

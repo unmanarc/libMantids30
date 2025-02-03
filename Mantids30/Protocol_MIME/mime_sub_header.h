@@ -170,8 +170,8 @@ private:
     void parseOptionValue(std::string optionValue);
 
     std::multimap<std::string,std::shared_ptr<MIME_HeaderOption>> m_headers;
-    size_t m_maxOptions;
-    size_t m_maxSubOptionCount, m_maxSubOptionSize;
+    size_t m_maxOptions = 32; // 32 Max options
+    size_t m_maxSubOptionCount=100, m_maxSubOptionSize=2*KB_MULT;
 };
 
 }}}}

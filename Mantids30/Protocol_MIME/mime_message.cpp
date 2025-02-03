@@ -17,28 +17,23 @@ using namespace Mantids30;
 
 MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value, false)
 {
-    initSubParser(&m_subFirstBoundary);
-    initSubParser(&m_subEndPBoundary);
-
-    m_currentPart = nullptr;
-
-    m_multiPartType = "multipart/mixed";
-
-    m_maxNumberOfParts=128;
-
-    m_maxHeaderSubOptionsCount=16;
-    m_maxHeaderSubOptionsSize=8*KB_MULT;
-
-    m_maxHeaderOptionsCount=64;
-    m_maxHeaderOptionSize=8*KB_MULT;
-
     m_maxVarContentSize = 32*KB_MULT;
-    renewCurrentPart();
-
-    setMultiPartBoundary(Helpers::Random::createRandomString(64));
 
     m_currentParser = &m_subFirstBoundary;
-    m_currentState = MP_STATE_FIRST_BOUNDARY;
+
+    renewCurrentPart();
+    setMultiPartBoundary(Helpers::Random::createRandomString(64));
+
+}
+
+std::shared_ptr<MIME_Message> MIME_Message::create(
+    std::shared_ptr<StreamableObject> value)
+{
+    auto x = std::shared_ptr<MIME_Message>(new MIME_Message(value));
+    x->initSubParser(&x->m_subFirstBoundary);
+    x->initSubParser(&x->m_subEndPBoundary);
+    x->m_initialized = x->initProtocol();
+    return x;
 }
 
 MIME_Message::~MIME_Message()
