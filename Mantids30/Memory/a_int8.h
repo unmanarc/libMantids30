@@ -20,7 +20,7 @@ public:
     int8_t getValue();
     bool setValue(const int8_t & value);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -28,8 +28,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    int8_t value;
-    Threads::Sync::Mutex_Shared mutex;
+    int8_t m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 

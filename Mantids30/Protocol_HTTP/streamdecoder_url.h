@@ -21,11 +21,11 @@ private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
     Status flushBytes(Status &wrStat);
 
-    unsigned char bytes[3];
-    uint8_t filled;
+    unsigned char m_bytes[3];
+    uint8_t m_filled;
 
-    uint64_t finalBytesWritten;
-    std::shared_ptr<Memory::Streams::StreamableObject>  orig;
+    uint64_t m_finalBytesWritten;
+    std::shared_ptr<Memory::Streams::StreamableObject>  m_orig;
 };
 
 }}}}

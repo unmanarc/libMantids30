@@ -6,69 +6,69 @@ using namespace Mantids30::Memory::Abstract;
 
 UINT64::UINT64()
 {
-    value = 0;
+    m_value = 0;
     setVarType(TYPE_UINT64);
 }
 
 UINT64::UINT64(const uint64_t &value)
 {
     setVarType(TYPE_UINT64);
-    this->value = value;
+    this->m_value = value;
 }
 
 uint64_t UINT64::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return value;
+    return m_value;
 }
 
 int64_t UINT64::getIValueTruncatedOrZero()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (value<=0x7FFFFFFFFFFFFFFF)
-        return value;
+    if (m_value<=0x7FFFFFFFFFFFFFFF)
+        return m_value;
     else
         return 0;
 }
 
 bool UINT64::setValue(const uint64_t &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
-    this->value = value;
+    this->m_value = value;
     return true;
 }
 
 std::string UINT64::toString()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return std::to_string(value);
+    return std::to_string(m_value);
 }
 
 bool UINT64::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     if (value.empty())
     {
-        this->value = 0;
+        this->m_value = 0;
         return true;
     }
 
-    this->value = strtoull( value.c_str(), nullptr, 10 );
-    if (value!="0" && this->value==0) return false;
+    this->m_value = strtoull( value.c_str(), nullptr, 10 );
+    if (value!="0" && this->m_value==0) return false;
 
     return true;
 }
 
 std::shared_ptr<Var> UINT64::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<UINT64>();
-    if (var) *var = this->value;
+    if (var) *var = this->m_value;
     return var;
 }

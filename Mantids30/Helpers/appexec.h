@@ -119,17 +119,17 @@ public:
     // TODO: write to the process..
 
 private:
-    std::string execPath;
-    std::vector<std::string> arguments;
-    std::vector<std::string> environment;
-    pid_t child_pid;
-    posix_spawnattr_t attr;
-    posix_spawnattr_t *attrp;
-    posix_spawn_file_actions_t file_actions;
-    posix_spawn_file_actions_t *file_actionsp;
-    int piStdOut[2];
-    int piStdErr[2];
-    std::vector<pollfd> plist;
+    std::string m_execPath;
+    std::vector<std::string> m_arguments;
+    std::vector<std::string> m_environment;
+    pid_t m_childPid;
+    posix_spawnattr_t m_attr;
+    posix_spawnattr_t *m_attrp;
+    posix_spawn_file_actions_t m_fileActions;
+    posix_spawn_file_actions_t *m_fileActionsp;
+    int m_piStdOut[2];
+    int m_piStdErr[2];
+    std::vector<pollfd> m_plist;
 };
 #endif
 

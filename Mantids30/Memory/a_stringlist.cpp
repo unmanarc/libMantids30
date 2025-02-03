@@ -11,19 +11,19 @@ STRINGLIST::STRINGLIST()
 STRINGLIST::STRINGLIST(const std::list<std::string> &value)
 {
     setVarType(TYPE_STRINGLIST);
-    this->value = value;
+    this->m_value = value;
 }
 
 std::list<std::string> STRINGLIST::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 bool STRINGLIST::setValue(const std::list<std::string> &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    this->value = value;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    this->m_value = value;
     return true;
 }
 

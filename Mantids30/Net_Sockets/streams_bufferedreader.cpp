@@ -6,15 +6,15 @@ using namespace NetStreams;
 
 BufferedReader::BufferedReader( std::shared_ptr<Sockets::Socket_Stream_Base> stream, const size_t &bufferSize)
 {
-    this->stream = stream;
-    buffer = malloc(bufferSize);
-    bufferOK = buffer!=nullptr;
-    currentBufferSize=0;
+    this->m_stream = stream;
+    m_buffer = malloc(bufferSize);
+    m_bufferOK = m_buffer!=nullptr;
+    m_currentBufferSize=0;
 }
 
 BufferedReader::~BufferedReader()
 {
-    if (buffer) free(buffer);
+    if (m_buffer) free(m_buffer);
 }
 
 BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(void *data, size_t *len, int delimiter)
@@ -22,21 +22,21 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(void *
     while (true)
     {
         // Check in the buffer.
-        void *needle = memchr(buffer, delimiter, currentBufferSize);
+        void *needle = memchr(m_buffer, delimiter, m_currentBufferSize);
         if (needle)
-            return displaceAndCopy(data,len,(size_t)((char *)needle-(char *)buffer)+1);
+            return displaceAndCopy(data,len,(size_t)((char *)needle-(char *)m_buffer)+1);
 
         // Check if full, we can't add anymore
-        if (maxBufferSize == currentBufferSize) return E_STREAMBUFFER_READ_FULL;
+        if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
-        int readSize = stream->partialRead((char *)buffer+currentBufferSize,maxBufferSize-currentBufferSize);
+        int readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
 
         // If disconneted, report, if not, add to the buffer...
         if (readSize < 0 )
             return E_STREAMBUFFER_READ_DISCONNECTED;
         else
-            currentBufferSize+=readSize;
+            m_currentBufferSize+=readSize;
     }
 }
 
@@ -45,21 +45,21 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(std::s
     while (true)
     {
         // Check in the buffer.
-        void *needle = memchr(buffer, delimiter, currentBufferSize);
+        void *needle = memchr(m_buffer, delimiter, m_currentBufferSize);
         if (needle)
-            return displaceAndCopy(str,(size_t)((char *)needle-(char *)buffer)+1);
+            return displaceAndCopy(str,(size_t)((char *)needle-(char *)m_buffer)+1);
 
         // Check if full, we can't add anymore
-        if (maxBufferSize == currentBufferSize) return E_STREAMBUFFER_READ_FULL;
+        if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
-        int readSize = stream->partialRead((char *)buffer+currentBufferSize,maxBufferSize-currentBufferSize);
+        int readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
 
         // If disconneted, report, if not, add to the buffer...
         if (readSize < 0 )
             return E_STREAMBUFFER_READ_DISCONNECTED;
         else
-            currentBufferSize+=readSize;
+            m_currentBufferSize+=readSize;
     }
 }
 
@@ -75,12 +75,12 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::readLineLF(std::string *
 
 bool BufferedReader::getBufferOK() const
 {
-    return bufferOK;
+    return m_bufferOK;
 }
 
 size_t BufferedReader::getBufferSize() const
 {
-    return maxBufferSize;
+    return m_maxBufferSize;
 }
 
 BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(void *data, size_t *len, size_t dlen)
@@ -88,16 +88,16 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(void *da
     // check output buffer availability...
     if (dlen>*len) return E_STREAMBUFFER_READ_MAXSIZEEXCEED;
     // Null terminate it.
-    ((char *)buffer)[dlen-1]=0;
+    ((char *)m_buffer)[dlen-1]=0;
     // Copy to output
-    memcpy(data,buffer,dlen);
+    memcpy(data,m_buffer,dlen);
     // Copy bytes
     *len = dlen;
     // Reduce byte count
-    currentBufferSize-=dlen;
+    m_currentBufferSize-=dlen;
     // Displace data.
-    if (currentBufferSize)
-        memmove(buffer,(char *)buffer+dlen,currentBufferSize);
+    if (m_currentBufferSize)
+        memmove(m_buffer,(char *)m_buffer+dlen,m_currentBufferSize);
     // Get out.
     return E_STREAMBUFFER_READ_OK;
 }
@@ -105,14 +105,14 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(void *da
 BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(std::string *str, size_t dlen)
 {
     // Null terminate it.
-    ((char *)buffer)[dlen-1]=0;
+    ((char *)m_buffer)[dlen-1]=0;
     // Copy to output
-    *str = std::string((char *)buffer,dlen);
+    *str = std::string((char *)m_buffer,dlen);
     // Reduce byte count
-    currentBufferSize-=dlen;
+    m_currentBufferSize-=dlen;
     // Displace data.
-    if (currentBufferSize)
-        memmove(buffer,(char *)buffer+dlen,currentBufferSize);
+    if (m_currentBufferSize)
+        memmove(m_buffer,(char *)m_buffer+dlen,m_currentBufferSize);
     // Get out.
     return E_STREAMBUFFER_READ_OK;
 }

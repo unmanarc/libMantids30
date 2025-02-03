@@ -6,12 +6,12 @@ using namespace Mantids30::Network::Protocols::Line2Line;
 LineRecv::LineRecv(std::shared_ptr<Memory::Streams::StreamableObject> sobject) : Memory::Streams::Parser(sobject,false)
 {
     m_initialized = initProtocol();
-    m_currentParser = (Memory::Streams::SubParser *)(&subParser);
+    m_currentParser = (Memory::Streams::SubParser *)(&m_subParser);
 }
 
 void LineRecv::setMaxLineSize(const uint32_t &maxLineSize)
 {
-    subParser.setMaxObjectSize(maxLineSize);
+    m_subParser.setMaxObjectSize(maxLineSize);
 }
 
 bool LineRecv::initProtocol()
@@ -21,7 +21,7 @@ bool LineRecv::initProtocol()
 
 bool LineRecv::changeToNextParser()
 {
-    if (!processParsedLine( subParser.getParsedString() ))
+    if (!processParsedLine( m_subParser.getParsedString() ))
     {
         m_currentParser = nullptr;
         return false;

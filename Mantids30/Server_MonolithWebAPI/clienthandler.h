@@ -117,7 +117,7 @@ private:
 
     bool validateSessionAntiCSRFMechanism();
 
-    Program::Logs::RPCLog * rpcLog = nullptr;
+    Program::Logs::RPCLog * m_rpcLog = nullptr;
     std::map<uint32_t,API::Monolith::MethodsHandler *> m_methodsHandlerByAPIVersion;
     WebSessionsManager * m_sessionsManager = nullptr;
 

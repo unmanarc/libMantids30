@@ -66,7 +66,7 @@ protected:
     bool postBindInputVars();
 
 private:
-    std::vector<std::string> keysByPos; ///< Map of column names by position.
+    std::vector<std::string> m_keysByPos; ///< Map of column names by position.
 
     size_t m_paramCount; ///< Number of query parameters.
     char ** m_paramValues; ///< Query parameter values.

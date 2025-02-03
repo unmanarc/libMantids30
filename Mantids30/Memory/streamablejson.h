@@ -33,10 +33,10 @@ public:
 
 private:
 
-    uint64_t maxSize;
-    std::string strValue;
-    json root;
-    bool formatted;
+    uint64_t m_maxSize;
+    std::string m_strValue;
+    json m_root;
+    bool m_formatted;
 };
 
 }}}

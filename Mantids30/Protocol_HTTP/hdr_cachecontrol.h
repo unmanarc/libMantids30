@@ -10,41 +10,59 @@ class CacheControl
 public:
     CacheControl();
 
-    void setDefaults();
-
     std::string toString();
     void fromString(const std::string & str);
 
-    bool getOptionNoStore() const;
-    void setOptionNoStore(bool newOptionNoStore);
+    /**
+     * @brief Prevents caching of the response by any cache.
+     */
+    bool optionNoStore=true;
 
-    bool getOptionNoCache() const;
-    void setOptionNoCache(bool newOptionNoCache);
+    /**
+     * @brief Requires revalidation before using a cached response.
+     */
+    bool optionNoCache=false;
 
-    bool getOptionMustRevalidate() const;
-    void setOptionMustRevalidate(bool newOptionMustRevalidate);
+    /**
+     * @brief Forces caches to revalidate stale responses with the origin server.
+     */
+    bool optionMustRevalidate=false;
 
-    bool getOptionPrivate() const;
-    void setOptionPrivate(bool newOptionPrivate);
+    /**
+     * @brief Restricts caching to the client only, disallowing intermediary caches.
+     */
+    bool optionPrivate=false;
 
-    bool getOptionPublic() const;
-    void setOptionPublic(bool newOptionPublic);
+    /**
+     * @brief Allows the response to be cached by any cache, including shared ones.
+     */
+    bool optionPublic=false;
 
-    uint32_t getMaxAge() const;
-    void setMaxAge(uint32_t newMaxAge);
+    /**
+     * @brief Indicates the response will not change, allowing long-term caching.
+     */
+    bool optionImmutable=false;
 
-    bool getOptionImmutable() const;
-    void setOptionImmutable(bool newOptionImmutable);
+    /**
+     * @brief Prevents modification of the response by proxies or caches.
+     */
+    bool optionNoTransform=false;
 
-    bool getOptionNoTransform() const;
-    void setOptionNoTransform(bool newOptionNoTransform);
+    /**
+     * @brief Requires shared caches to revalidate stale responses before serving.
+     */
+    bool optionProxyRevalidate=false;
 
-    uint32_t getSMaxAge() const;
-    void setSMaxAge(uint32_t newSMaxAge);
+    /**
+     * @brief Maximum time (in seconds) the response can be cached before becoming stale.
+     */
+    uint32_t maxAge=0;
 
-private:
-    bool optionNoStore, optionNoCache, optionMustRevalidate, optionPrivate, optionPublic, optionImmutable, optionNoTransform,optionProxyRevalidate;
-    uint32_t maxAge,sMaxAge;
+    /**
+     * @brief Maximum time (in seconds) the response can be cached in shared caches.
+     */
+    uint32_t sMaxAge=0;
+
 };
 
 }}}}}

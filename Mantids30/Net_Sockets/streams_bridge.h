@@ -146,32 +146,32 @@ private:
     static void pingThread(Bridge * stp);
     static void pipeThread(Bridge * stp);
 
-    Bridge_Thread *bridgeThreadPrc;
+    Bridge_Thread *m_bridgeThreadPrc;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base>  peers[2];
-    TransmitionMode transmitionMode;
+    std::shared_ptr<Sockets::Socket_Stream_Base>  m_peers[2];
+    TransmitionMode m_transmitionMode;
 
-    std::atomic<uint64_t> sentBytes,recvBytes;
-    std::atomic<int> finishingPeer;
-    std::atomic<bool> shutdownRemotePeerOnFinish;
-    std::atomic<bool> closeRemotePeerOnFinish;
+    std::atomic<uint64_t> m_sentBytes,m_recvBytes;
+    std::atomic<int> m_finishingPeer;
+    std::atomic<bool> m_shutdownRemotePeerOnFinish;
+    std::atomic<bool> m_closeRemotePeerOnFinish;
 
-    int lastError[2];
+    int m_lastError[2];
 
-    std::mutex mutex_lastPing;
-    time_t lastPing;
+    std::mutex m_lastPingMutex;
+    time_t m_lastPingTimestamp;
 
-    std::mutex mutex_endPingLoop;
-    std::condition_variable cond_endPing;
+    std::mutex m_endPingLoopMutex;
+    std::condition_variable m_endPingCond;
 
-    uint32_t pingEveryMS;
+    uint32_t m_pingEveryMS;
 
-    bool pingFinished;
-    bool autoDeleteStreamPipeOnExit;
+    bool m_isPingFinished;
+    bool m_autoDeleteStreamPipeOnExit;
     //bool autoDeleteSocketsOnExit;
-    bool autoDeleteCustomPipeOnClose;
+    bool m_autoDeleteCustomPipeOnClose;
 
-    std::thread pipeThreadP;
+    std::thread m_pipeThreadP;
 };
 
 }}}}

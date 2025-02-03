@@ -104,26 +104,26 @@ private:
     TasksQueue * getRandomTaskQueueWithElements(  );
 
     // TERMINATION:
-    bool terminate;
+    bool m_terminate;
 
     // LIMITS:
-    std::atomic<uint32_t> maxTasksPerQueue;
+    std::atomic<uint32_t> m_maxTasksPerQueue;
 
     // THREADS:
-    std::map<size_t,std::thread> threads;
-    uint32_t threadsCount;
+    std::map<size_t,std::thread> m_threads;
+    uint32_t m_threadCount;
 
     // QUEUE OPERATIONS/CONDITIONS:
-    std::map<size_t,TasksQueue> queues;
-    std::mutex mutexQueues;
-    std::condition_variable cond_insertedElement;
-    std::condition_variable empty;
-    uint32_t queuedElements;
+    std::map<size_t,TasksQueue> m_queues;
+    std::mutex m_queuesMutex;
+    std::condition_variable m_insertedElementCond;
+    std::condition_variable m_emptyCond;
+    uint32_t m_queuedElements;
 
     // RANDOM:
-    std::hash<std::string> hash_fn;
-    std::mutex mutexRandom;
-    std::minstd_rand0 lRand;
+    std::hash<std::string> m_hashFunction;
+    std::mutex m_randomMutex;
+    std::minstd_rand0 m_lRand;
 };
 
 }

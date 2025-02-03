@@ -31,7 +31,7 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids30::Program:
     /////////////////////////
     rpcInitVars(argc,argv,globalArguments);
 
-    globalArguments->setVersion( to_string(appVersionMajor) + "." + to_string(appVersionMinor) + "." + to_string(appVersionSubMinor) );
+    globalArguments->setVersion( to_string(m_appVersionMajor) + "." + to_string(m_appVersionMinor) + "." + to_string(m_appVersionSubMinor) );
 
 #ifdef _WIN32
     char folderProgramFiles[MAX_PATH];
@@ -43,7 +43,7 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids30::Program:
     defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir;
 #endif
 
-    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , defaultConfigDir, Mantids30::Memory::Abstract::Var::TYPE_STRING );
+    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir" , "Configuration directory"  , m_defaultConfigDir, Mantids30::Memory::Abstract::Var::TYPE_STRING );
     globalArguments->addCommandLineOption("Encoding", 0, "encode" , "Encode Configuration String"  , "", Mantids30::Memory::Abstract::Var::TYPE_STRING );
 }
 
@@ -74,12 +74,12 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     initLog.moduleFieldMinWidth = 36;
     initLog.userFieldMinWidth = 1;
 
-    if (versionCodeName.empty())
+    if (m_versionCodeName.empty())
         initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription +  " Starting UP, version %d.%d.%d, PID: %d").c_str(),
-                    appVersionMajor, appVersionMinor, appVersionSubMinor,getpid());
+                    m_appVersionMajor, m_appVersionMinor, m_appVersionSubMinor,getpid());
     else
         initLog.log(__func__, "","", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription +  " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(),
-                    appVersionMajor, appVersionMinor, appVersionSubMinor, versionCodeName.c_str() , getpid());
+                    m_appVersionMajor, m_appVersionMinor, m_appVersionSubMinor, m_versionCodeName.c_str() , getpid());
 
     initLog.log0(__func__,Logs::LEVEL_INFO, "Using config dir: %s", configDir.c_str());
     initLog.log0(__func__,Logs::LEVEL_INFO, "Loading configuration: %s", configPath.c_str());
@@ -212,7 +212,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
     std::thread(RPCClientImpl::runRPClient0,Globals::getRpcImpl()).detach();
 
     // If retrieve config is setted up, retrieve it.
-    if (retrieveConfig)
+    if (m_retrieveConfig)
     {
         // Obtain the config from the disk:
         Globals::getRpcImpl()->retrieveConfigFromLocalFile();

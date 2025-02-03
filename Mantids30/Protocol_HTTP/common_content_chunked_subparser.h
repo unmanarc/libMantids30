@@ -17,8 +17,8 @@ public:
     bool endBuffer();
 
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject> dst;
-    uint64_t pos;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_dst;
+    uint64_t m_pos;
 };
 
 }}}}}

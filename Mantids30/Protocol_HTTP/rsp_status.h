@@ -107,11 +107,11 @@ protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    Common::Version httpVersion;
-    unsigned short responseRetCode;
-    std::string responseMessage;
+    Common::Version m_httpVersion;
+    unsigned short m_responseRetCode;
+    std::string m_responseMessage;
 
-    static const sHTTP_StatusCode responseRetCodes[];
+    static const sHTTP_StatusCode m_responseRetCodes[];
 
 
 };

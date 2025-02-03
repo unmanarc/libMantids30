@@ -75,8 +75,8 @@ protected:
     bool connect0();
 
 private:
-    int rc;
-    sqlite3 *ppDb;
+    int m_rc;
+    sqlite3 *m_ppDb;
 
 };
 }}

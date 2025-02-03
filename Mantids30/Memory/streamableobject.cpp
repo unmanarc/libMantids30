@@ -13,7 +13,7 @@ using namespace Mantids30::Memory::Streams;
 
 StreamableObject::StreamableObject()
 {
-    failedWriteState = 0;
+    m_failedWriteState = 0;
 }
 
 StreamableObject::~StreamableObject()
@@ -119,12 +119,12 @@ uint64_t StreamableObject::size() const
 
 uint16_t StreamableObject::getFailedWriteState() const
 {
-    return failedWriteState;
+    return m_failedWriteState;
 }
 
 bool StreamableObject::setFailedWriteState(const uint16_t &value)
 {
-    failedWriteState = value;
+    m_failedWriteState = value;
     return value==0;
 }
 

@@ -30,7 +30,7 @@ public:
 
     bool setValue(const in_addr & value, const uint8_t & cidrMask);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -55,9 +55,9 @@ protected:
 private:
     static uint64_t u64pow(uint32_t base, uint32_t exponent);
 
-    in_addr value;
-    uint8_t cidrMask;
-    Threads::Sync::Mutex_Shared mutex;
+    in_addr m_value;
+    uint8_t m_cidrMask;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 

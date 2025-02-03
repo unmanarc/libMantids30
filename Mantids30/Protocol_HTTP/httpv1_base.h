@@ -269,10 +269,10 @@ public:
             {
                 // Set default headers (lost previous ones):
                 headers.remove("Last-Modified");
-                cacheControl.setDefaults();
-                cacheControl.setOptionNoCache(true);
-                cacheControl.setOptionNoStore(true);
-                cacheControl.setOptionMustRevalidate(true);
+                cacheControl = Headers::CacheControl();
+                cacheControl.optionNoCache = true;
+                cacheControl.optionNoStore = true;
+                cacheControl.optionMustRevalidate = true;
                 setContentType("", false);
             }
             content.setStreamableObj(dataStream);
@@ -296,12 +296,12 @@ public:
         void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
         {
             Headers::Cookie val;
-            val.setValue(cookieValue);
-            val.setSecure(true);
-            val.setHttpOnly(true);
             val.setExpirationFromNow(uMaxAge);
-            val.setMaxAge(uMaxAge);
-            val.setSameSite(Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
+            val.value = cookieValue;
+            val.secure = true;
+            val.httpOnly = true;
+            val.maxAge = uMaxAge;
+            val.sameSitePolicy = Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
             setCookie(cookieName,val);
         }
         /**
@@ -313,7 +313,7 @@ public:
         void setInsecureCookie( const std::string &sCookieName, const std::string & sCookieValue )
         {
             Headers::Cookie val;
-            val.setValue(sCookieValue);
+            val.value = sCookieValue;
             setCookie(sCookieName,val);
         }
         /**

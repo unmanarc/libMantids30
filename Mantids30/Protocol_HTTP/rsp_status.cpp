@@ -11,7 +11,7 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::HTTP;
 using namespace Mantids30;
 
-const sHTTP_StatusCode Status::responseRetCodes[] = {
+const sHTTP_StatusCode Status::m_responseRetCodes[] = {
     {100,"Continue"},
     {101,"Switching Protocol"},
     {200,"OK"},
@@ -64,7 +64,7 @@ uint16_t Status::getHTTPStatusCodeTranslation(const Status::eRetCode &code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        return responseRetCodes[code].code;
+        return m_responseRetCodes[code].code;
     }
     return 999;
 }
@@ -75,7 +75,7 @@ Status::Status()
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setParseDataTargetSize(128);
-    subParserName = "Status";
+    m_subParserName = "Status";
 
 }
 
@@ -89,16 +89,16 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
     // We need almost 2 parameters.
     if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 
-    httpVersion.parse(requestParts[0]);
-    responseRetCode = strtoul(requestParts[1].c_str(),nullptr,10);
-    responseMessage = "";
+    m_httpVersion.parse(requestParts[0]);
+    m_responseRetCode = strtoul(requestParts[1].c_str(),nullptr,10);
+    m_responseMessage = "";
 
     if (requestParts.size()>=3)
     {
         for (size_t i=2; i<requestParts.size(); i++)
         {
-            if (i!=2) responseMessage+=" ";
-            responseMessage+=requestParts[i];
+            if (i!=2) m_responseMessage+=" ";
+            m_responseMessage+=requestParts[i];
         }
     }
 
@@ -107,46 +107,46 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
 
 std::string Status::getResponseMessage() const
 {
-    return responseMessage;
+    return m_responseMessage;
 }
 
 void Status::setResponseMessage(const std::string &value)
 {
-    responseMessage = value;
+    m_responseMessage = value;
 }
 
 bool Status::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     // Act as a client. Send data from here.
-    return upStream->writeString(  httpVersion.toString()
+    return m_upStream->writeString(  m_httpVersion.toString()
                                  +  " "
-                                 +  std::to_string(responseRetCode)
+                                 +  std::to_string(m_responseRetCode)
                                  +  " "
-                                 +  responseMessage + "\r\n",wrStat).succeed;
+                                 +  m_responseMessage + "\r\n",wrStat).succeed;
 }
 
 void Status::setRetCodeValue(unsigned short value)
 {
-    responseRetCode = value;
+    m_responseRetCode = value;
 }
 
 void Status::setRetCode(Status::eRetCode code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        setRetCodeValue(responseRetCodes[code].code);
-        setResponseMessage(responseRetCodes[code].responseMessage);
+        setRetCodeValue(m_responseRetCodes[code].code);
+        setResponseMessage(m_responseRetCodes[code].responseMessage);
     }
 }
 
 unsigned short Status::getRetCode() const
 {
-    return responseRetCode;
+    return m_responseRetCode;
 }
 
 Common::Version *Status::getHttpVersion()
 {
-    return &httpVersion;
+    return &m_httpVersion;
 }
 
 

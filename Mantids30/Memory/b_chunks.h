@@ -136,23 +136,23 @@ private:
     /**
      * @brief chunksVector defines a vector containing ordered chunks
      */
-    std::vector<BinaryContainerChunk> chunksVector;
+    std::vector<BinaryContainerChunk> m_chunksVector;
     /**
      * @brief Max number of Chunks in memory
      */
-    size_t maxChunks;
+    size_t m_maxChunks;
     /**
-     * @brief maxChunkSize Maximum Chunk Size.
+     * @brief m_maxChunkSize Maximum Chunk Size.
      */
-    uint32_t maxChunkSize;
+    uint32_t m_maxChunkSize;
     /**
      * @brief Maximum Container Size in bytes Until Swapping to FS
      */
-    uint64_t maxContainerSizeUntilGoingToFS;
+    uint64_t m_maxContainerSizeUntilGoingToFS;
     /**
      * @brief mmapContainer
      */
-    B_Base * mmapContainer;
+    B_Base * m_mmapContainer;
 };
 
 }}}

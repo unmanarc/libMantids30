@@ -6,13 +6,13 @@ using namespace Mantids30::Database;
 
 SQLConnector_SQLite3::SQLConnector_SQLite3()
 {
-    ppDb = nullptr;
+    m_ppDb = nullptr;
 }
 
 SQLConnector_SQLite3::~SQLConnector_SQLite3()
 {
-    if (ppDb)
-        sqlite3_close(ppDb);
+    if (m_ppDb)
+        sqlite3_close(m_ppDb);
 }
 
 bool SQLConnector_SQLite3::connectInMemory()
@@ -22,7 +22,7 @@ bool SQLConnector_SQLite3::connectInMemory()
 
 bool SQLConnector_SQLite3::isOpen()
 {
-    return ppDb != nullptr && !rc;
+    return m_ppDb != nullptr && !m_rc;
 }
 
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
@@ -41,7 +41,7 @@ bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 
 void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
 {
-    query->setDatabaseConnectionHandler(ppDb);
+    query->setDatabaseConnectionHandler(m_ppDb);
 }
 
 bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
@@ -96,14 +96,14 @@ std::string SQLConnector_SQLite3::getEscaped(const std::string &v)
 
 bool SQLConnector_SQLite3::connect0()
 {
-    if (ppDb)
+    if (m_ppDb)
     {
-        sqlite3_close(ppDb);
-        ppDb = nullptr;
+        sqlite3_close(m_ppDb);
+        m_ppDb = nullptr;
     }
 
-    rc = sqlite3_open(m_dbFilePath.c_str(), &ppDb);
-    if (rc)
+    m_rc = sqlite3_open(m_dbFilePath.c_str(),&m_ppDb);
+    if (m_rc)
     {
         m_lastSQLError = "Error openning the database file";
         return false;

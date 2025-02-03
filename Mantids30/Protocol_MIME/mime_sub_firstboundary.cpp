@@ -6,7 +6,7 @@ MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-    subParserName = "MIME_Sub_FirstBoundary";
+    m_subParserName = "MIME_Sub_FirstBoundary";
 }
 
 bool MIME_Sub_FirstBoundary::stream(Memory::Streams::StreamableObject::Status & wrStat)

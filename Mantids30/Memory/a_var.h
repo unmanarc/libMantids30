@@ -65,7 +65,7 @@ protected:
     virtual std::shared_ptr<Var> protectedCopy();
 
 private:
-    Type varType;
+    Type m_varType;
 };
 
 }}}

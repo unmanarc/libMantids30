@@ -16,7 +16,7 @@ public:
     std::string getParsedString() const;
 
 protected:
-    std::string parsedString;
+    std::string m_parsedString;
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 };

@@ -4,9 +4,9 @@ using namespace Mantids30::Memory::Containers;
 
 B_MEM::B_MEM(const void *buf, const uint32_t & len)
 {
-    storeMethod = BC_METHOD_MEM;
+    m_storeMethod = BC_METHOD_MEM;
     linearMem = nullptr;
-    readOnly = true;
+    m_readOnly = true;
     setContainerBytes(0);
     B_MEM::clear2();
     if (buf && len) reference(buf,len);
@@ -21,7 +21,7 @@ void B_MEM::reference(const void *buf, const uint32_t &len)
 {
     clear();
     linearMem = ((const char *)buf);
-    readOnly = true;
+    m_readOnly = true;
     setContainerBytes(len);
 }
 

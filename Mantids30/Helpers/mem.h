@@ -107,7 +107,7 @@ public:
 
 private:
 
-    static unsigned char cmpMatrix[];
+    static unsigned char m_cmpMatrix[];
 
 };
 

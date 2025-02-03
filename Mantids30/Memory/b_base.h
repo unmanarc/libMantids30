@@ -386,31 +386,31 @@ protected:
     /**
      * @brief readOnly defined if it's in read-only mode or not.
      */
-    bool readOnly;
+    bool m_readOnly;
     /**
      * @brief containerBytes container current size in bytes.
      */
-    uint64_t containerBytes;
+    uint64_t m_containerBytes;
     /**
      * @brief maxSize Maximum size of the container
      */
-    uint64_t maxSize;
+    uint64_t m_maxSize;
 
     // Storage Method:
     /**
      * @brief storeMethod Storage Mechanism used (read only memory reference, chunks, file)
      */
-    BinaryContainerMethod storeMethod;
+    BinaryContainerMethod m_storeMethod;
 
     // FS directives:
     /**
      * @brief fsDirectoryPath Directory where files will be created.
      */
-    std::string fsDirectoryPath;
+    std::string m_fsDirectoryPath;
     /**
      * @brief fsBaseFileName base filename on the directory.
      */
-    std::string fsBaseFileName;
+    std::string m_fsBaseFileName;
 
 private:
     bool clear0();

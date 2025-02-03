@@ -20,20 +20,20 @@ RequestLine::RequestLine()
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K
 
-    subParserName = "RequestLine";
+    m_subParserName = "RequestLine";
 }
 
 bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
 {
     Memory::Streams::StreamableObject::Status cur;
     // Act as a client. Send data from here.
-    if (!(cur+=upStream->writeString(requestMethod + " " + requestURI, wrStat )).succeed) return false;
-    if (!getVars->isEmpty())
+     if (!(cur+=m_upStream->writeString(m_requestMethod + " " + m_requestURI, wrStat )).succeed) return false;
+    if (!m_getVars->isEmpty())
     {
-        if (!(cur+=upStream->writeString("?",wrStat)).succeed) return false;
-        if (!getVars->streamTo(upStream,wrStat)) return false;
+        if (!(cur+=m_upStream->writeString("?",wrStat)).succeed) return false;
+        if (!m_getVars->streamTo(m_upStream,wrStat)) return false;
     }
-    if (!(cur+=upStream->writeString(" " + httpVersion.toString() + string("\r\n"), wrStat )).succeed) return false;
+    if (!(cur+=m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n"), wrStat )).succeed) return false;
     return true;
 }
 
@@ -47,9 +47,9 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
     // We need almost 2 parameters.
     if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 
-    requestMethod = boost::to_upper_copy(requestParts[0]);
-    requestURI = requestParts[1];
-    httpVersion.parse(requestParts.size()>2?requestParts[2]:"HTTP/1.0");
+    m_requestMethod = boost::to_upper_copy(requestParts[0]);
+    m_requestURI = requestParts[1];
+    m_httpVersion.parse(requestParts.size()>2?requestParts[2]:"HTTP/1.0");
 
     parseURI();
 
@@ -58,13 +58,13 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 
 void RequestLine::parseURI()
 {
-    size_t found=requestURI.find("?");
+    size_t found=m_requestURI.find("?");
 
     if (found!=std::string::npos)
     {
         // We have parameters..
-        requestURIParameters = requestURI.c_str()+found+1;
-        requestURI.resize(found);
+        m_requestURIParameters = m_requestURI.c_str()+found+1;
+        m_requestURI.resize(found);
         parseGETParameters();
     }
     else
@@ -73,50 +73,50 @@ void RequestLine::parseURI()
     }
 
     // Decode URI (maybe it's url encoded)...
-    requestURI = Memory::Streams::Decoders::URL::decodeURLStr(requestURI);
+    m_requestURI = Memory::Streams::Decoders::URL::decodeURLStr(m_requestURI);
 }
 
 void RequestLine::parseGETParameters()
 {
     Memory::Streams::StreamableObject::Status x;
     Memory::Containers::B_Chunks bc;
-    bc.append(requestURIParameters.c_str(),requestURIParameters.size());
-    bc.streamTo(getVars,x);
+    bc.append(m_requestURIParameters.c_str(),m_requestURIParameters.size());
+    bc.streamTo(m_getVars,x);
 }
 
 std::string RequestLine::getRequestURIParameters() const
 {
-    return requestURIParameters;
+    return m_requestURIParameters;
 }
 
 Common::Version * RequestLine::getHTTPVersion()
 {
-    return &httpVersion;
+    return &m_httpVersion;
 }
 
 std::shared_ptr<Memory::Abstract::Vars> RequestLine::urlVars()
 {
-    return getVars;
+    return m_getVars;
 }
 
 std::string RequestLine::getRequestMethod() const
 {
-    return requestMethod;
+    return m_requestMethod;
 }
 
 void RequestLine::setRequestMethod(const std::string &value)
 {
-    requestMethod = value;
+    m_requestMethod = value;
 }
 
 std::string RequestLine::getURI() const
 {
-    return requestURI;
+    return m_requestURI;
 }
 
 void RequestLine::setRequestURI(const std::string &value)
 {
-    requestURI = value;
+    m_requestURI = value;
 }
 
 void RequestLine::setSecurityMaxURLSize(size_t value)

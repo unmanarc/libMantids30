@@ -8,18 +8,18 @@ using namespace Mantids30;
 StreamableJSON::StreamableJSON()
 {
     // No max size (original...)
-    maxSize = std::numeric_limits<uint64_t>::max();
+    m_maxSize = std::numeric_limits<uint64_t>::max();
     setFormatted(false);
 }
 
 bool StreamableJSON::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrStatUpd)
 {
     Memory::Streams::StreamableObject::Status cur;
-    if (!formatted)
-        strValue = Mantids30::Helpers::jsonToString(root);
+    if (!m_formatted)
+        m_strValue = Mantids30::Helpers::jsonToString(m_root);
     else
-        strValue = root.toStyledString();
-    return (cur = out->writeFullStream(strValue.c_str(), strValue.size(), wrStatUpd)).succeed;
+        m_strValue = m_root.toStyledString();
+    return (cur = out->writeFullStream(m_strValue.c_str(), m_strValue.size(), wrStatUpd)).succeed;
 }
 
 Memory::Streams::StreamableObject::Status StreamableJSON::write(const void *buf, const size_t &count, Memory::Streams::StreamableObject::Status &wrStatUpd)
@@ -28,11 +28,11 @@ Memory::Streams::StreamableObject::Status StreamableJSON::write(const void *buf,
     Memory::Streams::StreamableObject::Status cur;
 
     // ...
-    if ( strValue.size()+count > maxSize ) cur.bytesWritten = maxSize-strValue.size();
+    if ( m_strValue.size()+count > m_maxSize ) cur.bytesWritten = m_maxSize-m_strValue.size();
     else                                   cur.bytesWritten = count;
 
     if (cur.bytesWritten)
-        strValue += std::string(((const char *)buf),cur.bytesWritten); // Copy...
+        m_strValue += std::string(((const char *)buf),cur.bytesWritten); // Copy...
     else
         wrStatUpd.finish = cur.finish = true;
 
@@ -50,29 +50,29 @@ void StreamableJSON::writeEOF(bool)
 void StreamableJSON::clear()
 {
     json x;
-    root = x;
-    strValue.clear();
+    m_root = x;
+    m_strValue.clear();
 }
 
 std::string StreamableJSON::getString()
 {
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
-    return Json::writeString(builder, root);
+    return Json::writeString(builder, m_root);
 }
 
 json *StreamableJSON::processValue()
 {
     Mantids30::Helpers::JSONReader2 reader;
-    bool parsingSuccessful = reader.parse( strValue, root );
+    bool parsingSuccessful = reader.parse( m_strValue, m_root );
     if ( !parsingSuccessful )
         return nullptr;
-    return &root;
+    return &m_root;
 }
 
 json *StreamableJSON::getValue()
 {
-    return &root;
+    return &m_root;
 }
 
 StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
@@ -83,20 +83,20 @@ StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
 
 void StreamableJSON::setValue(const json &value)
 {
-    root=value;
+    m_root=value;
 }
 
 void StreamableJSON::setMaxSize(const uint64_t &value)
 {
-    maxSize = value;
+    m_maxSize = value;
 }
 
 bool StreamableJSON::getFormatted() const
 {
-    return formatted;
+    return m_formatted;
 }
 
 void StreamableJSON::setFormatted(bool value)
 {
-    formatted = value;
+    m_formatted = value;
 }

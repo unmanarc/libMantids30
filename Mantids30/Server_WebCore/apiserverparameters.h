@@ -21,7 +21,6 @@ public:
     APIServerParameters();
     ~APIServerParameters();
 
-public:
     // JWT Validator and signer...
     std::shared_ptr<DataFormat::JWT> jwtValidator;
     std::shared_ptr<DataFormat::JWT> jwtSigner;
@@ -262,10 +261,10 @@ private:
      * This path is used as the base directory for handling incoming requests that
      * are mapped to file resources.
      */
-    std::string documentRootPath;
-    std::map<std::string,std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> staticContentElements;
-    std::mutex internalContentMutex;
-    std::list<char *> memToBeFreed;
+    std::string m_documentRootPath;
+    std::map<std::string,std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
+    std::mutex m_internalContentMutex;
+    std::list<char *> m_memToBeFreed;
 };
 
 } // namespace Web

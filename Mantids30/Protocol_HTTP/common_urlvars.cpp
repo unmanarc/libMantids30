@@ -12,17 +12,17 @@ using namespace Mantids30;
 
 URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value,false)
 {
-    initSubParser(&_urlVarParser);
+    initSubParser(&m_urlVarParser);
 
     // TODO: virtual method during constructor...
     m_initialized = initProtocol();
-    currentStat = URLV_STAT_WAITING_NAME;
-    _urlVarParser.setVarType(true);
+    m_currentStat = URLV_STAT_WAITING_NAME;
+    m_urlVarParser.setVarType(true);
 
     setMaxVarNameSize(4096);
     setMaxVarContentSize(4096);
 
-    m_currentParser = &_urlVarParser;
+    m_currentParser = &m_urlVarParser;
 }
 
 URLVars::~URLVars()
@@ -32,7 +32,7 @@ URLVars::~URLVars()
 
 bool URLVars::isEmpty()
 {
-    return vars.empty();
+    return m_vars.empty();
 }
 
 //(Memory::Containers::B_Chunks *)
@@ -41,7 +41,7 @@ bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, M
 {
     Memory::Streams::StreamableObject::Status cur;
     bool firstVar = true;
-    for (auto & i : vars)
+    for (auto & i : m_vars)
     {
         if (firstVar) firstVar=false;
         else
@@ -82,14 +82,14 @@ bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, M
 uint32_t URLVars::varCount(const std::string &varName)
 {
     uint32_t i=0;
-    auto range = vars.equal_range(boost::to_upper_copy(varName));
+    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
     for (auto iterator = range.first; iterator != range.second;) i++;
     return i;
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> URLVars::getValue(const std::string &varName)
 {
-    auto range = vars.equal_range(boost::to_upper_copy(varName));
+    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
 
     for (auto iterator = range.first; iterator != range.second;)
         return iterator->second;
@@ -100,7 +100,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> URLVars::getValue(const std::
 std::list<std::shared_ptr<Memory::Streams::StreamableObject> > URLVars::getValues(const std::string &varName)
 {
     std::list<std::shared_ptr<Memory::Streams::StreamableObject> > r;
-    auto range = vars.equal_range(boost::to_upper_copy(varName));
+    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
 
     for (auto iterator = range.first; iterator != range.second;)
         r.push_back(iterator->second);
@@ -110,7 +110,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject> > URLVars::getValue
 std::set<std::string> URLVars::getKeysList()
 {
     std::set<std::string> r;
-    for ( const auto & i : vars ) r.insert(i.first);
+    for ( const auto & i : m_vars ) r.insert(i.first);
     return r;
 }
 
@@ -125,30 +125,30 @@ void URLVars::endProtocol()
 
 bool URLVars::changeToNextParser()
 {
-    switch(currentStat)
+    switch(m_currentStat)
     {
     case URLV_STAT_WAITING_NAME:
     {
-        currentVarName = _urlVarParser.flushRetrievedContentAsString();
-        if (_urlVarParser.getDelimiterFound() == "&" || _urlVarParser.isStreamEnded())
+        m_currentVarName = m_urlVarParser.flushRetrievedContentAsString();
+        if (m_urlVarParser.getDelimiterFound() == "&" || m_urlVarParser.isStreamEnded())
         {
             // AMP / END:
-            addVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
+            addVar(m_currentVarName, m_urlVarParser.flushRetrievedContentAsBC());
         }
         else
         {
             // EQUAL:
-            currentStat = URLV_STAT_WAITING_CONTENT;
-            _urlVarParser.setVarType(false);
-            _urlVarParser.setMaxObjectSize(maxVarContentSize);
+            m_currentStat = URLV_STAT_WAITING_CONTENT;
+            m_urlVarParser.setVarType(false);
+            m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
         }
     }break;
     case URLV_STAT_WAITING_CONTENT:
     {
-        addVar(currentVarName, _urlVarParser.flushRetrievedContentAsBC());
-        currentStat = URLV_STAT_WAITING_NAME;
-        _urlVarParser.setVarType(true);
-        _urlVarParser.setMaxObjectSize(maxVarNameSize);
+        addVar(m_currentVarName, m_urlVarParser.flushRetrievedContentAsBC());
+        m_currentStat = URLV_STAT_WAITING_NAME;
+        m_urlVarParser.setVarType(true);
+        m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
     }break;
     default:
         break;
@@ -161,7 +161,7 @@ void URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Contain
 {
     //vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(currentVarName, _urlVarParser.flushRetrievedContentAsBC()));
     if (!varName.empty())
-        vars.insert(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(boost::to_upper_copy(varName), data));
+        m_vars.insert(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(boost::to_upper_copy(varName), data));
 /*    else
         delete data;*/
 }
@@ -169,10 +169,10 @@ void URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Contain
 
 void URLVars::iSetMaxVarContentSize()
 {
-    if (currentStat == URLV_STAT_WAITING_CONTENT) _urlVarParser.setMaxObjectSize(maxVarContentSize);
+    if (m_currentStat == URLV_STAT_WAITING_CONTENT) m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
 }
 
 void URLVars::iSetMaxVarNameSize()
 {
-    if (currentStat == URLV_STAT_WAITING_NAME) _urlVarParser.setMaxObjectSize(maxVarNameSize);
+    if (m_currentStat == URLV_STAT_WAITING_NAME) m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
 }

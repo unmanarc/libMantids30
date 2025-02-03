@@ -14,7 +14,7 @@ class RPCClientApplication : public Mantids30::Program::Application
 public:
     RPCClientApplication( Mantids30::Helpers::Mem::BinaryDataContainer * masterKey ) {
         Globals::setMasterKey(masterKey);
-        retrieveConfig = false;
+        m_retrieveConfig = false;
     }
     void _shutdown();
     void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments * globalArguments);
@@ -54,10 +54,10 @@ protected:
     virtual void processRetrievedConfig() {};
 
     //
-    uint32_t appVersionMajor,appVersionMinor,appVersionSubMinor;
-    std::string versionCodeName;
-    std::string defaultConfigDir;
-    bool retrieveConfig;
+    uint32_t m_appVersionMajor,m_appVersionMinor,m_appVersionSubMinor;
+    std::string m_versionCodeName;
+    std::string m_defaultConfigDir;
+    bool m_retrieveConfig;
 };
 
 }}}

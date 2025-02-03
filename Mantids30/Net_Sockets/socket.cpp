@@ -34,7 +34,7 @@ using namespace Mantids30::Network::Sockets;
 
 #ifdef _WIN32
 // Init winsock when the program begins...
-bool Socket::winSockInitialized = Socket::win32Init();
+bool Socket::m_isWinSockInitialized = Socket::win32Init();
 #endif
 
 bool Socket::m_globalSocketInitialized = false;

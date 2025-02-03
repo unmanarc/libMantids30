@@ -34,10 +34,10 @@ private:
     eStreamBufferReadErrors displaceAndCopy(void *data, size_t *len, size_t dlen);
     eStreamBufferReadErrors displaceAndCopy(std::string * str, size_t dlen);
 
-    bool bufferOK;
-    void * buffer;
-    std::shared_ptr<Sockets::Socket_Stream_Base> stream;
-    size_t maxBufferSize, currentBufferSize;
+    bool m_bufferOK;
+    void * m_buffer;
+    std::shared_ptr<Sockets::Socket_Stream_Base> m_stream;
+    size_t m_maxBufferSize, m_currentBufferSize;
 };
 
 typedef std::shared_ptr<BufferedReader> Stream_Buffer_SP;

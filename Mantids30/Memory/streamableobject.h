@@ -93,7 +93,7 @@ public:
 
 protected:
     bool setFailedWriteState(const uint16_t &value = 1);
-    uint16_t failedWriteState;
+    uint16_t m_failedWriteState;
 
 #ifdef _WIN32
 private:

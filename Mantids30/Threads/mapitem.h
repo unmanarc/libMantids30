@@ -24,7 +24,7 @@ protected:
     /**
      * @brief xMapFinished this map is finished.
      */
-    std::atomic<bool> xMapFinished;
+    std::atomic<bool> m_mapFinished;
 };
 
 }}}

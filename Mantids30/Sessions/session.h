@@ -138,7 +138,7 @@ public:
 private:
     void iUpdateLastActivity();
 
-    DataFormat::JWT::Token jwtAuthenticatedInfo;
+    DataFormat::JWT::Token m_jwtAuthenticatedInfo;
 
     std::string m_user, m_domain, m_impersonator;
 

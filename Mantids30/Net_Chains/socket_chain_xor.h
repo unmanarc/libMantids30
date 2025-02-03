@@ -27,7 +27,7 @@ protected:
 
 private:
     char * getXorCopy(const void *data, const uint32_t & datalen);
-    char xorByte;
+    char m_xorByte;
 };
 
 

@@ -12,9 +12,9 @@ URLVar_SubParser::URLVar_SubParser()
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
     setParseMultiDelimiter({"=","&"});
     setMaxObjectSize(4096);
-    pData = std::make_shared<Memory::Containers::B_Chunks>();
+    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
 
-    subParserName = "URLVar_SubParser";
+    m_subParserName = "URLVar_SubParser";
 
 }
 
@@ -44,33 +44,33 @@ void URLVar_SubParser::setMaxObjectSize(const uint32_t &size)
 
 std::shared_ptr<Memory::Containers::B_Chunks> URLVar_SubParser::flushRetrievedContentAsBC()
 {
-    std::shared_ptr<Memory::Containers::B_Chunks> r = pData;
-    pData = std::make_shared<Memory::Containers::B_Chunks>();
+    std::shared_ptr<Memory::Containers::B_Chunks> r = m_pData;
+    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
     return r;
 }
 
 std::string URLVar_SubParser::flushRetrievedContentAsString()
 {
-    std::string r = pData->toString();
+    std::string r = m_pData->toString();
     //delete pData;
-    pData = std::make_shared<Memory::Containers::B_Chunks>();
+    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
     return r;
 }
 
 Memory::Streams::SubParser::ParseStatus URLVar_SubParser::parse()
 {
-    pData->clear();
+    m_pData->clear();
     if (!getParsedBuffer()->size()) return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
     Memory::Streams::StreamableObject::Status cur;
-    std::shared_ptr<Memory::Streams::Decoders::URL> decUrl = std::make_shared<Memory::Streams::Decoders::URL>(pData);
+    std::shared_ptr<Memory::Streams::Decoders::URL> decUrl = std::make_shared<Memory::Streams::Decoders::URL>(m_pData);
     if (!(cur=getParsedBuffer()->streamTo(decUrl,cur)).succeed)
     {
-        pData->clear();
+        m_pData->clear();
     }
     return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }
 
 std::shared_ptr<Memory::Containers::B_Chunks> URLVar_SubParser::getPData()
 {
-    return pData;
+    return m_pData;
 }

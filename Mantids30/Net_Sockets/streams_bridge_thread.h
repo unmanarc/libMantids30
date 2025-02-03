@@ -52,11 +52,11 @@ protected:
 
 private:
 
-    std::atomic<bool> terminated;
-    bool chunked;
+    std::atomic<bool> m_terminated;
+    bool m_chunked;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base>  dst;
-    char * block_bwd;
+    std::shared_ptr<Sockets::Socket_Stream_Base>  m_dstSocket;
+    char * m_blockBwd;
 
     std::mutex mt_fwd, mt_rev;
 };

@@ -23,10 +23,10 @@ void fastRPCPingerThread( FastRPC1 * obj )
 
 FastRPC1::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
 {
-    threadPool = new Mantids30::Threads::Pool::ThreadPool(threadsCount, taskQueues);
+    m_threadPool = new Mantids30::Threads::Pool::ThreadPool(threadsCount, taskQueues);
 
-    finished = false;
-    overwriteContext = nullptr;
+    m_finished = false;
+    m_overwriteContext = nullptr;
 
     setRWTimeout();
     setPingInterval();
@@ -35,44 +35,44 @@ FastRPC1::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
     setQueuePushTimeoutInMS();
     setRemoteExecutionDisconnectedTries();
 
-    threadPool->start();
-    pinger = std::thread(fastRPCPingerThread,this);
+    m_threadPool->start();
+    m_pinger = std::thread(fastRPCPingerThread,this);
 }
 
 FastRPC1::~FastRPC1()
 {
     // Set pings to cease (the current one will continue)
-    finished=true;
+    m_finished=true;
 
     // Notify that pings should stop now... This can take a while (while pings are cycled)...
     {
-        std::unique_lock<std::mutex> lk(mtPing);
-        cvPing.notify_all();
+        std::unique_lock<std::mutex> lk(m_pingMutex);
+        m_pingCond.notify_all();
     }
 
     // Wait until the loop ends...
-    pinger.join();
+    m_pinger.join();
 
-    delete threadPool;
+    delete m_threadPool;
 }
 
 void FastRPC1::stop()
 {
-    threadPool->stop();
+    m_threadPool->stop();
 }
 
 void FastRPC1::setQueuePushTimeoutInMS(const uint32_t &value)
 {
-    this->queuePushTimeoutInMS = value;
+    this->m_queuePushTimeoutInMS = value;
 }
 
 bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &method)
 {
-    Threads::Sync::Lock_RW lock(smutexMethods);
-    if (methods.find(methodName) == methods.end() )
+    Threads::Sync::Lock_RW lock(m_methodsMutex);
+    if (m_methods.find(methodName) == m_methods.end() )
     {
         // Put the method.
-        methods[methodName] = method;
+        m_methods[methodName] = method;
         return true;
     }
     return false;
@@ -81,11 +81,11 @@ bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &
 void FastRPC1::sendPings()
 {
     // This will create some traffic:
-    auto keys = connectionsByKeyId.getKeys();
+    auto keys = m_connectionsByKeyId.getKeys();
     for (const auto & i : keys)
     {
         // Avoid to ping more hosts during program finalization...
-        if (finished)
+        if (m_finished)
             return;
         // Run unexistant remote function
         runRemoteRPCMethod(i,"_pingNotFound_",{},nullptr,false);
@@ -94,18 +94,18 @@ void FastRPC1::sendPings()
 
 void FastRPC1::setPingInterval(uint32_t _intvl)
 {
-    pingIntvl = _intvl;
+    m_pingIntvl = _intvl;
 }
 
 uint32_t FastRPC1::getPingInterval()
 {
-    return pingIntvl;
+    return m_pingIntvl;
 }
 
 bool FastRPC1::waitPingInterval()
 {
-    std::unique_lock<std::mutex> lk(mtPing);
-    if (cvPing.wait_for(lk,S(pingIntvl)) == std::cv_status::timeout )
+    std::unique_lock<std::mutex> lk(m_pingMutex);
+    if (m_pingCond.wait_for(lk,S(m_pingIntvl)) == std::cv_status::timeout )
     {
         return true;
     }
@@ -115,10 +115,10 @@ bool FastRPC1::waitPingInterval()
 json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string & data, std::shared_ptr<void> context, const json & payload, bool *found)
 {
     json r;
-    Threads::Sync::Lock_RD lock(smutexMethods);
-    if (methods.find(methodName) != methods.end())
+    Threads::Sync::Lock_RD lock(m_methodsMutex);
+    if (m_methods.find(methodName) != m_methods.end())
     {
-        r = methods[methodName].method(overwriteContext?overwriteContext:methods[methodName].context
+        r = m_methods[methodName].method(m_overwriteContext?m_overwriteContext:m_methods[methodName].context
                                           ,connectionKey,payload,context,data);
         if (found) *found =true;
     }
@@ -135,7 +135,7 @@ void FastRPC1::eventUnexpectedAnswerReceived(FastRPC1::Connection *, const std::
 
 int FastRPC1::processAnswer(FastRPC1::Connection * connection)
 {
-    uint32_t maxAlloc = maxMessageSize;
+    uint32_t maxAlloc = m_maxMessageSize;
     uint64_t requestId;
     uint8_t executionStatus;
     char * payloadBytes;
@@ -194,7 +194,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection * connection)
 
 int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared * mtDone, Threads::Sync::Mutex * mtSocket, std::shared_ptr<void> context, const std::string &data)
 {
-    uint32_t maxAlloc = maxMessageSize;
+    uint32_t maxAlloc = m_maxMessageSize;
     uint64_t requestId;
     char * payloadBytes;
     bool ok;
@@ -232,7 +232,7 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
     params->key = key;
     params->data = data;
     params->context = context;
-    params->maxMessageSize = maxMessageSize;
+    params->maxMessageSize = m_maxMessageSize;
 
     bool parsingSuccessful = reader.parse( payloadBytes, params->payload );
     delete [] payloadBytes;
@@ -246,7 +246,7 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
     else
     {
         params->done->lockShared();
-        if (!threadPool->pushTask(executeRPCTask,params,queuePushTimeoutInMS,priority,key))
+        if (!m_threadPool->pushTask(executeRPCTask,params,m_queuePushTimeoutInMS,priority,key))
         {
             // Can't push the task in the queue. Null answer.
             eventFullQueueDrop(params.get());
@@ -260,22 +260,22 @@ int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, 
 
 std::shared_ptr<void> FastRPC1::getOverwriteObject() const
 {
-    return overwriteContext;
+    return m_overwriteContext;
 }
 
 void FastRPC1::setOverwriteObject(std::shared_ptr<void> newOverwriteObject)
 {
-    overwriteContext = newOverwriteObject;
+    m_overwriteContext = newOverwriteObject;
 }
 
 uint32_t FastRPC1::getRWTimeout() const
 {
-    return rwTimeout;
+    return m_rwTimeout;
 }
 
 void FastRPC1::setRWTimeout(uint32_t _rwTimeout)
 {
-    rwTimeout = _rwTimeout;
+    m_rwTimeout = _rwTimeout;
 }
 /*
 
@@ -295,12 +295,12 @@ bool FastRPC1::shutdownConnection(const std::string &connectionKey)
 
 void FastRPC1::setRemoteExecutionDisconnectedTries(const uint32_t &value)
 {
-    remoteExecutionDisconnectedTries = value;
+    m_remoteExecutionDisconnectedTries = value;
 }
 
 void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
 {
-    remoteExecutionTimeoutInMS = value;
+    m_remoteExecutionTimeoutInMS = value;
 }
 
 int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor, std::shared_ptr<void> context, const std::string &data)
@@ -321,7 +321,7 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> str
     connection->key = key;
     connection->stream = stream;
 
-    if (!connectionsByKeyId.addElement(key,connection))
+    if (!m_connectionsByKeyId.addElement(key,connection))
     {
         delete connection;
         return -2;
@@ -334,8 +334,8 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> str
         i.detach();
     }
 
-    stream->setReadTimeout(rwTimeout);
-    stream->setWriteTimeout(rwTimeout);
+    stream->setReadTimeout(m_rwTimeout);
+    stream->setWriteTimeout(m_rwTimeout);
 
     while (ret>0)
     {
@@ -377,7 +377,7 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> str
     connection->terminated = true;
     connection->cvAnswers.notify_all();
 
-    connectionsByKeyId.destroyElement(key);
+    m_connectionsByKeyId.destroyElement(key);
 
     return ret;
 }
@@ -411,7 +411,7 @@ void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::stri
 
 void FastRPC1::setMaxMessageSize(const uint32_t &value)
 {
-    maxMessageSize = value;
+    m_maxMessageSize = value;
 }
 
 json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const json &payload, json *error, bool retryIfDisconnected)
@@ -422,7 +422,7 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
     builder.settings_["indentation"] = "";
     std::string output = Json::writeString(builder, payload);
 
-    if (output.size()>maxMessageSize)
+    if (output.size()>m_maxMessageSize)
     {
         if (error)
         {
@@ -436,10 +436,10 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
     FastRPC1::Connection * connection;
 
     uint32_t _tries=0;
-    while ( (connection=(FastRPC1::Connection *)connectionsByKeyId.openElement(connectionKey))==nullptr )
+    while ( (connection=(FastRPC1::Connection *)m_connectionsByKeyId.openElement(connectionKey))==nullptr )
     {
         _tries++;
-        if (_tries >= remoteExecutionDisconnectedTries || !retryIfDisconnected)
+        if (_tries >= m_remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
             eventRemotePeerDisconnected(connectionKey,methodName,payload);
             if (error)
@@ -470,7 +470,7 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
     if (    connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
             connection->stream->writeU<uint64_t>(requestId) &&
             connection->stream->writeStringEx<uint8_t>(methodName) &&
-            connection->stream->writeStringEx<uint32_t>( output,maxMessageSize ) )
+            connection->stream->writeStringEx<uint32_t>( output,m_maxMessageSize ) )
     {
     }
     connection->mtSocket->unlock();
@@ -482,7 +482,7 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
 
         // Process multiple signals until our answer comes...
 
-        if (connection->cvAnswers.wait_for(lk,Ms(remoteExecutionTimeoutInMS)) == std::cv_status::timeout )
+        if (connection->cvAnswers.wait_for(lk,Ms(m_remoteExecutionTimeoutInMS)) == std::cv_status::timeout )
         {
             // break by timeout. (no answer)
             eventRemoteExecutionTimedOut(connectionKey,methodName,payload);
@@ -548,7 +548,7 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
         connection->pendingRequests.erase(requestId);
     }
 
-    connectionsByKeyId.releaseElement(connectionKey);
+    m_connectionsByKeyId.releaseElement(connectionKey);
 
     if (error)
     {
@@ -568,7 +568,7 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
     bool r = false;
 
     FastRPC1::Connection * connection;
-    if ((connection=(FastRPC1::Connection *)connectionsByKeyId.openElement(connectionKey))!=nullptr)
+    if ((connection=(FastRPC1::Connection *)m_connectionsByKeyId.openElement(connectionKey))!=nullptr)
     {
 
         connection->mtSocket->lock();
@@ -577,7 +577,7 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
         }
         connection->mtSocket->unlock();
 
-        connectionsByKeyId.releaseElement(connectionKey);
+        m_connectionsByKeyId.releaseElement(connectionKey);
     }
     else
     {
@@ -588,12 +588,12 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
 
 std::set<std::string> FastRPC1::getConnectionKeys()
 {
-    return connectionsByKeyId.getKeys();
+    return m_connectionsByKeyId.getKeys();
 }
 
 bool FastRPC1::checkConnectionKey(const std::string &connectionKey)
 {
-    return connectionsByKeyId.isMember(connectionKey);
+    return m_connectionsByKeyId.isMember(connectionKey);
 }
 
 void FastRPC1::eventFullQueueDrop(FastRPC1::ThreadParameters *)

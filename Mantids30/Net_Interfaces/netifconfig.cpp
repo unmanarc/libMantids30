@@ -29,30 +29,30 @@ using namespace Mantids30::Network::Interfaces;
 
 NetworkInterfaceConfiguration::NetworkInterfaceConfiguration()
 {
-    MTU = 0;
+    m_MTU = 0;
 #ifndef _WIN32
-    fd = -1;
-    ZeroBStruct(ifr);
+    m_fd = -1;
+    ZeroBStruct(m_ifr);
 #else
     adapterIndex = ((DWORD)-1);
-    fd = INVALID_HANDLE_VALUE;
+    m_fd = INVALID_HANDLE_VALUE;
 #endif
 
-    netifType = NETIF_GENERIC_LIN;
+    m_netifType = NETIF_GENERIC_LIN;
 
-    promiscMode = false;
-    stateUP = true;
-    changeIPv4Addr = false;
-    changeMTU = false;
-    changePromiscMode = false;
-    changeState = false;
+    m_promiscMode = false;
+    m_stateUP = true;
+    m_changeIPv4Addr = false;
+    m_changeMTU = false;
+    m_changePromiscMode = false;
+    m_changeState = false;
 }
 
 bool NetworkInterfaceConfiguration::apply()
 {
 #ifndef _WIN32
     // Linux:
-    if (changeIPv4Addr)
+    if (m_changeIPv4Addr)
     {
         struct ifreq ifr1_host;
         struct ifreq ifr1_netmask;
@@ -63,68 +63,68 @@ bool NetworkInterfaceConfiguration::apply()
         sockaddr_in addr;
         ZeroBStruct(addr);
 
-        ifr1_host = ifr;
-        ifr1_netmask = ifr;
+        ifr1_host = m_ifr;
+        ifr1_netmask = m_ifr;
 
-        addr.sin_addr.s_addr = address.s_addr;
+        addr.sin_addr.s_addr = m_address.s_addr;
         addr.sin_family = AF_INET;
         memcpy(&ifr1_host.ifr_addr, &addr, sizeof(addr));
 
-        addr.sin_addr.s_addr = netmask.s_addr;
+        addr.sin_addr.s_addr = m_netmask.s_addr;
         memcpy(&ifr1_netmask.ifr_netmask, &addr, sizeof(addr));
 
-        if (ioctl(fd,SIOCSIFADDR,&ifr1_host) == -1)
+        if (ioctl(m_fd,SIOCSIFADDR,&ifr1_host) == -1)
         {
-            lastError = "SIOCSIFADDR error @" + interfaceName;
+            m_lastError = "SIOCSIFADDR error @" + m_interfaceName;
             return false;
         }
-        if (ioctl(fd,SIOCSIFNETMASK,&ifr1_netmask) == -1)
+        if (ioctl(m_fd,SIOCSIFNETMASK,&ifr1_netmask) == -1)
         {
-            lastError = "SIOCSIFNETMASK error @" + interfaceName;
+            m_lastError = "SIOCSIFNETMASK error @" + m_interfaceName;
             return false;
         }
-        changeIPv4Addr = false;
+        m_changeIPv4Addr = false;
     }
 
     bool setifr = false;
-    if (changeState)
+    if (m_changeState)
     {
-        if (stateUP)
-            ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+        if (m_stateUP)
+            m_ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
         else
-            ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
-        changeState = false;
+            m_ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+        m_changeState = false;
         setifr = true;
     }
-    if (changePromiscMode)
+    if (m_changePromiscMode)
     {
-        if (promiscMode)
-            ifr.ifr_flags |= (IFF_PROMISC);
+        if (m_promiscMode)
+            m_ifr.ifr_flags |= (IFF_PROMISC);
         else
-            ifr.ifr_flags &= ~(IFF_PROMISC);
-        changePromiscMode = false;
+            m_ifr.ifr_flags &= ~(IFF_PROMISC);
+        m_changePromiscMode = false;
         setifr = true;
     }
 
     // promisc + up:
     if ( setifr )
     {
-        if (ioctl (fd, SIOCSIFFLAGS, &ifr) == -1 )
+        if (ioctl (m_fd, SIOCSIFFLAGS, &m_ifr) == -1 )
         {
-            lastError = "SIOCSIFFLAGS error @" + interfaceName;
+            m_lastError = "SIOCSIFFLAGS error @" + m_interfaceName;
             return false;
         }
     }
 
-    if ( changeMTU )
+    if ( m_changeMTU )
     {
-        ifr.ifr_mtu = MTU;
-        if (ioctl(fd, SIOCSIFMTU, &ifr) < 0)
+        m_ifr.ifr_mtu = m_MTU;
+        if (ioctl(m_fd, SIOCSIFMTU, &m_ifr) < 0)
         {
-            lastError = "SIOCSIFMTU error @" + interfaceName;
+            m_lastError = "SIOCSIFMTU error @" + m_interfaceName;
             return false;
         }
-        changeMTU = false;
+        m_changeMTU = false;
     }
 #else
     if (changeIPv4Addr)
@@ -133,7 +133,7 @@ bool NetworkInterfaceConfiguration::apply()
                                                                "ipv4",
                                                                "set",
                                                                "address",
-                                                               std::string("name="+std::to_string(adapterIndex)),
+                                                               std::string("name="+std::to_string(m_adapterIndex)),
                                                                "static",
                                                                Mantids30::Memory::Abstract::IPV4::_toString(address),
                                                                Mantids30::Memory::Abstract::IPV4::_toString(netmask)
@@ -153,7 +153,7 @@ bool NetworkInterfaceConfiguration::apply()
                                                                "ipv4",
                                                                "set",
                                                                "interface",
-                                                               std::to_string(adapterIndex),
+                                                               std::to_string(m_adapterIndex),
                                                                std::string("mtu="+std::to_string(MTU))
                                                               }));
         if (i.error==0)
@@ -174,14 +174,14 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeState)
     {
-        if (fd != INVALID_HANDLE_VALUE)
+        if (m_fd != INVALID_HANDLE_VALUE)
         {
             if (netifType==NETIF_VIRTUAL_WIN)
             {
                 ULONG status = stateUP?1:0;
 
                 DWORD len;
-                if (DeviceIoControl(fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
+                if (DeviceIoControl(m_fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
                 {
                     lastError = "Failed to set media status";
                     return false;
@@ -206,7 +206,7 @@ bool NetworkInterfaceConfiguration::apply()
 
 NetworkInterfaceConfiguration::NetIfType NetworkInterfaceConfiguration::getNetIfType() const
 {
-    return netifType;
+    return m_netifType;
 }
 
 
@@ -266,8 +266,8 @@ std::string NetworkInterfaceConfiguration::getRouteExecPath()
 NetworkInterfaceConfiguration::~NetworkInterfaceConfiguration()
 {
 #ifndef _WIN32
-    if (fd>=0)
-        close(fd);
+    if (m_fd>=0)
+        close(m_fd);
 #else
     // WIN32: HANDLE fd is handled outside this class, and only works for virtual interfaces..
 #endif
@@ -279,10 +279,10 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
     char errormsg[4096];
     errormsg[4095] = 0;
 
-    netifType = NETIF_GENERIC_LIN;
+    m_netifType = NETIF_GENERIC_LIN;
 
-    interfaceName = _ifaceName;
-    if((fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
+    m_interfaceName = _ifaceName;
+    if((m_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
         char cError[1024]="Unknown Error";
 
@@ -290,13 +290,13 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;
 
-        lastError = errormsg;
+        m_lastError = errormsg;
         return false;
     }
 
-    SecBACopy(ifr.ifr_name, _ifaceName.c_str());
+    SecBACopy(m_ifr.ifr_name, _ifaceName.c_str());
 
-    if((ioctl(fd, SIOCGIFFLAGS, &ifr) == -1))
+    if((ioctl(m_fd, SIOCGIFFLAGS, &m_ifr) == -1))
     {
         char cError[1024]="Unknown Error";
 
@@ -304,7 +304,7 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;
 
-        lastError = errormsg;
+        m_lastError = errormsg;
 
         return false;
     }
@@ -314,8 +314,8 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
 void NetworkInterfaceConfiguration::openTAPW32Interface(HANDLE fd, ULONG adapterIndex)
 {
     netifType=NETIF_VIRTUAL_WIN;
-    this->fd = fd;
-    this->adapterIndex = adapterIndex;
+    this->m_fd = fd;
+    this->m_adapterIndex = adapterIndex;
 }
 #endif
 
@@ -330,11 +330,11 @@ int NetworkInterfaceConfiguration::getMTU()
         return 0;
     }
 
-    SecBACopy(ifr2.ifr_name, interfaceName.c_str());
+    SecBACopy(ifr2.ifr_name, m_interfaceName.c_str());
 
     if((ioctl(sock2, SIOCGIFMTU, &ifr2) == -1))
     {
-        lastError = "SIOCGIFMTU error @" + interfaceName;
+        m_lastError = "SIOCGIFMTU error @" + m_interfaceName;
         return false;
     }
     close(sock2);
@@ -345,10 +345,10 @@ int NetworkInterfaceConfiguration::getMTU()
     case NETIF_VIRTUAL_WIN:
     {
         ULONG mtu = 1500;
-        if (fd != INVALID_HANDLE_VALUE)
+        if (m_fd != INVALID_HANDLE_VALUE)
         {
             DWORD len;
-            if  (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof (mtu), &mtu, sizeof (mtu), &len, NULL) == 0)
+            if  (DeviceIoControl(m_fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof (mtu), &mtu, sizeof (mtu), &len, NULL) == 0)
             {
                 lastError = "Failed to obtain interface MTU";
                 return 0;
@@ -370,15 +370,15 @@ ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
 
 #ifndef _WIN32
     etherHdrData.h_proto = htons(ETH_P_IP);
-    struct ifreq ifr1x = ifr;
-    if (ioctl(fd, SIOCGIFHWADDR, &ifr1x) < 0)
+    struct ifreq ifr1x = m_ifr;
+    if (ioctl(m_fd, SIOCGIFHWADDR, &ifr1x) < 0)
     {
-        lastError = "SIOCGIFHWADDR error @" + interfaceName;
+        m_lastError = "SIOCGIFHWADDR error @" + m_interfaceName;
         return etherHdrData;
     }
     if (ifr1x.ifr_hwaddr.sa_family!=ARPHRD_ETHER)
     {
-        lastError = "SIOCGIFHWADDR error, not an ethernet interface @" + interfaceName;
+        m_lastError = "SIOCGIFHWADDR error, not an ethernet interface @" + m_interfaceName;
         return etherHdrData;
     }
     memcpy(etherHdrData.h_dest,ifr1x.ifr_hwaddr.sa_data,6);
@@ -386,10 +386,10 @@ ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
     switch (netifType)
     {
     case NETIF_VIRTUAL_WIN:
-        if (fd != INVALID_HANDLE_VALUE)
+        if (m_fd != INVALID_HANDLE_VALUE)
         {
             DWORD len;
-            if (DeviceIoControl(fd, TAP_WIN_IOCTL_GET_MAC, &(etherHdrData.h_dest), 6, &(etherHdrData.h_dest), 6, &len, NULL) == 0)
+            if (DeviceIoControl(m_fd, TAP_WIN_IOCTL_GET_MAC, &(etherHdrData.h_dest), 6, &(etherHdrData.h_dest), 6, &len, NULL) == 0)
             {
                 lastError = "Failed to obtain interface MAC Address";
                 ZeroBStruct(etherHdrData);
@@ -406,33 +406,33 @@ ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
 
 std::string NetworkInterfaceConfiguration::getLastError() const
 {
-    return lastError;
+    return m_lastError;
 }
 
 void NetworkInterfaceConfiguration::setIPv4Address(const in_addr &_address, const in_addr &_netmask)
 {
-    changeIPv4Addr = true;
+    m_changeIPv4Addr = true;
 
-    this->address = _address;
-    this->netmask = _netmask;
+    this->m_address = _address;
+    this->m_netmask = _netmask;
 }
 
 void NetworkInterfaceConfiguration::setMTU(int _mtu)
 {
-    changeMTU = true;
-    MTU = _mtu;
+    m_changeMTU = true;
+    m_MTU = _mtu;
 }
 
 void NetworkInterfaceConfiguration::setPromiscMode(bool state)
 {
-    changePromiscMode = true;
+    m_changePromiscMode = true;
     // set the flags to PROMISC
-    promiscMode = state;
+    m_promiscMode = state;
 }
 
 void NetworkInterfaceConfiguration::setUP(bool state)
 {
-    changeState = true;
+    m_changeState = true;
     // set the flags to UP...
-    this->stateUP = state;
+    this->m_stateUP = state;
 }

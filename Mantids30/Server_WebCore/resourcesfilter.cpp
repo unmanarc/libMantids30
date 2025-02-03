@@ -109,14 +109,14 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
 
 void ResourcesFilter::addFilter(const Filter &filter)
 {
-    filters.push_back(filter);
+    m_filters.push_back(filter);
 }
 
 ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> & permissions,const std::set<std::string> & roles, bool isSessionActive)
 {
     FilterEvaluationResult evaluationResult;
 
-    for (const Filter & filter : filters)
+    for (const Filter & filter : m_filters)
     {
         // Evaluate the filter:
 

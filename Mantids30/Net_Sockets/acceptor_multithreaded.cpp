@@ -9,13 +9,13 @@ using Ms = std::chrono::milliseconds;
 
 uint32_t MultiThreaded::Config::getMaxConnectionsPerIP()
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     return maxConnectionsPerIP;
 }
 
 void MultiThreaded::Config::setMaxConnectionsPerIP(const uint32_t &value)
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     maxConnectionsPerIP = value;
 }
 
@@ -26,30 +26,30 @@ void MultiThreaded::Config::setParent(MultiThreaded *newParent)
 
 uint32_t MultiThreaded::Config::getMaxWaitMSTime()
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     return maxWaitMSTime;
 }
 
 void MultiThreaded::Config::setMaxWaitMSTime(const uint32_t &value)
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     maxWaitMSTime = value;
     lock.unlock();
-    parent->cond_clients_notfull.notify_all();
+    parent->m_condClientsNotFull.notify_all();
 }
 
 uint32_t MultiThreaded::Config::getMaxConcurrentClients()
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     return maxConcurrentClients;
 }
 
 void MultiThreaded::Config::setMaxConcurrentClients(const uint32_t &value)
 {
-    std::unique_lock<std::mutex> lock(parent->mutex_clients);
+    std::unique_lock<std::mutex> lock(parent->m_mutexClients);
     maxConcurrentClients = value;
     lock.unlock();
-    parent->cond_clients_notfull.notify_all();
+    parent->m_condClientsNotFull.notify_all();
 }
 
 
@@ -66,11 +66,11 @@ void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & t
 bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>clientSocket, std::shared_ptr<SAThread> clientThread)
 {
     // Introduce the new client thread into the list.
-    std::unique_lock<std::mutex> lock(mutex_clients);
+    std::unique_lock<std::mutex> lock(m_mutexClients);
     // free the lock (wait until another thread finish)...
-    while(threadList.size()>=parameters.maxConcurrentClients && !finalized)
+    while(m_threadList.size()>=parameters.maxConcurrentClients && !m_finalized)
     {
-        if (cond_clients_notfull.wait_for(lock,Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout )
+        if (m_condClientsNotFull.wait_for(lock,Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout )
         {
             if (callbacks.onClientAcceptTimeoutOccurred)
             {
@@ -80,7 +80,7 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
             return true;
         }
     }
-    if (finalized)
+    if (m_finalized)
     {
         // Don't introduce or start... delete it (close).
         //delete clientThread;
@@ -98,7 +98,7 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
         return true;
     }
 
-    threadList.push_back(clientThread);
+    m_threadList.push_back(clientThread);
 
     std::thread(SAThread::thread_streamclient,clientThread,this).detach();
 
@@ -107,22 +107,22 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>cl
 
 uint32_t MultiThreaded::incrementIPUsage(const std::string &ipAddr)
 {
-    if (connectionsPerIP.find(ipAddr) == connectionsPerIP.end())
-        connectionsPerIP[ipAddr] = 1;
+    if (m_connectionsPerIP.find(ipAddr) == m_connectionsPerIP.end())
+        m_connectionsPerIP[ipAddr] = 1;
     else
     {
-        if (connectionsPerIP[ipAddr] != UINT32_MAX)
-            connectionsPerIP[ipAddr]++;
+        if (m_connectionsPerIP[ipAddr] != UINT32_MAX)
+            m_connectionsPerIP[ipAddr]++;
     }
-    return connectionsPerIP[ipAddr];
+    return m_connectionsPerIP[ipAddr];
 }
 
 void MultiThreaded::decrementIPUsage(const std::string &ipAddr)
 {
-    if (connectionsPerIP.find(ipAddr) == connectionsPerIP.end())
+    if (m_connectionsPerIP.find(ipAddr) == m_connectionsPerIP.end())
         throw std::runtime_error("decrement ip usage, but never incremented before");
-    if (connectionsPerIP[ipAddr]==1) connectionsPerIP.erase(ipAddr);
-    else connectionsPerIP[ipAddr]--;
+    if (m_connectionsPerIP[ipAddr]==1) m_connectionsPerIP.erase(ipAddr);
+    else m_connectionsPerIP[ipAddr]--;
 }
 
 MultiThreaded::MultiThreaded()
@@ -148,44 +148,44 @@ MultiThreaded::~MultiThreaded()
     stop();
 
     // if someone waiting? (mark as finalized and unlock).
-    mutex_clients.lock();
-    finalized = true;
-    mutex_clients.unlock();
-    cond_clients_notfull.notify_all();
+    m_mutexClients.lock();
+    m_finalized = true;
+    m_mutexClients.unlock();
+    m_condClientsNotFull.notify_all();
 
     // no aditional elements will be added, because acceptConnection will drop.
 
     // Accept the listen-injection thread. (no new threads will be added from here)
-    if (initialized)
-        acceptorThread.join();
+    if (m_initialized)
+        m_acceptorThread.join();
 
-    if (acceptorSocket)
+    if (m_acceptorSocket)
     {
         // Shutdown the listener here, but don't delete the object yet...
-        acceptorSocket->shutdownSocket();
+        m_acceptorSocket->shutdownSocket();
     }
 
     // Close all current connections...
     if (true)
     {
-        std::unique_lock<std::mutex> lock(mutex_clients);
+        std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<std::shared_ptr<SAThread>>::iterator it=threadList.begin(); it != threadList.end(); ++it)
+        for (std::list<std::shared_ptr<SAThread>>::iterator it=m_threadList.begin(); it != m_threadList.end(); ++it)
             (*it)->stopSocket();
         // unlock until there is no threads left.
-        while ( !threadList.empty() )
-            cond_clients_empty.wait(lock);
+        while ( !m_threadList.empty() )
+            m_condClientsEmpty.wait(lock);
     }
 
 
     // Now we can safetly free the acceptor socket resource.
-    if (acceptorSocket)
-        acceptorSocket = nullptr;
+    if (m_acceptorSocket)
+        m_acceptorSocket = nullptr;
 }
 
 bool MultiThreaded::acceptClient()
 {
-    std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = acceptorSocket->acceptConnection();
+    std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = m_acceptorSocket->acceptConnection();
     if (clientSocket)
     {
         std::shared_ptr<SAThread> clientThread = std::make_shared<SAThread>();
@@ -208,15 +208,15 @@ bool MultiThreaded::acceptClient()
 
 bool MultiThreaded::finalizeThreadElement(std::shared_ptr<SAThread> x)
 {
-    std::unique_lock<std::mutex> lock(mutex_clients);
-    if (std::find(threadList.begin(), threadList.end(), x) != threadList.end())
+    std::unique_lock<std::mutex> lock(m_mutexClients);
+    if (std::find(m_threadList.begin(), m_threadList.end(), x) != m_threadList.end())
     {
-        threadList.remove(x);
+        m_threadList.remove(x);
         decrementIPUsage(x->getRemotePair());
         //delete x;
-        cond_clients_notfull.notify_one();
-        if (threadList.empty())
-            cond_clients_empty.notify_one();
+        m_condClientsNotFull.notify_one();
+        if (m_threadList.empty())
+            m_condClientsEmpty.notify_one();
         return true;
     }
     return false;
@@ -224,32 +224,32 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<SAThread> x)
 
 void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket)
 {
-    this->acceptorSocket = acceptorSocket;
+    this->m_acceptorSocket = acceptorSocket;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This class should be declared always as a shared_ptr...
 void MultiThreaded::startInBackground()
 {
-    if (!acceptorSocket)
+    if (!m_acceptorSocket)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Socket not defined.");
     if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
 
-    initialized = true;
-    acceptorThread = std::thread(thread_streamaccept,shared_from_this());
+    m_initialized = true;
+    m_acceptorThread = std::thread(thread_streamaccept,shared_from_this());
 }
 
 void MultiThreaded::stop()
 {
-    if (acceptorSocket)
-        acceptorSocket->shutdownSocket(SHUT_RDWR);
+    if (m_acceptorSocket)
+        m_acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
 
 bool MultiThreaded::startBlocking()
 {
-    if (!acceptorSocket)
+    if (!m_acceptorSocket)
         throw std::runtime_error("MultiThreaded::startBlocking() : Acceptor Socket not defined");
     if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");

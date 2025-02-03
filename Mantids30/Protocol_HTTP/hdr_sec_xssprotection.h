@@ -38,10 +38,6 @@ public:
      * @return true if the parsing was successful, false otherwise.
      */
     bool fromString(const std::string & sValue);
-    /**
-     * @brief Sets the X-XSS-Protection header to its default values.
-     */
-    void setDefaults();
 
     bool isActivated = true; ///< Whether the X-XSS-Protection header is activated.
     bool enableBlockingMode = true; ///< Whether blocking is enabled for the X-XSS-Protection header.

@@ -1,5 +1,4 @@
 #include "b_mmap.h"
-#include <time.h>
 #include <sys/timeb.h>
 #include <random>
 
@@ -13,8 +12,8 @@ using namespace Mantids30::Memory::Containers;
 
 B_MMAP::B_MMAP()
 {
-    storeMethod = BC_METHOD_FILEMMAP;
-    readOnly = false;
+    m_storeMethod = BC_METHOD_FILEMMAP;
+    m_readOnly = false;
     setContainerBytes(0);
     B_MMAP::clear2();
 }
@@ -163,7 +162,7 @@ std::string B_MMAP::getRandomFileName()
     randomStr.reserve(length);
     while(length--) randomStr += baseChars[pick(rg)];
 
-    return fsDirectoryPath + FS_DIRSLASH + fsBaseFileName + "." + randomStr;
+    return m_fsDirectoryPath + FS_DIRSLASH + m_fsBaseFileName + "." + randomStr;
 }
 
 bool B_MMAP::createEmptyFile(const std::string &)

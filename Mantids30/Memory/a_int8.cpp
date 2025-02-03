@@ -5,54 +5,54 @@ using namespace Mantids30::Memory::Abstract;
 
 INT8::INT8()
 {
-    value = 0;
+    m_value = 0;
     setVarType(TYPE_INT8);
 }
 
 INT8::INT8(const int8_t &value)
 {
-    this->value = value;
+    this->m_value = value;
     setVarType(TYPE_INT64);
 }
 
 int8_t INT8::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 bool INT8::setValue(const int8_t &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    this->value = value;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    this->m_value = value;
     return true;
 }
 
 std::string INT8::toString()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return std::to_string(value);
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return std::to_string(m_value);
 }
 
 bool INT8::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     if (value.empty())
     {
-        this->value = 0;
+        this->m_value = 0;
         return true;
     }
-    this->value = static_cast<int8_t>(strtol( value.c_str(), nullptr, 10 ));
-    if (value!="0" && this->value==0) return false;
+    this->m_value = static_cast<int8_t>(strtol( value.c_str(), nullptr, 10 ));
+    if (value!="0" && this->m_value==0) return false;
 
     return true;
 }
 std::shared_ptr<Var> INT8::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<INT8>();
-    if (var) *var = this->value;
+    if (var) *var = this->m_value;
     return var;
 }

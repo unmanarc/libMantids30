@@ -12,29 +12,29 @@ using namespace NetStreams;
 Bridge_Thread::Bridge_Thread()
 {
     block_fwd = nullptr;
-    block_bwd = nullptr;
-    chunked = false;
-    terminated = false;
+    m_blockBwd = nullptr;
+    m_chunked = false;
+    m_terminated = false;
     setBlockSize(8192);
 }
 
 Bridge_Thread::~Bridge_Thread()
 {
     delete [] block_fwd;
-    delete [] block_bwd;
+    delete [] m_blockBwd;
 }
 
 void Bridge_Thread::setSocketEndpoints(std::shared_ptr<Socket_Stream_Base> src, std::shared_ptr<Socket_Stream_Base> dst, bool chunked)
 {
     this->src = src;
-    this->dst = dst;
-    this->chunked = chunked;
+    this->m_dstSocket = dst;
+    this->m_chunked = chunked;
 }
 
 bool Bridge_Thread::sendPing()
 {
     std::lock_guard<std::mutex> lock(mt_fwd);
-    bool r = dst->writeU<uint16_t>((uint16_t)0);
+    bool r = m_dstSocket->writeU<uint16_t>((uint16_t)0);
     return r;
 }
 
@@ -47,39 +47,39 @@ void Bridge_Thread::setBlockSize(uint16_t value)
 {
     if (block_fwd)
         delete [] block_fwd;
-    if (block_bwd)
-        delete [] block_bwd;
+    if (m_blockBwd)
+        delete [] m_blockBwd;
 
     blockSize = value;
 
     block_fwd = new char[value];
-    block_bwd = new char[value];
+    m_blockBwd = new char[value];
 }
 
 void Bridge_Thread::terminate()
 {
-    terminated = true;
+    m_terminated = true;
 }
 
 int Bridge_Thread::processPipe(Side fwd)
 {
-    char * curBlock = fwd==SIDE_FORWARD?block_fwd:block_bwd;
+    char * curBlock = fwd==SIDE_FORWARD?block_fwd:m_blockBwd;
 
     int bytesReceived;
 
-    if ( !chunked )
+    if ( !m_chunked )
     {
         // Stream mode: read and write from the both peers
 
         // TODO: if writer is done...
         if ((bytesReceived=
-             (fwd==SIDE_FORWARD?src:dst)->partialRead(curBlock,blockSize)
+             (fwd==SIDE_FORWARD?src:m_dstSocket)->partialRead(curBlock,blockSize)
              )>0)
         {
             {
                 std::lock_guard<std::mutex> lock(fwd==SIDE_FORWARD?mt_fwd:mt_rev);
 
-                if (!(fwd==SIDE_FORWARD?dst:src)->writeFull(curBlock,bytesReceived))
+                if (!(fwd==SIDE_FORWARD?m_dstSocket:src)->writeFull(curBlock,bytesReceived))
                     return -2;
             }
 
@@ -101,11 +101,11 @@ int Bridge_Thread::processPipe(Side fwd)
                 std::lock_guard<std::mutex> lock(mt_fwd);
 
                 // Write the size to be written (chunk)
-                if (!dst->writeU<uint16_t>((uint16_t)bytesReceived))
+                if (!m_dstSocket->writeU<uint16_t>((uint16_t)bytesReceived))
                     return -2;
 
                 // Write the packet itself.
-                if (!dst->writeFull(curBlock,bytesReceived))
+                if (!m_dstSocket->writeFull(curBlock,bytesReceived))
                     return -2;
 
                 return bytesReceived;
@@ -116,21 +116,21 @@ int Bridge_Thread::processPipe(Side fwd)
         {
             // 1->0 (decapsulate)
             bool readOK;
-            bytesReceived = dst->readU<uint16_t>(&readOK);
+            bytesReceived = m_dstSocket->readU<uint16_t>(&readOK);
             if (!readOK)
                 return -1;
 
             // It's a ping! (do nothing, but validate that the connection is not terminated yet)
             if (bytesReceived == 0)
             {
-                if (terminated)
+                if (m_terminated)
                     return -2;
 
                 return -3;
             }
 
             // Attempt to read from the dst
-            if (!dst->readFull(curBlock,(uint16_t)bytesReceived))
+            if (!m_dstSocket->readFull(curBlock,(uint16_t)bytesReceived))
                 return -1;
 
             // Attempt to write to the src

@@ -150,10 +150,10 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
 
 Mantids30::Helpers::AppSpawn::AppSpawn()
 {
-    attrp = nullptr;
-    file_actionsp = &file_actions;
+    m_attrp = nullptr;
+    m_fileActionsp = &m_fileActions;
 
-    if ((posix_spawn_file_actions_init (file_actionsp)) != 0)
+    if ((posix_spawn_file_actions_init (m_fileActionsp)) != 0)
         throw std::runtime_error("Unable to create file actions in execution.");
 
 }
@@ -168,7 +168,7 @@ bool Mantids30::Helpers::AppSpawn::setExec(const std::string &path)
         #endif
             )
     {
-        execPath = path;
+        m_execPath = path;
         return true;
     }
     return false;
@@ -176,36 +176,36 @@ bool Mantids30::Helpers::AppSpawn::setExec(const std::string &path)
 
 bool Mantids30::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
 {
-    return posix_spawn_file_actions_addopen (file_actionsp, fd, outFile.c_str(),
+    return posix_spawn_file_actions_addopen (m_fileActionsp, fd, outFile.c_str(),
                                              O_WRONLY | O_CREAT | O_TRUNC, 0644)==0;
 }
 
 bool Mantids30::Helpers::AppSpawn::redirectStdErrToStdOut()
 {
-    return posix_spawn_file_actions_adddup2 (file_actionsp, STDOUT_FILENO, STDERR_FILENO)==0;
+    return posix_spawn_file_actions_adddup2 (m_fileActionsp, STDOUT_FILENO, STDERR_FILENO)==0;
 }
 
 void Mantids30::Helpers::AppSpawn::addArgument(const std::string &arg)
 {
-    arguments.push_back(arg);
+    m_arguments.push_back(arg);
 }
 
 void Mantids30::Helpers::AppSpawn::addEnvironment(const std::string &env)
 {
-    environment.push_back(env);
+    m_environment.push_back(env);
 }
 
 bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
     // Create the argv...
-    char ** argv = (char **)malloc( (arguments.size()+2)*sizeof(char *) );
-    argv[0] = (char *)strdup(execPath.c_str());
-    for (size_t i=1; i<(arguments.size()+1);i++)
-        argv[i] = (char *)strdup(arguments[i-1].c_str());
-    argv[arguments.size()+1] = 0;
+    char ** argv = (char **)malloc( (m_arguments.size()+2)*sizeof(char *) );
+    argv[0] = (char *)strdup(m_execPath.c_str());
+    for (size_t i=1; i<(m_arguments.size()+1);i++)
+        argv[i] = (char *)strdup(m_arguments[i-1].c_str());
+    argv[m_arguments.size()+1] = 0;
 
     // Create the env...
-    std::vector<std::string> _environment = environment;
+    std::vector<std::string> _environment = m_environment;
     // Pass the current environ...
     for (int i=0;environ[i];i++ )
         _environment.push_back(environ[i]);
@@ -218,51 +218,51 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
 
     if (pipeStdout)
     {
-        if(pipe(piStdOut)!=0)
+        if(pipe(m_piStdOut)!=0)
             throw std::runtime_error("Unable to create pipes.");
 
         // Ask the remote process to close the pipes side 0.
-        posix_spawn_file_actions_addclose(file_actionsp, piStdOut[0]);
+        posix_spawn_file_actions_addclose(m_fileActionsp,m_piStdOut[0]);
 
         // Ask the remote process to link pipes side 1 with stdout
-        posix_spawn_file_actions_adddup2(file_actionsp, piStdOut[1], STDOUT_FILENO);
+        posix_spawn_file_actions_adddup2(m_fileActionsp,m_piStdOut[1], STDOUT_FILENO);
 
         // Ask the remote process to close the pipes side 1
-        posix_spawn_file_actions_addclose(file_actionsp, piStdOut[1]);
+        posix_spawn_file_actions_addclose(m_fileActionsp,m_piStdOut[1]);
     }
 
     if (pipeStderr)
     {
-        if(pipe(piStdErr)!=0)
+        if(pipe(m_piStdErr)!=0)
             throw std::runtime_error("Unable to create pipes.");
 
         // Ask the remote process to close the pipes side 0.
-        posix_spawn_file_actions_addclose(file_actionsp, piStdErr[0]);
+        posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdErr[0]);
 
         // Ask the remote process to link pipes side 1 with stderr
-        posix_spawn_file_actions_adddup2(file_actionsp, piStdErr[1], STDERR_FILENO);
+        posix_spawn_file_actions_adddup2(m_fileActionsp, m_piStdErr[1], STDERR_FILENO);
 
         // Ask the remote process to close the pipes side 1
-        posix_spawn_file_actions_addclose(file_actionsp, piStdErr[1]);
+        posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdErr[1]);
     }
 
 
     // Execute:
-    int s = posix_spawn(&child_pid, execPath.c_str(), file_actionsp, attrp,
+    int s = posix_spawn(&m_childPid, m_execPath.c_str(), m_fileActionsp, m_attrp,
                         &argv[0], env);
 
     if (pipeStdout)
     {
         // close the pipe side 1 in the parent process..
-        close(piStdOut[1]);
-        plist = { {piStdOut[0],POLLIN} };
+        close(m_piStdOut[1]);
+        m_plist = { {m_piStdOut[0],POLLIN} };
     }
 
     if (pipeStderr)
     {
         // close the pipe side 1 in the parent process..
-        close(piStdErr[1]);
-        plist.push_back({piStdErr[0],POLLIN});
+        close(m_piStdErr[1]);
+        m_plist.push_back({m_piStdErr[0],POLLIN});
     }
 
     // Destroy objects:
@@ -274,9 +274,9 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     free(env);
 
 
-    if (attrp != nullptr && ((s = posix_spawnattr_destroy(attrp))!=0))
+    if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp))!=0))
         throw std::runtime_error("Unable to destroy execution attributes.");
-    if (file_actionsp != nullptr && ((s = posix_spawn_file_actions_destroy(file_actionsp)))!=0 )
+    if (m_fileActionsp != nullptr && ((s = posix_spawn_file_actions_destroy(m_fileActionsp)))!=0 )
         throw std::runtime_error("Unable to destroy file actions execution.");
 
     return s==0;
@@ -287,7 +287,7 @@ void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
     int s,status;
     do
     {
-        s = waitpid(child_pid, &status, WUNTRACED | WCONTINUED);
+        s = waitpid(m_childPid, &status, WUNTRACED | WCONTINUED);
         if (s == -1)
         {
             return;
@@ -299,15 +299,15 @@ void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
 std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
 {
     std::set<int> r;
-    if (  poll(&plist[0],plist.size(),-1)>0 )
+    if (  poll(&m_plist[0],m_plist.size(),-1)>0 )
     {
-        for (size_t i=0; i<plist.size(); i++)
+        for (size_t i=0; i<m_plist.size(); i++)
         {
-            if ( (plist[i].revents&POLLIN)!=0 )
+            if ( (m_plist[i].revents&POLLIN)!=0 )
             {
-                if ( plist[i].fd == piStdOut[0] )
+                if ( m_plist[i].fd == m_piStdOut[0] )
                     r.insert(STDOUT_FILENO);
-                else if ( plist[i].fd == piStdErr[0] )
+                else if ( m_plist[i].fd == m_piStdErr[0] )
                     r.insert(STDERR_FILENO);
             }
         }
@@ -318,9 +318,9 @@ std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
 ssize_t Mantids30::Helpers::AppSpawn::read(int fd, void *buf, size_t count)
 {
     if (fd == STDOUT_FILENO)
-        return ::read(piStdOut[0], buf, count);
+        return ::read(m_piStdOut[0], buf, count);
     else if (fd == STDERR_FILENO)
-        return ::read(piStdErr[0], buf, count);
+        return ::read(m_piStdErr[0], buf, count);
 
     throw std::runtime_error("AppSpawn: You should use stderr or stdout magic numbers in read function.");
 }

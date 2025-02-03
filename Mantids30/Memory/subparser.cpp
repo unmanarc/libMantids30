@@ -8,12 +8,12 @@ using namespace Mantids30::Memory::Streams;
 
 SubParser::SubParser()
 {
-    clientMode = true;
-    upStream = nullptr;
-    streamEnded = false;
+    m_clientMode = true;
+    m_upStream = nullptr;
+    m_streamEnded = false;
     setParseStatus(PARSE_STAT_GET_MORE_DATA);
-    parseMode = PARSE_MODE_DELIMITER;
-    parseDelimiter = "\r\n";
+    m_parseMode = PARSE_MODE_DELIMITER;
+    m_parseDelimiter = "\r\n";
 }
 
 SubParser::~SubParser()
@@ -22,14 +22,14 @@ SubParser::~SubParser()
 
 void SubParser::initElemParser(std::shared_ptr<Memory::Streams::StreamableObject> upstreamObj, bool clientMode)
 {
-    this->upStream = upstreamObj;
-    this->clientMode = clientMode;
+    this->m_upStream = upstreamObj;
+    this->m_clientMode = clientMode;
 }
 
 std::pair<bool,uint64_t> SubParser::writeIntoParser(const void *buf, size_t count)
 {
-    if (!count) streamEnded = true;
-    switch (parseMode)
+    if (!count) m_streamEnded = true;
+    switch (m_parseMode)
     {
     case PARSE_MODE_DELIMITER:
 
@@ -87,68 +87,68 @@ size_t SubParser::ParseValidator(Mantids30::Memory::Containers::B_Base &bc)
 
 SubParser::ParseStatus SubParser::getParseStatus() const
 {
-    return parseStatus;
+    return m_parseStatus;
 }
 
 void SubParser::setParseStatus(const ParseStatus &value)
 {
-    parseStatus = value;
+    m_parseStatus = value;
 }
 
 void SubParser::setParseDelimiter(const std::string &value)
 {
-    parseDelimiter = value;
+    m_parseDelimiter = value;
 }
 
 Mantids30::Memory::Containers::B_Base *SubParser::getParsedBuffer()
 {
-    return &parsedBuffer;
+    return &m_parsedBuffer;
 }
 
 std::pair<bool,uint64_t> SubParser::parseByMultiDelimiter(const void *buf, size_t count)
 {
     std::pair<bool,uint64_t> needlePos, bytesAppended = std::make_pair(true,0);
-    uint64_t prevSize = unparsedBuffer.size(), bytesToDisplace = 0;
+    uint64_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
     if (!count)
     {
-        streamEnded = true;
+        m_streamEnded = true;
     }
 
     // stick to the unparsedBuffer object size.
-    if ( count > unparsedBuffer.getSizeLeft() && unparsedBuffer.getSizeLeft() )
-        count = unparsedBuffer.getSizeLeft();
+    if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+        count = m_unparsedBuffer.getSizeLeft();
 
-    if (count && ((bytesAppended=unparsedBuffer.append(buf,count)).first==false || bytesAppended.second==0))
+    if (count && ((bytesAppended=m_unparsedBuffer.append(buf,count)).first==false || bytesAppended.second==0))
     {
         // size exceeded. don't continue with the streamparser, error.
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
         return std::make_pair(false,(uint64_t)0);
     }
 
     bytesToDisplace = bytesAppended.second;
-    parsedBuffer.reference(&unparsedBuffer);
+    m_parsedBuffer.reference(&m_unparsedBuffer);
 
-    if ( (needlePos = unparsedBuffer.find(parseMultiDelimiter, delimiterFound)).first!=false )
+    if ( (needlePos = m_unparsedBuffer.find(m_parseMultiDelimiter, m_delimiterFound)).first!=false )
     {
         //std::cout << "MULTI DELIMITER FOUND AT ->" << needlePos.second << std::endl << std::flush;
         // needle found.
-        parsedBuffer.reference(&unparsedBuffer,0,needlePos.second);
+        m_parsedBuffer.reference(&m_unparsedBuffer,0,needlePos.second);
 
 #ifdef DEBUG_PARSER
         printf("Parsing by multidelimiter: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
 #endif
 
         setParseStatus(parse());
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
 
         // Bytes to displace:
-        bytesToDisplace = needlePos.second+delimiterFound.size()-prevSize;
+        bytesToDisplace = needlePos.second+m_delimiterFound.size()-prevSize;
     }
-    else if (streamEnded)
+    else if (m_streamEnded)
     {
-        parsedBuffer.reference(&unparsedBuffer);
+        m_parsedBuffer.reference(&m_unparsedBuffer);
         setParseStatus(parse());
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
     }
     else
     {
@@ -162,28 +162,28 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
 {
     std::pair<bool,uint64_t> needlePos, bytesAppended = std::make_pair(true,0);
 
-    uint64_t prevSize = unparsedBuffer.size(), bytesToDisplace = 0;
+    uint64_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
     if (!count)
     {
-        streamEnded = true;
+        m_streamEnded = true;
     }
 
     // stick to the unparsedBuffer object size.
-    if ( count > unparsedBuffer.getSizeLeft() && unparsedBuffer.getSizeLeft() )
-        count = unparsedBuffer.getSizeLeft();
+    if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+        count = m_unparsedBuffer.getSizeLeft();
 
-    if (count && ((bytesAppended=unparsedBuffer.append(buf,count)).second==0 || bytesAppended.first==false))
+    if (count && ((bytesAppended=m_unparsedBuffer.append(buf,count)).second==0 || bytesAppended.first==false))
     {
 #ifdef DEBUG
         printf("%p Parse by Delimiter size exceeded. don't continue with the streamparser, error....\n",this); fflush(stdout);
 #endif
         // size exceeded. don't continue with the streamparser, error.
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
         return std::make_pair(false,(uint64_t)0);
     }
 
     bytesToDisplace = bytesAppended.second;
-    parsedBuffer.reference(&unparsedBuffer);
+    m_parsedBuffer.reference(&m_unparsedBuffer);
 
 #ifdef DEBUG
         auto x = unparsedBuffer.toString();
@@ -192,31 +192,31 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
         BIO_dump_fp (stdout, (char *)x.c_str(), x.size());
 #endif
 
-    if ( (needlePos = unparsedBuffer.find(parseDelimiter.c_str(),parseDelimiter.size())).first!=false )
+    if ( (needlePos = m_unparsedBuffer.find(m_parseDelimiter.c_str(),m_parseDelimiter.size())).first!=false )
     {
         // needle found.
-        parsedBuffer.reference(&unparsedBuffer,0,needlePos.second);
+        m_parsedBuffer.reference(&m_unparsedBuffer,0,needlePos.second);
 
 #ifdef DEBUG_PARSER
         printf("Parsing by delimiter: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse());
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
 
         // Bytes to displace:
-        bytesToDisplace = (needlePos.second-prevSize)+parseDelimiter.size();
+        bytesToDisplace = (needlePos.second-prevSize)+m_parseDelimiter.size();
 #ifdef DEBUG
         printf("%p Delimiter found and parsed -> displaced %lu bytes\n", this, bytesToDisplace); fflush(stdout);
 #endif
     }
-    else if (streamEnded)
+    else if (m_streamEnded)
     {
-        parsedBuffer.reference(&unparsedBuffer);
+        m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG
         printf("%p Delimiter not found and parsed, displaced %lu bytes\n", this, bytesToDisplace); fflush(stdout);
 #endif
         setParseStatus(parse());
-        unparsedBuffer.clear();
+        m_unparsedBuffer.clear();
     }
 
 #ifdef DEBUG
@@ -231,27 +231,27 @@ std::pair<bool,uint64_t> SubParser::parseBySize(const void *buf, size_t count)
     if (!count)
     {
         // Abort current data.
-        streamEnded = true;
+        m_streamEnded = true;
         setParseStatus(PARSE_STAT_GOTO_NEXT_SUBPARSER);
-        unparsedBuffer.clear(); // Destroy the container data.
+        m_unparsedBuffer.clear(); // Destroy the container data.
         return std::make_pair(true,0);
     }
 
-    count = count>unparsedBuffer.getSizeLeft()?unparsedBuffer.getSizeLeft():count;
-    std::pair<bool,uint64_t> appendResult = unparsedBuffer.append(buf,count);
+    count = count>m_unparsedBuffer.getSizeLeft()?m_unparsedBuffer.getSizeLeft():count;
+    std::pair<bool,uint64_t> appendResult = m_unparsedBuffer.append(buf,count);
 
     if (!appendResult.first)
         return appendResult;
 
     // Ready...
-    if (unparsedBuffer.getSizeLeft()==0)
+    if (m_unparsedBuffer.getSizeLeft()==0)
     {
-        parsedBuffer.reference(&unparsedBuffer);
+        m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
         printf("Parsing by size: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse());
-        unparsedBuffer.clear(); // Destroy the container data.
+        m_unparsedBuffer.clear(); // Destroy the container data.
     }
 
     return std::make_pair(true,appendResult.second);
@@ -283,10 +283,10 @@ std::pair<bool,uint64_t> SubParser::parseByValidator(const void *buf, size_t cou
 std::pair<bool,uint64_t> SubParser::parseByConnectionEnd(const void *buf, size_t count)
 {
     // stick to the unparsedBuffer object size.
-    if ( count > unparsedBuffer.getSizeLeft() && unparsedBuffer.getSizeLeft() )
-        count = unparsedBuffer.getSizeLeft();
+    if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+        count = m_unparsedBuffer.getSizeLeft();
 
-    std::pair<bool,uint64_t> appendedBytes = unparsedBuffer.append(buf,count);
+    std::pair<bool,uint64_t> appendedBytes = m_unparsedBuffer.append(buf,count);
 
     if (!appendedBytes.first)
         return std::make_pair(false,(uint64_t)0);
@@ -295,12 +295,12 @@ std::pair<bool,uint64_t> SubParser::parseByConnectionEnd(const void *buf, size_t
 
     if (!count)
     {
-        parsedBuffer.reference(&unparsedBuffer);
+        m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
         printf("Parsing by connection end: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse()); // analyze on connection end.
-        parsedBuffer.clear();
+        m_parsedBuffer.clear();
         return std::make_pair(true,0);
     }
     return std::make_pair(true,count);
@@ -312,26 +312,26 @@ std::pair<bool,uint64_t> SubParser::parseDirect(const void *buf, size_t count)
 
     // TODO: check.
     // stick to the unparsedBuffer object size.
-    if ( count > unparsedBuffer.getSizeLeft() && unparsedBuffer.getSizeLeft() )
-        count = unparsedBuffer.getSizeLeft();
+    if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+        count = m_unparsedBuffer.getSizeLeft();
 
     // TODO: termination?
 
     // Bad copy...
-    if ((copiedDirect = unparsedBuffer.append(buf, count)).first == false)
+    if ((copiedDirect = m_unparsedBuffer.append(buf, count)).first == false)
         return std::make_pair(false,(uint64_t)0);
 
     // Parse it...
-    parsedBuffer.reference(&unparsedBuffer);
+    m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
     printf("Parsing direct (%llu, until size %llu): %s\n", postParsedBuffer.size(), leftToParse, postParsedBuffer.toString().c_str()); fflush(stdout);
 #endif
     setParseStatus(parse());
 
     // All the unparsed buffer was consumed by parsed buffer to the next parser...
-    auto curBufSize = unparsedBuffer.size();
-    unparsedBuffer.clear(); // Reset the container data for the next element.
-    unparsedBuffer.reduceMaxSizeBy( curBufSize );
+    auto curBufSize = m_unparsedBuffer.size();
+    m_unparsedBuffer.clear(); // Reset the container data for the next element.
+    m_unparsedBuffer.reduceMaxSizeBy( curBufSize );
 
     return copiedDirect;
 }
@@ -342,48 +342,48 @@ std::pair<bool,uint64_t> SubParser::parseDirectDelimiter(const void *buf, size_t
     uint64_t prevSize=0;
     std::pair<bool,uint64_t> delimPos;
     std::pair<bool,uint64_t> copiedDirect;
-    delimiterFound = "";
+    m_delimiterFound = "";
 
     // stick to the unparsedBuffer object size.
-    if ( count > unparsedBuffer.getSizeLeft() && unparsedBuffer.getSizeLeft() )
-        count = unparsedBuffer.getSizeLeft();
+    if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+        count = m_unparsedBuffer.getSizeLeft();
 
     if (count == 0)
         return std::make_pair(false,(uint64_t)0); // Can't handle more data...
 
     // Get the previous size.
-    prevSize = unparsedBuffer.size();       
+    prevSize = m_unparsedBuffer.size();       
 
     // Append the current data
-    if ((copiedDirect = unparsedBuffer.append(buf,count)).first==false)
+    if ((copiedDirect = m_unparsedBuffer.append(buf,count)).first==false)
         return std::make_pair(false,(uint64_t)0);
 
     // Find the delimiter pos.
-    if ((delimPos = unparsedBuffer.find(parseDelimiter.c_str(),parseDelimiter.size())).first==false)
+    if ((delimPos = m_unparsedBuffer.find(m_parseDelimiter.c_str(),m_parseDelimiter.size())).first==false)
     {
         // Not found, evaluate how much data I can give here...
-        uint64_t bytesOfPossibleDelim = getLastBytesInCommon(parseDelimiter);
+        uint64_t bytesOfPossibleDelim = getLastBytesInCommon(m_parseDelimiter);
         switch (bytesOfPossibleDelim)
         {
         case 0:
             // delimiter not found at all, parse ALL direct...
-            parsedBuffer.reference(&unparsedBuffer);
+            m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG
             //printf("Parsing direct delimiter (%llu, until size %llu): ", postParsedBuffer.size(), leftToParse); postParsedBuffer.print(); printf("\n"); fflush(stdout);
 #endif
             setParseStatus(parse());
-            unparsedBuffer.clear(); // Reset the container data for the next element.
+            m_unparsedBuffer.clear(); // Reset the container data for the next element.
             break;
         default:
             // bytesOfPossibleDelim maybe belongs to the delimiter, need more data to continue and release the buffer...
             // we are safe on unparsedBuffer.size()-bytesOfPossibleDelim
-            parsedBuffer.reference(&unparsedBuffer, 0,unparsedBuffer.size()-bytesOfPossibleDelim);
+            m_parsedBuffer.reference(&m_unparsedBuffer,0, m_unparsedBuffer.size()-bytesOfPossibleDelim);
             setParseStatus(parse());
 
             if ( bytesOfPossibleDelim )
-                unparsedBuffer.displace( unparsedBuffer.size()-bytesOfPossibleDelim ); // Displace the parsed elements and leave the possible delimiter in the buffer...
+                m_unparsedBuffer.displace( m_unparsedBuffer.size()-bytesOfPossibleDelim ); // Displace the parsed elements and leave the possible delimiter in the buffer...
             else
-                unparsedBuffer.clear(); // Reset the container data for the next element.
+                m_unparsedBuffer.clear(); // Reset the container data for the next element.
             break;
         }
 
@@ -392,26 +392,26 @@ std::pair<bool,uint64_t> SubParser::parseDirectDelimiter(const void *buf, size_t
     else
     {
         // DELIMITER Found...
-        delimiterFound = parseDelimiter;
+        m_delimiterFound = m_parseDelimiter;
 
         if (delimPos.second==0)
         {
-            unparsedBuffer.clear(); // found on 0... give nothing to give
-            parsedBuffer.reference(&unparsedBuffer);
+            m_unparsedBuffer.clear(); // found on 0... give nothing to give
+            m_parsedBuffer.reference(&m_unparsedBuffer);
         }
         else
-            parsedBuffer.reference(&unparsedBuffer,0,delimPos.second);
+            m_parsedBuffer.reference(&m_unparsedBuffer,0,delimPos.second);
 
         setParseStatus(parse());
-        unparsedBuffer.clear(); // Reset the container data for the next element.
+        m_unparsedBuffer.clear(); // Reset the container data for the next element.
 
-        return std::make_pair(true,(delimPos.second-prevSize)+parseDelimiter.size());
+        return std::make_pair(true,(delimPos.second-prevSize)+m_parseDelimiter.size());
     }
 }
 
 uint64_t SubParser::getLastBytesInCommon(const std::string &boundary)
 {
-    size_t maxBoundary = unparsedBuffer.size()>(boundary.size()-1)?(boundary.size()-1) : unparsedBuffer.size();
+    size_t maxBoundary = m_unparsedBuffer.size()>(boundary.size()-1)?(boundary.size()-1) : m_unparsedBuffer.size();
     for (size_t v=maxBoundary; v!=0; v--)
     {
         Mantids30::Memory::Containers::B_Ref ref = referenceLastBytes(v);
@@ -430,48 +430,48 @@ uint64_t SubParser::getLastBytesInCommon(const std::string &boundary)
 Mantids30::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t &bytes)
 {
     Mantids30::Memory::Containers::B_Ref r;
-    r.reference(&unparsedBuffer, unparsedBuffer.size()-bytes);
+    r.reference(&m_unparsedBuffer, m_unparsedBuffer.size()-bytes);
     return r;
 }
 
 std::string SubParser::getDelimiterFound() const
 {
-    return delimiterFound;
+    return m_delimiterFound;
 }
 
 void SubParser::setParseMultiDelimiter(const std::list<std::string> &value)
 {
-    parseMultiDelimiter = value;
+    m_parseMultiDelimiter = value;
 }
 
 uint64_t SubParser::getLeftToparse() const
 {
-    return unparsedBuffer.getSizeLeft();
+    return m_unparsedBuffer.getSizeLeft();
 }
 
 void SubParser::setParseDataTargetSize(const uint64_t &value)
 {
-    unparsedBuffer.setMaxSize(value);
+    m_unparsedBuffer.setMaxSize(value);
 }
 
 void SubParser::clear()
 {
-    unparsedBuffer.clear();
-    parsedBuffer.clear();
+    m_unparsedBuffer.clear();
+    m_parsedBuffer.clear();
 }
 
 const std::string &SubParser::getSubParserName() const
 {
-    return subParserName;
+    return m_subParserName;
 }
 
 bool SubParser::isStreamEnded() const
 {
-    return streamEnded;
+    return m_streamEnded;
 }
 
 void SubParser::setParseMode(const ParseMode &value)
 {
     if (value == PARSE_MODE_DIRECT) setParseDataTargetSize(std::numeric_limits<uint64_t>::max());
-    parseMode = value;
+    m_parseMode = value;
 }

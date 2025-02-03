@@ -18,8 +18,8 @@ private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count);
     inline bool shouldEncodeThisByte(const unsigned char & byte) const;
 
-    uint64_t finalBytesWritten;
-    std::shared_ptr<Memory::Streams::StreamableObject>  orig;
+    uint64_t m_finalBytesWritten;
+    std::shared_ptr<Memory::Streams::StreamableObject>  m_orig;
 };
 
 

@@ -183,7 +183,7 @@ private:
 
     bool answer(Memory::Streams::StreamableObject::Status &wrStat);
 
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> staticContentElements;
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
 
     bool m_badAnswer;
     Memory::Streams::StreamableObject::Status m_answerBytes;

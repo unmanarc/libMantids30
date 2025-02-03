@@ -4,7 +4,7 @@ using namespace Mantids30::Threads::Safe;
 
 MapItem::MapItem()
 {
-    xMapFinished = false;
+    m_mapFinished = false;
 }
 
 MapItem::~MapItem()
@@ -14,7 +14,7 @@ MapItem::~MapItem()
 
 void MapItem::stopReaders()
 {
-    xMapFinished = true;
+    m_mapFinished = true;
 
     // Send signal stop for this element...
     stopSignal();

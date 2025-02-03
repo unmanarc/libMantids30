@@ -24,7 +24,7 @@ using namespace Mantids30::Memory::Abstract;
 
 Var::Var()
 {
-    varType = TYPE_NULL;
+    m_varType = TYPE_NULL;
 }
 
 std::shared_ptr<Var> Var::copy()
@@ -126,12 +126,12 @@ bool Var::fromString(const std::string &)
 
 Var::Type Var::getVarType() const
 {
-    return varType;
+    return m_varType;
 }
 
 void Var::setVarType(const Type &value)
 {
-    varType = value;
+    m_varType = value;
 }
 
 std::shared_ptr<Var> Var::protectedCopy()

@@ -35,11 +35,11 @@ private:
     bool calcNegative(bool r);
     bool substractExpressions(const std::string &regex, const eEvalOperator & op);
 
-    std::vector<std::string> *staticTexts;
-    std::string expr;
-    AtomicExpressionSide left,right;
-    eEvalOperator evalOperator;
-    bool negativeExpression, ignoreCase;
+    std::vector<std::string> *m_staticTexts;
+    std::string m_expr;
+    AtomicExpressionSide m_left,m_right;
+    eEvalOperator m_evalOperator;
+    bool m_negativeExpression, m_ignoreCase;
 
 };
 

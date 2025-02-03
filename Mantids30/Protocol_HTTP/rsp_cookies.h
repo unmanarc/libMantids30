@@ -30,7 +30,7 @@ public:
     void addClearSecureCookie(const std::string & cookieName);
 
 private:
-    std::map<std::string, std::shared_ptr<Headers::Cookie>> cookiesMap;
+    std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
 
 };
 }}}}}

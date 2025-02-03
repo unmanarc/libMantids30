@@ -18,7 +18,7 @@ public:
 
 
 private:
-    std::shared_ptr<Sockets::Socket_Stream_Base> socket;
+    std::shared_ptr<Sockets::Socket_Stream_Base> m_socket;
 };
 
 }}}}

@@ -156,12 +156,12 @@ bool Query_PostgreSQL::postBindInputVars()
     for (auto & i : m_inputVars) keysIn.push_back(i.first);
 
     // Replace the named keys for $0, $1, etc...:
-    while (replaceFirstKey(m_query,keysIn,keysByPos, std::string("$") + std::to_string(m_paramCount)))
+    while (replaceFirstKey(m_query,keysIn,m_keysByPos, std::string("$") + std::to_string(m_paramCount)))
     {
         m_paramCount++;
     }
 
-    if (m_paramCount!=keysByPos.size())
+    if (m_paramCount!=m_keysByPos.size())
     {
         throw std::runtime_error("Param count is not the same size of keys by pos (please report).");
     }
@@ -175,11 +175,11 @@ bool Query_PostgreSQL::postBindInputVars()
     m_paramLengths = (int *)malloc( m_paramCount * sizeof(int) );;
     m_paramFormats = (int *)malloc( m_paramCount * sizeof(int) );
 
-    for (size_t pos=0; pos<keysByPos.size(); pos++)
+    for (size_t pos=0; pos<m_keysByPos.size(); pos++)
     {
         std::shared_ptr<std::string> str = nullptr;
         m_paramFormats[pos] = 0;
-        std::string key = keysByPos[pos];
+        std::string key = m_keysByPos[pos];
 
         /*
         Bind params here.

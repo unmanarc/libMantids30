@@ -40,10 +40,10 @@ public:
 private:
     std::set<std::string> recompileRegex(const std::string & r, bool ignoreCase);
 
-    boost::regex * regexp;
-    std::vector<std::string> * staticTexts;
-    uint32_t staticIndex;
-    std::string expr;
-    eExpressionSideMode mode;
+    boost::regex * m_regexp;
+    std::vector<std::string> * m_staticTexts;
+    uint32_t m_staticIndex;
+    std::string m_expr;
+    eExpressionSideMode m_mode;
 };
 }}}

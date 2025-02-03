@@ -79,10 +79,10 @@ public:
     std::list<std::string> listSubmapKeys();
 
 private:
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> variables;
-    std::map<std::string, std::shared_ptr<VariableMap>> submaps;
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> m_variables;
+    std::map<std::string, std::shared_ptr<VariableMap>> m_submaps;
 
-    Threads::Sync::Mutex_Shared mutex;
+    Threads::Sync::Mutex_Shared m_mutex;
 };
 
 }}}

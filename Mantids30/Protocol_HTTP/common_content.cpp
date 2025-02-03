@@ -14,7 +14,7 @@ using namespace Mantids30;
 
 Content::Content()
 {
-    subParserName = "Content";
+    m_subParserName = "Content";
 }
 
 Content::~Content()
@@ -216,13 +216,13 @@ bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
     {
     case TRANSMIT_MODE_CHUNKS:
     {
-        std::shared_ptr<Content_Chunked_SubParser> retr = std::make_shared<Content_Chunked_SubParser>(upStream);
-        return m_outStream->streamTo(retr,wrStat) && upStream->getFailedWriteState()==0;
+        std::shared_ptr<Content_Chunked_SubParser> retr = std::make_shared<Content_Chunked_SubParser>(m_upStream);
+        return m_outStream->streamTo(retr,wrStat) && m_upStream->getFailedWriteState()==0;
     }
     case TRANSMIT_MODE_CONTENT_LENGTH:
     case TRANSMIT_MODE_CONNECTION_CLOSE:
     {
-        return m_outStream->streamTo(upStream, wrStat) && upStream->getFailedWriteState()==0;
+        return m_outStream->streamTo(m_upStream, wrStat) && m_upStream->getFailedWriteState()==0;
     }
     }
     return true;

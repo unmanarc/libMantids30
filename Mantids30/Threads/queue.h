@@ -16,16 +16,16 @@ class Queue
 public:
     Queue()
     {
-        maxItems = &localMaxItems;
-        localMaxItems = 0xFFFFFFFF;
+        m_maxItems = &m_localMaxItems;
+        m_localMaxItems = 0xFFFFFFFF;
     }
     ~Queue()
     {
-        std::unique_lock<std::mutex> lock(mQueue);
-        while (_queue.size())
+        std::unique_lock<std::mutex> lock(m_mQueue);
+        while (m_queue.size())
         {
-            delete _queue.front();
-            _queue.pop();
+            delete m_queue.front();
+            m_queue.pop();
         }
     }
     /**
@@ -63,11 +63,11 @@ public:
     size_t size();
 
 private:
-    std::atomic<size_t> * maxItems;
-    std::atomic<size_t> localMaxItems;
-    std::mutex mQueue;
-    std::condition_variable condNotEmpty, condNotFull;
-    std::queue<T *> _queue;
+    std::atomic<size_t> * m_maxItems;
+    std::atomic<size_t> m_localMaxItems;
+    std::mutex m_mQueue;
+    std::condition_variable m_notEmptyCond, m_notFullCond;
+    std::queue<T *> m_queue;
 };
 
 
@@ -87,49 +87,49 @@ void Queue<T>::setMaxItems(const size_t &maxItems)
 template<class T>
 size_t Queue<T>::getMaxItems()
 {
-    return *maxItems;
+    return *m_maxItems;
 }
 
 template<class T>
 bool Queue<T>::push(T *item, const uint32_t &tmout_msecs)
 {
-    std::unique_lock<std::mutex> lock(mQueue);
-    while (_queue.size()>=*maxItems)
+    std::unique_lock<std::mutex> lock(m_mQueue);
+    while (m_queue.size()>=*m_maxItems)
     {
         if ( tmout_msecs == 0 )
             return false;
-        if (condNotFull.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
+        if (m_notFullCond.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
             return false;
     }
-    _queue.push(item);
+    m_queue.push(item);
     lock.unlock();
-    condNotEmpty.notify_one();
+    m_notEmptyCond.notify_one();
     return true;
 }
 
 template<class T>
 T *Queue<T>::pop(const uint32_t &tmout_msecs)
 {
-    std::unique_lock<std::mutex> lock(mQueue);
-    while (_queue.empty())
+    std::unique_lock<std::mutex> lock(m_mQueue);
+    while (m_queue.empty())
     {
         if ( tmout_msecs == 0 )
             return nullptr;
-        if (condNotEmpty.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
+        if (m_notEmptyCond.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
             return nullptr;
     }
-    T * r = _queue.front();
-    _queue.pop();
+    T * r = m_queue.front();
+    m_queue.pop();
     lock.unlock();
-    condNotFull.notify_one();
+    m_notFullCond.notify_one();
     return r;
 }
 
 template<class T>
 size_t Queue<T>::size()
 {
-    std::unique_lock<std::mutex> lock(mQueue);
-    return _queue.size();
+    std::unique_lock<std::mutex> lock(m_mQueue);
+    return m_queue.size();
 }
 
 }}}

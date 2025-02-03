@@ -22,7 +22,7 @@ protected:
     virtual void * getThis() = 0;
 
 private:
-    bool serverMode;
+    bool m_serverMode;
 };
 
 }}}}

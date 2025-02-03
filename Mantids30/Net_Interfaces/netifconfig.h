@@ -13,6 +13,7 @@
 #include <Mantids30/Helpers/appexec.h>
 #endif
 
+
 namespace Mantids30 { namespace Network { namespace Interfaces {
 
 // LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for NETIF_VIRTUAL_WIN interfaces.
@@ -108,24 +109,24 @@ public:
 
 private:
 #ifndef _WIN32
-    struct ifreq ifr;
-    int fd;
+    struct ifreq m_ifr;
+    int m_fd;
 #else
-    ULONG adapterIndex;
-    HANDLE fd;
+    ULONG m_adapterIndex;
+    HANDLE m_fd;
     static std::string getNetSHExecPath();
     static std::string getRouteExecPath();
 #endif
 
 
-    in_addr address, netmask;
+    in_addr m_address, m_netmask;
 
-    std::string interfaceName;
-    std::string lastError;
-    int MTU;
-    bool promiscMode,stateUP;
-    bool changeIPv4Addr, changeMTU, changeState, changePromiscMode;
-    NetIfType netifType;
+    std::string m_interfaceName;
+    std::string m_lastError;
+    int m_MTU;
+    bool m_promiscMode,m_stateUP;
+    bool m_changeIPv4Addr, m_changeMTU, m_changeState, m_changePromiscMode;
+    NetIfType m_netifType;
 };
 
 }}}

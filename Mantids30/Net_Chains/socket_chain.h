@@ -116,12 +116,12 @@ private:
 
     static void chainThread(sChainTElement * chain);
 
-    bool endPointReached;
+    bool m_endPointReached;
     void removeSocketsOnExit();
 
-    bool deleteBaseSocketOnExit;
-    std::shared_ptr<Socket_Stream_Base> baseSocket;
-    std::vector<sChainVectorItem *> socketLayers;
+    bool m_deleteBaseSocketOnExit;
+    std::shared_ptr<Socket_Stream_Base> m_baseSocket;
+    std::vector<sChainVectorItem *> m_socketLayers;
 };
 
 }}}

@@ -5,12 +5,12 @@ using namespace Mantids30::Threads;
 
 Threaded::Threaded()
 {
-    threadRunner = nullptr;
-    contextRunner = nullptr;
-    threadStopper = nullptr;
-    contextStopper = nullptr;
+    m_threadRunner = nullptr;
+    m_contextRunner = nullptr;
+    m_threadStopper = nullptr;
+    m_contextStopper = nullptr;
 
-    running = false;
+    m_isRunning = false;
 }
 
 Threaded::~Threaded()
@@ -20,34 +20,34 @@ Threaded::~Threaded()
 
 void Threaded::startInBackground()
 {
-    threadObj = std::thread(Threaded::bgRunner, shared_from_this());
+    m_threadObj = std::thread(Threaded::bgRunner, shared_from_this());
 }
 
 void Threaded::stop()
 {
-    threadStopper(contextStopper);
+    m_threadStopper(m_contextStopper);
 }
 
 void Threaded::join()
 {
-    threadObj.join();
+    m_threadObj.join();
 }
 
 void Threaded::detach()
 {
-    threadObj.detach();
+    m_threadObj.detach();
 }
 
 void Threaded::setThreadRunner(void (*threadRunner)(void *), void *context)
 {
-    this->threadRunner = threadRunner;
-    this->contextRunner = context;
+    this->m_threadRunner = threadRunner;
+    this->m_contextRunner = context;
 }
 
 void Threaded::setThreadStopper(void (*threadStopper)(void *), void *context)
 {
-    this->threadStopper = threadStopper;
-    this->contextStopper = context;
+    this->m_threadStopper = threadStopper;
+    this->m_contextStopper = context;
 }
 
 void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
@@ -57,12 +57,12 @@ void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
 
 void Threaded::execRun()
 {
-    running = true;
-    threadRunner(contextRunner);
-    running = false;
+    m_isRunning = true;
+    m_threadRunner(m_contextRunner);
+    m_isRunning = false;
 }
 
 bool Threaded::isRunning() const
 {
-    return running;
+    return m_isRunning;
 }

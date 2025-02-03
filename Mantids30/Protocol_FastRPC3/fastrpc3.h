@@ -521,13 +521,9 @@ private:
     int processIncomingAnswer(FastRPC3::Connection *connection);
     int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
 
-    Mantids30::Threads::Safe::Map<std::string> m_connectionMapById;
-    
-    
-  //  static json passwordPublicDataToJSON(const uint32_t &slotId, const Sessions::Credential &publicData);
 
     // TODO:
-/*    std::map<std::string,std::string> connectionIdToLogin;
+    /*    std::map<std::string,std::string> connectionIdToLogin;
     std::mutex connectionIdToLoginMutex;
     std::multimap<std::string,std::string> loginToConnectionKey;
     std::mutex loginToConnectionKeyMutex;*/
@@ -536,19 +532,51 @@ private:
     // Methods:
     // method name -> method.
     // ? TP or
+    //  static json passwordPublicDataToJSON(const uint32_t &slotId, const Sessions::Credential &publicData);
+    //  void * overwriteObject;
+    //Sessions::Domains m_defaultAuthDomain;
+
+
+    /**
+     * @brief Stores active connections indexed by a unique key identifier.
+     */
+    Mantids30::Threads::Safe::Map<std::string> m_connectionMapById;
+
+    /**
+     * @brief Thread pool for handling RPC method execution.
+     */
     Mantids30::Threads::Pool::ThreadPool * m_threadPool;
 
+    /**
+     * @brief Background thread responsible for periodic pinging to maintain connection health.
+     */
     std::thread m_pingerThread;
-  //  void * overwriteObject;
 
+    /**
+     * @brief Indicates whether the RPC system is in a finished state.
+     */
     std::atomic<bool> m_isFinished;
+
+    /**
+     * @brief Mutex for synchronizing ping operations.
+     */
     std::mutex m_pingMutex;
+
+    /**
+     * @brief Condition variable used to signal ping-related events.
+     */
     std::condition_variable m_pingCondition;
 
-    //Sessions::Domains m_defaultAuthDomain;
+    /**
+     * @brief Handler for default RPC methods.
+     */
     Mantids30::API::Monolith::MethodsHandler m_defaultMethodsHandlers;
 
+    /**
+     * @brief Flag indicating whether the remote peer's common name is used as the connection ID.
+     */
     bool m_usingRemotePeerCommonNameAsConnectionId = false;
+
 };
 
 }}}}

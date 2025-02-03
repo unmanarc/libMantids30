@@ -149,19 +149,19 @@ private:
     /**
      * @brief phase1Key Key Negotiation Password... (PSK)
      */
-    char phase1Key[32];
+    char m_phase1Key[32];
     /**
      * @brief readParams remote read params
      */
-    sSideParams readParams;
+    sSideParams m_readParams;
     /**
-     * @brief writeParams local write params
+     * @brief m_writeParams local write params
      */
-    sSideParams writeParams;
+    sSideParams m_writeParams;
 
-    size_t aesRegenBlockSize;
-    bool initialized;
-    const static EVP_CIPHER *cipher;
+    size_t m_aesRegenBlockSize;
+    bool m_initialized;
+    const static EVP_CIPHER *m_cipher;
 };
 
 }}}}

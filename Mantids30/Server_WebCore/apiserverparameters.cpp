@@ -7,7 +7,7 @@ APIServerParameters::APIServerParameters() {}
 
 APIServerParameters::~APIServerParameters()
 {
-    for (const auto & i : memToBeFreed)
+    for (const auto & i : m_memToBeFreed)
     {
         free(i);
     }
@@ -20,7 +20,7 @@ void APIServerParameters::setSoftwareVersion(const uint32_t major, const uint32_
 
 bool APIServerParameters::isDocumentRootPathAccesible() const
 {
-    return !access(documentRootPath.c_str(),R_OK);
+    return !access(m_documentRootPath.c_str(),R_OK);
 }
 
 bool APIServerParameters::setDocumentRootPath(const std::string &value)
@@ -30,12 +30,12 @@ bool APIServerParameters::setDocumentRootPath(const std::string &value)
         return false;
 
     // Set the local path for resources.
-    documentRootPath = value;
+    m_documentRootPath = value;
 
     // If the provided path is empty, reset the path and return true.
     if (value.empty())
     {
-        documentRootPath = "";
+        m_documentRootPath = "";
         return true;
     }
 
@@ -43,20 +43,20 @@ bool APIServerParameters::setDocumentRootPath(const std::string &value)
     char *cFullPath = realpath(value.c_str(), nullptr);
     if (cFullPath)
     {
-        documentRootPath = cFullPath;
+        m_documentRootPath = cFullPath;
         free(cFullPath); // Free the allocated memory after usage.
     }
     else
     {
         // If `realpath` fails, keep the original path.
-        documentRootPath = value;
+        m_documentRootPath = value;
     }
 
     // If automatic loading of resources filters is enabled:
     if (autoloadResourcesFilter)
     {
         // Construct the path to the `resources.conf` file.
-        std::string resourceFilterPath = documentRootPath + "/resources.conf";
+        std::string resourceFilterPath = m_documentRootPath + "/resources.conf";
 
         // Check if the `resources.conf` file has read access.
         if (!access(resourceFilterPath.c_str(), R_OK))
@@ -82,27 +82,27 @@ bool APIServerParameters::setDocumentRootPath(const std::string &value)
 
 void APIServerParameters::addStaticContentElement(const std::string &path, const std::string &content)
 {
-    std::lock_guard<std::mutex> lck(internalContentMutex);
+    std::lock_guard<std::mutex> lck(m_internalContentMutex);
     // TODO: update.... (when no http clients running)
-    if (staticContentElements.find(path) == staticContentElements.end())
+    if (m_staticContentElements.find(path) == m_staticContentElements.end())
     {
         char *xmem = (char *) malloc(content.size() + 1);
         xmem[content.size()] = 0;
         memcpy(xmem, content.c_str(), content.size());
-        staticContentElements[path] = std::make_shared<Mantids30::Memory::Containers::B_MEM>(xmem, content.size());
-        memToBeFreed.push_back(xmem);
+        m_staticContentElements[path] = std::make_shared<Mantids30::Memory::Containers::B_MEM>(xmem, content.size());
+        m_memToBeFreed.push_back(xmem);
     }
 }
 
 std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> > APIServerParameters::getStaticContentElements()
 {
-    std::lock_guard<std::mutex> lck(internalContentMutex);
-    return staticContentElements;
+    std::lock_guard<std::mutex> lck(m_internalContentMutex);
+    return m_staticContentElements;
 }
 
 std::string APIServerParameters::getDocumentRootPath() const
 {
-    return documentRootPath;
+    return m_documentRootPath;
 }
 
 

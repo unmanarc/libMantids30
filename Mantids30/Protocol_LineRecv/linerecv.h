@@ -18,7 +18,7 @@ protected:
     virtual bool initProtocol() override;
     virtual void endProtocol() override {}
     virtual bool changeToNextParser() override;
-    LineRecv_SubParser subParser;
+    LineRecv_SubParser m_subParser;
 };
 
 }}}}

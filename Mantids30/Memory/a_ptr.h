@@ -19,7 +19,7 @@ public:
     void * getValue();
     bool setValue(void * value);
 
-    void * getDirectMemory() override { return value; }
+    void * getDirectMemory() override { return m_value; }
 
 
     std::string toString() override;
@@ -28,8 +28,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    void * value;
-    Threads::Sync::Mutex_Shared mutex;
+    void * m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 }}}

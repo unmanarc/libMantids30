@@ -67,11 +67,6 @@ public:
     XFrameOpts(const eOptsValues &value, const std::string &allowFromURL = "");
 
     /**
-     * @brief Sets the X-Frame-Options value to its default value of "deny".
-     */
-    void setDefaults();
-
-    /**
      * @brief Returns whether the X-Frame-Options header is not activated.
      *
      * @return true if the X-Frame-Options header is not activated, false otherwise.
@@ -93,17 +88,8 @@ public:
      */
     bool fromString(const std::string &sValue);
 
-    /**
-     * @brief Returns the X-Frame-Options value.
-     *
-     * @return The X-Frame-Options value.
-     */
-    eOptsValues getValue() const;
-
-    std::string m_allowFromURL; ///< The URL to allow frames from when the value is "allow-from".
-
-private:
-    eOptsValues m_value; ///< The X-Frame-Options value.
+    std::string allowFromURL; ///< The URL to allow frames from when the value is "allow-from".
+    eOptsValues value = DENY; ///< The X-Frame-Options value.
 };
 
 

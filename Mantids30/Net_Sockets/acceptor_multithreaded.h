@@ -163,18 +163,18 @@ private:
     void decrementIPUsage(const std::string & ipAddr);
 
 
-    bool initialized=false;
-        bool finalized=false;
-    std::shared_ptr<Sockets::Socket_Stream_Base> acceptorSocket;
-    std::list<std::shared_ptr<SAThread>> threadList;
-    std::map<std::string, uint32_t> connectionsPerIP;
+    bool m_initialized=false;
+    bool m_finalized=false;
+    std::shared_ptr<Sockets::Socket_Stream_Base> m_acceptorSocket;
+    std::list<std::shared_ptr<SAThread>> m_threadList;
+    std::map<std::string, uint32_t> m_connectionsPerIP;
 
     // thread objects:
-    std::thread acceptorThread;
+    std::thread m_acceptorThread;
 
     //
-    std::mutex mutex_clients;
-    std::condition_variable cond_clients_empty, cond_clients_notfull;
+    std::mutex m_mutexClients;
+    std::condition_variable m_condClientsEmpty, m_condClientsNotFull;
 };
 
 

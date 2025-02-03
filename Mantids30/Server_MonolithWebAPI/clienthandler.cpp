@@ -396,12 +396,12 @@ void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
 {
     // This cookie is readeable by the javascript code inside the web, so the web will know how much time is left to the session
     Headers::Cookie simpleJSSecureCookie;
-    simpleJSSecureCookie.setValue("1");
-    simpleJSSecureCookie.setSecure(true);
-    simpleJSSecureCookie.setHttpOnly(false);
+    simpleJSSecureCookie.value = "1";
+    simpleJSSecureCookie.secure = true;
+    simpleJSSecureCookie.httpOnly = false;
     simpleJSSecureCookie.setExpirationFromNow(maxAge);
-    simpleJSSecureCookie.setMaxAge(maxAge);
-    simpleJSSecureCookie.setSameSite(Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
+    simpleJSSecureCookie.maxAge = maxAge;
+    simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
     serverResponse.setCookie("jsSessionTimeout", simpleJSSecureCookie);
 }
 
@@ -412,12 +412,12 @@ void ClientHandler::setJSSessionHalfIDCookie( const string & sessionID )
     if (m_currentSessionInfo.authSession)
     {
         Headers::Cookie simpleJSSecureCookie;
-        simpleJSSecureCookie.setSecure(true);
-        simpleJSSecureCookie.setHttpOnly(false);
+        simpleJSSecureCookie.secure = true;
+        simpleJSSecureCookie.httpOnly = false;
         simpleJSSecureCookie.setExpirationFromNow(m_sessionMaxAge);
-        simpleJSSecureCookie.setMaxAge(m_sessionMaxAge);
-        simpleJSSecureCookie.setSameSite(Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
-        simpleJSSecureCookie.setValue( RPCLog::truncateSessionId(sessionID) );
+        simpleJSSecureCookie.maxAge = (m_sessionMaxAge);
+        simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+        simpleJSSecureCookie.value = RPCLog::truncateSessionId(sessionID);
         serverResponse.setCookie("jsSessionHalfID", simpleJSSecureCookie);
     }
 }

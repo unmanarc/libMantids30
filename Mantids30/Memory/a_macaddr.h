@@ -33,7 +33,7 @@ public:
     unsigned char *getValue();
     bool setValue(const unsigned char * macaddr);
 
-    void * getDirectMemory() override { return &macaddr; }
+    void * getDirectMemory() override { return &m_macaddr; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -50,8 +50,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    unsigned char macaddr[ETH_ALEN];
-    Threads::Sync::Mutex_Shared mutex;
+    unsigned char m_macaddr[ETH_ALEN];
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 

@@ -14,7 +14,7 @@ using namespace Mantids30::Memory::Abstract;
 
 IPV6::IPV6()
 {
-    ZeroBStruct(value);
+    ZeroBStruct(m_value);
     setVarType(TYPE_IPV6);
 }
 
@@ -22,7 +22,7 @@ IPV6::IPV6()
 IPV6::IPV6(const in6_addr &value)
 {
     setVarType(TYPE_IPV6);
-    ZeroBStruct(this->value);
+    ZeroBStruct(this->m_value);
     setValue(value);
 }
 
@@ -34,15 +34,15 @@ IPV6::IPV6(const std::string &value)
 
 in6_addr IPV6::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 bool IPV6::setValue(const in6_addr &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 #ifndef _WIN32
-    this->value.__in6_u = value.__in6_u;
+    this->m_value.__in6_u = value.__in6_u;
 #else
     this->value.u = value.u;
 #endif

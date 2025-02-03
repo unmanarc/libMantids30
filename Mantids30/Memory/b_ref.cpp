@@ -5,7 +5,7 @@ using namespace Mantids30::Memory::Containers;
 
 B_Ref::B_Ref(B_Base *bc, const uint64_t &offset, const uint64_t &maxBytes)
 {
-    storeMethod = BC_METHOD_BCREF;
+    m_storeMethod = BC_METHOD_BCREF;
     referencedBC = nullptr;
 
     B_Ref::clear2();
@@ -22,7 +22,7 @@ bool B_Ref::reference(B_Base *bc, const uint64_t &offset, const uint64_t &maxByt
 {
     if (offset>bc->size()) return false;
 
-    readOnly = true; // :p
+    m_readOnly = true; // :p
 
     referencedBC = bc;
     referencedOffset = offset;

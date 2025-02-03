@@ -10,9 +10,9 @@ using namespace Mantids30::Memory::Containers;
 
 B_Base::B_Base()
 {
-    maxSize = std::numeric_limits<uint64_t>::max();
-    readOnly = false;
-    storeMethod = BC_METHOD_NULL;
+    m_maxSize = std::numeric_limits<uint64_t>::max();
+    m_readOnly = false;
+    m_storeMethod = BC_METHOD_NULL;
     clear0();
 }
 
@@ -46,7 +46,7 @@ std::pair<bool,uint64_t> B_Base::append(const void *buf)
 std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
 {
     // Read only: can't append nothing.
-    if (readOnly)
+    if (m_readOnly)
         return std::make_pair(false,(uint64_t)0);
 
     uint64_t currentSize = size();
@@ -55,7 +55,7 @@ std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
         return std::make_pair(false,(uint64_t)0);
     // out of bounds, fail.
-    if (len+currentSize>maxSize)
+    if (len+currentSize>m_maxSize)
         return std::make_pair(false,(uint64_t)0);
     // zero to copy!
     if (!len)
@@ -68,7 +68,7 @@ std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
 std::pair<bool,uint64_t> B_Base::prepend(const void *data, uint64_t len)
 {
     // Read only: can't append nothing.
-    if (readOnly) return std::make_pair(false,(uint64_t)0);
+    if (m_readOnly) return std::make_pair(false,(uint64_t)0);
 
     uint64_t currentSize = size();
 
@@ -76,7 +76,7 @@ std::pair<bool,uint64_t> B_Base::prepend(const void *data, uint64_t len)
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
         return std::make_pair(false,(uint64_t)0);
     // out of bounds.
-    if (len+currentSize>maxSize)
+    if (len+currentSize>m_maxSize)
         return std::make_pair(false,(uint64_t)0);
     // zero to copy!
     if (!len)
@@ -103,17 +103,17 @@ std::pair<bool,uint64_t> B_Base::truncate(const uint64_t &bytes)
 
 bool B_Base::clear0()
 {
-    containerBytes = 0;
+    m_containerBytes = 0;
 
 #ifdef _WIN32
     char tempPath[MAX_PATH+1];
     GetTempPathA(MAX_PATH,tempPath);
     fsDirectoryPath = tempPath;
 #else
-    fsDirectoryPath = "/tmp";
+    m_fsDirectoryPath = "/tmp";
 #endif
 
-    fsBaseFileName = "BinaryContainer-";
+    m_fsBaseFileName = "BinaryContainer-";
     return true;
 }
 
@@ -592,7 +592,7 @@ std::pair<bool,uint64_t> B_Base::find(const std::list<std::string> &needles, std
 
 uint64_t B_Base::size() const
 {
-    return containerBytes;
+    return m_containerBytes;
 }
 
 bool B_Base::isNull()
@@ -602,21 +602,21 @@ bool B_Base::isNull()
 
 uint64_t B_Base::getMaxSize() const
 {
-    return maxSize;
+    return m_maxSize;
 }
 
 void B_Base::setMaxSize(const uint64_t &value)
 {
-    maxSize = value;
+    m_maxSize = value;
 }
 
 uint64_t B_Base::getSizeLeft() const
 {
     // ERR
-    if (size()>maxSize)
+    if (size()>m_maxSize)
         return 0;
     // DEF
-    return maxSize-size();
+    return m_maxSize-size();
 }
 
 void B_Base::reduceMaxSizeBy(const uint64_t &value)
@@ -661,8 +661,8 @@ Mantids30::Memory::Streams::StreamableObject::Status B_Base::write(const void * 
 B_Base *B_Base::copyToFS(const std::string &fileName, bool removeOnDestroy)
 {
     B_MMAP * mmapbc = new B_MMAP();
-    mmapbc->setFsBaseFileName(fsBaseFileName);
-    mmapbc->setFsDirectoryPath(fsDirectoryPath);
+    mmapbc->setFsBaseFileName(m_fsBaseFileName);
+    mmapbc->setFsDirectoryPath(m_fsDirectoryPath);
     // TODO: passing filename when passing from chunks/mem to file.
     if (!mmapbc->referenceFile(fileName))
     {
@@ -683,22 +683,22 @@ B_Base *B_Base::copyToFS(const std::string &fileName, bool removeOnDestroy)
 
 std::string B_Base::getFsDirectoryPath() const
 {
-    return fsDirectoryPath;
+    return m_fsDirectoryPath;
 }
 
 void B_Base::setFsDirectoryPath(const std::string &value)
 {
-    fsDirectoryPath = value;
+    m_fsDirectoryPath = value;
 }
 
 std::string B_Base::getFsBaseFileName() const
 {
-    return fsBaseFileName;
+    return m_fsBaseFileName;
 }
 
 void B_Base::setFsBaseFileName(const std::string &value)
 {
-    fsBaseFileName = value;
+    m_fsBaseFileName = value;
 }
 
 std::string B_Base::getCurrentFileName() const
@@ -724,7 +724,7 @@ void B_Base::decContainerBytesCount(const uint64_t &i)
 
 void B_Base::setContainerBytes(const uint64_t &value)
 {
-    containerBytes = value;
+    m_containerBytes = value;
 }
 
 uint64_t B_Base::copyToStreamUsingCleanVector(std::ostream &bc, std::vector<BinaryContainerChunk> copyChunks)

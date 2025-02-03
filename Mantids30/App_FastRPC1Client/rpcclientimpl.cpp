@@ -21,9 +21,9 @@ using namespace Mantids30::Program;
 
 RPCClientImpl::RPCClientImpl()
 {
-    getClientConfigCmd="getClientConfig";
-    updateClientConfigLoadTimeCmd="updateClientConfigLoadTime";
-    failedToRetrieveC2Config = false;
+    m_getClientConfigCmd="getClientConfig";
+    m_updateClientConfigLoadTimeCmd="updateClientConfigLoadTime";
+    m_failedToRetrieveC2Config = false;
 }
 
 RPCClientImpl::~RPCClientImpl()
@@ -113,9 +113,9 @@ void RPCClientImpl::runRPClient()
             if (postConnect(sockRPCClient))
             {
                 // now is fully connected / authenticated...
-                if (failedToRetrieveC2Config)
+                if (m_failedToRetrieveC2Config)
                     connectedToC2AfterFailingToLoadC2Config();
-                fastRPC.processConnection(sockRPCClient,"SERVER");
+                m_fastRPC.processConnection(sockRPCClient,"SERVER");
             }
             LOG_APP->log0(__func__,Logs::LEVEL_WARN,  "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str());
         }
@@ -158,7 +158,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
             bool parsingSuccessful = reader.parse( sRemoteConfigDecrypted, jRemoteConfig );
             if ( parsingSuccessful )
             {
-                jRetrievedConfig=jRemoteConfig;
+                m_jRetrievedConfig=jRemoteConfig;
                 infile.close();
                 return true;
             }
@@ -175,17 +175,17 @@ bool RPCClientImpl::retrieveConfigFromC2()
     /////////////////////////////////////////////////////////////
     json rpcError;
 
-    failedToRetrieveC2Config = false;
+    m_failedToRetrieveC2Config = false;
 
     LOG_APP->log0(__func__,Logs::LEVEL_INFO, "Retrieving config from remote C2.");
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
-    json jRemoteConfig = fastRPC.runRemoteRPCMethod("SERVER",getClientConfigCmd,{},&rpcError);
+    json jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER",m_getClientConfigCmd,{},&rpcError);
     if (rpcError["succeed"].asBool() == true)
     {
         // Translate this config to the configuration file...
         std::string sRemoteConfig = jRemoteConfig.toStyledString();
-        std::string sLocalConfig = jRetrievedConfig.toStyledString();
+        std::string sLocalConfig = m_jRetrievedConfig.toStyledString();
 
         if (sRemoteConfig == sLocalConfig)
         {
@@ -205,10 +205,10 @@ bool RPCClientImpl::retrieveConfigFromC2()
                 outfile  << sRemoteConfigEncrypted << "\n";
                 outfile.close();
 
-                jRetrievedConfig=jRemoteConfig;
+                m_jRetrievedConfig=jRemoteConfig;
 
                 json ans;
-                ans["x"] = fastRPC.runRemoteRPCMethod("SERVER",updateClientConfigLoadTimeCmd,{},&rpcError);
+                ans["x"] = m_fastRPC.runRemoteRPCMethod("SERVER",m_updateClientConfigLoadTimeCmd,{},&rpcError);
 
                 if ( rpcError["succeed"].asBool() == false )
                 {
@@ -240,7 +240,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).
-    failedToRetrieveC2Config = true;
+    m_failedToRetrieveC2Config = true;
 
 
     return false;
@@ -248,7 +248,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
 json RPCClientImpl::getJRetrievedConfig()
 {
-    return jRetrievedConfig;
+    return m_jRetrievedConfig;
 }
 
 RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()

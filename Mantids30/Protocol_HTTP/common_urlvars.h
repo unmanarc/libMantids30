@@ -72,12 +72,12 @@ protected:
     bool changeToNextParser() override;
 private:
 
-    eHTTP_URLVarStat currentStat;
+    eHTTP_URLVarStat m_currentStat;
 
-    std::string currentVarName;
-    std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> vars;
+    std::string m_currentVarName;
+    std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> m_vars;
 
-    URLVar_SubParser _urlVarParser;
+    URLVar_SubParser m_urlVarParser;
 };
 }}}}}
 

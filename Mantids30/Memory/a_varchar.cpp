@@ -7,67 +7,67 @@ using namespace Mantids30::Memory::Abstract;
 VARCHAR::VARCHAR(const size_t &varSize)
 {
     setVarType(TYPE_VARCHAR);
-    wasTruncated = false;
-    this->varSize = varSize;
-    this->value = (char *)malloc(varSize+1);
-    this->value[varSize] = 0;
+    m_wasTruncated = false;
+    this->m_varSize = varSize;
+    this->m_value = (char *)malloc(varSize+1);
+    this->m_value[varSize] = 0;
 }
 
 VARCHAR::VARCHAR(const size_t &varSize, char *value)
 {
     setVarType(TYPE_VARCHAR);
-    wasTruncated = false;
-    this->varSize = varSize;
-    this->value = (char *)malloc(varSize+1);
-    this->value[varSize] = 0;
+    m_wasTruncated = false;
+    this->m_varSize = varSize;
+    this->m_value = (char *)malloc(varSize+1);
+    this->m_value[varSize] = 0;
     setValue(value);
 }
 
 VARCHAR::VARCHAR( VARCHAR &var )
 {
     setVarType(TYPE_VARCHAR);
-    wasTruncated = false;
-    this->varSize = var.getVarSize();
-    this->value = (char *)malloc(varSize+1);
-    this->value[varSize] = 0;
+    m_wasTruncated = false;
+    this->m_varSize = var.getVarSize();
+    this->m_value = (char *)malloc(m_varSize+1);
+    this->m_value[m_varSize] = 0;
     setValue(var.getValue());
 }
 
 VARCHAR::~VARCHAR()
 {
-    free(this->value);
+    free(this->m_value);
 }
 
 std::string VARCHAR::toString()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return value;
+    return m_value;
 }
 
 bool VARCHAR::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     bool r = true;
     size_t szVar = value.size();
 
-    wasTruncated = false;
+    m_wasTruncated = false;
 
-    if (szVar>varSize)
+    if (szVar>m_varSize)
     {
-        szVar = varSize;
+        szVar = m_varSize;
         r = false;
-        wasTruncated = true;
+        m_wasTruncated = true;
     }
 
     if (szVar>0)
     {
-        this->value[szVar]=0;
-        memcpy( this->value, value.c_str(), szVar );
+        this->m_value[szVar]=0;
+        memcpy( this->m_value, value.c_str(), szVar );
     }
     else
-        this->value[0]=0;
+        this->m_value[0]=0;
 
 
     return r;
@@ -75,59 +75,59 @@ bool VARCHAR::fromString(const std::string &value)
 
 char *VARCHAR::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return value;
+    return m_value;
 }
 
 bool VARCHAR::setValue(char *value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     bool r = true;
 
-    size_t szVar = strnlen(value,varSize+1);
-    wasTruncated = false;
+    size_t szVar = strnlen(value,m_varSize+1);
+    m_wasTruncated = false;
 
-    if (szVar>varSize)
+    if (szVar>m_varSize)
     {
-        szVar = varSize;
+        szVar = m_varSize;
         r = false;
-        wasTruncated = true;
+        m_wasTruncated = true;
     }
 
     if (szVar>0)
     {
-        this->value[szVar]=0;
-        memcpy( this->value, value, szVar );
+        this->m_value[szVar]=0;
+        memcpy( this->m_value, value, szVar );
     }
     else
-        this->value[0]=0;
+        this->m_value[0]=0;
     return r;
 }
 
 size_t VARCHAR::getVarSize()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return varSize;
+    return m_varSize;
 }
 
 bool VARCHAR::getWasTruncated()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return wasTruncated;
+    return m_wasTruncated;
 }
 
 unsigned long VARCHAR::getFillSize() const
 {
-    return fillSize;
+    return m_fillSize;
 }
 
 std::shared_ptr<Var> VARCHAR::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(this->mutex);
-    auto var = std::make_shared<VARCHAR>(this->varSize, this->value);
+    Threads::Sync::Lock_RD lock(this->m_mutex);
+    auto var = std::make_shared<VARCHAR>(this->m_varSize, this->m_value);
     return var;
 }

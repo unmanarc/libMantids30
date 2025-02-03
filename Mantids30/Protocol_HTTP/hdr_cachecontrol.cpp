@@ -12,21 +12,6 @@ using namespace boost::algorithm;
 
 CacheControl::CacheControl()
 {
-    setDefaults();
-}
-
-void CacheControl::setDefaults()
-{
-    optionNoStore=true;
-    optionNoCache=false;
-    optionMustRevalidate=false;
-    optionPrivate=false;
-    optionPublic=false;
-    optionImmutable=false;
-    optionNoTransform=false;
-    optionProxyRevalidate=false;
-    maxAge=0;
-    sMaxAge=0;
 }
 
 std::string CacheControl::toString()
@@ -71,7 +56,8 @@ void CacheControl::fromString(const std::string &str)
     vector<string> params;
     split(params,str,is_any_of(", "),token_compress_on);
 
-    setDefaults();
+    // Reset to default values using a temporary instance.
+    *this = CacheControl();
 
     bool firstVal = true;
     for (const string & param : params)
@@ -95,97 +81,5 @@ void CacheControl::fromString(const std::string &str)
             const char * sMaxAgeValue = paramLower.c_str()+9;
             sMaxAge = strtoul(sMaxAgeValue,nullptr,10);
         }
-
-
     }
-}
-
-bool CacheControl::getOptionNoStore() const
-{
-    return optionNoStore;
-}
-
-void CacheControl::setOptionNoStore(bool newOptionNoStore)
-{
-    optionNoStore = newOptionNoStore;
-}
-
-bool CacheControl::getOptionNoCache() const
-{
-    return optionNoCache;
-}
-
-void CacheControl::setOptionNoCache(bool newOptionNoCache)
-{
-    optionNoCache = newOptionNoCache;
-}
-
-bool CacheControl::getOptionMustRevalidate() const
-{
-    return optionMustRevalidate;
-}
-
-void CacheControl::setOptionMustRevalidate(bool newOptionMustRevalidate)
-{
-    optionMustRevalidate = newOptionMustRevalidate;
-}
-
-bool CacheControl::getOptionPrivate() const
-{
-    return optionPrivate;
-}
-
-void CacheControl::setOptionPrivate(bool newOptionPrivate)
-{
-    optionPrivate = newOptionPrivate;
-}
-
-bool CacheControl::getOptionPublic() const
-{
-    return optionPublic;
-}
-
-void CacheControl::setOptionPublic(bool newOptionPublic)
-{
-    optionPublic = newOptionPublic;
-}
-
-uint32_t CacheControl::getMaxAge() const
-{
-    return maxAge;
-}
-
-void CacheControl::setMaxAge(uint32_t newMaxAge)
-{
-    maxAge = newMaxAge;
-}
-
-bool CacheControl::getOptionImmutable() const
-{
-    return optionImmutable;
-}
-
-void CacheControl::setOptionImmutable(bool newOptionImmutable)
-{
-    optionImmutable = newOptionImmutable;
-}
-
-bool CacheControl::getOptionNoTransform() const
-{
-    return optionNoTransform;
-}
-
-void CacheControl::setOptionNoTransform(bool newOptionNoTransform)
-{
-    optionNoTransform = newOptionNoTransform;
-}
-
-uint32_t CacheControl::getSMaxAge() const
-{
-    return sMaxAge;
-}
-
-void CacheControl::setSMaxAge(uint32_t newSMaxAge)
-{
-    sMaxAge = newSMaxAge;
 }

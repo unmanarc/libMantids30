@@ -64,18 +64,18 @@ private:
     /**
      * @brief requestMethod - method requested: GET/POST/HEAD/...
      */
-    std::string requestMethod = "GET"; // Default Method.
+    std::string m_requestMethod = "GET"; // Default Method.
     /**
      * @brief requestURL - URL Requested (without vars) E.g. /index.html
      */
-    std::string requestURI;
+    std::string m_requestURI;
     /**
      * @brief request URI Parameters
      */
-    std::string requestURIParameters;
+    std::string m_requestURIParameters;
 
-    Common::Version httpVersion;
-    std::shared_ptr<Common::URLVars> getVars = std::make_shared<Common::URLVars>();;
+    Common::Version m_httpVersion;
+    std::shared_ptr<Common::URLVars> m_getVars = std::make_shared<Common::URLVars>();;
 };
 
 }}}}}

@@ -19,7 +19,7 @@ MIME_Sub_Header::MIME_Sub_Header()
     setMaxOptionSize(2*KB_MULT); // 2K per option
     maxOptions = 32; // 32 Max options
     lastOpt = nullptr;
-    subParserName = "MIME_Sub_Header";
+    m_subParserName = "MIME_Sub_Header";
 }
 MIME_Sub_Header::~MIME_Sub_Header()
 {
@@ -35,9 +35,9 @@ bool MIME_Sub_Header::stream(Memory::Streams::StreamableObject::Status & wrStat)
     for (auto & i : headers)
     {
         std::string x = i.second->getString() + std::string("\r\n");
-        if (!(cur+=upStream->writeString( x, wrStat )).succeed) return false;
+        if (!(cur+=m_upStream->writeString( x, wrStat )).succeed) return false;
     }
-    if (!(cur+=upStream->writeString("\r\n", wrStat)).succeed) return false;
+    if (!(cur+=m_upStream->writeString("\r\n", wrStat)).succeed) return false;
     return true;
 }
 

@@ -8,16 +8,16 @@ VariableMap::VariableMap() {}
 
 VariableMap::~VariableMap()
 {
-    variables.clear();
-    submaps.clear();
+    m_variables.clear();
+    m_submaps.clear();
 }
 
 void VariableMap::insertOrUpdateSubmap(const std::string &variableName, std::shared_ptr<VariableMap> vars)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     removeVariable(variableName, false);
-    submaps[variableName] = vars;
+    m_submaps[variableName] = vars;
 }
 
 void VariableMap::setVariableFromString(const std::string &variableName, Var::Type varType, const std::string &str)
@@ -27,73 +27,73 @@ void VariableMap::setVariableFromString(const std::string &variableName, Var::Ty
 
 void VariableMap::insertOrUpdateVariable(const std::string &variableName, std::shared_ptr<Var> var)
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     removeVariable(variableName, false);
-    variables[variableName] = var;
+    m_variables[variableName] = var;
 }
 
 std::string VariableMap::getVariableAsString(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (variables.find(variableName) == variables.end())
+    if (m_variables.find(variableName) == m_variables.end())
         return "";
-    return variables[variableName]->toString();
+    return m_variables[variableName]->toString();
 }
 
 void VariableMap::removeVariable(const std::string &variableName, bool lock)
 {
     if (lock)
-        mutex.lock();
+        m_mutex.lock();
 
-    if (variables.find(variableName) != variables.end())
+    if (m_variables.find(variableName) != m_variables.end())
     {
-        variables.erase(variableName);
+        m_variables.erase(variableName);
     }
-    if (submaps.find(variableName) != submaps.end())
+    if (m_submaps.find(variableName) != m_submaps.end())
     {
-        submaps.erase(variableName);
+        m_submaps.erase(variableName);
     }
 
     if (lock)
-        mutex.unlock();
+        m_mutex.unlock();
 }
 
 std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (variables.find(variableName) == variables.end())
+    if (m_variables.find(variableName) == m_variables.end())
         return nullptr;
-    return variables[variableName];
+    return m_variables[variableName];
 }
 
 std::shared_ptr<VariableMap> VariableMap::getSubmap(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (submaps.find(variableName) == submaps.end())
+    if (m_submaps.find(variableName) == m_submaps.end())
         return nullptr;
-    return submaps[variableName];
+    return m_submaps[variableName];
 }
 
 std::list<std::string> VariableMap::listVariableKeys()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const auto &i : variables)
+    for (const auto &i : m_variables)
         r.push_back(i.first);
     return r;
 }
 
 std::list<std::string> VariableMap::listSubmapKeys()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const auto &i : submaps)
+    for (const auto &i : m_submaps)
         r.push_back(i.first);
     return r;
 }

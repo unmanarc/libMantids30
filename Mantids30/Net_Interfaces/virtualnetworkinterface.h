@@ -151,20 +151,20 @@ private:
     /**
      * @brief mutexWrite Mutex used for write operations
      */
-    std::mutex mutexWrite;
+    std::mutex m_mutexWrite;
     /**
      * @brief lastError Last error string
      */
-    std::string lastError;
-    std::string interfaceName, interfaceRealName;
+    std::string m_lastError;
+    std::string m_interfaceName, m_interfaceRealName;
 
 #ifndef _WIN32
-    int fd;
+    int m_fd;
 #else
-    HANDLE fd;
-    std::string devicePath;
-    std::string NETCLSID;
-    OVERLAPPED overlapped;
+    HANDLE m_fd;
+    std::string m_devicePath;
+    std::string m_NETCLSID;
+    OVERLAPPED m_overlapped;
 
 #endif
 };

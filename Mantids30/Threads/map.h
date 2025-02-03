@@ -107,7 +107,7 @@ private:
     };
 
 
-    std::map<T, MapElement> keyValueMap; ///< The map storing key-value pairs.
+    std::map<T, MapElement> m_keyValueMap; ///< The map storing key-value pairs.
     std::condition_variable m_noItemsOnMapCondition; ///< The condition variable to wait for the map to become empty.
     std::mutex m_keyValueMapMutex; ///< The mutex to ensure thread safety when accessing the map.
 };
@@ -117,7 +117,7 @@ std::set<T> Map<T>::getKeys()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
     std::set<T> ret;
-    for (const auto & i : keyValueMap) ret.insert(i.first);
+    for (const auto & i : m_keyValueMap) ret.insert(i.first);
     return ret;
 }
 
@@ -125,16 +125,16 @@ template<class T>
 bool Map<T>::isMember(const T &key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    return (keyValueMap.find(key) != keyValueMap.end());
+    return (m_keyValueMap.find(key) != m_keyValueMap.end());
 }
 
 template<class T>
 bool Map<T>::addElement(const T &key, MapItem *element)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    if (keyValueMap.find(key) == keyValueMap.end())
+    if (m_keyValueMap.find(key) == m_keyValueMap.end())
     {
-        keyValueMap[key].item = element;
+        m_keyValueMap[key].item = element;
         return true;
     }
     return false;
@@ -145,10 +145,10 @@ template<class T>
 MapItem *Map<T>::openElement(const T &key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    if (keyValueMap.find(key) != keyValueMap.end() && keyValueMap[key].item)
+    if (m_keyValueMap.find(key) != m_keyValueMap.end() && m_keyValueMap[key].item)
     {
-        keyValueMap[key].numReaders++;
-        return keyValueMap[key].item;;
+        m_keyValueMap[key].numReaders++;
+        return m_keyValueMap[key].item;;
     }
     return nullptr;
 }
@@ -159,16 +159,16 @@ bool Map<T>::releaseElement(const T &key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
 
-    if (keyValueMap.find(key) != keyValueMap.end())
+    if (m_keyValueMap.find(key) != m_keyValueMap.end())
     {
-        if (keyValueMap[key].numReaders==0)
+        if (m_keyValueMap[key].numReaders==0)
             throw std::runtime_error("Invalid close on Mutex MAP");
 
-        keyValueMap[key].numReaders--;
+        m_keyValueMap[key].numReaders--;
         // if no more readers... emit the signal to notify it:
-        if (keyValueMap[key].numReaders == 0)
+        if (m_keyValueMap[key].numReaders == 0)
         {
-            keyValueMap[key].noReadersCondition.notify_one();
+            m_keyValueMap[key].noReadersCondition.notify_one();
         }
         return true;
     }
@@ -180,24 +180,24 @@ bool Map<T>::destroyElement(const T key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
 
-    if (    keyValueMap.find(key) != keyValueMap.end()
-            && keyValueMap[key].item != nullptr )
+    if (    m_keyValueMap.find(key) != m_keyValueMap.end()
+            && m_keyValueMap[key].item != nullptr )
     {
         // No more open readers and destroy element.. (inaccesible for openElement and for destroyElement)
-        MapItem * delElement = keyValueMap[key].item;
-        keyValueMap[key].item = nullptr;
+        MapItem * delElement = m_keyValueMap[key].item;
+        m_keyValueMap[key].item = nullptr;
 
-        for (;keyValueMap[key].numReaders != 0;)
+        for (;m_keyValueMap[key].numReaders != 0;)
         {
             delElement->stopReaders();
             // unlock and retake the lock until signal is emited.
-            keyValueMap[key].noReadersCondition.wait(lock);
+            m_keyValueMap[key].noReadersCondition.wait(lock);
         }
 
         // Now is time to delete and remove.
         delete delElement;
-        keyValueMap.erase(key);
-        if (keyValueMap.empty())
+        m_keyValueMap.erase(key);
+        if (m_keyValueMap.empty())
             m_noItemsOnMapCondition.notify_one();
         return true;
     }
@@ -208,7 +208,7 @@ template<class T>
 void Map<T>::waitForEmptyMap()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    if (keyValueMap.empty()) return;
+    if (m_keyValueMap.empty()) return;
     m_noItemsOnMapCondition.wait(lock);
 }
 

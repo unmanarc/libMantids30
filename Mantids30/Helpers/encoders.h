@@ -228,7 +228,7 @@ private:
     /**
      * @brief The set of characters used in base64 encoding.
      */
-    static const std::string b64Chars;
+    static const std::string m_b64Chars;
 };
 
 } // namespace Helpers

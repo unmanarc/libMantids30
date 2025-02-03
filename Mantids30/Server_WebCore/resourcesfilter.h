@@ -89,7 +89,7 @@ public:
 
 protected:
 
-    std::list<Filter> filters;
+    std::list<Filter> m_filters;
 };
 
 }}}

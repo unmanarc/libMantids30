@@ -39,12 +39,12 @@ int Socket_Chain_XOR::partialWrite(const void *data, const uint32_t &datalen)
 
 char Socket_Chain_XOR::getXorByte() const
 {
-    return xorByte;
+    return m_xorByte;
 }
 
 void Socket_Chain_XOR::setXorByte(char value)
 {
-    xorByte = value;
+    m_xorByte = value;
 }
 
 char *Socket_Chain_XOR::getXorCopy(const void *data, const uint32_t &datalen)
@@ -52,7 +52,7 @@ char *Socket_Chain_XOR::getXorCopy(const void *data, const uint32_t &datalen)
     char * datacp = new char[datalen];
     if (!datacp) return nullptr;
     for (uint32_t i=0; i<datalen; i++)
-        datacp[i] = ((char *)data)[i]^xorByte;
+        datacp[i] = ((char *)data)[i]^m_xorByte;
     return datacp;
 }
 

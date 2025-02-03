@@ -20,7 +20,7 @@ public:
     time_t getValue();
     bool setValue(const time_t & value);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toStringLcl();
     std::string toString() override;
@@ -33,8 +33,8 @@ private:
     std::string getISOTimeStr( const time_t & v );
     time_t fromISOTimeStr( const std::string & v );
 
-    time_t value;
-    Threads::Sync::Mutex_Shared mutex;
+    time_t m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 }}}

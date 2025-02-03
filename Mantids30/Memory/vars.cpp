@@ -5,8 +5,8 @@ using namespace Mantids30::Memory::Abstract;
 
 Vars::Vars()
 {
-    maxVarNameSize = 256; // 256 bytes
-    maxVarContentSize = 128*1024; // 128Kb.
+    m_maxVarNameSize = 256; // 256 bytes
+    m_maxVarContentSize = 128*1024; // 128Kb.
 }
 
 Vars::~Vars()
@@ -72,23 +72,23 @@ bool Vars::exist(const std::string &varName)
 
 uint32_t Vars::getMaxVarNameSize() const
 {
-    return maxVarNameSize;
+    return m_maxVarNameSize;
 }
 
 void Vars::setMaxVarNameSize(const uint32_t &value)
 {
-    maxVarNameSize = value;
+    m_maxVarNameSize = value;
     iSetMaxVarNameSize();
 }
 
 uint64_t Vars::getMaxVarContentSize() const
 {
-    return maxVarContentSize;
+    return m_maxVarContentSize;
 }
 
 void Vars::setMaxVarContentSize(const uint64_t &value)
 {
-    maxVarContentSize = value;
+    m_maxVarContentSize = value;
     iSetMaxVarContentSize();
 }
 

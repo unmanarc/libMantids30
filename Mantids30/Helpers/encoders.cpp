@@ -11,7 +11,7 @@
 using namespace std;
 using namespace Mantids30::Helpers;
 
-const std::string Encoders::b64Chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const std::string Encoders::m_b64Chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 Encoders::Encoders()
 {
@@ -36,7 +36,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t & see
         {
             for (x=0; x <4; x++)
             {
-                cont4[x]=(unsigned char)b64Chars.find(cont4[x]);
+                cont4[x]=(unsigned char)m_b64Chars.find(cont4[x]);
             }
 
             cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
@@ -59,7 +59,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t & see
         }
         for (y=0; y <4; y++)
         {
-            cont4[y]=(unsigned char)b64Chars.find(cont4[y]);
+            cont4[y]=(unsigned char)m_b64Chars.find(cont4[y]);
         }
 
         cont3[0]=(cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);

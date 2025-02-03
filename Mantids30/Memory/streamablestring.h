@@ -34,7 +34,7 @@ public:
     void setValue(const std::string &newValue);
 
 private:
-    std::string value;
+    std::string m_value;
 };
 
 }}}

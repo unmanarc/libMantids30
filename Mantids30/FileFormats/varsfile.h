@@ -90,9 +90,9 @@ public:
     eFileError getLastError() const;
 
 private:
-    eFileError lastError;
-    std::string filePath;
-    std::multimap<std::string,std::string> vars;
+    eFileError m_lastError;
+    std::string m_filePath;
+    std::multimap<std::string,std::string> m_vars;
 };
 
 

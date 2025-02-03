@@ -33,7 +33,7 @@ private:
     std::string toString() const;
 
     void parseCookie(std::string cookie);
-    std::map<std::string,std::string> cookiesMap;
+    std::map<std::string,std::string> m_cookiesMap;
 };
 
 }}}}}

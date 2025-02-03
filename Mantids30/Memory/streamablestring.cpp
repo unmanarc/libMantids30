@@ -11,7 +11,7 @@ StreamableString::StreamableString()
 bool StreamableString::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
 {
     StreamableObject::Status cur;
-    if (!(cur=out->writeFullStream(value.c_str(),value.size(),wrStatUpd)).succeed || cur.finish)
+    if (!(cur=out->writeFullStream(m_value.c_str(),m_value.size(),wrStatUpd)).succeed || cur.finish)
     {
         if (!cur.succeed)
         {
@@ -33,7 +33,7 @@ StreamableObject::Status StreamableString::write(const void *buf, const size_t &
     StreamableObject::Status cur;
 
     std::string x( ((char *)buf), count);
-    value+=x;
+    m_value+=x;
 
     cur+=(uint64_t)count;
     wrStatUpd+=(uint64_t)count;
@@ -47,10 +47,10 @@ StreamableString &StreamableString::operator=(const std::string &str) {
 
 const std::string &StreamableString::getValue() const
 {
-    return value;
+    return m_value;
 }
 
 void StreamableString::setValue(const std::string &newValue)
 {
-    value = newValue;
+    m_value = newValue;
 }

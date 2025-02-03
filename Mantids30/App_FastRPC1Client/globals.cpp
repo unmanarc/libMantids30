@@ -4,11 +4,11 @@ using namespace Mantids30::Program;
 using namespace Mantids30::Applications::FastRPC1;
 
 // LOGS:
-Logs::AppLog * Globals::applog = nullptr;
-boost::property_tree::ptree Globals::pLocalConfig;
-Mantids30::Applications::FastRPC1::RPCClientImpl * Globals::rpcImpl = nullptr;
+Logs::AppLog * Globals::m_appLog = nullptr;
+boost::property_tree::ptree Globals::m_ptreeLocalConfig;
+Mantids30::Applications::FastRPC1::RPCClientImpl * Globals::m_rpcImpl = nullptr;
 
-Mantids30::Helpers::Mem::BinaryDataContainer * Globals::masterKey=nullptr;
+Mantids30::Helpers::Mem::BinaryDataContainer * Globals::m_masterKey=nullptr;
 
 
 Globals::Globals()
@@ -18,35 +18,35 @@ Globals::Globals()
 void Globals::setLocalInitConfig(const boost::property_tree::ptree &config)
 {
     // Initial config:
-    pLocalConfig = config;
+    m_ptreeLocalConfig = config;
 }
 
 Mantids30::Program::Logs::AppLog *Globals::getAppLog()
 {
-    return applog;
+    return m_appLog;
 }
 
 void Globals::setAppLog(Mantids30::Program::Logs::AppLog *value)
 {
-    applog = value;
+    m_appLog = value;
 }
 
 Mantids30::Applications::FastRPC1::RPCClientImpl *Globals::getRpcImpl()
 {
-    return rpcImpl;
+    return m_rpcImpl;
 }
 
 void Globals::setRpcImpl(Applications::FastRPC1::RPCClientImpl *value)
 {
-    rpcImpl = value;
+    m_rpcImpl = value;
 }
 
 Mantids30::Helpers::Mem::BinaryDataContainer *Globals::getMasterKey()
 {
-    return masterKey;
+    return m_masterKey;
 }
 
 void Globals::setMasterKey(Mantids30::Helpers::Mem::BinaryDataContainer *newMasterKey)
 {
-    masterKey = newMasterKey;
+    m_masterKey = newMasterKey;
 }

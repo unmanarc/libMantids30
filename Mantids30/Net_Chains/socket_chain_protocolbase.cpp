@@ -6,7 +6,7 @@ using namespace Sockets::ChainProtocols;
 
 Socket_Chain_ProtocolBase::Socket_Chain_ProtocolBase()
 {
-    serverMode = false;
+    m_serverMode = false;
 }
 
 Socket_Chain_ProtocolBase::~Socket_Chain_ProtocolBase()
@@ -41,11 +41,11 @@ std::pair<std::shared_ptr<Sockets::Socket_Stream_Base> , std::shared_ptr<Sockets
 
 bool Socket_Chain_ProtocolBase::isServerMode() const
 {
-    return serverMode;
+    return m_serverMode;
 }
 
 void Socket_Chain_ProtocolBase::setServerMode(bool value)
 {
-    serverMode = value;
+    m_serverMode = value;
 }
 

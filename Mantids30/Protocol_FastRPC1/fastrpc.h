@@ -273,22 +273,51 @@ private:
     int processAnswer(FastRPC1::Connection *connection);
     int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, std::shared_ptr<void> context, const std::string &data);
 
-    Mantids30::Threads::Safe::Map<std::string> connectionsByKeyId;
+    // Stores active connections indexed by a unique key identifier.
+    Mantids30::Threads::Safe::Map<std::string> m_connectionsByKeyId;
 
-    std::atomic<uint32_t> queuePushTimeoutInMS,maxMessageSize, remoteExecutionTimeoutInMS, remoteExecutionDisconnectedTries;
-    // Methods:
-    // method name -> method.
-    std::map<std::string,FastRPC1::Method> methods;
-    Threads::Sync::Mutex_Shared smutexMethods;
-    Mantids30::Threads::Pool::ThreadPool * threadPool;
+    // Configuration parameters for RPC behavior.
+    // queuePushTimeoutInMS: Timeout (in milliseconds) for queue push operations.
+    // maxMessageSize: Maximum allowed message size in bytes.
+    // remoteExecutionTimeoutInMS: Timeout (in milliseconds) for remote execution.
+    // remoteExecutionDisconnectedTries: Maximum retry attempts for remote execution when disconnected.
+    std::atomic<uint32_t> m_queuePushTimeoutInMS;
+    std::atomic<uint32_t> m_maxMessageSize;
+    std::atomic<uint32_t> m_remoteExecutionTimeoutInMS;
+    std::atomic<uint32_t> m_remoteExecutionDisconnectedTries;
 
-    std::thread pinger;
-    std::shared_ptr<void> overwriteContext;
+    // Map storing available RPC methods.
+    // Key: Method name (string).
+    // Value: Corresponding method object.
+    std::map<std::string, FastRPC1::Method> m_methods;
 
-    std::atomic<bool> finished;
-    uint32_t pingIntvl, rwTimeout;
-    std::mutex mtPing;
-    std::condition_variable cvPing;
+    // Shared mutex for synchronizing access to the methods map.
+    Threads::Sync::Mutex_Shared m_methodsMutex;
+
+    // Thread pool for handling RPC method execution.
+    Mantids30::Threads::Pool::ThreadPool * m_threadPool;
+
+    // Background thread responsible for periodic pinging to maintain connection health.
+    std::thread m_pinger;
+
+    // Optional context for overwriting specific execution behaviors.
+    std::shared_ptr<void> m_overwriteContext;
+
+    // Indicates whether the RPC system is in a finished state.
+    std::atomic<bool> m_finished;
+
+    // Ping-related configuration.
+    // pingIntvl: Interval (in milliseconds) between ping attempts.
+    // rwTimeout: Read/write timeout (in milliseconds) for network operations.
+    uint32_t m_pingIntvl;
+    uint32_t m_rwTimeout;
+
+    // Mutex for synchronizing ping operations.
+    std::mutex m_pingMutex;
+
+    // Condition variable used to signal ping-related events.
+    std::condition_variable m_pingCond;
+
 };
 
 }}}}

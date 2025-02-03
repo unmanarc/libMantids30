@@ -57,13 +57,13 @@ public:
     std::string toString() override;
     bool fromString(const std::string & value) override;
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    sBinContainer value;
+    sBinContainer m_value;
 
 };
 }}}

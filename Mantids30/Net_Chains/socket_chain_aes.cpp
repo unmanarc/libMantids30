@@ -17,12 +17,12 @@ using namespace Mantids30::Network::Sockets::ChainProtocols;
 
 using namespace std;
 
-const EVP_CIPHER * Socket_Chain_AES::cipher = openSSLInit();
+const EVP_CIPHER * Socket_Chain_AES::m_cipher = openSSLInit();
 
 Socket_Chain_AES::Socket_Chain_AES()
 {
-    initialized = false;
-    cipher = nullptr;
+    m_initialized = false;
+    m_cipher = nullptr;
     setAESRegenBlockSize();
 }
 
@@ -32,12 +32,12 @@ Socket_Chain_AES::~Socket_Chain_AES()
 
 void Socket_Chain_AES::setAESRegenBlockSize(const size_t &value)
 {
-    aesRegenBlockSize = value;
+    m_aesRegenBlockSize = value;
 }
 
 void Socket_Chain_AES::setPhase1Key256(const char *pass)
 {
-    memcpy(phase1Key,pass,sizeof(phase1Key));
+    memcpy(m_phase1Key,pass,sizeof(m_phase1Key));
 }
 
 void Socket_Chain_AES::setPhase1Key(const char *pass)
@@ -45,12 +45,12 @@ void Socket_Chain_AES::setPhase1Key(const char *pass)
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, pass, strlen(pass));
-    SHA256_Final((unsigned char *)phase1Key, &sha256);
+    SHA256_Final((unsigned char *)m_phase1Key, &sha256);
 }
 
 int Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
 {
-    if (!initialized)
+    if (!m_initialized)
         return Socket_Stream_Base::partialRead(data,datalen);
 
     int r = Socket_Stream_Base::partialRead(data,datalen);
@@ -58,20 +58,20 @@ int Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
         return r;
 
     // Enlarge the buffer to decrypt the requested string...
-    while (readParams.aesBlock_curSize<(size_t)r)
+    while (m_readParams.aesBlock_curSize<(size_t)r)
     {
-        regenIV(&readParams);
-        if (!appendNewAESBlock( &readParams, readParams.handshake.phase2Key, readParams.currentIV))
+        regenIV(&m_readParams);
+        if (!appendNewAESBlock( &m_readParams, m_readParams.handshake.phase2Key, m_readParams.currentIV))
             return false;
     }
     // Decrypt the data...
-    readParams.cryptoXOR((char *)data,r);
+    m_readParams.cryptoXOR((char *)data,r);
     return r;
 }
 
 int Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
 {
-    if (!initialized)
+    if (!m_initialized)
         return Socket_Stream_Base::partialWrite(data,datalen);
 
     // Copy the data...
@@ -79,10 +79,10 @@ int Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
     memcpy(edata,data,datalen);
 
     // Enlarge the buffer to decrypt the requested string...
-    while (writeParams.aesBlock_curSize<datalen)
+    while (m_writeParams.aesBlock_curSize<datalen)
     {
-        regenIV(&writeParams);
-        if (!appendNewAESBlock( &writeParams, writeParams.handshake.phase2Key, writeParams.currentIV))
+        regenIV(&m_writeParams);
+        if (!appendNewAESBlock( &m_writeParams, m_writeParams.handshake.phase2Key, m_writeParams.currentIV))
         {
             delete [] edata;
             return false;
@@ -90,14 +90,14 @@ int Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
     }
 
     // Encrypt the data...
-    writeParams.cryptoXOR(edata,datalen,true);
+    m_writeParams.cryptoXOR(edata,datalen,true);
 
     // Try to transmit the encrypted data...
     int r=Socket_Stream_Base::partialWrite(edata,datalen);
     if (r>0)
     {
         // Data transmited.. reduce it.
-        writeParams.reduce(r);
+        m_writeParams.reduce(r);
     }
 
     // destroy this data..
@@ -114,66 +114,66 @@ bool Socket_Chain_AES::postAcceptSubInitialization()
     // Transmition:
     ///////////////////////////////////////////////
     // Put the very first IV
-    genRandomBytes(writeParams.handShakeIV,sizeof(writeParams.handShakeIV));
+    genRandomBytes(m_writeParams.handShakeIV,sizeof(m_writeParams.handShakeIV));
     // Transmit the very first IV
-    if (!writeFull(writeParams.handShakeIV,sizeof(writeParams.handShakeIV)))
+    if (!writeFull(m_writeParams.handShakeIV,sizeof(m_writeParams.handShakeIV)))
         return false;
     // Create the en/decryption xoring block
-    if (!appendNewAESBlock( &writeParams, phase1Key, writeParams.handShakeIV))
+    if (!appendNewAESBlock( &m_writeParams, m_phase1Key, m_writeParams.handShakeIV))
         return false;
     // Create the next local (write) keys...
-    genRandomBytes(writeParams.handshake.phase2Key,sizeof(writeParams.handshake.phase2Key));
-    genRandomBytes(writeParams.handshake.IVSeed,sizeof(writeParams.handshake.IVSeed));
+    genRandomBytes(m_writeParams.handshake.phase2Key,sizeof(m_writeParams.handshake.phase2Key));
+    genRandomBytes(m_writeParams.handshake.IVSeed,sizeof(m_writeParams.handshake.IVSeed));
     // Create the memory to transmit this...
     char vFirstLoad[sizeof(sHandShakeHeader)];
-    memcpy(vFirstLoad,&(writeParams.handshake),sizeof(sHandShakeHeader));
+    memcpy(vFirstLoad,&(m_writeParams.handshake),sizeof(sHandShakeHeader));
     // Encrypt the header.
-    writeParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
+    m_writeParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
     // Transmit the encrypted header.
     if (!writeFull(vFirstLoad,sizeof(sHandShakeHeader)))
         return false;
     // Initialize with the transmited values:
-    writeParams.cleanAESBlock();
+    m_writeParams.cleanAESBlock();
 
     // Fill the initial Write IV values on MT engine.
-    p1 = writeParams.handshake.IVSeed+0;
-    p2 = writeParams.handshake.IVSeed+8;
-    writeParams.mt19937IV[0].seed(*((uint64_t *)p1));
-    writeParams.mt19937IV[1].seed(*((uint64_t *)p2));
+    p1 = m_writeParams.handshake.IVSeed+0;
+    p2 = m_writeParams.handshake.IVSeed+8;
+    m_writeParams.mt19937IV[0].seed(*((uint64_t *)p1));
+    m_writeParams.mt19937IV[1].seed(*((uint64_t *)p2));
 
     ///////////////////////////////////////////////
     // Reception:
     ///////////////////////////////////////////////
     // Read the IV
-    if (!readFull(readParams.handShakeIV,sizeof(readParams.handShakeIV)))
+    if (!readFull(m_readParams.handShakeIV,sizeof(m_readParams.handShakeIV)))
         return false;
     // Read the encryted header
     if (!readFull(vFirstLoad,sizeof(sHandShakeHeader)))
         return false;
     // Create the en/decryption xoring block
-    if (!appendNewAESBlock( &readParams, phase1Key, readParams.handShakeIV))
+    if (!appendNewAESBlock( &m_readParams, m_phase1Key, m_readParams.handShakeIV))
         return false;
     // Decrypt the header.
-    readParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
+    m_readParams.cryptoXOR(vFirstLoad,sizeof(sHandShakeHeader));
 
     sHandShakeHeader * hshdr = (sHandShakeHeader *)vFirstLoad;
-    readParams.handshake = *hshdr;
+    m_readParams.handshake = *hshdr;
 
     // Check the decryption:
-    if (memcmp(readParams.handshake.magicBytes,"IHDR",4))
+    if (memcmp(m_readParams.handshake.magicBytes,"IHDR",4))
         return false;
     // If the decryption is OK... REGEN the AES block...
-    readParams.cleanAESBlock();
+    m_readParams.cleanAESBlock();
     // Fill the initial Read IV values on MT engine.
-    p1 = readParams.handshake.IVSeed+0;
-    p2 = readParams.handshake.IVSeed+8;
-    readParams.mt19937IV[0].seed(*((uint64_t *)p1));
-    readParams.mt19937IV[1].seed(*((uint64_t *)p2));
+    p1 = m_readParams.handshake.IVSeed+0;
+    p2 = m_readParams.handshake.IVSeed+8;
+    m_readParams.mt19937IV[0].seed(*((uint64_t *)p1));
+    m_readParams.mt19937IV[1].seed(*((uint64_t *)p2));
 
     // clean the mem...
     ZeroBStruct(vFirstLoad);
 
-    initialized = true;
+    m_initialized = true;
     return true;
 }
 
@@ -198,7 +198,7 @@ const EVP_CIPHER *Socket_Chain_AES::openSSLInit()
 bool Socket_Chain_AES::appendNewAESBlock(sSideParams *params, const char *key, const char *iv)
 {
     // Create the AES block here.
-    char * cipherText = new char [aesRegenBlockSize*2];
+    char * cipherText = new char [m_aesRegenBlockSize*2];
 
     int len;
     int cipherText_len;
@@ -220,7 +220,7 @@ bool Socket_Chain_AES::appendNewAESBlock(sSideParams *params, const char *key, c
 
     // Encrypt the plaintext block
     char * plainText = genPlainText();
-    if(1 != EVP_EncryptUpdate(ctx, (unsigned char *)cipherText, &len, (unsigned char *)plainText, aesRegenBlockSize))
+    if(1 != EVP_EncryptUpdate(ctx, (unsigned char *)cipherText, &len, (unsigned char *)plainText, m_aesRegenBlockSize))
     {
         EVP_CIPHER_CTX_free(ctx);
         delete [] cipherText;
@@ -237,7 +237,7 @@ bool Socket_Chain_AES::appendNewAESBlock(sSideParams *params, const char *key, c
     }
     cipherText_len += len;
 
-    params->appendAESBlock(cipherText,aesRegenBlockSize);
+    params->appendAESBlock(cipherText,m_aesRegenBlockSize);
 
     delete [] cipherText;
     // Now it's encrypted :)
@@ -342,8 +342,8 @@ void Socket_Chain_AES::regenIV(sSideParams *param)
 
 char *Socket_Chain_AES::genPlainText()
 {
-    char * vGen = new char [aesRegenBlockSize];
-    for (size_t i=0;i<aesRegenBlockSize;i++)
+    char * vGen = new char [m_aesRegenBlockSize];
+    for (size_t i=0;i<m_aesRegenBlockSize;i++)
     {
         vGen[i] = (i*487)%256;
     }

@@ -26,7 +26,7 @@ public:
     in6_addr getValue();
     bool setValue(const in6_addr & value);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -38,8 +38,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    in6_addr value;
-    Threads::Sync::Mutex_Shared mutex;
+    in6_addr m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 

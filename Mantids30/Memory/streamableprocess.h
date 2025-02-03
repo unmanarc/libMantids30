@@ -21,8 +21,8 @@ public:
     virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd) override;
 
 private:
-    bool streamStdOut,streamStdErr;
-    Mantids30::Helpers::AppSpawn * spawner;
+    bool m_streamStdOut,m_streamStdErr;
+    Mantids30::Helpers::AppSpawn * m_spawner;
 };
 
 }}}

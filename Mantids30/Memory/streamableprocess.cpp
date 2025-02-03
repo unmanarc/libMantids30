@@ -5,12 +5,12 @@
 
 Mantids30::Memory::Streams::StreamableProcess::StreamableProcess(Helpers::AppSpawn *spawner)
 {
-    this->spawner = spawner;
+    this->m_spawner = spawner;
 }
 
 Mantids30::Memory::Streams::StreamableProcess::~StreamableProcess()
 {
-    delete this->spawner;
+    delete this->m_spawner;
 }
 
 bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<StreamableObject> out, Status &wrStatUpd)
@@ -18,7 +18,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<Str
     Status cur;
     for (;;)
     {
-        auto rsp =spawner->pollResponse();
+        auto rsp =m_spawner->pollResponse();
 
         // Nothing to read?
         if (rsp.empty()) break;
@@ -28,9 +28,9 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<Str
         ssize_t rsize=-1;
 
         if (rsp.find(STDOUT_FILENO)!=rsp.end())
-            rsize = spawner->read(STDOUT_FILENO,buf,sizeof(buf)-1);
+            rsize = m_spawner->read(STDOUT_FILENO,buf,sizeof(buf)-1);
         if (rsp.find(STDERR_FILENO)!=rsp.end())
-            rsize = spawner->read(STDERR_FILENO,buf,sizeof(buf)-1);
+            rsize = m_spawner->read(STDERR_FILENO,buf,sizeof(buf)-1);
 
         // TODO: if multiple streams are going in, and you close one, the other one should keep transmitting...
         switch (rsize)
@@ -61,7 +61,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<Str
         }
     }
 
-   spawner->waitUntilProcessEnds();
+   m_spawner->waitUntilProcessEnds();
    return true;
 }
 

@@ -76,11 +76,11 @@ protected:
     virtual std::string decryptStr(const std::string & src) { return src; };
     virtual std::string encryptStr(const std::string & src) { return src; };
 
-    std::string getClientConfigCmd,updateClientConfigLoadTimeCmd;
+    std::string m_getClientConfigCmd,m_updateClientConfigLoadTimeCmd;
 
-    Mantids30::Network::Protocols::FastRPC::FastRPC1 fastRPC;
-    json jRetrievedConfig;
-    std::atomic<bool> failedToRetrieveC2Config;
+    Mantids30::Network::Protocols::FastRPC::FastRPC1 m_fastRPC;
+    json m_jRetrievedConfig;
+    std::atomic<bool> m_failedToRetrieveC2Config;
 
 };
 }}}

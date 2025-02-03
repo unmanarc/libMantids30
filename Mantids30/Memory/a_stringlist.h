@@ -19,7 +19,7 @@ public:
     std::list<std::string> getValue();
     bool setValue(const std::list<std::string> &value);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -28,8 +28,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    std::list<std::string> value;
-    Threads::Sync::Mutex_Shared mutex;
+    std::list<std::string> m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 };
 
 }}}

@@ -8,7 +8,7 @@ LineRecv_SubParser::LineRecv_SubParser()
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
     setParseMultiDelimiter({"\x0a", "\x0d"});
     setMaxObjectSize(65536);
-    subParserName = "LineRecv_SubParser";
+    m_subParserName = "LineRecv_SubParser";
 
 }
 
@@ -30,11 +30,11 @@ bool LineRecv_SubParser::stream(Memory::Streams::StreamableObject::Status &)
 
 std::string LineRecv_SubParser::getParsedString() const
 {
-    return parsedString;
+    return m_parsedString;
 }
 
 Memory::Streams::SubParser::ParseStatus LineRecv_SubParser::parse()
 {
-    parsedString = getParsedBuffer()->toString();
+    m_parsedString = getParsedBuffer()->toString();
     return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
 }

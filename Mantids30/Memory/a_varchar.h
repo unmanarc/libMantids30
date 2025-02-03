@@ -42,7 +42,7 @@ public:
 
     size_t getVarSize();
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     /**
      * @brief getWasTruncated Get if the last copy operation was truncated.
@@ -51,16 +51,16 @@ public:
     bool getWasTruncated();
 
     unsigned long getFillSize() const;
-    unsigned long * getFillSizePTR() { return &fillSize; }
+    unsigned long * getFillSizePTR() { return &m_fillSize; }
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 private:
-    bool wasTruncated;
-    char * value;
-    size_t varSize;
-    unsigned long fillSize;
-    Threads::Sync::Mutex_Shared mutex;
+    bool m_wasTruncated;
+    char * m_value;
+    size_t m_varSize;
+    unsigned long m_fillSize;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 };
 

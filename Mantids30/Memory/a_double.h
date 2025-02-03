@@ -19,7 +19,7 @@ public:
     double getValue();
     void setValue(const double & value);
 
-    void * getDirectMemory() override { return &value; }
+    void * getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -27,8 +27,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    double value;
-    Threads::Sync::Mutex_Shared mutex;
+    double m_value;
+    Threads::Sync::Mutex_Shared m_mutex;
 
 
 };

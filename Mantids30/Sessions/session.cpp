@@ -8,7 +8,7 @@ using namespace Mantids30::Sessions;
 Session::Session(const DataFormat::JWT::Token &jwt)  : m_firstActivityTimestamp(time(nullptr)), m_lastActivityTimestamp(time(nullptr))
     //: Session() // Delegates to the default constructor
 {
-    jwtAuthenticatedInfo = jwt;
+    m_jwtAuthenticatedInfo = jwt;
     m_impersonator = jwt.getImpersonator();
     m_domain = jwt.getDomain();
     m_user = jwt.getSubject();
@@ -80,7 +80,7 @@ void Session::setJWTAuthenticatedInfo(const DataFormat::JWT::Token &newJwtAuthen
 Mantids30::DataFormat::JWT::Token Session::getJWTAuthenticatedInfo()
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
-    return jwtAuthenticatedInfo;
+    return m_jwtAuthenticatedInfo;
 }
 
 

@@ -6,16 +6,16 @@ using namespace Mantids30::FileFormats::Vars;
 
 File::File(const std::string &filePath)
 {
-    this->filePath = filePath;
-    lastError = FILE_NO_ERROR;
+    this->m_filePath = filePath;
+    m_lastError = FILE_NO_ERROR;
 }
 
 bool File::load()
 {
-    std::ifstream varsfile(filePath);
+    std::ifstream varsfile(m_filePath);
     if (!varsfile.is_open())
     {
-        lastError = CANT_OPEN_FILE;
+        m_lastError = CANT_OPEN_FILE;
         return false;
     }
     std::string line;
@@ -25,11 +25,11 @@ bool File::load()
         std::pair<std::string, std::string> lineVars = getLineVars(line, &ok);
         if (!ok)
         {
-            lastError = INVALID_FILE_FORMAT;
+            m_lastError = INVALID_FILE_FORMAT;
             varsfile.close();
             return false;
         }
-        vars.insert(lineVars);
+        m_vars.insert(lineVars);
     }
     varsfile.close();
     return true;
@@ -37,20 +37,20 @@ bool File::load()
 
 bool File::save()
 {
-    std::ofstream varsfile (filePath, std::ofstream::out);
+    std::ofstream varsfile (m_filePath, std::ofstream::out);
     if (!varsfile.is_open())
     {
-        lastError = CANT_OPEN_FILE;
+        m_lastError = CANT_OPEN_FILE;
         return false;
     }
 
     bool ok;
-    for ( const auto & i : vars )
+    for ( const auto & i : m_vars )
     {
         std::string value = getLineFromVars(i,&ok);
         if (!ok)
         {
-            lastError = INVALID_VARNAME_FORMAT;
+            m_lastError = INVALID_VARNAME_FORMAT;
             varsfile.close();
             return false;
         }
@@ -62,19 +62,19 @@ bool File::save()
 
 void File::setVar(const std::string &varName, const std::string &varValue)
 {
-    vars.erase(varName);
+    m_vars.erase(varName);
     addVar(varName,varValue);
 }
 
 void File::addVar(const std::string &varName, const std::string &varValue)
 {
-    vars.insert(std::make_pair(varName,varValue));
+    m_vars.insert(std::make_pair(varName,varValue));
 }
 
 std::list<std::string> File::getVarValues(const std::string &varName)
 {
     std::list<std::string> r;
-    auto ret = vars.equal_range(varName);
+    auto ret = m_vars.equal_range(varName);
     for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
     {
           r.push_back(it->second);
@@ -84,9 +84,9 @@ std::list<std::string> File::getVarValues(const std::string &varName)
 
 std::string File::getVarValue(const std::string &varName, bool * found)
 {
-    auto i = vars.find(varName);
+    auto i = m_vars.find(varName);
 
-    if (i == vars.end())
+    if (i == m_vars.end())
     {
         if (found) *found = false;
         return "";
@@ -132,18 +132,18 @@ std::string File::getLineFromVars(const std::pair<std::string, std::string> &var
 
 eFileError File::getLastError() const
 {
-    return lastError;
+    return m_lastError;
 }
 
 std::multimap<std::string, std::string> File::getVars() const
 {
-    return vars;
+    return m_vars;
 }
 
 std::map<std::string, std::string> File::getVarsMap() const
 {
     std::map<std::string, std::string> r;
-    for (auto & i : vars)
+    for (auto & i : m_vars)
     {
         r[i.first]=i.second;
     }

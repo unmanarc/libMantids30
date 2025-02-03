@@ -309,12 +309,12 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
     {
         // deliver the information about the new token via a JS readable cookie:
         Headers::Cookie jsAuthTokenCookie;
-        jsAuthTokenCookie.setSecure(true);
-        jsAuthTokenCookie.setHttpOnly(false);
+        jsAuthTokenCookie.secure = true;
+        jsAuthTokenCookie.httpOnly = false;
         jsAuthTokenCookie.setExpirationFromNow(maxAge);
-        jsAuthTokenCookie.setMaxAge(maxAge);
-        jsAuthTokenCookie.setSameSite(Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT);
-        jsAuthTokenCookie.setValue( postLoginToken );
+        jsAuthTokenCookie.maxAge = maxAge;
+        jsAuthTokenCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+        jsAuthTokenCookie.value =  postLoginToken;
         serverResponse.setCookie("jsAuthToken", jsAuthTokenCookie);
         // the cookie should be dropped from the website to avoid XSS attacks to retrieve it.
     }

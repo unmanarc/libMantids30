@@ -161,8 +161,8 @@ protected:
     virtual void iSetMaxVarNameSize();
 
     // Security options.
-    uint32_t maxVarNameSize;
-    uint64_t maxVarContentSize;
+    uint32_t m_maxVarNameSize;
+    uint64_t m_maxVarContentSize;
 };
 
 }}}

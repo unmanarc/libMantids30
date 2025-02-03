@@ -129,10 +129,10 @@ protected:
     void clear();
 
     ////////////////////////////
-    bool clientMode;
-    std::shared_ptr<Memory::Streams::StreamableObject> upStream;
-    bool streamEnded;
-    std::string subParserName;
+    bool m_clientMode;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_upStream;
+    bool m_streamEnded;
+    std::string m_subParserName;
 
 private:
     std::pair<bool,uint64_t> parseByMultiDelimiter(const void * buf, size_t count);
@@ -146,15 +146,15 @@ private:
     uint64_t getLastBytesInCommon(const std::string &boundary);
     Mantids30::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
 
-    Mantids30::Memory::Containers::B_Ref parsedBuffer;
-    Mantids30::Memory::Containers::B_Chunks unparsedBuffer;
-    std::string parseDelimiter;
+    Mantids30::Memory::Containers::B_Ref m_parsedBuffer;
+    Mantids30::Memory::Containers::B_Chunks m_unparsedBuffer;
+    std::string m_parseDelimiter;
 
-    std::string delimiterFound;
-    std::list<std::string> parseMultiDelimiter;
+    std::string m_delimiterFound;
+    std::list<std::string> m_parseMultiDelimiter;
 
-    ParseMode parseMode;
-    ParseStatus parseStatus;
+    ParseMode m_parseMode;
+    ParseStatus m_parseStatus;
 };
 
 }}}

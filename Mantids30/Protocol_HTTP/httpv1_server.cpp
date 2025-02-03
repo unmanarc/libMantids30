@@ -36,9 +36,9 @@ HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1
     m_badAnswer = false;
 
     // All request will have no-cache activated.... (unless it's a real file and it's not overwritten)
-    serverResponse.cacheControl.setOptionNoCache(true);
-    serverResponse.cacheControl.setOptionNoStore(true);
-    serverResponse.cacheControl.setOptionMustRevalidate(true);
+    serverResponse.cacheControl.optionNoCache = true;
+    serverResponse.cacheControl.optionNoStore = true;
+    serverResponse.cacheControl.optionMustRevalidate = true;
 
     m_currentParser = (Memory::Streams::SubParser *)(&clientRequest.requestLine);
 
@@ -160,14 +160,14 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
     std::string sFullComputedPath;
     {
         char *cFullPath;
-        if (  staticContentElements.find(std::string(clientRequest.getURI()+defaultFileAppend)) != staticContentElements.end() )
+        if (  m_staticContentElements.find(std::string(clientRequest.getURI()+defaultFileAppend)) != m_staticContentElements.end() )
         {
             // STATIC CONTENT:
-            serverResponse.cacheControl.setOptionNoCache(false);
-            serverResponse.cacheControl.setOptionNoStore(false);
-            serverResponse.cacheControl.setOptionMustRevalidate(false);
-            serverResponse.cacheControl.setMaxAge(3600);
-            serverResponse.cacheControl.setOptionImmutable(true);
+            serverResponse.cacheControl.optionNoCache = false;
+            serverResponse.cacheControl.optionNoStore = false;
+            serverResponse.cacheControl.optionMustRevalidate = false;
+            serverResponse.cacheControl.maxAge = 3600;
+            serverResponse.cacheControl.optionImmutable = true;
 
             info->sRealRelativePath = clientRequest.getURI()+defaultFileAppend;
 
@@ -175,7 +175,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
 
             info->sRealFullPath = "MEM:" + info->sRealRelativePath;
 
-            serverResponse.setDataStreamer(staticContentElements[info->sRealRelativePath]);
+            serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath]);
             return true;
         }
         else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
@@ -279,11 +279,11 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                         serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
                 }
 
-                serverResponse.cacheControl.setOptionNoCache(false);
-                serverResponse.cacheControl.setOptionNoStore(false);
-                serverResponse.cacheControl.setOptionMustRevalidate(false);
-                serverResponse.cacheControl.setMaxAge(3600);
-                serverResponse.cacheControl.setOptionImmutable(true);
+                serverResponse.cacheControl.optionNoCache = false;
+                serverResponse.cacheControl.optionNoStore = false;
+                serverResponse.cacheControl.optionMustRevalidate = false;
+                serverResponse.cacheControl.maxAge = 3600;
+                serverResponse.cacheControl.optionImmutable = true;
                 return true;
             }
             return false;
@@ -713,7 +713,7 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
 
 void HTTPv1_Server::setStaticContentElements(const std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> &value)
 {
-    staticContentElements = value;
+    m_staticContentElements = value;
 }
 
 std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
@@ -749,7 +749,7 @@ std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
 
 bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
 {
-    return !(staticContentElements.find(path) == staticContentElements.end());
+    return !(m_staticContentElements.find(path) == m_staticContentElements.end());
 }
 
 
@@ -766,7 +766,7 @@ void HTTPv1_Server::setResponseIncludeServerDate(bool value)
 
 void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {
-    staticContentElements[path] = contentElement;
+    m_staticContentElements[path] = contentElement;
 }
 
 Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmissionStatus() const

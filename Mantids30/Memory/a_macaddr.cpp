@@ -16,7 +16,7 @@ using namespace Mantids30::Memory::Abstract;
 MACADDR::MACADDR()
 {
     setVarType(TYPE_MACADDR);
-    memset(macaddr,0,sizeof (macaddr));
+    memset(m_macaddr,0,sizeof (m_macaddr));
 }
 
 MACADDR::MACADDR(const unsigned char * macaddr)
@@ -28,25 +28,25 @@ MACADDR::MACADDR(const unsigned char * macaddr)
 MACADDR::MACADDR(const std::string &value)
 {
     setVarType(TYPE_MACADDR);
-    _fromString(value,macaddr);
+    _fromString(value,m_macaddr);
 }
 
 MACADDR::MACADDR(const uint64_t &value)
 {
     setVarType(TYPE_MACADDR);
-    _fromHASH(value,macaddr);
+    _fromHASH(value,m_macaddr);
 }
 
 unsigned char *MACADDR::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return macaddr;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_macaddr;
 }
 
 bool MACADDR::setValue(const unsigned char * macaddr)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    memcpy(this->macaddr,macaddr,sizeof (this->macaddr));
+    Threads::Sync::Lock_RW lock(m_mutex);
+    memcpy(this->m_macaddr,macaddr,sizeof (this->m_macaddr));
     return true;
 }
 
@@ -67,7 +67,7 @@ bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
 {
     bool r = false;
 
-    memset(dst,0,sizeof (macaddr));
+    memset(dst,0,sizeof (m_macaddr));
     unsigned int a,b,c,d,e,f;
     if (    sscanf(src.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X",&a,&b,&c,&d,&e,&f)==6
         ||  sscanf(src.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x",&a,&b,&c,&d,&e,&f)==6

@@ -11,8 +11,8 @@ using namespace Mantids30::Memory::Streams::Encoders;
 
 URL::URL(std::shared_ptr<StreamableObject> orig)
 {
-    this->orig = orig;
-    finalBytesWritten =0;
+    this->m_orig = orig;
+    m_finalBytesWritten =0;
 }
 
 bool URL::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Status & )
@@ -41,9 +41,9 @@ StreamableObject::Status URL::write(const void *buf, const size_t &count, Status
         size_t bytesToTransmitInPlain;
         if ((bytesToTransmitInPlain=getPlainBytesSize( ((const unsigned char *)buf)+pos,count-pos))>0)
         {
-            if (!(cur+=orig->writeFullStream( ((const unsigned char *)buf)+pos ,bytesToTransmitInPlain,wrStat)).succeed)
+            if (!(cur+=m_orig->writeFullStream( ((const unsigned char *)buf)+pos ,bytesToTransmitInPlain,wrStat)).succeed)
             {
-                finalBytesWritten+=cur.bytesWritten;
+                m_finalBytesWritten+=cur.bytesWritten;
                 return cur;
             }
             pos+=bytesToTransmitInPlain;
@@ -52,15 +52,15 @@ StreamableObject::Status URL::write(const void *buf, const size_t &count, Status
         {
             char encodedByte[8];
             snprintf(encodedByte,sizeof(encodedByte), "%%%02" PRIX8, *(((const unsigned char *)buf)+pos));
-            if (!(cur+=orig->writeFullStream(encodedByte,3, wrStat)).succeed)
+            if (!(cur+=m_orig->writeFullStream(encodedByte,3, wrStat)).succeed)
             {
-                finalBytesWritten+=cur.bytesWritten;
+                m_finalBytesWritten+=cur.bytesWritten;
                 return cur;
             }
             pos++;
         }
     }
-    finalBytesWritten+=cur.bytesWritten;
+    m_finalBytesWritten+=cur.bytesWritten;
     return cur;
 }
 
@@ -84,7 +84,7 @@ inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
 
 uint64_t URL::getFinalBytesWritten() const
 {
-    return finalBytesWritten;
+    return m_finalBytesWritten;
 }
 
 

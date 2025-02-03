@@ -15,8 +15,8 @@ using namespace Mantids30::Memory::Abstract;
 IPV4::IPV4()
 {
     setVarType(TYPE_IPV4);
-    cidrMask = 32;
-    value.s_addr = 0;
+    m_cidrMask = 32;
+    m_value.s_addr = 0;
 }
 
 IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
@@ -36,21 +36,21 @@ IPV4::IPV4(const std::string &value)
 
 in_addr IPV4::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 uint8_t IPV4::getCidrMask()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return cidrMask;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_cidrMask;
 }
 
 bool IPV4::setValue(const in_addr &value, const uint8_t &cidrMask)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    this->cidrMask = cidrMask;
-    this->value.s_addr = value.s_addr;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    this->m_cidrMask = cidrMask;
+    this->m_value.s_addr = value.s_addr;
     return true;
 }
 

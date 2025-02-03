@@ -230,26 +230,26 @@ private:
     void renewCurrentPart();
 
     // Constraints:
-    size_t maxNumberOfParts;
-    size_t maxHeaderSubOptionsCount, maxHeaderSubOptionsSize;
-    size_t maxHeaderOptionsCount, maxHeaderOptionSize;
+    size_t m_maxNumberOfParts;
+    size_t m_maxHeaderSubOptionsCount, m_maxHeaderSubOptionsSize;
+    size_t m_maxHeaderOptionsCount, m_maxHeaderOptionSize;
 
     // MIME Message Options:
-    std::string multiPartType, multiPartBoundary;
+    std::string m_multiPartType, m_multiPartBoundary;
 
     // Status:
-    eMIME_VarStat currentState;
+    eMIME_VarStat m_currentState;
 
     // Message Parts:
-    std::list<MIME_PartMessage *> allParts;
-    std::multimap<std::string,MIME_PartMessage *> partsByName;
-    MIME_PartMessage * currentPart;
-    MIME_Sub_FirstBoundary subFirstBoundary;
-    MIME_Sub_EndPBoundary subEndPBoundary;
+    std::list<MIME_PartMessage *> m_allParts;
+    std::multimap<std::string,MIME_PartMessage *> m_partsByName;
+    MIME_PartMessage * m_currentPart;
+    MIME_Sub_FirstBoundary m_subFirstBoundary;
+    MIME_Sub_EndPBoundary m_subEndPBoundary;
 
     // Callbacks:
-    sMIMECallback onHeaderReady;
-    sMIMECallback onContentReady;
+    sMIMECallback m_onHeaderReady;
+    sMIMECallback m_onContentReady;
 
 };
 

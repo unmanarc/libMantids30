@@ -18,8 +18,8 @@ STRING::STRING(const std::string &value)
 
 std::string STRING::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 bool STRING::setValue(const std::string &value)
@@ -42,16 +42,16 @@ std::string STRING::toString()
 
 bool STRING::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    this->value = value;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    this->m_value = value;
     return true;
 }
 
 std::shared_ptr<Var> STRING::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<STRING>();
-    if (var) *var = this->value;
+    if (var) *var = this->m_value;
     return var;
 }

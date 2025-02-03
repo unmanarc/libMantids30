@@ -21,7 +21,7 @@ public:
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
-    std::shared_ptr<Memory::Containers::B_Chunks> pData;
+    std::shared_ptr<Memory::Containers::B_Chunks> m_pData;
 
 };
 

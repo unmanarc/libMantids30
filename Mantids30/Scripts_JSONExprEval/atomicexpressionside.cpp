@@ -8,29 +8,29 @@ using namespace std;
 
 AtomicExpressionSide::AtomicExpressionSide(vector<string> *staticTexts)
 {
-    this->staticTexts = staticTexts;
-    mode=EXPR_MODE_UNDEFINED;
-    regexp = nullptr;
+    this->m_staticTexts = staticTexts;
+    m_mode=EXPR_MODE_UNDEFINED;
+    m_regexp = nullptr;
 }
 
 AtomicExpressionSide::~AtomicExpressionSide()
 {
-    if (regexp) delete regexp;
+    if (m_regexp) delete m_regexp;
 }
 
 bool AtomicExpressionSide::calcMode()
 {
-    if (expr.empty()) mode=EXPR_MODE_NULL;
-    else if ( expr.at(0)=='$') mode=EXPR_MODE_JSONPATH;
-    else if ( expr.find_first_not_of("0123456789") == string::npos ) mode=EXPR_MODE_NUMERIC;
-    else if ( boost::starts_with(expr,"_STATIC_") && staticTexts->size() > strtoul(expr.substr(8).c_str(),nullptr,10))
+    if (m_expr.empty()) m_mode=EXPR_MODE_NULL;
+    else if ( m_expr.at(0)=='$') m_mode=EXPR_MODE_JSONPATH;
+    else if ( m_expr.find_first_not_of("0123456789") == string::npos ) m_mode=EXPR_MODE_NUMERIC;
+    else if ( boost::starts_with(m_expr,"_STATIC_") && m_staticTexts->size() > strtoul(m_expr.substr(8).c_str(),nullptr,10))
     {
-        mode=EXPR_MODE_STATIC_STRING;
-        staticIndex = strtoul(expr.substr(8).c_str(),nullptr,10);
+        m_mode=EXPR_MODE_STATIC_STRING;
+        m_staticIndex = strtoul(m_expr.substr(8).c_str(),nullptr,10);
     }
     else
     {
-        mode=EXPR_MODE_UNDEFINED;
+        m_mode=EXPR_MODE_UNDEFINED;
         return false;
     }
     return true;
@@ -38,22 +38,22 @@ bool AtomicExpressionSide::calcMode()
 
 string AtomicExpressionSide::getExpr() const
 {
-    return expr;
+    return m_expr;
 }
 
 void AtomicExpressionSide::setExpr(const string &value)
 {
-    expr = value;
-    boost::trim(expr);
+    m_expr = value;
+    boost::trim(m_expr);
 }
 
 set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool ignoreCase)
 {
-    switch (mode)
+    switch (m_mode)
     {
     case EXPR_MODE_JSONPATH:
     {
-        Json::Path path(expr.substr(1));
+        Json::Path path(m_expr.substr(1));
         json result = path.resolve(v);
         set<string> res;
 
@@ -71,19 +71,19 @@ set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool
     case EXPR_MODE_STATIC_STRING:
         if (resolveRegex)
         {
-            recompileRegex((*staticTexts)[strtoul(expr.substr(8).c_str(),nullptr,10)], ignoreCase);
+            recompileRegex((*m_staticTexts)[strtoul(m_expr.substr(8).c_str(),nullptr,10)], ignoreCase);
             return {};
         }
         else
-            return { (*staticTexts)[strtoul(expr.substr(8).c_str(),nullptr,10)] };
+            return { (*m_staticTexts)[strtoul(m_expr.substr(8).c_str(),nullptr,10)] };
     case EXPR_MODE_NUMERIC:
         if (resolveRegex)
         {
-            recompileRegex(expr, ignoreCase);
+            recompileRegex(m_expr, ignoreCase);
             return {};
         }
         else
-            return { expr };
+            return { m_expr };
     case EXPR_MODE_NULL:
     case EXPR_MODE_UNDEFINED:
     default:
@@ -93,24 +93,24 @@ set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool
 
 boost::regex *AtomicExpressionSide::getRegexp() const
 {
-    return regexp;
+    return m_regexp;
 }
 
 void AtomicExpressionSide::setRegexp(boost::regex *value)
 {
-    regexp = value;
+    m_regexp = value;
 }
 
 Mantids30::Scripts::Expressions::AtomicExpressionSide::eExpressionSideMode AtomicExpressionSide::getMode() const
 {
-    return mode;
+    return m_mode;
 }
 
 set<string> AtomicExpressionSide::recompileRegex(const string &r, bool ignoreCase)
 {
-    if (!regexp)
+    if (!m_regexp)
     {
-        regexp = new boost::regex(r.c_str(),
+        m_regexp = new boost::regex(r.c_str(),
                                   ignoreCase? (boost::regex::extended|boost::regex::icase) : (boost::regex::extended) );
     }
     return {};

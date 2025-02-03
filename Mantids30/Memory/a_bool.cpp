@@ -6,48 +6,48 @@ using namespace Mantids30::Memory::Abstract;
 
 BOOL::BOOL()
 {
-    value = false;
+    m_value = false;
     setVarType(TYPE_BOOL);
 }
 
 BOOL::BOOL(const bool &value)
 {
     setVarType(TYPE_BOOL);
-    this->value = value;
+    this->m_value = value;
 }
 
 bool BOOL::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value;
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value;
 }
 
 bool BOOL::setValue(bool value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    this->value = value;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    this->m_value = value;
     return true;
 }
 
 std::string BOOL::toString()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return value?"true":"false";
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return m_value?"true":"false";
 }
 
 bool BOOL::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
-    if (value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T") this->value = true;
-    else this->value = false;
+    Threads::Sync::Lock_RW lock(m_mutex);
+    if (value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T") this->m_value = true;
+    else this->m_value = false;
     return true;
 }
 
 std::shared_ptr<Var> BOOL::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<BOOL>();
-    if (var) *var = this->value;
+    if (var) *var = this->m_value;
     return var;
 }

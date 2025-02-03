@@ -26,7 +26,7 @@ std::string Cookies_ClientSide::toString() const
     std::string cookies;
 
     bool first = true;
-    for (auto & i : cookiesMap)
+    for (auto & i : m_cookiesMap)
     {
         if (first)
         {
@@ -71,11 +71,11 @@ void Cookies_ClientSide::parseCookie(string cookie)
 
 void Cookies_ClientSide::addCookieVal(const string &cookieName, const string &cookieValue)
 {
-    cookiesMap[cookieName] = cookieValue;
+    m_cookiesMap[cookieName] = cookieValue;
 }
 
 std::string Cookies_ClientSide::getCookieByName(const std::string &cookieName)
 {
-    if (cookiesMap.find(cookieName) == cookiesMap.end()) return "";
-    return cookiesMap[cookieName];
+    if (m_cookiesMap.find(cookieName) == m_cookiesMap.end()) return "";
+    return m_cookiesMap[cookieName];
 }

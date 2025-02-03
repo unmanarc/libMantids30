@@ -7,7 +7,7 @@ MIME_Sub_EndPBoundary::MIME_Sub_EndPBoundary()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
     reset();
-    subParserName = "MIME_Sub_EndPBoundary";
+    m_subParserName = "MIME_Sub_EndPBoundary";
 
 }
 

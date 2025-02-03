@@ -15,64 +15,64 @@ using namespace std;
 
 DATETIME::DATETIME()
 {
-    value = 0;
+    m_value = 0;
     setVarType(TYPE_DATETIME);
 }
 
 DATETIME::DATETIME(const time_t &value)
 {
-    this->value = value;
+    this->m_value = value;
     setVarType(TYPE_DATETIME);
 }
 
 time_t DATETIME::getValue()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
-    return value;
+    return m_value;
 }
 
 bool DATETIME::setValue(const time_t &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
-    this->value = value;
+    this->m_value = value;
     return true;
 }
 
 string DATETIME::toStringLcl()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return getPlainLclTimeStr(value);
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return getPlainLclTimeStr(m_value);
 }
 
 std::string DATETIME::toString()
 {
-    Threads::Sync::Lock_RD lock(mutex);
-    return getISOTimeStr(value);
+    Threads::Sync::Lock_RD lock(m_mutex);
+    return getISOTimeStr(m_value);
 }
 
 bool DATETIME::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(mutex);
+    Threads::Sync::Lock_RW lock(m_mutex);
 
     if (value.empty())
     {
-        this->value = 0;
+        this->m_value = 0;
         return false;
     }
 
-    this->value = fromISOTimeStr(value);
+    this->m_value = fromISOTimeStr(value);
 
     return true;
 }
 
 std::shared_ptr<Var> DATETIME::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(mutex);
+    Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<DATETIME>();
-    if (var) *var = this->value;
+    if (var) *var = this->m_value;
     return var;
 }
 

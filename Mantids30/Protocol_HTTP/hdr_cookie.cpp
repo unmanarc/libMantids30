@@ -13,37 +13,23 @@ using namespace Mantids30;
 
 Cookie::Cookie()
 {
-    setDefaults();
-}
-
-void Cookie::setDefaults()
-{
     // Don't expire.
     expires.setUnixTime(0);
-    max_age=UINT32_MAX;
-
-    // Default: the cookie will be secure. If you want to downgrade, do it manually.
-    secure=true;
-    httpOnly=true;
-    sameSite = HTTP_COOKIE_SAMESITE_STRICT;
-
-    value="";
-    domain="";
-    path="";
 }
+
 
 std::string Cookie::toSetCookieString(const std::string &cookieName)
 {
     std::string opts = cookieName + "=" + value + "; ";
 
     if (expires.getUnixTime()) opts+= "Expires=" + expires.toString() + "; ";
-    if (max_age!=UINT32_MAX) opts+= "Max-Age=" + std::to_string(max_age) + "; ";
+    if (maxAge!=UINT32_MAX) opts+= "Max-Age=" + std::to_string(maxAge) + "; ";
     if (secure) opts+= "Secure; ";
     if (httpOnly) opts+= "HttpOnly; ";
     if (!domain.empty()) opts+= "Domain=" + domain + "; ";
     if (!path.empty()) opts+= "Path=" + path + "; ";
 
-    switch (sameSite) {
+    switch (sameSitePolicy) {
     case HTTP_COOKIE_SAMESITE_NONE:
         opts+= "SameSite=None; ";
         break;
@@ -64,7 +50,7 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
     vector<string> cookiesParams;
     split(cookiesParams,setCookieValue,is_any_of(";"),token_compress_on);
 
-    setDefaults();
+    *this = Cookie();
 
     bool firstVal = true;
     for (const string & param : cookiesParams)
@@ -83,7 +69,7 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
             std::string varNameUpper = boost::to_upper_copy(var.first);
 
             if      (varNameUpper == "EXPIRES") expires.fromString(var.second);
-            else if (varNameUpper == "MAX-AGE") max_age = strtoul(var.second.c_str(),nullptr,10);
+            else if (varNameUpper == "MAX-AGE") maxAge = strtoul(var.second.c_str(),nullptr,10);
             else if (varNameUpper == "SECURE") secure = true;
             else if (varNameUpper == "HTTPONLY") httpOnly = true;
             else if (varNameUpper == "DOMAIN") domain = var.second;
@@ -91,11 +77,11 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
             else if (varNameUpper == "SAMESITE")
             {
                 if ( boost::iequals( var.second, "LAX" ))
-                    sameSite = HTTP_COOKIE_SAMESITE_LAX;
+                    sameSitePolicy = HTTP_COOKIE_SAMESITE_LAX;
                 else if ( boost::iequals( var.second, "STRICT" ))
-                    sameSite = HTTP_COOKIE_SAMESITE_STRICT;
+                    sameSitePolicy = HTTP_COOKIE_SAMESITE_STRICT;
                 else
-                    sameSite = HTTP_COOKIE_SAMESITE_NONE;
+                    sameSitePolicy = HTTP_COOKIE_SAMESITE_NONE;
             }
             else
             {
@@ -126,66 +112,6 @@ void Cookie::setExpirationFromNow(const uint32_t &seconds)
     expires.incTime(seconds);
 }
 
-std::string Cookie::getValue() const
-{
-    return value;
-}
-
-void Cookie::setValue(const std::string &value)
-{
-    this->value = value;
-}
-
-uint32_t Cookie::getMaxAge() const
-{
-    return max_age;
-}
-
-void Cookie::setMaxAge(const uint32_t &value)
-{
-    max_age = value;
-}
-
-std::string Cookie::getDomain() const
-{
-    return domain;
-}
-
-void Cookie::setDomain(const std::string &value)
-{
-    domain = value;
-}
-
-std::string Cookie::getPath() const
-{
-    return path;
-}
-
-void Cookie::setPath(const std::string &value)
-{
-    path = value;
-}
-
-bool Cookie::isHttpOnly() const
-{
-    return httpOnly;
-}
-
-void Cookie::setHttpOnly(bool value)
-{
-    httpOnly = value;
-}
-
-bool Cookie::isSecure() const
-{
-    return secure;
-}
-
-void Cookie::setSecure(bool value)
-{
-    secure = value;
-}
-
 std::pair<string, string> Cookie::getVarNameAndValue(const string &var)
 {
     std::pair<string, string> r;
@@ -208,14 +134,4 @@ std::pair<string, string> Cookie::getVarNameAndValue(const string &var)
     trim(r.second);
 
     return r;
-}
-
-Cookie::eSameSitePolicy Cookie::getSameSite() const
-{
-    return sameSite;
-}
-
-void Cookie::setSameSite(const Cookie::eSameSitePolicy &value)
-{
-    sameSite = value;
 }

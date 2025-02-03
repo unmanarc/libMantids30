@@ -20,7 +20,6 @@
 namespace Mantids30 { namespace Network { namespace Sockets {
 
 class Socket_TCP;
-
 /**
  * Socket base class
  * Manipulates all kind of sockets (udp,tcp,unix, etc)
@@ -351,7 +350,7 @@ protected:
 
 
 #ifdef _WIN32
-    static bool winSockInitialized;
+    static bool m_isWinSockInitialized;
 #endif
 };
 
