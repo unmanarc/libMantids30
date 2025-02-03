@@ -34,23 +34,6 @@ public:
         std::string sRealFullPath;
         bool isDir, isExecutable, isTransversal, pathExist;
     };
-/*
-
-    struct ClientVars
-    {
-        ClientVars()
-        {
-//            memset(REMOTE_ADDR,0,sizeof(REMOTE_ADDR));
-        }
-        // Host Information:
-//        char REMOTE_ADDR[INET6_ADDRSTRLEN];
-//        std::string tlsCommonName;
-
-        // Proceced information:
-        std::shared_ptr<Memory::Abstract::Vars> VARS_GET, VARS_POST;
-        std::shared_ptr<MIME::MIME_HeaderOption> VARS_COOKIES;
-    };
-*/
 
     HTTPv1_Server(std::shared_ptr<Memory::Streams::StreamableObject> sobject);
 
