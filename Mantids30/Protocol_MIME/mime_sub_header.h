@@ -20,21 +20,21 @@ class MIME_HeaderOption
 public:
     MIME_HeaderOption()
     {
-        maxHeaderOptSize=8*KB_MULT;
-        curHeaderOptSize=0;
-        maxSubOptionsCount=16;
+        m_maxHeaderOptSize=8*KB_MULT;
+        m_curHeaderOptSize=0;
+        m_maxSubOptionsCount=16;
     }
 
     std::string getSubVar(const std::string & subVarName)
     {
-        if (subVar.find(subVarName) == subVar.end()) return "";
-        return subVar.find(subVarName)->second;
+        if (m_subVar.find(subVarName) == m_subVar.end()) return "";
+        return m_subVar.find(subVarName)->second;
     }
 
     std::list<std::string> getSubVars(const std::string & subVarName)
     {
         std::list<std::string> r;
-        auto ret = subVar.equal_range(subVarName);
+        auto ret = m_subVar.equal_range(subVarName);
         for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
         {
               r.push_back(it->second);
@@ -42,7 +42,7 @@ public:
         return r;
     }
 
-    std::multimap<std::string, std::string> getAllSubVars() { return subVar;
+    std::multimap<std::string, std::string> getAllSubVars() { return m_subVar;
     }
 
     std::string getString();
@@ -66,14 +66,14 @@ public:
 private:
     bool isPermited7bitCharset(const std::string & varX);
 
-    uint64_t maxSubOptionsCount;
-    uint64_t maxHeaderOptSize;
-    uint64_t curHeaderOptSize;
+    uint64_t m_maxSubOptionsCount;
+    uint64_t m_maxHeaderOptSize;
+    uint64_t m_curHeaderOptSize;
 
-    std::string origName;
-    std::string origValue;
-    std::string value;
-    std::multimap<std::string,std::string> subVar;
+    std::string m_origName;
+    std::string m_origValue;
+    std::string m_value;
+    std::multimap<std::string,std::string> m_subVar;
 };
 
 class MIME_Sub_Header : public Memory::Streams::SubParser
@@ -166,12 +166,12 @@ protected:
 private:
     void parseSubValues(MIME_HeaderOption *opt, const std::string & strName);
 
-    MIME_HeaderOption * lastOpt;
+    MIME_HeaderOption * m_lastOpt;
     void parseOptionValue(std::string optionValue);
 
-    std::multimap<std::string,MIME_HeaderOption *> headers;
-    size_t maxOptions;
-    size_t maxSubOptionCount, maxSubOptionSize;
+    std::multimap<std::string,MIME_HeaderOption *> m_headers;
+    size_t m_maxOptions;
+    size_t m_maxSubOptionCount, m_maxSubOptionSize;
 };
 
 }}}}

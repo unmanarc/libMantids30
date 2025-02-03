@@ -13,7 +13,7 @@ MIME_Sub_EndPBoundary::MIME_Sub_EndPBoundary()
 
 void MIME_Sub_EndPBoundary::reset()
 {
-    status = ENDP_STAT_UNINITIALIZED;
+    m_status = ENDP_STAT_UNINITIALIZED;
     setParseMultiDelimiter( { "--\r\n", "\r\n" } );
     setParseDataTargetSize(16);
     clear();
@@ -37,7 +37,7 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_EndPBoundary::parse()
         printf("MIME EndPBoundary match with ENDED...\n");fflush(stdout);
 #endif
         // END.
-        status = ENDP_STAT_END;
+        m_status = ENDP_STAT_END;
         return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
     }
     else if (getDelimiterFound() == "\r\n")
@@ -45,17 +45,17 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_EndPBoundary::parse()
 #ifdef DEBUG
         printf("MIME EndPBoundary match with NEXT HEADER...\n");fflush(stdout);
 #endif
-        status = ENDP_STAT_CONTINUE;
+        m_status = ENDP_STAT_CONTINUE;
         return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("MIME EndPBoundary Failed with unexpected content\n");fflush(stdout);
 #endif
-    status = ENDP_STAT_ERROR;
+    m_status = ENDP_STAT_ERROR;
     return Memory::Streams::SubParser::PARSE_STAT_ERROR;
 }
 
 int MIME_Sub_EndPBoundary::getStatus() const
 {
-    return status;
+    return m_status;
 }

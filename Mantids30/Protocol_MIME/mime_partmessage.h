@@ -18,8 +18,8 @@ public:
     MIME_Sub_Header * getHeader();
 
 private:
-    MIME_Sub_Content content;
-    MIME_Sub_Header header;
+    MIME_Sub_Content m_content;
+    MIME_Sub_Header m_header;
 };
 
 }}}}

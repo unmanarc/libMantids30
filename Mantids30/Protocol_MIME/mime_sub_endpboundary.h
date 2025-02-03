@@ -23,7 +23,7 @@ protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    int status;
+    int m_status;
 };
 
 }}}}

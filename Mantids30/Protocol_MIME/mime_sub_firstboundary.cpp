@@ -16,7 +16,7 @@ bool MIME_Sub_FirstBoundary::stream(Memory::Streams::StreamableObject::Status & 
 
 std::string MIME_Sub_FirstBoundary::getBoundary() const
 {
-    return boundary;
+    return m_boundary;
 }
 
 void MIME_Sub_FirstBoundary::setBoundary(const std::string &value)
@@ -24,7 +24,7 @@ void MIME_Sub_FirstBoundary::setBoundary(const std::string &value)
     setParseDelimiter("--" + value + "\r\n");
     // Max 512 bytes of trash before the first boundary...
     setParseDataTargetSize(value.size()+512);
-    boundary = value;
+    m_boundary = value;
 }
 
 Memory::Streams::SubParser::ParseStatus MIME_Sub_FirstBoundary::parse()

@@ -33,11 +33,11 @@ public:
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject>  contentContainer;
+    std::shared_ptr<Memory::Streams::StreamableObject>  m_contentContainer;
 
-    std::string fsTmpFolder, boundary;
-    uint64_t maxContentSize;
-    uint64_t maxContentSizeUntilGoingToFS;
+    std::string m_fsTmpFolder, m_boundary;
+    uint64_t m_maxContentSize;
+    uint64_t m_maxContentSizeUntilGoingToFS;
 };
 
 }}}}

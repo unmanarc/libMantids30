@@ -18,7 +18,7 @@ public:
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 private:
-    std::string boundary;
+    std::string m_boundary;
 };
 
 }}}}
