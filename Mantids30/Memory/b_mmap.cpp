@@ -75,7 +75,7 @@ std::pair<bool, uint64_t> B_MMAP::truncate2(const uint64_t &bytes)
     if (!fileReference.mmapTruncate(bytes))
     {
         clear();
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     reMapMemoryContainer();
@@ -113,9 +113,9 @@ std::pair<bool, uint64_t> B_MMAP::displace2(const uint64_t &roBytesToDisplace)
     uint64_t bytesToDisplace = roBytesToDisplace;
 
     if (bytesToDisplace>fileReference.getFileOpenSize())
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     if (!fileReference.mmapDisplace(bytesToDisplace))
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     reMapMemoryContainer();
     return std::make_pair(true,bytesToDisplace);

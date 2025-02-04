@@ -28,11 +28,17 @@ Memory::Streams::StreamableObject::Status StreamableJSON::write(const void *buf,
     Memory::Streams::StreamableObject::Status cur;
 
     // ...
-    if ( m_strValue.size()+count > m_maxSize ) cur.bytesWritten = m_maxSize-m_strValue.size();
-    else                                   cur.bytesWritten = count;
+    if ( m_strValue.size()+count > m_maxSize ) 
+    {
+        cur.bytesWritten = m_maxSize-m_strValue.size();
+    }
+    else
+    {
+        cur.bytesWritten = count;
+    }
 
     if (cur.bytesWritten)
-        m_strValue += std::string(((const char *)buf),cur.bytesWritten); // Copy...
+        m_strValue += std::string((static_cast<const char *>(buf)),cur.bytesWritten); // Copy...
     else
         wrStatUpd.finish = cur.finish = true;
 

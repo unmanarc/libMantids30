@@ -35,28 +35,28 @@ void B_Base::print(FILE *f)
 
 std::pair<bool,uint64_t> B_Base::prepend(const void *buf)
 {
-    return prepend(buf,strlen((const char *)buf));
+    return prepend(buf,strlen(static_cast<const char *>(buf)));
 }
 
 std::pair<bool,uint64_t> B_Base::append(const void *buf)
 {
-    return append(buf,strlen((const char *)buf));
+    return append(buf,strlen(static_cast<const char *>(buf)));
 }
 
 std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
 {
     // Read only: can't append nothing.
     if (m_readOnly)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     uint64_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     // out of bounds, fail.
     if (len+currentSize>m_maxSize)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     // zero to copy!
     if (!len)
         return std::make_pair(true,0);
@@ -68,16 +68,16 @@ std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
 std::pair<bool,uint64_t> B_Base::prepend(const void *data, uint64_t len)
 {
     // Read only: can't append nothing.
-    if (m_readOnly) return std::make_pair(false,(uint64_t)0);
+    if (m_readOnly) return std::make_pair(false,static_cast<uint64_t>(0));
 
     uint64_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     // out of bounds.
     if (len+currentSize>m_maxSize)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     // zero to copy!
     if (!len)
         return std::make_pair(true,0);
@@ -267,18 +267,18 @@ std::pair<bool,uint64_t> B_Base::copyToStream(std::ostream &out, uint64_t bytes,
 
     if (bytes == std::numeric_limits<uint64_t>::max())
     {
-        if (offset>currentSize) return std::make_pair(false,(uint64_t)0); // invalid size.
+        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // invalid size.
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
 
     // No bytes to copy:
     if (!bytes) return std::make_pair(true,0);
 
     // out of bounds for sure.
-    if (offset>currentSize) return std::make_pair(false,(uint64_t)0);
+    if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
 
     // out of bounds (last bytes):
     if (offset+bytes>currentSize) bytes = currentSize-offset;
@@ -303,7 +303,7 @@ std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, Streams::Stream
         if (offset>currentSize)
         {
             wrStatUpd.succeed=false;
-            return std::make_pair(false,(uint64_t)0); // invalid pos.
+            return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
         }
         bytes = currentSize-offset; // whole container bytes copied.
     }
@@ -312,7 +312,7 @@ std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, Streams::Stream
     if (CHECK_UINT_OVERFLOW_SUM(offset,bytes))
     {
         wrStatUpd.succeed=false;
-        return std::make_pair(false,(uint64_t)0); // invalid pos.
+        return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
     }
 
     // No bytes to copy:
@@ -323,7 +323,7 @@ std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, Streams::Stream
     if (offset>currentSize)
     {
         wrStatUpd.succeed=false;
-        return std::make_pair(false,(uint64_t)0); // invalid pos.
+        return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
     }
 
     // out of bounds (last bytes):
@@ -339,18 +339,18 @@ std::pair<bool,uint64_t> B_Base::copyOut(void *buf, uint64_t bytes, const uint64
 
     if (bytes == std::numeric_limits<uint64_t>::max())
     {
-        if (offset>currentSize) return std::make_pair(false,(uint64_t)0); // out of bounds.
+        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // out of bounds.
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
 
     // No bytes to copy:
     if (!bytes) return std::make_pair(true,0);
 
     // out of bounds (fail to copy):
-    if (offset+bytes>currentSize) return std::make_pair(false,(uint64_t)0);
+    if (offset+bytes>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
 
     ////////////////////////////////////
     return copyOut2(buf,bytes,offset);
@@ -363,18 +363,18 @@ std::pair<bool, uint64_t> B_Base::copyToString(std::string &outStr, uint64_t byt
     uint64_t offset = roOffset;
     if (bytes == std::numeric_limits<uint64_t>::max())
     {
-        if (offset>currentSize) return std::make_pair(false,(uint64_t)0); // out of bounds
+        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // out of bounds
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
 
     // No bytes to copy:
     if (!bytes) return std::make_pair(true,0);
 
     // out of bounds (fail to copy):
-    if (offset+bytes>currentSize) return std::make_pair(false,(uint64_t)0);
+    if (offset+bytes>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
 
     char outmem[8192];
     ////////////////////////////////////
@@ -494,7 +494,7 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     if (searchSpace == 0)
         searchSpace = currentSize-offset;
     if (searchSpace == 0)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     // not enough search space to found anything...
     if (searchSpace<needle_len)
@@ -529,7 +529,7 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     }
 
     // not found
-    return std::make_pair(false,(uint64_t)0);
+    return std::make_pair(false,static_cast<uint64_t>(0));
 
     /*
     if (searchSpace == 0) searchSpace = currentSize;
@@ -587,7 +587,7 @@ std::pair<bool,uint64_t> B_Base::find(const std::list<std::string> &needles, std
             return f;
         }
     }
-    return std::make_pair(false,(uint64_t)0);
+    return std::make_pair(false,static_cast<uint64_t>(0));
 }
 
 uint64_t B_Base::size() const

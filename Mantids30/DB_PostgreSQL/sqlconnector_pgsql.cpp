@@ -128,7 +128,7 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
 
 char **SQLConnector_PostgreSQL::getConnectionKeys()
 {
-    char ** values = (char **)malloc( (m_connectionValues.size()+1)*sizeof(char *) );
+    char ** values = static_cast<char **>( malloc( (m_connectionValues.size()+1)*sizeof(char *)) );
 
     size_t pos = 0;
     for ( const auto & i : m_connectionValues )
@@ -142,7 +142,7 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
 
 char **SQLConnector_PostgreSQL::getConnectionValues()
 {
-    char ** values = (char **)malloc( (m_connectionValues.size()+1)*sizeof(char *) );
+    char ** values = static_cast<char **>( malloc ((m_connectionValues.size()+1)*sizeof(char *)) );
 
     size_t pos = 0;
     for ( const auto & i : m_connectionValues )

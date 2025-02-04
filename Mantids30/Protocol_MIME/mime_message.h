@@ -93,10 +93,10 @@ public:
 
     struct sMIMECallback
     {
-        sMIMECallback( void (*callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * context)
+        sMIMECallback( void (*_callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * _context)
         {
-           this->callbackFunction = callbackFunction;
-           this->context = context;
+           this->callbackFunction = _callbackFunction;
+           this->context = _context;
         }
 
         sMIMECallback()

@@ -8,6 +8,7 @@
 
 #include <Mantids30/Threads/lock_shared.h>
 #include <Mantids30/Helpers/mem.h>
+#include <Mantids30/Helpers/safeint.h>
 #include <string.h>
 
 
@@ -75,12 +76,12 @@ bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
         ||  sscanf(src.c_str(), "%02x-%02x-%02x-%02x-%02x-%02x",&a,&b,&c,&d,&e,&f)==6
             )
     {
-        dst[0] = (unsigned char)a;
-        dst[1] = (unsigned char)b;
-        dst[2] = (unsigned char)c;
-        dst[3] = (unsigned char)d;
-        dst[4] = (unsigned char)e;
-        dst[5] = (unsigned char)f;
+        dst[0] = unsafeStaticCast<unsigned char, unsigned int>(a);
+        dst[1] = unsafeStaticCast<unsigned char, unsigned int>(b);
+        dst[2] = unsafeStaticCast<unsigned char, unsigned int>(c);
+        dst[3] = unsafeStaticCast<unsigned char, unsigned int>(d);
+        dst[4] = unsafeStaticCast<unsigned char, unsigned int>(e);
+        dst[5] = unsafeStaticCast<unsigned char, unsigned int>(f);
         r=true;
     }
 

@@ -197,11 +197,11 @@ void Mantids30::Helpers::AppSpawn::addEnvironment(const std::string &env)
 bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
     // Create the argv...
-    char ** argv = (char **)malloc( (m_arguments.size()+2)*sizeof(char *) );
-    argv[0] = (char *)strdup(m_execPath.c_str());
+    char ** argv = static_cast<char **>(malloc( (m_arguments.size()+2)*sizeof(char *) ));
+    argv[0] = static_cast<char *>(strdup(m_execPath.c_str()));
     for (size_t i=1; i<(m_arguments.size()+1);i++)
-        argv[i] = (char *)strdup(m_arguments[i-1].c_str());
-    argv[m_arguments.size()+1] = 0;
+        argv[i] = static_cast<char *>(strdup(m_arguments[i-1].c_str()));
+    argv[m_arguments.size()+1] = nullptr;
 
     // Create the env...
     std::vector<std::string> _environment = m_environment;
@@ -209,10 +209,10 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     for (int i=0;environ[i];i++ )
         _environment.push_back(environ[i]);
 
-    char ** env = (char **)malloc( (_environment.size()+1)*sizeof(char *) );
+    char ** env = static_cast<char **>(malloc( (_environment.size()+1)*sizeof(char *) ));
     for (size_t i=0; i<_environment.size();i++)
-        env[i] = (char *)strdup(_environment[i].c_str());
-    env[_environment.size()] = 0;
+        env[i] = static_cast<char *>(strdup(_environment[i].c_str()));
+    env[_environment.size()] = nullptr;
 
 
     if (pipeStdout)

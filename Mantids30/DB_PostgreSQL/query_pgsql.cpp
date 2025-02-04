@@ -171,9 +171,9 @@ bool Query_PostgreSQL::postBindInputVars()
         throw std::runtime_error("Can't bind input variables twice (please report).");
     }
 
-    m_paramValues = (char **)malloc( m_paramCount * sizeof(char *) );
-    m_paramLengths = (int *)malloc( m_paramCount * sizeof(int) );;
-    m_paramFormats = (int *)malloc( m_paramCount * sizeof(int) );
+    m_paramValues = static_cast<char **>( malloc (m_paramCount * sizeof(char *)) );
+    m_paramLengths = static_cast<int *>(malloc( m_paramCount * sizeof(int)) );
+    m_paramFormats = static_cast<int *>(malloc( m_paramCount * sizeof(int)) );
 
     for (size_t pos=0; pos<m_keysByPos.size(); pos++)
     {

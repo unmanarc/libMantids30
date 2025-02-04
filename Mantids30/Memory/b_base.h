@@ -40,28 +40,29 @@ public:
 
     // Data Agregattion method method:
     /**
-     * @brief Prepend linear memory here.
-     * @param bc Binary container.
-     * @return bytes prepended
+     * @brief Prepend linear memory to this container.
+     * @param buf Pointer to the memory buffer to prepend.
+     * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes prepended.
      */
     std::pair<bool,uint64_t> prepend(const void * buf);
     /**
-     * @brief Append null terminated linear memory to this container.
-     * @param data null terminated linear memory data.
-     * @return bytes appended
+     * @brief Append null-terminated linear memory to this container.
+     * @param buf Pointer to the null-terminated memory buffer to append.
+     * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes appended.
      */
     std::pair<bool,uint64_t> append(const void * buf);
     /**
     * @brief Append linear memory to this container.
-    * @param data linear memory data.
-    * @param len linear memory data size in bytes.
-    * @return bytes appended
+    * @param buf Pointer to the memory buffer to append.
+    * @param len Number of bytes in the memory buffer to append.
+    * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes appended.
     */
     std::pair<bool,uint64_t> append(const void * buf, uint64_t len);
     /**
-     * @brief Prepend linear memory here.
-     * @param bc Binary container.
-     * @return bytes prepended
+     * @brief Prepend linear memory to this container.
+     * @param buf Pointer to the memory buffer to prepend.
+     * @param len Number of bytes in the memory buffer to prepend.
+     * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes prepended.
      */
     std::pair<bool,uint64_t> prepend(const void * buf, uint64_t len);
     // Memory shrinking..
@@ -84,12 +85,21 @@ public:
     bool clear();
     // Copy mechanisms:
     /**
-     * @brief copy Until some byte sequence
-     * @param destination Binary container where the resulted data will be saved.
-     * @param needle delimiter
-     * @param needle_len delimiter length
-     * @param maxCopySize maximum bytes to be retrieved in bytes.
-     * @return retr Return codes [0:found, -1:failed, not found, -2:failed, out of size]
+     * @brief Copies data from this container to another until a specified byte sequence is found or a maximum size is reached.
+     * 
+     * This function will copy data from the current container into the destination container up to the point where the specified
+     * delimiter (needle) is found. If the needle is not found within the maximum copy size, it will copy up to maxCopySize bytes.
+     * The function also provides an option to remove the delimiter from the source container if it is found.
+     *
+     * @param destination Reference to the binary container where the copied data will be stored.
+     * @param needle Pointer to the memory buffer containing the byte sequence (delimiter) to search for.
+     * @param needleLenght Length of the delimiter in bytes.
+     * @param maxCopySize Maximum number of bytes to copy from the source container.
+     * @param removeNeedle Boolean flag indicating whether to remove the delimiter from the source container if it is found.
+     * @return Integer return code:
+     *         - 0: Delimiter was found and data copied successfully.
+     *         - -1: Failed to copy data (general error).
+     *         - -2: Maximum copy size reached without finding the delimiter.
      */
     int copyUntil(B_Base & destination, const void * needle, const size_t &needleLenght, const uint64_t &maxCopySize, bool removeNeedle = false );
     /**
@@ -102,32 +112,17 @@ public:
      */
     int displaceUntil(B_Base & destination, const void * needle, const size_t &needleCount, const uint64_t &maxCopySize, bool removeNeedle = false );
     /**
-     * @brief displaceUntil move until some byte sequence
-     * @param needle delimiter
-     * @param needle_len delimiter length in bytes
-     * @param maxCopySize maximum bytes to be retrieved in bytes.
-     * @return retr return codes [0:found, -1:failed, not found, -2:failed, out of size]
+     * @brief displaceUntil move until any of the specified byte sequences
+     * @param destination Binary container where the resulting data will be saved.
+     * @param needles List of delimiters to search for.
+     * @param maxCopySize Maximum bytes to be retrieved in bytes.
+     * @param removeNeedle If true, removes the found needle from the original container.
+     * @return Return codes [0:found, -1:failed, not found, -2:failed, out of size]
      */
     int displaceUntil(B_Base & destination, const std::list<std::string> needles, const uint64_t &maxCopySize, bool removeNeedle = true );
     /**
-     * @brief referencedSplit split the current container into many referencers.
-     * @param needles needles to be used
-     * @param maxSearchSize Maximum search size per needle.
-     * @param maxNeedles Maximum needles to be searched.
-     * @return list of binary containers referencing this container (you should delete them)
-     */
-  //  std::list<Memory::Containers::B_Base *> referencedSplit(const std::list<std::string> & needles,  const uint64_t & maxSearchSize=0, const size_t &maxNeedles=0);
-    /**
-     * @brief referencedSplit split the current container into many referencers.
-     * @param needles needles to be used
-     * @param maxSearchSize Maximum search size per needle.
-     * @param maxNeedles Maximum needles to be searched.
-     * @return list of binary containers referencing this container (you should delete them)
-     */
- //   std::list<Memory::Containers::B_Base *> referencedSplit2(const std::list<std::string> & needles, const std::list<std::string> & skipBegWith, const uint64_t & maxSearchSize, const size_t & maxNeedles);
-    /**
-     * @brief freeSplitList free list of binary container
-     * @param x
+     * @brief freeSplitList Free a list of binary containers.
+     * @param x List of binary containers to be freed.
      */
     static void freeSplitList(std::list<Memory::Containers::B_Base *> x);
     /**
@@ -206,11 +201,18 @@ public:
     bool compare(const std::string & cmpString, bool caseSensitive = false, const uint64_t &offset = 0 );
 
     /**
-     * @brief findChar get the position of character from the beggining of the container.
-     * @param c character to find.
-     * @param offset offset bytes to discard.
-     * @param searchSpace search size from offset
-     * @return
+     * @brief findChar Find the position of a character within the container.
+     *
+     * This function searches for the first occurrence of a specified character within the container, starting from an optional
+     * offset. If a search space is provided, the search will be limited to that many bytes starting from the offset. The search
+     * can be case-sensitive or case-insensitive depending on the parameter.
+     *
+     * @param c Character to find.
+     * @param offset Starting position (in bytes) for the search. Default is 0 (start of the container).
+     * @param searchSpace Maximum number of bytes to search from the starting offset. If set to 0, the entire remaining container will be searched.
+     * @param caseSensitive If true, the search is case-sensitive; otherwise, it is case-insensitive.
+     * @return A pair where the first element is a boolean indicating whether the character was found, and the second element
+     *         is the position of the character in bytes from the start of the container (or std::numeric_limits<uint64_t>::max() if not found).
      */
     virtual std::pair<bool,uint64_t> findChar(const int & c, const uint64_t &offset = 0, uint64_t searchSpace = 0, bool caseSensitive = false) = 0;
 
@@ -287,18 +289,18 @@ public:
      */
     void setFsDirectoryPath(const std::string &value);
     /**
-     * @brief getFsBaseFileName
-     * @return
+     * @brief getFsBaseFileName Get base file name used for creating temporary files.
+     * @return Base file name string
      */
     std::string getFsBaseFileName() const;
     /**
-     * @brief setFsBaseFileName
-     * @param value
+     * @brief setFsBaseFileName Set base file name used for creating temporary files.
+     * @param value Base file name string to be set
      */
     void setFsBaseFileName(const std::string &value);
     /**
-     * @brief getCurrentFileName Get current FileName Full Path
-     * @return Full path string
+     * @brief getCurrentFileName Get the current full path of the temporary file.
+     * @return Full path string of the current file
      */
     virtual std::string getCurrentFileName() const;
 
@@ -324,55 +326,67 @@ protected:
     virtual std::pair<bool,uint64_t> displace2(const uint64_t &bytes = 0) = 0;
     /**
      * @brief Append more data to current chunks. (creates new chunks of data)
-     * @param data data to be appended
+     * @param buf data to be appended
      * @param len data size in bytes to be appended
      * @param prependMode mode: true will prepend the data, false will append.
-     * @return true if succeed
+     * @return pair containing a boolean indicating success and the number of bytes processed.
      */
     virtual std::pair<bool,uint64_t> append2(const void * buf, const uint64_t &len, bool prependMode) = 0;
+    
     /**
     * @brief Internal Copy function to copy this container to a stream
     * @param out data stream out
-    * @param bytes size of data to be copied in bytes. -1 copy all the container but the offset.
+     * @param bytes size of data to be copied in bytes. -1 (default) copies all the container but the offset.
     * @param offset displacement in bytes where the data starts.
-    * @return
+     * @return pair containing a boolean indicating success and the number of bytes processed.
     */
     virtual std::pair<bool,uint64_t> copyToStream2(std::ostream & out, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) = 0;
+    
     /**
     * @brief Internal Copy function to copy this container to a new one.
-    * @param out data stream out
-    * @param bytes size of data to be copied in bytes. -1 copy all the container but the offset.
+     * @param bc destination StreamableObject
+     * @param bytes size of data to be copied in bytes. -1 (default) copies all the container but the offset.
     * @param offset displacement in bytes where the data starts.
-    * @return number of bytes copied
+     * @return pair containing a boolean indicating success and the number of bytes processed.
     */
     virtual std::pair<bool,uint64_t> copyTo2(StreamableObject & bc, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0);
+    
+    /**
+     * @brief Internal Copy function to copy this container to a new one with status update.
+     * @param bc destination StreamableObject
+     * @param wrStatUpd Status object to be updated during the write operation.
+     * @param bytes size of data to be copied in bytes. -1 (default) copies all the container but the offset.
+     * @param offset displacement in bytes where the data starts.
+     * @return pair containing a boolean indicating success and the number of bytes processed.
+     */
     virtual std::pair<bool,uint64_t> copyTo2(StreamableObject & bc, Streams::StreamableObject::Status & wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) = 0;
     /**
-     * @brief Copy append to external memory
-     * @param bc destination binary container
-     * @param bytes size of data in bytes to be copied
-     * @param offset starting point (offset) in bytes, default: 0 (start)
-     * @return number of bytes copied
+     * @brief Copy data from the container to an external buffer
+     * @param buf Destination buffer where data will be copied
+     * @param bytes Number of bytes to copy
+     * @param offset Starting point (offset) in bytes, default is 0 (start)
+     * @return Pair containing a boolean indicating success and the number of bytes copied
      */
     virtual std::pair<bool,uint64_t> copyOut2(void * buf, const uint64_t &bytes, const uint64_t &offset = 0) = 0;
     /**
-     * @brief Compare memory with the container
-     * @param mem Memory to be compared
-     * @param len Memory size in bytes to be compared
-     * @param offset starting point (offset) in bytes, default: 0 (start)
-     * @return true where comparison returns equeal.
+     * @brief Compare data in the container with an external memory buffer
+     * @param buf Memory buffer to compare against
+     * @param len Size of the memory buffer in bytes
+     * @param caseSensitive Flag indicating whether comparison should be case-sensitive, default is true
+     * @param offset Starting point (offset) in bytes for comparison, default is 0 (start)
+     * @return Boolean indicating whether the comparison was successful and the contents were equal
      */
     virtual bool compare2(const void * buf, const uint64_t &len, bool caseSensitive = true, const uint64_t &offset = 0 ) = 0;
 
-
     /**
-     * @brief addToContainerBytes Internal function to increase container bytes count.
-     * @param i
+     * @brief incContainerBytesCount Internal function to increase container bytes count.
+     * @param i Number of bytes to add to the container's byte count
      */
     void incContainerBytesCount(const uint64_t & i);
+
     /**
-     * @brief remFromContainerBytes Internal function to decrease container bytes count.
-     * @param i
+     * @brief decContainerBytesCount Internal function to decrease container bytes count.
+     * @param i Number of bytes to subtract from the container's byte count
      */
     void decContainerBytesCount(const uint64_t & i);
 
@@ -383,24 +397,7 @@ protected:
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Variables::
-    /**
-     * @brief readOnly defined if it's in read-only mode or not.
-     */
-    bool m_readOnly;
-    /**
-     * @brief containerBytes container current size in bytes.
-     */
-    uint64_t m_containerBytes;
-    /**
-     * @brief maxSize Maximum size of the container
-     */
-    uint64_t m_maxSize;
 
-    // Storage Method:
-    /**
-     * @brief storeMethod Storage Mechanism used (read only memory reference, chunks, file)
-     */
-    BinaryContainerMethod m_storeMethod;
 
     // FS directives:
     /**
@@ -411,6 +408,26 @@ protected:
      * @brief fsBaseFileName base filename on the directory.
      */
     std::string m_fsBaseFileName;
+
+    // Storage Method:
+    /**
+     * @brief storeMethod Storage Mechanism used (read only memory reference, chunks, file)
+     */
+    BinaryContainerMethod m_storeMethod;
+
+    /**
+     * @brief readOnly defined if it's in read-only mode or not.
+     */
+    bool m_readOnly;
+
+    /**
+     * @brief containerBytes container current size in bytes.
+     */
+    uint64_t m_containerBytes;
+    /**
+     * @brief maxSize Maximum size of the container
+     */
+    uint64_t m_maxSize;
 
 private:
     bool clear0();

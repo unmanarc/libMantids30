@@ -5,7 +5,7 @@
 
 namespace Mantids30 { namespace Memory { namespace Abstract {
 
-#define ABSTRACT_PTR_AS(x,y) ((Mantids30::Memory::Abstract::x *)(y))
+#define ABSTRACT_PTR_AS(x,y) ( static_cast<Mantids30::Memory::Abstract::x *>(y))
 #define ABSTRACT_SPTR_AS(x,y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
 #define MAKE_VAR(x,y)  std::make_shared<Mantids30::Memory::Abstract::x>(y)
 #define MAKE_NULL_VAR  std::make_shared<Mantids30::Memory::Abstract::Var>()

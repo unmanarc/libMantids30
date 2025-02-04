@@ -32,52 +32,52 @@ std::pair<bool,uint64_t> SubParser::writeIntoParser(const void *buf, size_t coun
 
 #ifdef DEBUG_PARSER
         printf("Parse by delimiter %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseByDelimiter(buf,count);
     case PARSE_MODE_SIZE:
 #ifdef DEBUG_PARSER
         printf("Parse by size %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseBySize(buf,count);
     case PARSE_MODE_VALIDATOR:
 #ifdef DEBUG_PARSER
         printf("Parse by validator %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseByValidator(buf,count);
     case PARSE_MODE_DIRECT_DELIMITER:
 #ifdef DEBUG_PARSER
         printf("Parse by direct delimiter %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseDirectDelimiter(buf,count);
     case PARSE_MODE_CONNECTION_END:
 #ifdef DEBUG_PARSER
         printf("Parse by connection end %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseByConnectionEnd(buf,count);
     case PARSE_MODE_MULTIDELIMITER:
 #ifdef DEBUG_PARSER
         printf("Parse by multidelimiter %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseByMultiDelimiter(buf,count);
     case PARSE_MODE_DIRECT:
 #ifdef DEBUG_PARSER
         printf("Parse by direct %p\n", this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)buf, count);
+        BIO_dump_fp (stdout, static_cast<char *>(buf), count);
 #endif
         return parseDirect(buf,count);
     default:
         break;
     }
-    return std::make_pair(false,(uint64_t)0);
+    return std::make_pair(false,static_cast<uint64_t>(0));
 }
 
-size_t SubParser::ParseValidator(Mantids30::Memory::Containers::B_Base &bc)
+size_t SubParser::ParseValidator(Mantids30::Memory::Containers::B_Base &)
 {
     return std::numeric_limits<size_t>::max();
 }
@@ -119,7 +119,7 @@ std::pair<bool,uint64_t> SubParser::parseByMultiDelimiter(const void *buf, size_
     {
         // size exceeded. don't continue with the streamparser, error.
         m_unparsedBuffer.clear();
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     bytesToDisplace = bytesAppended.second;
@@ -178,7 +178,7 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
 #endif
         // size exceeded. don't continue with the streamparser, error.
         m_unparsedBuffer.clear();
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     bytesToDisplace = bytesAppended.second;
@@ -256,7 +256,7 @@ std::pair<bool,uint64_t> SubParser::parseBySize(const void *buf, size_t count)
     return std::make_pair(true,appendResult.second);
 }
 
-std::pair<bool,uint64_t> SubParser::parseByValidator(const void *buf, size_t count)
+std::pair<bool,uint64_t> SubParser::parseByValidator(const void *, size_t )
 {
     // TODO: parseByValidator
     /*B_MEM bc;
@@ -276,7 +276,7 @@ std::pair<bool,uint64_t> SubParser::parseByValidator(const void *buf, size_t cou
 
     size_t bytesLeft = bc.getContainerSize()-validatedBytes;
     */
-    return std::make_pair(false,(uint64_t)0);
+    return std::make_pair(false,static_cast<uint64_t>(0));
 }
 
 std::pair<bool,uint64_t> SubParser::parseByConnectionEnd(const void *buf, size_t count)
@@ -288,7 +288,7 @@ std::pair<bool,uint64_t> SubParser::parseByConnectionEnd(const void *buf, size_t
     std::pair<bool,uint64_t> appendedBytes = m_unparsedBuffer.append(buf,count);
 
     if (!appendedBytes.first)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     if (appendedBytes.second!=count)
         return std::make_pair(false,appendedBytes.second); // max reached.
 
@@ -318,12 +318,12 @@ std::pair<bool,uint64_t> SubParser::parseDirect(const void *buf, size_t count)
 
     // Bad copy...
     if ((copiedDirect = m_unparsedBuffer.append(buf, count)).first == false)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     // Parse it...
     m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
-    printf("Parsing direct (%lu, until size %lu): %s\n", m_parsedBuffer.size(), (uint64_t)0, m_parsedBuffer.toString().c_str()); fflush(stdout);
+    printf("Parsing direct (%lu, until size %lu): %s\n", m_parsedBuffer.size(), static_cast<uint64_t>(0), m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
     setParseStatus(parse());
 
@@ -348,14 +348,14 @@ std::pair<bool,uint64_t> SubParser::parseDirectDelimiter(const void *buf, size_t
         count = m_unparsedBuffer.getSizeLeft();
 
     if (count == 0)
-        return std::make_pair(false,(uint64_t)0); // Can't handle more data...
+        return std::make_pair(false,static_cast<uint64_t>(0)); // Can't handle more data...
 
     // Get the previous size.
     prevSize = m_unparsedBuffer.size();       
 
     // Append the current data
     if ((copiedDirect = m_unparsedBuffer.append(buf,count)).first==false)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     // Find the delimiter pos.
     if ((delimPos = m_unparsedBuffer.find(m_parseDelimiter.c_str(),m_parseDelimiter.size())).first==false)
@@ -414,7 +414,7 @@ uint64_t SubParser::getLastBytesInCommon(const std::string &boundary)
     for (size_t v=maxBoundary; v!=0; v--)
     {
         Mantids30::Memory::Containers::B_Ref ref = referenceLastBytes(v);
-        char * toCmp = ((char *)malloc(ref.size()));
+        char * toCmp = (static_cast<char *>(malloc(ref.size())));
         ref.copyOut(toCmp,ref.size());
         if (!memcmp(toCmp,boundary.c_str(),ref.size()))
         {

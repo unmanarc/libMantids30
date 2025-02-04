@@ -49,7 +49,7 @@ void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::S
 
 bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> sock)
 {
-    APIEngineCore * webserver = ((APIEngineCore *)context);
+    APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
 
     std::string tlsCN;
     if (sock->isSecure())
@@ -78,14 +78,14 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
 
 bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
-    APIEngineCore * webserver = ((APIEngineCore *)context);
+    APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     webserver->callbacks.onProtocolInitializationFailure.call(webserver,s);
     return true;
 }
 
 void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
-    APIEngineCore * webserver = ((APIEngineCore *)context);
+    APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
@@ -98,7 +98,7 @@ void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket
 
 void APIEngineCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
 {
-    APIEngineCore * webserver = ((APIEngineCore *)context);
+    APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");

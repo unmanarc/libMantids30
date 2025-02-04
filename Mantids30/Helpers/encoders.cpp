@@ -76,7 +76,7 @@ string Encoders::encodeToBase64Obf(const unsigned char *buf, uint64_t count,  co
     std::mt19937_64 gen( seed );
     std::uniform_int_distribution<char> dis;
 
-    unsigned char * obfBuf = (unsigned char *)malloc(count);
+    unsigned char * obfBuf = static_cast<unsigned char *>(malloc(count));
     if (!obfBuf) return "";
 
     for ( size_t i=0; i<count; i++ )

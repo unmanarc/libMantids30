@@ -10,7 +10,8 @@
 
 using namespace Mantids30::Helpers::TOTP;
 
-std::string GoogleAuthenticator::generateTOTP(const std::string &base32Secret, int position, int interval, int digits)
+std::string GoogleAuthenticator::generateTOTP(
+    const std::string &base32Secret, int position, unsigned int interval, unsigned int digits)
 {
     // Decode the base32 secret
     std::string secret = Mantids30::Helpers::Encoders::decodeFromBase32(base32Secret);
@@ -19,12 +20,14 @@ std::string GoogleAuthenticator::generateTOTP(const std::string &base32Secret, i
     long dynamicBinaryCode; // Dynamic Binary Code (DBC)
 
     // Calculate the current Unix timestamp, shifted by the position and interval
-    time_t now = time(nullptr) + (int)(position * interval);
+    time_t now = time(nullptr) + (position * interval);
     uint64_t timeSteps;
 
     // Calculate the number of time steps since Unix epoch
     if (interval == 0)
+    {
         interval = 30; // Default time step size is 30 seconds
+    }
 
     timeSteps = now / interval;
 
@@ -35,7 +38,7 @@ std::string GoogleAuthenticator::generateTOTP(const std::string &base32Secret, i
         counter[i] = (timeSteps >> ((sizeof(timeSteps) - i - 1) * 8)) & 0xFF;
 
     // Calculate HMAC SHA1
-    HMAC(EVP_sha1(), secret.c_str(), secret.length(), (const unsigned char *)counter.c_str(), sizeof(timeSteps), (unsigned char *)hashSHA1, NULL);
+    HMAC(EVP_sha1(), secret.c_str(), static_cast<int>(secret.length()), reinterpret_cast<const unsigned char *>(counter.c_str()), sizeof(timeSteps), reinterpret_cast<unsigned char *>(hashSHA1), NULL);
 
     // Calculate the dynamic binary code (DBC)
     uint8_t offset = hashSHA1[19] & 0x0f;
@@ -57,12 +60,13 @@ std::string GoogleAuthenticator::generateTOTP(const std::string &base32Secret, i
     return otp;
 }
 
-bool GoogleAuthenticator::verifyToken(const std::string &base32Secret, const std::string &tokenInput, int aperture, int interval, int digits)
+bool GoogleAuthenticator::verifyToken(
+    const std::string &base32Secret, const std::string &tokenInput, int aperture, unsigned int interval, unsigned int digits)
 {
     // Check the input token against all tokens from -aperture to +aperture
     for(int i = -aperture; i <= aperture; i++)
     {
-        std::string otp = generateTOTP(base32Secret, interval, digits, i);
+        std::string otp = generateTOTP(base32Secret, i, interval, digits);
         if(tokenInput == otp)
         {
             return true;

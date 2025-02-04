@@ -184,8 +184,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 
 void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData.get());
-    FastRPC3 * caller = (FastRPC3 *)taskParams->caller;
+    FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
+    FastRPC3 * caller = static_cast<FastRPC3 *>(taskParams->caller);
 
     json data;
     data["loginURL"] = caller->config.loginURL;
@@ -198,8 +198,8 @@ void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
 
 void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *taskParams = (FastRPC3::TaskParameters *) (taskData.get());
-    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
+    FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
+    RPC3CallbackDefinitions *callbacks = static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks);
 
     // CREATE NEW SESSION:
     json response;
@@ -249,7 +249,7 @@ void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
 
 void FastRPC3::LocalRPCTasks::logout(std::shared_ptr<void> taskData)
 {
-    FastRPC3::TaskParameters *params = (FastRPC3::TaskParameters *) (taskData.get());
+    FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     json response;
     response = params->sessionHolder->destroy();
     sendRPCAnswer(params, response.toStyledString(), EXEC_STATUS_SUCCESS);

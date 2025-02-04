@@ -83,7 +83,7 @@ std::pair<bool, uint64_t> B_Chunks::truncate2(const uint64_t &bytes)
 
     size_t ival = I_Chunk_GetPosForOffset(bytes);
     if (ival==MAX_SIZE_T)
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
 
     m_chunksVector[ival].truncate(bytes);
 
@@ -113,7 +113,7 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(len,size()))
     {
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     if (m_maxContainerSizeUntilGoingToFS!=0 && len+size() > m_maxContainerSizeUntilGoingToFS)
@@ -121,7 +121,7 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         m_mmapContainer = copyToFS("",true);
         if (!m_mmapContainer)
         {
-            return std::make_pair(false,(uint64_t)0);
+            return std::make_pair(false,static_cast<uint64_t>(0));
         }
         clearChunks(); // Clear this container leaving the mmap intact...
         if (prependMode)
@@ -184,7 +184,7 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
 
         ////////////////////////////
         // local counters update...
-        buf=((const char *)buf)+chunkSize;
+        buf=(static_cast<const char *>(buf))+chunkSize;
         len-=chunkSize;
     }
 
@@ -258,11 +258,20 @@ std::pair<bool,uint64_t> B_Chunks::copyToStream2(std::ostream &bc, const uint64_
     if (!bytes) return std::make_pair(true,0);
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes))
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    } 
     // No bytes to copy:
-    if (offset>size()) return std::make_pair(false,(uint64_t)0);
+    if (offset>size()) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
     // Request exceed this container.
-    if (offset+bytes>size()) bytes = size()-offset;
+    if (offset+bytes>size())
+    {
+        bytes = size()-offset;
+    } 
 
     uint64_t dataToCopy = bytes;
     std::vector<BinaryContainerChunk> copyChunks;
@@ -316,9 +325,9 @@ std::pair<bool,uint64_t> B_Chunks::copyTo2(StreamableObject &bc, Streams::Stream
     if (!bytes) return std::make_pair(true,0);
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
     // No bytes to copy:
-    if (offset>size()) return std::make_pair(false,(uint64_t)0);
+    if (offset>size()) return std::make_pair(false,static_cast<uint64_t>(0));
     // Request exceed this container.
     if (offset+bytes>size()) bytes = size()-offset;
 
@@ -373,18 +382,18 @@ std::pair<bool, uint64_t> B_Chunks::copyOut2(void *buf, const uint64_t &roBytes,
     uint64_t copiedBytes = 0;
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,(uint64_t)0);
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
 
     // No bytes to copy:
     if (!bytes) return std::make_pair(true,0);
 
     // out of bounds (fail to copy):
-    if (offset+bytes>size()) return std::make_pair(false,(uint64_t)0);
+    if (offset+bytes>size()) return std::make_pair(false,static_cast<uint64_t>(0));
 
     ////////////////////////////////////
 
     size_t icurrentChunk = I_Chunk_GetPosForOffset(offset);
-    if (icurrentChunk==MAX_SIZE_T) return std::make_pair(false,(uint64_t)0);
+    if (icurrentChunk==MAX_SIZE_T) return std::make_pair(false,static_cast<uint64_t>(0));
 
     BinaryContainerChunk currentChunk = m_chunksVector[icurrentChunk];
     currentChunk.moveToOffset(offset);
@@ -399,7 +408,7 @@ std::pair<bool, uint64_t> B_Chunks::copyOut2(void *buf, const uint64_t &roBytes,
             // repos the vars...
             copiedBytes += currentChunk.size;
             bytes-=currentChunk.size;
-            buf=((char *)buf)+currentChunk.size;
+            buf=(static_cast<char *>(buf))+currentChunk.size;
         }
         else if (bytes <= currentChunk.size)
         {
@@ -472,7 +481,7 @@ bool B_Chunks::compare2(const void *buf, const uint64_t &len, bool caseSensitive
 
             dataToCompare-=currentChunkSize;
             dataCompared+=currentChunkSize;
-            buf=((const char *)buf)+currentChunkSize;
+            buf=(static_cast<const char *>(buf))+currentChunkSize;
 
             // Ended.!
             if (!dataToCompare) return true;
@@ -535,11 +544,11 @@ std::pair<bool, uint64_t> B_Chunks::findChar(const int &c, const uint64_t &roOff
             char * pos = nullptr;
 
             if (!caseSensitive)
-                pos = (char *)memchr(currentChunk.data, c, searchSpace>currentChunk.size? currentChunk.size : searchSpace);
+                pos = static_cast<char*>(memchr(currentChunk.data, c, searchSpace>currentChunk.size? currentChunk.size : searchSpace));
             else
             {
-                char *pos_upper = (char *)memchr(currentChunk.data, std::toupper(c), searchSpace>currentChunk.size? currentChunk.size : searchSpace);
-                char *pos_lower = (char *)memchr(currentChunk.data, std::tolower(c), searchSpace>currentChunk.size? currentChunk.size : searchSpace);
+                char *pos_upper = static_cast<char*>(memchr(currentChunk.data, std::toupper(c), searchSpace>currentChunk.size? currentChunk.size : searchSpace));
+                char *pos_lower = static_cast<char*>(memchr(currentChunk.data, std::tolower(c), searchSpace>currentChunk.size? currentChunk.size : searchSpace));
 
                 if      (pos_upper && pos_lower && pos_upper<=pos_lower) pos = pos_upper;
                 else if (pos_upper && pos_lower && pos_lower<pos_upper) pos = pos_lower;
@@ -556,18 +565,18 @@ std::pair<bool, uint64_t> B_Chunks::findChar(const int &c, const uint64_t &roOff
             if (searchSpace>currentChunk.size)
                 searchSpace-=currentChunk.size;
             else
-                 return std::make_pair(false,(uint64_t)0);
+                 return std::make_pair(false,static_cast<uint64_t>(0));
         }
 
         // chunk discarded.
         retpos+=originalChunk->size;
     }
-    return std::make_pair(false,(uint64_t)0);
+    return std::make_pair(false,static_cast<uint64_t>(0));
 }
 
 void B_Chunks::recalcChunkOffsets()
 {
-    unsigned long long currentOffset = 0;
+    uint64_t currentOffset = 0;
     size_t vpos=0, vsize = m_chunksVector.size();
     for ( BinaryContainerChunk * i = &(m_chunksVector[vpos]) ; vpos<vsize ; vpos++ )
     {
@@ -617,6 +626,6 @@ size_t B_Chunks::I_Chunk_GetPosForOffset(const uint64_t &offset,  size_t  curpos
 
 B_MMAP *B_Chunks::getMmapContainer() const
 {
-    return ((B_MMAP *)m_mmapContainer);
+    return (static_cast<B_MMAP *>(m_mmapContainer));
 }
 

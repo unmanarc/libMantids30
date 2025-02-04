@@ -56,20 +56,30 @@ public:
     /**
      * @brief Decodes a base64-encoded string to binary data.
      *
-     * @param sB64Buf The base64-encoded string to decode.
+     * This function decodes a given base64-encoded string into its original binary form. If the input is URL-safe base64 encoded,
+     * set the `url` parameter to true, otherwise leave it as false (default).
      *
-     * @return A shared pointer to a BinaryDataContainer object containing the decoded binary data.
+     * @param input The base64-encoded string to decode.
+     * @param url A boolean indicating whether the input is URL-safe base64 encoded (default: false).
+     *
+     * @return A shared pointer to a BinaryDataContainer object containing the decoded binary data. If decoding fails,
+     *         an empty shared pointer is returned.
      */
     static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string const &input, bool url = false);
 
     /**
      * @brief Decodes a base64-encoded string.
      *
-     * @param sB64Buf The base64-encoded string to decode.
+     * This function decodes a given base64-encoded string into its original string form. If the input is URL-safe base64 encoded,
+     * set the `url` parameter to true, otherwise leave it as false (default).
      *
-     * @return The decoded string.
+     * @param input The base64-encoded string to decode.
+     * @param url A boolean indicating whether the input is URL-safe base64 encoded (default: false).
+     *
+     * @return The decoded string. If decoding fails, an empty string is returned.
      */
     static std::string decodeFromBase64(std::string const &input, bool url = false);
+
     /**
      * @brief Decodes a base32-encoded string.
      *
@@ -162,8 +172,14 @@ public:
     /**
      * @brief Converts a 4-bit nibble to an ASCII hexadecimal character.
      *
-     * @param nibble The 4-bit nibble to convert.
-     * @param position The position of the nibble within the byte (1 or 2).
+     * This function takes a 4-bit value and converts it to the corresponding
+     * ASCII hexadecimal character. The function assumes that the input value is
+     * a valid 4-bit nibble (i.e., in the range 0-15).
+     *
+     * @param value The 4-bit value to convert.
+     * @param part Specifies which half of the byte is being processed:
+     *             - `part` should be 1 if converting the higher 4 bits of a byte,
+     *             - `part` should be 2 if converting the lower 4 bits of a byte.
      *
      * @return The ASCII hexadecimal character corresponding to the nibble.
      */

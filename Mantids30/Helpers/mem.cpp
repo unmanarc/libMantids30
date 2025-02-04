@@ -1,5 +1,6 @@
 #include "mem.h"
 #include <cstdlib>
+#include <stdexcept>
 #include <string.h>
 
 using namespace std;
@@ -16,8 +17,7 @@ unsigned char Mem::m_cmpMatrix[] =
     123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255
 };
 
-Mem::BinaryDataContainer::BinaryDataContainer(
-    const char *data, const uint64_t &len)
+Mem::BinaryDataContainer::BinaryDataContainer(const char *_data, const uint64_t &len)
 {
     if (len)
     {
@@ -31,7 +31,7 @@ Mem::BinaryDataContainer::BinaryDataContainer(
     if (this->data)
     {
         this->length = len;
-        memcpy(this->data, data, len);
+        memcpy(this->data, _data, len);
     }
     else
     {
@@ -80,7 +80,10 @@ Mem::BinaryDataContainer::~BinaryDataContainer()
 void Mem::BinaryDataContainer::operator+=(
     const unsigned char &c)
 {
-    unsigned char *data_c = (unsigned char *) (data);
+    if (cur >= length) {
+        throw runtime_error("Attempt to append to a full BinaryDataContainer");
+    }
+    unsigned char *data_c = reinterpret_cast<unsigned char *>(data);
     data_c[cur++] = c;
 }
 
@@ -93,13 +96,12 @@ bool Mem::icharcmp(
 int Mem::memcmp64(
     const void *s1, const void *s2, uint64_t n)
 {
-    uint64_t currentOffset = 0;
-    for (size_t currentBlock = (n > 64 * KB_MULT ? 64 * KB_MULT : n); n; n -= currentBlock)
-    {
-        int result = memcmp(((const char *) s1) + currentOffset, ((const char *) s2) + currentOffset, currentBlock);
+    constexpr size_t blockSize = 64 * KB_MULT;
+    for (size_t offset = 0; offset < n; offset += blockSize) {
+        size_t currentBlock = std::min(n - offset, blockSize);
+        int result = memcmp(static_cast<const char *>(s1) + offset, static_cast<const char *>(s2) + offset, currentBlock);
         if (result != 0)
             return result;
-        currentOffset += currentBlock;
     }
     return 0;
 }
@@ -113,9 +115,11 @@ int Mem::memicmp2(
     }
     else
     {
-        for (uint64_t i = 0; i < n; i++)
+        const unsigned char* p1 = static_cast<const unsigned char*>(s1);
+        const unsigned char* p2 = static_cast<const unsigned char*>(s2);
+        for (uint64_t i = 0; i < n; ++i)
         {
-            if (!icharcmp(((const unsigned char *) s1)[i], ((const unsigned char *) s2)[i]))
+            if (!icharcmp(p1[i], p2[i]))
                 return -1;
         }
         return 0;
@@ -128,8 +132,10 @@ void *Mem::memcpy64(
     uint64_t currentOffset = 0;
     while (numBytes > 0)
     {
-        size_t blockSizeToCopy = (numBytes > 64 * KB_MULT ? 64 * KB_MULT : numBytes);
-        memcpy(((char *) destination) + currentOffset, ((const char *) source) + currentOffset, blockSizeToCopy);
+        size_t blockSizeToCopy = std::min(numBytes, static_cast<uint64_t>(64 * KB_MULT));
+        memcpy(static_cast<char *>(destination) + currentOffset, static_cast<const char *>(source) + currentOffset, blockSizeToCopy);
+        currentOffset += blockSizeToCopy;
+        numBytes -= blockSizeToCopy;
         currentOffset += blockSizeToCopy;
         numBytes -= blockSizeToCopy;
     }
@@ -143,7 +149,7 @@ void *Mem::memmove64(
     {
         for (size_t currentBlock = (numBytes > blockSize ? blockSize : numBytes); numBytes; numBytes -= currentBlock)
         {
-            memmove(((char *) dest) + numBytes - currentBlock, ((const char *) src) + numBytes - currentBlock, currentBlock);
+            memmove(static_cast<char *>(dest) + numBytes - currentBlock, static_cast<const char *>(src) + numBytes - currentBlock, currentBlock);
         }
     }
     else if (dest < src)
@@ -151,7 +157,7 @@ void *Mem::memmove64(
         uint64_t currentOffset = 0;
         for (size_t currentBlock = (numBytes > blockSize ? blockSize : numBytes); numBytes; numBytes -= currentBlock)
         {
-            memmove(((char *) dest) + currentOffset, ((const char *) src) + currentOffset, currentBlock);
+            memmove(static_cast<char *>(dest) + currentOffset, static_cast<const char *>(src) + currentOffset, currentBlock);
             currentOffset += currentBlock;
         }
     }

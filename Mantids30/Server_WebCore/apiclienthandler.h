@@ -78,7 +78,7 @@ protected:
      * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    virtual void fillSessionExtraInfo( json & jVars ) {};
+    virtual void fillSessionExtraInfo( json & jVars ) {}
     /**
      * @brief fillSessionInfo Fill user data vars like username, domain, TLS Common Name...
      * @param jVars vars to be filled into a JSON structure

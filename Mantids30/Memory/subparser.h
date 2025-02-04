@@ -33,8 +33,8 @@ public:
         PARSE_MODE_CONNECTION_END,          // wait for connection end
         PARSE_MODE_DIRECT,                  // don't wait, just parse.
         PARSE_MODE_DIRECT_DELIMITER,   // parse direct until multi-delimiter (// TODO:)
-        PARSE_MODE_MULTIDELIMITER,          // wait for any of those delimiters
-        PARSE_MODE_FREEPARSER               // TODO
+        PARSE_MODE_MULTIDELIMITER //,          // wait for any of those delimiters
+//        PARSE_MODE_FREEPARSER               // TODO
     };
 
     SubParser();
@@ -96,7 +96,7 @@ protected:
      * @param bc container with the data to be analyzed.
      * @return bytes matching the policy.
      */
-    virtual size_t ParseValidator(Mantids30::Memory::Containers::B_Base & bc);
+    virtual size_t ParseValidator(Mantids30::Memory::Containers::B_Base &);
     /**
      * @brief Set Parse Mode
      * @param value parse mode (delimiter, size, or validator)
@@ -139,7 +139,7 @@ private:
     std::pair<bool,uint64_t> parseByMultiDelimiter(const void * buf, size_t count);
     std::pair<bool,uint64_t> parseByDelimiter(const void * buf, size_t count);
     std::pair<bool,uint64_t> parseBySize(const void * buf, size_t count);
-    std::pair<bool,uint64_t> parseByValidator(const void * buf, size_t count);
+    std::pair<bool, uint64_t> parseByValidator(const void *, size_t);
     std::pair<bool,uint64_t> parseByConnectionEnd(const void * buf, size_t count);
     std::pair<bool,uint64_t> parseDirect(const void * buf, size_t count);
     std::pair<bool,uint64_t> parseDirectDelimiter(const void * buf, size_t count);

@@ -40,7 +40,7 @@ public:
     Status parseObject(ErrorMSG * err);
 
     //////////////////////////////////////////
-    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrsStat) override;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>, Status &) override;
     virtual Status write(const void * buf, const size_t &count, Status &wrStat) override;
     /**
      * @brief writeEOF Receive this when the connection is ended.

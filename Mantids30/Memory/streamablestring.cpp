@@ -27,11 +27,11 @@ StreamableObject::Status StreamableString::write(const void *buf, const size_t &
 {
     StreamableObject::Status cur;
 
-    std::string x( ((char *)buf), count);
+    std::string x( (static_cast<const char *>(buf)), count);
     m_value+=x;
 
-    cur+=(uint64_t)count;
-    wrStatUpd+=(uint64_t)count;
+    cur+=static_cast<uint64_t>(count);
+    wrStatUpd+=static_cast<uint64_t>(count);
     return  cur;
 }
 

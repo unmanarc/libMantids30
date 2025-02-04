@@ -181,7 +181,10 @@ std::pair<bool, uint64_t> FileMap::mmapAppend(const void *buf, const uint64_t &c
     /////////////////////////////
 
     uint64_t curOpenSize = fileOpenSize;
-    if (!mmapTruncate(fileOpenSize+count)) return std::make_pair(false,(uint64_t)0);
+    if (!mmapTruncate(fileOpenSize+count)) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
 
     memcpy(mmapAddr+curOpenSize,buf,count);
     return std::make_pair(true,count);
@@ -193,7 +196,10 @@ std::pair<bool, uint64_t> FileMap::mmapPrepend(const void *buf, const uint64_t &
 
     /////////////////////////////
     uint64_t curOpenSize = fileOpenSize;
-    if (!mmapTruncate(fileOpenSize+count)) return std::make_pair(false,(uint64_t)0);
+    if (!mmapTruncate(fileOpenSize+count))
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
     Mantids30::Helpers::Mem::memmove64(mmapAddr,mmapAddr+count,curOpenSize);
     Mantids30::Helpers::Mem::memcpy64(mmapAddr,buf,count);
     return std::make_pair(true,count);

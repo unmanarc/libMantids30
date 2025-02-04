@@ -222,8 +222,9 @@ SSL_CTX *Socket_TLS::createServerSSLContext()
     return SSL_CTX_new (TLSv1_2_server_method());
 #elif TLS_MAX_VERSION >= TLS1_3_VERSION
     return SSL_CTX_new (TLS_server_method());
-#endif
+#else
     return nullptr;
+#endif
 }
 
 SSL_CTX *Socket_TLS::createClientSSLContext()
@@ -236,8 +237,9 @@ SSL_CTX *Socket_TLS::createClientSSLContext()
     return SSL_CTX_new (TLSv1_2_client_method());
 #elif TLS_MAX_VERSION >= TLS1_3_VERSION
     return SSL_CTX_new (TLS_client_method());
-#endif
+#else
     return nullptr;
+#endif
 }
 
 bool Socket_TLS::isServer() const
@@ -261,7 +263,6 @@ bool Socket_TLS::createTLSContext()
     if (m_sslContext)
     {
         throw std::runtime_error("Can't reuse the TLS socket. Create a new one.");
-        return false;
     }
 
     if (m_isServer)

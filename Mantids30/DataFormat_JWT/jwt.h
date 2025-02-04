@@ -361,7 +361,7 @@ public:
 
 
 
-    bool (*verificationCallback)(const std::string &fullSignedToken) = 0;
+    bool (*verificationCallback)(const std::string &fullSignedToken) = nullptr;
     Cache m_cache;
     Revocation m_revocation;
 

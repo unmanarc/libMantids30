@@ -56,7 +56,10 @@ std::pair<bool, uint64_t> B_Ref::truncate2(const uint64_t &bytes)
 
 std::pair<bool,uint64_t> B_Ref::append2(const void *buf, const uint64_t &len, bool prependMode)
 {
-    if (!referencedBC) return std::make_pair(false,(uint64_t)0); // CANT APPEND TO NOTHING.
+    if (!referencedBC) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0)); // CANT APPEND TO NOTHING.
+    }
 
     if (prependMode)
         return referencedBC->prepend(buf,len);
@@ -67,7 +70,10 @@ std::pair<bool,uint64_t> B_Ref::append2(const void *buf, const uint64_t &len, bo
 std::pair<bool,uint64_t> B_Ref::displace2(const uint64_t &roBytesToDisplace)
 {
     uint64_t bytesToDisplace=roBytesToDisplace;
-    if (!referencedBC) return std::make_pair(false,(uint64_t)0);
+    if (!referencedBC) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
     if (bytesToDisplace>size()) bytesToDisplace = size();
     if (referencedMaxBytes!=std::numeric_limits<uint64_t>::max())
         referencedMaxBytes-=bytesToDisplace;
@@ -87,10 +93,16 @@ bool B_Ref::clear2()
 
 std::pair<bool,uint64_t> B_Ref::copyToStream2(std::ostream &out, const uint64_t &bytes, const uint64_t &offset)
 {
-    if (!referencedBC) return std::make_pair(false,(uint64_t)0);
+    if (!referencedBC)
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
 
     // CAN'T COPY BEYOND OFFSET.
-    if (offset>size()) return std::make_pair(false,(uint64_t)0);
+    if (offset>size()) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
 
     uint64_t maxBytesToCopy = size()-offset;
     uint64_t bytesToCopy = maxBytesToCopy>bytes?bytes:maxBytesToCopy;
@@ -103,14 +115,14 @@ std::pair<bool,uint64_t> B_Ref::copyTo2(StreamableObject &bc, Streams::Streamabl
     if (!referencedBC)
     {
         wrStatUpd.succeed=false;
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     // CAN'T COPY BEYOND OFFSET.
     if (offset>size())
     {
         wrStatUpd.succeed=false;
-        return std::make_pair(false,(uint64_t)0);
+        return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
     uint64_t maxBytesToCopy = size()-offset;
@@ -121,10 +133,16 @@ std::pair<bool,uint64_t> B_Ref::copyTo2(StreamableObject &bc, Streams::Streamabl
 
 std::pair<bool,uint64_t> B_Ref::copyOut2(void *buf, const uint64_t &bytes, const uint64_t &offset)
 {
-    if (!referencedBC) return std::make_pair(false,(uint64_t)0);
+    if (!referencedBC) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
 
     // CAN'T COPY BEYOND OFFSET.
-    if (offset>size()) return std::make_pair(false,(uint64_t)0);
+    if (offset>size()) 
+    {
+        return std::make_pair(false,static_cast<uint64_t>(0));
+    }
 
     uint64_t maxBytesToCopy = size()-offset;
     uint64_t bytesToCopy = maxBytesToCopy>bytes?bytes:maxBytesToCopy;

@@ -182,7 +182,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
                 else
                 {
                     // Key Passphrase Available...
-                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), keyPassPhrase.c_str() ) )
+                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), (char *)keyPassPhrase.c_str() ) )
                     {
                         LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
                         cont=false;

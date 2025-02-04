@@ -28,7 +28,7 @@ public:
     };
 
     SQLConnector_SQLite3();
-    ~SQLConnector_SQLite3();
+    ~SQLConnector_SQLite3() override;
 
     /**
      * @brief connectInMemory Connect to IN-MEMORY SQLite3 Database (like using connect(":memory:"))
@@ -41,20 +41,20 @@ public:
      * @brief isOpen Check if the database is open
      * @return true if open.
      */
-    bool isOpen();
+    bool isOpen() override;
 
     /**
      * @brief driverName Get driver Name.
      * @return driver name (SQLITE3)
      */
-    std::string driverName() { return "SQLITE3"; }
+    std::string driverName() override { return "SQLITE3"; }
 
     /**
      * @brief dbTableExist Check if sqlite3 table exist
      * @param table table name
      * @return true if exist, otherwise false.
      */
-    bool dbTableExist(const std::string & table);
+    bool dbTableExist(const std::string & table) override;
 
     /**
      * @brief prepareQuery Internal function used by the query to prepare the query with the database handler.
@@ -67,12 +67,12 @@ public:
     bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode & mode);
     bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode & mode);
 
-    std::string getEscaped(const std::string & value);
+    std::string getEscaped(const std::string & value) override;
 
 
 protected:
-    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_SQLite3>(); };
-    bool connect0();
+    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_SQLite3>(); }
+    bool connect0() override;
 
 private:
     int m_rc;

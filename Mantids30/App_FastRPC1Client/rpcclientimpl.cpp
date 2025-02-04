@@ -69,7 +69,7 @@ void RPCClientImpl::runRPClient()
                                                                             ,(char *)masterKey->data,masterKey->length,&ok
                                                                             );
                 
-                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), keyPassPhrase.c_str() ))
+                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), (char *)keyPassPhrase.c_str() ))
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
                     _exit(-35);

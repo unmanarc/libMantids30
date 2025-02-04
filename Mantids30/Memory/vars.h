@@ -31,18 +31,19 @@ public:
         if (value)
         {
             std::istringstream iss(value->toString());
-            T value;
-            iss >> value;
-            if (iss.fail())
+            T result;
+            iss >> result;
+            if (iss.fail()|| !iss.eof())
             {
                 // Conversion failed, return default value
                 return T{}; // For numeric types, T{} will be 0
             }
-            return value;
+            return result;
         }
         // Variable not found, return default value
         return T{};
     }
+
 
     template<typename T>
     T getTValue(const std::string& varName, const T & defaultValue)
@@ -51,14 +52,14 @@ public:
         if (value)
         {
             std::istringstream iss(value->toString());
-            T value;
-            iss >> value;
-            if (iss.fail())
+            T result;
+            iss >> result;
+            if (iss.fail()|| !iss.eof())
             {
                 // Conversion failed, return default value
                 return defaultValue; // Parsing failed, return the default value
             }
-            return value;
+            return result;
         }
         // Variable not found, return default value
         return defaultValue;
@@ -81,7 +82,7 @@ public:
             T valueResult;
             iss >> valueResult;
 
-            if (!iss.fail()) {
+            if (!iss.fail()|| !iss.eof()) {
                 // Only add to the list if the conversion succeeded
                 resultList.push_back(valueResult);
             } else {

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <Mantids30/Memory/streamablefile.h>
 #include <Mantids30/Helpers/random.h>
+#include <Mantids30/Helpers/safeint.h>
 #include <stdexcept>
 
 using namespace std;
@@ -140,7 +141,7 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
 
     if (!m_TLSCertificateAuthorityPath.empty())
     {
-        ERR_ON_ZERO( SSL_CTX_load_verify_locations(ctx, m_TLSCertificateAuthorityPath.c_str(),nullptr), "SSL_load_verify_locations Failed for CA.");
+        ERR_ON_ZERO( SSL_CTX_load_verify_locations(ctx, m_TLSCertificateAuthorityPath.c_str(),nullptr), "SSL_load_verify_locations Failed for CA.")
         STACK_OF(X509_NAME) *list;
         list = SSL_load_client_CA_file( m_TLSCertificateAuthorityPath.c_str() );
         if( list != nullptr )
@@ -155,7 +156,7 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
 
     if (m_useSystemCertificates)
     {
-        ERR_ON_ZERO( SSL_CTX_set_default_verify_paths(ctx), "SSL_CTX_set_default_verify_paths Failed.");
+        ERR_ON_ZERO( SSL_CTX_set_default_verify_paths(ctx), "SSL_CTX_set_default_verify_paths Failed.")
     }
 
     // Setup Diffie-Hellman
@@ -223,7 +224,7 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
 
         // return the proper key for the iPSK negotiation.
         snprintf((char *)psk,max_psk_len,"%s",_psk.c_str());
-        return strlen((char *)psk);
+        return safeStaticCast<unsigned int,size_t>(strlen( reinterpret_cast<char *>(psk) ));
     }
     // No ID found.
     return 0;
@@ -234,7 +235,8 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKClient(SSL *ssl, const char *hin
     auto * pskValue = PSKStaticHdlr::getClientValue(ssl);
     snprintf((char *)psk,max_psk_len,"%s",  pskValue->psk.c_str() );
     snprintf(identity,max_identity_len,"%s", pskValue->identity.c_str() );
-    return strlen((char *)psk);
+
+    return safeStaticCast<unsigned int,size_t>(strlen( reinterpret_cast<char *>(psk) ));
 }
 
 Socket_TLS::TLSKeyParameters::PSKClientValue *Socket_TLS::TLSKeyParameters::getPSKClientValue()
@@ -308,7 +310,8 @@ bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMMemory(const char *privK
     return r;
 }
 
-bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMMemory(const char *pubKeyPEMData, pem_password_cb * cbPass, void *u)
+bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMMemory(
+    const char *pubKeyPEMData, pem_password_cb *cbPass, void *u)
 {
     bool r=false;
     BIO * buf = BIO_new_mem_buf( pubKeyPEMData, strlen(pubKeyPEMData));

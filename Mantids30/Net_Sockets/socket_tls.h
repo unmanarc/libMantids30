@@ -47,13 +47,13 @@ public:
                 memset(&psk[0], 0x7F, psk.size());
             }
 
-            void setValues(const std::string &identity, const std::string &psk)
+            void setValues(const std::string &_identity, const std::string &_psk)
             {
                 std::unique_lock<std::mutex> lock(mtMutex);
 
                 isUsingPSK = true;
-                this->psk = psk;
-                this->identity = identity;
+                this->psk = _psk;
+                this->identity = _identity;
             }
 
             bool isUsingPSK;
@@ -114,9 +114,9 @@ public:
              * @brief setPSKCallback Set PSK Callback, warn: you have to manage multithread environment there.
              * @param newCbpsk Callback function
              */
-            void setPSKCallback(cbPSK newCbpsk, void *data)
+            void setPSKCallback(cbPSK newCbpsk, void *_data)
             {
-                this->data = data;
+                this->data = _data;
                 pskCallback = newCbpsk;
                 isUsingPSK = true;
             }
@@ -189,9 +189,9 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPrivateKeyFromPEMFileEP(const char *filePath, const char *pass)
+        bool loadPrivateKeyFromPEMFileEP(const char *filePath, char *pass)
         {
-            return loadPrivateKeyFromPEMFile(filePath, nullptr, (void *) pass);
+            return loadPrivateKeyFromPEMFile(filePath, nullptr,static_cast<void *>(pass));
         }
         /**
          * @brief loadPrivateKeyFromPEMFile Load Private Key From PEM File
@@ -207,7 +207,7 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPublicKeyFromPEMFileEP(const char *filePath, const char *pass) { return loadPublicKeyFromPEMFile(filePath, nullptr, (void *) pass); }
+        bool loadPublicKeyFromPEMFileEP(const char *filePath, char *pass) { return loadPublicKeyFromPEMFile(filePath, nullptr, static_cast<void *>(pass)); }
         /**
          * @brief loadPublicKeyFromPEMFile Load Public Key From PEM File
          * @param filePath file path
@@ -223,9 +223,9 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPrivateKeyFromPEMMemoryEP(const char *privKeyPEMData, const char *pass)
+        bool loadPrivateKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass)
         {
-            return loadPrivateKeyFromPEMMemory(privKeyPEMData, nullptr, (void *) pass);
+            return loadPrivateKeyFromPEMMemory(privKeyPEMData, nullptr, static_cast<void *>(pass));
         }
         /**
          * @brief loadPrivateKeyFromPEMMemory Load Private Key from PEM formatted memory (null-terminated)
@@ -243,9 +243,9 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPublicKeyFromPEMMemoryEP(const char *privKeyPEMData, const char *pass)
+        bool loadPublicKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass)
         {
-            return loadPublicKeyFromPEMMemory(privKeyPEMData, nullptr, (void *) pass);
+            return loadPublicKeyFromPEMMemory(privKeyPEMData, nullptr, pass);
         }
         /**
          * @brief loadPublicKeyFromPEMMemory Load Public Key from PEM formatted memory (null-terminated)
@@ -478,7 +478,7 @@ public:
     /**
      * Class destructor.
      */
-    virtual ~Socket_TLS();
+    virtual ~Socket_TLS() override;
 
     /**
      * TLS server function for protocol initialization , it runs in blocking mode and should be called apart to avoid tcp accept while block

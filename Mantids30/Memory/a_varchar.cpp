@@ -9,7 +9,7 @@ VARCHAR::VARCHAR(const size_t &varSize)
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = (char *)malloc(varSize+1);
+    this->m_value = static_cast<char *>(malloc(varSize+1));
     this->m_value[varSize] = 0;
 }
 
@@ -18,7 +18,7 @@ VARCHAR::VARCHAR(const size_t &varSize, char *value)
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = (char *)malloc(varSize+1);
+    this->m_value = static_cast<char *>(malloc(varSize+1));
     this->m_value[varSize] = 0;
     setValue(value);
 }
@@ -28,7 +28,7 @@ VARCHAR::VARCHAR( VARCHAR &var )
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = var.getVarSize();
-    this->m_value = (char *)malloc(m_varSize+1);
+    this->m_value = static_cast<char *>(malloc(m_varSize+1));
     this->m_value[m_varSize] = 0;
     setValue(var.getValue());
 }

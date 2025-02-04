@@ -38,16 +38,16 @@ std::list<std::string> Mantids30::Helpers::jsonToStringList(const json &value, c
     {
         for ( size_t x = 0; x< value.size(); x++)
         {
-            if (value[(int)x].isString())
-                r.push_back(value[(int)x].asString());
+            if (value[static_cast<int>(x)].isString())
+                r.push_back(value[static_cast<int>(x)].asString());
         }
     }
     else if (!sub.empty() && JSON_ISARRAY(value,sub))
     {
         for ( size_t x = 0; x< value[sub].size(); x++)
         {
-            if (value[sub][(int)x].isString())
-                r.push_back(value[sub][(int)x].asString());
+            if (value[sub][static_cast<int>(x)].isString())
+                r.push_back(value[sub][static_cast<int>(x)].asString());
         }
     }
     return r;
@@ -61,16 +61,16 @@ std::set<std::string> Mantids30::Helpers::jsonToStringSet(const json &value, con
     {
         for (size_t x = 0; x < value.size(); x++)
         {
-            if (value[(int)x].isString())
-                r.insert(value[(int)x].asString());
+            if (value[static_cast<int>(x)].isString())
+                r.insert(value[static_cast<int>(x)].asString());
         }
     }
     else if (!sub.empty() && JSON_ISARRAY(value,sub))
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
-            if (value[sub][(int)x].isString())
-                r.insert(value[sub][(int)x].asString());
+            if (value[sub][static_cast<int>(x)].isString())
+                r.insert(value[sub][static_cast<int>(x)].asString());
         }
     }
 

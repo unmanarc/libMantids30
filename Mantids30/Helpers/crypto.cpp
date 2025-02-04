@@ -9,6 +9,8 @@
 #include <openssl/aes.h>
 #include <sys/types.h>
 
+#include "safeint.h"
+
 using namespace Mantids30::Helpers;
 
 
@@ -45,7 +47,7 @@ std::string Crypto::AES256EncryptB64(const unsigned char * input, uint32_t input
                 if (EVP_EncryptUpdate(ctx, cipherOutText + cipherOutLength, &len, input, inputLen) == 1 && len>=0)
                 {
                     cipherOutLength += len;
-                    if (EVP_EncryptFinal_ex(ctx, cipherOutText + cipherOutLength, (int*)&len) == 1 && len>=0)
+                    if (EVP_EncryptFinal_ex(ctx, cipherOutText + cipherOutLength, static_cast<int*>(&len)) == 1 && len>=0)
                     {
                         cipherOutLength += len;
                         std::uint8_t gcmTag[16];
@@ -69,12 +71,12 @@ std::string Crypto::AES256EncryptB64(const unsigned char * input, uint32_t input
 
 std::string Crypto::AES256EncryptB64(const std::string &input, const char *key, uint32_t keyLen, bool *ok)
 {
-    return AES256EncryptB64((unsigned char *)input.c_str(),input.length(),key,keyLen,ok);
+    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.c_str()),safeStaticCast<uint32_t,uint64_t>(input.length()),key,keyLen,ok);
 }
 
 std::string Crypto::AES256EncryptB64(const std::string &input,  const std::string &key, bool *ok)
 {
-    return AES256EncryptB64((unsigned char *)input.c_str(),input.length(),key.c_str(),key.length(),ok);
+    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.c_str()),safeStaticCast<uint32_t,uint64_t>(input.length()),key.c_str(),safeStaticCast<uint32_t,uint64_t>(key.length()),ok);
 }
 
 std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const std::string &input, const char *key, uint32_t keyLen, bool *ok)
@@ -92,10 +94,10 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
     if (dec->data && dec->cur>=32)
     {
         uint8_t salt[128/8],derivedKey[256/8],gcmTag[16];
-        unsigned char * encryptedData = ((unsigned char *)dec->data)+32;
-        uint64_t encryptedDataLen;
+        // unsigned char * encryptedData = (static_cast<unsigned char *>(dec->data))+32;
+        // uint64_t encryptedDataLen;
         memcpy(salt,dec->data,16);
-        memcpy(gcmTag,((unsigned char *)dec->data)+16,16);
+        memcpy(gcmTag,(static_cast<unsigned char *>(dec->data))+16,16);
 
         EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
         int err;
@@ -112,13 +114,13 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
                 if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL))
                 {
                     int len=-1;
-                    if (EVP_DecryptUpdate(ctx, (unsigned char *) r->data, &len,  (unsigned char *) dec->data+32, dec->cur-32 ) == 1 && len>=0)
+                    if (EVP_DecryptUpdate(ctx, (unsigned char *) r->data, &len,  static_cast<unsigned char *>(dec->data)+32, dec->cur-32 ) == 1 && len>=0)
                     {
                         r->cur+=len;
 
                         if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_TAG, 16, (void*)gcmTag))
                         {
-                            if ((err = EVP_DecryptFinal_ex(ctx, (unsigned char *) r->data + r->cur, &len)) == 1 && len>=0)
+                            if ((err = EVP_DecryptFinal_ex(ctx, static_cast<unsigned char *>(r->data) + r->cur, &len)) == 1 && len>=0)
                             {
                                 r->cur += len;
 

@@ -26,7 +26,7 @@ StreamableObject::Status StreamableObject::writeFullStream(const void *buf, cons
     StreamableObject::Status cur;
     while (cur.bytesWritten<count)
     {
-        if (!(cur += write((char *)buf+cur.bytesWritten,count-cur.bytesWritten, wrStatUpd)).succeed || cur.finish)
+        if (!(cur += write(static_cast<const char *>(buf)+cur.bytesWritten,count-cur.bytesWritten, wrStatUpd)).succeed || cur.finish)
             return cur;
     }
     return cur;
