@@ -1,10 +1,10 @@
 #include "a_datetime.h"
 
-#include <stdlib.h>
 #include <Mantids30/Threads/lock_shared.h>
-#include <time.h>
-#include <string.h>
 #include <Mantids30/Helpers/mem.h>
+
+#include <stdlib.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -15,7 +15,6 @@ using namespace std;
 
 DATETIME::DATETIME()
 {
-    m_value = 0;
     setVarType(TYPE_DATETIME);
 }
 

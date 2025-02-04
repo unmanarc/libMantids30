@@ -6,7 +6,6 @@
 #include <arpa/inet.h>
 #endif
 
-#include <string.h>
 #include <Mantids30/Threads/lock_shared.h>
 #include <Mantids30/Helpers/mem.h>
 

@@ -33,7 +33,7 @@ private:
     std::string getISOTimeStr( const time_t & v );
     time_t fromISOTimeStr( const std::string & v );
 
-    time_t m_value;
+    time_t m_value = 0;
     Threads::Sync::Mutex_Shared m_mutex;
 
 };

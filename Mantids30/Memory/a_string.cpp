@@ -11,10 +11,8 @@ STRING::STRING()
 STRING::STRING(const std::string &value)
 {
     setVarType(TYPE_STRING);
-    setValue(value);
+    this->m_value = value;
 }
-
-
 
 std::string STRING::getValue()
 {

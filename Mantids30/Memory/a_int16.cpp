@@ -6,7 +6,6 @@ using namespace Mantids30::Memory::Abstract;
 
 INT16::INT16()
 {
-    m_value = 0;
     setVarType(TYPE_INT16);
 
 }

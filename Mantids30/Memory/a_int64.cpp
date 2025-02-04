@@ -1,11 +1,11 @@
 #include "a_int64.h"
-#include <stdexcept>      // std::invalid_argument
-using namespace Mantids30::Memory::Abstract;
+
 #include <Mantids30/Threads/lock_shared.h>
+
+using namespace Mantids30::Memory::Abstract;
 
 INT64::INT64()
 {
-    m_value = 0;
     setVarType(TYPE_INT64);
 }
 

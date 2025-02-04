@@ -55,8 +55,8 @@ protected:
 private:
     static uint64_t u64pow(uint32_t base, uint32_t exponent);
 
-    in_addr m_value;
-    uint8_t m_cidrMask;
+    in_addr m_value = {0};
+    uint8_t m_cidrMask = 32;
     Threads::Sync::Mutex_Shared m_mutex;
 
 };

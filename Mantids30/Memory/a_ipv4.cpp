@@ -8,15 +8,12 @@
 
 #include <Mantids30/Threads/lock_shared.h>
 #include <Mantids30/Helpers/mem.h>
-#include <string.h>
 
 using namespace Mantids30::Memory::Abstract;
 
 IPV4::IPV4()
 {
     setVarType(TYPE_IPV4);
-    m_cidrMask = 32;
-    m_value.s_addr = 0;
 }
 
 IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)

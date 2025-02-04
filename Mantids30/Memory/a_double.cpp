@@ -1,12 +1,12 @@
 #include "a_double.h"
-#include <stdexcept>      // std::invalid_argument
 #include <Mantids30/Threads/lock_shared.h>
+
+#include <stdexcept>      // std::invalid_argument
 
 using namespace Mantids30::Memory::Abstract;
 
 DOUBLE::DOUBLE()
 {
-    m_value = 0;
     setVarType(TYPE_DOUBLE);
 }
 

@@ -25,7 +25,7 @@ public:
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 private:
-    bool m_value;
+    bool m_value = false;
     Threads::Sync::Mutex_Shared m_mutex;
 
 };

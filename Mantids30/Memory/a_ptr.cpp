@@ -1,13 +1,10 @@
 #include "a_ptr.h"
-#include <inttypes.h>
 #include <Mantids30/Threads/lock_shared.h>
 
-#include <stdexcept>      // std::invalid_argument
 using namespace Mantids30::Memory::Abstract;
 
 PTR::PTR()
 {
-    m_value = 0;
     setVarType(TYPE_PTR);
 }
 

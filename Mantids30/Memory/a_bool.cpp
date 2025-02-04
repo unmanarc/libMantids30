@@ -1,12 +1,10 @@
 #include "a_bool.h"
-#include <stdexcept>      // std::invalid_argument
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
 
 BOOL::BOOL()
 {
-    m_value = false;
     setVarType(TYPE_BOOL);
 }
 

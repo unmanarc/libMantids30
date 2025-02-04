@@ -1,12 +1,10 @@
 #include "a_uint16.h"
-#include <stdexcept>      // std::invalid_argument
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
 
 UINT16::UINT16()
 {
-    m_value = 0;
     setVarType(TYPE_UINT16);
 }
 

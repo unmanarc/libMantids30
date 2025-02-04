@@ -99,25 +99,39 @@ std::pair<bool, uint64_t> B_Chunks::truncate2(const uint64_t &bytes)
 std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roLen, bool prependMode)
 {
     uint64_t len = roLen;
-    if (m_mmapContainer && !prependMode) return m_mmapContainer->append(buf,len);
-    if (m_mmapContainer && prependMode) return m_mmapContainer->prepend(buf,len);
+    if (m_mmapContainer && !prependMode)
+    {
+        return m_mmapContainer->append(buf,len);
+    }
+    if (m_mmapContainer && prependMode)
+    {
+        return m_mmapContainer->prepend(buf,len);
+    }
 
     std::pair<bool,uint64_t> appendedBytes = std::make_pair(true,0);
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(len,size()))
+    {
         return std::make_pair(false,(uint64_t)0);
+    }
 
     if (m_maxContainerSizeUntilGoingToFS!=0 && len+size() > m_maxContainerSizeUntilGoingToFS)
     {
         m_mmapContainer = copyToFS("",true);
         if (!m_mmapContainer)
+        {
             return std::make_pair(false,(uint64_t)0);
+        }
         clearChunks(); // Clear this container leaving the mmap intact...
         if (prependMode)
+        {
             return m_mmapContainer->prepend(buf,len);
+        }
         else
+        {
             return m_mmapContainer->append(buf,len);
+        }
     }
 
     while (len)
@@ -125,7 +139,7 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         uint64_t chunkSize = len<m_maxChunkSize? len:m_maxChunkSize;
 
         // Don't create new chunks if we can't handle them.
-        if (m_chunksVector.size()+m_maxChunks)
+        if (m_chunksVector.size()+1>m_maxChunks)
         {
             appendedBytes.first = false;
             return appendedBytes;
@@ -136,7 +150,10 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         BinaryContainerChunk bcc;
         if (!bcc.copy(buf,chunkSize))
         {
-            if (prependMode) recalcChunkOffsets();
+            if (prependMode)
+            {
+                recalcChunkOffsets();
+            }
             appendedBytes.first = false;
             return appendedBytes; // not enough memory.
         }
@@ -145,8 +162,14 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         // Append or prepend the data.
         if (!prependMode)
         {
-            if (!m_chunksVector.size()) bcc.offset = 0;
-            else bcc.offset = m_chunksVector[m_chunksVector.size()-1].nextOffset();
+            if (!m_chunksVector.size())
+            {
+                bcc.offset = 0;
+            }
+            else
+            {
+                bcc.offset = m_chunksVector[m_chunksVector.size()-1].nextOffset();
+            }
             m_chunksVector.push_back(bcc);
         }
         else
@@ -165,7 +188,10 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         len-=chunkSize;
     }
 
-    if (prependMode) recalcChunkOffsets();
+    if (prependMode)
+    {
+        recalcChunkOffsets();
+    }
     return appendedBytes;
 }
 

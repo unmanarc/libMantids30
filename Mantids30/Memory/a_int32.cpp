@@ -6,7 +6,6 @@ using namespace Mantids30::Memory::Abstract;
 
 INT32::INT32()
 {
-    m_value = 0;
     setVarType(TYPE_INT32);
 }
 

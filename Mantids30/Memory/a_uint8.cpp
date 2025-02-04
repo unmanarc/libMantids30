@@ -1,12 +1,10 @@
 #include "a_uint8.h"
-#include <stdexcept>      // std::invalid_argument
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
 
 UINT8::UINT8()
 {
-    m_value = 0;
     setVarType(TYPE_UINT8);
 }
 
