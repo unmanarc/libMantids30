@@ -11,12 +11,28 @@ public:
     B_MEM(const void * buf=nullptr, const uint32_t &len=0);
     ~B_MEM() override;
     void reference(const void * buf, const uint32_t & len);
+    
     /**
-     * @brief findChar
-     * @param c
-     * @param offset
-     * @return
-     */
+    * @brief Searches for the first occurrence of a character within a specified range and offset.
+    *
+    * This function searches for the first occurrence of a given character (charInt) within
+    * a specified range (searchSpace) starting from a specific offset in the memory buffer.
+    * It supports case-sensitive or case-insensitive search.
+    *
+    * @param charInt The ASCII value of the character to search for.
+    * @param offset The starting position in the memory buffer to begin searching.
+    * @param searchSpace The number of bytes to search within, starting from the specified offset.
+    *                    If set to 0, the function will search until the end of the buffer.
+    * @param caseSensitive A boolean flag indicating whether the search should be case-sensitive.
+    *
+    * @return A pair consisting of a boolean and an unsigned integer. The boolean indicates whether
+    *         the character was found (true if found, false otherwise). The unsigned integer represents
+    *         the offset from the beginning of the buffer to the first occurrence of the character,
+    *         or 0 if the character is not found.
+    *
+    * @note If caseSensitive is true but the character is not a letter (A-Z or a-z), the search will be
+    *       treated as case-insensitive.
+    */
     std::pair<bool,uint64_t> findChar(const int & c, const uint64_t &offset = 0, uint64_t searchSpace = 0, bool caseSensitive = false) override;
 
 protected:
@@ -81,7 +97,7 @@ private:
     /**
      * @brief linearMem Current usable linear memory pointer.
      */
-    const char * linearMem;
+    const char * linearMem = nullptr;
 };
 
 }}}

@@ -5,11 +5,13 @@ using namespace Mantids30::Memory::Containers;
 B_MEM::B_MEM(const void *buf, const uint32_t & len)
 {
     m_storeMethod = BC_METHOD_MEM;
-    linearMem = nullptr;
     m_readOnly = true;
     setContainerBytes(0);
     B_MEM::clear2();
-    if (buf && len) reference(buf,len);
+    if (buf && len)
+    {
+        reference(buf,len);
+    }
 }
 
 B_MEM::~B_MEM()
@@ -25,41 +27,70 @@ void B_MEM::reference(const void *buf, const uint32_t &len)
     setContainerBytes(len);
 }
 
-std::pair<bool, uint64_t> B_MEM::findChar(const int &c, const uint64_t &offset, uint64_t searchSpace, bool caseSensitive)
+
+std::pair<bool, uint64_t> B_MEM::findChar(const int &charInt, const uint64_t &offset, uint64_t searchSpace, bool caseSensitive)
 {
-    if (caseSensitive && !(c>='A' && c<='Z') && !(c>='a' && c<='z') )
-        caseSensitive = false;
+    // Convert the integer representation of the character to an unsigned char
+    unsigned char ch = static_cast<unsigned char>(charInt);
 
+    // If case sensitivity is disabled and the character is not a letter, enable case sensitivity
+    if (!caseSensitive && !((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')))
+        caseSensitive = true;
+
+    // Get the current size of the memory container
     size_t currentSize = size();
-    // No bytes to copy.
-    if (!currentSize) return std::make_pair(false,(uint64_t)0);
 
-    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace)) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    // If the container is empty, return not found
+    if (!currentSize)
+        return std::make_pair(false, static_cast<uint64_t>(0));
 
-    // No bytes to copy:
-    if (offset+searchSpace>currentSize) return  std::make_pair(false,std::numeric_limits<uint64_t>::max());
+    // Check for potential overflow when calculating offset + searchSpace
+    if (CHECK_UINT_OVERFLOW_SUM(offset, searchSpace))
+        return std::make_pair(false, std::numeric_limits<uint64_t>::max());
 
-    if (searchSpace == 0) searchSpace = currentSize-offset;
+    // If the specified range exceeds the container size, return not found
+    if (offset + searchSpace > currentSize)
+        return std::make_pair(false, std::numeric_limits<uint64_t>::max());
 
-    const char * cPos = nullptr;//
+    // If no specific search space is provided, search until the end of the container
+    if (searchSpace == 0)
+        searchSpace = currentSize - offset;
 
-    if (!caseSensitive)
-        cPos = (const char *)memchr(linearMem+offset,c,searchSpace);
+    const char *cPos = nullptr;
+    
+    // Perform case-sensitive or case-insensitive search based on the flag
+    if (caseSensitive)
+    {
+        // Use memchr for a direct comparison in case-sensitive mode
+        cPos = static_cast<const char*>(memchr(linearMem + offset, ch, searchSpace));
+    }
     else
     {
-        const char *pos_upper = (const char *)memchr(linearMem+offset,std::toupper(c),searchSpace);
-        const char *pos_lower = (const char *)memchr(linearMem+offset,std::tolower(c),searchSpace);
+        // Convert the character to both upper and lower cases for comparison
+        unsigned char upperCh = static_cast<unsigned char>(std::toupper(ch));
+        unsigned char lowerCh = static_cast<unsigned char>(std::tolower(ch));
 
-        if      (pos_upper && pos_lower && pos_upper<=pos_lower) cPos = pos_upper;
-        else if (pos_upper && pos_lower && pos_lower<pos_upper) cPos = pos_lower;
-        else if (pos_upper) cPos = pos_upper;
-        cPos = pos_lower;
+        // Find positions of both uppercase and lowercase versions
+        const char *posUpper = static_cast<const char*>(memchr(linearMem + offset, upperCh, searchSpace));
+        const char *posLower = static_cast<const char*>(memchr(linearMem + offset, lowerCh, searchSpace));
+
+        // Determine the first occurrence position if both are found
+        if (posUpper && posLower)
+            cPos = (posUpper < posLower) ? posUpper : posLower;
+        else if (posUpper)
+            cPos = posUpper;
+        else
+            cPos = posLower;
     }
 
-    if (!cPos) return std::make_pair(false,(uint64_t)0);
+    // If the character was not found, return not found
+    if (!cPos)
+        return std::make_pair(false, static_cast<uint64_t>(0));
 
-    return std::make_pair(true,uint64_t(cPos-linearMem));
+    // Calculate and return the position of the found character
+    return std::make_pair(true, static_cast<uint64_t>(cPos - linearMem));
 }
+
 
 std::pair<bool, uint64_t> B_MEM::truncate2(const uint64_t &bytes)
 {
