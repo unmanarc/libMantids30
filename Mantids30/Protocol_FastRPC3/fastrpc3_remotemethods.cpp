@@ -156,7 +156,9 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         {
             // break by element found. (answer)
             uint8_t executionStatus = connection->executionStatus[requestId];
+
             r = connection->answers[requestId];
+
             if (error)
             {
                 switch (executionStatus)
@@ -227,8 +229,7 @@ bool FastRPC3::RemoteMethods::logout(json *error)
 
 json FastRPC3::RemoteMethods::getSSOData(json *error)
 {
-    json x = parent->remote(connectionId).executeTask( "SESSION.GETSSODATA", {}, error, true, true);
-    return JSON_ASBOOL_D(x, false);
+    return parent->remote(connectionId).executeTask( "SESSION.GETSSODATA", {}, error, true, true );
 }
 
 bool FastRPC3::RemoteMethods::close()
