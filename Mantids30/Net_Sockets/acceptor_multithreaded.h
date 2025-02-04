@@ -76,10 +76,6 @@ public:
      */
     bool finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> x);
 
-
-
-
-
     /**
      * @brief The Config class holds configuration parameters for managing concurrency,
      *        connection limits, and timeout settings in a multithreaded environment.
@@ -87,13 +83,7 @@ public:
     class Config {
     public:
         friend class MultiThreaded;
-        Config()
-        {
-            maxConcurrentClients = 100;
-            maxWaitMSTime = 5000;
-            maxConnectionsPerIP = 10;
-        }
-
+        Config() = default;
         /**
          * @brief getMaxConcurrentClients Get maximum number of concurrent client threads are accepted
          * @return maximum current clients accepted
@@ -134,20 +124,20 @@ public:
          *        Be cautious when increasing this value, as too many concurrent threads could lead to system instability
          *        or crashes due to resource exhaustion (check your ulimits).
          */
-        std::atomic<uint32_t> maxConcurrentClients;
+        std::atomic<uint32_t> maxConcurrentClients{100};
 
         /**
          * @brief maxWaitMSTime Defines the maximum time (in milliseconds) a new client connection will wait
          *        if the maximum concurrent client limit is reached.
          *        If the wait time is exceeded, the connection attempt will be aborted.
          */
-        std::atomic<uint32_t> maxWaitMSTime;
+        std::atomic<uint32_t> maxWaitMSTime{5000};
 
         /**
          * @brief maxConnectionsPerIP Defines the maximum number of concurrent connections allowed per unique client IP.
          *        This helps prevent a single IP from monopolizing server resources and ensures fair distribution.
          */
-        std::atomic<uint32_t> maxConnectionsPerIP;
+        std::atomic<uint32_t> maxConnectionsPerIP{10};
 
         MultiThreaded * parent = nullptr;
     };
