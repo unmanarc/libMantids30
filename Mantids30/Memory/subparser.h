@@ -5,9 +5,9 @@
 #include "streamableobject.h"
 #include <memory>
 
-//#define DEBUG 1
+//#define DEBUG_PARSER 1
 
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
 #include <openssl/bio.h>
 #define BIO_dump_fp(a,b,c) fprintf(a, "BIO_dump_fp->%lu bytes\n", c); fflush(a);
 #endif

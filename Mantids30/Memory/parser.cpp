@@ -49,7 +49,7 @@ StreamableObject::Status Parser::write(const void *buf, const size_t &count, Sta
     size_t ttl = 0;
     bool finished = false;
 
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
     printf("Writting on Parser %p:\n", this); fflush(stdout);
     BIO_dump_fp (stdout, (char *)buf, count);
     fflush(stdout);
@@ -83,7 +83,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
     if (*ttl>m_maxTTL)
     {
         // TODO: reset TTL?
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         fprintf(stderr, "%p Parser reaching TTL %zu", this, *ttl); fflush(stderr);
 #endif
         return std::make_pair(false,(uint64_t)0); // TTL Reached...
@@ -107,14 +107,14 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
         {
         case SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER:
         {
-#ifdef DEBUG
-            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#ifdef DEBUG_PARSER
+            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // Check if there is next parser...
             if (!changeToNextParser())
                 return std::make_pair(false,(uint64_t)0);
-#ifdef DEBUG
-            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#ifdef DEBUG_PARSER
+            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
@@ -125,8 +125,8 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
         } break;
         case SubParser::PARSE_STAT_GET_MORE_DATA:
         {
-#ifdef DEBUG
-            printf("%p PARSE_STAT_GET_MORE_DATA requested from %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#ifdef DEBUG_PARSER
+            printf("%p PARSE_STAT_GET_MORE_DATA requested from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // More data required... (TODO: check this)
             if (writtenBytes.second == count)
@@ -134,8 +134,8 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
         } break;
             // Bad parsing... end here.
         case SubParser::PARSE_STAT_ERROR:
-#ifdef DEBUG
-            printf("%p PARSE_STAT_ERROR executed from %s\n", this,(!currentParser?"nullptr" : currentParser->getSubParserName().c_str())); fflush(stdout);
+#ifdef DEBUG_PARSER
+            printf("%p PARSE_STAT_ERROR executed from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
 
             return std::make_pair(false,(uint64_t)0);

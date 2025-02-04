@@ -30,43 +30,43 @@ std::pair<bool,uint64_t> SubParser::writeIntoParser(const void *buf, size_t coun
     {
     case PARSE_MODE_DELIMITER:
 
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by delimiter %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseByDelimiter(buf,count);
     case PARSE_MODE_SIZE:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by size %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseBySize(buf,count);
     case PARSE_MODE_VALIDATOR:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by validator %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseByValidator(buf,count);
     case PARSE_MODE_DIRECT_DELIMITER:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by direct delimiter %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseDirectDelimiter(buf,count);
     case PARSE_MODE_CONNECTION_END:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by connection end %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseByConnectionEnd(buf,count);
     case PARSE_MODE_MULTIDELIMITER:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by multidelimiter %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
         return parseByMultiDelimiter(buf,count);
     case PARSE_MODE_DIRECT:
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("Parse by direct %p\n", this); fflush(stdout);
         BIO_dump_fp (stdout, (char *)buf, count);
 #endif
@@ -132,7 +132,7 @@ std::pair<bool,uint64_t> SubParser::parseByMultiDelimiter(const void *buf, size_
         m_parsedBuffer.reference(&m_unparsedBuffer,0,needlePos.second);
 
 #ifdef DEBUG_PARSER
-        printf("Parsing by multidelimiter: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
+        printf("Parsing by multidelimiter: %s\n", m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
 
         setParseStatus(parse());
@@ -167,11 +167,13 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
 
     // stick to the unparsedBuffer object size.
     if ( count > m_unparsedBuffer.getSizeLeft() && m_unparsedBuffer.getSizeLeft() )
+    {
         count = m_unparsedBuffer.getSizeLeft();
+    }
 
     if (count && ((bytesAppended=m_unparsedBuffer.append(buf,count)).second==0 || bytesAppended.first==false))
     {
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("%p Parse by Delimiter size exceeded. don't continue with the streamparser, error....\n",this); fflush(stdout);
 #endif
         // size exceeded. don't continue with the streamparser, error.
@@ -182,10 +184,10 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
     bytesToDisplace = bytesAppended.second;
     m_parsedBuffer.reference(&m_unparsedBuffer);
 
-#ifdef DEBUG
-        auto x = unparsedBuffer.toString();
+#ifdef DEBUG_PARSER
+        auto x = m_unparsedBuffer.toString();
         printf("%p Searching delimiter...\n",this); fflush(stdout);
-        BIO_dump_fp (stdout, (char *)parseDelimiter.c_str(), parseDelimiter.size());
+        BIO_dump_fp (stdout, (char *)parseDelimiter.c_str(), m_parseDelimiter.size());
         BIO_dump_fp (stdout, (char *)x.c_str(), x.size());
 #endif
 
@@ -195,28 +197,28 @@ std::pair<bool,uint64_t> SubParser::parseByDelimiter(const void *buf, size_t cou
         m_parsedBuffer.reference(&m_unparsedBuffer,0,needlePos.second);
 
 #ifdef DEBUG_PARSER
-        printf("Parsing by delimiter: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
+        printf("Parsing by delimiter: %s\n", m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse());
         m_unparsedBuffer.clear();
 
         // Bytes to displace:
         bytesToDisplace = (needlePos.second-prevSize)+m_parseDelimiter.size();
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("%p Delimiter found and parsed -> displaced %lu bytes\n", this, bytesToDisplace); fflush(stdout);
 #endif
     }
     else if (m_streamEnded)
     {
         m_parsedBuffer.reference(&m_unparsedBuffer);
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("%p Delimiter not found and parsed, displaced %lu bytes\n", this, bytesToDisplace); fflush(stdout);
 #endif
         setParseStatus(parse());
         m_unparsedBuffer.clear();
     }
 
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
     printf("%p displacing %lu bytes\n", this, bytesToDisplace); fflush(stdout);
 #endif
 
@@ -245,7 +247,7 @@ std::pair<bool,uint64_t> SubParser::parseBySize(const void *buf, size_t count)
     {
         m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
-        printf("Parsing by size: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
+        printf("Parsing by size: %s\n", m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse());
         m_unparsedBuffer.clear(); // Destroy the container data.
@@ -294,7 +296,7 @@ std::pair<bool,uint64_t> SubParser::parseByConnectionEnd(const void *buf, size_t
     {
         m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
-        printf("Parsing by connection end: %s\n", postParsedBuffer.toString().c_str()); fflush(stdout);
+        printf("Parsing by connection end: %s\n", m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
         setParseStatus(parse()); // analyze on connection end.
         m_parsedBuffer.clear();
@@ -321,7 +323,7 @@ std::pair<bool,uint64_t> SubParser::parseDirect(const void *buf, size_t count)
     // Parse it...
     m_parsedBuffer.reference(&m_unparsedBuffer);
 #ifdef DEBUG_PARSER
-    printf("Parsing direct (%llu, until size %llu): %s\n", postParsedBuffer.size(), leftToParse, postParsedBuffer.toString().c_str()); fflush(stdout);
+    printf("Parsing direct (%lu, until size %lu): %s\n", m_parsedBuffer.size(), (uint64_t)0, m_parsedBuffer.toString().c_str()); fflush(stdout);
 #endif
     setParseStatus(parse());
 
@@ -365,7 +367,7 @@ std::pair<bool,uint64_t> SubParser::parseDirectDelimiter(const void *buf, size_t
         case 0:
             // delimiter not found at all, parse ALL direct...
             m_parsedBuffer.reference(&m_unparsedBuffer);
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
             //printf("Parsing direct delimiter (%llu, until size %llu): ", postParsedBuffer.size(), leftToParse); postParsedBuffer.print(); printf("\n"); fflush(stdout);
 #endif
             setParseStatus(parse());

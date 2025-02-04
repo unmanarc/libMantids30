@@ -1,9 +1,6 @@
 #pragma once
 
-#include "streamableobject.h"
 #include "subparser.h"
-#include "b_chunks.h"
-#include "streamableobject.h"
 #include <memory>
 
 namespace Mantids30 { namespace Memory { namespace Streams {
