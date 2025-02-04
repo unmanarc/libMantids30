@@ -1,18 +1,16 @@
 #include "a_uint32.h"
-#include <stdexcept>      // std::invalid_argument
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
 
 UINT32::UINT32()
 {
-    m_value = 0;
     setVarType(TYPE_UINT32);
 }
 
 UINT32::UINT32(const uint32_t &value)
 {
-    setVarType(TYPE_UINT16);
+    setVarType(TYPE_UINT32);
     this->m_value = value;
 }
 
