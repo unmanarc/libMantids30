@@ -325,15 +325,24 @@ bool HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::str
     // Compute the full requested path:
     std::string sFullComputedRealPath;
     {
-        char cRealPath[PATH_MAX+2];
-        realpath(sFullRequestedPath.c_str(), cRealPath);
-        if ( errno == ENOENT )
+        char cRealPath[PATH_MAX];
+        if (realpath(sFullRequestedPath.c_str(), cRealPath) == nullptr)
         {
-            // Non-Existant File.
-            sFullComputedRealPath = cRealPath;
+            if (errno == ENOENT)
+            {
+                // Non-existent file.
+                return false;  // or handle the error as needed
+            }
+            else
+            {
+                // Other error occurred.
+                return false;  // or handle the error as needed
+            }
         }
         else
-            return false;
+        {
+            sFullComputedRealPath = cRealPath;
+        }
     }
 
     // Check for transversal access hacking attempts...
