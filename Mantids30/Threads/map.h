@@ -198,7 +198,9 @@ bool Map<T>::destroyElement(const T key)
         delete delElement;
         m_keyValueMap.erase(key);
         if (m_keyValueMap.empty())
+        {
             m_noItemsOnMapCondition.notify_one();
+        }
         return true;
     }
     return false;
@@ -208,8 +210,7 @@ template<class T>
 void Map<T>::waitForEmptyMap()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    if (m_keyValueMap.empty()) return;
-    m_noItemsOnMapCondition.wait(lock);
+    m_noItemsOnMapCondition.wait(lock, [this]{ return m_keyValueMap.empty(); });
 }
 
 }}}
