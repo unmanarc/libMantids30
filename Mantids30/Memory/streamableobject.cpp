@@ -14,11 +14,10 @@ using namespace Mantids30::Memory::Streams;
 
 std::string StreamableObject::toString()
 {
-    std::shared_ptr<StreamableString> s;
+    std::shared_ptr<StreamableString> s = std::make_shared<StreamableString>();
     Status x;
     this->streamTo(s, x);
     return s->getValue();
-
 }
 
 StreamableObject::Status StreamableObject::writeFullStream(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)

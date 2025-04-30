@@ -39,15 +39,31 @@ public:
      * @param last vector end()
      * @param hash Hash function
      */
-    template <class RandomAccessIterator> static void safe_random_shuffle (RandomAccessIterator first, RandomAccessIterator last, std::size_t hash)
+    template <class RandomAccessIterator>
+    static void safe_random_shuffle(RandomAccessIterator first, RandomAccessIterator last, std::size_t hash)
     {
         std::minstd_rand0 gen(hash);
         typename std::iterator_traits<RandomAccessIterator>::difference_type i, n;
-        n = (last-first);
-        for (i=n-1; i>0; --i)
+        n = (last - first);
+
+        if (n <= 1) {
+            // No need to shuffle if there are 0 or 1 elements
+            return;
+        }
+
+        for (i = n - 1; i > 0; --i)
         {
-            std::uniform_int_distribution<> dis(0, static_cast<int>(i));
-            std::swap (first[i],first[dis(gen)]);
+            std::uniform_int_distribution<typename std::iterator_traits<RandomAccessIterator>::difference_type> dis(0, i);
+            typename std::iterator_traits<RandomAccessIterator>::difference_type j = dis(gen);
+
+            // Use std::advance to properly handle the iterators
+            RandomAccessIterator it_i = first;
+            std::advance(it_i, i);
+
+            RandomAccessIterator it_j = first;
+            std::advance(it_j, j);
+
+            std::swap(*it_i, *it_j);
         }
     }
 };

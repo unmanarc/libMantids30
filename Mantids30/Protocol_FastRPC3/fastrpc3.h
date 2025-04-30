@@ -101,7 +101,7 @@ public:
         uint32_t maxMessageSize=0;
         void * caller = nullptr;
         FastRPC3::SessionPTR * sessionHolder = nullptr;
-        Mantids30::API::Monolith::MethodsHandler *methodsHandler;
+        std::shared_ptr<Mantids30::API::Monolith::MethodsHandler> methodsHandler;
         std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator = nullptr;
         Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
         Threads::Sync::Mutex * socketMutex = nullptr;
@@ -180,21 +180,9 @@ public:
     class Config {
     public:
         Config(
-                API::Monolith::MethodsHandler *_methodsHandlers,
                 std::shared_ptr<Mantids30::DataFormat::JWT> _jwtValidator
-            ) : methodHandlers(_methodsHandlers),  jwtValidator(_jwtValidator)
+            ) :  jwtValidator(_jwtValidator)
         {
-            this->defaultMethodsHandlers = methodHandlers;
-
-            maxMessageSize = 10*1024*1024;
-            queuePushTimeoutInMS = 2000;
-            remoteExecutionTimeoutInMS = 5000;
-            remoteExecutionDisconnectedTries = 10;
-        }
-        ~Config()
-        {
-            if ( defaultMethodsHandlers != methodHandlers )
-                delete methodHandlers;
         }
         /**
          * @brief pingIntvl Ping Interval (in seconds) - Set before connect / not thread safe.
@@ -207,19 +195,19 @@ public:
         /**
          * @brief queuePushTimeoutInMS Queue Timeout in milliseconds to desist to put the execution task into the threadpool
          */
-        std::atomic<uint32_t> queuePushTimeoutInMS;
+        std::atomic<uint32_t> queuePushTimeoutInMS{2000};
         /**
          * @brief maxMessageSize Max JSON RAW Message Size
          */
-        std::atomic<uint32_t> maxMessageSize;
+        std::atomic<uint32_t> maxMessageSize{10*1024*1024};
         /**
          * @brief remoteExecutionTimeoutInMS Remote Execution Timeout for "runRemoteRPCMethod" function
          */
-        std::atomic<uint32_t> remoteExecutionTimeoutInMS;
+        std::atomic<uint32_t> remoteExecutionTimeoutInMS{5000};
         /**
          * @brief remoteExecutionDisconnectedTries
          */
-        std::atomic<uint32_t> remoteExecutionDisconnectedTries;
+        std::atomic<uint32_t> remoteExecutionDisconnectedTries{10};
         /**
          * @brief rwTimeout This timeout will be setted on processConnection, call this function before that.
          *                  Read timeout defines how long are we going to wait if no-data comes from a RPC connection socket,
@@ -233,7 +221,7 @@ public:
         /**
          * @brief methodHandlers current Methods Manager
          */
-        API::Monolith::MethodsHandler *methodHandlers;
+        std::shared_ptr<API::Monolith::MethodsHandler> methodHandlers;
         /**
          * @brief jwtValidator JWT Validator.
          */
@@ -260,8 +248,14 @@ public:
         bool ignoreSSLCertForSSO = false;
 
 
+        void setDefaultHandlers(std::shared_ptr<API::Monolith::MethodsHandler> x)
+        {
+            methodHandlers = x;
+            defaultMethodsHandlers = x;
+        }
+
     private:
-        API::Monolith::MethodsHandler *defaultMethodsHandlers;
+        std::shared_ptr<API::Monolith::MethodsHandler> defaultMethodsHandlers;
     };
 
     class RemoteMethods {
@@ -570,7 +564,7 @@ private:
     /**
      * @brief Handler for default RPC methods.
      */
-    Mantids30::API::Monolith::MethodsHandler m_defaultMethodsHandlers;
+    std::shared_ptr<Mantids30::API::Monolith::MethodsHandler> m_defaultMethodsHandlers = nullptr;
 
     /**
      * @brief Flag indicating whether the remote peer's common name is used as the connection ID.

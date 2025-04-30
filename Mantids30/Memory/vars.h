@@ -102,6 +102,11 @@ public:
      */
     bool exist(const std::string & varName);
 
+
+    std::string getStringValue( const std::string & varName );
+
+
+
     ///////////////////////////////////////
     // Virtuals...
     /**

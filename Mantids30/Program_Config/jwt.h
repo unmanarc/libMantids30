@@ -21,6 +21,9 @@ public:
                                                                           boost::property_tree::ptree *ptr,
                                                                           const std::string &configClassName);
 
+    static std::shared_ptr<Mantids30::DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
+                                                                          const std::string & algorithm,
+                                                                          const std::string & key);
 private:
     static bool createHMACSecret(Program::Logs::AppLog *log,const std::string &filePath);
     static bool createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize = 4096);

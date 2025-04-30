@@ -74,7 +74,7 @@ public:
      * @return std::numeric_limits<uint64_t>::max() if the stream is not fixed size
      */
     virtual uint64_t size() const { return std::numeric_limits<uint64_t>::max(); }
-    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Status & wrStatUpd)=0;
+    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Status & wrStatUpd)=0;
     virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd)=0;
 
     Status writeFullStream(const void *buf, const size_t &count, Status & wrStatUpd);

@@ -7,6 +7,7 @@
 #include <Mantids30/Memory/b_mmap.h>
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/json.h>
+#include <Mantids30/Helpers/encoders.h>
 
 #include <memory>
 #include <stdarg.h>
@@ -121,8 +122,8 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                 std::string resourceAndPathParameters = pathMatch[2].str();
 
                 API::APIReturn apiReturn;
-                apiReturn.body->setFormatted(config->useFormattedJSONOutput);
-                serverResponse.setDataStreamer(apiReturn.body);
+                apiReturn.getBodyDataStreamer()->setFormatted(config->useFormattedJSONOutput);
+                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                 serverResponse.setContentType("application/json", true);
 
                 // Check API Origin
@@ -133,8 +134,8 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                     {
                         log(LEVEL_SECURITY_ALERT, "restAPI", 2048,
                             "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setFullStatus(false, Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED, "Disallowed Origin");
-                        ret = apiReturn.code = Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED;
+                        apiReturn.setError(Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED,"invalid_security_context", "Disallowed Origin");
+                        ret = Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED;
                         isAPIURI = true;
                         break;
                     }
@@ -152,7 +153,7 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
 
                 handleAPIRequest(&apiReturn, baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters );
 
-                ret = apiReturn.code;
+                ret = apiReturn.getHTTPResponseCode();
 
                 // Set cookies to the server (eg. refresher token cookie)...
                 for (auto &i : apiReturn.cookiesMap)
@@ -472,6 +473,14 @@ bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
     }
     return true;
 }
+
+Status::eRetCode APIClientHandler::redirectUsingJS(
+    const std::string &url)
+{
+    getResponseDataStreamer()->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
+    return Protocols::HTTP::Status::S_200_OK;
+}
+
 
 Status::eRetCode APIClientHandler::showBrowserMessage(const std::string & title, const std::string &message, Protocols::HTTP::Status::eRetCode returnCode)
 {

@@ -308,7 +308,65 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program:
     }
 }
 
-bool ConfigBuilder::JWT::createHMACSecret(Program::Logs::AppLog *log, const std::string &filePath)
+std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(
+    Program::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
+{
+
+    bool insecureFile;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
+    std::string algorithmName = algorithm;
+    bool createIfNotPresent = false;
+
+    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
+    {
+        log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        return jwtNull;
+    }
+
+    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+
+    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+
+    if (algorithmDetails.isUsingHMAC)
+    {
+        std::string hmacSecret = key;
+
+        // Remove the newline character if it exists
+        if (!hmacSecret.empty() && hmacSecret.back() == '\n')
+        {
+            hmacSecret.pop_back();
+        }
+
+        if (hmacSecret.empty())
+        {
+            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
+            return jwtNull;
+        }
+
+        // Set HMAC secret key on jwtSigner object
+        jwtValidator->setSharedSecret(hmacSecret);
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
+
+        return jwtValidator;
+    }
+    else
+    {
+
+        if (key.empty())
+        {
+            log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "No JWT Public Validation Key Configured.");
+            return jwtNull;
+        }
+
+        jwtValidator->setPublicSecret(key);
+        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT Public Validation Key Loaded.");
+
+        return jwtValidator;
+    }
+}
+
+bool ConfigBuilder::JWT::createHMACSecret(
+    Program::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions

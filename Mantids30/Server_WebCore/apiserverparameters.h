@@ -94,6 +94,11 @@ public:
     std::string redirectPathOn404 = "/";
 
     /**
+     * @brief defaultLoginRedirect URL for login redirection called by /auth/login_redirect
+     */
+    std::string defaultLoginRedirect;
+
+    /**
      * @brief List of allowed origins for login requests.
      *
      * This set contains the origins that are permitted to initiate login requests. It is used to
@@ -112,30 +117,12 @@ public:
     std::set<std::string> permittedAPIOrigins;
 
     /**
-     * @brief Sets the redirect path for successful login.
-     *
-     * Specifies the URL path to which users will be redirected upon a successful login attempt.
-     *
-     */
-    std::string redirectLocationOnLoginSuccess = "/";
-
-    /**
      * @brief Sets the redirect path for failed login attempts.
      *
      * Specifies the URL path to which users will be redirected when a login attempt fails.
      *
      */
     std::string redirectLocationOnLoginFailed = "/";
-
-    /**
-     * @brief Determines if the redirect location on successful login should be taken from the URL.
-     *
-     * When set to true, the application will extract the redirect path for a successful login
-     * from a specified parameter in the URL. If set to false, a predefined redirect location will be used.
-     *
-     * eg. /api/v1/auth/login?redirect=/index.html
-     */
-    bool takeRedirectLocationOnLoginSuccessFromURL = false;
 
     /**
      * @brief Sets the web server name for the HTTP header.

@@ -34,13 +34,10 @@ struct RequestParameters
 
 
 using MethodType = void (*)(
-    void *context,                                          // Context pointer
+    void *context,                                         // Context pointer
     APIReturn &response,                                   // The API return object
-    json &responseData,                                    // Response data (JSON format)
-    const RESTful::RequestParameters &requestParams,       // Parameters from the RESTful request
-    const json &inputData,                                 // Input data (JSON format)
-    const DataFormat::JWT::Token &authToken,               // Authentication token (JWT)
-    Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+    const RESTful::RequestParameters &request,       // Parameters from the RESTful request
+    Mantids30::Sessions::ClientDetails &authClientDetails  // Client authentication details
     );
 
 /**

@@ -68,7 +68,6 @@ public:
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
-    //std::shared_ptr<void>=nullptr;                 ///< A void pointer to an object used by the web server callbacks.
     APIServerParameters config;             ///< The api server configuration parameters
 
 protected:

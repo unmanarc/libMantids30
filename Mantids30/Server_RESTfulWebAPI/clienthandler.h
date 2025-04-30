@@ -58,6 +58,7 @@ protected:
 
 private:
 
+
     void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
     Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();
 

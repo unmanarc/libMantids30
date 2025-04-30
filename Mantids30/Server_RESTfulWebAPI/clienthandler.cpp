@@ -4,6 +4,8 @@
 #include <Mantids30/API_RESTful/methodshandler.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
+#include <Mantids30/Helpers/encoders.h>
+
 #include <json/config.h>
 #include <memory>
 #include <string>
@@ -16,6 +18,7 @@ using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network::Protocols::HTTP;
+
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
@@ -32,7 +35,7 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
     string headerBearerToken = clientRequest.getAuthorizationBearer();
 
     // Take the auth token from the cookie (if exist)...
-    string cookieBearerToken = clientRequest.getCookie("AuthToken");
+    string cookieBearerToken = clientRequest.getCookie("AccessToken");
 
     // In JWT apps, the thing should work as follow:
     // 1. the IAM will auth us in with a POST callback
@@ -117,9 +120,9 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     bool authenticated =false;
     API::RESTful::RequestParameters inputParameters;
 
-    inputParameters.jwtSigner =  this->config->jwtSigner;
-    inputParameters.jwtValidator = this->config->jwtValidator;
-    inputParameters.clientRequest = &clientRequest;
+    inputParameters.jwtSigner       = this->config->jwtSigner;
+    inputParameters.jwtValidator    = this->config->jwtValidator;
+    inputParameters.clientRequest   = &clientRequest;
 
     if (m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified)
     {
@@ -130,7 +133,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
-        apiReturn->setFullStatus(false, Network::Protocols::HTTP::Status::S_404_NOT_FOUND, "Resource Not Found");
+        apiReturn->setError( Network::Protocols::HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
         return;
     }
 
@@ -139,6 +142,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     API::RESTful::MethodsHandler::SecurityParameters securityParameters;
     securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
     securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
+
     //inputParameters.cookies = m_clientRequest.getAllCookies();
     //securityParameters.genCSRFToken = m_clientRequest.headers.getOptionValueStringByName("GenCSRFToken");
 
@@ -172,7 +176,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         break;
     default:
         log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "Unknown Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
-        apiReturn->code = Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+        apiReturn->setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
         break;
     }
 }
@@ -212,7 +216,23 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
-    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getValue("token")->toString();
+    // Security note (design): We trust the redirection to the trusted origin.
+
+    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("accessToken");
+
+    if (postLoginToken.empty())
+    {
+        // No need to validate the token, we are asuming that the application has a valid token.
+
+        // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
+        // or a default homepage if none is provided securely.
+        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+        if (redirectURL.empty())
+        {
+            redirectURL = "/";  // Default to home page
+        }
+        return redirectUsingJS(redirectURL);
+    }
 
     DataFormat::JWT::Token currentJWTToken;
     bool isTokenValid = this->config->jwtValidator->verify(postLoginToken, &currentJWTToken);
@@ -234,11 +254,13 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
                 else
                 {
                     // With this cookie, the entire web should work fine.
-                    serverResponse.setSecureCookie( "AuthToken", postLoginToken, maxAge );
+                    serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
+                    serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
                     // If defined, use the JS Token Cookie.
                     setPostLoginTokenCookie(postLoginToken, maxAge);
                     // Set the impersonation token as the old token (pass->)
-                    serverResponse.setSecureCookie( "ImpersonatorToken", clientRequest.getCookie("AuthToken"), maxAge );
+                    serverResponse.setSecureCookie( "ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge );
+                    serverResponse.cookies.getCookieByName("ImpersonatorToken")->path = "/";
                 }
             }
             else
@@ -254,7 +276,8 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
                 else
                 {
                     // With this cookie, the entire web should work fine.
-                    serverResponse.setSecureCookie( "AuthToken", postLoginToken, maxAge );
+                    serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
+                    serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
                     // If defined, use the JS Token Cookie.
                     setPostLoginTokenCookie(postLoginToken, maxAge);
                 }
@@ -264,18 +287,32 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         {
             // No previous session: set the token.
             // With this cookie, the entire web should work fine.
-            serverResponse.setSecureCookie( "AuthToken", postLoginToken, maxAge );
+            serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
+            serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
             // If defined, use the JS Token Cookie.
             setPostLoginTokenCookie(postLoginToken, maxAge);
         }
 
+        // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
+        // or a default homepage if none is provided securely.
+        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+        if (redirectURL.empty())
+        {
+            redirectURL = "/";  // Default to home page
+        }
+        return redirectUsingJS(redirectURL);
     }
     else
     {
         log(Program::Logs::LEVEL_SECURITY_ALERT, "restAPI", 2048, "Invalid JWT token");
+        return redirectUsingJS(config->redirectLocationOnLoginFailed);
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
+
+
+
+    /*
     if (config->takeRedirectLocationOnLoginSuccessFromURL)
     {
         string redirectURL = clientRequest.requestLine.urlVars()->getValue("redirect")->toString();
@@ -288,18 +325,19 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         else
         {
             // beware of dangerous URL's please.
-            return serverResponse.setRedirectLocation(redirectURL);
+            return redirectUsingJS(redirectURL);
         }
     }
     else
     {
-        return serverResponse.setRedirectLocation(config->redirectLocationOnLoginSuccess);
-    }
+        return redirectUsingJS(config->redirectLocationOnLoginSuccess);
+    }*/
 
-    // TODO: separar opciones de configuracion específicas para monotlih
+    // TODO: separar opciones de configuracion específicas para monolith
     // Bad authentication:
-    return serverResponse.setRedirectLocation(config->redirectLocationOnLoginFailed);
 }
+
+
 void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const uint64_t & maxAge)
 {
     if (config->useJSTokenCookie)
@@ -320,10 +358,14 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
 Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // Login callback:
-    if (authFunctionName == "login")
+    if (authFunctionName == "callback")
     {
         // Login (Pass the JWT)...
         return handleAuthLoginFunction();
+    }
+    else if (authFunctionName == "login_redirect" && !m_currentSessionInfo.authSession)
+    {
+        return serverResponse.setRedirectLocation(config->defaultLoginRedirect);
     }
     else if (authFunctionName == "logout" && m_currentSessionInfo.authSession)
     {
@@ -366,7 +408,7 @@ void ClientHandler::sessionLogout()
                 {
                     // Just swap the ImpersonatorToken to AuthToken
                     serverResponse.addCookieClearSecure("ImpersonatorToken");
-                    serverResponse.setSecureCookie( "AuthToken", cookieImpersonatorToken,
+                    serverResponse.setSecureCookie( "AccessToken", cookieImpersonatorToken,
                                                      impersonatorJWTToken.getExpirationTime()>time(nullptr)? impersonatorJWTToken.getExpirationTime()-time(nullptr) : 0 );
                     // deliver the information about the new token...
                     json r;
@@ -385,7 +427,7 @@ void ClientHandler::sessionLogout()
             else
             {
                 // Clear the AUTH token:
-                serverResponse.addCookieClearSecure("AuthToken");
+                serverResponse.addCookieClearSecure("AccessToken");
 
                 // deliver ok and no further token.
                 json r;

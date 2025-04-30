@@ -178,6 +178,9 @@ protected:
     // This session info is used for the logs and for filling htmli variables.
     SessionInfo m_currentSessionInfo;
 
+protected:
+    Protocols::HTTP::Status::eRetCode redirectUsingJS( const std::string & url );
+
 
 private:
     Protocols::HTTP::Status::eRetCode handleRegularFileRequest();

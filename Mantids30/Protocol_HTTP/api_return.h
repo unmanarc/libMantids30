@@ -1,17 +1,21 @@
 #ifndef API_RETURN_H
 #define API_RETURN_H
 
-#include <Mantids30/Memory/streamablejson.h>
-#include <Mantids30/Helpers/json.h>
 #include "hdr_cookie.h"
 #include "rsp_status.h"
+#include "json/value.h"
+#include <Mantids30/Helpers/json.h>
+#include <Mantids30/Memory/streamablejson.h>
 
-namespace Mantids30 {namespace API {
+namespace Mantids30 {
+namespace API {
 
 /**
  * @brief Represents the response of an API endpoint.
  */
-struct APIReturn {
+class APIReturn
+{
+public:
     /**
      * @brief Default constructor for APIReturn.
      */
@@ -19,14 +23,15 @@ struct APIReturn {
 
     APIReturn(Network::Protocols::HTTP::Status::eRetCode code)
     {
-        this->code = code;
+        this->httpResponseCode = code;
     }
 
     /**
      * @brief Parameterized constructor for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn(const json & body) {
+    APIReturn(const json &body)
+    {
         // Initialize the body member variable with the provided json object.
         *this->body = body;
     }
@@ -35,30 +40,44 @@ struct APIReturn {
      * @brief Assignment operator for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn& operator=(const json& body) {
+    APIReturn &operator=(const json &body)
+    {
         *this->body = body;
         return *this;
     }
 
-    void setSuccess(const bool & success)
+    void setError( const Network::Protocols::HTTP::Status::eRetCode & httpResponseCode, const std::string &error, const std::string &message )
     {
+        this->httpResponseCode = httpResponseCode;
         if (body)
         {
-            (*body->getValue())["success"] = success;
+            (*body->getValue())["error"] = error;
+            (*body->getValue())["message"] = message;
         }
     }
 
-    void setFullStatus( const bool & success, const int64_t & code, const std::string & message )
+    /**
+    * @brief Returns a string representation of the HTTP status code and error message.
+    * @return A string in the format "<code>http status code</code> - <code>error message</code>".
+    */
+    std::string getErrorString() const 
     {
-        if (body)
+        std::string errorString = std::to_string(static_cast<int>(httpResponseCode)) + " - ";
+ 
+        if (httpResponseCode != Network::Protocols::HTTP::Status::S_200_OK)
         {
-            (*body->getValue())["success"] = success;
-            (*body->getValue())["statusCode"] = code;
-            (*body->getValue())["statusMessage"] = message;
+            errorString +=  JSON_ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
+        } 
+        else 
+        {
+            errorString += "OK";
         }
+ 
+        return errorString;
     }
+ 
 
-    void setReasons( const json & reasons )
+    void setReasons(const json &reasons)
     {
         if (body)
         {
@@ -66,21 +85,24 @@ struct APIReturn {
         }
     }
 
-    void setFullStatus( bool success, const std::string & message )
+    Json::Value *outputPayload()
     {
-        if (body)
-        {
-            (*body->getValue())["success"] = success;
-            (*body->getValue())["statusMessage"] = message;
-        }
+        if (!body)
+            return nullptr;
+        return body->getValue();
     }
 
-    std::map<std::string,Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
-    Network::Protocols::HTTP::Status::eRetCode code = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
+
+    std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
+    Network::Protocols::HTTP::Status::eRetCode getHTTPResponseCode() const { return httpResponseCode; }
+
+    std::map<std::string, Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
+private:
+    Network::Protocols::HTTP::Status::eRetCode httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
 };
 
-}}
-
+} // namespace API
+} // namespace Mantids30
 
 #endif // API_RETURN_H

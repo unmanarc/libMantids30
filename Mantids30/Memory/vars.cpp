@@ -67,6 +67,15 @@ bool Vars::exist(const std::string &varName)
     return getValue(varName)!=nullptr?true:false;
 }
 
+std::string Vars::getStringValue(
+    const std::string &varName)
+{
+    auto v = getValue(varName);
+    if (v == nullptr)
+        return "";
+    return v->toString();
+}
+
 uint32_t Vars::getMaxVarNameSize() const
 {
     return m_maxVarNameSize;

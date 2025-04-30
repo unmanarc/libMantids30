@@ -145,7 +145,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         // Key does not exist
         log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {method=%s}", apiVersion, methodName.c_str());
         // Method not available for this null session..
-        apiReturn->code = HTTP::Status::S_404_NOT_FOUND;
+        apiReturn->setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
         return;
     }
 
@@ -156,7 +156,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "This method requires full authentication / session {method=%s}", methodName.c_str());
         // Method not available for this null session..
-        apiReturn->code = HTTP::Status::S_404_NOT_FOUND;
+        apiReturn->setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
         return;
     }
 
@@ -176,29 +176,22 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         auto finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn->body->getValue() ))
+        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn->outputPayload() ))
         {
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
-
             log(LEVEL_INFO, "monolithAPI", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", methodName.c_str(), elapsed.count());
-            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),
-                Mantids30::Helpers::jsonToString(
-                    *(apiReturn->body->getValue())
-                    ).c_str()
-                );
-
-            apiReturn->code = HTTP::Status::S_200_OK;
+            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn->outputPayload())).c_str());
             break;
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
             log(LEVEL_ERR, "monolithAPI", 2048, "Web Method not found {method=%s}", methodName.c_str());
-            apiReturn->code =  HTTP::Status::S_404_NOT_FOUND;
+            apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
             break;
         default:
             log(LEVEL_ERR, "monolithAPI", 2048, "Unknown error during web method execution {method=%s}", methodName.c_str());
-            apiReturn->code = HTTP::Status::S_401_UNAUTHORIZED;
+            apiReturn->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
             break;
         }
     }
@@ -206,10 +199,10 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
     {
         // not enough permissions.
-        apiReturn->setFullStatus(false, HTTP::Status::S_401_UNAUTHORIZED, "reasons");
-        apiReturn->setReasons(reasons);
         log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute method {method=%s,reasons=%s}", methodName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
-        apiReturn->code = HTTP::Status::S_401_UNAUTHORIZED;
+        apiReturn->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
+        apiReturn->setReasons(reasons);
+
     }
     break;
     case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
@@ -217,7 +210,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "Method not found {method=%s}", methodName.c_str());
         // not enough permissions.
-        apiReturn->code = HTTP::Status::S_404_NOT_FOUND;
+        apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
     }
     break;
     }
@@ -243,6 +236,10 @@ Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, co
     {
         // Login (Pass the JWT)...
         return handleAuthLoginFunction();
+    }
+    else if (authFunctionName == "login_redirect" && !m_currentWebSession)
+    {
+        return serverResponse.setRedirectLocation(config->defaultLoginRedirect);
     }
     else if (authFunctionName == "retrieveInfo" && m_currentWebSession)
     {
@@ -488,7 +485,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
     // TODO: en el futuro permitir header usando un policy y OPTIONS.
 
     // Check for the authorization bearer token...
-    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getValue("token")->toString();
+    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("accessToken");
     bool isJWTHeaderTokenVerified = verifyToken(postLoginToken);
 
     // The token is OK (authenticated).
@@ -588,7 +585,16 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
             serverResponse.setSecureCookie(IMPERSONATOR_SESSIONID_COOKIENAME, impersonatorSessionID, m_sessionMaxAge);
         }
 
-        if (config->takeRedirectLocationOnLoginSuccessFromURL)
+        // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
+        // or a default homepage if none is provided securely.
+        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+        if (redirectURL.empty())
+        {
+            redirectURL = "/";  // Default to home page
+        }
+        return redirectUsingJS(redirectURL);
+
+/*        if (config->takeRedirectLocationOnLoginSuccessFromURL)
         {
             string redirectURL = clientRequest.requestLine.urlVars()->getValue("redirect")->toString();
 
@@ -606,7 +612,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         else
         {
             return serverResponse.setRedirectLocation(config->redirectLocationOnLoginSuccess);
-        }
+        }*/
     }
 
     // Bad authentication:
