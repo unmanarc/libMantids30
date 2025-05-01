@@ -274,7 +274,7 @@ Status::eRetCode APIClientHandler::handleRegularFileRequest()
         // it will proccess this according to the authorization session
         if ( config->resourceFilter )
         {
-            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath,getSessionPermissions(), getSessionRoles(), getIsInActiveSession() );
+            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath,getSessionPermissions(), getSessionRoles(), isSessionActive() );
         }
 
 

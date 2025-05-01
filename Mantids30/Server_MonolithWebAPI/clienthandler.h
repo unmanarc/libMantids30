@@ -81,7 +81,7 @@ protected:
      */
     void fillSessionExtraInfo( json & jVars ) override;
 
-    bool getIsInActiveSession() override;
+    bool isSessionActive() override;
     std::set<std::string> getSessionPermissions() override;
     std::set<std::string> getSessionRoles() override;
 

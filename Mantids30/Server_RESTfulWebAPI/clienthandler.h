@@ -52,12 +52,14 @@ protected:
     Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
 
 
-    bool getIsInActiveSession() override;
+    bool isSessionActive() override;
     std::set<std::string> getSessionPermissions() override;
     std::set<std::string> getSessionRoles() override;
 
 private:
-
+    void setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t &maxAge);
+    void setImpersonatorToken(const uint64_t &maxAge);
+    std::string getRedirectURL();
 
     void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
     Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();

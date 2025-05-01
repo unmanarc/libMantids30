@@ -164,7 +164,7 @@ protected:
      * is valid, otherwise `false`.
      */
     bool verifyToken( const std::string &strToken);
-    virtual bool getIsInActiveSession() = 0;
+    virtual bool isSessionActive() = 0;
     virtual std::set<std::string> getSessionPermissions() = 0;
     virtual std::set<std::string> getSessionRoles() = 0;
     // Function to check if the URL contains any invalid characters

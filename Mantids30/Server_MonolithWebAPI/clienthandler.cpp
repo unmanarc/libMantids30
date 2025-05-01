@@ -351,7 +351,7 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
     }
 }
 
-bool ClientHandler::getIsInActiveSession()
+bool ClientHandler::isSessionActive()
 {
     return m_currentSessionInfo.authSession && !(m_currentSessionInfo.authSession->isSessionRevoked());
 }

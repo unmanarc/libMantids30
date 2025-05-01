@@ -60,7 +60,7 @@ Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
         m_JWTCookieTokenVerified = verifyToken(cookieBearerToken);
     }
 
-    if (m_JWTCookieTokenVerified || m_JWTHeaderTokenVerified)
+    if ( isSessionActive() )
     {
         // If verification is successful and the token is valid, populate user data.
         // Extract and store user-related information from the token.
@@ -83,7 +83,7 @@ void ClientHandler::sessionCleanup()
 void ClientHandler::fillSessionExtraInfo(json &jVars)
 {
     jVars["maxAge"] = 0;
-    if ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified )
+    if ( isSessionActive() )
     {
         jVars["maxAge"] = m_JWTToken.getExpirationTime() - time(nullptr);
     }
@@ -91,7 +91,7 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
 
 bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
-    if ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified )
+    if ( isSessionActive() )
     {
         return m_JWTToken.hasClaim(varName);
     }
@@ -100,7 +100,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
 
 json ClientHandler::getSessionVariableValue(const string &varName)
 {
-    if ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified )
+    if ( isSessionActive() )
     {
         return m_JWTToken.getClaim(varName);
     }
@@ -124,7 +124,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     inputParameters.jwtValidator    = this->config->jwtValidator;
     inputParameters.clientRequest   = &clientRequest;
 
-    if (m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified)
+    if ( isSessionActive() )
     {
         currentPermissions = m_JWTToken.getAllPermissions();
         inputParameters.jwtToken = &m_JWTToken;
@@ -181,14 +181,14 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     }
 }
 
-bool ClientHandler::getIsInActiveSession()
+bool ClientHandler::isSessionActive()
 {
     return ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified );
 }
 
 set<string> ClientHandler::getSessionPermissions()
 {
-    if ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified )
+    if ( isSessionActive() )
     {
         return m_JWTToken.getAllPermissions();
     }
@@ -197,18 +197,61 @@ set<string> ClientHandler::getSessionPermissions()
 
 set<string> ClientHandler::getSessionRoles()
 {
-    if ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified )
+    if ( isSessionActive() )
     {
         return m_JWTToken.getAllRoles();
     }
     return {};
 }
 
+// Helper: Set AccessToken and loggedIn cookies
+void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t & maxAge)
+{
+    // Set the access token cookie:
+    serverResponse.setSecureCookie("AccessToken", token, maxAge);
+    auto accessToken = serverResponse.cookies.getCookieByName("AccessToken");
+    if (accessToken)
+    {
+        accessToken->path = "/";
+        Headers::Cookie loggedInCookie;
+        loggedInCookie.setExpiration(accessToken->getExpiration());
+        loggedInCookie.secure = true;
+        loggedInCookie.httpOnly = false;
+        loggedInCookie.path = "/";
+        loggedInCookie.value = std::to_string(accessToken->getExpiration());
+
+        // Set the loggedIn cookie (JS accessible).
+        serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
+
+        // If defined in config->useJSTokenCookie, use the JS accessible cookie token:
+        setPostLoginTokenCookie(token, maxAge);
+    }
+}
+
+// Helper: Set impersonator token if allowed
+void ClientHandler::setImpersonatorToken(const uint64_t &maxAge)
+{
+    serverResponse.setSecureCookie("ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge);
+    serverResponse.cookies.getCookieByName("ImpersonatorToken")->path = "/";
+}
+
+// Helper: Get redirect URL from request or default
+std::string ClientHandler::getRedirectURL()
+{
+    std::string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+    if (redirectURL.empty())
+    {
+        redirectURL = "/";
+    }
+    return redirectURL;
+}
+
 Status::eRetCode ClientHandler::handleAuthLoginFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
-    string requestOrigin = clientRequest.getOrigin();
 
+    // Validate origin
+    string requestOrigin = clientRequest.getOrigin();
     if ( config->permittedLoginOrigins.find(requestOrigin) == config->permittedLoginOrigins.end() )
     {
         log(LEVEL_SECURITY_ALERT, "restAPI", 2048,
@@ -218,125 +261,79 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
 
     // Security note (design): We trust the redirection to the trusted origin.
 
+    // Handle token from POST
     string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("accessToken");
-
     if (postLoginToken.empty())
     {
         // No need to validate the token, we are asuming that the application has a valid token.
-
         // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
         // or a default homepage if none is provided securely.
-        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
-        if (redirectURL.empty())
-        {
-            redirectURL = "/";  // Default to home page
-        }
+        string redirectURL = getRedirectURL();
         return redirectUsingJS(redirectURL);
     }
 
+    // Verify JWT token
     DataFormat::JWT::Token currentJWTToken;
     bool isTokenValid = this->config->jwtValidator->verify(postLoginToken, &currentJWTToken);
     uint64_t maxAge = currentJWTToken.getExpirationTime()>time(nullptr)? currentJWTToken.getExpirationTime()-time(nullptr) : 0;
 
-    if (isTokenValid)
-    {
-        if ( (m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified) ) // Session enabled
-        {
-            if ( currentJWTToken.hasClaim("impersonator") )
-            {
-                // Impersonation
-                if (!this->config->allowImpersonation)
-                {
-                    // Impersonate
-                    log(LEVEL_SECURITY_ALERT,"restAPI", 65535, "Impersonation not allowed on this application.");
-                    return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
-                }
-                else
-                {
-                    // With this cookie, the entire web should work fine.
-                    serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
-                    serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
-                    // If defined, use the JS Token Cookie.
-                    setPostLoginTokenCookie(postLoginToken, maxAge);
-                    // Set the impersonation token as the old token (pass->)
-                    serverResponse.setSecureCookie( "ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge );
-                    serverResponse.cookies.getCookieByName("ImpersonatorToken")->path = "/";
-                }
-            }
-            else
-            {
-                // upgrade
-                if (m_JWTToken.getSubject()!=currentJWTToken.getSubject() ||  m_JWTToken.getDomain()!=currentJWTToken.getDomain())
-                {
-                    // If the cookie does not match with the current subject/token and not impersonation cookie
-                    log(LEVEL_SECURITY_ALERT, "restAPI", 2048,
-                        "Login override attempt with different user/domain {origin=%s}", requestOrigin.c_str());
-                    return HTTP::Status::S_401_UNAUTHORIZED;
-                }
-                else
-                {
-                    // With this cookie, the entire web should work fine.
-                    serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
-
-                    auto accessToken =serverResponse.cookies.getCookieByName("AccessToken");
-                    accessToken->path = "/";
-
-                    Headers::Cookie loggedInCookie;
-                    loggedInCookie.setExpiration( accessToken->getExpiration() );
-                    loggedInCookie.secure = true;
-                    loggedInCookie.httpOnly = false;
-                    loggedInCookie.path= "/";
-                    loggedInCookie.value = std::to_string( accessToken->getExpiration() ) ;
-
-                    serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
-
-                    // If defined, use the JS Token Cookie.
-                    setPostLoginTokenCookie(postLoginToken, maxAge);
-                }
-            }
-        }
-        else
-        {
-            // No previous session: set the token.
-            // With this cookie, the entire web should work fine.
-            serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
-
-            auto accessToken =serverResponse.cookies.getCookieByName("AccessToken");
-            accessToken->path = "/";
-
-            Headers::Cookie loggedInCookie;
-            loggedInCookie.setExpiration( accessToken->getExpiration() );
-            loggedInCookie.secure = true;
-            loggedInCookie.httpOnly = false;
-            loggedInCookie.path= "/";
-            loggedInCookie.value = std::to_string( accessToken->getExpiration() ) ;
-
-            serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
-
-            // If defined, use the JS Token Cookie.
-            setPostLoginTokenCookie(postLoginToken, maxAge);
-        }
-
-        // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
-        // or a default homepage if none is provided securely.
-        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
-        if (redirectURL.empty())
-        {
-            redirectURL = "/";  // Default to home page
-        }
-        return redirectUsingJS(redirectURL);
-    }
-    else
+    if (!isTokenValid)
     {
         log(Program::Logs::LEVEL_SECURITY_ALERT, "restAPI", 2048, "Invalid JWT token");
         return redirectUsingJS(config->redirectLocationOnLoginFailed);
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
+    if ( isSessionActive() )
+    {
+        // Session is enabled:
+        if ( currentJWTToken.hasClaim("impersonator") )
+        {
+            // Impersonation
+            if (!this->config->allowImpersonation)
+            {
+                // Impersonate
+                log(LEVEL_SECURITY_ALERT,"restAPI", 65535, "Impersonation not allowed on this application.");
+                return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
+            }
+            else
+            {
+                // set the access + logged in cookies:
+                setAccessTokenAndLoggedInCookie(postLoginToken, maxAge);
+
+                // Set the impersonation token as the old token (pass->)
+                setImpersonatorToken(maxAge);
+            }
+        }
+        else
+        {
+            // Upgrade the token.
+            if (m_JWTToken.getSubject()!=currentJWTToken.getSubject() ||  m_JWTToken.getDomain()!=currentJWTToken.getDomain())
+            {
+                // If the cookie does not match with the current subject/token and not impersonation cookie
+                log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Login override attempt with different user/domain {origin=%s}, you must logout first.", requestOrigin.c_str());
+                return HTTP::Status::S_401_UNAUTHORIZED;
+            }
+            else
+            {
+                // set the access + logged in cookies:
+                setAccessTokenAndLoggedInCookie(postLoginToken, maxAge);
+            }
+        }
+    }
+    else
+    {
+        // No previous session: set the token.
+
+        // set the access + logged in cookies:
+        setAccessTokenAndLoggedInCookie(postLoginToken, maxAge);
+    }
+
+    // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
+    // or a default homepage if none is provided securely.
+    string redirectURL = getRedirectURL();
+    return redirectUsingJS(redirectURL);
 }
-
-
-
 
 /*
     if (config->takeRedirectLocationOnLoginSuccessFromURL)
