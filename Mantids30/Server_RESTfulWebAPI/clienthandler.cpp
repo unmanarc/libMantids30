@@ -277,7 +277,19 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
                 {
                     // With this cookie, the entire web should work fine.
                     serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
-                    serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
+
+                    auto accessToken =serverResponse.cookies.getCookieByName("AccessToken");
+                    accessToken->path = "/";
+
+                    Headers::Cookie loggedInCookie;
+                    loggedInCookie.setExpiration( accessToken->getExpiration() );
+                    loggedInCookie.secure = true;
+                    loggedInCookie.httpOnly = false;
+                    loggedInCookie.path= "/";
+                    loggedInCookie.value = std::to_string( accessToken->getExpiration() ) ;
+
+                    serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
+
                     // If defined, use the JS Token Cookie.
                     setPostLoginTokenCookie(postLoginToken, maxAge);
                 }
@@ -288,7 +300,19 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
             // No previous session: set the token.
             // With this cookie, the entire web should work fine.
             serverResponse.setSecureCookie( "AccessToken", postLoginToken, maxAge );
-            serverResponse.cookies.getCookieByName("AccessToken")->path = "/";
+
+            auto accessToken =serverResponse.cookies.getCookieByName("AccessToken");
+            accessToken->path = "/";
+
+            Headers::Cookie loggedInCookie;
+            loggedInCookie.setExpiration( accessToken->getExpiration() );
+            loggedInCookie.secure = true;
+            loggedInCookie.httpOnly = false;
+            loggedInCookie.path= "/";
+            loggedInCookie.value = std::to_string( accessToken->getExpiration() ) ;
+
+            serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
+
             // If defined, use the JS Token Cookie.
             setPostLoginTokenCookie(postLoginToken, maxAge);
         }
@@ -309,10 +333,12 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
+}
 
 
 
-    /*
+
+/*
     if (config->takeRedirectLocationOnLoginSuccessFromURL)
     {
         string redirectURL = clientRequest.requestLine.urlVars()->getValue("redirect")->toString();
@@ -333,10 +359,8 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         return redirectUsingJS(config->redirectLocationOnLoginSuccess);
     }*/
 
-    // TODO: separar opciones de configuracion específicas para monolith
-    // Bad authentication:
-}
-
+// TODO: separar opciones de configuracion específicas para monolith
+// Bad authentication:
 
 void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const uint64_t & maxAge)
 {
