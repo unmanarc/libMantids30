@@ -85,7 +85,7 @@ public:
         }
     }
 
-    Json::Value *outputPayload()
+    Json::Value *responseJSON()
     {
         if (!body)
             return nullptr;

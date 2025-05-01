@@ -176,14 +176,14 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         auto finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn->outputPayload() ))
+        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn->responseJSON() ))
         {
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
             log(LEVEL_INFO, "monolithAPI", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", methodName.c_str(), elapsed.count());
-            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn->outputPayload())).c_str());
+            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn->responseJSON())).c_str());
             break;
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
             log(LEVEL_ERR, "monolithAPI", 2048, "Web Method not found {method=%s}", methodName.c_str());
