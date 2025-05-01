@@ -484,13 +484,13 @@ Status::eRetCode APIClientHandler::redirectUsingJS(
 
 Status::eRetCode APIClientHandler::showBrowserMessage(const std::string & title, const std::string &message, Protocols::HTTP::Status::eRetCode returnCode)
 {
-    auto sPayloadOut = createHtmlPayload(title,message);
-    serverResponse.setDataStreamer(sPayloadOut);
+    auto sHTMLPayloadOut = createHTMLAlertMessage(title,message);
+    serverResponse.setDataStreamer(sHTMLPayloadOut);
     serverResponse.setContentType("text/html", true);
     return returnCode;
 }
 
-std::shared_ptr<Streams::StreamableString> APIClientHandler::createHtmlPayload(const std::string &title, const std::string &message)
+std::shared_ptr<Streams::StreamableString> APIClientHandler::createHTMLAlertMessage(const std::string &title, const std::string &message)
 {
     std::shared_ptr<Memory::Streams::StreamableString> sPayloadOut = std::make_shared<Memory::Streams::StreamableString>();
     sPayloadOut->writeString(R"(

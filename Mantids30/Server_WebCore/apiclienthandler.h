@@ -172,7 +172,7 @@ protected:
     bool isRedirectPathSafeForAuth(const std::string& url);
 
     Protocols::HTTP::Status::eRetCode showBrowserMessage(const std::string & title, const std::string& message, Protocols::HTTP::Status::eRetCode returnCode);
-    std::shared_ptr<Memory::Streams::StreamableString> createHtmlPayload(const std::string & title, const std::string& message);
+    std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string & title, const std::string& message);
 
     DataFormat::JWT::Token m_JWTToken;
     // This session info is used for the logs and for filling htmli variables.
