@@ -322,6 +322,7 @@ std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
     return sign(*(token.getClaimsPTR()));
 }
 
+
 bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOutput)
 {
     JWT::Token dummyToken;

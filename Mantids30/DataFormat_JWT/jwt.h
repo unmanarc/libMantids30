@@ -164,6 +164,42 @@ public:
 
     class Cache {
     public:
+
+        Cache()
+        {
+
+        }
+
+        // Copy constructor (thread-safe)
+        Cache(const Cache& other)
+            : m_cacheMaxByteCount(0), m_cacheCurrentByteCount(0), m_enabled(false) {
+            // Lock the destination's mutex to prevent concurrent modifications
+            boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
+
+            // Copy data
+            m_cacheMaxByteCount = other.m_cacheMaxByteCount;
+            m_cacheCurrentByteCount = other.m_cacheCurrentByteCount;
+            m_enabled = other.m_enabled;
+            m_tokenCache = other.m_tokenCache;
+            m_cacheQueue = other.m_cacheQueue;
+        }
+
+        // Copy assignment operator (thread-safe)
+        Cache& operator=(const Cache& other) {
+            if (this != &other) {
+                // Lock the destination's mutex to prevent concurrent modifications
+                boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
+
+                // Copy data
+                m_cacheMaxByteCount = other.m_cacheMaxByteCount;
+                m_cacheCurrentByteCount = other.m_cacheCurrentByteCount;
+                m_enabled = other.m_enabled;
+                m_tokenCache = other.m_tokenCache;
+                m_cacheQueue = other.m_cacheQueue;
+            }
+            return *this;
+        }
+
         // Cache functions:
         bool checkToken( const std::string& payload);
         void add(const std::string &payload);
@@ -191,6 +227,37 @@ public:
     public:
         Revocation();
         ~Revocation();
+
+        // Copy constructor
+        Revocation(const Revocation &other)
+        {
+            // Lock the destination's mutex to prevent concurrent modifications
+            boost::unique_lock<boost::shared_mutex> lockThis(m_revokedTokensMutex);
+
+            // Copy the data
+            m_expirationSignatures = other.m_expirationSignatures;
+            m_revokedTokens = other.m_revokedTokens;
+            m_stopGarbageCollector = (bool)other.m_stopGarbageCollector;
+            m_garbageCollectorInterval = other.m_garbageCollectorInterval;
+        }
+
+        // Copy assignment operator
+        Revocation &operator=(
+            const Revocation &other)
+        {
+            if (this != &other)
+            {
+                // Lock the destination's mutex to prevent concurrent modifications
+                boost::unique_lock<boost::shared_mutex> lockThis(m_revokedTokensMutex);
+
+                // Copy the data
+                m_expirationSignatures = other.m_expirationSignatures;
+                m_revokedTokens = other.m_revokedTokens;
+                m_garbageCollectorInterval = other.m_garbageCollectorInterval;
+                m_stopGarbageCollector = (bool)other.m_stopGarbageCollector;
+            }
+            return *this;
+        }
 
         // Revokation functions...
         void addToRevocationList(const std::string& signature, std::time_t expirationTime);
