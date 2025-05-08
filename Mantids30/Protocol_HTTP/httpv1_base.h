@@ -201,7 +201,7 @@ public:
 
         struct NetworkClientInfo {
 
-            json getNetworkClientInfo()
+            json toJSON()
             {
                 json sessionInfo;
                 sessionInfo["remoteAddress"] = REMOTE_ADDR;
