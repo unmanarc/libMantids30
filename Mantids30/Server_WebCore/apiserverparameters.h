@@ -81,6 +81,12 @@ public:
      */
     std::set<std::string> APIURLs = {  "/api" };
 
+
+    /**
+     * @brief appName The application name (eg. IAM) identificator.
+     */
+    std::string appName;
+
     /**
      * @brief softwareName Software name for our API server
      */
@@ -173,7 +179,12 @@ public:
      * The handler returns a value of type `Protocols::HTTP::Status::eRetCode` representing the
      * response status code.
      */
-    typedef Protocols::HTTP::Status::eRetCode (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response);
+    typedef Protocols::HTTP::Status::eRetCode (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+
+    struct DynamicRequestHandlerDef {
+        DynamicRequestHandler handler;
+        std::shared_ptr<void> obj = nullptr;
+    };
 
     /**
      * @brief Map for associating URL paths with dynamic request handler functions.
@@ -201,7 +212,7 @@ public:
      * the appropriate handler for any given path. If a request's path matches an entry in the
      * map, the corresponding handler function is called to process the request.
      */
-    std::map<std::string, DynamicRequestHandler> dynamicRequestHandlersByRoute;
+    std::map<std::string, DynamicRequestHandlerDef> dynamicRequestHandlersByRoute;
 
     /**
      * @brief Sets the document root path for serving web resources.

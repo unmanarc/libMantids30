@@ -161,6 +161,12 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                     serverResponse.setCookie(i.first, i.second);
                 }
 
+                // Set headers to the server response (eg. CORS)...
+                for (auto &i : apiReturn.httpExtraHeaders)
+                {
+                    serverResponse.headers.add(i.first, i.second);
+                }
+
                 isAPIURI = true;
                 break;
             }
@@ -207,7 +213,7 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                 std::string dynUrlWithoutBase = requestURI.substr(route.first.size() + 1);
 
                 // Invoke the corresponding handler function with the extracted path and request/response objects.
-                ret = route.second(dynUrlWithoutBase, &clientRequest, &serverResponse);
+                ret = route.second.handler(dynUrlWithoutBase, &clientRequest, &serverResponse, route.second.obj);
 
                 // Set the flag to true, indicating the request was processed as dynamic content.
                 isDynamicContent = true;
@@ -446,7 +452,13 @@ void APIClientHandler::log(eLogLevels logSeverity,  const std::string & module, 
 bool APIClientHandler::verifyToken(const std::string &strToken)
 {
     // Attempt to verify the provided token using the JWT validator.
-    return this->config->jwtValidator->verify(strToken, &m_JWTToken);
+    bool x = this->config->jwtValidator->verify(strToken, &m_JWTToken);
+
+    if (!x)
+        return false;
+
+    // Check if the current running app matches the JWT spec.
+    return JSON_ASSTRING_D(m_JWTToken.getClaim("app"), "") == config->appName;
 }
 
 bool APIClientHandler::isURLSafe(const std::string &url)
@@ -477,6 +489,9 @@ bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
 Status::eRetCode APIClientHandler::redirectUsingJS(
     const std::string &url)
 {
+    if (url == "#retokenize")
+        return Protocols::HTTP::Status::S_200_OK;
+
     getResponseDataStreamer()->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
     return Protocols::HTTP::Status::S_200_OK;
 }
