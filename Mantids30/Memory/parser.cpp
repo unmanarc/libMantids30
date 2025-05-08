@@ -7,44 +7,54 @@ using namespace Mantids30::Memory::Streams;
 Parser::Parser(std::shared_ptr<StreamableObject> value, bool clientMode)
 {
     this->m_clientMode = clientMode;
-    m_currentParser = nullptr;
-    m_maxTTL = 4096;
-    m_initialized = false;
     this->m_streamableObject = value;
 }
 
-StreamableObject::Status Parser::parseObject(Parser::ErrorMSG *err)
+WriteStatus Parser::parseObject(Parser::ErrorMSG *err)
 {
     bool ret;
-    Status upd;
+    WriteStatus upd;
 
     *err = PARSING_SUCCEED;
+
+    // Call the init protocol...
     m_initialized = initProtocol();
+
+    // If initialized ok...
     if (m_initialized)
     {
-        if (!(ret=m_streamableObject->streamTo(shared_from_this(),upd)) || !upd.succeed)
+        // the streamable object introduced on the object creation is streamed to this.
+        // write function will write....
+        if (!(ret=m_streamableObject->streamTo(this,upd)) || !upd.succeed)
         {
+            // Something failed during the streaming...
             upd.succeed=false;
             *err=getFailedWriteState()!=0?PARSING_ERR_READ:PARSING_ERR_PARSE;
         }
+
+        // Call: Finish the protocol (either failed or not).
         endProtocol();
         return upd;
     }
     else
+    {
+        // status: failed.
         upd.succeed=false;
+    }
 
     *err = PARSING_ERR_INIT;
     return upd;
 }
 
-bool Parser::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Status &)
+bool Parser::streamTo(
+    Memory::Streams::StreamableObject *, WriteStatus &)
 {
     return false;
 }
 
-StreamableObject::Status Parser::write(const void *buf, const size_t &count, Status &wrStat)
+WriteStatus Parser::write(const void *buf, const size_t &count, WriteStatus &wrStat)
 {
-    Status ret;
+    WriteStatus ret;
     // Parse this data...
     size_t ttl = 0;
     bool finished = false;
@@ -55,8 +65,10 @@ StreamableObject::Status Parser::write(const void *buf, const size_t &count, Sta
     fflush(stdout);
 #endif
 
+    // The content streamed is parsed here:
     std::pair<bool, uint64_t> r = parseData(buf,count, &ttl, &finished);
-    if (finished) ret.finish = wrStat.finish = true;
+    if (finished)
+        ret.finish = wrStat.finish = true;
 
     if (r.first==false)
     {
@@ -95,26 +107,29 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
     // displace bytes is the number of bytes that the subparser have taken from the incoming buffer, so we have to displace them.
     std::pair<bool, uint64_t> writtenBytes;
 
+    // The m_currentParser is a subparser...
     if (m_currentParser!=nullptr)
     {
         // Default state: get more data...
-        m_currentParser->setParseStatus(SubParser::PARSE_STAT_GET_MORE_DATA);
+        m_currentParser->setParseStatus(SubParser::PARSE_GET_MORE_DATA);
+
         // Here, the parser should call the sub stream parser parse function and set the new status.
         if ((writtenBytes=m_currentParser->writeIntoParser(buf,count)).first==false)
             return std::make_pair(false,static_cast<uint64_t>(0));
+
         // TODO: what if error? how to tell the parser that it should analize the connection up to there (without correctness).
         switch (m_currentParser->getParseStatus())
         {
-        case SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER:
+        case SubParser::PARSE_GOTO_NEXT_SUBPARSER:
         {
 #ifdef DEBUG_PARSER
-            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
+            printf("%p PARSE_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // Check if there is next parser...
             if (!changeToNextParser())
                 return std::make_pair(false,static_cast<uint64_t>(0));
 #ifdef DEBUG_PARSER
-            printf("%p PARSE_STAT_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
+            printf("%p PARSE_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
@@ -123,17 +138,17 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
             if (m_currentParser==nullptr || writtenBytes.second == count)
                 return writtenBytes;
         } break;
-        case SubParser::PARSE_STAT_GET_MORE_DATA:
+        case SubParser::PARSE_GET_MORE_DATA:
         {
 #ifdef DEBUG_PARSER
-            printf("%p PARSE_STAT_GET_MORE_DATA requested from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
+            printf("%p PARSE_GET_MORE_DATA requested from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // More data required... (TODO: check this)
             if (writtenBytes.second == count)
                 return writtenBytes;
         } break;
             // Bad parsing... end here.
-        case SubParser::PARSE_STAT_ERROR:
+        case SubParser::PARSE_ERROR:
 #ifdef DEBUG_PARSER
             printf("%p PARSE_STAT_ERROR executed from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
@@ -163,7 +178,9 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 
 void Parser::initSubParser(SubParser *subparser)
 {
-    subparser->initElemParser((m_streamableObject!=nullptr)?m_streamableObject:shared_from_this(),m_clientMode);
+    // Parsers are initialized with the pointer from the smart pointer.
+    // all subparser should live in the context of the parser, and never run after the parser dies...
+    subparser->initElemParser((m_streamableObject!=nullptr)?m_streamableObject.get():this,m_clientMode);
 }
 
 void Parser::setMaxTTL(const size_t &value)

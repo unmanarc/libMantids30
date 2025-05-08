@@ -577,7 +577,7 @@ bool HTTPv1_Server::changeToNextParserOnClientContentData()
     return answer(m_answerBytes);
 }
 
-bool HTTPv1_Server::streamServerHeaders(Memory::Streams::StreamableObject::Status &wrStat)
+bool HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
 {
     // Act as a server. Send data from here.
     uint64_t strsize;
@@ -633,7 +633,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::StreamableObject::Statu
             serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
     }
 
-    return serverResponse.headers.stream(wrStat);
+    return serverResponse.headers.streamToUpstream(wrStat);
 }
 
 void HTTPv1_Server::prepareServerVersionOnURI()
@@ -686,15 +686,13 @@ void HTTPv1_Server::parseHostOptions()
 }
 
 
-bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
+bool HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
 {
     wrStat.bytesWritten = 0;
 
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
-
-    //setClientInfoVars();
 
     // Process client petition here.
     if (!m_badAnswer)
@@ -705,18 +703,21 @@ bool HTTPv1_Server::answer(Memory::Streams::StreamableObject::Status &wrStat)
     // Answer is the last... close the connection after it.
     m_currentParser = nullptr;
 
-    if (!serverResponse.status.stream(wrStat))
+    if (!serverResponse.status.streamToUpstream(wrStat))
     {
         return false;
     }
+
     if (!streamServerHeaders(wrStat))
     {
         return false;
     }
 
-    bool streamedOK = serverResponse.content.stream(wrStat);
+    bool streamedOK = serverResponse.content.streamToUpstream(wrStat);
+
     // Destroy the binary content container here:
     serverResponse.content.setStreamableObj(nullptr);
+
     return streamedOK;
 }
 
@@ -778,14 +779,14 @@ void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory:
     m_staticContentElements[path] = contentElement;
 }
 
-Memory::Streams::StreamableObject::Status HTTPv1_Server::getResponseTransmissionStatus() const
+Memory::Streams::WriteStatus HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return m_answerBytes;
 }
 
-Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
+Memory::Streams::WriteStatus HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
-    Memory::Streams::StreamableObject::Status stat;
+    Memory::Streams::WriteStatus stat;
 
     if (!serverResponse.content.getStreamableObj())
     {
@@ -794,11 +795,9 @@ Memory::Streams::StreamableObject::Status HTTPv1_Server::streamResponse(std::sha
     }
 
     // Stream in place:
-    source->streamTo( serverResponse.content.getStreamableObj(), stat);
+    source->streamTo( serverResponse.content.getStreamableObj().get() , stat);
     return stat;
 }
-
-
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTPv1_Server::getResponseDataStreamer()
 {

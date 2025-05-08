@@ -6,20 +6,9 @@
 using namespace Mantids30::Memory::Streams;
 
 
-SubParser::SubParser()
+void SubParser::initElemParser(Memory::Streams::StreamableObject * upStreamObj, bool clientMode)
 {
-    m_clientMode = true;
-    m_upStream = nullptr;
-    m_streamEnded = false;
-    setParseStatus(PARSE_STAT_GET_MORE_DATA);
-    m_parseMode = PARSE_MODE_DELIMITER;
-    m_parseDelimiter = "\r\n";
-}
-
-
-void SubParser::initElemParser(std::shared_ptr<Memory::Streams::StreamableObject> upstreamObj, bool clientMode)
-{
-    this->m_upStream = upstreamObj;
+    this->m_upStream = upStreamObj;
     this->m_clientMode = clientMode;
 }
 
@@ -231,7 +220,7 @@ std::pair<bool,uint64_t> SubParser::parseBySize(const void *buf, size_t count)
     {
         // Abort current data.
         m_streamEnded = true;
-        setParseStatus(PARSE_STAT_GOTO_NEXT_SUBPARSER);
+        setParseStatus(PARSE_GOTO_NEXT_SUBPARSER);
         m_unparsedBuffer.clear(); // Destroy the container data.
         return std::make_pair(true,0);
     }
@@ -433,7 +422,7 @@ Mantids30::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t 
     return r;
 }
 
-std::string SubParser::getDelimiterFound() const
+std::string SubParser::getFoundDelimiter() const
 {
     return m_delimiterFound;
 }
@@ -443,7 +432,7 @@ void SubParser::setParseMultiDelimiter(const std::list<std::string> &value)
     m_parseMultiDelimiter = value;
 }
 
-uint64_t SubParser::getLeftToparse() const
+uint64_t SubParser::getUnparsedDataSize() const
 {
     return m_unparsedBuffer.getSizeLeft();
 }

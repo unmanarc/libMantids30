@@ -2,14 +2,14 @@
 
 using namespace Mantids30::Memory::Streams;
 
-bool StreamableNull::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
+bool StreamableNull::streamTo(Memory::Streams::StreamableObject * out, WriteStatus &wrStatUpd)
 {
     return true;
 }
 
-StreamableObject::Status StreamableNull::write(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
+WriteStatus StreamableNull::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     cur.succeed=true;
     return  cur;
 }

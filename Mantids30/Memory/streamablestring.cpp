@@ -3,9 +3,9 @@
 
 using namespace Mantids30::Memory::Streams;
 
-bool StreamableString::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
+bool StreamableString::streamTo(Memory::Streams::StreamableObject * out, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     if (!(cur=out->writeFullStream(m_value.c_str(),m_value.size(),wrStatUpd)).succeed || cur.finish)
     {
         if (!cur.succeed)
@@ -23,9 +23,9 @@ bool StreamableString::streamTo(std::shared_ptr<Memory::Streams::StreamableObjec
     return true;
 }
 
-StreamableObject::Status StreamableString::write(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
+WriteStatus StreamableString::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
 
     std::string x( (static_cast<const char *>(buf)), count);
     m_value+=x;

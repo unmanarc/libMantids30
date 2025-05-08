@@ -8,6 +8,46 @@
 
 namespace Mantids30 { namespace Memory { namespace Streams {
 
+struct WriteStatus {
+
+    WriteStatus()
+    {
+        bytesWritten = 0;
+        succeed = true;
+        finish = false;
+    }
+
+    WriteStatus(const uint64_t & x)
+    {
+        bytesWritten = x;
+        succeed = true;
+        finish = false;
+    }
+
+    WriteStatus & operator=(const uint64_t & x)
+    {
+        bytesWritten = x;
+        return *this;
+    }
+
+    WriteStatus & operator+=(const uint64_t & x)
+    {
+        bytesWritten += x;
+        return *this;
+    }
+
+    WriteStatus & operator+=(const WriteStatus & x)
+    {
+        bytesWritten += x.bytesWritten;
+        if (!x.succeed) succeed = false;
+        if (x.finish) finish = x.finish;
+        return *this;
+    }
+
+    bool succeed, finish;
+    uint64_t bytesWritten;
+};
+
 /**
  * StreamableObject base class
  * This is a base class for streamable objects that can be retrieved or parsed trough read/write functions.
@@ -15,47 +55,6 @@ namespace Mantids30 { namespace Memory { namespace Streams {
 class StreamableObject : public std::enable_shared_from_this<StreamableObject>
 {
 public:
-
-    struct Status {
-
-        Status()
-        {
-            bytesWritten = 0;
-            succeed = true;
-            finish = false;
-        }
-
-        Status(const uint64_t & x)
-        {
-            bytesWritten = x;
-            succeed = true;
-            finish = false;
-        }
-
-        Status & operator=(const uint64_t & x)
-        {
-            bytesWritten = x;
-            return *this;
-        }
-
-        Status & operator+=(const uint64_t & x)
-        {
-            bytesWritten += x;
-            return *this;
-        }
-
-        Status & operator+=(const Status & x)
-        {
-            bytesWritten += x.bytesWritten;
-            if (!x.succeed) succeed = false;
-            if (x.finish) finish = x.finish;
-            return *this;
-        }
-
-        bool succeed, finish;
-        uint64_t bytesWritten;
-    };
-
     StreamableObject() = default;
     virtual ~StreamableObject() = default;
 
@@ -74,20 +73,20 @@ public:
      * @return std::numeric_limits<uint64_t>::max() if the stream is not fixed size
      */
     virtual uint64_t size() const { return std::numeric_limits<uint64_t>::max(); }
-    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Status & wrStatUpd)=0;
-    virtual Status write(const void * buf, const size_t &count, Status & wrStatUpd)=0;
+    virtual bool streamTo(Memory::Streams::StreamableObject * out, WriteStatus & wrStatUpd)=0;
+    virtual WriteStatus write(const void * buf, const size_t &count, WriteStatus & wrStatUpd)=0;
 
-    Status writeFullStream(const void *buf, const size_t &count, Status & wrStatUpd);
+    WriteStatus writeFullStream(const void *buf, const size_t &count, WriteStatus & wrStatUpd);
     /**
      * @brief writeStream Write into stream using std::strings
      * @param buf data to be streamed.
      * @return true if succeed (all bytes written)
      */
-    Status writeString(const std::string & buf, Status & wrStatUpd);
-    Status writeString(const std::string & buf);
+    WriteStatus writeString(const std::string & buf, WriteStatus & wrStatUpd);
+    WriteStatus writeString(const std::string & buf);
 
-    Status strPrintf(const char * format, ...);
-    Status strPrintf(Status & wrStatUpd, const char * format, ...);
+    WriteStatus strPrintf(const char * format, ...);
+    WriteStatus strPrintf(WriteStatus & wrStatUpd, const char * format, ...);
 
     uint16_t getFailedWriteState() const;
 

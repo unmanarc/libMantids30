@@ -21,7 +21,7 @@ public:
 
     ~MIME_Message() override;
 
-    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrStat) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrStat) override;
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- VARIABLE GET FUNCTIONS -------------

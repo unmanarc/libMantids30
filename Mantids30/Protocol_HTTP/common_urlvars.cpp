@@ -34,15 +34,14 @@ bool URLVars::isEmpty()
     return m_vars.empty();
 }
 
-//(Memory::Containers::B_Chunks *)
-
-bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrsStat)
+bool URLVars::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     bool firstVar = true;
     for (auto & i : m_vars)
     {
-        if (firstVar) firstVar=false;
+        if (firstVar)
+            firstVar=false;
         else
         {
             if (!(cur+=out->writeString("&", wrsStat)).succeed)
@@ -52,9 +51,11 @@ bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, M
         Memory::Containers::B_Chunks varName;
         varName.append(i.first.c_str(), i.first.size());
 
-        std::shared_ptr<Memory::Streams::Encoders::URL> varNameEncoder = std::make_shared<Memory::Streams::Encoders::URL>(out);
-        //bytesWritten+=varNameEncoder.getFinalBytesWritten();
-        if (!(cur+=varName.streamTo(varNameEncoder, wrsStat)).succeed)
+        Memory::Streams::Encoders::URL varNameEncoder;
+
+        auto cur = varNameEncoder.transform(&varName,out);
+        wrsStat+=cur;
+        if (!cur.succeed || !cur.finish)
         {
             out->writeEOF(false);
             return false;
@@ -65,9 +66,10 @@ bool URLVars::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, M
             if (!(cur+=out->writeString("=",wrsStat)).succeed)
                 return false;
 
-            std::shared_ptr<Memory::Streams::Encoders::URL> varNameEncoder2 = std::make_shared<Memory::Streams::Encoders::URL>(out);
-            //writtenBytes+=varNameEncoder2.getFinalBytesWritten();
-            if (!(i.second)->streamTo(varNameEncoder2,wrsStat))
+            Memory::Streams::Encoders::URL varNameEncoder2;
+            auto cur = varNameEncoder2.transform(i.second.get(),out);
+            wrsStat+=cur;
+            if (!cur.finish || !cur.succeed)
             {
                 out->writeEOF(false);
                 return false;
@@ -129,7 +131,7 @@ bool URLVars::changeToNextParser()
     case URLV_STAT_WAITING_NAME:
     {
         m_currentVarName = m_urlVarParser.flushRetrievedContentAsString();
-        if (m_urlVarParser.getDelimiterFound() == "&" || m_urlVarParser.isStreamEnded())
+        if (m_urlVarParser.getFoundDelimiter() == "&" || m_urlVarParser.isStreamEnded())
         {
             // AMP / END:
             addVar(m_currentVarName, m_urlVarParser.flushRetrievedContentAsBC());
@@ -168,10 +170,12 @@ void URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Contain
 
 void URLVars::iSetMaxVarContentSize()
 {
-    if (m_currentStat == URLV_STAT_WAITING_CONTENT) m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
+    if (m_currentStat == URLV_STAT_WAITING_CONTENT)
+        m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
 }
 
 void URLVars::iSetMaxVarNameSize()
 {
-    if (m_currentStat == URLV_STAT_WAITING_NAME) m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
+    if (m_currentStat == URLV_STAT_WAITING_NAME)
+        m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
 }

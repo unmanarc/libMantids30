@@ -1,24 +1,23 @@
 #pragma once
 
 #include <Mantids30/Memory/streamableobject.h>
-#include <memory>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
 class Content_Chunked_SubParser : public Memory::Streams::StreamableObject
 {
 public:
-    Content_Chunked_SubParser( std::shared_ptr<Memory::Streams::StreamableObject> dst );
+    Content_Chunked_SubParser(Memory::Streams::StreamableObject * upStreamOut);
     ~Content_Chunked_SubParser( );
 
-    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrsStat) override;
-    Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Memory::Streams::StreamableObject::Status & wrStatUpd) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrsStat) override;
+    Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Memory::Streams::WriteStatus & wrStatUpd) override;
 
     bool endBuffer();
 
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject> m_dst;
-    uint64_t m_pos;
+    uint64_t m_pos = 0;
+    Memory::Streams::StreamableObject * upStreamOut = nullptr;
 };
 
 }}}}}

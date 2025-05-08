@@ -3,7 +3,6 @@
 #include "b_chunks.h"
 #include "b_ref.h"
 #include "streamableobject.h"
-#include <memory>
 
 //#define DEBUG_PARSER 1
 
@@ -20,9 +19,9 @@ class SubParser
 {
 public:
     enum ParseStatus {
-        PARSE_STAT_ERROR,
-        PARSE_STAT_GET_MORE_DATA,
-        PARSE_STAT_GOTO_NEXT_SUBPARSER
+        PARSE_ERROR,
+        PARSE_GET_MORE_DATA,
+        PARSE_GOTO_NEXT_SUBPARSER
         // TODO: PARSE_STAT_NEXT_MAINPARSER
     };
 
@@ -37,10 +36,10 @@ public:
 //        PARSE_MODE_FREEPARSER               // TODO
     };
 
-    SubParser();
+    SubParser() = default;
     virtual ~SubParser() = default;
-    
-    void initElemParser(std::shared_ptr<StreamableObject> upstreamObj, bool clientMode);
+
+    void initElemParser(StreamableObject *upStreamObj, bool clientMode);
 
     ///////////////////
     /**
@@ -66,17 +65,17 @@ public:
      * @param wrStat updates bytes written and error status.
      * @return true if succeed
      */
-    virtual bool stream(StreamableObject::Status & wrStat) = 0;
+    virtual bool streamToUpstream(WriteStatus & wrStat) = 0;
     /**
-     * @brief getLeftToParse Get Left data to parse.
-     * @return left data to parse.
+     * @brief Returns the size of the unparsed data remaining in the buffer.
+     * @return Size of the unparsed data in bytes.
      */
-    uint64_t getLeftToparse() const;
+    uint64_t getUnparsedDataSize() const;
     /**
-     * @brief getDelimiterFound Get delimiter found on multi-delimiter.
-     * @return delimiter string found.
+     * @brief Returns the delimiter string that was found during parsing with multiple delimiters.
+     * @return The delimiter string that was matched in the current parsing context.
      */
-    std::string getDelimiterFound() const;
+    std::string getFoundDelimiter() const;
     /**
      * @brief isStreamEnded Get if the last piece of data of the stream was parsed.
      * @return
@@ -130,10 +129,10 @@ protected:
     void clear();
 
     ////////////////////////////
-    bool m_clientMode;
-    std::shared_ptr<Memory::Streams::StreamableObject> m_upStream;
-    bool m_streamEnded;
+    bool m_clientMode = true;
+    bool m_streamEnded = false;
     std::string m_subParserName;
+    Memory::Streams::StreamableObject * m_upStream = nullptr;
 
 private:
     std::pair<bool,uint64_t> parseByMultiDelimiter(const void * buf, size_t count);
@@ -146,16 +145,16 @@ private:
 
     uint64_t getLastBytesInCommon(const std::string &boundary);
     Mantids30::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
-
     Mantids30::Memory::Containers::B_Ref m_parsedBuffer;
     Mantids30::Memory::Containers::B_Chunks m_unparsedBuffer;
-    std::string m_parseDelimiter;
 
+    std::string m_parseDelimiter  = "\r\n";
     std::string m_delimiterFound;
+
     std::list<std::string> m_parseMultiDelimiter;
 
-    ParseMode m_parseMode;
-    ParseStatus m_parseStatus;
+    ParseMode m_parseMode = PARSE_MODE_DELIMITER;
+    ParseStatus m_parseStatus = PARSE_GET_MORE_DATA;
 };
 
 }}}

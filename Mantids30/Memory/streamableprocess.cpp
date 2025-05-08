@@ -1,5 +1,4 @@
 #include "streamableprocess.h"
-#include <memory>
 #ifndef _WIN32
 #include <string.h>
 
@@ -13,9 +12,9 @@ Mantids30::Memory::Streams::StreamableProcess::~StreamableProcess()
     delete this->m_spawner;
 }
 
-bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<StreamableObject> out, Status &wrStatUpd)
+bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * out, WriteStatus &wrStatUpd)
 {
-    Status cur;
+    WriteStatus cur;
     for (;;)
     {
         auto rsp =m_spawner->pollResponse();
@@ -29,6 +28,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<Str
 
         if (rsp.find(STDOUT_FILENO)!=rsp.end())
             rsize = m_spawner->read(STDOUT_FILENO,buf,sizeof(buf)-1);
+
         if (rsp.find(STDERR_FILENO)!=rsp.end())
             rsize = m_spawner->read(STDERR_FILENO,buf,sizeof(buf)-1);
 
@@ -62,13 +62,14 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(std::shared_ptr<Str
     }
 
    m_spawner->waitUntilProcessEnds();
+
    return true;
 }
 
-Mantids30::Memory::Streams::StreamableObject::Status Mantids30::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count, Status &wrStatUpd)
+Mantids30::Memory::Streams::WriteStatus Mantids30::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
 {
     // TODO:
-    Mantids30::Memory::Streams::StreamableObject::Status status;
+    Mantids30::Memory::Streams::WriteStatus status;
     status.succeed = false;
     status.finish = false;
     return status;

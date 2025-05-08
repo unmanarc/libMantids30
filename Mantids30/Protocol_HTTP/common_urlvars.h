@@ -24,7 +24,7 @@ public:
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
-    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Memory::Streams::StreamableObject::Status & wrsStat) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrsStat) override;
 
     /////////////////////////////////////////////////////
     // Variables Container:

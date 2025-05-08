@@ -22,10 +22,10 @@ void Socket_Stream_Base::writeEOF(bool)
     shutdownSocket(SHUT_RDWR);
 }
 
-bool Socket_Stream_Base::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrsStat)
+bool Socket_Stream_Base::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
 {
     char data[8192];
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     for (;;)
     {
         int r = partialRead(data,sizeof(data));
@@ -56,9 +56,9 @@ bool Socket_Stream_Base::streamTo(std::shared_ptr<Memory::Streams::StreamableObj
     }
 }
 
-Memory::Streams::StreamableObject::Status Socket_Stream_Base::write(const void *buf, const size_t &count, Memory::Streams::StreamableObject::Status &wrStat)
+Memory::Streams::WriteStatus Socket_Stream_Base::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     // TODO: report the right amount of data copied...
     bool r = writeFull(buf,count);
     if (!r)

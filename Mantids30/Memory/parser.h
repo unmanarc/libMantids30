@@ -37,11 +37,11 @@ public:
      * @param err: (0:succeed, -1:failed to initialize, -2:failed to read, -3:failed to parse/write)
      * @return bytes written.
      */
-    Status parseObject(ErrorMSG * err);
+    WriteStatus parseObject(ErrorMSG * err);
 
     //////////////////////////////////////////
-    virtual bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>, Status &) override;
-    virtual Status write(const void * buf, const size_t &count, Status &wrStat) override;
+    virtual bool streamTo(Memory::Streams::StreamableObject *, WriteStatus &) override;
+    virtual WriteStatus write(const void * buf, const size_t &count, WriteStatus &wrStat) override;
     /**
      * @brief writeEOF Receive this when the connection is ended.
      */
@@ -67,9 +67,9 @@ protected:
 
     void initSubParser(SubParser * subparser);
 
-    SubParser * m_currentParser;
-    size_t m_maxTTL;
-    bool m_initialized;
+    SubParser * m_currentParser = nullptr;
+    size_t m_maxTTL = 4096;
+    bool m_initialized = false;
     bool m_clientMode;
 
 private:

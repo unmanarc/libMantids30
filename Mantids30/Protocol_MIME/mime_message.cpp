@@ -42,19 +42,28 @@ MIME_Message::~MIME_Message()
     for (MIME_PartMessage * i : m_allParts) delete i;
 }
 
-bool MIME_Message::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrStat)
+bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     // first boundary:
-    if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed) return false;
+    if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed)
+        return false;
     for (MIME_PartMessage * i : m_allParts)
     {
-        if (!(cur+=out->writeString("\r\n", wrStat)).succeed) return false;
+        if (!(cur+=out->writeString("\r\n", wrStat)).succeed)
+            return false;
+
         i->getContent()->initElemParser(out,true);
         i->getHeader()->initElemParser(out,true);
-        if (!i->stream(wrStat))
+
+        if (!i->streamToSubParsers(wrStat))
             return false;
-        if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed) return false;
+
+        i->getContent()->initElemParser(nullptr,true);
+        i->getHeader()->initElemParser(nullptr,true);
+
+        if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed)
+            return false;
     }
     if (!(cur+=out->writeString("--\r\n", wrStat)).succeed)
         return false;

@@ -1,6 +1,5 @@
 #include "streamableobject.h"
 #include "streamablestring.h"
-#include <memory>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -14,15 +13,15 @@ using namespace Mantids30::Memory::Streams;
 
 std::string StreamableObject::toString()
 {
-    std::shared_ptr<StreamableString> s = std::make_shared<StreamableString>();
-    Status x;
-    this->streamTo(s, x);
-    return s->getValue();
+    StreamableString s;
+    WriteStatus x;
+    this->streamTo(&s, x);
+    return s.getValue();
 }
 
-StreamableObject::Status StreamableObject::writeFullStream(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
+WriteStatus StreamableObject::writeFullStream(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     while (cur.bytesWritten<count)
     {
         if (!(cur += write(static_cast<const char *>(buf)+cur.bytesWritten,count-cur.bytesWritten, wrStatUpd)).succeed || cur.finish)
@@ -31,20 +30,20 @@ StreamableObject::Status StreamableObject::writeFullStream(const void *buf, cons
     return cur;
 }
 
-StreamableObject::Status StreamableObject::writeString(const std::string &buf, StreamableObject::Status &wrStatUpd)
+WriteStatus StreamableObject::writeString(const std::string &buf, WriteStatus &wrStatUpd)
 {
     return writeFullStream(buf.c_str(), buf.size(), wrStatUpd);
 }
 
-StreamableObject::Status StreamableObject::writeString(const std::string &buf)
+WriteStatus StreamableObject::writeString(const std::string &buf)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     return writeString(buf,cur);
 }
 
-StreamableObject::Status StreamableObject::strPrintf(const char *format, ...)
+WriteStatus StreamableObject::strPrintf(const char *format, ...)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     char * var = nullptr;
     int retval;
 
@@ -67,9 +66,9 @@ StreamableObject::Status StreamableObject::strPrintf(const char *format, ...)
     return cur;
 }
 
-StreamableObject::Status StreamableObject::strPrintf(StreamableObject::Status &wrStatUpd, const char *format,...)
+WriteStatus StreamableObject::strPrintf(WriteStatus &wrStatUpd, const char *format,...)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     char * var = nullptr;
     int retval;
 

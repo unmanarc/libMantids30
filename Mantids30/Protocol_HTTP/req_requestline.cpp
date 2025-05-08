@@ -24,9 +24,9 @@ RequestLine::RequestLine()
     m_subParserName = "RequestLine";
 }
 
-bool RequestLine::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool RequestLine::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     // Act as a client. Send data from here.
      if (!(cur+=m_upStream->writeString(m_requestMethod + " " + m_requestURI, wrStat )).succeed) return false;
     if (!m_getVars->isEmpty())
@@ -46,7 +46,7 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
+    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
     m_requestURI = requestParts[1];
@@ -54,7 +54,7 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 
     parseURI();
 
-    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
 void RequestLine::parseURI()
@@ -79,10 +79,11 @@ void RequestLine::parseURI()
 
 void RequestLine::parseGETParameters()
 {
-    Memory::Streams::StreamableObject::Status x;
+    Memory::Streams::WriteStatus x;
     Memory::Containers::B_Chunks bc;
+
     bc.append(m_requestURIParameters.c_str(),m_requestURIParameters.size());
-    bc.streamTo(m_getVars,x);
+    bc.streamTo(m_getVars.get(),x);
 }
 
 std::string RequestLine::getRequestURIParameters() const

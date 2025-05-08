@@ -40,17 +40,17 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
                     setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
                     setParseDataTargetSize(targetChunkSize);
                     m_currentMode = PROCMODE_CHUNK_DATA;
-                    return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+                    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
                 }
                 else
                 {
                     // Done... last chunk.
                     // report that is last chunk.
                     m_outStream->writeEOF(true);
-                    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+                    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
                 }
             }
-            return Memory::Streams::SubParser::PARSE_STAT_ERROR;
+            return Memory::Streams::SubParser::PARSE_ERROR;
         }
         case PROCMODE_CHUNK_DATA:
         {
@@ -61,7 +61,7 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
             // Proccess chunk into mem...
             // TODO: validate when outstream is filled up.
             getParsedBuffer()->appendTo(*m_outStream);
-            return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+            return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
         }
         case PROCMODE_CHUNK_CRLF:
         {
@@ -69,18 +69,18 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
             setParseDelimiter("\r\n");
             setParseDataTargetSize(1*KB_MULT); // !1kb max (until fails).
             m_currentMode = PROCMODE_CHUNK_SIZE;
-            return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+            return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
         }
         case PROCMODE_CONTENT_LENGTH:
         {
             // TODO: validate when outstream is filled up.
             getParsedBuffer()->appendTo(*m_outStream);
-            if (getLeftToparse()>0)
+            if (getUnparsedDataSize()>0)
             {
 #ifdef DEBUG
-                printf("%p Content PROCMODE_CONTENT_LENGTH - left to parse: %lu\n",this, getLeftToparse());
+                printf("%p Content PROCMODE_CONTENT_LENGTH - left to parse: %lu\n",this, getUnparsedDataSize());
 #endif
-                return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+                return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
             }
             else
             {
@@ -89,7 +89,7 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
 #endif
                 // End of stream reached...
                 m_outStream->writeEOF(true);
-                return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+                return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
             }
         }
         case PROCMODE_CONNECTION_CLOSE:
@@ -100,17 +100,17 @@ Memory::Streams::SubParser::ParseStatus Content::parse()
                 // Parsing data...
                 // TODO: validate when outstream is filled up.
                 getParsedBuffer()->appendTo(*m_outStream);
-                return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+                return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
             }
             else
             {
                 // No more data to parse, ending and processing it...
                 m_outStream->writeEOF(true);
-                return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+                return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
             }
         }
     }
-    return Memory::Streams::SubParser::PARSE_STAT_ERROR;
+    return Memory::Streams::SubParser::PARSE_ERROR;
 }
 
 uint32_t Content::parseHttpChunkSize()
@@ -204,15 +204,15 @@ void Content::setSecurityMaxHttpChunkSize(const uint32_t &value)
     m_securityMaxHttpChunkSize = value;
 }
 
-bool Content::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool Content::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
     // Act as a client. Send data from here.
     switch (m_transmitionMode)
     {
     case TRANSMIT_MODE_CHUNKS:
     {
-        std::shared_ptr<Content_Chunked_SubParser> retr = std::make_shared<Content_Chunked_SubParser>(m_upStream);
-        return m_outStream->streamTo(retr,wrStat) && m_upStream->getFailedWriteState()==0;
+        Content_Chunked_SubParser retr(m_upStream);
+        return m_outStream->streamTo(&retr,wrStat) && m_upStream->getFailedWriteState()==0;
     }
     case TRANSMIT_MODE_CONTENT_LENGTH:
     case TRANSMIT_MODE_CONNECTION_CLOSE:

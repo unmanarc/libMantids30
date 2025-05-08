@@ -38,9 +38,9 @@ int StreamableFile::open(const char *path, int oflag, mode_t __mode)
     return fd;
 }
 
-bool StreamableFile::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, StreamableObject::Status &wrStatUpd)
+bool StreamableFile::streamTo(Memory::Streams::StreamableObject * out, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
 
     // Restart the read from zero (for multiple streamTo)...
     lseek(rd_fd, 0, SEEK_SET);
@@ -76,9 +76,9 @@ bool StreamableFile::streamTo(std::shared_ptr<Memory::Streams::StreamableObject>
     }
 }
 
-StreamableObject::Status StreamableFile::write(const void *buf, const size_t &count, StreamableObject::Status &wrStatUpd)
+WriteStatus StreamableFile::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
 {
-    StreamableObject::Status cur;
+    WriteStatus cur;
     ssize_t x=0;
 
     // Always stick to the EOF

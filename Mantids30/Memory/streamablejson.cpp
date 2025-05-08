@@ -12,9 +12,9 @@ StreamableJSON::StreamableJSON()
     setFormatted(false);
 }
 
-bool StreamableJSON::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> out, Memory::Streams::StreamableObject::Status &wrStatUpd)
+bool StreamableJSON::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrStatUpd)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     if (!m_formatted)
         m_strValue = Mantids30::Helpers::jsonToString(m_root);
     else
@@ -22,10 +22,10 @@ bool StreamableJSON::streamTo(std::shared_ptr<Memory::Streams::StreamableObject>
     return (cur = out->writeFullStream(m_strValue.c_str(), m_strValue.size(), wrStatUpd)).succeed;
 }
 
-Memory::Streams::StreamableObject::Status StreamableJSON::write(const void *buf, const size_t &count, Memory::Streams::StreamableObject::Status &wrStatUpd)
+Memory::Streams::WriteStatus StreamableJSON::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStatUpd)
 {
     // TODO: how to report that the max size has been exceeded.
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
 
     // ...
     if ( m_strValue.size()+count > m_maxSize ) 
