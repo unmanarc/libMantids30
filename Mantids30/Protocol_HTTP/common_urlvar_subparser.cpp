@@ -13,9 +13,7 @@ URLVar_SubParser::URLVar_SubParser()
     setParseMultiDelimiter({"=","&"});
     setMaxObjectSize(4096);
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
-
     m_subParserName = "URLVar_SubParser";
-
 }
 
 URLVar_SubParser::~URLVar_SubParser()
@@ -23,7 +21,7 @@ URLVar_SubParser::~URLVar_SubParser()
     //if (pData) delete pData;
 }
 
-bool URLVar_SubParser::stream(Memory::Streams::StreamableObject::Status &)
+bool URLVar_SubParser::streamToUpstream(Memory::Streams::WriteStatus &)
 {
     // NOT IMPLEMENTED.
     return false;
@@ -60,14 +58,25 @@ std::string URLVar_SubParser::flushRetrievedContentAsString()
 Memory::Streams::SubParser::ParseStatus URLVar_SubParser::parse()
 {
     m_pData->clear();
-    if (!getParsedBuffer()->size()) return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
-    Memory::Streams::StreamableObject::Status cur;
-    std::shared_ptr<Memory::Streams::Decoders::URL> decUrl = std::make_shared<Memory::Streams::Decoders::URL>(m_pData);
-    if (!(cur=getParsedBuffer()->streamTo(decUrl,cur)).succeed)
+    if (!getParsedBuffer()->size())
     {
-        m_pData->clear();
+        return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
     }
-    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+
+    Memory::Streams::Decoders::URL urlDecoder;
+    auto cur = urlDecoder.transform(
+                                    getParsedBuffer(), // Parsed Buffer.
+                                    m_pData.get() // pData.
+                                    );
+
+    if (!cur.finish || !cur.succeed)
+    {
+        // Error parsing the URLVar...
+        m_pData->clear();
+        return Memory::Streams::SubParser::PARSE_ERROR;
+    }
+
+    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
 std::shared_ptr<Memory::Containers::B_Chunks> URLVar_SubParser::getPData()
