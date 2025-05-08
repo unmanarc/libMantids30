@@ -38,7 +38,7 @@ public:
      *
      * @return The string representation of the date.
      */
-    std::string toString();
+    std::string toString() const;
 
     /**
      * @brief Parses a string in HTTP format and sets the Date object to the corresponding date.

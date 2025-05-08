@@ -27,7 +27,7 @@ void Date::setUnixTime(const time_t &value)
     m_unixTime = value;
 }
 
-std::string Date::toString()
+std::string Date::toString() const
 {
     char buffer[128];
     struct tm timeinfo;
