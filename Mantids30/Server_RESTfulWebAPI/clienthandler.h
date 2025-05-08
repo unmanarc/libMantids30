@@ -57,12 +57,13 @@ protected:
     std::set<std::string> getSessionRoles() override;
 
 private:
+    void deliverSessionMaxAgeViaCookie(const uint64_t &maxAge);
     void setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t &maxAge);
     void setImpersonatorToken(const uint64_t &maxAge);
     std::string getRedirectURL();
 
     void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
-    Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();
+    Protocols::HTTP::Status::eRetCode handleAPIAuthCallbackFunction();
 
     void sessionLogout();
 

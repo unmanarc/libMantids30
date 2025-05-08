@@ -28,6 +28,29 @@ ClientHandler::ClientHandler(void *parent, std::shared_ptr<Memory::Streams::Stre
 {
 }
 
+/*
+void ClientHandler::deliverSessionMaxAgeViaCookie()
+{
+    Headers::Cookie loggedInCookie;
+    loggedInCookie.setAsTransientCookie();
+    loggedInCookie.secure = true;
+    loggedInCookie.httpOnly = false;
+    loggedInCookie.path = "/";
+
+    time_t expirationTime = m_JWTToken.getExpirationTime(), currentTime = time(nullptr);
+    time_t maxAge = 0; // Expired.
+    if (expirationTime > currentTime)
+    {
+        maxAge = expirationTime - currentTime;
+    }
+
+    if (m_JWTHeaderTokenVerified)
+        loggedInCookie.value = std::to_string( maxAge );
+
+    // Set the sessionMaxAge cookie (JS accessible).
+    serverResponse.cookies.addCookieVal("sessionMaxAge", loggedInCookie);
+}
+*/
 
 Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
 {
@@ -204,6 +227,20 @@ set<string> ClientHandler::getSessionRoles()
     return {};
 }
 
+void ClientHandler::deliverSessionMaxAgeViaCookie(const uint64_t & maxAge)
+{
+    Headers::Cookie loggedInCookie;
+    loggedInCookie.setAsTransientCookie();
+    loggedInCookie.secure = true;
+    loggedInCookie.httpOnly = false;
+    loggedInCookie.path = "/";
+
+    loggedInCookie.value = std::to_string( maxAge );
+
+    // Set the sessionMaxAge cookie (JS accessible).
+    serverResponse.cookies.addCookieVal("sessionMaxAge", loggedInCookie);
+}
+
 // Helper: Set AccessToken and loggedIn cookies
 void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t & maxAge)
 {
@@ -213,15 +250,9 @@ void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, co
     if (accessToken)
     {
         accessToken->path = "/";
-        Headers::Cookie loggedInCookie;
-        loggedInCookie.setExpiration(accessToken->getExpiration());
-        loggedInCookie.secure = true;
-        loggedInCookie.httpOnly = false;
-        loggedInCookie.path = "/";
-        loggedInCookie.value = std::to_string(accessToken->getExpiration());
 
-        // Set the loggedIn cookie (JS accessible).
-        serverResponse.cookies.addCookieVal("loggedIn", loggedInCookie);
+        // If session is active/received, always deliver the session maxAge, so the JS can retokenize if expired.
+        deliverSessionMaxAgeViaCookie(maxAge);
 
         // If defined in config->useJSTokenCookie, use the JS accessible cookie token:
         setPostLoginTokenCookie(token, maxAge);
@@ -246,7 +277,7 @@ std::string ClientHandler::getRedirectURL()
     return redirectURL;
 }
 
-Status::eRetCode ClientHandler::handleAuthLoginFunction()
+Status::eRetCode ClientHandler::handleAPIAuthCallbackFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
 
@@ -275,7 +306,8 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
     // Verify JWT token
     DataFormat::JWT::Token currentJWTToken;
     bool isTokenValid = this->config->jwtValidator->verify(postLoginToken, &currentJWTToken);
-    uint64_t maxAge = currentJWTToken.getExpirationTime()>time(nullptr)? currentJWTToken.getExpirationTime()-time(nullptr) : 0;
+    auto currentTime = time(nullptr);
+    uint64_t maxAge = currentJWTToken.getExpirationTime()>currentTime? currentJWTToken.getExpirationTime()-currentTime : 0;
 
     if (!isTokenValid)
     {
@@ -379,16 +411,16 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
 Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // Login callback:
-    if (authFunctionName == "callback")
+    if (authFunctionName == "callback") // /api/auth/callback
     {
         // Login (Pass the JWT)...
-        return handleAuthLoginFunction();
+        return handleAPIAuthCallbackFunction();
     }
-    else if (authFunctionName == "login_redirect" && !m_currentSessionInfo.authSession)
+    else if (authFunctionName == "login_redirect" && !m_currentSessionInfo.authSession) // /api/auth/login_redirect
     {
         return serverResponse.setRedirectLocation(config->defaultLoginRedirect);
     }
-    else if (authFunctionName == "logout" && m_currentSessionInfo.authSession)
+    else if (authFunctionName == "logout" && m_currentSessionInfo.authSession) // /api/auth/logout
     {
         // Logout... (Mark to terminate the session)
         m_destroySession = true;
