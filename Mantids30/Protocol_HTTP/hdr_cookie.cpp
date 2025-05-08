@@ -17,8 +17,8 @@ Cookie::Cookie()
     expires.setUnixTime(0);
 }
 
-
-std::string Cookie::toSetCookieString(const std::string &cookieName)
+std::string Cookie::toSetCookieString(
+    const std::string &cookieName) const
 {
     std::string opts = cookieName + "=" + value + "; ";
 

@@ -2,6 +2,7 @@
 
 #include <string>
 #include "common_date.h"
+#include <Mantids30/Helpers/json.h>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers {
 
@@ -23,13 +24,12 @@ public:
      */
     Cookie();
 
-
     /**
      * @brief toSetCookieString Get the Cookie: string for the HTTP Header (without the Cookie:).
      * @param cookieName Name of the cookie
      * @return string value for the http header.
      */
-    std::string toSetCookieString(const std::string & cookieName);
+    std::string toSetCookieString(const std::string & cookieName) const;
     /**
      * @brief fromSetCookieString Parse cookie from the HTTP Cookie: string  (after the Cookie:)
      * @param setCookieValue cookie value
