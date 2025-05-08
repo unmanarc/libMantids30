@@ -46,7 +46,7 @@ public:
      * @param wrStat write status
      * @return true if written
      */
-    bool stream(Memory::Streams::StreamableObject::Status & wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus & wrStat) override;
     /**
      * @brief isDefaultStreamableObj Get if the default streamable output is in use.
      * @return true if is it use, false if replaced by another one

@@ -9,8 +9,8 @@ class NullContainer : public Streams::StreamableObject
 public:
     NullContainer();
 
-    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject>  out, Streams::StreamableObject::Status & wrsStat) override;
-    Memory::Streams::StreamableObject::Status write(const void * buf, const size_t &count, Streams::StreamableObject::Status & wrStatUpd) override;
+    bool streamTo(Memory::Streams::StreamableObject * out, Streams::WriteStatus & wrsStat) override;
+    Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Streams::WriteStatus & wrStatUpd) override;
 
     uint64_t size() const override { return bytes; }
 

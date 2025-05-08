@@ -16,7 +16,7 @@ public:
     MIME_Sub_EndPBoundary();
 
     void reset();
-    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
     int getStatus() const;
 
 protected:

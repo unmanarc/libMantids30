@@ -12,7 +12,7 @@ public:
     MIME_Sub_Content();
     ~MIME_Sub_Content() = default;
 
-    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
 
     uint64_t getMaxContentSize() const;
     void setMaxContentSize(const uint64_t &value);

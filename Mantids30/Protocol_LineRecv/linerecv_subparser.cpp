@@ -19,7 +19,7 @@ void LineRecv_SubParser::setMaxObjectSize(const uint32_t &size)
     setParseDataTargetSize(size);
 }
 
-bool LineRecv_SubParser::stream(Memory::Streams::StreamableObject::Status &)
+bool LineRecv_SubParser::streamToUpstream(Memory::Streams::WriteStatus &)
 {
     // NOT IMPLEMENTED.
     return false;
@@ -33,5 +33,5 @@ std::string LineRecv_SubParser::getParsedString() const
 Memory::Streams::SubParser::ParseStatus LineRecv_SubParser::parse()
 {
     m_parsedString = getParsedBuffer()->toString();
-    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }

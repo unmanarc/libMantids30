@@ -102,7 +102,7 @@ public:
      */
     void setResponseMessage(const std::string &value);
 
-    bool stream(Memory::Streams::StreamableObject::Status & wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus & wrStat) override;
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 

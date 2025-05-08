@@ -28,9 +28,9 @@ MIME_Sub_Content::MIME_Sub_Content()
 }
 
 
-bool MIME_Sub_Content::stream(Memory::Streams::StreamableObject::Status &wrStat)
+bool MIME_Sub_Content::streamToUpstream(Memory::Streams::WriteStatus &wrStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
     // TODO: interpret content encoding...
     if (!m_contentContainer->streamTo(m_upStream,wrStat)) return false;
     if (!(cur+=m_contentContainer->writeString("\r\n--" + m_boundary, wrStat)).succeed) return false;
@@ -72,18 +72,18 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
     getParsedBuffer()->appendTo(*m_contentContainer);
-    if (getDelimiterFound().size())
+    if (getFoundDelimiter().size())
     {
         // finished (delimiter found).
 #ifdef DEBUG
         printf("%p MIME_Sub_Content: Delimiter %s received.\n", this, boundary.c_str());fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("%p MIME_Sub_Content: requesting more data.\n", this);fflush(stdout);
 #endif
-    return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
 }
 
 std::string MIME_Sub_Content::getBoundary() const

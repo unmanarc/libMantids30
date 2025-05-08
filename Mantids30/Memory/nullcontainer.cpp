@@ -7,12 +7,12 @@ NullContainer::NullContainer()
     bytes = 0;
 }
 
-bool NullContainer::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Streams::StreamableObject::Status &)
+bool NullContainer::streamTo(Memory::Streams::StreamableObject * , Streams::WriteStatus &)
 {
     return false;
 }
 
-Mantids30::Memory::Streams::StreamableObject::Status NullContainer::write(const void *, const size_t &count, Streams::StreamableObject::Status &)
+Mantids30::Memory::Streams::WriteStatus NullContainer::write(const void *, const size_t &count, Streams::WriteStatus &)
 {
     bytes+=count;
     return true;

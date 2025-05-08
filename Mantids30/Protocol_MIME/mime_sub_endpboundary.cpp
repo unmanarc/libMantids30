@@ -19,7 +19,7 @@ void MIME_Sub_EndPBoundary::reset()
     clear();
 }
 
-bool MIME_Sub_EndPBoundary::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool MIME_Sub_EndPBoundary::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
     return true;
 }
@@ -31,28 +31,28 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_EndPBoundary::parse()
     BIO_dump_fp (stdout, (char *)getParsedBuffer()->toString().c_str(), getParsedBuffer()->toString().size());
 #endif
 
-    if (getDelimiterFound() == "--\r\n" )
+    if (getFoundDelimiter() == "--\r\n" )
     {
 #ifdef DEBUG
         printf("MIME EndPBoundary match with ENDED...\n");fflush(stdout);
 #endif
         // END.
         m_status = ENDP_STAT_END;
-        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
     }
-    else if (getDelimiterFound() == "\r\n")
+    else if (getFoundDelimiter() == "\r\n")
     {
 #ifdef DEBUG
         printf("MIME EndPBoundary match with NEXT HEADER...\n");fflush(stdout);
 #endif
         m_status = ENDP_STAT_CONTINUE;
-        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("MIME EndPBoundary Failed with unexpected content\n");fflush(stdout);
 #endif
     m_status = ENDP_STAT_ERROR;
-    return Memory::Streams::SubParser::PARSE_STAT_ERROR;
+    return Memory::Streams::SubParser::PARSE_ERROR;
 }
 
 int MIME_Sub_EndPBoundary::getStatus() const

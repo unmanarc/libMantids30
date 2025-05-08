@@ -105,7 +105,7 @@ private:
     void parseHeaders2ServerCookies();
     Memory::Streams::SubParser *parseHeaders2TransmitionMode();
 
-    bool streamClientHeaders(Memory::Streams::StreamableObject::Status &wrStat);
+    bool streamClientHeaders(Memory::Streams::WriteStatus &wrStat);
 
     HTTP::Request::Cookies_ClientSide m_clientCookies;
 

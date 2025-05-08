@@ -9,7 +9,7 @@ MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()
     m_subParserName = "MIME_Sub_FirstBoundary";
 }
 
-bool MIME_Sub_FirstBoundary::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool MIME_Sub_FirstBoundary::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
     return true;
 }
@@ -32,5 +32,5 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_FirstBoundary::parse()
 #ifdef DEBUG
     printf("Initial Delimiter %s received on MIME First Boundary.\n", boundary.c_str());fflush(stdout);
 #endif
-    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }

@@ -3,10 +3,10 @@
 using namespace Mantids30::Network::Protocols::MIME;
 
 
-bool MIME_PartMessage::stream(Memory::Streams::StreamableObject::Status &wrStat)
+bool MIME_PartMessage::streamToSubParsers(Memory::Streams::WriteStatus &wrStat)
 {
-    if (!m_header.stream(wrStat)) return false;
-    if (!m_content.stream(wrStat)) return false;
+    if (!m_header.streamToUpstream(wrStat)) return false;
+    if (!m_content.streamToUpstream(wrStat)) return false;
     return true;
 }
 

@@ -21,7 +21,7 @@ public:
      *        writes this class objects/data into the http uplink.
      * @return true if written successfully/
      */
-    bool stream(Memory::Streams::StreamableObject::Status & wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus & wrStat) override;
 
     ////////////////////////////////////////////////
     // Objects:

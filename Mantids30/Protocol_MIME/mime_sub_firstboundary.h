@@ -10,7 +10,7 @@ class MIME_Sub_FirstBoundary : public Memory::Streams::SubParser
 public:
     MIME_Sub_FirstBoundary();
 
-    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
 
     std::string getBoundary() const;
     void setBoundary(const std::string &value);
