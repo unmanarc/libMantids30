@@ -93,10 +93,76 @@ public:
     }
 
 
+    /**
+     * @brief Exports all the data of this class to JSON format for use in an API server.
+     * @return A Json::Value object containing the HTTP response code and body.
+     */
+    Json::Value toJSON() const
+    {
+        Json::Value root;
+        root["httpResponseCode"] = static_cast<int>(httpResponseCode);
+        if (body)
+        {
+            root["body"] = *body->getValue();
+        }
+        if (!httpExtraHeaders.empty())
+        {
+            for (const auto& header : httpExtraHeaders)
+            {
+                root["extraHeaders"][header.first] = header.second;
+            }
+        }
+
+        if (!cookiesMap.empty())
+        {
+            int i=0;
+            for (const auto & cookie : cookiesMap)
+            {
+                root["cookies"][(int)i++] = cookie.second.toSetCookieString(cookie.first);
+            }
+        }
+
+        return root;
+    }
+
+    /**
+     * @brief Imports data from a JSON object into this class for use in an API server.
+     * @param jsonValue A Json::Value object containing the HTTP response code and body.
+     */
+    void fromJSON(const Json::Value & jsonValue)
+    {
+        httpResponseCode = (Network::Protocols::HTTP::Status::eRetCode)JSON_ASUINT(jsonValue,"httpResponseCode",(unsigned int)Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR);
+        if (jsonValue.isMember("body") && body)
+        {
+            body->setValue(jsonValue["body"]);
+        }
+        if (jsonValue.isMember("extraHeaders"))
+        {
+            for (const auto& header : jsonValue["extraHeaders"].getMemberNames())
+            {
+                httpExtraHeaders[header] = JSON_ASSTRING(jsonValue["extraHeaders"],header,"");
+            }
+        }
+        if (jsonValue.isMember("cookies"))
+        {
+            for (int i=0; i < jsonValue["cookies"].size(); ++i)
+            {
+                std::string cookieString = jsonValue["cookies"][i].asString();
+                Mantids30::Network::Protocols::HTTP::Headers::Cookie cookie;
+                std::string cookieName;
+                cookie.fromSetCookieString(cookieString, &cookieName);
+                cookiesMap[cookieName] = cookie;
+            }
+        }
+    }
+
+
     std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
     Network::Protocols::HTTP::Status::eRetCode getHTTPResponseCode() const { return httpResponseCode; }
 
     std::map<std::string, Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
+    std::map<std::string,std::string> httpExtraHeaders;
+
 private:
     Network::Protocols::HTTP::Status::eRetCode httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
