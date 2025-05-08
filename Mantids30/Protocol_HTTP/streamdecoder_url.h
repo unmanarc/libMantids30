@@ -1,31 +1,27 @@
 #pragma once
 
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamabletransformer.h>
 
 namespace Mantids30 { namespace Memory { namespace Streams { namespace Decoders {
 
-class URL : public Memory::Streams::StreamableObject
+class URL : public Memory::Streams::StreamableTransformer
 {
 public:
-    URL(std::shared_ptr<Memory::Streams::StreamableObject>  orig);
-
-    bool streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Status & ) override;
-    Status write(const void * buf, const size_t &count, Status &wrStat) override;
-
-    uint64_t getFinalBytesWritten() const;
-    void writeEOF(bool) override;
+    URL() = default;
 
     static std::string decodeURLStr(const std::string & url);
 
+protected:
+    Memory::Streams::WriteStatus writeTo(Memory::Streams::StreamableObject * dst, const void * buf, const size_t &count, Streams::WriteStatus &wrStat) override;
+    void writeTransformerEOF(Memory::Streams::StreamableObject *dst, bool) override;
+
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
-    Status flushBytes(Status &wrStat);
+    Memory::Streams::WriteStatus flushBytes(Memory::Streams::StreamableObject * dst,Memory::Streams::WriteStatus &wrStat);
 
     unsigned char m_bytes[3];
-    uint8_t m_filled;
-
-    uint64_t m_finalBytesWritten;
-    std::shared_ptr<Memory::Streams::StreamableObject>  m_orig;
+    uint8_t m_filled = 0;
+    uint64_t m_finalBytesWritten = 0;
 };
 
 }}}}

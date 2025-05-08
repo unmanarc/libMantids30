@@ -1,4 +1,5 @@
 #include "streamencoder_url.h"
+#include "Mantids30/Memory/streamableobject.h"
 
 #include <limits>
 #include <inttypes.h>
@@ -9,20 +10,10 @@
 using namespace Mantids30::Memory::Streams;
 using namespace Mantids30::Memory::Streams::Encoders;
 
-URL::URL(std::shared_ptr<StreamableObject> orig)
-{
-    this->m_orig = orig;
-    m_finalBytesWritten =0;
-}
 
-bool URL::streamTo(std::shared_ptr<Memory::Streams::StreamableObject> , Status & )
+WriteStatus URL::writeTo(Memory::Streams::StreamableObject * dst, const void *buf, const size_t &count,Streams::WriteStatus &wrStat)
 {
-    return false;
-}
-
-StreamableObject::Status URL::write(const void *buf, const size_t &count, Status &wrStat)
-{
-    Status cur;
+    Streams::WriteStatus cur;
     size_t pos=0;
 
     size_t maxStream=std::numeric_limits<size_t>::max();
@@ -41,7 +32,7 @@ StreamableObject::Status URL::write(const void *buf, const size_t &count, Status
         size_t bytesToTransmitInPlain;
         if ((bytesToTransmitInPlain=getPlainBytesSize( ((const unsigned char *)buf)+pos,count-pos))>0)
         {
-            if (!(cur+=m_orig->writeFullStream( ((const unsigned char *)buf)+pos ,bytesToTransmitInPlain,wrStat)).succeed)
+            if (!(cur+=dst->writeFullStream( ((const unsigned char *)buf)+pos ,bytesToTransmitInPlain,wrStat)).succeed)
             {
                 m_finalBytesWritten+=cur.bytesWritten;
                 return cur;
@@ -52,7 +43,7 @@ StreamableObject::Status URL::write(const void *buf, const size_t &count, Status
         {
             char encodedByte[8];
             snprintf(encodedByte,sizeof(encodedByte), "%%%02" PRIX8, *(((const unsigned char *)buf)+pos));
-            if (!(cur+=m_orig->writeFullStream(encodedByte,3, wrStat)).succeed)
+            if (!(cur+=dst->writeFullStream(encodedByte,3, wrStat)).succeed)
             {
                 m_finalBytesWritten+=cur.bytesWritten;
                 return cur;
@@ -82,25 +73,20 @@ inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
     );
 }
 
-uint64_t URL::getFinalBytesWritten() const
-{
-    return m_finalBytesWritten;
-}
-
 
 std::string URL::encodeURLStr(const std::string &url)
 {
     Mantids30::Memory::Containers::B_MEM uriDecoded( url.c_str(), url.size() );
-    std::shared_ptr<Memory::Containers::B_Chunks> uriEncoded = std::make_shared<Memory::Containers::B_Chunks>();
+    Memory::Containers::B_Chunks uriEncoded;
 
     // Encode URI...
-    std::shared_ptr<Memory::Streams::Encoders::URL> uriEncoder = std::make_shared<Memory::Streams::Encoders::URL>(uriEncoded);
-    Memory::Streams::StreamableObject::Status cur;
-    Memory::Streams::StreamableObject::Status wrsStat;
+    Memory::Streams::Encoders::URL uriEncoder;
 
-    if ((cur+=uriDecoded.streamTo(uriEncoder, wrsStat)).succeed)
+    auto cur = uriEncoder.transform( &uriDecoded, &uriEncoded );
+    if (cur.succeed && cur.finish)
     {
-        return uriEncoded->toString();
+        return uriEncoded.toString();
     }
+
     return url;
 }
