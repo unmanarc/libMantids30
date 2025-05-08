@@ -14,7 +14,7 @@ set(PROJECT_CONTACT "Aaron G. Mizrachi P. <aaron@unmanarc.com>")
 set(CXX_STANDARD 20)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wextra -pedantic -Weverything -Wno-c++98-compat -Wno-padded -Wno-documentation -Wno-unused-macros -Wno-undef -Wno-unused-parameters -Wno-sign-conversion -Wno-unsafe-buffer-usage -Wdeprecated -Wconversion -Wshadow")
 ##############################################################################################################################
 
