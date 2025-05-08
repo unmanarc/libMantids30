@@ -80,6 +80,35 @@ public:
         DELETE=3
     };
 
+    static std::string methodModeToString(MethodMode mode) {
+        switch (mode) {
+            case GET:
+                return "GET";
+            case POST:
+                return "POST";
+            case PUT:
+                return "PUT";
+            case DELETE:
+                return "DELETE";
+            default:
+                return "POST";
+        }
+    }
+
+    static MethodMode stringToMethodMode(const std::string &str) {
+        if (str == "GET") {
+            return GET;
+        } else if (str == "POST") {
+            return POST;
+        } else if (str == "PUT") {
+            return PUT;
+        } else if (str == "DELETE") {
+            return DELETE;
+        } else {
+            return POST; // default: POST
+        }
+    }
+
     /**
      * @enum ErrorCodes
      *
@@ -105,9 +134,21 @@ public:
 
     struct SecurityParameters
     {
+        Json::Value getJSON() const {
+            Json::Value securityJSON;
+            securityJSON["haveJWTAuthHeader"] = haveJWTAuthHeader;
+            securityJSON["haveJWTAuthCookie"] = haveJWTAuthCookie;
+            return securityJSON;
+        }
+
+        void setJSON(const Json::Value &securityJSON)
+        {
+            haveJWTAuthHeader = JSON_ASBOOL(securityJSON,"haveJWTAuthHeader",false);
+            haveJWTAuthCookie = JSON_ASBOOL(securityJSON,"haveJWTAuthCookie",false);
+        }
+
         bool haveJWTAuthHeader = false;
         bool haveJWTAuthCookie = false;
-        //std::string genCSRFToken;
     };
 
     /**
