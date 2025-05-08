@@ -8,7 +8,7 @@ namespace Mantids30 { namespace Memory { namespace Streams { namespace Encoders 
 class URL : public Memory::Streams::StreamableTransformer
 {
 public:
-    URL();
+    URL() = default;
     static std::string encodeURLStr(const std::string &url);
 
 protected:
