@@ -87,7 +87,7 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_STAT_ERROR;
+    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_httpVersion.parse(requestParts[0]);
     m_responseRetCode = strtoul(requestParts[1].c_str(),nullptr,10);
@@ -102,7 +102,7 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
         }
     }
 
-    return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
 std::string Status::getResponseMessage() const
@@ -115,7 +115,7 @@ void Status::setResponseMessage(const std::string &value)
     m_responseMessage = value;
 }
 
-bool Status::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool Status::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
     // Act as a client. Send data from here.
     return m_upStream->writeString(  m_httpVersion.toString()

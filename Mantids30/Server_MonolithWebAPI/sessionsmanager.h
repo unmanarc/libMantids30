@@ -36,7 +36,7 @@ public:
         return authSession;
     }
 
-    json getNetworkClientInfo()
+    json toJSON()
     {
         return networkClientInfo;
     }

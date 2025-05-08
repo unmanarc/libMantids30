@@ -82,7 +82,7 @@ class MIME_Sub_Header : public Memory::Streams::SubParser
 public:
     MIME_Sub_Header();
 
-    bool stream(Memory::Streams::StreamableObject::Status &wrStat) override;
+    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
 
     /**
      * @brief exist exist option.

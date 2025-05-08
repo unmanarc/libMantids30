@@ -22,9 +22,9 @@ MIME_Sub_Header::MIME_Sub_Header()
 }
 
 
-bool MIME_Sub_Header::stream(Memory::Streams::StreamableObject::Status & wrStat)
+bool MIME_Sub_Header::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
-    Memory::Streams::StreamableObject::Status cur;
+    Memory::Streams::WriteStatus cur;
 
     // Write out the header option values...
     for (auto & i : m_headers)
@@ -155,13 +155,13 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
 #ifdef DEBUG
         printf("Parsing MIME header lines (END).\n");fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::PARSE_STAT_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("Parsing MIME header (line).\n");fflush(stdout);
 #endif
     parseOptionValue(getParsedBuffer()->toString());
-    return Memory::Streams::SubParser::PARSE_STAT_GET_MORE_DATA;
+    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
 }
 
 void MIME_Sub_Header::parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName)

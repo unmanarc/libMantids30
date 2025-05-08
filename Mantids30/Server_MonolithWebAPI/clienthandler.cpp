@@ -540,7 +540,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
         // TODO: exit impersonation.
         shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>( m_JWTToken );
 
-        json networkClientInfo = clientRequest.networkClientInfo.getNetworkClientInfo();
+        json networkClientInfo = clientRequest.networkClientInfo.toJSON();
         networkClientInfo["userAgent"] = clientRequest.userAgent;
         networkClientInfo["startTime"] = (uint64_t)time(nullptr);
 
