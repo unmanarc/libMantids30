@@ -158,13 +158,15 @@ bool URLVars::changeToNextParser()
     return true;
 }
 
-void URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
+bool URLVars::addVar(
+    const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
-    //vars.insert(std::pair<std::string,Memory::Containers::B_Chunks*>(currentVarName, _urlVarParser.flushRetrievedContentAsBC()));
     if (!varName.empty())
+    {
         m_vars.insert(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(boost::to_upper_copy(varName), data));
-/*    else
-        delete data;*/
+        return true;
+    }
+    return false;
 }
 
 

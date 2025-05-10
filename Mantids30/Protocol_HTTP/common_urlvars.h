@@ -7,8 +7,11 @@
 
 #include "common_urlvar_subparser.h"
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
-
+namespace Mantids30 {
+namespace Network {
+namespace Protocols {
+namespace HTTP {
+namespace Common {
 
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
@@ -24,7 +27,7 @@ public:
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrsStat) override;
+    bool streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::WriteStatus &wrsStat) override;
 
     /////////////////////////////////////////////////////
     // Variables Container:
@@ -33,19 +36,19 @@ public:
      * @param varName Variable name
      * @return Count of values
      */
-    uint32_t varCount(const std::string & varName) override;
+    uint32_t varCount(const std::string &varName) override;
     /**
      * @brief getValue Get Value of specific variable
      * @param varName Variable Name
      * @return binary container with the variable
      */
-    std::shared_ptr<Memory::Streams::StreamableObject>  getValue(const std::string & varName) override;
+    std::shared_ptr<Memory::Streams::StreamableObject> getValue(const std::string &varName) override;
     /**
      * @brief getValues Get the values for an specific variable name
      * @param varName variable name
      * @return list of binary containers containing the data of each value of the variable
      */
-    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > getValues(const std::string & varName) override;
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject>> getValues(const std::string &varName) override;
     /**
      * @brief getKeysList Get set of Variable Names
      * @return set of variables names
@@ -61,7 +64,11 @@ public:
      * @param varName Var Name
      * @param data Variable Data (will be destroyed during URLVars destruction)
      */
-    void addVar(const std::string & varName, std::shared_ptr<Memory::Containers::B_Chunks> data);
+    bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data);
+    /**
+     * @brief clear all vars.
+     */
+    void clear() override { m_vars.clear(); }
 
 protected:
     void iSetMaxVarContentSize() override;
@@ -70,6 +77,7 @@ protected:
     bool initProtocol() override;
     void endProtocol() override;
     bool changeToNextParser() override;
+
 private:
     URLVars(std::shared_ptr<StreamableObject> value = nullptr);
 
@@ -80,5 +88,8 @@ private:
 
     URLVar_SubParser m_urlVarParser;
 };
-}}}}}
-
+} // namespace Common
+} // namespace HTTP
+} // namespace Protocols
+} // namespace Network
+} // namespace Mantids30
