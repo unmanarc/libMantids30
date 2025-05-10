@@ -7,11 +7,11 @@
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
-class Socket_Stream_BaseWriter
+class Socket_Stream_Writer
 {
 public:
-    Socket_Stream_BaseWriter() = default;
-    virtual ~Socket_Stream_BaseWriter() = default;
+    Socket_Stream_Writer() = default;
+    virtual ~Socket_Stream_Writer() = default;
 
     template<typename T>
     bool writeU(const T & c)

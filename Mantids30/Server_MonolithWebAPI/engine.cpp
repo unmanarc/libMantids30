@@ -13,7 +13,7 @@ Engine::Engine()
     sessionsManager.startGarbageCollector( WebSessionsManager::threadGC, &sessionsManager, "GC:WebSessions" );
 }
 
-std::shared_ptr<Network::Servers::Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s)
+std::shared_ptr<Network::Servers::Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     auto webHandler = std::make_shared<ClientHandler>(webServer,s);
 

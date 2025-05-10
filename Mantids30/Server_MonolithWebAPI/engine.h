@@ -7,7 +7,7 @@
 #include <Mantids30/Memory/b_mem.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Server_WebCore/apienginecore.h>
 #include <memory>
@@ -25,7 +25,7 @@ public:
     WebSessionsManager sessionsManager;
 
 protected:
-    std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s ) override;
+    std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) override;
 };
 
 }}}}

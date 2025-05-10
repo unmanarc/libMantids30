@@ -8,10 +8,10 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 
-const sHTTP_StatusCode Status::m_responseRetCodes[] = {
+const HTTP::HTTPStatusCode HTTP::Status::m_responsStatusCodess[] = {
     {100,"Continue"},
     {101,"Switching Protocol"},
     {200,"OK"},
@@ -60,17 +60,17 @@ const sHTTP_StatusCode Status::m_responseRetCodes[] = {
 };
 
 
-uint16_t Status::getHTTPStatusCodeTranslation(const Status::eRetCode &code)
+uint16_t HTTP::Status::getHTTPStatusCodeTranslation(const Status::Codes &code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        return m_responseRetCodes[code].code;
+        return m_responsStatusCodess[code].code;
     }
     return 999;
 }
 
 
-Status::Status()
+HTTP::Status::Status()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
@@ -79,7 +79,7 @@ Status::Status()
 
 }
 
-Memory::Streams::SubParser::ParseStatus Status::parse()
+Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
 {
     std::string clientRequest = getParsedBuffer()->toString();
 
@@ -90,7 +90,7 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
     if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_httpVersion.parse(requestParts[0]);
-    m_responseRetCode = strtoul(requestParts[1].c_str(),nullptr,10);
+    m_responsStatusCodes = strtoul(requestParts[1].c_str(),nullptr,10);
     m_responseMessage = "";
 
     if (requestParts.size()>=3)
@@ -105,46 +105,46 @@ Memory::Streams::SubParser::ParseStatus Status::parse()
     return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
-std::string Status::getResponseMessage() const
+std::string HTTP::Status::getResponseMessage() const
 {
     return m_responseMessage;
 }
 
-void Status::setResponseMessage(const std::string &value)
+void HTTP::Status::setResponseMessage(const std::string &value)
 {
     m_responseMessage = value;
 }
 
-bool Status::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
+bool HTTP::Status::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
 {
     // Act as a client. Send data from here.
     return m_upStream->writeString(  m_httpVersion.toString()
                                  +  " "
-                                 +  std::to_string(m_responseRetCode)
+                                 +  std::to_string(m_responsStatusCodes)
                                  +  " "
                                  +  m_responseMessage + "\r\n",wrStat).succeed;
 }
 
-void Status::setRetCodeValue(unsigned short value)
+void HTTP::Status::setRetCodeValue(unsigned short value)
 {
-    m_responseRetCode = value;
+    m_responsStatusCodes = value;
 }
 
-void Status::setRetCode(Status::eRetCode code)
+void HTTP::Status::setRetCode(Status::Codes code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        setRetCodeValue(m_responseRetCodes[code].code);
-        setResponseMessage(m_responseRetCodes[code].responseMessage);
+        setRetCodeValue(m_responsStatusCodess[code].code);
+        setResponseMessage(m_responsStatusCodess[code].responseMessage);
     }
 }
 
-unsigned short Status::getRetCode() const
+unsigned short HTTP::Status::getRetCode() const
 {
-    return m_responseRetCode;
+    return m_responsStatusCodes;
 }
 
-Common::Version *Status::getHttpVersion()
+HTTP::Version *HTTP::Status::getHttpVersion()
 {
     return &m_httpVersion;
 }

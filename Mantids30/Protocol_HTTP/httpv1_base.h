@@ -24,15 +24,16 @@
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
+enum VarSource
+{
+    VARS_POST,
+    VARS_GET
+};
+
 
 class HTTPv1_Base : public Memory::Streams::Parser
 {
 public:
-    enum HTTP_VarSource
-    {
-        HTTP_VARS_POST,
-        HTTP_VARS_GET
-    };
 
     /**
      * @brief A struct representing security settings for the web server.
@@ -86,13 +87,13 @@ public:
          * @param source
          * @return
          */
-        std::shared_ptr<Memory::Abstract::Vars> getVars(const HTTP_VarSource &source)
+        std::shared_ptr<Memory::Abstract::Vars> getVars(const VarSource &source)
         {
             switch (source)
             {
-            case HTTP_VARS_POST:
+            case VARS_POST:
                 return content.postVars();
-            case HTTP_VARS_GET:
+            case VARS_GET:
                 return requestLine.urlVars();
             }
             return nullptr;
@@ -108,7 +109,7 @@ public:
          */
         std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONStreamerContent()
         {
-            if (content.getContainerType() == Common::Content::CONTENT_TYPE_JSON)
+            if (content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
             {
                 return content.getJSONVars();
             }
@@ -235,7 +236,7 @@ public:
         /**
          * @brief content - Content Data.
          */
-        Common::Content content;
+        HTTP::Content content;
         /**
          * @brief headers - Options Values.
          */
@@ -342,7 +343,7 @@ public:
          * @brief setRedirectLocation Redirect site to another URL
          * @param location URL string
          */
-        Mantids30::Network::Protocols::HTTP::Status::eRetCode setRedirectLocation(const std::string & location, bool temporary = true)
+        Mantids30::Network::Protocols::HTTP::Status::Codes setRedirectLocation(const std::string & location, bool temporary = true)
         {
             headers.replace("Location", location);
 
@@ -363,7 +364,7 @@ public:
         /**
          * @brief content - Content Data.
          */
-        Common::Content content;
+        HTTP::Content content;
         /**
          * @brief headers - Options Values.
          */

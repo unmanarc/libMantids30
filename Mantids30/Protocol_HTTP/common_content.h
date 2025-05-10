@@ -8,7 +8,7 @@
 #include <Mantids30/Protocol_MIME/mime_message.h>
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
 class Content : public Memory::Streams::SubParser
 {
@@ -160,5 +160,5 @@ private:
     uint32_t m_securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
 };
 
-}}}}}
+}}}}
 

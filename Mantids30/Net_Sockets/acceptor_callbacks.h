@@ -1,15 +1,15 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 {
 namespace Network {
 namespace Sockets {
 namespace Acceptors {
 
-typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
-typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
-typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream_Base>);
+typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream>);
+typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream>);
+typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream>);
 
 class StreamAcceptorThreadCallbacks
 {

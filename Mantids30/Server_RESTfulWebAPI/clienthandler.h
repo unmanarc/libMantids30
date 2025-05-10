@@ -17,7 +17,7 @@ protected:
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediatly.
      */
-    Protocols::HTTP::Status::eRetCode sessionStart() override;
+    Protocols::HTTP::Status::Codes sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      */
@@ -49,7 +49,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
+    Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
 
 
     bool isSessionActive() override;
@@ -63,7 +63,7 @@ private:
     std::string getRedirectURL();
 
     void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
-    Protocols::HTTP::Status::eRetCode handleAPIAuthCallbackFunction();
+    Protocols::HTTP::Status::Codes handleAPIAuthCallbackFunction();
 
     void sessionLogout();
 

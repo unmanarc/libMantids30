@@ -6,7 +6,7 @@
 #include <boost/algorithm/string.hpp>
 
 using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 using namespace std;
 using namespace boost;

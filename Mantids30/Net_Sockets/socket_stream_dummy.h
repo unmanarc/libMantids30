@@ -7,7 +7,7 @@
 
 
 #include <Mantids30/Memory/b_chunks.h>
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 {
 namespace Network {
@@ -18,7 +18,7 @@ namespace Sockets {
  *
  * This class provides a dummy socket stream implementation for testing and development purposes.
  */
-class Socket_Stream_Dummy : public Mantids30::Network::Sockets::Socket_Stream_Base
+class Socket_Stream_Dummy : public Mantids30::Network::Sockets::Socket_Stream
 {
 public:
     /**

@@ -20,7 +20,7 @@ bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stre
 }
 
 
-void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &maxConcurrentConnections)
+void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> & listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     checkEngineStatus();
 
@@ -36,7 +36,7 @@ void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::
     m_multiThreadedAcceptor->startInBackground();
 }
 
-void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
+void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> & listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
 {
     checkEngineStatus();
 
@@ -53,7 +53,7 @@ void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::S
     m_poolThreadedAcceptor->startInBackground();
 }
 
-bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> sock)
+bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
 
@@ -82,14 +82,14 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     return true;
 }
 
-bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
+bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     webserver->callbacks.onProtocolInitializationFailure.call(webserver,s);
     return true;
 }
 
-void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
+void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
@@ -102,7 +102,7 @@ void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket
     }
 }
 
-void APIEngineCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream_Base> s)
+void APIEngineCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))

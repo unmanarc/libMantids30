@@ -176,10 +176,10 @@ public:
      * - `request` (HTTPv1_Base::Request*): Pointer to the HTTP request object.
      * - `response` (HTTPv1_Base::Response*): Pointer to the HTTP response object.
      *
-     * The handler returns a value of type `Protocols::HTTP::Status::eRetCode` representing the
+     * The handler returns a value of type `Protocols::HTTP::Status::Codes` representing the
      * response status code.
      */
-    typedef Protocols::HTTP::Status::eRetCode (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
     struct DynamicRequestHandlerDef {
         DynamicRequestHandler handler;
@@ -205,7 +205,7 @@ public:
      *     information about the client request.
      *   - `HTTPv1_Base::Response* response`: Pointer to the HTTP response object, used to
      *     generate the response to the client.
-     *   - **Return**: A `Protocols::HTTP::Status::eRetCode` representing the status of the
+     *   - **Return**: A `Protocols::HTTP::Status::Codes` representing the status of the
      *     response, such as success or error codes.
      *
      * This map enables efficient routing by allowing the server to quickly look up and execute

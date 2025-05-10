@@ -21,7 +21,7 @@ public:
      */
     APIReturn() = default;
 
-    APIReturn(Network::Protocols::HTTP::Status::eRetCode code)
+    APIReturn(Network::Protocols::HTTP::Status::Codes code)
     {
         this->httpResponseCode = code;
     }
@@ -46,7 +46,7 @@ public:
         return *this;
     }
 
-    void setError( const Network::Protocols::HTTP::Status::eRetCode & httpResponseCode, const std::string &error, const std::string &message )
+    void setError( const Network::Protocols::HTTP::Status::Codes & httpResponseCode, const std::string &error, const std::string &message )
     {
         this->httpResponseCode = httpResponseCode;
         if (body)
@@ -131,7 +131,7 @@ public:
      */
     void fromJSON(const Json::Value & jsonValue)
     {
-        httpResponseCode = (Network::Protocols::HTTP::Status::eRetCode)JSON_ASUINT(jsonValue,"httpResponseCode",(unsigned int)Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR);
+        httpResponseCode = (Network::Protocols::HTTP::Status::Codes)JSON_ASUINT(jsonValue,"httpResponseCode",(unsigned int)Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR);
         if (jsonValue.isMember("body") && body)
         {
             body->setValue(jsonValue["body"]);
@@ -158,13 +158,13 @@ public:
 
 
     std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
-    Network::Protocols::HTTP::Status::eRetCode getHTTPResponseCode() const { return httpResponseCode; }
+    Network::Protocols::HTTP::Status::Codes getHTTPResponseCode() const { return httpResponseCode; }
 
     std::map<std::string, Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
     std::map<std::string,std::string> httpExtraHeaders;
 
 private:
-    Network::Protocols::HTTP::Status::eRetCode httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
+    Network::Protocols::HTTP::Status::Codes httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
 };
 

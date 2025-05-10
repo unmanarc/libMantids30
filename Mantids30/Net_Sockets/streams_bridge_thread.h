@@ -1,6 +1,6 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include <atomic>
 #include <mutex>
 
@@ -16,7 +16,7 @@ public:
     Bridge_Thread();
     virtual ~Bridge_Thread();
 
-    void setSocketEndpoints(std::shared_ptr<Sockets::Socket_Stream_Base> src, std::shared_ptr<Sockets::Socket_Stream_Base> dst, bool chunked);
+    void setSocketEndpoints(std::shared_ptr<Sockets::Socket_Stream> src, std::shared_ptr<Sockets::Socket_Stream> dst, bool chunked);
 
     bool sendPing();
 
@@ -45,7 +45,7 @@ public:
     void terminate();
 
 protected:
-    std::shared_ptr<Sockets::Socket_Stream_Base>  src;
+    std::shared_ptr<Sockets::Socket_Stream>  src;
     char * block_fwd;
     uint16_t blockSize;
    // int partialReadL(void *data, const uint32_t &datalen, bool fwd = true);
@@ -55,7 +55,7 @@ private:
     std::atomic<bool> m_terminated;
     bool m_chunked;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base>  m_dstSocket;
+    std::shared_ptr<Sockets::Socket_Stream>  m_dstSocket;
     char * m_blockBwd;
 
     std::mutex mt_fwd, mt_rev;

@@ -1,4 +1,4 @@
-#include "socket_stream_reader_base.h"
+#include "socket_stream_reader.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -17,17 +17,17 @@
 
 using namespace Mantids30::Network::Sockets;
 
-Socket_Stream_BaseReader::Socket_Stream_BaseReader()
+Socket_Stream_Reader::Socket_Stream_Reader()
 {
 
 }
 
-Socket_Stream_BaseReader::~Socket_Stream_BaseReader()
+Socket_Stream_Reader::~Socket_Stream_Reader()
 {
 
 }
 
-unsigned char Socket_Stream_BaseReader::readU8(bool* readOK)
+unsigned char Socket_Stream_Reader::readU8(bool* readOK)
 {
     unsigned char rsp[1] =
     { 0 };
@@ -40,7 +40,7 @@ unsigned char Socket_Stream_BaseReader::readU8(bool* readOK)
     return rsp[0];
 }
 
-uint16_t Socket_Stream_BaseReader::readU16(bool* readOK)
+uint16_t Socket_Stream_Reader::readU16(bool* readOK)
 {
     uint16_t ret = 0;
     if (readOK)
@@ -54,7 +54,7 @@ uint16_t Socket_Stream_BaseReader::readU16(bool* readOK)
 }
 
 
-uint32_t Socket_Stream_BaseReader::readU32(bool* readOK)
+uint32_t Socket_Stream_Reader::readU32(bool* readOK)
 {
     uint32_t ret = 0;
     if (readOK)
@@ -68,7 +68,7 @@ uint32_t Socket_Stream_BaseReader::readU32(bool* readOK)
     return ret;
 }
 
-uint64_t Socket_Stream_BaseReader::readU64(bool *readOK)
+uint64_t Socket_Stream_Reader::readU64(bool *readOK)
 {
     uint64_t ret = 0;
     if (readOK)
@@ -84,7 +84,7 @@ uint64_t Socket_Stream_BaseReader::readU64(bool *readOK)
 }
 
 // TODO: null termination
-int32_t Socket_Stream_BaseReader::read64KBlockDelim(char * block, const char *delim, const uint16_t &delimBytes, const uint32_t & blockNo)
+int32_t Socket_Stream_Reader::read64KBlockDelim(char * block, const char *delim, const uint16_t &delimBytes, const uint32_t & blockNo)
 {
     bool readOK;
 
@@ -103,7 +103,7 @@ int32_t Socket_Stream_BaseReader::read64KBlockDelim(char * block, const char *de
     return -1; // not found.
 }
 
-char* Socket_Stream_BaseReader::readBlock32WAllocAndDelim(unsigned int* datalen,
+char* Socket_Stream_Reader::readBlock32WAllocAndDelim(unsigned int* datalen,
         const char *delim, uint16_t delimBytes)
 {
     if (*datalen<=65535) return nullptr; // It should at least have 65k of buffer.

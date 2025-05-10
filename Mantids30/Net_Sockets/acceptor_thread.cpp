@@ -45,7 +45,7 @@ void StreamAcceptorThread::postInitConnection()
     }
 }
 
-void StreamAcceptorThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket)
+void StreamAcceptorThread::setClientSocket(std::shared_ptr<Sockets::Socket_Stream> _clientSocket)
 {
     m_pClientSocket = _clientSocket;
 //    m_pClientSocket->getRemotePair(m_remotePair);

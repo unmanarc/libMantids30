@@ -4,6 +4,7 @@
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30;
+using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
 bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredPermissions)
@@ -98,7 +99,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     default:
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( Network::Protocols::HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid Method Mode");
+            apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid Method Mode");
         }
         return INVALID_METHOD_MODE;
     }
@@ -107,7 +108,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( Network::Protocols::HTTP::Status::S_404_NOT_FOUND, "invalid_invokation","Resource not found");
+            apiResponse->setError( HTTP::Status::S_404_NOT_FOUND, "invalid_invokation","Resource not found");
         }
         return RESOURCE_NOT_FOUND;
     }
@@ -116,7 +117,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( Network::Protocols::HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Header Required");
+            apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Header Required");
         }
         return AUTHENTICATION_REQUIRED;
     }
@@ -125,7 +126,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( Network::Protocols::HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Cookie Required");
+            apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Cookie Required");
         }
         return AUTHENTICATION_REQUIRED;
     }
@@ -142,7 +143,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         {
             if (apiResponse != nullptr)
             {
-                apiResponse->setError( Network::Protocols::HTTP::Status::S_403_FORBIDDEN, "Generic CSRF Token Required");
+                apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "Generic CSRF Token Required");
             }
             return AUTHENTICATION_REQUIRED;
         }
@@ -154,7 +155,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         {
             if (apiResponse != nullptr)
             {
-                apiResponse->setError( Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Insufficient permissions");
+                apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Insufficient permissions");
             }
             return INSUFFICIENT_PERMISSIONS;
         }
@@ -167,7 +168,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
             if ((inputParameters.inputJSON = inputParameters.clientRequest->getJSONStreamerContent()->processValue()) == nullptr)
             {
                 // Bad parsing...
-                apiResponse->setError( Network::Protocols::HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing");
+                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing");
                 inputParameters.inputJSON = &inputParameters.emptyJSON;
                 return INTERNAL_ERROR;
             }
@@ -191,7 +192,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         {
             if (apiResponse != nullptr)
             {
-                apiResponse->setError( Network::Protocols::HTTP::Status::S_403_FORBIDDEN, "JWT CSRF Token Hash Required");
+                apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "JWT CSRF Token Hash Required");
             }
             return AUTHENTICATION_REQUIRED;
         }
@@ -209,7 +210,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
 
     if (apiResponse != nullptr)
     {
-        apiResponse->setError( Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_invokation","Internal error");
+        apiResponse->setError( HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_invokation","Internal error");
     }
 
     return INTERNAL_ERROR;
@@ -239,7 +240,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
     {
         if (payloadOut != nullptr)
         {
-            payloadOut->setError(Network::Protocols::HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation", "Invalid method mode string");
+            payloadOut->setError(HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation", "Invalid method mode string");
         }
         return INVALID_METHOD_MODE;
     }

@@ -15,7 +15,7 @@
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -23,7 +23,7 @@ using namespace std;
 
 
 // TODO: documentar los privilegios cargados de un usuario
-Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandler, const std::string &sRealFullPath)
+HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHandler, const std::string &sRealFullPath)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -164,9 +164,9 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
         string varName       = string(whatStaticText[2].first, whatStaticText[2].second);
 
         // Obtain using POST Vars...
-        if (clientHandler->clientRequest.getVars(HTTPv1_Base::HTTP_VARS_POST)->exist(varName))
+        if (clientHandler->clientRequest.getVars(HTTP::VARS_POST)->exist(varName))
         {
-            replaceTagByJVar(fileContent,fulltag,clientHandler->clientRequest.getVars(HTTPv1_Base::HTTP_VARS_POST)->getTValue<std::string>(varName));
+            replaceTagByJVar(fileContent,fulltag,clientHandler->clientRequest.getVars(HTTP::VARS_POST)->getTValue<std::string>(varName));
         }
         // Report as not found.
         else
@@ -188,11 +188,11 @@ Status::eRetCode HTMLIEngine::processResourceFile(APIClientHandler *clientHandle
         string varName       = string(whatStaticText[2].first, whatStaticText[2].second);
 
         // Obtain using POST Vars...
-        if (clientHandler->clientRequest.getVars(HTTPv1_Base::HTTP_VARS_GET)->exist(varName))
+        if (clientHandler->clientRequest.getVars(HTTP::VARS_GET)->exist(varName))
         {
            replaceTagByJVar(fileContent,
                              fulltag,
-                             clientHandler->clientRequest.getVars(HTTPv1_Base::HTTP_VARS_GET)->getTValue<std::string>(varName)
+                             clientHandler->clientRequest.getVars(HTTP::VARS_GET)->getTValue<std::string>(varName)
                              );
         }
         // Report as not found.

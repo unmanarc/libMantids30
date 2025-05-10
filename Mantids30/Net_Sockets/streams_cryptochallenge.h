@@ -1,13 +1,13 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace NetStreams {
 
 class CryptoChallenge
 {
 public:
-    CryptoChallenge( std::shared_ptr<Sockets::Socket_Stream_Base> socket );
+    CryptoChallenge( std::shared_ptr<Sockets::Socket_Stream> socket );
     /**
      * @brief mutualChallengeResponseSHA256Auth Create a Mutual Challenge-Reponse Authentication with the remote host
      * @param localKey Local Key
@@ -18,7 +18,7 @@ public:
 
 
 private:
-    std::shared_ptr<Sockets::Socket_Stream_Base> m_socket;
+    std::shared_ptr<Sockets::Socket_Stream> m_socket;
 };
 
 }}}}

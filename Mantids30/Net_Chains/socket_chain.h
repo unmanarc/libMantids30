@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
 
 #include <memory>
@@ -23,10 +23,10 @@
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
-class Socket_Chain : public Socket_Stream_Base
+class Socket_Chain : public Socket_Stream
 {
 public:
-    Socket_Chain(std::shared_ptr<Socket_Stream_Base>  _baseSocket, bool _deleteBaseSocketOnExit = true);
+    Socket_Chain(std::shared_ptr<Socket_Stream>  _baseSocket, bool _deleteBaseSocketOnExit = true);
     virtual ~Socket_Chain();
 
     /**
@@ -35,7 +35,7 @@ public:
      * @return true if successfully initialized
      */
     bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase * chainElement, bool deleteAtExit = false);
-    bool addToChain(std::pair<std::shared_ptr<Socket_Stream_Base> , std::shared_ptr<Socket_Stream_Base> > sockPairs,
+    bool addToChain(std::pair<std::shared_ptr<Socket_Stream> , std::shared_ptr<Socket_Stream> > sockPairs,
                     bool deleteFirstSocketOnExit = false,
                     bool deleteSecondSocketOnExit = true,
                     bool modeServer = false,
@@ -67,9 +67,9 @@ public:
     /**
      * @brief getSocketPairLayer Get Sockets Pair from layer (don't use with )
      * @param layer layer number [0..n-1]
-     * @return pair of Socket_Stream_Base ptr
+     * @return pair of Socket_Stream ptr
      */
-    std::pair<std::shared_ptr<Socket_Stream_Base> , std::shared_ptr<Socket_Stream_Base> > getSocketPairLayer(size_t layer);
+    std::pair<std::shared_ptr<Socket_Stream> , std::shared_ptr<Socket_Stream> > getSocketPairLayer(size_t layer);
 
     ////////////////////
     // virtuals:
@@ -94,7 +94,7 @@ private:
         /**
          * @brief sock connected pair sockets (sock[0]: up socket  sock[1]: down socket)
          */
-        std::shared_ptr<Socket_Stream_Base>  sock[2];
+        std::shared_ptr<Socket_Stream>  sock[2];
         std::thread thr1,thr2;
 
         // Results from threads...
@@ -108,7 +108,7 @@ private:
 
 
     struct sChainTElement {
-        std::shared_ptr<Socket_Stream_Base>  sockets[2];
+        std::shared_ptr<Socket_Stream>  sockets[2];
         int * r0;
         bool * w1;
         bool modeFWD;
@@ -120,7 +120,7 @@ private:
     void removeSocketsOnExit();
 
     bool m_deleteBaseSocketOnExit;
-    std::shared_ptr<Socket_Stream_Base> m_baseSocket;
+    std::shared_ptr<Socket_Stream> m_baseSocket;
     std::vector<sChainVectorItem *> m_socketLayers;
 };
 

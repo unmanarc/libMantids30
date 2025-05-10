@@ -27,11 +27,11 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1_Base(false, sobject)
+HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1_Base(false, sobject)
 {
     m_badAnswer = false;
 
@@ -123,12 +123,12 @@ HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1
     m_includeServerDate = true;
 }
 
-void HTTPv1_Server::setResponseServerName(const string &sServerName)
+void HTTP::HTTPv1_Server::setResponseServerName(const string &sServerName)
 {
     serverResponse.headers.replace("Server", sServerName);
 }
 
-bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
+bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
 {
     if (!info)
         throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
@@ -269,7 +269,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
                 struct stat attrib;
                 if (!stat(sFullRequestedPath.c_str(), &attrib))
                 {
-                    HTTP::Common::Date fileModificationDate;
+                    HTTP::Date fileModificationDate;
 #ifdef _WIN32
                     fileModificationDate.setUnixTime(attrib.st_mtime);
 #else
@@ -296,7 +296,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedF
     }
 }
 
-bool HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::string sServerDir, sLocalRequestedFileInfo *info)
 {
     if (!info)
         throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
@@ -359,7 +359,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::str
     return true;
 }
 
-bool HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
 {
     if (!info)
         throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
@@ -419,7 +419,7 @@ bool HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::strin
     return true;
 }
 
-bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
+bool HTTP::HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
 {
     const char * cFileExtension = strrchr(sFilePath.c_str(),'.');
 
@@ -437,12 +437,12 @@ bool HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePat
     return false;
 }
 
-void HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const string &type)
+void HTTP::HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext, const string &type)
 {
     m_mimeTypes[ext] = type;
 }
 
-bool HTTPv1_Server::changeToNextParser()
+bool HTTP::HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
     if (m_currentParser == &clientRequest.requestLine) return changeToNextParserOnClientRequest();
@@ -450,14 +450,14 @@ bool HTTPv1_Server::changeToNextParser()
     else return changeToNextParserOnClientContentData();
 }
 
-void HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
+void HTTP::HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
 {
     clientRequest.networkClientInfo.tlsCommonName = tlsCommonName;
     strncpy(clientRequest.networkClientInfo.REMOTE_ADDR,ipAddr,sizeof(clientRequest.networkClientInfo.REMOTE_ADDR));
     clientRequest.networkClientInfo.isSecure = secure;
 }
 
-bool HTTPv1_Server::changeToNextParserOnClientHeaders()
+bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
 {
     // This function is used when the client options arrives, so we need to parse it.
 
@@ -505,7 +505,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
         if (contentLength)
         {
             // Content length defined.
-            clientRequest.content.setTransmitionMode(Common::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+            clientRequest.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
             if (!clientRequest.content.setContentLenSize(contentLength))
             {
                 // Error setting this content length size. (automatic answer)
@@ -517,19 +517,19 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
             // Content-Type... (only if length is designated)
             if ( icontains(contentType,"multipart/form-data") )
             {
-                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_MIME);
+                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
                 clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
             else if ( icontains(contentType,"application/x-www-form-urlencoded") )
             {
-                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_URL);
+                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
             }
             else if ( icontains(contentType,"application/json") )
             {
-                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_JSON);
+                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_JSON);
             }
             else
-                clientRequest.content.setContainerType(Common::Content::CONTENT_TYPE_BIN);
+                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_BIN);
             /////////////////////////////////////////////////////////////////////////////////////
         }
 
@@ -555,7 +555,7 @@ bool HTTPv1_Server::changeToNextParserOnClientHeaders()
     return true;
 }
 
-bool HTTPv1_Server::changeToNextParserOnClientRequest()
+bool HTTP::HTTPv1_Server::changeToNextParserOnClientRequest()
 {
     // Internal checks when URL request has received.
     prepareServerVersionOnURI();
@@ -572,12 +572,12 @@ bool HTTPv1_Server::changeToNextParserOnClientRequest()
     return true;
 }
 
-bool HTTPv1_Server::changeToNextParserOnClientContentData()
+bool HTTP::HTTPv1_Server::changeToNextParserOnClientContentData()
 {
     return answer(m_answerBytes);
 }
 
-bool HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
+bool HTTP::HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
 {
     // Act as a server. Send data from here.
     uint64_t strsize;
@@ -588,7 +588,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
         serverResponse.headers.add("Connetion", "Close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
-        if (serverResponse.content.getTransmitionMode() == Common::Content::TRANSMIT_MODE_CHUNKS)
+        if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
             serverResponse.headers.replace("Transfer-Encoding", "Chunked");
     }
     else
@@ -597,7 +597,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
         serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
-    HTTP::Common::Date currentDate;
+    HTTP::Date currentDate;
     currentDate.setCurrentTime();
     if (m_includeServerDate)
         serverResponse.headers.add("Date", currentDate.toString());
@@ -636,7 +636,7 @@ bool HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
     return serverResponse.headers.streamToUpstream(wrStat);
 }
 
-void HTTPv1_Server::prepareServerVersionOnURI()
+void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 {
     serverResponse.status.getHttpVersion()->setMajor(1);
     serverResponse.status.getHttpVersion()->setMinor(0);
@@ -652,7 +652,7 @@ void HTTPv1_Server::prepareServerVersionOnURI()
     }
 }
 
-void HTTPv1_Server::prepareServerVersionOnOptions()
+void HTTP::HTTPv1_Server::prepareServerVersionOnOptions()
 {
     if (clientRequest.requestLine.getHTTPVersion()->getMinor()>=1)
     {
@@ -665,7 +665,7 @@ void HTTPv1_Server::prepareServerVersionOnOptions()
     }
 }
 
-void HTTPv1_Server::parseHostOptions()
+void HTTP::HTTPv1_Server::parseHostOptions()
 {
     string hostVal = clientRequest.headers.getOptionValueStringByName("HOST");
     if (!hostVal.empty())
@@ -686,7 +686,7 @@ void HTTPv1_Server::parseHostOptions()
 }
 
 
-bool HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
+bool HTTP::HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
 {
     wrStat.bytesWritten = 0;
 
@@ -721,12 +721,12 @@ bool HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
     return streamedOK;
 }
 
-void HTTPv1_Server::setStaticContentElements(const std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> &value)
+void HTTP::HTTPv1_Server::setStaticContentElements(const std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> &value)
 {
     m_staticContentElements = value;
 }
 
-std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
+std::string HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
 {
     std::string output;
     output.reserve(rawStr.size());
@@ -757,34 +757,34 @@ std::string HTTPv1_Server::htmlEncode(const std::string &rawStr)
     return output;
 }
 
-bool HTTPv1_Server::verifyStaticContentExistence(const string &path)
+bool HTTP::HTTPv1_Server::verifyStaticContentExistence(const string &path)
 {
     return !(m_staticContentElements.find(path) == m_staticContentElements.end());
 }
 
 
-std::string HTTPv1_Server::getCurrentFileExtension() const
+std::string HTTP::HTTPv1_Server::getCurrentFileExtension() const
 {
     return m_currentFileExtension;
 }
 
-void HTTPv1_Server::setResponseIncludeServerDate(bool value)
+void HTTP::HTTPv1_Server::setResponseIncludeServerDate(bool value)
 {
     m_includeServerDate = value;
 }
 
 
-void HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
+void HTTP::HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {
     m_staticContentElements[path] = contentElement;
 }
 
-Memory::Streams::WriteStatus HTTPv1_Server::getResponseTransmissionStatus() const
+Memory::Streams::WriteStatus HTTP::HTTPv1_Server::getResponseTransmissionStatus() const
 {
     return m_answerBytes;
 }
 
-Memory::Streams::WriteStatus HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
+Memory::Streams::WriteStatus HTTP::HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
     Memory::Streams::WriteStatus stat;
 
@@ -799,7 +799,7 @@ Memory::Streams::WriteStatus HTTPv1_Server::streamResponse(std::shared_ptr<Memor
     return stat;
 }
 
-std::shared_ptr<Memory::Streams::StreamableObject> HTTPv1_Server::getResponseDataStreamer()
+std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getResponseDataStreamer()
 {
     return serverResponse.content.getStreamableObj();
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include "streams_bridge_thread.h"
 
 #include <cstdint>
@@ -57,13 +57,13 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream_Base>  s);
+    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream>  s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    std::shared_ptr<Sockets::Socket_Stream_Base>  getPeer(Side i);
+    std::shared_ptr<Sockets::Socket_Stream>  getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -144,7 +144,7 @@ private:
 
     Bridge_Thread *m_bridgeThreadPrc = nullptr;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base>  m_peers[2] = {nullptr, nullptr};
+    std::shared_ptr<Sockets::Socket_Stream>  m_peers[2] = {nullptr, nullptr};
     TransmitionMode m_transmitionMode = TRANSMITION_MODE_STREAM;
 
     std::atomic<uint64_t> m_sentBytes{0}, m_recvBytes{0};

@@ -7,27 +7,27 @@
 #include <locale>
 #include <iomanip>
 
-using namespace Mantids30::Network::Protocols::HTTP;
-using namespace Mantids30::Network::Protocols::HTTP::Common;
+using namespace Mantids30::Network::Protocols;
+
 using namespace Mantids30;
 using namespace boost::posix_time;
 
-Date::Date()
+HTTP::Date::Date()
 {
     setCurrentTime();
 }
 
-time_t Date::getUnixTime() const
+time_t HTTP::Date::getUnixTime() const
 {
     return m_unixTime;
 }
 
-void Date::setUnixTime(const time_t &value)
+void HTTP::Date::setUnixTime(const time_t &value)
 {
     m_unixTime = value;
 }
 
-std::string Date::toString() const
+std::string HTTP::Date::toString() const
 {
     char buffer[128];
     struct tm timeinfo;
@@ -47,7 +47,7 @@ std::string Date::toString() const
     return std::string(buffer);
 }
 
-bool Date::fromString(const std::string &fTime)
+bool HTTP::Date::fromString(const std::string &fTime)
 {
 
 #ifndef _WIN32
@@ -88,12 +88,12 @@ bool Date::fromString(const std::string &fTime)
     // TODO: check hour zones changes.
 }
 
-void Date::setCurrentTime()
+void HTTP::Date::setCurrentTime()
 {
     m_unixTime = time(nullptr);
 }
 
-void Date::incTime(const uint32_t &seconds)
+void HTTP::Date::incTime(const uint32_t &seconds)
 {
     m_unixTime += seconds;
 }

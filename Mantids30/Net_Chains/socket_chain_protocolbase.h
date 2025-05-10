@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <utility>
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainProtocols {
 
@@ -14,7 +14,7 @@ public:
     virtual ~Socket_Chain_ProtocolBase() = default;
 
     virtual bool isEndPoint();
-    std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> , std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> > makeSocketChainPair();
+    std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> , std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> > makeSocketChainPair();
     bool isServerMode() const;
     void setServerMode(bool value);
 

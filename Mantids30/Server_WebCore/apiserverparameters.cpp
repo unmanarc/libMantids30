@@ -64,10 +64,6 @@ bool APIServerParameters::setDocumentRootPath(const std::string &value)
             std::shared_ptr<API::Web::ResourcesFilter> rf = std::make_shared<API::Web::ResourcesFilter>();
             if (rf->loadFiltersFromFile(resourceFilterPath))
             {
-                // If an existing filter is set, delete it before replacing.
-/*                if (resourceFilter)
-                    delete resourceFilter;*/
-
                 // Assign the new resources filter. (if there is another resource filter, the first one is destroyed)
                 resourceFilter = rf;
             }

@@ -63,12 +63,12 @@ protected:
      * @brief procHTTPClientContent Process web client request
      * @return http response code.
      */
-    Protocols::HTTP::Status::eRetCode procHTTPClientContent() override;
+    Protocols::HTTP::Status::Codes procHTTPClientContent() override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediatly.
      */
-    virtual Protocols::HTTP::Status::eRetCode sessionStart() = 0;
+    virtual Protocols::HTTP::Status::Codes sessionStart() = 0;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      * @return S_200_OK for good cleaning.
@@ -125,7 +125,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) = 0;
+    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) = 0;
 
     /**
      * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
@@ -171,7 +171,7 @@ protected:
     bool isURLSafe(const std::string& url);
     bool isRedirectPathSafeForAuth(const std::string& url);
 
-    Protocols::HTTP::Status::eRetCode showBrowserMessage(const std::string & title, const std::string& message, Protocols::HTTP::Status::eRetCode returnCode);
+    Protocols::HTTP::Status::Codes showBrowserMessage(const std::string & title, const std::string& message, Protocols::HTTP::Status::Codes returnCode);
     std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string & title, const std::string& message);
 
     DataFormat::JWT::Token m_JWTToken;
@@ -179,11 +179,11 @@ protected:
     SessionInfo m_currentSessionInfo;
 
 protected:
-    Protocols::HTTP::Status::eRetCode redirectUsingJS( const std::string & url );
+    Protocols::HTTP::Status::Codes redirectUsingJS( const std::string & url );
 
 
 private:
-    Protocols::HTTP::Status::eRetCode handleRegularFileRequest();
+    Protocols::HTTP::Status::Codes handleRegularFileRequest();
 
     bool versionIsSupported(const std::string &versionStr, int minVersion);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "acceptor_callbacks.h"
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Threads/threaded.h>
@@ -42,7 +42,7 @@ public:
    * reached the max number of connections (default nullptr -> none)
    */
   PoolThreaded(
-      const std::shared_ptr<Sockets::Socket_Stream_Base> &acceptorSocket,
+      const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket,
       _callbackConnectionRB _onConnect, void *context = nullptr,
       _callbackConnectionRB _onInitFailed = nullptr,
       _callbackConnectionRV _onTimeOut = nullptr);
@@ -101,7 +101,7 @@ public:
    * @param value acceptor socket
    */
   void
-  setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> &value);
+  setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &value);
 
   ThreadPoolCallbacks callbacks;
 
@@ -121,7 +121,7 @@ private:
 
     std::string key;
 
-    std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket;
+    std::shared_ptr<Sockets::Socket_Stream> clientSocket;
     char pad;
   };
 
@@ -132,7 +132,7 @@ private:
   void init();
 
   Mantids30::Threads::Pool::ThreadPool *m_pool = nullptr;
-  std::shared_ptr<Sockets::Socket_Stream_Base> m_acceptorSocket;
+  std::shared_ptr<Sockets::Socket_Stream> m_acceptorSocket;
   std::mutex m_runMutex;
 };
 

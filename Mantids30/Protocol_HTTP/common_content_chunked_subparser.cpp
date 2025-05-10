@@ -2,27 +2,26 @@
 #include <stdio.h>
 #include <string.h>
 
-using namespace Mantids30::Network::Protocols::HTTP;
-using namespace Mantids30::Network::Protocols::HTTP::Common;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 
-Content_Chunked_SubParser::Content_Chunked_SubParser(
+HTTP::ContentChunkedTransformer::ContentChunkedTransformer(
     StreamableObject *upStreamOut)
 {
     this->upStreamOut = upStreamOut;
 }
 
-Content_Chunked_SubParser::~Content_Chunked_SubParser()
+HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
 {
     endBuffer();
 }
 
-bool Content_Chunked_SubParser::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
+bool HTTP::ContentChunkedTransformer::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
 {
     return false;
 }
 
-Memory::Streams::WriteStatus Content_Chunked_SubParser::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
+Memory::Streams::WriteStatus HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
 {
     Memory::Streams::WriteStatus cur;
     char strhex[32];
@@ -38,7 +37,7 @@ Memory::Streams::WriteStatus Content_Chunked_SubParser::write(const void *buf, c
     return cur;
 }
 
-bool Content_Chunked_SubParser::endBuffer()
+bool HTTP::ContentChunkedTransformer::endBuffer()
 {
     Memory::Streams::WriteStatus cur;
     return (cur=upStreamOut->writeString(m_pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n",cur)).succeed;

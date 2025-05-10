@@ -5,9 +5,9 @@
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
-struct sHTTP_StatusCode
+struct HTTPStatusCode
 {
-    sHTTP_StatusCode(const uint16_t &code,const char *responseMessage)
+    HTTPStatusCode(const uint16_t &code,const char *responseMessage)
     {
         this->code = code;
         this->responseMessage = responseMessage;
@@ -19,7 +19,7 @@ struct sHTTP_StatusCode
 class Status : public Memory::Streams::SubParser
 {
 public:
-    enum eRetCode {
+    enum Codes {
         S_100_CONTINUE = 0,
         S_101_SWITCHING_PROTOCOL = 1,
         S_200_OK = 2,
@@ -70,27 +70,27 @@ public:
 
     Status();
 
-    static uint16_t getHTTPStatusCodeTranslation(const eRetCode & code);
+    static uint16_t getHTTPStatusCodeTranslation(const Codes & code);
 
     /**
      * @brief getHttpVersion - Get HTTP Version Object
      * @return Version Object
      */
-    Common::Version * getHttpVersion();
+    HTTP::Version * getHttpVersion();
     /**
-     * @brief getResponseRetCode - Get HTTP Response Code (Ex. 404=Not found)
+     * @brief getResponsStatusCodes - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
      */
     unsigned short getRetCode() const;
     /**
-     * @brief setResponseRetCode - Set HTTP Response Code (Ex. 404=Not found)
+     * @brief setResponsStatusCodes - Set HTTP Response Code (Ex. 404=Not found)
      * @param value response code number
      */
     void setRetCodeValue(unsigned short value);
     /**
-     * @brief setResponseRetCode2 Set response code and message from a fixed list.
+     * @brief setResponsStatusCodes2 Set response code and message from a fixed list.
      */
-    void setRetCode(eRetCode code);
+    void setRetCode(Codes code);
     /**
      * @brief getResponseMessage - Get HTTP Response Code Message (Ex. Not found)
      * @return response code message
@@ -107,11 +107,11 @@ protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    Common::Version m_httpVersion;
-    unsigned short m_responseRetCode;
+    HTTP::Version m_httpVersion;
+    unsigned short m_responsStatusCodes;
     std::string m_responseMessage;
 
-    static const sHTTP_StatusCode m_responseRetCodes[];
+    static const HTTPStatusCode m_responsStatusCodess[];
 
 
 };

@@ -1,5 +1,5 @@
 #include "fastrpc3.h"
-#include "Mantids30/Net_Sockets/socket_stream_base.h"
+#include "Mantids30/Net_Sockets/socket_stream.h"
 #include <Mantids30/API_Monolith/methodshandler.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
@@ -169,7 +169,7 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
     return 1;
 }
 
-int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream_Base> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
+int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
 {
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId = 0;
@@ -280,7 +280,7 @@ void FastRPC3::setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAs
     m_usingRemotePeerCommonNameAsConnectionId = newUseCNAsServerKey;
 }
 
-int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer)
+int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, bool remotePeerIsServer)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "VSRPC:ProcStr");

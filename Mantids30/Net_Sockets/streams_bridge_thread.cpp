@@ -24,7 +24,7 @@ Bridge_Thread::~Bridge_Thread()
     delete [] m_blockBwd;
 }
 
-void Bridge_Thread::setSocketEndpoints(std::shared_ptr<Socket_Stream_Base> src, std::shared_ptr<Socket_Stream_Base> dst, bool chunked)
+void Bridge_Thread::setSocketEndpoints(std::shared_ptr<Socket_Stream> src, std::shared_ptr<Socket_Stream> dst, bool chunked)
 {
     this->src = src;
     this->m_dstSocket = dst;

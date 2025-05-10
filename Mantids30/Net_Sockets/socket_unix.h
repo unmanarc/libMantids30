@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef _WIN32
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
@@ -10,7 +10,7 @@ namespace Mantids30 { namespace Network { namespace Sockets {
  *
  * This class provides methods to listen on and connect using UNIX domain sockets.
  */
-class  Socket_UNIX : public Sockets::Socket_Stream_Base {
+class  Socket_UNIX : public Sockets::Socket_Stream {
 public:
     /**
      * @brief Constructor for the Socket_UNIX class.
@@ -64,7 +64,7 @@ public:
      * 
      * @return A shared pointer to a new Socket_UNIX object if a connection is successfully accepted, or nullptr if an error occurs.
      */
-    std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
+    std::shared_ptr<Socket_Stream> acceptConnection() override;
 };
 
 /**

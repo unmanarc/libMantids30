@@ -1,4 +1,4 @@
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include <memory>
 
 #ifndef _WIN32
@@ -17,12 +17,12 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
 
-void Socket_Stream_Base::writeEOF(bool)
+void Socket_Stream::writeEOF(bool)
 {
     shutdownSocket(SHUT_RDWR);
 }
 
-bool Socket_Stream_Base::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
+bool Socket_Stream::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
 {
     char data[8192];
     Memory::Streams::WriteStatus cur;
@@ -56,7 +56,7 @@ bool Socket_Stream_Base::streamTo(Memory::Streams::StreamableObject * out, Memor
     }
 }
 
-Memory::Streams::WriteStatus Socket_Stream_Base::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
+Memory::Streams::WriteStatus Socket_Stream::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
 {
     Memory::Streams::WriteStatus cur;
     // TODO: report the right amount of data copied...
@@ -71,9 +71,9 @@ Memory::Streams::WriteStatus Socket_Stream_Base::write(const void *buf, const si
     return cur;
 }
 
-std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Base>> Socket_Stream_Base::GetSocketPair()
+std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket_Stream::GetSocketPair()
 {
-    std::pair<std::shared_ptr<Socket_Stream_Base>,std::shared_ptr<Socket_Stream_Base>> p;
+    std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> p;
 
     p.first = nullptr;
     p.second = nullptr;
@@ -86,8 +86,8 @@ std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Bas
     }
     else
     {
-        p.first = std::make_shared<Socket_Stream_Base>();
-        p.second = std::make_shared<Socket_Stream_Base>();
+        p.first = std::make_shared<Socket_Stream>();
+        p.second = std::make_shared<Socket_Stream>();
 
         p.first->setSocketFD(sockets[0]);
         p.second->setSocketFD(sockets[1]);
@@ -112,12 +112,12 @@ std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Bas
     return p;
 }
 
-bool Socket_Stream_Base::writeFull(const void *data)
+bool Socket_Stream::writeFull(const void *data)
 {
     return writeFull(data,strlen(((const char *)data)));
 }
 
-bool Socket_Stream_Base::writeFull(const void *data, const uint64_t &datalen)
+bool Socket_Stream::writeFull(const void *data, const uint64_t &datalen)
 {
     uint64_t sent_bytes = 0;
     uint64_t left_to_send = datalen;
@@ -147,23 +147,23 @@ bool Socket_Stream_Base::writeFull(const void *data, const uint64_t &datalen)
     return true;
 }
 
-std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> Socket_Stream_Base::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_Stream::acceptConnection()
 {
     return nullptr;
 }
 
-bool Socket_Stream_Base::postAcceptSubInitialization()
+bool Socket_Stream::postAcceptSubInitialization()
 {
     return true;
 }
 
-bool Socket_Stream_Base::postConnectSubInitialization()
+bool Socket_Stream::postConnectSubInitialization()
 {
     return true;
 }
 
 
-bool Socket_Stream_Base::readFull(void *data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount)
+bool Socket_Stream::readFull(void *data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount)
 {
     if (receivedDataBytesCount) *receivedDataBytesCount = 0;
 
@@ -196,7 +196,7 @@ bool Socket_Stream_Base::readFull(void *data, const uint64_t &expectedDataBytesC
     return true;
 }
 
-void Socket_Stream_Base::deriveConnectionName()
+void Socket_Stream::deriveConnectionName()
 {
     std::string rpcClientKey;
     std::string remotePair = getRemotePairStr();
@@ -216,19 +216,19 @@ void Socket_Stream_Base::deriveConnectionName()
     setConnectionName(rpcClientKey);
 }
 
-void Socket_Stream_Base::writeDeSync()
+void Socket_Stream::writeDeSync()
 {
     // Action when everything is desynced... (better to stop R/W from the socket)
     shutdownSocket();
 }
 
-void Socket_Stream_Base::readDeSync()
+void Socket_Stream::readDeSync()
 {
     // Action when everything is desynced... (better to stop R/W from the socket)
     shutdownSocket();
 }
 
-bool Socket_Stream_Base::isConnected()
+bool Socket_Stream::isConnected()
 {
     if (!isActive())
         return false;
@@ -244,12 +244,12 @@ bool Socket_Stream_Base::isConnected()
     return true;
 }
 
-bool Socket_Stream_Base::listenOn(const uint16_t &, const char *, const int32_t &, const int32_t &)
+bool Socket_Stream::listenOn(const uint16_t &, const char *, const int32_t &, const int32_t &)
 {
     return false;
 }
 
-bool Socket_Stream_Base::connectFrom(const char *, const char* , const uint16_t &, const uint32_t &)
+bool Socket_Stream::connectFrom(const char *, const char* , const uint16_t &, const uint32_t &)
 {
 	return false;
 }

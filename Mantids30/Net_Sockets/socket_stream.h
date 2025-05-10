@@ -1,19 +1,19 @@
 #pragma once
 
 #include "socket.h"
-#include "socket_stream_reader_base.h"
-#include "socket_stream_writer_base.h"
+#include "socket_stream_reader.h"
+#include "socket_stream_writer.h"
 #include <memory>
 #include <utility>
 #include <Mantids30/Memory/streamableobject.h>
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
-class Socket_Stream_Base : public Memory::Streams::StreamableObject, public Sockets::Socket, public Socket_Stream_BaseReader, public Socket_Stream_BaseWriter
+class Socket_Stream : public Memory::Streams::StreamableObject, public Sockets::Socket, public Socket_Stream_Reader, public Socket_Stream_Writer
 {
 public:
-    Socket_Stream_Base() = default;
-    virtual ~Socket_Stream_Base() override = default;
+    Socket_Stream() = default;
+    virtual ~Socket_Stream() override = default;
 
     virtual void writeEOF(bool) override;
 
@@ -23,9 +23,9 @@ public:
 
     /**
      * @brief GetSocketPair Create a Pair of interconnected sockets
-     * @return pair of interconnected Socket_Stream_Bases. (remember to delete them)
+     * @return pair of interconnected Socket_Streams. (remember to delete them)
     */
-    static std::pair<std::shared_ptr<Socket_Stream_Base>, std::shared_ptr<Socket_Stream_Base> > GetSocketPair();
+    static std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > GetSocketPair();
 
     /**
      * @brief isConnected Get if the socket is connected. In case the socket is openned but the connection is down, the function will close the socket
@@ -37,7 +37,7 @@ public:
     // TODO: virtual redefinition?
     virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
     virtual bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
-    virtual std::shared_ptr<Socket_Stream_Base> acceptConnection();
+    virtual std::shared_ptr<Socket_Stream> acceptConnection();
 
     /**
      * Virtual function for protocol initialization after the connection starts...
@@ -89,7 +89,7 @@ protected:
     void readDeSync() override;
 };
 
-typedef std::shared_ptr<Socket_Stream_Base> Socket_Stream_Base_SP;
+typedef std::shared_ptr<Socket_Stream> Socket_Stream_SP;
 }}}
 
 

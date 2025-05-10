@@ -1,4 +1,4 @@
-#include "socket_stream_writer_base.h"
+#include "socket_stream_writer.h"
 #ifdef _WIN32
 #include <winsock2.h>
 #else
@@ -19,7 +19,7 @@ using namespace Mantids30::Network::Sockets;
 
 
 
-bool Socket_Stream_BaseWriter::writeU8(const unsigned char& c)
+bool Socket_Stream_Writer::writeU8(const unsigned char& c)
 {
     unsigned char snd[1];
     snd[0] = c;
@@ -27,7 +27,7 @@ bool Socket_Stream_BaseWriter::writeU8(const unsigned char& c)
 }
 
 
-bool Socket_Stream_BaseWriter::writeU16(const uint16_t& c)
+bool Socket_Stream_Writer::writeU16(const uint16_t& c)
 {
     // Write 16bit unsigned integer as network short.
     uint16_t nbo;
@@ -36,7 +36,7 @@ bool Socket_Stream_BaseWriter::writeU16(const uint16_t& c)
 }
 
 
-bool Socket_Stream_BaseWriter::writeU32(const uint32_t& c)
+bool Socket_Stream_Writer::writeU32(const uint32_t& c)
 {
     // Write 32bit unsigned integer as network long.
     uint32_t nbo;
@@ -44,7 +44,7 @@ bool Socket_Stream_BaseWriter::writeU32(const uint32_t& c)
     return writeFull(&nbo, sizeof(unsigned int));
 }
 
-bool Socket_Stream_BaseWriter::writeU64(const uint64_t &c)
+bool Socket_Stream_Writer::writeU64(const uint64_t &c)
 {
     // Write 32bit unsigned integer as network long.
     uint64_t nbo;

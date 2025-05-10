@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainProtocols {
@@ -9,7 +9,7 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainPro
  * @brief The SocketChainXOR class
  *        Proof of concept of socket transformation, don't use for security applications.
  */
-class Socket_Chain_XOR : public Mantids30::Network::Sockets::Socket_Stream_Base, public Socket_Chain_ProtocolBase
+class Socket_Chain_XOR : public Mantids30::Network::Sockets::Socket_Stream, public Socket_Chain_ProtocolBase
 {
 public:
     Socket_Chain_XOR();

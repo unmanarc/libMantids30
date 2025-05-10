@@ -5,7 +5,7 @@
 #include <Mantids30/Threads/threadpool.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Threads/map.h>
 #include <memory>
 
@@ -37,7 +37,7 @@ public:
 
     struct ThreadParameters
     {
-        std::shared_ptr<Sockets::Socket_Stream_Base> streamBack;
+        std::shared_ptr<Sockets::Socket_Stream> streamBack;
         uint32_t maxMessageSize;
         void * caller;
         Threads::Sync::Mutex_Shared * done;
@@ -62,7 +62,7 @@ public:
             terminated = false;
         }
         // Socket
-        std::shared_ptr<Sockets::Socket_Stream_Base> stream;
+        std::shared_ptr<Sockets::Socket_Stream> stream;
         Threads::Sync::Mutex * mtSocket;
         std::string key;
 
@@ -146,7 +146,7 @@ public:
      * @param data string to be passsed everywhere in the connection
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream,
+    int processConnection(std::shared_ptr<Sockets::Socket_Stream> stream,
                           const std::string & key,
                           const FastRPC1::CallBackOnConnected & _cb_OnConnected = {nullptr,nullptr},
                           const float & keyDistFactor=1.0,
@@ -163,7 +163,7 @@ public:
      * @param data
      * @return
      */
-    int processConnection2(std::shared_ptr<Sockets::Socket_Stream_Base> stream,
+    int processConnection2(std::shared_ptr<Sockets::Socket_Stream> stream,
                                   const std::string & key,
                                   std::shared_ptr<void> context = nullptr,
                                   const std::string & data = ""
@@ -272,7 +272,7 @@ private:
     static void sendRPCAnswer(FastRPC1::ThreadParameters * parameters, const std::string & answer, uint8_t executionStatus);
 
     int processAnswer(FastRPC1::Connection *connection);
-    int processQuery(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, std::shared_ptr<void> context, const std::string &data);
+    int processQuery(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, std::shared_ptr<void> context, const std::string &data);
 
     // Stores active connections indexed by a unique key identifier.
     Mantids30::Threads::Safe::Map<std::string> m_connectionsByKeyId;

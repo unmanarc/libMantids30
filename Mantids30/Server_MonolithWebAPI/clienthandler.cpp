@@ -21,7 +21,7 @@ using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
@@ -36,7 +36,7 @@ ClientHandler::ClientHandler(void *parent, std::shared_ptr<StreamableObject> soc
 
 
 // This function is called at the beggining.
-Status::eRetCode ClientHandler::sessionStart()
+HTTP::Status::Codes ClientHandler::sessionStart()
 {
     m_sessionID = clientRequest.getCookie(CURRENT_SESSIONID_COOKIENAME);
     m_impersonatorSessionID = clientRequest.getCookie(IMPERSONATOR_SESSIONID_COOKIENAME);
@@ -229,7 +229,7 @@ Validaciones de Origin o Referer en el backend.
 Medidas contra XSS en la aplicación.
 */
 
-Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
+HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // Login callback:
     if (authFunctionName == "login")
@@ -263,9 +263,9 @@ Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, co
     }
 }
 
-Status::eRetCode ClientHandler::handleAuthRetrieveInfoFunction()
+HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
 {
-    Protocols::HTTP::Status::eRetCode ret;
+    Protocols::HTTP::Status::Codes ret;
     shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = make_shared<Memory::Streams::StreamableJSON>();
     serverResponse.setDataStreamer(jPayloadOutStr);
     serverResponse.setContentType("application/json", true);
@@ -391,7 +391,7 @@ void ClientHandler::updateActivityOnImpersonatorSession()
 void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
 {
     // This cookie is readeable by the javascript code inside the web, so the web will know how much time is left to the session
-    Headers::Cookie simpleJSSecureCookie;
+    HTTP::Headers::Cookie simpleJSSecureCookie;
     simpleJSSecureCookie.value = "1";
     simpleJSSecureCookie.secure = true;
     simpleJSSecureCookie.httpOnly = false;
@@ -407,7 +407,7 @@ void ClientHandler::setJSSessionHalfIDCookie( const string & sessionID )
     // The other half is not known, so the javascript can't substract the session id to exfiltrate the session.
     if (m_currentSessionInfo.authSession)
     {
-        Headers::Cookie simpleJSSecureCookie;
+        HTTP::Headers::Cookie simpleJSSecureCookie;
         simpleJSSecureCookie.secure = true;
         simpleJSSecureCookie.httpOnly = false;
         simpleJSSecureCookie.setExpirationFromNow(m_sessionMaxAge);
@@ -470,7 +470,7 @@ void ClientHandler::sessionLogout()
 }
 
 // TODO: tambien cambiar en restful.
-Status::eRetCode ClientHandler::handleAuthLoginFunction()
+HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
     string requestOrigin = clientRequest.getOrigin();
@@ -485,7 +485,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
     // TODO: en el futuro permitir header usando un policy y OPTIONS.
 
     // Check for the authorization bearer token...
-    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("accessToken");
+    string postLoginToken = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("accessToken");
     bool isJWTHeaderTokenVerified = verifyToken(postLoginToken);
 
     // The token is OK (authenticated).
@@ -587,7 +587,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
 
         // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
         // or a default homepage if none is provided securely.
-        string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+        string redirectURL = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("redirectURI");
         if (redirectURL.empty())
         {
             redirectURL = "/";  // Default to home page
@@ -619,7 +619,7 @@ Status::eRetCode ClientHandler::handleAuthLoginFunction()
     return serverResponse.setRedirectLocation(config->redirectLocationOnLoginFailed);
 }
 
-Status::eRetCode ClientHandler::handleAuthLogoutFunction()
+HTTP::Status::Codes ClientHandler::handleAuthLogoutFunction()
 {
     string requestOrigin = clientRequest.getOrigin();
 
@@ -634,7 +634,7 @@ Status::eRetCode ClientHandler::handleAuthLogoutFunction()
 }
 
 // With this API, we can update the last activity.
-Status::eRetCode ClientHandler::handleAuthUpdateLastActivityFunction()
+HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
 {
     string requestOrigin = clientRequest.getOrigin();
 

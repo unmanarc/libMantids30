@@ -147,13 +147,13 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     return true;
 }
 
-std::shared_ptr<Sockets::Socket_Stream_Base> Socket_TCP::acceptConnection()
+std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
 {
     int sdconn;
 
     if (!isActive()) return nullptr;
 
-    std::shared_ptr<Socket_Stream_Base> cursocket;
+    std::shared_ptr<Socket_Stream> cursocket;
 
     int32_t clilen;
     struct sockaddr_in cli_addr;

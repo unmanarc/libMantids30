@@ -23,7 +23,7 @@ protected:
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediatly.
      */
-    Protocols::HTTP::Status::eRetCode sessionStart() override;
+    Protocols::HTTP::Status::Codes sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      * @return S_200_OK for good cleaning.
@@ -53,7 +53,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    Protocols::HTTP::Status::eRetCode handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
+    Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
@@ -110,10 +110,10 @@ private:
 
     void sessionLogout();
 
-    Protocols::HTTP::Status::eRetCode handleAuthUpdateLastActivityFunction();
-    Protocols::HTTP::Status::eRetCode handleAuthLoginFunction();
-    Protocols::HTTP::Status::eRetCode handleAuthRetrieveInfoFunction();
-    Protocols::HTTP::Status::eRetCode handleAuthLogoutFunction();
+    Protocols::HTTP::Status::Codes handleAuthUpdateLastActivityFunction();
+    Protocols::HTTP::Status::Codes handleAuthLoginFunction();
+    Protocols::HTTP::Status::Codes handleAuthRetrieveInfoFunction();
+    Protocols::HTTP::Status::Codes handleAuthLogoutFunction();
 
     bool validateSessionAntiCSRFMechanism();
 

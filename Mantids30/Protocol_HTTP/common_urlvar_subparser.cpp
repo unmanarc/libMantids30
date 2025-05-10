@@ -3,31 +3,31 @@
 #include "streamdecoder_url.h"
 #include <memory>
 
-using namespace Mantids30::Network::Protocols::HTTP;
-using namespace Mantids30::Network::Protocols::HTTP::Common;
+using namespace Mantids30::Network::Protocols;
+
 using namespace Mantids30;
 
-URLVar_SubParser::URLVar_SubParser()
+HTTP::URLVarContent::URLVarContent()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
     setParseMultiDelimiter({"=","&"});
     setMaxObjectSize(4096);
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
-    m_subParserName = "URLVar_SubParser";
+    m_subParserName = "URLVarContent";
 }
 
-URLVar_SubParser::~URLVar_SubParser()
+HTTP::URLVarContent::~URLVarContent()
 {
     //if (pData) delete pData;
 }
 
-bool URLVar_SubParser::streamToUpstream(Memory::Streams::WriteStatus &)
+bool HTTP::URLVarContent::streamToUpstream(Memory::Streams::WriteStatus &)
 {
     // NOT IMPLEMENTED.
     return false;
 }
 
-void URLVar_SubParser::setVarType(bool varName)
+void HTTP::URLVarContent::setVarType(bool varName)
 {
     if (varName)
         setParseMultiDelimiter({"=","&"}); // Parsing name...
@@ -35,19 +35,19 @@ void URLVar_SubParser::setVarType(bool varName)
         setParseMultiDelimiter({"&"}); // Parsing value...
 }
 
-void URLVar_SubParser::setMaxObjectSize(const uint32_t &size)
+void HTTP::URLVarContent::setMaxObjectSize(const uint32_t &size)
 {
     setParseDataTargetSize(size);
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> URLVar_SubParser::flushRetrievedContentAsBC()
+std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::flushRetrievedContentAsBC()
 {
     std::shared_ptr<Memory::Containers::B_Chunks> r = m_pData;
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
     return r;
 }
 
-std::string URLVar_SubParser::flushRetrievedContentAsString()
+std::string HTTP::URLVarContent::flushRetrievedContentAsString()
 {
     std::string r = m_pData->toString();
     //delete pData;
@@ -55,7 +55,7 @@ std::string URLVar_SubParser::flushRetrievedContentAsString()
     return r;
 }
 
-Memory::Streams::SubParser::ParseStatus URLVar_SubParser::parse()
+Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
 {
     m_pData->clear();
     if (!getParsedBuffer()->size())
@@ -79,7 +79,7 @@ Memory::Streams::SubParser::ParseStatus URLVar_SubParser::parse()
     return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> URLVar_SubParser::getPData()
+std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getPData()
 {
     return m_pData;
 }

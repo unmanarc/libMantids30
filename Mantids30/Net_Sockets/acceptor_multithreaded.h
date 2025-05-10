@@ -8,7 +8,7 @@
 #include <condition_variable>
 
 #include "acceptor_thread.h"
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptors {
 
@@ -32,7 +32,7 @@ public:
      * @param _onTimeOut callback function on time out (default nullptr -> none)
      * @param _onClientConnectionLimitPerIPReached callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket,
+    MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket,
                     _callbackConnectionRB _onConnect,
                     void * context=nullptr,
                     _callbackConnectionRB _onInitFailed=nullptr,
@@ -65,7 +65,7 @@ public:
      * Set the socket that will be used to accept new clients.
      * WARNING: acceptorSocket will be deleted when this class finishes.
      */
-    void setAcceptorSocket(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket);
+    void setAcceptorSocket(const std::shared_ptr<Socket_Stream> &acceptorSocket);
     /**
      * Do accept on the acceptor socket.
      * @return true if we can still accept a new connection
@@ -147,7 +147,7 @@ public:
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
 
-    bool processClient(std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
+    bool processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
 
     uint32_t incrementIPUsage(const std::string & ipAddr);
     void decrementIPUsage(const std::string & ipAddr);
@@ -155,7 +155,7 @@ private:
 
     bool m_initialized=false;
     bool m_finalized=false;
-    std::shared_ptr<Sockets::Socket_Stream_Base> m_acceptorSocket;
+    std::shared_ptr<Sockets::Socket_Stream> m_acceptorSocket;
     std::list<std::shared_ptr<StreamAcceptorThread>> m_threadList;
     std::map<std::string, uint32_t> m_connectionsPerIP;
 

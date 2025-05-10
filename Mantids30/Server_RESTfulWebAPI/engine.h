@@ -23,7 +23,7 @@ public:
 
     // TODO: max variable size
 protected:
-    std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s) override;
+    std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) override;
 
 private:
     static void revokeJWT(void *context,                                        // Context pointer

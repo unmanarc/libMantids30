@@ -1,6 +1,6 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 namespace Mantids30 { namespace Network { namespace Sockets { namespace NetStreams {
 
@@ -17,7 +17,7 @@ public:
         E_STREAMBUFFER_READ_MAXSIZEEXCEED = 4
     };
 
-    BufferedReader( std::shared_ptr<Sockets::Socket_Stream_Base> stream, const size_t & maxBufferSize );
+    BufferedReader( std::shared_ptr<Sockets::Socket_Stream> stream, const size_t & maxBufferSize );
     ~BufferedReader();
 
     eStreamBufferReadErrors bufferedReadUntil(void *data, size_t * len, int delimiter );
@@ -36,7 +36,7 @@ private:
 
     bool m_bufferOK;
     void * m_buffer;
-    std::shared_ptr<Sockets::Socket_Stream_Base> m_stream;
+    std::shared_ptr<Sockets::Socket_Stream> m_stream;
     size_t m_maxBufferSize, m_currentBufferSize;
 };
 

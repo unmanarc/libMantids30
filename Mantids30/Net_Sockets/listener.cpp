@@ -1,5 +1,5 @@
 #include "listener.h"
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
@@ -12,7 +12,7 @@ using namespace std;
 Listener::Listener() {}
 
 bool Listener::incomingConnection(void * context,
-                                  std::shared_ptr<Sockets::Socket_Stream_Base> socketStream)
+                                  std::shared_ptr<Sockets::Socket_Stream> socketStream)
 {
     Listener *threadParams = (Listener *)(context);
 
@@ -31,7 +31,7 @@ bool Listener::startListeningInBackground( const Config &parameters )
     // TODO: this is repeated code... we should pass this to socket_tls? and personalize the socket options...
     shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = make_shared<Acceptors::MultiThreaded>();
 
-    shared_ptr<Socket_Stream_Base> listenerSocket = parameters.useTLS ? std::make_shared<Socket_TLS>() : std::make_shared<Socket_TCP>();
+    shared_ptr<Socket_Stream> listenerSocket = parameters.useTLS ? std::make_shared<Socket_TLS>() : std::make_shared<Socket_TCP>();
 
     bool cont = true;
 

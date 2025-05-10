@@ -29,7 +29,7 @@ public:
      * @brief getHttpVersion Get HTTP Version requested.
      * @return version object requested.
      */
-    Common::Version * getHTTPVersion();
+    HTTP::Version * getHTTPVersion();
     /**
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
@@ -96,9 +96,9 @@ private:
      */
     std::string m_requestURIParameters;
 
-    Common::Version m_httpVersion;
+    HTTP::Version m_httpVersion;
 
-    std::shared_ptr<Common::URLVars> m_getVars;
+    std::shared_ptr<HTTP::URLVars> m_getVars;
 };
 
 }}}}}

@@ -36,7 +36,7 @@ public:
     /**
      * Set socket
      */
-    void setClientSocket(std::shared_ptr<Sockets::Socket_Stream_Base> _clientSocket);
+    void setClientSocket(std::shared_ptr<Sockets::Socket_Stream> _clientSocket);
 
     /**
      * @brief getRemotePair Get Remote Host Address
@@ -49,7 +49,7 @@ public:
 private:
 
 
-    std::shared_ptr<Sockets::Socket_Stream_Base> m_pClientSocket;
+    std::shared_ptr<Sockets::Socket_Stream> m_pClientSocket;
 
 };
 

@@ -63,7 +63,7 @@ void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & t
     while (tc->acceptClient()) {}
 }
 
-bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream_Base>clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
+bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(m_mutexClients);
@@ -130,7 +130,7 @@ MultiThreaded::MultiThreaded()
     parameters.setParent(this);
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream_Base> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
 {
     parameters.setParent(this);
 
@@ -185,7 +185,7 @@ MultiThreaded::~MultiThreaded()
 
 bool MultiThreaded::acceptClient()
 {
-    std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = m_acceptorSocket->acceptConnection();
+    std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocket->acceptConnection();
     if (clientSocket)
     {
         std::shared_ptr<StreamAcceptorThread> clientThread = std::make_shared<StreamAcceptorThread>();
@@ -222,7 +222,7 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> 
     return false;
 }
 
-void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket)
+void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> & acceptorSocket)
 {
     this->m_acceptorSocket = acceptorSocket;
 }

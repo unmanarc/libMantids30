@@ -144,7 +144,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual Mantids30::Network::Protocols::HTTP::Status::eRetCode procHTTPClientContent()
+    virtual Mantids30::Network::Protocols::HTTP::Status::Codes procHTTPClientContent()
     {
         return HTTP::Status::S_200_OK;
     }

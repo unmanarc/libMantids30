@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <Mantids30/Helpers/json.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
 /**
  * @brief The Version class provides functionality for HTTP versions.
@@ -100,5 +100,5 @@ private:
 
 
 
-}}}}}
+}}}}
 

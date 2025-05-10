@@ -19,7 +19,7 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream_Base> & acceptorSocket, _callbackConnectionRB _onConnect, void * context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
+PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> & acceptorSocket, _callbackConnectionRB _onConnect, void * context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
 {
     init();
     setAcceptorSocket(acceptorSocket);
@@ -46,7 +46,7 @@ void PoolThreaded::run()
 
     for(;;)
     {
-        std::shared_ptr<Sockets::Socket_Stream_Base> clientSocket = m_acceptorSocket->acceptConnection();
+        std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocket->acceptConnection();
         if (clientSocket)
         {
             // TODO: shared_ptr
@@ -79,7 +79,7 @@ void PoolThreaded::stop()
     m_acceptorSocket->shutdownSocket();
 }
 
-void PoolThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream_Base> & value)
+void PoolThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> & value)
 {
     m_acceptorSocket = value;
 }

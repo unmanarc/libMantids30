@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
 #include <openssl/evp.h>
 #include <string.h>
@@ -15,7 +15,7 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainPro
  *        AES-PSK Stream Cipher using XOR.
  *        Suitable for security apps (Use with TLS).
  */
-class Socket_Chain_AES  : public Mantids30::Network::Sockets::Socket_Stream_Base, public Socket_Chain_ProtocolBase
+class Socket_Chain_AES  : public Mantids30::Network::Sockets::Socket_Stream, public Socket_Chain_ProtocolBase
 {
 public:
     Socket_Chain_AES();

@@ -2,7 +2,7 @@
 
 #include "callbacks_socket_tcp_client.h"
 #include "callbacks_socket_tls.h"
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include <thread>
 
 namespace Mantids30 { namespace Network { namespace Sockets {
@@ -86,7 +86,7 @@ public:
     std::thread startConnectionLoopThread(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> sock) = 0;
+    virtual int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> sock) = 0;
 
     std::atomic_bool m_stopReconnecting;
 

@@ -10,11 +10,11 @@
 namespace Mantids30 { namespace Network { namespace Sockets {
 
 
-class Socket_Stream_BaseReader
+class Socket_Stream_Reader
 {
 public:
-    Socket_Stream_BaseReader();
-    virtual ~Socket_Stream_BaseReader();
+    Socket_Stream_Reader();
+    virtual ~Socket_Stream_Reader();
 
 
     template<typename T>

@@ -2,13 +2,13 @@
 
 #include <Mantids30/Memory/streamableobject.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
-class Content_Chunked_SubParser : public Memory::Streams::StreamableObject
+class ContentChunkedTransformer : public Memory::Streams::StreamableObject
 {
 public:
-    Content_Chunked_SubParser(Memory::Streams::StreamableObject * upStreamOut);
-    ~Content_Chunked_SubParser( );
+    ContentChunkedTransformer(Memory::Streams::StreamableObject * upStreamOut);
+    ~ContentChunkedTransformer( );
 
     bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrsStat) override;
     Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Memory::Streams::WriteStatus & wrStatUpd) override;
@@ -20,5 +20,5 @@ private:
     Memory::Streams::StreamableObject * upStreamOut = nullptr;
 };
 
-}}}}}
+}}}}
 

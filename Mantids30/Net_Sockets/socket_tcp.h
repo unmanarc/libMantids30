@@ -1,6 +1,6 @@
 #pragma once
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include <unistd.h>
 
 #ifdef _WIN32
@@ -12,7 +12,7 @@ namespace Mantids30 { namespace Network { namespace Sockets {
 /**
  * TCP Socket Class
  */
-class Socket_TCP : public Sockets::Socket_Stream_Base {
+class Socket_TCP : public Sockets::Socket_Stream {
 public:
     /**
      * Class constructor.
@@ -38,7 +38,7 @@ public:
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.
      */
-    virtual std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
+    virtual std::shared_ptr<Socket_Stream> acceptConnection() override;
 
     /**
      * Virtual function for protocol initialization after the connection starts...

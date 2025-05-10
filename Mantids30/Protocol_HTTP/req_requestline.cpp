@@ -10,13 +10,13 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network::Protocols::HTTP::Request;
 using namespace Mantids30;
 
 RequestLine::RequestLine()
 {
-    m_getVars = Common::URLVars::create();
+    m_getVars = HTTP::URLVars::create();
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128*KB_MULT); // 128K
@@ -91,7 +91,7 @@ std::string RequestLine::getRequestURIParameters() const
     return m_requestURIParameters;
 }
 
-Common::Version * RequestLine::getHTTPVersion()
+HTTP::Version * RequestLine::getHTTPVersion()
 {
     return &m_httpVersion;
 }

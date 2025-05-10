@@ -7,7 +7,7 @@
 #include <Mantids30/Threads/threadpool.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Net_Sockets/socket_stream_base.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/callbacks_socket_tls_server.h>
 
 #include <Mantids30/Net_Sockets/connector.h>
@@ -97,7 +97,7 @@ public:
                 delete [] extraTokenAuth;
         }
 
-        std::shared_ptr<Sockets::Socket_Stream_Base> streamBack = nullptr;
+        std::shared_ptr<Sockets::Socket_Stream> streamBack = nullptr;
         uint32_t maxMessageSize=0;
         void * caller = nullptr;
         FastRPC3::SessionPTR * sessionHolder = nullptr;
@@ -123,7 +123,7 @@ public:
         void * callbacks = nullptr;
 
         // Socket
-        std::shared_ptr<Sockets::Socket_Stream_Base> stream = nullptr;
+        std::shared_ptr<Sockets::Socket_Stream> stream = nullptr;
         Threads::Sync::Mutex * socketMutex = nullptr;
         std::string key;
 
@@ -379,12 +379,12 @@ public:
      */
     void stop();
 
-    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream) override
+    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override
     {
         return handleConnection(stream, false);
     }
 
-    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream) override
+    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override
     {
         return handleConnection(stream, true);
     }
@@ -396,7 +396,7 @@ public:
      * @param remotePair remote pair IP address detected by the acceptor
      * @return
      */
-    int handleConnection(std::shared_ptr<Sockets::Socket_Stream_Base> stream, bool remotePeerIsServer);
+    int handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, bool remotePeerIsServer);
 
 
     // TODO: runRemoteRPCMethod for sending message to an specific connected user...
@@ -513,7 +513,7 @@ private:
     static void sendRPCAnswer(FastRPC3::TaskParameters * parameters, const std::string & answer, uint8_t executionStatus);
 
     int processIncomingAnswer(FastRPC3::Connection *connection);
-    int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream_Base> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
+    int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
 
 
     // TODO:

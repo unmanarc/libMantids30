@@ -4,7 +4,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
 /**
  * @brief The Date class provides functionality for HTTP dates.
@@ -66,5 +66,5 @@ private:
 
 
 
-}}}}}
+}}}}
 

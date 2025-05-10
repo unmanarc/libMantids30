@@ -66,7 +66,7 @@ public:
 
   // Callbacks from thread:
   virtual int handleClientConnection(
-      std::shared_ptr<Sockets::Socket_Stream_Base> stream) = 0;
+      std::shared_ptr<Sockets::Socket_Stream> stream) = 0;
 
   // Parameters:
   Config parameters;
@@ -95,7 +95,7 @@ public:
 private:
   static bool
   incomingConnection(void *,
-                     std::shared_ptr<Sockets::Socket_Stream_Base> bsocket);
+                     std::shared_ptr<Sockets::Socket_Stream> bsocket);
 };
 
 } // namespace Sockets

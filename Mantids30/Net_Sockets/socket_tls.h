@@ -489,7 +489,7 @@ public:
      * Accept a new TCP connection on a listening socket. The connection should be initialized with "postAcceptSubInitialization"
      * @return returns a socket with the new established tcp connection.
      */
-    std::shared_ptr<Socket_Stream_Base> acceptConnection() override;
+    std::shared_ptr<Socket_Stream> acceptConnection() override;
     /**
      * Read a data block from the TLS socket
      * Receive the data block in only one command (without chunks).

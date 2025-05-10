@@ -28,7 +28,7 @@
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -76,9 +76,9 @@ void APIClientHandler::processPathParameters(const std::string &request, std::st
     }
 }
 
-Status::eRetCode APIClientHandler::procHTTPClientContent()
+HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
 {
-    HTTP::Status::eRetCode ret  = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Codes ret  = HTTP::Status::S_404_NOT_FOUND;
 
     if (!config->webServerName.empty())
     {
@@ -98,7 +98,7 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                                 )", HTTP::Status::S_426_UPGRADE_REQUIRED);
     }
 
-    HTTP::Status::eRetCode rtmp;
+    HTTP::Status::Codes rtmp;
     if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
     {
         return rtmp;
@@ -134,8 +134,8 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
                     {
                         log(LEVEL_SECURITY_ALERT, "restAPI", 2048,
                             "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setError(Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED,"invalid_security_context", "Disallowed Origin");
-                        ret = Network::Protocols::HTTP::Status::S_401_UNAUTHORIZED;
+                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED,"invalid_security_context", "Disallowed Origin");
+                        ret = HTTP::Status::S_401_UNAUTHORIZED;
                         isAPIURI = true;
                         break;
                     }
@@ -217,7 +217,9 @@ Status::eRetCode APIClientHandler::procHTTPClientContent()
 
                 // Set the flag to true, indicating the request was processed as dynamic content.
                 isDynamicContent = true;
-                break; // Exit the loop as the matching handler has been found and executed.
+
+                // Exit the loop as the matching handler has been found and executed.
+                break;
             }
         }
 
@@ -255,10 +257,10 @@ void APIClientHandler::fillSessionInfo(json &jVars)
 
 }
 
-Status::eRetCode APIClientHandler::handleRegularFileRequest()
+HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 {
     // WEB RESOURCE MODE:
-    HTTP::Status::eRetCode ret  = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Codes ret  = HTTP::Status::S_404_NOT_FOUND;
     sLocalRequestedFileInfo fileInfo;
     uint64_t uMaxAge=0;
 
@@ -486,7 +488,7 @@ bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
     return true;
 }
 
-Status::eRetCode APIClientHandler::redirectUsingJS(
+HTTP::Status::Codes APIClientHandler::redirectUsingJS(
     const std::string &url)
 {
     if (url == "#retokenize")
@@ -497,7 +499,7 @@ Status::eRetCode APIClientHandler::redirectUsingJS(
 }
 
 
-Status::eRetCode APIClientHandler::showBrowserMessage(const std::string & title, const std::string &message, Protocols::HTTP::Status::eRetCode returnCode)
+HTTP::Status::Codes APIClientHandler::showBrowserMessage(const std::string & title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
 {
     auto sHTMLPayloadOut = createHTMLAlertMessage(title,message);
     serverResponse.setDataStreamer(sHTMLPayloadOut);

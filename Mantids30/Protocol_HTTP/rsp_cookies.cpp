@@ -9,7 +9,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::HTTP::Response;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 
 
@@ -23,11 +23,11 @@ void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 
 string Cookies_ServerSide::getCookieValueByName(const string &cookieName)
 {
-    std::shared_ptr<Headers::Cookie> cookieValue = getCookieByName(cookieName);
+    std::shared_ptr<HTTP::Headers::Cookie> cookieValue = getCookieByName(cookieName);
     return !cookieValue?"":cookieValue->value;
 }
 
-std::shared_ptr<Headers::Cookie> Cookies_ServerSide::getCookieByName(const string &cookieName)
+std::shared_ptr<HTTP::Headers::Cookie> Cookies_ServerSide::getCookieByName(const string &cookieName)
 {
     if (m_cookiesMap.find(cookieName) == m_cookiesMap.end()) return nullptr;
     return m_cookiesMap[cookieName];

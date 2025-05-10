@@ -69,7 +69,7 @@ public:
     /**
      * @brief The expiration date of the cookie.
      */
-    Common::Date expires;
+    HTTP::Date expires;
 
     /**
      * @brief The maximum age (in seconds) of the cookie.

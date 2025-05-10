@@ -11,7 +11,6 @@ namespace Mantids30 {
 namespace Network {
 namespace Protocols {
 namespace HTTP {
-namespace Common {
 
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
@@ -64,7 +63,7 @@ public:
      * @param varName Var Name
      * @param data Variable Data (will be destroyed during URLVars destruction)
      */
-    bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data);
+    bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) override;
     /**
      * @brief clear all vars.
      */
@@ -86,9 +85,8 @@ private:
     std::string m_currentVarName;
     std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> m_vars;
 
-    URLVar_SubParser m_urlVarParser;
+    URLVarContent m_urlVarParser;
 };
-} // namespace Common
 } // namespace HTTP
 } // namespace Protocols
 } // namespace Network

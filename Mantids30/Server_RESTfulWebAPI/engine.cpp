@@ -42,7 +42,7 @@ void Engine::revokeJWT(
     ((Engine *)context)->config.jwtValidator->m_revocation.addToRevocationList( jwtSignature, expirationTime );
 }
 
-std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream_Base> s)
+std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer,s);
     clientHandler->m_methodsHandler = methodsHandler;

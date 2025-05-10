@@ -21,7 +21,7 @@ public:
         VALIDATION_NOTAUTHORIZED = 0x2       // Not authorized to access the method
     };
 
-    enum eRetCodes {
+    enum StatusCodess {
         METHOD_RET_CODE_SUCCESS = 0,            // Success return code
         METHOD_RET_CODE_UNAUTHENTICATED = -9994,// User is unauthenticated
         METHOD_RET_CODE_INVALIDLOCALAUTH = -9995,// Local authentication failed

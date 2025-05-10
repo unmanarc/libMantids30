@@ -1,6 +1,6 @@
 #include "connector.h"
 #include "Mantids30/Helpers/callbacks.h"
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 #include <memory>
 #include <netinet/in.h>
 
@@ -20,7 +20,7 @@ void connectionLoopThread(Connector *parent,
 
     for (;cont;)
     {
-        std::shared_ptr<Socket_Stream_Base> clientSocket;
+        std::shared_ptr<Socket_Stream> clientSocket;
 
         if (config->useTLS)
         {

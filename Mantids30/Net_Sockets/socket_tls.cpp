@@ -1,6 +1,6 @@
 #include "socket_tls.h"
 
-#include "socket_stream_base.h"
+#include "socket_stream.h"
 
 
 #include <memory>
@@ -456,13 +456,13 @@ string Socket_TLS::getTLSConnectionProtocolVersion()
     return SSL_get_version(m_sslHandler);
 }
 
-std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Base> Socket_TLS::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptConnection()
 {
     char remotePair[INET6_ADDRSTRLEN];
 
     m_isServer = true;
 
-    std::shared_ptr<Socket_Stream_Base>  acceptedTCPSock = Socket_TCP::acceptConnection();
+    std::shared_ptr<Socket_Stream>  acceptedTCPSock = Socket_TCP::acceptConnection();
 
     if (!acceptedTCPSock)
         return nullptr;

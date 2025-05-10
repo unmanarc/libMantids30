@@ -17,7 +17,7 @@ using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols::HTTP;
+using namespace Mantids30::Network::Protocols;
 
 using namespace Mantids30::Memory;
 using namespace Mantids30;
@@ -52,7 +52,7 @@ void ClientHandler::deliverSessionMaxAgeViaCookie()
 }
 */
 
-Network::Protocols::HTTP::Status::eRetCode ClientHandler::sessionStart()
+Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
 {
     // Check for the authorization bearer token...
     string headerBearerToken = clientRequest.getAuthorizationBearer();
@@ -156,7 +156,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
-        apiReturn->setError( Network::Protocols::HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
+        apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
         return;
     }
 
@@ -229,7 +229,7 @@ set<string> ClientHandler::getSessionRoles()
 
 void ClientHandler::deliverSessionMaxAgeViaCookie(const uint64_t & maxAge)
 {
-    Headers::Cookie loggedInCookie;
+    HTTP::Headers::Cookie loggedInCookie;
     loggedInCookie.setAsTransientCookie();
     loggedInCookie.secure = true;
     loggedInCookie.httpOnly = false;
@@ -269,7 +269,7 @@ void ClientHandler::setImpersonatorToken(const uint64_t &maxAge)
 // Helper: Get redirect URL from request or default
 std::string ClientHandler::getRedirectURL()
 {
-    std::string redirectURL = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("redirectURI");
+    std::string redirectURL = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("redirectURI");
     if (redirectURL.empty())
     {
         redirectURL = "/";
@@ -277,7 +277,7 @@ std::string ClientHandler::getRedirectURL()
     return redirectURL;
 }
 
-Status::eRetCode ClientHandler::handleAPIAuthCallbackFunction()
+HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
 
@@ -293,7 +293,7 @@ Status::eRetCode ClientHandler::handleAPIAuthCallbackFunction()
     // Security note (design): We trust the redirection to the trusted origin.
 
     // Handle token from POST
-    string postLoginToken = clientRequest.getVars(HTTP_VARS_POST)->getStringValue("accessToken");
+    string postLoginToken = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("accessToken");
     if (postLoginToken.empty())
     {
         // No need to validate the token, we are asuming that the application has a valid token.
@@ -396,7 +396,7 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
     if (config->useJSTokenCookie)
     {
         // deliver the information about the new token via a JS readable cookie:
-        Headers::Cookie jsAuthTokenCookie;
+        HTTP::Headers::Cookie jsAuthTokenCookie;
         jsAuthTokenCookie.secure = true;
         jsAuthTokenCookie.httpOnly = false;
         jsAuthTokenCookie.setExpirationFromNow(maxAge);
@@ -408,7 +408,7 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
     }
 }
 
-Status::eRetCode ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
+HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // Login callback:
     if (authFunctionName == "callback") // /api/auth/callback

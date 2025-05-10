@@ -3,13 +3,13 @@
 #include <Mantids30/Memory/subparser.h>
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
+namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
-class URLVar_SubParser : public Memory::Streams::SubParser
+class URLVarContent : public Memory::Streams::SubParser
 {
 public:
-    URLVar_SubParser();
-    ~URLVar_SubParser() override;
+    URLVarContent();
+    ~URLVarContent() override;
 
     bool streamToUpstream(Memory::Streams::WriteStatus &) override;
 
@@ -25,5 +25,5 @@ protected:
 
 };
 
-}}}}}
+}}}}
 
