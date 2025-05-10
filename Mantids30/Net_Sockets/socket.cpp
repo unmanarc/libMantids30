@@ -38,30 +38,8 @@ bool Socket::m_isWinSockInitialized = Socket::win32Init();
 #endif
 
 bool Socket::m_globalSocketInitialized = false;
-//bool Socket::badSocket = false;
 
-#define DEFAULT_SOCKRW_TIMEOUT 60*5
 
-void Socket::initVars()
-{
-    m_useIPv6 = false;
-
-    m_isInListenMode = false;
-
-    // default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
-    m_readTimeout = DEFAULT_SOCKRW_TIMEOUT;
-    m_writeTimeout = DEFAULT_SOCKRW_TIMEOUT;
-    
-    m_recvBuffer = 0;
-    m_useWriteInsteadRecv = false;
-    m_lastError = "";
-    m_sockFD = -1;
-    
-    m_shutdownProtocolOnRead = false;
-    m_shutdownProtocolOnWrite = false;
-
-    ZeroBArray(m_remotePair);
-}
 /*
 bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
 {
@@ -296,7 +274,7 @@ void Socket::setUseIPv6(bool value)
 
 Socket::Socket()
 {
-    initVars();
+    //initVars();
 }
 
 Socket::~Socket()
@@ -377,7 +355,9 @@ bool Socket::listenOn(const uint16_t &, const char *, const int32_t &, const int
 
 int Socket::closeSocket()
 {
-    if (!isActive()) return 0;
+    if (!isActive())
+        return 0;
+
 #ifdef _WIN32
     int i = closesocket(sockfd);
 #else
@@ -647,7 +627,6 @@ bool Socket::isActive() const
 {
     return m_sockFD!=-1;
 }
-
 
 void Socket::setSocketFD(int _sockfd)
 {

@@ -17,6 +17,9 @@
 #include <string>
 #include <atomic>
 
+// default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
+#define DEFAULT_SOCKRW_TIMEOUT 60*5
+
 namespace Mantids30 { namespace Network { namespace Sockets {
 
 class Socket_TCP;
@@ -92,7 +95,7 @@ public:
      * Check if we have an initialized socket.
      * @return true if the socket is a valid file descriptor
      */
-    virtual bool isActive() const;
+    bool isActive() const;
     /**
      * Check if the remote pair is connected or not.
      * @param true if is it connected
@@ -284,7 +287,7 @@ public:
 
 private:
     static void socketSystemInitialization();
-    void initVars();
+    //void initVars();
 
 protected:
     /**
@@ -297,11 +300,11 @@ protected:
     bool bindTo(const char * bindAddress = nullptr, const uint16_t &port = 0);
     bool getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void ** res);
 
-    bool m_useIPv6;
+    bool m_useIPv6 = false;
     /**
      * if true, Use write instead send and read instead recv.
      */
-    bool m_useWriteInsteadRecv;
+    bool m_useWriteInsteadRecv = false;
     /**
      * last error message.
      */
@@ -309,11 +312,11 @@ protected:
     /**
      * buffer with the remote pair address.
      */
-    char m_remotePair[INET6_ADDRSTRLEN];
+    char m_remotePair[INET6_ADDRSTRLEN] = "";
     /**
      * @brief remotePort remote port when accepting connections.
      */
-    unsigned short m_remotePort;
+    unsigned short m_remotePort = 0;
     /**
      * @brief m_remoteServerHostname The server hostname configured when connecting...
      */
@@ -326,28 +329,26 @@ protected:
     bool m_lastBindValid = false;
 
     static bool m_globalSocketInitialized;
-    //static bool badSocket;
 
-    std::atomic<unsigned int> m_readTimeout;
-    std::atomic<unsigned int> m_writeTimeout;
-    std::atomic<unsigned int> m_recvBuffer;
+    std::atomic<unsigned int> m_readTimeout = {DEFAULT_SOCKRW_TIMEOUT};
+    std::atomic<unsigned int> m_writeTimeout = {DEFAULT_SOCKRW_TIMEOUT};
+    std::atomic<unsigned int> m_recvBuffer = {0};
 
     std::string m_connectionName;
 
     /**
      * @brief m_isInListenMode The socket is in listen mode.
      */
-    bool m_isInListenMode;
+    bool m_isInListenMode = false;
 
     /**
      * @brief sockfd Socket descriptor
      */
-    int m_sockFD;
+    int m_sockFD = -1;
 
 
-    bool m_shutdownProtocolOnRead;
-    bool m_shutdownProtocolOnWrite;
-
+    bool m_shutdownProtocolOnRead = false;
+    bool m_shutdownProtocolOnWrite = false;
 
 #ifdef _WIN32
     static bool m_isWinSockInitialized;
