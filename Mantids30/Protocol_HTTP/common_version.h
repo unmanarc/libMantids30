@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <Mantids30/Helpers/json.h>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Common {
 
@@ -66,6 +67,31 @@ public:
      * @param value The value to set the major version number to.
      */
     void setMajor(const uint16_t& value);
+
+    /**
+     * @brief Serializes the Version object into a JSON string.
+     *
+     * @return A JSON representation of the Version object.
+     */
+     std::string toJSON() const
+     {
+         Json::Value root;
+         root["major"] = static_cast<int>(m_majorVersion);
+         root["minor"] = static_cast<int>(m_minorVersion);
+         return root.toStyledString();
+     }
+     /**
+      * @brief Deserializes the Version object from a JSON string.
+      *
+      * @param jsonString The JSON string to parse and set the version numbers from.
+      * @return True if parsing was successful, false otherwise.
+      */
+     bool fromJSON(const Json::Value & root)
+     {
+         m_majorVersion = static_cast<uint16_t>(JSON_ASUINT(root, "major", 0));
+         m_minorVersion = static_cast<uint16_t>(JSON_ASUINT(root, "minor", 0));
+         return true;
+     }
 
 private:
     uint16_t m_minorVersion = 1; ///< The minor version number.
