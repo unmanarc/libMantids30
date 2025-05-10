@@ -1,0 +1,79 @@
+#include "apiproxy.h"
+#include "Mantids30/Net_Sockets/socket_stream.h"
+
+#include <Mantids30/Net_Sockets/socket_tls.h>
+#include <Mantids30/Net_Sockets/socket_tcp.h>
+
+#include <Mantids30/Protocol_HTTP/httpv1_client.h>
+
+using namespace Mantids30::Network::Sockets;
+using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Memory::Streams;
+
+using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30;
+
+HTTP::Status::Codes ApiProxy(
+    const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
+{
+    if (obj == nullptr)
+    {
+        throw std::runtime_error("Undefined API Proxy Object.");
+        return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+    }
+
+    ApiProxyObj *proxyParameters = static_cast<ApiProxyObj *>(obj.get());
+
+    std::shared_ptr<Socket_Stream> connection;
+
+    if (proxyParameters->useTLS)
+    {
+        auto socket = std::make_shared<Socket_TLS>();
+
+        if (proxyParameters->checkTLSPeer)
+        {
+            socket->setCertValidation(Socket_TLS::CERT_X509_VALIDATE);
+            socket->tlsKeys.setUseSystemCertificates(!proxyParameters->usePrivateCA);
+            if (proxyParameters->usePrivateCA)
+            {
+                socket->tlsKeys.loadCAFromPEMFile(proxyParameters->privateCAPath);
+            }
+        }
+        else
+        {
+            socket->setCertValidation(Socket_TLS::CERT_X509_NOVALIDATE);
+        }
+
+        connection = socket;
+
+    }
+    else
+    {
+        auto socket = std::make_shared<Socket_TCP>();
+        connection = socket;
+    }
+
+    if (connection->connectTo( proxyParameters->remoteHost.c_str(), proxyParameters->remotePort ))
+    {
+        HTTP::HTTPv1_Client client(connection);
+
+        // Set the same request.
+        client.clientRequest = *request;
+        //client.clientRequest.headers.add( "x-api-key",  )
+
+        Parser::ErrorMSG msg;
+        client.parseObject(&msg);
+
+        if (msg == Parser::PARSING_SUCCEED)
+        {
+
+        }
+
+
+        return HTTP::Status::S_200_OK;
+    }
+    else
+    {
+        return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+    }
+}
