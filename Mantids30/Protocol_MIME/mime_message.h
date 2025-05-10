@@ -18,10 +18,13 @@ class MIME_Message : public Memory::Abstract::Vars, public Memory::Streams::Pars
 {
 public:
     static std::shared_ptr<MIME_Message> create(std::shared_ptr<StreamableObject> value = nullptr);
-
-    ~MIME_Message() override;
+    ~MIME_Message() override = default;
 
     bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrStat) override;
+
+    // virtuals:
+
+    void clear() override;
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- VARIABLE GET FUNCTIONS -------------
@@ -60,13 +63,13 @@ public:
      * @param varName Variable Name
      * @return list of part message that match the given name
      */
-    std::list<MIME_PartMessage *> getMultiPartMessagesByName(const std::string & varName);
+    std::list<std::shared_ptr<MIME_PartMessage> > getMultiPartMessagesByName(const std::string & varName);
     /**
      * @brief getFirstMessageByName Get the first message by name
      * @param varName Variable name
      * @return The first part message for a given variable name
      */
-    MIME_PartMessage * getFirstMessageByName(const std::string & varName);
+    std::shared_ptr<MIME_PartMessage>  getFirstMessageByName(const std::string & varName);
 
 
     ////////////////////////////////////////////////////////////////////
@@ -87,13 +90,19 @@ public:
      */
     bool addReferecedFileVar(const std::string & varName, const std::string & filePath );
 
+
+    bool addStreamableObjectContainer(const std::string & varName,std::shared_ptr<Memory::Streams::StreamableObject> obj);
+
+    bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) override;
+
+
     ////////////////////////////////////////////////////////////////////
     //        ------------- CALLBACKS OPTIONS -------------
     ////////////////////////////////////////////////////////////////////
 
     struct sMIMECallback
     {
-        sMIMECallback( void (*_callbackFunction)(void *, const std::string &, MIME_PartMessage *),  void * _context)
+        sMIMECallback( void (*_callbackFunction)(void *, const std::string &, std::shared_ptr<MIME_PartMessage> ),  void * _context)
         {
            this->callbackFunction = _callbackFunction;
            this->context = _context;
@@ -105,13 +114,13 @@ public:
            context = nullptr;
         }
 
-        void call(const std::string & partName, MIME_PartMessage *partMessage)
+        void call(const std::string & partName, std::shared_ptr<MIME_PartMessage> partMessage)
         {
             if (callbackFunction!=nullptr)
                 callbackFunction(context,partName,partMessage);
         }
 
-        void (*callbackFunction)(void *context, const std::string & partName, MIME_PartMessage *partMessage);
+        void (*callbackFunction)(void *context, const std::string & partName, std::shared_ptr<MIME_PartMessage> partMessage);
         void * context;
     };
 
@@ -227,10 +236,11 @@ private:
         MP_STATE_CONTENT
     };
 
-    void addMultiPartMessage(MIME_PartMessage * part);
-    std::string getMultiPartMessageName(MIME_PartMessage * part);
+    void addMultiPartMessage(std::shared_ptr<MIME_PartMessage>  part);
+    std::string getMultiPartMessageName(std::shared_ptr<MIME_PartMessage>  part);
 
     void renewCurrentPart();
+
     size_t m_maxNumberOfParts = 128;
     size_t m_maxHeaderSubOptionsCount = 16;
     size_t m_maxHeaderSubOptionsSize = 8 * KB_MULT;
@@ -246,9 +256,10 @@ private:
 
 
     // Message Parts:
-    std::list<MIME_PartMessage *> m_allParts;
-    std::multimap<std::string,MIME_PartMessage *> m_partsByName;
-    MIME_PartMessage * m_currentPart = nullptr;
+    std::list<std::shared_ptr<MIME_PartMessage>> m_allParts;
+    std::multimap<std::string,std::shared_ptr<MIME_PartMessage>> m_partsByName;
+
+    std::shared_ptr<MIME_PartMessage> m_currentPart = nullptr;
     MIME_Sub_FirstBoundary m_subFirstBoundary;
     MIME_Sub_EndPBoundary m_subEndPBoundary;
 
