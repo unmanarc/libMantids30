@@ -11,7 +11,7 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 
-const HTTP::HTTPStatusCode HTTP::Status::m_responsStatusCodess[] = {
+const HTTP::HTTPStatusCode HTTP::Status::m_responseStatusCodess[] = {
     {100,"Continue"},
     {101,"Switching Protocol"},
     {200,"OK"},
@@ -64,7 +64,7 @@ uint16_t HTTP::Status::getHTTPStatusCodeTranslation(const Status::Codes &code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        return m_responsStatusCodess[code].code;
+        return m_responseStatusCodess[code].code;
     }
     return 999;
 }
@@ -90,7 +90,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
     if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_httpVersion.parse(requestParts[0]);
-    m_responsStatusCodes = strtoul(requestParts[1].c_str(),nullptr,10);
+    m_responseStatusCodes = strtoul(requestParts[1].c_str(),nullptr,10);
     m_responseMessage = "";
 
     if (requestParts.size()>=3)
@@ -120,28 +120,28 @@ bool HTTP::Status::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
     // Act as a client. Send data from here.
     return m_upStream->writeString(  m_httpVersion.toString()
                                  +  " "
-                                 +  std::to_string(m_responsStatusCodes)
+                                 +  std::to_string(m_responseStatusCodes)
                                  +  " "
                                  +  m_responseMessage + "\r\n",wrStat).succeed;
 }
 
 void HTTP::Status::setRetCodeValue(unsigned short value)
 {
-    m_responsStatusCodes = value;
+    m_responseStatusCodes = value;
 }
 
 void HTTP::Status::setRetCode(Status::Codes code)
 {
     if (code != HTTP::Status::S_999_NOT_SET)
     {
-        setRetCodeValue(m_responsStatusCodess[code].code);
-        setResponseMessage(m_responsStatusCodess[code].responseMessage);
+        setRetCodeValue(m_responseStatusCodess[code].code);
+        setResponseMessage(m_responseStatusCodess[code].responseMessage);
     }
 }
 
 unsigned short HTTP::Status::getRetCode() const
 {
-    return m_responsStatusCodes;
+    return m_responseStatusCodes;
 }
 
 HTTP::Version *HTTP::Status::getHttpVersion()

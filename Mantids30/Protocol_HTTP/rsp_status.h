@@ -108,10 +108,10 @@ protected:
 
 private:
     HTTP::Version m_httpVersion;
-    unsigned short m_responsStatusCodes;
+    unsigned short m_responseStatusCodes;
     std::string m_responseMessage;
 
-    static const HTTPStatusCode m_responsStatusCodess[];
+    static const HTTPStatusCode m_responseStatusCodess[];
 
 
 };
