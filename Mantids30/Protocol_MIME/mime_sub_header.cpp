@@ -29,10 +29,12 @@ bool MIME_Sub_Header::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
     // Write out the header option values...
     for (auto & i : m_headers)
     {
-        std::string x = i.second->getString() + std::string("\r\n");
-        if (!(cur+=m_upStream->writeString( x, wrStat )).succeed) return false;
+        std::string x = i.second->toString() + std::string("\r\n");
+        if (!(cur+=m_upStream->writeString( x, wrStat )).succeed)
+            return false;
     }
-    if (!(cur+=m_upStream->writeString("\r\n", wrStat)).succeed) return false;
+    if (!(cur+=m_upStream->writeString("\r\n", wrStat)).succeed)
+        return false;
     return true;
 }
 
@@ -315,7 +317,7 @@ void MIME_Sub_Header::setMaxSubOptionCount(const size_t &value)
     m_maxSubOptionCount = value;
 }
 
-std::string MIME_HeaderOption::getString()
+std::string MIME_HeaderOption::toString()
 {
     std::string r;
 
@@ -338,12 +340,19 @@ bool MIME_HeaderOption::isPermited7bitCharset(const std::string &varX)
 
 void MIME_HeaderOption::addSubVar(const std::string &varName, const std::string &varValue)
 {
-    if (varName.empty() && varValue.empty()) return;
-    if (m_subVar.size()>=m_maxSubOptionsCount) return;
-    if (varName.size()+varValue.size()+m_curHeaderOptSize>m_maxHeaderOptSize) return;
-    if (!isPermited7bitCharset(varName)) return;
-    if (!isPermited7bitCharset(varValue)) return;
+    if (varName.empty() && varValue.empty())
+        return;
+    if (m_subVar.size()>=m_maxSubOptionsCount)
+        return;
+    if (varName.size()+varValue.size()+m_curHeaderOptSize>m_maxHeaderOptSize)
+        return;
+    if (!isPermited7bitCharset(varName))
+        return;
+    if (!isPermited7bitCharset(varValue))
+        return;
+
     m_curHeaderOptSize += varName.size()+varValue.size();
+
     // TODO: the subVar may be URL Encoded... (decode)
     m_subVar.insert(std::make_pair(varName,varValue));
 }

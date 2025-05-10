@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Mantids30/Memory/subparser.h>
+#include <Mantids30/Helpers/json.h>
 
 #include <memory>
 #include <string>
@@ -46,7 +47,7 @@ public:
     std::multimap<std::string, std::string> getAllSubVars() { return m_subVar;
     }
 
-    std::string getString();
+    std::string toString();
 
     void addSubVar(const std::string & varName, const std::string & varValue);
 
