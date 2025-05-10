@@ -5,6 +5,7 @@
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
 #include <memory>
 #include <netinet/in.h>
+#include <stdio.h>
 #include <string>
 
 #include <Mantids30/Memory/streamablejson.h>
@@ -208,6 +209,16 @@ public:
                 sessionInfo["isSecureConnection"] = isSecure;
                 sessionInfo["tls"]["commonName"] = tlsCommonName;
                 return sessionInfo;
+            }
+            void fromJSON(const json& sessionInfo)
+            {
+                snprintf( REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s",JSON_ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
+                isSecure = JSON_ASBOOL_D(sessionInfo["isSecureConnection"], false);
+                if (sessionInfo.isObject() && sessionInfo["tls"].isObject()) {
+                    tlsCommonName = JSON_ASSTRING_D(sessionInfo["tls"]["commonName"], "");
+                } else {
+                    tlsCommonName = "";
+                }
             }
 
             char REMOTE_ADDR[INET6_ADDRSTRLEN] = "";
