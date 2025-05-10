@@ -60,12 +60,6 @@ void StreamableJSON::clear()
     m_strValue.clear();
 }
 
-std::string StreamableJSON::getString()
-{
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-    return Json::writeString(builder, m_root);
-}
 
 json *StreamableJSON::processValue()
 {

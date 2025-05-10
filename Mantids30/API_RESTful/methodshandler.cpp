@@ -162,7 +162,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
 
     if (inputParameters.clientRequest->getJSONStreamerContent() != nullptr)
     {
-        if (!inputParameters.clientRequest->getJSONStreamerContent()->getString().empty())
+        if (!inputParameters.clientRequest->getJSONStreamerContent()->toString().empty())
         {
             if ((inputParameters.inputJSON = inputParameters.clientRequest->getJSONStreamerContent()->processValue()) == nullptr)
             {

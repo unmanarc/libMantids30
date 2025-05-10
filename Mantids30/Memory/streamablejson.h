@@ -16,8 +16,6 @@ public:
 
     void clear();
 
-    std::string getString();
-
     json * processValue();
     json * getValue();
 
