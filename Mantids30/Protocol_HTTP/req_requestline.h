@@ -54,6 +54,28 @@ public:
 
     std::string getRequestURIParameters() const;
 
+    bool fromJSON(const Json::Value &json)
+    {
+        if (!json.isObject())
+            return false;
+
+        setRequestMethod(JSON_ASSTRING(json, "method", ""));
+        setRequestURI(JSON_ASSTRING(json, "uri", ""));
+        m_httpVersion.fromJSON(json["httpVersion"]);
+        m_getVars->fromJSON(json["getVars"]);
+
+        return true;
+    }
+    json toJSON() const
+    {
+        Json::Value json;
+        json["method"] = getRequestMethod();
+        json["uri"] = getURI();
+        json["httpVersion"] = m_httpVersion.toJSON();
+        json["getVars"] = m_getVars->toJSON();
+        return json;
+    }
+    
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
@@ -75,6 +97,7 @@ private:
     std::string m_requestURIParameters;
 
     Common::Version m_httpVersion;
+
     std::shared_ptr<Common::URLVars> m_getVars;
 };
 
