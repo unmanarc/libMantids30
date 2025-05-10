@@ -1,11 +1,12 @@
 #pragma once
 
-#include <Mantids30/Helpers/json.h>
 #include "b_base.h"
+#include "b_chunks.h"
 #include "streamableobject.h"
-#include <string>
+#include <Mantids30/Helpers/json.h>
 #include <list>
 #include <set>
+#include <string>
 
 namespace Mantids30 { namespace Memory { namespace Abstract {
 
@@ -15,7 +16,11 @@ public:
     Vars();
     virtual ~Vars() = default;
 
-    json getVarsAsJSONMap();
+
+    // Methods to convert to and from JSON
+    json toJSON();
+    bool fromJSON(const Json::Value &json);
+
 
     ///////////////////////////////////////
     // Generic conversion.
@@ -161,6 +166,10 @@ public:
      * @param value maximum size for a variable content value
      */
     void setMaxVarContentSize(const uint64_t &value);
+
+
+    virtual void clear() = 0;
+    virtual bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) = 0;
 
 protected:
     virtual void iSetMaxVarContentSize();

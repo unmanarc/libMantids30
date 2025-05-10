@@ -1,4 +1,5 @@
 #include "vars.h"
+#include "b_chunks.h"
 #include <memory>
 
 using namespace Mantids30::Memory::Abstract;
@@ -10,7 +11,7 @@ Vars::Vars()
 }
 
 
-json Vars::getVarsAsJSONMap()
+json Vars::toJSON()
 {
     Json::Value jsonMap;
 
@@ -44,7 +45,40 @@ json Vars::getVarsAsJSONMap()
     }
 
     return jsonMap;
+}
 
+bool Vars::fromJSON(const Json::Value &json)
+{
+    clear();
+
+    if (!json.isObject())
+    {
+        return false; // Not a JSON object
+    }
+
+    for (const auto &key : json.getMemberNames())
+    {
+        const Json::Value &value = json[key];
+        if (value.isArray())
+        {
+            // If the value is an array, add each element as a separate variable
+            for (Json::ArrayIndex i = 0; i < value.size(); ++i)
+            {
+                auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
+                bChunk->writeString(JSON_ARRAY_ASSTRING(value, i, ""));
+                addVar(key, bChunk);
+            }
+        }
+        else
+        {
+            // If the value is a single element, add it as a variable
+            auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
+            bChunk->writeString(JSON_ASSTRING_D(value, ""));
+            addVar(key, bChunk);
+        }
+    }
+
+    return true;
 }
 /*
 std::string Vars::getStringValue(const std::string &varName)
