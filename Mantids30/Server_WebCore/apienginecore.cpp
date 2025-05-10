@@ -14,6 +14,12 @@ APIEngineCore::APIEngineCore()
     m_poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
 }
 
+bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
+{
+    return handleConnect(this,virtualConnection);
+}
+
+
 void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream_Base> & listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     checkEngineStatus();
@@ -59,18 +65,18 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     }
 
     // Prepare the web services handler.
-    auto webHandler = webserver->createNewAPIClientHandler(webserver,sock);
+    std::shared_ptr<APIClientHandler> apiWebServerClientHandler = webserver->createNewAPIClientHandler(webserver,sock);
 
-    webHandler->setClientInfoVars( sock->getRemotePairStr().c_str(), sock->isSecure(), tlsCN );
+    apiWebServerClientHandler->setClientInfoVars( sock->getRemotePairStr().c_str(), sock->isSecure(), tlsCN );
 
     // Set the configuration:
-    webHandler->config = &(webserver->config);
+    apiWebServerClientHandler->config = &(webserver->config);
 
     if (webserver->callbacks.onClientConnected.call(webserver,sock))
     {
         // Handle the webservice.
         Memory::Streams::Parser::ErrorMSG err;
-        webHandler->parseObject(&err);
+        apiWebServerClientHandler->parseObject(&err);
     }
 
     return true;

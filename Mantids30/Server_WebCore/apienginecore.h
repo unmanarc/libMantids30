@@ -3,6 +3,7 @@
 
 #include <Mantids30/Net_Sockets/socket_stream_base.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
+#include <Mantids30/Net_Sockets/socket_stream_dummy.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Memory/b_mem.h>
@@ -51,6 +52,7 @@ public:
 
     APIEngineCore();
 
+    bool handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
 
     /**
      * @brief acceptMultiThreaded Start Web Server as Multi-Threaded (thread number grows as receive connections)
