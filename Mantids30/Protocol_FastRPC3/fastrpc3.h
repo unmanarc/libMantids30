@@ -101,8 +101,8 @@ public:
         uint32_t maxMessageSize=0;
         void * caller = nullptr;
         FastRPC3::SessionPTR * sessionHolder = nullptr;
-        std::shared_ptr<Mantids30::API::Monolith::MethodsHandler> methodsHandler;
-        std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator = nullptr;
+        std::shared_ptr<API::Monolith::MethodsHandler> methodsHandler;
+        std::shared_ptr<DataFormat::JWT> jwtValidator = nullptr;
         Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
         Threads::Sync::Mutex * socketMutex = nullptr;
         std::string methodName, remotePeerIPAddress, remotePeerTLSCommonName, userId, domain;
@@ -180,7 +180,7 @@ public:
     class Config {
     public:
         Config(
-                std::shared_ptr<Mantids30::DataFormat::JWT> _jwtValidator
+                std::shared_ptr<DataFormat::JWT> _jwtValidator
             ) :  jwtValidator(_jwtValidator)
         {
         }
@@ -225,7 +225,7 @@ public:
         /**
          * @brief jwtValidator JWT Validator.
          */
-        std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator;
+        std::shared_ptr<DataFormat::JWT> jwtValidator;
 
         // WARNING: this parameters should not be changed during execution:
         /**
@@ -358,7 +358,7 @@ public:
      * @param threadsCount The number of threads to preload (default: 16).
      * @param taskQueues The maximum number of queued tasks per thread (default: 24).
      */
-    FastRPC3(std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator,
+    FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator,
              uint32_t threadsCount = 16,
              uint32_t taskQueues = 24);
     /**

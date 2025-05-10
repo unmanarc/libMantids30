@@ -3,9 +3,9 @@
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Sessions;
+using namespace Mantids30::DataFormat;
 
-
-Session::Session(const DataFormat::JWT::Token &jwt)  : m_firstActivityTimestamp(time(nullptr)), m_lastActivityTimestamp(time(nullptr))
+Session::Session(const JWT::Token &jwt)  : m_firstActivityTimestamp(time(nullptr)), m_lastActivityTimestamp(time(nullptr))
     //: Session() // Delegates to the default constructor
 {
     m_jwtAuthenticatedInfo = jwt;
@@ -71,13 +71,13 @@ void Session::setDomain(const std::string &newDomain)
     m_domain = newDomain;
 }
 
-void Session::setJWTAuthenticatedInfo(const DataFormat::JWT::Token &newJwtAuthenticatedInfo)
+void Session::setJWTAuthenticatedInfo(const JWT::Token &newJwtAuthenticatedInfo)
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
     jwtAuthenticatedInfo = newJwtAuthenticatedInfo;
 }
 */
-Mantids30::DataFormat::JWT::Token Session::getJWTAuthenticatedInfo()
+JWT::Token Session::getJWTAuthenticatedInfo()
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
     return m_jwtAuthenticatedInfo;

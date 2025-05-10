@@ -1,6 +1,7 @@
 #include "fastrpc3.h"
 
 using namespace Mantids30::Network::Protocols::FastRPC;
+using namespace Mantids30::DataFormat;
 using namespace Mantids30;
 
 bool FastRPC3::SessionPTR::destroy()
@@ -13,7 +14,7 @@ bool FastRPC3::SessionPTR::destroy()
     return true;
 }
 
-std::shared_ptr<Sessions::Session> FastRPC3::SessionPTR::create(const DataFormat::JWT::Token & jwt)
+std::shared_ptr<Sessions::Session> FastRPC3::SessionPTR::create(const JWT::Token & jwt)
 {
     std::lock_guard<std::mutex> lock(mt);
     if (session != nullptr)

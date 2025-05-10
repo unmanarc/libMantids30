@@ -16,13 +16,14 @@
 #include <memory>
 
 using namespace Mantids30;
+using namespace Mantids30::DataFormat;
 
-std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Logs::AppLog *log,
+std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Program::Logs::AppLog *log,
                                                               boost::property_tree::ptree *ptr,
                                                               const std::string &configClassName)
 {
     bool insecureFile;
-    std::shared_ptr<DataFormat::JWT> jwtNull;
+    std::shared_ptr<JWT> jwtNull;
 
     std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
     bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
@@ -35,7 +36,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Lo
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    auto jwtSigner = std::make_shared<JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -172,24 +173,24 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTSigner(Program::Lo
     }
 }
 
-std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program::Logs::AppLog *log,
+std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs::AppLog *log,
                                                                  boost::property_tree::ptree *ptr,
                                                                  const std::string &configClassName)
 {
     bool insecureFile;
-    std::shared_ptr<DataFormat::JWT> jwtNull;
+    std::shared_ptr<JWT> jwtNull;
     std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
     bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
 
-    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
+    if (!JWT::isAlgorithmSupported(algorithmName))
     {
         log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return jwtNull;
     }
 
-    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    auto jwtValidator = std::make_shared<JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -308,24 +309,24 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(Program:
     }
 }
 
-std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(
+std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(
     Program::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
 {
 
     bool insecureFile;
-    std::shared_ptr<DataFormat::JWT> jwtNull;
+    std::shared_ptr<JWT> jwtNull;
     std::string algorithmName = algorithm;
     bool createIfNotPresent = false;
 
-    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
+    if (!JWT::isAlgorithmSupported(algorithmName))
     {
         log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return jwtNull;
     }
 
-    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    auto jwtValidator = std::make_shared<JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -365,7 +366,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWT::createJWTValidator(
     }
 }
 
-bool ConfigBuilder::JWT::createHMACSecret(
+bool ConfigBuilder::JWTConfig::createHMACSecret(
     Program::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
@@ -401,7 +402,7 @@ bool ConfigBuilder::JWT::createHMACSecret(
     return r;
 }
 
-bool ConfigBuilder::JWT::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool ConfigBuilder::JWTConfig::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *ctx = NULL;

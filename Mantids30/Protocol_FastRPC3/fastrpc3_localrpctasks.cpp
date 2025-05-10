@@ -14,6 +14,7 @@
 using namespace Mantids30;
 using namespace Network::Sockets;
 using namespace Network::Protocols::FastRPC;
+using namespace Mantids30::DataFormat;
 using namespace std;
 
 using Ms = chrono::milliseconds;
@@ -33,7 +34,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 
     Helpers::JSONReader2 reader;
     bool sessionFailed = false;
-    DataFormat::JWT::Token extraJWT;
+    JWT::Token extraJWT;
 
     // Process the extra token
     if (taskParams->extraTokenAuth)
@@ -217,7 +218,7 @@ void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
     else
     {
         // PROCEED THEN....
-        DataFormat::JWT::Token token = taskParams->jwtValidator->verifyAndDecodeTokenPayload(sJWTToken);
+        JWT::Token token = taskParams->jwtValidator->verifyAndDecodeTokenPayload(sJWTToken);
         if (token.isValid())
         {
             session = taskParams->sessionHolder->create(token);

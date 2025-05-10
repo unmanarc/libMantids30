@@ -127,7 +127,7 @@ public:
 
     DataFormat::JWT::Token getJWTAuthenticatedInfo();
 
-//    void setJWTAuthenticatedInfo(const DataFormat::JWT::Token &newJwtAuthenticatedInfo);
+//    void setJWTAuthenticatedInfo(const JWT::Token &newJwtAuthenticatedInfo);
 
     std::string getDomain();
     //void setDomain(const std::string &newDomain);

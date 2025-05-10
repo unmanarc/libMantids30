@@ -18,7 +18,7 @@ using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network::Protocols;
-
+using namespace Mantids30::DataFormat;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
@@ -304,7 +304,7 @@ HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
     }
 
     // Verify JWT token
-    DataFormat::JWT::Token currentJWTToken;
+    JWT::Token currentJWTToken;
     bool isTokenValid = this->config->jwtValidator->verify(postLoginToken, &currentJWTToken);
     auto currentTime = time(nullptr);
     uint64_t maxAge = currentJWTToken.getExpirationTime()>currentTime? currentJWTToken.getExpirationTime()-currentTime : 0;
@@ -454,7 +454,7 @@ void ClientHandler::sessionLogout()
 
             if (isImpersonation)
             {
-                DataFormat::JWT::Token impersonatorJWTToken;
+                JWT::Token impersonatorJWTToken;
                 bool isTokenValid = this->config->jwtValidator->verify(cookieImpersonatorToken, &impersonatorJWTToken);
 
                 if (isTokenValid)

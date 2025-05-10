@@ -8,20 +8,20 @@
 namespace Mantids30 {
 namespace ConfigBuilder {
 
-class JWT
+class JWTConfig
 {
 public:
-    JWT() = default;
+    JWTConfig() = default;
 
-    static std::shared_ptr<Mantids30::DataFormat::JWT> createJWTSigner(Mantids30::Program::Logs::AppLog *log,
+    static std::shared_ptr<DataFormat::JWT> createJWTSigner(Mantids30::Program::Logs::AppLog *log,
                                                                        boost::property_tree::ptree *ptr,
                                                                        const std::string &configClassName);
 
-    static std::shared_ptr<Mantids30::DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
+    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
                                                                           boost::property_tree::ptree *ptr,
                                                                           const std::string &configClassName);
 
-    static std::shared_ptr<Mantids30::DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
+    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
                                                                           const std::string & algorithm,
                                                                           const std::string & key);
 private:
