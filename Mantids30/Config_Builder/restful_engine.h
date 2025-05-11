@@ -12,6 +12,7 @@ namespace Config {
 constexpr uint64_t REST_ENGINE_NO_JWT = 1ULL << 0;            // Bit 0: Do not configure JWT
 constexpr uint64_t REST_ENGINE_NO_SSL = 1ULL << 1;            // Bit 1: Do not configure SSL/TLS
 constexpr uint64_t REST_ENGINE_DISABLE_RESOURCES = 1ULL << 2; // Bit 2: Disable Resources (don't look for resource path)
+constexpr uint64_t REST_ENGINE_MANDATORY_SSL = 1ULL << 3;     // Bit 3: The SSL is mandatory...
 
 class RESTful_Engine
 {

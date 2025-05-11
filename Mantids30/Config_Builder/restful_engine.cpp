@@ -28,15 +28,19 @@ std::set<std::string> parseCommaSeparatedOrigins(const std::string &input)
 Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(
     boost::property_tree::ptree *config, Logs::AppLog *log,Logs::RPCLog *rpcLog, const std::string &serviceName, const std::string & defaultResourcePath, uint64_t options)
 {
-
     bool usingTLS = config->get<bool>("UseTLS", true);
-
 
     std::shared_ptr<Sockets::Socket_Stream> sockWebListen;
 
     // Retrieve listen port and address from configuration
     uint16_t listenPort = config->get<uint16_t>("ListenPort", 8443);
     std::string listenAddr = config->get<std::string>("ListenAddr", "0.0.0.0");
+
+    if (usingTLS == false && (options&REST_ENGINE_MANDATORY_SSL))
+    {
+        log->log0(__func__, Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s", serviceName.c_str(), listenAddr.c_str(), listenPort, "TLS is required/mandatory for this service.");
+        return nullptr;
+    }
 
     if (usingTLS == true && (options&REST_ENGINE_NO_SSL))
     {
@@ -72,35 +76,46 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         sockWebListen = std::make_shared<Sockets::Socket_TCP>();
     }
 
+    sockWebListen->setUseIPv6(config->get<bool>("UseIPv6", false));
+
     // Start listening on the specified address and port
-    if (sockWebListen->listenOn(listenPort, listenAddr.c_str(), !config->get<bool>("IPv6", false)))
+    if (sockWebListen->listenOn(listenPort, listenAddr.c_str()))
     {
         // Create and configure the web server instance
-        Network::Servers::RESTful::Engine *loginWebServer = new Network::Servers::RESTful::Engine();
+        Network::Servers::RESTful::Engine *webServer = new Network::Servers::RESTful::Engine();
 
         // Setup the RPC Log:
-        loginWebServer->config.rpcLog = rpcLog;
+        webServer->config.rpcLog = rpcLog;
 
         if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0)
         {
             std::string resourcesPath = config->get<std::string>("ResourcesPath",defaultResourcePath);
-            if (!loginWebServer->config.setDocumentRootPath( resourcesPath ))
+            if (!webServer->config.setDocumentRootPath( resourcesPath ))
             {
                 log->log0(__func__,Logs::LEVEL_CRITICAL, "Error locating web server resources at %s",resourcesPath.c_str() );
                 return nullptr;
             }
         }
 
-        std::string rawOrigins = config->get<std::string>("IAMOriginDomains", "");
-        loginWebServer->config.permittedAPIOrigins = parseCommaSeparatedOrigins(rawOrigins);
+        // All the API will be accessible from this Origins...
+        std::string rawOrigins = config->get<std::string>("API.Origins", "");
+        webServer->config.permittedAPIOrigins = parseCommaSeparatedOrigins(rawOrigins);
+
+        // The login can be made from this origins (will receive)
+        // Set the permitted origin (login IAM location Origin)
+        std::string loginOrigins = config->get<std::string>("Login.Origins", "");
+        webServer->config.permittedLoginOrigins = parseCommaSeparatedOrigins(loginOrigins);
+
+        // Set the login IAM location:
+        webServer->config.defaultLoginRedirect = config->get<std::string>("Login.RedirectURL", "/login");
 
         if ( (options & REST_ENGINE_NO_JWT)==0 )
         {
-            // JWT:
-            loginWebServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(log, config, "JWT" );
-            loginWebServer->config.jwtValidator = Program::Config::JWT::createJWTValidator(log, config, "JWT" );
+            // JWT
+            webServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(log, config, "JWT" );
+            webServer->config.jwtValidator = Program::Config::JWT::createJWTValidator(log, config, "JWT" );
 
-            if (!loginWebServer->config.jwtValidator)
+            if (!webServer->config.jwtValidator)
             {
                 log->log0(__func__, Logs::LEVEL_CRITICAL, "We need at least a JWT Validator.");
                 return nullptr;
@@ -108,17 +123,17 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         }
 
         // Setup the callbacks:
-        loginWebServer->callbacks.onProtocolInitializationFailure = handleProtocolInitializationFailure;
-        loginWebServer->callbacks.onClientAcceptTimeoutOccurred = handleClientAcceptTimeoutOccurred;
-        loginWebServer->callbacks.onClientConnectionLimitPerIPReached = handleClientConnectionLimitPerIPReached;
+        webServer->callbacks.onProtocolInitializationFailure = handleProtocolInitializationFailure;
+        webServer->callbacks.onClientAcceptTimeoutOccurred = handleClientAcceptTimeoutOccurred;
+        webServer->callbacks.onClientConnectionLimitPerIPReached = handleClientConnectionLimitPerIPReached;
 
         // Use a thread pool or multi-threading based on configuration
-        if (config->get<bool>("ThreadPool", false))
-            loginWebServer->setAcceptPoolThreaded(sockWebListen, config->get<uint32_t>("PoolSize", 10));
+        if (config->get<bool>("Threads.UseThreadPool", false))
+            webServer->setAcceptPoolThreaded(sockWebListen, config->get<uint32_t>("Threads.PoolSize", 10));
         else
-            loginWebServer->setAcceptMultiThreaded(sockWebListen, config->get<uint32_t>("MaxThreads", 10000));
+            webServer->setAcceptMultiThreaded(sockWebListen, config->get<uint32_t>("Threads.MaxThreads", 10000));
 
-        return loginWebServer;
+        return webServer;
     }
     else
     {
