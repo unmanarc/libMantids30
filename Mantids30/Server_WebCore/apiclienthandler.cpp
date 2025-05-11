@@ -298,7 +298,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
         else // If not, drop a 403 (forbidden)
             ret = HTTP::Status::S_403_FORBIDDEN;
 
-        log(LEVEL_DEBUG,"fileServer", 2048, "R/ - LOCAL - %03d: %s",HTTP::Status::getHTTPStatusCodeTranslation(ret),fileInfo.sRealFullPath.c_str());
+        log(LEVEL_DEBUG,"fileServer", 2048, "R/ - LOCAL - %03d: %s",HTTP::Status::getStringTranslation(ret).c_str(),fileInfo.sRealFullPath.c_str());
     }
     else
     {
@@ -328,7 +328,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     // Log the response.
     log(ret==HTTP::Status::S_200_OK?LEVEL_INFO:LEVEL_WARN,
         "fileServer", 2048, "R/%03d: %s",
-        HTTP::Status::getHTTPStatusCodeTranslation(ret),
+        HTTP::Status::getStringTranslation(ret).c_str(),
         ret==HTTP::Status::S_200_OK?fileInfo.sRealRelativePath.c_str():clientRequest.getURI().c_str());
 
     return ret;

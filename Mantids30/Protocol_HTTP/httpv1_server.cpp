@@ -510,7 +510,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
             {
                 // Error setting this content length size. (automatic answer)
                 m_badAnswer = true;
-                serverResponse.status.setRetCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
+                serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
                 return answer(m_answerBytes);
             }
             /////////////////////////////////////////////////////////////////////////////////////
@@ -638,17 +638,17 @@ bool HTTP::HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrSt
 
 void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 {
-    serverResponse.status.getHttpVersion()->setMajor(1);
-    serverResponse.status.getHttpVersion()->setMinor(0);
+    serverResponse.status.getHTTPVersion()->setMajor(1);
+    serverResponse.status.getHTTPVersion()->setMinor(0);
 
     if (clientRequest.requestLine.getHTTPVersion()->getMajor()!=1)
     {
-        serverResponse.status.setRetCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        serverResponse.status.setCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
         m_badAnswer = true;
     }
     else
     {
-        serverResponse.status.getHttpVersion()->setMinor(clientRequest.requestLine.getHTTPVersion()->getMinor());
+        serverResponse.status.getHTTPVersion()->setMinor(clientRequest.requestLine.getHTTPVersion()->getMinor());
     }
 }
 
@@ -659,7 +659,7 @@ void HTTP::HTTPv1_Server::prepareServerVersionOnOptions()
         if (clientRequest.virtualHost=="")
         {
             // TODO: does really need the VHost?
-            serverResponse.status.setRetCode(HTTP::Status::S_400_BAD_REQUEST);
+            serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
             m_badAnswer = true;
         }
     }
@@ -697,7 +697,7 @@ bool HTTP::HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
     // Process client petition here.
     if (!m_badAnswer)
     {
-        serverResponse.status.setRetCode(procHTTPClientContent());
+        serverResponse.status.setCode(procHTTPClientContent());
     }
 
     // Answer is the last... close the connection after it.
