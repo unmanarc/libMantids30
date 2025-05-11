@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
+#include <string>
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
 
@@ -16,6 +17,7 @@ struct ApiProxyParameters
 
     std::string privateCAPath;
 
+    std::map<std::string,std::string> extraHeaders;
 
 };
 

@@ -13,6 +13,8 @@ using namespace Mantids30::Memory::Streams;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 
+// TODO: logs via callback?
+
 HTTP::Status::Codes ApiProxy(
     const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
 {
@@ -53,14 +55,21 @@ HTTP::Status::Codes ApiProxy(
         connection = socket;
     }
 
+    // Make the connection
     if (connection->connectTo( proxyParameters->remoteHost.c_str(), proxyParameters->remotePort ))
     {
         HTTP::HTTPv1_Client client(connection);
 
         // Set the same request.
         client.clientRequest = *request;
-        //client.clientRequest.headers.add( "x-api-key",  )
 
+        // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
+        for (const auto& header : proxyParameters->extraHeaders)
+        {
+            client.clientRequest.headers.replace(header.first, header.second);
+        }
+
+        // Make the petition...
         Parser::ErrorMSG msg;
         client.parseObject(&msg);
 
