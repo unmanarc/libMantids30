@@ -5,7 +5,7 @@
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
 
-struct ApiProxyObj
+struct ApiProxyParameters
 {
     bool useTLS = true;
     bool checkTLSPeer = false;

@@ -22,7 +22,7 @@ HTTP::Status::Codes ApiProxy(
         return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
     }
 
-    ApiProxyObj *proxyParameters = static_cast<ApiProxyObj *>(obj.get());
+    ApiProxyParameters *proxyParameters = static_cast<ApiProxyParameters *>(obj.get());
 
     std::shared_ptr<Socket_Stream> connection;
 
@@ -66,14 +66,14 @@ HTTP::Status::Codes ApiProxy(
 
         if (msg == Parser::PARSING_SUCCEED)
         {
-
+            *response = client.serverResponse;
+            return (HTTP::Status::Codes)client.serverResponse.status.getCode();
         }
 
-
-        return HTTP::Status::S_200_OK;
+        return HTTP::Status::S_502_BAD_GATEWAY;
     }
     else
     {
-        return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+        return HTTP::Status::S_502_BAD_GATEWAY;
     }
 }
