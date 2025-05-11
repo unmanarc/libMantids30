@@ -14,17 +14,29 @@ APIEngineCore::APIEngineCore()
     m_poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
 }
 
-bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
+void APIEngineCore::setAcceptPoolThreaded(
+    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
 {
-    return handleConnect(this,virtualConnection);
+    m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    this->listenerSocket = listenerSocket;
+
+    m_poolThreadedAcceptor->callbacks.setAllContexts(this);
+    m_poolThreadedAcceptor->callbacks.onClientConnected = handleConnect;
+    m_poolThreadedAcceptor->callbacks.onProtocolInitializationFailure = handleInitFailed;
+    m_poolThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
+
+    m_poolThreadedAcceptor->parameters.threadsCount = threadCount;
+    m_poolThreadedAcceptor->parameters.taskQueues = taskQueues;
+
+    // Set acceptor type
+    m_acceptorType = AcceptorType::MULTI_THREADED;
 }
 
-
-void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> & listenerSocket, const uint32_t &maxConcurrentConnections)
+void APIEngineCore::setAcceptMultiThreaded(
+    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &maxConcurrentConnections)
 {
-    checkEngineStatus();
-
     m_multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    this->listenerSocket = listenerSocket;
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
     m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
@@ -33,24 +45,38 @@ void APIEngineCore::acceptMultiThreaded(const std::shared_ptr<Network::Sockets::
     m_multiThreadedAcceptor->callbacks.onClientConnectionLimitPerIPReached = handleConnectionLimit;
 
     m_multiThreadedAcceptor->parameters.setMaxConcurrentClients(maxConcurrentConnections);
-    m_multiThreadedAcceptor->startInBackground();
+
+    // Set acceptor type
+    m_acceptorType = AcceptorType::POOL_THREADED;
 }
 
-void APIEngineCore::acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> & listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
+void APIEngineCore::startInBackground()
 {
     checkEngineStatus();
 
-    m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    // Start the appropriate acceptor based on the set mode
+    switch (m_acceptorType)
+    {
+    case AcceptorType::MULTI_THREADED:
+        m_multiThreadedAcceptor->startInBackground();
+        break;
+    case AcceptorType::POOL_THREADED:
+        m_poolThreadedAcceptor->startInBackground();
+        break;
+    case AcceptorType::NONE:
+        throw std::runtime_error("Acceptor type not defined in API Web Engine Core.");
+        break;
+    }
+}
 
-    m_multiThreadedAcceptor->callbacks.setAllContexts(this);
-    m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
-    m_multiThreadedAcceptor->callbacks.onProtocolInitializationFailure = handleInitFailed;
-    m_multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> APIEngineCore::getListenerSocket() const
+{
+    return listenerSocket;
+}
 
-    m_poolThreadedAcceptor->parameters.threadsCount = threadCount;
-    m_poolThreadedAcceptor->parameters.taskQueues = taskQueues;
-
-    m_poolThreadedAcceptor->startInBackground();
+bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
+{
+    return handleConnect(this,virtualConnection);
 }
 
 bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)

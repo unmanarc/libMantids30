@@ -55,22 +55,40 @@ public:
     bool handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
 
     /**
-     * @brief acceptMultiThreaded Start Web Server as Multi-Threaded (thread number grows as receive connections)
-     * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
-     * @param maxConcurrentConnections Max Number of allowed Connections/Threads
+     * @brief setAcceptMultiThreaded Configures the server to start in multi-threaded mode where the number of threads grows as connections are received.
+     *
+     * In this mode, each incoming connection is handled by a new thread up to the specified maximum number of concurrent connections.
+     *
+     * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
+     * @param maxConcurrentConnections The maximum number of allowed concurrent connections/threads. Default value is 10000.
      */
-    void acceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t & maxConcurrentConnections = 10000);
+    void setAcceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t &maxConcurrentConnections = 10000);
+
     /**
-     * @brief acceptPoolThreaded Start Web Server as Pool-Threaded (threads are already started and consume clients from a queue)
-     * @param listenerSocket Listener Prepared Socket (Can be TCP, TLS, etc)
-     * @param threadCount Pre-started thread count
-     * @param taskQueues Max queued connections per threads
+     * @brief setAcceptPoolThreaded Configures the server to start in pool-threaded mode with a fixed number of pre-started threads.
+     *
+     * In this mode, incoming connections are queued and handled by a fixed pool of worker threads. Each thread can handle multiple connections up to the specified task queue limit.
+     *
+     * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
+     * @param threadCount The initial number of pre-started threads in the pool. Default value is 20.
+     * @param taskQueues The maximum number of queued connections per thread. Default value is 100.
      */
-    void acceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t & threadCount = 20, const uint32_t & taskQueues = 100 );
+    void setAcceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t &threadCount = 20, const uint32_t &taskQueues = 100);
+
+    /**
+     * @brief startInBackground Starts the server in the background.
+     *
+     * This method will initiate the server's operation based on the configuration set by either `setAcceptMultiThreaded` or `setAcceptPoolThreaded`.
+     */
+    void startInBackground();
+
+
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
     APIServerParameters config;             ///< The api server configuration parameters
+
+    std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
 
 protected:
     virtual std::shared_ptr<APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
@@ -83,6 +101,16 @@ protected:
     virtual void checkEngineStatus() {}
 
 private:
+    enum class AcceptorType {
+        NONE,
+        POOL_THREADED,
+        MULTI_THREADED,
+    };
+
+    AcceptorType m_acceptorType = AcceptorType::NONE;
+    std::shared_ptr<Sockets::Socket_Stream> listenerSocket;
+
+
     std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
     std::shared_ptr<Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
 
