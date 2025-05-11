@@ -16,27 +16,28 @@
 #include <memory>
 
 using namespace Mantids30;
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::Program;
+using namespace Mantids30::Program::Config;
 
-std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Program::Logs::AppLog *log,
+std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
                                                               boost::property_tree::ptree *ptr,
                                                               const std::string &configClassName)
 {
     bool insecureFile;
-    std::shared_ptr<JWT> jwtNull;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
 
     std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
     bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
 
     if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
-        log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return jwtNull;
     }
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtSigner = std::make_shared<JWT>(algorithmDetails.algorithm);
+    auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -53,20 +54,20 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
 
         if (!hmacFile.is_open())
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
             return jwtNull;
         }
 
         if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
             return jwtNull;
         }
 
         if (insecureFile)
         {
             log->log0(__func__,
-                      Program::Logs::LEVEL_SECURITY_ALERT,
+                      Logs::LEVEL_SECURITY_ALERT,
                       "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
                       "the service.");
             return jwtNull;
@@ -84,13 +85,13 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
 
         if (hmacSecret.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Signing Key.");
+            log->log0(__func__, Logs::LEVEL_DEBUG, "Empty JWT HMAC Signing Key.");
             return jwtNull;
         }
 
         // Set HMAC secret key on jwtSigner object
         jwtSigner->setSharedSecret(hmacSecret);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC signing key successfully loaded with algorithm: '%s'.", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_INFO, "JWT HMAC signing key successfully loaded with algorithm: '%s'.", algorithmName.c_str());
 
 
         return jwtSigner;
@@ -103,7 +104,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
 
         if (privateKeyFilePath.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_INFO, "No JWT RSA Signing Key Configured.");
+            log->log0(__func__, Logs::LEVEL_INFO, "No JWT RSA Signing Key Configured.");
             return jwtNull;
         }
 
@@ -121,7 +122,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
         {
             if (!Helpers::File::isSensitiveConfigPermissionInsecure(privateKeyFilePath, &insecureFile))
             {
-                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on JWT RSA Signing Key secret file.");
+                log->log0(__func__, Logs::LEVEL_ERR, "Failed to open permissions on JWT RSA Signing Key secret file.");
                 fclose(privateKeyFP);
                 return jwtNull;
             }
@@ -129,7 +130,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
             if (insecureFile)
             {
                 log->log0(__func__,
-                          Program::Logs::LEVEL_SECURITY_ALERT,
+                          Logs::LEVEL_SECURITY_ALERT,
                           "Insecure JWT RSA Signing Key secret file permissions detected. For security reasons, it is crucial to change this key "
                           "immediately and reboot the service.");
                 fclose(privateKeyFP);
@@ -150,12 +151,12 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
                 BIO_free(privateKeyBio);
 
                 jwtSigner->setPrivateSecret(fileContent);
-                log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT RSA Signing Key Loaded.");
+                log->log0(__func__, Logs::LEVEL_INFO, "JWT RSA Signing Key Loaded.");
                 loaded = true;
             }
             else
             {
-                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+                log->log0(__func__, Logs::LEVEL_ERR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
             }
 
             EVP_PKEY_free(evpPrivateKey);
@@ -163,7 +164,7 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
         }
         else
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
         }
 
         if (loaded)
@@ -173,24 +174,24 @@ std::shared_ptr<DataFormat::JWT> ConfigBuilder::JWTConfig::createJWTSigner(Progr
     }
 }
 
-std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs::AppLog *log,
+std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
                                                                  boost::property_tree::ptree *ptr,
                                                                  const std::string &configClassName)
 {
     bool insecureFile;
-    std::shared_ptr<JWT> jwtNull;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
     std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
     bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
 
-    if (!JWT::isAlgorithmSupported(algorithmName))
+    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
-        log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return jwtNull;
     }
 
-    JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<JWT>(algorithmDetails.algorithm);
+    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -208,20 +209,20 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
 
         if (!hmacFile.is_open())
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to open HMAC secret file.");
             return jwtNull;
         }
 
         if (!Helpers::File::isSensitiveConfigPermissionInsecure(hmacFilePath, &insecureFile))
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to open permissions on HMAC secret file.");
             return jwtNull;
         }
 
         if (insecureFile)
         {
             log->log0(__func__,
-                      Program::Logs::LEVEL_SECURITY_ALERT,
+                      Logs::LEVEL_SECURITY_ALERT,
                       "Insecure HMAC secret file permissions detected. For security reasons, it is crucial to change this key immediately and reboot "
                       "the service.");
             return jwtNull;
@@ -238,13 +239,13 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
 
         if (hmacSecret.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
+            log->log0(__func__, Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
             return jwtNull;
         }
 
         // Set HMAC secret key on jwtSigner object
         jwtValidator->setSharedSecret(hmacSecret);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
 
         return jwtValidator;
     }
@@ -256,7 +257,7 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
 
         if (publicKeyFilePath.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "No JWT RSA Validation Key Configured.");
+            log->log0(__func__, Logs::LEVEL_CRITICAL, "No JWT RSA Validation Key Configured.");
             return jwtNull;
         }
 
@@ -286,12 +287,12 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
                 BIO_free(publicKeyBio);
 
                 jwtValidator->setPublicSecret(fileContent);
-                log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT RSA Validation Key Loaded.");
+                log->log0(__func__, Logs::LEVEL_INFO, "JWT RSA Validation Key Loaded.");
                 loaded = true;
             }
             else
             {
-                log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "Failed to load the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
+                log->log0(__func__, Logs::LEVEL_CRITICAL, "Failed to load the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
             }
 
             EVP_PKEY_free(evpPublicKey);
@@ -299,7 +300,7 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
         }
         else
         {
-            log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "Failed to read the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
+            log->log0(__func__, Logs::LEVEL_CRITICAL, "Failed to read the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
         }
 
         if (loaded)
@@ -309,24 +310,24 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(Program::Logs:
     }
 }
 
-std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(
-    Program::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
+std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(
+    Logs::AppLog *log, const std::string &algorithm, const std::string &key)
 {
 
     bool insecureFile;
-    std::shared_ptr<JWT> jwtNull;
+    std::shared_ptr<DataFormat::JWT> jwtNull;
     std::string algorithmName = algorithm;
     bool createIfNotPresent = false;
 
-    if (!JWT::isAlgorithmSupported(algorithmName))
+    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
-        log->log0(__func__, Program::Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return jwtNull;
     }
 
-    JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<JWT>(algorithmDetails.algorithm);
+    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -340,13 +341,13 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(
 
         if (hmacSecret.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
+            log->log0(__func__, Logs::LEVEL_DEBUG, "Empty JWT HMAC Validation Key.");
             return jwtNull;
         }
 
         // Set HMAC secret key on jwtSigner object
         jwtValidator->setSharedSecret(hmacSecret);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
+        log->log0(__func__, Logs::LEVEL_INFO, "JWT HMAC validation key successfully loaded with algorithm: '%s'", algorithmName.c_str());
 
         return jwtValidator;
     }
@@ -355,19 +356,19 @@ std::shared_ptr<JWT> ConfigBuilder::JWTConfig::createJWTValidator(
 
         if (key.empty())
         {
-            log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "No JWT Public Validation Key Configured.");
+            log->log0(__func__, Logs::LEVEL_CRITICAL, "No JWT Public Validation Key Configured.");
             return jwtNull;
         }
 
         jwtValidator->setPublicSecret(key);
-        log->log0(__func__, Program::Logs::LEVEL_INFO, "JWT Public Validation Key Loaded.");
+        log->log0(__func__, Logs::LEVEL_INFO, "JWT Public Validation Key Loaded.");
 
         return jwtValidator;
     }
 }
 
-bool ConfigBuilder::JWTConfig::createHMACSecret(
-    Program::Logs::AppLog *log, const std::string &filePath)
+bool JWT::createHMACSecret(
+    Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
@@ -381,28 +382,28 @@ bool ConfigBuilder::JWTConfig::createHMACSecret(
 
             if (r)
             {
-                log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT HMAC Secret File: %s", filePath.c_str());
+                log->log0(__func__, Logs::LEVEL_WARN, "Created JWT HMAC Secret File: %s", filePath.c_str());
             }
             else
             {
-                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
+                log->log0(__func__, Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
             }
 
             fclose(pkeyFile);
         }
         else
         {
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
             close(fd);
         }
     }
     else
-        log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
+        log->log0(__func__, Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
 
     return r;
 }
 
-bool ConfigBuilder::JWTConfig::createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = NULL;
     EVP_PKEY_CTX *ctx = NULL;
@@ -422,7 +423,7 @@ bool ConfigBuilder::JWTConfig::createRSASecret(Program::Logs::AppLog *log, const
                 {
                     if (PEM_write_PrivateKey(pkeyFile, pkey, NULL, NULL, 0, NULL, NULL))
                     {
-                        log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
+                        log->log0(__func__, Logs::LEVEL_WARN, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
 
                         // Save public key
                         FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
@@ -431,36 +432,36 @@ bool ConfigBuilder::JWTConfig::createRSASecret(Program::Logs::AppLog *log, const
                             success = PEM_write_PUBKEY(pubkeyFile, pkey) > 0;
                             if (success)
                             {
-                                log->log0(__func__, Program::Logs::LEVEL_WARN, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
+                                log->log0(__func__, Logs::LEVEL_WARN, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
                             }
                             else
                             {
-                                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
+                                log->log0(__func__, Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
                             }
                             fclose(pubkeyFile);
                         }
                         else
                         {
-                            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
+                            log->log0(__func__, Logs::LEVEL_ERR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
                         }
                     }
                     else
                     {
-                        log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
+                        log->log0(__func__, Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
                     }
                     fclose(pkeyFile);
                 }
                 else
                 {
-                    log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
+                    log->log0(__func__, Logs::LEVEL_ERR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
                     close(fd);
                 }
             }
             else
-                log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (2)");
+                log->log0(__func__, Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (2)");
         }
         else
-            log->log0(__func__, Program::Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (1)");
+            log->log0(__func__, Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (1)");
     }
 
     if (pkey)

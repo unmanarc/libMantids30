@@ -6,12 +6,14 @@
 #include <memory>
 
 namespace Mantids30 {
-namespace ConfigBuilder {
+namespace Program {
+namespace Config {
 
-class JWTConfig
+
+class JWT
 {
 public:
-    JWTConfig() = default;
+    JWT() = default;
 
     static std::shared_ptr<DataFormat::JWT> createJWTSigner(Mantids30::Program::Logs::AppLog *log,
                                                                        boost::property_tree::ptree *ptr,
@@ -29,5 +31,6 @@ private:
     static bool createRSASecret(Program::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize = 4096);
 };
 
+}
 } // namespace Config
 } // namespace Mantids30

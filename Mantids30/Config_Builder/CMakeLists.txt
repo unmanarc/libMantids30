@@ -47,6 +47,9 @@ if (EXTRAPREFIX)
 endif()
 
 set(Mantids30_LIBRARIES
+    Server_WebCore
+    Server_RESTfulWebAPI
+    Program_Logs
     DataFormat_JWT
     Helpers
 )
