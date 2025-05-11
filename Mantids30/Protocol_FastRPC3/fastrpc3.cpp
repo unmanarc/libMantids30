@@ -35,7 +35,7 @@ void vrsyncRPCPingerThread(FastRPC3 *obj)
     }
 }
 
-FastRPC3::FastRPC3(std::shared_ptr<JWT> jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
+FastRPC3::FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
     : m_defaultMethodsHandlers()
     , config(jwtValidator)
 {
@@ -51,7 +51,7 @@ FastRPC3::FastRPC3(std::shared_ptr<JWT> jwtValidator, uint32_t threadsCount, uin
 
 FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
     : m_defaultMethodsHandlers()
-    , config(std::make_shared<JWT>())
+    , config(std::make_shared<DataFormat::JWT>())
 {
     m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::MethodsHandler>();
     config.setDefaultHandlers( m_defaultMethodsHandlers );

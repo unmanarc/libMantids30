@@ -773,7 +773,6 @@ void HTTP::HTTPv1_Server::setResponseIncludeServerDate(bool value)
     m_includeServerDate = value;
 }
 
-
 void HTTP::HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<Memory::Containers::B_MEM> contentElement)
 {
     m_staticContentElements[path] = contentElement;
