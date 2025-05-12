@@ -16,7 +16,7 @@ using namespace Mantids30;
 // TODO: logs via callback?
 // TODO: how to prvent ../ (escapes)...
 
-HTTP::Status::Codes ApiProxy(
+HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
     const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
 {
     if (obj == nullptr)
