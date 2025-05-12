@@ -13,14 +13,6 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else
-/*
-#include <sys/types.h>
-#include <netdb.h>
-
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>*/
 
 #include <sys/socket.h>
 #include <netdb.h>
@@ -38,59 +30,6 @@ bool Socket::m_isWinSockInitialized = Socket::win32Init();
 #endif
 
 bool Socket::m_globalSocketInitialized = false;
-
-
-/*
-bool Socket::bindTo(const char *bindAddress, const uint16_t & port)
-{
-    if (bindAddress == nullptr)
-        return true;
-
-    if (!m_useIPv6)
-    {
-        ZeroBStruct(m_lastBindIPv4);
-
-        m_lastBindIPv4.sin_family = AF_INET;
-        m_lastBindIPv4.sin_port   = htons(port);
-
-        // Accept * or :: as a generic listen address
-        if (    (bindAddress[0] == '*' && bindAddress[1] == 0) ||
-                (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0) )
-            inet_pton(AF_INET, "0.0.0.0", &m_lastBindIPv4.sin_addr);
-        else
-            inet_pton(AF_INET, bindAddress, &m_lastBindIPv4.sin_addr);
-        
-        if (bind(m_sockFD,(struct sockaddr *)&m_lastBindIPv4,sizeof(m_lastBindIPv4)) < 0)
-        {
-            m_lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
-    }
-    else
-    {
-        ZeroBStruct(m_lastBindIPv6);
-
-        m_lastBindIPv6.sin6_family = AF_INET6;
-        m_lastBindIPv6.sin6_port   = htons(port);
-
-        if (bindAddress[0] == '*' && bindAddress[1] == 0)
-            inet_pton(AF_INET6, "::", &m_lastBindIPv6.sin6_addr);
-        else
-            inet_pton(AF_INET6, bindAddress, &m_lastBindIPv6.sin6_addr);
-        
-        if (bind(m_sockFD,(struct sockaddr *)&m_lastBindIPv6,sizeof(m_lastBindIPv6)) < 0)
-        {
-            m_lastError = "bind() failed";
-            closeSocket();
-            return false;
-        }
-    }
-
-    return true;
-}*/
-
-
 
 bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
 {
@@ -280,18 +219,6 @@ Socket::Socket()
 Socket::~Socket()
 {
     closeSocket();
-}
-
-Socket::Socket(const Socket &)
-{
-    // If your program copy+construct the socket with other, it will crash for sanity here (preventing socket file descriptor duplication):
-    throw std::runtime_error("Socket does not handle copy-constructor, please use shared_ptr");
-}
-
-Socket &Socket::operator=(Socket)
-{
-    // If your program copies the socket, it will crash for sanity here (preventing socket file descriptor duplication):
-    throw std::runtime_error("Socket does not handle copies/assignment, please use shared_ptr");
 }
 
 #ifdef _WIN32

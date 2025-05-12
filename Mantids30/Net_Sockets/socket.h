@@ -39,8 +39,9 @@ public:
     Socket();
     virtual ~Socket();
 
-    Socket(const Socket &);
-    Socket& operator=(Socket);
+    //Keep the copy constructor and assignment operator as deleted or private to prevent duplication.
+    Socket(const Socket &) = delete;
+    Socket& operator=(Socket) = delete;
 
 #ifdef _WIN32
     static bool win32Init();
