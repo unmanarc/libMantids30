@@ -57,6 +57,13 @@ public:
     void setStreamable(std::shared_ptr<StreamableObject> value);
 
 protected:
+    // Avoid to copy streaming things...
+    Parser& operator=(const Parser&)
+    {
+        return *this; // NO-OP Copy...
+    }
+    Parser(Parser&) = delete;
+
     //////////////////////////////////////////
     // Virtual functions to initialize the protocol.
     virtual bool initProtocol() = 0;

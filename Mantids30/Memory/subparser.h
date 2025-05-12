@@ -85,6 +85,15 @@ public:
     const std::string &getSubParserName() const;
 
 protected:
+
+
+    // Avoid to copy streaming things...
+    SubParser& operator=(const SubParser&)
+    {
+        return *this; // NO-OP Copy...
+    }
+    SubParser(SubParser&) = delete;
+
     /**
      * @brief Parse is called when the parser in writeStream reached the completion of ParseMode
      * @return Parse Status (ERROR: Parse Error, OK_CONTINUE: Ok, continue parsing, OK_END: )
