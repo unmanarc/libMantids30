@@ -9,48 +9,48 @@ using namespace Mantids30::Program::Config;
 /*
 Config example:
 
+
+; ApiProxy Configuration
+UseTLS true   ; Use TLS
+CheckTLSPeer true   ; Check TLS peer
+UsePrivateCA false   ; Do not use private CA
+RemoteHost "example.com"   ; Remote host
+RemotePort 443   ; Remote port
+
+ExtraHeaders
 {
-  "ApiProxy": {
-    "useTLS": true,
-    "checkTLSPeer": true,
-    "usePrivateCA": false,
-    "remoteHost": "example.com",
-    "remotePort": 443,
-    "privateCAPath": "/path/to/ca.pem",
-    "extraHeaders": {
-      "Authorization": "Bearer token123",
-      "Custom-Header": "value"
-    }
-  }
+   Authorization "Bearer token123"   ; Authorization token
+   Custom-Header "value"   ; Custom header value
 }
+
+PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
+
 
 */
 
 std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
-    Mantids30::Program::Logs::AppLog *log, boost::property_tree::ptree *ptr, const std::string &configClassName)
+    Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree & config)
 {
     auto params = std::make_shared<ApiProxyParameters>();
 
     try
-    {
-        if (!ptr)
+    {/*
+        if (!config)
         {
             log->log0(__func__, Logs::LEVEL_ERR, "Property tree pointer is null.");
             return nullptr;
-        }
+        }*/
 
-        const boost::property_tree::ptree &configTree = ptr->get_child(configClassName);
-
-        params->useTLS = configTree.get<bool>("useTLS", true);
-        params->checkTLSPeer = configTree.get<bool>("checkTLSPeer", false);
-        params->usePrivateCA = configTree.get<bool>("usePrivateCA", false);
-        params->remoteHost = configTree.get<std::string>("remoteHost", "localhost");
-        params->remotePort = static_cast<uint16_t>(configTree.get<int>("remotePort", 8443));
-        params->privateCAPath = configTree.get<std::string>("privateCAPath", "");
+        params->useTLS =config.get<bool>("UseTLS", true);
+        params->checkTLSPeer =config.get<bool>("CheckTLSPeer", false);
+        params->usePrivateCA =config.get<bool>("UsePrivateCA", false);
+        params->remoteHost =config.get<std::string>("RemoteHost", "localhost");
+        params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
+        params->privateCAPath =config.get<std::string>("PrivateCAPath", "");
 
         // Parse extra headers
-        if (configTree.find("extraHeaders") != configTree.not_found())
-            parseExtraHeaders(configTree.get_child("extraHeaders"), params->extraHeaders);
+        if (config.find("ExtraHeaders") !=config.not_found())
+            parseExtraHeaders(config.get_child("ExtraHeaders"), params->extraHeaders);
     }
     catch (const boost::property_tree::ptree_error &e)
     {

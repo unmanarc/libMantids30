@@ -18,8 +18,7 @@ class ApiProxyConfig
 public:
     ApiProxyConfig() = default;
 
-    static std::shared_ptr<Network::Servers::Web::ApiProxyParameters> createApiProxyParams(Mantids30::Program::Logs::AppLog *log,boost::property_tree::ptree *ptr,
-                                                                    const std::string &configClassName);
+    static std::shared_ptr<Network::Servers::Web::ApiProxyParameters> createApiProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree & config);
 private:
     static void parseExtraHeaders(const boost::property_tree::ptree &headersTree,
                                   std::map<std::string, std::string> &extraHeaders);
