@@ -1,6 +1,7 @@
 #include "restful_engine.h"
 
 #include "jwt.h"
+#include "apiproxyparameters.h"
 
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
@@ -132,6 +133,22 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             webServer->setAcceptPoolThreaded(sockWebListen, config->get<uint32_t>("Threads.PoolSize", 10));
         else
             webServer->setAcceptMultiThreaded(sockWebListen, config->get<uint32_t>("Threads.MaxThreads", 10000));
+
+        // WebServer Extras:
+        if (config->find("Proxies") != config->not_found())
+        {
+            // Loading proxies...
+
+            for (const auto& proxy : config->get_child("Proxies"))
+            {
+                log->log0(__func__, Logs::LEVEL_INFO, "Loading proxy to path '%s' at %s Service @%s:%" PRIu16,proxy.first.c_str(), serviceName.c_str(), listenAddr.c_str(), listenPort);
+                std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(log,config->get_child("Proxies"));
+                if (param!=nullptr)
+                {
+                    webServer->config.dynamicRequestHandlersByRoute[proxy.first] = {&Network::Servers::Web::ApiProxy, param};
+                }
+            }
+        }
 
         return webServer;
     }
