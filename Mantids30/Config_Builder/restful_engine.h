@@ -23,7 +23,8 @@ public:
                                                                   Logs::RPCLog *rpcLog,
                                                                   const std::string & serviceName,
                                                                   const std::string & defaultResourcePath,
-                                                                  uint64_t options = 0);
+                                                                  uint64_t options = 0,
+                                                                  const std::map<std::string, std::string> & vars = {});
 
 private:
     static bool handleProtocolInitializationFailure(void * data, std::shared_ptr<Network::Sockets::Socket_Stream> sock );

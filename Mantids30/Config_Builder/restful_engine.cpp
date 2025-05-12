@@ -25,9 +25,15 @@ std::set<std::string> parseCommaSeparatedOrigins(const std::string &input)
     }
     return result;
 }
-
 Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(
-    boost::property_tree::ptree *config, Logs::AppLog *log,Logs::RPCLog *rpcLog, const std::string &serviceName, const std::string & defaultResourcePath, uint64_t options)
+                        boost::property_tree::ptree *config,
+                        Logs::AppLog *log,
+                        Logs::RPCLog *rpcLog,
+                        const std::string &serviceName,
+                        const std::string & defaultResourcePath,
+                        uint64_t options,
+                        const std::map<std::string, std::string> & vars
+                        )
 {
     bool usingTLS = config->get<bool>("UseTLS", true);
 
@@ -82,6 +88,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     // Start listening on the specified address and port
     if (sockWebListen->listenOn(listenPort, listenAddr.c_str()))
     {
+        log->log0(__func__, Logs::LEVEL_DEBUG, "%s service is now listening at @%s:%" PRIu16 "", serviceName.c_str(), listenAddr.c_str(), listenPort);
         // Create and configure the web server instance
         Network::Servers::RESTful::Engine *webServer = new Network::Servers::RESTful::Engine();
 
@@ -91,6 +98,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0)
         {
             std::string resourcesPath = config->get<std::string>("ResourcesPath",defaultResourcePath);
+            log->log0(__func__, Logs::LEVEL_DEBUG, "Setting document root path to %s", resourcesPath.c_str());
             if (!webServer->config.setDocumentRootPath( resourcesPath ))
             {
                 log->log0(__func__,Logs::LEVEL_CRITICAL, "Error locating web server resources at %s",resourcesPath.c_str() );
@@ -100,15 +108,18 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         // All the API will be accessible from this Origins...
         std::string rawOrigins = config->get<std::string>("API.Origins", "");
+        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting permitted API origins to %s", rawOrigins.c_str());
         webServer->config.permittedAPIOrigins = parseCommaSeparatedOrigins(rawOrigins);
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
         std::string loginOrigins = config->get<std::string>("Login.Origins", "");
+        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting permitted login origins to %s", loginOrigins.c_str());
         webServer->config.permittedLoginOrigins = parseCommaSeparatedOrigins(loginOrigins);
-
         // Set the login IAM location:
-        webServer->config.defaultLoginRedirect = config->get<std::string>("Login.RedirectURL", "/login");
+        std::string loginRedirectURL = config->get<std::string>("Login.RedirectURL", "/login");
+        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting default login redirect URL to %s", loginRedirectURL.c_str());
+        webServer->config.defaultLoginRedirect = loginRedirectURL;
 
         if ( (options & REST_ENGINE_NO_JWT)==0 )
         {
@@ -129,23 +140,37 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         webServer->callbacks.onClientConnectionLimitPerIPReached = handleClientConnectionLimitPerIPReached;
 
         // Use a thread pool or multi-threading based on configuration
-        if (config->get<bool>("Threads.UseThreadPool", false))
-            webServer->setAcceptPoolThreaded(sockWebListen, config->get<uint32_t>("Threads.PoolSize", 10));
+        bool useThreadPool = config->get<bool>("Threads.UseThreadPool", false);
+        uint32_t threadsCount = useThreadPool ?
+            config->get<uint32_t>("Threads.PoolSize", 10) :
+            config->get<uint32_t>("Threads.MaxThreads", 10000);
+
+        log->log0(__func__, Logs::LEVEL_DEBUG, "Using %s with %u threads",
+                  useThreadPool ? "thread pool" : "multi-threading",
+                  threadsCount);
+
+        if (useThreadPool)
+            webServer->setAcceptPoolThreaded(sockWebListen, threadsCount);
         else
-            webServer->setAcceptMultiThreaded(sockWebListen, config->get<uint32_t>("Threads.MaxThreads", 10000));
+            webServer->setAcceptMultiThreaded(sockWebListen, threadsCount);
 
         // WebServer Extras:
         if (config->find("Proxies") != config->not_found())
         {
+            log->log0(__func__, Logs::LEVEL_DEBUG, "Loading proxies...");
             // Loading proxies...
 
             for (const auto& proxy : config->get_child("Proxies"))
             {
-                log->log0(__func__, Logs::LEVEL_INFO, "Loading proxy to path '%s' at %s Service @%s:%" PRIu16,proxy.first.c_str(), serviceName.c_str(), listenAddr.c_str(), listenPort);
-                std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(log,config->get_child("Proxies"));
+                std::string proxyPath = proxy.first;
+                log->log0(__func__, Logs::LEVEL_INFO, "Loading proxy to path '%s' at %s Service",
+                          proxyPath.c_str(), serviceName.c_str());
+
+                std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(log, proxy.second, vars );
+
                 if (param!=nullptr)
                 {
-                    webServer->config.dynamicRequestHandlersByRoute[proxy.first] = {&Network::Servers::Web::ApiProxy, param};
+                    webServer->config.dynamicRequestHandlersByRoute[proxyPath] = {&Network::Servers::Web::ApiProxy, param};
                 }
             }
         }
