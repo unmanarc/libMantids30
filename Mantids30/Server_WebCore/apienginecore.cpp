@@ -29,7 +29,7 @@ void APIEngineCore::setAcceptPoolThreaded(
     m_poolThreadedAcceptor->parameters.taskQueues = taskQueues;
 
     // Set acceptor type
-    m_acceptorType = AcceptorType::MULTI_THREADED;
+    m_acceptorType = AcceptorType::POOL_THREADED;
 }
 
 void APIEngineCore::setAcceptMultiThreaded(
@@ -47,7 +47,7 @@ void APIEngineCore::setAcceptMultiThreaded(
     m_multiThreadedAcceptor->parameters.setMaxConcurrentClients(maxConcurrentConnections);
 
     // Set acceptor type
-    m_acceptorType = AcceptorType::POOL_THREADED;
+    m_acceptorType = AcceptorType::MULTI_THREADED;
 }
 
 void APIEngineCore::startInBackground()
