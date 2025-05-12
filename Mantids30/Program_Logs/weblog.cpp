@@ -1,5 +1,7 @@
 #include "weblog.h"
 
+#include <inttypes.h>
+
 using namespace Mantids30::Program::Logs;
 
 WebLog::WebLog(unsigned int _logMode) : LogBase(_logMode)
@@ -57,7 +59,7 @@ void WebLog::log(
         }
     }
 
-    fprintf(fp, " METHOD=\"%s\" URL=\"%s\" STATUS=%d USER_AGENT=\"%s\" CLIENT_IP=\"%s\"\n", method.c_str(), url.c_str(), statusCode, userAgent.c_str(), clientIP.c_str());
+    fprintf(fp, " METHOD=\"%s\" URL=\"%s\" STATUS=%" PRIi32 " USER_AGENT=\"%s\" CLIENT_IP=\"%s\"\n", method.c_str(), url.c_str(), static_cast<int32_t>(statusCode), userAgent.c_str(), clientIP.c_str());
 
     fflush(stdout);
 }

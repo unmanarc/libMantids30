@@ -2,6 +2,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 
 #ifndef _WIN32
 #include <sys/ioctl.h>
@@ -94,7 +95,7 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration * netcfg, cons
         char cError[1024]="Unknown Error";
 
         char errormsg[4096];
-        snprintf(errormsg,sizeof(errormsg), "ioctl(TUNSETIFF) error(%d): %s\n", errno, strerror_r(errno,cError,sizeof(cError)));
+        snprintf(errormsg,sizeof(errormsg), "ioctl(TUNSETIFF) error(%" PRId32 "): %s\n", static_cast<int32_t>(errno), strerror_r(errno,cError,sizeof(cError)));
 
         if (errormsg[strlen(errormsg)-1] == 0x0A)
             errormsg[strlen(errormsg)-1] = 0;

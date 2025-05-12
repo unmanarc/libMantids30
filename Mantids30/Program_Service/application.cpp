@@ -3,6 +3,7 @@
 // STD:
 #include <stdio.h>
 #include <signal.h>
+#include <inttypes.h>
 
 #ifndef _WIN32
 #include <syslog.h>
@@ -308,13 +309,13 @@ int StartApplication(int argc, char *argv[], Application *_app)
         if (!globalArgs.isInifiniteWaitAtEnd())
         {
             // Finish up.
-            syslog( LOG_NOTICE, "terminated (%d) by program execution", r);
+            syslog( LOG_NOTICE, "terminated (%" PRId32 ") by program execution", (int32_t)r);
             closelog();
             return r;
         }
         else
         {
-            syslog( LOG_NOTICE, "This program (%d) is running with background threads, send kill signal to terminate it.", getpid());
+            syslog( LOG_NOTICE, "This program (%" PRIi32 ") is running with background threads, send kill signal to terminate it.", static_cast<int32_t>(getpid()));
             for (;;) { sleep(3600); }
         }
     }
@@ -382,7 +383,7 @@ static void daemonize()
     {
         char cError[1024]="Unknown Error";
 
-        syslog( LOG_ERR, "unable to fork daemon, code=%d [%s]", errno, strerror_r(errno,cError,sizeof(cError)));
+        syslog( LOG_ERR, "unable to fork daemon, code=%" PRIi32 " [%s]", static_cast<int32_t>(errno), strerror_r(errno,cError,sizeof(cError)));
         _exit(EXIT_FAILURE);
     }
 
@@ -414,7 +415,7 @@ static void daemonize()
     {
         char cError[1024]="Unknown Error";
 
-        syslog( LOG_ERR, "unable to create a new session, code %d (%s)", errno, strerror_r(errno,cError,sizeof(cError)));
+        syslog( LOG_ERR, "unable to create a new session, code %" PRIi32 " (%s)", static_cast<int32_t>(errno), strerror_r(errno,cError,sizeof(cError)));
         _exit(EXIT_FAILURE);
     }
 
@@ -452,10 +453,10 @@ void pidCheck()
 
 void exitRoutine(int , siginfo_t *, void *)
 {
-    fprintf(stderr, "Receiving termination signal for (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+    fprintf(stderr, "Receiving termination signal for (%s) - pid %" PRIi32 ".\n", globalArgs.getDaemonName().c_str(), static_cast<int32_t>(getpid()));
     if (appPTR)
         appPTR->_shutdown();
-    fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+    fprintf(stderr, "Finalizing (%s) - pid %" PRIi32 ".\n", globalArgs.getDaemonName().c_str(), static_cast<int32_t>(getpid()));
     fflush(stderr);
     fflush(stdout);
 
@@ -482,11 +483,11 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     default:
         // All termination events:
 
-        fprintf(stderr, "Receiving termination signal for (%s) - pid %d, event %ld.\n",
-                globalArgs.getDaemonName().c_str(), getpid(), fdwCtrlType);
+        fprintf(stderr, "Receiving termination signal for (%s) - pid %" PRIi32 ", event %" PRIu32 ".\n",
+                globalArgs.getDaemonName().c_str(), static_cast<int32_t>(getpid()), fdwCtrlType);
         if (appPTR)
             appPTR->_shutdown();
-        fprintf(stderr, "Finalizing (%s) - pid %d.\n", globalArgs.getDaemonName().c_str(), getpid());
+        fprintf(stderr, "Finalizing (%s) - pid %" PRIi32 ".\n", globalArgs.getDaemonName().c_str(), static_cast<int32_t>(getpid()));
         fflush(stdout);
         fflush(stderr);
 
