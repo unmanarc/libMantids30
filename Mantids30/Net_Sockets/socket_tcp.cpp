@@ -17,7 +17,6 @@
 #endif
 
 #include <string.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -60,7 +59,8 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     // Iterate over DNS
     for (struct addrinfo *resiter=res; resiter && !connected; resiter = resiter->ai_next)
     {
-        if (m_sockFD >=0 ) closeSocket();
+        if (m_sockFD >=0 )
+            closeSocket();
         m_sockFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
         if (!isActive())
         {
