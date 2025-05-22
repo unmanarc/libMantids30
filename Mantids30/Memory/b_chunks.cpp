@@ -76,23 +76,44 @@ uint64_t B_Chunks::size() const
 
 std::pair<bool, uint64_t> B_Chunks::truncate2(const uint64_t &bytes)
 {
+    // Check if the data is stored in memory-mapped file.
     if (m_mmapContainer)
     {
+        // Use the truncate method of the memory-mapped container to resize it.
         return m_mmapContainer->truncate(bytes);
     }
 
+    // Get the position of the chunk that contains the offset 'bytes'.
     size_t ival = I_Chunk_GetPosForOffset(bytes);
+
+    // If the offset is beyond the current data, return failure.
     if (ival==MAX_SIZE_T)
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::make_pair(false,(uint64_t)0);
 
-    m_chunksVector[ival].truncate(bytes);
-
-    for (int i=static_cast<int>(ival);i<static_cast<int>(m_chunksVector.size());i++)
+    // If the offset exactly matches the end of a chunk, remove that chunk and all following chunks.
+    if (m_chunksVector[ival].offset == bytes)
     {
-        m_chunksVector[ival].destroy();
-        m_chunksVector.erase(m_chunksVector.begin()+i);
+        // Border case. Destroy also the last ival.
+        if (ival>=0)
+            ival--;
+    }
+    else
+    {
+        // Otherwise, truncate the current chunk to the given offset.
+        m_chunksVector[ival].truncate(bytes);
     }
 
+    // Remove all chunks after the truncated chunk.
+    for (size_t i=ival+1; i < m_chunksVector.size(); ++i)
+    {
+        m_chunksVector[i].destroy();
+    }
+    m_chunksVector.resize(ival + 1);
+
+    // Update the total container size to reflect the truncation.
+    setContainerBytes(bytes);
+
+    // Return success and the new size of the container.
     return std::make_pair(true,size());
 }
 
