@@ -13,7 +13,7 @@ B_Chunks::B_Chunks()
     m_maxChunks = 256*KB_MULT; // 256K chunks (16Gb of RAM)
 
     // Don't go to FS by default.
-    m_maxContainerSizeUntilGoingToFS = 0;
+    m_maxSizeInMemoryBeforeMovingToDisk = 0;
     //maxContainerSizeUntilGoingToFS = 32*MB_MULT; // 32Mb.
 
     B_Chunks::clear2();
@@ -30,14 +30,14 @@ B_Chunks::~B_Chunks()
     B_Chunks::clear2();
 }
 
-void B_Chunks::setMaxContainerSizeUntilGoingToFS(const uint64_t &value)
+void B_Chunks::setMaxSizeInMemoryBeforeMovingToDisk(const uint64_t &value)
 {
-    m_maxContainerSizeUntilGoingToFS = value;
+    m_maxSizeInMemoryBeforeMovingToDisk = value;
 }
 
-uint64_t B_Chunks::getMaxContainerSizeUntilGoingToFS() const
+uint64_t B_Chunks::getMaxSizeInMemoryBeforeMovingToDisk() const
 {
-    return m_maxContainerSizeUntilGoingToFS;
+    return m_maxSizeInMemoryBeforeMovingToDisk;
 }
 
 bool B_Chunks::isUsingFiles()
@@ -137,7 +137,7 @@ std::pair<bool, uint64_t> B_Chunks::append2(const void *buf, const uint64_t &roL
         return std::make_pair(false,static_cast<uint64_t>(0));
     }
 
-    if (m_maxContainerSizeUntilGoingToFS!=0 && len+size() > m_maxContainerSizeUntilGoingToFS)
+    if (m_maxSizeInMemoryBeforeMovingToDisk!=0 && len+size() > m_maxSizeInMemoryBeforeMovingToDisk)
     {
         m_mmapContainer = copyToFS("",true);
         if (!m_mmapContainer)

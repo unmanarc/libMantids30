@@ -14,8 +14,19 @@ public:
     B_Chunks(const std::string & str);
     ~B_Chunks() override;
 
-    void setMaxContainerSizeUntilGoingToFS(const uint64_t &value);
-    uint64_t getMaxContainerSizeUntilGoingToFS() const;
+    /**
+     * @brief Sets the maximum memory size in bytes for a container before moves the container to disk.
+     *
+     * @param value Maximum memory size in bytes before data is written to disk.
+     */
+    void setMaxSizeInMemoryBeforeMovingToDisk(const uint64_t &value);
+
+    /**
+     * @brief Gets the maximum memory size in bytes for a container before moves the container to disk.
+     *
+     * @return Maximum memory size in bytes before data is written to disk.
+     */
+    uint64_t getMaxSizeInMemoryBeforeMovingToDisk() const;
 
     /**
      * @brief isUsingFiles is using mmap
@@ -148,7 +159,7 @@ private:
     /**
      * @brief Maximum Container Size in bytes Until Swapping to FS
      */
-    uint64_t m_maxContainerSizeUntilGoingToFS;
+    uint64_t m_maxSizeInMemoryBeforeMovingToDisk;
     /**
      * @brief mmapContainer
      */

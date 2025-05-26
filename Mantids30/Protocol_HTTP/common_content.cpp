@@ -271,7 +271,7 @@ void HTTP::Content::setMaxBinPostMemoryBeforeFS(const uint64_t& value)
 {
     if (m_containerType == CONTENT_TYPE_BIN && m_usingInternalOutStream)
     {
-        std::dynamic_pointer_cast<Memory::Containers::B_Chunks>(m_outStream)->setMaxContainerSizeUntilGoingToFS(value);
+        std::dynamic_pointer_cast<Memory::Containers::B_Chunks>(m_outStream)->setMaxSizeInMemoryBeforeMovingToDisk(value);
     }
     else
     {
