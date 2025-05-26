@@ -233,8 +233,8 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(
     }
 }
 
-void HTMLIEngine::procJAPI_Exec(const std::string & sRealFullPath,
-    APIClientHandler *clientHandler, const std::string & functionName, const std::string & functionInput, Memory::Streams::StreamableJSON *jPayloadOutStr)
+json HTMLIEngine::procJAPI_Exec(
+    const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
 
     API::APIReturn apiReturn;
@@ -272,7 +272,7 @@ void HTMLIEngine::procJAPI_Exec(const std::string & sRealFullPath,
     }
 
 
-    *(jPayloadOutStr->getValue()) = apiReturn.toJSON();
+    return apiReturn.toJSON();
 }
 
 
@@ -299,9 +299,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string & sReal
         std::string functionInput = whatStaticText[2].str();
         Helpers::Encoders::replaceHexCodes(functionInput);
 
-        Memory::Streams::StreamableJSON jPayloadOutStr;
-        procJAPI_Exec(sRealFullPath,clientHandler, functionName, functionInput, &jPayloadOutStr);
-        return replaceByJVar(*(jPayloadOutStr.getValue()), scriptVarName);
+        return replaceByJVar(procJAPI_Exec(sRealFullPath,clientHandler, functionName, functionInput), scriptVarName);
     }
 
     return replaceByJVar(Json::Value::null, scriptVarName);

@@ -16,7 +16,7 @@ public:
     static Protocols::HTTP::Status::Codes processResourceFile(APIClientHandler *clientHandler, const std::string &sRealFullPath);
 
 private:
-    static void procJAPI_Exec(const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput, Memory::Streams::StreamableJSON *jPayloadOutStr = nullptr);
+    static json procJAPI_Exec(const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);
 
     static void procResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler);
     static void procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler);
