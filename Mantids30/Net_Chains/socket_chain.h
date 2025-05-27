@@ -75,8 +75,8 @@ public:
     // virtuals:
     bool isConnected() override;
     int shutdownSocket(int mode = SHUT_WR) override;
-    int partialRead(void * data, const uint32_t & datalen) override;
-    int partialWrite(const void * data, const uint32_t & datalen) override;
+    ssize_t partialRead(void * data, const uint32_t & datalen) override;
+    ssize_t partialWrite(const void * data, const uint32_t & datalen) override;
 
 private:
 

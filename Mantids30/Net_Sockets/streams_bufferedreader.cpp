@@ -30,7 +30,7 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(void *
         if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
-        int readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
+        ssize_t readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
 
         // If disconneted, report, if not, add to the buffer...
         if (readSize < 0 )
@@ -53,7 +53,7 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(std::s
         if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
-        int readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
+        ssize_t readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
 
         // If disconneted, report, if not, add to the buffer...
         if (readSize < 0 )

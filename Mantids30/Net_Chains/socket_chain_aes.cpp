@@ -42,12 +42,12 @@ void Socket_Chain_AES::setPhase1Key(const char *pass)
     SHA256_Final((unsigned char *)m_phase1Key, &sha256);
 }
 
-int Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
 {
     if (!m_initialized)
         return Socket_Stream::partialRead(data,datalen);
 
-    int r = Socket_Stream::partialRead(data,datalen);
+    ssize_t r = Socket_Stream::partialRead(data,datalen);
     if (r<=0)
         return r;
 
@@ -63,7 +63,7 @@ int Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
     return r;
 }
 
-int Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
 {
     if (!m_initialized)
         return Socket_Stream::partialWrite(data,datalen);
@@ -87,7 +87,7 @@ int Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
     m_writeParams.cryptoXOR(edata,datalen,true);
 
     // Try to transmit the encrypted data...
-    int r=Socket_Stream::partialWrite(edata,datalen);
+    ssize_t r=Socket_Stream::partialWrite(edata,datalen);
     if (r>0)
     {
         // Data transmited.. reduce it.

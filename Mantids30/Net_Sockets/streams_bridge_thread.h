@@ -48,7 +48,7 @@ protected:
     std::shared_ptr<Sockets::Socket_Stream>  src;
     char * block_fwd;
     uint16_t blockSize;
-   // int partialReadL(void *data, const uint32_t &datalen, bool fwd = true);
+   // ssize_t partialReadL(void *data, const uint32_t &datalen, bool fwd = true);
 
 private:
 

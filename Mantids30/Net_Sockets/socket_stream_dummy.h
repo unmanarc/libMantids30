@@ -83,7 +83,7 @@ public:
      * @param datalen Maximum number of bytes to read.
      * @return Number of bytes read, 0 for end of file, or -1 on error.
      */
-    int partialRead(void *data, const uint32_t &datalen) override;
+    ssize_t partialRead(void *data, const uint32_t &datalen) override;
 
     /**
      * @brief Write a data block to the chunk container.
@@ -92,7 +92,7 @@ public:
      * @param datalen Number of bytes to write.
      * @return Number of bytes written, 0 for end of file, or -1 on error.
      */
-    int partialWrite(const void *data, const uint32_t &datalen) override;
+    ssize_t partialWrite(const void *data, const uint32_t &datalen) override;
 
     /**
      * @brief Override the remote pair address.

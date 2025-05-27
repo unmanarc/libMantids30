@@ -37,8 +37,8 @@ public:
 
     //////////////////////////////////////////
     // Overwritten functions:
-    int partialRead(void * data, const uint32_t & datalen) override;
-    int partialWrite(const void * data, const uint32_t & datalen) override;
+    ssize_t partialRead(void * data, const uint32_t & datalen) override;
+    ssize_t partialWrite(const void * data, const uint32_t & datalen) override;
 
     bool postAcceptSubInitialization() override;
     bool postConnectSubInitialization() override;

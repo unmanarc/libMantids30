@@ -28,7 +28,7 @@ bool Socket_Stream::streamTo(Memory::Streams::StreamableObject * out, Memory::St
     Memory::Streams::WriteStatus cur;
     for (;;)
     {
-        int r = partialRead(data,sizeof(data));
+        ssize_t r = partialRead(data,sizeof(data));
         switch (r)
         {
         case -1: // ERR.

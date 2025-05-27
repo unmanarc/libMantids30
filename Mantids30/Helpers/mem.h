@@ -38,8 +38,8 @@ namespace Mantids30 { namespace Helpers {
 #define SecBACopy(dst,src) memset(&dst,0, sizeof(dst)); strncpy(dst, src, sizeof(dst)-1)
 #endif
 
-#define ZeroBArrayNS(x) memset((x),0,sizeof((x)));
-#define ZeroBStructNS(x) memset(&(x),0,sizeof(x));
+#define ZeroBArrayNS(x) memset((x),0,sizeof((x)))
+#define ZeroBStructNS(x) memset(&(x),0,sizeof(x))
 
 class Mem
 {

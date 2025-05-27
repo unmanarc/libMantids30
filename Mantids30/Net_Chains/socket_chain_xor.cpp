@@ -10,11 +10,11 @@ Socket_Chain_XOR::Socket_Chain_XOR()
     setXorByte(0x77);
 }
 
-int Socket_Chain_XOR::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_XOR::partialRead(void *data, const uint32_t &datalen)
 {
     if (!datalen) return 0;
 
-    int r = Mantids30::Network::Sockets::Socket::partialRead(data,datalen);
+    ssize_t r = Mantids30::Network::Sockets::Socket::partialRead(data,datalen);
     if (r<=0) return r;
 
     char * datacp = getXorCopy(data,r);
@@ -25,14 +25,14 @@ int Socket_Chain_XOR::partialRead(void *data, const uint32_t &datalen)
     return r;
 }
 
-int Socket_Chain_XOR::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_XOR::partialWrite(const void *data, const uint32_t &datalen)
 {
     if (!datalen) return 0;
 
     char * datacp = getXorCopy(data,datalen);
     if (!datacp) return 0;
 
-    int r = Mantids30::Network::Sockets::Socket::partialWrite(datacp,datalen);
+    ssize_t r = Mantids30::Network::Sockets::Socket::partialWrite(datacp,datalen);
     delete [] datacp;
     return r;
 }

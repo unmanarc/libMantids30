@@ -41,7 +41,7 @@ int Socket_Stream_Dummy::shutdownSocket(
     return 0;
 }
 
-int Socket_Stream_Dummy::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_Stream_Dummy::partialRead(void *data, const uint32_t &datalen)
 {
     auto storedDataSize = sender.size();
     if (!storedDataSize)
@@ -64,7 +64,7 @@ int Socket_Stream_Dummy::partialRead(void *data, const uint32_t &datalen)
     }
 }
 
-int Socket_Stream_Dummy::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Stream_Dummy::partialWrite(const void *data, const uint32_t &datalen)
 {
     std::pair<bool, uint64_t> r = receiver.append(data, datalen);
     if (!r.first)

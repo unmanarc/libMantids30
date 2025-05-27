@@ -176,21 +176,21 @@ int Socket_Chain::shutdownSocket(int mode)
     return curSocket->shutdownSocket(mode);
 }
 
-int Socket_Chain::partialRead(void *data, const uint32_t & datalen)
+ssize_t Socket_Chain::partialRead(void *data, const uint32_t & datalen)
 {
     if (m_socketLayers.size() == 0 && !m_baseSocket) return -1;
     std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>  curSocket = !m_socketLayers.size()? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size()-1])->sock[0];
-    int x = curSocket->partialRead(data,datalen);
+    ssize_t x = curSocket->partialRead(data,datalen);
     if (x<=0)
         return x;
     return x;
 }
 
-int Socket_Chain::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Chain::partialWrite(const void *data, const uint32_t &datalen)
 {
     if (m_socketLayers.size() == 0 && !m_baseSocket) return -1;
     std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>  curSocket = !m_socketLayers.size()? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size()-1])->sock[0];
-    int x = curSocket->partialWrite(data,datalen);
+    ssize_t x = curSocket->partialWrite(data,datalen);
     if (x<=0)
         return x;
     return x;

@@ -488,7 +488,7 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
     return acceptedTLSSock;
 }
 
-int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
+ssize_t Socket_TLS::partialRead(void * data, const uint32_t & datalen)
 {
     if (!m_sslHandler) return -1;
     char cError[1024]="Unknown Error";
@@ -526,7 +526,7 @@ int Socket_TLS::partialRead(void * data, const uint32_t & datalen)
     }
 }
 
-int Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
+ssize_t Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 {
     if (!m_sslHandler) return -1;
 

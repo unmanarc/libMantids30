@@ -15,8 +15,8 @@ public:
     Socket_Chain_XOR();
 
     // Overwritten functions:
-    int partialRead(void * data, const uint32_t & datalen);
-    int partialWrite(const void * data, const uint32_t & datalen);
+    ssize_t partialRead(void * data, const uint32_t & datalen);
+    ssize_t partialWrite(const void * data, const uint32_t & datalen);
 
     // Private functions:
     char getXorByte() const;

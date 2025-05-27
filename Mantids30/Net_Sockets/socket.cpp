@@ -340,7 +340,7 @@ uint16_t Socket::getPort()
     return ntohs(sin.sin_port);
 }
 
-int Socket::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket::partialRead(void *data, const uint32_t &datalen)
 {
     if (!isActive()) return -1;
     if (!datalen) return 0;
@@ -356,7 +356,7 @@ int Socket::partialRead(void *data, const uint32_t &datalen)
     }
 }
 
-int Socket::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket::partialWrite(const void *data, const uint32_t &datalen)
 {
     if (!isActive()) return -1;
     if (!datalen) return 0;
