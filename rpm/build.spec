@@ -1,7 +1,6 @@
 %define name libMantids
 %define version 3.0.0
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
-
 Name:           %{name}
 Version:        %{version}
 Release:        %{build_timestamp}.git%{?dist}
@@ -10,29 +9,22 @@ License:        LGPLv3
 URL:            https://github.com/unmanarc/libMantids30
 Source0:        https://github.com/unmanarc/libMantids30/archive/master.tar.gz#/%{name}-%{version}-%{build_timestamp}.tar.gz
 Group:          Development/Libraries
-
 %define cmake cmake
-
 %if 0%{?rhel} == 6
 %define cmake cmake3
 %endif
-
 %if 0%{?rhel} == 7
 %define cmake cmake3
 %endif
-
 %if 0%{?rhel} == 8
 %define debug_package %{nil}
 %endif
-
 %if 0%{?rhel} == 9
 %define debug_package %{nil}
 %endif
-
 %if 0%{?fedora} >= 33
 %define debug_package %{nil}
 %endif
-
 BuildRequires:  %{cmake} jsoncpp-devel boost-devel boost-static sqlite-devel postgresql-devel gcc-c++
 %if 0%{?rhel} == 6
 BuildRequires:  mysql-devel
@@ -44,58 +36,45 @@ BuildRequires:  openssl11-devel
 %else
 BuildRequires:  openssl-devel
 %endif
-
 Requires: jsoncpp boost-regex boost-thread
 %if 0%{?rhel} == 7
 Requires:       openssl11
 %else
 Requires:       openssl
 %endif
-
 %description
 This package contains a enhancing C++11 framework libraries for services and network based projects
-
 %package sqlite
 Summary:        C++11 Framework Libraries v2 SQLite Extensions
 Group:          Development/Libraries
 Provides:       %{name}-sqlite
 Requires:       %{name} sqlite
-
 %description sqlite
 This package contains the SQLite3 extensions for libMantids
-
 %package postgresql
 Summary:        C++11 Framework Libraries v2 PostgreSQL Extensions
 Group:          Development/Libraries
 Provides:       %{name}-postgresql
 Requires:       %{name} postgresql-devel postgresql-libs
-
 %description postgresql
 This package contains the PostgreSQL extensions for libMantids
-
 %package mariadb
 Summary:        C++11 Framework Libraries v2 MariaDB Extensions
 Group:          Development/Libraries
 Provides:       %{name}-mariadb
 Requires:       %{name} mariadb-devel mariadb-libs
-
 %description mariadb
 This package contains the MariaDB extensions for libMantids
-
 %package devel
 Summary:        C++11 Framework Libraries v2 development files
 Group:          Development/Libraries
 Provides:       %{name}-devel
 Requires:       %{name}
-
 %description devel
 This package contains necessary header files for %{name} development.
-
 %prep
 %autosetup -n %{name}-master
-
 %build
-
 %if 0%{?rhel} == 7
 %{cmake} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
 %{cmake} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
@@ -103,60 +82,45 @@ This package contains necessary header files for %{name} development.
 %{cmake} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
 %{cmake} -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
 %endif
-
 make %{?_smp_mflags}
-
 %clean
 rm -rf $RPM_BUILD_ROOT
-
 %install
 rm -rf $RPM_BUILD_ROOT
-
 %if 0%{?fedora} >= 33
 ln -s . %{_host}
 %endif
-
 %if 0%{?rhel} >= 9
 ln -s . %{_host}
 ln -s . redhat-linux-build
 %endif
-
 %if 0%{?fedora} == 35
 ln -s . redhat-linux-build
 %endif
-
 %if "%{_host}" == "powerpc64le-redhat-linux-gnu"
 ln -s . ppc64le-redhat-linux-gnu
 %endif
-
 %if "%{_host}" == "s390x-ibm-linux-gnu"
 ln -s . s390x-redhat-linux-gnu
 %endif
-
 %if "%{cmake}" == "cmake3"
 %cmake3_install
 %else
 %cmake_install
 %endif
-
 %files
 %doc
 %{_libdir}/libMantids30_*
 %exclude %{_libdir}/libMantids30_DB_SQLite*
 %exclude %{_libdir}/libMantids30_DB_PGSQL*
 %exclude %{_libdir}/libMantids30_DB_MariaDB*
-
 %files devel
 /usr/include/Mantids30*
 /usr/share/pkgconfig/Mantids30*
-
 %files sqlite
 %{_libdir}/libMantids30_DB_SQLite*
-
 %files postgresql
 %{_libdir}/libMantids30_DB_pgsql*
-
 %files mariadb
 %{_libdir}/libMantids30_DB_mariadb*
-
 %changelog

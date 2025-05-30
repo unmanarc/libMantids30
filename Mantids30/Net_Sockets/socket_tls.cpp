@@ -488,76 +488,145 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
     return acceptedTLSSock;
 }
 
-ssize_t Socket_TLS::partialRead(void * data, const uint32_t & datalen)
+ssize_t Socket_TLS::partialRead(void *data, const uint32_t &datalen)
 {
-    if (!m_sslHandler) return -1;
-    char cError[1024]="Unknown Error";
+    std::unique_lock<std::mutex> lock(mutexRead);
 
-    int readBytes = SSL_read(m_sslHandler, data, datalen);
-    if (readBytes > 0)
-    {
-        return readBytes;
-    }
-    else
-    {
-        // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
-        Socket_TCP::iShutdown();
-
-        int err = SSL_get_error(m_sslHandler, readBytes);
-        switch(err)
-        {
-        case SSL_ERROR_WANT_WRITE:
-        case SSL_ERROR_WANT_READ:
-            parseErrors();
-            return -1;
-        case SSL_ERROR_ZERO_RETURN:
-            // Socket closed.
-            parseErrors();
-            return -1;
-        case SSL_ERROR_SYSCALL:
-            // Common error (maybe tcp error).
-            parseErrors();
-            m_lastError = "Error " + std::to_string(errno) + " during read: " + strerror_r(errno,cError,sizeof(cError));
-            return -1;
-        default:
-            parseErrors();
-            return -1;
-        }
-    }
+    return iPartialRead(data,datalen);
 }
 
 ssize_t Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 {
-    if (!m_sslHandler) return -1;
+    std::unique_lock<std::mutex> lock(mutexWrite);
+
+    return iPartialWrite(data,datalen);
+}
+
+ssize_t Socket_TLS::iPartialRead(
+    void *data, const uint32_t &datalen, int ttl)
+{
+
+    if (!m_sslHandler)
+    {
+        m_lastError = "SSL handle is null";
+        return -1;
+    }
+
+    if (ttl == 0)
+    {
+        return -1;
+    }
+
+    int readBytes = SSL_read(m_sslHandler, data, static_cast<int>(datalen));
+
+    if (readBytes > 0)
+    {
+        m_lastError = "";
+        return readBytes;
+    }
+    else if (readBytes == 0)
+    {
+        // The connection has been closed.
+        m_lastError = "Connection closed by peer";
+        return 0;
+    }
+
+    // Error mgmt:
+    int sslError = SSL_get_error(m_sslHandler, readBytes);
+    switch (sslError)
+    {
+    case SSL_ERROR_WANT_READ:
+    case SSL_ERROR_WANT_WRITE:
+        // Try Again after 10ms...
+        usleep(10000);
+        return iPartialRead(data,datalen,ttl-1);
+    case SSL_ERROR_SYSCALL:
+    {
+        int errnoCopy = errno;
+        char errorBuffer[256];
+        strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
+        m_lastError = std::string("System call error: ") + errorBuffer;
+        break;
+    }
+    case SSL_ERROR_ZERO_RETURN:
+    case SSL_ERROR_SSL:
+        // SSL Specific error.
+        {
+            parseErrors();
+            m_lastError = std::string("SSL Layer Error");
+            break;
+        }
+    default:
+        m_lastError = "Unknown SSL error occurred";
+    }
+
+    // In case of error, close the connection.
+    Socket_TCP::iShutdown();
+
+    return -1;
+}
+
+ssize_t Socket_TLS::iPartialWrite(
+    const void *data, const uint32_t &datalen, int ttl)
+{
+    if (!m_sslHandler)
+    {
+        return -1;
+    }
+
+    if (ttl == 0)
+    {
+        return -1;
+    }
+
+    int chunkSize = static_cast<int>(datalen);
+    if ( datalen>static_cast<uint64_t>(std::numeric_limits<int>::max()) )
+    {
+        throw std::runtime_error("Data size exceeds the maximum allowed for partial write.");
+    }
 
     // TODO: sigpipe here?
-    int sentBytes = SSL_write(m_sslHandler, data, datalen);
+    int sentBytes = SSL_write(m_sslHandler, data, chunkSize);
+
     if (sentBytes > 0)
     {
+        m_lastError = "";
+        return sentBytes;
+    }
+    else if (sentBytes == 0)
+    {
+        // Closed.
+        m_lastError = "Connection closed";
         return sentBytes;
     }
     else
     {
-        // Connection may be lost... shutdown here using the TCP/IP layer to prevent further protocol negotiations that can lead to sigpipe...
-        Socket_TCP::iShutdown();
-
-        switch(SSL_get_error(m_sslHandler, sentBytes))
-        {
-        case SSL_ERROR_WANT_WRITE:
+        int sslErr = SSL_get_error(m_sslHandler, sentBytes);
+        switch(sslErr) {
         case SSL_ERROR_WANT_READ:
-            // Must wait a little bit until the socket buffer is free
-            // TODO: ?
-            usleep(100000);
-            return 0;
-        case SSL_ERROR_ZERO_RETURN:
-            // Socket closed...
+        case SSL_ERROR_WANT_WRITE:
+            // Wait 10ms... and try again...
+            usleep(10000);
+            return iPartialWrite(data,datalen,ttl-1);
+        case SSL_ERROR_SYSCALL:
+        {
+            int errnoCopy = errno;
+            char errorBuffer[256];
+            strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
+            m_lastError = std::string("System call error: ") + errorBuffer;
             parseErrors();
+            Socket_TCP::iShutdown();
             return -1;
+        }
+        case SSL_ERROR_ZERO_RETURN:
+        case SSL_ERROR_SSL:
         default:
-            // Another SSL Error.
+            // Other SSL errors
+            m_lastError = std::string("SSL Layer Error");
             parseErrors();
+            Socket_TCP::iShutdown();
             return -1;
         }
     }
-}
 
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -345,7 +346,9 @@ protected:
     /**
      * @brief sockfd Socket descriptor
      */
-    int m_sockFD = -1;
+    std::atomic<int> m_sockFD = -1;
+
+    std::mutex mutexClose;
 
 
     bool m_shutdownProtocolOnRead = false;

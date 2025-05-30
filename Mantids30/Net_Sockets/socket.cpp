@@ -285,12 +285,17 @@ int Socket::closeSocket()
     if (!isActive())
         return 0;
 
-#ifdef _WIN32
-    int i = closesocket(sockfd);
-#else
-    int i = close(m_sockFD);
-#endif
+    mutexClose.lock();
+    // Prevent socket utilization / race condition.
+    auto socktmp = (int)m_sockFD;
     m_sockFD = -1;
+#ifdef _WIN32
+    int i = closesocket(socktmp);
+#else
+    int i = close(socktmp);
+#endif
+    mutexClose.unlock();
+
     return i;
 }
 
@@ -346,12 +351,12 @@ ssize_t Socket::partialRead(void *data, const uint32_t &datalen)
     if (!datalen) return 0;
     if (!m_useWriteInsteadRecv)
     {
-        ssize_t recvLen = recv(m_sockFD, (char *) data, datalen, 0);
+        ssize_t recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
         return recvLen;
     }
     else
     {
-        ssize_t recvLen = read(m_sockFD, (char *) data, datalen);
+        ssize_t recvLen = read(m_sockFD, static_cast<char *>(data), datalen);
         return recvLen;
     }
 }
@@ -363,22 +368,26 @@ ssize_t Socket::partialWrite(const void *data, const uint32_t &datalen)
     if (!m_useWriteInsteadRecv)
     {
 #ifdef _WIN32
-        ssize_t sendLen = send(sockfd, (char *) data, datalen, 0);
+        ssize_t sendLen = send(sockfd, static_cast<const char *>(data), datalen, 0);
 #else
-        ssize_t sendLen = send(m_sockFD, (char *) data, datalen, MSG_NOSIGNAL);
+        ssize_t sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, MSG_NOSIGNAL);
 #endif
         return sendLen;
     }
     else
     {
-        ssize_t sendLen = write(m_sockFD, (char *) data, datalen);
+        ssize_t sendLen = write(m_sockFD, static_cast<const char *>(data), datalen);
         return sendLen;
     }
 }
 
-int Socket::iShutdown(int mode)
+int Socket::iShutdown(
+    int mode)
 {
-   bool rd_to_shutdown = false;
+    if (!isActive())
+        return -10;
+
+    bool rd_to_shutdown = false;
     bool wr_to_shutdown = false;
 
     switch (mode)
@@ -403,42 +412,38 @@ int Socket::iShutdown(int mode)
     if (m_shutdownProtocolOnWrite == true)
         wr_to_shutdown = false;
 
-    if ( rd_to_shutdown && wr_to_shutdown )
+    if (rd_to_shutdown && wr_to_shutdown)
     {
         int x = _shutdownSocket(SHUT_RDWR);
-//        if (x == 0)
-//        {
+
         m_shutdownProtocolOnRead = true;
         m_shutdownProtocolOnWrite = true;
-//        }
+
         return x;
     }
-    else if ( rd_to_shutdown )
+    else if (rd_to_shutdown)
     {
         int x = _shutdownSocket(SHUT_RD);
-//        if (x == 0)
-//        {
+
         m_shutdownProtocolOnRead = true;
-//        }
+
         return x;
     }
-    else if ( wr_to_shutdown )
+    else if (wr_to_shutdown)
     {
         int x = _shutdownSocket(SHUT_WR);
-//        if (x == 0)
-//        {
+
         m_shutdownProtocolOnWrite = true;
-//        }
+
         return x;
     }
     else
     {
         // Double shutdown?
         //fprintf(stderr,"Double shutdown detected at socket: %i in mode %s @%p\n", sockfd, mode==SHUT_RD?"RD": ( mode==SHUT_WR?"WR":"RDWR") ,this); fflush(stderr);
-//        throw std::runtime_error("Double shutdown on Socket");
+        //        throw std::runtime_error("Double shutdown on Socket");
         return -1;
     }
-
 }
 
 void Socket::socketSystemInitialization()
@@ -600,6 +605,14 @@ int Socket::_shutdownSocket(int mode)
 {
     //printf("Shutting down socket: %i in mode %s @%p\n", sockfd, mode==SHUT_RD?"RD": ( mode==SHUT_WR?"WR":"RDWR") ,this); fflush(stdout);
     int x = shutdown(m_sockFD, mode);
+
+#ifdef WIN32
+    if ( mode == SHUT_RDWR )
+    {
+        closeSocket();
+    }
+#endif
+
     return x;
 }
 

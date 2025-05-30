@@ -599,6 +599,11 @@ protected:
     bool postConnectSubInitialization() override;
 
 private:
+
+
+    ssize_t iPartialRead(void * data, const uint32_t & datalen, int ttl = 100);
+    ssize_t iPartialWrite(const void * data, const uint32_t & datalen, int ttl = 100);
+
     bool createTLSContext();
     void parseErrors();
     bool validateTLSConnection(const bool &usingPSK);
@@ -613,6 +618,7 @@ private:
 
     std::list<std::string> m_sslErrorList;
 
+    std::mutex mutexRead, mutexWrite;
     bool m_isServer = false;
 };
 } // namespace Sockets
