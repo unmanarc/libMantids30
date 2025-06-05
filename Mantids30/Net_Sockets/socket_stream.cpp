@@ -119,33 +119,43 @@ bool Socket_Stream::writeFull(const void *data)
 
 bool Socket_Stream::writeFull(const void *data, const uint64_t &datalen)
 {
-    uint64_t sent_bytes = 0;
-    uint64_t left_to_send = datalen;
+    // Init control variables:
+    uint64_t remaining = datalen;           // data left to send
+    const char* dataPtr = static_cast<const char*>(data); // data pointer.
 
-    // Send the raw data.
-    // datalen-left_to_send is the _size_ of the data already sent.
-    while (left_to_send && (sent_bytes = partialWrite((char *) data + (datalen - left_to_send), left_to_send>4096?4096:left_to_send)) <= left_to_send)
+    // Bucle para enviar datos en fragmentos hasta que se envíe todo
+    while (remaining > 0)
     {
-        if (sent_bytes == -1)
+        // Determina el tamaño del fragmento (máximo 4096 bytes)
+        uint64_t chunkSize = std::min(remaining, static_cast<uint64_t>(4096));
+
+        // Envía el fragmento actual
+        ssize_t sentBytes = partialWrite(dataPtr, static_cast<uint32_t>(chunkSize));
+
+        // Manejo de errores
+        if (sentBytes < 0)
         {
-            // Error sending data. (returns false.)
+            // Error al enviar los datos
             shutdownSocket();
             return false;
         }
-        // Substract the data that was already sent from the count.
-        else
-            left_to_send -= sent_bytes;
+
+        if (sentBytes == 0)
+        {
+            // No se pudieron enviar bytes, posible error de conexión (buffer lleno?)
+            shutdownSocket();
+            return false;
+        }
+
+        // Actualiza el puntero y el conteo de datos pendientes
+        dataPtr += sentBytes;
+        remaining -= static_cast<uint64_t>(sentBytes);
     }
 
-    // Failed to achieve sending the contect on 5 attempts
-    if (left_to_send != 0)
-    {
-        // left_to_send must always return 0 bytes. otherwise here we have an error (return false)
-        shutdownSocket();
-        return false;
-    }
+    // Todos los datos fueron enviados correctamente
     return true;
 }
+
 
 std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_Stream::acceptConnection()
 {
@@ -165,37 +175,64 @@ bool Socket_Stream::postConnectSubInitialization()
 
 bool Socket_Stream::readFull(void *data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount)
 {
-    if (receivedDataBytesCount) *receivedDataBytesCount = 0;
+    if (receivedDataBytesCount != nullptr) {
+        *receivedDataBytesCount = 0;
+    }
+
+    // Validate input
+    if (data == nullptr) {
+        return false;
+    }
+
+    if (expectedDataBytesCount == 0) {
+        return true;
+    }
 
     uint64_t curReceivedBytesCount = 0;
-    int partialReceivedBytesCount = 0;
+    const size_t MAX_READ_BUFFER_SIZE = 4096;
 
-    if (expectedDataBytesCount==0)
-        return true;
-
-    // Try to receive the maximum amount of data left.
-    while ( (expectedDataBytesCount - curReceivedBytesCount)>0 // there are bytes to read.
-            && (partialReceivedBytesCount = partialRead(((char *) data) + curReceivedBytesCount, expectedDataBytesCount - curReceivedBytesCount)) >0 // receive bytes. if error, will return with -1 or zero (connection terminated).
-            )
+    while (curReceivedBytesCount < expectedDataBytesCount)
     {
-        // Count the data received.
-        curReceivedBytesCount += partialReceivedBytesCount;
-    }
+        // Calcular el tamaño máximo a leer en esta iteración
+        size_t bytesToRead = std::min<uint64_t>(MAX_READ_BUFFER_SIZE, expectedDataBytesCount - curReceivedBytesCount);
 
-    if (curReceivedBytesCount<expectedDataBytesCount)
-    {
-        if (curReceivedBytesCount==0)
+        ssize_t partialReceivedBytesCount = partialRead(
+            static_cast<char*>(data) + curReceivedBytesCount,
+            static_cast<uint32_t>(bytesToRead)
+            );
+
+        if (partialReceivedBytesCount < 0)
+        {
+            // Read Error.
             return false;
-        if (receivedDataBytesCount) *receivedDataBytesCount = curReceivedBytesCount;
-        return true;
+        }
+        else if (partialReceivedBytesCount == 0)
+        {
+            // Connection Closed.
+            break;
+        }
+        else
+        {
+            curReceivedBytesCount += static_cast<uint64_t>(partialReceivedBytesCount);
+        }
     }
 
-    if (receivedDataBytesCount) *receivedDataBytesCount = expectedDataBytesCount;
+    // Notify the received bytes count.
+    if (receivedDataBytesCount != nullptr)
+    {
+        *receivedDataBytesCount = curReceivedBytesCount;
+    }
 
-    // Otherwise... return true.
+    // If we received less...
+    if (curReceivedBytesCount < expectedDataBytesCount)
+    {
+        // Not interested in less.
+        return false;
+    }
+
+    // We received complete:
     return true;
 }
-
 void Socket_Stream::deriveConnectionName()
 {
     std::string rpcClientKey;
