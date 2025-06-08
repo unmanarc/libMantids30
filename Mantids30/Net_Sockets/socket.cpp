@@ -53,12 +53,12 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
         {
             if (inet_pton(AF_INET, bindAddress, &m_lastBindIPv4.sin_addr) <= 0)
             {
-                m_lastError = "bind() failed / Invalid IPv4 address format";
+                m_lastError = "bindTo failed / Invalid IPv4 address format";
                 return false;
             }
         }
 
-        if (bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
+        if (::bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
@@ -86,7 +86,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
             }
         }
 
-        if (bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
+        if (::bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
