@@ -37,11 +37,11 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    std::shared_ptr<DataFormat::JWT> jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
-        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecret", "jwt_secret.key");
+        std::string hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt_secret.key");
 
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
@@ -198,7 +198,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
 
-        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecret", "jwt_secret.key");
+        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt_secret.key");
 
         std::ifstream hmacFile(hmacFilePath.c_str());
 
@@ -327,7 +327,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(
 
     DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
-    auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    std::shared_ptr<DataFormat::JWT> jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -377,7 +377,7 @@ bool JWT::createHMACSecret(
         FILE *pkeyFile = fdopen(fd, "w");
         if (pkeyFile)
         {
-            auto rndstr = Helpers::Random::createRandomString(32);
+            std::string rndstr = Helpers::Random::createRandomString(32);
             r = fwrite(rndstr.c_str(), 32, 1, pkeyFile) == 1;
 
             if (r)
