@@ -19,8 +19,8 @@ WebSessionsManager::WebSessionsManager()
 
 void WebSessionsManager::gc()
 {
-    auto i = m_sessions.getKeys();
-    for (const auto & key : i)
+    std::set<std::string> i = m_sessions.getKeys();
+    for (const std::string & key : i)
     {
         WebSession * s = (WebSession *)m_sessions.openElement(key);
         if (s && s->getAuthSession()->isLastActivityExpired(m_MaxInactiveSeconds))
