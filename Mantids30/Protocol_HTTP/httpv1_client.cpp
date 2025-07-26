@@ -24,13 +24,12 @@ HTTP::HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableOb
 
 bool HTTP::HTTPv1_Client::initProtocol()
 {
-    Memory::Streams::WriteStatus wrStat;
 
-    if (!clientRequest.requestLine.streamToUpstream(wrStat))
+    if (!clientRequest.requestLine.streamToUpstream())
         return false;
-    if (!streamClientHeaders(wrStat))
+    if (!streamClientHeaders())
         return false;
-    if (!clientRequest.content.streamToUpstream(wrStat))
+    if (!clientRequest.content.streamToUpstream())
         return false;
 
     // Succesfully initialized...
@@ -118,13 +117,13 @@ Memory::Streams::SubParser * HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
     return &serverResponse.content;
 }
 
-bool HTTP::HTTPv1_Client::streamClientHeaders(Memory::Streams::WriteStatus &wrStat)
+bool HTTP::HTTPv1_Client::streamClientHeaders()
 {
     // Act as a server. Send data from here.
-    uint64_t strsize;
+    size_t strsize;
 
     // Can't use chunked mode on client.
-    if ((strsize=clientRequest.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
+    if ((strsize=clientRequest.content.getStreamSize()) == std::numeric_limits<size_t>::max())
         return false;
     else
     {
@@ -148,7 +147,7 @@ bool HTTP::HTTPv1_Client::streamClientHeaders(Memory::Streams::WriteStatus &wrSt
         clientRequest.headers.replace("Host", clientRequest.virtualHost + (clientRequest.virtualPort==80?"":
                                                             ":"+std::to_string(clientRequest.virtualPort)) );
     // Stream it..
-    return clientRequest.headers.streamToUpstream(wrStat);
+    return clientRequest.headers.streamToUpstream();
 }
 
 

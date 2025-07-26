@@ -95,7 +95,7 @@ protected:
      * @brief onProgress emit progress percentage when data is received.
      * @param progressPct percentage using scale /10000
      */
-    virtual void onProgress(const uint16_t &progressPct, const uint64_t &progressBytes, const uint64_t &progressExpectedBytes) {}
+    virtual void onProgress(const uint16_t &progressPct, const size_t &progressBytes, const size_t &progressExpectedBytes) {}
     /**
       // TODO:
      * @brief onFinished emit this signal when connection is ended.
@@ -105,7 +105,7 @@ private:
     void parseHeaders2ServerCookies();
     Memory::Streams::SubParser *parseHeaders2TransmitionMode();
 
-    bool streamClientHeaders(Memory::Streams::WriteStatus &wrStat);
+    bool streamClientHeaders();
 
     HTTP::Request::Cookies_ClientSide m_clientCookies;
 
