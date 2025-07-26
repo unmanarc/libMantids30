@@ -294,6 +294,15 @@ public:
          * @param cookieName
          * @return
          */
+        void addCookieClearSecure(const std::string &cookieName, const std::string path)
+        {
+            cookies.addClearSecureCookie(cookieName, path);
+        }
+        /**
+         * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
+         * @param cookieName
+         * @return
+         */
         void addCookieClearSecure(const std::string &cookieName)
         {
             cookies.addClearSecureCookie(cookieName);
@@ -305,16 +314,29 @@ public:
          * @param uMaxAge
          * @return
          */
-        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
+        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge, const std::string & path )
         {
             Headers::Cookie val;
             val.setExpirationFromNow(uMaxAge);
+            val.path = path;
             val.value = cookieValue;
             val.secure = true;
             val.httpOnly = true;
             val.maxAge = uMaxAge;
             val.sameSitePolicy = Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
             setCookie(cookieName,val);
+        }
+
+        /**
+         * @brief setSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite)
+         * @param cookieName
+         * @param cookieValue
+         * @param uMaxAge
+         * @return
+         */
+        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
+        {
+            setSecureCookie(cookieName,cookieValue,uMaxAge,"");
         }
         /**
          * @brief setInsecureCookie Set HTTP Simple Cookie (don't use, very insecure)
