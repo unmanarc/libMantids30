@@ -26,6 +26,7 @@ public:
     std::shared_ptr<DataFormat::JWT> jwtSigner;
 
     Program::Logs::RPCLog *rpcLog = nullptr;
+
     /**
      * @brief Sets the shared pointer resource filter for the web session.
      *
@@ -35,7 +36,6 @@ public:
      *
      */
     std::shared_ptr<API::Web::ResourcesFilter> resourceFilter;
-
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
