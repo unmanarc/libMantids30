@@ -19,11 +19,6 @@ void MIME_Sub_EndPBoundary::reset()
     clear();
 }
 
-bool MIME_Sub_EndPBoundary::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
-{
-    return true;
-}
-
 Memory::Streams::SubParser::ParseStatus MIME_Sub_EndPBoundary::parse()
 {
 #ifdef DEBUG

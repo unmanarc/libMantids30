@@ -11,7 +11,6 @@ public:
     ~LineRecv_SubParser() override = default;
 
     void setMaxObjectSize(const uint32_t &size);
-    bool streamToUpstream(Memory::Streams::WriteStatus &) override;
 
     std::string getParsedString() const;
 

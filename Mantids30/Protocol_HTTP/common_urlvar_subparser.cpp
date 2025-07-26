@@ -2,6 +2,7 @@
 
 #include "streamdecoder_url.h"
 #include <memory>
+#include <optional>
 
 using namespace Mantids30::Network::Protocols;
 
@@ -18,13 +19,6 @@ HTTP::URLVarContent::URLVarContent()
 
 HTTP::URLVarContent::~URLVarContent()
 {
-    //if (pData) delete pData;
-}
-
-bool HTTP::URLVarContent::streamToUpstream(Memory::Streams::WriteStatus &)
-{
-    // NOT IMPLEMENTED.
-    return false;
 }
 
 void HTTP::URLVarContent::setVarType(bool varName)
@@ -49,10 +43,9 @@ std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::flushRetrieve
 
 std::string HTTP::URLVarContent::flushRetrievedContentAsString()
 {
-    std::string r = m_pData->toString();
-    //delete pData;
+    std::optional<std::string> r = m_pData->toString();
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
-    return r;
+    return r?*r:"";
 }
 
 Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
@@ -64,12 +57,11 @@ Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
     }
 
     Memory::Streams::Decoders::URL urlDecoder;
-    auto cur = urlDecoder.transform(
-                                    getParsedBuffer(), // Parsed Buffer.
-                                    m_pData.get() // pData.
-                                    );
+    urlDecoder.transform(getParsedBuffer(), // Parsed Buffer.
+                         m_pData.get() // pData.
+                         );
 
-    if (!cur.finish || !cur.succeed)
+    if (!m_pData->writeStatus.succeed)
     {
         // Error parsing the URLVar...
         m_pData->clear();

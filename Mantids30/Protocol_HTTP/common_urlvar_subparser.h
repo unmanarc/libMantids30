@@ -11,7 +11,6 @@ public:
     URLVarContent();
     ~URLVarContent() override;
 
-    bool streamToUpstream(Memory::Streams::WriteStatus &) override;
 
     void setVarType(bool varName = true);
     void setMaxObjectSize(const uint32_t &size);

@@ -9,10 +9,6 @@ MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()
     m_subParserName = "MIME_Sub_FirstBoundary";
 }
 
-bool MIME_Sub_FirstBoundary::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
-{
-    return true;
-}
 
 std::string MIME_Sub_FirstBoundary::getBoundary() const
 {
