@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Mantids30/Helpers/safeint.h"
 #include <limits>
 #include <memory>
+#include <optional>
+#include <stdexcept>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string>
@@ -13,39 +16,90 @@ struct WriteStatus {
     WriteStatus()
     {
         bytesWritten = 0;
-        succeed = true;
-        finish = false;
     }
 
-    WriteStatus(const uint64_t & x)
+    // ssize because we consider the write() output with errors.
+    WriteStatus(const ssize_t & x)
     {
-        bytesWritten = x;
-        succeed = true;
-        finish = false;
+        bytesWritten = 0;
+        *this+=x;
     }
 
-    WriteStatus & operator=(const uint64_t & x)
+    WriteStatus & operator=(const size_t & x)
     {
         bytesWritten = x;
         return *this;
     }
 
-    WriteStatus & operator+=(const uint64_t & x)
+
+    WriteStatus & operator-(const WriteStatus & x)
     {
-        bytesWritten += x;
+        if ( x.bytesWritten > bytesWritten )
+        {
+            // you should not be writting anymore here.
+            throw std::runtime_error("Invalid WriteStatus Substract Operation.");
+        }
+
+        bytesWritten-=x.bytesWritten;
+
+        succeed = x.succeed;
+        finish = x.finish;
+        writeError = x.writeError;
+
+        return *this;
+    }
+
+    WriteStatus & operator+=(const ssize_t & x)
+    {
+        if (succeed == false || finish == true)
+        {
+            // you should not be writting anymore here.
+            throw std::runtime_error("Trying to write into an already finished write object.");
+        }
+
+        if (x>0)
+        {
+            bytesWritten = safeAdd(bytesWritten,(size_t)x);
+        }
+        else if (x == 0)
+        {
+            succeed = true;
+            finish = true;
+        }
+        else
+        {
+            succeed = false;
+            finish = false;
+            writeError = x;
+        }
         return *this;
     }
 
     WriteStatus & operator+=(const WriteStatus & x)
     {
-        bytesWritten += x.bytesWritten;
-        if (!x.succeed) succeed = false;
-        if (x.finish) finish = x.finish;
+        bytesWritten = safeAdd(bytesWritten, x.bytesWritten);
+
+        if (!x.succeed)
+            succeed = false;
+
+        if (x.finish)
+            finish = true;
+
         return *this;
     }
 
-    bool succeed, finish;
-    uint64_t bytesWritten;
+    void reset()
+    {
+        succeed = true;
+        finish = false;
+        bytesWritten = 0;
+        writeError = 0;
+    }
+
+    bool succeed = true;
+    bool finish = false;
+    size_t bytesWritten = 0;
+    ssize_t writeError = 0;
 };
 
 /**
@@ -58,41 +112,56 @@ public:
     StreamableObject() = default;
     virtual ~StreamableObject() = default;
 
-    // TODO: what if the protocol reached std::numeric_limits<uint64_t>::max() ? enforce 64bit max. (on streamTo)
+    // TODO: what if the protocol reached std::numeric_limits<size_t>::max() ? enforce 64bit max. (on streamTo)
     // TODO: report percentage completed
 
-    virtual std::string getPeerName() const { return  ""; }
-
+    virtual std::string getPeerName() const
+    {
+        return  "";
+    }
     virtual std::string toString();
     /**
      * @brief writeEOF proccess the end of the stream (should be implemented on streamTo)
      */
-    virtual void writeEOF(bool);
+    size_t writeEOF();
+
     /**
      * @brief size return the size of the sub-container if it's fixed size.
      * @return std::numeric_limits<uint64_t>::max() if the stream is not fixed size
      */
-    virtual uint64_t size() const { return std::numeric_limits<uint64_t>::max(); }
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, WriteStatus & wrStatUpd)=0;
-    virtual WriteStatus write(const void * buf, const size_t &count, WriteStatus & wrStatUpd)=0;
+    virtual size_t size()
+    {
+        return std::numeric_limits<size_t>::max();
+    }
+    /**
+     * @brief streamTo Stream this container to another streamable object
+     * @param out
+     * @return optional size of bytes taken out of this container, std::nullopt if the source failed to provide the data.
+     */
+    virtual bool streamTo(Memory::Streams::StreamableObject * out)
+    {
+        writeEOF();
+        return true;
+    }
 
-    WriteStatus writeFullStream(const void *buf, const size_t &count, WriteStatus & wrStatUpd);
+    std::optional<size_t> writeFullStreamWithEOF(const void *buf, const size_t &count);
+    size_t writeFullStream(const void *buf, const size_t &count);
+
+    // Partial Write...
+    virtual size_t write(const void * buf, const size_t &count)=0;
     /**
      * @brief writeStream Write into stream using std::strings
      * @param buf data to be streamed.
      * @return true if succeed (all bytes written)
      */
-    WriteStatus writeString(const std::string & buf, WriteStatus & wrStatUpd);
-    WriteStatus writeString(const std::string & buf);
+    size_t writeString(const std::string & buf);
 
-    WriteStatus strPrintf(const char * format, ...);
-    WriteStatus strPrintf(WriteStatus & wrStatUpd, const char * format, ...);
+    size_t strPrintf(const char * format, ...);
 
-    uint16_t getFailedWriteState() const;
+    WriteStatus writeStatus;
+
 
 protected:
-    bool setFailedWriteState(const uint16_t &value = 1);
-    uint16_t m_failedWriteState = 0;
 
 #ifdef _WIN32
 private:

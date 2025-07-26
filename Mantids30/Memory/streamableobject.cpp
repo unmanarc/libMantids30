@@ -1,5 +1,7 @@
 #include "streamableobject.h"
+#include "Mantids30/Helpers/safeint.h"
 #include "streamablestring.h"
+#include <optional>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -14,36 +16,68 @@ using namespace Mantids30::Memory::Streams;
 std::string StreamableObject::toString()
 {
     StreamableString s;
-    WriteStatus x;
-    this->streamTo(&s, x);
+    this->streamTo(&s);
     return s.getValue();
 }
 
-WriteStatus StreamableObject::writeFullStream(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
+size_t StreamableObject::writeEOF()
 {
-    WriteStatus cur;
-    while (cur.bytesWritten<count)
+    // Writting 0 (ZERO) to the socket will trigger the EOF.
+    return write(nullptr, 0);
+}
+
+std::optional<size_t> StreamableObject::writeFullStreamWithEOF(
+    const void *buf, const size_t &count)
+{
+    size_t x = writeFullStream(buf,count);
+    if (!writeStatus.succeed)
     {
-        if (!(cur += write(static_cast<const char *>(buf)+cur.bytesWritten,count-cur.bytesWritten, wrStatUpd)).succeed || cur.finish)
-            return cur;
+        return std::nullopt;
     }
-    return cur;
+
+    // Here everything is written OK.
+    size_t y = writeEOF();
+
+    // Failed to EOF.
+    if (!writeStatus.succeed)
+    {
+        return std::nullopt;
+    }
+
+    return safeAdd(x,y);
 }
 
-WriteStatus StreamableObject::writeString(const std::string &buf, WriteStatus &wrStatUpd)
+size_t StreamableObject::writeFullStream(
+    const void *buf, const size_t &count)
 {
-    return writeFullStream(buf.c_str(), buf.size(), wrStatUpd);
+    size_t writtenBytes = 0;
+
+    while (writtenBytes<count)
+    {
+        ssize_t cur = write(static_cast<const char *>(buf)+writtenBytes,count-writtenBytes);
+
+        if (cur>0)
+            writtenBytes+=cur;
+
+        // Failed Somewhere...
+        if (!writeStatus.succeed)
+        {
+            return writtenBytes;
+        }
+    }
+
+    return writtenBytes;
 }
 
-WriteStatus StreamableObject::writeString(const std::string &buf)
+size_t StreamableObject::writeString(
+    const std::string &buf)
 {
-    WriteStatus cur;
-    return writeString(buf,cur);
+    return writeFullStream(buf.c_str(), buf.size());
 }
 
-WriteStatus StreamableObject::strPrintf(const char *format, ...)
+size_t StreamableObject::strPrintf( const char *format, ...)
 {
-    WriteStatus cur;
+    size_t writtenBytes = 0;
     char * var = nullptr;
     int retval;
 
@@ -55,57 +89,31 @@ WriteStatus StreamableObject::strPrintf(const char *format, ...)
     va_end( argv );
 
     if (retval!=-1)
-        cur = writeString(var, cur);
-    else
-        cur.succeed=false;
-
-    if (var) free(var);
-
-    //////
-
-    return cur;
-}
-
-WriteStatus StreamableObject::strPrintf(WriteStatus &wrStatUpd, const char *format,...)
-{
-    WriteStatus cur;
-    char * var = nullptr;
-    int retval;
-
-    //////
-
-    va_list argv;
-    va_start( argv, format );
-    retval = vasprintf( &var, format, argv );
-    va_end( argv );
-
-    if (retval!=-1)
     {
-        cur = writeString(var, cur);
-        wrStatUpd+=cur;
+        writtenBytes = writeString(var);
     }
     else
     {
-        wrStatUpd.succeed = cur.succeed = false;
+        writtenBytes = 0;
+        // Set error writting...
+        writeStatus+=-1;
     }
 
-    if (var) free(var);
+    if (var)
+        free(var);
 
     //////
 
-    return cur;
+    return writtenBytes;
 }
 
-void StreamableObject::writeEOF(bool )
-{
 
-}
 /*
-uint64_t StreamableObject::size() const
+size_t StreamableObject::size()
 {
-  return std::numeric_limits<uint64_t>::max();
+  return std::numeric_limits<size_t>::max();
 }*/
-
+/*
 uint16_t StreamableObject::getFailedWriteState() const
 {
     return m_failedWriteState;
@@ -116,7 +124,7 @@ bool StreamableObject::setFailedWriteState(const uint16_t &value)
     m_failedWriteState = value;
     return value==0;
 }
-
+*/
 #ifdef _WIN32
 int StreamableObject::vasprintf(char **strp, const char *fmt, va_list ap)
 {
