@@ -245,12 +245,10 @@ void ClientHandler::deliverSessionMaxAgeViaCookie(const uint64_t & maxAge)
 void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t & maxAge)
 {
     // Set the access token cookie:
-    serverResponse.setSecureCookie("AccessToken", token, maxAge);
+    serverResponse.setSecureCookie("AccessToken", token, maxAge, "/");
     auto accessToken = serverResponse.cookies.getCookieByName("AccessToken");
     if (accessToken)
     {
-        accessToken->path = "/";
-
         // If session is active/received, always deliver the session maxAge, so the JS can retokenize if expired.
         deliverSessionMaxAgeViaCookie(maxAge);
 
@@ -262,8 +260,7 @@ void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, co
 // Helper: Set impersonator token if allowed
 void ClientHandler::setImpersonatorToken(const uint64_t &maxAge)
 {
-    serverResponse.setSecureCookie("ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge);
-    serverResponse.cookies.getCookieByName("ImpersonatorToken")->path = "/";
+    serverResponse.setSecureCookie("ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge, "/");
 }
 
 // Helper: Get redirect URL from request or default
@@ -276,7 +273,7 @@ std::string ClientHandler::getRedirectURL()
     }
     return redirectURL;
 }
-
+/*
 HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
@@ -311,7 +308,7 @@ HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
 
     if (!isTokenValid)
     {
-        log(Program::Logs::LEVEL_SECURITY_ALERT, "restAPI", 2048, "Invalid JWT token");
+        log(Program::Logs::LEVEL_SECURITY_ALERT, "restAPI", 2048, "Invalid JWT Token From the Auth Origin");
         return redirectUsingJS(config->redirectLocationOnLoginFailed);
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
@@ -366,6 +363,8 @@ HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
     string redirectURL = getRedirectURL();
     return redirectUsingJS(redirectURL);
 }
+*/
+
 
 /*
     if (config->takeRedirectLocationOnLoginSuccessFromURL)
@@ -410,8 +409,13 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
 
 HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
+    // In the future we may want to implement this to handle authorizations from any other IAM's
+    // Not implemented for REST.
+    // In this case, you should use a proxy to a WebSessionAuthHandler
+    return HTTP::Status::S_501_NOT_IMPLEMENTED;
+
     // Login callback:
-    if (authFunctionName == "callback") // /api/auth/callback
+  /*  if (authFunctionName == "callback") // /api/auth/callback
     {
         // Login (Pass the JWT)...
         return handleAPIAuthCallbackFunction();
@@ -430,7 +434,7 @@ HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl,
     {
         log(LEVEL_WARN,"restAPI", 65535, "A/404: Authentication Function Not Found.");
         return HTTP::Status::S_404_NOT_FOUND;
-    }
+    }*/
 }
 
 
@@ -460,7 +464,7 @@ void ClientHandler::sessionLogout()
                 if (isTokenValid)
                 {
                     // Just swap the ImpersonatorToken to AuthToken
-                    serverResponse.addCookieClearSecure("ImpersonatorToken");
+                    serverResponse.addCookieClearSecure("ImpersonatorToken", "/");
                     serverResponse.setSecureCookie( "AccessToken", cookieImpersonatorToken,
                                                      impersonatorJWTToken.getExpirationTime()>time(nullptr)? impersonatorJWTToken.getExpirationTime()-time(nullptr) : 0 );
                     // deliver the information about the new token...
@@ -480,7 +484,7 @@ void ClientHandler::sessionLogout()
             else
             {
                 // Clear the AUTH token:
-                serverResponse.addCookieClearSecure("AccessToken");
+                serverResponse.addCookieClearSecure("AccessToken","/");
 
                 // deliver ok and no further token.
                 json r;

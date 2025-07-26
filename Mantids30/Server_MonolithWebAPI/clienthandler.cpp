@@ -120,7 +120,7 @@ void ClientHandler::sessionCleanup()
         // Set this cookie to report only to the javascript the remaining session time.
         setJSSessionTimeOutCookie(m_sessionMaxAge);
         setJSSessionHalfIDCookie(m_sessionID);
-        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge);
+        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge, "/");
         m_sessionsManager->releaseSession(m_sessionID);
     }
 
@@ -398,6 +398,7 @@ void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
     simpleJSSecureCookie.setExpirationFromNow(maxAge);
     simpleJSSecureCookie.maxAge = maxAge;
     simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+    simpleJSSecureCookie.path = "/";
     serverResponse.setCookie("jsSessionTimeout", simpleJSSecureCookie);
 }
 
@@ -414,6 +415,7 @@ void ClientHandler::setJSSessionHalfIDCookie( const string & sessionID )
         simpleJSSecureCookie.maxAge = (m_sessionMaxAge);
         simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
         simpleJSSecureCookie.value = RPCLog::truncateSessionId(sessionID);
+        simpleJSSecureCookie.path = "/"; // all the site.
         serverResponse.setCookie("jsSessionHalfID", simpleJSSecureCookie);
     }
 }
@@ -444,9 +446,9 @@ void ClientHandler::sessionLogout()
         if (!isImpersonation)
         {
             // Not impersonation, normal logout
-            serverResponse.addCookieClearSecure("jsSessionTimeout");
-            serverResponse.addCookieClearSecure("jsSessionHalfID");
-            serverResponse.addCookieClearSecure(CURRENT_SESSIONID_COOKIENAME);
+            serverResponse.addCookieClearSecure("jsSessionTimeout", "/");
+            serverResponse.addCookieClearSecure("jsSessionHalfID", "/");
+            serverResponse.addCookieClearSecure(CURRENT_SESSIONID_COOKIENAME, "/");
             log(LEVEL_INFO, "monolithAPI", 2048, "Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
         }
         else
@@ -455,9 +457,9 @@ void ClientHandler::sessionLogout()
             setJSSessionTimeOutCookie(parentSessionMaxAge);
             setJSSessionHalfIDCookie(m_impersonatorSessionID);
             // Remove the impersonation cookie:
-            serverResponse.addCookieClearSecure(IMPERSONATOR_SESSIONID_COOKIENAME);
+            serverResponse.addCookieClearSecure(IMPERSONATOR_SESSIONID_COOKIENAME,"/");
             // Fall back to the impersonator cookie.
-            serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_impersonatorSessionID, m_sessionMaxAge);
+            serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_impersonatorSessionID, m_sessionMaxAge,"/");
             log(LEVEL_INFO, "monolithAPI", 2048, "Impersonation Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
         }
     }
@@ -579,10 +581,10 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         // Same site is enforced as strict, so CSRF should not be available, not accesible via JS
         // However the cookie will be sent when an application lives in the same server...
         // but the application will not be able to know the sessionId to be sent on the header.
-        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge);
+        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge,"/");
         if (isImpersonation)
         {
-            serverResponse.setSecureCookie(IMPERSONATOR_SESSIONID_COOKIENAME, impersonatorSessionID, m_sessionMaxAge);
+            serverResponse.setSecureCookie(IMPERSONATOR_SESSIONID_COOKIENAME, impersonatorSessionID, m_sessionMaxAge, "/");
         }
 
         // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
