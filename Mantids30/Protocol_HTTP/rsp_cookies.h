@@ -27,6 +27,11 @@ public:
      * @brief addClearCookie Add cookie with empty values (to clear the previous cookie)
      * @param cookieName cookie Name
      */
+    void addClearSecureCookie(const std::string & cookieName, const std::string & path);
+    /**
+     * @brief addClearCookie Add cookie with empty values (to clear the previous cookie)
+     * @param cookieName cookie Name
+     */
     void addClearSecureCookie(const std::string & cookieName);
 
 private:
