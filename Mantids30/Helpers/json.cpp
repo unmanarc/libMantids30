@@ -77,6 +77,31 @@ std::set<std::string> Mantids30::Helpers::jsonToStringSet(const json &value, con
     return r;
 }
 
+std::set<uint32_t> Mantids30::Helpers::jsonToUInt32Set(const json &value, const std::string &sub)
+{
+    std::set<uint32_t> r;
+
+    if (sub.empty() && value.isArray())
+    {
+        for (size_t x = 0; x < value.size(); x++)
+        {
+            if (value[static_cast<int>(x)].isUInt())
+                r.insert(value[static_cast<int>(x)].asUInt());
+        }
+    }
+    else if (!sub.empty() && JSON_ISARRAY(value,sub))
+    {
+        for (size_t x = 0; x < value[sub].size(); x++)
+        {
+            if (value[sub][static_cast<int>(x)].isUInt())
+                r.insert(value[sub][static_cast<int>(x)].asUInt());
+        }
+    }
+
+    return r;
+}
+
+
 json Mantids30::Helpers::setToJSON(const std::set<std::string> &t)
 {
     json x;
@@ -103,3 +128,4 @@ json Mantids30::Helpers::listToJSON(const std::list<std::string> &t)
         x[v++] = i;
     return x;
 }
+

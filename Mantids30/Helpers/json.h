@@ -98,16 +98,16 @@ typedef Json::Value json;
 namespace Mantids30 {
 namespace Helpers {
 
-/**
+    /**
      * Converts a JSON value to a string.
      *
      * @param value The JSON value to convert.
      *
      * @return The JSON value as a string.
      */
-std::string jsonToString(const json &value);
+    std::string jsonToString(const json &value);
 
-/**
+    /**
      * Converts a JSON array to a list of strings.
      *
      * @param value The JSON array to convert.
@@ -115,9 +115,9 @@ std::string jsonToString(const json &value);
      *
      * @return A list of strings containing the elements of the JSON array.
      */
-std::list<std::string> jsonToStringList(const json &value, const std::string &sub = "");
+    std::list<std::string> jsonToStringList(const json &value, const std::string &sub = "");
 
-/**
+    /**
      * Converts a JSON array to a set of strings.
      *
      * @param value The JSON array to convert.
@@ -125,71 +125,92 @@ std::list<std::string> jsonToStringList(const json &value, const std::string &su
      *
      * @return A list of strings containing the elements of the JSON array.
      */
-std::set<std::string> jsonToStringSet(const json &value, const std::string &sub = "");
+    std::set<std::string> jsonToStringSet(const json &value, const std::string &sub = "");
+    /**
+     * Converts a JSON array to a set of uint32_t values.
+     *
+     * @param value The JSON array to convert.
+     * @param sub The name of the sub-element to extract from each array element (optional).
+     *
+     * @return A set of uint32_t containing the elements of the JSON array.
+     */
+    std::set<uint32_t> jsonToUInt32Set(const json &value, const std::string &sub = "");
 
-/**
+    /**
      * Converts a set of strings to a JSON array.
      *
      * @param t The set of strings to convert.
      *
      * @return A JSON array containing the elements of the input set.
      */
-json setToJSON(const std::set<std::string> &t);
+    json setToJSON(const std::set<std::string> &t);
 
-/**
+    /**
      * Converts a list of strings to a JSON array.
      *
      * @param t The list of strings to convert.
      *
      * @return A JSON array containing the elements of the input list.
      */
-json listToJSON(const std::list<std::string> &t);
+    json listToJSON(const std::list<std::string> &t);
 
-/**
+    /**
      * Converts a set of unsigned 32-bit integers to a JSON array.
      *
      * @param t The set of uint32_t values to convert.
      *
      * @return A JSON array containing the elements of the input set.
      */
-json setToJSON(const std::set<uint32_t> &t);
+    json setToJSON(const std::set<uint32_t> &t);
 
-json setToJSON(const std::set<std::string> &t);
+    /**
+     * Converts a set of strings to a JSON array.
+     *
+     * This function takes a set of strings and converts it into a JSON array, where each
+     * string in the set becomes an element in the resulting JSON array. The order of elements
+     * in the JSON array is determined by the iteration order of the set.
+     *
+     * @param t The set of strings to convert.
+     *
+     * @return A JSON array containing the elements of the input set.
+     */
+    json setToJSON(const std::set<std::string> &t);
 
-/**
+    /**
      * A replacement for the deprecated Json::Reader class.
      *
      * Note: This class is named JSONReader2 to avoid conflicts with the existing JSONReader class in json.h.
      */
-class JSONReader2
-{
-public:
-    /**
-         * Constructs a new JSON reader.
-         */
-    JSONReader2();
 
-    /**
-         * Parses a JSON document into a JSON value.
-         *
-         * @param document The JSON document to parse.
-         * @param root A reference to a Json::Value object that will contain the parsed JSON value.
-         *
-         * @return True if the document was parsed successfully, false otherwise.
-         */
-    bool parse(const std::string &document, json &root);
+    class JSONReader2
+    {
+    public:
+        /**
+             * Constructs a new JSON reader.
+             */
+        JSONReader2();
 
-    /**
-         * Gets the error messages generated during the last parsing operation.
-         *
-         * @return A string containing the error messages.
-         */
-    std::string getFormattedErrorMessages();
+        /**
+             * Parses a JSON document into a JSON value.
+             *
+             * @param document The JSON document to parse.
+             * @param root A reference to a Json::Value object that will contain the parsed JSON value.
+             *
+             * @return True if the document was parsed successfully, false otherwise.
+             */
+        bool parse(const std::string &document, json &root);
 
-private:
-    std::shared_ptr<Json::CharReader> m_reader;
-    std::string m_errors;
-};
+        /**
+             * Gets the error messages generated during the last parsing operation.
+             *
+             * @return A string containing the error messages.
+             */
+        std::string getFormattedErrorMessages();
+
+    private:
+        std::shared_ptr<Json::CharReader> m_reader;
+        std::string m_errors;
+    };
 
 } // namespace Helpers
 } // namespace Mantids30
