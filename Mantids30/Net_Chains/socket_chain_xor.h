@@ -15,8 +15,8 @@ public:
     Socket_Chain_XOR();
 
     // Overwritten functions:
-    ssize_t partialRead(void * data, const uint32_t & datalen);
-    ssize_t partialWrite(const void * data, const uint32_t & datalen);
+    ssize_t partialRead(void * data, const size_t & datalen);
+    ssize_t partialWrite(const void * data, const size_t & datalen);
 
     // Private functions:
     char getXorByte() const;
@@ -26,7 +26,7 @@ protected:
     void * getThis() { return this; }
 
 private:
-    char * getXorCopy(const void *data, const uint32_t & datalen);
+    char * getXorCopy(const void *data, const size_t & datalen);
     char m_xorByte;
 };
 

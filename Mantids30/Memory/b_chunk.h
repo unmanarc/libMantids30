@@ -25,7 +25,8 @@ struct BinaryContainerChunk {
      */
     void destroy()
     {
-        if (data) delete [] data;
+        if (data)
+            delete [] data;
         data = nullptr;
         size = 0;
     }
@@ -36,8 +37,10 @@ struct BinaryContainerChunk {
      */
     void displace(size_t displLen)
     {
-        if (!data) return;
-        if (!displLen) return;
+        if (!data)
+            return;
+        if (!displLen) 
+            return;
         if (displLen>=size)
         {
             destroy();
@@ -54,10 +57,12 @@ struct BinaryContainerChunk {
         //** Remember to rearrange next offsets...
     }
 
-    void truncate(uint64_t nSize)
+    void truncate(size_t nSize)
     {
-        if (nSize>=(offset+size)) return;
-        if (!nSize || nSize == offset) return;
+        if (nSize>=(offset+size)) 
+            return;
+        if (!nSize || nSize == offset) 
+            return;
 
         // Current new chunk size.
         nSize-=offset;
@@ -81,7 +86,8 @@ struct BinaryContainerChunk {
     {
         destroy();
         data = new char[count];
-        if (!data) return false;
+        if (!data)
+            return false;
         size = count;
         memcpy(data,buf,count);
         return true;
@@ -91,7 +97,7 @@ struct BinaryContainerChunk {
      * @brief Offset of the next/following chunk.
      * @return Current Offset + Size of this container (absolute offset in bytes of the next chunk)
      */
-    uint64_t nextOffset()
+    size_t nextOffset()
     {
         return size+offset;
     }
@@ -101,7 +107,7 @@ struct BinaryContainerChunk {
      * @param l_offset requested absolute offset in bytes.
      * @return true if the requested offset is on this chunk
      */
-    bool containsOffset(const uint64_t &l_offset)
+    bool containsOffset(const size_t &l_offset)
     {
         return (l_offset>=offset && l_offset<nextOffset());
     }
@@ -111,7 +117,7 @@ struct BinaryContainerChunk {
      * COPY THE CHUNK REFERENCE FIRST. DON'T USE DIRECTLY ON "chunksVector"
      * @param l_offset offset to be displaced in bytes
      */
-    void moveToOffset(uint64_t l_offset)
+    void moveToOffset(size_t l_offset)
     {
         l_offset -= offset;
         offset = 0;
@@ -124,7 +130,7 @@ struct BinaryContainerChunk {
 
     char * data;
     size_t size;
-    uint64_t offset;
+    size_t offset;
 };
 }}}
 

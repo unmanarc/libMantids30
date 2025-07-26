@@ -37,8 +37,8 @@ public:
 
     //////////////////////////////////////////
     // Overwritten functions:
-    ssize_t partialRead(void * data, const uint32_t & datalen) override;
-    ssize_t partialWrite(const void * data, const uint32_t & datalen) override;
+    ssize_t partialRead(void * data, const size_t & datalen) override;
+    ssize_t partialWrite(const void * data, const size_t & datalen) override;
 
     bool postAcceptSubInitialization() override;
     bool postConnectSubInitialization() override;
@@ -96,7 +96,8 @@ private:
         bool appendAESBlock(char * nAesBlock, size_t nAesBlock_size)
         {
             char * nBlock = new char[nAesBlock_size+aesBlock_curSize];
-            if (!nBlock) return false;
+            if (!nBlock) 
+                return false;
             if (aesBlock_curSize) memcpy(nBlock,aesBlock,aesBlock_curSize);
             memcpy(nBlock+aesBlock_curSize,nAesBlock,nAesBlock_size);
             cleanAESBlock(nBlock,nAesBlock_size+aesBlock_curSize);
@@ -111,7 +112,8 @@ private:
             else
             {
                 char * nBlock = new char[aesBlock_curSize-bytes];
-                if (!nBlock) return;
+                if (!nBlock) 
+                    return;
                 if (aesBlock_curSize)
                     memcpy(nBlock,aesBlock+bytes,aesBlock_curSize-bytes);
                 cleanAESBlock(nBlock,aesBlock_curSize-bytes);
@@ -119,7 +121,8 @@ private:
         }
         bool cryptoXOR( char * dataBlock, size_t dblocksize, bool dontreduce = false)
         {
-            if (dblocksize>aesBlock_curSize) return false;
+            if (dblocksize>aesBlock_curSize) 
+                return false;
             for (size_t i=0;i<dblocksize;i++)
             {
                 dataBlock[i] = dataBlock[i]^aesBlock[i];

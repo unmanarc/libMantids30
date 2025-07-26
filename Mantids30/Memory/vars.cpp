@@ -121,12 +121,12 @@ void Vars::setMaxVarNameSize(const uint32_t &value)
     iSetMaxVarNameSize();
 }
 
-uint64_t Vars::getMaxVarContentSize() const
+size_t Vars::getMaxVarContentSize() const
 {
     return m_maxVarContentSize;
 }
 
-void Vars::setMaxVarContentSize(const uint64_t &value)
+void Vars::setMaxVarContentSize(const size_t &value)
 {
     m_maxVarContentSize = value;
     iSetMaxVarContentSize();

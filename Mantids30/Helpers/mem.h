@@ -53,14 +53,14 @@ public:
          * @param data A pointer to the binary data.
          * @param len The length of the binary data in bytes.
          */
-        BinaryDataContainer(const char* data, const uint64_t& len);
+        BinaryDataContainer(const char* data, const size_t& len);
 
         /**
          * Constructs a new empty BinaryDataContainer with a specified capacity.
          *
          * @param len The capacity of the container in bytes.
          */
-        BinaryDataContainer(const uint64_t& len);
+        BinaryDataContainer(const size_t& len);
 
         /**
          * Destroys the BinaryDataContainer and frees the memory used by its data.
@@ -93,19 +93,19 @@ public:
         /**
          * The length of the binary data in bytes.
          */
-        uint64_t length;
+        size_t length;
 
         /**
          * The current position in the binary data.
          */
-        uint64_t cur;
+        size_t cur;
     };
 
     static bool icharcmp(unsigned char c1,unsigned  char c2);
-    static int memcmp64(const void *s1, const void *s2, uint64_t n);
-    static int memicmp2(const void *s1, const void *s2, const uint64_t &n, const bool & caseSensitive);
-    static void *memcpy64(void *dest, const void *src, uint64_t n);
-    static void *memmove64(void *dest, const void *src, uint64_t n);
+    static int memcmp64(const void *s1, const void *s2, size_t n);
+    static int memicmp2(const void *s1, const void *s2, const size_t &n, const bool & caseSensitive);
+    static void *memcpy64(void *dest, const void *src, size_t n);
+    static void *memmove64(void *dest, const void *src, size_t n);
 
 
 private:

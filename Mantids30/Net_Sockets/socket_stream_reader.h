@@ -64,7 +64,8 @@ public:
         T len;
 
         // no data to be received:
-        if (*datalen == 0) return true;
+        if (*datalen == 0) 
+            return true;
 
         len = readU<T>(&readOK);
 
@@ -81,7 +82,7 @@ public:
             if (!len) // Nothing to get here.
                 return true;
 
-            uint64_t r;
+            size_t r;
             return (readFull(data, len, &r) && r==len);
         }
         return false;
@@ -132,7 +133,7 @@ public:
                 return odata;
             }
 
-            uint64_t r;
+            size_t r;
             bool ok = readFull(odata, expectedBytesCount,&r) && r==expectedBytesCount;
             if (!ok)
             {
@@ -194,7 +195,7 @@ public:
 
 
 protected:
-    virtual bool readFull(void * data, const uint64_t & datalen, uint64_t * bytesReceived = nullptr) = 0;
+    virtual bool readFull(void * data, const size_t & datalen, size_t * bytesReceived = nullptr) = 0;
     virtual void readDeSync()=0;
 
 private:

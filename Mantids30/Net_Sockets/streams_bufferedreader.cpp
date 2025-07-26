@@ -27,7 +27,8 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(void *
             return displaceAndCopy(data,len,(size_t)((char *)needle-(char *)m_buffer)+1);
 
         // Check if full, we can't add anymore
-        if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
+        if (m_maxBufferSize == m_currentBufferSize) 
+            return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
         ssize_t readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
@@ -50,7 +51,8 @@ BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(std::s
             return displaceAndCopy(str,(size_t)((char *)needle-(char *)m_buffer)+1);
 
         // Check if full, we can't add anymore
-        if (m_maxBufferSize == m_currentBufferSize) return E_STREAMBUFFER_READ_FULL;
+        if (m_maxBufferSize == m_currentBufferSize) 
+            return E_STREAMBUFFER_READ_FULL;
 
         // Refill from socket...
         ssize_t readSize = m_stream->partialRead((char *)m_buffer+m_currentBufferSize,m_maxBufferSize-m_currentBufferSize);
@@ -86,7 +88,8 @@ size_t BufferedReader::getBufferSize() const
 BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(void *data, size_t *len, size_t dlen)
 {
     // check output buffer availability...
-    if (dlen>*len) return E_STREAMBUFFER_READ_MAXSIZEEXCEED;
+    if (dlen>*len) 
+        return E_STREAMBUFFER_READ_MAXSIZEEXCEED;
     // Null terminate it.
     ((char *)m_buffer)[dlen-1]=0;
     // Copy to output

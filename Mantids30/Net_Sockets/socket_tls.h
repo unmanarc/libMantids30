@@ -499,7 +499,7 @@ public:
      * @param datalen data length in bytes
      * @return return the number of bytes read by the socket, zero for end of file and -1 for error.
      */
-    virtual ssize_t partialRead(void *data, const uint32_t &datalen) override;
+    virtual ssize_t partialRead(void *data, const size_t &datalen) override;
     /**
      * Write a data block to the TLS socket
      * note that this haves some limitations. some systems can only send 4k at time.
@@ -508,7 +508,7 @@ public:
      * @param datalen data length in bytes
      * @return return the number of bytes read by the socket, zero for end of file and -1 for error.
      */
-    virtual ssize_t partialWrite(const void *data, const uint32_t &datalen) override;
+    virtual ssize_t partialWrite(const void *data, const size_t &datalen) override;
 
     /////////////////////////
     // SSL functions:
@@ -601,8 +601,8 @@ protected:
 private:
 
 
-    ssize_t iPartialRead(void * data, const uint32_t & datalen, int ttl = 100);
-    ssize_t iPartialWrite(const void * data, const uint32_t & datalen, int ttl = 100);
+    ssize_t iPartialRead(void * data, const size_t & datalen, int ttl = 100);
+    ssize_t iPartialWrite(const void * data, const size_t & datalen, int ttl = 100);
 
     bool createTLSContext();
     void parseErrors();

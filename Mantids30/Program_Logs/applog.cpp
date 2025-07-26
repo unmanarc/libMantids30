@@ -30,7 +30,8 @@ void AppLog::printStandardLog( eLogLevels logSeverity,FILE *fp, string module, s
     if (true)
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
-        if (m_modulesOutputExclusion.find(module)!=m_modulesOutputExclusion.end()) return;
+        if (m_modulesOutputExclusion.find(module)!=m_modulesOutputExclusion.end()) 
+           return;
     }
 
     user = Helpers::Encoders::toURL(user,Helpers::Encoders::QUOTEPRINT_ENCODING);
@@ -141,7 +142,8 @@ void AppLog::log(const string &module, const string &user, const string &ip,eLog
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char * buffer = new char [outSize];
-    if (!buffer) return;
+    if (!buffer) 
+        return;
 
 
     // take arguments...

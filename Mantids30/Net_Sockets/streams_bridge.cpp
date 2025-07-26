@@ -146,7 +146,7 @@ bool Bridge::processPeer(Side currentSide)
 
     Side oppositeSide = currentSide==SIDE_FORWARD?SIDE_BACKWARD:SIDE_FORWARD;
 
-    std::atomic<uint64_t> * bytesCounter = currentSide==SIDE_FORWARD?&m_sentBytes:&m_recvBytes;
+    std::atomic<size_t> * bytesCounter = currentSide==SIDE_FORWARD?&m_sentBytes:&m_recvBytes;
 
     int dataRecv=1;
     while ( dataRecv > 0 )
@@ -210,12 +210,12 @@ void Bridge::setToCloseRemotePeer(bool value)
     m_closeRemotePeerOnFinish = value;
 }
 
-uint64_t Bridge::getSentBytes() const
+size_t Bridge::getSentBytes() const
 {
     return m_sentBytes;
 }
 
-uint64_t Bridge::getRecvBytes() const
+size_t Bridge::getRecvBytes() const
 {
     return m_recvBytes;
 }

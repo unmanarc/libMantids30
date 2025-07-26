@@ -42,7 +42,7 @@ void Socket_Chain_AES::setPhase1Key(const char *pass)
     SHA256_Final((unsigned char *)m_phase1Key, &sha256);
 }
 
-ssize_t Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_AES::partialRead(void *data, const size_t &datalen)
 {
     if (!m_initialized)
         return Socket_Stream::partialRead(data,datalen);
@@ -63,7 +63,7 @@ ssize_t Socket_Chain_AES::partialRead(void *data, const uint32_t &datalen)
     return r;
 }
 
-ssize_t Socket_Chain_AES::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Chain_AES::partialWrite(const void *data, const size_t &datalen)
 {
     if (!m_initialized)
         return Socket_Stream::partialWrite(data,datalen);

@@ -160,12 +160,12 @@ public:
      * @brief getMaxVarContentSize Get the maximum size for a variable content value
      * @return maximum size for a variable content value
      */
-    uint64_t getMaxVarContentSize() const;
+    size_t getMaxVarContentSize() const;
     /**
      * @brief setMaxVarContentSize Set the maximum size for a variable content value
      * @param value maximum size for a variable content value
      */
-    void setMaxVarContentSize(const uint64_t &value);
+    void setMaxVarContentSize(const size_t &value);
 
 
     virtual void clear() = 0;
@@ -177,7 +177,7 @@ protected:
 
     // Security options.
     uint32_t m_maxVarNameSize;
-    uint64_t m_maxVarContentSize;
+    size_t m_maxVarContentSize;
 };
 
 }}}

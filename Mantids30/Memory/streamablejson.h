@@ -8,11 +8,10 @@ namespace Mantids30 { namespace Memory { namespace Streams {
 class StreamableJSON : public Memory::Streams::StreamableObject
 {
 public:
-    StreamableJSON();
+    StreamableJSON() = default;
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrStatUpd) override;
-    Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Memory::Streams::WriteStatus & wrStatUpd)  override;
-    void writeEOF(bool) override;
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    size_t write(const void *buf, const size_t &count) override;
 
     void clear();
 
@@ -24,17 +23,19 @@ public:
 
     void setValue(const json & value);
 
-    void setMaxSize(const uint64_t &value);
+    void setMaxSize(const size_t &value);
 
     bool getFormatted() const;
     void setFormatted(bool value);
 
 private:
 
-    uint64_t m_maxSize;
+    size_t m_maxSize = std::numeric_limits<size_t>::max();
     std::string m_strValue;
     json m_root;
-    bool m_formatted;
+    bool m_formatted = true;
+    bool m_isFull = false;
+
 };
 
 }}}

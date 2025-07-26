@@ -46,7 +46,7 @@ public:
      * @param datalen data length in bytes of the datagram
      * @return true if the datagram was sucessfully released by our software.
      */
-    bool writeBlock(const void * data, const uint32_t & datalen) override;
+    bool writeBlock(const void * data, const size_t & datalen) override;
     /**
      * Read a datagram from the socket
      * Receive the data block of maximum 65507 bytes.
@@ -56,7 +56,7 @@ public:
      * @param datalen maximum data length in bytes (you should consider to use 65507+sizeof(int)+sizeof(sockaddr).
      * @return true if the data block was sucessfully received.
      */
-    bool readBlock(void *, const uint32_t &) override;
+    bool readBlock(void *, const size_t &) override;
 
     /**
      * Read a datagram from the socket

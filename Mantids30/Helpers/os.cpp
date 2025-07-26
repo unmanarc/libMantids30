@@ -127,7 +127,7 @@ LocalSysInfo OS::getLocalSystemInfo()
     x.threadCount = threadCount;
 
     // Get MemTotal:
-    uint64_t memTotal=0;
+    size_t memTotal=0;
     infile.open("/proc/meminfo");
     if (infile.is_open())
     {

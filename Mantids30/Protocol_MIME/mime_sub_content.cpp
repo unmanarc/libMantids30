@@ -28,32 +28,34 @@ MIME_Sub_Content::MIME_Sub_Content()
 }
 
 
-bool MIME_Sub_Content::streamToUpstream(Memory::Streams::WriteStatus &wrStat)
+bool MIME_Sub_Content::streamToUpstream()
 {
-    Memory::Streams::WriteStatus cur;
     // TODO: interpret content encoding...
-    if (!m_contentContainer->streamTo(m_upStream,wrStat)) return false;
-    if (!(cur+=m_contentContainer->writeString("\r\n--" + m_boundary, wrStat)).succeed) return false;
-    return true;
+    if (!m_contentContainer->streamTo(m_upStream))
+        return false;
+
+    m_upStream->writeString("\r\n--" + m_boundary);
+
+    return m_upStream->writeStatus.succeed;
 }
 
-uint64_t MIME_Sub_Content::getMaxContentSize() const
+size_t MIME_Sub_Content::getMaxContentSize() const
 {
     return m_maxContentSize;
 }
 
-void MIME_Sub_Content::setMaxContentSize(const uint64_t &value)
+void MIME_Sub_Content::setMaxContentSize(const size_t &value)
 {
     m_maxContentSize = value;
     setParseDataTargetSize(m_maxContentSize+m_boundary.size()+4);
 }
 
-uint64_t MIME_Sub_Content::getMaxContentSizeUntilGoingToFS() const
+size_t MIME_Sub_Content::getMaxContentSizeUntilGoingToFS() const
 {
     return m_maxContentSizeUntilGoingToFS;
 }
 
-void MIME_Sub_Content::setMaxContentSizeUntilGoingToFS(const uint64_t &value)
+void MIME_Sub_Content::setMaxContentSizeUntilGoingToFS(const size_t &value)
 {
     m_maxContentSizeUntilGoingToFS = value;
 }
@@ -105,6 +107,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentC
 
 void MIME_Sub_Content::replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value)
 {
-//    if (contentContainer) delete contentContainer;
+//    if (contentContainer) 
+//  delete contentContainer;
     m_contentContainer = value;
 }

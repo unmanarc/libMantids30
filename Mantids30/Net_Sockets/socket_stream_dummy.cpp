@@ -41,7 +41,7 @@ int Socket_Stream_Dummy::shutdownSocket(
     return 0;
 }
 
-ssize_t Socket_Stream_Dummy::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_Stream_Dummy::partialRead(void *data, const size_t &datalen)
 {
     auto storedDataSize = sender.size();
     if (!storedDataSize)
@@ -64,13 +64,13 @@ ssize_t Socket_Stream_Dummy::partialRead(void *data, const uint32_t &datalen)
     }
 }
 
-ssize_t Socket_Stream_Dummy::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket_Stream_Dummy::partialWrite(const void *data, const size_t &datalen)
 {
-    std::pair<bool, uint64_t> r = receiver.append(data, datalen);
-    if (!r.first)
+    std::optional<size_t> r = receiver.append(data, datalen);
+    if (!r)
         return -1;
     else
-        return r.second;
+        return *r;
 }
 
 void Socket_Stream_Dummy::setRemotePairOverride(

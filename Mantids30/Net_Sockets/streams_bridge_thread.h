@@ -40,7 +40,7 @@ public:
      * @param datalen data length to be written
      * @return true if success
      */
-    bool writeBlockL(const void *data, const uint32_t &datalen, bool fwd = true);
+    bool writeBlockL(const void *data, const size_t &datalen, bool fwd = true);
 
     void terminate();
 
@@ -48,7 +48,7 @@ protected:
     std::shared_ptr<Sockets::Socket_Stream>  src;
     char * block_fwd;
     uint16_t blockSize;
-   // ssize_t partialReadL(void *data, const uint32_t &datalen, bool fwd = true);
+   // ssize_t partialReadL(void *data, const size_t &datalen, bool fwd = true);
 
 private:
 

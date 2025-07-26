@@ -41,7 +41,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string encodeToBase64Obf(unsigned char const *buf, uint64_t count, const uint64_t &seed = 0xAA12017BEA385A7B);
+    static std::string encodeToBase64Obf(unsigned char const *buf, size_t count, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on a string.
@@ -104,7 +104,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    static std::string encodeToBase64(unsigned char const *buf, uint64_t count, bool url = false);
+    static std::string encodeToBase64(unsigned char const *buf, size_t count, bool url = false);
 
     /**
      * @brief Encodes a string for use in a URL.

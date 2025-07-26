@@ -28,7 +28,8 @@ public:
         }
         void free()
         {
-            if (data) delete [] data;
+            if (data) 
+                delete [] data;
         }
         void copy(void * _data, int dlen)
         {
@@ -54,8 +55,8 @@ public:
     virtual bool isConnected() = 0;
     virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10)  = 0;
     virtual bool connectFrom(const char * bindAddress,const char * remoteHost, const uint16_t & port, const uint32_t &timeout = 30) = 0;
-    virtual bool writeBlock(const void * data, const uint32_t &datalen) = 0;
-    virtual bool readBlock(void * data, const uint32_t & datalen) = 0;
+    virtual bool writeBlock(const void * data, const size_t &datalen) = 0;
+    virtual bool readBlock(void * data, const size_t & datalen) = 0;
 };
 
 typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;

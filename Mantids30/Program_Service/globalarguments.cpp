@@ -300,7 +300,7 @@ void GlobalArguments::printProgramHeader()
 {
     cout << "# " << softwareDescription << " (" <<  softwareName << ") v" << m_version << endl;
 
-    for ( const auto & i : m_authors )
+    for ( const Program::Values::Author & i : m_authors )
     {
         cout << "# " << "Author:  " << i.name << " (" << i.email << ")" << endl;
     }
@@ -454,18 +454,21 @@ string GlobalArguments::getLine(const uint32_t & size)
 // TODO: unicode?
 std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(int shortOption)
 {
-    if (!shortOption) return nullptr;
+    if (!shortOption) 
+        return nullptr;
     for ( auto & i : m_commandOptions )
     {
         for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
-            if (shortOption == v->shortOption) return v;
+            if (shortOption == v->shortOption) 
+        return v;
 
             if (shortOption>0 && shortOption<256)
             {
                 char x[2] = { 0, 0 };
                 x[0] = shortOption;
-                if (x == v->name) return v;
+                if (x == v->name) 
+        return v;
             }
         }
     }
@@ -478,8 +481,10 @@ std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(const std::
     {
         for ( std::shared_ptr<CommandLineOption> v : i.second )
         {
-            if (optName == v->name) return v;
-            if (optName.size() == 1 && v->shortOption>0 && v->shortOption<256 && optName.at(0) == v->shortOption) return v;
+            if (optName == v->name) 
+        return v;
+            if (optName.size() == 1 && v->shortOption>0 && v->shortOption<256 && optName.at(0) == v->shortOption) 
+        return v;
         }
     }
     return nullptr;

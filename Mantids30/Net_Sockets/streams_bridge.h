@@ -83,12 +83,12 @@ public:
      * @brief getSentBytes Get bytes transmitted from peer 0 to peer 1.
      * @return bytes transmitted.
      */
-    uint64_t getSentBytes() const;
+    size_t getSentBytes() const;
     /**
      * @brief getRecvBytes Get bytes  transmitted from peer 1 to peer 0.
      * @return bytes transmitted.
      */
-    uint64_t getRecvBytes() const;
+    size_t getRecvBytes() const;
     /**
      * @brief isAutoDeleteStreamPipeOnThreadExit Get if this class autodeletes when pipe is over.
      * @return true if autodelete is on.
@@ -147,7 +147,7 @@ private:
     std::shared_ptr<Sockets::Socket_Stream>  m_peers[2] = {nullptr, nullptr};
     TransmitionMode m_transmitionMode = TRANSMITION_MODE_STREAM;
 
-    std::atomic<uint64_t> m_sentBytes{0}, m_recvBytes{0};
+    std::atomic<size_t> m_sentBytes{0}, m_recvBytes{0};
     std::atomic<int> m_finishingPeer{-1};
     std::atomic<bool> m_shutdownRemotePeerOnFinish{false};
     std::atomic<bool> m_closeRemotePeerOnFinish{false};

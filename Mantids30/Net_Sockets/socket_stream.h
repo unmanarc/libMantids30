@@ -15,11 +15,9 @@ public:
     Socket_Stream() = default;
     virtual ~Socket_Stream() override = default;
 
-    virtual void writeEOF(bool) override;
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrsStat) override;
-
-    Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Memory::Streams::WriteStatus & wrStatUpd) override;
+    size_t write(const void * buf, const size_t &count) override;
 
     /**
      * @brief GetSocketPair Create a Pair of interconnected sockets
@@ -69,7 +67,7 @@ public:
      * @param datalen data length in bytes
      * @return true if the data block was sucessfully sent.
      */
-    virtual bool writeFull(const void * data, const uint64_t & datalen) override;
+    virtual bool writeFull(const void *data, const size_t &datalen) override;
     /**
      * @brief readBlock Read a data block from the socket
      *                  Receive the data block in 4k chunks (or less) until it ends or fail.
@@ -78,7 +76,7 @@ public:
      * @param receivedBytesCount if not null, this function returns the received byte count.
      * @return if it's disconnected (invalid sockfd) or it's not able to obtain at least 1 byte, then return false, otherwise true, you should check by yourself that expectedDataBytesCount == *receivedDataBytesCount
      */
-    virtual bool readFull(void * data, const uint64_t &expectedDataBytesCount, uint64_t * receivedDataBytesCount = nullptr) override;
+    virtual bool readFull(void * data, const size_t &expectedDataBytesCount, size_t * receivedDataBytesCount = nullptr) override;
 
 
 

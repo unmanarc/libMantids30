@@ -34,7 +34,7 @@ unsigned char Socket_Stream_Reader::readU8(bool* readOK)
     if (readOK)
         *readOK = true;
     // Receive 1 byte, if fails, readOK is setted as false.
-    uint64_t r;
+    size_t r;
     if ((!readFull(&rsp, 1, &r) || r!=1) && readOK)
         *readOK = false;
     return rsp[0];
@@ -46,7 +46,7 @@ uint16_t Socket_Stream_Reader::readU16(bool* readOK)
     if (readOK)
         *readOK = true;
     // Receive 2 bytes (unsigned short), if fails, readOK is setted as false.
-    uint64_t r;
+    size_t r;
     if ((!readFull(&ret, sizeof(uint16_t), &r) || r!=sizeof(uint16_t)) && readOK)
         *readOK = false;
     ret = ntohs(ret); // Reconvert into host based integer.
@@ -61,7 +61,7 @@ uint32_t Socket_Stream_Reader::readU32(bool* readOK)
         *readOK = true;
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
-    uint64_t r;
+    size_t r;
     if ((!readFull(&ret, sizeof(uint32_t), &r) || r!=sizeof(uint32_t)) && readOK)
         *readOK = false;
     ret = ntohl(ret); // Reconvert into host based integer.
@@ -75,7 +75,7 @@ uint64_t Socket_Stream_Reader::readU64(bool *readOK)
         *readOK = true;
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
-    uint64_t r;
+    size_t r;
     if ((!readFull(&ret, sizeof(uint64_t), &r) || r!=sizeof(uint64_t)) && readOK)
         *readOK = false;
 
@@ -91,7 +91,8 @@ int32_t Socket_Stream_Reader::read64KBlockDelim(char * block, const char *delim,
     for (unsigned int pos=1; pos<=65536; pos++)
     {
         block[pos-1]=readU8(&readOK);
-        if (!readOK) return -2; // FAILED WITH READ ERROR.
+        if (!readOK) 
+            return -2; // FAILED WITH READ ERROR.
 
         if ((blockNo==0 && pos>=delimBytes) || blockNo>0)
         {
@@ -106,7 +107,8 @@ int32_t Socket_Stream_Reader::read64KBlockDelim(char * block, const char *delim,
 char* Socket_Stream_Reader::readBlock32WAllocAndDelim(unsigned int* datalen,
         const char *delim, uint16_t delimBytes)
 {
-    if (*datalen<=65535) return nullptr; // It should at least have 65k of buffer.
+    if (*datalen<=65535) 
+        return nullptr; // It should at least have 65k of buffer.
 
     char * currentBlock = new char[65536];
     unsigned int currentBlockSize = 65536;

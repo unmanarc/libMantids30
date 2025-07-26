@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <optional>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -18,7 +19,7 @@ public:
 
     FileMap & operator=(FileMap & bc);
 
-    bool mmapDisplace(const uint64_t &offsetBytes);
+    bool mmapDisplace(const size_t &offsetBytes);
 
     // thanks to larsmans: http://stackoverflow.com/questions/4460507/appending-to-a-memory-mapped-file
     /**
@@ -27,7 +28,7 @@ public:
      * @param count bytes to be appended.
      * @return -1 if error, or bytes written (can be zero or different to nbytes).
      */
-    std::pair<bool, uint64_t> mmapAppend(void const *buf, const uint64_t &count);
+    std::optional<size_t> mmapAppend(void const *buf, const size_t &count);
 
     /**
      * @brief mmapPrepend Prepend data to the mmap memory.
@@ -35,19 +36,19 @@ public:
      * @param count bytes to be preapended.
      * @return -1 if error, or bytes written (can be zero or different to nbytes).
      */
-    std::pair<bool, uint64_t> mmapPrepend(void const *buf, const uint64_t &count);
+    std::optional<size_t> mmapPrepend(void const *buf, const size_t &count);
 
     /**
      * @brief closeFile Close currently openned file.
-     * @param respectRemoveOnDestroy if false, will not destroy the file at all.
+     * @param respectDeleteFileOnDestruction if false, will not destroy the file at all.
      * @return true if close suceeded
      */
-    bool closeFile(bool respectRemoveOnDestroy=true);
+    bool closeFile(bool respectDeleteFileOnDestruction=true);
 
 
     // Mmap/FILE MODE methods:
     // TODO: use mmap64... or plain seek mode...
-    bool mmapTruncate(const uint64_t &nSize);
+    bool mmapTruncate(const size_t &nSize);
 
     /**
      * @brief openFile Open file and Map to Memory
@@ -61,11 +62,11 @@ public:
 
     std::string getCurrentFileName() const;
 
-    uint64_t getFileOpenSize() const;
+    size_t getFileOpenSize() const;
 
     char *getMmapAddr() const;
 
-    void setRemoveOnDestroy(bool value);
+    void setDeleteFileOnDestruction(bool value);
 
 private:
 
@@ -78,9 +79,9 @@ private:
      */
     std::string currentFileName;
     /**
-     * @brief removeOnDestroy Remove the file when this class ends.
+     * @brief deleteFileOnDestruction Remove the file when this class ends.
      */
-    bool removeOnDestroy;
+    bool deleteFileOnDestruction;
     /**
      * @brief fd mmap file descriptor:
      */
@@ -92,7 +93,7 @@ private:
     /**
      * @brief containerBytesOriginalBytes original container size.
      */
-    uint64_t fileOpenSize;
+    size_t fileOpenSize;
 
     /**
      * @brief readOnly Use Read-Only Mode.

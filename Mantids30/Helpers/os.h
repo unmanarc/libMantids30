@@ -26,7 +26,7 @@ struct LocalSysInfo
     uint16_t threadCount;
 
     // The amount of memory available on the system (in bytes).
-    uint64_t memorySize;
+    size_t memorySize;
 
     // The hostname of the machine.
     std::string hostname;

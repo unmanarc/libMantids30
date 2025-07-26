@@ -12,10 +12,10 @@ public:
     MIME_Sub_Content();
     ~MIME_Sub_Content() = default;
 
-    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
+    bool streamToUpstream() override;
 
-    uint64_t getMaxContentSize() const;
-    void setMaxContentSize(const uint64_t &value);
+    size_t getMaxContentSize() const;
+    void setMaxContentSize(const size_t &value);
 
     std::string getFsTmpFolder() const;
     void setFsTmpFolder(const std::string &value);
@@ -27,8 +27,8 @@ public:
     void setBoundary(const std::string &value);
 
     // TODO: implement using filesystem.
-    uint64_t getMaxContentSizeUntilGoingToFS() const;
-    void setMaxContentSizeUntilGoingToFS(const uint64_t &value);
+    size_t getMaxContentSizeUntilGoingToFS() const;
+    void setMaxContentSizeUntilGoingToFS(const size_t &value);
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
@@ -36,8 +36,8 @@ private:
     std::shared_ptr<Memory::Streams::StreamableObject>  m_contentContainer;
 
     std::string m_fsTmpFolder, m_boundary;
-    uint64_t m_maxContentSize;
-    uint64_t m_maxContentSizeUntilGoingToFS;
+    size_t m_maxContentSize;
+    size_t m_maxContentSizeUntilGoingToFS;
 };
 
 }}}}
