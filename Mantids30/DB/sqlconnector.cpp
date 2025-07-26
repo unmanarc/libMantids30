@@ -55,7 +55,8 @@ std::string SQLConnector::getDBFilePath() const
 std::shared_ptr<Query> SQLConnector::createQuery(eQueryPTRErrors *error)
 {
     std::shared_ptr<Query> query = createQuery0();
-    if (!query) return nullptr;
+    if (!query) 
+        return nullptr;
 
     if (!attachQuery(query.get()))
     {
@@ -80,7 +81,7 @@ std::shared_ptr<Query> SQLConnector::createQuery(eQueryPTRErrors *error)
 std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::createQuerySharedPTR()
 {
     eQueryPTRErrors error;
-    auto q = std::make_shared<QueryInstance>(createQuery(&error));
+    std::shared_ptr<SQLConnector::QueryInstance> q = std::make_shared<QueryInstance>(createQuery(&error));
     q->error = error;
     return q;
 }

@@ -171,7 +171,8 @@ void LogBase::deactivateModuleOutput(const string &moduleName)
 
 string LogBase::getAlignedValue(const string &value, size_t sz)
 {
-    if (value.size()>=sz) return value;
+    if (value.size()>=sz) 
+        return value;
     else
     {
         char * tmpValue = new char[sz+2];

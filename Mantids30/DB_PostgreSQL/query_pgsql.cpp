@@ -38,12 +38,15 @@ Query_PostgreSQL::~Query_PostgreSQL()
 bool Query_PostgreSQL::step0()
 {
     //  :)
-    if (!m_results) return false;
-    if (m_execStatus != PGRES_TUPLES_OK) return false;
+    if (!m_results) 
+        return false;
+    if (m_execStatus != PGRES_TUPLES_OK) 
+        return false;
 
     int i = m_currentRow;
 
-    if (m_currentRow >= PQntuples(m_results)) return false;
+    if (m_currentRow >= PQntuples(m_results)) 
+        return false;
 
     int columnpos = 0;
     for ( const auto &outputVar : m_resultVars)

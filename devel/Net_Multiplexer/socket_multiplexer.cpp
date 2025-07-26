@@ -102,7 +102,8 @@ bool Socket_Multiplexer::processMultiplexedSocket()
 {
     bool readen;
     DataStructs::eMultiplexedSocketMessage msg = (DataStructs::eMultiplexedSocketMessage)multiplexedSocket->readU8(&readen);
-    if (!readen) return false;
+    if (!readen) 
+        return false;
 
     switch(msg)
     {
@@ -116,7 +117,8 @@ bool Socket_Multiplexer::processMultiplexedSocket()
         // all the connections in the remote side are closed now.
         // closing this side (if there is one)
         //closeAndWaitForEveryLine();
-        if (!multiplexedSocket_sendCloseACK2()) return false;
+        if (!multiplexedSocket_sendCloseACK2()) 
+            return false;
         //multiplexedSocket->shutdownSocket();
     } return false;
     case DataStructs::MPLX_MSG_CLOSE:

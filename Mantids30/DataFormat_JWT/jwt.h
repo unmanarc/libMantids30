@@ -294,7 +294,8 @@ public:
         }
         ~RAWSignature()
         {
-            if (m_digest) delete [] m_digest;
+            if (m_digest)
+                delete [] m_digest;
             m_digestSize = 0;
             m_digest = nullptr;
         }

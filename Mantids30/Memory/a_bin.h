@@ -18,23 +18,28 @@ public:
         }
         ~sBinContainer()
         {
-            if (ptr) delete [] ptr;
+            if (ptr)
+                delete [] ptr;
         }
         sBinContainer(const size_t & len)
         {
             ptr = nullptr;
-            if (len==0) return;
+            if (len==0) 
+                return;
             ptr = new char[len+1];
-            if (!ptr) return;
+            if (!ptr) 
+                return;
             memset(ptr,0,len+1);
             dataSize = len;
         }
         sBinContainer(char * value, const size_t & len)
         {
             ptr = nullptr;
-            if (len==0) return;
+            if (len==0) 
+                return;
             ptr = new char[len+1];
-            if (!ptr) return;
+            if (!ptr) 
+                return;
             ptr[len] = 0;
             dataSize = len;
             memcpy(ptr,value,len);

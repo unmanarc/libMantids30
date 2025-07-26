@@ -36,7 +36,8 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char * buffer = new char[outSize];
-    if (!buffer) return;
+    if (!buffer) 
+        return;
 
     // take arguments...
     vsnprintf(buffer, outSize, fmtLog, args);
@@ -65,7 +66,8 @@ void RPCLog::printStandardLog(eLogLevels logSeverity,FILE *fp, std::string ip, s
     if (true)
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
-        if (m_modulesOutputExclusion.find(module)!=m_modulesOutputExclusion.end()) return;
+        if (m_modulesOutputExclusion.find(module)!=m_modulesOutputExclusion.end()) 
+        return;
     }
 
     user = Helpers::Encoders::toURL(user,Helpers::Encoders::QUOTEPRINT_ENCODING);

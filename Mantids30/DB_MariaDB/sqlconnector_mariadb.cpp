@@ -21,7 +21,8 @@ SQLConnector_MariaDB::~SQLConnector_MariaDB()
 
 bool SQLConnector_MariaDB::isOpen()
 {
-    if (!m_databaseConnectionHandler) return false;
+    if (!m_databaseConnectionHandler) 
+        return false;
     std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT 1;", {},{} );
     if (i->getResultsOK())
         return i->query->step();

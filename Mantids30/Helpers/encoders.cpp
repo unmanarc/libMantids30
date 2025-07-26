@@ -70,14 +70,15 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t & see
     return decodedString;
 }
 
-string Encoders::encodeToBase64Obf(const unsigned char *buf, uint64_t count,  const uint64_t & seed)
+string Encoders::encodeToBase64Obf(const unsigned char *buf, size_t count,  const uint64_t & seed)
 {
     std::string r;
     std::mt19937_64 gen( seed );
     std::uniform_int_distribution<char> dis;
 
     unsigned char * obfBuf = static_cast<unsigned char *>(malloc(count));
-    if (!obfBuf) return "";
+    if (!obfBuf) 
+        return "";
 
     for ( size_t i=0; i<count; i++ )
         obfBuf[i] = buf[i]^dis(gen);
@@ -283,7 +284,7 @@ string Encoders::encodeToBase64(const string &buf, bool url)
     return encodeToBase64((unsigned char *)buf.c_str(),buf.size(),url);
 }
 
-string Encoders::encodeToBase64(const unsigned char *buf, uint64_t count, bool url)
+string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url)
 {
     std::string result;
 
@@ -339,7 +340,8 @@ string Encoders::encodeToBase64(const unsigned char *buf, uint64_t count, bool u
 
 string Encoders::toURL(const string &str, const URL_ENCODING_TYPE & urlEncodingType)
 {
-    if (!str.size()) return "";
+    if (!str.size()) 
+        return "";
 
     size_t x=0;
     string out;
@@ -364,7 +366,8 @@ string Encoders::toURL(const string &str, const URL_ENCODING_TYPE & urlEncodingT
 string Encoders::fromURL(const string &urlEncodedStr)
 {
     std::string r;
-    if (!urlEncodedStr.size()) return "";
+    if (!urlEncodedStr.size()) 
+        return "";
 
     for (size_t i=0; i<urlEncodedStr.size();i++)
     {
@@ -452,9 +455,12 @@ char Encoders::toHexFrom4bitChar(char nibble, char position)
 
 char Encoders::hexToValue(char v)
 {
-    if (v>='0' && v<='9') return v-'0';
-    if (v>='A' && v<='F') return v-'A'+10;
-    if (v>='a' && v<='f') return v-'a'+10;
+    if (v>='0' && v<='9') 
+        return v-'0';
+    if (v>='A' && v<='F') 
+        return v-'A'+10;
+    if (v>='a' && v<='f') 
+        return v-'a'+10;
     return 0;
 }
 
@@ -474,15 +480,20 @@ bool Encoders::getIfMustBeURLEncoded(char c,const URL_ENCODING_TYPE & urlEncodin
     if (urlEncodingType==QUOTEPRINT_ENCODING)
     {
         // All printable chars but "
-        if (  c=='\"' ) return true;
-        if (c >= 32 && c<= 126) return false;
+        if (  c=='\"' ) 
+           return true;
+        if (c >= 32 && c<= 126) 
+            return false;
     }
     else
     {
         // be strict: Only very safe chars...
-        if (c >= 'A' && c<= 'Z') return false;
-        if (c >= 'a' && c<= 'z') return false;
-        if (c >= '0' && c<= '9') return false;
+        if (c >= 'A' && c<= 'Z') 
+            return false;
+        if (c >= 'a' && c<= 'z') 
+            return false;
+        if (c >= '0' && c<= '9') 
+            return false;
     }
 
     return true;

@@ -167,7 +167,8 @@ int VirtualNetworkInterface::getInterfaceHandler()
 
 bool VirtualNetworkInterface::setPersistentMode(bool mode)
 {
-    if (m_fd<0) return false;
+    if (m_fd<0) 
+        return false;
     int iPersistent = mode?1:0;
     if (ioctl(m_fd, TUNSETPERSIST, iPersistent) < 0)
         return false;
@@ -176,7 +177,8 @@ bool VirtualNetworkInterface::setPersistentMode(bool mode)
 
 bool VirtualNetworkInterface::setOwner(const char *userName)
 {
-    if (m_fd<0) return false;
+    if (m_fd<0) 
+        return false;
     char pwd_buf[4096];
     struct passwd pwd, *p_pwd;
 
@@ -192,7 +194,8 @@ bool VirtualNetworkInterface::setOwner(const char *userName)
 
 bool VirtualNetworkInterface::setGroup(const char *groupName)
 {
-    if (m_fd<0) return false;
+    if (m_fd<0) 
+        return false;
     char grp_buf[4096];
     struct group grp, *p_grp;
 

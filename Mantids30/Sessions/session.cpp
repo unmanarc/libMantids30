@@ -31,7 +31,8 @@ bool Session::isLastActivityExpired(const uint32_t &expSeconds)
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
 
     time_t curTime = time(nullptr);
-    if (m_lastActivityTimestamp>curTime) return true; // Computer time has changed?
+    if (m_lastActivityTimestamp>curTime) 
+        return true; // Computer time has changed?
     return (uint32_t)(curTime-m_lastActivityTimestamp)>expSeconds;
 }
 

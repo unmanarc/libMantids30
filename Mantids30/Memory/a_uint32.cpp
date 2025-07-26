@@ -47,7 +47,8 @@ bool UINT32::fromString(const std::string &value)
     }
 
     this->m_value = static_cast<uint32_t>(strtoul( value.c_str(), nullptr, 10 ));
-    if (value!="0" && this->m_value==0) return false;
+    if (value!="0" && this->m_value==0) 
+        return false;
 
     return true;
 }

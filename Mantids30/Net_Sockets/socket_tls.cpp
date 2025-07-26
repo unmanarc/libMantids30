@@ -347,7 +347,8 @@ void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
 
 string Socket_TLS::getTLSConnectionCipherName()
 {
-    if (!m_sslHandler) return "";
+    if (!m_sslHandler) 
+        return "";
     return SSL_get_cipher_name(m_sslHandler);
 }
 
@@ -445,14 +446,16 @@ void Socket_TLS::setServerMode(bool value)
 Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
-    if (!m_sslHandler) return cb;
+    if (!m_sslHandler) 
+        return cb;
     cb.asymmetricBits = SSL_get_cipher_bits(m_sslHandler, &cb.symmetricBits);
     return cb;
 }
 
 string Socket_TLS::getTLSConnectionProtocolVersion()
 {
-    if (!m_sslHandler) return "";
+    if (!m_sslHandler) 
+        return "";
     return SSL_get_version(m_sslHandler);
 }
 
@@ -488,14 +491,14 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
     return acceptedTLSSock;
 }
 
-ssize_t Socket_TLS::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket_TLS::partialRead(void *data, const size_t &datalen)
 {
     std::unique_lock<std::mutex> lock(mutexRead);
 
     return iPartialRead(data,datalen);
 }
 
-ssize_t Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
+ssize_t Socket_TLS::partialWrite(const void * data, const size_t & datalen)
 {
     std::unique_lock<std::mutex> lock(mutexWrite);
 
@@ -503,7 +506,7 @@ ssize_t Socket_TLS::partialWrite(const void * data, const uint32_t & datalen)
 }
 
 ssize_t Socket_TLS::iPartialRead(
-    void *data, const uint32_t &datalen, int ttl)
+    void *data, const size_t &datalen, int ttl)
 {
 
     if (!m_sslHandler)
@@ -567,7 +570,7 @@ ssize_t Socket_TLS::iPartialRead(
 }
 
 ssize_t Socket_TLS::iPartialWrite(
-    const void *data, const uint32_t &datalen, int ttl)
+    const void *data, const size_t &datalen, int ttl)
 {
     if (!m_sslHandler)
     {
@@ -579,11 +582,12 @@ ssize_t Socket_TLS::iPartialWrite(
         return -1;
     }
 
-    int chunkSize = static_cast<int>(datalen);
     if ( datalen>static_cast<uint64_t>(std::numeric_limits<int>::max()) )
     {
         throw std::runtime_error("Data size exceeds the maximum allowed for partial write.");
     }
+
+    int chunkSize = static_cast<int>(datalen);
 
     // TODO: sigpipe here?
     int sentBytes = SSL_write(m_sslHandler, data, chunkSize);

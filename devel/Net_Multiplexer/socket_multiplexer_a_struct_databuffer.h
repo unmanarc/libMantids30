@@ -23,7 +23,8 @@ struct sDataBuffer {
         if (data && len)
         {
             this->data = malloc(len);
-            if (!this->data) return false;
+            if (!this->data) 
+                return false;
             this->len = len;
             memcpy(this->data, data, len);
             return true;

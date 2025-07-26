@@ -29,7 +29,8 @@ public:
 
     std::string getSubVar(const std::string & subVarName)
     {
-        if (m_subVar.find(subVarName) == m_subVar.end()) return "";
+        if (m_subVar.find(subVarName) == m_subVar.end()) 
+            return "";
         return m_subVar.find(subVarName)->second;
     }
 
@@ -44,7 +45,9 @@ public:
         return r;
     }
 
-    std::multimap<std::string, std::string> getAllSubVars() { return m_subVar;
+    std::multimap<std::string, std::string> getAllSubVars()
+    {
+        return m_subVar;
     }
 
     std::string toString();
@@ -83,7 +86,7 @@ class MIME_Sub_Header : public Memory::Streams::SubParser
 public:
     MIME_Sub_Header();
 
-    bool streamToUpstream( Memory::Streams::WriteStatus &wrStat) override;
+    bool streamToUpstream( ) override;
 
     /**
      * @brief exist exist option.

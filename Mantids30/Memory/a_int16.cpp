@@ -47,7 +47,8 @@ bool INT16::fromString(const std::string &value)
         return true;
     }
     this->m_value = (int16_t)strtol(value.c_str(),nullptr,10);
-    if (value!="0" && this->m_value==0) return false;
+    if (value!="0" && this->m_value==0) 
+        return false;
 
     return true;
 }

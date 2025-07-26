@@ -11,7 +11,8 @@ bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataSt
 
 bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataStructs::sLineID & lineId, const DataStructs::eLineAcceptAnswerMSG &msg, const json &answerValue, const uint32_t & localLineWindow)
 {
-    if (noSendData) return false;
+    if (noSendData) 
+        return false;
     std::unique_lock<std::timed_mutex> lock(mtLock_multiplexedSocket);
 
     if (!multiplexedSocket->writeU8(DataStructs::MPLX_LINE_CONNECT_ANS))
@@ -85,7 +86,8 @@ void Socket_Multiplexer::server_AcceptConnection_Callback(DataStructs::sLineID l
 
     if (cbServerConnectionFinished.callbackFunction) cbServerConnectionFinished.callbackFunction(cbServerConnectionFinished.obj, lineId.localLineId, ssock);
 
-    if (destroySocketOnServer) delete ssock;
+    if (destroySocketOnServer)
+        delete ssock;
 }
 
 bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_Connect(bool authorized)

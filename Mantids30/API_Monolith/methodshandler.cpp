@@ -6,8 +6,6 @@
 using namespace Mantids30::API::Monolith;
 using namespace Mantids30;
 
-
-
 bool MethodsHandler::addMethod(const MethodDefinition &methodDefinition)
 {
     // Locks the methods mutex to ensure thread-safe modification of methods map

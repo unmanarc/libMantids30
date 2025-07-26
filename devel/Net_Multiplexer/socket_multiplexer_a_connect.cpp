@@ -43,19 +43,22 @@ LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiple
 
 void Socket_Multiplexer::client_HandlerConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock)
 {
-    if (!cbClientConnectAccepted.callbackFunction) return;
+    if (!cbClientConnectAccepted.callbackFunction) 
+        return;
     Streams::StreamSocket * ssock = cbClientConnectAccepted.callbackFunction(cbClientConnectAccepted.obj, sock);
     if (ssock) sock->processLine(ssock,this);
     // remove/close the remote connection
     multiplexedSocket_sendLineData(sock->getLineID(),nullptr,0);
     // unregister the connection...
     stopAndRemoveLine(sock);
-    if (destroySocketOnClient) delete ssock;
+    if (destroySocketOnClient) 
+        delete ssock;
 }
 
 void Socket_Multiplexer::client_FailedConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock, DataStructs::eConnectFailedReason reason)
 {
-    if (!cbClientConnectFailed.callbackFunction) return;
+    if (!cbClientConnectFailed.callbackFunction) 
+        return;
     cbClientConnectFailed.callbackFunction(cbClientConnectFailed.obj, sock, reason);
     stopAndRemoveLine(sock);
 }

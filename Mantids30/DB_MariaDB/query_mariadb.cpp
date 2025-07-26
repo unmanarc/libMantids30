@@ -89,8 +89,10 @@ Query_MariaDB::~Query_MariaDB()
     }
 
     // Destroy main items:
-    if (m_bindedInputParams) delete [] m_bindedInputParams;
-    if (m_bindedResultsParams) delete [] m_bindedResultsParams;
+    if (m_bindedInputParams)
+        delete [] m_bindedInputParams;
+    if (m_bindedResultsParams)
+        delete [] m_bindedResultsParams;
 
     // Destroy the statement
     if (m_stmt)

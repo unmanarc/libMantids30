@@ -243,7 +243,8 @@ void Socket::setRecvBuffer(int buffsize)
 {
     m_recvBuffer = buffsize;
 
-    if (!isActive()) return;
+    if (!isActive()) 
+        return;
 #ifdef _WIN32
     setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
 #else
@@ -333,7 +334,8 @@ std::string Socket::getRemotePairStr()
 
 uint16_t Socket::getPort()
 {
-    if (!isActive()) return 0;
+    if (!isActive()) 
+        return 0;
 
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
@@ -345,10 +347,12 @@ uint16_t Socket::getPort()
     return ntohs(sin.sin_port);
 }
 
-ssize_t Socket::partialRead(void *data, const uint32_t &datalen)
+ssize_t Socket::partialRead(void *data, const size_t &datalen)
 {
-    if (!isActive()) return -1;
-    if (!datalen) return 0;
+    if (!isActive()) 
+        return -1;
+    if (!datalen) 
+        return 0;
     if (!m_useWriteInsteadRecv)
     {
         ssize_t recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
@@ -361,10 +365,12 @@ ssize_t Socket::partialRead(void *data, const uint32_t &datalen)
     }
 }
 
-ssize_t Socket::partialWrite(const void *data, const uint32_t &datalen)
+ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 {
-    if (!isActive()) return -1;
-    if (!datalen) return 0;
+    if (!isActive()) 
+        return -1;
+    if (!datalen) 
+        return 0;
     if (!m_useWriteInsteadRecv)
     {
 #ifdef _WIN32
@@ -514,11 +520,13 @@ int Socket::setSocketOptionBool(int level, int optname, bool value)
 
 bool Socket::setReadTimeout(unsigned int _timeout)
 {
-    if (!isActive()) return false;
+    if (!isActive()) 
+        return false;
 
     m_readTimeout = _timeout;
 
-    if (m_isInListenMode) return true;
+    if (m_isInListenMode) 
+        return true;
 
 #ifdef _WIN32
     DWORD tout = _timeout*1000;
@@ -537,9 +545,11 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 
 bool Socket::setWriteTimeout(unsigned int _timeout)
 {
-    if (!isActive()) return false;
+    if (!isActive()) 
+        return false;
     m_writeTimeout = _timeout;
-    if (m_isInListenMode) return true;
+    if (m_isInListenMode) 
+        return true;
 #ifdef _WIN32
     int tout = _timeout*1000;
     if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tout, sizeof(int))) == -1)
@@ -589,7 +599,8 @@ void Socket::setRemotePair(const char * address)
 
 int Socket::shutdownSocket(int mode)
 {
-    if (!isActive()) return -1;
+    if (!isActive()) 
+        return -1;
 
     int i;
     // Shutdown sub-protocol:

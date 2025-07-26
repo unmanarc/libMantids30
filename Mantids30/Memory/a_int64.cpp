@@ -48,7 +48,8 @@ bool INT64::fromString(const std::string &value)
     }
 
     this->m_value = strtoll(value.c_str(),nullptr,10);
-    if (value!="0" && this->m_value==0) return false;
+    if (value!="0" && this->m_value==0) 
+        return false;
 
     return true;
 }

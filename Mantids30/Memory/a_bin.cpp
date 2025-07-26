@@ -20,7 +20,8 @@ bool BINARY::setValue(sBinContainer *value)
 {
     Threads::Sync::Lock_RW lock(this->m_value.mutex);
     this->m_value.ptr = new char[value->dataSize];
-    if (!this->m_value.ptr) return false;
+    if (!this->m_value.ptr) 
+        return false;
     this->m_value.dataSize = value->dataSize;
     memcpy(this->m_value.ptr, value->ptr, value->dataSize);
     return true;
@@ -37,7 +38,8 @@ bool BINARY::fromString(const std::string &value)
 {
     Threads::Sync::Lock_RW lock(this->m_value.mutex);
     this->m_value.ptr = new char[value.size()+1];
-    if (!this->m_value.ptr) return false;
+    if (!this->m_value.ptr) 
+        return false;
     this->m_value.ptr[value.size()] = 0;
     memcpy(this->m_value.ptr,value.c_str(),value.size());
     return true;

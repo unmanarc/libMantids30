@@ -4,7 +4,8 @@ using namespace Mantids::Network::Multiplexor;
 
 bool Socket_Multiplexer::multiplexedSocket_sendLineData(const DataStructs::sLineID &lineId, void *data, const uint16_t &datalen)
 {
-    if (noSendData) return false;
+    if (noSendData) 
+        return false;
     std::unique_lock<std::timed_mutex> lock(mtLock_multiplexedSocket);
 
     if (!multiplexedSocket->writeU8(DataStructs::MPLX_LINE_DATA))
@@ -42,7 +43,8 @@ bool Socket_Multiplexer::multiplexedSocket_sendTermination(const DataStructs::sL
 
 bool Socket_Multiplexer::multiplexedSocket_sendReadenBytes(const DataStructs::sLineID &lineId, const uint16_t &freedSize)
 {
-    if (noSendData) return false;
+    if (noSendData) 
+        return false;
     std::unique_lock<std::timed_mutex> lock(mtLock_multiplexedSocket);
 
     if (!multiplexedSocket->writeU8(DataStructs::MPLX_LINE_BYTESREADEN))
@@ -75,7 +77,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_Data()
     lineId.remoteLineId = recvFromMultiplexedSocket_LineID(&readen);
 
     uint16_t sizeToRead = multiplexedSocket->readU16(&readen);
-    if (!readen) return false;
+    if (!readen) 
+        return false;
     if (sizeToRead)
     {
         uint32_t recvBytes;
@@ -112,7 +115,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_UpdateReadenBytes(
     lineId.remoteLineId = recvFromMultiplexedSocket_LineID(&readen);
 
     uint16_t processedBytes = multiplexedSocket->readU16(&readen);
-    if (!readen) return false;
+    if (!readen) 
+        return false;
 
     // Load the connection...
     std::shared_ptr<Socket_Multiplexed_Line> chSock = findLine(lineId.localLineId);
@@ -124,7 +128,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_UpdateReadenBytes(
     }
     else
     {
-        if (!chSock->addProcessedBytes(processedBytes)) return false;
+        if (!chSock->addProcessedBytes(processedBytes)) 
+        return false;
     }
 
 

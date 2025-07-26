@@ -19,7 +19,8 @@ SQLConnector_PostgreSQL::~SQLConnector_PostgreSQL()
 
 bool SQLConnector_PostgreSQL::isOpen()
 {
-    if (!m_databaseConnectionHandler) return false;
+    if (!m_databaseConnectionHandler) 
+        return false;
     std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT 1;", {},{} );
     if (i->getResultsOK())
         return i->query->step();

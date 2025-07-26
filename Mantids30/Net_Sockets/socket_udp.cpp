@@ -110,10 +110,12 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
     return true;
 }
 
-bool Socket_UDP::writeBlock(const void *data, const uint32_t & datalen)
+bool Socket_UDP::writeBlock(const void *data, const size_t & datalen)
 {
-    if (!isActive()) return false;
-    if (!m_addressInfoResolution) return false;
+    if (!isActive()) 
+        return false;
+    if (!m_addressInfoResolution) 
+        return false;
 #ifdef _WIN32
     if (sendto(sockfd, (char *)data, datalen, 0, res->ai_addr, res->ai_addrlen) == -1)
 #else
@@ -139,7 +141,7 @@ void Socket_UDP::freeAddrInfo()
     m_addressInfoResolution = nullptr;
 }
 
-bool Socket_UDP::readBlock(void *, const uint32_t &)
+bool Socket_UDP::readBlock(void *, const size_t &)
 {
     // USE: readBlock
     throw std::runtime_error("Don't use Socket_UDP::readBlock(data,len)");
@@ -150,7 +152,8 @@ std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
 {
     std::shared_ptr<Socket_UDP::Block> datagramBlock;
     datagramBlock.reset(new Socket_UDP::Block);
-    if (!isActive()) return datagramBlock;
+    if (!isActive()) 
+        return datagramBlock;
 
     socklen_t fromlen = SOCKADDR_IN_SIZE;
 

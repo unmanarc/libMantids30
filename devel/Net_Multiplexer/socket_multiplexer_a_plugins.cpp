@@ -7,9 +7,11 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
     bool readen;
     json jMsg;
     std::string pluginId = multiplexedSocket->readString(&readen,8), sMsg;
-    if (!readen) return false;
+    if (!readen) 
+        return false;
     sMsg = multiplexedSocket->readString(&readen, 16);
-    if (!readen) return false;
+    if (!readen) 
+        return false;
 
     Json::CharReaderBuilder builder;
     Json::CharReader * reader = builder.newCharReader();
@@ -33,9 +35,11 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_Data()
     bool readen;
     unsigned int datalen = PLUGIN_MAX_DATA;
     std::string pluginId = multiplexedSocket->readString(&readen,8);
-    if (!readen) return false;
+    if (!readen) 
+        return false;
     char * pluginData = ((char *)multiplexedSocket->readBlock32WAlloc(&datalen));
-    if (!pluginData) return false;
+    if (!pluginData) 
+        return false;
     if (plugins.find(pluginId) != plugins.end())
     {
         plugins[pluginId]->processData(pluginData,datalen);
@@ -46,7 +50,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_Data()
 
 bool Socket_Multiplexer::plugin_SendData(const std::string &pluginId, void *data, const uint32_t &datalen, bool lock)
 {
-    if (noSendData) return false;
+    if (noSendData) 
+        return false;
 
     if (lock) mtLock_multiplexedSocket.lock();
     if (!multiplexedSocket->writeU8(DataStructs::MPLX_PLUGIN_DATA))
@@ -70,7 +75,8 @@ bool Socket_Multiplexer::plugin_SendData(const std::string &pluginId, void *data
 
 bool Socket_Multiplexer::plugin_SendJson(const std::string &pluginId, const json &jData, bool lock)
 {
-    if (noSendData) return false;
+    if (noSendData) 
+        return false;
     if (lock) mtLock_multiplexedSocket.lock();
     if (!multiplexedSocket->writeU8(DataStructs::MPLX_PLUGIN_JSON))
     {

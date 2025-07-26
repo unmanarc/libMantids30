@@ -43,7 +43,7 @@ bool JSONEval::compile(std::string expr)
          boost::regex_search(start, end, whatStaticText, exStaticText, flags);
          start = expr.begin(), end =  expr.end())
     {
-        uint64_t pos = m_staticTexts->size();
+        size_t pos = m_staticTexts->size();
         char _staticmsg[128];
 #ifdef _WIN32
         snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%llu",pos);
@@ -215,14 +215,15 @@ size_t JSONEval::detectSubExpr(string &expr, size_t start)
         }
         else if (expr.at(i) == ')')
         {
-            if (level == 0) return expr.size()+1;
+            if (level == 0) 
+                return expr.size()+1;
             level--;
             if (level==0 && inSubExpr)
             {
                 /////////////////////////////
                 std::string subexpr = expr.substr(firstByte+1,i-firstByte-1);
 
-                uint64_t pos = m_subExpressions.size();
+                size_t pos = m_subExpressions.size();
                 char _staticmsg[128];
 
 #ifdef _WIN32
@@ -266,6 +267,7 @@ std::string JSONEval::getLastCompilerError() const
 
 bool JSONEval::calcNegative(bool r)
 {
-    if (m_negativeExpression) return !r;
+    if (m_negativeExpression) 
+        return !r;
     return r;
 }

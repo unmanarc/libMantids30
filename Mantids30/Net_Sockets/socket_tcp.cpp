@@ -151,7 +151,8 @@ std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
 {
     int sdconn;
 
-    if (!isActive()) return nullptr;
+    if (!isActive()) 
+        return nullptr;
 
     std::shared_ptr<Socket_Stream> cursocket;
 
@@ -207,7 +208,8 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
     int res2,valopt;
 
     // Non-blocking connect with timeout...
-    if (!setBlockingMode(false)) return false;
+    if (!setBlockingMode(false)) 
+        return false;
 
 #ifdef _WIN32
     if (timeout == 0)

@@ -345,7 +345,8 @@ static int get_lock()
 
     string lockFile = "/var/lock/" + globalArgs.getDaemonName() + "/state.lock";
 
-    if ((lockfd = open(lockFile.c_str(), O_CREAT | O_RDWR, 0700)) < 0) return 0;
+    if ((lockfd = open(lockFile.c_str(), O_CREAT | O_RDWR, 0700)) < 0) 
+        return 0;
 
     ZeroBStruct(lplock);
 
@@ -353,7 +354,8 @@ static int get_lock()
     lplock.l_pid = getpid();
 
     // Lock this file to my PID.
-    if (fcntl(lockfd, F_SETLK, &lplock) < 0) return 0;
+    if (fcntl(lockfd, F_SETLK, &lplock) < 0) 
+        return 0;
 
     return 1;
 }

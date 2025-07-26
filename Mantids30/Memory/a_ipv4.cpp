@@ -27,7 +27,7 @@ IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
 IPV4::IPV4(const std::string &value)
 {
     setVarType(TYPE_IPV4);
-    auto v = _fromStringWithNetmask(value);
+    std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(value);
     setValue(v.first,v.second);
 }
 
@@ -59,7 +59,7 @@ std::string IPV4::toString()
 bool IPV4::fromString(const std::string &value)
 {
     bool r = false;
-    auto v = _fromStringWithNetmask(value, &r);
+    std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(value, &r);
     setValue(v.first,v.second);
     return r;
 }
@@ -92,8 +92,9 @@ bool IPV4::_matchRange(const char *haystack, const in_addr &needle)
 {
     bool ok = true;
 
-    auto v = _fromStringWithNetmask(haystack,&ok);
-    if (!ok) return false;
+    std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(haystack,&ok);
+    if (!ok) 
+        return false;
 
     return _matchRange( v.first,v.second,needle );
 }
@@ -103,7 +104,8 @@ bool IPV4::_matchRange(const char *haystack, const char *needle)
     bool ok = true;
 
     auto aNeedle = _fromString(needle,&ok);
-    if (!ok) return false;
+    if (!ok) 
+        return false;
 
     return _matchRange(haystack,aNeedle);
 }
@@ -126,42 +128,75 @@ uint8_t IPV4::_toCIDRMask(const in_addr &value)
 {
     std::string maskValue = _toString(value);
 
-    if (maskValue == "255.255.255.255") return 32;
-    if (maskValue == "255.255.255.254") return 31;
-    if (maskValue == "255.255.255.252") return 30;
-    if (maskValue == "255.255.255.248") return 29;
-    if (maskValue == "255.255.255.240") return 28;
-    if (maskValue == "255.255.255.224") return 27;
-    if (maskValue == "255.255.255.192") return 26;
-    if (maskValue == "255.255.255.128") return 25;
+    if (maskValue == "255.255.255.255") 
+        return 32;
+    if (maskValue == "255.255.255.254") 
+        return 31;
+    if (maskValue == "255.255.255.252") 
+        return 30;
+    if (maskValue == "255.255.255.248") 
+        return 29;
+    if (maskValue == "255.255.255.240") 
+        return 28;
+    if (maskValue == "255.255.255.224") 
+        return 27;
+    if (maskValue == "255.255.255.192") 
+        return 26;
+    if (maskValue == "255.255.255.128") 
+        return 25;
 
-    if (maskValue == "255.255.255.0") return 24;
-    if (maskValue == "255.255.254.0") return 23;
-    if (maskValue == "255.255.252.0") return 22;
-    if (maskValue == "255.255.248.0") return 21;
-    if (maskValue == "255.255.240.0") return 20;
-    if (maskValue == "255.255.224.0") return 19;
-    if (maskValue == "255.255.192.0") return 18;
-    if (maskValue == "255.255.128.0") return 17;
+    if (maskValue == "255.255.255.0") 
+        return 24;
+    if (maskValue == "255.255.254.0") 
+        return 23;
+    if (maskValue == "255.255.252.0") 
+        return 22;
+    if (maskValue == "255.255.248.0") 
+        return 21;
+    if (maskValue == "255.255.240.0") 
+        return 20;
+    if (maskValue == "255.255.224.0") 
+        return 19;
+    if (maskValue == "255.255.192.0") 
+        return 18;
+    if (maskValue == "255.255.128.0") 
+        return 17;
 
-    if (maskValue == "255.255.0.0") return 16;
-    if (maskValue == "255.254.0.0") return 15;
-    if (maskValue == "255.252.0.0") return 14;
-    if (maskValue == "255.248.0.0") return 13;
-    if (maskValue == "255.240.0.0") return 12;
-    if (maskValue == "255.224.0.0") return 11;
-    if (maskValue == "255.192.0.0") return 10;
-    if (maskValue == "255.128.0.0") return 9;
+    if (maskValue == "255.255.0.0") 
+        return 16;
+    if (maskValue == "255.254.0.0") 
+        return 15;
+    if (maskValue == "255.252.0.0") 
+        return 14;
+    if (maskValue == "255.248.0.0") 
+        return 13;
+    if (maskValue == "255.240.0.0") 
+        return 12;
+    if (maskValue == "255.224.0.0") 
+        return 11;
+    if (maskValue == "255.192.0.0") 
+        return 10;
+    if (maskValue == "255.128.0.0") 
+        return 9;
 
-    if (maskValue == "255.0.0.0") return 8;
-    if (maskValue == "254.0.0.0") return 7;
-    if (maskValue == "252.0.0.0") return 6;
-    if (maskValue == "248.0.0.0") return 5;
-    if (maskValue == "240.0.0.0") return 4;
-    if (maskValue == "224.0.0.0") return 3;
-    if (maskValue == "192.0.0.0") return 2;
-    if (maskValue == "128.0.0.0") return 1;
-    if (maskValue == "0.0.0.0") return 0;
+    if (maskValue == "255.0.0.0") 
+        return 8;
+    if (maskValue == "254.0.0.0") 
+        return 7;
+    if (maskValue == "252.0.0.0") 
+        return 6;
+    if (maskValue == "248.0.0.0") 
+        return 5;
+    if (maskValue == "240.0.0.0") 
+        return 4;
+    if (maskValue == "224.0.0.0") 
+        return 3;
+    if (maskValue == "192.0.0.0") 
+        return 2;
+    if (maskValue == "128.0.0.0") 
+        return 1;
+    if (maskValue == "0.0.0.0") 
+        return 0;
 
     return 255;
 }

@@ -76,6 +76,7 @@ void Cookies_ClientSide::addCookieVal(const string &cookieName, const string &co
 
 std::string Cookies_ClientSide::getCookieByName(const std::string &cookieName)
 {
-    if (m_cookiesMap.find(cookieName) == m_cookiesMap.end()) return "";
+    if (m_cookiesMap.find(cookieName) == m_cookiesMap.end()) 
+        return "";
     return m_cookiesMap[cookieName];
 }
