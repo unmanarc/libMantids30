@@ -6,6 +6,7 @@
 
 #include <Mantids30/Helpers/file.h>
 
+#include <optional>
 #include <sys/time.h>
 #include <boost/algorithm/string/replace.hpp>
 
@@ -53,8 +54,18 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     {
         auto masterKey = Globals::getMasterKey();
         sleep(1);
-        bool ok;
-        printf("%s\n", Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(),(char *)masterKey->data,masterKey->length,&ok).c_str());
+        std::optional<std::string> r = Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(),(char *)masterKey->data,masterKey->length);
+
+        if (r)
+        {
+            printf("%s\n", r->c_str());
+        }
+        else
+        {
+            fprintf(stderr,"Failed to decrypt.\n");
+        }
+
+
         fflush(stdout);
         exit(0);
     }
@@ -165,16 +176,15 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
                 cont=false;
             }
 
-            std::string keyPassPhrase;
+            std::optional<std::string> keyPassPhrase;
             // CHeck if the using passphrase for key
             if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
             {
                 bool ok = false;
                 // Load Key
                 keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64( Mantids30::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
-                                                                            ,(char *)masterKey->data,masterKey->length,&ok
-                                                                            );
-                if (!ok)
+                                                                            ,(char *)masterKey->data,masterKey->length);
+                if (!keyPassPhrase)
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
                     cont=false;
@@ -182,7 +192,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
                 else
                 {
                     // Key Passphrase Available...
-                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), (char *)keyPassPhrase.c_str() ) )
+                    if ( !Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP( Globals::getLC_TLSKeyFilePath().c_str(), (char *)keyPassPhrase->c_str() ) )
                     {
                         LOG_APP->log0(__func__,Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
                         cont=false;

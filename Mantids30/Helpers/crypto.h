@@ -2,6 +2,7 @@
 
 
 #include <memory>
+#include <optional>
 #include <string>
 #include "mem.h"
 
@@ -25,11 +26,10 @@ public:
      * @param inputLen The length of the input binary data in bytes.
      * @param key A pointer to the encryption key.
      * @param keyLen The length of the encryption key in bytes.
-     * @param ok A pointer to a boolean value indicating whether the encryption was successful.
      *
      * @return The encrypted binary data as a base64-encoded string.
      */
-    static std::string AES256EncryptB64(const unsigned char* input, uint32_t inputLen, const char* key, uint32_t keyLen, bool* ok);
+    static std::optional<std::string> AES256EncryptB64(const unsigned char *input, const size_t &inputLen, const char *key, const size_t &keyLen);
 
     /**
      * @brief Encrypts a string using AES-256 encryption and base64 encoding.
@@ -37,22 +37,20 @@ public:
      * @param input The input string to encrypt.
      * @param key A pointer to the encryption key.
      * @param keyLen The length of the encryption key in bytes.
-     * @param ok A pointer to a boolean value indicating whether the encryption was successful.
      *
      * @return The encrypted string as a base64-encoded string.
      */
-    static std::string AES256EncryptB64(const std::string& input, const char* key, uint32_t keyLen, bool* ok);
+    static std::optional<std::string> AES256EncryptB64(const std::string &input, const char *key, const size_t &keyLen);
 
     /**
      * @brief Encrypts a string using AES-256 encryption and base64 encoding.
      *
      * @param input The input string to encrypt.
      * @param key The encryption key as a string.
-     * @param ok A pointer to a boolean value indicating whether the encryption was successful.
      *
      * @return The encrypted string as a base64-encoded string.
      */
-    static std::string AES256EncryptB64(const std::string& input, const std::string& key, bool* ok);
+    static std::optional<std::string> AES256EncryptB64(const std::string& input, const std::string& key);
 
     /**
      * @brief Decrypts a base64-encoded string to binary data using AES-256 encryption.
@@ -60,11 +58,10 @@ public:
      * @param input The base64-encoded string to decrypt.
      * @param key A pointer to the decryption key.
      * @param keyLen The length of the decryption key in bytes.
-     * @param ok A pointer to a boolean value indicating whether the decryption was successful.
      *
      * @return A shared pointer to a BinaryDataContainer object containing the decrypted binary data.
      */
-    static std::shared_ptr<Mem::BinaryDataContainer> AES256DecryptB64ToBin(const std::string& input, const char* key, uint32_t keyLen, bool* ok);
+    static std::shared_ptr<Mem::BinaryDataContainer> AES256DecryptB64ToBin(const std::string& input, const char* key, const size_t & keyLen);
 
     /**
      * @brief Decrypts a base64-encoded string using AES-256 encryption.
@@ -72,22 +69,20 @@ public:
      * @param input The base64-encoded string to decrypt.
      * @param key A pointer to the decryption key.
      * @param keyLen The length of the decryption key in bytes.
-     * @param ok A pointer to a boolean value indicating whether the decryption was successful.
      *
      * @return The decrypted string.
      */
-    static std::string AES256DecryptB64(const std::string& input, const char* key, uint32_t keyLen, bool* ok);
+    static std::optional<std::string> AES256DecryptB64(const std::string &input, const char *key, const size_t &keyLen);
 
     /**
      * @brief Decrypts a base64-encoded string using AES-256 encryption.
      *
      * @param input The base64-encoded string to decrypt.
      * @param key The decryption key as a string.
-     * @param ok A pointer to a boolean value indicating whether the decryption was successful.
      *
      * @return The decrypted string.
      */
-    static std::string AES256DecryptB64(const std::string& input, const std::string& key, bool* ok);
+    static std::optional<std::string> AES256DecryptB64(const std::string& input, const std::string& key);
 
     /**
      * @brief Calculates the SHA-256 hash of a string.

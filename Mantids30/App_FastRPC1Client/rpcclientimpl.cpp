@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <inttypes.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <thread>
 
@@ -63,13 +64,17 @@ void RPCClientImpl::runRPClient()
             // Check if using passphrase
             if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
             {
-                bool ok = false;
                 // Load Key
-                std::string keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64( Mantids30::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
-                                                                            ,(char *)masterKey->data,masterKey->length,&ok
-                                                                            );
+                std::optional<std::string> keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64( Mantids30::Helpers::File::loadFileIntoString( Globals::getLC_TLSPhraseFileForPrivateKey() )
+                                                                            ,(char *)masterKey->data,masterKey->length);
                 
-                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), (char *)keyPassPhrase.c_str() ))
+                if (!keyPassPhrase)
+                {
+                    LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Invalid Passphrase.");
+                    _exit(-37);
+                }
+
+                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(  privKeyPath.c_str(), (char *)keyPassPhrase->c_str() ))
                 {
                     LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(), remotePort, privKeyPath.c_str());
                     _exit(-35);
@@ -271,9 +276,16 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     }
     else
     {
-        std::string tokenizedKey = Mantids30::Helpers::Crypto::AES256DecryptB64( encryptedKey,(char *)masterKey->data,masterKey->length,&ok );
+        std::optional<std::string> tokenizedKey = Mantids30::Helpers::Crypto::AES256DecryptB64( encryptedKey,(char *)masterKey->data,masterKey->length );
+
+        if (!tokenizedKey)
+        {
+            LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: Invalid PSK Key");
+            _exit(-336);
+        }
+
         std::vector<std::string> keyParts;
-        split(keyParts,tokenizedKey,is_any_of(":"),token_compress_on);
+        split(keyParts,*tokenizedKey,is_any_of(":"),token_compress_on);
         if (!ok || keyParts.size()!=2)
         {
             LOG_APP->log0(__func__,Logs::LEVEL_ERR, "Error in RPC Client: PSK Key not in ID:PSK format");
