@@ -1,11 +1,9 @@
 #include "common_urlvars.h"
 
-#include "Mantids30/Helpers/safeint.h"
 #include "Mantids30/Memory/streamablenull.h"
 #include "streamencoder_url.h"
 #include <boost/algorithm/string.hpp>
 #include <memory>
-#include <optional>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -175,6 +173,7 @@ size_t HTTP::URLVars::size()
     {
         return nullobj.writeStatus.bytesWritten;
     }
+    return 0;
 }
 
 void HTTP::URLVars::iSetMaxVarContentSize()
