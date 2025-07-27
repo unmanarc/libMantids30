@@ -12,7 +12,7 @@ class MIME_PartMessage
 public:
     MIME_PartMessage() = default;
 
-    bool streamToSubParsers(Memory::Streams::WriteStatus &wrStat);
+    bool streamToSubParsers();
 
     MIME_Sub_Content * getContent();
     MIME_Sub_Header * getHeader();

@@ -26,7 +26,7 @@ public:
 
     /////////////////////////////////////////////////////
     // Stream Parsing:
-    bool streamTo(Memory::Streams::StreamableObject *out, Memory::Streams::WriteStatus &wrsStat) override;
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
 
     /////////////////////////////////////////////////////
     // Variables Container:
@@ -67,7 +67,12 @@ public:
     /**
      * @brief clear all vars.
      */
-    void clear() override { m_vars.clear(); }
+    void clear() override
+    {
+        m_vars.clear();
+    }
+
+    size_t size() override;
 
 protected:
     void iSetMaxVarContentSize() override;

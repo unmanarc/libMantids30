@@ -29,23 +29,17 @@ public:
     enum ErrorMSG {
         PARSING_SUCCEED = 0,
         PARSING_ERR_INIT = -1,
-        PARSING_ERR_READ = -2,
-        PARSING_ERR_PARSE = -3
+        PARSING_ERR_PARSING = -2,
     };
+
     /**
      * @brief parseObject Parse streamable object (init/parse/end)
      * @param err: (0:succeed, -1:failed to initialize, -2:failed to read, -3:failed to parse/write)
-     * @return bytes written.
      */
-    WriteStatus parseObject(ErrorMSG * err);
+    void parseObject(ErrorMSG *err);
 
     //////////////////////////////////////////
-    virtual bool streamTo(Memory::Streams::StreamableObject *, WriteStatus &) override;
-    virtual WriteStatus write(const void * buf, const size_t &count, WriteStatus &wrStat) override;
-    /**
-     * @brief writeEOF Receive this when the connection is ended.
-     */
-    virtual void writeEOF(bool) override;
+    virtual size_t write(const void *buf, const size_t &count) override;
 
     //////////////////////////////////////////
     /**
@@ -88,7 +82,7 @@ private:
      * @param ttl Time To Live Counter.
      * @return -1 if error, and n>0 : n length of data processed by parser, which should be equal to count.
      */
-    std::pair<bool,uint64_t> parseData(const void * buf, size_t count, size_t *ttl, bool * finished);
+    std::optional<size_t> parseData(const void * buf, size_t count, size_t *ttl, bool * finished);
 };
 
 

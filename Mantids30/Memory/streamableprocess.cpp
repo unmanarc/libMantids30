@@ -1,4 +1,6 @@
 #include "streamableprocess.h"
+#include <optional>
+
 #ifndef _WIN32
 #include <string.h>
 
@@ -12,15 +14,17 @@ Mantids30::Memory::Streams::StreamableProcess::~StreamableProcess()
     delete this->m_spawner;
 }
 
-bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * out, WriteStatus &wrStatUpd)
+bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * out)
 {
-    WriteStatus cur;
     for (;;)
     {
         auto rsp =m_spawner->pollResponse();
 
         // Nothing to read?
-        if (rsp.empty()) break;
+        if (rsp.empty())
+        {
+            break;
+        }
 
         char buf[4096];
         memset(buf,0,sizeof(buf));
@@ -36,42 +40,35 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
         switch (rsize)
         {
         case -1:
-            out->writeEOF(false);
+            // The process failed... output is not reliable...
+            out->writeEOF();
             return false;
         case 0:
-            out->writeEOF(true);
-            return true;
+            return out->writeEOF();
+            break;
         default:
-            if (!(cur=out->writeFullStream(buf,rsize,wrStatUpd)).succeed || cur.finish)
+            if (!out->writeFullStream(buf,rsize))
             {
-                if (!cur.succeed)
-                {
-                    // Transmission error
-                    out->writeEOF(false);
-                    return false;
-                }
-                else
-                {
-                    // Maybe the receiving object is finished...
-                    out->writeEOF(true);
-                    return true;
-                }
+                return false;
             }
             break;
         }
+
+        if (!out->writeStatus.succeed)
+        {
+            // Transmission error, stop doing anything... (TODO: close the program?)
+            return false;
+        }
     }
 
-   m_spawner->waitUntilProcessEnds();
-
-   return true;
+    m_spawner->waitUntilProcessEnds();
+    return true;
 }
 
-Mantids30::Memory::Streams::WriteStatus Mantids30::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
+size_t Mantids30::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count)
 {
-    // TODO:
-    Mantids30::Memory::Streams::WriteStatus status;
-    status.succeed = false;
-    status.finish = false;
-    return status;
+    // TODO: how to write into the process??
+    writeStatus+=-1;
+    return 0;
 }
 #endif

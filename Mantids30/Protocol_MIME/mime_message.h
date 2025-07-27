@@ -20,7 +20,7 @@ public:
     static std::shared_ptr<MIME_Message> create(std::shared_ptr<StreamableObject> value = nullptr);
     ~MIME_Message() override = default;
 
-    bool streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus & wrStat) override;
+    bool streamTo(Memory::Streams::StreamableObject * out) override;
 
     // virtuals:
 

@@ -1,5 +1,7 @@
 #include "parser.h"
+#include "Mantids30/Helpers/safeint.h"
 #include <memory>
+#include <optional>
 
 
 using namespace Mantids30::Memory::Streams;
@@ -10,11 +12,8 @@ Parser::Parser(std::shared_ptr<StreamableObject> value, bool clientMode)
     this->m_streamableObject = value;
 }
 
-WriteStatus Parser::parseObject(Parser::ErrorMSG *err)
+void Parser::parseObject(Parser::ErrorMSG *err)
 {
-    bool ret;
-    WriteStatus upd;
-
     *err = PARSING_SUCCEED;
 
     // Call the init protocol...
@@ -25,39 +24,47 @@ WriteStatus Parser::parseObject(Parser::ErrorMSG *err)
     {
         // the streamable object introduced on the object creation is streamed to this.
         // write function will write....
-        if (!(ret=m_streamableObject->streamTo(this,upd)) || !upd.succeed)
+        bool streamedBytes = m_streamableObject->streamTo( this );
+
+        // Protocol Failed Somewhere...
+        if (!streamedBytes)
         {
-            // Something failed during the streaming...
-            upd.succeed=false;
-            *err=getFailedWriteState()!=0?PARSING_ERR_READ:PARSING_ERR_PARSE;
+            *err = PARSING_ERR_PARSING;
         }
 
         // Call: Finish the protocol (either failed or not).
         endProtocol();
-        return upd;
     }
     else
     {
         // status: failed.
-        upd.succeed=false;
+        *err = PARSING_ERR_INIT;
     }
-
-    *err = PARSING_ERR_INIT;
-    return upd;
 }
 
-bool Parser::streamTo(
-    Memory::Streams::StreamableObject *, WriteStatus &)
+size_t Parser::write(
+    const void *buf, const size_t &count)
 {
-    return false;
-}
-
-WriteStatus Parser::write(const void *buf, const size_t &count, WriteStatus &wrStat)
-{
-    WriteStatus ret;
     // Parse this data...
     size_t ttl = 0;
     bool finished = false;
+    size_t r;
+
+    if (count == 0)
+    {
+        // EOF:
+        size_t ttl = 0;
+        bool finished = false;
+
+        auto x = parseData("",0, &ttl,&finished);
+        if (!x || !finished)
+        {
+            return 0;
+        }
+
+        return *x;
+    }
+
 
 #ifdef DEBUG_PARSER
     printf("Writting on Parser %p:\n", this); fflush(stdout);
@@ -66,31 +73,17 @@ WriteStatus Parser::write(const void *buf, const size_t &count, WriteStatus &wrS
 #endif
 
     // The content streamed is parsed here:
-    std::pair<bool, uint64_t> r = parseData(buf,count, &ttl, &finished);
-    if (finished)
-        ret.finish = wrStat.finish = true;
-
-    if (r.first==false)
+    auto x = parseData(buf,count, &ttl, &finished);
+    if (!x)
     {
-        wrStat.succeed = ret.succeed = setFailedWriteState();
-    }
-    else
-    {
-        ret+=r.second;
-        wrStat+=ret;
+        return 0;
     }
 
-    return ret;
+    return *x;
 }
 
-void Parser::writeEOF(bool)
-{
-    size_t ttl = 0;
-    bool finished = false;
-    parseData("",0, &ttl,&finished);
-}
 
-std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_t *ttl, bool *finished)
+std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *ttl, bool *finished)
 {
     if (*ttl>m_maxTTL)
     {
@@ -98,14 +91,14 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 #ifdef DEBUG_PARSER
         fprintf(stderr, "%p Parser reaching TTL %zu", this, *ttl); fflush(stderr);
 #endif
-        return std::make_pair(false,static_cast<uint64_t>(0)); // TTL Reached...
+        return std::nullopt; // TTL Reached...
     }
     (*ttl)++;
 
     // We are parsing data here...
     // written bytes will be filled with first=error, and second=displacebytes
     // displace bytes is the number of bytes that the subparser have taken from the incoming buffer, so we have to displace them.
-    std::pair<bool, uint64_t> writtenBytes;
+    std::optional<size_t> writtenBytes;
 
     // The m_currentParser is a subparser...
     if (m_currentParser!=nullptr)
@@ -114,8 +107,11 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
         m_currentParser->setParseStatus(SubParser::PARSE_GET_MORE_DATA);
 
         // Here, the parser should call the sub stream parser parse function and set the new status.
-        if ((writtenBytes=m_currentParser->writeIntoParser(buf,count)).first==false)
-            return std::make_pair(false,static_cast<uint64_t>(0));
+        writtenBytes=m_currentParser->writeIntoParser(buf,count);
+
+        // Failed to write this into the parser...
+        if (writtenBytes==std::nullopt)
+            return std::nullopt;
 
         // TODO: what if error? how to tell the parser that it should analize the connection up to there (without correctness).
         switch (m_currentParser->getParseStatus())
@@ -127,7 +123,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
 #endif
             // Check if there is next parser...
             if (!changeToNextParser())
-                return std::make_pair(false,static_cast<uint64_t>(0));
+                return std::nullopt;
 #ifdef DEBUG_PARSER
             printf("%p PARSE_GOTO_NEXT_SUBPARSER changed to %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
@@ -135,7 +131,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
             // Parsed OK :)... Pass to the next stage
             if (m_currentParser==nullptr)
                 *finished = true;
-            if (m_currentParser==nullptr || writtenBytes.second == count)
+            if (m_currentParser==nullptr || writtenBytes.value() == count)
                 return writtenBytes;
         } break;
         case SubParser::PARSE_GET_MORE_DATA:
@@ -144,7 +140,7 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
             printf("%p PARSE_GET_MORE_DATA requested from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
             // More data required... (TODO: check this)
-            if (writtenBytes.second == count)
+            if (writtenBytes.value() == count)
                 return writtenBytes;
         } break;
             // Bad parsing... end here.
@@ -153,24 +149,25 @@ std::pair<bool, uint64_t> Parser::parseData(const void *buf, size_t count, size_
             printf("%p PARSE_STAT_ERROR executed from %s\n", this,(!m_currentParser?"nullptr" : m_currentParser->getSubParserName().c_str())); fflush(stdout);
 #endif
 
-            return std::make_pair(false,static_cast<uint64_t>(0));
+            return std::nullopt;
             // Unknown parser...
         }
     }
 
     // TODO: what if writtenBytes == 0?
     // Data left in buffer, process it.
-    if (writtenBytes.second!=count)
+    if (*writtenBytes!=count)
     {
-        buf=(static_cast<const char *>(buf))+writtenBytes.second;
-        count-=writtenBytes.second;
+        buf=(static_cast<const char *>(buf))+*writtenBytes;
+        count-=*writtenBytes;
 
         // Data left to process..
-        std::pair<bool, uint64_t> x;
-        if ((x=parseData(buf,count, ttl, finished)).first==false)
-            return x;
+        std::optional<size_t> x = parseData(buf,count, ttl, finished);
 
-        return std::make_pair(true,x.second+writtenBytes.second);
+        if (!x)
+            return std::nullopt;
+
+        return *x+*writtenBytes;
     }
     else
         return writtenBytes;

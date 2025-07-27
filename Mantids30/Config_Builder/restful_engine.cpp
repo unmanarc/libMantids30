@@ -88,9 +88,11 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     // Start listening on the specified address and port
     if (sockWebListen->listenOn(listenPort, listenAddr.c_str()))
     {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "%s service is now listening at @%s:%" PRIu16 "", serviceName.c_str(), listenAddr.c_str(), listenPort);
         // Create and configure the web server instance
         Network::Servers::RESTful::Engine *webServer = new Network::Servers::RESTful::Engine();
+        webServer->log = log;
+
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] %s service is now listening at @%s:%" PRIu16 "", (void*)webServer, serviceName.c_str(), listenAddr.c_str(), listenPort);
 
         // Setup the RPC Log:
         webServer->config.rpcLog = rpcLog;
@@ -98,27 +100,27 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0)
         {
             std::string resourcesPath = config->get<std::string>("ResourcesPath",defaultResourcePath);
-            log->log0(__func__, Logs::LEVEL_DEBUG, "Setting document root path to %s", resourcesPath.c_str());
+            log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting document root path to %s", (void*)webServer, resourcesPath.c_str());
             if (!webServer->config.setDocumentRootPath( resourcesPath ))
             {
-                log->log0(__func__,Logs::LEVEL_CRITICAL, "Error locating web server resources at %s",resourcesPath.c_str() );
+                log->log0(__func__,Logs::LEVEL_CRITICAL, "[%p] Error locating web server resources at %s", (void*)webServer,resourcesPath.c_str() );
                 return nullptr;
             }
         }
 
         // All the API will be accessible from this Origins...
         std::string rawOrigins = config->get<std::string>("API.Origins", "");
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting permitted API origins to %s", rawOrigins.c_str());
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
         webServer->config.permittedAPIOrigins = parseCommaSeparatedOrigins(rawOrigins);
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
         std::string loginOrigins = config->get<std::string>("Login.Origins", "");
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting permitted login origins to %s", loginOrigins.c_str());
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins to %s", (void*)webServer, loginOrigins.c_str());
         webServer->config.permittedLoginOrigins = parseCommaSeparatedOrigins(loginOrigins);
         // Set the login IAM location:
         std::string loginRedirectURL = config->get<std::string>("Login.RedirectURL", "/login");
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Setting default login redirect URL to %s", loginRedirectURL.c_str());
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting default login redirect URL to %s", (void*)webServer, loginRedirectURL.c_str());
         webServer->config.defaultLoginRedirect = loginRedirectURL;
 
         if ( (options & REST_ENGINE_NO_JWT)==0 )
@@ -129,7 +131,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
             if (!webServer->config.jwtValidator)
             {
-                log->log0(__func__, Logs::LEVEL_CRITICAL, "We need at least a JWT Validator.");
+                log->log0(__func__, Logs::LEVEL_CRITICAL, "[%p] We need at least a JWT Validator.", (void*)webServer);
                 return nullptr;
             }
         }
@@ -145,7 +147,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             config->get<uint32_t>("Threads.PoolSize", 10) :
             config->get<uint32_t>("Threads.MaxThreads", 10000);
 
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Using %s with %u threads",
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Using %s with %u threads",
+                  (void*)webServer,
                   useThreadPool ? "thread pool" : "multi-threading",
                   threadsCount);
 
@@ -157,13 +160,14 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // WebServer Extras:
         if (config->find("Proxies") != config->not_found())
         {
-            log->log0(__func__, Logs::LEVEL_DEBUG, "Loading proxies...");
+            log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Loading proxies...", (void*)webServer);
             // Loading proxies...
 
             for (const auto& proxy : config->get_child("Proxies"))
             {
                 std::string proxyPath = proxy.first;
-                log->log0(__func__, Logs::LEVEL_INFO, "Loading proxy to path '%s' at %s Service",
+                log->log0(__func__, Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service",
+                          (void*)webServer,
                           proxyPath.c_str(), serviceName.c_str());
 
                 std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(log, proxy.second, vars );
@@ -191,14 +195,14 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(
     if (!sock->isSecure())
         return true;
 
-    Program::Logs::AppLog *log = (Program::Logs::AppLog *) data;
+    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
 
     std::shared_ptr<Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Sockets::Socket_TLS>(sock);
 
-    for (const auto &i : secSocket->getTLSErrorsAndClear())
+    for (const std::string &i : secSocket->getTLSErrorsAndClear())
     {
         if (!strstr(i.c_str(), "certificate unknown"))
-            log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "TLS: %s", i.c_str());
+            core->log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "TLS: %s", i.c_str());
     }
     return true;
 }
@@ -206,17 +210,17 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(
 bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(
     void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
-    Program::Logs::AppLog *log = (Program::Logs::AppLog *) data;
+    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
 
-    log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "RESTful Service Timed Out.");
+    core->log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "RESTful Service Timed Out.");
     return true;
 }
 
 bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(
     void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
-    Program::Logs::AppLog *log = (Program::Logs::AppLog *) data;
+    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
 
-    log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_DEBUG, "Client Connection Limit Per IP Reached...");
+    core->log->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_DEBUG, "Client Connection Limit Per IP Reached...");
     return true;
 }

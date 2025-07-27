@@ -431,7 +431,7 @@ void Encoders::fromHex(const string &hexValue, unsigned char *data, size_t maxle
     }
 }
 
-char Encoders::toHexFrom4bitChar(char nibble, char position)
+char Encoders::toHexFrom4bitChar(char nibble, const char & position)
 {
     // Extract the high or low nibble from the byte, depending on the position.
     if (position == 1) {
@@ -453,11 +453,11 @@ char Encoders::toHexFrom4bitChar(char nibble, char position)
     }
 }
 
-char Encoders::hexToValue(char v)
+char Encoders::hexToValue(const char &v)
 {
     if (v>='0' && v<='9') 
         return v-'0';
-    if (v>='A' && v<='F') 
+    if (v>='A' && v<='F')
         return v-'A'+10;
     if (v>='a' && v<='f') 
         return v-'a'+10;
@@ -488,11 +488,7 @@ bool Encoders::getIfMustBeURLEncoded(char c,const URL_ENCODING_TYPE & urlEncodin
     else
     {
         // be strict: Only very safe chars...
-        if (c >= 'A' && c<= 'Z') 
-            return false;
-        if (c >= 'a' && c<= 'z') 
-            return false;
-        if (c >= '0' && c<= '9') 
+        if (isalnum(c))
             return false;
     }
 
@@ -504,8 +500,10 @@ size_t Encoders::calcURLEncodingExpandedStringSize(const string &str,const URL_E
     size_t x = 0;
     for (size_t i=0; i<str.size();i++)
     {
-        if ( getIfMustBeURLEncoded(str.at(i),urlEncodingType) ) x+=3;
-        else x+=1;
+        if ( getIfMustBeURLEncoded(str.at(i),urlEncodingType) )
+            x+=3;
+        else
+            x+=1;
     }
     return x;
 }

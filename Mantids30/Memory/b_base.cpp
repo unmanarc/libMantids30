@@ -1,16 +1,21 @@
 #include "b_base.h"
 
+#include "Mantids30/Helpers/safeint.h"
 #include "b_mmap.h"
 #include "b_ref.h"
 
 #include <limits>
+#include <memory>
+#include <optional>
 #include <stdexcept>
+#include <utility>
+
 
 using namespace Mantids30::Memory::Containers;
 
 B_Base::B_Base()
 {
-    m_maxSize = std::numeric_limits<uint64_t>::max();
+    m_maxSize = std::numeric_limits<size_t>::max();
     m_readOnly = false;
     m_storeMethod = BC_METHOD_NULL;
     clear0();
@@ -30,73 +35,78 @@ B_Base &B_Base::operator=(B_Base &bc)
 
 void B_Base::print(FILE *f)
 {
-    fprintf(f, "%s", toString().c_str());
+    auto str = toString();
+    if (str) 
+    {
+        fprintf(f, "%s", str->c_str());
+    }
 }
 
-std::pair<bool,uint64_t> B_Base::prepend(const void *buf)
+std::optional<size_t> B_Base::prepend(const void *buf)
 {
     return prepend(buf,strlen(static_cast<const char *>(buf)));
 }
 
-std::pair<bool,uint64_t> B_Base::append(const void *buf)
+std::optional<size_t> B_Base::append(const void *buf)
 {
     return append(buf,strlen(static_cast<const char *>(buf)));
 }
 
-std::pair<bool,uint64_t> B_Base::append(const void *data, uint64_t len)
+std::optional<size_t> B_Base::append(const void *data, size_t len)
 {
     // Read only: can't append nothing.
     if (m_readOnly)
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
 
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     // out of bounds, fail.
     if (len+currentSize>m_maxSize)
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     // zero to copy!
     if (!len)
-        return std::make_pair(true,0);
+        return std::nullopt;
 
     // Data modification should pass trough referenced pointer.
     return append2(data,len,false);
 }
 
-std::pair<bool,uint64_t> B_Base::prepend(const void *data, uint64_t len)
+std::optional<size_t> B_Base::prepend(const void *data, size_t len)
 {
     // Read only: can't append nothing.
-    if (m_readOnly) return std::make_pair(false,static_cast<uint64_t>(0));
+    if (m_readOnly)
+        return std::nullopt;
 
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len,currentSize))
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     // out of bounds.
     if (len+currentSize>m_maxSize)
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     // zero to copy!
     if (!len)
-        return std::make_pair(true,0);
+        return 0;
 
     return append2(data,len,true);
 }
 
-std::pair<bool, uint64_t> B_Base::displace(const uint64_t &bytes)
+std::optional<size_t> B_Base::displace(const size_t &bytes)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
     return displace2(bytes>currentSize?currentSize:bytes);
 }
 
-std::pair<bool,uint64_t> B_Base::truncate(const uint64_t &bytes)
+std::optional<size_t> B_Base::truncate(const size_t &bytes)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
     if (bytes>=currentSize)
-        return std::make_pair(false,currentSize); //not truncated.
+        return  std::nullopt;
 
     return truncate2(bytes);
 }
@@ -123,42 +133,43 @@ bool B_Base::clear()
     return clear2();
 }
 
-int B_Base::copyUntil(B_Base &destination, const void *needle, const size_t &needleLenght, const uint64_t &maxCopySize, bool removeNeedle)
+int B_Base::copyUntil(B_Base &destination, const void *needle, const size_t &needleLenght, const size_t &maxCopySize, bool removeNeedle)
 {
-    std::pair<bool,uint64_t> needlePos = find(needle,needleLenght,false,0,maxCopySize);
+    std::optional<size_t> needlePos = find(needle,needleLenght,false,0,maxCopySize);
 
-    if (!needlePos.first)
+    if (!needlePos)
         return -1;
 
     // will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(needlePos.second,needleLenght))
+    if (CHECK_UINT_OVERFLOW_SUM(*needlePos,needleLenght))
         return -1;
 
     if (removeNeedle)
     {
-        if ((needlePos.second) > maxCopySize)
+        if ((*needlePos) > maxCopySize)
             return -2;
-        appendTo(destination,needlePos.second);
+        appendTo(destination,*needlePos);
     }
     else
     {
-        if ((needlePos.second+needleLenght) > maxCopySize)
+        if ((*needlePos+needleLenght) > maxCopySize)
             return -2;
-        appendTo(destination,needlePos.second+needleLenght);
+        appendTo(destination,*needlePos+needleLenght);
     }
 
     return 0;
 }
 
-int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t &needleCount, const uint64_t &maxCopySize, bool removeNeedle)
+int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t &needleCount, const size_t &maxCopySize, bool removeNeedle)
 {
     int retr = copyUntil(destination,needle,needleCount, maxCopySize, removeNeedle);
-    if (retr<0) return retr;
+    if (retr<0) 
+        return retr;
     displace( destination.size() + (removeNeedle?needleCount:0) );
     return 0;
 }
 
-int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> needles, const uint64_t &maxCopySize, bool removeNeedle)
+int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle)
 {
     for (const auto & needle : needles)
     {
@@ -170,21 +181,22 @@ int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> need
 
 // TODO: pass this to shared_ptr
 /*
-std::list<Memory::Containers::B_Base *> B_Base::referencedSplit(const std::list<std::string> &needles,const uint64_t &maxSearchSize, const size_t &maxNeedles)
+std::list<Memory::Containers::B_Base *> B_Base::referencedSplit(const std::list<std::string> &needles,const size_t &maxSearchSize, const size_t &maxNeedles)
 {
     std::list<std::string> skipBegWith;
     return referencedSplit2(needles,skipBegWith,maxSearchSize,maxNeedles);
 }
 
-std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list<std::string> &needles, const std::list<std::string> &skipBegWith, const uint64_t &maxSearchSize, const size_t &roMaxNeedles)
+std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list<std::string> &needles, const std::list<std::string> &skipBegWith, const size_t &maxSearchSize, const size_t &roMaxNeedles)
 {
     size_t maxNeedles = roMaxNeedles;
     std::list<Memory::Containers::B_Base *> x;
 
-    uint64_t currentOffset = 0;
+    size_t currentOffset = 0;
 
-    if (isNull()) return x;
-    if (maxNeedles == 0) maxNeedles = std::numeric_limits<uint64_t>::max();
+    if (isNull()) 
+        return x;
+    if (maxNeedles == 0) maxNeedles = std::numeric_limits<size_t>::max();
 
     B_Ref * current = new B_Ref;
     current->reference(this,currentOffset); // reference the whole container.
@@ -196,13 +208,13 @@ std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list
         return x;
     }
 
-    uint64_t currentLocalOffset = 0;
+    size_t currentLocalOffset = 0;
 
     for (size_t i=0;i<maxNeedles;i++)
     {
         // TODO: repair maxSearchSize.
         std::string needleFound;
-        std::pair<bool,uint64_t> pos = current->find(needles,needleFound,currentLocalOffset,maxSearchSize);
+        std::optional<size_t> pos = current->find(needles,needleFound,currentLocalOffset,maxSearchSize);
         if (pos.first == false)
         {
             // needle not found... so this is the last element.
@@ -257,269 +269,310 @@ void B_Base::freeSplitList(std::list<Memory::Containers::B_Base *> x)
 {
     for (auto i: x)
     {
-        if (i) delete i;
+        if (i) 
+            delete i;
     }
 }
 
-std::pair<bool,uint64_t> B_Base::copyToStream(std::ostream &out, uint64_t bytes, const uint64_t &offset)
+std::optional<size_t> B_Base::copyToStream(std::ostream &out, size_t bytes, const size_t &offset)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
-    if (bytes == std::numeric_limits<uint64_t>::max())
+    if (bytes == std::numeric_limits<size_t>::max())
     {
-        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // invalid size.
+        if (offset>currentSize)
+            return std::nullopt; // invalid size.
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes))
+        return std::nullopt;
 
     // No bytes to copy:
-    if (!bytes) return std::make_pair(true,0);
+    if (!bytes)
+        return 0;
 
     // out of bounds for sure.
-    if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
+    if (offset>currentSize)
+        return std::nullopt;
 
     // out of bounds (last bytes):
-    if (offset+bytes>currentSize) bytes = currentSize-offset;
+    if (offset+bytes>currentSize)
+        bytes = currentSize-offset;
 
     ////////////////////////////////////
     return copyToStream2(out,bytes,offset);
 }
 
-std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, const uint64_t &bytes, const uint64_t &offset)
+std::optional<size_t> B_Base::appendTo(
+    StreamableObject &out, const size_t &bytes, const size_t &offset)
 {
-    Memory::Streams::WriteStatus wrStat;
-    return appendTo(out,wrStat,bytes,offset);
-}
-
-std::pair<bool,uint64_t> B_Base::appendTo(StreamableObject &out, Streams::WriteStatus &wrStatUpd, uint64_t bytes, const uint64_t &offset)
-{
-    uint64_t currentSize = size();
+    size_t currentSize = size();
+    size_t bytesToCopy = bytes;
 
     // Copy eveything...
-    if (bytes == std::numeric_limits<uint64_t>::max())
+    if (bytesToCopy == std::numeric_limits<size_t>::max())
     {
         if (offset>currentSize)
         {
-            wrStatUpd.succeed=false;
-            return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
+            out.writeStatus.succeed=false;
+            return std::nullopt; // invalid pos.
         }
-        bytes = currentSize-offset; // whole container bytes copied.
+        bytesToCopy = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes))
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytesToCopy))
     {
-        wrStatUpd.succeed=false;
-        return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
+        out.writeStatus.succeed=false;
+        return std::nullopt; // invalid pos.
     }
 
     // No bytes to copy:
-    if (!bytes)
-        return std::make_pair(true,0); // invalid pos.
+    if (!bytesToCopy)
+        return 0; // Zero bytes to copy.
 
     // out of bounds for sure.
     if (offset>currentSize)
     {
-        wrStatUpd.succeed=false;
-        return std::make_pair(false,static_cast<uint64_t>(0)); // invalid pos.
+        out.writeStatus.succeed=false;
+        return std::nullopt; // invalid pos.
     }
 
     // out of bounds (last bytes):
-    if (offset+bytes>currentSize) bytes = currentSize-offset;
+    if (offset+bytesToCopy>currentSize)
+        bytesToCopy = currentSize-offset;
 
     ////////////////////////////////////
-    return copyTo2(out,wrStatUpd,bytes,offset);
+    return copyToStreamableObject2(out,bytesToCopy,offset);
 }
 
-std::pair<bool,uint64_t> B_Base::copyOut(void *buf, uint64_t bytes, const uint64_t &offset)
+std::optional<size_t> B_Base::copyOut(void *buf, size_t bytes, const size_t &offset)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
-    if (bytes == std::numeric_limits<uint64_t>::max())
+    if (bytes == std::numeric_limits<size_t>::max())
     {
-        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // out of bounds.
+        if (offset>currentSize) 
+            return std::nullopt; // out of bounds.
+
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
+    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) 
+        return std::nullopt;
 
     // No bytes to copy:
-    if (!bytes) return std::make_pair(true,0);
+    if (!bytes)
+        return 0;
 
     // out of bounds (fail to copy):
-    if (offset+bytes>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
+    if (offset+bytes>currentSize) 
+        return std::nullopt;
 
     ////////////////////////////////////
-    return copyOut2(buf,bytes,offset);
+    return copyToBuffer2(buf,bytes,offset);
 }
 
-std::pair<bool, uint64_t> B_Base::copyToString(std::string &outStr, uint64_t bytes, const uint64_t &roOffset)
+std::optional<size_t> B_Base::copyToString(std::string &outStr, size_t bytes, const size_t &roOffset)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
-    uint64_t offset = roOffset;
-    if (bytes == std::numeric_limits<uint64_t>::max())
-    {
-        if (offset>currentSize) return std::make_pair(false,static_cast<uint64_t>(0)); // out of bounds
-        bytes = currentSize-offset; // whole container bytes copied.
-    }
-
-    // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,bytes)) return std::make_pair(false,static_cast<uint64_t>(0));
-
-    // No bytes to copy:
-    if (!bytes) return std::make_pair(true,0);
-
-    // out of bounds (fail to copy):
-    if (offset+bytes>currentSize) return std::make_pair(false,static_cast<uint64_t>(0));
-
-    char outmem[8192];
-    ////////////////////////////////////
-    while (bytes)
-    {
-        size_t copyBytes = bytes>8192?8192:bytes;
-        bytes-=copyBytes;
-
-        std::pair<bool,uint64_t> outBytes = copyOut(outmem,copyBytes,offset);
-
-        if (outBytes.first)
-            outStr.append(outmem,outBytes.second);
-        else
-            return std::make_pair(false,outStr.size());
-
-        offset+=copyBytes;
-    }
-
-    return std::make_pair(true,outStr.size());
-}
-
-std::string B_Base::toString(uint64_t bytes, const uint64_t &roOffset)
-{
-    std::string r;
-
-    uint64_t currentSize = size();
-    uint64_t offset = roOffset;
-
-    if (bytes == std::numeric_limits<uint64_t>::max())
+    size_t offset = roOffset;
+    if (bytes == std::numeric_limits<size_t>::max())
     {
         if (offset>currentSize)
-            return r; // negative bytes copied.
+            return std::nullopt; // out of bounds
+
         bytes = currentSize-offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset,bytes))
-        return r;
+        return std::nullopt;
+
+    // No bytes to copy:
+    if (!bytes)
+        return 0;
+
+    // out of bounds (fail to copy):
+    if (offset+bytes>currentSize)
+        return std::nullopt;
+
+    char outmem[8192];
+    ////////////////////////////////////
+    while (bytes)
+    {
+        size_t copyBytes = std::min(bytes, static_cast<size_t>(8192));
+        bytes-=copyBytes;
+
+        std::optional<size_t> outBytes = copyOut(outmem,copyBytes,offset);
+
+        if (outBytes!=std::nullopt)
+            outStr.append(outmem,outBytes.value());
+        else
+            return outStr.size();
+
+        offset+=copyBytes;
+    }
+
+    return outStr.size();
+}
+
+std::optional<std::string> B_Base::toString(size_t bytes, const size_t &roOffset)
+{
+    std::string r;
+
+    size_t currentSize = size();
+    size_t offset = roOffset;
+
+    if (bytes == std::numeric_limits<size_t>::max())
+    {
+        if (offset > currentSize)
+            return std::nullopt;      // negative bytes copied.
+        bytes = currentSize - offset; // whole container bytes copied.
+    }
+
+    // Offset:bytes will overflow...
+    if (CHECK_UINT_OVERFLOW_SUM(offset, bytes))
+        return std::nullopt; // negative bytes copied.
 
     // No bytes to copy:
     if (!bytes)
         return r;
 
     // out of bounds (fail to copy):
-    if (offset+bytes>currentSize)
-        return r;
+    if (offset + bytes > currentSize)
+        return std::nullopt; // negative bytes copied.
 
     char outmem[8192];
     ////////////////////////////////////
     while (bytes)
     {
-        size_t copyBytes = bytes>8192?8192:bytes;
-        bytes-=copyBytes;
-         std::pair<bool,uint64_t> outBytes = copyOut(outmem,copyBytes,offset);
+        size_t copyBytes = std::min(bytes, static_cast<size_t>(8192));
+        bytes -= copyBytes;
+        std::optional<size_t> outBytes = copyOut(outmem, copyBytes, offset);
 
-         if (outBytes.first)
-             r.append(outmem,outBytes.second);
-         else
-             return r;
+        if (outBytes!=std::nullopt)
+            r.append(outmem, outBytes.value());
+        else
+            return r;
 
-        offset+=copyBytes;
+        offset += copyBytes;
     }
 
     return r;
 }
 
-uint64_t B_Base::toUInt64(int base, const uint64_t &bytes, const uint64_t &offset)
+std::optional<uint64_t> B_Base::toUInt64(int base, const size_t &bytes, const size_t &offset)
 {
-    return strtoull(toString(bytes,offset).c_str(),nullptr,base);
+    auto s = toString(bytes,offset);
+    if (!s)
+        return std::nullopt;
+
+    char *endPtr;
+    uint64_t result = strtoull(s->c_str(), &endPtr, base);
+
+    // Check for conversion errors
+    if (*endPtr != '\0' || endPtr == s->c_str())
+        return std::nullopt;
+
+    return result;
 }
 
-uint32_t B_Base::toUInt32(int base, const uint64_t &bytes, const uint64_t &offset)
+std::optional<uint32_t> B_Base::toUInt32(int base, const size_t &bytes, const size_t &offset)
 {
-    return strtoul(toString(bytes,offset).c_str(),nullptr,base);
+    auto s = toString(bytes,offset);
+    if (!s)
+        return std::nullopt;
+
+    char *endPtr;
+    uint32_t result = strtoul(s->c_str(), &endPtr, base);
+
+    // Check for conversion errors
+    if (*endPtr != '\0' || endPtr == s->c_str())
+        return std::nullopt;
+
+    return result;
 }
 
-bool B_Base::compare(const std::string &cmpString, bool caseSensitive, const uint64_t &offset)
+bool B_Base::compare(const std::string &cmpString, bool caseSensitive, const size_t &offset)
 {
-    if (cmpString.size()!=size()) return false;
+    if (cmpString.size()!=size()) 
+        return false;
     return compare(cmpString.c_str(),cmpString.size(),caseSensitive,offset);
 }
 
-bool B_Base::compare(const void *mem, const uint64_t &len, bool caseSensitive, const uint64_t &offset)
+bool B_Base::compare(const void *mem, const size_t &len, bool caseSensitive, const size_t &offset)
 {
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,len)) return false;
+    if (CHECK_UINT_OVERFLOW_SUM(offset,len)) 
+        return false;
 
     // No bytes to copy:
-    //if (!len || offset+len==size()) return true;
+    //if (!len || offset+len==size()) 
+        return true;
     // No data to compare...
-    if (!len) return true;
+    if (!len) 
+        return true;
 
     // out of bounds (fail to compare):
-    if (offset+len>size()) return false;
+    if (offset+len>size()) 
+        return false;
 
     /////////////////////////////
 
     return compare2(mem,len,caseSensitive,offset);
 }
 
-std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_len, bool caseSensitive, const uint64_t &offset, uint64_t searchSpace)
+std::optional<size_t> B_Base::find(const void *needle,const size_t &needle_len, bool caseSensitive, const size_t &offset, size_t searchSpace)
 {
-    uint64_t currentSize = size();
+    size_t currentSize = size();
 
     char * c_needle = (char *)needle;
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len))
-        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+        return  std::nullopt;
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace))
-        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+        return  std::nullopt;
 
     if (offset>currentSize)
-        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+        return  std::nullopt;
     if (searchSpace == 0)
         searchSpace = currentSize-offset;
     if (searchSpace == 0)
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
 
     // not enough search space to found anything...
     if (searchSpace<needle_len)
-        return std::make_pair(false,std::numeric_limits<uint64_t>::max());
+        return  std::nullopt;
 
     // nothing to be found... first position
     if (needle_len == 0)
-        return std::make_pair(true,0);
+        return 0;
 
-    uint64_t currentOffset = offset;
+    size_t currentOffset = offset;
 
-    std::pair<bool,uint64_t> pos = findChar(c_needle[0],currentOffset,searchSpace,caseSensitive);
-    while (pos.first == true) // char detected...
+    std::optional<size_t> pos = findChar(c_needle[0],currentOffset,searchSpace,caseSensitive);
+    while (pos != std::nullopt) // char detected...
     {
         /////////////////////////////////
-        uint64_t displacement = pos.second-currentOffset;
+        size_t displacement = pos.value()-currentOffset;
 
         currentOffset+=displacement;
         searchSpace-=displacement;
 
         if (compare2(needle,needle_len,caseSensitive,currentOffset))
-            return std::make_pair(true,currentOffset);
+            return currentOffset;
 
         // no left space to consume.
-        if (searchSpace == 0) break;
+        if (searchSpace == 0)
+            break;
 
         // skip char found.
         currentOffset+=1;
@@ -529,7 +582,7 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     }
 
     // not found
-    return std::make_pair(false,static_cast<uint64_t>(0));
+    return std::nullopt;
 
     /*
     if (searchSpace == 0) searchSpace = currentSize;
@@ -537,25 +590,30 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     //std::cout << "B_Base::find  Getting size() " << containerBytes << std::endl << std::flush;
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len)) return std::numeric_limits<uint64_t>::max();
+    if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len)) 
+        return std::numeric_limits<size_t>::max();
 
     // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace)) return std::numeric_limits<uint64_t>::max();
+    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace)) 
+        return std::numeric_limits<size_t>::max();
 
     // not enough search space to found anything...
-    if (searchSpace<needle_len) return std::numeric_limits<uint64_t>::max();
+    if (searchSpace<needle_len) 
+        return std::numeric_limits<size_t>::max();
 
     // nothing to found... first position
-    if (needle_len == 0) return 0;
+    if (needle_len == 0) 
+        return 0;
 
     // Reduce the needle size from the search space (optimization)
     searchSpace=searchSpace-needle_len+1;
 
     // calc search space available
-    uint64_t availableSearchSpace= (currentSize-needle_len+1);
+    size_t availableSearchSpace= (currentSize-needle_len+1);
 
     // Verify if offset is appliable (bad offset)
-    if (availableSearchSpace<offset) return std::numeric_limits<uint64_t>::max();
+    if (availableSearchSpace<offset) 
+        return std::numeric_limits<size_t>::max();
 
     // Apply offset:
     availableSearchSpace-=offset;
@@ -564,33 +622,34 @@ std::pair<bool,uint64_t> B_Base::find(const void *needle,const size_t &needle_le
     if (searchSpace<availableSearchSpace) availableSearchSpace=searchSpace;
 
     // start comparing at offset...
-    for (uint64_t currentOffset=offset; currentOffset<availableSearchSpace; currentOffset++)
+    for (size_t currentOffset=offset; currentOffset<availableSearchSpace; currentOffset++)
     {
-        if (CHECK_UINT_OVERFLOW_SUM(currentOffset,needle_len)) std::numeric_limits<uint64_t>::max(); // ERROR...
-        if (compare2(needle,needle_len,caseSensitive,currentOffset)) return currentOffset;
+        if (CHECK_UINT_OVERFLOW_SUM(currentOffset,needle_len)) std::numeric_limits<size_t>::max(); // ERROR...
+        if (compare2(needle,needle_len,caseSensitive,currentOffset)) 
+        return currentOffset;
     }
 
     // TODO: found boolean flag instead.
 
-    return std::numeric_limits<uint64_t>::max(); // not found.*/
+    return std::numeric_limits<size_t>::max(); // not found.*/
 }
 
-std::pair<bool,uint64_t> B_Base::find(const std::list<std::string> &needles, std::string &needleFound, bool caseSensitive, const uint64_t &offset, const uint64_t &searchSpace)
+std::optional<size_t> B_Base::find(const std::list<std::string> &needles, std::string &needleFound, bool caseSensitive, const size_t &offset, const size_t &searchSpace)
 {
     needleFound = "";
     for (const std::string & needle : needles)
     {
-        std::pair<bool,uint64_t> f;
-        if ((f=find(needle.c_str(),needle.size(),caseSensitive,offset,searchSpace)).first==true)
+        std::optional<size_t> f = find(needle.c_str(),needle.size(),caseSensitive,offset,searchSpace);
+        if (f != std::nullopt)
         {
             needleFound = needle;
             return f;
         }
     }
-    return std::make_pair(false,static_cast<uint64_t>(0));
+    return std::nullopt;
 }
 
-uint64_t B_Base::size() const
+size_t B_Base::size()
 {
     return m_containerBytes;
 }
@@ -600,17 +659,17 @@ bool B_Base::isNull()
     return size()==0;
 }
 
-uint64_t B_Base::getMaxSize() const
+size_t B_Base::getMaxSize() const
 {
     return m_maxSize;
 }
 
-void B_Base::setMaxSize(const uint64_t &value)
+void B_Base::setMaxSize(const size_t &value)
 {
     m_maxSize = value;
 }
 
-uint64_t B_Base::getSizeLeft() const
+size_t B_Base::getSizeLeft()
 {
     // ERR
     if (size()>m_maxSize)
@@ -619,7 +678,7 @@ uint64_t B_Base::getSizeLeft() const
     return m_maxSize-size();
 }
 
-void B_Base::reduceMaxSizeBy(const uint64_t &value)
+void B_Base::reduceMaxSizeBy(const size_t &value)
 {
     if ( value > getMaxSize() )
         throw std::runtime_error("Don't reduce the max size with a value greater than the current max.");
@@ -627,57 +686,56 @@ void B_Base::reduceMaxSizeBy(const uint64_t &value)
     setMaxSize( getMaxSize() - value );
 }
 
-bool B_Base::streamTo(Memory::Streams::StreamableObject * out, Streams::WriteStatus &wrStatUpd)
+bool B_Base::streamTo(Memory::Streams::StreamableObject *out)
 {
-    std::pair<bool,uint64_t> bytesAppended = appendTo(*out,wrStatUpd);
-    if (bytesAppended.first==false)
+    std::optional<size_t> x = appendTo(*out);
+
+    if (x==std::nullopt || !out->writeStatus.succeed)
     {
-        out->writeEOF(false);
         return false;
     }
+
+    bool y = out->writeEOF();
+    return y && out->writeStatus.succeed;
+}
+
+size_t B_Base::write(const void * buf, const size_t &count)
+{
+    std::optional<size_t> bytesAppended = append(buf,count);
+
+    if ( bytesAppended == false )
+    {
+        writeStatus+=-1;
+        return 0;
+    }
     else
     {
-        out->writeEOF(true);
-        return true;
+        writeStatus+=*bytesAppended;
+        return *bytesAppended;
     }
 }
 
-Mantids30::Memory::Streams::WriteStatus B_Base::write(const void * buf, const size_t &count, Mantids30::Memory::Streams::WriteStatus & wrStatUpd)
+std::shared_ptr<Mantids30::Memory::Containers::B_Base> B_Base::copyToFS(
+    const std::string &fileName, bool deleteFileOnDestruction)
 {
-    Memory::Streams::WriteStatus ret;
-    std::pair<bool,uint64_t> bytesAppended = append(buf,count);
-    if (bytesAppended.first==false)
-    {
-        ret.succeed=wrStatUpd.succeed=setFailedWriteState();
-    }
-    else
-    {
-        ret.bytesWritten+=bytesAppended.second;
-        wrStatUpd.bytesWritten+=bytesAppended.second;
-    }
-    return ret;
-}
-
-B_Base *B_Base::copyToFS(const std::string &fileName, bool removeOnDestroy)
-{
-    B_MMAP * mmapbc = new B_MMAP();
+    std::shared_ptr<B_MMAP> mmapbc = std::make_shared<B_MMAP>();
     mmapbc->setFsBaseFileName(m_fsBaseFileName);
     mmapbc->setFsDirectoryPath(m_fsDirectoryPath);
     // TODO: passing filename when passing from chunks/mem to file.
     if (!mmapbc->referenceFile(fileName))
     {
-        delete mmapbc;
         return nullptr;
     }
-    mmapbc->setRemoveOnDestroy(removeOnDestroy);
+    mmapbc->setDeleteFileOnDestruction(deleteFileOnDestruction);
+
     // dump this container into the mmaped binary container.
-    std::pair<bool,uint64_t> bytesAppended = appendTo(*mmapbc);
-    if (bytesAppended.second!=size() || !bytesAppended.first)
+    std::optional<size_t> bytesAppended = appendTo(*mmapbc);
+    if (!bytesAppended || *bytesAppended!=size())
     {
-        mmapbc->setRemoveOnDestroy(true);
-        delete mmapbc;
+        mmapbc->setDeleteFileOnDestruction(true);
         return nullptr;
     }
+
     return mmapbc;
 }
 
@@ -706,55 +764,52 @@ std::string B_Base::getCurrentFileName() const
     return "";
 }
 
-std::pair<bool,uint64_t> B_Base::copyTo2(StreamableObject &bc, const uint64_t &bytes, const uint64_t &offset)
-{
-    Memory::Streams::WriteStatus wrStatUpd;
-    return copyTo2(bc,wrStatUpd,bytes,offset);
-}
-
-void B_Base::incContainerBytesCount(const uint64_t &i)
+void B_Base::incContainerBytesCount(const size_t &i)
 {
     setContainerBytes(size()+i);
 }
 
-void B_Base::decContainerBytesCount(const uint64_t &i)
+void B_Base::decContainerBytesCount(const size_t &i)
 {
     setContainerBytes(size()-i);
 }
 
-void B_Base::setContainerBytes(const uint64_t &value)
+void B_Base::setContainerBytes(const size_t &value)
 {
     m_containerBytes = value;
 }
 
-uint64_t B_Base::copyToStreamUsingCleanVector(std::ostream &bc, std::vector<BinaryContainerChunk> copyChunks)
+size_t B_Base::copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks)
 {
-    uint64_t dataCopied = 0;
+    size_t dataCopied = 0;
 
     // Appending mode.
     for (size_t i=0; i<copyChunks.size();i++)
     {
         // TODO: Check the outcome of write...
-        bc.write(copyChunks[i].rodata,copyChunks[i].rosize);
+        streamOut.write(copyChunks[i].rodata,copyChunks[i].rosize);
+
         dataCopied+= copyChunks[i].rosize;
     }
 
     return dataCopied;
 }
 
-uint64_t B_Base::copyToSOUsingCleanVector(StreamableObject &bc, std::vector<BinaryContainerChunk> copyChunks, Streams::WriteStatus &wrStatUpd)
+size_t B_Base::copyToStreamableObjectUsingCleanVector(
+    StreamableObject &bcOut, std::vector<BinaryContainerChunk> copyChunks)
 {
-    Memory::Streams::WriteStatus acum;
+    size_t dataCopied = 0;
+
     // Appending mode.
     for (size_t i=0; i<copyChunks.size();i++)
     {
-        Memory::Streams::WriteStatus cur;
-        if ( !(cur = bc.write(copyChunks[i].rodata,copyChunks[i].rosize,wrStatUpd)).succeed || cur.bytesWritten!=copyChunks[i].rosize)
+        size_t bytesWritten = bcOut.write(copyChunks[i].rodata, copyChunks[i].rosize);
+        dataCopied = safeAdd(bytesWritten,dataCopied);
+        if (!bcOut.writeStatus.succeed)
         {
-            acum+=cur;
-            return acum.bytesWritten;
+            return dataCopied;
         }
-        acum+=cur;
     }
-    return acum.bytesWritten;
+
+    return dataCopied;
 }

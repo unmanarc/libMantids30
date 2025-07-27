@@ -123,7 +123,7 @@ public:
     /**
      * @brief writeEOF proccess the end of the stream (should be implemented on streamTo)
      */
-    size_t writeEOF();
+    bool writeEOF();
 
     /**
      * @brief size return the size of the sub-container if it's fixed size.
@@ -144,8 +144,8 @@ public:
         return true;
     }
 
-    std::optional<size_t> writeFullStreamWithEOF(const void *buf, const size_t &count);
-    size_t writeFullStream(const void *buf, const size_t &count);
+    bool writeFullStreamWithEOF(const void *buf, const size_t &count);
+    bool writeFullStream(const void *buf, const size_t &count);
 
     // Partial Write...
     virtual size_t write(const void * buf, const size_t &count)=0;
@@ -154,7 +154,7 @@ public:
      * @param buf data to be streamed.
      * @return true if succeed (all bytes written)
      */
-    size_t writeString(const std::string & buf);
+    bool writeString(const std::string & buf);
 
     size_t strPrintf(const char * format, ...);
 

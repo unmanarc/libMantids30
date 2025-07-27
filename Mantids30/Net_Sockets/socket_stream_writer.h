@@ -1,9 +1,11 @@
 #pragma once
 
-#include <stdint.h>
-#include <string>
+#include <Mantids30/Memory/streamableobject.h>
+
 #include <limits>
 #include <stdexcept>
+#include <stdint.h>
+#include <string>
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 
@@ -80,7 +82,7 @@ public:
     }
 
     template<typename T>
-    bool writeStringEx(const std::string & str,const uint64_t & maxSize = std::numeric_limits<T>::max()-1)
+    bool writeStringEx(const std::string & str,const size_t & maxSize = std::numeric_limits<T>::max()-1)
     {
         if (str.size()>maxSize)
         {
@@ -93,7 +95,7 @@ public:
 
 protected:
 
-    virtual bool writeFull(const void * data, const uint64_t & datalen) = 0;
+    virtual bool writeFull(const void * data, const size_t & datalen) = 0;
     virtual void writeDeSync()=0;
 private:
     /**

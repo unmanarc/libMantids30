@@ -9,7 +9,7 @@ Logs::AppLog *Config::Logs::createAppLog(
     if ( ptr->get<bool>("Logs.ToSyslog",true) )
         logMode|=Program::Logs::MODE_SYSLOG;
 
-    auto log = new Program::Logs::AppLog(logMode);
+    Program::Logs::AppLog* log = new Program::Logs::AppLog(logMode);
     log->setDebug(ptr->get<bool>("Logs.Debug", false));
     log->enableDateLogging = ptr->get<bool>("Logs.ShowDate", true);
     log->enableColorLogging = ptr->get<bool>("Logs.ShowColors", true);
@@ -27,7 +27,7 @@ Logs::RPCLog *Config::Logs::createRPCLog(
     if ( ptr->get<bool>("Logs.ToSyslog",true) )
         logMode|=Program::Logs::MODE_SYSLOG;
 
-    auto log = new Program::Logs::RPCLog(logMode);
+    Program::Logs::RPCLog* log = new Program::Logs::RPCLog(logMode);
     log->setDebug(ptr->get<bool>("Logs.Debug", false));
     log->enableColorLogging = ptr->get<bool>("Logs.ShowColors", true);
     log->enableDateLogging = ptr->get<bool>("Logs.ShowDate", true);

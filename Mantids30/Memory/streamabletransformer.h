@@ -16,33 +16,30 @@ public:
     StreamableTransformer() = default;
     virtual ~StreamableTransformer() = default;
 
-    bool streamTo(Memory::Streams::StreamableObject *, Streams::WriteStatus & ) override { return false; }
+    void transform( Memory::Streams::StreamableObject * in, Memory::Streams::StreamableObject * out );
 
-    Streams::WriteStatus transform( Memory::Streams::StreamableObject * in, Memory::Streams::StreamableObject * out );
 
 protected:
-    bool setFailedWriteState(const uint16_t &value = 1)
-    {
-        return StreamableObject::setFailedWriteState(value);
-    }
 
-    virtual Memory::Streams::WriteStatus writeTo(Memory::Streams::StreamableObject * dst, const void * buf, const size_t &count, Streams::WriteStatus &wrStat) = 0;
-
-    virtual void writeTransformerEOF(Memory::Streams::StreamableObject *dst, bool) {}
-
+    virtual size_t writeTo(Memory::Streams::StreamableObject * dst, const void * buf, const size_t &count) = 0;
+    virtual size_t writeTransformerEOF(Memory::Streams::StreamableObject *dst) { return 0; }
 
 private:
-    /**
-     * @brief writeEOF proccess the end of the stream (should be implemented on streamTo)
-     */
-    void writeEOF(bool x) override
+    size_t write(const void * buf, const size_t &count) override
     {
-        writeTransformerEOF(destObj,x);
-    }
+        size_t r;
 
-    Memory::Streams::WriteStatus write(const void * buf, const size_t &count, Streams::WriteStatus &wrStat) override
-    {
-        return writeTo(destObj,buf,count,wrStat);
+        if ( count == 0 ) // EOF
+        {
+            r = writeTransformerEOF(destObj);
+        }
+        else
+        {
+            r = writeTo(destObj,buf,count);
+        }
+
+        return r;
+
     }
 
     Memory::Streams::StreamableObject * destObj = nullptr;

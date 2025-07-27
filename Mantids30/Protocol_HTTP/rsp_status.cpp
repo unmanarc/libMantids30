@@ -2,6 +2,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <optional>
 #include <vector>
 #include <string>
 
@@ -72,13 +73,14 @@ HTTP::Status::Status()
 
 Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
 {
-    std::string clientRequest = getParsedBuffer()->toString();
+    std::string clientRequest = getParsedBuffer()->toStringEx();
 
     vector<string> requestParts;
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
+    if (requestParts.size()<2) 
+        return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_httpVersion.parse(requestParts[0]);
     m_statusCode = strtoul(requestParts[1].c_str(),nullptr,10);
@@ -116,14 +118,14 @@ string HTTP::Status::getStringTranslation(
     return "";
 }
 
-bool HTTP::Status::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
+bool HTTP::Status::streamToUpstream( )
 {
     // Act as a client. Send data from here.
     return m_upStream->writeString(  m_httpVersion.toString()
                                  +  " "
                                  +  std::to_string(m_statusCode)
                                  +  " "
-                                 +  m_statusMessage + "\r\n",wrStat).succeed;
+                                 +  m_statusMessage + "\r\n");
 }
 
 void HTTP::Status::setCode(Status::Codes code)

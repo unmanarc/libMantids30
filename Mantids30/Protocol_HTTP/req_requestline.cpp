@@ -24,29 +24,43 @@ RequestLine::RequestLine()
     m_subParserName = "RequestLine";
 }
 
-bool RequestLine::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
+bool RequestLine::streamToUpstream()
 {
-    Memory::Streams::WriteStatus cur;
     // Act as a client. Send data from here.
-     if (!(cur+=m_upStream->writeString(m_requestMethod + " " + m_requestURI, wrStat )).succeed) return false;
+    m_upStream->writeString(m_requestMethod + " " + m_requestURI );
+    if (!m_upStream->writeStatus.succeed)
+        return false;
+
     if (!m_getVars->isEmpty())
     {
-        if (!(cur+=m_upStream->writeString("?",wrStat)).succeed) return false;
-        if (!m_getVars->streamTo(m_upStream,wrStat)) return false;
+        m_upStream->writeString("?");
+        if (!m_upStream->writeStatus.succeed)
+            return false;
+
+        if (!m_getVars->streamTo(m_upStream))
+            return false;
+
+        m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n") );
+
+        if (!m_upStream->writeStatus.succeed)
+            return false;
     }
-    if (!(cur+=m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n"), wrStat )).succeed) return false;
-    return true;
+
+    return m_upStream->writeStatus.succeed;
+
+
 }
 
 Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 {
-    std::string clientRequest = getParsedBuffer()->toString();
+    std::string clientRequest = getParsedBuffer()->toStringEx();
 
     vector<string> requestParts;
     split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) return Memory::Streams::SubParser::PARSE_ERROR;
+    if (requestParts.size()<2) 
+        return Memory::Streams::SubParser::PARSE_ERROR;
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
     m_requestURI = requestParts[1];
@@ -79,11 +93,10 @@ void RequestLine::parseURI()
 
 void RequestLine::parseGETParameters()
 {
-    Memory::Streams::WriteStatus x;
     Memory::Containers::B_Chunks bc;
 
     bc.append(m_requestURIParameters.c_str(),m_requestURIParameters.size());
-    bc.streamTo(m_getVars.get(),x);
+    bc.streamTo(m_getVars.get());
 }
 
 std::string RequestLine::getRequestURIParameters() const

@@ -1,16 +1,15 @@
 #pragma once
 
-
-#include <Mantids30/Net_Sockets/socket_stream.h>
-#include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
-#include <Mantids30/Net_Sockets/socket_stream_dummy.h>
-#include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
-#include <Mantids30/Program_Logs/rpclog.h>
-#include <Mantids30/Memory/b_mem.h>
-#include <memory>
+#include <Mantids30/Program_Logs/applog.h>
 #include "apiclienthandler.h"
 #include "apiserverparameters.h"
-
+#include <Mantids30/Memory/b_mem.h>
+#include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
+#include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
+#include <Mantids30/Net_Sockets/socket_stream_dummy.h>
+#include <Mantids30/Program_Logs/rpclog.h>
+#include <memory>
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
 
@@ -20,17 +19,38 @@ public:
 
     struct Callbacks
     {
+        /**
+         * @brief NotificationCallback A callback function that is invoked when a new client connection is established.
+         *
+         * This callback allows you to perform actions when a new client successfully connects to the server.
+         *
+         * @param context A user-defined context that can be passed to the callback function.
+         * @param sock The newly established socket connection.
+         * @return True to continue processing the connection, false to cancel it.
+         */
         struct NotificationCallback
         {
             NotificationCallback()
             {
             }
 
+            /**
+             * @brief NotificationCallback Constructor.
+             *
+             * @param callbackFunction The callback function to be invoked.
+             */
             NotificationCallback( bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>) )
             {
                 this->callbackFunction=callbackFunction;
             }
 
+            /**
+             * @brief call Invokes the callback function with the provided context and socket.
+             *
+             * @param context A user-defined context that can be passed to the callback function.
+             * @param sock The socket connection to be processed.
+             * @return True if the callback returns true, false otherwise.
+             */
             bool call(void *context, std::shared_ptr<Sockets::Socket_Stream> sock) const
             {
                 if (!callbackFunction)
@@ -38,15 +58,19 @@ public:
                 return callbackFunction(context, sock);
             }
             /**
-             * return false to cancel the connection, true to continue...
+             * @brief The callback function to be invoked when a new client connection is established.
+             *
+             * @param context A user-defined context that can be passed to the callback function.
+             * @param sock The newly established socket connection.
+             * @return True to continue processing the connection, false to cancel it.
              */
             bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
         };
 
-        NotificationCallback onClientConnected;
-        NotificationCallback onProtocolInitializationFailure;
-        NotificationCallback onClientAcceptTimeoutOccurred;
-        NotificationCallback onClientConnectionLimitPerIPReached;
+        NotificationCallback onClientConnected;            ///< Callback invoked when a new client connects.
+        NotificationCallback onProtocolInitializationFailure; ///< Callback invoked when protocol initialization fails.
+        NotificationCallback onClientAcceptTimeoutOccurred;  ///< Callback invoked when a client connection times out during acceptance.
+        NotificationCallback onClientConnectionLimitPerIPReached; ///< Callback invoked when the connection limit per IP address is reached.
     };
 
 
@@ -87,6 +111,7 @@ public:
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
     APIServerParameters config;             ///< The api server configuration parameters
+    Program::Logs::AppLog *log = nullptr;
 
     std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
 

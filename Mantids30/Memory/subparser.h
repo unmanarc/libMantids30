@@ -3,6 +3,7 @@
 #include "b_chunks.h"
 #include "b_ref.h"
 #include "streamableobject.h"
+#include <optional>
 
 //#define DEBUG_PARSER 1
 
@@ -59,18 +60,21 @@ public:
      * @return -1 if failed, or bytes written >0. 0 on ending stream.
      */
     // TODO: size_t -1? why not ssize_t?
-    std::pair<bool, uint64_t> writeIntoParser(const void * buf, size_t count);
+    std::optional<size_t> writeIntoParser(const void * buf, size_t count);
     /**
      * @brief stream Virtual function to stream this sub parser into upstream object
-     * @param wrStat updates bytes written and error status.
      * @return true if succeed
      */
-    virtual bool streamToUpstream(WriteStatus & wrStat) = 0;
+    virtual bool streamToUpstream()
+    {
+        // if not implemented...
+        return false;
+    }
     /**
      * @brief Returns the size of the unparsed data remaining in the buffer.
      * @return Size of the unparsed data in bytes.
      */
-    uint64_t getUnparsedDataSize() const;
+    size_t getUnparsedDataSize();
     /**
      * @brief Returns the delimiter string that was found during parsing with multiple delimiters.
      * @return The delimiter string that was matched in the current parsing context.
@@ -129,7 +133,7 @@ protected:
      * @brief Set Parse Data Target Size in bytes
      * @param value Target Size in bytes
      */
-    void setParseDataTargetSize(const uint64_t &value);
+    void setParseDataTargetSize(const size_t &value);
 
 
     /**
@@ -144,15 +148,15 @@ protected:
     Memory::Streams::StreamableObject * m_upStream = nullptr;
 
 private:
-    std::pair<bool,uint64_t> parseByMultiDelimiter(const void * buf, size_t count);
-    std::pair<bool,uint64_t> parseByDelimiter(const void * buf, size_t count);
-    std::pair<bool,uint64_t> parseBySize(const void * buf, size_t count);
-    std::pair<bool, uint64_t> parseByValidator(const void *, size_t);
-    std::pair<bool,uint64_t> parseByConnectionEnd(const void * buf, size_t count);
-    std::pair<bool,uint64_t> parseDirect(const void * buf, size_t count);
-    std::pair<bool,uint64_t> parseDirectDelimiter(const void * buf, size_t count);
+    std::optional<size_t> parseByMultiDelimiter(const void * buf, size_t count);
+    std::optional<size_t> parseByDelimiter(const void * buf, size_t count);
+    std::optional<size_t> parseBySize(const void * buf, size_t count);
+    std::optional<size_t> parseByValidator(const void *, size_t);
+    std::optional<size_t> parseByConnectionEnd(const void * buf, size_t count);
+    std::optional<size_t> parseDirect(const void * buf, size_t count);
+    std::optional<size_t> parseDirectDelimiter(const void * buf, size_t count);
 
-    uint64_t getLastBytesInCommon(const std::string &boundary);
+    size_t getLastBytesInCommon(const std::string &boundary);
     Mantids30::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
     Mantids30::Memory::Containers::B_Ref m_parsedBuffer;
     Mantids30::Memory::Containers::B_Chunks m_unparsedBuffer;

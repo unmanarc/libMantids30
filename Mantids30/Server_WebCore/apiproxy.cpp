@@ -64,6 +64,9 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
         // Set the same request.
         client.clientRequest = *request;
 
+        // Use the new internal path (removing the proxy original URL)...
+        client.clientRequest.requestLine.setRequestURI( internalPath );
+
         // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
         for (const auto& header : proxyParameters->extraHeaders)
         {

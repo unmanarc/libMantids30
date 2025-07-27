@@ -3,7 +3,7 @@
 using namespace Mantids30::Memory::Containers;
 
 
-B_Ref::B_Ref(B_Base *bc, const uint64_t &offset, const uint64_t &maxBytes)
+B_Ref::B_Ref(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 {
     m_storeMethod = BC_METHOD_BCREF;
     referencedBC = nullptr;
@@ -18,9 +18,10 @@ B_Ref::~B_Ref()
     B_Ref::clear2();
 }
 
-bool B_Ref::reference(B_Base *bc, const uint64_t &offset, const uint64_t &maxBytes)
+bool B_Ref::reference(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 {
-    if (offset>bc->size()) return false;
+    if (offset>bc->size()) 
+        return false;
 
     m_readOnly = true; // :p
 
@@ -31,34 +32,42 @@ bool B_Ref::reference(B_Base *bc, const uint64_t &offset, const uint64_t &maxByt
     return true;
 }
 
-uint64_t B_Ref::size() const
+size_t B_Ref::size()
 {
-    if (!referencedBC) return 0;
-    uint64_t availableBytes = referencedBC->size()-referencedOffset; // Available bytes.
+    if (!referencedBC)
+        return 0;
+    size_t availableBytes = referencedBC->size()-referencedOffset; // Available bytes.
 
-    if (referencedMaxBytes==std::numeric_limits<uint64_t>::max() || referencedMaxBytes>availableBytes) return availableBytes;
-    else return referencedMaxBytes;
+    if (referencedMaxBytes==std::numeric_limits<size_t>::max() || referencedMaxBytes>availableBytes)
+        return availableBytes;
+    else
+        return referencedMaxBytes;
 }
 
-std::pair<bool, uint64_t> B_Ref::findChar(const int &c, const uint64_t &offset, uint64_t searchSpace, bool caseSensitive)
+std::optional<size_t> B_Ref::findChar(const int &c, const size_t &offset, size_t searchSpace, bool caseSensitive)
 {
-    if (!referencedBC) return std::make_pair(false,std::numeric_limits<uint64_t>::max());
-    if (caseSensitive && !(c>='A' && c<='Z') && !(c>='a' && c<='z') )
+    if (!referencedBC) 
+        return  std::nullopt;
+
+    if (caseSensitive && !isalpha(static_cast<unsigned char>(c)))
+    {
         caseSensitive = false;
+    }
+
     return referencedBC->findChar(c, referencedOffset+offset,searchSpace, caseSensitive );
 }
 
-std::pair<bool, uint64_t> B_Ref::truncate2(const uint64_t &bytes)
+std::optional<size_t> B_Ref::truncate2(const size_t &bytes)
 {
     referencedMaxBytes = bytes;
-    return std::make_pair(true,bytes);
+    return bytes;
 }
 
-std::pair<bool,uint64_t> B_Ref::append2(const void *buf, const uint64_t &len, bool prependMode)
+std::optional<size_t> B_Ref::append2(const void *buf, const size_t &len, bool prependMode)
 {
     if (!referencedBC) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0)); // CANT APPEND TO NOTHING.
+        return std::nullopt; // CANT APPEND TO NOTHING.
     }
 
     if (prependMode)
@@ -67,18 +76,23 @@ std::pair<bool,uint64_t> B_Ref::append2(const void *buf, const uint64_t &len, bo
         return referencedBC->append(buf,len);
 }
 
-std::pair<bool,uint64_t> B_Ref::displace2(const uint64_t &roBytesToDisplace)
+std::optional<size_t> B_Ref::displace2(const size_t &roBytesToDisplace)
 {
-    uint64_t bytesToDisplace=roBytesToDisplace;
+    size_t bytesToDisplace=roBytesToDisplace;
     if (!referencedBC) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
-    if (bytesToDisplace>size()) bytesToDisplace = size();
-    if (referencedMaxBytes!=std::numeric_limits<uint64_t>::max())
+
+    if (bytesToDisplace>size())
+        bytesToDisplace = size();
+
+    if (referencedMaxBytes!=std::numeric_limits<size_t>::max())
         referencedMaxBytes-=bytesToDisplace;
+
     referencedOffset+=bytesToDisplace;
-    return std::make_pair(true,bytesToDisplace);
+
+    return bytesToDisplace;
 }
 
 bool B_Ref::clear2()
@@ -91,74 +105,76 @@ bool B_Ref::clear2()
     return true;
 }
 
-std::pair<bool,uint64_t> B_Ref::copyToStream2(std::ostream &out, const uint64_t &bytes, const uint64_t &offset)
+std::optional<size_t> B_Ref::copyToStream2(std::ostream &out, const size_t &bytes, const size_t &offset)
 {
     if (!referencedBC)
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
 
     // CAN'T COPY BEYOND OFFSET.
     if (offset>size()) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
 
-    uint64_t maxBytesToCopy = size()-offset;
-    uint64_t bytesToCopy = maxBytesToCopy>bytes?bytes:maxBytesToCopy;
+    size_t maxBytesToCopy = size()-offset;
+    size_t bytesToCopy = std::min(bytes, maxBytesToCopy);
 
     return referencedBC->copyToStream(out,bytesToCopy,referencedOffset+offset);
 }
 
-std::pair<bool,uint64_t> B_Ref::copyTo2(StreamableObject &bc, Streams::WriteStatus & wrStatUpd, const uint64_t &bytes, const uint64_t &offset)
+std::optional<size_t> B_Ref::copyToStreamableObject2(StreamableObject &bc, const size_t &bytes, const size_t &offset)
 {
     if (!referencedBC)
     {
-        wrStatUpd.succeed=false;
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        bc.writeStatus.succeed=false;
+        return std::nullopt;
     }
 
     // CAN'T COPY BEYOND OFFSET.
     if (offset>size())
     {
-        wrStatUpd.succeed=false;
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        bc.writeStatus.succeed=false;
+        return std::nullopt;
     }
 
-    uint64_t maxBytesToCopy = size()-offset;
-    uint64_t bytesToCopy = maxBytesToCopy>bytes?bytes:maxBytesToCopy;
+    size_t maxBytesToCopy = size()-offset;
+    size_t bytesToCopy = std::min(bytes, maxBytesToCopy);
 
-    return referencedBC->appendTo(bc,wrStatUpd,bytesToCopy,referencedOffset+offset);
+    return referencedBC->appendTo(bc,bytesToCopy,referencedOffset+offset);
 }
 
-std::pair<bool,uint64_t> B_Ref::copyOut2(void *buf, const uint64_t &bytes, const uint64_t &offset)
+std::optional<size_t> B_Ref::copyToBuffer2(void *buf, const size_t &bytes, const size_t &offset)
 {
     if (!referencedBC) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
 
     // CAN'T COPY BEYOND OFFSET.
     if (offset>size()) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
 
-    uint64_t maxBytesToCopy = size()-offset;
-    uint64_t bytesToCopy = maxBytesToCopy>bytes?bytes:maxBytesToCopy;
+    size_t maxBytesToCopy = size()-offset;
+    size_t bytesToCopy = std::min(bytes, maxBytesToCopy);
 
     return referencedBC->copyOut(buf,bytesToCopy,referencedOffset+offset);
 }
 
-bool B_Ref::compare2(const void *buf, const uint64_t &len, bool caseSensitive, const uint64_t &offset)
+bool B_Ref::compare2(const void *buf, const size_t &len, bool caseSensitive, const size_t &offset)
 {
-    if (!referencedBC) return false;
+    if (!referencedBC) 
+        return false;
 
     // CAN'T COPY BEYOND OFFSET.
-    if (offset>size()) return false;
+    if (offset>size()) 
+        return false;
 
-    uint64_t maxBytesToCompare = size()-offset;
-    uint64_t bytesToCompare = maxBytesToCompare>len?len:maxBytesToCompare;
+    size_t maxBytesToCompare = size()-offset;
+    size_t bytesToCompare = std::min(len, maxBytesToCompare);
 
     return referencedBC->compare(buf,bytesToCompare,caseSensitive,referencedOffset+offset);
 }

@@ -37,12 +37,13 @@ void JWT::Revocation::removeExpiredTokensFromRevocationList()
 {
     boost::unique_lock<boost::shared_mutex> writeLock(m_revokedTokensMutex);
 
-    auto now = std::time(nullptr);
-    auto upperBound = m_expirationSignatures.upper_bound(now);
-    for (auto it = m_expirationSignatures.begin(); it != upperBound; ++it)
+    time_t now = std::time(nullptr);
+    std::multimap<time_t, std::string>::iterator upperBound = m_expirationSignatures.upper_bound(now);
+    for (std::multimap<time_t, std::string>::iterator it = m_expirationSignatures.begin(); it != upperBound; ++it)
     {
         m_revokedTokens.erase(it->second);
     }
+    
     m_expirationSignatures.erase(m_expirationSignatures.begin(), upperBound);
 }
 

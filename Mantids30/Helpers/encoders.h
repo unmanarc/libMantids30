@@ -183,7 +183,7 @@ public:
      *
      * @return The ASCII hexadecimal character corresponding to the nibble.
      */
-    static char toHexFrom4bitChar(char value, char part);
+    static char toHexFrom4bitChar(char value, const char &part);
 
     /**
      * @brief Converts a hexadecimal character to its corresponding byte value.
@@ -192,7 +192,7 @@ public:
      *
      * @return The byte value corresponding to the hexadecimal character.
      */
-    static char hexToValue(char v);
+    static char hexToValue(const char & v);
 
     /**
      * @brief Converts a pair of hexadecimal characters to an unsigned byte.

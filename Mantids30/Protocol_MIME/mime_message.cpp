@@ -9,6 +9,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 #include <memory>
+#include <optional>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -37,32 +38,52 @@ std::shared_ptr<MIME_Message> MIME_Message::create(
 }
 
 
-bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrStat)
+bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out)
 {
     Memory::Streams::WriteStatus cur;
     // first boundary:
-    if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed)
+    out->writeString("--" + m_multiPartBoundary);
+    if (!out->writeStatus.succeed)
         return false;
+
     for (std::shared_ptr<MIME_PartMessage>  i : m_allParts)
     {
-        if (!(cur+=out->writeString("\r\n", wrStat)).succeed)
+        out->writeString("\r\n");
+
+        // CHECK
+        if (!out->writeStatus.succeed)
             return false;
 
         i->getContent()->initElemParser(out,true);
-        i->getHeader()->initElemParser(out,true);
 
-        if (!i->streamToSubParsers(wrStat))
+        // CHECK
+        if (!out->writeStatus.succeed)
             return false;
 
+        i->getHeader()->initElemParser(out,true);
+
+        // CHECK
+        if (!out->writeStatus.succeed)
+            return false;
+
+        if (!i->streamToSubParsers())
+            return false;
+
+        // Reset init element parsers...
         i->getContent()->initElemParser(nullptr,true);
         i->getHeader()->initElemParser(nullptr,true);
 
-        if (!(cur+=out->writeString("--" + m_multiPartBoundary, wrStat)).succeed)
+
+        out->writeString("--" + m_multiPartBoundary);
+
+        // CHECK
+        if (!out->writeStatus.succeed)
             return false;
     }
-    if (!(cur+=out->writeString("--\r\n", wrStat)).succeed)
-        return false;
-    return true;
+
+    out->writeString("--\r\n");
+    // CHECK
+    return out->writeStatus.succeed;
 }
 
 void MIME_Message::clear()
@@ -286,7 +307,8 @@ std::list<std::shared_ptr<MIME_PartMessage> > MIME_Message::getMultiPartMessages
 
 std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(const std::string &varName)
 {
-    if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end()) return nullptr;
+    if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end()) 
+        return nullptr;
     return m_partsByName.find(boost::to_upper_copy(varName))->second;
 }
 

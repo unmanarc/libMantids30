@@ -85,17 +85,13 @@ public:
      * @return
      */
     std::shared_ptr<Memory::Streams::StreamableObject> getResponseDataStreamer();
-    /**
-     * @brief getResponseTransmissionStatus Get the response transmitted byte count after the request was completed.
-     * @return
-     */
-    Memory::Streams::WriteStatus getResponseTransmissionStatus() const;
+
 
     /**
      * @brief streamResponse Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
      */
-    Memory::Streams::WriteStatus streamResponse(std::shared_ptr<Memory::Streams::StreamableObject>  source);
+    bool streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source);
 
     /**
      * @brief getCurrentFileExtension Get Current File Extension
@@ -155,21 +151,22 @@ protected:
     //ClientVars clientVars;
 
 private:
-    bool changeToNextParserOnClientHeaders();
-    bool changeToNextParserOnClientRequest();
-    bool changeToNextParserOnClientContentData();
-    bool streamServerHeaders(Memory::Streams::WriteStatus &wrStat);
+    bool changeToNextParserFromClientHeaders();
+    bool changeToNextParserFromClientRequestLine();
+    bool changeToNextParserFromClientContentData();
+
+    bool streamServerHeaders();
     void prepareServerVersionOnURI();
 
     void prepareServerVersionOnOptions();
     void parseHostOptions();
 
-    bool answer(Memory::Streams::WriteStatus &wrStat);
+    bool answer();
 
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
 
     bool m_badAnswer;
-    Memory::Streams::WriteStatus m_answerBytes;
+    //Memory::Streams::WriteStatus m_answerBytes;
 
     std::string m_currentFileExtension;
     bool m_includeServerDate;

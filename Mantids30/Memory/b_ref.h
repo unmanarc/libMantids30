@@ -8,15 +8,15 @@ namespace Mantids30 { namespace Memory { namespace Containers {
 class B_Ref : public B_Base
 {
 public:
-    B_Ref(B_Base *bc = nullptr, const uint64_t &offset=0, const uint64_t &maxBytes=0);
+    B_Ref(B_Base *bc = nullptr, const size_t &offset=0, const size_t &maxBytes=0);
     ~B_Ref() override;
     /**
      * @brief reference another binary container into this container.
      * @param bc binary container to be referenced.
      * @param offset start position.
-     * @param maxBytes max bytes to be referenced (std::numeric_limits<uint64_t>::max(): unlimited, but if maxBytes>0, it will be readOnly)
+     * @param maxBytes max bytes to be referenced (std::numeric_limits<size_t>::max(): unlimited, but if maxBytes>0, it will be readOnly)
      */
-    bool reference(B_Base * bc, const uint64_t &offset=0, const uint64_t &maxBytes = std::numeric_limits<uint64_t>::max());
+    bool reference(B_Base * bc, const size_t &offset=0, const size_t &maxBytes = std::numeric_limits<size_t>::max());
     /**
      * @brief getReferencedBC Get referenced object
      * @return referenced object pointer.
@@ -26,14 +26,14 @@ public:
      * @brief size Get Container Data Size in bytes
      * @return data size in bytes
      */
-    uint64_t size() const override;
+    size_t size() override;
     /**
      * @brief findChar
      * @param c
      * @param offset
      * @return
      */
-    std::pair<bool,uint64_t> findChar(const int & c, const uint64_t &offset = 0, uint64_t searchSpace = 0, bool caseSensitive = false) override;
+    std::optional<size_t> findChar(const int & c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
 
 protected:
     /**
@@ -41,18 +41,18 @@ protected:
      * @param bytes n bytes.
      * @return new container size.
      */
-    std::pair<bool,uint64_t> truncate2(const uint64_t &bytes) override;
+    std::optional<size_t> truncate2(const size_t &bytes) override;
     /**
      * @brief Append is disabled.
      * @return 0.
      */
-    std::pair<bool,uint64_t> append2(const void * buf, const uint64_t &len, bool prependMode = false) override;
+    std::optional<size_t> append2(const void * buf, const size_t &len, bool prependMode = false) override;
     /**
      * @brief remove n bytes at the beggining shrinking the container
      * @param bytes bytes to be removed
      * @return bytes removed.
      */
-    std::pair<bool,uint64_t> displace2(const uint64_t &bytes = 0) override;
+    std::optional<size_t> displace2(const size_t &bytes = 0) override;
     /**
      * @brief free the whole container
      * @return true if succeed
@@ -65,7 +65,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::pair<bool,uint64_t> copyToStream2(std::ostream & out, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) override;
+    std::optional<size_t> copyToStream2(std::ostream & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
     * @brief Internal Copy function to copy this container to a new one.
     * @param out data stream out
@@ -73,7 +73,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::pair<bool,uint64_t> copyTo2(StreamableObject &bc, Streams::WriteStatus &wrStatUpd, const uint64_t &bytes = std::numeric_limits<uint64_t>::max(), const uint64_t &offset = 0) override;
+    std::optional<size_t> copyToStreamableObject2(StreamableObject &bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
@@ -81,7 +81,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return number of bytes copied (in bytes)
      */
-    std::pair<bool,uint64_t> copyOut2(void * buf, const uint64_t &bytes, const uint64_t &offset = 0) override;
+    std::optional<size_t> copyToBuffer2(void * buf, const size_t &bytes, const size_t &offset = 0) override;
     /**
      * @brief Compare memory with the container
      * @param mem Memory to be compared
@@ -89,7 +89,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare2(const void * buf, const uint64_t &len, bool caseSensitive = true, const uint64_t &offset = 0 ) override;
+    bool compare2(const void * buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0 ) override;
 
 
 private:
@@ -100,11 +100,11 @@ private:
     /**
      * @brief referecedOffset binary container reference offset in bytes
      */
-    uint64_t referencedOffset;
+    size_t referencedOffset;
     /**
      * @brief referencedMaxBytes binary container reference bytes to be referenced
      */
-    uint64_t referencedMaxBytes;
+    size_t referencedMaxBytes;
 
 };
 

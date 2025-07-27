@@ -43,10 +43,9 @@ public:
     //////////////////////////////////////////////////////////////////
     /**
      * @brief stream Stream the output to upStream
-     * @param wrStat write status
      * @return true if written
      */
-    bool streamToUpstream( Memory::Streams::WriteStatus & wrStat) override;
+    bool streamToUpstream( ) override;
     /**
      * @brief isDefaultStreamableObj Get if the default streamable output is in use.
      * @return true if is it use, false if replaced by another one
@@ -69,9 +68,9 @@ public:
     void setStreamableObj(std::shared_ptr<Memory::Streams::StreamableObject> outDataContainer);
     /**
      * @brief getStreamSize Get stream full size ()
-     * @return std::numeric_limits<uint64_t>::max() if size not defined, or >=0 if size defined.
+     * @return std::numeric_limits<size_t>::max() if size not defined, or >=0 if size defined.
      */
-    uint64_t getStreamSize();
+    size_t getStreamSize();
     /**
      * @brief postVars Get the post vars (read-only)... Useful for decoding received content
      * @return Variable
@@ -112,7 +111,7 @@ public:
      * @param contentLengthSize size.
      * @return true if limits are not exceeded.
      */
-    bool setContentLenSize(const uint64_t &contentLengthSize);
+    bool setContentLenSize(const size_t &contentLengthSize);
     /**
      * @brief useFilesystem Set filesystem path when variables exceed limits
      * @param fsFilePath file path
@@ -136,8 +135,8 @@ public:
      * @brief Sets the maximum size of the internal memory buffer used to store HTTP POST data before the data is written to disk instead.
      * @param value The maximum size of the buffer, in bytes.
      */
-    void setMaxBinPostMemoryBeforeFS(const uint64_t &value);
-    void setSecurityMaxPostDataSize(const uint64_t &value);
+    void setMaxBinPostMemoryBeforeFS(const size_t &value);
+    void setSecurityMaxPostDataSize(const size_t &value);
     void setSecurityMaxHttpChunkSize(const uint32_t &value);
 
 protected:
@@ -155,8 +154,8 @@ private:
     eDataType m_containerType = CONTENT_TYPE_BIN;
 
     // Security Parameters (for parsing):
-    uint64_t m_securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
-    uint64_t m_currentContentLengthSize = 0;
+    size_t m_securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
+    size_t m_currentContentLengthSize = 0;
     uint32_t m_securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
 };
 

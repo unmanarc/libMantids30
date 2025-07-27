@@ -47,7 +47,7 @@ FileMap &FileMap::operator=(FileMap &bc)
     cleanVars();
 
     currentFileName = bc.currentFileName;
-    removeOnDestroy = bc.removeOnDestroy;
+    deleteFileOnDestruction = bc.deleteFileOnDestruction;
     fd = bc.fd;
     mmapAddr = bc.mmapAddr;
     fileOpenSize = bc.fileOpenSize;
@@ -64,7 +64,7 @@ void FileMap::cleanVars()
 {
     readOnly = false;
     currentFileName = "";
-    removeOnDestroy = false;
+    deleteFileOnDestruction = false;
     fd = -1;
     mmapAddr = nullptr;
 #ifdef _WIN32
@@ -73,9 +73,9 @@ void FileMap::cleanVars()
     fileOpenSize=0;
 }
 
-void FileMap::setRemoveOnDestroy(bool value)
+void FileMap::setDeleteFileOnDestruction(bool value)
 {
-    removeOnDestroy = value;
+    deleteFileOnDestruction = value;
 }
 
 bool FileMap::unMapFile()
@@ -159,7 +159,7 @@ char *FileMap::getMmapAddr() const
     return mmapAddr;
 }
 
-uint64_t FileMap::getFileOpenSize() const
+size_t FileMap::getFileOpenSize() const
 {
     return fileOpenSize;
 }
@@ -169,43 +169,47 @@ std::string FileMap::getCurrentFileName() const
     return currentFileName;
 }
 
-bool FileMap::mmapDisplace(const uint64_t &offsetBytes)
+bool FileMap::mmapDisplace(const size_t &offsetBytes)
 {
     Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr+offsetBytes, fileOpenSize-offsetBytes);
     return mmapTruncate(fileOpenSize-offsetBytes);
 }
 
-std::pair<bool, uint64_t> FileMap::mmapAppend(const void *buf, const uint64_t &count)
+std::optional<size_t> FileMap::mmapAppend(const void *buf, const size_t &count)
 {
-    if (!count) return std::make_pair(true,0);
+    if (!count) 
+        return 0;
     /////////////////////////////
 
-    uint64_t curOpenSize = fileOpenSize;
+    size_t curOpenSize = fileOpenSize;
     if (!mmapTruncate(fileOpenSize+count)) 
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
 
     memcpy(mmapAddr+curOpenSize,buf,count);
-    return std::make_pair(true,count);
+    return count;
 }
 
-std::pair<bool, uint64_t> FileMap::mmapPrepend(const void *buf, const uint64_t &count)
+std::optional<size_t> FileMap::mmapPrepend(const void *buf, const size_t &count)
 {
-    if (!count) return std::make_pair(true,0);
+    if (!count) 
+        return 0;
 
     /////////////////////////////
-    uint64_t curOpenSize = fileOpenSize;
+    size_t curOpenSize = fileOpenSize;
     if (!mmapTruncate(fileOpenSize+count))
     {
-        return std::make_pair(false,static_cast<uint64_t>(0));
+        return std::nullopt;
     }
+
     Mantids30::Helpers::Mem::memmove64(mmapAddr,mmapAddr+count,curOpenSize);
     Mantids30::Helpers::Mem::memcpy64(mmapAddr,buf,count);
-    return std::make_pair(true,count);
+
+    return count;
 }
 
-bool FileMap::closeFile(bool respectRemoveOnDestroy)
+bool FileMap::closeFile(bool respectDeleteFileOnDestruction)
 {
     // If there is a mmap, close the mmap:
     unMapFile();
@@ -214,7 +218,7 @@ bool FileMap::closeFile(bool respectRemoveOnDestroy)
     if (fd!=-1) close(fd);
 
     // If there is an order to destroy the file, destroy the file.
-    if (removeOnDestroy && respectRemoveOnDestroy && currentFileName.size())
+    if (deleteFileOnDestruction && respectDeleteFileOnDestruction && currentFileName.size())
     {
         remove(currentFileName.c_str());
     }
@@ -225,7 +229,7 @@ bool FileMap::closeFile(bool respectRemoveOnDestroy)
     return true;
 }
 
-bool FileMap::mmapTruncate(const uint64_t &nSize)
+bool FileMap::mmapTruncate(const size_t &nSize)
 {
     // Check if file descriptor is invalid (not file opened)
     if (fd==-1 || readOnly)

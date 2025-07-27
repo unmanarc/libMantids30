@@ -13,32 +13,42 @@ HTTP::ContentChunkedTransformer::ContentChunkedTransformer(
 
 HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
 {
-    endBuffer();
+    writeEOF();
 }
 
-bool HTTP::ContentChunkedTransformer::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
+size_t HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
 {
-    return false;
-}
+    if (count == 0)
+    {
+        // Set finished status (EOF)
+        if (!upStreamOut->writeString(m_pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n"))
+            writeStatus+=-1;
+        return 0;
+    }
 
-Memory::Streams::WriteStatus HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStat)
-{
-    Memory::Streams::WriteStatus cur;
-    char strhex[32];
+    if (count+64<count)
+    {
+        // Error writting on this (source error...).
+        writeStatus+=-1;
+        upStreamOut->writeStatus+=-1;
+        return 0;
+    }
 
-    if (count+64<count) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }
-    snprintf(strhex,sizeof(strhex), m_pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
+    upStreamOut->strPrintf(m_pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
+    if (!upStreamOut->writeStatus.succeed)
+    {
+        writeStatus+=-1;
+        return 0;
+    }
 
-    if (!(cur+=upStreamOut->writeString(strhex,wrStat)).succeed) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }
-    if (!(cur+=upStreamOut->writeFullStream(buf,count,wrStat)).succeed) { cur.succeed=wrStat.succeed=setFailedWriteState(); return cur; }
+    if (!upStreamOut->writeFullStream(buf,count))
+    {
+        writeStatus+=-1;
+    }
+    else
+    {
+        m_pos+=count;
+    }
 
-    m_pos+=count;
-
-    return cur;
-}
-
-bool HTTP::ContentChunkedTransformer::endBuffer()
-{
-    Memory::Streams::WriteStatus cur;
-    return (cur=upStreamOut->writeString(m_pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n",cur)).succeed;
+    return count;
 }

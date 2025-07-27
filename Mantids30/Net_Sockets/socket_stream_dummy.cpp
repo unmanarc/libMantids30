@@ -1,4 +1,5 @@
 #include "socket_stream_dummy.h"
+#include <optional>
 
 using namespace Mantids30::Network::Sockets;
 
@@ -67,7 +68,7 @@ ssize_t Socket_Stream_Dummy::partialRead(void *data, const size_t &datalen)
 ssize_t Socket_Stream_Dummy::partialWrite(const void *data, const size_t &datalen)
 {
     std::optional<size_t> r = receiver.append(data, datalen);
-    if (!r)
+    if (r==std::nullopt)
         return -1;
     else
         return *r;

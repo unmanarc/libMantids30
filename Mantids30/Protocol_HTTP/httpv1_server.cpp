@@ -445,9 +445,12 @@ void HTTP::HTTPv1_Server::addResponseContentTypeFileExtension(const string &ext,
 bool HTTP::HTTPv1_Server::changeToNextParser()
 {
     // Server Mode:
-    if (m_currentParser == &clientRequest.requestLine) return changeToNextParserOnClientRequest();
-    else if (m_currentParser == &clientRequest.headers) return changeToNextParserOnClientHeaders();
-    else return changeToNextParserOnClientContentData();
+    if (m_currentParser == &clientRequest.requestLine)
+        return changeToNextParserFromClientRequestLine();
+    else if (m_currentParser == &clientRequest.headers)
+        return changeToNextParserFromClientHeaders();
+    else
+        return changeToNextParserFromClientContentData();
 }
 
 void HTTP::HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
@@ -457,12 +460,13 @@ void HTTP::HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secu
     clientRequest.networkClientInfo.isSecure = secure;
 }
 
-bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
+bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
 {
     // This function is used when the client options arrives, so we need to parse it.
 
     // Internal checks when options are parsed (ex. check if host exist on http/1.1)
     parseHostOptions();
+
     prepareServerVersionOnOptions();
 
     // PARSE CLIENT BASIC AUTHENTICATION:
@@ -495,10 +499,10 @@ bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
 
     // PARSE CONTENT TYPE/LENGHT OPTIONS
     if (m_badAnswer)
-        return answer(m_answerBytes);
+        return answer();
     else
     {
-        uint64_t contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
+        size_t contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
         string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
         /////////////////////////////////////////////////////////////////////////////////////
         // Content-Length...
@@ -511,7 +515,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
                 // Error setting this content length size. (automatic answer)
                 m_badAnswer = true;
                 serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
-                return answer(m_answerBytes);
+                return answer();
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
@@ -547,7 +551,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
                 else
                 {
                     // Answer here:
-                    return answer(m_answerBytes);
+                    return answer();
                 }
             }
         }
@@ -555,34 +559,34 @@ bool HTTP::HTTPv1_Server::changeToNextParserOnClientHeaders()
     return true;
 }
 
-bool HTTP::HTTPv1_Server::changeToNextParserOnClientRequest()
+bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 {
     // Internal checks when URL request has received.
     prepareServerVersionOnURI();
     if (m_badAnswer)
-        return answer(m_answerBytes);
+        return answer();
     else
     {
         //setClientInfoVars();
-
         if (!procHTTPClientURI())
             m_currentParser = nullptr; // Don't continue with parsing.
-        else m_currentParser = &clientRequest.headers;
+        else
+            m_currentParser = &clientRequest.headers;
     }
     return true;
 }
 
-bool HTTP::HTTPv1_Server::changeToNextParserOnClientContentData()
+bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
-    return answer(m_answerBytes);
+    return answer();
 }
 
-bool HTTP::HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrStat)
+bool HTTP::HTTPv1_Server::streamServerHeaders()
 {
     // Act as a server. Send data from here.
-    uint64_t strsize;
+    size_t strsize;
 
-    if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<uint64_t>::max())
+    if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
         // TODO: connection keep alive.
         serverResponse.headers.add("Connetion", "Close");
@@ -633,7 +637,7 @@ bool HTTP::HTTPv1_Server::streamServerHeaders(Memory::Streams::WriteStatus &wrSt
             serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
     }
 
-    return serverResponse.headers.streamToUpstream(wrStat);
+    return serverResponse.headers.streamToUpstream();
 }
 
 void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
@@ -658,7 +662,6 @@ void HTTP::HTTPv1_Server::prepareServerVersionOnOptions()
     {
         if (clientRequest.virtualHost=="")
         {
-            // TODO: does really need the VHost?
             serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
             m_badAnswer = true;
         }
@@ -686,10 +689,8 @@ void HTTP::HTTPv1_Server::parseHostOptions()
 }
 
 
-bool HTTP::HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
+bool HTTP::HTTPv1_Server::answer()
 {
-    wrStat.bytesWritten = 0;
-
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
@@ -703,17 +704,17 @@ bool HTTP::HTTPv1_Server::answer(Memory::Streams::WriteStatus &wrStat)
     // Answer is the last... close the connection after it.
     m_currentParser = nullptr;
 
-    if (!serverResponse.status.streamToUpstream(wrStat))
+    if (!serverResponse.status.streamToUpstream())
     {
         return false;
     }
 
-    if (!streamServerHeaders(wrStat))
+    if (!streamServerHeaders())
     {
         return false;
     }
 
-    bool streamedOK = serverResponse.content.streamToUpstream(wrStat);
+    bool streamedOK = serverResponse.content.streamToUpstream();
 
     // Destroy the binary content container here:
     serverResponse.content.setStreamableObj(nullptr);
@@ -778,24 +779,15 @@ void HTTP::HTTPv1_Server::addStaticContent(const string &path, std::shared_ptr<M
     m_staticContentElements[path] = contentElement;
 }
 
-Memory::Streams::WriteStatus HTTP::HTTPv1_Server::getResponseTransmissionStatus() const
+bool HTTP::HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
-    return m_answerBytes;
-}
-
-Memory::Streams::WriteStatus HTTP::HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
-{
-    Memory::Streams::WriteStatus stat;
-
     if (!serverResponse.content.getStreamableObj())
     {
-        stat.succeed = false;
-        return stat;
+        return false;
     }
-
     // Stream in place:
-    source->streamTo( serverResponse.content.getStreamableObj().get() , stat);
-    return stat;
+    source->streamTo( serverResponse.content.getStreamableObj().get());
+    return true;
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getResponseDataStreamer()

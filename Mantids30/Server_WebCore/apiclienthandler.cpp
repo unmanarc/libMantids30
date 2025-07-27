@@ -211,7 +211,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             if (boost::starts_with(requestURI, route.first + "/"))
             {
                 // Extract the portion of the request URI that follows the matching route path.
-                std::string dynUrlWithoutBase = requestURI.substr(route.first.size() + 1);
+                std::string dynUrlWithoutBase = requestURI.substr(route.first.size());
 
                 // Invoke the corresponding handler function with the extracted path and request/response objects.
                 ret = route.second.handler(dynUrlWithoutBase, &clientRequest, &serverResponse, route.second.obj);

@@ -12,21 +12,10 @@ class StreamableString : public Memory::Streams::StreamableObject
 {
 public:
     StreamableString() = default;
-    /**
-     * @brief streamTo Stream all the content to another StreamableObject
-     * @param out output
-     * @param wrStatUpd write status counter
-     * @return true if streamed ok
-     */
-    virtual bool streamTo(Memory::Streams::StreamableObject * out, WriteStatus & wrStatUpd) override;
-    /**
-     * @brief write Write/Append into the file
-     * @param buf buffer to be written
-     * @param count size of the buffed to be written
-     * @param wrStatUpd Overall Write Status
-     * @return Write Status from the operation
-     */
-    virtual WriteStatus write(const void * buf, const size_t &count, WriteStatus & wrStatUpd) override;
+
+    virtual bool streamTo(Memory::Streams::StreamableObject * out) override;
+
+    virtual size_t write(const void *buf, const size_t &count) override;
 
     StreamableString& operator=(const std::string& str);
 

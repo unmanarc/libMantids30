@@ -22,7 +22,7 @@ MIME_Sub_Header::MIME_Sub_Header()
 }
 
 
-bool MIME_Sub_Header::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
+bool MIME_Sub_Header::streamToUpstream()
 {
     Memory::Streams::WriteStatus cur;
 
@@ -30,12 +30,16 @@ bool MIME_Sub_Header::streamToUpstream( Memory::Streams::WriteStatus & wrStat)
     for (auto & i : m_headers)
     {
         std::string x = i.second->toString() + std::string("\r\n");
-        if (!(cur+=m_upStream->writeString( x, wrStat )).succeed)
+
+        m_upStream->writeString( x );
+
+        if (!m_upStream->writeStatus.succeed)
+        {
             return false;
+        }
     }
-    if (!(cur+=m_upStream->writeString("\r\n", wrStat)).succeed)
-        return false;
-    return true;
+    m_upStream->writeString("\r\n");
+    return m_upStream->writeStatus.succeed;
 }
 
 bool MIME_Sub_Header::exist(const std::string &optionName) const
@@ -113,7 +117,8 @@ std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(
 std::shared_ptr<MIME_HeaderOption> MIME_Sub_Header::getOptionByName(
     const std::string &varName) const
 {
-    if (m_headers.find(boost::to_upper_copy(varName)) == m_headers.end()) return nullptr;
+    if (m_headers.find(boost::to_upper_copy(varName)) == m_headers.end()) 
+        return nullptr;
     return m_headers.find(boost::to_upper_copy(varName))->second;
 }
 
@@ -162,7 +167,7 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
 #ifdef DEBUG
     printf("Parsing MIME header (line).\n");fflush(stdout);
 #endif
-    parseOptionValue(getParsedBuffer()->toString());
+    parseOptionValue(getParsedBuffer()->toStringEx());
     return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
 }
 
@@ -332,7 +337,8 @@ bool MIME_HeaderOption::isPermited7bitCharset(const std::string &varX)
     // No strange chars on our vars...
     for (size_t i=0;i<varX.size();i++)
     {
-        if (varX[i]<32 || varX[i]>126) return false;
+        if (varX[i]<32 || varX[i]>126) 
+            return false;
     }
     return true;
 }

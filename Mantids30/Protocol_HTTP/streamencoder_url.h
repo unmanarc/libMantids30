@@ -12,13 +12,13 @@ public:
     static std::string encodeURLStr(const std::string &url);
 
 protected:
-    Memory::Streams::WriteStatus writeTo(Memory::Streams::StreamableObject * dst, const void * buf, const size_t &count, Streams::WriteStatus &wrStat) override;
+    size_t writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) override;
 
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count);
     inline bool shouldEncodeThisByte(const unsigned char & byte) const;
 
-    uint64_t m_finalBytesWritten = 0;
+    //size_t m_finalBytesWritten = 0;
 };
 
 

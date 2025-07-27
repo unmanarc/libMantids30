@@ -1,56 +1,61 @@
 #include "streamablejson.h"
+#include "streamableobject.h"
 #include <limits>
 #include <iostream>
+#include <optional>
 
 using namespace Mantids30::Memory::Streams;
 using namespace Mantids30;
 
-StreamableJSON::StreamableJSON()
-{
-    // No max size (original...)
-    m_maxSize = std::numeric_limits<uint64_t>::max();
-    setFormatted(false);
-}
-
-bool StreamableJSON::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrStatUpd)
+bool StreamableJSON::streamTo(
+    Memory::Streams::StreamableObject *out)
 {
     Memory::Streams::WriteStatus cur;
+
     if (!m_formatted)
         m_strValue = Mantids30::Helpers::jsonToString(m_root);
     else
         m_strValue = m_root.toStyledString();
-    return (cur = out->writeFullStream(m_strValue.c_str(), m_strValue.size(), wrStatUpd)).succeed;
+
+
+    return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
 }
 
-Memory::Streams::WriteStatus StreamableJSON::write(const void *buf, const size_t &count, Memory::Streams::WriteStatus &wrStatUpd)
+size_t StreamableJSON::write(const void *buf, const size_t &count)
 {
-    // TODO: how to report that the max size has been exceeded.
-    Memory::Streams::WriteStatus cur;
+    ssize_t writtenBytes;
+
+    if ( count == 0 )
+    {
+        // EOF:
+        writeStatus+=0;
+        if (!processValue())
+        {
+            writeStatus+=-1;
+        }
+        return 0;
+    }
 
     // ...
     if ( m_strValue.size()+count > m_maxSize ) 
     {
-        cur.bytesWritten = m_maxSize-m_strValue.size();
+        // Container Full! Can't process this information.
+        // There is no sense to process an incomplete JSON.
+        m_isFull = true;
+        writeStatus+=-1;
+        return -1;
     }
     else
     {
-        cur.bytesWritten = count;
+        writtenBytes = count;
     }
 
-    if (cur.bytesWritten)
-        m_strValue += std::string((static_cast<const char *>(buf)),cur.bytesWritten); // Copy...
-    else
-        wrStatUpd.finish = cur.finish = true;
+    m_strValue += std::string((static_cast<const char *>(buf)),writtenBytes); // Copy...
 
     // Append...
-    wrStatUpd.bytesWritten+=cur.bytesWritten;
+    writeStatus+=writtenBytes;
 
-    return cur;
-}
-
-void StreamableJSON::writeEOF(bool)
-{
-    processValue();
+    return writtenBytes;
 }
 
 void StreamableJSON::clear()
@@ -63,6 +68,9 @@ void StreamableJSON::clear()
 
 json *StreamableJSON::processValue()
 {
+    if (m_isFull)
+        return nullptr;
+
     Mantids30::Helpers::JSONReader2 reader;
     bool parsingSuccessful = reader.parse( m_strValue, m_root );
     if ( !parsingSuccessful )
@@ -80,13 +88,12 @@ StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
     return *this;
 }
 
-
 void StreamableJSON::setValue(const json &value)
 {
     m_root=value;
 }
 
-void StreamableJSON::setMaxSize(const uint64_t &value)
+void StreamableJSON::setMaxSize(const size_t &value)
 {
     m_maxSize = value;
 }

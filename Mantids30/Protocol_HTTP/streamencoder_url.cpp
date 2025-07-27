@@ -10,11 +10,9 @@
 using namespace Mantids30::Memory::Streams;
 using namespace Mantids30::Memory::Streams::Encoders;
 
-
-WriteStatus URL::writeTo(Memory::Streams::StreamableObject * dst, const void *buf, const size_t &count,Streams::WriteStatus &wrStat)
+size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
 {
-    Streams::WriteStatus cur;
-    size_t pos=0;
+    size_t readenBytes=0;
 
     size_t maxStream=std::numeric_limits<size_t>::max();
     maxStream/=3;
@@ -22,55 +20,55 @@ WriteStatus URL::writeTo(Memory::Streams::StreamableObject * dst, const void *bu
 
     if (count>maxStream)
     {
-        cur.succeed=wrStat.succeed=setFailedWriteState();
-        return cur;
+        // FAILED:
+        dst->writeStatus+=-1;
+        return -1;
     }
 
     ///////////////////////
-    while (pos<count)
+    while (readenBytes<count)
     {
-        size_t bytesToTransmitInPlain;
-        if ((bytesToTransmitInPlain=getPlainBytesSize( ((const unsigned char *)buf)+pos,count-pos))>0)
+        size_t bytesToTransmitInPlain=getPlainBytesSize( ((const unsigned char *)buf)+readenBytes,count-readenBytes);
+
+        if (bytesToTransmitInPlain>0)
         {
-            if (!(cur+=dst->writeFullStream( ((const unsigned char *)buf)+pos ,bytesToTransmitInPlain,wrStat)).succeed)
+            if (dst->writeFullStream( ((const unsigned char *)buf)+readenBytes ,bytesToTransmitInPlain))
             {
-                m_finalBytesWritten+=cur.bytesWritten;
-                return cur;
+                readenBytes+=bytesToTransmitInPlain;
             }
-            pos+=bytesToTransmitInPlain;
         }
         else
         {
             char encodedByte[8];
-            snprintf(encodedByte,sizeof(encodedByte), "%%%02" PRIX8, *(((const unsigned char *)buf)+pos));
-            if (!(cur+=dst->writeFullStream(encodedByte,3, wrStat)).succeed)
+            snprintf(encodedByte,sizeof(encodedByte), "%%%02" PRIX8, *(((const unsigned char *)buf)+readenBytes));
+            if ( dst->writeFullStream(encodedByte,3) )
             {
-                m_finalBytesWritten+=cur.bytesWritten;
-                return cur;
+                readenBytes++;
             }
-            pos++;
         }
+
+        // Stop reading on bad transmition..
+        if (dst->writeStatus.succeed==false)
+            return readenBytes;
+
     }
-    m_finalBytesWritten+=cur.bytesWritten;
-    return cur;
+    //m_finalBytesWritten+=cur.bytesWritten;
+    return readenBytes;
 }
 
 size_t URL::getPlainBytesSize(const unsigned char *buf, size_t count)
 {
     for (size_t i=0;i<count;i++)
     {
-        if (shouldEncodeThisByte(buf[i])) return i;
+        if (shouldEncodeThisByte(buf[i])) 
+        return i;
     }
     return count;
 }
 
 inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
 {
-    return !(
-            (byte>='A' && byte<='Z') ||
-            (byte>='a' && byte<='z') ||
-            (byte>='0' && byte<='9')
-    );
+    return !isalnum(byte);
 }
 
 
@@ -82,10 +80,11 @@ std::string URL::encodeURLStr(const std::string &url)
     // Encode URI...
     Memory::Streams::Encoders::URL uriEncoder;
 
-    auto cur = uriEncoder.transform( &uriDecoded, &uriEncoded );
-    if (cur.succeed && cur.finish)
+    uriEncoder.transform( &uriDecoded, &uriEncoded );
+
+    if (uriEncoded.writeStatus.succeed && uriEncoded.writeStatus.finish)
     {
-        return uriEncoded.toString();
+        return uriEncoded.toStringEx();
     }
 
     return url;

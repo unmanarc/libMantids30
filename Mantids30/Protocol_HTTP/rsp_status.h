@@ -92,7 +92,7 @@ public:
      */
     static std::string getStringTranslation(unsigned short code);
 
-    bool streamToUpstream( Memory::Streams::WriteStatus & wrStat) override;
+    bool streamToUpstream( ) override;
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 

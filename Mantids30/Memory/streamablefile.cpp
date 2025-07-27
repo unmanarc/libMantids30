@@ -1,5 +1,7 @@
 #include "streamablefile.h"
+#include "Mantids30/Helpers/safeint.h"
 #include <fcntl.h>
+#include <optional>
 
 using namespace Mantids30::Memory::Streams;
 
@@ -38,66 +40,57 @@ int StreamableFile::open(const char *path, int oflag, mode_t __mode)
     return fd;
 }
 
-bool StreamableFile::streamTo(Memory::Streams::StreamableObject * out, WriteStatus &wrStatUpd)
+bool StreamableFile::streamTo(Memory::Streams::StreamableObject * out)
 {
-    WriteStatus cur;
-
     // Restart the read from zero (for multiple streamTo)...
     lseek(rd_fd, 0, SEEK_SET);
 
     for (;;)
     {
-        char buf[4096];
-        ssize_t rsize=read(rd_fd,buf,4096);
+        char buf[8192];
+        ssize_t rsize=read(rd_fd,buf,8192);
         switch (rsize)
         {
         case -1:
-            out->writeEOF(false);
+            // Unexpected error during file read... don't process with EOF. (bad file)
+            out->writeEOF();
             return false;
         case 0:
-            out->writeEOF(true);
-            return true;
+            // Write EOF into the stream. Maybe some buffer bytes are written down
+            return out->writeEOF();
         default:
-            if (!(cur=out->writeFullStream(buf,rsize,wrStatUpd)).succeed || cur.finish)
+            if ( !out->writeFullStream(buf,rsize) )
             {
-                if (!cur.succeed)
-                {
-                    out->writeEOF(false);
-                    return false;
-                }
-                else
-                {
-                    out->writeEOF(true);
-                    return true;
-                }
+                return false;
             }
             break;
         }
     }
 }
 
-WriteStatus StreamableFile::write(const void *buf, const size_t &count, WriteStatus &wrStatUpd)
+size_t StreamableFile::write(const void *buf, const size_t &count)
 {
-    WriteStatus cur;
     ssize_t x=0;
 
     // Always stick to the EOF
     lseek(rd_fd, 0, SEEK_END);
 
-    if ((x=::write(wr_fd, buf, count)) == -1)
-    {
-        cur.succeed=wrStatUpd.succeed=setFailedWriteState();
-        return cur;
-    }
-    cur+=(uint64_t)x;
-    wrStatUpd+=(uint64_t)x;
-    return  cur;
+    x=::write(wr_fd, buf, count);
+
+    writeStatus+=x;
+
+    if (x>=0)
+        return x;
+    else
+        return 0; // Error reflected in the WriteStatus
 }
 
 void StreamableFile::closeAll()
 {
-    if (rd_fd!=STDIN_FILENO && rd_fd>0)   close(rd_fd);
-    if (wr_fd!=STDOUT_FILENO  && wr_fd!=STDERR_FILENO  && wr_fd>0)  close(wr_fd);
+    if (rd_fd!=STDIN_FILENO && rd_fd>0)
+        close(rd_fd);
+    if (wr_fd!=STDOUT_FILENO  && wr_fd!=STDERR_FILENO  && wr_fd>0)
+        close(wr_fd);
 
     rd_fd=-1;
     wr_fd=-1;

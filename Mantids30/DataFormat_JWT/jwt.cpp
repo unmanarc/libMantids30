@@ -302,7 +302,7 @@ std::string JWT::sign(const Json::Value& payload)
     std::string header_str = createHeader();
     std::string signature;
 
-    auto eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
+    std::shared_ptr<JWT::RAWSignature> eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
 
     if (eSignature->m_result == RAWSignature::SIG_OK)
         signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest,eSignature->m_digestSize, true);

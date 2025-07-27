@@ -5,13 +5,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-
 #ifdef _WIN32
 #include <stdlib.h>
 #endif
 
 using namespace Mantids30::Memory::Streams;
-
 
 std::string StreamableObject::toString()
 {
@@ -20,75 +18,78 @@ std::string StreamableObject::toString()
     return s.getValue();
 }
 
-size_t StreamableObject::writeEOF()
+bool StreamableObject::writeEOF()
 {
     // Writting 0 (ZERO) to the socket will trigger the EOF.
-    return write(nullptr, 0);
+    if (write(nullptr, 0)>=0)
+    {
+        return true;
+    }
+    else
+    {
+        writeStatus.succeed+=-1;
+        return false;
+    }
 }
 
-std::optional<size_t> StreamableObject::writeFullStreamWithEOF(
-    const void *buf, const size_t &count)
+bool StreamableObject::writeFullStreamWithEOF(const void *buf, const size_t &count)
 {
-    size_t x = writeFullStream(buf,count);
-    if (!writeStatus.succeed)
+    if (!writeFullStream(buf, count))
     {
-        return std::nullopt;
+        return false;
     }
 
     // Here everything is written OK.
-    size_t y = writeEOF();
-
-    // Failed to EOF.
-    if (!writeStatus.succeed)
+    if (!writeEOF())
     {
-        return std::nullopt;
+        writeStatus.succeed+=-1;
+        return false;
     }
 
-    return safeAdd(x,y);
+    return true;
 }
 
-size_t StreamableObject::writeFullStream(
-    const void *buf, const size_t &count)
+bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
 {
     size_t writtenBytes = 0;
 
-    while (writtenBytes<count)
+    while (writtenBytes < count)
     {
-        ssize_t cur = write(static_cast<const char *>(buf)+writtenBytes,count-writtenBytes);
+        ssize_t cur = write(static_cast<const char *>(buf) + writtenBytes, count - writtenBytes);
 
-        if (cur>0)
-            writtenBytes+=cur;
+        if (cur > 0)
+            writtenBytes += cur;
 
         // Failed Somewhere...
-        if (!writeStatus.succeed)
+        if (!writeStatus.succeed || cur < 0)
         {
-            return writtenBytes;
+            writeStatus.succeed+=-1;
+            return false;
         }
     }
 
-    return writtenBytes;
+    return true;
 }
 
-size_t StreamableObject::writeString(
-    const std::string &buf)
+bool StreamableObject::writeString(const std::string &buf)
 {
     return writeFullStream(buf.c_str(), buf.size());
 }
 
-size_t StreamableObject::strPrintf( const char *format, ...)
+size_t StreamableObject::strPrintf(const char *format, ...)
 {
     size_t writtenBytes = 0;
-    char * var = nullptr;
+    char *var = nullptr;
     int retval;
 
     //////
 
     va_list argv;
-    va_start( argv, format );
-    retval = vasprintf( &var, format, argv );
-    va_end( argv );
+    va_start(argv, format);
+    retval = vasprintf(&var, format, argv);
+    va_end(argv);
 
-    if (retval!=-1)
+    if (retval != -1)
     {
         writtenBytes = writeString(var);
     }
@@ -96,7 +97,7 @@ size_t StreamableObject::strPrintf( const char *format, ...)
     {
         writtenBytes = 0;
         // Set error writting...
-        writeStatus+=-1;
+        writeStatus += -1;
     }
 
     if (var)
@@ -106,7 +107,6 @@ size_t StreamableObject::strPrintf( const char *format, ...)
 
     return writtenBytes;
 }
-
 
 /*
 size_t StreamableObject::size()
@@ -132,11 +132,11 @@ int StreamableObject::vasprintf(char **strp, const char *fmt, va_list ap)
     int dNeededLength, iBytesWritten;
 
     // Account how much memory we are going to need:
-    if ((dNeededLength =_vscprintf(fmt, ap)) == -1)
+    if ((dNeededLength = _vscprintf(fmt, ap)) == -1)
         return -1;
 
     // Allocate the required buffer with extra-byte:
-    if ((cBuffer = (char *)malloc((size_t)dNeededLength + 2)) == nullptr)
+    if ((cBuffer = (char *) malloc((size_t) dNeededLength + 2)) == nullptr)
         return -1;
 
     // fill the buffer with the printf function:

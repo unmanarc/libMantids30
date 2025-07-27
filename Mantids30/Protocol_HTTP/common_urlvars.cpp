@@ -1,8 +1,11 @@
 #include "common_urlvars.h"
 
+#include "Mantids30/Helpers/safeint.h"
+#include "Mantids30/Memory/streamablenull.h"
 #include "streamencoder_url.h"
 #include <boost/algorithm/string.hpp>
 #include <memory>
+#include <optional>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -34,9 +37,8 @@ bool HTTP::URLVars::isEmpty()
     return m_vars.empty();
 }
 
-bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out, Memory::Streams::WriteStatus &wrsStat)
+bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
 {
-    Memory::Streams::WriteStatus cur;
     bool firstVar = true;
     for (auto & i : m_vars)
     {
@@ -44,7 +46,8 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out, Memory::St
             firstVar=false;
         else
         {
-            if (!(cur+=out->writeString("&", wrsStat)).succeed)
+            out->writeString("&");
+            if (!out->writeStatus.succeed)
                 return false;
         }
 
@@ -53,31 +56,26 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out, Memory::St
 
         Memory::Streams::Encoders::URL varNameEncoder;
 
-        auto cur = varNameEncoder.transform(&varName,out);
-        wrsStat+=cur;
-        if (!cur.succeed || !cur.finish)
-        {
-            out->writeEOF(false);
+        varNameEncoder.transform(&varName,out);
+
+        if (!out->writeStatus.succeed)
             return false;
-        }
 
         if ((i.second)->size())
         {
-            if (!(cur+=out->writeString("=",wrsStat)).succeed)
+            out->writeString("=");
+
+            if (!out->writeStatus.succeed)
                 return false;
 
             Memory::Streams::Encoders::URL varNameEncoder2;
-            auto cur = varNameEncoder2.transform(i.second.get(),out);
-            wrsStat+=cur;
-            if (!cur.finish || !cur.succeed)
-            {
-                out->writeEOF(false);
+            varNameEncoder2.transform(i.second.get(),out);
+            if (!out->writeStatus.succeed)
                 return false;
-            }
         }
     }
-    out->writeEOF(true);
-    return true;
+
+    return out->writeEOF();
 }
 
 uint32_t HTTP::URLVars::varCount(const std::string &varName)
@@ -169,6 +167,15 @@ bool HTTP::URLVars::addVar(
     return false;
 }
 
+size_t HTTP::URLVars::size()
+{
+    Memory::Streams::StreamableNull nullobj;
+    streamTo(&nullobj);
+    if (nullobj.writeStatus.succeed == true)
+    {
+        return nullobj.writeStatus.bytesWritten;
+    }
+}
 
 void HTTP::URLVars::iSetMaxVarContentSize()
 {

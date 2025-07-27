@@ -12,16 +12,21 @@ public:
     static std::string decodeURLStr(const std::string & url);
 
 protected:
-    Memory::Streams::WriteStatus writeTo(Memory::Streams::StreamableObject * dst, const void * buf, const size_t &count, Streams::WriteStatus &wrStat) override;
-    void writeTransformerEOF(Memory::Streams::StreamableObject *dst, bool) override;
+    size_t writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) override;
+
+    size_t writeTransformerEOF(Memory::Streams::StreamableObject *dst) override;
+
+    //void writeTransformerEOF(Memory::Streams::StreamableObject *dst, bool) override;
 
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
-    Memory::Streams::WriteStatus flushBytes(Memory::Streams::StreamableObject * dst,Memory::Streams::WriteStatus &wrStat);
+    bool flushBytesAndResetFilledCounter(Memory::Streams::StreamableObject *dst);
 
     unsigned char m_bytes[3];
     uint8_t m_filled = 0;
-    uint64_t m_finalBytesWritten = 0;
+    //size_t m_finalBytesWritten = 0;
+
+
 };
 
 }}}}
