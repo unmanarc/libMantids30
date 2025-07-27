@@ -158,6 +158,11 @@ private:
 
     size_t getLastBytesInCommon(const std::string &boundary);
     Mantids30::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
+
+
+    std::optional<size_t> appendToUnparsedBuffer(const void *buf, size_t count);
+
+
     Mantids30::Memory::Containers::B_Ref m_parsedBuffer;
     Mantids30::Memory::Containers::B_Chunks m_unparsedBuffer;
 

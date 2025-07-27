@@ -100,28 +100,48 @@ Mantids30::Memory::Containers::B_Base *SubParser::getParsedBuffer()
     return &m_parsedBuffer;
 }
 
-std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t count)
+
+std::optional<size_t> SubParser::appendToUnparsedBuffer(const void *buf, size_t count)
 {
-    std::optional<size_t> needlePos = std::nullopt, bytesAppended = 0;
-    size_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
-    if (!count)
+    std::optional<size_t> bytesAppended = 0;
+    size_t leftSize = m_unparsedBuffer.getSizeLeft();
+
+    // Overflow of the subparser buffer...
+    if (!leftSize && count>0)
     {
-        m_streamEnded = true;
+#ifdef DEBUG_PARSER
+        printf("%p Subparser unparsed buffer size exceeded. can't continue with the parsing....\n", this);
+        fflush(stdout);
+#endif
+        return std::nullopt;
     }
 
     // stick to the unparsedBuffer object size.
-    count = std::min(count, m_unparsedBuffer.getSizeLeft());
+    count = std::min(count, leftSize);
 
+    // There is some data to add...
     if (count > 0)
     {
         bytesAppended = m_unparsedBuffer.append(buf, count);
-        if (!bytesAppended || bytesAppended.value() != count)
+        if (bytesAppended==std::nullopt || bytesAppended.value() != count)
         {
             // Failed to append this data (weird...)
             m_unparsedBuffer.clear();
             return std::nullopt;
         }
     }
+
+    return bytesAppended;
+}
+
+std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t count)
+{
+    size_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
+    std::optional<size_t> needlePos = std::nullopt, bytesAppended = appendToUnparsedBuffer(buf,count);
+
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
+        return std::nullopt;
 
     bytesToDisplace = bytesAppended.value();
     m_parsedBuffer.reference(&m_unparsedBuffer);
@@ -142,6 +162,8 @@ std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t c
         m_unparsedBuffer.clear();
 
         // Calculate bytes to displace
+        // We may have copied in the unparsed buffer more than we need to deliver. so
+        // the unparsed buffer is destroyed and you only need to displace the useful bytes.
         bytesToDisplace = needlePos.value() + m_delimiterFound.size() - prevSize;
     }
     else if (m_streamEnded)
@@ -158,32 +180,12 @@ std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t c
 
 std::optional<size_t> SubParser::parseByDelimiter(const void *buf, size_t count)
 {
-    std::optional<size_t> needlePos, bytesAppended = 0;
-
     size_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
-    if (!count)
-    {
-        m_streamEnded = true;
-        return 0;
-    }
+    std::optional<size_t> needlePos, bytesAppended = appendToUnparsedBuffer(buf,count);
 
-    // stick to the unparsedBuffer object size.
-    count = std::min(count, m_unparsedBuffer.getSizeLeft());
-
-    if (count > 0)
-    {
-        bytesAppended = m_unparsedBuffer.append(buf, count);
-        if (bytesAppended==std::nullopt || bytesAppended.value() != count)
-        {
-#ifdef DEBUG_PARSER
-        printf("%p Parse by Delimiter size exceeded. don't continue with the streamparser, error....\n", this);
-        fflush(stdout);
-#endif
-            // Failed to append this data (weird...)
-            m_unparsedBuffer.clear();
-            return std::nullopt;
-        }
-    }
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
+        return std::nullopt;
 
     bytesToDisplace = bytesAppended.value();
     m_parsedBuffer.reference(&m_unparsedBuffer);
@@ -237,21 +239,25 @@ std::optional<size_t> SubParser::parseByDelimiter(const void *buf, size_t count)
 
 std::optional<size_t> SubParser::parseBySize(const void *buf, size_t count)
 {
-    if (!count)
+    if (count == 0)
     {
-        // Abort current data.
-        m_streamEnded = true;
+        // EOF.
+        // Abort current subparser because we did not match the requested size.
         setParseStatus(PARSE_GOTO_NEXT_SUBPARSER);
         m_unparsedBuffer.clear(); // Destroy the container data.
         return 0;
     }
 
-    count = std::min(count, m_unparsedBuffer.getSizeLeft());
-    std::optional<size_t> bytesToDisplace = m_unparsedBuffer.append(buf, count);
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    size_t bytesToDisplace = 0;
 
-    // The buffer should be available...
-    if (bytesToDisplace==std::nullopt)
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
         return std::nullopt;
+
+    // will only displace the bytes appended to the buffer.
+    // because the buffer can only handle the max requested size.
+    bytesToDisplace = bytesAppended.value();
 
     // Ready...
     if (m_unparsedBuffer.getSizeLeft() == 0)
@@ -295,44 +301,55 @@ std::optional<size_t> SubParser::parseByValidator(const void *, size_t)
 
 std::optional<size_t> SubParser::parseByConnectionEnd(const void *buf, size_t count)
 {
-    // stick to the unparsedBuffer object size.
-    count = std::min(count, m_unparsedBuffer.getSizeLeft());
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    size_t bytesToDisplace = 0;
 
-    std::optional<size_t> appendedBytes = m_unparsedBuffer.append(buf, count);
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
+        return std::nullopt;
 
-    // failed or maxed out?
-    if (appendedBytes==std::nullopt || appendedBytes.value() != count)
-        return appendedBytes;
+    bytesToDisplace = bytesAppended.value();
 
-    if (!count)
+    if (count == 0)
     {
+        // !count means EOF. so, the parse will be done on EOF:
+
         m_parsedBuffer.reference(&m_unparsedBuffer);
+
 #ifdef DEBUG_PARSER
         printf("Parsing by connection end: %s\n", m_parsedBuffer.toString().c_str());
         fflush(stdout);
 #endif
+
         setParseStatus(parse()); // analyze on connection end.
-        m_parsedBuffer.clear();
+        m_unparsedBuffer.clear(); // Destroy the container data.
         return 0;
     }
 
-    return count;
+    return bytesToDisplace;
 }
 
-std::optional<size_t> SubParser::parseDirect(const void *buf, size_t count)
-{
-    std::optional<size_t> copiedDirect;
+
+/*
+
+  //  std::optional<size_t> copiedDirect;
 
     // TODO: check.
     // stick to the unparsedBuffer object size.
     count = std::min(count, m_unparsedBuffer.getSizeLeft());
 
     // TODO: termination?
+*/
+std::optional<size_t> SubParser::parseDirect(const void *buf, size_t count)
+{
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    size_t bytesToDisplace = 0;
 
-    // Bad copy...
-    copiedDirect = m_unparsedBuffer.append(buf, count);
-    if (copiedDirect == std::nullopt)
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
         return std::nullopt;
+
+    bytesToDisplace = bytesAppended.value();
 
     // Parse it...
     m_parsedBuffer.reference(&m_unparsedBuffer);
@@ -349,29 +366,23 @@ std::optional<size_t> SubParser::parseDirect(const void *buf, size_t count)
     m_unparsedBuffer.clear(); // Reset the container data for the next element.
     m_unparsedBuffer.reduceMaxSizeBy(curBufSize);
 
-    return copiedDirect;
+    return bytesToDisplace;
 }
 
 std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t count)
 {
-    size_t prevSize = 0;
+    size_t prevSize = m_unparsedBuffer.size();
     std::optional<size_t> delimPos;
-    std::optional<size_t> copiedDirect;
     m_delimiterFound = "";
 
-    // stick to the unparsedBuffer object size.
-    count = std::min(count, m_unparsedBuffer.getSizeLeft());
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    size_t bytesToDisplace = 0;
 
-    if (count == 0)
-        return std::nullopt; // Can't handle more data...
+    // Error appending data...
+    if (bytesAppended == std::nullopt)
+        return std::nullopt;
 
-    // Get the previous size.
-    prevSize = m_unparsedBuffer.size();
-
-    // Append the current data
-    copiedDirect = m_unparsedBuffer.append(buf, count);
-    if (copiedDirect==std::nullopt || copiedDirect.value() != count)
-        return std::nullopt; // Failed to create an unparsed buffer... (maxed out?)
+    bytesToDisplace = bytesAppended.value();
 
     // Find the delimiter pos.
     delimPos = m_unparsedBuffer.find(m_parseDelimiter.c_str(), m_parseDelimiter.size());
@@ -403,7 +414,7 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
             break;
         }
 
-        return copiedDirect; // Move all data copied.
+        return bytesToDisplace; // Move all data copied.
     }
     else
     {
@@ -449,6 +460,7 @@ Mantids30::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t 
     r.reference(&m_unparsedBuffer, m_unparsedBuffer.size() - bytes);
     return r;
 }
+
 
 std::string SubParser::getFoundDelimiter() const
 {
