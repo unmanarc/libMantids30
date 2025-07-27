@@ -1,5 +1,4 @@
 #include "streamableobject.h"
-#include "Mantids30/Helpers/safeint.h"
 #include "streamablestring.h"
 #include <optional>
 #include <stdarg.h>
@@ -21,7 +20,7 @@ std::string StreamableObject::toString()
 bool StreamableObject::writeEOF()
 {
     // Writting 0 (ZERO) to the socket will trigger the EOF.
-    if (write(nullptr, 0)>=0)
+    if (write(nullptr, 0)!=std::nullopt)
     {
         return true;
     }
@@ -55,17 +54,14 @@ bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
 
     while (writtenBytes < count)
     {
-        ssize_t cur = write(static_cast<const char *>(buf) + writtenBytes, count - writtenBytes);
-
-        if (cur > 0)
-            writtenBytes += cur;
-
-        // Failed Somewhere...
-        if (!writeStatus.succeed || cur < 0)
+        std::optional<size_t> cur = write(static_cast<const char *>(buf) + writtenBytes, count - writtenBytes);
+        if (cur == std::nullopt || !writeStatus.succeed)
         {
             writeStatus.succeed+=-1;
             return false;
         }
+
+        writtenBytes += cur.value();
     }
 
     return true;

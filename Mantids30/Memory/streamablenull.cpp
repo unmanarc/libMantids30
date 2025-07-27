@@ -2,7 +2,7 @@
 
 using namespace Mantids30::Memory::Streams;
 
-size_t StreamableNull::write(
+std::optional<size_t> StreamableNull::write(
     const void *buf, const size_t &count)
 {
     writeStatus+=count;

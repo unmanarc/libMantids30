@@ -15,7 +15,7 @@ public:
 
     virtual bool streamTo(Memory::Streams::StreamableObject * out) override;
 
-    virtual size_t write(const void *buf, const size_t &count) override;
+    virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
 
     StreamableString& operator=(const std::string& str);
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <stdlib.h>
 
 #include "streamableobject.h"
@@ -15,7 +16,6 @@ class StreamableTransformer : private StreamableObject
 public:
     StreamableTransformer() = default;
     virtual ~StreamableTransformer() = default;
-
     void transform( Memory::Streams::StreamableObject * in, Memory::Streams::StreamableObject * out );
 
 
@@ -25,22 +25,7 @@ protected:
     virtual size_t writeTransformerEOF(Memory::Streams::StreamableObject *dst) { return 0; }
 
 private:
-    size_t write(const void * buf, const size_t &count) override
-    {
-        size_t r;
-
-        if ( count == 0 ) // EOF
-        {
-            r = writeTransformerEOF(destObj);
-        }
-        else
-        {
-            r = writeTo(destObj,buf,count);
-        }
-
-        return r;
-
-    }
+    std::optional<size_t> write(const void * buf, const size_t &count) override;
 
     Memory::Streams::StreamableObject * destObj = nullptr;
 

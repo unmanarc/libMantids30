@@ -1,4 +1,5 @@
 #include "streamablestring.h"
+#include <optional>
 #include <string.h>
 
 using namespace Mantids30::Memory::Streams;
@@ -8,7 +9,7 @@ bool StreamableString::streamTo(Memory::Streams::StreamableObject *out)
     return out->writeFullStreamWithEOF(m_value.c_str(), m_value.size());
 }
 
-size_t StreamableString::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableString::write(const void *buf, const size_t &count)
 {
     try
     {
@@ -21,7 +22,7 @@ size_t StreamableString::write(const void *buf, const size_t &count)
     {
         // Set error:
         writeStatus+=-1;
-        return 0;
+        return std::nullopt;
     }
 }
 

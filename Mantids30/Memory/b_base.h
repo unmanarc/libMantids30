@@ -283,7 +283,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Streamable
     bool streamTo(Memory::Streams::StreamableObject *out) override;
-    size_t write(const void *buf, const size_t &count) override;
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FS options:
     std::shared_ptr<B_Base> copyToFS(const std::string &fileName, bool deleteFileOnDestruction);
@@ -391,8 +391,8 @@ protected:
     void decContainerBytesCount(const size_t & i);
 
     // Auxiliar:
-    size_t copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks);
-    size_t copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, std::vector<BinaryContainerChunk> copyChunks);
+    std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks);
+    std::optional<size_t> copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, std::vector<BinaryContainerChunk> copyChunks);
 
     void setContainerBytes(const size_t &value);
 

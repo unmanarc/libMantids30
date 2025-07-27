@@ -148,7 +148,7 @@ public:
     bool writeFullStream(const void *buf, const size_t &count);
 
     // Partial Write...
-    virtual size_t write(const void * buf, const size_t &count)=0;
+    virtual std::optional<size_t> write(const void * buf, const size_t &count)=0;
     /**
      * @brief writeStream Write into stream using std::strings
      * @param buf data to be streamed.

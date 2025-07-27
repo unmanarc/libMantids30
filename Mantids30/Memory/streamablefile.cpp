@@ -68,7 +68,7 @@ bool StreamableFile::streamTo(Memory::Streams::StreamableObject * out)
     }
 }
 
-size_t StreamableFile::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableFile::write(const void *buf, const size_t &count)
 {
     ssize_t x=0;
 
@@ -76,13 +76,12 @@ size_t StreamableFile::write(const void *buf, const size_t &count)
     lseek(rd_fd, 0, SEEK_END);
 
     x=::write(wr_fd, buf, count);
-
     writeStatus+=x;
 
     if (x>=0)
         return x;
     else
-        return 0; // Error reflected in the WriteStatus
+        return std::nullopt; // Error reflected also in the WriteStatus
 }
 
 void StreamableFile::closeAll()

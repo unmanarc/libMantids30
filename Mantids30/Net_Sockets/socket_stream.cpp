@@ -6,9 +6,9 @@
 #ifndef _WIN32
 #include <sys/socket.h>
 #else
+#include "socket_tcp.h"
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include "socket_tcp.h"
 
 #endif
 #include <string.h>
@@ -19,13 +19,13 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
 
-bool Socket_Stream::streamTo(Memory::Streams::StreamableObject * out)
+bool Socket_Stream::streamTo(Memory::Streams::StreamableObject *out)
 {
     char data[8192];
-    memset(data,0,8192);
+    memset(data, 0, 8192);
     for (;;)
     {
-        ssize_t r = partialRead(data,sizeof(data));
+        ssize_t r = partialRead(data, sizeof(data));
         switch (r)
         {
         case -1: // ERR.
@@ -34,17 +34,16 @@ bool Socket_Stream::streamTo(Memory::Streams::StreamableObject * out)
         case 0: // EOF.
             return out->writeEOF();
         default:
-            if (!out->writeFullStream(data,r))
+            if (!out->writeFullStream(data, r))
             {
                 return false;
             }
-        break;
+            break;
         }
     }
 }
 
-size_t Socket_Stream::write(
-    const void *buf, const size_t &count)
+std::optional<size_t> Socket_Stream::write(const void *buf, const size_t &count)
 {
     // EOF:
     if (count == 0)
@@ -54,12 +53,17 @@ size_t Socket_Stream::write(
     }
 
     // Write...
-    return partialWrite(buf,count);
+    ssize_t r = partialWrite(buf, count);
+    if (r>0)
+    {
+        return r;
+    }
+    return std::nullopt;
 }
 
 std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket_Stream::GetSocketPair()
 {
-    std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> p;
+    std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> p;
 
     p.first = nullptr;
     p.second = nullptr;
@@ -85,8 +89,8 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
     std::shared_ptr<Sockets::Socket_TCP> rsock = std::make_shared<Socket_TCP>();
     std::shared_ptr<Sockets::Socket_TCP> lsock = nullptr;
 
-    llsock->listenOn(0,"127.0.0.1");
-    rsock->connectTo("127.0.0.1",lsock->getPort());
+    llsock->listenOn(0, "127.0.0.1");
+    rsock->connectTo("127.0.0.1", lsock->getPort());
     lsock = std::dynamic_pointer_cast<Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
 
@@ -98,24 +102,22 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
     return p;
 }
 
-bool Socket_Stream::writeFull(
-    const void *data)
-{ 
-    return writeFull(data,strlen(((const char *)data)));
+bool Socket_Stream::writeFull(const void *data)
+{
+    return writeFull(data, strlen(((const char *) data)));
 }
 
-bool Socket_Stream::writeFull(
-    const void *data, const size_t &datalen)
+bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
 {
-    if ( datalen>static_cast<size_t>(std::numeric_limits<ssize_t>::max()) )
+    if (datalen > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
     {
-        writeStatus+=-1;
+        writeStatus += -1;
         return false;
     }
 
     // Init control variables:
-    size_t remaining = datalen;           // data left to send
-    const char* dataPtr = static_cast<const char*>(data); // data pointer.
+    size_t remaining = datalen;                            // data left to send
+    const char *dataPtr = static_cast<const char *>(data); // data pointer.
 
     // Bucle para enviar datos en fragmentos hasta que se envíe todo
     while (remaining > 0)
@@ -131,7 +133,7 @@ bool Socket_Stream::writeFull(
         {
             // Error al enviar los datos
             shutdownSocket();
-            writeStatus+=-1;
+            writeStatus += -1;
             return false;
         }
 
@@ -143,7 +145,6 @@ bool Socket_Stream::writeFull(
     // Todos los datos fueron enviados correctamente
     return true;
 }
-
 
 std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_Stream::acceptConnection()
 {
@@ -160,19 +161,21 @@ bool Socket_Stream::postConnectSubInitialization()
     return true;
 }
 
-
-bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, size_t * receivedDataBytesCount)
+bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, size_t *receivedDataBytesCount)
 {
-    if (receivedDataBytesCount != nullptr) {
+    if (receivedDataBytesCount != nullptr)
+    {
         *receivedDataBytesCount = 0;
     }
 
     // Validate input
-    if (data == nullptr) {
+    if (data == nullptr)
+    {
         return false;
     }
 
-    if (expectedDataBytesCount == 0) {
+    if (expectedDataBytesCount == 0)
+    {
         return true;
     }
 
@@ -184,10 +187,7 @@ bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, s
         // Calcular el tamaño máximo a leer en esta iteración
         size_t bytesToRead = std::min<size_t>(MAX_READ_BUFFER_SIZE, expectedDataBytesCount - curReceivedBytesCount);
 
-        ssize_t partialReceivedBytesCount = partialRead(
-            static_cast<char*>(data) + curReceivedBytesCount,
-            static_cast<uint32_t>(bytesToRead)
-            );
+        ssize_t partialReceivedBytesCount = partialRead(static_cast<char *>(data) + curReceivedBytesCount, static_cast<uint32_t>(bytesToRead));
 
         if (partialReceivedBytesCount < 0)
         {
@@ -274,7 +274,7 @@ bool Socket_Stream::listenOn(const uint16_t &, const char *, const int32_t &, co
     return false;
 }
 
-bool Socket_Stream::connectFrom(const char *, const char* , const uint16_t &, const uint32_t &)
+bool Socket_Stream::connectFrom(const char *, const char *, const uint16_t &, const uint32_t &)
 {
-	return false;
+    return false;
 }

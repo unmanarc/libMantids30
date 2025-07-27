@@ -16,13 +16,16 @@ HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
     writeEOF();
 }
 
-size_t HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
+std::optional<size_t> HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
 {
     if (count == 0)
     {
         // Set finished status (EOF)
         if (!upStreamOut->writeString(m_pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n"))
+        {
             writeStatus+=-1;
+            return std::nullopt;
+        }
         return 0;
     }
 
@@ -31,19 +34,19 @@ size_t HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &cou
         // Error writting on this (source error...).
         writeStatus+=-1;
         upStreamOut->writeStatus+=-1;
-        return 0;
+        return std::nullopt;
     }
 
     upStreamOut->strPrintf(m_pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
     if (!upStreamOut->writeStatus.succeed)
     {
         writeStatus+=-1;
-        return 0;
+        return std::nullopt;
     }
 
     if (!upStreamOut->writeFullStream(buf,count))
     {
-        writeStatus+=-1;
+        return std::nullopt;
     }
     else
     {

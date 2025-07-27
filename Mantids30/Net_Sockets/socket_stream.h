@@ -17,7 +17,7 @@ public:
 
     bool streamTo(Memory::Streams::StreamableObject *out) override;
 
-    size_t write(const void * buf, const size_t &count) override;
+    std::optional<size_t> write(const void * buf, const size_t &count) override;
 
     /**
      * @brief GetSocketPair Create a Pair of interconnected sockets

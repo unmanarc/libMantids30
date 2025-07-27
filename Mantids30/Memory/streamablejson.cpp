@@ -21,7 +21,7 @@ bool StreamableJSON::streamTo(
     return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
 }
 
-size_t StreamableJSON::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableJSON::write(const void *buf, const size_t &count)
 {
     ssize_t writtenBytes;
 
@@ -32,6 +32,7 @@ size_t StreamableJSON::write(const void *buf, const size_t &count)
         if (!processValue())
         {
             writeStatus+=-1;
+            return std::nullopt;
         }
         return 0;
     }
@@ -43,7 +44,7 @@ size_t StreamableJSON::write(const void *buf, const size_t &count)
         // There is no sense to process an incomplete JSON.
         m_isFull = true;
         writeStatus+=-1;
-        return -1;
+        return std::nullopt;
     }
     else
     {

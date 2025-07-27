@@ -9,7 +9,7 @@ class StreamableNull : public Memory::Streams::StreamableObject
 {
 public:
     StreamableNull() = default;
-    virtual size_t write(const void *buf, const size_t &count) override;
+    virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
     size_t size() override { return bytes; }
 
 private:
