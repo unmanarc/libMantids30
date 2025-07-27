@@ -72,6 +72,7 @@ protected:
     size_t m_maxTTL = 4096;
     bool m_initialized = false;
     bool m_clientMode;
+    //bool m_isProtocolFinished = false;
 
 private:
     /**
@@ -82,7 +83,7 @@ private:
      * @param ttl Time To Live Counter.
      * @return -1 if error, and n>0 : n length of data processed by parser, which should be equal to count.
      */
-    std::optional<size_t> parseData(const void * buf, size_t count, size_t *ttl, bool * finished);
+    std::optional<size_t> parseData(const void * buf, size_t count, size_t *ttl);
 };
 
 

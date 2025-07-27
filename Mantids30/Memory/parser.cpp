@@ -14,6 +14,8 @@ void Parser::parseObject(Parser::ErrorMSG *err)
 {
     *err = PARSING_SUCCEED;
 
+    this->writeStatus.finish = false;
+
     // Call the init protocol...
     m_initialized = initProtocol();
 
@@ -44,17 +46,14 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
 {
     // Parse this data...
     size_t ttl = 0;
-    bool finished = false;
     size_t r;
 
     if (count == 0)
     {
         // EOF:
         size_t ttl = 0;
-        bool finished = false;
-
-        std::optional<size_t> r = parseData("", 0, &ttl, &finished);
-        return !finished? std::nullopt : r;
+        std::optional<size_t> r = parseData("", 0, &ttl);
+        return r;
     }
 
 #ifdef DEBUG_PARSER
@@ -65,10 +64,10 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
 #endif
 
     // The content streamed is parsed here:
-    return parseData(buf, count, &ttl, &finished);
+    return parseData(buf, count, &ttl);
 }
 
-std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *ttl, bool *finished)
+std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *ttl)
 {
     if (*ttl > m_maxTTL)
     {
@@ -118,7 +117,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
             if (m_currentParser == nullptr)
-                *finished = true;
+                this->writeStatus.finish = true;
             if (m_currentParser == nullptr || writtenBytes.value() == count)
                 return writtenBytes;
         }
@@ -154,7 +153,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         count -= writtenBytes.value();
 
         // Data left to process.. (Recursive call)
-        std::optional<size_t> x = parseData(buf, count, ttl, finished);
+        std::optional<size_t> x = parseData(buf, count, ttl);
 
         if (x == std::nullopt)
             return std::nullopt;
