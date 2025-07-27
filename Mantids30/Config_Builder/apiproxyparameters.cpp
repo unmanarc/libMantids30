@@ -12,8 +12,11 @@ Config example:
 
 ; ApiProxy Configuration
 UseTLS true   ; Use TLS
-CheckTLSPeer true   ; Check TLS peer
-UsePrivateCA false   ; Do not use private CA
+TLS
+{
+    CheckTLSPeer true   ; Check TLS peer
+    UsePrivateCA false   ; Do not use private CA
+}
 RemoteHost "example.com"   ; Remote host
 RemotePort 443   ; Remote port
 
@@ -29,14 +32,19 @@ PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were tru
 std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
     Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config, const std::map<std::string, std::string> &vars)
 {
-    auto params = std::make_shared<ApiProxyParameters>();
+    std::shared_ptr<ApiProxyParameters> params = std::make_shared<ApiProxyParameters>();
 
     try
     {
         log->log0(__func__, Logs::LEVEL_DEBUG, "Creating ApiProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
-        params->checkTLSPeer = config.get<bool>("CheckTLSPeer", false);
-        params->usePrivateCA = config.get<bool>("UsePrivateCA", false);
+
+        if (auto tlsHeaders = config.get_child_optional("TLS"))
+        {
+            params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", false);
+            params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
+        }
+
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
         params->privateCAPath = config.get<std::string>("PrivateCAPath", "");
