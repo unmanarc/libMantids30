@@ -64,3 +64,5 @@ ltmain.sh
 
 # Autosave Files
 *.autosave
+TODO_PORTING.txt
+.vscode/settings.json
