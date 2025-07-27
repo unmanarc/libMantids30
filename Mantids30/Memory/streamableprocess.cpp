@@ -41,10 +41,10 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
         {
         case -1:
             // The process failed... output is not reliable...
-            out->writeEOF();
+            //out->writeEOF();
             return false;
         case 0:
-            return out->writeEOF();
+            //return out->writeEOF();
             break;
         default:
             if (!out->writeFullStream(buf,rsize))
@@ -52,6 +52,13 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
                 return false;
             }
             break;
+        }
+
+
+        if (out->writeStatus.finish)
+        {
+            // Protocol finished. Stop writting into.
+            return true;
         }
 
         if (!out->writeStatus.succeed)

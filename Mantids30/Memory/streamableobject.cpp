@@ -60,7 +60,6 @@ bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
             writeStatus.succeed+=-1;
             return false;
         }
-
         writtenBytes += cur.value();
     }
 

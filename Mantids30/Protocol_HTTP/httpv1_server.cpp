@@ -578,6 +578,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
+    m_currentParser = nullptr; // Don't continue with parsing. (TODO: Not supported yet)
     return answer();
 }
 

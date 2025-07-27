@@ -6,7 +6,7 @@ using namespace Mantids30::Memory::Streams;
 
 bool StreamableString::streamTo(Memory::Streams::StreamableObject *out)
 {
-    return out->writeFullStreamWithEOF(m_value.c_str(), m_value.size());
+    return out->writeFullStream(m_value.c_str(), m_value.size());
 }
 
 std::optional<size_t> StreamableString::write(const void *buf, const size_t &count)
