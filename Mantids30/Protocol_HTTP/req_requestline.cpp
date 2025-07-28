@@ -34,21 +34,20 @@ bool RequestLine::streamToUpstream()
     if (!m_getVars->isEmpty())
     {
         m_upStream->writeString("?");
+
         if (!m_upStream->writeStatus.succeed)
             return false;
 
         if (!m_getVars->streamTo(m_upStream))
             return false;
-
-        m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n") );
-
-        if (!m_upStream->writeStatus.succeed)
-            return false;
     }
 
+    m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n") );
+
+    if (!m_upStream->writeStatus.succeed)
+        return false;
+
     return m_upStream->writeStatus.succeed;
-
-
 }
 
 Memory::Streams::SubParser::ParseStatus RequestLine::parse()
