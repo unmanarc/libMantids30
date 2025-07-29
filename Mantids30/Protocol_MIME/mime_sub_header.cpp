@@ -31,7 +31,6 @@ bool MIME_Sub_Header::streamToUpstream()
     {
         std::string x = i.second->toString() + std::string("\r\n");
 
-        printf(">>>> %s", x.c_str());
         m_upStream->writeString( x );
 
         if (!m_upStream->writeStatus.succeed)
