@@ -24,7 +24,6 @@ struct RequestParameters
     Json::Value emptyJSON;
     Json::Value * inputJSON = &emptyJSON;     ///< Holds the input JSON that came from the request body.
 
-
     DataFormat::JWT::Token emptyToken; ///< Holds a default empty token
     DataFormat::JWT::Token * jwtToken = &emptyToken;    ///< Holds JWT token data, if present and validated the pointer will be changed.
 
