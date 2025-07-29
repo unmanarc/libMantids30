@@ -11,7 +11,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Network;
 
-std::set<std::string> parseCommaSeparatedOrigins(const std::string &input)
+std::set<std::string> parseCommaSeparatedString(const std::string &input)
 {
     std::set<std::string> result;
     std::stringstream ss(input);
@@ -111,13 +111,18 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // All the API will be accessible from this Origins...
         std::string rawOrigins = config->get<std::string>("API.Origins", "");
         log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
-        webServer->config.permittedAPIOrigins = parseCommaSeparatedOrigins(rawOrigins);
+        webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
+
+        // All the API will be accessible from this Origins...
+        std::string callbackAPIMethodName = config->get<std::string>("Login.CallbackMethodName", "callback");
+        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting API Login callback method name to %s", (void*)webServer, callbackAPIMethodName.c_str());
+        webServer->config.callbackAPIMethodName = callbackAPIMethodName;
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
         std::string loginOrigins = config->get<std::string>("Login.Origins", "");
         log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins to %s", (void*)webServer, loginOrigins.c_str());
-        webServer->config.permittedLoginOrigins = parseCommaSeparatedOrigins(loginOrigins);
+        webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
         // Set the login IAM location:
         std::string loginRedirectURL = config->get<std::string>("Login.RedirectURL", "/login");
         log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting default login redirect URL to %s", (void*)webServer, loginRedirectURL.c_str());

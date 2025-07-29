@@ -5,10 +5,13 @@
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
+#include <Mantids30/Sessions/session.h>
+#include <Mantids30/API_RESTful/methodshandler.h>
 
 #include "resourcesfilter.h"
 #include <memory>
 #include <set>
+#include <string>
 
 namespace Mantids30 {
 namespace Network {
@@ -18,6 +21,10 @@ namespace Web {
 class APIServerParameters
 {
 public:
+    using ClientDetails = Mantids30::Sessions::ClientDetails;
+    using RequestParameters = Mantids30::API::RESTful::RequestParameters;
+    using APIReturn = Mantids30::API::APIReturn;
+
     APIServerParameters() = default;
     ~APIServerParameters();
 
@@ -36,6 +43,21 @@ public:
      *
      */
     std::shared_ptr<API::Web::ResourcesFilter> resourceFilter;
+
+
+    /**
+     * @brief List of allowed origins for login requests.
+     *
+     * This set contains the origins that are permitted to initiate login requests. It is used to
+     * ensure that only requests coming from specified trusted origins are processed for login,
+     * enhancing security by preventing unauthorized cross-origin requests.
+     */
+    std::set<std::string> permittedLoginOrigins;
+
+    /**
+     * @brief callbackAPIMethodName The method name used for JWT Token absorption from the IAM.
+     */
+    std::string callbackAPIMethodName = "callback";
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
@@ -104,14 +126,7 @@ public:
      */
     std::string defaultLoginRedirect;
 
-    /**
-     * @brief List of allowed origins for login requests.
-     *
-     * This set contains the origins that are permitted to initiate login requests. It is used to
-     * ensure that only requests coming from specified trusted origins are processed for login,
-     * enhancing security by preventing unauthorized cross-origin requests.
-     */
-    std::set<std::string> permittedLoginOrigins;
+
 
     /**
      * @brief List of allowed origins for API requests.
