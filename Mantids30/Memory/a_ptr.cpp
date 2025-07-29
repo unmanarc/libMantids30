@@ -1,5 +1,6 @@
 #include "a_ptr.h"
 #include <Mantids30/Threads/lock_shared.h>
+#include <cstdint>
 
 using namespace Mantids30::Memory::Abstract;
 

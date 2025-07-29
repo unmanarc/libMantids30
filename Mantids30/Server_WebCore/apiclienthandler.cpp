@@ -1,29 +1,29 @@
 #include "apiclienthandler.h"
 #include "htmliengine.h"
 
+#include <Mantids30/Helpers/crypto.h>
+#include <Mantids30/Helpers/encoders.h>
+#include <Mantids30/Helpers/json.h>
+#include <Mantids30/Memory/b_mmap.h>
+#include <Mantids30/Memory/streamablestring.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/Memory/streamablestring.h>
-#include <Mantids30/Memory/b_mmap.h>
-#include <Mantids30/Helpers/crypto.h>
-#include <Mantids30/Helpers/json.h>
-#include <Mantids30/Helpers/encoders.h>
 
-#include <memory>
-#include <stdarg.h>
-#include <regex>
-#include <vector>
-#include <string>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
 #include <inttypes.h>
 #include <json/value.h>
-#include <boost/tokenizer.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string/predicate.hpp>
+#include <memory>
+#include <regex>
+#include <stdarg.h>
+#include <string>
+#include <vector>
 
 #ifdef _WIN32
 #include <stdlib.h>
-#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
+#define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
 #endif
 
 using namespace Mantids30::Program::Logs;
@@ -35,10 +35,9 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-
-APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObject> sock) : HTTPv1_Server(sock)
-{
-}
+APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
+    : HTTPv1_Server(sock)
+{}
 
 void APIClientHandler::processPathParameters(const std::string &request, std::string &methodName, Json::Value &pathParameters)
 {
@@ -79,7 +78,7 @@ void APIClientHandler::processPathParameters(const std::string &request, std::st
 
 HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
 {
-    HTTP::Status::Codes ret  = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
 
     if (!config->webServerName.empty())
     {
@@ -96,7 +95,8 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
-                                )", HTTP::Status::S_426_UPGRADE_REQUIRED);
+                                )",
+                                  HTTP::Status::S_426_UPGRADE_REQUIRED);
     }
 
     HTTP::Status::Codes rtmp;
@@ -108,9 +108,9 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
-    for ( const auto & baseApiUrl : config->APIURLs)
+    for (const auto &baseApiUrl : config->APIURLs)
     {
-        if (boost::starts_with(requestURI,baseApiUrl + "/"))
+        if (boost::starts_with(requestURI, baseApiUrl + "/"))
         {
             std::string apiUrlWithoutBase = requestURI.substr(baseApiUrl.size());
 
@@ -119,40 +119,56 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             if (std::regex_match(apiUrlWithoutBase, pathMatch, apiVersionResourcePattern))
             {
                 // It's an API request (with resource).
+                API::APIReturn apiReturn;
+                std::string methodName;
+                json pathParameters;
                 size_t apiVersion = std::stoul(pathMatch[1].str());
+                string methodMode = clientRequest.requestLine.getRequestMethod().c_str();
+                string requestOrigin = clientRequest.getOrigin();
                 std::string resourceAndPathParameters = pathMatch[2].str();
 
-                API::APIReturn apiReturn;
                 apiReturn.getBodyDataStreamer()->setFormatted(config->useFormattedJSONOutput);
                 serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                 serverResponse.setContentType("application/json", true);
 
-                // Check API Origin
-                string requestOrigin = clientRequest.getOrigin();
-                if ( !requestOrigin.empty() )
+                processPathParameters(resourceAndPathParameters, methodName, pathParameters);
+
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                /// API ORIGIN VALIDATIONS:
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+                if (methodName == this->config->callbackAPIMethodName)
                 {
+                    // Check Login Origin if the
+                    if (this->config->permittedLoginOrigins.find(requestOrigin) == this->config->permittedLoginOrigins.end())
+                    {
+                        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                        ret = HTTP::Status::S_401_UNAUTHORIZED;
+                        isAPIURI = true;
+                        break;
+                    }
+                }
+                else if (!requestOrigin.empty())
+                {
+                    // Check API Origin (if origin is provided)
                     if (this->config->permittedAPIOrigins.find(requestOrigin) == this->config->permittedAPIOrigins.end())
                     {
-                        log(LEVEL_SECURITY_ALERT, "restAPI", 2048,
-                            "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED,"invalid_security_context", "Disallowed Origin");
+                        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                         ret = HTTP::Status::S_401_UNAUTHORIZED;
                         isAPIURI = true;
                         break;
                     }
                 }
 
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                /// API CALL:
+                ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
-
-                std::string methodName;
-                json pathParameters;
-                json postParameters = !jsonStreamable? Json::nullValue : *(jsonStreamable->getValue());
-
-                processPathParameters(resourceAndPathParameters,methodName,pathParameters);
-
-                string methodMode = clientRequest.requestLine.getRequestMethod().c_str();
-
-                handleAPIRequest(&apiReturn, baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters );
+                json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
+                handleAPIRequest(&apiReturn, baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters);
 
                 ret = apiReturn.getHTTPResponseCode();
 
@@ -168,17 +184,22 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                     serverResponse.headers.add(i.first, i.second);
                 }
 
+                if (!apiReturn.redirectURL.empty())
+                {
+                    // Set as HTML.
+                    ret = redirectUsingJS(apiReturn.redirectURL);
+                }
                 isAPIURI = true;
                 break;
             }
-            else if (  boost::starts_with(apiUrlWithoutBase,"/auth/") )
+            else if (boost::starts_with(apiUrlWithoutBase, "/auth/"))
             {
-                std::string authFunction = apiUrlWithoutBase.substr( 6 );
+                std::string authFunction = apiUrlWithoutBase.substr(6);
                 ret = handleAuthFunctions(baseApiUrl, authFunction);
                 isAPIURI = true;
                 break;
             }
-            else if (  boost::starts_with(apiUrlWithoutBase,"/info") )
+            else if (boost::starts_with(apiUrlWithoutBase, "/info"))
             {
                 std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
                 jPayloadOutStr->setFormatted(this->config->useFormattedJSONOutput);
@@ -239,53 +260,49 @@ void APIClientHandler::fillSessionInfo(json &jVars)
 {
     if (m_currentSessionInfo.authSession)
     {
-        jVars["isImpersonation"]   = m_currentSessionInfo.isImpersonation;
-        jVars["impersonator"]      = m_currentSessionInfo.authSession->getImpersonator();
+        jVars["isImpersonation"] = m_currentSessionInfo.isImpersonation;
+        jVars["impersonator"] = m_currentSessionInfo.authSession->getImpersonator();
 
-        jVars["halfSessionID"]     = m_currentSessionInfo.halfSessionId;
-        jVars["user"]              = m_currentSessionInfo.authSession->getUser();
-        jVars["domain"]            = m_currentSessionInfo.authSession->getDomain();
-        jVars["loggedIn"]          = true;
+        jVars["halfSessionID"] = m_currentSessionInfo.halfSessionId;
+        jVars["user"] = m_currentSessionInfo.authSession->getUser();
+        jVars["domain"] = m_currentSessionInfo.authSession->getDomain();
+        jVars["loggedIn"] = true;
     }
     else
     {
-        jVars["loggedIn"]          = false;
+        jVars["loggedIn"] = false;
     }
 
     jVars["userTLSCommonName"] = clientRequest.networkClientInfo.tlsCommonName;
-    jVars["userIP"]            = clientRequest.networkClientInfo.REMOTE_ADDR;
-    jVars["userAgent"]         = clientRequest.userAgent;
-
+    jVars["userIP"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+    jVars["userAgent"] = clientRequest.userAgent;
 }
 
 HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 {
     // WEB RESOURCE MODE:
-    HTTP::Status::Codes ret  = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
     sLocalRequestedFileInfo fileInfo;
-    uint64_t uMaxAge=0;
+    uint64_t uMaxAge = 0;
 
     // if there are no web resources path, return 404 without data.
     if (config->getDocumentRootPath().empty())
-            return HTTP::Status::S_404_NOT_FOUND;
+        return HTTP::Status::S_404_NOT_FOUND;
 
     if ( //staticContent ||
-         (getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, ".html") ||
-          getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, "index.html") ||
-          getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, "")
-          ) && !fileInfo.isDir
-         )
+        (getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, ".html") || getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, "index.html")
+         || getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, ""))
+        && !fileInfo.isDir)
     {
         // Evaluate...
         API::Web::ResourcesFilter::FilterEvaluationResult e;
 
         // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
         // it will proccess this according to the authorization session
-        if ( config->resourceFilter )
+        if (config->resourceFilter)
         {
-            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath,getSessionPermissions(), getSessionRoles(), isSessionActive() );
+            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath, getSessionPermissions(), getSessionRoles(), isSessionActive());
         }
-
 
         // If the element is accepted (during the filter)
         if (e.accept)
@@ -294,17 +311,17 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
             if (e.redirectLocation.empty())
                 ret = HTTP::Status::S_200_OK;
             else // otherwise you will need to redirect.
-                ret = serverResponse.setRedirectLocation( e.redirectLocation );
+                ret = serverResponse.setRedirectLocation(e.redirectLocation);
         }
         else // If not, drop a 403 (forbidden)
             ret = HTTP::Status::S_403_FORBIDDEN;
 
-        log(LEVEL_DEBUG,"fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
+        log(LEVEL_DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
     }
     else
     {
         // File not found at this point (404)
-        log(LEVEL_WARN,"fileServer", 65535, "R/404: %s",clientRequest.getURI().c_str());
+        log(LEVEL_WARN, "fileServer", 65535, "R/404: %s", clientRequest.getURI().c_str());
     }
 
     if (ret != HTTP::Status::S_200_OK)
@@ -315,21 +332,20 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 
     // If the URL is going to process the Interactive HTML Engine,
     // and the document content is text/html, then, process it as HTMLIEngine:
-    if ( config->useHTMLIEngine && serverResponse.contentType == "text/html" ) // The content type has changed during the map.
+    if (config->useHTMLIEngine && serverResponse.contentType == "text/html") // The content type has changed during the map.
     {
-        ret = HTMLIEngine::processResourceFile( this, fileInfo.sRealFullPath );
+        ret = HTMLIEngine::processResourceFile(this, fileInfo.sRealFullPath);
     }
 
     // And if the file is not found and there are redirections, set the redirection:
-    if (ret==HTTP::Status::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
+    if (ret == HTTP::Status::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
     {
-        ret = serverResponse.setRedirectLocation( config->redirectPathOn404 );
+        ret = serverResponse.setRedirectLocation(config->redirectPathOn404);
     }
 
     // Log the response.
-    log(ret==HTTP::Status::S_200_OK?LEVEL_INFO:LEVEL_WARN,
-        "fileServer", 2048, "R/%03" PRIu16 ": %s",static_cast<uint16_t>(ret),
-        ret==HTTP::Status::S_200_OK?fileInfo.sRealRelativePath.c_str():clientRequest.getURI().c_str());
+    log(ret == HTTP::Status::S_200_OK ? LEVEL_INFO : LEVEL_WARN, "fileServer", 2048, "R/%03" PRIu16 ": %s", static_cast<uint16_t>(ret),
+        ret == HTTP::Status::S_200_OK ? fileInfo.sRealRelativePath.c_str() : clientRequest.getURI().c_str());
 
     return ret;
 }
@@ -419,7 +435,7 @@ bool APIClientHandler::isSupportedUserAgent(const std::string &userAgent)
     return false; // No supported browser matched
 }
 
-void APIClientHandler::log(eLogLevels logSeverity,  const std::string & module, const uint32_t &outSize, const char *fmtLog,...)
+void APIClientHandler::log(eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
 {
     va_list args;
     va_start(args, fmtLog);
@@ -437,16 +453,11 @@ void APIClientHandler::log(eLogLevels logSeverity,  const std::string & module, 
             user = m_currentSessionInfo.authSession->getUser();
         }
 
-        domain= m_currentSessionInfo.authSession->getDomain();
-
+        domain = m_currentSessionInfo.authSession->getDomain();
     }
 
-    if (config->rpcLog) config->rpcLog->logVA( logSeverity,
-                               clientRequest.networkClientInfo.REMOTE_ADDR,
-                               m_currentSessionInfo.halfSessionId,
-                               user,
-                               domain,
-                               module, outSize,fmtLog,args);
+    if (config->rpcLog)
+        config->rpcLog->logVA(logSeverity, clientRequest.networkClientInfo.REMOTE_ADDR, m_currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
 
     va_end(args);
 }
@@ -478,9 +489,9 @@ bool APIClientHandler::isURLSafe(const std::string &url)
 
 bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
 {
-    for (  const auto & apiurl : config->APIURLs )
+    for (const auto &apiurl : config->APIURLs)
     {
-        if ( boost::starts_with(url,apiurl + "/") )
+        if (boost::starts_with(url, apiurl + "/"))
         {
             return false;
         }
@@ -488,20 +499,22 @@ bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
     return true;
 }
 
-HTTP::Status::Codes APIClientHandler::redirectUsingJS(
-    const std::string &url)
+HTTP::Status::Codes APIClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
         return Protocols::HTTP::Status::S_200_OK;
 
-    getResponseDataStreamer()->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
+    std::shared_ptr<Memory::Streams::StreamableString> htmlOutput = std::make_shared<Memory::Streams::StreamableString>();
+    htmlOutput->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
+    serverResponse.setDataStreamer(htmlOutput);
+    serverResponse.setContentType("text/html", true);
+
     return Protocols::HTTP::Status::S_200_OK;
 }
 
-
-HTTP::Status::Codes APIClientHandler::showBrowserMessage(const std::string & title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
+HTTP::Status::Codes APIClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
 {
-    auto sHTMLPayloadOut = createHTMLAlertMessage(title,message);
+    auto sHTMLPayloadOut = createHTMLAlertMessage(title, message);
     serverResponse.setDataStreamer(sHTMLPayloadOut);
     serverResponse.setContentType("text/html", true);
     return returnCode;

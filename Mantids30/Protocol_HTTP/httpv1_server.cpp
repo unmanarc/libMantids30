@@ -590,7 +590,7 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
     if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
         // TODO: connection keep alive.
-        serverResponse.headers.add("Connetion", "Close");
+        serverResponse.headers.replace("Connetion", "Close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
@@ -605,11 +605,18 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
     HTTP::Date currentDate;
     currentDate.setCurrentTime();
     if (m_includeServerDate)
-        serverResponse.headers.add("Date", currentDate.toString());
+        serverResponse.headers.replace("Date", currentDate.toString());
+
+    if (serverResponse.immutableHeaders)
+    {
+        // No futher headers will be modified...
+        return serverResponse.headers.streamToUpstream();
+    }
+
 
     if (!serverResponse.sWWWAuthenticateRealm.empty())
     {
-        serverResponse.headers.add("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");
+        serverResponse.headers.replace("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");
     }
 
     // Establish the cookies

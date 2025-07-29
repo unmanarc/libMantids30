@@ -79,6 +79,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
 
         if (msg == Parser::PARSING_SUCCEED)
         {
+            client.serverResponse.immutableHeaders = true;
             *response = client.serverResponse;
             return (HTTP::Status::Codes)client.serverResponse.status.getCode();
         }

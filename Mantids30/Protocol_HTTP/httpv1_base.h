@@ -411,6 +411,11 @@ public:
          * @brief contentType Response Content Type
          */
         std::string contentType;
+
+        /**
+         * @brief immutableHeaders Prevent current headers to be filled/replaced with the Response options/object. (eg. server name, security, cache-control, etc)
+         */
+        bool immutableHeaders = false;
     };
 
     HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);

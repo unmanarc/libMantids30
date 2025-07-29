@@ -163,6 +163,8 @@ public:
     std::map<std::string, Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
     std::map<std::string,std::string> httpExtraHeaders;
 
+    std::string redirectURL;
+
 private:
     Network::Protocols::HTTP::Status::Codes httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
