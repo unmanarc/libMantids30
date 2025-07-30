@@ -226,7 +226,7 @@ set<string> ClientHandler::getSessionRoles()
     }
     return {};
 }
-
+/*
 void ClientHandler::deliverSessionMaxAgeViaCookie(const uint64_t & maxAge)
 {
     HTTP::Headers::Cookie loggedInCookie;
@@ -239,8 +239,8 @@ void ClientHandler::deliverSessionMaxAgeViaCookie(const uint64_t & maxAge)
 
     // Set the sessionMaxAge cookie (JS accessible).
     serverResponse.cookies.addCookieVal("sessionMaxAge", loggedInCookie);
-}
-
+}*/
+/*
 // Helper: Set AccessToken and loggedIn cookies
 void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t & maxAge)
 {
@@ -256,15 +256,15 @@ void ClientHandler::setAccessTokenAndLoggedInCookie(const std::string &token, co
         setPostLoginTokenCookie(token, maxAge);
     }
 }
-
+*/
 // Helper: Set impersonator token if allowed
-void ClientHandler::setImpersonatorToken(const uint64_t &maxAge)
+/*void ClientHandler::setImpersonatorToken(const uint64_t &maxAge)
 {
     serverResponse.setSecureCookie("ImpersonatorToken", clientRequest.getCookie("AccessToken"), maxAge, "/");
-}
+}*/
 
 // Helper: Get redirect URL from request or default
-std::string ClientHandler::getRedirectURL()
+/*std::string ClientHandler::getRedirectURL()
 {
     std::string redirectURL = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("redirectURI");
     if (redirectURL.empty())
@@ -272,7 +272,7 @@ std::string ClientHandler::getRedirectURL()
         redirectURL = "/";
     }
     return redirectURL;
-}
+}*/
 /*
 HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
 {
@@ -390,7 +390,7 @@ HTTP::Status::Codes ClientHandler::handleAPIAuthCallbackFunction()
 // TODO: separar opciones de configuracion específicas para monolith
 // Bad authentication:
 
-void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const uint64_t & maxAge)
+/*void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const uint64_t & maxAge)
 {
     if (config->useJSTokenCookie)
     {
@@ -406,7 +406,7 @@ void ClientHandler::setPostLoginTokenCookie(const string &postLoginToken, const 
         // the cookie should be dropped from the website to avoid XSS attacks to retrieve it.
     }
 }
-
+*/
 HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // In the future we may want to implement this to handle authorizations from any other IAM's
