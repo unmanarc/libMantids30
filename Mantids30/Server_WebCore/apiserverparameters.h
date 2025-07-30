@@ -35,6 +35,11 @@ public:
     Program::Logs::RPCLog *rpcLog = nullptr;
 
     /**
+     * @brief redirections HTTP 307 Redirections (Temporary Redirect), by example, you can use some path for URL shortening here.
+     */
+    std::map<std::string,std::string> redirections;
+
+    /**
      * @brief Sets the shared pointer resource filter for the web session.
      *
      * Configures a filter for regular files that can be matched with the current
@@ -43,7 +48,6 @@ public:
      *
      */
     std::shared_ptr<API::Web::ResourcesFilter> resourceFilter;
-
 
     /**
      * @brief List of allowed origins for login requests.

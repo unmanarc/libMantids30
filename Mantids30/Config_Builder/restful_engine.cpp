@@ -97,9 +97,9 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // Setup the RPC Log:
         webServer->config.rpcLog = rpcLog;
 
-        if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0)
+        std::string resourcesPath = config->get<std::string>("ResourcesPath",defaultResourcePath);
+        if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0 || resourcesPath.empty())
         {
-            std::string resourcesPath = config->get<std::string>("ResourcesPath",defaultResourcePath);
             log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting document root path to %s", (void*)webServer, resourcesPath.c_str());
             if (!webServer->config.setDocumentRootPath( resourcesPath ))
             {
@@ -110,7 +110,12 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         // All the API will be accessible from this Origins...
         std::string rawOrigins = config->get<std::string>("API.Origins", "");
-        log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
+
+        if (!rawOrigins.empty())
+            log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
+        else
+            log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] API origins won't be enforced", (void*)webServer);
+
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
         // All the API will be accessible from this Origins...
@@ -183,6 +188,26 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 }
             }
         }
+
+        if (config->find("Redirections") != config->not_found())
+        {
+            log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Loading redirections...", (void*)webServer);
+            // Loading redirections...
+
+            for (const auto& redirection : config->get_child("Redirections"))
+            {
+                std::string path = redirection.first;
+                std::string url = redirection.second.get_value<std::string>("/");
+
+                log->log0(__func__, Logs::LEVEL_INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'",
+                          (void*)webServer,
+                          path.c_str(), url.c_str());
+
+                webServer->config.redirections[path] = url;
+            }
+        }
+
+
 
         return webServer;
     }

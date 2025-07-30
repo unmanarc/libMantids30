@@ -79,6 +79,8 @@ void APIClientHandler::processPathParameters(const std::string &request, std::st
 HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
 {
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
+    std::string requestURI = clientRequest.getURI();
+    bool isAPIURI = false;
 
     if (!config->webServerName.empty())
     {
@@ -99,14 +101,17 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                                   HTTP::Status::S_426_UPGRADE_REQUIRED);
     }
 
+    // Do forced redirections (before session's):
+    if ( config->redirections.find(requestURI) != config->redirections.end() )
+    {
+        return serverResponse.setRedirectLocation(config->redirections[requestURI]);
+    }
+
     HTTP::Status::Codes rtmp;
     if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
     {
         return rtmp;
-    }
-
-    std::string requestURI = clientRequest.getURI();
-    bool isAPIURI = false;
+    }   
 
     for (const auto &baseApiUrl : config->APIURLs)
     {
@@ -332,7 +337,9 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 
     // If the URL is going to process the Interactive HTML Engine,
     // and the document content is text/html, then, process it as HTMLIEngine:
-    if (config->useHTMLIEngine && serverResponse.contentType == "text/html") // The content type has changed during the map.
+    if (config->useHTMLIEngine 
+        && (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
+    ) // The content type has changed during the map.
     {
         ret = HTMLIEngine::processResourceFile(this, fileInfo.sRealFullPath);
     }
