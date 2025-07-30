@@ -1,12 +1,12 @@
 #include "htmliengine.h"
-#include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Protocol_HTTP/api_return.h>
 #include "json/value.h"
-#include <Mantids30/Protocol_HTTP/httpv1_base.h>
+#include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/streamablejson.h>
-#include <boost/algorithm/string/replace.hpp>
-#include <boost/algorithm/string/predicate.hpp>
 #include <Mantids30/Program_Logs/rpclog.h>
+#include <Mantids30/Protocol_HTTP/api_return.h>
+#include <Mantids30/Protocol_HTTP/httpv1_base.h>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 #include <boost/regex.hpp>
 #include <fstream>
@@ -24,8 +24,7 @@ using namespace std;
 // TODO: documentar los privilegios cargados de un usuario
 // TODO: create a TTL for start =  fileContent.begin(); and end = fileContent.end(); on loops to avoid infinite loops in cross-references...
 
-string HTMLIEngine::replaceByJVar(
-    const json &value, const std::string &scriptVarName)
+string HTMLIEngine::replaceByJVar(const json &value, const std::string &scriptVarName, bool useHTMLFrame)
 {
     Json::FastWriter writer;
     std::string str = writer.write(value);
@@ -36,7 +35,10 @@ string HTMLIEngine::replaceByJVar(
 
     if (!scriptVarName.empty())
     {
-        str = "<script>\nconst " + scriptVarName + " = " + str + ";\n</script>";
+        if (useHTMLFrame)
+            str = "<script>\nconst " + scriptVarName + " = " + str + ";\n</script>";
+        else
+            str = "const " + scriptVarName + " = " + str + ";\n";
     }
 
     return str;
@@ -50,7 +52,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     if (boost::starts_with(sRealFullPath, "MEM:"))
     {
         // Mem-Static resource.
-        fileContent = ((Mantids30::Memory::Containers::B_MEM *)clientHandler->getResponseDataStreamer().get())->toStringEx();
+        fileContent = ((Mantids30::Memory::Containers::B_MEM *) clientHandler->getResponseDataStreamer().get())->toStringEx();
         clientHandler->serverResponse.setDataStreamer(nullptr);
     }
     else
@@ -61,11 +63,11 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())
         {
-            clientHandler->log(LEVEL_ERR,"fileServer", 2048, "file not found: %s",sRealFullPath.c_str());
+            clientHandler->log(LEVEL_ERR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
             return HTTP::Status::S_404_NOT_FOUND;
         }
         // Pass the file to a string.
-        fileContent = std::string((std::istreambuf_iterator<char>(fileStream)),std::istreambuf_iterator<char>());
+        fileContent = std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
         fileStream.close();
     }
 
@@ -78,10 +80,8 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     return HTTP::Status::S_200_OK;
 }
 
-void HTMLIEngine::procResource_JProcessor(
-    const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler)
+void HTMLIEngine::processInput(string &input, const std::regex &re, const string &sRealFullPath, APIClientHandler *clientHandler, bool isJ)
 {
-    std::regex re("<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*%>");
     size_t pos = 0;
 
     // Search every J processor in one big loop and replace in place and continue... so won't be a chance to re-ingest anything...
@@ -99,42 +99,42 @@ void HTMLIEngine::procResource_JProcessor(
         int absolute_pos = static_cast<int>(std::distance(input.cbegin(), match[0].first));
         int length = match.length();
 
-        if ( match.size() >=3 )
+        if (match.size() >= 3)
         {
             std::string command = match[1];
             std::string value = match[2];
             std::string replacedBy = "null";
             std::string scriptVarName = "varName";
 
-            if ( boost::istarts_with( command, "VAR/" ) )
+            if (boost::istarts_with(command, "VAR/"))
             {
-                scriptVarName=command.c_str()+3+1;
+                scriptVarName = command.c_str() + 3 + 1;
                 // %JVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJVAR(scriptVarName,value, sRealFullPath,clientHandler);
+                replacedBy = procResource_HTMLIEngineJVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
             }
-            if ( boost::istarts_with( command, "GETVAR/" ) )
+            if (boost::istarts_with(command, "GETVAR/"))
             {
-                scriptVarName=command.c_str()+6+1;
+                scriptVarName = command.c_str() + 6 + 1;
                 // %JGETVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJGETVAR(scriptVarName,value, sRealFullPath,clientHandler);
+                replacedBy = procResource_HTMLIEngineJGETVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
             }
-            if ( boost::istarts_with( command, "POSTVAR/" ) )
+            if (boost::istarts_with(command, "POSTVAR/"))
             {
-                scriptVarName=command.c_str()+7+1;
+                scriptVarName = command.c_str() + 7 + 1;
                 // %JPOSTVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJPOSTVAR(scriptVarName,value, sRealFullPath,clientHandler);
+                replacedBy = procResource_HTMLIEngineJPOSTVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
             }
-            if ( boost::istarts_with( command, "FUNC/" ) )
+            if (boost::istarts_with(command, "FUNC/"))
             {
-                scriptVarName=command.c_str()+4+1;
+                scriptVarName = command.c_str() + 4 + 1;
                 // %JFUNC PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJFUNC(sRealFullPath,scriptVarName, value, clientHandler);
+                replacedBy = procResource_HTMLIEngineJFUNC(sRealFullPath, scriptVarName, value, clientHandler, isJ);
             }
-            if ( boost::istarts_with( command, "SESS/" ) )
+            if (boost::istarts_with(command, "SESS/"))
             {
-                scriptVarName=command.c_str()+4+1;
+                scriptVarName = command.c_str() + 4 + 1;
                 // %JSESSVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJSESSVAR(scriptVarName,value, sRealFullPath,clientHandler);
+                replacedBy = procResource_HTMLIEngineJSESSVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
             }
 
             input.replace(absolute_pos, length, replacedBy);
@@ -143,100 +143,106 @@ void HTMLIEngine::procResource_JProcessor(
     }
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(
-    const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler)
+void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler)
+{
+    std::regex reHTML("<!--<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*>-->");
+    std::regex reJS("//<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*>//");
+
+    processInput(input, reJS, sRealFullPath, clientHandler, true);
+    processInput(input, reHTML, sRealFullPath, clientHandler, false);
+}
+
+std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+                                                          bool useHTMLFrame)
 {
     // %JSESSVAR PROCESSOR:
 
     // Report as not found.
-    if ( ! clientHandler->doesSessionVariableExist(varName)   )
+    if (!clientHandler->doesSessionVariableExist(varName))
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName);
+        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
     else
     {
-        return replaceByJVar(clientHandler->getSessionVariableValue(varName),scriptVarName);
+        return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName, useHTMLFrame);
     }
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName,const std::string &sRealFullPath, APIClientHandler *clientHandler)
+std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame)
 {
-    json jVars,jNull;
-    jVars["softwareVersion"]   = clientHandler->config->softwareVersion;
+    json jVars, jNull;
+    jVars["softwareVersion"] = clientHandler->config->softwareVersion;
 
     // Fill the jVars with session info (common to every API Server) and extra info (specific to monolith or restful or anything else)
     clientHandler->fillSessionInfo(jVars);
     clientHandler->fillSessionExtraInfo(jVars);
 
-
-    bool isSessionVar = clientHandler->doesSessionVariableExist( varName );
+    bool isSessionVar = clientHandler->doesSessionVariableExist(varName);
     bool isJVar = jVars.isMember(varName);
 
     // Report as not found.
-    if ( !isSessionVar && !isJVar )
+    if (!isSessionVar && !isJVar)
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName);
+        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
     else
     {
         // jvar is from a set of constructed variables (remote address, user agent, etc...)
         if (isJVar)
         {
-            return replaceByJVar(jVars[varName], scriptVarName);
+            return replaceByJVar(jVars[varName], scriptVarName, useHTMLFrame);
         }
         // Session vars are set by the application or the JWT token:
         else if (isSessionVar)
         {
-            return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName);
+            return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName, useHTMLFrame);
         }
 
-        return replaceByJVar(Json::Value::null, scriptVarName);
+        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
 }
 
 // Function to process JGETVAR tags in the file content
-std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName,const std::string &sRealFullPath, APIClientHandler *clientHandler)
+std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+                                                         bool useHTMLFrame)
 {
     // Obtain using GET Vars...
     if (clientHandler->clientRequest.getVars(HTTP::VARS_GET)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_GET)->getTValue<std::string>(varName), scriptVarName);
+        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_GET)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName);
+        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
 }
 
-
-std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(
-    const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler)
+std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+                                                          bool useHTMLFrame)
 {
     // Obtain using POST Vars...
     if (clientHandler->clientRequest.getVars(HTTP::VARS_POST)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_POST)->getTValue<std::string>(varName),scriptVarName);
+        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_POST)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'",varName.c_str(),sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName);
+        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
 }
 
-json HTMLIEngine::procJAPI_Exec(
-    const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
+json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
-
     API::APIReturn apiReturn;
 
     Json::Value vars;
@@ -248,9 +254,7 @@ json HTMLIEngine::procJAPI_Exec(
 
     if (!charReader->parse(functionInput.c_str(), functionInput.c_str() + functionInput.length(), &vars, &errs))
     {
-        clientHandler->log(LEVEL_ERR, "fileserver", 4096,
-                           "JSON parsing failed for input: '%s' on resource '%s'. Error: %s",
-                           functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
+        clientHandler->log(LEVEL_ERR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
     }
 
     // Regular expression to split the components (eg. POST/v1/myFunction)
@@ -261,23 +265,20 @@ json HTMLIEngine::procJAPI_Exec(
         std::string METHOD_MODE = matches[1];
         std::string VERSION = matches[2];
         std::string FUNCTION_NAME = matches[3];
-        uint32_t xversion = static_cast<uint32_t>(strtoul( VERSION.c_str(), nullptr, 10 ));
+        uint32_t xversion = static_cast<uint32_t>(strtoul(VERSION.c_str(), nullptr, 10));
 
-
-        clientHandler->handleAPIRequest(&apiReturn, "/", xversion, METHOD_MODE, FUNCTION_NAME, {},vars );
+        clientHandler->handleAPIRequest(&apiReturn, "/", xversion, METHOD_MODE, FUNCTION_NAME, {}, vars);
     }
     else
     {
-        clientHandler->handleAPIRequest(&apiReturn, "/", 1, "POST", functionName, {},vars );
+        clientHandler->handleAPIRequest(&apiReturn, "/", 1, "POST", functionName, {}, vars);
     }
-
 
     return apiReturn.toJSON();
 }
 
-
-std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string & sRealFullPath,
-    const std::string &scriptVarName, const std::string &functionDef, APIClientHandler *clientHandler)
+std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIClientHandler *clientHandler,
+                                                       bool useHTMLFrame)
 {
     // TODO: como revisar que realmente termine en ) y no haya un ) dentro del json
     std::regex exStaticJsonFunction("([^\\(]+)\\(([^\\)]*)\\)");
@@ -287,7 +288,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string & sReal
     std::string::const_iterator end = functionDef.end();
 
     // Search for matches in the file content
-    if  (std::regex_search(start, end, whatStaticText, exStaticJsonFunction))
+    if (std::regex_search(start, end, whatStaticText, exStaticJsonFunction))
     {
         // The full tag found in the file content (e.g., <%jfuncVar: Function(param)%>)
         std::string fulltag = whatStaticText[0].str();
@@ -299,32 +300,29 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string & sReal
         std::string functionInput = whatStaticText[2].str();
         Helpers::Encoders::replaceHexCodes(functionInput);
 
-        return replaceByJVar(procJAPI_Exec(sRealFullPath,clientHandler, functionName, functionInput), scriptVarName);
+        return replaceByJVar(procJAPI_Exec(sRealFullPath, clientHandler, functionName, functionInput), scriptVarName, useHTMLFrame);
     }
 
-    return replaceByJVar(Json::Value::null, scriptVarName);
+    return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
 }
 
-
 // Function to process the HTMLI include tags within the file content
-void HTMLIEngine::procResource_HTMLIEngineInclude(
-    const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler)
+void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler)
 {
-
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
 
     // CINC PROCESSOR:
-    boost::regex exStaticText("<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>",boost::regex::icase);
+    boost::regex exStaticText("<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>", boost::regex::icase);
 
     boost::match_results<string::const_iterator> whatStaticText;
-    for (string::const_iterator start = fileContent.begin(), end =  fileContent.end(); //
-         boost::regex_search(start, end, whatStaticText, exStaticText, flags); // FIND REGEXP
-         start = fileContent.begin(), end =  fileContent.end()) // RESET AND RECHECK EVERYTHING
+    for (string::const_iterator start = fileContent.begin(), end = fileContent.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticText, flags);        // FIND REGEXP
+         start = fileContent.begin(), end = fileContent.end())                        // RESET AND RECHECK EVERYTHING
     {
-        string fulltag      = string(whatStaticText[0].first, whatStaticText[0].second);
-        string tag          = string(whatStaticText[1].first, whatStaticText[1].second);
-        string includePath  = string(whatStaticText[2].first, whatStaticText[2].second);
+        string fulltag = string(whatStaticText[0].first, whatStaticText[0].second);
+        string tag = string(whatStaticText[1].first, whatStaticText[1].second);
+        string includePath = string(whatStaticText[2].first, whatStaticText[2].second);
         //      string tagClose     = string(whatStaticText[3].first, whatStaticText[3].second);
 
         // GET THE TAG DATA HERE...
@@ -333,17 +331,17 @@ void HTMLIEngine::procResource_HTMLIEngineInclude(
 
         if (fileIncludeStream.is_open())
         {
-            std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)),std::istreambuf_iterator<char>());
-            if (!tag.empty() && tag.size()>1 && tag.at(0) == '/')
-                boost::replace_all(fileContent,fulltag, "<" + tag.substr(1) + ">" + includeFileContent + "</" + tag.substr(1) + ">" );
+            std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)), std::istreambuf_iterator<char>());
+            if (!tag.empty() && tag.size() > 1 && tag.at(0) == '/')
+                boost::replace_all(fileContent, fulltag, "<" + tag.substr(1) + ">" + includeFileContent + "</" + tag.substr(1) + ">");
             else
-                boost::replace_all(fileContent,fulltag, includeFileContent);
+                boost::replace_all(fileContent, fulltag, includeFileContent);
         }
         else
         {
-            boost::replace_all(fileContent,fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
+            boost::replace_all(fileContent, fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
 
-            clientHandler->log(LEVEL_ERR,"fileserver", 2048, "file not found: %s",sRealFullPath.c_str());
+            clientHandler->log(LEVEL_ERR, "fileserver", 2048, "file not found: %s", sRealFullPath.c_str());
         }
 
         // // Move the start iterator to the beginning (maybe we need to reprocess the whole thing after some modifications)...
@@ -351,7 +349,3 @@ void HTMLIEngine::procResource_HTMLIEngineInclude(
         // end = fileContent.end();
     }
 }
-
-
-
-

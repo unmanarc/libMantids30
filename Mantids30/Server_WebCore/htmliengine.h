@@ -2,6 +2,7 @@
 
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
+#include <regex>
 
 #include "apiclienthandler.h"
 
@@ -21,12 +22,14 @@ private:
     static void procResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler);
     static void procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler);
 
-    static std::string procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIClientHandler *clientHandler);
-    static std::string procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler);
-    static std::string procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler);
-    static std::string procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler);
-    static std::string procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler);
-    static std::string replaceByJVar(const json &value, const std::string &scriptVarName);
+    static std::string procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIClientHandler *clientHandler, bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame);
+    static std::string replaceByJVar(const json &value, const std::string &scriptVarName, bool useHTMLFrame);
+
+    static void processInput(std::string& input, const std::regex &re, const std::string &sRealFullPath, APIClientHandler* clientHandler, bool isJ);
 };
 
 } // namespace Web
