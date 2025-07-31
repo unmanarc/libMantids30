@@ -98,7 +98,7 @@ time_t Cookie::getExpiration() const
 
 void Cookie::setAsTransientCookie()
 {
-    setExpiration(0);
+    setExpiration(1);
 }
 
 void Cookie::setExpiration(const time_t &exp)
