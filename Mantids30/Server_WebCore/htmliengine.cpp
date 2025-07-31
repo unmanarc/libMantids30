@@ -72,7 +72,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     }
 
     // CINC PROCESSOR:
-    procResource_HTMLIEngineInclude(sRealFullPath, fileContent, clientHandler);
+    procResource_HTMLIEngineInclude(sRealFullPath,clientHandler->serverResponse.contentType, fileContent, clientHandler);
     procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
 
     // Stream the generated content...
@@ -80,7 +80,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     return HTTP::Status::S_200_OK;
 }
 
-void HTMLIEngine::processInput(string &input, const std::regex &re, const string &sRealFullPath, APIClientHandler *clientHandler, bool isJ)
+void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame)
 {
     size_t pos = 0;
 
@@ -110,31 +110,31 @@ void HTMLIEngine::processInput(string &input, const std::regex &re, const string
             {
                 scriptVarName = command.c_str() + 3 + 1;
                 // %JVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
+                replacedBy = procResource_HTMLIEngineJVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
             }
             if (boost::istarts_with(command, "GETVAR/"))
             {
                 scriptVarName = command.c_str() + 6 + 1;
                 // %JGETVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJGETVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
+                replacedBy = procResource_HTMLIEngineJGETVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
             }
             if (boost::istarts_with(command, "POSTVAR/"))
             {
                 scriptVarName = command.c_str() + 7 + 1;
                 // %JPOSTVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJPOSTVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
+                replacedBy = procResource_HTMLIEngineJPOSTVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
             }
             if (boost::istarts_with(command, "FUNC/"))
             {
                 scriptVarName = command.c_str() + 4 + 1;
                 // %JFUNC PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJFUNC(sRealFullPath, scriptVarName, value, clientHandler, isJ);
+                replacedBy = procResource_HTMLIEngineJFUNC(sRealFullPath, scriptVarName, value, clientHandler, useHTMLFrame);
             }
             if (boost::istarts_with(command, "SESS/"))
             {
                 scriptVarName = command.c_str() + 4 + 1;
                 // %JSESSVAR PROCESSOR:
-                replacedBy = procResource_HTMLIEngineJSESSVAR(scriptVarName, value, sRealFullPath, clientHandler, isJ);
+                replacedBy = procResource_HTMLIEngineJSESSVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
             }
 
             input.replace(absolute_pos, length, replacedBy);
@@ -143,13 +143,14 @@ void HTMLIEngine::processInput(string &input, const std::regex &re, const string
     }
 }
 
+
 void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler)
 {
-    std::regex reHTML("<!--<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*>-->");
-    std::regex reJS("//<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*>//");
+    std::regex reHTML("<!--<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*%>-->");
+    std::regex reJS("\\/\\/<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*%>\\/\\/");
 
-    processInput(input, reJS, sRealFullPath, clientHandler, true);
-    processInput(input, reHTML, sRealFullPath, clientHandler, false);
+    iProcResource_JProcessor(input, reJS, sRealFullPath, clientHandler, false);
+    iProcResource_JProcessor(input, reHTML, sRealFullPath, clientHandler, true);
 }
 
 std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
@@ -306,14 +307,10 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
     return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
 }
 
-// Function to process the HTMLI include tags within the file content
-void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler)
+void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler, const boost::regex & exStaticText)
 {
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
-
-    // CINC PROCESSOR:
-    boost::regex exStaticText("<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>", boost::regex::icase);
 
     boost::match_results<string::const_iterator> whatStaticText;
     for (string::const_iterator start = fileContent.begin(), end = fileContent.end(); //
@@ -348,4 +345,18 @@ void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPa
         // start =  fileContent.begin();
         // end = fileContent.end();
     }
+}
+
+
+// Function to process the HTMLI include tags within the file content
+void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string & contentType, std::string &fileContent, APIClientHandler *clientHandler)
+{
+    // CINC PROCESSOR:
+    boost::regex reIncludeHTML("<!--<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>-->", boost::regex::icase);
+    boost::regex reIncludeJS("//<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>//", boost::regex::icase);
+
+    if (contentType == "application/javacript")
+        iProcResource_HTMLIEngineInclude(sRealFullPath,fileContent,clientHandler,reIncludeJS);
+    else
+        iProcResource_HTMLIEngineInclude(sRealFullPath,fileContent,clientHandler,reIncludeHTML);
 }
