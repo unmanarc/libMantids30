@@ -130,6 +130,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 size_t apiVersion = std::stoul(pathMatch[1].str());
                 string methodMode = clientRequest.requestLine.getRequestMethod().c_str();
                 string requestOrigin = clientRequest.getOrigin();
+                string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
                 std::string resourceAndPathParameters = pathMatch[2].str();
 
                 apiReturn.getBodyDataStreamer()->setFormatted(config->useFormattedJSONOutput);
@@ -144,7 +145,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
 
                 if (methodName == this->config->callbackAPIMethodName)
                 {
-                    // Check Login Origin if the
+                    // Check Login Origin... ALWAYS.
                     if (this->config->permittedLoginOrigins.find(requestOrigin) == this->config->permittedLoginOrigins.end())
                     {
                         log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
@@ -154,17 +155,36 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                         break;
                     }
                 }
-                else if (!requestOrigin.empty())
+                else
                 {
                     // Check API Origin (if origin is provided)
-                    if (this->config->permittedAPIOrigins.find(requestOrigin) == this->config->permittedAPIOrigins.end())
+                    if (!requestOrigin.empty())
                     {
-                        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                        ret = HTTP::Status::S_401_UNAUTHORIZED;
-                        isAPIURI = true;
-                        break;
+                        if (!this->config->dynamicOriginValidator)
+                        {
+                            // Use the native method...
+                            if (this->config->permittedAPIOrigins.find(requestOrigin) == this->config->permittedAPIOrigins.end())
+                            {
+                                log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+                                apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                                ret = HTTP::Status::S_401_UNAUTHORIZED;
+                                isAPIURI = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (!this->config->dynamicOriginValidator( requestOrigin, requestXAPIKEY ))
+                            {
+                                log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via dynamic validator {origin=%s}", requestOrigin.c_str());
+                                apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                                ret = HTTP::Status::S_401_UNAUTHORIZED;
+                                isAPIURI = true;
+                                break;
+                            }
+                        }
                     }
+
                 }
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

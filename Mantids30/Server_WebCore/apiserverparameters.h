@@ -28,6 +28,48 @@ public:
     APIServerParameters() = default;
     ~APIServerParameters();
 
+    /**
+     * @brief Callback function type for dynamic validation of access tokens.
+     * This function is used when the application needs to validate an access token
+     * based on the provided API key. It allows for different validation logic for
+     * different applications or scenarios.
+     *
+     * @param token The access token to validate.
+     * @param apikey The API key associated with the request.
+     * @param accessToken A reference to the parsed JWT token, if valid.
+     * @return true if the token is valid for the given API key, false otherwise.
+     */
+    typedef bool (*DynamicTokenValidatorFunction)(const std::string& token, const std::string& apikey, Mantids30::DataFormat::JWT::Token * accessToken);
+
+    /**
+     * @brief The dynamic validator callback function.
+     * Set this to a custom validation function to handle dynamic token validation.
+     */
+    DynamicTokenValidatorFunction dynamicTokenValidator = nullptr;
+
+
+
+
+    /**
+     * @brief Callback function type for dynamic validation of the origin header.
+     * This function allows applications to validate the origin header of incoming requests
+     * based on the provided API key. It is useful for ensuring requests that come from different trusted
+     * sources and different applications.
+     *
+     * @param origin The origin header value from the request.
+     * @param apikey The API key associated with the request.
+     * @return true if the origin is valid for the given API key, false otherwise.
+     */
+    typedef bool (*DynamicOriginValidatorFunction)(const std::string& origin, const std::string& apikey);
+
+    /**
+     * @brief The dynamic origin validator callback function.
+     * Set this to a custom validation function to handle dynamic origin validation.
+     */
+    DynamicOriginValidatorFunction dynamicOriginValidator = nullptr;
+
+
+
     // JWT Validator and signer...
     std::shared_ptr<DataFormat::JWT> jwtValidator;
     std::shared_ptr<DataFormat::JWT> jwtSigner;

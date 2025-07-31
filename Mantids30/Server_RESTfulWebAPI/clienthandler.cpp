@@ -75,12 +75,26 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
     if (!headerBearerToken.empty())
     {
         // First we check the header, if the header have a token, continue with it
-        m_JWTHeaderTokenVerified = verifyToken(headerBearerToken);
+        if ( this->config->dynamicTokenValidator!=nullptr )
+        {
+            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&m_JWTToken);
+        }
+        else
+        {
+            m_JWTHeaderTokenVerified = verifyToken(headerBearerToken);
+        }
     }
     else if (!cookieBearerToken.empty())
     {
         // if not, continue with the cookie.
-        m_JWTCookieTokenVerified = verifyToken(cookieBearerToken);
+        if ( this->config->dynamicTokenValidator!=nullptr )
+        {
+            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&m_JWTToken);
+        }
+        else
+        {
+            m_JWTCookieTokenVerified = verifyToken(cookieBearerToken);
+        }
     }
 
     if ( isSessionActive() )
