@@ -73,6 +73,9 @@ public:
 protected:
     std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_SQLite3>(); }
     bool connect0() override;
+    bool attach0( const std::string &dbFilePath, const std::string & schemeName ) override;
+    bool detach0( const std::string & schemeName ) override;
+
 
 private:
     int m_rc;

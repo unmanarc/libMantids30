@@ -111,3 +111,15 @@ bool SQLConnector_SQLite3::connect0()
     sqlite3PragmaForeignKeys();
     return true;
 }
+
+bool SQLConnector_SQLite3::attach0(const std::string &dbFilePath, const std::string &schemeName)
+{
+    std::string attachQuery = "ATTACH DATABASE '" + dbFilePath + "' AS " + schemeName + ";";
+    return query(attachQuery);
+}
+
+bool SQLConnector_SQLite3::detach0(const std::string &schemeName)
+{
+    std::string detachQuery = "DETACH DATABASE " + schemeName + ";";
+    return query(detachQuery);
+}

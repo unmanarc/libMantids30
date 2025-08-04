@@ -89,6 +89,9 @@ public:
 
     bool connect( const std::string &dbFilePath );
 
+    bool attach( const std::string &dbFilePath, const std::string & schemeName );
+    bool detach( const std::string & schemeName );
+
     bool connect( const std::string &host,
                   const uint16_t & port,
                   const DatabaseCredentials & credentials,
@@ -238,8 +241,11 @@ public:
 protected:
     virtual std::shared_ptr<Query> createQuery0() { return nullptr; };
     virtual bool connect0() { return false; }
+    virtual bool attach0( const std::string &dbFilePath, const std::string & schemeName ) { return false; }
+    virtual bool detach0( const std::string & schemeName ) { return false; }
 
     std::string m_dbFilePath;
+
     uint16_t m_port = 0;
     std::string m_host;
     std::string m_dbName;

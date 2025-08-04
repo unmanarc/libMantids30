@@ -24,6 +24,16 @@ bool SQLConnector::connect(const std::string &file)
     return connect0();
 }
 
+bool SQLConnector::attach(const std::string &dbFilePath, const std::string &schemeName)
+{
+    return attach0( dbFilePath, schemeName );
+}
+
+bool SQLConnector::detach(const std::string &schemeName)
+{
+    return detach0(schemeName);
+}
+
 std::string SQLConnector::getDBHostname() const
 {
     return m_host;
