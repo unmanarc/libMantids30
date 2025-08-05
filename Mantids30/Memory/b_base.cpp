@@ -803,14 +803,12 @@ std::optional<size_t> B_Base::copyToStreamableObjectUsingCleanVector(StreamableO
     // Appending mode.
     for (size_t i = 0; i < copyChunks.size(); i++)
     {
-        std::optional<size_t> bytesWritten = bcOut.write(copyChunks[i].rodata, copyChunks[i].rosize);
-
-        if (bytesWritten == std::nullopt || !bcOut.writeStatus.succeed)
+        if (!bcOut.writeFullStream(copyChunks[i].rodata, copyChunks[i].rosize))
         {
             return std::nullopt;
         }
 
-        dataCopied = safeAdd(bytesWritten.value(), dataCopied);
+        dataCopied = safeAdd(copyChunks[i].rosize, dataCopied);
     }
 
     return dataCopied;
