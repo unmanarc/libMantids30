@@ -20,7 +20,7 @@
 #include "rsp_status.h"
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
-#define HTTP_PRODUCT_VERSION_MINOR 4
+#define HTTP_PRODUCT_VERSION_MINOR 5
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
 
