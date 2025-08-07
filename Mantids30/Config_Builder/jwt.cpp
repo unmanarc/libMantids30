@@ -41,7 +41,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
 
     if (algorithmDetails.isUsingHMAC)
     {
-        std::string hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt_secret.key");
+        std::string hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
 
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
@@ -198,7 +198,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
 
-        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt_secret.key");
+        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
 
         std::ifstream hmacFile(hmacFilePath.c_str());
 
