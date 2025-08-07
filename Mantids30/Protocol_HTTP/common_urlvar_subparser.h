@@ -14,9 +14,9 @@ public:
 
     void setVarType(bool varName = true);
     void setMaxObjectSize(const uint32_t &size);
-    std::shared_ptr<Memory::Containers::B_Chunks> flushRetrievedContentAsBC();
-    std::string flushRetrievedContentAsString();
-    std::shared_ptr<Memory::Containers::B_Chunks> getPData();
+    std::shared_ptr<Memory::Containers::B_Chunks> getContentAndFlush();
+    std::string getContentAsStringAndFlush();
+    std::shared_ptr<Memory::Containers::B_Chunks> getCurrentContentData();
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;

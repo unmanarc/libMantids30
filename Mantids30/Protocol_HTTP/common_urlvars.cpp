@@ -127,11 +127,11 @@ bool HTTP::URLVars::changeToNextParser()
     {
     case URLV_STAT_WAITING_NAME:
     {
-        m_currentVarName = m_urlVarParser.flushRetrievedContentAsString();
+        m_currentVarName = m_urlVarParser.getContentAsStringAndFlush();
         if (m_urlVarParser.getFoundDelimiter() == "&" || m_urlVarParser.isStreamEnded())
         {
             // AMP / END:
-            addVar(m_currentVarName, m_urlVarParser.flushRetrievedContentAsBC());
+            addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
         }
         else
         {
@@ -143,7 +143,7 @@ bool HTTP::URLVars::changeToNextParser()
     }break;
     case URLV_STAT_WAITING_CONTENT:
     {
-        addVar(m_currentVarName, m_urlVarParser.flushRetrievedContentAsBC());
+        addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
         m_currentStat = URLV_STAT_WAITING_NAME;
         m_urlVarParser.setVarType(true);
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);

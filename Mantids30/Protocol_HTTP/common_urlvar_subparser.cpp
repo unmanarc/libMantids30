@@ -34,14 +34,14 @@ void HTTP::URLVarContent::setMaxObjectSize(const uint32_t &size)
     setParseDataTargetSize(size);
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::flushRetrievedContentAsBC()
+std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getContentAndFlush()
 {
     std::shared_ptr<Memory::Containers::B_Chunks> r = m_pData;
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
     return r;
 }
 
-std::string HTTP::URLVarContent::flushRetrievedContentAsString()
+std::string HTTP::URLVarContent::getContentAsStringAndFlush()
 {
     std::optional<std::string> r = m_pData->toString();
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
@@ -71,7 +71,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
     return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getPData()
+std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getCurrentContentData()
 {
     return m_pData;
 }
