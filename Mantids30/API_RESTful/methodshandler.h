@@ -195,7 +195,7 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *payloadOut);
+    ErrorCodes invokeResource(const MethodMode & mode, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
@@ -208,7 +208,7 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const std::string & modeStr, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *payloadOut);
+    ErrorCodes invokeResource(const std::string & modeStr, const std::string & resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut);
 
 private:
     std::map<std::string, RESTfulAPIDefinition> m_methodsGET;    ///< Map of GET resources.

@@ -58,10 +58,11 @@ Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParame
 MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode,
                                                           const std::string & resourceName,
                                                           RESTful::RequestParameters &inputParameters,
-                                                          const std::set<std::string> &currentPermissions,
+                                                          const std::set<std::string> &currentPermissions, bool isAdmin,
                                                           const SecurityParameters & securityParameters,
                                                           APIReturn *apiResponse)
-{    Threads::Sync::Lock_RD lock(m_methodsMutex);
+{
+    Threads::Sync::Lock_RD lock(m_methodsMutex);
 
     RESTfulAPIDefinition method;
     auto it = m_methodsGET.end();
@@ -104,7 +105,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         return INVALID_METHOD_MODE;
     }
 
-    if (it == m_methodsGET.end())
+    if (method.method == nullptr)
     {
         if (apiResponse != nullptr)
         {
@@ -149,15 +150,18 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         }
     }*/
 
-    for (const auto &attr : method.security.requiredPermissions)
+    if (!isAdmin)
     {
-        if (currentPermissions.find(attr) == currentPermissions.end())
+        for (const auto &attr : method.security.requiredPermissions)
         {
-            if (apiResponse != nullptr)
+            if (currentPermissions.find(attr) == currentPermissions.end())
             {
-                apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Insufficient permissions");
+                if (apiResponse != nullptr)
+                {
+                    apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Insufficient permissions");
+                }
+                return INSUFFICIENT_PERMISSIONS;
             }
-            return INSUFFICIENT_PERMISSIONS;
         }
     }
 
@@ -216,7 +220,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     return INTERNAL_ERROR;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, const SecurityParameters & securityParameters, APIReturn *payloadOut)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut)
 {
     MethodMode mode;
 
@@ -245,7 +249,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
         return INVALID_METHOD_MODE;
     }
 
-    return invokeResource(mode, resourceName, inputParameters, currentPermissions, securityParameters, payloadOut);
+    return invokeResource(mode, resourceName, inputParameters, currentPermissions, isAdmin, securityParameters, payloadOut);
 
 }
 

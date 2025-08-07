@@ -154,6 +154,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
                                                )
 {
     set<string> currentPermissions;
+    bool isAdmin = false;
     bool authenticated =false;
     API::RESTful::RequestParameters inputParameters;
 
@@ -163,6 +164,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
 
     if ( isSessionActive() )
     {
+        isAdmin = m_JWTToken.isAdmin();
         currentPermissions = m_JWTToken.getAllPermissions();
         inputParameters.jwtToken = &m_JWTToken;
     }
@@ -187,6 +189,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
                                                                                                     methodName,
                                                                                                     inputParameters,
                                                                                                     currentPermissions,
+                                                                                                    isAdmin,
                                                                                                     securityParameters,
                                                                                                     apiReturn
                                                                                                    );
