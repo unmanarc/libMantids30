@@ -82,7 +82,7 @@ std::string URL::encodeURLStr(const std::string &url)
 
     uriEncoder.transform( &uriDecoded, &uriEncoded );
 
-    if (uriEncoded.writeStatus.succeed && uriEncoded.writeStatus.finish)
+    if (uriEncoded.writeStatus.succeed)
     {
         return uriEncoded.toStringEx();
     }

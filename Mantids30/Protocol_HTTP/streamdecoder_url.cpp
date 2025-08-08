@@ -161,7 +161,8 @@ std::string URL::decodeURLStr(
     // Decode URI (maybe it's url encoded)...
     Memory::Streams::Decoders::URL uriDecoder;
     uriDecoder.transform(&uriEncoded, &uriDecoded);
-    if (uriDecoded.writeStatus.succeed && uriDecoded.writeStatus.finish)
+
+    if (uriDecoded.writeStatus.succeed)
     {
         return uriDecoded.toStringEx();
     }
