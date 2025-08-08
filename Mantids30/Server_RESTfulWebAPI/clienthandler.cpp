@@ -114,7 +114,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
 void ClientHandler::sessionCleanup()
 {   
     // Cleaned up (nothing to do)
-    sessionLogout();
+    //sessionLogout();
 }
 
 void ClientHandler::fillSessionExtraInfo(json &jVars)
@@ -454,7 +454,7 @@ HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl,
     }*/
 }
 
-
+/*
 void ClientHandler::sessionLogout()
 {
     // We are working with cookie tokens...
@@ -511,5 +511,5 @@ void ClientHandler::sessionLogout()
             }
         }
     }
-}
+}*/
 

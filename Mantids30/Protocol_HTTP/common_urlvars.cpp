@@ -53,9 +53,7 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
         varName.append(i.first.c_str(), i.first.size());
 
         Memory::Streams::Encoders::URL varNameEncoder;
-
         varNameEncoder.transform(&varName,out);
-
         if (!out->writeStatus.succeed)
             return false;
 

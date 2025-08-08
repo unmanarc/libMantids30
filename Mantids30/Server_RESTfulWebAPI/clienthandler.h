@@ -65,7 +65,7 @@ private:
     //void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
     //Protocols::HTTP::Status::Codes handleAPIAuthCallbackFunction();
 
-    void sessionLogout();
+//    void sessionLogout();
 
     // API Version -> MethodsHandler
     std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
