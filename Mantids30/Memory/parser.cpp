@@ -14,7 +14,7 @@ void Parser::parseObject(Parser::ErrorMSG *err)
 {
     *err = PARSING_SUCCEED;
 
-    this->writeStatus.finish = false;
+    this->writeStatus.finished = false;
 
     // Call the init protocol...
     m_initialized = initProtocol();
@@ -117,7 +117,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
             if (m_currentParser == nullptr)
-                this->writeStatus.finish = true;
+                this->writeStatus.finished = true;
             if (m_currentParser == nullptr || writtenBytes.value() == count)
                 return writtenBytes;
         }

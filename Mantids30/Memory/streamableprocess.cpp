@@ -55,7 +55,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
         }
 
 
-        if (out->writeStatus.finish)
+        if (out->writeStatus.finished)
         {
             // Protocol finished. Stop writting into.
             return true;

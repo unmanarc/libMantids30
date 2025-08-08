@@ -43,7 +43,7 @@ struct WriteStatus {
         bytesWritten-=x.bytesWritten;
 
         succeed = x.succeed;
-        finish = x.finish;
+        finished = x.finished;
         writeError = x.writeError;
 
         return *this;
@@ -51,7 +51,7 @@ struct WriteStatus {
 
     WriteStatus & operator+=(const ssize_t & x)
     {
-        if (succeed == false || finish == true)
+        if (succeed == false || finished == true)
         {
             // you should not be writting anymore here.
             throw std::runtime_error("Trying to write into an already finished write object.");
@@ -64,12 +64,12 @@ struct WriteStatus {
         else if (x == 0)
         {
             succeed = true;
-            finish = true;
+            finished = true;
         }
         else
         {
             succeed = false;
-            finish = false;
+            finished = false;
             writeError = x;
         }
         return *this;
@@ -82,8 +82,8 @@ struct WriteStatus {
         if (!x.succeed)
             succeed = false;
 
-        if (x.finish)
-            finish = true;
+        if (x.finished)
+            finished = true;
 
         return *this;
     }
@@ -91,13 +91,13 @@ struct WriteStatus {
     void reset()
     {
         succeed = true;
-        finish = false;
+        finished = false;
         bytesWritten = 0;
         writeError = 0;
     }
 
     bool succeed = true;
-    bool finish = false;
+    bool finished = false;
     size_t bytesWritten = 0;
     ssize_t writeError = 0;
 };

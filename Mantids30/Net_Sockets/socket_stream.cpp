@@ -42,7 +42,7 @@ bool Socket_Stream::streamTo(Memory::Streams::StreamableObject *out)
             break;
         }
 
-        if (out->writeStatus.finish)
+        if (out->writeStatus.finished)
         {
             // Protocol finished. Stop writting into.
             return true;
