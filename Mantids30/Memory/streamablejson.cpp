@@ -1,7 +1,5 @@
 #include "streamablejson.h"
 #include "streamableobject.h"
-#include <limits>
-#include <iostream>
 #include <optional>
 
 using namespace Mantids30::Memory::Streams;
@@ -12,7 +10,7 @@ bool StreamableJSON::streamTo(
 {
     Memory::Streams::WriteStatus cur;
 
-    if (!m_formatted)
+    if (!m_isFormatted)
         m_strValue = Mantids30::Helpers::jsonToString(m_root);
     else
         m_strValue = m_root.toStyledString();
@@ -84,6 +82,11 @@ json *StreamableJSON::getValue()
     return &m_root;
 }
 
+bool StreamableJSON::isEmpty()
+{
+    return m_root.empty();
+}
+
 StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
     setValue(value);
     return *this;
@@ -94,17 +97,27 @@ void StreamableJSON::setValue(const json &value)
     m_root=value;
 }
 
+bool StreamableJSON::setValue(const std::string &value)
+{
+    Mantids30::Helpers::JSONReader2 reader;
+    m_strValue = value;
+    bool parsingSuccessful = reader.parse( m_strValue, m_root );
+    if ( !parsingSuccessful )
+        return false;
+    return true;
+}
+
 void StreamableJSON::setMaxSize(const size_t &value)
 {
     m_maxSize = value;
 }
 
-bool StreamableJSON::getFormatted() const
+bool StreamableJSON::getIsFormatted() const
 {
-    return m_formatted;
+    return m_isFormatted;
 }
 
-void StreamableJSON::setFormatted(bool value)
+void StreamableJSON::setIsFormatted(bool value)
 {
-    m_formatted = value;
+    m_isFormatted = value;
 }

@@ -269,7 +269,7 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
     shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = make_shared<Memory::Streams::StreamableJSON>();
     serverResponse.setDataStreamer(jPayloadOutStr);
     serverResponse.setContentType("application/json", true);
-    jPayloadOutStr->setFormatted(this->config->useFormattedJSONOutput);
+    jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
     json x;
 
     if (m_currentSessionInfo.authSession)

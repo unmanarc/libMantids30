@@ -133,7 +133,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
                 std::string resourceAndPathParameters = pathMatch[2].str();
 
-                apiReturn.getBodyDataStreamer()->setFormatted(config->useFormattedJSONOutput);
+                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
                 serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                 serverResponse.setContentType("application/json", true);
 
@@ -227,7 +227,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             else if (boost::starts_with(apiUrlWithoutBase, "/info"))
             {
                 std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
-                jPayloadOutStr->setFormatted(this->config->useFormattedJSONOutput);
+                jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
                 jPayloadOutStr->setValue(handleAPIInfo(baseApiUrl));
                 ret = HTTP::Status::S_200_OK;
                 serverResponse.setDataStreamer(jPayloadOutStr);
