@@ -165,20 +165,36 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
         }
     }
 
-    if (inputParameters.clientRequest->getJSONStreamerContent() != nullptr)
+    std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamerContent = inputParameters.clientRequest->getJSONStreamerContent();
+
+    inputParameters.inputJSON = &inputParameters.emptyJSON;
+
+    if (jsonStreamerContent != nullptr)
     {
-        if (!inputParameters.clientRequest->getJSONStreamerContent()->toString().empty())
+        inputParameters.inputJSON = jsonStreamerContent->getValue();
+    }
+    else
+    {
+        if (inputParameters.clientRequest->requestLine.getRequestMethod() == "GET")
         {
-            if ((inputParameters.inputJSON = inputParameters.clientRequest->getJSONStreamerContent()->processValue()) == nullptr)
+            if (inputParameters.clientRequest->requestLine.getRequestURIParameters().size())
             {
-                // Bad parsing...
-                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing");
-                inputParameters.inputJSON = &inputParameters.emptyJSON;
+                // Bad parsing... (should be JSON or empty)
+                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing during GET");
                 return INTERNAL_ERROR;
             }
             else
             {
-                // Parsed...
+                // No problem, empty.
+            }
+        }
+        else
+        {
+            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
+            {
+                // Bad parsing... (should be parsed as JSON...)
+                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing during POST");
+                return INTERNAL_ERROR;
             }
         }
     }

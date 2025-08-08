@@ -9,6 +9,7 @@
 #include <string>
 
 #include <Mantids30/Memory/streamablejson.h>
+#include "Mantids30/Memory/streamablestring.h"
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
 #include "hdr_sec_hsts.h"
@@ -18,6 +19,7 @@
 //#include "req_cookies.h"
 #include "rsp_cookies.h"
 #include "rsp_status.h"
+#include "streamdecoder_url.h"
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 5
@@ -109,10 +111,31 @@ public:
          */
         std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONStreamerContent()
         {
-            if (content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
+            if (requestLine.getRequestMethod() == "GET")
             {
-                return content.getJSONVars();
+                // Get method uses the URL parameters (as a big json)
+                std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonParameters = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();
+
+                Memory::Streams::StreamableString urlData;
+                urlData.setValue(requestLine.getRequestURIParameters());
+                Memory::Streams::Decoders::URL urlDecoder;
+                urlDecoder.transform(&urlData, jsonParameters.get());
+                jsonParameters->writeEOF();
+
+                if (jsonParameters->writeStatus.succeed)
+                {
+                    return jsonParameters;
+                }
             }
+            else
+            {
+                // Other methods use the body content.
+                if (content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
+                {
+                    return content.getJSONVars();
+                }
+            }
+
             return nullptr;
         }
 
