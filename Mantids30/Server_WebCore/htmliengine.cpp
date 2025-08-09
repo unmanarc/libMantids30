@@ -324,7 +324,8 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
 
         // GET THE TAG DATA HERE...
         // The path is relative to documentRootPath (beware: admits transversal)
-        std::ifstream fileIncludeStream(clientHandler->config->getDocumentRootPath() + includePath);
+        std::string streamFilePath = clientHandler->config->getDocumentRootPath() + includePath;
+        std::ifstream fileIncludeStream(streamFilePath);
 
         if (fileIncludeStream.is_open())
         {
@@ -338,7 +339,7 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
         {
             boost::replace_all(fileContent, fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
 
-            clientHandler->log(LEVEL_ERR, "fileserver", 2048, "file not found: %s", sRealFullPath.c_str());
+            clientHandler->log(LEVEL_ERR, "HTMLI", 2048, "Included file not found: '%s' in resource '%s'", streamFilePath.c_str(), sRealFullPath.c_str());
         }
 
         // // Move the start iterator to the beginning (maybe we need to reprocess the whole thing after some modifications)...
