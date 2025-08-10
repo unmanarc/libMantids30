@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <string>
+#include <atomic>
+
+#include <Mantids30/Helpers/json.h>
 
 namespace Mantids30 { namespace Memory { namespace Abstract {
 
@@ -45,6 +48,9 @@ public:
 
     static std::shared_ptr<Var> makeAbstract(Type type, const std::string & defValue = "");
 
+    virtual json toJSON();;
+    virtual bool fromJSON(const json & value);
+
     /**
      * @brief toString Transform the Variable To a Readable string.
      * @return readable string
@@ -61,10 +67,15 @@ public:
     Type getVarType() const;
     void setVarType(const Type &value);
 
+    bool getIsNull();
+    void setIsNull(bool newIsNull);
+
 protected:
     virtual std::shared_ptr<Var> protectedCopy();
+    std::atomic<bool> m_isNull = true;
 
 private:
+
     Type m_varType;
 };
 

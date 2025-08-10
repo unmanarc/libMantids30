@@ -2,6 +2,7 @@
 
 #include "a_var.h"
 #include <Mantids30/Threads/mutex_shared.h>
+#include <Mantids30/Helpers/encoders.h>
 #include <string.h>
 
 namespace Mantids30 { namespace Memory { namespace Abstract {
@@ -61,6 +62,10 @@ public:
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
+
+    json toJSON() override;
+    bool fromJSON(const json &value) override;
+
 
     void * getDirectMemory() override { return &m_value; }
 

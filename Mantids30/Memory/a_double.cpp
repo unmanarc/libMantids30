@@ -1,18 +1,20 @@
 #include "a_double.h"
 #include <Mantids30/Threads/lock_shared.h>
 
-#include <stdexcept>      // std::invalid_argument
+#include <stdexcept> // std::invalid_argument
 
 using namespace Mantids30::Memory::Abstract;
 
 DOUBLE::DOUBLE()
 {
     setVarType(TYPE_DOUBLE);
+
 }
 
 DOUBLE::DOUBLE(const double &value)
 {
     setVarType(TYPE_DOUBLE);
+
     this->m_value = value;
 }
 
@@ -40,23 +42,41 @@ bool DOUBLE::fromString(const std::string &value)
 
     try
     {
-        this->m_value = std::stod( value ) ;
+        this->m_value = std::stod(value);
         return true;
     }
-    catch( std::invalid_argument * )
+    catch (std::invalid_argument *)
     {
         return false;
     }
-    catch ( std::out_of_range * )
+    catch (std::out_of_range *)
     {
         return false;
     }
 }
+
+json DOUBLE::toJSON()
+{
+    Threads::Sync::Lock_RD lock(m_mutex);
+    if (getIsNull())
+        return Json::nullValue;
+
+    return m_value;
+}
+
+bool DOUBLE::fromJSON(const json &value)
+{
+    Threads::Sync::Lock_RW lock(m_mutex);
+    m_value = JSON_ASDOUBLE_D(value, 0);
+    return true;
+}
+
 std::shared_ptr<Var> DOUBLE::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<DOUBLE>();
-    if (var) *var = this->m_value;
+    if (var)
+        *var = this->m_value;
     return var;
 }

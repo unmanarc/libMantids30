@@ -46,9 +46,9 @@ bool UINT16::fromString(const std::string &value)
         return true;
     }
 
-    this->m_value = static_cast<uint16_t>(strtoul( value.c_str(), nullptr, 10 ));
+    this->m_value = static_cast<uint16_t>(strtoul(value.c_str(), nullptr, 10));
 
-    if (value!="0" && this->m_value==0) 
+    if (value != "0" && this->m_value == 0)
         return false;
 
     return true;
@@ -59,6 +59,24 @@ std::shared_ptr<Var> UINT16::protectedCopy()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<UINT16>();
-    if (var) *var = this->m_value;
+    if (var)
+        *var = this->m_value;
     return var;
+}
+
+json UINT16::toJSON()
+{
+    Threads::Sync::Lock_RD lock(m_mutex);
+
+    if (getIsNull())
+        return Json::nullValue;
+
+    return m_value;
+}
+
+bool UINT16::fromJSON(const json &value)
+{
+    Threads::Sync::Lock_RW lock(m_mutex);
+    m_value = JSON_ASUINT_D(value, 0);
+    return true;
 }

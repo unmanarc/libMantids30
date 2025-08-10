@@ -113,6 +113,10 @@ std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defVal
     return v;
 }
 
+json Var::toJSON() { return json::null; }
+
+bool Var::fromJSON(const json &value) { return true; }
+
 std::string Var::toString()
 {
     return "";
@@ -131,10 +135,20 @@ Var::Type Var::getVarType() const
 void Var::setVarType(const Type &value)
 {
     m_varType = value;
+    this->m_isNull = false;
 }
 
 std::shared_ptr<Var> Var::protectedCopy()
 {
     auto var = std::make_shared<Var>();
     return var;
+}
+bool Var::getIsNull()
+{
+    return m_isNull;
+}
+
+void Var::setIsNull(bool newIsNull)
+{
+    m_isNull = newIsNull;
 }

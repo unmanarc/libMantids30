@@ -50,6 +50,20 @@ std::shared_ptr<Var> STRING::protectedCopy()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<STRING>();
-    if (var) *var = this->m_value;
+    if (var)
+        *var = this->m_value;
     return var;
+}
+
+json STRING::toJSON()
+{
+    if (getIsNull())
+        return Json::nullValue;
+
+    return toString();
+}
+
+bool STRING::fromJSON(const json &value)
+{
+    return fromString(JSON_ASSTRING_D(value, ""));
 }

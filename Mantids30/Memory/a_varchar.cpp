@@ -1,6 +1,6 @@
 #include "a_varchar.h"
-#include <string.h>
 #include <Mantids30/Threads/lock_shared.h>
+#include <string.h>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -9,7 +9,7 @@ VARCHAR::VARCHAR(const size_t &varSize)
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = static_cast<char *>(malloc(varSize+1));
+    this->m_value = static_cast<char *>(malloc(varSize + 1));
     this->m_value[varSize] = 0;
 }
 
@@ -18,17 +18,17 @@ VARCHAR::VARCHAR(const size_t &varSize, char *value)
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = static_cast<char *>(malloc(varSize+1));
+    this->m_value = static_cast<char *>(malloc(varSize + 1));
     this->m_value[varSize] = 0;
     setValue(value);
 }
 
-VARCHAR::VARCHAR( VARCHAR &var )
+VARCHAR::VARCHAR(VARCHAR &var)
 {
     setVarType(TYPE_VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = var.getVarSize();
-    this->m_value = static_cast<char *>(malloc(m_varSize+1));
+    this->m_value = static_cast<char *>(malloc(m_varSize + 1));
     this->m_value[m_varSize] = 0;
     setValue(var.getValue());
 }
@@ -54,21 +54,20 @@ bool VARCHAR::fromString(const std::string &value)
 
     m_wasTruncated = false;
 
-    if (szVar>m_varSize)
+    if (szVar > m_varSize)
     {
         szVar = m_varSize;
         r = false;
         m_wasTruncated = true;
     }
 
-    if (szVar>0)
+    if (szVar > 0)
     {
-        this->m_value[szVar]=0;
-        memcpy( this->m_value, value.c_str(), szVar );
+        this->m_value[szVar] = 0;
+        memcpy(this->m_value, value.c_str(), szVar);
     }
     else
-        this->m_value[0]=0;
-
+        this->m_value[0] = 0;
 
     return r;
 }
@@ -86,23 +85,23 @@ bool VARCHAR::setValue(char *value)
 
     bool r = true;
 
-    size_t szVar = strnlen(value,m_varSize+1);
+    size_t szVar = strnlen(value, m_varSize + 1);
     m_wasTruncated = false;
 
-    if (szVar>m_varSize)
+    if (szVar > m_varSize)
     {
         szVar = m_varSize;
         r = false;
         m_wasTruncated = true;
     }
 
-    if (szVar>0)
+    if (szVar > 0)
     {
-        this->m_value[szVar]=0;
-        memcpy( this->m_value, value, szVar );
+        this->m_value[szVar] = 0;
+        memcpy(this->m_value, value, szVar);
     }
     else
-        this->m_value[0]=0;
+        this->m_value[0] = 0;
     return r;
 }
 
@@ -123,6 +122,19 @@ bool VARCHAR::getWasTruncated()
 unsigned long VARCHAR::getFillSize() const
 {
     return m_fillSize;
+}
+
+json VARCHAR::toJSON()
+{
+    if (getIsNull())
+        return Json::nullValue;
+
+    return toString();
+}
+
+bool VARCHAR::fromJSON(const json &value)
+{
+    return fromString(JSON_ASSTRING_D(value, ""));
 }
 
 std::shared_ptr<Var> VARCHAR::protectedCopy()

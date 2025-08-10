@@ -23,6 +23,10 @@ public:
     void * getDirectMemory() override { return &m_value; }
     std::string toString() override;
     bool fromString(const std::string & value) override;
+
+    json toJSON() override;
+    bool fromJSON(const json & value) override;
+
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 

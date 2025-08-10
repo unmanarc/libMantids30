@@ -1,4 +1,5 @@
 #pragma once
+#include "Mantids30/Helpers/json.h"
 #include "a_var.h"
 
 #include <Mantids30/Threads/mutex_shared.h>
@@ -23,6 +24,11 @@ public:
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
+
+    json toJSON() override;
+    bool fromJSON(const json &value) override;
+
+
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 

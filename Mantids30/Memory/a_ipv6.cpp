@@ -6,8 +6,8 @@
 #include <arpa/inet.h>
 #endif
 
-#include <Mantids30/Threads/lock_shared.h>
 #include <Mantids30/Helpers/mem.h>
+#include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -16,7 +16,6 @@ IPV6::IPV6()
     ZeroBStruct(m_value);
     setVarType(TYPE_IPV6);
 }
-
 
 IPV6::IPV6(const in6_addr &value)
 {
@@ -56,15 +55,15 @@ std::string IPV6::toString()
 bool IPV6::fromString(const std::string &value)
 {
     bool r;
-    auto ipaddr = _fromString(value,&r);
+    auto ipaddr = _fromString(value, &r);
     setValue(ipaddr);
     return r;
 }
 
 std::string IPV6::_toString(const in6_addr &value)
 {
-    char cIpSource[INET6_ADDRSTRLEN]="";
-    inet_ntop(AF_INET6, &value ,cIpSource, INET6_ADDRSTRLEN);
+    char cIpSource[INET6_ADDRSTRLEN] = "";
+    inet_ntop(AF_INET6, &value, cIpSource, INET6_ADDRSTRLEN);
     return std::string(cIpSource);
 }
 
@@ -75,12 +74,14 @@ in6_addr IPV6::_fromString(const std::string &value, bool *ok)
 
     if (value.empty())
     {
-        if (ok) *ok = true;
+        if (ok)
+            *ok = true;
         return xvalue;
     }
 
-    bool r = inet_pton(AF_INET6, value.c_str(), &xvalue)==1;
-    if (ok) *ok = r;
+    bool r = inet_pton(AF_INET6, value.c_str(), &xvalue) == 1;
+    if (ok)
+        *ok = r;
 
     return xvalue;
 }
@@ -88,6 +89,20 @@ in6_addr IPV6::_fromString(const std::string &value, bool *ok)
 std::shared_ptr<Var> IPV6::protectedCopy()
 {
     auto var = std::make_shared<IPV6>();
-    if (var) *var = getValue();
+    if (var)
+        *var = getValue();
     return var;
+}
+
+json IPV6::toJSON()
+{
+    if (getIsNull())
+        return Json::nullValue;
+
+    return toString();
+}
+
+bool IPV6::fromJSON(const json &value)
+{
+    return fromString(JSON_ASSTRING_D(value, "0.0.0.0"));
 }

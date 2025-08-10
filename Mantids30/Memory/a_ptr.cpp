@@ -15,13 +15,13 @@ PTR::PTR(void *value)
     this->m_value = value;
 }
 
-void * PTR::getValue()
+void *PTR::getValue()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
     return m_value;
 }
 
-bool PTR::setValue(void * value)
+bool PTR::setValue(void *value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
 
@@ -34,8 +34,8 @@ std::string PTR::toString()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     char ovalue[256];
-    void * ptr = m_value;
-    snprintf(ovalue,sizeof(ovalue),"%.8lX", (uintptr_t)ptr);
+    void *ptr = m_value;
+    snprintf(ovalue, sizeof(ovalue), "%.8lX", (uintptr_t) ptr);
     return ovalue;
 }
 
@@ -48,7 +48,7 @@ bool PTR::fromString(const std::string &value)
         this->m_value = 0;
         return true;
     }
-    this->m_value = (void *)(strtol( value.c_str(), nullptr, 16 ));
+    this->m_value = (void *) (strtol(value.c_str(), nullptr, 16));
     return true;
 }
 
@@ -57,7 +57,20 @@ std::shared_ptr<Var> PTR::protectedCopy()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<PTR>();
-    if (var) *var = this->m_value;
+    if (var)
+        *var = this->m_value;
     return var;
 }
 
+json PTR::toJSON()
+{
+    if (getIsNull())
+        return Json::nullValue;
+
+    return toString();
+}
+
+bool PTR::fromJSON(const json &value)
+{
+    return fromString(JSON_ASSTRING_D(value, "00000000"));
+}

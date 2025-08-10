@@ -3,15 +3,16 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-
 INT32::INT32()
 {
     setVarType(TYPE_INT32);
+
 }
 
 INT32::INT32(const int32_t &value)
 {
     this->m_value = value;
+
     setVarType(TYPE_INT32);
 }
 
@@ -34,7 +35,6 @@ std::string INT32::toString()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     return std::to_string(m_value);
-
 }
 
 bool INT32::fromString(const std::string &value)
@@ -46,8 +46,8 @@ bool INT32::fromString(const std::string &value)
         return true;
     }
 
-    this->m_value = strtol(value.c_str(),nullptr,10);
-    if (value!="0" && this->m_value==0) 
+    this->m_value = strtol(value.c_str(), nullptr, 10);
+    if (value != "0" && this->m_value == 0)
         return false;
 
     return true;
@@ -58,6 +58,24 @@ std::shared_ptr<Var> INT32::protectedCopy()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     auto var = std::make_shared<INT32>();
-    if (var) *var = this->m_value;
+    if (var)
+        *var = this->m_value;
     return var;
+}
+
+json INT32::toJSON()
+{
+    Threads::Sync::Lock_RD lock(m_mutex);
+
+    if (getIsNull())
+        return Json::nullValue;
+
+    return m_value;
+}
+
+bool INT32::fromJSON(const json &value)
+{
+    Threads::Sync::Lock_RW lock(m_mutex);
+    m_value = JSON_ASINT_D(value, 0);
+    return true;
 }

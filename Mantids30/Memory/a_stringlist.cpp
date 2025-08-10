@@ -1,4 +1,5 @@
 #include "a_stringlist.h"
+#include "Mantids30/Helpers/json.h"
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;
@@ -126,44 +127,44 @@ bool STRINGLIST::fromString(const std::string &inputString)
             while (currentPosition < inputString.size())
             {
                 char currentChar = inputString.at(currentPosition);
-                if ( currentChar == '\"' )
+                if (currentChar == '\"')
                 {
-                    if (currentPosition+1==inputString.size())
+                    if (currentPosition + 1 == inputString.size())
                     {
                         // End of String (not any other comma)...
                         finalValues.push_back(currentFieldValue);
                         currentPosition++;
                         currentFieldValue = "";
-                        inQuotes=false;
+                        inQuotes = false;
                         break;
                     }
-                    else if ( inputString.at(currentPosition+1) == ',' )
+                    else if (inputString.at(currentPosition + 1) == ',')
                     {
                         // Field completed on ", now take the field and push into the values.
                         // Process this field...
                         finalValues.push_back(currentFieldValue);
                         currentFieldValue = "";
-                        inQuotes=false;
-                        currentPosition+=2;
+                        inQuotes = false;
+                        currentPosition += 2;
                         startOfCurrentField = currentPosition;
                     }
-                    else if ( inputString.at(currentPosition+1) == '\"' && currentPosition+2!=inputString.size() )
+                    else if (inputString.at(currentPosition + 1) == '\"' && currentPosition + 2 != inputString.size())
                     {
                         // Double Quote... take only one..
                         currentFieldValue += currentChar;
-                        currentPosition+=2;
+                        currentPosition += 2;
                     }
                     else
                     {
                         // 1. the " is followed by unknown bytes... revert the escaping?
                         // 2. the "" is followed by the end of the string... revert the escaping?
-                        currentFieldValue="IGN";
+                        currentFieldValue = "IGN";
                         break;
                     }
                 }
                 else
                 {
-                    currentFieldValue+=currentChar;
+                    currentFieldValue += currentChar;
                     currentPosition++;
                 }
             }
@@ -186,4 +187,41 @@ std::shared_ptr<Var> STRINGLIST::protectedCopy()
     if (var)
         *var = getValue();
     return var;
+}
+
+Json::Value STRINGLIST::toJSON()
+{
+    if (getIsNull())
+        return Json::nullValue;
+
+    Threads::Sync::Lock_RD lock(m_mutex);
+    Json::Value j(Json::arrayValue);
+    for (const auto &item : m_value)
+    {
+        j.append(item);
+    }
+    return j;
+}
+
+bool STRINGLIST::fromJSON(const Json::Value &value)
+{
+    if (!value.isArray())
+        return false;
+
+    Threads::Sync::Lock_RW lock(m_mutex);
+    m_value.clear();
+    for (const auto &item : value)
+    {
+        if (item.isString())
+        {
+            m_value.push_back(JSON_ASSTRING_D(item, ""));
+        }
+        else
+        {
+            // If any element is not a string, we can either skip it or return false
+            // For now, let's assume all elements must be strings and return false if not.
+            return false;
+        }
+    }
+    return true;
 }
