@@ -125,7 +125,7 @@ public:
 
     // SQL Query:
     std::shared_ptr<Query> createQuery(eQueryPTRErrors *error);
-    std::shared_ptr<SQLConnector::QueryInstance> createQuerySharedPTR();
+    SQLConnector::QueryInstance createQueryInstance();
 
     void detachQuery(Query *query);
 
@@ -150,7 +150,7 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::shared_ptr<SQLConnector::QueryInstance> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    SQLConnector::QueryInstance qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
@@ -163,7 +163,7 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::shared_ptr<SQLConnector::QueryInstance> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    SQLConnector::QueryInstance qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                          const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
@@ -177,7 +177,7 @@ public:
      * @param offset OFFSET value to start returning rows from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    std::shared_ptr<SQLConnector::QueryInstance> qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,
+    SQLConnector::QueryInstance qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,
                                                                     const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                                     const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 

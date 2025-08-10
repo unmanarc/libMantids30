@@ -45,6 +45,10 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         m_lastSQLError = std::string(sqlite3_errmsg(m_databaseConnectionHandler));
         if (m_throwCPPErrorOnQueryFailure)
         {
+            printf("--------------------------------\n");
+            printf("SQL Query:\n");
+            printf("%s\n",m_query.c_str());
+            fflush(stdout);
             throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
         }
         return false;
@@ -206,13 +210,19 @@ bool Query_SQLite3::step0()
 
     if (m_lastSQLReturnValue == SQLITE_ROW)
     {
+        m_numRows++; // Will only be available at the end (full fetch)...
+
         int columnpos = 0;
         for (Memory::Abstract::Var *outputVar : m_resultVars)
         {
             bool isNull = sqlite3_column_type(m_stmt, columnpos) == SQLITE_NULL;
             m_fieldIsNull.push_back(isNull);
 
-            if (!isNull)
+            if (isNull)
+            {
+                outputVar->setIsNull(true);
+            }
+            else
             {
                 switch (outputVar->getVarType())
                 {
@@ -301,6 +311,7 @@ bool Query_SQLite3::step0()
                 break;
                 case Memory::Abstract::Var::TYPE_NULL:
                     // Don't copy the value (not needed).
+                    outputVar->setIsNull(true);
                     break;
                 }
             }

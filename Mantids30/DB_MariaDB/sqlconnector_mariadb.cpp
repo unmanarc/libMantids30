@@ -23,9 +23,9 @@ bool SQLConnector_MariaDB::isOpen()
 {
     if (!m_databaseConnectionHandler) 
         return false;
-    std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT 1;", {},{} );
-    if (i->getResultsOK())
-        return i->query->step();
+    SQLConnector::QueryInstance i = qSelect("SELECT 1;", {},{} );
+    if (i.getResultsOK())
+        return i.query->step();
     return true;
 }
 
@@ -59,15 +59,15 @@ std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
 {
     // Select Query:
-    std::shared_ptr<SQLConnector::QueryInstance> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
+    SQLConnector::QueryInstance i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
     {
       { ":schema", std::make_shared<Memory::Abstract::STRING>(m_dbName)},
       { ":table", std::make_shared<Memory::Abstract::STRING>(table)}
     },
     {} );
 
-    if (i->getResultsOK())
-        return i->query->step();
+    if (i.getResultsOK())
+        return i.query->step();
     else
         return false;
 }
