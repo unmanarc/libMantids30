@@ -51,7 +51,7 @@ struct WriteStatus {
 
     WriteStatus & operator+=(const ssize_t & x)
     {
-        if (succeed == false || finished == true)
+        if ((succeed == false || finished == true) && x>=0)
         {
             // you should not be writting anymore here.
             throw std::runtime_error("Trying to write into an already finished write object.");
@@ -69,7 +69,7 @@ struct WriteStatus {
         else
         {
             succeed = false;
-            finished = false;
+            finished = true;
             writeError = x;
         }
         return *this;
