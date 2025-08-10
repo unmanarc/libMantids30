@@ -3,15 +3,16 @@
 #include <condition_variable>
 
 #include <cstdint>
-#include <mutex>
-#include <string>
-#include <set>
 #include <memory>
+#include <mutex>
+#include <set>
+#include <string>
 
 #include "databasecredentials.h"
 #include "query.h"
 
-namespace Mantids30 { namespace Database {
+namespace Mantids30 {
+namespace Database {
 
 class SQLConnector
 {
@@ -29,18 +30,19 @@ public:
         QUERY_ERRORBINDINGINPUTVARS = 5,
         QUERY_ERRORBINDINGRESULTVARS = 6,
         QUERY_RESULTS_FAILED = 7,
-        QUERY_RESULTS_OK = 8
+        QUERY_SELECTCOUNT_FAILED = 8,
+        QUERY_RESULTS_OK = 100
     };
 
-
-    struct QueryInstance {
+    struct QueryInstance
+    {
         QueryInstance()
         {
             error = QUERY_UNINITIALIZED;
             this->query = nullptr;
         }
 
-        QueryInstance( std::shared_ptr<Query> query )
+        QueryInstance(std::shared_ptr<Query> query)
         {
             error = QUERY_READY_OK;
             this->query = query;
@@ -52,34 +54,33 @@ public:
         }
         std::string getErrorString()
         {
-            switch(error)
+            switch (error)
             {
             case QUERY_READY_OK:
                 return "Ready to execute query";
             case QUERY_UNINITIALIZED:
-                return "Query Uninitalized";
+                return "Query uninitialized";
             case QUERY_FINISHED:
-                return "Query Instance Finished (should not happen)";
+                return "Query instance finished (should not happen)";
             case QUERY_UNABLETOADQUIRELOCK:
-                return "Unable to adquire lock";
+                return "Unable to acquire lock";
             case QUERY_SQLCONNECTORFINISHED:
-                return "SQL Connector Finished";
+                return "SQL Connector finished";
             case QUERY_ERRORBINDINGINPUTVARS:
                 return "Error binding input variables";
             case QUERY_ERRORBINDINGRESULTVARS:
-                return "Error binding the result variables";
+                return "Error binding result variables";
+            case QUERY_SELECTCOUNT_FAILED:
+                return "Error determining the number of rows in the SELECT statement";
             case QUERY_RESULTS_FAILED:
                 return query->getLastSQLError();
             case QUERY_RESULTS_OK:
-                return "Query Executed";
+                return "Query executed successfully";
             }
             return "";
         }
 
-        bool getResultsOK()
-        {
-            return error == QUERY_RESULTS_OK;
-        }
+        bool getResultsOK() { return error == QUERY_RESULTS_OK; }
 
         std::shared_ptr<Query> query;
         eQueryPTRErrors error;
@@ -87,26 +88,22 @@ public:
 
     // Database connection:
 
-    bool connect( const std::string &dbFilePath );
+    bool connect(const std::string &dbFilePath);
 
-    bool attach( const std::string &dbFilePath, const std::string & schemeName );
-    bool detach( const std::string & schemeName );
+    bool attach(const std::string &dbFilePath, const std::string &schemeName);
+    bool detach(const std::string &schemeName);
 
-    bool connect( const std::string &host,
-                  const uint16_t & port,
-                  const DatabaseCredentials & credentials,
-                  const std::string & dbName
-                  );
+    bool connect(const std::string &host, const uint16_t &port, const DatabaseCredentials &credentials, const std::string &dbName);
 
     virtual bool isOpen() = 0;
 
     // Database Internals:
-    virtual bool dbTableExist(const std::string & table) = 0;
+    virtual bool dbTableExist(const std::string &table) = 0;
 
     // Connection/Database Information:
     virtual std::string driverName() = 0;
 
-    virtual std::string getEscaped(const std::string & value) = 0;
+    virtual std::string getEscaped(const std::string &value) = 0;
 
     std::string getLastSQLError() const;
 
@@ -127,23 +124,23 @@ public:
     // TODO: Reconnector thread / Reconnection options.
 
     // SQL Query:
-    std::shared_ptr<Query> createQuery(eQueryPTRErrors * error);
+    std::shared_ptr<Query> createQuery(eQueryPTRErrors *error);
     std::shared_ptr<SQLConnector::QueryInstance> createQuerySharedPTR();
 
-    void detachQuery(Query *query );
+    void detachQuery(Query *query);
 
-    // Fast Queries Approach (TODO: deprecate query, only work with qInsert/qSelect):
+    // Fast Queries Approach (TODO: deprecate query, only work with qExecute/qSelect):
     /**
-     * @brief query Fast Prepared Query for non-row-return statements (non-select).
+     * @brief execute Fast Prepared Query for non-row-return statements (non-select).
      * @param preparedQuery Prepared SQL Query String.
-     * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted after the query is executed)
+     * @param inputVars Input Vars for the prepared execute. (abstract elements will be deleted after the execute is executed)
      * @return true if succeed.
      */
-    bool query(std::string * lastError, const std::string & preparedQuery, const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> &inputVars = {} );
-    bool query(const std::string & preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {} );
+    bool execute(std::string *lastError, const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    bool execute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
-     * @brief qInsert Fast Prepared Query for non-row-return statements. (update/insert/delete)
+     * @brief qExecute Fast Prepared Query for non-row-return statements. (update/insert/delete)
      * @param preparedQuery Prepared SQL Query String.
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
      * @param outputVars Output Vars for the step iteration.
@@ -153,9 +150,7 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::shared_ptr<SQLConnector::QueryInstance> qInsert(const std::string & preparedQuery,
-                                                         const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & inputVars = {}
-                                                        );
+    std::shared_ptr<SQLConnector::QueryInstance> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
@@ -168,17 +163,25 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::shared_ptr<SQLConnector::QueryInstance> qSelect(const std::string & preparedQuery,
-                                                         const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & inputVars,
-                                                         const std::vector<Memory::Abstract::Var *> & resultVars
-                                           );
-    /*std::shared_ptr<SQLConnector::QueryInstance> query(const std::string & preparedQuery,
-                                         const std::map<std::string,Memory::Abstract::Var *> & inputVars,
-                                         const std::vector<Memory::Abstract::Var *> & resultVars
-                                         );*/
+    std::shared_ptr<SQLConnector::QueryInstance> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                                                         const std::vector<Memory::Abstract::Var *> &resultVars);
+
+    /**
+     * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
+     * @param preparedQuery Prepared SQL Query String.
+     * @param whereFilters WHERE clause filters to be applied.
+     * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
+     * @param resultVars Output Vars for the step iteration.
+     * @param orderby ORDER BY clause string.
+     * @param limit LIMIT value for the number of rows returned.
+     * @param offset OFFSET value to start returning rows from.
+     * @return shared pointer to QueryInstance if successful, nullptr otherwise.
+     */
+    std::shared_ptr<SQLConnector::QueryInstance> qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,
+                                                                    const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                                                                    const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);
-
 
     /**
      * @brief getReconnectIntervalSeconds Get Sleep time in seconds between reconnections
@@ -240,8 +243,8 @@ public:
 protected:
     virtual std::shared_ptr<Query> createQuery0() { return nullptr; };
     virtual bool connect0() { return false; }
-    virtual bool attach0( const std::string &dbFilePath, const std::string & schemeName ) { return false; }
-    virtual bool detach0( const std::string & schemeName ) { return false; }
+    virtual bool attach0(const std::string &dbFilePath, const std::string &schemeName) { return false; }
+    virtual bool detach0(const std::string &schemeName) { return false; }
 
     std::string m_dbFilePath;
 
@@ -265,9 +268,8 @@ private:
     std::mutex m_querySetMutex;
     std::timed_mutex m_databaseLockMutex;
 
-    std::condition_variable m_emptyQuerySetCondition;    // Condition variable used to wait for an empty query set.
+    std::condition_variable m_emptyQuerySetCondition; // Condition variable used to wait for an empty query set.
 };
 
-
-}}
-
+} // namespace Database
+} // namespace Mantids30

@@ -132,6 +132,9 @@ public:
     bool getFetchLastInsertRowID() const;
     void setFetchLastInsertRowID(bool newFetchLastInsertRowID);
 
+    uint64_t getUnfilteredNumRows() const;
+    void setUnfilteredNumRows(uint64_t newUnfilteredNumRows);
+
 protected:
     /**
     * @brief (Internal use) Executes the prepared SQL query.
@@ -185,6 +188,7 @@ protected:
     unsigned long long m_lastInsertRowID = 0;
     uint64_t m_numRows = 0;
     uint64_t m_affectedRows = 0;
+    uint64_t m_unfilteredNumRows = std::numeric_limits<uint64_t>::max();
     std::timed_mutex * m_databaseLockMutex = nullptr;
 
     /**

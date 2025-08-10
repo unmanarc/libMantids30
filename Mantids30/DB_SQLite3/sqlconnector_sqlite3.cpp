@@ -47,26 +47,26 @@ void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
 bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
 {
     if (on)
-        return query("PRAGMA foreign_keys = ON;");
+        return execute("PRAGMA foreign_keys = ON;");
     else
-        return query("PRAGMA foreign_keys = OFF;");
+        return execute("PRAGMA foreign_keys = OFF;");
 }
 
 bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode)
 {
     switch (mode) {
     case SQLITE3_JOURNAL_OFF:
-        return query("PRAGMA journal_mode = OFF;");
+        return execute("PRAGMA journal_mode = OFF;");
     case SQLITE3_JOURNAL_WAL:
-        return query("PRAGMA journal_mode = WAL;");
+        return execute("PRAGMA journal_mode = WAL;");
     case SQLITE3_JOURNAL_MEMORY:
-        return query("PRAGMA journal_mode = MEMORY;");
+        return execute("PRAGMA journal_mode = MEMORY;");
     case SQLITE3_JOURNAL_PERSIST:
-        return query("PRAGMA journal_mode = PERSIST;");
+        return execute("PRAGMA journal_mode = PERSIST;");
     case SQLITE3_JOURNAL_TRUNCATE:
-        return query("PRAGMA journal_mode = TRUNCATE;");
+        return execute("PRAGMA journal_mode = TRUNCATE;");
     case SQLITE3_JOURNAL_DELETE:
-        return query("PRAGMA journal_mode = DELETE;");
+        return execute("PRAGMA journal_mode = DELETE;");
     }
     return false;
 }
@@ -75,13 +75,13 @@ bool SQLConnector_SQLite3::sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode
 {
     switch (mode) {
     case SQLITE3_SYNC_OFF:
-        return query("PRAGMA synchronous = OFF;");
+        return execute("PRAGMA synchronous = OFF;");
     case SQLITE3_SYNC_NORMAL:
-        return query("PRAGMA synchronous = NORMAL;");
+        return execute("PRAGMA synchronous = NORMAL;");
     case SQLITE3_SYNC_FULL:
-        return query("PRAGMA synchronous = FULL;");
+        return execute("PRAGMA synchronous = FULL;");
     case SQLITE3_SYNC_EXTRA:
-        return query("PRAGMA synchronous = EXTRA;");
+        return execute("PRAGMA synchronous = EXTRA;");
     }
     return false;
 }
@@ -115,11 +115,11 @@ bool SQLConnector_SQLite3::connect0()
 bool SQLConnector_SQLite3::attach0(const std::string &dbFilePath, const std::string &schemeName)
 {
     std::string attachQuery = "ATTACH DATABASE '" + dbFilePath + "' AS " + schemeName + ";";
-    return query(attachQuery);
+    return execute(attachQuery);
 }
 
 bool SQLConnector_SQLite3::detach0(const std::string &schemeName)
 {
     std::string detachQuery = "DETACH DATABASE " + schemeName + ";";
-    return query(detachQuery);
+    return execute(detachQuery);
 }

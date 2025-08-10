@@ -165,6 +165,16 @@ void Query::clearDestroyableStringsForResults()
     m_destroyableStringsForResults.clear();
 }
 
+uint64_t Query::getUnfilteredNumRows() const
+{
+    return m_unfilteredNumRows;
+}
+
+void Query::setUnfilteredNumRows(uint64_t newUnfilteredNumRows)
+{
+    m_unfilteredNumRows = newUnfilteredNumRows;
+}
+
 bool Query::getFetchLastInsertRowID() const
 {
     return m_fetchLastInsertRowID;
