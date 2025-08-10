@@ -154,8 +154,7 @@ public:
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
     std::shared_ptr<SQLConnector::QueryInstance> qInsert(const std::string & preparedQuery,
-                                                         const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & inputVars = {},
-                                                         const std::vector<Memory::Abstract::Var *> & resultVars = {}
+                                                         const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & inputVars = {}
                                                         );
 
     /**

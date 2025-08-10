@@ -146,7 +146,7 @@ std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qSelect(const std::st
     return q;
 }
 
-std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qInsert(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
+std::shared_ptr<SQLConnector::QueryInstance> SQLConnector::qInsert(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars)
 {
     std::shared_ptr<SQLConnector::QueryInstance> q = createQuerySharedPTR();
 
