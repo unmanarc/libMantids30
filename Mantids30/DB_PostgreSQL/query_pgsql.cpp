@@ -369,8 +369,8 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
 
     m_execStatus = PQresultStatus(m_results);
 
-    m_numRows = 0;
-    m_affectedRows = 0;
+    m_numRecords = 0;
+    m_affectedRecords = 0;
 
     if (m_execStatus == PGRES_BAD_RESPONSE || m_execStatus == PGRES_FATAL_ERROR)
     {
@@ -381,12 +381,12 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
 
     if (execType == EXEC_TYPE_SELECT)
     {
-        m_numRows = PQntuples(m_results);
+        m_numRecords = PQntuples(m_results);
         return m_execStatus == PGRES_TUPLES_OK;
     }
     else
     {
-        m_affectedRows = strtoull(PQcmdTuples(m_results), 0, 10);
+        m_affectedRecords = strtoull(PQcmdTuples(m_results), 0, 10);
         if (m_fetchLastInsertRowID)
             m_lastInsertRowID = PQoidValue(m_results);
         return m_execStatus == PGRES_COMMAND_OK;

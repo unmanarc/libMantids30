@@ -165,14 +165,24 @@ void Query::clearDestroyableStringsForResults()
     m_destroyableStringsForResults.clear();
 }
 
-uint64_t Query::getUnfilteredNumRows() const
+uint64_t Query::getTotalRecordsCount() const
 {
-    return m_unfilteredNumRows;
+    return m_totalRecordsCount;
 }
 
-void Query::setUnfilteredNumRows(uint64_t newUnfilteredNumRows)
+void Query::setTotalRecordsCount(uint64_t newTotalRecordsCount)
 {
-    m_unfilteredNumRows = newUnfilteredNumRows;
+    m_totalRecordsCount = newTotalRecordsCount;
+}
+
+uint64_t Query::getFilteredRecordsCount() const
+{
+    return m_filteredRecordsCount;
+}
+
+void Query::setFilteredRecordsCount(uint64_t newFilteredRecordsCount)
+{
+    m_filteredRecordsCount = newFilteredRecordsCount;
 }
 
 bool Query::getFetchLastInsertRowID() const
@@ -185,14 +195,14 @@ void Query::setFetchLastInsertRowID(bool newFetchLastInsertRowID)
     m_fetchLastInsertRowID = newFetchLastInsertRowID;
 }
 
-uint64_t Query::getAffectedRows() const
+uint64_t Query::getAffectedRecords() const
 {
-    return m_affectedRows;
+    return m_affectedRecords;
 }
 
-uint64_t Query::getNumRows() const
+uint64_t Query::getNumRecords() const
 {
-    return m_numRows;
+    return m_numRecords;
 }
 
 bool Query::setSqlConnector(void *value, std::timed_mutex *mtDatabaseLockMutex, const uint64_t &milliseconds)

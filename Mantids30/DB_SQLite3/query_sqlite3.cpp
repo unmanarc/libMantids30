@@ -168,8 +168,8 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         }
     }
 
-    m_numRows = 0;
-    m_affectedRows = 0;
+    m_numRecords = 0;
+    m_affectedRecords = 0;
 
     // if insert, only do one step.
     if (execType == EXEC_TYPE_INSERT)
@@ -178,7 +178,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         m_lastSQLReturnValue = sqlite3_step(m_stmt);
 
         // Get number of changes:
-        m_affectedRows = sqlite3_changes(m_databaseConnectionHandler);
+        m_affectedRecords = sqlite3_changes(m_databaseConnectionHandler);
 
         if (m_fetchLastInsertRowID)
             m_lastInsertRowID = sqlite3_last_insert_rowid(m_databaseConnectionHandler);
@@ -198,7 +198,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     else
     {
         // Execution should be done on step0.
-        // TODO: retrieve number of retrieved rows in numRows.
+        // TODO: retrieve number of retrieved records in numRecords.
     }
 
     return true;
@@ -210,7 +210,7 @@ bool Query_SQLite3::step0()
 
     if (m_lastSQLReturnValue == SQLITE_ROW)
     {
-        m_numRows++; // Will only be available at the end (full fetch)...
+        m_numRecords++; // Will only be available at the end (full fetch)...
 
         int columnpos = 0;
         for (Memory::Abstract::Var *outputVar : m_resultVars)

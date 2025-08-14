@@ -118,22 +118,25 @@ public:
     */
     int getLastSQLReturnValue() const;
     /**
-     * @brief getNumRows Get the retrieved rows count on SELECT statement
+     * @brief getNumRecords Get the retrieved records count on SELECT statement
      * warning: does not apply to sqlite3
-     * @return number of rows retrieved by the select statement
+     * @return number of records retrieved by the select statement
      */
-    uint64_t getNumRows() const;
+    uint64_t getNumRecords() const;
     /**
-     * @brief getAffectedRows Get Affected Rows by INSERT/UPDATE/DELETE commands
+     * @brief getAffectedRecords Get Affected Records by INSERT/UPDATE/DELETE commands
      * @return number of affected rows.
      */
-    uint64_t getAffectedRows() const;
+    uint64_t getAffectedRecords() const;
 
     bool getFetchLastInsertRowID() const;
     void setFetchLastInsertRowID(bool newFetchLastInsertRowID);
 
-    uint64_t getUnfilteredNumRows() const;
-    void setUnfilteredNumRows(uint64_t newUnfilteredNumRows);
+    uint64_t getTotalRecordsCount() const;
+    void setTotalRecordsCount(uint64_t newTotalRecordsCount);
+
+    uint64_t getFilteredRecordsCount() const;
+    void setFilteredRecordsCount(uint64_t newFilteredRecordsCount);
 
 protected:
     /**
@@ -186,9 +189,10 @@ protected:
     std::vector<bool> m_fieldIsNull;
     std::vector<Memory::Abstract::Var *> m_resultVars;
     unsigned long long m_lastInsertRowID = 0;
-    uint64_t m_numRows = 0;
-    uint64_t m_affectedRows = 0;
-    uint64_t m_unfilteredNumRows = std::numeric_limits<uint64_t>::max();
+    uint64_t m_numRecords = 0;
+    uint64_t m_affectedRecords = 0;
+    uint64_t m_totalRecordsCount = std::numeric_limits<uint64_t>::max();
+    uint64_t m_filteredRecordsCount = std::numeric_limits<uint64_t>::max();
     std::timed_mutex * m_databaseLockMutex = nullptr;
 
     /**

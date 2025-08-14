@@ -71,7 +71,7 @@ public:
             case QUERY_ERRORBINDINGRESULTVARS:
                 return "Error binding result variables";
             case QUERY_SELECTCOUNT_FAILED:
-                return "Error determining the number of rows in the SELECT statement";
+                return "Error determining the number of records in the SELECT statement";
             case QUERY_RESULTS_FAILED:
                 return query->getLastSQLError();
             case QUERY_RESULTS_OK:
@@ -173,8 +173,8 @@ public:
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
      * @param resultVars Output Vars for the step iteration.
      * @param orderby ORDER BY clause string.
-     * @param limit LIMIT value for the number of rows returned.
-     * @param offset OFFSET value to start returning rows from.
+     * @param limit LIMIT value for the number of records returned.
+     * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
     SQLConnector::QueryInstance qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,

@@ -154,15 +154,24 @@ SQLConnector::QueryInstance SQLConnector::qSelectWithFilters(const std::string &
                                                                               const uint64_t &offset)
 {
     // First phase: get the count of records without filters and limits
-    std::string countQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
+    std::string unfilteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
+    std::string filteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
     if (!whereFilters.empty())
     {
-        countQuery += " WHERE " + whereFilters;
+        filteredTotalCountQuery += " WHERE " + whereFilters;
     }
 
-    Memory::Abstract::INT64 totalCount;
+    Memory::Abstract::INT64 unfilteredTotalCount,filteredTotalCount;
     {
-        SQLConnector::QueryInstance countResultQuery = qSelect(countQuery, inputVars, {&totalCount});
+        SQLConnector::QueryInstance countResultQuery = qSelect(unfilteredTotalCountQuery, inputVars, {&unfilteredTotalCount});
+        if (!countResultQuery.getResultsOK() || !countResultQuery.query->step())
+        {
+            countResultQuery.error = QUERY_SELECTCOUNT_FAILED;
+            return countResultQuery;
+        }
+    }
+    {
+        SQLConnector::QueryInstance countResultQuery = qSelect(filteredTotalCountQuery, inputVars, {&filteredTotalCount});
         if (!countResultQuery.getResultsOK() || !countResultQuery.query->step())
         {
             countResultQuery.error = QUERY_SELECTCOUNT_FAILED;
@@ -192,7 +201,8 @@ SQLConnector::QueryInstance SQLConnector::qSelectWithFilters(const std::string &
     }
 
     SQLConnector::QueryInstance result = qSelect(fullQuery, inputVars, resultVars);
-    result.query->setUnfilteredNumRows(totalCount.getValue());
+    result.query->setTotalRecordsCount(unfilteredTotalCount.getValue());
+    result.query->setFilteredRecordsCount(filteredTotalCount.getValue());
     return result;
 }
 

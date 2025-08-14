@@ -625,8 +625,8 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         return false;
     }
 
-    m_numRows = 0;
-    m_affectedRows = 0;
+    m_numRecords = 0;
+    m_affectedRecords = 0;
 
     if (mysql_stmt_store_result(m_stmt) != 0)
     {
@@ -643,11 +643,11 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     {
         if (m_fetchLastInsertRowID)
             m_lastInsertRowID = mysql_stmt_insert_id(m_stmt);
-        m_affectedRows = mysql_stmt_num_rows(m_stmt);
+        m_affectedRecords = mysql_stmt_num_rows(m_stmt);
     }
     else
     {
-        m_numRows = mysql_stmt_num_rows(m_stmt);
+        m_numRecords = mysql_stmt_num_rows(m_stmt);
     }
 
     return true;
