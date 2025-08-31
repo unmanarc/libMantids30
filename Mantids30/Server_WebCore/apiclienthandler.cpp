@@ -326,7 +326,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
         // it will proccess this according to the authorization session
         if (config->resourceFilter)
         {
-            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath, getSessionPermissions(), getSessionRoles(), isSessionActive());
+            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
         }
 
         // If the element is accepted (during the filter)

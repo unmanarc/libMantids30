@@ -19,44 +19,44 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(
     for (const auto & filter : filters)
     {
         ruleIndex++;
-        bool allPermissionsAreValid=true;
+        bool allScopesAreValid=true;
 
         // If the filter require a session and there is no session, it does not match...
-        if (allPermissionsAreValid && filter.requireSession && !session)
-            allPermissionsAreValid=false;
+        if (allScopesAreValid && filter.requireSession && !session)
+            allScopesAreValid=false;
 
         // To check for required attributes, we have to have a session, then, if no session, not match:
-        if (allPermissionsAreValid && !filter.requiredPermissions.empty() && !session)
-            allPermissionsAreValid=false;
+        if (allScopesAreValid && !filter.requiredScopes.empty() && !session)
+            allScopesAreValid=false;
 
         // To check for rejected attributes, we have to have a session, then, if no session, not match:
-        if (allPermissionsAreValid && !filter.rejectedPermissions.empty() && !session)
-            allPermissionsAreValid=false;
+        if (allScopesAreValid && !filter.rejectedScopes.empty() && !session)
+            allScopesAreValid=false;
 
-        // If there is any missing permission:
-        if (allPermissionsAreValid)
+        // If there is any missing scope:
+        if (allScopesAreValid)
         {
-            for (const auto &requiredPermission : filter.requiredPermissions)
+            for (const auto &requiredScope : filter.requiredScopes)
             {
-                if (!session->validateAppPermissionInClaim(requiredPermission))
+                if (!session->validateAppScopeInClaim(requiredScope))
                 {
-                    allPermissionsAreValid = false;
+                    allScopesAreValid = false;
                     break;
                 }
             }
         }
 
-        // If there is any rejected permission:
-        if (allPermissionsAreValid)
+        // If there is any rejected scope:
+        if (allScopesAreValid)
         {
-            for (const auto &rejectedPermission : filter.rejectedPermissions)
+            for (const auto &rejectedScope : filter.rejectedScopes)
             {
-                if (session->validateAppPermissionInClaim(rejectedPermission))
-                    allPermissionsAreValid = false;
+                if (session->validateAppScopeInClaim(rejectedScope))
+                    allScopesAreValid = false;
             }
         }
 
-        if (!allPermissionsAreValid)
+        if (!allScopesAreValid)
         {
             // Rule match
             boost::cmatch matchedRegex;
@@ -97,29 +97,29 @@ ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::st
     for (const auto & filter : filters)
     {
         ruleId++;
-        bool allPermissionsDone=true;
+        bool allScopesDone=true;
 
-        for (const auto & permission : filter.requiredPermissions)
+        for (const auto & scope : filter.requiredScopes)
         {
-            if (!hSession || ! identityManager) // Any Permission without the session is marked as false
-                allPermissionsDone = false;
-            else if (permission == "loggedin" && hSession->getAuthUser() == "")
-                allPermissionsDone = false;
-            else if (! identityManager->validateAccountApplicationPermission(hSession->getAuthUser(),{hSession->getApplicationName(), permission}))
-                allPermissionsDone = false;
+            if (!hSession || ! identityManager) // Any Scope without the session is marked as false
+                allScopesDone = false;
+            else if (scope == "loggedin" && hSession->getAuthUser() == "")
+                allScopesDone = false;
+            else if (! identityManager->validateAccountApplicationScope(hSession->getAuthUser(),{hSession->getApplicationName(), scope}))
+                allScopesDone = false;
         }
-        for (const auto & permission : filter.rejectedPermissions)
+        for (const auto & scope : filter.rejectedScopes)
         {
             if (hSession &&  identityManager)
             {
-                if (permission == "loggedin" && hSession->getAuthUser() != "")
-                    allPermissionsDone = false;
-                else if ( identityManager->validateAccountApplicationPermission(hSession->getAuthUser(),{hSession->getApplicationName(), permission}))
-                    allPermissionsDone = false;
+                if (scope == "loggedin" && hSession->getAuthUser() != "")
+                    allScopesDone = false;
+                else if ( identityManager->validateAccountApplicationScope(hSession->getAuthUser(),{hSession->getApplicationName(), scope}))
+                    allScopesDone = false;
             }
         }
 
-        if (!allPermissionsDone)
+        if (!allScopesDone)
         {
             continue; // Rule does not match
         }

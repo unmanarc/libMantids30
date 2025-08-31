@@ -151,7 +151,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
             break;
             case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
             {
-                // not enough permissions.
+                // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
                 fullResponse["auth"]["reasons"] = reasons;
                 fullResponse["statusCode"] = ELT_RET_NOTAUTHORIZED;

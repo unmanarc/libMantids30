@@ -7,7 +7,7 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredPermissions)
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredScopes)
 {
     RESTfulAPIDefinition def;
     def.method = method;
@@ -16,7 +16,7 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
     def.security.requireJWTCookieAuthentication = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
     //def.security.requireJWTCookieHash = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_HASH;
     //def.security.requireGenericAntiCSRFToken = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
-    def.security.requiredPermissions = requiredPermissions;
+    def.security.requiredScopes = requiredScopes;
     return addResource(mode, resourceName, def);
 }
 
@@ -38,6 +38,9 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
     case DELETE:
         m_methodsDELETE[resourceName] = method;
         break;
+    case PATCH:
+        m_methodsPATCH[resourceName] = method;
+        break;
     default:
         return false;
     }
@@ -58,7 +61,7 @@ Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParame
 MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode,
                                                           const std::string & resourceName,
                                                           RESTful::RequestParameters &inputParameters,
-                                                          const std::set<std::string> &currentPermissions, bool isAdmin,
+                                                          const std::set<std::string> &currentScopes, bool isAdmin,
                                                           const SecurityParameters & securityParameters,
                                                           APIReturn *apiResponse)
 {
@@ -93,6 +96,13 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     case DELETE:
         it = m_methodsDELETE.find(resourceName);
         if (it != m_methodsDELETE.end())
+        {
+            method = it->second;
+        }
+        break;
+    case PATCH:
+        it = m_methodsPATCH.find(resourceName);
+        if (it != m_methodsPATCH.end())
         {
             method = it->second;
         }
@@ -152,15 +162,15 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
 
     if (!isAdmin)
     {
-        for (const auto &attr : method.security.requiredPermissions)
+        for (const auto &attr : method.security.requiredScopes)
         {
-            if (currentPermissions.find(attr) == currentPermissions.end())
+            if (currentScopes.find(attr) == currentScopes.end())
             {
                 if (apiResponse != nullptr)
                 {
-                    apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Insufficient permissions");
+                    apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Invalid Scope");
                 }
-                return INSUFFICIENT_PERMISSIONS;
+                return INVALID_SCOPE;
             }
         }
     }
@@ -236,7 +246,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     return INTERNAL_ERROR;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentPermissions, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut)
 {
     MethodMode mode;
 
@@ -256,6 +266,10 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
     {
         mode = DELETE;
     }
+    else if (modeStr == "PATCH")
+    {
+        mode = PATCH;
+    }
     else
     {
         if (payloadOut != nullptr)
@@ -265,7 +279,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
         return INVALID_METHOD_MODE;
     }
 
-    return invokeResource(mode, resourceName, inputParameters, currentPermissions, isAdmin, securityParameters, payloadOut);
+    return invokeResource(mode, resourceName, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
 
 }
 

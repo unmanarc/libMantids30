@@ -57,7 +57,7 @@ public:
     {
         MonolithAPIMethod method;               // API method definition
         std::string methodName;                 // Name of the method
-        std::set<std::string> reqPermissions;   // Required permissions for the method
+        std::set<std::string> reqScopes;        // Required scopes for the method
         std::set<std::string> reqRoles;         // Required roles for the method
         bool doUsageUpdateLastSessionActivity = true;    // Flag to update last session activity on usage
         bool isActiveSessionRequired = true;     // Flag to check if an active session is required
@@ -89,7 +89,7 @@ public:
     /**
      * @brief Validate method requirements
      * 
-     * Validates if the given method can be accessed based on session permissions and roles.
+     * Validates if the given method can be accessed based on session scopes and roles.
      * 
      * @param session Session object for authentication and context
      * @param methodName Name of the method to validate
@@ -101,7 +101,7 @@ public:
     /**
      * @brief Get methods requirements map
      * 
-     * Returns the MethodsRequirements_Map object containing method permissions and roles.
+     * Returns the MethodsRequirements_Map object containing method scopes and roles.
      * 
      * @return MethodsRequirements_Map* Pointer to the methods requirements map
      */
@@ -120,7 +120,7 @@ public:
    // std::string getApplicationName() const;
 
 private:
-    //std::set<std::string> getApplicationPermissions(const std::set<std::string> & reqPermissions);
+    //std::set<std::string> getApplicationScopes(const std::set<std::string> & reqScopes);
 
     /////////////////////////////////
     // Methods:
@@ -135,7 +135,7 @@ private:
     std::map<std::string,bool> m_methodUpdateSessionLastActivityOnUsage;
 
     //std::string m_applicationName;
-    MethodsRequirements_Map m_methodsPermissions;
+    MethodsRequirements_Map m_methodsScopes;
 
     // lock for methods manipulation...
     Threads::Sync::Mutex_Shared m_methodsMutex;

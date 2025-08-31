@@ -198,7 +198,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     break;
     case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
     {
-        // not enough permissions.
+        // Method unauthorized.
         log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute method {method=%s,reasons=%s}", methodName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
         apiReturn->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
         apiReturn->setReasons(reasons);
@@ -209,7 +209,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     default:
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "Method not found {method=%s}", methodName.c_str());
-        // not enough permissions.
+        // Method not found.
         apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
     }
     break;
@@ -278,7 +278,7 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
         x["loggedUser"]["username"] = effectiveUserName;
         x["isImpersonation"] = m_currentSessionInfo.isImpersonation;
         x["impersonator"] = m_currentSessionInfo.authSession->getImpersonator();
-        x["permissions"] = m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllPermissionsAsJSON();
+        x["scopes"] = m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
         x["roles"] = m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
         x["currentActivity"]["first"] = (Json::UInt64)m_currentSessionInfo.authSession->getFirstActivity();
         x["currentActivity"]["last"] = (Json::UInt64)m_currentSessionInfo.authSession->getLastActivity();
@@ -356,11 +356,11 @@ bool ClientHandler::isSessionActive()
     return m_currentSessionInfo.authSession && !(m_currentSessionInfo.authSession->isSessionRevoked());
 }
 
-set<string> ClientHandler::getSessionPermissions()
+set<string> ClientHandler::getSessionScopes()
 {
     if (m_currentSessionInfo.authSession)
     {
-        return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllPermissions();
+        return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopes();
     }
     return {};
 }

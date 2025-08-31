@@ -108,13 +108,13 @@ public:
 
         std::string getJwtId() const;
 
-        std::set<std::string> getAllPermissions();
+        std::set<std::string> getAllScopes();
 
-        Json::Value getAllPermissionsAsJSON();
+        Json::Value getAllScopesAsJSON();
 
-        void addPermission(const std::string & permissionId);
+        void addScope(const std::string & scopeId);
 
-        bool hasPermission(const std::string &permissionId) const;
+        bool hasScope(const std::string &scopeId) const;
 
         std::set<std::string> getAllRoles();
 

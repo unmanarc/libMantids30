@@ -17,9 +17,9 @@ bool MethodsHandler::addMethod(const MethodDefinition &methodDefinition)
         // Adds method definition to the methods map using methodName as key
         m_methods[methodDefinition.methodName] = methodDefinition.method;
 
-        // Updates required permissions and roles for the new method
-        m_methodsPermissions.addMethodRequiredPermissions(methodDefinition.methodName,methodDefinition.reqPermissions);
-        m_methodsPermissions.addMethodRequiredRoles(methodDefinition.methodName,methodDefinition.reqRoles);
+        // Updates required scopes and roles for the new method
+        m_methodsScopes.addMethodRequiredScopes(methodDefinition.methodName,methodDefinition.reqScopes);
+        m_methodsScopes.addMethodRequiredRoles(methodDefinition.methodName,methodDefinition.reqRoles);
 
         // Sets whether an active session is required for this method and whether to update last activity on usage
         m_methodRequireActiveSession[methodDefinition.methodName] = methodDefinition.isActiveSessionRequired;
@@ -55,7 +55,7 @@ int MethodsHandler::invoke(std::shared_ptr<Mantids30::Sessions::Session> session
 
 MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & methodName, json * reasons)
 {
-    std::set<std::string> permissionsLeft, rolesLeft;
+    std::set<std::string> scopesLeft, rolesLeft;
     
     // Locks the methods mutex in read mode to ensure thread-safe access to methods map
     Threads::Sync::Lock_RD lock(m_methodsMutex);
@@ -71,16 +71,16 @@ MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirement
             return VALIDATION_NOTAUTHORIZED; // No session provided but one is required, return unauthorized code
     }
 
-    // Validates whether the session meets the roles and permissions requirements for the method
-    if (m_methodsPermissions.validateMethod(session,methodName,rolesLeft,permissionsLeft))
+    // Validates whether the session meets the roles and scopes requirements for the method
+    if (m_methodsScopes.validateMethod(session,methodName,rolesLeft,scopesLeft))
     {
         return VALIDATION_OK; // All requirements met, return validation code indicating success
     }
     else
     {
-        // Fills reasons with any missing roles and permissions required by the method
+        // Fills reasons with any missing roles and scopes required by the method
         (*reasons)["rolesLeft"] = Helpers::setToJSON(rolesLeft);
-        (*reasons)["permissionsLeft"] = Helpers::setToJSON(permissionsLeft);
+        (*reasons)["scopesLeft"] = Helpers::setToJSON(scopesLeft);
 
         return VALIDATION_NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }
@@ -90,7 +90,7 @@ MethodsHandler::eMethodValidationCodes MethodsHandler::validateMethodRequirement
 MethodsRequirements_Map *MethodsHandler::methodsRequirements()
 {
     // Returns a pointer to the methods requirements map for external usage or modification
-    return &m_methodsPermissions;
+    return &m_methodsScopes;
 }
 
 bool MethodsHandler::doesMethodRequireActiveSession(const std::string &methodName)

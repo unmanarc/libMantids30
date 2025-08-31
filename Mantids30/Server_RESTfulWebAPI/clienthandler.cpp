@@ -153,7 +153,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
                                      const Json::Value & postParameters
                                                )
 {
-    set<string> currentPermissions;
+    set<string> currentScopes;
     bool isAdmin = false;
     bool authenticated =false;
     API::RESTful::RequestParameters inputParameters;
@@ -165,7 +165,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     if ( isSessionActive() )
     {
         isAdmin = m_JWTToken.isAdmin();
-        currentPermissions = m_JWTToken.getAllPermissions();
+        currentScopes = m_JWTToken.getAllScopes();
         inputParameters.jwtToken = &m_JWTToken;
     }
 
@@ -188,7 +188,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     API::RESTful::MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode,
                                                                                                     methodName,
                                                                                                     inputParameters,
-                                                                                                    currentPermissions,
+                                                                                                    currentScopes,
                                                                                                     isAdmin,
                                                                                                     securityParameters,
                                                                                                     apiReturn
@@ -208,8 +208,8 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     case API::RESTful::MethodsHandler::AUTHENTICATION_REQUIRED:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Authentication Not Provided {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
-    case API::RESTful::MethodsHandler::INSUFFICIENT_PERMISSIONS:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Insufficient permissions {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::MethodsHandler::INVALID_SCOPE:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Invalid Scope {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::INTERNAL_ERROR:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Internal Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
@@ -226,11 +226,11 @@ bool ClientHandler::isSessionActive()
     return ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified );
 }
 
-set<string> ClientHandler::getSessionPermissions()
+set<string> ClientHandler::getSessionScopes()
 {
     if ( isSessionActive() )
     {
-        return m_JWTToken.getAllPermissions();
+        return m_JWTToken.getAllScopes();
     }
     return {};
 }

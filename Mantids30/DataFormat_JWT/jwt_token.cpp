@@ -163,55 +163,55 @@ bool JWT::Token::hasRole(const std::string &roleId) const
     return false;
 }
 
-std::set<std::string> JWT::Token::getAllPermissions()
+std::set<std::string> JWT::Token::getAllScopes()
 {
-    std::set<std::string> permissions;
+    std::set<std::string> scopes;
 
-    if (m_claims.isMember("permissions"))
+    if (m_claims.isMember("scopes"))
     {
-        const Json::Value& permissionsClaims = m_claims["permissions"];
-        if (permissionsClaims.isArray())
+        const Json::Value& scopesClaims = m_claims["scopes"];
+        if (scopesClaims.isArray())
         {
-            for (const auto& permission : permissionsClaims)
+            for (const auto& scope : scopesClaims)
             {
-                permissions.insert(JSON_ASSTRING_D(permission,""));
+                scopes.insert(JSON_ASSTRING_D(scope,""));
             }
         }
     }
 
-    return permissions;
+    return scopes;
 }
 
-Json::Value JWT::Token::getAllPermissionsAsJSON()
+Json::Value JWT::Token::getAllScopesAsJSON()
 {
-    if (m_claims.isMember("permissions"))
+    if (m_claims.isMember("scopes"))
     {
-        return m_claims["permissions"];
+        return m_claims["scopes"];
     }
 
     return {};
 }
 
-void JWT::Token::addPermission(const std::string &permissionId)
+void JWT::Token::addScope(const std::string &scopeId)
 {
-    if (!m_claims.isMember("permissions"))
+    if (!m_claims.isMember("scopes"))
     {
-        m_claims["permissions"] = Json::Value(Json::arrayValue);
+        m_claims["scopes"] = Json::Value(Json::arrayValue);
     }
 
-    m_claims["permissions"].append(permissionId);
+    m_claims["scopes"].append(scopeId);
 }
 
-bool JWT::Token::hasPermission(const std::string &permissionId) const
+bool JWT::Token::hasScope(const std::string &scopeId) const
 {
-    if (m_claims.isMember("permissions"))
+    if (m_claims.isMember("scopes"))
     {
-        const Json::Value& permissionsClaims = m_claims["permissions"];
-        if (permissionsClaims.isArray())
+        const Json::Value& scopesClaims = m_claims["scopes"];
+        if (scopesClaims.isArray())
         {
-            for (const auto& permission : permissionsClaims)
+            for (const auto& scope : scopesClaims)
             {
-                if (JSON_ASSTRING_D(permission,"") == permissionId)
+                if (JSON_ASSTRING_D(scope,"") == scopeId)
                 {
                     return true;
                 }

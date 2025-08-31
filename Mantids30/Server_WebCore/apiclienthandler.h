@@ -155,7 +155,7 @@ protected:
      *   - The `userName` is set from the token's subject.
      *   - The `domainName` is extracted from the "domain" claim (using a macro `JSON_ASSTRING_D`
      *     to handle default values).
-     *   - All claims and permissions from the token are stored in `m_userData`.
+     *   - All claims and scopes from the token are stored in `m_userData`.
      *   - The `sessionId` and `halfSessionId` are set from the token's JWT ID.
      *   - The `loggedIn` flag is set to `true` if `userName` is not empty.
      *   - The `sessionActive` flag is set to `true` to indicate an active session.
@@ -165,7 +165,7 @@ protected:
      */
     bool verifyToken( const std::string &strToken);
     virtual bool isSessionActive() = 0;
-    virtual std::set<std::string> getSessionPermissions() = 0;
+    virtual std::set<std::string> getSessionScopes() = 0;
     virtual std::set<std::string> getSessionRoles() = 0;
     // Function to check if the URL contains any invalid characters
     bool isURLSafe(const std::string& url);

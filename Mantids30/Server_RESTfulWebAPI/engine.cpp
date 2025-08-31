@@ -18,7 +18,7 @@ Engine::Engine()
 
     API::RESTful::RESTfulAPIDefinition jwtRevokeDef;
     jwtRevokeDef.method = &revokeJWT;
-    jwtRevokeDef.security.requiredPermissions = {"IAM"};
+    jwtRevokeDef.security.requiredScopes = {"IAM"};
     jwtRevokeDef.context = this;
 
     handler->addResource(API::RESTful::MethodsHandler::POST, "revokeJWT", jwtRevokeDef);

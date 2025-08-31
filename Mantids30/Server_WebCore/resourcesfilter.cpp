@@ -38,21 +38,21 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         filter.compileRegex();
 
 
-        auto pRequiredPermissions = i.second.get_child_optional("requiredPermissions");
-        if (pRequiredPermissions)
+        auto pRequiredScopes = i.second.get_child_optional("requiredScopes");
+        if (pRequiredScopes)
         {
-            for (const auto & i : pRequiredPermissions.get())
+            for (const auto & i : pRequiredScopes.get())
             {
-                filter.requiredPermissions.push_back(i.second.get_value<std::string>());
+                filter.requiredScopes.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pDisallowedPermissions =  i.second.get_child_optional("disallowedPermissions");
-        if (pDisallowedPermissions)
+        auto pDisallowedScopes =  i.second.get_child_optional("disallowedScopes");
+        if (pDisallowedScopes)
         {
-            for (const auto & i : pDisallowedPermissions.get())
+            for (const auto & i : pDisallowedScopes.get())
             {
-                filter.rejectedPermissions.push_back(i.second.get_value<std::string>());
+                filter.rejectedScopes.push_back(i.second.get_value<std::string>());
             }
         }
 
@@ -106,7 +106,7 @@ void ResourcesFilter::addFilter(const Filter &filter)
     m_filters.push_back(filter);
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> & permissions,const std::set<std::string> & roles, bool isSessionActive)
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> & scopes,const std::set<std::string> & roles, bool isSessionActive)
 {
     FilterEvaluationResult evaluationResult;
 
@@ -117,23 +117,23 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
         // Set the match to true...
         bool filterMatchesRequirements=true;
 
-        // Check required permissions
-        for (const auto & requiredPermission : filter.requiredPermissions)
+        // Check required scopes
+        for (const auto & requiredScope : filter.requiredScopes)
         {
             if (!filterMatchesRequirements)
                 break;
 
-            if ( permissions.find(requiredPermission) == permissions.end() )
+            if ( scopes.find(requiredScope) == scopes.end() )
                 filterMatchesRequirements = false;
         }
 
         // Check rejected permissions
-        for (const auto & rejectedPermission : filter.rejectedPermissions)
+        for (const auto & rejectedScope : filter.rejectedScopes)
         {
             if (!filterMatchesRequirements)
                 break;
 
-            if ( permissions.find(rejectedPermission) != permissions.end() )
+            if ( scopes.find(rejectedScope) != scopes.end() )
                 filterMatchesRequirements = false;
         }
 

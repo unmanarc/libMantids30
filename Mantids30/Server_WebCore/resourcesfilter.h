@@ -40,7 +40,7 @@ public:
 
         std::list<boost::regex> regexPatterns;
         std::string redirectLocation = "";
-        std::list<std::string> requiredPermissions, rejectedPermissions;
+        std::list<std::string> requiredScopes, rejectedScopes;
         std::list<std::string> requiredRoles, rejectedRoles;
         std::list<std::string> sRegexs;
         bool requireSession = false;
@@ -58,7 +58,7 @@ public:
     /**
      * @brief Evaluates a given URI against a set of filters to determine the appropriate action.
      *
-     * This function checks the URI against filters, each containing required permissions, rejected permissions,
+     * This function checks the URI against filters, each containing required scopes, rejected scopes,
      * regex patterns, and a specified action. If a filter matches the user's data and the URI,
      * the function performs the corresponding action (accept, redirect, or deny). If no filters match,
      * the function accepts the URI by default.
@@ -68,7 +68,7 @@ public:
      * @return A FilterEvaluationResult object containing the evaluation results, including whether to accept
      *         or deny the URI, and an optional redirect location.
      */
-    FilterEvaluationResult evaluateURI(const std::string & uri, const std::set<std::string> & permissions,const std::set<std::string> & roles, bool isSessionActive );
+    FilterEvaluationResult evaluateURI(const std::string & uri, const std::set<std::string> & scopes,const std::set<std::string> & roles, bool isSessionActive );
 
 protected:
 
