@@ -57,7 +57,7 @@ std::shared_ptr<Var> STRING::protectedCopy()
 
 json STRING::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return toString();

@@ -126,7 +126,7 @@ unsigned long VARCHAR::getFillSize() const
 
 json VARCHAR::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return toString();

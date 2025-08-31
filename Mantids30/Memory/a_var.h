@@ -67,7 +67,7 @@ public:
     Type getVarType() const;
     void setVarType(const Type &value);
 
-    bool getIsNull();
+    bool isNull();
     void setIsNull(bool newIsNull);
 
 protected:

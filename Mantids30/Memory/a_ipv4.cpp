@@ -300,7 +300,7 @@ std::shared_ptr<Var> IPV4::protectedCopy()
 
 json IPV4::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return toString();

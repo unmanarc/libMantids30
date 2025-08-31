@@ -67,7 +67,7 @@ json UINT32::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return m_value;

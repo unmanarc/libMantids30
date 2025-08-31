@@ -143,7 +143,7 @@ std::shared_ptr<Var> Var::protectedCopy()
     auto var = std::make_shared<Var>();
     return var;
 }
-bool Var::getIsNull()
+bool Var::isNull()
 {
     return m_isNull;
 }

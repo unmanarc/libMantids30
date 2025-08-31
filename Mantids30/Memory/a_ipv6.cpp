@@ -96,7 +96,7 @@ std::shared_ptr<Var> IPV6::protectedCopy()
 
 json IPV6::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return toString();

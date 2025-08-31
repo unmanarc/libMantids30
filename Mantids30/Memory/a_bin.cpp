@@ -51,7 +51,7 @@ json BINARY::toJSON()
 {
     Threads::Sync::Lock_RD lock(this->m_value.mutex);
 
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return Helpers::Encoders::encodeToBase64(m_value.ptr,m_value.dataSize);

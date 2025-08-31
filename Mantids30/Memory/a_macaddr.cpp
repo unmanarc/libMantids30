@@ -134,7 +134,7 @@ std::shared_ptr<Var> MACADDR::protectedCopy()
 }
 json MACADDR::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return toString();

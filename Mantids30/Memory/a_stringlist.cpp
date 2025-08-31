@@ -191,7 +191,7 @@ std::shared_ptr<Var> STRINGLIST::protectedCopy()
 
 Json::Value STRINGLIST::toJSON()
 {
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     Threads::Sync::Lock_RD lock(m_mutex);

@@ -72,7 +72,7 @@ json DATETIME::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    if (getIsNull())
+    if (isNull())
         return Json::nullValue;
 
     return (Json::UInt64) m_value;
