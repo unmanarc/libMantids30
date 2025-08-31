@@ -59,6 +59,7 @@ bool Query::bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *>
     {
         throw std::runtime_error("Don't call bindResultVars twice.");
     }
+
     m_bindResultVars = true;
     m_resultVars = vars;
     return postBindResultVars();
@@ -86,6 +87,12 @@ bool Query::exec(const ExecType &execType)
 
 bool Query::step()
 {
+    for (Mantids30::Memory::Abstract::Var * var: m_resultVars)
+    {
+        // Reset null status.
+        var->setIsNull(false);
+    }
+
     clearDestroyableStringsForResults();
     m_fieldIsNull.clear();
     return step0();
