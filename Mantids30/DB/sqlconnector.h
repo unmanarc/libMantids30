@@ -240,6 +240,10 @@ public:
     */
     void setThrowCPPErrorOnQueryFailure(bool newThrowCPPErrorOnQueryFailure);
 
+    bool throwCPPErrorOnUniqueFailure() const;
+
+    void setThrowCPPErrorOnUniqueFailure(bool newThrowCPPErrorOnUniqueFailure);
+
 protected:
     virtual std::shared_ptr<Query> createQuery0() { return nullptr; };
     virtual bool connect0() { return false; }
@@ -265,6 +269,7 @@ private:
     std::set<Query *> m_querySet;
     bool m_finalized = false;
     bool m_throwCPPErrorOnQueryFailure = false;
+    bool m_throwCPPErrorOnUniqueFailure = false;
     std::mutex m_querySetMutex;
     std::timed_mutex m_databaseLockMutex;
 

@@ -201,6 +201,7 @@ protected:
     bool m_fetchLastInsertRowID = true;
 
     bool m_throwCPPErrorOnQueryFailure = false;
+    bool m_throwCPPErrorOnUniqueFailure = false;
 private:
     // Memory cleaning:
     std::list<std::shared_ptr<std::string>> m_destroyableStringsForInput, m_destroyableStringsForResults;

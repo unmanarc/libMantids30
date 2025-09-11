@@ -79,6 +79,7 @@ std::shared_ptr<Query> SQLConnector::createQuery(eQueryPTRErrors *error)
     }
 
     query->m_throwCPPErrorOnQueryFailure = m_throwCPPErrorOnQueryFailure;
+    query->m_throwCPPErrorOnUniqueFailure = m_throwCPPErrorOnUniqueFailure;
 
     if (!query->setSqlConnector(this, &m_databaseLockMutex, m_maxQueryLockMilliseconds))
     {
@@ -250,6 +251,16 @@ bool SQLConnector::attachQuery(Query *query)
         return false;
     m_querySet.insert(query);
     return true;
+}
+
+void SQLConnector::setThrowCPPErrorOnUniqueFailure(bool newThrowCPPErrorOnUniqueFailure)
+{
+    m_throwCPPErrorOnUniqueFailure = newThrowCPPErrorOnUniqueFailure;
+}
+
+bool SQLConnector::throwCPPErrorOnUniqueFailure() const
+{
+    return m_throwCPPErrorOnUniqueFailure;
 }
 
 bool SQLConnector::throwCPPErrorOnQueryFailure() const

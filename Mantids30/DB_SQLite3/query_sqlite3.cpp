@@ -1,6 +1,7 @@
 #include "query_sqlite3.h"
 #include "sqlconnector_sqlite3.h"
 #include <Mantids30/Memory/a_allvars.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include <string.h>
 
 #include <stdexcept>
@@ -43,6 +44,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     if (m_lastSQLReturnValue != SQLITE_OK)
     {
         m_lastSQLError = std::string(sqlite3_errmsg(m_databaseConnectionHandler));
+
         if (m_throwCPPErrorOnQueryFailure)
         {
             printf("--------------------------------\n");
@@ -186,7 +188,21 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         if (!sqlite3IsDone())
         {
             m_lastSQLError = sqlite3_errmsg(m_databaseConnectionHandler);
-            if (m_throwCPPErrorOnQueryFailure)
+
+
+            if (boost::algorithm::icontains(m_lastSQLError,"UNIQUE constraint failed"))
+            {
+                // This error sometimes is not an DB error :)
+                if (m_throwCPPErrorOnUniqueFailure)
+                {
+                    printf("--------------------------------\n");
+                    printf("SQL Query:\n");
+                    printf("%s\n",m_query.c_str());
+                    fflush(stdout);
+                    throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
+                }
+            }
+            else if (m_throwCPPErrorOnQueryFailure)
             {
                 printf("--------------------------------\n");
                 printf("SQL Query:\n");
