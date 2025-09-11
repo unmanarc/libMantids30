@@ -1,5 +1,8 @@
 #include "sqlconnector.h"
 #include "Mantids30/Memory/a_int64.h"
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <memory>
 #include <unistd.h>
 
@@ -148,18 +151,34 @@ SQLConnector::QueryInstance SQLConnector::qSelect(const std::string &preparedQue
     return q;
 }
 
-SQLConnector::QueryInstance SQLConnector::qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,
+SQLConnector::QueryInstance SQLConnector::qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters,
                                                                               const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                                               const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit,
                                                                               const uint64_t &offset)
 {
+    boost::algorithm::trim(preparedQuery);
+
+    // Remove trailing semicolon if present
+    if (!preparedQuery.empty() && preparedQuery.back() == ';')
+    {
+        preparedQuery.pop_back();
+    }
+
+    // Check if WHERE clause exists in the preparedQuery using boost::algorithm
+    if (!boost::algorithm::icontains(preparedQuery, "WHERE"))
+    {
+        preparedQuery+= " WHERE 1=1";
+    }
+
     // First phase: get the count of records without filters and limits
     std::string unfilteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
     std::string filteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
+
     if (!whereFilters.empty())
     {
-        filteredTotalCountQuery += " WHERE " + whereFilters;
+        boost::ireplace_last( filteredTotalCountQuery, "WHERE ", "WHERE (" + whereFilters + ") AND " );
     }
+
 
     Memory::Abstract::INT64 unfilteredTotalCount,filteredTotalCount;
     {
@@ -180,10 +199,10 @@ SQLConnector::QueryInstance SQLConnector::qSelectWithFilters(const std::string &
     }
 
     // Second phase: build the full query with filters and limits
-    std::string fullQuery =  preparedQuery ;
+    std::string fullQuery =  preparedQuery;
     if (!whereFilters.empty())
     {
-        fullQuery += "\n WHERE " + whereFilters;
+        boost::ireplace_last( fullQuery, "WHERE ", "WHERE (" + whereFilters + ") AND " );
     }
 
     if (!orderby.empty())

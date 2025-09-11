@@ -177,9 +177,9 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    SQLConnector::QueryInstance qSelectWithFilters(const std::string &preparedQuery, const std::string &whereFilters,
-                                                                    const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                                                    const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
+    SQLConnector::QueryInstance qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters,
+                                                   const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                                                   const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);
 

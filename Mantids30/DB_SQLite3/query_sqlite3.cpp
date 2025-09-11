@@ -188,6 +188,11 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             m_lastSQLError = sqlite3_errmsg(m_databaseConnectionHandler);
             if (m_throwCPPErrorOnQueryFailure)
             {
+                printf("--------------------------------\n");
+                printf("SQL Query:\n");
+                printf("%s\n",m_query.c_str());
+                fflush(stdout);
+
                 throw std::runtime_error("Error during insert query: " + m_lastSQLError);
             }
             return false;
