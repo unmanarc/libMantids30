@@ -156,7 +156,7 @@ public:
 
     struct SecurityParameters
     {
-        Json::Value getJSON() const
+        Json::Value toJSON() const
         {
             Json::Value securityJSON;
             securityJSON["haveJWTAuthHeader"] = haveJWTAuthHeader;
