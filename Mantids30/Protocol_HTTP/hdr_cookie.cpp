@@ -23,7 +23,7 @@ std::string Cookie::toSetCookieString(
     std::string opts = cookieName + "=" + value + "; ";
 
     if (expires.getUnixTime()) opts+= "Expires=" + expires.toString() + "; ";
-    if (maxAge!=UINT32_MAX) opts+= "Max-Age=" + std::to_string(maxAge) + "; ";
+    if (maxAge.has_value()) opts+= "Max-Age=" + std::to_string(*maxAge) + "; ";
     if (secure) opts+= "Secure; ";
     if (httpOnly) opts+= "HttpOnly; ";
     if (!domain.empty()) opts+= "Domain=" + domain + "; ";

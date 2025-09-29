@@ -31,13 +31,13 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
     {
         case PROCMODE_CHUNK_SIZE:
         {
-            size_t targetChunkSize;
-            if ((targetChunkSize=parseHttpChunkSize())!=UINT32_MAX)
+            std::optional<size_t> targetChunkSize;
+            if ((targetChunkSize=parseHttpChunkSize())!=std::nullopt)
             {
                 if (targetChunkSize>0)
                 {
                     setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
-                    setParseDataTargetSize(targetChunkSize);
+                    setParseDataTargetSize(*targetChunkSize);
                     m_currentMode = PROCMODE_CHUNK_DATA;
                     return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
                 }
@@ -112,13 +112,13 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
     return Memory::Streams::SubParser::PARSE_ERROR;
 }
 
-uint32_t HTTP::Content::parseHttpChunkSize()
+std::optional<uint32_t> HTTP::Content::parseHttpChunkSize()
 {
     std::optional<uint32_t> parsedSize = getParsedBuffer()->toUInt32(16);
 
     if (parsedSize==std::nullopt || parsedSize.value()>m_securityMaxHttpChunkSize)
     {
-        return UINT32_MAX;
+        return std::nullopt;
     }
 
     return *parsedSize;

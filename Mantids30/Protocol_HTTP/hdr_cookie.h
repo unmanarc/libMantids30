@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include "common_date.h"
 #include <Mantids30/Helpers/json.h>
@@ -74,7 +75,7 @@ public:
     /**
      * @brief The maximum age (in seconds) of the cookie.
      */
-    uint32_t maxAge=UINT32_MAX;
+    std::optional<uint32_t> maxAge;
 
     /**
      * @brief The domain associated with the cookie.

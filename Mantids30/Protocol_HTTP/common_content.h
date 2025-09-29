@@ -146,7 +146,7 @@ private:
     std::shared_ptr<Memory::Streams::StreamableObject> m_outStream = std::make_shared<Memory::Containers::B_Chunks>();
     bool m_usingInternalOutStream = true;
 
-    uint32_t parseHttpChunkSize();
+    std::optional<uint32_t> parseHttpChunkSize();
 
     // Parsing Optimization:
     eTransmitionMode m_transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
