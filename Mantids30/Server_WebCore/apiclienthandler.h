@@ -104,7 +104,6 @@ protected:
      * executing the appropriate logic for the specified API version, method, and mode,
      * and preparing a response that is written back to the client.
      *
-     * @param apiReturn Pointer to an object where the result of the API request will be stored.
      * @param baseApiUrl The base URL for the API, used to construct resource paths or endpoints.
      * @param apiVersion The version of the API being requested.
      * @param methodMode The mode of the API method, such as GET, POST, PUT, DELETE, etc.
@@ -112,9 +111,9 @@ protected:
      * @param pathParameters A JSON object containing parameters parsed from the URL path.
      * @param postParameters A JSON object containing parameters sent in the POST body.
      *
-     * @return Returns an appropriate API return code indicating success or the type of error encountered.
+     * @return Retorn an object where the result of the API request will be stored.
      */
-    virtual void handleAPIRequest(API::APIReturn * apiReturn, const std::string & baseApiUrl,
+    virtual API::APIReturn handleAPIRequest(const std::string & baseApiUrl,
                                   const uint32_t & apiVersion,
                                   const std::string &methodMode,
                                   const std::string &methodName,

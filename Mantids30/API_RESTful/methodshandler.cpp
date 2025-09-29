@@ -7,7 +7,7 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t & SecurityOptions, const std::set<std::string> requiredScopes)
+bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes)
 {
     RESTfulAPIDefinition def;
     def.method = method;
@@ -57,13 +57,8 @@ Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParame
     return clientDetails;
 }
 
-
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mode,
-                                                          const std::string & resourceName,
-                                                          RESTful::RequestParameters &inputParameters,
-                                                          const std::set<std::string> &currentScopes, bool isAdmin,
-                                                          const SecurityParameters & securityParameters,
-                                                          APIReturn *apiResponse)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode, const std::string &resourceName, RESTful::RequestParameters &inputParameters,
+                                                          const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse)
 {
     Threads::Sync::Lock_RD lock(m_methodsMutex);
 
@@ -110,7 +105,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     default:
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid Method Mode");
+            apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid Method Mode");
         }
         return INVALID_METHOD_MODE;
     }
@@ -119,7 +114,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( HTTP::Status::S_404_NOT_FOUND, "invalid_invokation","Resource not found");
+            apiResponse->setError(HTTP::Status::S_404_NOT_FOUND, "invalid_invokation", "Resource not found");
         }
         return RESOURCE_NOT_FOUND;
     }
@@ -128,7 +123,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Header Required");
+            apiResponse->setError(HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Header Required");
         }
         return AUTHENTICATION_REQUIRED;
     }
@@ -137,7 +132,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     {
         if (apiResponse != nullptr)
         {
-            apiResponse->setError( HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Cookie Required");
+            apiResponse->setError(HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Cookie Required");
         }
         return AUTHENTICATION_REQUIRED;
     }
@@ -168,7 +163,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
             {
                 if (apiResponse != nullptr)
                 {
-                    apiResponse->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_invokation","Invalid Scope");
+                    apiResponse->setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_invokation", "Invalid Scope");
                 }
                 return INVALID_SCOPE;
             }
@@ -190,7 +185,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
             if (inputParameters.clientRequest->requestLine.getRequestURIParameters().size())
             {
                 // Bad parsing... (should be JSON or empty)
-                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing during GET");
+                apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during GET");
                 return INTERNAL_ERROR;
             }
             else
@@ -203,12 +198,12 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
             if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
             {
                 // Bad parsing... (should be parsed as JSON...)
-                apiResponse->setError( HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation","Bad Input JSON Parsing during POST");
+                apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during POST");
                 return INTERNAL_ERROR;
             }
         }
     }
-/*
+    /*
     if (method.security.requireJWTCookieHash)
     {
         // Test for the hash from the cookie to be the same of the post...
@@ -231,22 +226,23 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode & mod
     if (method.method != nullptr && apiResponse != nullptr)
     {
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(inputParameters);
-        method.method(method.context, // Context
-                      *apiResponse, // The API return object
-                      inputParameters, // Parameters from the RESTful request in JSON format
-                      clientDetails);
+
+        *apiResponse = method.method(method.context,  // Context
+                                     inputParameters, // Parameters from the RESTful request in JSON format
+                                     clientDetails);
         return SUCCESS;
     }
 
     if (apiResponse != nullptr)
     {
-        apiResponse->setError( HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_invokation","Internal error");
+        apiResponse->setError(HTTP::Status::S_500_INTERNAL_SERVER_ERROR, "invalid_invokation", "Internal error");
     }
 
     return INTERNAL_ERROR;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters & securityParameters, APIReturn *payloadOut)
+MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
+                                                          bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut)
 {
     MethodMode mode;
 
@@ -274,12 +270,10 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
     {
         if (payloadOut != nullptr)
         {
-            payloadOut->setError(HTTP::Status::S_400_BAD_REQUEST,"invalid_invokation", "Invalid method mode string");
+            payloadOut->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid method mode string");
         }
         return INVALID_METHOD_MODE;
     }
 
     return invokeResource(mode, resourceName, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
-
 }
-

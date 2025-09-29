@@ -128,14 +128,15 @@ void ClientHandler::sessionCleanup()
     sessionLogout();
 }
 
-void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
-                                     const string & baseApiUrl,
-                                     const uint32_t & apiVersion,
-                                      const std::string &methodMode,
-                                     const string & methodName,
-                                     const Json::Value & pathParameters,
-                                     const Json::Value & postParameters)
+API::APIReturn ClientHandler::handleAPIRequest(
+    const string & baseApiUrl,
+    const uint32_t & apiVersion,
+    const std::string &methodMode,
+    const string & methodName,
+    const Json::Value & pathParameters,
+    const Json::Value & postParameters)
 {
+    API::APIReturn apiReturn;
     //json jPayloadIn;
     Mantids30::Helpers::JSONReader2 reader;
 
@@ -145,8 +146,8 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         // Key does not exist
         log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {method=%s}", apiVersion, methodName.c_str());
         // Method not available for this null session..
-        apiReturn->setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
-        return;
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
+        return apiReturn;
     }
 
     API::Monolith::MethodsHandler * methodsHandler = m_methodsHandlerByAPIVersion[apiVersion];
@@ -156,8 +157,8 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "This method requires full authentication / session {method=%s}", methodName.c_str());
         // Method not available for this null session..
-        apiReturn->setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
-        return;
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
+        return apiReturn;
     }
 
     json reasons;
@@ -176,22 +177,22 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         auto finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn->responseJSON() ))
+        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn.responseJSON() ))
         {
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
             log(LEVEL_INFO, "monolithAPI", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", methodName.c_str(), elapsed.count());
-            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn->responseJSON())).c_str());
+            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
             break;
         case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
             log(LEVEL_ERR, "monolithAPI", 2048, "Web Method not found {method=%s}", methodName.c_str());
-            apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
+            apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
             break;
         default:
             log(LEVEL_ERR, "monolithAPI", 2048, "Unknown error during web method execution {method=%s}", methodName.c_str());
-            apiReturn->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
+            apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
             break;
         }
     }
@@ -200,8 +201,8 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     {
         // Method unauthorized.
         log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute method {method=%s,reasons=%s}", methodName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
-        apiReturn->setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
-        apiReturn->setReasons(reasons);
+        apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
+        apiReturn.setReasons(reasons);
 
     }
     break;
@@ -210,10 +211,12 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "Method not found {method=%s}", methodName.c_str());
         // Method not found.
-        apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
+        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
     }
     break;
     }
+
+    return apiReturn;
 
 }
 

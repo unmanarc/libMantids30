@@ -47,7 +47,7 @@ protected:
      *
      * @return Returns an appropriate API return code indicating success or the type of error encountered.
      */
-    void handleAPIRequest(API::APIReturn *apiReturn, const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...

@@ -124,7 +124,6 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             if (std::regex_match(apiUrlWithoutBase, pathMatch, apiVersionResourcePattern))
             {
                 // It's an API request (with resource).
-                API::APIReturn apiReturn;
                 std::string methodName;
                 json pathParameters;
                 size_t apiVersion = std::stoul(pathMatch[1].str());
@@ -132,10 +131,6 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 string requestOrigin = clientRequest.getOrigin();
                 string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
                 std::string resourceAndPathParameters = pathMatch[2].str();
-
-                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
-                serverResponse.setContentType("application/json", true);
 
                 processPathParameters(resourceAndPathParameters, methodName, pathParameters);
 
@@ -148,9 +143,14 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                     // Check Login Origin... ALWAYS.
                     if (this->config->permittedLoginOrigins.find(requestOrigin) == this->config->permittedLoginOrigins.end())
                     {
+                        API::APIReturn apiReturn;
+                        apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                        serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                        serverResponse.setContentType("application/json", true);
+
                         log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
                         apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                        ret = HTTP::Status::S_401_UNAUTHORIZED;
+                        ret = apiReturn.getHTTPResponseCode();
                         isAPIURI = true;
                         break;
                     }
@@ -165,9 +165,14 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                             // Use the native method...
                             if (this->config->permittedAPIOrigins.find(requestOrigin) == this->config->permittedAPIOrigins.end())
                             {
+                                API::APIReturn apiReturn;
+                                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                                serverResponse.setContentType("application/json", true);
+
                                 log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
                                 apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                                ret = HTTP::Status::S_401_UNAUTHORIZED;
+                                ret = apiReturn.getHTTPResponseCode();
                                 isAPIURI = true;
                                 break;
                             }
@@ -176,9 +181,14 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                         {
                             if (!this->config->dynamicOriginValidator(requestOrigin, requestXAPIKEY))
                             {
+                                API::APIReturn apiReturn;
+                                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                                serverResponse.setContentType("application/json", true);
+
                                 log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via dynamic validator {origin=%s}", requestOrigin.c_str());
                                 apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                                ret = HTTP::Status::S_401_UNAUTHORIZED;
+                                ret = apiReturn.getHTTPResponseCode();
                                 isAPIURI = true;
                                 break;
                             }
@@ -190,9 +200,17 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 /// API CALL:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+                API::APIReturn apiReturn;
+
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
                 json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
-                handleAPIRequest(&apiReturn, baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters);
+
+                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters);
+
+                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+
+                serverResponse.setContentType("application/json", true);
 
                 ret = apiReturn.getHTTPResponseCode();
 

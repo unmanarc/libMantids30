@@ -34,8 +34,7 @@ struct RequestParameters
     //std::multimap<std::string, std::string> cookies;
 };
 
-using MethodType = void (*)(void *context,                                        // Context pointer
-                            APIReturn &response,                                  // The API return object
+using MethodType = APIReturn (*)(void *context,                                        // Context pointer
                             const RESTful::RequestParameters &request,            // Parameters from the RESTful request
                             Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 );

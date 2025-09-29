@@ -26,11 +26,10 @@ protected:
     std::shared_ptr<Web::APIClientHandler> createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) override;
 
 private:
-    static void revokeJWT(void *context,                                        // Context pointer
-                          API::APIReturn &response,                             // Response data (JSON format)
-                          const API::RESTful::RequestParameters &request, // Authentication token (JWT)
-                          Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
-    );
+    static API::APIReturn revokeJWT(  void *context,                                        // Context pointer
+                                      const API::RESTful::RequestParameters &request, // Authentication token (JWT)
+                                      Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+                                    );
 };
 
 } // namespace RESTful

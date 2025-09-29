@@ -144,8 +144,7 @@ json ClientHandler::getSessionVariableValue(const string &varName)
     return {};
 }
 
-void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
-                                     const string & baseApiUrl,
+API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
                                      const uint32_t & apiVersion,
                                      const string &methodMode,
                                      const string &methodName,
@@ -153,6 +152,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
                                      const Json::Value & postParameters
                                                )
 {
+    API::APIReturn apiReturn;
     set<string> currentScopes;
     bool isAdmin = false;
     bool authenticated =false;
@@ -172,8 +172,8 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
     if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
-        apiReturn->setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
-        return;
+        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
+        return apiReturn;
     }
 
 
@@ -191,7 +191,7 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
                                                                                                     currentScopes,
                                                                                                     isAdmin,
                                                                                                     securityParameters,
-                                                                                                    apiReturn
+                                                                                                    &apiReturn
                                                                                                    );
 
     switch (result)
@@ -216,9 +216,11 @@ void ClientHandler::handleAPIRequest(API::APIReturn * apiReturn,
         break;
     default:
         log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "Unknown Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
-        apiReturn->setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
+        apiReturn.setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
         break;
     }
+
+    return apiReturn;
 }
 
 bool ClientHandler::isSessionActive()

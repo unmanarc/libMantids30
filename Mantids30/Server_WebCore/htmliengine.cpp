@@ -268,11 +268,11 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIClientHandl
         std::string FUNCTION_NAME = matches[3];
         uint32_t xversion = static_cast<uint32_t>(strtoul(VERSION.c_str(), nullptr, 10));
 
-        clientHandler->handleAPIRequest(&apiReturn, "/", xversion, METHOD_MODE, FUNCTION_NAME, {}, vars);
+        apiReturn = clientHandler->handleAPIRequest("/", xversion, METHOD_MODE, FUNCTION_NAME, {}, vars);
     }
     else
     {
-        clientHandler->handleAPIRequest(&apiReturn, "/", 1, "POST", functionName, {}, vars);
+        apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName, {}, vars);
     }
 
     return apiReturn.toJSON();

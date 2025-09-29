@@ -29,9 +29,8 @@ Engine::~Engine()
 {
 }
 
-void Engine::revokeJWT(
+API::APIReturn Engine::revokeJWT(
     void *context,                                          // Context pointer
-    API::APIReturn &response,                               // The API return object
     const API::RESTful::RequestParameters &request,   // Parameters from the RESTful request
     Mantids30::Sessions::ClientDetails &authClientDetails   // Client authentication details
     )
@@ -40,6 +39,8 @@ void Engine::revokeJWT(
     std::string jwtSignature = Helpers::Encoders::decodeFromBase64(JSON_ASSTRING(request.pathParameters, "signature",""),true);
     time_t expirationTime = JSON_ASUINT64(request.pathParameters, "expiration",0);
     ((Engine *)context)->config.jwtValidator->m_revocation.addToRevocationList( jwtSignature, expirationTime );
+
+    return API::APIReturn();
 }
 
 std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s)
