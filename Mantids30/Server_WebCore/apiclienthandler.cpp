@@ -102,7 +102,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     }
 
     // Do forced redirections (before session's):
-    if ( config->redirections.find(requestURI) != config->redirections.end() )
+    if (config->redirections.find(requestURI) != config->redirections.end())
     {
         return serverResponse.setRedirectLocation(config->redirections[requestURI]);
     }
@@ -111,7 +111,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
     {
         return rtmp;
-    }   
+    }
 
     for (const auto &baseApiUrl : config->APIURLs)
     {
@@ -174,7 +174,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                         }
                         else
                         {
-                            if (!this->config->dynamicOriginValidator( requestOrigin, requestXAPIKEY ))
+                            if (!this->config->dynamicOriginValidator(requestOrigin, requestXAPIKEY))
                             {
                                 log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via dynamic validator {origin=%s}", requestOrigin.c_str());
                                 apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
@@ -184,7 +184,6 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                             }
                         }
                     }
-
                 }
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -357,9 +356,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 
     // If the URL is going to process the Interactive HTML Engine,
     // and the document content is text/html, then, process it as HTMLIEngine:
-    if (config->useHTMLIEngine 
-        && (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
-    ) // The content type has changed during the map.
+    if (config->useHTMLIEngine && (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")) // The content type has changed during the map.
     {
         ret = HTMLIEngine::processResourceFile(this, fileInfo.sRealFullPath);
     }
@@ -379,15 +376,13 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 
 bool APIClientHandler::versionIsSupported(const std::string &versionStr, int minVersion)
 {
-    try
-    {
-        int version = boost::lexical_cast<int>(versionStr);
-        return version >= minVersion;
-    }
-    catch (...)
-    {
+    int version = strtol(versionStr.c_str(), 0, 10);
+
+    // Failed to retrieve the version.
+    if (version < 0)
         return false;
-    }
+
+    return version >= minVersion;
 }
 
 bool APIClientHandler::isSupportedUserAgent(const std::string &userAgent)
@@ -491,6 +486,13 @@ void APIClientHandler::log(eLogLevels logSeverity, const std::string &module, co
 
 bool APIClientHandler::verifyToken(const std::string &strToken)
 {
+    // No token has been configured / for security, the token validation fails.
+    if (this->config->jwtValidator == nullptr)
+    {
+        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "JWT token validation disabled: no JWT validator configured. Access denied for security reasons.");
+        return false;
+    }
+
     // Attempt to verify the provided token using the JWT validator.
     bool x = this->config->jwtValidator->verify(strToken, &m_JWTToken);
 
