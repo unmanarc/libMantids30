@@ -133,7 +133,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         log->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting default login redirect URL to %s", (void*)webServer, loginRedirectURL.c_str());
         webServer->config.defaultLoginRedirect = loginRedirectURL;
 
-        if ( (options & REST_ENGINE_NO_JWT)==0 )
+        if ( (options & REST_ENGINE_NOCONFIG_JWT)==0 )
         {
             // JWT
             webServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(log, config, "JWT" );
