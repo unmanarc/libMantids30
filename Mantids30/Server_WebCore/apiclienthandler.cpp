@@ -90,7 +90,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     // Check if the client's User-Agent header corresponds to a supported browser.
     // This function filters out insecure browsers that lack SameSite cookie support,
     // effectively blocking older, less secure clients from accessing the web server.
-    if (isSupportedUserAgent(clientRequest.userAgent))
+    if (!isSupportedUserAgent(clientRequest.userAgent))
     {
         return showBrowserMessage("Browser Upgrade Required",
                                   R"(
