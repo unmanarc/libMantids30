@@ -13,7 +13,7 @@ class Loader
 public:
     Loader() = default;
 
-    static std::optional<boost::property_tree::ptree> loadSecureApplicationConfig(Logs::AppLog *log, const std::string &dir, const std::string & filePath );
+    static std::optional<boost::property_tree::ptree> loadSecureApplicationConfig(Mantids30::Program::Logs::AppLog *log, const std::string &dir, const std::string & filePath );
 
 };
 

@@ -9,6 +9,14 @@ std::optional<boost::property_tree::ptree> Mantids30::Program::Config::Loader::l
 {
     boost::property_tree::ptree pConfig;
 
+    log->log0(__func__, Program::Logs::LEVEL_INFO, "Loading configuration: %s", (dir + "/" + filePath).c_str());
+
+    if (access(dir.c_str(), R_OK))
+    {
+        log->log0(__func__, Program::Logs::LEVEL_CRITICAL, "Missing configuration dir: %s", dir.c_str());
+        return std::nullopt;
+    }
+
     chdir(dir.c_str());
     bool isConfigFileInsecure = true;
     if (!Helpers::File::isSensitiveConfigPermissionInsecure(filePath, &isConfigFileInsecure))
