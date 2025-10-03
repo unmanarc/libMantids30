@@ -18,16 +18,15 @@
 using namespace Mantids30;
 using namespace Mantids30::Program;
 using namespace Mantids30::Program::Config;
-
 std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
-                                                              boost::property_tree::ptree *ptr,
+                                                              const boost::property_tree::ptree &ptr,
                                                               const std::string &configClassName)
 {
     bool insecureFile;
     std::shared_ptr<DataFormat::JWT> jwtNull;
 
-    std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
-    bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
+    std::string algorithmName = ptr.get<std::string>(configClassName + ".Algorithm", "HS256");
+    bool createIfNotPresent = ptr.get<bool>(configClassName + ".CreateIfNotPresent", true);
 
     if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
@@ -41,7 +40,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
 
     if (algorithmDetails.isUsingHMAC)
     {
-        std::string hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
+        std::string hmacFilePath = ptr.get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
 
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
@@ -98,9 +97,9 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
     }
     else
     {
-        std::string privateKeyFilePath = ptr->get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
-        std::string publicKeyFilePath = ptr->get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
-        uint16_t createRSASize = ptr->get<bool>(configClassName + ".CreateRSASize", 4096);
+        std::string privateKeyFilePath = ptr.get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
+        std::string publicKeyFilePath = ptr.get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
+        uint16_t createRSASize = ptr.get<bool>(configClassName + ".CreateRSASize", 4096);
 
         if (privateKeyFilePath.empty())
         {
@@ -175,13 +174,13 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log,
 }
 
 std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
-                                                                 boost::property_tree::ptree *ptr,
+                                                                 const boost::property_tree::ptree &ptr,
                                                                  const std::string &configClassName)
 {
     bool insecureFile;
     std::shared_ptr<DataFormat::JWT> jwtNull;
-    std::string algorithmName = ptr->get<std::string>(configClassName + ".Algorithm", "HS256");
-    bool createIfNotPresent = ptr->get<bool>(configClassName + ".CreateIfNotPresent", true);
+    std::string algorithmName = ptr.get<std::string>(configClassName + ".Algorithm", "HS256");
+    bool createIfNotPresent = ptr.get<bool>(configClassName + ".CreateIfNotPresent", true);
 
     if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
@@ -198,7 +197,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
         // HMACSecret is a file, read the hmacSecret variable from file to file and
         // report error if failed to read or if permissions are not secure.
 
-        auto hmacFilePath = ptr->get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
+        auto hmacFilePath = ptr.get<std::string>(configClassName + ".HMACSecretFile", "jwt/jwt_secret.key");
 
         std::ifstream hmacFile(hmacFilePath.c_str());
 
@@ -251,9 +250,9 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTValidator(Logs::AppLog *log,
     }
     else
     {
-        uint16_t createRSASize = ptr->get<bool>(configClassName + ".CreateRSASize", 4096);
-        std::string privateKeyFilePath = ptr->get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
-        std::string publicKeyFilePath = ptr->get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
+        uint16_t createRSASize = ptr.get<bool>(configClassName + ".CreateRSASize", 4096);
+        std::string privateKeyFilePath = ptr.get<std::string>(configClassName + ".PrivateKeyFile", "jwt.key");
+        std::string publicKeyFilePath = ptr.get<std::string>(configClassName + ".PublicKeyFile", "jwt.pub");
 
         if (publicKeyFilePath.empty())
         {

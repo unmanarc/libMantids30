@@ -14,13 +14,12 @@ class JWT
 {
 public:
     JWT() = default;
-
     static std::shared_ptr<DataFormat::JWT> createJWTSigner(Mantids30::Program::Logs::AppLog *log,
-                                                                       boost::property_tree::ptree *ptr,
+                                                                       const boost::property_tree::ptree &ptr,
                                                                        const std::string &configClassName);
 
     static std::shared_ptr<DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
-                                                                          boost::property_tree::ptree *ptr,
+                                                                          const boost::property_tree::ptree &ptr,
                                                                           const std::string &configClassName);
 
     static std::shared_ptr<DataFormat::JWT> createJWTValidator(Mantids30::Program::Logs::AppLog *log,
