@@ -2,11 +2,13 @@
 #define APISERVERPARAMETERS_H
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
-#include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Sessions/session.h>
 #include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/Program_Logs/applog.h>
+#include <Mantids30/Program_Logs/rpclog.h>
+#include <Mantids30/Program_Logs/weblog.h>
 
 #include "resourcesfilter.h"
 #include <memory>
@@ -68,13 +70,13 @@ public:
      */
     DynamicOriginValidatorFunction dynamicOriginValidator = nullptr;
 
-
-
     // JWT Validator and signer...
     std::shared_ptr<DataFormat::JWT> jwtValidator;
     std::shared_ptr<DataFormat::JWT> jwtSigner;
 
-    Program::Logs::RPCLog *rpcLog = nullptr;
+    std::shared_ptr<Program::Logs::AppLog> appLog = nullptr;
+    std::shared_ptr<Program::Logs::RPCLog> rpcLog = nullptr;
+    std::shared_ptr<Program::Logs::WebLog> webLog = nullptr;
 
     /**
      * @brief redirections HTTP 307 Redirections (Temporary Redirect), by example, you can use some path for URL shortening here.

@@ -12,8 +12,9 @@ namespace Mantids30 { namespace Applications { namespace FastRPC1 {
 class RPCClientApplication : public Mantids30::Program::Application
 {
 public:
-    RPCClientApplication( Mantids30::Helpers::Mem::BinaryDataContainer * masterKey ) {
-        Globals::setMasterKey(masterKey);
+    RPCClientApplication( std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey )
+    {
+        Globals::m_masterKey = masterKey;
         m_retrieveConfig = false;
     }
     void _shutdown();

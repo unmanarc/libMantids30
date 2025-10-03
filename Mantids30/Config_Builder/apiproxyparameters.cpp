@@ -30,7 +30,7 @@ PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were tru
 
 */
 std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
-    Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config, const std::map<std::string, std::string> &vars)
+    Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &config, const std::map<std::string, std::string> &vars)
 {
     std::shared_ptr<ApiProxyParameters> params = std::make_shared<ApiProxyParameters>();
 
@@ -81,7 +81,7 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
 }
 
 void ApiProxyConfig::parseExtraHeaders(
-    Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders, const std::map<std::string, std::string> &vars)
+    Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders, const std::map<std::string, std::string> &vars)
 {
     log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");
     for (const auto &pair : headersTree)

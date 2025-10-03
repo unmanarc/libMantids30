@@ -19,8 +19,8 @@ class RESTful_Engine
 public:
     RESTful_Engine() = default;
     static Network::Servers::RESTful::Engine *createRESTfulEngine(boost::property_tree::ptree *ptr,
-                                                                  Mantids30::Program::Logs::AppLog *log,
-                                                                  Mantids30::Program::Logs::RPCLog *rpcLog,
+                                                                  std::shared_ptr<Mantids30::Program::Logs::AppLog> log,
+                                                                  std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog,
                                                                   const std::string & serviceName,
                                                                   const std::string & defaultResourcePath,
                                                                   uint64_t options = 0,

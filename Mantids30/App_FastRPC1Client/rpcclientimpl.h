@@ -21,11 +21,6 @@ public:
     virtual ~RPCClientImpl() = default;
 
     /**
-     * @brief runRPClient0 Run the class RPC Client (to be called from a thread)
-     * @param rpcImpl RPC Client Implementation object
-     */
-    static void runRPClient0(RPCClientImpl * rpcImpl);
-    /**
      * @brief runRPClient run RPC Client and made connection/authentication/processing (will block indefinitely)
      */
     void runRPClient();

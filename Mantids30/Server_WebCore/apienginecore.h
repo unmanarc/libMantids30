@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Mantids30/Program_Logs/applog.h>
 #include "apiclienthandler.h"
 #include "apiserverparameters.h"
 #include <Mantids30/Memory/b_mem.h>
@@ -111,7 +110,7 @@ public:
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
     APIServerParameters config;             ///< The api server configuration parameters
-    Program::Logs::AppLog *log = nullptr;
+
 
     std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
 

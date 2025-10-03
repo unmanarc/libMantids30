@@ -5,7 +5,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <thread>
 
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/file.h>
@@ -13,7 +12,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
-#include <utility>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -27,11 +25,6 @@ RPCClientImpl::RPCClientImpl()
     m_failedToRetrieveC2Config = false;
 }
 
-
-void RPCClientImpl::runRPClient0(RPCClientImpl *rpcImpl)
-{
-    rpcImpl->runRPClient();
-}
 
 void RPCClientImpl::runRPClient()
 {
@@ -59,7 +52,7 @@ void RPCClientImpl::runRPClient()
                 _exit(-3);
             }
 
-            auto masterKey = Globals::getMasterKey();
+            auto masterKey = Globals::m_masterKey;
 
             // Check if using passphrase
             if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
@@ -257,7 +250,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     bool ok = false;
     PSKIdKey r;
     std::string encryptedKey = Mantids30::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFilePath() , &ok);
-    auto masterKey = Globals::getMasterKey();
+    auto masterKey = Globals::m_masterKey;
     if (!ok || encryptedKey.empty())
     {
         if (!ok)

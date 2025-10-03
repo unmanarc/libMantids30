@@ -4,6 +4,7 @@
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/mem.h>
+#include <memory>
 
 #include "rpcclientimpl.h"
 
@@ -13,7 +14,7 @@ static std::string dirSlash =  "\\";
 static std::string dirSlash =  "/";
 #endif
 
-#define LOG_APP Globals::getAppLog()
+#define LOG_APP Globals::m_appLog
 
 namespace Mantids30 { namespace Applications { namespace FastRPC1 {
 
@@ -95,26 +96,19 @@ public:
     }
 
     ///////////////////////////////////////
-    // LOGS...
-    static Mantids30::Program::Logs::AppLog *getAppLog();
-    static void setAppLog(Mantids30::Program::Logs::AppLog *value);
+    // LOGS.
+    static std::shared_ptr<Mantids30::Program::Logs::AppLog> m_appLog;
 
+    // RPC Implementation:
+    static Applications::FastRPC1::RPCClientImpl * m_rpcImpl;
 
-    static Applications::FastRPC1::RPCClientImpl *getRpcImpl();
-    static void setRpcImpl(Applications::FastRPC1::RPCClientImpl *value);
-
-    static Mantids30::Helpers::Mem::BinaryDataContainer *getMasterKey();
-    static void setMasterKey(Mantids30::Helpers::Mem::BinaryDataContainer *newMasterKey);
+    // Master Key:
+    static std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> m_masterKey;
 
 protected:
     static boost::property_tree::ptree m_ptreeLocalConfig;
 
-private:
-    static Mantids30::Helpers::Mem::BinaryDataContainer * m_masterKey;
 
-    // LOGS:
-    static Mantids30::Program::Logs::AppLog * m_appLog;
-    static Applications::FastRPC1::RPCClientImpl * m_rpcImpl;
 };
 }}}
 

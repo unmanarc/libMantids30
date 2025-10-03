@@ -52,7 +52,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
 {
     if ( !globalArguments->getCommandLineOptionValue("encode")->toString().empty() )
     {
-        auto masterKey = Globals::getMasterKey();
+        auto masterKey = Globals::m_masterKey;
         sleep(1);
         std::optional<std::string> r = Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(),(char *)masterKey->data,masterKey->length);
 
@@ -121,7 +121,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     // Use syslog option:
     if ( Globals::getLC_LogsUsingSyslog() ) logMode|=Mantids30::Program::Logs::MODE_SYSLOG;
     // Applog instance
-    Globals::setAppLog(new Logs::AppLog(logMode));
+    Globals::m_appLog = std::make_shared<Logs::AppLog>(logMode);
     LOG_APP->enableEmptyFieldLogging = true;
     LOG_APP->enableAttributeNameLogging = false;
     LOG_APP->enableColorLogging = Globals::getLC_LogsShowColors();
@@ -139,7 +139,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
 
 int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments)
 {
-    auto masterKey = Globals::getMasterKey();
+    auto masterKey = Globals::m_masterKey;
 
     bool cont=true;
 
@@ -153,7 +153,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
             // Check the PSK Itself...
 
             // If failed, the application will end here...
-            Globals::getRpcImpl()->loadPSK();
+            Globals::m_rpcImpl->loadPSK();
 
             // Check CA if present
             if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
@@ -219,19 +219,23 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
         return false;
 
     // Start the client...
-    std::thread(RPCClientImpl::runRPClient0,Globals::getRpcImpl()).detach();
+    std::thread([this]() {
+#ifdef __linux__
+        pthread_setname_np(pthread_self(), "RPC-Client");
+#endif
+        Globals::m_rpcImpl->runRPClient();
+    }).detach();
 
     // If retrieve config is setted up, retrieve it.
     if (m_retrieveConfig)
     {
         // Obtain the config from the disk:
-        Globals::getRpcImpl()->retrieveConfigFromLocalFile();
+        Globals::m_rpcImpl->retrieveConfigFromLocalFile();
 
         // Obtain the config from the c2:
-        if (!Globals::getRpcImpl()->retrieveConfigFromC2())
+        if (!Globals::m_rpcImpl->retrieveConfigFromC2())
         {
             // Unable to get the new config...
-
         }
 
         // Virtual function to process the jRetrievedConfig...
