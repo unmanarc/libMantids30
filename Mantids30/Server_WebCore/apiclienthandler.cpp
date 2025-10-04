@@ -1,6 +1,7 @@
 #include "apiclienthandler.h"
 #include "htmliengine.h"
 
+#include "json/config.h"
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Helpers/json.h>
@@ -82,6 +83,14 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
+    json jWebLog;
+    jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+    jWebLog["timestamp"] = (Json::UInt64)time(nullptr);
+    jWebLog["requestLine"] = clientRequest.requestLine.toString();
+    jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
+    jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
+
+    //config->webLog
     if (!config->webServerName.empty())
     {
         setResponseServerName(config->webServerName);
@@ -92,25 +101,40 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     // effectively blocking older, less secure clients from accessing the web server.
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
-        return showBrowserMessage("Browser Upgrade Required",
+        auto retCode = showBrowserMessage("Browser Upgrade Required",
                                   R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
                                   HTTP::Status::S_426_UPGRADE_REQUIRED);
+        jWebLog["responseStatus"] = retCode;
+        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
+        return retCode;
+
     }
 
     // Do forced redirections (before session's):
     if (config->redirections.find(requestURI) != config->redirections.end())
     {
-        return serverResponse.setRedirectLocation(config->redirections[requestURI]);
+        auto retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
+        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
+        jWebLog["responseStatus"] = retCode;
+        return retCode;
     }
 
     HTTP::Status::Codes rtmp;
     if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
     {
+        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
+        jWebLog["responseStatus"] = rtmp;
         return rtmp;
+    }
+
+    // TODO: implement identity.
+    if (m_currentSessionInfo.authSession)
+    {
+        jWebLog["user"] = m_currentSessionInfo.authSession->getUser();
     }
 
     for (const auto &baseApiUrl : config->APIURLs)
@@ -295,6 +319,11 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     }
 
     sessionCleanup();
+
+    jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
+    jWebLog["responseStatus"] = ret;
+
+    config->webLog->log(jWebLog);
     return ret;
 }
 
@@ -358,12 +387,12 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
         else // If not, drop a 403 (forbidden)
             ret = HTTP::Status::S_403_FORBIDDEN;
 
-        log(LEVEL_DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
+        //log(LEVEL_DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
     }
     else
     {
         // File not found at this point (404)
-        log(LEVEL_WARN, "fileServer", 65535, "R/404: %s", clientRequest.getURI().c_str());
+        //log(LEVEL_WARN, "fileServer", 65535, "R/404: %s", clientRequest.getURI().c_str());
     }
 
     if (ret != HTTP::Status::S_200_OK)
@@ -384,11 +413,11 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     {
         ret = serverResponse.setRedirectLocation(config->redirectPathOn404);
     }
-
+/*
     // Log the response.
     log(ret == HTTP::Status::S_200_OK ? LEVEL_INFO : LEVEL_WARN, "fileServer", 2048, "R/%03" PRIu16 ": %s", static_cast<uint16_t>(ret),
         ret == HTTP::Status::S_200_OK ? fileInfo.sRealRelativePath.c_str() : clientRequest.getURI().c_str());
-
+*/
     return ret;
 }
 

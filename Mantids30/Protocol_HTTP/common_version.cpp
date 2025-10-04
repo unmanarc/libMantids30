@@ -43,7 +43,7 @@ void HTTP::Version::parse(const std::string &version)
     }
 }
 
-string HTTP::Version::toString()
+string HTTP::Version::toString() const
 {
     char cHTTPVersion[128];
     snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%" PRIu16 ".%" PRIu16, m_majorVersion, m_minorVersion);

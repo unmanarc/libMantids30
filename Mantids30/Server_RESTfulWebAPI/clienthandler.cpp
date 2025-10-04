@@ -197,25 +197,25 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
     switch (result)
     {
     case API::RESTful::MethodsHandler::SUCCESS:
-        log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "Method Executed {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "API REST Method Executed {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::INVALID_METHOD_MODE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Invalid Method Mode {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Method Mode {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::RESOURCE_NOT_FOUND:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Method Not Found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Method Not Found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::AUTHENTICATION_REQUIRED:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Authentication Not Provided {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Authentication Not Provided {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::INVALID_SCOPE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Invalid Scope {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Scope {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     case API::RESTful::MethodsHandler::INTERNAL_ERROR:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "Internal Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Internal Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         break;
     default:
-        log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "Unknown Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "API REST Unknown Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
         apiReturn.setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
         break;
     }
@@ -227,6 +227,7 @@ bool ClientHandler::isSessionActive()
 {
     return ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified );
 }
+
 
 set<string> ClientHandler::getSessionScopes()
 {

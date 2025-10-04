@@ -1,5 +1,6 @@
 #pragma once
 
+#include "applog.h"
 #include <atomic>
 #include <fstream>
 #include <optional>
@@ -59,6 +60,8 @@ public:
         uint32_t queueMaxItems = 10000;
         uint32_t queueMaxInsertWaitTimeInMS = 100;
         bool useThreadedQueue = true;
+
+        std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog;
 
     private:
         LogFormat m_logFormat = JSON;

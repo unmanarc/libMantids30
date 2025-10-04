@@ -52,29 +52,12 @@ public:
     // Security:
     void setSecurityMaxURLSize(size_t value);
 
-    std::string getRequestURIParameters() const;
+    std::string getRequestGETVarsRawString() const;
 
-    bool fromJSON(const Json::Value &json)
-    {
-        if (!json.isObject())
-            return false;
+    bool fromJSON(const Json::Value &json);
+    json toJSON() const;
 
-        setRequestMethod(JSON_ASSTRING(json, "method", ""));
-        setRequestURI(JSON_ASSTRING(json, "uri", ""));
-        m_httpVersion.fromJSON(json["httpVersion"]);
-        m_getVars->fromJSON(json["getVars"]);
-
-        return true;
-    }
-    json toJSON() const
-    {
-        Json::Value json;
-        json["method"] = getRequestMethod();
-        json["uri"] = getURI();
-        json["httpVersion"] = m_httpVersion.toJSON();
-        json["getVars"] = m_getVars->toJSON();
-        return json;
-    }
+    std::string toString() const;
     
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
@@ -94,7 +77,7 @@ private:
     /**
      * @brief request URI Parameters
      */
-    std::string m_requestURIParameters;
+    std::string m_requestGETVarsRawString;
 
     HTTP::Version m_httpVersion;
 

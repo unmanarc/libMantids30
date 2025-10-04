@@ -1,4 +1,5 @@
 #include "streamablejson.h"
+#include "streamablenull.h"
 #include "streamableobject.h"
 #include <optional>
 
@@ -14,7 +15,6 @@ bool StreamableJSON::streamTo(
         m_strValue = Mantids30::Helpers::jsonToString(m_root);
     else
         m_strValue = m_root.toStyledString();
-
 
     return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
 }
@@ -55,6 +55,16 @@ std::optional<size_t> StreamableJSON::write(const void *buf, const size_t &count
     writeStatus+=writtenBytes;
 
     return writtenBytes;
+}
+
+size_t StreamableJSON::size()
+{
+    StreamableNull sum;
+    if (streamTo(&sum))
+    {
+        return sum.size();
+    }
+    return 0;
 }
 
 void StreamableJSON::clear()

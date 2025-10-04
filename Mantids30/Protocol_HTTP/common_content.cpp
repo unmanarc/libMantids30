@@ -316,6 +316,8 @@ void HTTP::Content::setStreamableObj(std::shared_ptr<Memory::Streams::Streamable
 
 size_t HTTP::Content::getStreamSize()
 {
+    if (!m_outStream)
+        return 0;
     return m_outStream->size();
 }
 

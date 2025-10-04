@@ -77,7 +77,7 @@ void RequestLine::parseURI()
     if (found!=std::string::npos)
     {
         // We have parameters..
-        m_requestURIParameters = m_requestURI.c_str()+found+1;
+        m_requestGETVarsRawString = m_requestURI.c_str()+found+1;
         m_requestURI.resize(found);
         parseGETParameters();
     }
@@ -94,13 +94,44 @@ void RequestLine::parseGETParameters()
 {
     Memory::Containers::B_Chunks bc;
 
-    bc.append(m_requestURIParameters.c_str(),m_requestURIParameters.size());
+    bc.append(m_requestGETVarsRawString.c_str(),m_requestGETVarsRawString.size());
     bc.streamTo(m_getVars.get());
 }
 
-std::string RequestLine::getRequestURIParameters() const
+std::string RequestLine::getRequestGETVarsRawString() const
 {
-    return m_requestURIParameters;
+    return m_requestGETVarsRawString;
+}
+
+bool RequestLine::fromJSON(const Json::Value &json)
+{
+    if (!json.isObject())
+        return false;
+
+    setRequestMethod(JSON_ASSTRING(json, "method", ""));
+    setRequestURI(JSON_ASSTRING(json, "uri", ""));
+    m_httpVersion.fromJSON(json["httpVersion"]);
+    m_getVars->fromJSON(json["getVars"]);
+
+    return true;
+}
+
+json RequestLine::toJSON() const
+{
+    Json::Value json;
+    json["method"] = getRequestMethod();
+    json["uri"] = getURI();
+    json["httpVersion"] = m_httpVersion.toJSON();
+    json["getVars"] = m_getVars->toJSON();
+    return json;
+}
+
+string RequestLine::toString() const
+{
+    if ( m_requestGETVarsRawString.empty() )
+        return getRequestMethod() + " " + getURI() + " " + m_httpVersion.toString();
+    else
+        return getRequestMethod() + " " + getURI() + "?" + m_requestGETVarsRawString + " " + m_httpVersion.toString();
 }
 
 HTTP::Version * RequestLine::getHTTPVersion()

@@ -117,7 +117,7 @@ public:
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonParameters = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();
 
                 Memory::Streams::StreamableString urlData;
-                urlData.setValue(requestLine.getRequestURIParameters());
+                urlData.setValue(requestLine.getRequestGETVarsRawString());
                 Memory::Streams::Decoders::URL urlDecoder;
                 urlDecoder.transform(&urlData, jsonParameters.get());
                 jsonParameters->writeEOF();

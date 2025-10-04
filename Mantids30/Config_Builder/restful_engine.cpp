@@ -1,6 +1,7 @@
 #include "restful_engine.h"
 
 #include "jwt.h"
+#include "program_logs.h"
 #include "apiproxyparameters.h"
 
 #include <Mantids30/Net_Sockets/socket_tcp.h>
@@ -9,6 +10,7 @@
 #include <inttypes.h>
 
 using namespace Mantids30;
+using namespace Mantids30::Program;
 using namespace Mantids30::Network;
 
 std::set<std::string> parseCommaSeparatedString(const std::string &input)
@@ -28,14 +30,15 @@ std::set<std::string> parseCommaSeparatedString(const std::string &input)
 
 Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(
                         const boost::property_tree::ptree &config,
-                        std::shared_ptr<Logs::AppLog> appLog,
-                        std::shared_ptr<Logs::RPCLog> rpcLog,
+                        std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog,
+                        std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog,
                         const std::string &serviceName,
                         const std::string & defaultResourcePath,
                         uint64_t options,
                         const std::map<std::string, std::string> & vars
                         )
 {
+    using namespace Mantids30::Program;
     bool usingTLS = config.get<bool>("UseTLS", true);
 
     std::shared_ptr<Sockets::Socket_Stream> sockWebListen;
@@ -46,13 +49,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
     if (usingTLS == false && (options&REST_ENGINE_MANDATORY_SSL))
     {
-        appLog->log0(__func__, Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s", serviceName.c_str(), listenAddr.c_str(), listenPort, "TLS is required/mandatory for this service.");
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s", serviceName.c_str(), listenAddr.c_str(), listenPort, "TLS is required/mandatory for this service.");
         return nullptr;
     }
 
     if (usingTLS == true && (options&REST_ENGINE_NO_SSL))
     {
-        appLog->log0(__func__, Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s", serviceName.c_str(), listenAddr.c_str(), listenPort, "TLS is not available on this service.");
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s", serviceName.c_str(), listenAddr.c_str(), listenPort, "TLS is not available on this service.");
         return nullptr;
     }
 
@@ -66,14 +69,14 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // Load public key from PEM file for TLS
         if (!tlsSocket->tlsKeys.loadPublicKeyFromPEMFile(config.get<std::string>("TLS.CertFile", "snakeoil.crt").c_str()))
         {
-            appLog->log0(__func__, Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, "Bad TLS Public Key");
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, "Bad TLS Public Key");
             return nullptr;
         }
 
         // Load private key from PEM file for TLS
         if (!tlsSocket->tlsKeys.loadPrivateKeyFromPEMFile(config.get<std::string>("TLS.KeyFile", "snakeoil.key").c_str()))
         {
-            appLog->log0(__func__, Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, "Bad TLS Private Key");
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "Error starting %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, "Bad TLS Private Key");
             return nullptr;
         }
 
@@ -95,16 +98,18 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         webServer->config.appLog = appLog;
         // Setup the RPC Log:
         webServer->config.rpcLog = rpcLog;
+        // Setup the WEB Log:
+        webServer->config.webLog = Program::Config::Logs::createWebLog( appLog, config );
 
-        appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] %s service is now listening at @%s:%" PRIu16 "", (void*)webServer, serviceName.c_str(), listenAddr.c_str(), listenPort);
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] %s service is now listening at @%s:%" PRIu16 "", (void*)webServer, serviceName.c_str(), listenAddr.c_str(), listenPort);
 
         std::string resourcesPath = config.get<std::string>("ResourcesPath",defaultResourcePath);
         if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0 || resourcesPath.empty())
         {
-            appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting document root path to %s", (void*)webServer, resourcesPath.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting document root path to %s", (void*)webServer, resourcesPath.c_str());
             if (!webServer->config.setDocumentRootPath( resourcesPath ))
             {
-                appLog->log0(__func__,Logs::LEVEL_CRITICAL, "[%p] Error locating web server resources at %s", (void*)webServer,resourcesPath.c_str() );
+                appLog->log0(__func__,::Mantids30::Program::Logs::LEVEL_CRITICAL, "[%p] Error locating web server resources at %s", (void*)webServer,resourcesPath.c_str() );
                 return nullptr;
             }
         }
@@ -113,25 +118,25 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         std::string rawOrigins = config.get<std::string>("API.Origins", "");
 
         if (!rawOrigins.empty())
-            appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
         else
-            appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] API origins won't be enforced", (void*)webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] API origins won't be enforced", (void*)webServer);
 
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
         // All the API will be accessible from this Origins...
         std::string callbackAPIMethodName = config.get<std::string>("Login.CallbackMethodName", "callback");
-        appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting API Login callback method name to %s", (void*)webServer, callbackAPIMethodName.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting API Login callback method name to %s", (void*)webServer, callbackAPIMethodName.c_str());
         webServer->config.callbackAPIMethodName = callbackAPIMethodName;
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
         std::string loginOrigins = config.get<std::string>("Login.Origins", "");
-        appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins to %s", (void*)webServer, loginOrigins.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins to %s", (void*)webServer, loginOrigins.c_str());
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
         // Set the login IAM location:
         std::string loginRedirectURL = config.get<std::string>("Login.RedirectURL", "/login");
-        appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Setting default login redirect URL to %s", (void*)webServer, loginRedirectURL.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting default login redirect URL to %s", (void*)webServer, loginRedirectURL.c_str());
         webServer->config.defaultLoginRedirect = loginRedirectURL;
 
         if ( (options & REST_ENGINE_NOCONFIG_JWT)==0 )
@@ -142,7 +147,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
             if (!webServer->config.jwtValidator)
             {
-                appLog->log0(__func__, Logs::LEVEL_CRITICAL, "[%p] We need at least a JWT Validator.", (void*)webServer);
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "[%p] We need at least a JWT Validator.", (void*)webServer);
                 return nullptr;
             }
         }
@@ -158,7 +163,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             config.get<uint32_t>("Threads.PoolSize", 10) :
             config.get<uint32_t>("Threads.MaxThreads", 10000);
 
-        appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Using %s with %u threads",
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Using %s with %u threads",
                   (void*)webServer,
                   useThreadPool ? "thread pool" : "multi-threading",
                   threadsCount);
@@ -171,13 +176,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // WebServer Extras:
         if (config.find("Proxies") != config.not_found())
         {
-            appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Loading proxies...", (void*)webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading proxies...", (void*)webServer);
             // Loading proxies...
 
             for (const auto& proxy : config.get_child("Proxies"))
             {
                 std::string proxyPath = proxy.first;
-                appLog->log0(__func__, Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service",
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service",
                           (void*)webServer,
                           proxyPath.c_str(), serviceName.c_str());
 
@@ -192,7 +197,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         if (config.find("Redirections") != config.not_found())
         {
-            appLog->log0(__func__, Logs::LEVEL_DEBUG, "[%p] Loading redirections...", (void*)webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading redirections...", (void*)webServer);
             // Loading redirections...
 
             for (const auto& redirection : config.get_child("Redirections"))
@@ -200,7 +205,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 std::string path = redirection.first;
                 std::string url = redirection.second.get_value<std::string>("/");
 
-                appLog->log0(__func__, Logs::LEVEL_INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'",
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'",
                           (void*)webServer,
                           path.c_str(), url.c_str());
 
@@ -215,7 +220,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     else
     {
         // Log the error if the web service fails to start
-        appLog->log0(__func__, Logs::LEVEL_CRITICAL, "Error creating %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, sockWebListen->getLastError().c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_CRITICAL, "Error creating %s Service @%s:%" PRIu16 ": %s",serviceName.c_str(), listenAddr.c_str(), listenPort, sockWebListen->getLastError().c_str());
         return nullptr;
     }
 }

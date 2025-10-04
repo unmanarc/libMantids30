@@ -182,7 +182,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
     {
         if (inputParameters.clientRequest->requestLine.getRequestMethod() == "GET")
         {
-            if (inputParameters.clientRequest->requestLine.getRequestURIParameters().size())
+            if (inputParameters.clientRequest->requestLine.getRequestGETVarsRawString().size())
             {
                 // Bad parsing... (should be JSON or empty)
                 apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during GET");

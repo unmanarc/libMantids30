@@ -31,7 +31,7 @@ public:
      *
      * @return The HTTP version as a string.
      */
-    std::string toString();
+    std::string toString() const;
 
     /**
      * @brief Returns the minor version number.

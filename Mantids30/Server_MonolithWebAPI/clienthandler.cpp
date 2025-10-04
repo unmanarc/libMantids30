@@ -115,7 +115,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
 void ClientHandler::sessionCleanup()
 {
     // Release the session here:
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         // Set this cookie to report only to the javascript the remaining session time.
         setJSSessionTimeOutCookie(m_sessionMaxAge);
@@ -275,7 +275,7 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
     jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
     json x;
 
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         string effectiveUserName  = m_currentSessionInfo.authSession->getUser();
         x["loggedUser"]["username"] = effectiveUserName;
@@ -328,7 +328,7 @@ json ClientHandler::handleAPIInfo(const string &baseApiUrl)
 
 bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {       
         return m_currentSessionInfo.authSession->doesSessionVariableExist(varName);
     }
@@ -337,7 +337,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
 
 json ClientHandler::getSessionVariableValue(const string &varName)
 {
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         return m_currentSessionInfo.authSession->getSessionVariableValue(varName);
     }
@@ -348,7 +348,7 @@ json ClientHandler::getSessionVariableValue(const string &varName)
 void ClientHandler::fillSessionExtraInfo(json &jVars)
 {
     jVars["maxAge"] = (Json::UInt64) 0;
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         jVars["maxAge"] =(Json::UInt64) m_sessionMaxAge;
     }
@@ -361,7 +361,7 @@ bool ClientHandler::isSessionActive()
 
 set<string> ClientHandler::getSessionScopes()
 {
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopes();
     }
@@ -370,7 +370,7 @@ set<string> ClientHandler::getSessionScopes()
 
 set<string> ClientHandler::getSessionRoles()
 {
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRoles();
     }
@@ -409,7 +409,7 @@ void ClientHandler::setJSSessionHalfIDCookie( const string & sessionID )
 {
     // This cookie is readeable by the javascript code inside the web, so the web will know the half session id.
     // The other half is not known, so the javascript can't substract the session id to exfiltrate the session.
-    if (m_currentSessionInfo.authSession)
+    if (isSessionActive())
     {
         HTTP::Headers::Cookie simpleJSSecureCookie;
         simpleJSSecureCookie.secure = true;

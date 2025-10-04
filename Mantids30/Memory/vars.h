@@ -1,6 +1,5 @@
 #pragma once
 
-#include "b_base.h"
 #include "b_chunks.h"
 #include "streamableobject.h"
 #include <Mantids30/Helpers/json.h>
@@ -16,11 +15,9 @@ public:
     Vars();
     virtual ~Vars() = default;
 
-
     // Methods to convert to and from JSON
     json toJSON();
     bool fromJSON(const Json::Value &json);
-
 
     ///////////////////////////////////////
     // Generic conversion.
@@ -107,11 +104,7 @@ public:
      */
     bool exist(const std::string & varName);
 
-
     std::string getStringValue( const std::string & varName );
-
-
-
     ///////////////////////////////////////
     // Virtuals...
     /**
