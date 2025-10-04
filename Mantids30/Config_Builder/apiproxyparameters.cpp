@@ -43,11 +43,11 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
         {
             params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", false);
             params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
+            params->privateCAPath = config.get<std::string>("PrivateCAPath", "");
         }
 
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
-        params->privateCAPath = config.get<std::string>("PrivateCAPath", "");
 
         log->log0(__func__,
                   Logs::LEVEL_DEBUG,
