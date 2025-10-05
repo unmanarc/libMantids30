@@ -142,8 +142,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         if ( (options & REST_ENGINE_NOCONFIG_JWT)==0 )
         {
             // JWT
-            webServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(appLog.get(), config, "JWT" );
-            webServer->config.jwtValidator = Program::Config::JWT::createJWTValidator(appLog.get(), config, "JWT" );
+            webServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(appLog.get(), config, "JWT", vars );
+            webServer->config.jwtValidator = Program::Config::JWT::createJWTValidator(appLog.get(), config, "JWT", vars );
 
             if (!webServer->config.jwtValidator)
             {
