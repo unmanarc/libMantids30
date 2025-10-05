@@ -19,9 +19,8 @@ B_Chunks::B_Chunks()
     B_Chunks::clear2();
 }
 
-B_Chunks::B_Chunks(const std::string &str)
+B_Chunks::B_Chunks(const std::string &str) : B_Chunks()
 {
-    B_Chunks();
     append(str.c_str(),str.size());
 }
 

@@ -693,8 +693,7 @@ bool B_Base::streamTo(Memory::Streams::StreamableObject *out)
         return false;
     }
 
-    return true;
-
+    return out->writeEOF();
     /*bool y = out->writeEOF();
     return y && out->writeStatus.succeed;*/
 }
