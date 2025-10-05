@@ -103,7 +103,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
         return false;
     }
 
-    chdir(configDir.c_str());
+    //chdir(configDir.c_str());
 
     // Set Config:
     if (!access(configPath.c_str(),R_OK))
