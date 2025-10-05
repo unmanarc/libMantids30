@@ -41,7 +41,7 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
 
         if (auto tlsHeaders = config.get_child_optional("TLS"))
         {
-            params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", false);
+            params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
             params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
             params->privateCAPath = config.get<std::string>("PrivateCAPath", "");
         }
