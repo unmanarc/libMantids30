@@ -46,6 +46,16 @@ public:
         return *this;
     }
 
+    /**
+     * @brief Parameterized constructor for APIReturn using error.
+     * @param body The body of the response.
+     */
+    APIReturn(const Network::Protocols::HTTP::Status::Codes & httpResponseCode, const std::string &error, const std::string &message)
+    {
+        // Initialize the body member variable with the provided json object.
+        setError(httpResponseCode,error,message);
+    }
+
     void setError( const Network::Protocols::HTTP::Status::Codes & httpResponseCode, const std::string &error, const std::string &message )
     {
         this->httpResponseCode = httpResponseCode;
