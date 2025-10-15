@@ -29,37 +29,6 @@ public:
 protected:
 
     /**
-     * @brief Processes the path parameters from a given request string.
-     *
-     * This function parses a request path string to extract the resource name and any
-     * path parameters, storing them in a JSON object. It splits the request path using
-     * '/' as a delimiter and treats the tokens as key-value pairs for the parameters.
-     *
-     * @param request The request path string to be processed (e.g., "/resource/key1/value1/key2/value2").
-     * @param endpointName A reference to a string where the extracted resource name will be stored.
-     * @param pathParameters A reference to a `Json::Value` object where the extracted path parameters will be stored.
-     *                       Each key in the path will be associated with its corresponding value in the JSON object.
-     *                       If a key is not followed by a value, it will be assigned `Json::nullValue`.
-     *
-     * @details The function uses `boost::tokenizer` with a '/' separator to split the request into tokens.
-     * - The first token is assumed to be the `endpointName`.
-     * - Subsequent tokens are treated as key-value pairs, where each key is followed by its value.
-     * - If a key is not followed by a value, it is stored in `pathParameters` with `Json::nullValue`.
-     *
-     * Example:
-     * - Input: `"/users/id/123/name/John"`
-     * - `endpointName` will be set to `"users"`.
-     * - `pathParameters` will contain:
-     *   ```
-     *   {
-     *     "id": "123",
-     *     "name": "John"
-     *   }
-     *   ```
-     */
-    void processPathParameters(const std::string &request, std::string &endpointName, Json::Value &pathParameters);
-
-    /**
      * @brief procHTTPClientContent Process web client request
      * @return http response code.
      */
@@ -108,7 +77,6 @@ protected:
      * @param apiVersion The version of the API being requested.
      * @param httpMethodType The type of the API method, such as GET, POST, PUT, DELETE, etc.
      * @param endpointName The name of the API method to execute.
-     * @param pathParameters A JSON object containing parameters parsed from the URL path.
      * @param postParameters A JSON object containing parameters sent in the POST body.
      *
      * @return Retorn an object where the result of the API request will be stored.
@@ -117,7 +85,6 @@ protected:
                                   const uint32_t & apiVersion,
                                   const std::string &httpMethodType,
                                   const std::string &endpointName,
-                                  const Json::Value & pathParameters,
                                   const Json::Value & postParameters
                                   ) = 0;
     /**

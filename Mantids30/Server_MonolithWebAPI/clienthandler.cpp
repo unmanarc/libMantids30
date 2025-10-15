@@ -129,12 +129,7 @@ void ClientHandler::sessionCleanup()
 }
 
 API::APIReturn ClientHandler::handleAPIRequest(
-    const string & baseApiUrl,
-    const uint32_t & apiVersion,
-    const std::string &httpMethodMode,
-    const string & endpointName,
-    const Json::Value & pathParameters,
-    const Json::Value & postParameters)
+    const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &postParameters)
 {
     API::APIReturn apiReturn;
     //json jPayloadIn;

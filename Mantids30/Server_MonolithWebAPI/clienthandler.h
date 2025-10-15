@@ -42,12 +42,11 @@ protected:
      * @param apiVersion The version of the API being requested.
      * @param httpMethodMode The mode of the API method, such as GET, POST, PUT, DELETE, etc. (not used in monolith)
      * @param endpointName The name of the API method to execute.
-     * @param pathParameters A JSON object containing parameters parsed from the URL path.
      * @param postParameters A JSON object containing parameters sent in the POST body.
      *
      * @return Returns an appropriate API return code indicating success or the type of error encountered.
      */
-    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &postParameters) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...

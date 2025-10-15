@@ -22,7 +22,6 @@ namespace RESTful {
 struct RequestParameters
 {
     Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
-    Json::Value pathParameters;                                                         ///< Holds parameters from the URL path
     Json::Value emptyJSON;
     Json::Value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
 

@@ -43,7 +43,7 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & endpointName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & endpointName, const Json::Value &postParameters) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...

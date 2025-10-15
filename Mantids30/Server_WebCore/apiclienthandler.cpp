@@ -40,43 +40,6 @@ APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObjec
     : HTTPv1_Server(sock)
 {}
 
-void APIClientHandler::processPathParameters(const std::string &request, std::string &endpointName, Json::Value &pathParameters)
-{
-    using Tokenizer = boost::tokenizer<boost::char_separator<char>>;
-    boost::char_separator<char> sep("/");
-
-    Tokenizer tokens(request, sep);
-    Tokenizer::iterator tokenIterator = tokens.begin();
-
-    // Extract the resource name (first token)
-    if (tokenIterator != tokens.end())
-    {
-        endpointName = *tokenIterator;
-        ++tokenIterator;
-    }
-
-    // Extract key-value pairs and populate pathParameters
-    while (tokenIterator != tokens.end())
-    {
-        std::string key = *tokenIterator;
-        ++tokenIterator;
-
-        if (tokenIterator != tokens.end())
-        {
-            std::string value = *tokenIterator;
-
-            pathParameters[key] = value;
-
-            ++tokenIterator;
-        }
-        else
-        {
-            // If a key is not followed by a value, assign it null.
-            pathParameters[key] = Json::nullValue;
-        }
-    }
-}
-
 HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
 {
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
@@ -148,15 +111,11 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             if (std::regex_match(apiUrlWithoutBase, pathMatch, apiVersionResourcePattern))
             {
                 // It's an API request (with resource).
-                std::string endpointName;
-                json pathParameters;
                 size_t apiVersion = std::stoul(pathMatch[1].str());
                 string httpMethodMode = clientRequest.requestLine.getHTTPMethod().c_str();
                 string requestOrigin = clientRequest.getOrigin();
                 string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
-                std::string resourceAndPathParameters = pathMatch[2].str();
-
-                processPathParameters(resourceAndPathParameters, endpointName, pathParameters);
+                std::string endpointName = pathMatch[2].str();
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 /// API ORIGIN VALIDATIONS:
@@ -229,7 +188,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
                 json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
 
-                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, pathParameters, postParameters);
+                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, postParameters);
 
                 apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
                 serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());

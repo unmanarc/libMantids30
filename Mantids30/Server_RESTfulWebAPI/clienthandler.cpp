@@ -147,7 +147,6 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
                                      const uint32_t & apiVersion,
                                      const string &httpMethodMode,
                                      const string &endpointName,
-                                     const Json::Value & pathParameters,
                                      const Json::Value & postParameters
                                                )
 {
