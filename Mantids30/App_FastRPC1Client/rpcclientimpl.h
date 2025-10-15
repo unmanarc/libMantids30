@@ -58,9 +58,9 @@ protected:
      */
     virtual void connectedToC2AfterFailingToLoadC2Config() = 0;
     /**
-     * @brief addMethods This function is called back once to add the RPC client methods to be available to the C2.
+     * @brief addEndpoints This function is called back once to add the RPC client methods to be available to the C2.
      */
-    virtual void addMethods() = 0;
+    virtual void addEndpoints() = 0;
     /**
      * @brief postConnect This function is called back after the connection is made and before any authentication
      * @param sockRPCClient TLS Socket

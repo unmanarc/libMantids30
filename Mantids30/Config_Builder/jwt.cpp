@@ -1,15 +1,12 @@
 #include "jwt.h"
-#include "Mantids30/Memory/b_chunks.h"
-#include "Mantids30/Memory/streamablejson.h"
-#include "Mantids30/Protocol_HTTP/httpv1_base.h"
 
+
+#include "json/value.h"
+#include <Mantids30/Protocol_APISync/apisync.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/file.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Program_Logs/loglevels.h>
-
-#include <Mantids30/Net_Sockets/socket_tls.h>
-#include <Mantids30/Protocol_HTTP/httpv1_client.h>
 
 #include <openssl/bn.h>
 #include <openssl/evp.h>
@@ -17,137 +14,19 @@
 #include <openssl/rsa.h>
 
 #include <fcntl.h>
-#include <ostream>
 #include <sys/stat.h>
 
 #include <fstream>
 #include <memory>
+#include <optional>
 
 using namespace Mantids30;
 using namespace Mantids30::Program;
-using namespace Mantids30::Network::Sockets;
-using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Program::Config;
 
 // ==================== MAIN FACTORY FUNCTIONS ====================
 
-struct APISyncParameters
-{
-    void loadFromInfoTree(const boost::property_tree::ptree &ptr)
-    {
-        apiSyncHost = ptr.get<std::string>("APISyncHost", "");
-
-        if (apiSyncHost.empty())
-        {
-            return;
-        }
-
-        useTLS = ptr.get<bool>("UseTLS", true);
-        apiSyncPort = ptr.get<uint16_t>("APISyncPort", 7081);
-
-        if (auto tlsHeaders = ptr.get_child_optional("TLS"))
-        {
-            checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
-            usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
-            privateCAPath = ptr.get<std::string>("PrivateCAPath", "");
-        }
-    }
-
-    std::string apiSyncHost;
-    uint16_t apiSyncPort = 7081;
-    bool checkTLSPeer = true;
-    bool usePrivateCA = false;
-    bool useTLS = true;
-    std::string privateCAPath = "";
-};
-json loadAPI(Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const std::string &appName, const std::string &apiKey)
-{
-    std::shared_ptr<Socket_Stream> connection;
-
-    log->log0(__func__, Logs::LEVEL_INFO, "Requesting API Synchronization using '%s' for app '%s'.", functionName.c_str(), appName.c_str());
-
-    if (proxyParameters->useTLS)
-    {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Using TLS connection.");
-
-        auto socket = std::make_shared<Socket_TLS>();
-
-        if (proxyParameters->checkTLSPeer)
-        {
-            log->log0(__func__, Logs::LEVEL_DEBUG, "Enabling certificate validation.");
-            socket->setCertValidation(Socket_TLS::CERT_X509_VALIDATE);
-            socket->tlsKeys.setUseSystemCertificates(!proxyParameters->usePrivateCA);
-            if (proxyParameters->usePrivateCA)
-            {
-                log->log0(__func__, Logs::LEVEL_DEBUG, "Using private CA from path: '%s'.", proxyParameters->privateCAPath.c_str());
-                socket->tlsKeys.loadCAFromPEMFile(proxyParameters->privateCAPath);
-            }
-        }
-        else
-        {
-            log->log0(__func__, Logs::LEVEL_DEBUG, "Skipping certificate validation.");
-            socket->setCertValidation(Socket_TLS::CERT_X509_NOVALIDATE);
-        }
-
-        connection = socket;
-    }
-    else
-    {
-        log->log0(__func__, Logs::LEVEL_WARN, "Using plain TCP connection.");
-        auto socket = std::make_shared<Socket_TCP>();
-        connection = socket;
-    }
-
-    // Make the connection
-    if (connection->connectTo(proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort))
-    {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Connected to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
-
-        HTTP::HTTPv1_Client client(connection);
-
-        auto strJSONRequest = std::make_shared<Memory::Streams::StreamableJSON>();
-
-        (*strJSONRequest->getValue())["APIKEY"] = apiKey;
-        // Set POST as request method
-        client.clientRequest.requestLine.setRequestMethod("POST");
-        client.clientRequest.requestLine.setRequestURI("/api/v1/" + functionName);
-        client.clientRequest.getVars(HTTP::VARS_GET)->addVar("APP", std::make_shared<Memory::Containers::B_Chunks>(appName));
-        client.clientRequest.content.setStreamableObj(strJSONRequest);
-        client.clientRequest.headers.add("Content-Type","application/json");
-
-        auto strJSONResponse = std::make_shared<Memory::Streams::StreamableJSON>();
-        client.serverResponse.setDataStreamer(strJSONResponse);
-
-        // Make the petition...
-        Mantids30::Memory::Streams::Parser::ErrorMSG msg;
-        client.parseObject(&msg);
-
-        if (msg == Mantids30::Memory::Streams::Parser::PARSING_SUCCEED)
-        {
-            if (client.serverResponse.status.getCode() != HTTP::Status::S_200_OK)
-            {
-                log->log0(__func__, Logs::LEVEL_ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()), strJSONResponse->getValue()->toStyledString().c_str());
-            }
-            else
-            {
-                log->log0(__func__, Logs::LEVEL_DEBUG, "API request to %s successful.", functionName.c_str());
-                return *strJSONResponse->getValue();
-            }
-        }
-        else
-        {
-            log->log0(__func__, Logs::LEVEL_ERR, "Failed to parse API response. Error code: %d.", static_cast<int>(msg));
-        }
-    }
-    else
-    {
-        log->log0(__func__, Logs::LEVEL_ERR, "Failed to connect to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
-    }
-
-    return {};
-}
-
-std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const auto itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -163,7 +42,7 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, APISyncPar
         return std::nullopt;
     }
 
-    json response = loadAPI(log, proxyParameters, "getApplicationJWTConfig", itAppName->second, itApiKey->second);
+    json response = Network::Protocols::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Failed to get JWT configuration from API.");
@@ -173,7 +52,7 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, APISyncPar
     return response;
 }
 
-std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const auto itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -189,7 +68,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, APISyn
         return std::nullopt;
     }
 
-    json response = loadAPI(log, proxyParameters, "getApplicationJWTSigningKey", itAppName->second, itApiKey->second);
+    json response = Network::Protocols::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Failed to get JWT signing key from API.");
@@ -199,7 +78,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, APISyn
     return response.asString();
 }
 
-std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const auto itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -215,7 +94,7 @@ std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, API
         return std::nullopt;
     }
 
-    json response = loadAPI(log, proxyParameters, "getApplicationJWTValidationKey", itAppName->second, itApiKey->second);
+    json response = Network::Protocols::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Failed to get JWT validation key from API.");
@@ -227,10 +106,14 @@ std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, API
 
 std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
-    APISyncParameters apiSyncParameters;
-    if (auto x = ptr.get_child_optional(configClassName))
+    Network::Protocols::APISync::APISyncParameters apiSyncParameters;
+
+    if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        apiSyncParameters.loadFromInfoTree(*x);
+        if (auto x = ptr.get_child_optional("APISync"))
+        {
+            apiSyncParameters.loadFromInfoTree(*x);
+        }
     }
 
     std::string algorithmName;
@@ -325,10 +208,14 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                           const std::map<std::string, std::string> &vars)
 {
-    APISyncParameters apiSyncParameters;
-    if (auto x = ptr.get_child_optional(configClassName))
+    Network::Protocols::APISync::APISyncParameters apiSyncParameters;
+
+    if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        apiSyncParameters.loadFromInfoTree(*x);
+        if (auto x = ptr.get_child_optional("APISync"))
+        {
+            apiSyncParameters.loadFromInfoTree(*x);
+        }
     }
 
     std::string algorithmName;
@@ -548,7 +435,8 @@ std::shared_ptr<DataFormat::JWT> JWT::createHMACJWT(Logs::AppLog *log, const Dat
     auto jwt = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
     jwt->setSharedSecret(hmacSecret);
 
-    log->log0(__func__, Logs::LEVEL_INFO, "JWT HMAC %s key successfully loaded with algorithm: '%s'.", purpose.c_str(), algorithmDetails.algorithm);
+    DataFormat::JWT::AlgorithmDetails adt = DataFormat::JWT::AlgorithmDetails(algorithmDetails.algorithm);
+    log->log0(__func__, Logs::LEVEL_INFO, "JWT HMAC %s key successfully loaded with algorithm: '%s'.", purpose.c_str(), adt.algorithmStr);
 
     return jwt;
 }

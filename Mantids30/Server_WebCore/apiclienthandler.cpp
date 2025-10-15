@@ -40,7 +40,7 @@ APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObjec
     : HTTPv1_Server(sock)
 {}
 
-void APIClientHandler::processPathParameters(const std::string &request, std::string &methodName, Json::Value &pathParameters)
+void APIClientHandler::processPathParameters(const std::string &request, std::string &endpointName, Json::Value &pathParameters)
 {
     using Tokenizer = boost::tokenizer<boost::char_separator<char>>;
     boost::char_separator<char> sep("/");
@@ -51,7 +51,7 @@ void APIClientHandler::processPathParameters(const std::string &request, std::st
     // Extract the resource name (first token)
     if (tokenIterator != tokens.end())
     {
-        methodName = *tokenIterator;
+        endpointName = *tokenIterator;
         ++tokenIterator;
     }
 
@@ -148,21 +148,21 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
             if (std::regex_match(apiUrlWithoutBase, pathMatch, apiVersionResourcePattern))
             {
                 // It's an API request (with resource).
-                std::string methodName;
+                std::string endpointName;
                 json pathParameters;
                 size_t apiVersion = std::stoul(pathMatch[1].str());
-                string methodMode = clientRequest.requestLine.getRequestMethod().c_str();
+                string httpMethodMode = clientRequest.requestLine.getHTTPMethod().c_str();
                 string requestOrigin = clientRequest.getOrigin();
                 string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
                 std::string resourceAndPathParameters = pathMatch[2].str();
 
-                processPathParameters(resourceAndPathParameters, methodName, pathParameters);
+                processPathParameters(resourceAndPathParameters, endpointName, pathParameters);
 
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 /// API ORIGIN VALIDATIONS:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                if (methodName == this->config->callbackAPIMethodName)
+                if (endpointName == this->config->callbackAPIEndpointName)
                 {
                     // Check Login Origin... ALWAYS.
                     if (this->config->permittedLoginOrigins.find(requestOrigin) == this->config->permittedLoginOrigins.end())
@@ -229,7 +229,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
                 json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
 
-                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, methodMode, methodName, pathParameters, postParameters);
+                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, pathParameters, postParameters);
 
                 apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
                 serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());

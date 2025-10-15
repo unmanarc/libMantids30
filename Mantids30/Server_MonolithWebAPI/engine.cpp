@@ -17,7 +17,7 @@ std::shared_ptr<Network::Servers::Web::APIClientHandler> Engine::createNewAPICli
 {
     auto webHandler = std::make_shared<ClientHandler>(webServer,s);
 
-    webHandler->m_methodsHandlerByAPIVersion = methodsHandlerByAPIVersion;
+    webHandler->m_endpointsHandlerByAPIVersion = endpointsHandlerByAPIVersion;
     webHandler->m_sessionsManager = &sessionsManager;
 
     // Other parameters are set by the APIEngineCore.

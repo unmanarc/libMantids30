@@ -1,5 +1,5 @@
 #include "engine.h"
-#include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/API_RESTful/endpointshandler.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <memory>
@@ -14,15 +14,15 @@ using namespace Network::Servers::RESTful;
 Engine::Engine()
 {
     // This method handler will be used for IAM inter-process communication (like token revokations)
-    std::shared_ptr<API::RESTful::MethodsHandler> handler = std::make_shared<API::RESTful::MethodsHandler>();
+    std::shared_ptr<API::RESTful::Endpoints> handler = std::make_shared<API::RESTful::Endpoints>();
 
-    API::RESTful::RESTfulAPIDefinition jwtRevokeDef;
-    jwtRevokeDef.method = &revokeJWT;
+    API::RESTful::RESTfulAPIEndpointFullDefinition jwtRevokeDef;
+    jwtRevokeDef.endpointDefinition = &revokeJWT;
     jwtRevokeDef.security.requiredScopes = {"IAM"};
     jwtRevokeDef.context = this;
 
-    handler->addResource(API::RESTful::MethodsHandler::POST, "revokeJWT", jwtRevokeDef);
-    methodsHandler[0] = handler;
+    handler->addEndpoint(API::RESTful::Endpoints::POST, "revokeJWT", jwtRevokeDef);
+    endpointsHandler[0] = handler;
 }
 
 Engine::~Engine()
@@ -46,6 +46,6 @@ API::APIReturn Engine::revokeJWT(
 std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer,s);
-    clientHandler->m_methodsHandler = methodsHandler;
+    clientHandler->m_endpointsHandler = endpointsHandler;
     return clientHandler;
 }

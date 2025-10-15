@@ -1,4 +1,4 @@
-#include "methodshandler.h"
+#include "endpointshandler.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
@@ -7,39 +7,39 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes)
+bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, APIEndpointFunctionType endpointDefinition, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes)
 {
-    RESTfulAPIDefinition def;
-    def.method = method;
+    RESTfulAPIEndpointFullDefinition def;
+    def.endpointDefinition = endpointDefinition;
     def.context = context;
-    def.security.requireJWTHeaderAuthentication = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
-    def.security.requireJWTCookieAuthentication = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
-    //def.security.requireJWTCookieHash = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_JWT_COOKIE_HASH;
-    //def.security.requireGenericAntiCSRFToken = SecurityOptions & MethodsHandler::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
+    def.security.requireJWTHeaderAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
+    def.security.requireJWTCookieAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
+    //def.security.requireJWTCookieHash = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_HASH;
+    //def.security.requireGenericAntiCSRFToken = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
     def.security.requiredScopes = requiredScopes;
-    return addResource(mode, resourceName, def);
+    return addEndpoint(httpMethodType, endpointPath, def);
 }
 
-bool MethodsHandler::addResource(const MethodMode &mode, const std::string &resourceName, const RESTfulAPIDefinition &method)
+bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition)
 {
-    Threads::Sync::Lock_RW lock(m_methodsMutex);
+    Threads::Sync::Lock_RW lock(m_endpointsMutex);
 
-    switch (mode)
+    switch (httpMethodType)
     {
     case GET:
-        m_methodsGET[resourceName] = method;
+        m_endpointsGET[endpointPath] = apiEndpointFullDefinition;
         break;
     case POST:
-        m_methodsPOST[resourceName] = method;
+        m_endpointsPOST[endpointPath] = apiEndpointFullDefinition;
         break;
     case PUT:
-        m_methodsPUT[resourceName] = method;
+        m_endpointsPUT[endpointPath] = apiEndpointFullDefinition;
         break;
     case DELETE:
-        m_methodsDELETE[resourceName] = method;
+        m_endpointsDELETE[endpointPath] = apiEndpointFullDefinition;
         break;
     case PATCH:
-        m_methodsPATCH[resourceName] = method;
+        m_endpointsPATCH[endpointPath] = apiEndpointFullDefinition;
         break;
     default:
         return false;
@@ -48,7 +48,7 @@ bool MethodsHandler::addResource(const MethodMode &mode, const std::string &reso
     return true;
 }
 
-Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParameters &inputParameters)
+Sessions::ClientDetails Endpoints::extractClientDetails(const RequestParameters &inputParameters)
 {
     Mantids30::Sessions::ClientDetails clientDetails;
     clientDetails.ipAddress = inputParameters.clientRequest->networkClientInfo.REMOTE_ADDR;
@@ -57,49 +57,49 @@ Sessions::ClientDetails MethodsHandler::extractClientDetails(const RequestParame
     return clientDetails;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode, const std::string &resourceName, RESTful::RequestParameters &inputParameters,
+Endpoints::ErrorCodes Endpoints::invokeEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
                                                           const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse)
 {
-    Threads::Sync::Lock_RD lock(m_methodsMutex);
+    Threads::Sync::Lock_RD lock(m_endpointsMutex);
 
-    RESTfulAPIDefinition method;
-    auto it = m_methodsGET.end();
+    RESTfulAPIEndpointFullDefinition endpointFullDefinition;
+    auto it = m_endpointsGET.end();
 
-    switch (mode)
+    switch (httpMethodType)
     {
     case GET:
-        it = m_methodsGET.find(resourceName);
-        if (it != m_methodsGET.end())
+        it = m_endpointsGET.find(endpointPath);
+        if (it != m_endpointsGET.end())
         {
-            method = it->second;
+            endpointFullDefinition = it->second;
         }
         break;
     case POST:
-        it = m_methodsPOST.find(resourceName);
-        if (it != m_methodsPOST.end())
+        it = m_endpointsPOST.find(endpointPath);
+        if (it != m_endpointsPOST.end())
         {
-            method = it->second;
+            endpointFullDefinition = it->second;
         }
         break;
     case PUT:
-        it = m_methodsPUT.find(resourceName);
-        if (it != m_methodsPUT.end())
+        it = m_endpointsPUT.find(endpointPath);
+        if (it != m_endpointsPUT.end())
         {
-            method = it->second;
+            endpointFullDefinition = it->second;
         }
         break;
     case DELETE:
-        it = m_methodsDELETE.find(resourceName);
-        if (it != m_methodsDELETE.end())
+        it = m_endpointsDELETE.find(endpointPath);
+        if (it != m_endpointsDELETE.end())
         {
-            method = it->second;
+            endpointFullDefinition = it->second;
         }
         break;
     case PATCH:
-        it = m_methodsPATCH.find(resourceName);
-        if (it != m_methodsPATCH.end())
+        it = m_endpointsPATCH.find(endpointPath);
+        if (it != m_endpointsPATCH.end())
         {
-            method = it->second;
+            endpointFullDefinition = it->second;
         }
         break;
     default:
@@ -110,7 +110,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
         return INVALID_METHOD_MODE;
     }
 
-    if (method.method == nullptr)
+    if (endpointFullDefinition.endpointDefinition == nullptr)
     {
         if (apiResponse != nullptr)
         {
@@ -119,7 +119,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
         return RESOURCE_NOT_FOUND;
     }
 
-    if (method.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
+    if (endpointFullDefinition.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
     {
         if (apiResponse != nullptr)
         {
@@ -128,7 +128,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
         return AUTHENTICATION_REQUIRED;
     }
 
-    if (method.security.requireJWTCookieAuthentication && !securityParameters.haveJWTAuthCookie)
+    if (endpointFullDefinition.security.requireJWTCookieAuthentication && !securityParameters.haveJWTAuthCookie)
     {
         if (apiResponse != nullptr)
         {
@@ -157,7 +157,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
 
     if (!isAdmin)
     {
-        for (const auto &attr : method.security.requiredScopes)
+        for (const auto &attr : endpointFullDefinition.security.requiredScopes)
         {
             if (currentScopes.find(attr) == currentScopes.end())
             {
@@ -180,7 +180,7 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
     }
     else
     {
-        if (inputParameters.clientRequest->requestLine.getRequestMethod() == "GET")
+        if (inputParameters.clientRequest->requestLine.getHTTPMethod() == "GET")
         {
             if (inputParameters.clientRequest->requestLine.getRequestGETVarsRawString().size())
             {
@@ -223,11 +223,11 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
         }
     }*/
 
-    if (method.method != nullptr && apiResponse != nullptr)
+    if (endpointFullDefinition.endpointDefinition != nullptr && apiResponse != nullptr)
     {
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(inputParameters);
 
-        *apiResponse = method.method(method.context,  // Context
+        *apiResponse = endpointFullDefinition.endpointDefinition(endpointFullDefinition.context,  // Context
                                      inputParameters, // Parameters from the RESTful request in JSON format
                                      clientDetails);
         return SUCCESS;
@@ -241,28 +241,28 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const MethodMode &mode
     return INTERNAL_ERROR;
 }
 
-MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &modeStr, const std::string &resourceName, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
+Endpoints::ErrorCodes Endpoints::invokeEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
                                                           bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut)
 {
-    MethodMode mode;
+    HTTPMethodType mode;
 
-    if (modeStr == "GET")
+    if (httpMethodType == "GET")
     {
         mode = GET;
     }
-    else if (modeStr == "POST")
+    else if (httpMethodType == "POST")
     {
         mode = POST;
     }
-    else if (modeStr == "PUT")
+    else if (httpMethodType == "PUT")
     {
         mode = PUT;
     }
-    else if (modeStr == "DELETE")
+    else if (httpMethodType == "DELETE")
     {
         mode = DELETE;
     }
-    else if (modeStr == "PATCH")
+    else if (httpMethodType == "PATCH")
     {
         mode = PATCH;
     }
@@ -275,5 +275,5 @@ MethodsHandler::ErrorCodes MethodsHandler::invokeResource(const std::string &mod
         return INVALID_METHOD_MODE;
     }
 
-    return invokeResource(mode, resourceName, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
+    return invokeEndpoint(mode, endpointPath, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
 }

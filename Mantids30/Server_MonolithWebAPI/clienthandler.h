@@ -6,7 +6,7 @@
 #include "sessionsmanager.h"
 
 #include <Mantids30/Memory/streamablejson.h>
-#include <Mantids30/API_Monolith/methodshandler.h>
+#include <Mantids30/API_Monolith/endpointshandler.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>
@@ -40,14 +40,14 @@ protected:
      * @param apiReturn Pointer to an object where the result of the API request will be stored.
      * @param baseApiUrl The base URL for the API, used to construct resource paths or endpoints.
      * @param apiVersion The version of the API being requested.
-     * @param methodMode The mode of the API method, such as GET, POST, PUT, DELETE, etc.
-     * @param methodName The name of the API method to execute.
+     * @param httpMethodMode The mode of the API method, such as GET, POST, PUT, DELETE, etc. (not used in monolith)
+     * @param endpointName The name of the API method to execute.
      * @param pathParameters A JSON object containing parameters parsed from the URL path.
      * @param postParameters A JSON object containing parameters sent in the POST body.
      *
      * @return Returns an appropriate API return code indicating success or the type of error encountered.
      */
-    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
@@ -118,7 +118,7 @@ private:
     bool validateSessionAntiCSRFMechanism();
 
     Program::Logs::RPCLog * m_rpcLog = nullptr;
-    std::map<uint32_t,API::Monolith::MethodsHandler *> m_methodsHandlerByAPIVersion;
+    std::map<uint32_t,API::Monolith::Endpoints *> m_endpointsHandlerByAPIVersion;
     WebSessionsManager * m_sessionsManager = nullptr;
 
     // Current Session Vars:

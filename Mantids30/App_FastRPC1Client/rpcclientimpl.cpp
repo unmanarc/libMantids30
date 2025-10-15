@@ -25,14 +25,13 @@ RPCClientImpl::RPCClientImpl()
     m_failedToRetrieveC2Config = false;
 }
 
-
 void RPCClientImpl::runRPClient()
 {
     uint16_t remotePort = Globals::getLC_C2RemotePort();
     std::string remoteAddr = Globals::getLC_C2RemoteAddress();
     int secsBetweenConnections = Globals::getLC_C2TimeBetweenConnections();
 
-    addMethods();
+    addEndpoints();
     std::string caCertPath = Globals::getLC_TLSCAFilePath();
     std::string privKeyPath = Globals::getLC_TLSKeyFilePath();
     std::string pubCertPath = Globals::getLC_TLSCertFilePath();

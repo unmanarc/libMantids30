@@ -36,7 +36,7 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
 
     try
     {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Creating ApiProxyParameters.");
+      //  log->log0(__func__, Logs::LEVEL_DEBUG, "Creating ApiProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
 
         if (auto tlsHeaders = config.get_child_optional("TLS"))
@@ -51,7 +51,7 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
 
         log->log0(__func__,
                   Logs::LEVEL_DEBUG,
-                  "Parsed configuration: UseTLS=%s, CheckTLSPeer=%s, " "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
+                  "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, " "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
                   params->useTLS ? "true" : "false",
                   params->checkTLSPeer ? "true" : "false",
                   params->usePrivateCA ? "true" : "false",
@@ -76,14 +76,14 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
         return nullptr;
     }
 
-    log->log0(__func__, Logs::LEVEL_DEBUG, "Successfully created ApiProxyParameters.");
+//    log->log0(__func__, Logs::LEVEL_DEBUG, "Successfully created ApiProxyParameters.");
     return params;
 }
 
 void ApiProxyConfig::parseExtraHeaders(
     Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders, const std::map<std::string, std::string> &vars)
 {
-    log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");
+ //   log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");
     for (const auto &pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
@@ -104,7 +104,7 @@ void ApiProxyConfig::parseExtraHeaders(
         // Expose vars:
         //log->log0(__func__, Logs::LEVEL_DEBUG, "Parsed header: %s=%s", pair.first.c_str(), extraHeaders[pair.first].c_str());
         // Don't expose:
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Parsed header: %s=%s", pair.first.c_str(), pair.second.get_value<std::string>().c_str());
+//        log->log0(__func__, Logs::LEVEL_DEBUG, "Parsed header: %s=%s", pair.first.c_str(), pair.second.get_value<std::string>().c_str());
     }
-    log->log0(__func__, Logs::LEVEL_DEBUG, "Finished parsing extra headers.");
+//    log->log0(__func__, Logs::LEVEL_DEBUG, "Finished parsing extra headers.");
 }

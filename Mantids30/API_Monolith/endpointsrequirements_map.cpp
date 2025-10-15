@@ -1,40 +1,40 @@
-#include "methodsrequirements_map.h"
+#include "endpointsrequirements_map.h"
 #include <memory>
 #include <string>
 
 using namespace Mantids30::API::Monolith;
 
-void MethodsRequirements_Map::addMethodRequiredScopes(const std::string &methodName, const std::set<std::string> &applicationScopes)
+void EndpointsRequirements_Map::addEndpointRequiredScopes(const std::string &endpointName, const std::set<std::string> &applicationScopes)
 {
     for (const std::string & scope: applicationScopes)
-        m_methodRequiredScopes.insert(std::make_pair(methodName, scope));
+        m_endpointRequiredScopes.insert(std::make_pair(endpointName, scope));
 }
 
-std::set<std::string> MethodsRequirements_Map::getMethodRequiredScopes(const std::string &methodName)
+std::set<std::string> EndpointsRequirements_Map::getEndpointRequiredScopes(const std::string &endpointName)
 {
     std::set<std::string> r;
-    auto it = m_methodRequiredScopes.equal_range(methodName);
+    auto it = m_endpointRequiredScopes.equal_range(endpointName);
     for (auto itr = it.first; itr != it.second; ++itr)
         r.insert(itr->second);
     return r;
 }
 
-void MethodsRequirements_Map::addMethodRequiredRoles(const std::string &methodName, const std::set<std::string> &applicationRoles)
+void EndpointsRequirements_Map::addEndpointRequiredRoles(const std::string &endpointName, const std::set<std::string> &applicationRoles)
 {
     for (const std::string & role : applicationRoles)
-        m_methodRequiredRoles.insert(std::make_pair(methodName, role));
+        m_endpointRequiredRoles.insert(std::make_pair(endpointName, role));
 }
 
-std::set<std::string> MethodsRequirements_Map::getMethodRequiredRoles(const std::string &methodName)
+std::set<std::string> EndpointsRequirements_Map::getEndpointRequiredRoles(const std::string &endpointName)
 {
     std::set<std::string> r;
-    auto it = m_methodRequiredRoles.equal_range(methodName);
+    auto it = m_endpointRequiredRoles.equal_range(endpointName);
     for (auto itr = it.first; itr != it.second; ++itr)
         r.insert(itr->second);
     return r;
 }
 
-bool MethodsRequirements_Map::validateMethod(std::shared_ptr<Sessions::Session> session, const std::string &methodName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft)
+bool EndpointsRequirements_Map::validateEndpoint(std::shared_ptr<Sessions::Session> session, const std::string &endpointName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft)
 {
     if (!session)
         return false;
@@ -49,8 +49,8 @@ bool MethodsRequirements_Map::validateMethod(std::shared_ptr<Sessions::Session> 
         return true;
     }
 
-    std::set<std::string> requiredRoles  = getMethodRequiredRoles(methodName);
-    std::set<std::string> requiredScopes = getMethodRequiredScopes(methodName);
+    std::set<std::string> requiredRoles  = getEndpointRequiredRoles(endpointName);
+    std::set<std::string> requiredScopes = getEndpointRequiredScopes(endpointName);
 
     // start with all required scopes/slotIds...
     rolesLeft = rolesLeft;

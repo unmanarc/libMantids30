@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/API_RESTful/endpointshandler.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Server_WebCore/apienginecore.h>
 #include <memory>
@@ -17,9 +17,9 @@ public:
     ~Engine();
 
     /**
-     * @brief methodsHandler Methods handler per API Version.
+     * @brief endpointsHandler Methods handler per API Version.
      */
-    std::map<uint32_t, std::shared_ptr<API::RESTful::MethodsHandler>> methodsHandler;
+    std::map<uint32_t, std::shared_ptr<API::RESTful::Endpoints>> endpointsHandler;
 
     // TODO: max variable size
 protected:

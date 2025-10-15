@@ -3,7 +3,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Sessions/session.h>
 
-#include <Mantids30/API_Monolith/methodshandler.h>
+#include <Mantids30/API_Monolith/endpointshandler.h>
 #include <Mantids30/Threads/threadpool.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Threads/mutex.h>
@@ -101,7 +101,7 @@ public:
         uint32_t maxMessageSize=0;
         void * caller = nullptr;
         FastRPC3::SessionPTR * sessionHolder = nullptr;
-        std::shared_ptr<API::Monolith::MethodsHandler> methodsHandler;
+        std::shared_ptr<API::Monolith::Endpoints> methodsHandler;
         std::shared_ptr<DataFormat::JWT> jwtValidator = nullptr;
         Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
         Threads::Sync::Mutex * socketMutex = nullptr;
@@ -221,7 +221,7 @@ public:
         /**
          * @brief methodHandlers current Methods Manager
          */
-        std::shared_ptr<API::Monolith::MethodsHandler> methodHandlers;
+        std::shared_ptr<API::Monolith::Endpoints> methodHandlers;
         /**
          * @brief jwtValidator JWT Validator.
          */
@@ -248,14 +248,14 @@ public:
         bool ignoreSSLCertForSSO = false;
 
 
-        void setDefaultHandlers(std::shared_ptr<API::Monolith::MethodsHandler> x)
+        void setDefaultHandlers(std::shared_ptr<API::Monolith::Endpoints> x)
         {
             methodHandlers = x;
             defaultMethodsHandlers = x;
         }
 
     private:
-        std::shared_ptr<API::Monolith::MethodsHandler> defaultMethodsHandlers;
+        std::shared_ptr<API::Monolith::Endpoints> defaultMethodsHandlers;
     };
 
     class RemoteMethods {
@@ -564,7 +564,7 @@ private:
     /**
      * @brief Handler for default RPC methods.
      */
-    std::shared_ptr<Mantids30::API::Monolith::MethodsHandler> m_defaultMethodsHandlers = nullptr;
+    std::shared_ptr<Mantids30::API::Monolith::Endpoints> m_defaultMethodsHandlers = nullptr;
 
     /**
      * @brief Flag indicating whether the remote peer's common name is used as the connection ID.

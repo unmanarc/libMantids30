@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/API_RESTful/endpointshandler.h>
 #include <Mantids30/Server_WebCore/apiclienthandler.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <cstdint>
@@ -43,7 +43,7 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & methodName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
+    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & endpointName, const Json::Value &pathParameters, const Json::Value &postParameters) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
@@ -67,8 +67,8 @@ private:
 
 //    void sessionLogout();
 
-    // API Version -> MethodsHandler
-    std::map<uint32_t,std::shared_ptr<API::RESTful::MethodsHandler>> m_methodsHandler;
+    // API Version -> Endpoints
+    std::map<uint32_t,std::shared_ptr<API::RESTful::Endpoints>> m_endpointsHandler;
     bool m_destroySession = false;
     bool m_JWTHeaderTokenVerified = false;
     bool m_JWTCookieTokenVerified = false;

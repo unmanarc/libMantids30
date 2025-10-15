@@ -1,7 +1,7 @@
 #include "clienthandler.h"
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "json/value.h"
-#include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/API_RESTful/endpointshandler.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
 #include <Mantids30/Helpers/encoders.h>
@@ -143,11 +143,10 @@ json ClientHandler::getSessionVariableValue(const string &varName)
     }
     return {};
 }
-
 API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
                                      const uint32_t & apiVersion,
-                                     const string &methodMode,
-                                     const string &methodName,
+                                     const string &httpMethodMode,
+                                     const string &endpointName,
                                      const Json::Value & pathParameters,
                                      const Json::Value & postParameters
                                                )
@@ -169,24 +168,24 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
         inputParameters.jwtToken = &m_JWTToken;
     }
 
-    if (m_methodsHandler.find(apiVersion) == m_methodsHandler.end())
+    if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
         return apiReturn;
     }
 
 
     json x;
-    API::RESTful::MethodsHandler::SecurityParameters securityParameters;
+    API::RESTful::Endpoints::SecurityParameters securityParameters;
     securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
     securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
 
     //inputParameters.cookies = m_clientRequest.getAllCookies();
     //securityParameters.genCSRFToken = m_clientRequest.headers.getOptionValueStringByName("GenCSRFToken");
 
-    API::RESTful::MethodsHandler::ErrorCodes result = m_methodsHandler[apiVersion]->invokeResource( methodMode,
-                                                                                                    methodName,
+    API::RESTful::Endpoints::ErrorCodes result = m_endpointsHandler[apiVersion]->invokeEndpoint( httpMethodMode,
+                                                                                                    endpointName,
                                                                                                     inputParameters,
                                                                                                     currentScopes,
                                                                                                     isAdmin,
@@ -196,26 +195,26 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
 
     switch (result)
     {
-    case API::RESTful::MethodsHandler::SUCCESS:
-        log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "API REST Method Executed {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::SUCCESS:
+        log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "API REST Endpoint Executed {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::MethodsHandler::INVALID_METHOD_MODE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Method Mode {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::INVALID_METHOD_MODE:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Endpoint Mode {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::MethodsHandler::RESOURCE_NOT_FOUND:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Method Not Found {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::RESOURCE_NOT_FOUND:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Endpoint Not Found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::MethodsHandler::AUTHENTICATION_REQUIRED:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Authentication Not Provided {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::AUTHENTICATION_REQUIRED:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::MethodsHandler::INVALID_SCOPE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Scope {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::INVALID_SCOPE:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::MethodsHandler::INTERNAL_ERROR:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Internal Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+    case API::RESTful::Endpoints::INTERNAL_ERROR:
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Internal Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     default:
-        log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "API REST Unknown Error {method=%s, mode=%s}", methodName.c_str(), methodMode.c_str());
+        log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "API REST Unknown Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         apiReturn.setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
         break;
     }

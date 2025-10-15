@@ -108,7 +108,7 @@ bool RequestLine::fromJSON(const Json::Value &json)
     if (!json.isObject())
         return false;
 
-    setRequestMethod(JSON_ASSTRING(json, "method", ""));
+    setHTTPMethod(JSON_ASSTRING(json, "method", ""));
     setRequestURI(JSON_ASSTRING(json, "uri", ""));
     m_httpVersion.fromJSON(json["httpVersion"]);
     m_getVars->fromJSON(json["getVars"]);
@@ -119,7 +119,7 @@ bool RequestLine::fromJSON(const Json::Value &json)
 json RequestLine::toJSON() const
 {
     Json::Value json;
-    json["method"] = getRequestMethod();
+    json["method"] = getHTTPMethod();
     json["uri"] = getURI();
     json["httpVersion"] = m_httpVersion.toJSON();
     json["getVars"] = m_getVars->toJSON();
@@ -129,9 +129,9 @@ json RequestLine::toJSON() const
 string RequestLine::toString() const
 {
     if ( m_requestGETVarsRawString.empty() )
-        return getRequestMethod() + " " + getURI() + " " + m_httpVersion.toString();
+        return getHTTPMethod() + " " + getURI() + " " + m_httpVersion.toString();
     else
-        return getRequestMethod() + " " + getURI() + "?" + m_requestGETVarsRawString + " " + m_httpVersion.toString();
+        return getHTTPMethod() + " " + getURI() + "?" + m_requestGETVarsRawString + " " + m_httpVersion.toString();
 }
 
 HTTP::Version * RequestLine::getHTTPVersion()
@@ -144,12 +144,12 @@ std::shared_ptr<Memory::Abstract::Vars> RequestLine::urlVars()
     return m_getVars;
 }
 
-std::string RequestLine::getRequestMethod() const
+std::string RequestLine::getHTTPMethod() const
 {
     return m_requestMethod;
 }
 
-void RequestLine::setRequestMethod(const std::string &value)
+void RequestLine::setHTTPMethod(const std::string &value)
 {
     m_requestMethod = value;
 }

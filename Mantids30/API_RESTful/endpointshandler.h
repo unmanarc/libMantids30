@@ -34,7 +34,7 @@ struct RequestParameters
     //std::multimap<std::string, std::string> cookies;
 };
 
-using MethodType = APIReturn (*)(void *context,                                        // Context pointer
+using APIEndpointFunctionType = APIReturn (*)(void *context,                                        // Context pointer
                             const RESTful::RequestParameters &request,            // Parameters from the RESTful request
                             Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 );
@@ -44,7 +44,7 @@ using MethodType = APIReturn (*)(void *context,                                 
  *
  * @brief Struct to define the RESTful API method, security, and object pointer.
  */
-struct RESTfulAPIDefinition
+struct RESTfulAPIEndpointFullDefinition
 {
     struct Security
     {
@@ -54,26 +54,26 @@ struct RESTfulAPIDefinition
         //bool requireGenericAntiCSRFToken = true;
         //bool requireJWTCookieHash = true;
     };
-    MethodType method = nullptr;
+    APIEndpointFunctionType endpointDefinition = nullptr;
     Security security;
     void *context = nullptr;
 };
 
 /**
- * @class MethodsHandler
+ * @class Endpoints
  *
  * @brief Handles the mapping of RESTful API resources to corresponding methods,
  * manages security requirements, and invokes the appropriate methods.
  */
-class MethodsHandler
+class Endpoints
 {
 public:
     /**
-     * @enum MethodMode
+     * @enum HTTPMethodType
      *
      * @brief Enumeration for different RESTful method modes.
      */
-    enum MethodMode
+    enum HTTPMethodType
     {
         GET = 0,
         POST = 1,
@@ -82,7 +82,7 @@ public:
         PATCH = 4
     };
 
-    static std::string methodModeToString(MethodMode mode)
+    static std::string HTTPMethodTypeToString(HTTPMethodType mode)
     {
         switch (mode)
         {
@@ -101,7 +101,7 @@ public:
         }
     }
 
-    static MethodMode stringToMethodMode(const std::string &str)
+    static HTTPMethodType stringToHTTPMethodType(const std::string &str)
     {
         if (str == "GET")
         {
@@ -174,69 +174,69 @@ public:
     };
 
     /**
-     * @brief Default constructor for MethodsHandler.
+     * @brief Default constructor for Endpoints.
      */
-    MethodsHandler() = default;
+    Endpoints() = default;
 
     /**
-     * @brief Add a new resource to the MethodsHandler.
+     * @brief Add a new resource to the Endpoints.
      *
-     * @param mode The RESTful method mode (GET, POST, PUT, DELETE).
-     * @param resourceName The name of the resource.
-     * @param method The function pointer to the method.
+     * @param httpMethodType The RESTful method httpMethodType (GET, POST, PUT, DELETE).
+     * @param endpointPath The name of the resource.
+     * @param endpointDefinition The function pointer to the endpoint definition.
      * @param context The object pointer for the method.
      * @param requireJWTHeaderAuthentication If true, user authentication is required.
      * @param requiredScopes The set of required scopes for the resource.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addResource(const MethodMode &mode, const std::string &resourceName, MethodType method, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes);
+    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, APIEndpointFunctionType endpointDefinition, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes);
 
     /**
-     * @brief Add a new resource to the MethodsHandler with RESTfulAPIDefinition struct.
+     * @brief Add a new resource to the Endpoints with RESTfulAPIDefinition struct.
      *
-     * @param mode The RESTful method mode (GET, POST, PUT, DELETE).
-     * @param resourceName The name of the resource.
-     * @param method The RESTfulAPIDefinition struct containing method, security, and object pointer.
+     * @param httpMethodType The RESTful apiEndpointFullDefinition httpMethodType (GET, POST, PUT, DELETE).
+     * @param endpointPath The name of the resource.
+     * @param apiEndpointFullDefinition The RESTfulAPIDefinition struct containing apiEndpointFullDefinition, security, and object pointer.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addResource(const MethodMode &mode, const std::string &resourceName, const RESTfulAPIDefinition &method);
+    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
 
     /**
      * @brief Invoke a resource and return the error code.
      *
-     * @param mode The RESTful method mode (GET, POST, PUT, DELETE).
-     * @param resourceName The name of the resource.
+     * @param httpMethodType The RESTful method httpMethodType (GET, POST, PUT, DELETE).
+     * @param endpointPath The name of the resource.
      * @param inputParameters The input parameters for the method.
      * @param currentScopes The set of current scopes for the user.
      * @param authenticated If true, the user is authenticated.
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const MethodMode &mode, const std::string &resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
+    ErrorCodes invokeEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
      *
-     * @param modeStr The string representation of the RESTful method mode (e.g. "GET", "POST", "PUT", "DELETE").
-     * @param resourceName The name of the resource.
+     * @param httpMethodType The string representation of the RESTful method mode (e.g. "GET", "POST", "PUT", "DELETE").
+     * @param endpointPath The name of the resource.
      * @param inputParameters The input parameters for the method.
      * @param currentScopes The set of current scopes for the user.
      * @param authenticated If true, the user is authenticated.
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeResource(const std::string &modeStr, const std::string &resourceName, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
+    ErrorCodes invokeEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
 private:
-    std::map<std::string, RESTfulAPIDefinition> m_methodsPATCH;    ///< Map of PATCH resources.
-    std::map<std::string, RESTfulAPIDefinition> m_methodsGET;    ///< Map of GET resources.
-    std::map<std::string, RESTfulAPIDefinition> m_methodsPOST;   ///< Map of POST resources.
-    std::map<std::string, RESTfulAPIDefinition> m_methodsPUT;    ///< Map of PUT resources.
-    std::map<std::string, RESTfulAPIDefinition> m_methodsDELETE; ///< Map of DELETE resources.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;    ///< Map of PATCH endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;    ///< Map of GET endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPOST;   ///< Map of POST endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.
 
-    Threads::Sync::Mutex_Shared m_methodsMutex; ///< Mutex for protecting access to the maps of resources.
+    Threads::Sync::Mutex_Shared m_endpointsMutex; ///< Mutex for protecting access to the maps of endpoints.
 
     Sessions::ClientDetails extractClientDetails(const RequestParameters &inputParameters);
 };

@@ -1,6 +1,6 @@
 #include "fastrpc3.h"
 #include "Mantids30/Net_Sockets/socket_stream.h"
-#include <Mantids30/API_Monolith/methodshandler.h>
+#include <Mantids30/API_Monolith/endpointshandler.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -39,7 +39,7 @@ FastRPC3::FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threa
     : m_defaultMethodsHandlers()
     , config(jwtValidator)
 {
-    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::MethodsHandler>();
+    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
     config.setDefaultHandlers( m_defaultMethodsHandlers );
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
@@ -53,7 +53,7 @@ FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
     : m_defaultMethodsHandlers()
     , config(std::make_shared<DataFormat::JWT>())
 {
-    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::MethodsHandler>();
+    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
     config.setDefaultHandlers( m_defaultMethodsHandlers );
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);

@@ -118,21 +118,26 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         std::string rawOrigins = config.get<std::string>("API.Origins", "");
 
         if (!rawOrigins.empty())
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins to %s", (void*)webServer, rawOrigins.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins from %s", (void*)webServer, rawOrigins.c_str());
         else
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] API origins won't be enforced", (void*)webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_WARN, "[%p] API origins won't be enforced (API can be called from anywhere)", (void*)webServer);
 
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
         // All the API will be accessible from this Origins...
-        std::string callbackAPIMethodName = config.get<std::string>("Login.CallbackMethodName", "callback");
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting API Login callback method name to %s", (void*)webServer, callbackAPIMethodName.c_str());
-        webServer->config.callbackAPIMethodName = callbackAPIMethodName;
+        std::string callbackAPIEndpointName = config.get<std::string>("Login.CallbackEndpointName", "callback");
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting API Login callback endpoint name to /api/v1/%s", (void*)webServer, callbackAPIEndpointName.c_str());
+        webServer->config.callbackAPIEndpointName = callbackAPIEndpointName;
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
         std::string loginOrigins = config.get<std::string>("Login.Origins", "");
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins to %s", (void*)webServer, loginOrigins.c_str());
+
+        if (loginOrigins.empty())
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] This web server does not allow any Login Origin (Callback Disabled)", (void*)webServer);
+        else
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins from %s", (void*)webServer, loginOrigins.c_str());
+
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
         // Set the login IAM location:
         std::string loginRedirectURL = config.get<std::string>("Login.RedirectURL", "/login");

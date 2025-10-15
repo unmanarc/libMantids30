@@ -18,7 +18,7 @@ HTTP::HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableOb
     clientRequest.requestLine.getHTTPVersion()->setMajor(1);
     clientRequest.requestLine.getHTTPVersion()->setMinor(0);
 
-    clientRequest.requestLine.setRequestMethod("GET");
+    clientRequest.requestLine.setHTTPMethod("GET");
     clientRequest.userAgent = std::string("libMantids/") + std::to_string(HTTP_PRODUCT_VERSION_MAJOR) + std::string(".") + std::to_string(HTTP_PRODUCT_VERSION_MINOR);
 }
 
@@ -169,7 +169,7 @@ HTTP::HTTPv1_Client::PostMIMERequest HTTP::HTTPv1_Client::prepareRequestAsPostMI
 
     setClientRequest(hostName,uriPath);
 
-    clientRequest.requestLine.setRequestMethod("POST");
+    clientRequest.requestLine.setHTTPMethod("POST");
     clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
 
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
@@ -183,7 +183,7 @@ HTTP::HTTPv1_Client::PostURLRequest HTTP::HTTPv1_Client::prepareRequestAsPostURL
     HTTPv1_Client::PostURLRequest req;
 
     setClientRequest(hostName,uriPath);
-    clientRequest.requestLine.setRequestMethod("POST");
+    clientRequest.requestLine.setHTTPMethod("POST");
     clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
     req.postVars = clientRequest.content.getUrlPostVars();

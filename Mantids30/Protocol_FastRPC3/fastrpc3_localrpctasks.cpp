@@ -1,6 +1,6 @@
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include "fastrpc3.h"
-#include <Mantids30/API_Monolith/methodshandler.h>
+#include <Mantids30/API_Monolith/endpointshandler.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -99,9 +99,9 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
         fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
     }
 
-    if (  !taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) // method does not require session.
+    if (  !taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName) // method does not require session.
         || // OR
-        (taskParams->methodsHandler->doesMethodRequireActiveSession(taskParams->methodName) && session) // method require session and there is session.
+        (taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName) && session) // method require session and there is session.
         )
     {
         // There is an extra authentication token and session is OK.
@@ -109,11 +109,11 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
         {
             json reasons;
 
-            auto i = taskParams->methodsHandler->validateMethodRequirements(session, taskParams->methodName, &reasons);
+            auto i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
 
             switch (i)
             {
-            case API::Monolith::MethodsHandler::VALIDATION_OK:
+            case API::Monolith::Endpoints::VALIDATION_OK:
             {
                 if (session)
                     session->updateLastActivity();
@@ -127,7 +127,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 
                 switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
                 {
-                case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
+                case API::Monolith::Endpoints::ENDPOINT_RET_CODE_SUCCESS:
 
                     finish = chrono::high_resolution_clock::now();
                     elapsed = finish - start;
@@ -137,7 +137,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                     functionFound = true;
                     fullResponse["statusCode"] = 200;
                     break;
-                case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
+                case API::Monolith::Endpoints::ENDPOINT_RET_CODE_NOTFOUND:
 
                     CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
                     fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
@@ -149,7 +149,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                 }
             }
             break;
-            case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
+            case API::Monolith::Endpoints::VALIDATION_NOTAUTHORIZED:
             {
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
@@ -157,7 +157,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                 fullResponse["statusCode"] = ELT_RET_NOTAUTHORIZED;
             }
             break;
-            case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
+            case API::Monolith::Endpoints::VALIDATION_ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);

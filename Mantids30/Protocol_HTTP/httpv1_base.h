@@ -111,7 +111,7 @@ public:
          */
         std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONStreamerContent()
         {
-            if (requestLine.getRequestMethod() == "GET")
+            if (requestLine.getHTTPMethod() == "GET")
             {
                 // Get method uses the URL parameters (as a big json)
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonParameters = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();

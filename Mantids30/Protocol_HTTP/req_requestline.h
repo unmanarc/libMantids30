@@ -42,8 +42,8 @@ public:
      * @brief Get Request Method (GET/POST/HEAD/...)
      * @return request method string.
      */
-    std::string getRequestMethod() const;
-    void setRequestMethod(const std::string &value);
+    std::string getHTTPMethod() const;
+    void setHTTPMethod(const std::string &value);
 
     std::string getURI() const;
     void setRequestURI(const std::string &value);

@@ -4,7 +4,7 @@
 #include <Mantids30/Sessions/session.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Server_WebCore/htmliengine.h>
-#include <Mantids30/API_Monolith/methodshandler.h>
+#include <Mantids30/API_Monolith/endpointshandler.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/json.h>
@@ -131,8 +131,8 @@ void ClientHandler::sessionCleanup()
 API::APIReturn ClientHandler::handleAPIRequest(
     const string & baseApiUrl,
     const uint32_t & apiVersion,
-    const std::string &methodMode,
-    const string & methodName,
+    const std::string &httpMethodMode,
+    const string & endpointName,
     const Json::Value & pathParameters,
     const Json::Value & postParameters)
 {
@@ -140,78 +140,78 @@ API::APIReturn ClientHandler::handleAPIRequest(
     //json jPayloadIn;
     Mantids30::Helpers::JSONReader2 reader;
 
-    auto it = m_methodsHandlerByAPIVersion.find(apiVersion);
-    if (it == m_methodsHandlerByAPIVersion.end())
+    auto it = m_endpointsHandlerByAPIVersion.find(apiVersion);
+    if (it == m_endpointsHandlerByAPIVersion.end())
     {
         // Key does not exist
-        log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {method=%s}", apiVersion, methodName.c_str());
-        // Method not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
+        log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
+        // Endpoint not available for this null session..
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint Not Found");
         return apiReturn;
     }
 
-    API::Monolith::MethodsHandler * methodsHandler = m_methodsHandlerByAPIVersion[apiVersion];
+    API::Monolith::Endpoints * endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
 
     // TODO: upgrade Token (2fa) y/o  token acompañante.
-    if (methodsHandler->doesMethodRequireActiveSession(methodName) && !m_currentWebSession)
+    if (endpointsHandler->doesAPIEndpointRequireActiveSession(endpointName) && !m_currentWebSession)
     {
-        log(LEVEL_ERR, "monolithAPI", 2048, "This method requires full authentication / session {method=%s}", methodName.c_str());
-        // Method not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method Not Found");
+        log(LEVEL_ERR, "monolithAPI", 2048, "This endpoint requires full authentication / session {endpoint=%s}", endpointName.c_str());
+        // Endpoint not available for this null session..
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint Not Found");
         return apiReturn;
     }
 
     json reasons;
 
-    // Validate that the method requirements are satisfied.
-    auto i = methodsHandler->validateMethodRequirements(m_currentSessionInfo.authSession, methodName, &reasons);
+    // Validate that the endpoint requirements are satisfied.
+    auto i = endpointsHandler->validateEndpointRequirements(m_currentSessionInfo.authSession, endpointName, &reasons);
 
     switch (i)
     {
-    case API::Monolith::MethodsHandler::VALIDATION_OK:
+    case API::Monolith::Endpoints::VALIDATION_OK:
     {
-        log(LEVEL_INFO, "monolithAPI", 2048, "Executing Web Method {method=%s}", methodName.c_str());
-        log(LEVEL_DEBUG, "monolithAPI", 8192, "Executing Web Method - debugging parameters {method=%s,params=%s}", methodName.c_str(), Mantids30::Helpers::jsonToString(postParameters).c_str());
+        log(LEVEL_INFO, "monolithAPI", 2048, "Executing Web Endpoint {endpoint=%s}", endpointName.c_str());
+        log(LEVEL_DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(postParameters).c_str());
 
         auto start = chrono::high_resolution_clock::now();
         auto finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (methodsHandler->invoke(m_currentSessionInfo.authSession, methodName, postParameters, apiReturn.responseJSON() ))
+        switch (endpointsHandler->invoke(m_currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON() ))
         {
-        case API::Monolith::MethodsHandler::METHOD_RET_CODE_SUCCESS:
+        case API::Monolith::Endpoints::ENDPOINT_RET_CODE_SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
-            log(LEVEL_INFO, "monolithAPI", 2048, "Web Method executed OK {method=%s, elapsedMS=%f}", methodName.c_str(), elapsed.count());
-            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Method executed OK - debugging parameters {method=%s,params=%s}", methodName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
+            log(LEVEL_INFO, "monolithAPI", 2048, "Web Endpoint executed OK {endpoint=%s, elapsedMS=%f}", endpointName.c_str(), elapsed.count());
+            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Endpoint executed OK - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
             break;
-        case API::Monolith::MethodsHandler::METHOD_RET_CODE_METHODNOTFOUND:
-            log(LEVEL_ERR, "monolithAPI", 2048, "Web Method not found {method=%s}", methodName.c_str());
-            apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
+        case API::Monolith::Endpoints::ENDPOINT_RET_CODE_NOTFOUND:
+            log(LEVEL_ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
+            apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
             break;
         default:
-            log(LEVEL_ERR, "monolithAPI", 2048, "Unknown error during web method execution {method=%s}", methodName.c_str());
-            apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
+            log(LEVEL_ERR, "monolithAPI", 2048, "Unknown error during web endpoint execution {endpoint=%s}", endpointName.c_str());
+            apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Endpoint unauthorized.");
             break;
         }
     }
     break;
-    case API::Monolith::MethodsHandler::VALIDATION_NOTAUTHORIZED:
+    case API::Monolith::Endpoints::VALIDATION_NOTAUTHORIZED:
     {
-        // Method unauthorized.
-        log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute method {method=%s,reasons=%s}", methodName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
-        apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Method unauthorized.");
+        // Endpoint unauthorized.
+        log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
+        apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Endpoint unauthorized.");
         apiReturn.setReasons(reasons);
 
     }
     break;
-    case API::Monolith::MethodsHandler::VALIDATION_METHODNOTFOUND:
+    case API::Monolith::Endpoints::VALIDATION_ENDPOINTNOTFOUND:
     default:
     {
-        log(LEVEL_ERR, "monolithAPI", 2048, "Method not found {method=%s}", methodName.c_str());
-        // Method not found.
-        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Method not found.");
+        log(LEVEL_ERR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
+        // Endpoint not found.
+        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
     }
     break;
     }

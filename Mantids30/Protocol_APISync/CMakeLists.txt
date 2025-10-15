@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${LIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Program Logs Library")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for implementing APISync via HTTP")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
@@ -23,7 +23,7 @@ set_target_properties(  ${LIB_NAME}
                         PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                       )
 
-configure_file("genericlib.pc.in" "${LIB_NAME}.pc" @ONLY)
+configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
@@ -40,16 +40,17 @@ install(
         DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/pkgconfig
         )
 
-
 if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
 
 set(Mantids30_LIBRARIES
-    Protocol_APISync
-    Program_Logs
-    DataFormat_JWT
+    Memory
+    Threads
+    Net_Sockets
+    Server_WebCore
+    Server_RESTfulWebAPI
     Helpers
 )
 
@@ -57,3 +58,11 @@ foreach(LIB ${Mantids30_LIBRARIES})
     include_directories("${Mantids30_${LIB}_SOURCE_DIR}/../../")
     target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
 endforeach()
+
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP jsoncpp)
+link_libraries(${JSONCPP_LIBRARIES})
+target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
+target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
+

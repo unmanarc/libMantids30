@@ -5,7 +5,7 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Sessions/session.h>
-#include <Mantids30/API_RESTful/methodshandler.h>
+#include <Mantids30/API_RESTful/endpointshandler.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Program_Logs/weblog.h>
@@ -103,9 +103,9 @@ public:
     std::set<std::string> permittedLoginOrigins;
 
     /**
-     * @brief callbackAPIMethodName The method name used for JWT Token absorption from the IAM.
+     * @brief callbackAPIEndpointName The method name used for JWT Token absorption from the IAM.
      */
-    std::string callbackAPIMethodName = "callback";
+    std::string callbackAPIEndpointName = "callback";
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
