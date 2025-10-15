@@ -183,13 +183,13 @@ public:
      *
      * @param httpMethodType The RESTful method httpMethodType (GET, POST, PUT, DELETE).
      * @param endpointPath The name of the resource.
-     * @param endpointDefinition The function pointer to the endpoint definition.
-     * @param context The object pointer for the method.
      * @param requireJWTHeaderAuthentication If true, user authentication is required.
      * @param requiredScopes The set of required scopes for the resource.
+     * @param context The object pointer for the method.
+     * @param endpointDefinition The function pointer to the endpoint definition.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, APIEndpointFunctionType endpointDefinition, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes);
+    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath,  const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes,void *context, APIEndpointFunctionType endpointDefinition);
 
     /**
      * @brief Add a new resource to the Endpoints with RESTfulAPIDefinition struct.

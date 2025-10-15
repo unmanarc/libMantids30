@@ -7,15 +7,13 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
-bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, APIEndpointFunctionType endpointDefinition, void *context, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes)
+bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes,void *context, APIEndpointFunctionType endpointDefinition)
 {
     RESTfulAPIEndpointFullDefinition def;
     def.endpointDefinition = endpointDefinition;
     def.context = context;
     def.security.requireJWTHeaderAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
     def.security.requireJWTCookieAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
-    //def.security.requireJWTCookieHash = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_HASH;
-    //def.security.requireGenericAntiCSRFToken = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_GENERIC_ANTICSRF_TOKEN;
     def.security.requiredScopes = requiredScopes;
     return addEndpoint(httpMethodType, endpointPath, def);
 }
