@@ -61,6 +61,16 @@ struct ClientDetails {
      * @brief The user agent string associated with the incoming client connection.
      */
     std::string userAgent;
+
+
+    Json::Value toJSON()
+    {
+        Json::Value json;
+        json["ip"] = ipAddress;
+        json["userAgent"] = userAgent;
+        json["tlsCommonName"] = tlsCommonName;
+        return json;
+    }
 };
 
 class Session : public Session_Vars
