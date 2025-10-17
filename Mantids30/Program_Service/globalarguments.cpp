@@ -8,7 +8,6 @@
 #include <set>
 #include <limits>
 
-#include <algorithm>
 #include <boost/algorithm/string/replace.hpp>
 
 #include <Mantids30/Memory/a_bool.h>
@@ -113,7 +112,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     static string optString;
     static struct option * longOpts = new option[cmdOptions.size()+1];
     size_t iLongOptPos=0;
-    for (std::shared_ptr<CommandLineOption> optIter : cmdOptions)
+    for (const std::shared_ptr<CommandLineOption> &optIter : cmdOptions)
     {
         if (optIter->shortOption && optIter->shortOption < 256)
         {
@@ -185,7 +184,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
     // Check if all
     bool fulfilled = true;
 
-    for ( std::shared_ptr<CommandLineOption> optIter : cmdOptions )
+    for ( const std::shared_ptr<CommandLineOption> &optIter : cmdOptions )
     {
         if (optIter->isMandatory && cmdOptionsFulfilled.find(optIter) == cmdOptionsFulfilled.end())
         {
@@ -237,7 +236,7 @@ void GlobalArguments::printHelp()
         cout << getLine(i.first.size()+1) << endl;
 
         uint32_t msize = getMaxOptNameSize(i.second);
-        for ( std::shared_ptr<CommandLineOption> v : i.second )
+        for ( const std::shared_ptr<CommandLineOption> &v : i.second )
         {
             if (v->shortOption && v->shortOption<256)
             {
@@ -313,7 +312,7 @@ void GlobalArguments::printCurrentProgramOptionsValues()
 {
     for ( auto & i : m_commandOptions )
     {
-        for ( std::shared_ptr<CommandLineOption> v : i.second )
+        for ( const std::shared_ptr<CommandLineOption> &v : i.second )
         {
             std::string varNameToPrint = "";
             if (v->shortOption>0 && v->shortOption<256)
@@ -352,7 +351,7 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool remov
     std::string r;
     for ( auto & i : m_commandOptions )
     {
-        for ( std::shared_ptr<CommandLineOption> v : i.second )
+        for ( const std::shared_ptr<CommandLineOption> &v : i.second )
         {
             std::string varNameToPrint = "";
             if (v->shortOption>0 && v->shortOption<256)
@@ -425,7 +424,7 @@ std::list<std::shared_ptr<CommandLineOption>> GlobalArguments::getAllCommandLine
     std::list<std::shared_ptr<CommandLineOption>> x;
     for ( auto & i : m_commandOptions )
     {
-        for ( std::shared_ptr<CommandLineOption> v : i.second )
+        for ( const std::shared_ptr<CommandLineOption> &v : i.second )
         {
             x.push_back(v);
         }
@@ -436,7 +435,7 @@ std::list<std::shared_ptr<CommandLineOption>> GlobalArguments::getAllCommandLine
 uint32_t GlobalArguments::getMaxOptNameSize(std::list<std::shared_ptr<CommandLineOption>> options)
 {
     unsigned int max = 1;
-    for (std::shared_ptr<CommandLineOption> x : options)
+    for (const std::shared_ptr<CommandLineOption> &x : options)
     {
         uint32_t cursize = x->name.size(); // + (x->optionType!=TYPE_BOOL? strlen(" <value>") : 0 );
         if (cursize>max) max = cursize;
