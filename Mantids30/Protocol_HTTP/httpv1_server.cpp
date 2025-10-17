@@ -613,7 +613,6 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
         return serverResponse.headers.streamToUpstream();
     }
 
-
     if (!serverResponse.sWWWAuthenticateRealm.empty())
     {
         serverResponse.headers.replace("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");

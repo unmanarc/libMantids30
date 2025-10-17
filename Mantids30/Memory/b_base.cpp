@@ -687,15 +687,7 @@ void B_Base::reduceMaxSizeBy(const size_t &value)
 bool B_Base::streamTo(Memory::Streams::StreamableObject *out)
 {
     std::optional<size_t> x = appendTo(*out);
-
-    if (x == std::nullopt || !out->writeStatus.succeed)
-    {
-        return false;
-    }
-
-    return out->writeEOF();
-    /*bool y = out->writeEOF();
-    return y && out->writeStatus.succeed;*/
+    return x != std::nullopt && out->writeStatus.succeed;
 }
 
 std::optional<size_t> B_Base::write(const void *buf, const size_t &count)

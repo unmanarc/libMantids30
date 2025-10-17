@@ -52,13 +52,11 @@ bool StreamableFile::streamTo(Memory::Streams::StreamableObject * out)
         switch (rsize)
         {
         case -1:
-            // Unexpected error during file read... don't process with EOF. (bad file)
-            //out->writeEOF();
+            // Unexpected error during file read... return false.
             return false;
         case 0:
+            // Received the EOF, everything was streamed OK.
             return true;
-          //  // Write EOF into the stream. Maybe some buffer bytes are written down
-           // return out->writeEOF();
         default:
             if ( !out->writeFullStream(buf,rsize) )
             {

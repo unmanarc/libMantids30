@@ -133,14 +133,14 @@ public:
     {
         return std::numeric_limits<size_t>::max();
     }
+
     /**
-     * @brief streamTo Stream this container to another streamable object
+     * @brief streamTo Streams this object to another streamable object, will not send the EOF.
      * @param out
-     * @return optional size of bytes taken out of this container, std::nullopt if the source failed to provide the data.
+     * @return true if streamed, false otherwise
      */
     virtual bool streamTo(Memory::Streams::StreamableObject * out)
     {
-        writeEOF();
         return true;
     }
 

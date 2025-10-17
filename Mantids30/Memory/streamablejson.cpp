@@ -6,8 +6,7 @@
 using namespace Mantids30::Memory::Streams;
 using namespace Mantids30;
 
-bool StreamableJSON::streamTo(
-    Memory::Streams::StreamableObject *out)
+bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
 {
     Memory::Streams::WriteStatus cur;
 
@@ -23,25 +22,25 @@ std::optional<size_t> StreamableJSON::write(const void *buf, const size_t &count
 {
     ssize_t writtenBytes;
 
-    if ( count == 0 )
+    if (count == 0)
     {
         // EOF:
-        writeStatus+=0;
+        writeStatus += 0;
         if (!processValue())
         {
-            writeStatus+=-1;
+            writeStatus += -1;
             return std::nullopt;
         }
         return 0;
     }
 
     // ...
-    if ( m_strValue.size()+count > m_maxSize ) 
+    if (m_strValue.size() + count > m_maxSize)
     {
         // Container Full! Can't process this information.
         // There is no sense to process an incomplete JSON.
         m_isFull = true;
-        writeStatus+=-1;
+        writeStatus += -1;
         return std::nullopt;
     }
     else
@@ -49,10 +48,10 @@ std::optional<size_t> StreamableJSON::write(const void *buf, const size_t &count
         writtenBytes = count;
     }
 
-    m_strValue += std::string((static_cast<const char *>(buf)),writtenBytes); // Copy...
+    m_strValue += std::string((static_cast<const char *>(buf)), writtenBytes); // Copy...
 
     // Append...
-    writeStatus+=writtenBytes;
+    writeStatus += writtenBytes;
 
     return writtenBytes;
 }
@@ -74,15 +73,14 @@ void StreamableJSON::clear()
     m_strValue.clear();
 }
 
-
 json *StreamableJSON::processValue()
 {
     if (m_isFull)
         return nullptr;
 
     Mantids30::Helpers::JSONReader2 reader;
-    bool parsingSuccessful = reader.parse( m_strValue, m_root );
-    if ( !parsingSuccessful )
+    bool parsingSuccessful = reader.parse(m_strValue, m_root);
+    if (!parsingSuccessful)
         return nullptr;
     return &m_root;
 }
@@ -97,22 +95,23 @@ bool StreamableJSON::isEmpty()
     return m_root.empty();
 }
 
-StreamableJSON &StreamableJSON::operator=(const Json::Value &value) {
+StreamableJSON &StreamableJSON::operator=(const Json::Value &value)
+{
     setValue(value);
     return *this;
 }
 
 void StreamableJSON::setValue(const json &value)
 {
-    m_root=value;
+    m_root = value;
 }
 
 bool StreamableJSON::setValue(const std::string &value)
 {
     Mantids30::Helpers::JSONReader2 reader;
     m_strValue = value;
-    bool parsingSuccessful = reader.parse( m_strValue, m_root );
-    if ( !parsingSuccessful )
+    bool parsingSuccessful = reader.parse(m_strValue, m_root);
+    if (!parsingSuccessful)
         return false;
     return true;
 }

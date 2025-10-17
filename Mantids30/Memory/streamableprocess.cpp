@@ -41,10 +41,8 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
         {
         case -1:
             // The process failed... output is not reliable...
-            //out->writeEOF();
             return false;
         case 0:
-            //return out->writeEOF();
             break;
         default:
             if (!out->writeFullStream(buf,rsize))

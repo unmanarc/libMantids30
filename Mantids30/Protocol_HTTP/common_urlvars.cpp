@@ -72,7 +72,6 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
     }
 
     return true;
-    //return out->writeEOF();
 }
 
 uint32_t HTTP::URLVars::varCount(const std::string &varName)

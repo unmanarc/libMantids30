@@ -29,11 +29,9 @@ bool Socket_Stream::streamTo(Memory::Streams::StreamableObject *out)
         switch (r)
         {
         case -1: // ERR.
-            //out->writeEOF();
             return false;
         case 0: // EOF.
             return true;
-            //return out->writeEOF();
         default:
             if (!out->writeFullStream(data, r))
             {
@@ -47,7 +45,6 @@ bool Socket_Stream::streamTo(Memory::Streams::StreamableObject *out)
             // Protocol finished. Stop writting into.
             return true;
         }
-
     }
 }
 
