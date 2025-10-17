@@ -64,7 +64,7 @@ protected:
 
 private:
     void parseURI();
-    void parseGETParameters();
+    void parseGETVars();
 
     /**
      * @brief requestMethod - method requested: GET/POST/HEAD/...

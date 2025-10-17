@@ -79,7 +79,7 @@ void RequestLine::parseURI()
         // We have parameters..
         m_requestGETVarsRawString = m_requestURI.c_str()+found+1;
         m_requestURI.resize(found);
-        parseGETParameters();
+        parseGETVars();
     }
     else
     {
@@ -90,12 +90,9 @@ void RequestLine::parseURI()
     m_requestURI = Memory::Streams::Decoders::URL::decodeURLStr(m_requestURI);
 }
 
-void RequestLine::parseGETParameters()
+void RequestLine::parseGETVars()
 {
-    Memory::Containers::B_Chunks bc;
-
-    bc.append(m_requestGETVarsRawString.c_str(),m_requestGETVarsRawString.size());
-    bc.streamTo(m_getVars.get());
+    m_getVars->writeFullStreamWithEOF(m_requestGETVarsRawString.c_str(),m_requestGETVarsRawString.size());
 }
 
 std::string RequestLine::getRequestGETVarsRawString() const
