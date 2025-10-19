@@ -120,7 +120,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         if (!rawOrigins.empty())
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins from %s", (void*)webServer, rawOrigins.c_str());
         else
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_WARN, "[%p] API origins won't be enforced (API can be called from anywhere)", (void*)webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] API Origins are not set. External calls to this API will be blocked", (void*)webServer);
 
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
