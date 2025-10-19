@@ -9,7 +9,7 @@ class Random
 {
 public:
     /**
-     * @brief createRandomString Create a Random String (letters and numbers)
+     * @brief createRandomString Create a Secure Random String (letters and numbers)
      * @param length output lenght
      * @return random string with letters (mayus/minus) and numbers
      */
