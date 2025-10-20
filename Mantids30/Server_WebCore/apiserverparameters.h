@@ -1,14 +1,14 @@
 #ifndef APISERVERPARAMETERS_H
 #define APISERVERPARAMETERS_H
 
-#include <Mantids30/DataFormat_JWT/jwt.h>
-#include <Mantids30/Protocol_HTTP/httpv1_base.h>
-#include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/Sessions/session.h>
 #include <Mantids30/API_RESTful/endpointshandler.h>
+#include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Program_Logs/weblog.h>
+#include <Mantids30/Protocol_HTTP/httpv1_base.h>
+#include <Mantids30/Protocol_HTTP/rsp_status.h>
+#include <Mantids30/Sessions/session.h>
 
 #include "resourcesfilter.h"
 #include <memory>
@@ -41,16 +41,13 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicTokenValidatorFunction)(const std::string& token, const std::string& apikey, Mantids30::DataFormat::JWT::Token * accessToken);
+    typedef bool (*DynamicTokenValidatorFunction)(const std::string &token, const std::string &apikey, Mantids30::DataFormat::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.
      * Set this to a custom validation function to handle dynamic token validation.
      */
     DynamicTokenValidatorFunction dynamicTokenValidator = nullptr;
-
-
-
 
     /**
      * @brief Callback function type for dynamic validation of the origin header.
@@ -62,7 +59,7 @@ public:
      * @param apikey The API key associated with the request.
      * @return true if the origin is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicOriginValidatorFunction)(const std::string& origin, const std::string& apikey);
+    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey);
 
     /**
      * @brief The dynamic origin validator callback function.
@@ -81,7 +78,7 @@ public:
     /**
      * @brief redirections HTTP 307 Redirections (Temporary Redirect), by example, you can use some path for URL shortening here.
      */
-    std::map<std::string,std::string> redirections;
+    std::map<std::string, std::string> redirections;
 
     /**
      * @brief Sets the shared pointer resource filter for the web session.
@@ -149,8 +146,7 @@ public:
     /**
      * @brief APIURLs path's where the API will be available
      */
-    std::set<std::string> APIURLs = {  "/api" };
-
+    std::set<std::string> APIURLs = {"/api"};
 
     /**
      * @brief appName The application name (eg. IAM) identificator.
@@ -173,8 +169,6 @@ public:
      * @brief defaultLoginRedirect URL for login redirection called by /auth/login_redirect
      */
     std::string defaultLoginRedirect;
-
-
 
     /**
      * @brief List of allowed origins for API requests.
@@ -220,7 +214,7 @@ public:
      *
      * @return void.
      */
-    void setSoftwareVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string & subText);
+    void setSoftwareVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string &subText);
 
     /**
      * @brief softwareDescription Set the software description (to be sent in the API)
@@ -242,9 +236,13 @@ public:
      * The handler returns a value of type `Protocols::HTTP::Status::Codes` representing the
      * response status code.
      */
-    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath,
+                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
+                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response,
+                                                                    std::shared_ptr<void> obj);
 
-    struct DynamicRequestHandlerDef {
+    struct DynamicRequestHandlerDef
+    {
         DynamicRequestHandler handler;
         std::shared_ptr<void> obj = nullptr;
     };
@@ -303,6 +301,32 @@ public:
      * @return void.
      */
     void addStaticContentElement(const std::string &path, const std::string &content);
+
+    /**
+     * @brief Adds an overlapped directory mapping for internal paths to filesystem paths.
+     *
+     * This function allows the application to define a mapping between an internal path
+     * and a filesystem path. When a request is made to an internal path that matches one
+     * of these mappings, the server will serve content from the corresponding filesystem path.
+     *
+     * @param internalPath The internal path used for routing (e.g., "/static").
+     * @param fsPath The filesystem path to serve content from (e.g., "/var/www/static").
+     *
+     * @return true if the mapping was successfully added, false otherwise.
+     */
+    bool addOverlappedDirectory(std::string internalPath, std::string fsPath);
+
+
+    /**
+     * @brief Get the list of overlapped directories.
+     *
+     * Returns a const reference to the list of overlapped directory mappings.
+     *
+     * @return const std::list<std::pair<std::string, std::string>>& The list of overlapped directories.
+     */
+    const std::list<std::pair<std::string, std::string>>& getOverlappedDirectories() const;
+
+
     /**
      * @brief getStaticContentElements Get static content element...
      * @return
@@ -310,7 +334,6 @@ public:
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> getStaticContentElements();
 
     std::string getDocumentRootPath() const;
-
 
     bool isDocumentRootPathAccesible() const;
 
@@ -323,7 +346,18 @@ private:
      * are mapped to file resources.
      */
     std::string m_documentRootPath;
-    std::map<std::string,std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
+
+    /**
+     * @brief Map of overlapped directories for internal paths to filesystem paths.
+     *
+     * This map stores the mapping between internal paths (used for routing within the application)
+     * and filesystem paths (where the actual files are stored). It allows serving static content
+     * from specific filesystem locations under designated internal paths, enabling flexible content
+     * delivery and directory structure management.
+     */
+    std::list<std::pair<std::string, std::string>> m_overlappedDirectories;
+
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
     std::mutex m_internalContentMutex;
     std::list<char *> m_memToBeFreed;
 };

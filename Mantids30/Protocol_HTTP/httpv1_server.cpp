@@ -3,26 +3,16 @@
 #include "hdr_cookie.h"
 
 #include <memory>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/b_mmap.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #include <sys/stat.h>
 
-#ifdef _WIN32
-#define SLASHB '\\'
-#define SLASH "\\"
-#include <boost/algorithm/string/predicate.hpp>
-#include <stdlib.h>
-#define realpath(N,R) _fullpath((R),(N),_MAX_PATH)
-#else
-#define SLASH "/"
-#define SLASHB '/'
-#endif
 
 using namespace std;
 using namespace boost;
@@ -31,7 +21,8 @@ using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : HTTPv1_Base(false, sobject)
+HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject)
+    : HTTPv1_Base(false, sobject)
 {
     m_badAnswer = false;
 
@@ -40,85 +31,85 @@ HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject) : 
     serverResponse.cacheControl.optionNoStore = true;
     serverResponse.cacheControl.optionMustRevalidate = true;
 
-    m_currentParser = (Memory::Streams::SubParser *)(&clientRequest.requestLine);
+    m_currentParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
 
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
-    m_mimeTypes[".aac"]    = "audio/aac";
-    m_mimeTypes[".abw"]    = "application/x-abiword";
-    m_mimeTypes[".arc"]    = "application/x-freearc";
-    m_mimeTypes[".avi"]    = "video/x-msvideo";
-    m_mimeTypes[".azw"]    = "application/vnd.amazon.ebook";
-    m_mimeTypes[".bin"]    = "application/octet-stream";
-    m_mimeTypes[".bmp"]    = "image/bmp";
-    m_mimeTypes[".bz"]     = "application/x-bzip";
-    m_mimeTypes[".bz2"]    = "application/x-bzip2";
-    m_mimeTypes[".csh"]    = "application/x-csh";
-    m_mimeTypes[".css"]    = "text/css";
-    m_mimeTypes[".csv"]    = "text/csv";
-    m_mimeTypes[".doc"]    = "application/msword";
-    m_mimeTypes[".docx"]   = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    m_mimeTypes[".eot"]    = "application/vnd.ms-fontobject";
-    m_mimeTypes[".epub"]   = "application/epub+zip";
-    m_mimeTypes[".gz"]     = "application/gzip";
-    m_mimeTypes[".gif"]    = "image/gif";
-    m_mimeTypes[".htm"]    = "text/html";
-    m_mimeTypes[".html"]   = "text/html";
-    m_mimeTypes[".iso"]    = "application/octet-stream";
-    m_mimeTypes[".ico"]    = "image/vnd.microsoft.icon";
-    m_mimeTypes[".ics"]    = "text/calendar";
-    m_mimeTypes[".jar"]    = "application/java-archive";
-    m_mimeTypes[".jpeg"]   = "image/jpeg";
-    m_mimeTypes[".jpg"]    = "image/jpeg";
-    m_mimeTypes[".js"]     = "application/javascript";
-    m_mimeTypes[".json"]   = "application/json";
+    m_mimeTypes[".aac"] = "audio/aac";
+    m_mimeTypes[".abw"] = "application/x-abiword";
+    m_mimeTypes[".arc"] = "application/x-freearc";
+    m_mimeTypes[".avi"] = "video/x-msvideo";
+    m_mimeTypes[".azw"] = "application/vnd.amazon.ebook";
+    m_mimeTypes[".bin"] = "application/octet-stream";
+    m_mimeTypes[".bmp"] = "image/bmp";
+    m_mimeTypes[".bz"] = "application/x-bzip";
+    m_mimeTypes[".bz2"] = "application/x-bzip2";
+    m_mimeTypes[".csh"] = "application/x-csh";
+    m_mimeTypes[".css"] = "text/css";
+    m_mimeTypes[".csv"] = "text/csv";
+    m_mimeTypes[".doc"] = "application/msword";
+    m_mimeTypes[".docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    m_mimeTypes[".eot"] = "application/vnd.ms-fontobject";
+    m_mimeTypes[".epub"] = "application/epub+zip";
+    m_mimeTypes[".gz"] = "application/gzip";
+    m_mimeTypes[".gif"] = "image/gif";
+    m_mimeTypes[".htm"] = "text/html";
+    m_mimeTypes[".html"] = "text/html";
+    m_mimeTypes[".iso"] = "application/octet-stream";
+    m_mimeTypes[".ico"] = "image/vnd.microsoft.icon";
+    m_mimeTypes[".ics"] = "text/calendar";
+    m_mimeTypes[".jar"] = "application/java-archive";
+    m_mimeTypes[".jpeg"] = "image/jpeg";
+    m_mimeTypes[".jpg"] = "image/jpeg";
+    m_mimeTypes[".js"] = "application/javascript";
+    m_mimeTypes[".json"] = "application/json";
     m_mimeTypes[".jsonld"] = "application/ld+json";
-    m_mimeTypes[".mid"]    = "audio/midi";
-    m_mimeTypes[".midi"]   = "audio/x-midi";
-    m_mimeTypes[".mjs"]    = "text/javascript";
-    m_mimeTypes[".mp3"]    = "audio/mpeg";
-    m_mimeTypes[".mp4"]    = "video/mp4";
-    m_mimeTypes[".mpeg"]   = "video/mpeg";
-    m_mimeTypes[".mpg"]    = "video/mpeg";
-    m_mimeTypes[".mpkg"]   = "application/vnd.apple.installer+xml";
-    m_mimeTypes[".odp"]    = "application/vnd.oasis.opendocument.presentation";
-    m_mimeTypes[".ods"]    = "application/vnd.oasis.opendocument.spreadsheet";
-    m_mimeTypes[".odt"]    = "application/vnd.oasis.opendocument.text";
-    m_mimeTypes[".oga"]    = "audio/ogg";
-    m_mimeTypes[".ogv"]    = "video/ogg";
-    m_mimeTypes[".ogx"]    = "application/ogg";
-    m_mimeTypes[".opus"]   = "audio/opus";
-    m_mimeTypes[".otf"]    = "font/otf";
-    m_mimeTypes[".png"]    = "image/png";
-    m_mimeTypes[".pdf"]    = "application/pdf";
-    m_mimeTypes[".php"]    = "application/x-httpd-php";
-    m_mimeTypes[".ppt"]    = "application/vnd.ms-powerpoint";
-    m_mimeTypes[".pptx"]   = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-    m_mimeTypes[".rar"]    = "application/vnd.rar";
-    m_mimeTypes[".rtf"]    = "application/rtf";
-    m_mimeTypes[".sh"]     = "application/x-sh";
-    m_mimeTypes[".svg"]    = "image/svg+xml";
-    m_mimeTypes[".swf"]    = "application/x-shockwave-flash";
-    m_mimeTypes[".tar"]    = "application/x-tar";
-    m_mimeTypes[".tif"]    = "image/tiff";
-    m_mimeTypes[".ts"]     = "video/mp2t";
-    m_mimeTypes[".ttf"]    = "font/ttf";
-    m_mimeTypes[".txt"]    = "text/plain";
-    m_mimeTypes[".vsd"]    = "application/vnd.visio";
-    m_mimeTypes[".wav"]    = "audio/wav";
-    m_mimeTypes[".weba"]   = "audio/webm";
-    m_mimeTypes[".webm"]   = "video/webm";
-    m_mimeTypes[".webp"]   = "image/webp";
-    m_mimeTypes[".woff"]   = "font/woff";
-    m_mimeTypes[".woff2"]  = "font/woff2";
-    m_mimeTypes[".xhtml"]  = "application/xhtml+xml";
-    m_mimeTypes[".xls"]    = "application/vnd.ms-excel";
-    m_mimeTypes[".xlsx"]   = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    m_mimeTypes[".xml"]    = "application/xml";
-    m_mimeTypes[".xul"]    = "application/vnd.mozilla.xul+xml";
-    m_mimeTypes[".zip"]    = "application/zip";
-    m_mimeTypes[".3gp"]    = "video/3gpp";
-    m_mimeTypes[".3g2"]    = "video/3gpp2";
-    m_mimeTypes[".7z"]     = "application/x-7z-compressed";
+    m_mimeTypes[".mid"] = "audio/midi";
+    m_mimeTypes[".midi"] = "audio/x-midi";
+    m_mimeTypes[".mjs"] = "text/javascript";
+    m_mimeTypes[".mp3"] = "audio/mpeg";
+    m_mimeTypes[".mp4"] = "video/mp4";
+    m_mimeTypes[".mpeg"] = "video/mpeg";
+    m_mimeTypes[".mpg"] = "video/mpeg";
+    m_mimeTypes[".mpkg"] = "application/vnd.apple.installer+xml";
+    m_mimeTypes[".odp"] = "application/vnd.oasis.opendocument.presentation";
+    m_mimeTypes[".ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+    m_mimeTypes[".odt"] = "application/vnd.oasis.opendocument.text";
+    m_mimeTypes[".oga"] = "audio/ogg";
+    m_mimeTypes[".ogv"] = "video/ogg";
+    m_mimeTypes[".ogx"] = "application/ogg";
+    m_mimeTypes[".opus"] = "audio/opus";
+    m_mimeTypes[".otf"] = "font/otf";
+    m_mimeTypes[".png"] = "image/png";
+    m_mimeTypes[".pdf"] = "application/pdf";
+    m_mimeTypes[".php"] = "application/x-httpd-php";
+    m_mimeTypes[".ppt"] = "application/vnd.ms-powerpoint";
+    m_mimeTypes[".pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+    m_mimeTypes[".rar"] = "application/vnd.rar";
+    m_mimeTypes[".rtf"] = "application/rtf";
+    m_mimeTypes[".sh"] = "application/x-sh";
+    m_mimeTypes[".svg"] = "image/svg+xml";
+    m_mimeTypes[".swf"] = "application/x-shockwave-flash";
+    m_mimeTypes[".tar"] = "application/x-tar";
+    m_mimeTypes[".tif"] = "image/tiff";
+    m_mimeTypes[".ts"] = "video/mp2t";
+    m_mimeTypes[".ttf"] = "font/ttf";
+    m_mimeTypes[".txt"] = "text/plain";
+    m_mimeTypes[".vsd"] = "application/vnd.visio";
+    m_mimeTypes[".wav"] = "audio/wav";
+    m_mimeTypes[".weba"] = "audio/webm";
+    m_mimeTypes[".webm"] = "video/webm";
+    m_mimeTypes[".webp"] = "image/webp";
+    m_mimeTypes[".woff"] = "font/woff";
+    m_mimeTypes[".woff2"] = "font/woff2";
+    m_mimeTypes[".xhtml"] = "application/xhtml+xml";
+    m_mimeTypes[".xls"] = "application/vnd.ms-excel";
+    m_mimeTypes[".xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    m_mimeTypes[".xml"] = "application/xml";
+    m_mimeTypes[".xul"] = "application/vnd.mozilla.xul+xml";
+    m_mimeTypes[".zip"] = "application/zip";
+    m_mimeTypes[".3gp"] = "video/3gpp";
+    m_mimeTypes[".3g2"] = "video/3gpp2";
+    m_mimeTypes[".7z"] = "application/x-7z-compressed";
 
     m_includeServerDate = true;
 }
@@ -128,39 +119,101 @@ void HTTP::HTTPv1_Server::setResponseServerName(const string &sServerName)
     serverResponse.headers.replace("Server", sServerName);
 }
 
-bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequestedFileInfo *info, const std::string &defaultFileAppend, const bool &dontMapExecutables)
+bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, sLocalRequestedFileInfo *info,
+                                                   const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
 {
     if (!info)
-        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
+        throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
 
     info->reset();
 
+    std::string requestedURI = clientRequest.getURI();
+
+    auto resolveDirPathWithSlashAtEnd = [](const std::string &serverDirectoryPath) -> std::string
     {
-        char *cServerDir;
-        // Check Server Dir Real Path:
-        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
-            return false;
-
-        sServerDir = cServerDir;
-
+        // Use unique_ptr for automatic memory management
+        std::unique_ptr<char, decltype(&free)> resolvedPathUniquePtr(realpath(serverDirectoryPath.c_str(), nullptr), &free);
+        if (!resolvedPathUniquePtr)
+        {
+            return "";
+        }
+        std::string resolvedPath(resolvedPathUniquePtr.get());
         // Put a slash at the end of the server dir resource...
-        sServerDir += (sServerDir.back() == SLASHB ? "" : std::string(SLASH));
+        if (!resolvedPath.empty() && resolvedPath.back() != SLASHB)
+        {
+            resolvedPath += SLASH;
+        }
+        return resolvedPath;
+    };
 
-        free(cServerDir);
+    defaultWebRootWithEndingSlash = resolveDirPathWithSlashAtEnd(defaultWebRootWithEndingSlash);
+    if (defaultWebRootWithEndingSlash.empty())
+    {
+        return false;
     }
 
-    // Compute the requested path:
-    string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + (clientRequest.getURI().empty()?"":clientRequest.getURI().substr(1)) // Put the Request URI (without the first character / slash)
-            + defaultFileAppend; // Append option...
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Create list of potential paths to check
 
-    struct stat stats;
+    struct RequestedOverlapInfo
+    {
+        bool detectPathTraversal()
+        {
+            if (fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                    // outside dir?
+                || memcmp(serverWebRootWithEndingSlash.c_str(), fileSystemRealPath.c_str(), serverWebRootWithEndingSlash.size()) != 0 // not matching?
+            )
+            {
+                return true;
+            }
+            return false;
+        }
+
+        std::string getRelativePath()
+        {
+            // Eg. Relative Path: /assets/style.css
+            return urlPathPrefix + fileSystemRealPath.substr(serverWebRootWithEndingSlash.size());
+        }
+
+        std::string fileSystemRealPath; // Eg. /var/assets/style.css or /var/assets/js/ for dir
+        std::string serverWebRootWithEndingSlash; // Eg. /var/assets/
+        std::string urlPathPrefix; // Eg. /assets/, /
+        struct stat fileStats;
+    };
+
+    std::vector<RequestedOverlapInfo> detectedPotentialOverlaps;
+    std::string requestURIWithoutLeadingSlash = (requestedURI.size()<=1) ? "/" : requestedURI.substr(1);
+    std::string requestURIWithDefaultFile = requestURIWithoutLeadingSlash + defaultFileToAppend;
+    detectedPotentialOverlaps.push_back({defaultWebRootWithEndingSlash + requestURIWithDefaultFile, defaultWebRootWithEndingSlash, "/"}); // Add the original path
+
+    // Add overlapped directories if they match the requested URI
+    for (const auto &overlappedDirectory : overlappedDirectories)
+    {
+        // All the overlapped dirs should end with /
+        if (overlappedDirectory.first.empty() || overlappedDirectory.second.empty())
+            continue;
+
+        if (boost::starts_with(requestedURI, overlappedDirectory.first))
+        {
+            std::string overlappedWebRootWithEndingSlash = resolveDirPathWithSlashAtEnd(overlappedDirectory.second);
+            if (overlappedWebRootWithEndingSlash.empty())
+            {
+                continue;
+            }
+
+            // Compute the full path with overlapped directory
+            RequestedOverlapInfo oInfo = {overlappedWebRootWithEndingSlash + requestURIWithDefaultFile.substr(overlappedDirectory.first.size() - 1), overlappedWebRootWithEndingSlash, overlappedDirectory.first};
+            detectedPotentialOverlaps.push_back(oInfo);
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     // Compute the full requested path:
-    std::string sFullComputedPath;
+    RequestedOverlapInfo selectedOverlap;
     {
-        char *cFullPath;
-        if (  m_staticContentElements.find(std::string(clientRequest.getURI()+defaultFileAppend)) != m_staticContentElements.end() )
+        char *cFullPath = nullptr;
+        if (m_staticContentElements.find(requestURIWithDefaultFile) != m_staticContentElements.end())
         {
             // STATIC CONTENT:
             serverResponse.cacheControl.optionNoCache = false;
@@ -169,7 +222,7 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequ
             serverResponse.cacheControl.maxAge = 3600;
             serverResponse.cacheControl.optionImmutable = true;
 
-            info->sRealRelativePath = clientRequest.getURI()+defaultFileAppend;
+            info->sRealRelativePath = requestedURI + defaultFileToAppend;
 
             setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
@@ -178,33 +231,43 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequ
             serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath]);
             return true;
         }
-        else if ((cFullPath=realpath(sFullRequestedPath.c_str(), nullptr))!=nullptr)
-        {
-            // Compute the full path..
-            sFullComputedPath = cFullPath;
-            free(cFullPath);
-
-            // Check file properties...
-            stat(sFullComputedPath.c_str(), &stats);
-
-            // Put a slash at the end of the computed dir resource (when dir)...
-            if ((info->isDir = S_ISDIR(stats.st_mode)) == true)
-                sFullComputedPath += (sFullComputedPath.back() == SLASHB ? "" : std::string(SLASH));
-
-            // Path OK, continue.
-        }
         else
         {
-            // Does not exist or unaccesible. (404)
-            return false;
-        }
-    }
+            bool pathFound = false;
 
-    // Check for transversal access hacking attempts...
-    if (sFullComputedPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedPath.c_str(),sServerDir.size())!=0)
-    {
-        info->isTransversal=true;
-        return false;
+            for (const auto &rpInfo : detectedPotentialOverlaps)
+            {
+                selectedOverlap = rpInfo;
+                if ((cFullPath = realpath(rpInfo.fileSystemRealPath.c_str(), nullptr)) != nullptr)
+                {
+                    // Compute the full path..
+                    selectedOverlap.fileSystemRealPath = cFullPath;
+                    free(cFullPath);
+
+                    // Check file properties...
+                    stat(selectedOverlap.fileSystemRealPath.c_str(), &selectedOverlap.fileStats);
+
+                    // Put a slash at the end of the computed dir resource (when dir)...
+                    if ((info->isDir = S_ISDIR(selectedOverlap.fileStats.st_mode)) == true)
+                        selectedOverlap.fileSystemRealPath += (selectedOverlap.fileSystemRealPath.back() == SLASHB ? "" : std::string(SLASH));
+
+                    // Path OK, continue.
+
+                    // Check for transversal access hacking attempts...
+                    if (selectedOverlap.detectPathTraversal())
+                    {
+                        info->isTransversal = true;
+                        return false;
+                    }
+
+                    pathFound = true;
+                    break;
+                }
+            }
+
+            if (!pathFound)
+                return false;
+        }
     }
 
     // No transversal detected at this point.
@@ -213,71 +276,57 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequ
 
     if (info->isDir == true)
     {
-        info->pathExist=true;
+        info->pathExist = true;
 
         // Don't get directories when we are appending something.
-        if (!defaultFileAppend.empty())
+        if (!defaultFileToAppend.empty())
             return false;
 
-        // Complete the directory notation (slash at the end)
-        if (sFullComputedPath.back()!=SLASHB)
-            sFullComputedPath += SLASH;
+        info->sRealFullPath = selectedOverlap.fileSystemRealPath;
+        info->sRealRelativePath = selectedOverlap.getRelativePath();
 
-        info->sRealFullPath = sFullComputedPath;
-        info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
-
-        if (!access(sFullComputedPath.c_str(),R_OK))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        // Do we have access?:
+        return !access(info->sRealFullPath.c_str(), R_OK);
     }
-    else if ( S_ISREG(stats.st_mode) == true  ) // Check if it's a regular file
+    else if (S_ISREG(selectedOverlap.fileStats.st_mode) == true) // Check if it's a regular file
     {
-        info->pathExist=true;
+        info->pathExist = true;
 
-        if (    dontMapExecutables &&
-        #ifndef _WIN32
-                !access(sFullComputedPath.c_str(),X_OK)
-        #else
-                (boost::iends_with(sFullComputedPath,".exe") || boost::iends_with(sFullComputedPath,".bat") || boost::iends_with(sFullComputedPath,".com"))
-        #endif
-                )
+        if (preventMappingExecutables &&
+#ifndef _WIN32
+            !access(selectedOverlap.fileSystemRealPath.c_str(), X_OK)
+#else
+            (boost::iends_with(requestedPathInfo.fsPath, ".exe") || boost::iends_with(requestedPathInfo.fsPath, ".bat") || boost::iends_with(requestedPathInfo.fsPath, ".com"))
+#endif
+        )
         {
             // file is executable... don't map, and the most important: don't create cache in the browser...
             // Very useful for CGI-like implementations...
-            info->sRealFullPath = sFullComputedPath;
-            info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
+            info->sRealFullPath = selectedOverlap.fileSystemRealPath;
+            info->sRealRelativePath = selectedOverlap.getRelativePath();
             info->isExecutable = true;
             info->pathExist = true;
             return true;
         }
         else
         {
-            std::shared_ptr<Mantids30::Memory::Containers::B_MMAP> bFile = std::make_shared<Mantids30::Memory::Containers::B_MMAP>();
-            if (bFile->referenceFile(sFullComputedPath.c_str(),true,false))
+            std::shared_ptr<Mantids30::Memory::Containers::B_MMAP> fileMemoryMap = std::make_shared<Mantids30::Memory::Containers::B_MMAP>();
+            if (fileMemoryMap->referenceFile(selectedOverlap.fileSystemRealPath.c_str(), true, false))
             {
                 // File Found / Readable.
-                info->sRealFullPath = sFullComputedPath;
-                info->sRealRelativePath = sFullComputedPath.c_str()+(sServerDir.size()-1);
-                serverResponse.setDataStreamer(bFile);
+                info->sRealFullPath = selectedOverlap.fileSystemRealPath;
+                info->sRealRelativePath = selectedOverlap.getRelativePath();
+                serverResponse.setDataStreamer(fileMemoryMap);
                 setResponseContentTypeByFileExtension(info->sRealRelativePath);
 
-                struct stat attrib;
-                if (!stat(sFullRequestedPath.c_str(), &attrib))
-                {
-                    HTTP::Date fileModificationDate;
+                HTTP::Date fileModificationDate;
 #ifdef _WIN32
-                    fileModificationDate.setUnixTime(attrib.st_mtime);
+                fileModificationDate.setUnixTime(selectedPathInfo.fileStats.st_mtime);
 #else
-                    fileModificationDate.setUnixTime(attrib.st_mtim.tv_sec);
+                fileModificationDate.setUnixTime(selectedOverlap.fileStats.st_mtim.tv_sec);
 #endif
-                    if (m_includeServerDate)
-                        serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
-                }
+                if (m_includeServerDate)
+                    serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
 
                 serverResponse.cacheControl.optionNoCache = false;
                 serverResponse.cacheControl.optionNoStore = false;
@@ -296,17 +345,17 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string sServerDir, sLocalRequ
     }
 }
 
-bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
 {
     if (!info)
-        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
+        throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
 
     info->reset();
 
     {
         char *cServerDir;
         // Check Server Dir Real Path:
-        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+        if ((cServerDir = realpath((sServerDir).c_str(), nullptr)) == nullptr)
             return false;
 
         sServerDir = cServerDir;
@@ -318,9 +367,9 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, st
     }
 
     // Compute the requested path:
-    string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + (uri.empty()?"":uri.substr(1)) // Put the Request URI (without the first character / slash)
-            ; // Append option...
+    string sFullRequestedPath = sServerDir                           // Put the current server dir...
+                                + (uri.empty() ? "" : uri.substr(1)) // Put the Request URI (without the first character / slash)
+        ;                                                            // Append option...
 
     // Compute the full requested path:
     std::string sFullComputedRealPath;
@@ -331,12 +380,12 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, st
             if (errno == ENOENT)
             {
                 // Non-existent file.
-                return false;  // or handle the error as needed
+                return false; // or handle the error as needed
             }
             else
             {
                 // Other error occurred.
-                return false;  // or handle the error as needed
+                return false; // or handle the error as needed
             }
         }
         else
@@ -346,15 +395,15 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, st
     }
 
     // Check for transversal access hacking attempts...
-    if (sFullComputedRealPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedRealPath.c_str(),sServerDir.size())!=0)
+    if (sFullComputedRealPath.size() < sServerDir.size() || memcmp(sServerDir.c_str(), sFullComputedRealPath.c_str(), sServerDir.size()) != 0)
     {
-        info->isTransversal=true;
+        info->isTransversal = true;
         return false;
     }
 
     // No transversal detected at this point.
     info->sRealFullPath = sFullComputedRealPath;
-    info->sRealRelativePath = sFullComputedRealPath.c_str()+(sServerDir.size()-1);
+    info->sRealRelativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
 
     return true;
 }
@@ -362,14 +411,14 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string & uri, st
 bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
 {
     if (!info)
-        throw std::runtime_error( std::string(__func__) + std::string(" Should be called with info object... Aborting...") );
+        throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
 
     info->reset();
 
     {
         char *cServerDir;
         // Check Server Dir Real Path:
-        if ((cServerDir=realpath((sServerDir).c_str(), nullptr))==nullptr)
+        if ((cServerDir = realpath((sServerDir).c_str(), nullptr)) == nullptr)
             return false;
 
         sServerDir = cServerDir;
@@ -381,17 +430,17 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std:
     }
 
     // Compute the requested path:
-    string sFullRequestedPath =    sServerDir           // Put the current server dir...
-            + (uri.empty()?"":uri.substr(1)) // Put the Request URI (without the first character / slash)
-            ; // Append option...
+    string sFullRequestedPath = sServerDir                           // Put the current server dir...
+                                + (uri.empty() ? "" : uri.substr(1)) // Put the Request URI (without the first character / slash)
+        ;                                                            // Append option...
 
     struct stat stats;
 
     // Compute the full requested path:
     std::string sFullComputedRealPath;
     {
-        char cRealPath[PATH_MAX+2];
-        if ( realpath(sFullRequestedPath.c_str(), cRealPath) )
+        char cRealPath[PATH_MAX + 2];
+        if (realpath(sFullRequestedPath.c_str(), cRealPath))
         {
             sFullComputedRealPath = cRealPath;
 
@@ -406,34 +455,34 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std:
     }
 
     // Check for transversal access hacking attempts...
-    if (sFullComputedRealPath.size()<sServerDir.size() || memcmp(sServerDir.c_str(),sFullComputedRealPath.c_str(),sServerDir.size())!=0)
+    if (sFullComputedRealPath.size() < sServerDir.size() || memcmp(sServerDir.c_str(), sFullComputedRealPath.c_str(), sServerDir.size()) != 0)
     {
-        info->isTransversal=true;
+        info->isTransversal = true;
         return false;
     }
 
     // No transversal detected at this point.
     info->sRealFullPath = sFullComputedRealPath;
-    info->sRealRelativePath = sFullComputedRealPath.c_str()+(sServerDir.size()-1);
+    info->sRealRelativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
 
     return true;
 }
 
 bool HTTP::HTTPv1_Server::setResponseContentTypeByFileExtension(const string &sFilePath)
 {
-    const char * cFileExtension = strrchr(sFilePath.c_str(),'.');
+    const char *cFileExtension = strrchr(sFilePath.c_str(), '.');
 
-    if (!cFileExtension || cFileExtension[1]==0)
+    if (!cFileExtension || cFileExtension[1] == 0)
         return false;
 
     m_currentFileExtension = boost::to_lower_copy(std::string(cFileExtension));
 
     if (m_mimeTypes.find(m_currentFileExtension) != m_mimeTypes.end())
     {
-        serverResponse.setContentType(m_mimeTypes[m_currentFileExtension],true);
+        serverResponse.setContentType(m_mimeTypes[m_currentFileExtension], true);
         return true;
     }
-    serverResponse.setContentType("",false);
+    serverResponse.setContentType("", false);
     return false;
 }
 
@@ -456,7 +505,7 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
 void HTTP::HTTPv1_Server::setClientInfoVars(const char *ipAddr, const bool &secure, const std::string &tlsCommonName)
 {
     clientRequest.networkClientInfo.tlsCommonName = tlsCommonName;
-    strncpy(clientRequest.networkClientInfo.REMOTE_ADDR,ipAddr,sizeof(clientRequest.networkClientInfo.REMOTE_ADDR));
+    strncpy(clientRequest.networkClientInfo.REMOTE_ADDR, ipAddr, sizeof(clientRequest.networkClientInfo.REMOTE_ADDR));
     clientRequest.networkClientInfo.isSecure = secure;
 }
 
@@ -475,8 +524,8 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     {
         vector<string> authParts;
         string f1 = clientRequest.headers.getOptionValueStringByName("Authorization");
-        split(authParts,f1,is_any_of(" "),token_compress_on);
-        if (authParts.size()==2)
+        split(authParts, f1, is_any_of(" "), token_compress_on);
+        if (authParts.size() == 2)
         {
             if (authParts[0] == "Basic")
             {
@@ -485,10 +534,9 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
                 if (pos != std::string::npos)
                 {
                     clientRequest.basicAuth.isEnabled = true;
-                    clientRequest.basicAuth.username = bp.substr(0,pos);
-                    clientRequest.basicAuth.password = bp.substr(pos+1,bp.size());
+                    clientRequest.basicAuth.username = bp.substr(0, pos);
+                    clientRequest.basicAuth.password = bp.substr(pos + 1, bp.size());
                 }
-
             }
         }
     }
@@ -519,16 +567,16 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
             }
             /////////////////////////////////////////////////////////////////////////////////////
             // Content-Type... (only if length is designated)
-            if ( icontains(contentType,"multipart/form-data") )
+            if (icontains(contentType, "multipart/form-data"))
             {
                 clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
                 clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
             }
-            else if ( icontains(contentType,"application/x-www-form-urlencoded") )
+            else if (icontains(contentType, "application/x-www-form-urlencoded"))
             {
                 clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
             }
-            else if ( icontains(contentType,"application/json") )
+            else if (icontains(contentType, "application/json"))
             {
                 clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_JSON);
             }
@@ -547,7 +595,8 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
             else
             {
                 // OK, we are ready.
-                if (contentLength) m_currentParser = &clientRequest.content;
+                if (contentLength)
+                    m_currentParser = &clientRequest.content;
                 else
                 {
                     // Answer here:
@@ -587,7 +636,7 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
     // Act as a server. Send data from here.
     size_t strsize;
 
-    if ((strsize=serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
+    if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
         // TODO: connection keep alive.
         serverResponse.headers.replace("Connetion", "Close");
@@ -615,7 +664,7 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
 
     if (!serverResponse.sWWWAuthenticateRealm.empty())
     {
-        serverResponse.headers.replace("WWW-Authenticate", "Basic realm=\""+ serverResponse.sWWWAuthenticateRealm + "\"");
+        serverResponse.headers.replace("WWW-Authenticate", "Basic realm=\"" + serverResponse.sWWWAuthenticateRealm + "\"");
     }
 
     // Establish the cookies
@@ -652,7 +701,7 @@ void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
     serverResponse.status.getHTTPVersion()->setMajor(1);
     serverResponse.status.getHTTPVersion()->setMinor(0);
 
-    if (clientRequest.requestLine.getHTTPVersion()->getMajor()!=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getMajor() != 1)
     {
         serverResponse.status.setCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
         m_badAnswer = true;
@@ -665,9 +714,9 @@ void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 
 void HTTP::HTTPv1_Server::prepareServerVersionOnOptions()
 {
-    if (clientRequest.requestLine.getHTTPVersion()->getMinor()>=1)
+    if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1)
     {
-        if (clientRequest.virtualHost=="")
+        if (clientRequest.virtualHost == "")
         {
             serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
             m_badAnswer = true;
@@ -682,19 +731,18 @@ void HTTP::HTTPv1_Server::parseHostOptions()
     {
         clientRequest.virtualPort = 80;
         vector<string> hostParts;
-        split(hostParts,hostVal,is_any_of(":"),token_compress_on);
-        if (hostParts.size()==1)
+        split(hostParts, hostVal, is_any_of(":"), token_compress_on);
+        if (hostParts.size() == 1)
         {
             clientRequest.virtualHost = hostParts[0];
         }
-        else if (hostParts.size()>1)
+        else if (hostParts.size() > 1)
         {
             clientRequest.virtualHost = hostParts[0];
-            clientRequest.virtualPort = (uint16_t)strtoul(hostParts[1].c_str(),nullptr,10);
+            clientRequest.virtualPort = (uint16_t) strtoul(hostParts[1].c_str(), nullptr, 10);
         }
     }
 }
-
 
 bool HTTP::HTTPv1_Server::answer()
 {
@@ -738,9 +786,9 @@ std::string HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
 {
     std::string output;
     output.reserve(rawStr.size());
-    for(size_t i=0; rawStr.size()!=i; i++)
+    for (size_t i = 0; rawStr.size() != i; i++)
     {
-        switch(rawStr[i])
+        switch (rawStr[i])
         {
         case '<':
             output.append("&lt;");
@@ -770,7 +818,6 @@ bool HTTP::HTTPv1_Server::verifyStaticContentExistence(const string &path)
     return !(m_staticContentElements.find(path) == m_staticContentElements.end());
 }
 
-
 std::string HTTP::HTTPv1_Server::getCurrentFileExtension() const
 {
     return m_currentFileExtension;
@@ -793,7 +840,7 @@ bool HTTP::HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::Stream
         return false;
     }
     // Stream in place:
-    source->streamTo( serverResponse.content.getStreamableObj().get());
+    source->streamTo(serverResponse.content.getStreamableObj().get());
     return true;
 }
 
@@ -801,4 +848,3 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getRespo
 {
     return serverResponse.content.getStreamableObj();
 }
-

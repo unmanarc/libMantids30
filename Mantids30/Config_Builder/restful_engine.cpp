@@ -114,6 +114,32 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             }
         }
 
+        // Handle Overlapped Directories
+        try
+        {
+            const boost::property_tree::ptree &overlappedDirs = config.get_child("OverlappedDirectories");
+            for (const auto &dirPair : overlappedDirs)
+            {
+                const std::string &mountPoint = dirPair.first;
+                const boost::property_tree::ptree &dirConfig = dirPair.second;
+
+                std::string path = dirConfig.get<std::string>("Path", "");
+                if (!path.empty())
+                {
+                    appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Adding overlapped directory at %s -> %s", (void*)webServer, mountPoint.c_str(), path.c_str());
+                    webServer->config.addOverlappedDirectory(mountPoint, path);
+                }
+                else
+                {
+                    appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_WARN, "[%p] Skipped overlapped directory at %s due to missing Path", (void*)webServer, mountPoint.c_str());
+                }
+            }
+        }
+        catch (const boost::property_tree::ptree_error&)
+        {
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] No OverlappedDirectories configuration found", (void*)webServer);
+        }
+
         // All the API will be accessible from this Origins...
         std::string rawOrigins = config.get<std::string>("API.Origins", "");
 

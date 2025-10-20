@@ -89,6 +89,43 @@ void APIServerParameters::addStaticContentElement(const std::string &path, const
     }
 }
 
+bool APIServerParameters::addOverlappedDirectory(std::string internalPath, std::string fsPath)
+{
+    // Ensure internalPath ends with '/'
+    if (internalPath.empty() || internalPath.back() != '/')
+    {
+        internalPath += '/';
+    }
+
+    // Check if internalPath or fsPath is empty
+    if (fsPath.empty())
+    {
+        return false;
+    }
+
+    // Validate that the filesystem path exists and is readable
+    if (access(fsPath.c_str(), R_OK) != 0)
+    {
+        return false;
+    }
+
+    // Resolve the full absolute path and set `documentRootPath` if successful.
+    std::unique_ptr<char, decltype(&free)> cFullPath(realpath(fsPath.c_str(), nullptr), &free);
+    if (cFullPath)
+    {
+        fsPath = cFullPath.get();
+    }
+
+    // Add the mapping to our internal structure or configuration
+    m_overlappedDirectories.push_back(std::make_pair(internalPath, fsPath));
+    return true;
+}
+
+const std::list<std::pair<std::string, std::string> > &APIServerParameters::getOverlappedDirectories() const
+{
+    return m_overlappedDirectories;
+}
+
 std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> > APIServerParameters::getStaticContentElements()
 {
     std::lock_guard<std::mutex> lck(m_internalContentMutex);

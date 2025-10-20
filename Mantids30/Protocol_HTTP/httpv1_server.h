@@ -3,6 +3,17 @@
 #include "httpv1_base.h"
 #include <memory>
 
+#ifdef _WIN32
+#define SLASHB '\\'
+#define SLASH "\\"
+#include <boost/algorithm/string/predicate.hpp>
+#include <stdlib.h>
+#define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
+#else
+#define SLASH "/"
+#define SLASHB '/'
+#endif
+
 // TODO: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials
 
 #ifndef INET6_ADDRSTRLEN
@@ -47,13 +58,13 @@ public:
     void setResponseServerName(const std::string &sServerName);
     /**
      * @brief getLocalFilePathFromURI2 Get the local and relative path from the URL, it also checks for transversal escape attempts and set the cache control and other things
-     * @param sServerDir URI
+     * @param defaultWebRootWithEndingSlash URI
      * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
-     * @param defaultFileAppend  Append default suffix (eg. /index.html), default is not to append.
-     * @param dontMapExecutables Don't map the executable file as the response
+     * @param defaultFileToAppend  Append default suffix (eg. /index.html), default is not to append.
+     * @param preventMappingExecutables Don't map the executable file as the response
      * @return true if there is a positive resource that should be served, otherwise false.
      */
-    bool getLocalFilePathFromURI2(std::string sServerDir, sLocalRequestedFileInfo * info, const std::string & defaultFileAppend = "", const bool & dontMapExecutables = false);
+    bool getLocalFilePathFromURI2(std::string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, sLocalRequestedFileInfo * info, const std::string & defaultFileToAppend = "", const bool & preventMappingExecutables = false);
     /**
      * @brief getLocalFilePathFromURI0NE Only Get the local and relative path from the URL for non-existent file, it also checks for transversal escape attempts
      * @param sServerDir URI

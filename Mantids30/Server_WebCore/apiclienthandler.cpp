@@ -319,10 +319,14 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     if (config->getDocumentRootPath().empty())
         return HTTP::Status::S_404_NOT_FOUND;
 
-    if ( //staticContent ||
-        (getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, ".html") || getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, "index.html")
-         || getLocalFilePathFromURI2(config->getDocumentRootPath(), &fileInfo, ""))
-        && !fileInfo.isDir)
+    if ( (
+            getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
+         || getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "index.html")
+         || getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "")
+         )
+        &&
+        !fileInfo.isDir
+        )
     {
         // Evaluate...
         API::Web::ResourcesFilter::FilterEvaluationResult e;
@@ -351,7 +355,6 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     else
     {
         // File not found at this point (404)
-        //log(LEVEL_WARN, "fileServer", 65535, "R/404: %s", clientRequest.getURI().c_str());
     }
 
     if (ret != HTTP::Status::S_200_OK)
@@ -372,11 +375,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     {
         ret = serverResponse.setRedirectLocation(config->redirectPathOn404);
     }
-/*
-    // Log the response.
-    log(ret == HTTP::Status::S_200_OK ? LEVEL_INFO : LEVEL_WARN, "fileServer", 2048, "R/%03" PRIu16 ": %s", static_cast<uint16_t>(ret),
-        ret == HTTP::Status::S_200_OK ? fileInfo.sRealRelativePath.c_str() : clientRequest.getURI().c_str());
-*/
+
     return ret;
 }
 
