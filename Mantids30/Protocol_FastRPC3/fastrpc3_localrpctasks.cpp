@@ -243,7 +243,7 @@ void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
         }
     }
 
-    response = loginReason.toJsonResponse();
+    response = loginReason.toJSONResponse();
     sendRPCAnswer(taskParams, response.toStyledString(), EXEC_STATUS_SUCCESS);
     taskParams->doneSharedMutex->unlockShared();
 }

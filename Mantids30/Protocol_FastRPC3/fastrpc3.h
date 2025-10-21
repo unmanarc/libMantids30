@@ -461,7 +461,7 @@ public:
 
         eReasons reason = INTERNAL_ERROR;
 
-        Json::Value toJsonResponse() {
+        Json::Value toJSONResponse() {
             Json::Value response;
             response["val"] = reason;
 
