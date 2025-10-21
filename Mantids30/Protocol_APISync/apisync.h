@@ -81,7 +81,7 @@ json getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameter
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT signing key.
  */
-json getApplicationJWTSigningKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+//json getApplicationJWTSigningKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Retrieves the JWT configuration for an application.

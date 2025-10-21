@@ -52,6 +52,7 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30:
     return response;
 }
 
+/*
 std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const auto itAppName = vars.find("APP");
@@ -77,7 +78,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
 
     return response.asString();
 }
-
+*/
 std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const auto itAppName = vars.find("APP");
@@ -157,13 +158,8 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         }
         else
         {
-            auto key = getApplicationJWTSigningKey(log, &apiSyncParameters, vars);
-            if (key)
-            {
-                hmacSecret = (*key);
-            }
-            else
-                return nullptr;
+            // Don´t return JWT signer from ApiSync
+            return nullptr;
         }
 
         return createHMACJWT(log, algorithmDetails, hmacSecret, "signing");
@@ -185,13 +181,8 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         }
         else
         {
-            auto key = getApplicationJWTSigningKey(log, &apiSyncParameters, vars);
-            if (key)
-            {
-                privateKey = (*key);
-            }
-            else
-                return nullptr;
+            // Don´t return JWT signer from ApiSync
+            return nullptr;
         }
 
         if (privateKey.empty())
