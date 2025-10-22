@@ -82,7 +82,7 @@ void Cookies_ServerSide::addClearSecureCookie(
     c.secure = true;
     c.httpOnly = true;
 
-    c.setAsTransientCookie();
+    c.deleteCookie();
 
     c.sameSitePolicy =  Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
 

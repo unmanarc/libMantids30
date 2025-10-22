@@ -39,16 +39,15 @@ public:
     void fromSetCookieString(const std::string & setCookieValue, std::string * cookieName);
 
     ///////////////////////////////////////////////////////////////////////////////
-
     /**
      * @brief getExpiration Get Expiration
-     * @return Unix Time for the Expiration, or 0 if is a session cookie
+     * @return Unix Time for the Expiration, nullopt if it's a session cookie, and 0 if it's marked to be removed.
      */
-    time_t getExpiration() const;
+    std::optional<time_t> getExpiration() const;
     /**
-     * @brief setAsTransientCookie set the cookie as a session/trasient cookie
+     * @brief setAsSessionCookie Set the cookie as a session cookie
      */
-    void setAsTransientCookie();
+    void setAsSessionCookie();
     /**
      * @brief setExpiration Set Expiration to UNIX date
      * @param exp unix date
@@ -60,6 +59,10 @@ public:
      */
     void setExpirationFromNow(const uint32_t& seconds);
 
+    /**
+     * @brief deleteCookie Mark the cookie for deletion by setting max-age to 0
+     */
+    void deleteCookie();
 
     // Default: the cookie will be secure. If you want to downgrade, do it manually.
     /**
@@ -70,12 +73,12 @@ public:
     /**
      * @brief The expiration date of the cookie.
      */
-    HTTP::Date expires;
+    std::optional<HTTP::Date> expires = std::nullopt; // < default don't expire the cookie (session cookie).
 
     /**
      * @brief The maximum age (in seconds) of the cookie.
      */
-    std::optional<uint32_t> maxAge;
+    std::optional<uint32_t> maxAge = std::nullopt; // < default don't expire the cookie (session cookie).
 
     /**
      * @brief The domain associated with the cookie.
