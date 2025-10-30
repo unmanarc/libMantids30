@@ -17,24 +17,40 @@ using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
+
+ /**
+ * @brief Constructor for HTTPv1_Server.
+ *
+ * Initializes the HTTP/1.x server-side parser, sets default cache control headers,
+ * and configures the initial parser state to process the request line.
+ *
+ * @param sobject Shared pointer to the streamable object used for communication.
+ */
 HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject)
     : HTTPv1_Base(false, sobject)
 {
-    m_isInvalidHTTPRequest = false;
-
-    // All request will have no-cache option activated.... (unless it's a real file and it's not overwritten)
+    // Default to a conservative cache policy for dynamic responses.
     serverResponse.cacheControl.optionNoCache = true;
     serverResponse.cacheControl.optionNoStore = true;
     serverResponse.cacheControl.optionMustRevalidate = true;
 
+    // Start parsing from the request line
     m_currentParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
 
     loadDefaultMIMETypes();
 }
 
+/**
+ * @brief Progresses the parser through different stages of the HTTP request.
+ *
+ * Transitions from one parsing stage (request line, headers, content) to the next
+ * based on the current parser state.
+ *
+ * @return True if parsing should continue, false otherwise.
+ */
 bool HTTP::HTTPv1_Server::changeToNextParser()
 {
-    // Server Mode:
+    // Server mode progresses through request line → headers → body.
     if (m_currentParser == &clientRequest.requestLine)
         return changeToNextParserFromClientRequestLine();
     else if (m_currentParser == &clientRequest.headers)
@@ -43,10 +59,19 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
         return changeToNextParserFromClientContentData();
 }
 
+/**
+ * @brief Handles parsing after the request line has been fully received.
+ *
+ * Processes HTTP headers, extracts metadata (host, auth, user-agent, etc.), and
+ * determines whether to expect a body or respond immediately.
+ *
+ * @return True if parsing should continue, false otherwise.
+ */
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
 {
-    // This function is used when the client options arrives, so we need to parse it.
+    // Client headers have been received; parse metadata and decide next step.
 
+    // Lambda to parse the Host header and extract host and port information
     auto parseHostHeader = [this]()
     {
         string hostVal = clientRequest.headers.getOptionValueStringByName("HOST");
@@ -77,6 +102,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         }
     };
 
+    // Lambda to validate that HTTP version supports Host header in HTTP/1.1+
     auto validateServerVersionRequirements = [this]()
     {
         if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1)
@@ -89,6 +115,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         }
     };
 
+    // Lambda to parse Basic Authentication header
     auto parseBasicAuthentication = [this]()
     {
         // PARSE CLIENT BASIC AUTHENTICATION:
@@ -115,6 +142,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         }
     };
 
+    // Lambda to extract User-Agent header
     auto parseUserAgentHeader = [this]()
     {
         // PARSE USER-AGENT
@@ -122,25 +150,21 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
             clientRequest.userAgent = clientRequest.headers.getOptionRawStringByName("User-Agent");
     };
 
+    // Lambda to parse Content-Length and Content-Type headers
     auto parseContentLengthAndType = [this](size_t &contentLength)
     {
-        // PARSE CONTENT TYPE/LENGHT OPTIONS
+        // Extract payload size and content type hints from headers.
         contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
         string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
-        /////////////////////////////////////////////////////////////////////////////////////
-        // Content-Length...
         if (contentLength)
         {
-            // Content length defined.
             clientRequest.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
             if (!clientRequest.content.setContentLengthSize(contentLength))
             {
-                // Error setting this content length size. (automatic answer)
+                // Abort: the advertised length cannot be allocated within limits.
                 m_isInvalidHTTPRequest = true;
                 serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
             }
-            /////////////////////////////////////////////////////////////////////////////////////
-            // Content-Type... (only if length is designated)
             if (icontains(contentType, "multipart/form-data"))
             {
                 clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
@@ -160,6 +184,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         }
     };
 
+    // Execute parsing steps
     parseHostHeader();
     validateServerVersionRequirements();
     parseBasicAuthentication();
@@ -176,19 +201,19 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
             return sendHTTPResponse();
         else
         {
-            // Process the client header options
+            // Allow consumer code to inspect and possibly override headers.
             if (!procHTTPClientHeaders())
                 m_currentParser = nullptr; // Don't continue with parsing (close the connection)
             else
             {
                 if (contentLength)
                 {
-                    // The client set the content lenght, so we have to receive some data from the client (next parser is data content)
+                    // Expect a body because the client provided Content-Length.
                     m_currentParser = &clientRequest.content;
                 }
                 else
                 {
-                    // If not, answer immediately.
+                    // No body expected, respond now
                     return sendHTTPResponse();
                 }
             }
@@ -197,9 +222,16 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     return true;
 }
 
+/**
+ * @brief Handles parsing after the request line has been parsed.
+ *
+ * Validates the HTTP version and URI, then transitions to parsing headers.
+ *
+ * @return True if parsing should continue, false otherwise.
+ */
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 {
-    // Internal checks when URL request has received.
+    // Request-line parsed; validate URI and HTTP version before reading headers.
     prepareServerVersionOnURI();
     if (m_isInvalidHTTPRequest)
         return sendHTTPResponse();
@@ -213,18 +245,32 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
     return true;
 }
 
+/**
+ * @brief Handles parsing of the body content.
+ *
+ * Currently, streaming bodies are not supported. This method ends parsing
+ * and sends the HTTP response.
+ *
+ * @return Always returns true.
+ */
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
-    // Don't continue with parsing. (TODO: Not supported yet)
+    // TODO: Streaming body support not yet implemented
     m_currentParser = nullptr;
     return sendHTTPResponse();
 }
 
+/**
+ * @brief Sets the HTTP version for the server's response based on client request.
+ *
+ * Ensures the server responds with a compatible HTTP version.
+ */
 void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 {
     serverResponse.status.getHTTPVersion()->setMajor(1);
     serverResponse.status.getHTTPVersion()->setMinor(0);
 
+    // Validate major version
     if (clientRequest.requestLine.getHTTPVersion()->getMajor() != 1)
     {
         serverResponse.status.setCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);

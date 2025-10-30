@@ -163,7 +163,7 @@ private:
 
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
 
-    bool m_isInvalidHTTPRequest;
+    bool m_isInvalidHTTPRequest = false;
     //Memory::Streams::WriteStatus m_answerBytes;
 
     std::string m_currentFileExtension;
