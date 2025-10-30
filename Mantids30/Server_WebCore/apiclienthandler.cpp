@@ -433,8 +433,8 @@ bool APIClientHandler::isSupportedUserAgent(const std::string &userAgent)
         {"libfetch/", 0},    // libfetch (all versions)
         {"axel/", 0},        // Axel (all versions)
         {"wget2/", 0},       // Wget2 (all versions)
+        {"PostmanRuntime/", 0},      // Postman (all versions)
         {"libmantids/", 0}   // Me :-)
-
     };
 
     // Check if the user agent matches any of the supported browsers
