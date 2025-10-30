@@ -107,11 +107,11 @@ public:
      */
     eTransmitionMode getTransmitionMode() const;
     /**
-     * @brief setContentLenSize Set content length data size (for receiving/decoding data).
+     * @brief setContentLengthSize Set content length data size (for receiving/decoding data).
      * @param contentLengthSize size.
      * @return true if limits are not exceeded.
      */
-    bool setContentLenSize(const size_t &contentLengthSize);
+    bool setContentLengthSize(const size_t &contentLengthSize);
     /**
      * @brief useFilesystem Set filesystem path when variables exceed limits
      * @param fsFilePath file path

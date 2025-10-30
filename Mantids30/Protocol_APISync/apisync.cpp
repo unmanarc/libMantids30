@@ -1,17 +1,17 @@
 #include "apisync.h"
 
+#include <Mantids30/Memory/streamablejson.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_client.h>
-#include <Mantids30/Memory/streamablejson.h>
 
 using namespace Mantids30;
 using namespace Mantids30::Program;
 using namespace Mantids30::Network::Sockets;
 using namespace Mantids30::Network::Protocols;
 
-
-json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName, const std::string &apiKey)
+json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName,
+                                               const std::string &apiKey)
 {
     std::shared_ptr<Socket_Stream> connection;
 
@@ -66,7 +66,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         client.clientRequest.requestLine.setRequestURI("/api/v1/" + functionName);
         client.clientRequest.getVars(HTTP::VARS_GET)->addVar("APP", std::make_shared<Memory::Containers::B_Chunks>(appName));
         client.clientRequest.content.setStreamableObj(strJSONRequest);
-        client.clientRequest.headers.add("Content-Type","application/json");
+        client.clientRequest.headers.add("Content-Type", "application/json");
 
         auto strJSONResponse = std::make_shared<Memory::Streams::StreamableJSON>();
 
@@ -80,7 +80,8 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         {
             if (client.serverResponse.status.getCode() != HTTP::Status::S_200_OK)
             {
-                log->log0(__func__, Logs::LEVEL_ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()), strJSONResponse->getValue()->toStyledString().c_str());
+                log->log0(__func__, Logs::LEVEL_ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
+                          strJSONResponse->getValue()->toStyledString().c_str());
             }
             else
             {
@@ -101,7 +102,8 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     return {};
 }
 
-json APISync::updateAccessControlContext(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles, const json &activities)
+json APISync::updateAccessControlContext(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
+                                         const json &activities)
 {
     json request;
     request["scopes"] = scopes;

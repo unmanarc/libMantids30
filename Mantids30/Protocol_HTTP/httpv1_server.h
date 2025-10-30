@@ -48,14 +48,8 @@ public:
 
     HTTPv1_Server(std::shared_ptr<Memory::Streams::StreamableObject> sobject);
 
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
-    /**
-     * @brief setServerTokens Set Server Header
-     * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
-     */
-    void setResponseServerName(const std::string &sServerName);
     /**
      * @brief getLocalFilePathFromURI2 Get the local and relative path from the URL, it also checks for transversal escape attempts and set the cache control and other things
      * @param defaultWebRootWithEndingSlash URI
@@ -83,13 +77,13 @@ public:
      * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
      * @param sFilePath filename string
      */
-    bool setResponseContentTypeByFileExtension(const std::string & sFilePath);
+    bool detectContentTypeFromFilePath(const std::string & sFilePath);
     /**
      * @brief addFileExtensionMimeType Add/Replace File Extension to Mime Content Type Association (no Thread-Safe, must be done before start the server)
      * @param ext extension (important!!: should be in lowercase)
      * @param content type
      */
-    void addResponseContentTypeFileExtension(const std::string & ext, const std::string & type);
+    void setMimeTypeForFileExtension(const std::string & ext, const std::string & type);
 
     /**
      * @brief getResponseDataStreamer Get the response data streamer
@@ -110,8 +104,6 @@ public:
      */
     std::string getCurrentFileExtension() const;
 
-    void setResponseIncludeServerDate(bool value);
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OTHER FUNCTIONS:
     /**
@@ -122,8 +114,6 @@ public:
     void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM> > &value);
 
     static std::string htmlEncode(const std::string& rawStr);
-
-    void setClientInfoVars( const char * ipAddr, const bool & secure, const std::string & tlsCommonName);
 
 protected:
 
@@ -169,19 +159,16 @@ private:
     bool streamServerHeaders();
     void prepareServerVersionOnURI();
 
-    void prepareServerVersionOnOptions();
-    void parseHostOptions();
-
-    bool answer();
+    bool sendHTTPResponse();
 
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
 
-    bool m_badAnswer;
+    bool m_isInvalidHTTPRequest;
     //Memory::Streams::WriteStatus m_answerBytes;
 
     std::string m_currentFileExtension;
-    bool m_includeServerDate;
     std::map<std::string,std::string> m_mimeTypes;
+    void loadDefaultMIMETypes();
 };
 
 }}}}

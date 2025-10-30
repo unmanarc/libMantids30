@@ -256,7 +256,7 @@ void HTTP::Content::setTransmitionMode(const eTransmitionMode &value)
     }
 }
 
-bool HTTP::Content::setContentLenSize(const size_t &contentLengthSize)
+bool HTTP::Content::setContentLengthSize(const size_t &contentLengthSize)
 {
     if (contentLengthSize>m_securityMaxPostDataSize)
     {

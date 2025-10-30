@@ -35,7 +35,7 @@ protected:
     Protocols::HTTP::Status::Codes procHTTPClientContent() override;
     /**
      * @brief sessionStart Retrieve/Start the session
-     * @return S_200_OK for everything ok, any other value will return with that code immediatly.
+     * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
     virtual Protocols::HTTP::Status::Codes sessionStart() = 0;
     /**

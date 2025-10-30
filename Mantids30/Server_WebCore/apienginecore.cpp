@@ -93,7 +93,7 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     // Prepare the web services handler.
     std::shared_ptr<APIClientHandler> apiWebServerClientHandler = webserver->createNewAPIClientHandler(webserver,sock);
 
-    apiWebServerClientHandler->setClientInfoVars( sock->getRemotePairStr().c_str(), sock->isSecure(), tlsCN );
+    apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation( sock->getRemotePairStr(), sock->isSecure(), tlsCN );
 
     // Set the configuration:
     apiWebServerClientHandler->config = &(webserver->config);

@@ -56,7 +56,7 @@ HTTP::Status::Codes APIClientHandler::procHTTPClientContent()
     //config->webLog
     if (!config->webServerName.empty())
     {
-        setResponseServerName(config->webServerName);
+        serverResponse.setServerName(config->webServerName);
     }
 
     // Check if the client's User-Agent header corresponds to a supported browser.

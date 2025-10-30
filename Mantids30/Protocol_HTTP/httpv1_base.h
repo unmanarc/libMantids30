@@ -82,7 +82,7 @@ public:
     };
 
     struct Request
-    {
+    {       
         // HTTP Quick Access Functions:
         /**
          * @brief getVars Get Vars
@@ -226,6 +226,13 @@ public:
 
         struct NetworkClientInfo {
 
+            void setClientInformation(const std::string & ipAddress, const bool &secure, const std::string &tlsCommonName)
+            {
+                this->tlsCommonName = tlsCommonName;
+                strncpy(REMOTE_ADDR, ipAddress.c_str(), sizeof(REMOTE_ADDR));
+                isSecure = secure;
+            }
+
             json toJSON()
             {
                 json sessionInfo;
@@ -283,6 +290,15 @@ public:
     };
     struct Response
     {
+        /**
+         * @brief setServerTokens Set Server Header
+         * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
+         */
+        void setServerName(const std::string &sServerName)
+        {
+            headers.replace("Server", sServerName);
+        }
+
         /**
          * @brief setResponseContentType Set Response Content Type
          * @param contentType Content Type (eg. application/json, text/html)
@@ -439,6 +455,14 @@ public:
          * @brief immutableHeaders Prevent current headers to be filled/replaced with the Response options/object. (eg. server name, security, cache-control, etc)
          */
         bool immutableHeaders = false;
+
+        /**
+         * @brief includeDate Include the Date header in HTTP requests or responses
+         *
+         * When true, adds a 'Date' header containing the request timestamp.
+         * Useful for server logging, cache management, and debugging.
+         */
+        bool includeDate = true;
     };
 
     HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);

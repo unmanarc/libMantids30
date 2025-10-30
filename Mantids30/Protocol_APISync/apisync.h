@@ -39,6 +39,8 @@ struct APISyncParameters
     std::string privateCAPath = ""; ///< Path to the private CA certificate file (if applicable).
 };
 
+
+
 /**
  * @brief Performs an API synchronization request.
  *
@@ -113,7 +115,7 @@ json getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *prox
  * @return Response from the API after updating SRA settings.
  */
 json updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
-                       const json &activities);
+                                const json &activities);
 
 } // namespace APISync
 } // namespace Protocols
