@@ -24,10 +24,10 @@ using namespace Mantids30;
  * Initializes the HTTP/1.x server-side parser, sets default cache control headers,
  * and configures the initial parser state to process the request line.
  *
- * @param sobject Shared pointer to the streamable object used for communication.
+ * @param connectionStream Shared pointer to the streamable object used for communication.
  */
-HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> sobject)
-    : HTTPv1_Base(false, sobject)
+HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> connectionStream)
+    : HTTPv1_Base(false, connectionStream)
 {
     // Default to a conservative cache policy for dynamic responses.
     serverResponse.cacheControl.optionNoCache = true;

@@ -14,7 +14,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
-#include <inttypes.h>
 #include <json/value.h>
 #include <memory>
 #include <regex>
@@ -312,7 +311,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
 {
     // WEB RESOURCE MODE:
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
-    sLocalRequestedFileInfo fileInfo;
+    LocalRequestedFileInfo fileInfo;
     uint64_t uMaxAge = 0;
 
     // if there are no web resources path, return 404 without data.
@@ -320,12 +319,11 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
         return HTTP::Status::S_404_NOT_FOUND;
 
     if ( (
-            getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
-         || getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "index.html")
-         || getLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "")
+            resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
+         || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "index.html")
+         || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "")
          )
-        &&
-        !fileInfo.isDir
+        && !fileInfo.isDirectory
         )
     {
         // Evaluate...
@@ -335,7 +333,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
         // it will proccess this according to the authorization session
         if (config->resourceFilter)
         {
-            e = config->resourceFilter->evaluateURI(fileInfo.sRealRelativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
+            e = config->resourceFilter->evaluateURI(fileInfo.relativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
         }
 
         // If the element is accepted (during the filter)
@@ -367,7 +365,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     // and the document content is text/html, then, process it as HTMLIEngine:
     if (config->useHTMLIEngine && (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")) // The content type has changed during the map.
     {
-        ret = HTMLIEngine::processResourceFile(this, fileInfo.sRealFullPath);
+        ret = HTMLIEngine::processResourceFile(this, fileInfo.fullPath);
     }
 
     // And if the file is not found and there are redirections, set the redirection:

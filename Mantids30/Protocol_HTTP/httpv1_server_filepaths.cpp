@@ -17,7 +17,7 @@ using namespace std;
 
 
 
-bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, sLocalRequestedFileInfo *info,
+bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, LocalRequestedFileInfo *info,
                                                    const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
 {
     if (!info)
@@ -120,13 +120,13 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
             serverResponse.cacheControl.maxAge = 3600;
             serverResponse.cacheControl.optionImmutable = true;
 
-            info->sRealRelativePath = requestedURI + defaultFileToAppend;
+            info->relativePath = requestedURI + defaultFileToAppend;
 
-            detectContentTypeFromFilePath(info->sRealRelativePath);
+            detectContentTypeFromFilePath(info->relativePath);
 
-            info->sRealFullPath = "MEM:" + info->sRealRelativePath;
+            info->fullPath = "MEM:" + info->relativePath;
 
-            serverResponse.setDataStreamer(m_staticContentElements[info->sRealRelativePath]);
+            serverResponse.setDataStreamer(m_staticContentElements[info->relativePath]);
             return true;
         }
         else
@@ -146,7 +146,7 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
                     stat(selectedOverlap.fileSystemRealPath.c_str(), &selectedOverlap.fileStats);
 
                     // Put a slash at the end of the computed dir resource (when dir)...
-                    if ((info->isDir = S_ISDIR(selectedOverlap.fileStats.st_mode)) == true)
+                    if ((info->isDirectory = S_ISDIR(selectedOverlap.fileStats.st_mode)) == true)
                         selectedOverlap.fileSystemRealPath += (selectedOverlap.fileSystemRealPath.back() == SLASHB ? "" : std::string(SLASH));
 
                     // Path OK, continue.
@@ -172,23 +172,23 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
 
     // Check if it's a directory...
 
-    if (info->isDir == true)
+    if (info->isDirectory == true)
     {
-        info->pathExist = true;
+        info->exists = true;
 
         // Don't get directories when we are appending something.
         if (!defaultFileToAppend.empty())
             return false;
 
-        info->sRealFullPath = selectedOverlap.fileSystemRealPath;
-        info->sRealRelativePath = selectedOverlap.getRelativePath();
+        info->fullPath = selectedOverlap.fileSystemRealPath;
+        info->relativePath = selectedOverlap.getRelativePath();
 
         // Do we have access?:
-        return !access(info->sRealFullPath.c_str(), R_OK);
+        return !access(info->fullPath.c_str(), R_OK);
     }
     else if (S_ISREG(selectedOverlap.fileStats.st_mode) == true) // Check if it's a regular file
     {
-        info->pathExist = true;
+        info->exists = true;
 
         if (preventMappingExecutables &&
 #ifndef _WIN32
@@ -200,10 +200,10 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
         {
             // file is executable... don't map, and the most important: don't create cache in the browser...
             // Very useful for CGI-like implementations...
-            info->sRealFullPath = selectedOverlap.fileSystemRealPath;
-            info->sRealRelativePath = selectedOverlap.getRelativePath();
+            info->fullPath = selectedOverlap.fileSystemRealPath;
+            info->relativePath = selectedOverlap.getRelativePath();
             info->isExecutable = true;
-            info->pathExist = true;
+            info->exists = true;
             return true;
         }
         else
@@ -212,10 +212,10 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
             if (fileMemoryMap->referenceFile(selectedOverlap.fileSystemRealPath.c_str(), true, false))
             {
                 // File Found / Readable.
-                info->sRealFullPath = selectedOverlap.fileSystemRealPath;
-                info->sRealRelativePath = selectedOverlap.getRelativePath();
+                info->fullPath = selectedOverlap.fileSystemRealPath;
+                info->relativePath = selectedOverlap.getRelativePath();
                 serverResponse.setDataStreamer(fileMemoryMap);
-                detectContentTypeFromFilePath(info->sRealRelativePath);
+                detectContentTypeFromFilePath(info->relativePath);
 
                 HTTP::Date fileModificationDate;
 #ifdef _WIN32
@@ -243,7 +243,7 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI2(string defaultWebRootWithEndi
     }
 }
 
-bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
         throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
@@ -300,13 +300,13 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0NE(const std::string &uri, std
     }
 
     // No transversal detected at this point.
-    info->sRealFullPath = sFullComputedRealPath;
-    info->sRealRelativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
+    info->fullPath = sFullComputedRealPath;
+    info->relativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
 
     return true;
 }
 
-bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, sLocalRequestedFileInfo *info)
+bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
         throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
@@ -345,7 +345,7 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std:
             // Check file properties...
             stat(sFullComputedRealPath.c_str(), &stats);
             // Put a slash at the end of the computed dir resource (when dir)...
-            if ((info->isDir = S_ISDIR(stats.st_mode)) == true)
+            if ((info->isDirectory = S_ISDIR(stats.st_mode)) == true)
                 sFullComputedRealPath += (sFullComputedRealPath.back() == SLASHB ? "" : std::string(SLASH));
         }
         else // Non-Existant File.
@@ -360,8 +360,8 @@ bool HTTP::HTTPv1_Server::getLocalFilePathFromURI0E(const std::string &uri, std:
     }
 
     // No transversal detected at this point.
-    info->sRealFullPath = sFullComputedRealPath;
-    info->sRealRelativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
+    info->fullPath = sFullComputedRealPath;
+    info->relativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
 
     return true;
 }
