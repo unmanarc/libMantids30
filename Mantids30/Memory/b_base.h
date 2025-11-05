@@ -143,13 +143,12 @@ public:
     * @return -1 if error, 0 if no data appended (eg. max reached), n bytes appended.
     */
     std::optional<size_t> appendTo(StreamableObject & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
-
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
      * @param bytes size of data in bytes to be copied
      * @param offset starting point (offset) in bytes, default: 0 (start)
-     * @return number of bytes copied (in bytes)
+     * @return number of bytes copied (in bytes) or std::nullopt if the operation was not successful.
      */
     std::optional<size_t> copyOut(void * buf, size_t bytes, const size_t &offset = 0);
     /**
