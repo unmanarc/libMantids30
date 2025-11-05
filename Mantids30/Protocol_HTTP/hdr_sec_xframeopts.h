@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids30::Network::Protocols::HTTP { namespace Headers { namespace Security {
 /*
 class XFrameOpts
 {
@@ -93,5 +93,5 @@ public:
 };
 
 
-}}}}}}
+}}}
 

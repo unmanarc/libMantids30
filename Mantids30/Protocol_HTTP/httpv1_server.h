@@ -20,7 +20,7 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 
 class HTTPv1_Server : public HTTPv1_Base
@@ -120,28 +120,28 @@ protected:
     bool verifyStaticContentExistence(const std::string & path);
 
     /**
-    * @brief procHTTPClientURI Virtual function called when the Client URI request
+    * @brief onClientURIReceived Virtual function called when the Client URI request
     *                         (ex. GET / HTTP/1.1) is available.
     * @return true continue with the parsing / false end parsing and close connection.
     */
-    virtual bool procHTTPClientURI()
+    virtual bool onClientURIReceived()
     {
         return true;
     }
     /**
-    * @brief procHTTPClientHeaders Virtual function called when the HTTP Client Headers are available.
+    * @brief onClientHeadersReceived Virtual function called when the HTTP Client Headers are available.
     * @return true continue with the parsing / false end parsing and close connection.
     */
-    virtual bool procHTTPClientHeaders()
+    virtual bool onClientHeadersReceived()
     {
         return true;
     }
     /**
-    * @brief procHTTPClientHeaders Virtual function called when the whole client request
+    * @brief onClientHeadersReceived Virtual function called when the whole client request
     *                             is available (GET/Options/Post Data).
     * @return true
     */
-    virtual Mantids30::Network::Protocols::HTTP::Status::Codes procHTTPClientContent()
+    virtual Mantids30::Network::Protocols::HTTP::Status::Codes onClientContentReceived()
     {
         return HTTP::Status::S_200_OK;
     }
@@ -171,5 +171,5 @@ private:
     void loadDefaultMIMETypes();
 };
 
-}}}}
+}
 

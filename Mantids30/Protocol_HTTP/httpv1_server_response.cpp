@@ -16,7 +16,7 @@ bool HTTP::HTTPv1_Server::sendHTTPResponse()
     // Process client petition here.
     if (!m_isInvalidHTTPRequest)
     {
-        serverResponse.status.setCode(procHTTPClientContent());
+        serverResponse.status.setCode(onClientContentReceived());
     }
 
     // Answer is the last... close the connection after it.

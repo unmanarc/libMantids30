@@ -4,7 +4,7 @@
 #include "common_version.h"
 #include <map>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 class Status : public Memory::Streams::SubParser
 {
@@ -105,5 +105,5 @@ private:
 
 
 };
-}}}}
+}
 

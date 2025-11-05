@@ -2,7 +2,7 @@
 
 #include <Mantids30/Memory/streamableobject.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 class ContentChunkedTransformer : public Memory::Streams::StreamableObject
 {
@@ -17,5 +17,5 @@ private:
     Memory::Streams::StreamableObject * upStreamOut = nullptr;
 };
 
-}}}}
+}
 

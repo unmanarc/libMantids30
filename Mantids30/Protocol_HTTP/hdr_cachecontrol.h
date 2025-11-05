@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers {
+namespace Mantids30::Network::Protocols::HTTP { namespace Headers {
 
 class CacheControl
 {
@@ -65,4 +65,4 @@ public:
 
 };
 
-}}}}}
+}}

@@ -24,7 +24,7 @@
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 5
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 enum VarSource
 {
@@ -481,5 +481,5 @@ private:
     void setInternalProductVersion(const std::string & prodName, const std::string & extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR, const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 
-}}}}
+}
 

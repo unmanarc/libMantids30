@@ -9,7 +9,7 @@
 // TODO: reuse the connection?...
 // TODO: header: :scheme:https (begins with :)
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
 {
@@ -112,5 +112,5 @@ private:
     std::string m_serverContentType;
 };
 
-}}}}
+}
 

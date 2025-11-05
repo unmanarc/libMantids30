@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace HTTP { namespace Headers { namespace Security {
+namespace Mantids30::Network::Protocols::HTTP { namespace Headers { namespace Security {
 
 class XSSProtection
 {
@@ -44,7 +44,7 @@ public:
     std::string reportURL; ///< The URL to report violations to for the X-XSS-Protection header.
 };
 
-}}}}}}
+}}}
 
 
 

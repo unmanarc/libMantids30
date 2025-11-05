@@ -202,7 +202,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         else
         {
             // Allow consumer code to inspect and possibly override headers.
-            if (!procHTTPClientHeaders())
+            if (!onClientHeadersReceived())
                 m_currentParser = nullptr; // Don't continue with parsing (close the connection)
             else
             {
@@ -237,7 +237,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
         return sendHTTPResponse();
     else
     {
-        if (!procHTTPClientURI())
+        if (!onClientURIReceived())
             m_currentParser = nullptr; // Don't continue with parsing.
         else
             m_currentParser = &clientRequest.headers;
