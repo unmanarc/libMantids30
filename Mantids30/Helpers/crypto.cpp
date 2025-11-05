@@ -166,6 +166,17 @@ std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input,  c
     return std::nullopt;
 }
 
+std::string Crypto::calcSHA1(const std::string &password)
+{
+    std::string r;
+    unsigned char buffer_sha2[SHA_DIGEST_LENGTH+1];
+    SHA_CTX sha1;
+    SHA1_Init (&sha1);
+    SHA1_Update (&sha1, (const unsigned char *) password.c_str(), password.length());
+    SHA1_Final ( buffer_sha2, &sha1);
+    return Encoders::toHex(buffer_sha2,SHA_DIGEST_LENGTH);
+}
+
 std::string Crypto::calcSHA256(const std::string &password)
 {
     std::string r;

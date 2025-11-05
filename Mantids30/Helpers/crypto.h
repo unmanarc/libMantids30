@@ -85,6 +85,15 @@ public:
     static std::optional<std::string> AES256DecryptB64(const std::string& input, const std::string& key);
 
     /**
+     * @brief Calculates the SHA-1 hash of a string.
+     *
+     * @param password The string to hash.
+     *
+     * @return The SHA-1 hash of the string.
+     */
+    static std::string calcSHA1(const std::string& password);
+
+    /**
      * @brief Calculates the SHA-256 hash of a string.
      *
      * @param password The string to hash.
