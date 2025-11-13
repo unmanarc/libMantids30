@@ -52,15 +52,15 @@ public:
      */
     bool isDefaultStreamableObj();
     /**
-     * @brief writer Same of getStreamableObj
+     * @brief writer Same of getStreamableObject
      * @return current streamable output
      */
-    std::shared_ptr<Memory::Streams::StreamableObject> writer() { return m_outStream; }
+    std::shared_ptr<Memory::Streams::StreamableObject> writer() { return m_contentStreamableObject; }
     /**
-     * @brief getStreamableObj Get the current streamable output
+     * @brief getStreamableObject Get the current streamable output
      * @return current streamable output
      */
-    std::shared_ptr<Memory::Streams::StreamableObject> getStreamableObj();
+    std::shared_ptr<Memory::Streams::StreamableObject> getStreamableObject();
     /**
      * @brief setStreamableObj Set the streamable output (eg. a file?)
      * @param outDataContainer stream that will be used for the content trnasmission
@@ -143,7 +143,7 @@ protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject> m_outStream = std::make_shared<Memory::Containers::B_Chunks>();
+    std::shared_ptr<Memory::Streams::StreamableObject> m_contentStreamableObject = std::make_shared<Memory::Containers::B_Chunks>();
     bool m_usingInternalOutStream = true;
 
     std::optional<uint32_t> parseHttpChunkSize();

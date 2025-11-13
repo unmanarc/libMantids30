@@ -20,7 +20,7 @@ MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> va
 {
     m_maxVarContentSize = 32*KB_MULT;
 
-    m_currentParser = &m_subFirstBoundary;
+    m_currentSubParser = &m_subFirstBoundary;
 
     renewCurrentPart();
     setMultiPartBoundary(Helpers::Random::createRandomString(64));
@@ -226,7 +226,7 @@ bool MIME_Message::changeToNextParser()
     {
         // FIRST_BOUNDARY IS READY
         m_currentState = MP_STATE_HEADERS;
-        m_currentParser = m_currentPart->getHeader();
+        m_currentSubParser = m_currentPart->getHeader();
     }break;
     case MP_STATE_ENDPOINT:
     {
@@ -234,10 +234,10 @@ bool MIME_Message::changeToNextParser()
         if (m_subEndPBoundary.getStatus() == ENDP_STAT_CONTINUE)
         {
             m_currentState = MP_STATE_HEADERS;
-            m_currentParser = m_currentPart->getHeader();
+            m_currentSubParser = m_currentPart->getHeader();
         }
         else
-            m_currentParser = nullptr;
+            m_currentSubParser = nullptr;
     }break;
     case MP_STATE_HEADERS:
     {
@@ -246,7 +246,7 @@ bool MIME_Message::changeToNextParser()
         m_onHeaderReady.call(getMultiPartMessageName(m_currentPart),m_currentPart);
         // GOTO CONTENT:
         m_currentState = MP_STATE_CONTENT;
-        m_currentParser = m_currentPart->getContent();
+        m_currentSubParser = m_currentPart->getContent();
     }break;
     case MP_STATE_CONTENT:
     {
@@ -260,13 +260,13 @@ bool MIME_Message::changeToNextParser()
         renewCurrentPart();
         // Check if the max parts target is reached.
         if (m_allParts.size()==m_maxNumberOfParts)
-            m_currentParser = nullptr; // End here.
+            m_currentSubParser = nullptr; // End here.
         else
         {
             // Goto boundary.
             m_currentState = MP_STATE_ENDPOINT;
             m_subEndPBoundary.reset();
-            m_currentParser = &m_subEndPBoundary;
+            m_currentSubParser = &m_subEndPBoundary;
         }
     }break;
     default:

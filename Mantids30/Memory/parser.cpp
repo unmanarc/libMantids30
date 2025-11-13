@@ -86,20 +86,20 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
     std::optional<size_t> writtenBytes = 0;
 
     // The m_currentParser is a subparser...
-    if (m_currentParser != nullptr)
+    if (m_currentSubParser != nullptr)
     {
         // Default state: get more data...
-        m_currentParser->setParseStatus(SubParser::PARSE_GET_MORE_DATA);
+        m_currentSubParser->setParseStatus(SubParser::PARSE_GET_MORE_DATA);
 
         // Here, the parser should call the sub stream parser parse function and set the new status.
-        writtenBytes = m_currentParser->writeIntoParser(buf, count);
+        writtenBytes = m_currentSubParser->writeIntoParser(buf, count);
 
         // Failed to write this into the parser...
         if (writtenBytes == std::nullopt)
             return std::nullopt;
 
         // TODO: what if error? how to tell the parser that it should analize the connection up to there (without correctness).
-        switch (m_currentParser->getParseStatus())
+        switch (m_currentSubParser->getParseStatus())
         {
         case SubParser::PARSE_GOTO_NEXT_SUBPARSER:
         {
@@ -116,9 +116,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
 #endif
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
-            if (m_currentParser == nullptr)
+            if (m_currentSubParser == nullptr)
                 this->writeStatus.finished = true;
-            if (m_currentParser == nullptr || writtenBytes.value() == count)
+            if (m_currentSubParser == nullptr || writtenBytes.value() == count)
                 return writtenBytes;
         }
         break;

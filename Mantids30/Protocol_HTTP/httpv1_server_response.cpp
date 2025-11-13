@@ -1,4 +1,5 @@
 #include "httpv1_server.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
@@ -7,31 +8,27 @@ using namespace Mantids30;
 using namespace std;
 
 
-bool HTTP::HTTPv1_Server::sendHTTPResponse()
+bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
 
-    // Process client petition here.
-    if (!m_isInvalidHTTPRequest)
-    {
-        serverResponse.status.setCode(onClientContentReceived());
-    }
-
     // Answer is the last... close the connection after it.
-    m_currentParser = nullptr;
+    m_currentSubParser = nullptr;
 
     if (!serverResponse.status.streamToUpstream())
     {
         return false;
     }
 
-    if (!streamServerHeaders())
+    // Stream Server HTTP Headers
+    if (!sendHTTPHeadersResponse())
     {
         return false;
     }
 
+    // Stream content:
     bool streamedOK = serverResponse.content.streamToUpstream();
 
     // Destroy the binary content container here:
@@ -40,15 +37,15 @@ bool HTTP::HTTPv1_Server::sendHTTPResponse()
     return streamedOK;
 }
 
-bool HTTP::HTTPv1_Server::streamServerHeaders()
+bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
 {
     // Act as a server. Send data from here.
     size_t strsize;
-
+    // TODO: connection keep alive.
     if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
-        // TODO: connection keep alive.
-        serverResponse.headers.replace("Connetion", "Close");
+        // Undefined size. (eg. dynamic stream), the connection ends when closed.
+        serverResponse.headers.replace("Connection", "Close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
@@ -56,8 +53,20 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
     }
     else
     {
-        serverResponse.headers.remove("Connetion");
-        serverResponse.headers.replace("Content-Length", std::to_string(strsize));
+        std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
+        if (boost::iequals(connectionType, "close"))
+        {
+            // On connection close, don't report the content size. (is there any reason for not reporting the size?)
+        }
+        else if (boost::iequals(connectionType, "upgrade"))
+        {
+            // conection type is defined as an upgrade, so no extra header / content length...
+        }
+        else
+        {
+            // Defined stream object size, reporting this to the client.
+            serverResponse.headers.replace("Content-Length", std::to_string(strsize));
+        }
     }
 
     HTTP::Date currentDate;
@@ -107,20 +116,20 @@ bool HTTP::HTTPv1_Server::streamServerHeaders()
 }
 
 
-bool HTTP::HTTPv1_Server::streamResponse(std::shared_ptr<Memory::Streams::StreamableObject> source)
+bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
-    if (!serverResponse.content.getStreamableObj())
+    if (!serverResponse.content.getStreamableObject())
     {
         return false;
     }
     // Stream in place:
-    source->streamTo(serverResponse.content.getStreamableObj().get());
+    source->streamTo(serverResponse.content.getStreamableObject().get());
     return true;
 }
 
-std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getResponseDataStreamer()
+std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getResponseContentStreamableObject()
 {
-    return serverResponse.content.getStreamableObj();
+    return serverResponse.content.getStreamableObject();
 }
 
 

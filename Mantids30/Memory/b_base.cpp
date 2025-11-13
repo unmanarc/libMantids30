@@ -374,6 +374,18 @@ std::optional<size_t> B_Base::copyOut(void *buf, size_t bytes, const size_t &off
     return copyToBuffer2(buf, bytes, offset);
 }
 
+std::vector<char> B_Base::copyToBuffer()
+{
+    size_t n = size();
+    std::vector<char> buf(n);
+
+    std::optional<size_t> copied = copyOut(buf.data(), n, 0);
+    if (!copied || *copied != n)
+        return {};
+
+    return buf;
+}
+
 std::optional<size_t> B_Base::copyToString(std::string &outStr, size_t bytes, const size_t &roOffset)
 {
     size_t currentSize = size();

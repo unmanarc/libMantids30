@@ -18,7 +18,7 @@ HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
     setMaxVarNameSize(4096);
     setMaxVarContentSize(4096);
 
-    m_currentParser = &m_urlVarParser;
+    m_currentSubParser = &m_urlVarParser;
 }
 
 std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(

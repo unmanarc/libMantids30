@@ -52,7 +52,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     if (boost::starts_with(sRealFullPath, "MEM:"))
     {
         // Mem-Static resource.
-        fileContent = ((Mantids30::Memory::Containers::B_MEM *) clientHandler->getResponseDataStreamer().get())->toStringEx();
+        fileContent = ((Mantids30::Memory::Containers::B_MEM *) clientHandler->getResponseContentStreamableObject().get())->toStringEx();
         clientHandler->serverResponse.setDataStreamer(nullptr);
     }
     else
@@ -76,7 +76,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
 
     // Stream the generated content...
-    clientHandler->getResponseDataStreamer()->writeString(fileContent);
+    clientHandler->getResponseContentStreamableObject()->writeString(fileContent);
     return HTTP::Status::S_200_OK;
 }
 

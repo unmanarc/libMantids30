@@ -68,7 +68,7 @@ protected:
 
     void initSubParser(SubParser * subparser);
 
-    SubParser * m_currentParser = nullptr;
+    SubParser * m_currentSubParser = nullptr;
     size_t m_maxTTL = 4096;
     bool m_initialized = false;
     bool m_clientMode;

@@ -1,9 +1,7 @@
 #include "httpv1_server.h"
 
 #include <memory>
-#include <vector>
 
-#include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/b_mmap.h>
 
 #include <boost/algorithm/string.hpp>
@@ -35,7 +33,7 @@ HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> connectionS
     serverResponse.cacheControl.optionMustRevalidate = true;
 
     // Start parsing from the request line
-    m_currentParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
+    m_currentSubParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
 
     loadDefaultMIMETypes();
 }
@@ -51,10 +49,14 @@ HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> connectionS
 bool HTTP::HTTPv1_Server::changeToNextParser()
 {
     // Server mode progresses through request line → headers → body.
-    if (m_currentParser == &clientRequest.requestLine)
+    if (m_currentSubParser == &clientRequest.requestLine)
         return changeToNextParserFromClientRequestLine();
-    else if (m_currentParser == &clientRequest.headers)
+    else if (m_currentSubParser == &clientRequest.headers)
         return changeToNextParserFromClientHeaders();
+    else if (m_currentSubParser == &webSocketFrame.header)
+        return changeToNextParserFromWebSocketFrameHeader();
+    else if (m_currentSubParser == &webSocketFrame.content)
+        return changeToNextParserFromWebSocketFrameContent();
     else
         return changeToNextParserFromClientContentData();
 }
@@ -71,155 +73,89 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
 {
     // Client headers have been received; parse metadata and decide next step.
 
-    // Lambda to parse the Host header and extract host and port information
-    auto parseHostHeader = [this]()
+    // Parse all headers first
+    parseAllClientHeaders();
+
+    // Validate HTTP requirements
+    if (!validateHTTPv11Requirements())
     {
-        string hostVal = clientRequest.headers.getOptionValueStringByName("HOST");
-        if (!hostVal.empty())
-        {
-            clientRequest.virtualPort = 80;
-            vector<string> hostParts;
-            split(hostParts, hostVal, is_any_of(":"), token_compress_on);
-            if (hostParts.size() == 1)
-            {
-                clientRequest.virtualHost = hostParts[0];
-            }
-            else if (hostParts.size() > 1)
-            {
-                clientRequest.virtualHost = hostParts[0];
-                char *endptr;
-                unsigned long port = (uint16_t) strtoul(hostParts[1].c_str(), &endptr, 10);
-                if (*endptr == '\0' && port <= 65535) // Check if conversion was successful and port is valid
-                {
-                    clientRequest.virtualPort = (uint16_t) port;
-                }
-                else
-                {
-                    // Invalid port number, set to default or handle error appropriately
-                    clientRequest.virtualPort = 80;
-                }
-            }
-        }
-    };
-
-    // Lambda to validate that HTTP version supports Host header in HTTP/1.1+
-    auto validateServerVersionRequirements = [this]()
-    {
-        if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1)
-        {
-            if (clientRequest.virtualHost == "")
-            {
-                serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
-                m_isInvalidHTTPRequest = true;
-            }
-        }
-    };
-
-    // Lambda to parse Basic Authentication header
-    auto parseBasicAuthentication = [this]()
-    {
-        // PARSE CLIENT BASIC AUTHENTICATION:
-        clientRequest.basicAuth.isEnabled = false;
-        if (clientRequest.headers.exist("Authorization"))
-        {
-            vector<string> authParts;
-            string f1 = clientRequest.headers.getOptionValueStringByName("Authorization");
-            split(authParts, f1, boost::is_any_of(" "), token_compress_on);
-            if (authParts.size() == 2)
-            {
-                if (authParts[0] == "Basic")
-                {
-                    auto bp = Helpers::Encoders::decodeFromBase64(authParts[1]);
-                    std::string::size_type pos = bp.find(':', 0);
-                    if (pos != std::string::npos)
-                    {
-                        clientRequest.basicAuth.isEnabled = true;
-                        clientRequest.basicAuth.username = bp.substr(0, pos);
-                        clientRequest.basicAuth.password = bp.substr(pos + 1, bp.size());
-                    }
-                }
-            }
-        }
-    };
-
-    // Lambda to extract User-Agent header
-    auto parseUserAgentHeader = [this]()
-    {
-        // PARSE USER-AGENT
-        if (clientRequest.headers.exist("User-Agent"))
-            clientRequest.userAgent = clientRequest.headers.getOptionRawStringByName("User-Agent");
-    };
-
-    // Lambda to parse Content-Length and Content-Type headers
-    auto parseContentLengthAndType = [this](size_t &contentLength)
-    {
-        // Extract payload size and content type hints from headers.
-        contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
-        string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
-        if (contentLength)
-        {
-            clientRequest.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
-            if (!clientRequest.content.setContentLengthSize(contentLength))
-            {
-                // Abort: the advertised length cannot be allocated within limits.
-                m_isInvalidHTTPRequest = true;
-                serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
-            }
-            if (icontains(contentType, "multipart/form-data"))
-            {
-                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
-                clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
-            }
-            else if (icontains(contentType, "application/x-www-form-urlencoded"))
-            {
-                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
-            }
-            else if (icontains(contentType, "application/json"))
-            {
-                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_JSON);
-            }
-            else
-                clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_BIN);
-            /////////////////////////////////////////////////////////////////////////////////////
-        }
-    };
-
-    // Execute parsing steps
-    parseHostHeader();
-    validateServerVersionRequirements();
-    parseBasicAuthentication();
-    parseUserAgentHeader();
-
-    if (m_isInvalidHTTPRequest)
-        return sendHTTPResponse();
-    else
-    {
-        size_t contentLength;
-        parseContentLengthAndType(contentLength);
-
-        if (m_isInvalidHTTPRequest)
-            return sendHTTPResponse();
-        else
-        {
-            // Allow consumer code to inspect and possibly override headers.
-            if (!onClientHeadersReceived())
-                m_currentParser = nullptr; // Don't continue with parsing (close the connection)
-            else
-            {
-                if (contentLength)
-                {
-                    // Expect a body because the client provided Content-Length.
-                    m_currentParser = &clientRequest.content;
-                }
-                else
-                {
-                    // No body expected, respond now
-                    return sendHTTPResponse();
-                }
-            }
-        }
+        return sendFullHTTPResponse();
     }
-    return true;
+
+    size_t headerIncommingContentLength;
+
+    // Gets the content length and create the container that will receive the data.
+    if (!setupContentHandling(headerIncommingContentLength))
+    {
+        return sendFullHTTPResponse();
+    }
+
+    enum eProtocolRequestType {
+        PROTOCOL_REQUEST_SIMPLE_HTTP,
+        PROTOCOL_REQUEST_WEBSOCKETS,
+    };
+
+    eProtocolRequestType protocolRequestType = PROTOCOL_REQUEST_SIMPLE_HTTP;
+
+    // Validate WebSocket Protocol:
+    protocolRequestType = !isWebSocketConnectionRequest()? protocolRequestType:PROTOCOL_REQUEST_WEBSOCKETS;
+
+    // Manage current protocol:
+    switch ( protocolRequestType )
+    {
+        // HTTP PROTOCOL (REQ/RES)
+        case PROTOCOL_REQUEST_SIMPLE_HTTP:
+        {
+            // Headers parsed. Allow consumer code to inspect headers
+            if (!onHTTPClientHeadersReceived())
+            {
+                // Here the consumer decided to terminate the connection.
+                m_currentSubParser = nullptr;
+                return true;
+            }
+
+            if (headerIncommingContentLength == 0)
+            {
+                // No body expected, pass to the next phase.
+                return changeToNextParserFromClientContentData();
+            }
+            else
+            {
+                // Don´t respond here, change the parser to receive the content.
+                m_currentSubParser = &clientRequest.content;
+                return true;
+            }
+        } break;
+        // WEBSOCKETS PROTOCOL
+        case PROTOCOL_REQUEST_WEBSOCKETS:
+        {
+            if (!onWebSocketHTTPClientHeadersReceived())
+            {
+                // Here the consumer decided to deliver a http response.
+                return sendFullHTTPResponse();
+            }
+            else
+            {
+                // Authentication and everything went fine, send the header and start processing messages:
+                if (setupAndSendWebSocketHeaderResponse())
+                {
+                    // Connection established. <<
+                    onWebSocketConnectionEstablished();
+
+                    // Receive the frame header...
+                    m_currentSubParser = &webSocketFrame.header;
+                    return true;
+                }
+                else
+                {
+                    m_currentSubParser = nullptr;
+                    return false;
+                }
+            }
+        } break;
+        default:
+            return false;
+    }
 }
 
 /**
@@ -232,15 +168,13 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 {
     // Request-line parsed; validate URI and HTTP version before reading headers.
-    prepareServerVersionOnURI();
-    if (m_isInvalidHTTPRequest)
-        return sendHTTPResponse();
+    if (!prepareServerVersionOnURI())
+    {
+        return sendFullHTTPResponse();
+    }
     else
     {
-        if (!onClientURIReceived())
-            m_currentParser = nullptr; // Don't continue with parsing.
-        else
-            m_currentParser = &clientRequest.headers;
+        m_currentSubParser = !onHTTPClientURIReceived()? nullptr : &clientRequest.headers;
     }
     return true;
 }
@@ -256,16 +190,16 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
     // TODO: Streaming body support not yet implemented
-    m_currentParser = nullptr;
-    return sendHTTPResponse();
+    m_currentSubParser = nullptr;
+    serverResponse.status.setCode(onHTTPClientContentReceived());
+    return sendFullHTTPResponse();
 }
-
 /**
  * @brief Sets the HTTP version for the server's response based on client request.
  *
  * Ensures the server responds with a compatible HTTP version.
  */
-void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
+bool HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 {
     serverResponse.status.getHTTPVersion()->setMajor(1);
     serverResponse.status.getHTTPVersion()->setMinor(0);
@@ -274,10 +208,11 @@ void HTTP::HTTPv1_Server::prepareServerVersionOnURI()
     if (clientRequest.requestLine.getHTTPVersion()->getMajor() != 1)
     {
         serverResponse.status.setCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
-        m_isInvalidHTTPRequest = true;
+        return false;
     }
     else
     {
         serverResponse.status.getHTTPVersion()->setMinor(clientRequest.requestLine.getHTTPVersion()->getMinor());
+        return true;
     }
 }

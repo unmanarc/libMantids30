@@ -29,10 +29,10 @@ public:
 protected:
 
     /**
-     * @brief onClientContentReceived Process web client request
+     * @brief onHTTPClientContentReceived Process web client request
      * @return http response code.
      */
-    Protocols::HTTP::Status::Codes onClientContentReceived() override;
+    Protocols::HTTP::Status::Codes onHTTPClientContentReceived() override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.

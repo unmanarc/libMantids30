@@ -14,7 +14,7 @@ using namespace Mantids30;
 
 HTTP::HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject> sobject) : HTTPv1_Base(true,sobject)
 {
-    m_currentParser = (Memory::Streams::SubParser *)(&serverResponse.status);
+    m_currentSubParser = (Memory::Streams::SubParser *)(&serverResponse.status);
     clientRequest.requestLine.getHTTPVersion()->setMajor(1);
     clientRequest.requestLine.getHTTPVersion()->setMinor(0);
 
@@ -38,9 +38,9 @@ bool HTTP::HTTPv1_Client::initProtocol()
 
 bool HTTP::HTTPv1_Client::changeToNextParser()
 {
-    if (m_currentParser == &serverResponse.status)
-        m_currentParser = &serverResponse.headers;
-    else if (m_currentParser == &serverResponse.headers)
+    if (m_currentSubParser == &serverResponse.status)
+        m_currentSubParser = &serverResponse.headers;
+    else if (m_currentSubParser == &serverResponse.headers)
     {
         // Process incoming server headers here:
         /////////////////////////////////////////////////////////////////////////
@@ -84,10 +84,10 @@ bool HTTP::HTTPv1_Client::changeToNextParser()
         // Parse server cookies...
         parseHeaders2ServerCookies();
         // Parse the transmition mode requested and act according it.
-        m_currentParser = parseHeaders2TransmitionMode();
+        m_currentSubParser = parseHeaders2TransmitionMode();
     }
     else // END.
-        m_currentParser = nullptr;
+        m_currentSubParser = nullptr;
     return true;
 }
 
@@ -127,7 +127,7 @@ bool HTTP::HTTPv1_Client::streamClientHeaders()
         return false;
     else
     {
-        clientRequest.headers.remove("Connetion");
+        clientRequest.headers.remove("Connection");
         clientRequest.headers.replace("Content-Length", std::to_string(strsize));
     }
 

@@ -5,7 +5,6 @@
 
 #include "streamableobject.h"
 
-#include <limits.h>
 #include <memory>
 #include <stdio.h>
 #include <list>
@@ -152,13 +151,17 @@ public:
      */
     std::optional<size_t> copyOut(void * buf, size_t bytes, const size_t &offset = 0);
     /**
+     * @brief Copy the contents of this container into a new std::unique_ptr<char[]>.
+     * @return A std::unique_ptr<char[]> containing a copy of the container's data.
+     */
+    std::vector<char> copyToBuffer();
+    /**
      * @brief Copy the container to an std::string
      * @param bytes bytes to copy (std::numeric_limits<size_t>::max(): all bytes)
      * @param offset offset displacement
      * @return bytes copied or std::numeric_limits<size_t>::max() if error.
      */
     std::optional<size_t> copyToString(std::string & str,size_t bytes = std::numeric_limits<size_t>::max(), const size_t & offset = 0);
-
     /**
      * @brief toString create string with the data contained here.
      * @param bytes bytes to copy (std::numeric_limits<size_t>::max(): all bytes)

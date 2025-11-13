@@ -39,7 +39,7 @@ APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObjec
     : HTTPv1_Server(sock)
 {}
 
-HTTP::Status::Codes APIClientHandler::onClientContentReceived()
+HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
 {
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
     std::string requestURI = clientRequest.getURI();
