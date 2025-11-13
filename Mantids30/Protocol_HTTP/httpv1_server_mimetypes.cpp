@@ -35,6 +35,8 @@ std::string HTTP::HTTPv1_Server::getCurrentFileExtension() const
     return m_currentFileExtension;
 }
 
+
+
 void HTTP::HTTPv1_Server::loadDefaultMIMETypes()
 {
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)

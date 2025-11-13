@@ -279,3 +279,7 @@ bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
     return frmcontent.streamToUpstream();
 }
 
+bool HTTP::HTTPv1_Server::sendWebSocketText(const std::string &data)
+{
+    return sendWebSocketText(data.c_str(),data.size());
+}

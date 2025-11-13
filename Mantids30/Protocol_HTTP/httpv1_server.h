@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <atomic>
+#include <string>
 
 #ifdef _WIN32
 #define SLASHB '\\'
@@ -215,6 +216,7 @@ protected:
      */
     virtual void onWebSocketConnectionFinished() {}
 
+    bool sendWebSocketText( const std::string & data );
     bool sendWebSocketText( const char * data, const size_t & len );
     bool sendWebSocketBinaryData( const char * data, const size_t & len );
     bool sendWebSocketPing(const char * data, size_t len );
