@@ -216,7 +216,7 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
         webSocketFrame.content.reset();
         webSocketFrame.header.reset();
         m_currentSubParser = nullptr;
-        return false;
+        return true;
     } break;
     case WebSocket::FrameHeader::OPCODE_PING:
     {
