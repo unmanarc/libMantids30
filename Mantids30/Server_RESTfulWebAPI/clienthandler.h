@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/API_RESTful/restful_endpoints.h>
-#include <Mantids30/API_RESTful/websocket_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/websocket_endpoints.h>
 #include <Mantids30/Server_WebCore/apiclienthandler.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <cstdint>

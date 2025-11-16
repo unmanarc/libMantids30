@@ -48,8 +48,7 @@ set(Mantids30_LIBRARIES
     Helpers
     Net_Sockets
     Memory
-    Sessions
-    API_Monolith
+    API_EndpointsAndSessions
     DataFormat_JWT
 )
 

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Sessions/session.h>
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 
-#include <Mantids30/API_Monolith/endpointshandler.h>
+#include <Mantids30/API_EndpointsAndSessions/monolith_endpointshandler.h>
 #include <Mantids30/Threads/threadpool.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Threads/mutex.h>

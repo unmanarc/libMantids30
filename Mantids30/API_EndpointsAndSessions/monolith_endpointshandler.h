@@ -6,7 +6,7 @@
 #include <Mantids30/Threads/mutex_shared.h>
 #include <memory>
 #include <string>
-#include "endpointsrequirements_map.h"
+#include "monolith_endpointsrequirements_map.h"
 
 namespace Mantids30 { namespace API { namespace Monolith {
 

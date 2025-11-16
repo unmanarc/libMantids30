@@ -1,7 +1,7 @@
 #pragma once
 
 #include "json/value.h"
-#include <Mantids30/Sessions/session.h>
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamablestring.h>
 #include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
 #include "apiserverparameters.h"

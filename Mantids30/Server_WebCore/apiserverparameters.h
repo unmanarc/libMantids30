@@ -1,14 +1,14 @@
 #ifndef APISERVERPARAMETERS_H
 #define APISERVERPARAMETERS_H
 
-#include <Mantids30/API_RESTful/restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/restful_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Program_Logs/weblog.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/Sessions/session.h>
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 
 #include "resourcesfilter.h"
 #include <memory>

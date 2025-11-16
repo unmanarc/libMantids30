@@ -51,6 +51,7 @@ set(Mantids30_LIBRARIES
     Net_Sockets
     Server_WebCore
     Server_RESTfulWebAPI
+    API_EndpointsAndSessions
     Helpers
 )
 

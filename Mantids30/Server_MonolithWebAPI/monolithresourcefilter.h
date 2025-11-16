@@ -3,7 +3,7 @@
 #include <Mantids30/Server_WebCore/resourcesfilter.h>
 
 // FOR SESSION:
-#include <Mantids30/Sessions/session.h>
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 
 namespace Mantids30 { namespace API { namespace Monolith {
 

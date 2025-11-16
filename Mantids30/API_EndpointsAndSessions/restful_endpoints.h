@@ -7,7 +7,7 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/Sessions/session.h>
+#include "session.h"
 #include <Mantids30/Threads/mutex_shared.h>
 #include <cstdint>
 #include <map>

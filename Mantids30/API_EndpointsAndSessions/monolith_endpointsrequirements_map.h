@@ -2,7 +2,7 @@
 #include <map>
 #include <string>
 #include <set>
-#include <Mantids30/Sessions/session.h>
+#include "session.h"
 
 namespace Mantids30 {
 namespace API {

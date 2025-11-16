@@ -53,7 +53,7 @@ set(Mantids30_LIBRARIES
     Net_Sockets
     Protocol_HTTP
     Protocol_MIME
-    API_RESTful
+    API_EndpointsAndSessions
     Server_WebCore
     Program_Logs
 )

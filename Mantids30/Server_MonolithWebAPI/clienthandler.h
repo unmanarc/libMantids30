@@ -6,7 +6,7 @@
 #include "sessionsmanager.h"
 
 #include <Mantids30/Memory/streamablejson.h>
-#include <Mantids30/API_Monolith/endpointshandler.h>
+#include <Mantids30/API_EndpointsAndSessions/monolith_endpointshandler.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>

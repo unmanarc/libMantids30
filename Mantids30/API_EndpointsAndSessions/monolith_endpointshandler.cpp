@@ -1,4 +1,4 @@
-#include "endpointshandler.h"
+#include "monolith_endpointshandler.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/lock_shared.h>
 #include <memory>

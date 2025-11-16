@@ -1,5 +1,5 @@
 #include "engine.h"
-#include <Mantids30/API_RESTful/restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/restful_endpoints.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <memory>
