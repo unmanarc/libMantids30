@@ -2,23 +2,23 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Helpers { namespace TOTP {
+namespace Mantids30 { namespace Helpers { namespace OTP {
 
 
 /**
- * @class GoogleAuthenticator
+ * @class TOTP
  * @brief This class implements the Google Authenticator's Time-based One-Time Password (TOTP) algorithm.
  *
- * The GoogleAuthenticator class provides functions to generate a TOTP and to verify a given TOTP against the expected value.
+ * The TOTP class provides functions to generate a TOTP and to verify a given TOTP against the expected value.
  */
-class GoogleAuthenticator {
+class TOTP {
 public:
 
     /// Default constructor
-    GoogleAuthenticator() = default;
+    TOTP() = default;
 
     /// Default destructor
-    ~GoogleAuthenticator() = default;
+    ~TOTP() = default;
 
     /**
      * @brief Generates a TOTP for a given secret.

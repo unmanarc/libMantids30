@@ -1,4 +1,4 @@
-#include "googleauthenticator.h"
+#include "totp.h"
 
 #include "encoders.h"
 #include <openssl/hmac.h>
@@ -8,9 +8,9 @@
 //#include <cmath>
 //#include <vector>
 
-using namespace Mantids30::Helpers::TOTP;
+using namespace Mantids30::Helpers::OTP;
 
-std::string GoogleAuthenticator::generateTOTP(
+std::string TOTP::generateTOTP(
     const std::string &base32Secret, int position, unsigned int interval, unsigned int digits)
 {
     // Decode the base32 secret
@@ -60,7 +60,7 @@ std::string GoogleAuthenticator::generateTOTP(
     return otp;
 }
 
-bool GoogleAuthenticator::verifyToken(
+bool TOTP::verifyToken(
     const std::string &base32Secret, const std::string &tokenInput, int aperture, unsigned int interval, unsigned int digits)
 {
     // Check the input token against all tokens from -aperture to +aperture
