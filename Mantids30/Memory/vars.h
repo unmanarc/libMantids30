@@ -1,7 +1,7 @@
 #pragma once
 
 #include "b_chunks.h"
-#include "streamableobject.h"
+#include "streamable_object.h"
 #include <Mantids30/Helpers/json.h>
 #include <list>
 #include <set>

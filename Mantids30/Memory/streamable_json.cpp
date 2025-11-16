@@ -1,6 +1,6 @@
-#include "streamablejson.h"
-#include "streamablenull.h"
-#include "streamableobject.h"
+#include "streamable_json.h"
+#include "streamable_null.h"
+#include "streamable_object.h"
 #include <optional>
 
 using namespace Mantids30::Memory::Streams;

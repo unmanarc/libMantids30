@@ -3,7 +3,7 @@
 #include <openssl/ssl.h>
 #include <openssl/tls1.h>
 #include <string.h>
-#include <Mantids30/Memory/streamablefile.h>
+#include <Mantids30/Memory/streamable_file.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Helpers/safeint.h>
 #include <stdexcept>

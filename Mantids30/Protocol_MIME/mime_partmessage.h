@@ -3,7 +3,7 @@
 #include "mime_sub_content.h"
 #include "mime_sub_header.h"
 
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamable_object.h>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
 

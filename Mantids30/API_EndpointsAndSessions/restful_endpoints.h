@@ -2,7 +2,7 @@
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>

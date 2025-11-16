@@ -1,6 +1,6 @@
 #pragma once
 
-#include "streamableobject.h"
+#include "streamable_object.h"
 #include <unistd.h>
 
 namespace Mantids30 { namespace Memory { namespace Streams {

@@ -5,7 +5,7 @@
 #include "socket_stream_writer.h"
 #include <memory>
 #include <utility>
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamable_object.h>
 
 namespace Mantids30 { namespace Network { namespace Sockets {
 

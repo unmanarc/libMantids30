@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <string>
 
-#include <Mantids30/Memory/streamablejson.h>
-#include "Mantids30/Memory/streamablestring.h"
+#include <Mantids30/Memory/streamable_json.h>
+#include "Mantids30/Memory/streamable_string.h"
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
 #include "hdr_sec_hsts.h"

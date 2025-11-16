@@ -6,7 +6,7 @@
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/b_mmap.h>
-#include <Mantids30/Memory/streamablestring.h>
+#include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 

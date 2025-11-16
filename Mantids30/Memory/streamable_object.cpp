@@ -1,5 +1,5 @@
-#include "streamableobject.h"
-#include "streamablestring.h"
+#include "streamable_object.h"
+#include "streamable_string.h"
 #include <optional>
 #include <stdarg.h>
 #include <stdio.h>

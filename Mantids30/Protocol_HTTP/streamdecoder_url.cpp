@@ -5,7 +5,7 @@
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/b_chunks.h>
 #include <Mantids30/Memory/b_mem.h>
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamable_object.h>
 
 using namespace Mantids30;
 using namespace Mantids30::Memory::Streams;

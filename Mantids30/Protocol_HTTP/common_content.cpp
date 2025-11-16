@@ -1,5 +1,5 @@
 #include "common_content.h"
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include "common_content_chunked_subparser.h"
 
 #include <optional>

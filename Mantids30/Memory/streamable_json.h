@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamable_object.h>
 #include <Mantids30/Helpers/json.h>
 
 namespace Mantids30 { namespace Memory { namespace Streams {

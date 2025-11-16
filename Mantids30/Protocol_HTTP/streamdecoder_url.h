@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Memory/streamabletransformer.h>
+#include <Mantids30/Memory/streamable_transformer.h>
 
 namespace Mantids30 { namespace Memory { namespace Streams { namespace Decoders {
 

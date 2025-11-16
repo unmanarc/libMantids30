@@ -5,7 +5,7 @@
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "sessionsmanager.h"
 
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/API_EndpointsAndSessions/monolith_endpointshandler.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>

@@ -3,7 +3,7 @@
 #ifndef _WIN32
 
 #include <Mantids30/Helpers/appexec.h>
-#include "streamableobject.h"
+#include "streamable_object.h"
 
 namespace Mantids30 { namespace Memory { namespace Streams {
 

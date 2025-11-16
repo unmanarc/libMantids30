@@ -2,7 +2,7 @@
 
 #include "b_chunks.h"
 #include "b_ref.h"
-#include "streamableobject.h"
+#include "streamable_object.h"
 #include <optional>
 
 //#define DEBUG_PARSER 1

@@ -1,4 +1,4 @@
-#include "streamablenull.h"
+#include "streamable_null.h"
 
 using namespace Mantids30::Memory::Streams;
 

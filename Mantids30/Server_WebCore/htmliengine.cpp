@@ -1,7 +1,7 @@
 #include "htmliengine.h"
 #include "json/value.h"
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>

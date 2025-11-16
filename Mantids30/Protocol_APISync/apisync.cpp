@@ -1,6 +1,6 @@
 #include "apisync.h"
 
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_client.h>

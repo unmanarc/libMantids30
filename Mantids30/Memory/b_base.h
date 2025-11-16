@@ -3,7 +3,7 @@
 
 #include "b_chunk.h"
 
-#include "streamableobject.h"
+#include "streamable_object.h"
 
 #include <memory>
 #include <stdio.h>

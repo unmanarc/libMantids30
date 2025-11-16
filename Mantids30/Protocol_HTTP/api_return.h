@@ -5,7 +5,7 @@
 #include "rsp_status.h"
 #include "json/value.h"
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 
 namespace Mantids30 {
 namespace API {

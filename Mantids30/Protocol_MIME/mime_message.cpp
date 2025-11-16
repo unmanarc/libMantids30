@@ -4,7 +4,7 @@
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Memory/b_chunks.h>
-#include <Mantids30/Memory/streamableobject.h>
+#include <Mantids30/Memory/streamable_object.h>
 
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>

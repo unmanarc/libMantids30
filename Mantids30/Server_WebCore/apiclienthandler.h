@@ -2,11 +2,11 @@
 
 #include "json/value.h"
 #include <Mantids30/API_EndpointsAndSessions/session.h>
-#include <Mantids30/Memory/streamablestring.h>
+#include <Mantids30/Memory/streamable_string.h>
 #include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
 #include "apiserverparameters.h"
 
-#include <Mantids30/Memory/streamablejson.h>
+#include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
