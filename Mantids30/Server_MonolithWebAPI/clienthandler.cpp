@@ -44,7 +44,8 @@ API::APIReturn ClientHandler::handleAPIRequest(
     json reasons;
 
     // Validate that the endpoint requirements are satisfied.
-    auto i = endpointsHandler->validateEndpointRequirements(m_currentSessionInfo.authSession, endpointName, &reasons);
+    auto i = endpointsHandler->validateEndpointRequirements(
+        currentSessionInfo.authSession, endpointName, &reasons);
 
     switch (i)
     {
@@ -57,7 +58,7 @@ API::APIReturn ClientHandler::handleAPIRequest(
         auto finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (endpointsHandler->invoke(m_currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON() ))
+        switch (endpointsHandler->invoke(currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON() ))
         {
         case API::Monolith::Endpoints::ENDPOINT_RET_CODE_SUCCESS:
 

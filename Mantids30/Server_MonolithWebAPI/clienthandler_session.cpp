@@ -48,10 +48,10 @@ HTTP::Status::Codes ClientHandler::sessionStart()
     {
         // If session id is found, populate user data.
         // Extract and store user-related information from the token.
-        m_currentSessionInfo.authSession = m_currentWebSession->getAuthSession();
-        m_currentSessionInfo.halfSessionId = RPCLog::truncateSessionId(m_sessionID);
-        m_currentSessionInfo.sessionId = m_sessionID;
-        m_currentSessionInfo.isImpersonation = !(m_currentSessionInfo.authSession->getImpersonator().empty());
+        currentSessionInfo.authSession = m_currentWebSession->getAuthSession();
+        currentSessionInfo.halfSessionId = RPCLog::truncateSessionId(m_sessionID);
+        currentSessionInfo.sessionId = m_sessionID;
+        currentSessionInfo.isImpersonation = !(currentSessionInfo.authSession->getImpersonator().empty());
 
         if (!config->allowFloatingClients)
         {
@@ -106,7 +106,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
     if (isSessionActive())
     {
-        return m_currentSessionInfo.authSession->doesSessionVariableExist(varName);
+        return currentSessionInfo.authSession->doesSessionVariableExist(varName);
     }
     return false;
 }
@@ -115,7 +115,7 @@ json ClientHandler::getSessionVariableValue(const string &varName)
 {
     if (isSessionActive())
     {
-        return m_currentSessionInfo.authSession->getSessionVariableValue(varName);
+        return currentSessionInfo.authSession->getSessionVariableValue(varName);
     }
     return {};
 
@@ -132,14 +132,14 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
 
 bool ClientHandler::isSessionActive()
 {
-    return m_currentSessionInfo.authSession && !(m_currentSessionInfo.authSession->isSessionRevoked());
+    return currentSessionInfo.authSession && !(currentSessionInfo.authSession->isSessionRevoked());
 }
 
 set<string> ClientHandler::getSessionScopes()
 {
     if (isSessionActive())
     {
-        return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopes();
+        return currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopes();
     }
     return {};
 }
@@ -148,7 +148,7 @@ set<string> ClientHandler::getSessionRoles()
 {
     if (isSessionActive())
     {
-        return m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRoles();
+        return currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRoles();
     }
     return {};
 }

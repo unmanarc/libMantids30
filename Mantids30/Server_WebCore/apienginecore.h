@@ -8,6 +8,7 @@
 #include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/socket_stream_dummy.h>
 #include <Mantids30/Program_Logs/rpclog.h>
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <memory>
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
@@ -72,7 +73,6 @@ public:
         NotificationCallback onClientConnectionLimitPerIPReached; ///< Callback invoked when the connection limit per IP address is reached.
     };
 
-
     APIEngineCore();
 
     bool handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
@@ -105,14 +105,21 @@ public:
      */
     void startInBackground();
 
-
-
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
     APIServerParameters config;             ///< The api server configuration parameters
-
-
     std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
+
+
+    /**
+     * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
+     * @param newWebsocketEndpoints
+     */
+    void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
+    /**
+     * @brief m_websocketEndpoints WebSocket endpoints shared pointer
+     */
+    std::shared_ptr<API::WebSocket::Endpoints> websocketEndpoints;
 
 protected:
     virtual std::shared_ptr<APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
@@ -133,6 +140,7 @@ private:
 
     AcceptorType m_acceptorType = AcceptorType::NONE;
     std::shared_ptr<Sockets::Socket_Stream> listenerSocket;
+
 
 
     std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;

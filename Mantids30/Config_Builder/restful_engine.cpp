@@ -188,6 +188,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         webServer->callbacks.onClientAcceptTimeoutOccurred = handleClientAcceptTimeoutOccurred;
         webServer->callbacks.onClientConnectionLimitPerIPReached = handleClientConnectionLimitPerIPReached;
 
+        bool bTranslateTextMessagesToJSON = config.get<bool>("WebSockets.TranslateTextMessagesToJSON", true);
+        webServer->config.translateWebSocketTextMessagesToJSON = bTranslateTextMessagesToJSON;
+
+        bool bSendWebSocketSessionIDAtConnection = config.get<bool>("WebSockets.SendWebSocketSessionIDAtConnection", true);
+        webServer->config.sendWebSocketSessionIDAtConnection = bSendWebSocketSessionIDAtConnection;
+
+
         // Use a thread pool or multi-threading based on configuration
         bool useThreadPool = config.get<bool>("Threads.UseThreadPool", false);
         uint32_t threadsCount = useThreadPool ?

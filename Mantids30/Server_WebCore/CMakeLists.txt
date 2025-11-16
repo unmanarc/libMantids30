@@ -50,6 +50,7 @@ set(Mantids30_LIBRARIES
     Net_Sockets
     Protocol_HTTP
     Protocol_MIME
+    API_EndpointsAndSessions
     Program_Logs
 )
 

@@ -47,6 +47,5 @@ std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngi
 {
     auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer,s);
     clientHandler->m_endpointsHandler = endpointsHandler;
-    clientHandler->m_websocketEndpoints = websocketEndpoints;
     return clientHandler;
 }

@@ -10,16 +10,11 @@
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
+
 #include <memory>
 
 namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
-
-class SessionInfo {
-public:
-    std::shared_ptr<Mantids30::Sessions::Session> authSession;
-    std::string halfSessionId, sessionId;
-    bool isImpersonation = false;
-};
 
 class APIClientHandler : public Protocols::HTTP::HTTPv1_Server
 {
@@ -138,7 +133,7 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) = 0;
+    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
@@ -204,25 +199,25 @@ protected:
     Protocols::HTTP::Status::Codes showBrowserMessage(const std::string & title, const std::string& message, Protocols::HTTP::Status::Codes returnCode);
     std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string & title, const std::string& message);
 
-    DataFormat::JWT::Token m_JWTToken;
+    DataFormat::JWT::Token jwtToken;
     // This session info is used for the logs and for filling htmli variables.
-    SessionInfo m_currentSessionInfo;
+    Sessions::SessionInfo currentSessionInfo;
 
 protected:
     Protocols::HTTP::Status::Codes redirectUsingJS( const std::string & url );
 
+    // Websocket endpoints:
+    std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
+    std::string m_webSocketSessionId;
+    const API::WebSocket::WebSocketEndpointFullDefinition * m_webSocketCurrentEndpoint = nullptr;
 
 private:
-
     std::string logUsername;
-
     Protocols::HTTP::Status::Codes handleRegularFileRequest();
-
     bool versionIsSupported(const std::string &versionStr, int minVersion);
-
     bool isSupportedUserAgent(const std::string &userAgent);
-
     friend class HTMLIEngine;
+    friend class APIEngineCore;
 };
 
 }}}}

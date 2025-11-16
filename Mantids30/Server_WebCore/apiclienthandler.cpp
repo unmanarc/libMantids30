@@ -92,9 +92,9 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
     // TODO: implement identity.
 
     logUsername.clear();
-    if (m_currentSessionInfo.authSession)
+    if (currentSessionInfo.authSession)
     {
-        logUsername = m_currentSessionInfo.authSession->getUser();
+        logUsername = currentSessionInfo.authSession->getUser();
     }
 
     for (const auto &baseApiUrl : config->APIURLs)
@@ -282,14 +282,14 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
 
 void APIClientHandler::fillSessionInfo(json &jVars)
 {
-    if (m_currentSessionInfo.authSession)
+    if (currentSessionInfo.authSession)
     {
-        jVars["isImpersonation"] = m_currentSessionInfo.isImpersonation;
-        jVars["impersonator"] = m_currentSessionInfo.authSession->getImpersonator();
+        jVars["isImpersonation"] = currentSessionInfo.isImpersonation;
+        jVars["impersonator"] = currentSessionInfo.authSession->getImpersonator();
 
-        jVars["halfSessionID"] = m_currentSessionInfo.halfSessionId;
-        jVars["user"] = m_currentSessionInfo.authSession->getUser();
-        jVars["domain"] = m_currentSessionInfo.authSession->getDomain();
+        jVars["halfSessionID"] = currentSessionInfo.halfSessionId;
+        jVars["user"] = currentSessionInfo.authSession->getUser();
+        jVars["domain"] = currentSessionInfo.authSession->getDomain();
         jVars["loggedIn"] = true;
     }
     else
@@ -462,22 +462,22 @@ void APIClientHandler::log(eLogLevels logSeverity, const std::string &module, co
 
     std::string user, domain;
 
-    if (m_currentSessionInfo.authSession)
+    if (currentSessionInfo.authSession)
     {
-        if (!m_currentSessionInfo.authSession->getImpersonator().empty())
+        if (!currentSessionInfo.authSession->getImpersonator().empty())
         {
-            user = m_currentSessionInfo.authSession->getUser() + "<-" + m_currentSessionInfo.authSession->getImpersonator();
+            user = currentSessionInfo.authSession->getUser() + "<-" + currentSessionInfo.authSession->getImpersonator();
         }
         else
         {
-            user = m_currentSessionInfo.authSession->getUser();
+            user = currentSessionInfo.authSession->getUser();
         }
 
-        domain = m_currentSessionInfo.authSession->getDomain();
+        domain = currentSessionInfo.authSession->getDomain();
     }
 
     if (config->rpcLog)
-        config->rpcLog->logVA(logSeverity, clientRequest.networkClientInfo.REMOTE_ADDR, m_currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
+        config->rpcLog->logVA(logSeverity, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
 
     va_end(args);
 }
@@ -492,13 +492,13 @@ bool APIClientHandler::verifyToken(const std::string &strToken)
     }
 
     // Attempt to verify the provided token using the JWT validator.
-    bool x = this->config->jwtValidator->verify(strToken, &m_JWTToken);
+    bool x = this->config->jwtValidator->verify(strToken, &jwtToken);
 
     if (!x)
         return false;
 
     // Check if the current running app matches the JWT spec.
-    return JSON_ASSTRING_D(m_JWTToken.getClaim("app"), "") == config->appName;
+    return JSON_ASSTRING_D(jwtToken.getClaim("app"), "") == config->appName;
 }
 
 bool APIClientHandler::isURLSafe(const std::string &url)

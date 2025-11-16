@@ -5,8 +5,7 @@
 #include <string>
 #include <map>
 
-namespace Mantids30 {
-namespace Sessions {
+namespace Mantids30::Sessions {
 
 /**
  * @brief The Session_Vars class manages session variables for an authenticated session in the application.
@@ -54,6 +53,6 @@ private:
     Threads::Sync::Mutex_Shared m_sessionVarsMutex;
 };
 
-}} // namespace Mantids30::Auth
+}
 
 

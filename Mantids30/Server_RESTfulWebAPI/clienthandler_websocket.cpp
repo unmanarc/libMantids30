@@ -3,8 +3,8 @@
 #include <json/config.h>
 #include <string>
 
-#include <string>
 #include <json/json.h>
+#include <string>
 
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
@@ -20,17 +20,17 @@ HTTP::Status::Codes ClientHandler::checkWebSocketRequestURI(const std::string &p
     set<string> currentScopes;
     bool isAdmin = false;
 
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
-        isAdmin = m_JWTToken.isAdmin();
-        currentScopes = m_JWTToken.getAllScopes();
+        isAdmin = jwtToken.isAdmin();
+        currentScopes = jwtToken.getAllScopes();
     }
 
     API::WebSocket::Endpoints::SecurityParameters securityParameters;
     securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
     securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
 
-    switch(m_websocketEndpoints.checkEndpoint(path,currentScopes,isAdmin,securityParameters))
+    switch (m_websocketEndpoints->checkEndpoint(path, currentScopes, isAdmin, securityParameters))
     {
     case API::WebSocket::Endpoints::SUCCESS:
         return Protocols::HTTP::Status::Codes::S_200_OK;
@@ -50,18 +50,20 @@ HTTP::Status::Codes ClientHandler::checkWebSocketRequestURI(const std::string &p
     return Protocols::HTTP::Status::Codes::S_500_INTERNAL_SERVER_ERROR;
 }
 
-void ClientHandler::handleWebSocketEvent(Protocols::WebSocket::EventType eventType)
+void ClientHandler::handleWebSocketEvent(Protocols::WebSocket::EventType eventType, const API::WebSocket::WebSocketEndpointFullDefinition *currentWebSocketEndpoint)
 {
     API::WebSocket::WebSocketParameters inputParameters;
 
-    inputParameters.jwtSigner       = this->config->jwtSigner;
-    inputParameters.jwtValidator    = this->config->jwtValidator;
-    inputParameters.clientRequest   = &clientRequest;
+    inputParameters.jwtSigner = this->config->jwtSigner;
+    inputParameters.jwtValidator = this->config->jwtValidator;
+    inputParameters.clientRequest = &clientRequest;
+    inputParameters.webSocketSessionId = this->m_webSocketSessionId;
+    inputParameters.currentWebSocketEndpoint = currentWebSocketEndpoint;
 
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
-        inputParameters.jwtToken = &m_JWTToken;
+        inputParameters.jwtToken = &jwtToken;
     }
 
-    m_websocketEndpoints.handleEvent(eventType,webSocketCurrentFrame.content.getContent(),inputParameters);
+    m_websocketEndpoints->handleEvent(eventType, webSocketCurrentFrame.content.getContent(), inputParameters);
 }

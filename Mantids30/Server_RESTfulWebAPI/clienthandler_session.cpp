@@ -34,7 +34,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         // First we check the header, if the header have a token, continue with it
         if ( this->config->dynamicTokenValidator!=nullptr )
         {
-            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&m_JWTToken);
+            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&jwtToken);
         }
         else
         {
@@ -46,7 +46,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         // if not, continue with the cookie.
         if ( this->config->dynamicTokenValidator!=nullptr )
         {
-            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&m_JWTToken);
+            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&jwtToken);
         }
         else
         {
@@ -59,10 +59,10 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         // If verification is successful and the token is valid, populate user data.
         // Extract and store user-related information from the token.
         // Create a temporary session for the REST request...
-        m_currentSessionInfo.authSession = make_shared<Mantids30::Sessions::Session>(m_JWTToken);
-        m_currentSessionInfo.halfSessionId = m_JWTToken.getJwtId();
-        m_currentSessionInfo.sessionId = m_JWTToken.getJwtId();
-        m_currentSessionInfo.isImpersonation = !(m_currentSessionInfo.authSession->getImpersonator().empty());
+        currentSessionInfo.authSession = make_shared<Mantids30::Sessions::Session>(jwtToken);
+        currentSessionInfo.halfSessionId = jwtToken.getJwtId();
+        currentSessionInfo.sessionId = jwtToken.getJwtId();
+        currentSessionInfo.isImpersonation = !(currentSessionInfo.authSession->getImpersonator().empty());
     }
 
     return Protocols::HTTP::Status::S_200_OK;
@@ -78,7 +78,7 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
     jVars["maxAge"] = 0;
     if ( isSessionActive() )
     {
-        jVars["maxAge"] = m_JWTToken.getExpirationTime() - time(nullptr);
+        jVars["maxAge"] = jwtToken.getExpirationTime() - time(nullptr);
     }
 }
 
@@ -86,7 +86,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
     if ( isSessionActive() )
     {
-        return m_JWTToken.hasClaim(varName);
+        return jwtToken.hasClaim(varName);
     }
     return false;
 }
@@ -95,7 +95,7 @@ json ClientHandler::getSessionVariableValue(const string &varName)
 {
     if ( isSessionActive() )
     {
-        return m_JWTToken.getClaim(varName);
+        return jwtToken.getClaim(varName);
     }
     return {};
 }
@@ -109,7 +109,7 @@ set<string> ClientHandler::getSessionScopes()
 {
     if ( isSessionActive() )
     {
-        return m_JWTToken.getAllScopes();
+        return jwtToken.getAllScopes();
     }
     return {};
 }
@@ -118,7 +118,7 @@ set<string> ClientHandler::getSessionRoles()
 {
     if ( isSessionActive() )
     {
-        return m_JWTToken.getAllRoles();
+        return jwtToken.getAllRoles();
     }
     return {};
 }

@@ -14,9 +14,7 @@
 #include <memory>
 #include <set>
 
-namespace Mantids30 {
-namespace API {
-namespace RESTful {
+namespace Mantids30::API::RESTful {
 
 // Struct to hold HTTP request parameters
 struct RequestParameters
@@ -153,20 +151,6 @@ public:
 
     struct SecurityParameters
     {
-        Json::Value toJSON() const
-        {
-            Json::Value securityJSON;
-            securityJSON["haveJWTAuthHeader"] = haveJWTAuthHeader;
-            securityJSON["haveJWTAuthCookie"] = haveJWTAuthCookie;
-            return securityJSON;
-        }
-
-        void setJSON(const Json::Value &securityJSON)
-        {
-            haveJWTAuthHeader = JSON_ASBOOL(securityJSON, "haveJWTAuthHeader", false);
-            haveJWTAuthCookie = JSON_ASBOOL(securityJSON, "haveJWTAuthCookie", false);
-        }
-
         bool haveJWTAuthHeader = false;
         bool haveJWTAuthCookie = false;
     };
@@ -237,6 +221,4 @@ private:
     Sessions::ClientDetails extractClientDetails(const RequestParameters &inputParameters);
 };
 
-} // namespace RESTful
-} // namespace API
-} // namespace Mantids30
+}

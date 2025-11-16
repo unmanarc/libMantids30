@@ -8,7 +8,7 @@
 #include <atomic>
 #include <string>
 
-namespace Mantids30 { namespace Sessions {
+namespace Mantids30::Sessions {
 /*
 
 struct SlotAuthenticationPolicy
@@ -37,6 +37,9 @@ struct CurrentAuthenticationStatus
     time_t authTime;
 };
 */
+
+
+
 
 /**
  * @brief The ClientDetails struct contains details about an incoming client connection.
@@ -157,6 +160,13 @@ private:
     std::mutex m_authenticationMutex;
 };
 
-}}
+class SessionInfo {
+public:
+    std::shared_ptr<Mantids30::Sessions::Session> authSession;
+    std::string halfSessionId, sessionId;
+    bool isImpersonation = false;
+};
+
+}
 
 

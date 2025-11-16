@@ -3,7 +3,7 @@
 #include <string>
 #include <random>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 class Random
 {
@@ -68,5 +68,5 @@ public:
     }
 };
 
-}}
+}
 

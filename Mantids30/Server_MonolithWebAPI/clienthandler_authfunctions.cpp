@@ -53,14 +53,14 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
 
     if (isSessionActive())
     {
-        string effectiveUserName  = m_currentSessionInfo.authSession->getUser();
+        string effectiveUserName  = currentSessionInfo.authSession->getUser();
         x["loggedUser"]["username"] = effectiveUserName;
-        x["isImpersonation"] = m_currentSessionInfo.isImpersonation;
-        x["impersonator"] = m_currentSessionInfo.authSession->getImpersonator();
-        x["scopes"] = m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
-        x["roles"] = m_currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
-        x["currentActivity"]["first"] = (Json::UInt64)m_currentSessionInfo.authSession->getFirstActivity();
-        x["currentActivity"]["last"] = (Json::UInt64)m_currentSessionInfo.authSession->getLastActivity();
+        x["isImpersonation"] = currentSessionInfo.isImpersonation;
+        x["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+        x["scopes"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
+        x["roles"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
+        x["currentActivity"]["first"] = (Json::UInt64)currentSessionInfo.authSession->getFirstActivity();
+        x["currentActivity"]["last"] = (Json::UInt64)currentSessionInfo.authSession->getLastActivity();
         x["currentActivity"]["sessionMaxAge"] = (Json::UInt64) m_sessionMaxAge;
         if (m_sessionsManager)
         {
@@ -98,7 +98,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
     // The token is OK (authenticated).
     if (isJWTHeaderTokenVerified)
     {
-        bool isImpersonation = m_JWTToken.hasClaim("impersonator");
+        bool isImpersonation = jwtToken.hasClaim("impersonator");
         string impersonatorSessionID;
         string impersonatorUser;
         string impersonatorDomain;
@@ -119,14 +119,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 
         if (m_currentWebSession && isImpersonation)
         {
-            impersonatorSessionID = m_currentSessionInfo.sessionId;
-            impersonatorUser = m_currentSessionInfo.authSession->getUser();
-            impersonatorDomain = m_currentSessionInfo.authSession->getDomain();
+            impersonatorSessionID = currentSessionInfo.sessionId;
+            impersonatorUser = currentSessionInfo.authSession->getUser();
+            impersonatorDomain = currentSessionInfo.authSession->getDomain();
 
-            if ( m_currentSessionInfo.authSession )
+            if ( currentSessionInfo.authSession )
             {
-                string jwtDomain = JSON_ASSTRING_D(m_JWTToken.getClaim("domain"),"");
-                string jwtImpersonator = JSON_ASSTRING_D(m_JWTToken.getClaim("impersonator"),"");
+                string jwtDomain = JSON_ASSTRING_D(jwtToken.getClaim("domain"),"");
+                string jwtImpersonator = JSON_ASSTRING_D(jwtToken.getClaim("impersonator"),"");
 
                 if ( impersonatorUser != jwtImpersonator )
                 {
@@ -145,7 +145,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         }
 
         // TODO: exit impersonation.
-        shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>( m_JWTToken );
+        shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>( jwtToken );
 
         json networkClientInfo = clientRequest.networkClientInfo.toJSON();
         networkClientInfo["userAgent"] = clientRequest.userAgent;
@@ -161,16 +161,16 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 
         // If session id is found, populate user data.
         // Extract and store user-related information from the token.
-        m_currentSessionInfo.isImpersonation = isImpersonation;
-        m_currentSessionInfo.authSession = session;
-        m_currentSessionInfo.halfSessionId = RPCLog::truncateSessionId(m_sessionID);
-        m_currentSessionInfo.sessionId = m_sessionID;
+        currentSessionInfo.isImpersonation = isImpersonation;
+        currentSessionInfo.authSession = session;
+        currentSessionInfo.halfSessionId = RPCLog::truncateSessionId(m_sessionID);
+        currentSessionInfo.sessionId = m_sessionID;
 
         // TODO: log levels ORED...
         if (isImpersonation)
         {
             log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using impersonation token {user=%s, sessionId=%s} by impersonator {user=%s, sessionId=%s}",
-                m_currentSessionInfo.authSession->getUser().c_str(),
+                currentSessionInfo.authSession->getUser().c_str(),
                 RPCLog::truncateSessionId(m_sessionID).c_str(),
                 impersonatorUser.c_str(),
                 RPCLog::truncateSessionId(impersonatorSessionID).c_str());
@@ -178,7 +178,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         else
         {
             log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using token {user=%s, sessionId=%s}",
-                m_currentSessionInfo.authSession->getUser().c_str(),
+                currentSessionInfo.authSession->getUser().c_str(),
                 RPCLog::truncateSessionId(m_sessionID).c_str());
         }
 

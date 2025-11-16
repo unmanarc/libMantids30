@@ -6,10 +6,7 @@
 #include <Mantids30/Server_WebCore/apienginecore.h>
 #include <memory>
 
-namespace Mantids30 {
-namespace Network {
-namespace Servers {
-namespace RESTful {
+namespace Mantids30::Network::Servers::RESTful {
 
 class Engine : public Web::APIEngineCore
 {
@@ -19,12 +16,11 @@ public:
 
     /**
      * @brief endpointsHandler RESTful endpoints per API Version. (version->endpoint handler)
+     *
+     * (After first initialization should not be modified)
      */
     std::map<uint32_t, std::shared_ptr<API::RESTful::Endpoints>> endpointsHandler;
-    /**
-     * @brief m_websocketEndpoints WebSocket endpoints
-     */
-    API::WebSocket::Endpoints websocketEndpoints;
+
 
     // TODO: max variable size
 protected:
@@ -37,7 +33,4 @@ private:
                                     );
 };
 
-} // namespace RESTful
-} // namespace Servers
-} // namespace Network
-} // namespace Mantids30
+}

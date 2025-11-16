@@ -10,8 +10,9 @@ namespace Mantids30::Network::Protocols::WebSocket {
 enum EventType
 {
     SESSION_START = 0,
-    MESSAGE_RECEIVED = 1,
-    SESSION_END = 2
+    RECEIVED_MESSAGE_BINARY = 1,
+    RECEIVED_MESSAGE_TEXT = 2,
+    SESSION_END = 3
 };
 
 }

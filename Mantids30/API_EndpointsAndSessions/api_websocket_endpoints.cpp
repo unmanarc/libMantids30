@@ -1,5 +1,7 @@
 #include "api_websocket_endpoints.h"
+#include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
 
+#include "json/value.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
@@ -7,20 +9,6 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::WebSocket;
-
-bool Endpoints::addEndpoint(const std::string &endpointPath, const uint32_t &securityOptions, const std::set<std::string> requiredScopes, void *context, WebSocketEventFunctionType sessionStartHandler,
-                            WebSocketEventFunctionType messageReceivedHandler, WebSocketEventFunctionType sessionEndHandler)
-{
-    WebSocketEndpointFullDefinition def;
-    def.sessionStartHandler = sessionStartHandler;
-    def.messageReceivedHandler = messageReceivedHandler;
-    def.sessionEndHandler = sessionEndHandler;
-    def.context = context;
-    def.security.requireJWTHeaderAuthentication = securityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
-    def.security.requireJWTCookieAuthentication = securityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
-    def.security.requiredScopes = requiredScopes;
-    return addEndpoint(endpointPath, def);
-}
 
 bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocketEndpointFullDefinition &endpointDefinition)
 {
@@ -41,7 +29,7 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
 }
 
 
-void Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+bool Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
     const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;
@@ -51,21 +39,41 @@ void Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef
     case Network::Protocols::WebSocket::SESSION_START:
         handler = endpointDef.sessionStartHandler;
         break;
-    case Network::Protocols::WebSocket::MESSAGE_RECEIVED:
-        handler = endpointDef.messageReceivedHandler;
+    case Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT:
+        handler = endpointDef.textMessageReceivedHandler;
+        break;
+    case Network::Protocols::WebSocket::RECEIVED_MESSAGE_BINARY:
+        handler = endpointDef.binaryMessageReceivedHandler;
         break;
     case Network::Protocols::WebSocket::SESSION_END:
         handler = endpointDef.sessionEndHandler;
         break;
     default:
-        return; // Empty return for invalid event type (do nothing)
+        return false; // Empty return for invalid event type (do nothing)
     }
 
     if (handler != nullptr)
     {
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
-        handler(endpointDef.context, content, parameters, clientDetails);
+
+        Json::Value jsonContent;
+        Json::CharReaderBuilder reader;
+        std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
+        Json::Value header;
+        std::string errs;
+        std::vector<char> buf = content->copyToBuffer();
+        if ( m_translateTextMessagesToJSON &&
+            (eventType == Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocols::WebSocket::SESSION_END)  )
+        {
+            if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
+            {
+                // Failed to translate...
+            }
+        }
+
+        handler(endpointDef.context, content,jsonContent, parameters, clientDetails);
     }
+    return true;
 }
 
 Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters)
@@ -89,6 +97,11 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
         return AUTHENTICATION_REQUIRED;
     }
 
+    if (endpointDef.security.requireSession && !securityParameters.haveSession)
+    {
+        return AUTHENTICATION_REQUIRED;
+    }
+
     if (!isAdmin)
     {
         for (const auto &scope : endpointDef.security.requiredScopes)
@@ -103,6 +116,21 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
     return SUCCESS;
 }
 
+void Endpoints::setTranslateTextMessagesToJSON(bool newTranslateTextMessagesToJSON)
+{
+    m_translateTextMessagesToJSON = newTranslateTextMessagesToJSON;
+}
+
+const WebSocketEndpointFullDefinition *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
+{
+    auto it = m_endpoints.find(uri);
+    if (it != m_endpoints.end())
+    {
+        return &(it->second);
+    }
+    return nullptr;
+}
+
 Endpoints::ErrorCodes Endpoints::handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
                                              WebSocket::WebSocketParameters &parameters)
 {
@@ -113,26 +141,9 @@ Endpoints::ErrorCodes Endpoints::handleEvent(const Network::Protocols::WebSocket
 
     const WebSocketEndpointFullDefinition &endpointDef = it->second;
 
-    // Check if handler exists for this event type
-    bool handlerExists = false;
-    switch (eventType)
-    {
-    case Network::Protocols::WebSocket::SESSION_START:
-        handlerExists = (endpointDef.sessionStartHandler != nullptr);
-        break;
-    case Network::Protocols::WebSocket::MESSAGE_RECEIVED:
-        handlerExists = (endpointDef.messageReceivedHandler != nullptr);
-        break;
-    case Network::Protocols::WebSocket::SESSION_END:
-        handlerExists = (endpointDef.sessionEndHandler != nullptr);
-        break;
-    }
-
-    if (!handlerExists)
-    {
+    if (invokeHandler(endpointDef, eventType, content, parameters))
+        return SUCCESS;
+    else
         return INVALID_EVENT_TYPE;
-    }
 
-    invokeHandler(endpointDef, eventType, content, parameters);
-    return SUCCESS;
 }

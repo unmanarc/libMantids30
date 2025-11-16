@@ -100,6 +100,12 @@ public:
      */
     static std::string htmlEncode(const std::string &rawStr);
 
+    bool sendWebSocketText( const std::string & data );
+    bool sendWebSocketText( const char * data, const size_t & len );
+    bool sendWebSocketBinaryData( const char * data, const size_t & len );
+    bool sendWebSocketPing(const char * data, size_t len );
+
+
 protected:
     virtual void log( Json::Value & jWebLog ) {}
 
@@ -223,10 +229,6 @@ protected:
      */
     virtual void onWebSocketConnectionFinished() {}
 
-    bool sendWebSocketText( const std::string & data );
-    bool sendWebSocketText( const char * data, const size_t & len );
-    bool sendWebSocketBinaryData( const char * data, const size_t & len );
-    bool sendWebSocketPing(const char * data, size_t len );
 
     struct WebSocketFrame {
         WebSocket::FrameHeader::OpCode frameType = WebSocket::FrameHeader::OPCODE_CONTINUATION;

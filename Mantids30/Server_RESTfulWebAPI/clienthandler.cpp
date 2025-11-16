@@ -46,9 +46,9 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
 
     if ( isSessionActive() )
     {
-        isAdmin = m_JWTToken.isAdmin();
-        currentScopes = m_JWTToken.getAllScopes();
-        inputParameters.jwtToken = &m_JWTToken;
+        isAdmin = jwtToken.isAdmin();
+        currentScopes = jwtToken.getAllScopes();
+        inputParameters.jwtToken = &jwtToken;
     }
 
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())

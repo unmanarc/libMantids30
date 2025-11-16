@@ -1,4 +1,8 @@
+#include "Mantids30/Helpers/random.h"
 #include "apiclienthandler.h"
+
+#include "json/value.h"
+#include <Mantids30/Helpers/random.h>
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
@@ -26,9 +30,9 @@ bool APIClientHandler::onWebSocketHTTPClientHeadersReceived()
     }
 
     logUsername.clear();
-    if (m_currentSessionInfo.authSession)
+    if (currentSessionInfo.authSession)
     {
-        logUsername = m_currentSessionInfo.authSession->getUser();
+        logUsername = currentSessionInfo.authSession->getUser();
     }
 
     // Session started here.
@@ -39,22 +43,49 @@ bool APIClientHandler::onWebSocketHTTPClientHeadersReceived()
         return false;
     }
 
+    m_webSocketCurrentEndpoint = m_websocketEndpoints->getWebSocketEndpointByURI( clientRequest.getURI() );
+
     return true;
 }
 
 void APIClientHandler::onWebSocketConnectionEstablished()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_START );
+    m_webSocketSessionId = Mantids30::Helpers::Random::createRandomString(16);
+
+    if (m_webSocketCurrentEndpoint)
+    {
+        API::WebSocket::WebSocketConnection * connection = new API::WebSocket::WebSocketConnection;
+        connection->webSocketHTTPServer = this;
+        connection->sessionInfo = currentSessionInfo;
+        if (!m_webSocketCurrentEndpoint->connectionsByIdMap->addElement(m_webSocketSessionId, connection))
+        {
+            // This should not happen.
+            delete connection;
+            throw std::runtime_error("Web Socket ID is repeated. This should not happen. Reseting");
+        }
+    }
+
+    if (config->sendWebSocketSessionIDAtConnection)
+    {
+        Json::Value jSessionId;
+
+        jSessionId["type"] = "session_id";
+        jSessionId["sessionId"] = m_webSocketSessionId;
+
+        sendWebSocketText(jSessionId.toStyledString());
+    }
+
+    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_START,m_webSocketCurrentEndpoint );
 }
 
 void APIClientHandler::onWebSocketBinaryDataFrameReceived()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::MESSAGE_RECEIVED );
+    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_BINARY,m_webSocketCurrentEndpoint );
 }
 
 void APIClientHandler::onWebSocketTextFrameReceived()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::MESSAGE_RECEIVED );
+    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_TEXT,m_webSocketCurrentEndpoint );
 }
 
 void APIClientHandler::onWebSocketPingReceived()
@@ -69,6 +100,10 @@ void APIClientHandler::onWebSocketPongReceived()
 
 void APIClientHandler::onWebSocketConnectionFinished()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_END );
+    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_END,m_webSocketCurrentEndpoint );
+    if (m_webSocketCurrentEndpoint)
+    {
+        m_webSocketCurrentEndpoint->connectionsByIdMap->destroyElement(m_webSocketSessionId);
+    }
     sessionCleanup();
 }

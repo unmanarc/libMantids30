@@ -1,12 +1,12 @@
 #pragma once
 
-
 #include <Mantids30/Server_WebCore/apiclienthandler.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "sessionsmanager.h"
 
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>
@@ -14,7 +14,7 @@
 #define IMPERSONATOR_SESSIONID_COOKIENAME "impersonatorSessionId"
 #define CURRENT_SESSIONID_COOKIENAME "sessionId"
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace WebMonolith {
+namespace Mantids30::Network::Servers::WebMonolith {
 
 class ClientHandler : public Servers::Web::APIClientHandler
 {
@@ -37,7 +37,9 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) override;
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) override;
+
+    Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) override;
 
     /**
      * @brief Handles an API request and writes the response to the client.
@@ -95,6 +97,7 @@ protected:
 
 
 private:
+
     void updateActivityOnImpersonatorSession();
 
     /**
@@ -115,7 +118,6 @@ private:
      */
     void setJSSessionHalfIDCookie(const std::string &sessionID);
 
-
     void sessionLogout();
 
     Protocols::HTTP::Status::Codes handleAuthUpdateLastActivityFunction();
@@ -126,19 +128,18 @@ private:
     bool validateSessionAntiCSRFMechanism();
 
     Program::Logs::RPCLog * m_rpcLog = nullptr;
+
     std::map<uint32_t,API::Monolith::Endpoints *> m_endpointsHandlerByAPIVersion;
+
     WebSessionsManager * m_sessionsManager = nullptr;
 
     // Current Session Vars:
     WebSession * m_currentWebSession = nullptr;
-    //std::shared_ptr<Mantids30::Sessions::Session> m_session = nullptr;
     uint64_t m_sessionMaxAge = 0;
     std::string m_sessionID, m_impersonatorSessionID;
     bool m_destroySession = false;
-    //bool m_isSessionLoaded = false;
-
     friend class Engine;
+
 };
 
-}}}}
-
+}

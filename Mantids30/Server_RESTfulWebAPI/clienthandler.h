@@ -1,12 +1,14 @@
 #pragma once
 
+#include "engine.h"
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/Server_WebCore/apiclienthandler.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <cstdint>
+#include <memory>
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace RESTful {
+namespace Mantids30::Network::Servers::RESTful {
 
 class ClientHandler : public Servers::Web::APIClientHandler
 {
@@ -14,12 +16,9 @@ public:
     ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
 protected:
-
-
     Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) override;
 
-    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) override;
-
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
@@ -72,15 +71,13 @@ private:
 
     // API Version -> Endpoints:
     std::map<uint32_t,std::shared_ptr<API::RESTful::Endpoints>> m_endpointsHandler;
-    // Websocket endpoints:
-    API::WebSocket::Endpoints m_websocketEndpoints;
 
     bool m_destroySession = false;
     bool m_JWTHeaderTokenVerified = false;
     bool m_JWTCookieTokenVerified = false;
-
     friend class Engine;
+
 };
 
-}}}}
+}
 

@@ -1,5 +1,4 @@
-#ifndef APISERVERPARAMETERS_H
-#define APISERVERPARAMETERS_H
+#pragma once
 
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
@@ -15,10 +14,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30 {
-namespace Network {
-namespace Servers {
-namespace Web {
+namespace Mantids30::Network::Servers::Web {
 
 class APIServerParameters
 {
@@ -103,6 +99,16 @@ public:
      * @brief callbackAPIEndpointName The method name used for JWT Token absorption from the IAM.
      */
     std::string callbackAPIEndpointName = "callback";
+
+    /**
+     * @brief translateWebSocketTextMessagesToJSON Translate WebSocket Messages To JSON
+     */
+    bool translateWebSocketTextMessagesToJSON = true;
+
+    /**
+     * @brief sendWebSocketSessionIDAtConnection Send WebSocket Session ID Message At Connection Start
+     */
+    bool sendWebSocketSessionIDAtConnection = true;
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
@@ -357,9 +363,4 @@ private:
     std::list<char *> m_memToBeFreed;
 };
 
-} // namespace Web
-} // namespace Servers
-} // namespace Network
-} // namespace Mantids30
-
-#endif // APISERVERPARAMETERS_H
+}

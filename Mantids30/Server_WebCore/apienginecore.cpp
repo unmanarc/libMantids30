@@ -69,6 +69,12 @@ void APIEngineCore::startInBackground()
     }
 }
 
+void APIEngineCore::setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints)
+{
+    newWebsocketEndpoints->setTranslateTextMessagesToJSON(config.translateWebSocketTextMessagesToJSON);
+    websocketEndpoints = newWebsocketEndpoints;
+}
+
 std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> APIEngineCore::getListenerSocket() const
 {
     return listenerSocket;
@@ -92,6 +98,8 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
 
     // Prepare the web services handler.
     std::shared_ptr<APIClientHandler> apiWebServerClientHandler = webserver->createNewAPIClientHandler(webserver,sock);
+
+    apiWebServerClientHandler->m_websocketEndpoints = webserver->websocketEndpoints;
 
     apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation( sock->getRemotePairStr(), sock->isSecure(), tlsCN );
 
