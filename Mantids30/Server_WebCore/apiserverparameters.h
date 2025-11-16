@@ -1,7 +1,7 @@
 #ifndef APISERVERPARAMETERS_H
 #define APISERVERPARAMETERS_H
 
-#include <Mantids30/API_RESTful/endpointshandler.h>
+#include <Mantids30/API_RESTful/restful_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
@@ -301,6 +301,11 @@ public:
      * @return void.
      */
     void addStaticContentElement(const std::string &path, const std::string &content);
+    /**
+     * @brief getStaticContentElements Get static content element...
+     * @return
+     */
+    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> getStaticContentElements();
 
     /**
      * @brief Adds an overlapped directory mapping for internal paths to filesystem paths.
@@ -315,8 +320,6 @@ public:
      * @return true if the mapping was successfully added, false otherwise.
      */
     bool addOverlappedDirectory(std::string internalPath, std::string fsPath);
-
-
     /**
      * @brief Get the list of overlapped directories.
      *
@@ -326,15 +329,7 @@ public:
      */
     const std::list<std::pair<std::string, std::string>>& getOverlappedDirectories() const;
 
-
-    /**
-     * @brief getStaticContentElements Get static content element...
-     * @return
-     */
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> getStaticContentElements();
-
     std::string getDocumentRootPath() const;
-
     bool isDocumentRootPathAccesible() const;
 
 private:

@@ -117,11 +117,7 @@ public:
      */
     bool doesAPIEndpointRequireActiveSession(const std::string & endpointName);
 
-   // std::string getApplicationName() const;
-
 private:
-    //std::set<std::string> getApplicationScopes(const std::set<std::string> & reqScopes);
-
     /////////////////////////////////
     // Endpoints:
 
@@ -136,9 +132,6 @@ private:
 
     //std::string m_applicationName;
     EndpointsRequirements_Map m_endpointsScopes;
-
-    // lock for endpoints manipulation...
-    Threads::Sync::Mutex_Shared m_endpointsMutex;
 };
 
 }}}

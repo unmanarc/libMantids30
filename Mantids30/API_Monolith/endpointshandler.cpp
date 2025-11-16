@@ -8,9 +8,6 @@ using namespace Mantids30;
 
 bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
 {
-    // Locks the endpoints mutex to ensure thread-safe modification of endpoints map
-    Threads::Sync::Lock_RW lock(m_endpointsMutex);
-    
     // Checks if endpoint with given name does not already exist in endpoints map
     if (m_endpoints.find(endpointDefinition.endpointName) == m_endpoints.end() )
     {
@@ -32,9 +29,6 @@ bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
 
 int Endpoints::invoke(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & endpointName, const json & payload,  json * payloadOut)
 {
-    // Locks the endpoints mutex in read mode to ensure thread-safe access to endpoints map
-    Threads::Sync::Lock_RD lock(m_endpointsMutex);
-
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
         return ENDPOINT_RET_CODE_NOTFOUND; // Endpoint not found, return error code
@@ -57,9 +51,6 @@ Endpoints::eEndpointValidationCodes Endpoints::validateEndpointRequirements(std:
 {
     std::set<std::string> scopesLeft, rolesLeft;
     
-    // Locks the endpoints mutex in read mode to ensure thread-safe access to endpoints map
-    Threads::Sync::Lock_RD lock(m_endpointsMutex);
-
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
         return VALIDATION_ENDPOINTNOTFOUND; // Endpoint not found, return validation code indicating this
@@ -95,9 +86,6 @@ EndpointsRequirements_Map *Endpoints::endpointsRequirements()
 
 bool Endpoints::doesAPIEndpointRequireActiveSession(const std::string &endpointName)
 {
-    // Locks the endpoints mutex in read mode to ensure thread-safe access to endpoints map
-    Threads::Sync::Lock_RD lock(m_endpointsMutex);
-
     // Returns whether the specified endpoint requires an active session or not based on its definition
     return m_endpointRequireActiveSession[endpointName];
 }

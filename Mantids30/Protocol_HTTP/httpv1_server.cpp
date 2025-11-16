@@ -53,9 +53,9 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
         return changeToNextParserFromClientRequestLine();
     else if (m_currentSubParser == &clientRequest.headers)
         return changeToNextParserFromClientHeaders();
-    else if (m_currentSubParser == &webSocketFrame.header)
+    else if (m_currentSubParser == &webSocketCurrentFrame.header)
         return changeToNextParserFromWebSocketFrameHeader();
-    else if (m_currentSubParser == &webSocketFrame.content)
+    else if (m_currentSubParser == &webSocketCurrentFrame.content)
         return changeToNextParserFromWebSocketFrameContent();
     else
         return changeToNextParserFromClientContentData();
@@ -131,27 +131,26 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         {
             if (!onWebSocketHTTPClientHeadersReceived())
             {
-                // Here the consumer decided to deliver a http response.
+                // Not authenticated or the endpoint does not exist.
                 return sendFullHTTPResponse();
+            }
+
+            // Authentication and everything went fine, send the header and start processing messages:
+            if (setupAndSendWebSocketHeaderResponse())
+            {
+                // Connection established. <<
+                onWebSocketConnectionEstablished();
+
+                // Receive the frame header...
+                m_currentSubParser = &webSocketCurrentFrame.header;
+                return true;
             }
             else
             {
-                // Authentication and everything went fine, send the header and start processing messages:
-                if (setupAndSendWebSocketHeaderResponse())
-                {
-                    // Connection established. <<
-                    onWebSocketConnectionEstablished();
-
-                    // Receive the frame header...
-                    m_currentSubParser = &webSocketFrame.header;
-                    return true;
-                }
-                else
-                {
-                    m_currentSubParser = nullptr;
-                    return false;
-                }
+                m_currentSubParser = nullptr;
+                return false;
             }
+
         } break;
         default:
             return false;

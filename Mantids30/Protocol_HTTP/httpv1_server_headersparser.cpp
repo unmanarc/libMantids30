@@ -140,6 +140,7 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
 }
 
 
+
 bool HTTP::HTTPv1_Server::validateHTTPv11Requirements()
 {
     // HTTP/1.1+ requires Host header

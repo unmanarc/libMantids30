@@ -1,7 +1,9 @@
 #pragma once
 
+#include "json/value.h"
 #include <Mantids30/Sessions/session.h>
 #include <Mantids30/Memory/streamablestring.h>
+#include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
 #include "apiserverparameters.h"
 
 #include <Mantids30/Memory/streamablejson.h>
@@ -28,6 +30,50 @@ public:
 
 protected:
 
+    /**
+     * @brief log Log to weblog
+     * @param jWebLog weblog paramaters
+     */
+    void log( Json::Value & jWebLog ) override;
+
+    virtual Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) { return Protocols::HTTP::Status::Codes::S_404_NOT_FOUND; }
+
+    /**
+     * @brief Called when HTTP client headers are received for WebSocket connection
+     * @return true to continue WebSocket handshake, false to send HTTP error response.
+     *
+     */
+    bool onWebSocketHTTPClientHeadersReceived() override;
+    /**
+     * @brief Called when WebSocket connection is successfully established
+     * Use to start threads, initialize connection-specific resources, or trigger events
+     */
+    void onWebSocketConnectionEstablished() override;
+    /**
+     * @brief Called when a WebSocket binary frame is received
+     * Process incoming frame in this callback
+     */
+    void onWebSocketBinaryDataFrameReceived() override;
+    /**
+     * @brief Called when a WebSocket text frame is received
+     * Process incoming frame in this callback
+     */
+    void onWebSocketTextFrameReceived() override;
+    /**
+     * @brief Called when a WebSocket ping is received
+     * Update keepalive monitors and connection health status here
+     */
+    void onWebSocketPingReceived() override;
+    /**
+     * @brief Called when a WebSocket pong is received
+     * Update keepalive monitors and connection health status here
+     */
+    void onWebSocketPongReceived() override;
+    /**
+     * @brief Called when WebSocket connection is terminated
+     * Clean up resources and perform connection cleanup operations
+     */
+    void onWebSocketConnectionFinished() override;
     /**
      * @brief onHTTPClientContentReceived Process web client request
      * @return http response code.
@@ -87,11 +133,22 @@ protected:
                                   const std::string &endpointName,
                                   const Json::Value & postParameters
                                   ) = 0;
+
+    /**
+     * @brief handleWebSocketEvent Handle Web Socket Event from the client
+     * @return return code for api request
+     */
+    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) = 0;
+    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName)
+    {
+        // Implement this to handle authorizations from any other IAM's
+        // Meanwhile, you may want to use a proxy to a WebSessionAuthHandler or implement your own.
+        return Protocols::HTTP::Status::S_501_NOT_IMPLEMENTED;
+    }
 
     /**
      * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
@@ -103,6 +160,13 @@ protected:
     }
 
 
+    /**
+     * @brief log Log to RPC Log
+     * @param logSeverity
+     * @param module
+     * @param outSize
+     * @param fmtLog
+     */
     void log(Mantids30::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
     /**
      * @brief Verifies a JWT token and extracts user data if valid.
@@ -129,7 +193,7 @@ protected:
      * The function returns `true` if the token passes verification and the extracted data
      * is valid, otherwise `false`.
      */
-    bool verifyToken( const std::string &strToken);
+    bool verifyToken( const std::string &strToken );
     virtual bool isSessionActive() = 0;
     virtual std::set<std::string> getSessionScopes() = 0;
     virtual std::set<std::string> getSessionRoles() = 0;
@@ -149,6 +213,9 @@ protected:
 
 
 private:
+
+    std::string logUsername;
+
     Protocols::HTTP::Status::Codes handleRegularFileRequest();
 
     bool versionIsSupported(const std::string &versionStr, int minVersion);

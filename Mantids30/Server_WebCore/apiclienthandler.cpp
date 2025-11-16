@@ -29,7 +29,6 @@
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -39,20 +38,23 @@ APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObjec
     : HTTPv1_Server(sock)
 {}
 
+void APIClientHandler::log(Json::Value &jWebLog)
+{
+    if (logUsername.empty())
+    {
+        jWebLog["user"] = logUsername;
+    }
+
+    config->webLog->log(jWebLog);
+}
+
 HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
 {
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
-    json jWebLog;
-    jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-    jWebLog["timestamp"] = (Json::UInt64)time(nullptr);
-    jWebLog["requestLine"] = clientRequest.requestLine.toString();
-    jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
-    jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
 
-    //config->webLog
     if (!config->webServerName.empty())
     {
         serverResponse.setServerName(config->webServerName);
@@ -70,8 +72,6 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
                                   HTTP::Status::S_426_UPGRADE_REQUIRED);
-        jWebLog["responseStatus"] = retCode;
-        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
         return retCode;
 
     }
@@ -80,23 +80,21 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
     if (config->redirections.find(requestURI) != config->redirections.end())
     {
         auto retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
-        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
-        jWebLog["responseStatus"] = retCode;
         return retCode;
     }
 
     HTTP::Status::Codes rtmp;
     if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
     {
-        jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
-        jWebLog["responseStatus"] = rtmp;
         return rtmp;
     }
 
     // TODO: implement identity.
+
+    logUsername.clear();
     if (m_currentSessionInfo.authSession)
     {
-        jWebLog["user"] = m_currentSessionInfo.authSession->getUser();
+        logUsername = m_currentSessionInfo.authSession->getUser();
     }
 
     for (const auto &baseApiUrl : config->APIURLs)
@@ -278,12 +276,9 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
 
     sessionCleanup();
 
-    jWebLog["bytesSent"] = serverResponse.content.getStreamSize();
-    jWebLog["responseStatus"] = ret;
-
-    config->webLog->log(jWebLog);
     return ret;
 }
+
 
 void APIClientHandler::fillSessionInfo(json &jVars)
 {

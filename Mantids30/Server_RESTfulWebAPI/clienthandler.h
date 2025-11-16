@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Mantids30/API_RESTful/endpointshandler.h>
+#include <Mantids30/API_RESTful/restful_endpoints.h>
+#include <Mantids30/API_RESTful/websocket_endpoints.h>
 #include <Mantids30/Server_WebCore/apiclienthandler.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <cstdint>
@@ -13,6 +14,12 @@ public:
     ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
 protected:
+
+
+    Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) override;
+
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) override;
+
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
@@ -46,29 +53,28 @@ protected:
     API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & endpointName, const Json::Value &postParameters) override;
 
     /**
-     * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
-     * @return return code for api request
+     * @brief isSessionActive Check if the session is active (JWT is valid)
+     * @return
      */
-    Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName) override;
-
-
     bool isSessionActive() override;
+    /**
+     * @brief getSessionScopes If session is active (Valid JWT), returns all the session scopes
+     * @return
+     */
     std::set<std::string> getSessionScopes() override;
+    /**
+     * @brief getSessionRoles If session is active (Valid JWT), returns all the session roles
+     * @return
+     */
     std::set<std::string> getSessionRoles() override;
 
 private:
-    //void deliverSessionMaxAgeViaCookie(const uint64_t &maxAge);
-//    void setAccessTokenAndLoggedInCookie(const std::string &token, const uint64_t &maxAge);
-    //void setImpersonatorToken(const uint64_t &maxAge);
-    //std::string getRedirectURL();
 
-    //void setPostLoginTokenCookie(const std::string &postLoginToken, const uint64_t &maxAge);
-    //Protocols::HTTP::Status::Codes handleAPIAuthCallbackFunction();
-
-//    void sessionLogout();
-
-    // API Version -> Endpoints
+    // API Version -> Endpoints:
     std::map<uint32_t,std::shared_ptr<API::RESTful::Endpoints>> m_endpointsHandler;
+    // Websocket endpoints:
+    API::WebSocket::Endpoints m_websocketEndpoints;
+
     bool m_destroySession = false;
     bool m_JWTHeaderTokenVerified = false;
     bool m_JWTCookieTokenVerified = false;

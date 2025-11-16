@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <ctime>
 
@@ -294,7 +295,12 @@ void WebLog::printLogToFile(const json *value)
             time_t timestamp = JSON_ASUINT64(*value, "timestamp", 0);
             std::string requestLine = JSON_ASSTRING(*value, "requestLine", "-");
             uint32_t responseStatus = JSON_ASUINT(*value, "responseStatus", 0);
-            uint64_t bytesSent = JSON_ASUINT64(*value, "bytesSent", 0);
+            std::optional<uint64_t> bytesSent = std::nullopt;
+
+            if (value->isMember("bytesSent"))
+            {
+                bytesSent = JSON_ASUINT64(*value, "bytesSent", 0);
+            }
 
             // Referer and User-Agent
             std::string referer = JSON_ASSTRING(*value, "referer", "-");
@@ -316,7 +322,7 @@ void WebLog::printLogToFile(const json *value)
 
             // Construct the Combined Log Format line
             std::string logLine = remoteHost + " " + identity + " " + user + " [" + formattedTimestamp + "] \"" + requestLine + "\" " + (responseStatus == 0 ? "-" : std::to_string(responseStatus))
-                                  + " " + (bytesSent == 0 ? "-" : std::to_string(bytesSent)) + " \"" + referer + "\" \"" + userAgent + "\"";
+                                  + " " + (bytesSent == std::nullopt ? "-" : std::to_string(*bytesSent)) + " \"" + referer + "\" \"" + userAgent + "\"";
 
             m_logFileHandle << logLine << std::endl;
             m_logCurrentSize += logLine.size() + 1;

@@ -5,6 +5,7 @@
 #include "websocket_frameheader.h"
 #include "websocket_framecontent.h"
 
+#include "json/value.h"
 #include <memory>
 #include <atomic>
 #include <string>
@@ -100,6 +101,13 @@ public:
     static std::string htmlEncode(const std::string &rawStr);
 
 protected:
+    virtual void log( Json::Value & jWebLog ) {}
+
+    /**
+     * @brief verifyStaticContentExistence Check if the path exist in the static content
+     * @param path URI to be verified
+     * @return true if exist, or false if not.
+     */
     bool verifyStaticContentExistence(const std::string &path);
 
     /**
@@ -189,7 +197,6 @@ protected:
      * Use to start threads, initialize connection-specific resources, or trigger events
      */
     virtual void onWebSocketConnectionEstablished() {}
-
     /**
      * @brief Called when a WebSocket binary frame is received
      * Process incoming frame in this callback
@@ -228,7 +235,7 @@ protected:
         std::atomic<time_t> lastPongReceived;
     };
 
-    WebSocketFrame webSocketFrame;
+    WebSocketFrame webSocketCurrentFrame;
 
     /*
      * * *********************************************************** *
@@ -261,6 +268,8 @@ private:
     bool parseBasicAuth(const std::string &authHeader);
     void parseUserAgent();
     bool setupContentHandling(size_t &contentLength);
+
+    void fillLogInformation(Json::Value & logValues);
 
     /////
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;

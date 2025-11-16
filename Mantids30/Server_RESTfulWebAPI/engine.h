@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Mantids30/API_RESTful/endpointshandler.h>
+#include <Mantids30/API_RESTful/websocket_endpoints.h>
+#include <Mantids30/API_RESTful/restful_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Server_WebCore/apienginecore.h>
 #include <memory>
@@ -17,9 +18,13 @@ public:
     ~Engine();
 
     /**
-     * @brief endpointsHandler Methods handler per API Version.
+     * @brief endpointsHandler RESTful endpoints per API Version. (version->endpoint handler)
      */
     std::map<uint32_t, std::shared_ptr<API::RESTful::Endpoints>> endpointsHandler;
+    /**
+     * @brief m_websocketEndpoints WebSocket endpoints
+     */
+    API::WebSocket::Endpoints websocketEndpoints;
 
     // TODO: max variable size
 protected:

@@ -1,4 +1,4 @@
-#include "endpointshandler.h"
+#include "restful_endpoints.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
@@ -20,8 +20,6 @@ bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::str
 
 bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition)
 {
-    Threads::Sync::Lock_RW lock(m_endpointsMutex);
-
     switch (httpMethodType)
     {
     case GET:
@@ -55,11 +53,9 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const RequestParameters 
     return clientDetails;
 }
 
-Endpoints::ErrorCodes Endpoints::invokeEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
                                                           const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse)
 {
-    Threads::Sync::Lock_RD lock(m_endpointsMutex);
-
     RESTfulAPIEndpointFullDefinition endpointFullDefinition;
     auto it = m_endpointsGET.end();
 
@@ -239,7 +235,7 @@ Endpoints::ErrorCodes Endpoints::invokeEndpoint(const HTTPMethodType &httpMethod
     return INTERNAL_ERROR;
 }
 
-Endpoints::ErrorCodes Endpoints::invokeEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
+Endpoints::ErrorCodes Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
                                                           bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut)
 {
     HTTPMethodType mode;
@@ -273,5 +269,5 @@ Endpoints::ErrorCodes Endpoints::invokeEndpoint(const std::string &httpMethodTyp
         return INVALID_METHOD_MODE;
     }
 
-    return invokeEndpoint(mode, endpointPath, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
+    return handleEndpoint(mode, endpointPath, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);
 }

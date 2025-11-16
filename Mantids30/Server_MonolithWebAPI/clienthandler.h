@@ -11,6 +11,9 @@
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>
 
+#define IMPERSONATOR_SESSIONID_COOKIENAME "impersonatorSessionId"
+#define CURRENT_SESSIONID_COOKIENAME "sessionId"
+
 namespace Mantids30 { namespace Network { namespace Servers { namespace WebMonolith {
 
 class ClientHandler : public Servers::Web::APIClientHandler
@@ -29,6 +32,12 @@ protected:
      * @return S_200_OK for good cleaning.
      */
     void sessionCleanup() override;
+
+    /**
+     * @brief handleWebSocketEvent Handle Web Socket Event from the client
+     * @return return code for api request
+     */
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType ) override;
 
     /**
      * @brief Handles an API request and writes the response to the client.

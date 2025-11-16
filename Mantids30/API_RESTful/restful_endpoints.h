@@ -30,10 +30,9 @@ struct RequestParameters
 
     std::shared_ptr<DataFormat::JWT> jwtValidator; ///< Holds the JWT Validator
     std::shared_ptr<DataFormat::JWT> jwtSigner;    ///< Holds the JWT Signer
-    //std::multimap<std::string, std::string> cookies;
 };
 
-using APIEndpointFunctionType = APIReturn (*)(void *context,                                        // Context pointer
+using APIEndpointFunctionType = APIReturn (*)(void *context,                      // Context pointer
                             const RESTful::RequestParameters &request,            // Parameters from the RESTful request
                             Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 );
@@ -211,7 +210,7 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
+    ErrorCodes handleEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
     /**
@@ -225,7 +224,7 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes invokeEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
+    ErrorCodes handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
 private:
@@ -234,8 +233,6 @@ private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPOST;   ///< Map of POST endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.
-
-    Threads::Sync::Mutex_Shared m_endpointsMutex; ///< Mutex for protecting access to the maps of endpoints.
 
     Sessions::ClientDetails extractClientDetails(const RequestParameters &inputParameters);
 };

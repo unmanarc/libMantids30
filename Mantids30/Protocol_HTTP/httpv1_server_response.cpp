@@ -7,12 +7,30 @@ using namespace Mantids30;
 
 using namespace std;
 
+void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
+{
+    jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+    jWebLog["timestamp"] = (Json::UInt64)time(nullptr);
+    jWebLog["requestLine"] = clientRequest.requestLine.toString();
+    jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
+    jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
+    jWebLog["responseStatus"] = serverResponse.status.getCode();
+
+    size_t strsize;
+    if ((strsize = serverResponse.content.getStreamSize()) != std::numeric_limits<size_t>::max())
+    {
+        jWebLog["bytesSent"] = strsize;
+    }
+}
 
 bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "HTTP:Response");
 #endif
+    json jWebLog;
+    fillLogInformation(jWebLog);
+    log(jWebLog);
 
     // Answer is the last... close the connection after it.
     m_currentSubParser = nullptr;
@@ -41,6 +59,11 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
 {
     // Act as a server. Send data from here.
     size_t strsize;
+
+    json jWebLog;
+    fillLogInformation(jWebLog);
+    log(jWebLog);
+
     // TODO: connection keep alive.
     if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
