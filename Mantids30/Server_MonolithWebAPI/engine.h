@@ -3,7 +3,7 @@
 #include "sessionsmanager.h"
 #include <Mantids30/Server_WebCore/resourcesfilter.h>
 
-#include <Mantids30/API_EndpointsAndSessions/monolith_endpointshandler.h>
+#include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Memory/b_mem.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>

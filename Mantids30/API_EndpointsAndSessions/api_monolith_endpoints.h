@@ -6,9 +6,9 @@
 #include <Mantids30/Threads/mutex_shared.h>
 #include <memory>
 #include <string>
-#include "monolith_endpointsrequirements_map.h"
+#include "endpoints_requirements_map.h"
 
-namespace Mantids30 { namespace API { namespace Monolith {
+namespace Mantids30::API::Monolith {
 
 class Endpoints
 {
@@ -134,7 +134,6 @@ private:
     EndpointsRequirements_Map m_endpointsScopes;
 };
 
-}}}
-
+}
 
 

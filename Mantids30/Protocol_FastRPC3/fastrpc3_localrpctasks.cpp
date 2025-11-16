@@ -1,6 +1,6 @@
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include "fastrpc3.h"
-#include <Mantids30/API_EndpointsAndSessions/monolith_endpointshandler.h>
+#include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>

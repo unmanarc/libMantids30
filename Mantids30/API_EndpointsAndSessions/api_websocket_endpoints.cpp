@@ -1,4 +1,4 @@
-#include "websocket_endpoints.h"
+#include "api_websocket_endpoints.h"
 
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>

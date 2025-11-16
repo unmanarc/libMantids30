@@ -1,7 +1,7 @@
 #ifndef APISERVERPARAMETERS_H
 #define APISERVERPARAMETERS_H
 
-#include <Mantids30/API_EndpointsAndSessions/restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>

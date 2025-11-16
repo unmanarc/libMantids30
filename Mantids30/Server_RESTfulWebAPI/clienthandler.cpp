@@ -1,7 +1,7 @@
 #include "clienthandler.h"
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "json/value.h"
-#include <Mantids30/API_EndpointsAndSessions/restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
 #include <Mantids30/Helpers/encoders.h>

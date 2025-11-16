@@ -1,4 +1,4 @@
-#include "monolith_endpointsrequirements_map.h"
+#include "endpoints_requirements_map.h"
 #include <memory>
 #include <string>
 
