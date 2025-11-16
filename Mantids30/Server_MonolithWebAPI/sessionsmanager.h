@@ -2,7 +2,7 @@
 
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/API_EndpointsAndSessions/session.h>
-#include <Mantids30/Threads/map.h>
+#include <Mantids30/Threads/safe_map.h>
 #include <Mantids30/Threads/garbagecollector.h>
 #include <Mantids30/Helpers/random.h>
 #include <memory>

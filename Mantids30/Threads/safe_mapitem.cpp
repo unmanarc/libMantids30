@@ -1,4 +1,4 @@
-#include "mapitem.h"
+#include "safe_mapitem.h"
 
 using namespace Mantids30::Threads::Safe;
 

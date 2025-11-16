@@ -14,7 +14,7 @@
 #include <Mantids30/Net_Sockets/listener.h>
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
-#include <Mantids30/Threads/map.h>
+#include <Mantids30/Threads/safe_map.h>
 #include <cstdint>
 #include <memory>
 

@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <stdexcept>
 
-#include "mapitem.h"
+#include "safe_mapitem.h"
 
 namespace Mantids30 { namespace Threads { namespace Safe {
 

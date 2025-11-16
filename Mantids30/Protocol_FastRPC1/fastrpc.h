@@ -6,7 +6,7 @@
 #include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Threads/mutex.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
-#include <Mantids30/Threads/map.h>
+#include <Mantids30/Threads/safe_map.h>
 #include <memory>
 
 namespace Mantids30 { namespace Network { namespace Protocols { namespace FastRPC { 
