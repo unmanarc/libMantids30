@@ -3,14 +3,14 @@
 #include <Mantids30/Memory/streamable_object.h>
 #include <Mantids30/Helpers/json.h>
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
-class StreamableJSON : public Memory::Streams::StreamableObject
+class StreamableJSON : public StreamableObject
 {
 public:
     StreamableJSON() = default;
 
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(StreamableObject *out) override;
     std::optional<size_t> write(const void *buf, const size_t &count) override;
     size_t size() override;
 
@@ -49,6 +49,6 @@ private:
 
 };
 
-}}}
+}
 
 
