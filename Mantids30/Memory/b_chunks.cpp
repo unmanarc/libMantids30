@@ -500,7 +500,6 @@ bool B_Chunks::compare2(const void *buf, const size_t &len, bool caseSensitive, 
 
     // iterate over chunks and put that data on the new bc.
 
-    //for (auto & i : chunksVector)
     size_t vpos=0, vsize = m_chunksVector.size();
     for (  ; vpos<vsize ; vpos++ )
     {

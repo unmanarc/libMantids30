@@ -189,11 +189,16 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         webServer->callbacks.onClientConnectionLimitPerIPReached = handleClientConnectionLimitPerIPReached;
 
         bool bTranslateTextMessagesToJSON = config.get<bool>("WebSockets.TranslateTextMessagesToJSON", true);
-        webServer->config.translateWebSocketTextMessagesToJSON = bTranslateTextMessagesToJSON;
+        webServer->config.webSockets.translateWebSocketTextMessagesToJSON = bTranslateTextMessagesToJSON;
 
         bool bSendWebSocketSessionIDAtConnection = config.get<bool>("WebSockets.SendWebSocketSessionIDAtConnection", true);
-        webServer->config.sendWebSocketSessionIDAtConnection = bSendWebSocketSessionIDAtConnection;
+        webServer->config.webSockets.sendWebSocketSessionIDAtConnection = bSendWebSocketSessionIDAtConnection;
 
+        size_t bMaxSubscriptionTopicsPerConnection = config.get<size_t>("WebSockets.MaxSubscriptionTopicsPerConnection", 64);
+        webServer->config.webSockets.maxSubscriptionTopicsPerConnection = bMaxSubscriptionTopicsPerConnection;
+
+        size_t bMaxConnectionsPerUserPerEndpoint = config.get<size_t>("WebSockets.MaxConnectionsPerUserPerEndpoint", 64);
+        webServer->config.webSockets.maxConnectionsPerUserPerEndpoint = bMaxConnectionsPerUserPerEndpoint;
 
         // Use a thread pool or multi-threading based on configuration
         bool useThreadPool = config.get<bool>("Threads.UseThreadPool", false);

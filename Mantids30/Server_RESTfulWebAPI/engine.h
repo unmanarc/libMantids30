@@ -31,6 +31,14 @@ private:
                                       const API::RESTful::RequestParameters &request, // Authentication token (JWT)
                                       Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
                                     );
+    static API::APIReturn subscribeToTopic(  void *context,                                        // Context pointer
+                                    const API::RESTful::RequestParameters &request, // Authentication token (JWT)
+                                    Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+                                    );
+    static API::APIReturn unsubscribeFromTopic(  void *context,                                        // Context pointer
+                                    const API::RESTful::RequestParameters &request, // Authentication token (JWT)
+                                    Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+                                    );
 };
 
 }

@@ -8,8 +8,7 @@
 #include <memory>
 #include <mutex>
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace WebMonolith {
-
+namespace Mantids30::Network::Servers::WebMonolith {
 
 class WebSession : public Threads::Safe::MapItem
 {
@@ -131,13 +130,9 @@ public:
     json getUserSessionsInfo(const std::string & effectiveUserName);
 
 private:
-
     Threads::Safe::Map<std::string> m_sessions;
-
     std::mutex m_mutex;
-
     std::map<std::string, std::map<std::string, json> > m_sessionClientInfo;
-
 
     uint32_t m_gcWaitTime = 10;
     uint32_t m_MaxInactiveSeconds = 0;
@@ -145,5 +140,5 @@ private:
 };
 
 
-}}}}
+}
 

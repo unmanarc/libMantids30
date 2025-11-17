@@ -4,9 +4,7 @@
 #include <Mantids30/Server_RESTfulWebAPI/engine.h>
 #include <boost/property_tree/ptree.hpp>
 
-namespace Mantids30 {
-namespace Program {
-namespace Config {
+namespace Mantids30::Program::Config {
 
 // Define options as bit flags
 constexpr uint64_t REST_ENGINE_NOCONFIG_JWT = 1ULL << 0;            // Bit 0: Do not configure JWT
@@ -33,6 +31,4 @@ private:
 
 };
 
-} // namespace Config
-} // namespace Program
-} // namespace Mantids30
+}

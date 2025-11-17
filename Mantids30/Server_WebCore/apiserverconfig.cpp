@@ -1,10 +1,10 @@
-#include "apiserverparameters.h"
+#include "apiserverconfig.h"
 #include <memory>
 
 using namespace Mantids30::Network::Servers::Web;
 
 
-APIServerParameters::~APIServerParameters()
+APIServerConfig::~APIServerConfig()
 {
     for (const auto & i : m_memToBeFreed)
     {
@@ -12,17 +12,17 @@ APIServerParameters::~APIServerParameters()
     }
 }
 
-void APIServerParameters::setSoftwareVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string &subText)
+void APIServerConfig::setSoftwareVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string &subText)
 {
     softwareVersion = std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(subminor) + (subText.empty() ? "" : (" " + subText));
 }
 
-bool APIServerParameters::isDocumentRootPathAccesible() const
+bool APIServerConfig::isDocumentRootPathAccesible() const
 {
     return !access(m_documentRootPath.c_str(),R_OK);
 }
 
-bool APIServerParameters::setDocumentRootPath(const std::string &value)
+bool APIServerConfig::setDocumentRootPath(const std::string &value)
 {
     // Check if the provided path has read access.
     if (access(value.c_str(), R_OK))
@@ -75,7 +75,7 @@ bool APIServerParameters::setDocumentRootPath(const std::string &value)
     return true;
 }
 
-void APIServerParameters::addStaticContentElement(const std::string &path, const std::string &content)
+void APIServerConfig::addStaticContentElement(const std::string &path, const std::string &content)
 {
     std::lock_guard<std::mutex> lck(m_internalContentMutex);
     // TODO: update.... (when no http clients running)
@@ -89,7 +89,7 @@ void APIServerParameters::addStaticContentElement(const std::string &path, const
     }
 }
 
-bool APIServerParameters::addOverlappedDirectory(std::string internalPath, std::string fsPath)
+bool APIServerConfig::addOverlappedDirectory(std::string internalPath, std::string fsPath)
 {
     // Ensure internalPath ends with '/'
     if (internalPath.empty() || internalPath.back() != '/')
@@ -121,18 +121,18 @@ bool APIServerParameters::addOverlappedDirectory(std::string internalPath, std::
     return true;
 }
 
-const std::list<std::pair<std::string, std::string> > &APIServerParameters::getOverlappedDirectories() const
+const std::list<std::pair<std::string, std::string> > &APIServerConfig::getOverlappedDirectories() const
 {
     return m_overlappedDirectories;
 }
 
-std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> > APIServerParameters::getStaticContentElements()
+std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> > APIServerConfig::getStaticContentElements()
 {
     std::lock_guard<std::mutex> lck(m_internalContentMutex);
     return m_staticContentElements;
 }
 
-std::string APIServerParameters::getDocumentRootPath() const
+std::string APIServerConfig::getDocumentRootPath() const
 {
     return m_documentRootPath;
 }

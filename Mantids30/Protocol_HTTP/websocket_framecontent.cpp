@@ -6,8 +6,6 @@
 
 using namespace Mantids30::Network::Protocols::WebSocket;
 
-// TODO: under construction.
-
 FrameContent::FrameContent()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
@@ -172,7 +170,6 @@ bool FrameContent::isValidUtf8Continuation(uint8_t byte)
 {
     return (byte & 0xC0) == 0x80;
 }
-
 
 std::optional<std::string> FrameContent::getContentAsString()
 {

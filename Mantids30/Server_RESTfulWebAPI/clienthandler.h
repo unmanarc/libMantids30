@@ -18,7 +18,7 @@ public:
 protected:
     Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) override;
 
-    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) override;
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint * ) override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.

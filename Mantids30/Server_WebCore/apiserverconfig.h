@@ -1,13 +1,14 @@
 #pragma once
 
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Program_Logs/weblog.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/API_EndpointsAndSessions/session.h>
 
 #include "resourcesfilter.h"
 #include <memory>
@@ -16,15 +17,15 @@
 
 namespace Mantids30::Network::Servers::Web {
 
-class APIServerParameters
+class APIServerConfig
 {
 public:
     using ClientDetails = Mantids30::Sessions::ClientDetails;
     using RequestParameters = Mantids30::API::RESTful::RequestParameters;
     using APIReturn = Mantids30::API::APIReturn;
 
-    APIServerParameters() = default;
-    ~APIServerParameters();
+    APIServerConfig() = default;
+    ~APIServerConfig();
 
     /**
      * @brief Callback function type for dynamic validation of access tokens.
@@ -100,15 +101,9 @@ public:
      */
     std::string callbackAPIEndpointName = "callback";
 
-    /**
-     * @brief translateWebSocketTextMessagesToJSON Translate WebSocket Messages To JSON
-     */
-    bool translateWebSocketTextMessagesToJSON = true;
 
-    /**
-     * @brief sendWebSocketSessionIDAtConnection Send WebSocket Session ID Message At Connection Start
-     */
-    bool sendWebSocketSessionIDAtConnection = true;
+
+    API::WebSocket::Config webSockets;
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
@@ -242,10 +237,8 @@ public:
      * The handler returns a value of type `Protocols::HTTP::Status::Codes` representing the
      * response status code.
      */
-    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath,
-                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
-                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response,
-                                                                    std::shared_ptr<void> obj);
+    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
+                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
     struct DynamicRequestHandlerDef
     {
@@ -333,7 +326,7 @@ public:
      *
      * @return const std::list<std::pair<std::string, std::string>>& The list of overlapped directories.
      */
-    const std::list<std::pair<std::string, std::string>>& getOverlappedDirectories() const;
+    const std::list<std::pair<std::string, std::string>> &getOverlappedDirectories() const;
 
     std::string getDocumentRootPath() const;
     bool isDocumentRootPathAccesible() const;
@@ -363,4 +356,4 @@ private:
     std::list<char *> m_memToBeFreed;
 };
 
-}
+} // namespace Mantids30::Network::Servers::Web

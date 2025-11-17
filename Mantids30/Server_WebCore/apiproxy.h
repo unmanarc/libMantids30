@@ -4,7 +4,7 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <string>
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
+namespace Mantids30::Network::Servers::Web {
 
 struct ApiProxyParameters
 {
@@ -24,4 +24,4 @@ struct ApiProxyParameters
 Mantids30::Network::Protocols::HTTP::Status::Codes ApiProxy(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
 
-}}}}
+}

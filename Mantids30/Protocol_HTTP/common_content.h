@@ -112,11 +112,7 @@ public:
      * @return true if limits are not exceeded.
      */
     bool setContentLengthSize(const size_t &contentLengthSize);
-    /**
-     * @brief useFilesystem Set filesystem path when variables exceed limits
-     * @param fsFilePath file path
-     *
-    void useFilesystem(const std::string & fsFilePath);*/
+
     /**
      * @brief setContainerType Set Container Content Data Type (URL/MIME/BIN)
      * @param value type

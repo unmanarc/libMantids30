@@ -284,13 +284,6 @@ void HTTP::Content::setMaxBinPostMemoryBeforeFS(const size_t& value)
         throw std::runtime_error("This method is only meant for the internal container. Custom containers should be configured externally.");
     }
 }
-/*
-void Content::useFilesystem(const std::string &fsFilePath)
-{
-    // TODO:
-    //binDataContainer.setFsBaseFileName();
-}
-*/
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTP::Content::getStreamableObject()
 {

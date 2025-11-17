@@ -18,7 +18,7 @@ void APIEngineCore::setAcceptPoolThreaded(
     const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
 {
     m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
-    this->listenerSocket = listenerSocket;
+    this->m_listenerSocket = listenerSocket;
 
     m_poolThreadedAcceptor->callbacks.setAllContexts(this);
     m_poolThreadedAcceptor->callbacks.onClientConnected = handleConnect;
@@ -36,7 +36,7 @@ void APIEngineCore::setAcceptMultiThreaded(
     const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &maxConcurrentConnections)
 {
     m_multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
-    this->listenerSocket = listenerSocket;
+    this->m_listenerSocket = listenerSocket;
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
     m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
@@ -71,13 +71,13 @@ void APIEngineCore::startInBackground()
 
 void APIEngineCore::setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints)
 {
-    newWebsocketEndpoints->setTranslateTextMessagesToJSON(config.translateWebSocketTextMessagesToJSON);
-    websocketEndpoints = newWebsocketEndpoints;
+    m_websocketEndpoints = newWebsocketEndpoints;
+    m_websocketEndpoints->config = &(this->config.webSockets);
 }
 
 std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> APIEngineCore::getListenerSocket() const
 {
-    return listenerSocket;
+    return m_listenerSocket;
 }
 
 bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
@@ -99,7 +99,7 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     // Prepare the web services handler.
     std::shared_ptr<APIClientHandler> apiWebServerClientHandler = webserver->createNewAPIClientHandler(webserver,sock);
 
-    apiWebServerClientHandler->m_websocketEndpoints = webserver->websocketEndpoints;
+    apiWebServerClientHandler->m_websocketEndpoints = webserver->m_websocketEndpoints;
 
     apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation( sock->getRemotePairStr(), sock->isSecure(), tlsCN );
 

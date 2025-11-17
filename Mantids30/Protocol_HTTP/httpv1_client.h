@@ -43,7 +43,6 @@ public:
      * @param uriPath
      */
     PostURLRequest prepareRequestAsPostURL( const std::string & hostName, const std::string & uriPath );
-
     /**
      * @brief getResponseHeader Get Response Header from the server as string
      * @param headerName Header Name

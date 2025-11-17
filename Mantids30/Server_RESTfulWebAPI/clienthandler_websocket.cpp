@@ -50,7 +50,7 @@ HTTP::Status::Codes ClientHandler::checkWebSocketRequestURI(const std::string &p
     return Protocols::HTTP::Status::Codes::S_500_INTERNAL_SERVER_ERROR;
 }
 
-void ClientHandler::handleWebSocketEvent(Protocols::WebSocket::EventType eventType, const API::WebSocket::WebSocketEndpointFullDefinition *currentWebSocketEndpoint)
+void ClientHandler::handleWebSocketEvent(Protocols::WebSocket::EventType eventType, const API::WebSocket::Endpoint *currentWebSocketEndpoint)
 {
     API::WebSocket::WebSocketParameters inputParameters;
 

@@ -37,7 +37,7 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) override;
+    void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint * ) override;
 
     Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) override;
 

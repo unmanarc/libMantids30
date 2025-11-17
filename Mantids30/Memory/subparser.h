@@ -32,9 +32,9 @@ public:
         PARSE_MODE_VALIDATOR,               // wait for validation (TODO)
         PARSE_MODE_CONNECTION_END,          // wait for connection end
         PARSE_MODE_DIRECT,                  // don't wait, just parse.
-        PARSE_MODE_DIRECT_DELIMITER,   // parse direct until multi-delimiter (// TODO:)
-        PARSE_MODE_MULTIDELIMITER //,          // wait for any of those delimiters
-//        PARSE_MODE_FREEPARSER               // TODO
+        PARSE_MODE_DIRECT_DELIMITER,        // parse direct until multi-delimiter (// TODO:)
+        PARSE_MODE_MULTIDELIMITER //,       // wait for any of those delimiters
+//        PARSE_MODE_FREEPARSER             // TODO
     };
 
     SubParser() = default;

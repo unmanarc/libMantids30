@@ -1,7 +1,7 @@
 #pragma once
 
 #include "apiclienthandler.h"
-#include "apiserverparameters.h"
+#include "apiserverconfig.h"
 #include <Mantids30/Memory/b_mem.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
@@ -11,7 +11,7 @@
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
+namespace Mantids30::Network::Servers::Web {
 
 class APIEngineCore
 {
@@ -107,19 +107,14 @@ public:
 
     // Seteables (before starting the acceptor, non-thread safe):
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
-    APIServerParameters config;             ///< The api server configuration parameters
+    APIServerConfig config;             ///< The api server configuration parameters
+
     std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
-
-
     /**
      * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
      * @param newWebsocketEndpoints
      */
     void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
-    /**
-     * @brief m_websocketEndpoints WebSocket endpoints shared pointer
-     */
-    std::shared_ptr<API::WebSocket::Endpoints> websocketEndpoints;
 
 protected:
     virtual std::shared_ptr<APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
@@ -131,6 +126,10 @@ protected:
      */
     virtual void checkEngineStatus() {}
 
+    /**
+     * @brief m_websocketEndpoints WebSocket endpoints shared pointer
+     */
+    std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
 private:
     enum class AcceptorType {
         NONE,
@@ -139,9 +138,7 @@ private:
     };
 
     AcceptorType m_acceptorType = AcceptorType::NONE;
-    std::shared_ptr<Sockets::Socket_Stream> listenerSocket;
-
-
+    std::shared_ptr<Sockets::Socket_Stream> m_listenerSocket;
 
     std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
     std::shared_ptr<Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
@@ -167,4 +164,4 @@ private:
 
 };
 
-}}}}
+}

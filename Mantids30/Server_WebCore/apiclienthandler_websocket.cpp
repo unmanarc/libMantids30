@@ -1,6 +1,8 @@
 #include "Mantids30/Helpers/random.h"
 #include "apiclienthandler.h"
 
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
+
 #include "json/value.h"
 #include <Mantids30/Helpers/random.h>
 
@@ -36,36 +38,49 @@ bool APIClientHandler::onWebSocketHTTPClientHeadersReceived()
     }
 
     // Session started here.
-    if ( (rtmp=checkWebSocketRequestURI( requestURI ))!= HTTP::Status::S_200_OK )
+    if ((rtmp = checkWebSocketRequestURI(requestURI)) != HTTP::Status::S_200_OK)
     {
         sessionCleanup();
         serverResponse.status.setCode(rtmp);
         return false;
     }
 
-    m_webSocketCurrentEndpoint = m_websocketEndpoints->getWebSocketEndpointByURI( clientRequest.getURI() );
+    m_webSocketCurrentEndpoint = m_websocketEndpoints->getWebSocketEndpointByURI(clientRequest.getURI());
+
+    size_t userConnectionCount = m_webSocketCurrentEndpoint->getActiveUserConnectionsCount( currentSessionInfo.authSession->getUser() );
+    if (  userConnectionCount >= config->webSockets.maxConnectionsPerUserPerEndpoint )
+    {
+        sessionCleanup();
+        serverResponse.status.setCode(HTTP::Status::S_429_TOO_MANY_REQUESTS);
+        return false;
+    }
 
     return true;
 }
 
 void APIClientHandler::onWebSocketConnectionEstablished()
 {
-    m_webSocketSessionId = Mantids30::Helpers::Random::createRandomString(16);
-
-    if (m_webSocketCurrentEndpoint)
+    if (!m_webSocketCurrentEndpoint)
     {
-        API::WebSocket::WebSocketConnection * connection = new API::WebSocket::WebSocketConnection;
-        connection->webSocketHTTPServer = this;
-        connection->sessionInfo = currentSessionInfo;
-        if (!m_webSocketCurrentEndpoint->connectionsByIdMap->addElement(m_webSocketSessionId, connection))
-        {
-            // This should not happen.
-            delete connection;
-            throw std::runtime_error("Web Socket ID is repeated. This should not happen. Reseting");
-        }
+        return;
     }
 
-    if (config->sendWebSocketSessionIDAtConnection)
+    m_webSocketSessionId = Mantids30::Helpers::Random::createRandomString(16);
+
+
+
+    API::WebSocket::WebSocketConnection *connection = new API::WebSocket::WebSocketConnection;
+    connection->webSocketHTTPServer = this;
+    connection->sessionInfo = &currentSessionInfo;
+    if (!m_webSocketCurrentEndpoint->connectionsByIdMap->addElement(m_webSocketSessionId, connection))
+    {
+        // This should not happen.
+        delete connection;
+        throw std::runtime_error("Web Socket ID is repeated. This should not happen. Reseting");
+    }
+
+
+    if (config->webSockets.sendWebSocketSessionIDAtConnection)
     {
         Json::Value jSessionId;
 
@@ -75,32 +90,26 @@ void APIClientHandler::onWebSocketConnectionEstablished()
         sendWebSocketText(jSessionId.toStyledString());
     }
 
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_START,m_webSocketCurrentEndpoint );
+    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
 }
 
 void APIClientHandler::onWebSocketBinaryDataFrameReceived()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_BINARY,m_webSocketCurrentEndpoint );
+    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
 }
 
 void APIClientHandler::onWebSocketTextFrameReceived()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_TEXT,m_webSocketCurrentEndpoint );
+    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
 }
 
-void APIClientHandler::onWebSocketPingReceived()
-{
+void APIClientHandler::onWebSocketPingReceived() {}
 
-}
-
-void APIClientHandler::onWebSocketPongReceived()
-{
-
-}
+void APIClientHandler::onWebSocketPongReceived() {}
 
 void APIClientHandler::onWebSocketConnectionFinished()
 {
-    handleWebSocketEvent( Network::Protocols::WebSocket::EventType::SESSION_END,m_webSocketCurrentEndpoint );
+    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
     if (m_webSocketCurrentEndpoint)
     {
         m_webSocketCurrentEndpoint->connectionsByIdMap->destroyElement(m_webSocketSessionId);

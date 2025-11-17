@@ -10,9 +10,10 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::WebSocket;
 
-bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocketEndpointFullDefinition &endpointDefinition)
+bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocket::Endpoint &endpointDefinition)
 {
     m_endpoints[endpointPath] = endpointDefinition;
+    m_endpoints[endpointPath].config = &(config);
     return true;
 }
 
@@ -28,9 +29,8 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
     return clientDetails;
 }
 
-
-bool Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
-    const WebSocketParameters &parameters)
+bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+                              const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;
 
@@ -62,8 +62,7 @@ bool Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef
         Json::Value header;
         std::string errs;
         std::vector<char> buf = content->copyToBuffer();
-        if ( m_translateTextMessagesToJSON &&
-            (eventType == Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocols::WebSocket::SESSION_END)  )
+        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocols::WebSocket::SESSION_END))
         {
             if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
             {
@@ -71,7 +70,7 @@ bool Endpoints::invokeHandler(const WebSocketEndpointFullDefinition &endpointDef
             }
         }
 
-        handler(endpointDef.context, content,jsonContent, parameters, clientDetails);
+        handler(endpointDef.context, content, jsonContent, parameters, clientDetails);
     }
     return true;
 }
@@ -84,7 +83,7 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
         return ENDPOINT_NOT_FOUND;
     }
 
-    const WebSocketEndpointFullDefinition &endpointDef = it->second;
+    const WebSocket::Endpoint &endpointDef = it->second;
 
     // Security checks
     if (endpointDef.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
@@ -116,12 +115,7 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
     return SUCCESS;
 }
 
-void Endpoints::setTranslateTextMessagesToJSON(bool newTranslateTextMessagesToJSON)
-{
-    m_translateTextMessagesToJSON = newTranslateTextMessagesToJSON;
-}
-
-const WebSocketEndpointFullDefinition *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
+const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
 {
     auto it = m_endpoints.find(uri);
     if (it != m_endpoints.end())
@@ -139,11 +133,10 @@ Endpoints::ErrorCodes Endpoints::handleEvent(const Network::Protocols::WebSocket
         return ENDPOINT_NOT_FOUND;
     }
 
-    const WebSocketEndpointFullDefinition &endpointDef = it->second;
+    const WebSocket::Endpoint &endpointDef = it->second;
 
     if (invokeHandler(endpointDef, eventType, content, parameters))
         return SUCCESS;
     else
         return INVALID_EVENT_TYPE;
-
 }

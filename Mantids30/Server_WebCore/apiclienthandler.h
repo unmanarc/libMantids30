@@ -4,7 +4,7 @@
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
-#include "apiserverparameters.h"
+#include "apiserverconfig.h"
 
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
@@ -14,12 +14,12 @@
 
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Servers { namespace Web {
+namespace Mantids30::Network::Servers::Web {
 
 class APIClientHandler : public Protocols::HTTP::HTTPv1_Server
 {
 public:
-    APIServerParameters * config;
+    APIServerConfig * config;
 
     APIClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
@@ -133,7 +133,7 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::WebSocketEndpointFullDefinition * ) = 0;
+    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint * ) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
@@ -174,7 +174,7 @@ protected:
      * @return `true` if the token is valid and verification succeeds, `false` otherwise.
      *
      * @details
-     * - The function utilizes `m_APIServerParameters->jwtValidator` to verify the provided
+     * - The function utilizes `m_APIServerConfig->jwtValidator` to verify the provided
      *   JWT token (`strToken`). The verification result is stored in `result`.
      * - If the token is valid and the `m_JWTToken` object reflects a valid state:
      *   - The `userName` is set from the token's subject.
@@ -209,7 +209,7 @@ protected:
     // Websocket endpoints:
     std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
     std::string m_webSocketSessionId;
-    const API::WebSocket::WebSocketEndpointFullDefinition * m_webSocketCurrentEndpoint = nullptr;
+    const API::WebSocket::Endpoint * m_webSocketCurrentEndpoint = nullptr;
 
 private:
     std::string logUsername;
@@ -220,5 +220,5 @@ private:
     friend class APIEngineCore;
 };
 
-}}}}
+}
 
