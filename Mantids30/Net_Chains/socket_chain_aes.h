@@ -1,21 +1,21 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
-#include <openssl/evp.h>
-#include <string.h>
-#include <random>
 #include <Mantids30/Helpers/mem.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
+#include <openssl/evp.h>
+#include <random>
+#include <string.h>
 
-namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainProtocols {
-
+namespace Mantids30::Network::Sockets {
+namespace ChainProtocols {
 
 /**
  * @brief The Socket_Chain_AES class
  *        AES-PSK Stream Cipher using XOR.
  *        Suitable for security apps (Use with TLS).
  */
-class Socket_Chain_AES  : public Mantids30::Network::Sockets::Socket_Stream, public Socket_Chain_ProtocolBase
+class Socket_Chain_AES : public Mantids30::Network::Sockets::Socket_Stream, public Socket_Chain_ProtocolBase
 {
 public:
     Socket_Chain_AES();
@@ -33,31 +33,32 @@ public:
      * @param pass AES Key.
      */
     void setPhase1Key256(const char *pass);
-    void setPhase1Key(const char * pass);
+    void setPhase1Key(const char *pass);
 
     //////////////////////////////////////////
     // Overwritten functions:
-    ssize_t partialRead(void * data, const size_t & datalen) override;
-    ssize_t partialWrite(const void * data, const size_t & datalen) override;
+    ssize_t partialRead(void *data, const size_t &datalen) override;
+    ssize_t partialWrite(const void *data, const size_t &datalen) override;
 
     bool postAcceptSubInitialization() override;
     bool postConnectSubInitialization() override;
 
-    static const EVP_CIPHER * openSSLInit();
+    static const EVP_CIPHER *openSSLInit();
 
 protected:
-    void * getThis() override { return this; }
+    void *getThis() override { return this; }
 
 private:
     // 16 bytes sent from very first IV
     // and 112 bytes from this struct... (TOT: 128 bytes)
-    struct sHandShakeHeader {
+    struct sHandShakeHeader
+    {
         sHandShakeHeader()
         {
             ZeroBArray(reserved);
             ZeroBArray(phase2Key);
             ZeroBArray(IVSeed);
-            memcpy(magicBytes,"IHDR",4);
+            memcpy(magicBytes, "IHDR", 4);
         }
         ~sHandShakeHeader()
         {
@@ -74,33 +75,33 @@ private:
         char reserved[60];
     } __attribute__((packed));
 
-    struct sSideParams {
-        sSideParams()
-        {
-        }
+    struct sSideParams
+    {
+        sSideParams() {}
         ~sSideParams()
         {
             cleanAESBlock();
             ZeroBArray(handShakeIV);
         }
-        void cleanAESBlock( char * nAesBlock = nullptr , size_t nAesBlock_curSize = 0 )
+        void cleanAESBlock(char *nAesBlock = nullptr, size_t nAesBlock_curSize = 0)
         {
             if (aesBlock != nullptr)
             {
-                memset(aesBlock,0,sizeof(aesBlock_curSize));
-                delete [] aesBlock;
+                memset(aesBlock, 0, sizeof(aesBlock_curSize));
+                delete[] aesBlock;
             }
             aesBlock_curSize = nAesBlock_curSize;
             aesBlock = nAesBlock;
         }
-        bool appendAESBlock(char * nAesBlock, size_t nAesBlock_size)
+        bool appendAESBlock(char *nAesBlock, size_t nAesBlock_size)
         {
-            char * nBlock = new char[nAesBlock_size+aesBlock_curSize];
-            if (!nBlock) 
+            char *nBlock = new char[nAesBlock_size + aesBlock_curSize];
+            if (!nBlock)
                 return false;
-            if (aesBlock_curSize) memcpy(nBlock,aesBlock,aesBlock_curSize);
-            memcpy(nBlock+aesBlock_curSize,nAesBlock,nAesBlock_size);
-            cleanAESBlock(nBlock,nAesBlock_size+aesBlock_curSize);
+            if (aesBlock_curSize)
+                memcpy(nBlock, aesBlock, aesBlock_curSize);
+            memcpy(nBlock + aesBlock_curSize, nAesBlock, nAesBlock_size);
+            cleanAESBlock(nBlock, nAesBlock_size + aesBlock_curSize);
             return true;
         }
         void reduce(size_t bytes)
@@ -111,42 +112,43 @@ private:
             }
             else
             {
-                char * nBlock = new char[aesBlock_curSize-bytes];
-                if (!nBlock) 
+                char *nBlock = new char[aesBlock_curSize - bytes];
+                if (!nBlock)
                     return;
                 if (aesBlock_curSize)
-                    memcpy(nBlock,aesBlock+bytes,aesBlock_curSize-bytes);
-                cleanAESBlock(nBlock,aesBlock_curSize-bytes);
+                    memcpy(nBlock, aesBlock + bytes, aesBlock_curSize - bytes);
+                cleanAESBlock(nBlock, aesBlock_curSize - bytes);
             }
         }
-        bool cryptoXOR( char * dataBlock, size_t dblocksize, bool dontreduce = false)
+        bool cryptoXOR(char *dataBlock, size_t dblocksize, bool dontreduce = false)
         {
-            if (dblocksize>aesBlock_curSize) 
+            if (dblocksize > aesBlock_curSize)
                 return false;
-            for (size_t i=0;i<dblocksize;i++)
+            for (size_t i = 0; i < dblocksize; i++)
             {
-                dataBlock[i] = dataBlock[i]^aesBlock[i];
+                dataBlock[i] = dataBlock[i] ^ aesBlock[i];
             }
-            if (!dontreduce) reduce(dblocksize);
+            if (!dontreduce)
+                reduce(dblocksize);
             return true;
         }
         char handShakeIV[16];
         char currentIV[16];
         std::mt19937_64 mt19937IV[2];
         sHandShakeHeader handshake;
-        char * aesBlock = nullptr;
+        char *aesBlock = nullptr;
         size_t aesBlock_curSize = 0;
     };
 
-    void genRandomBytes(char * bytes, size_t size);
-    void genRandomWeakBytes(char * bytes, size_t size);
-    bool appendNewAESBlock(sSideParams * params, const char * key, const char * iv);
-    void regenIV(sSideParams * param);
+    void genRandomBytes(char *bytes, size_t size);
+    void genRandomWeakBytes(char *bytes, size_t size);
+    bool appendNewAESBlock(sSideParams *params, const char *key, const char *iv);
+    void regenIV(sSideParams *param);
     /**
      * @brief genPlainText Get Plain Text for generating the AES Block.
      * @return plain text (you should delete it with delete[])
      */
-    char * genPlainText();
+    char *genPlainText();
     /**
      * @brief phase1Key Key Negotiation Password... (PSK)
      */
@@ -165,4 +167,5 @@ private:
     const static EVP_CIPHER *m_cipher;
 };
 
-}}}}
+} // namespace ChainProtocols
+} // namespace Mantids30::Network::Sockets

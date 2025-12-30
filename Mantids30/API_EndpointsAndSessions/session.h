@@ -1,50 +1,20 @@
 #pragma once
 
 #include "session_vars.h"
-#include <Mantids30/Helpers/json.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
+#include <Mantids30/Helpers/json.h>
 
-#include <mutex>
 #include <atomic>
+#include <mutex>
 #include <string>
 
 namespace Mantids30::Sessions {
-/*
-
-struct SlotAuthenticationPolicy
-{
-    SlotAuthenticationPolicy()
-    {
-        validTime = 0;
-    }
-
-    time_t validTime;
-};
-
-
-struct CurrentAuthenticationStatus
-{
-    CurrentAuthenticationStatus()
-    {
-        lastAuthStatus = REASON_UNAUTHENTICATED;
-    }
-    void setCurrentTime()
-    {
-        authTime = time(nullptr);
-    }
-
-    Reason lastAuthStatus;
-    time_t authTime;
-};
-*/
-
-
-
 
 /**
  * @brief The ClientDetails struct contains details about an incoming client connection.
  */
-struct ClientDetails {
+struct ClientDetails
+{
     /**
      * @brief The IP address of the incoming client connection.
      */
@@ -64,7 +34,6 @@ struct ClientDetails {
      * @brief The user agent string associated with the incoming client connection.
      */
     std::string userAgent;
-
 
     Json::Value toJSON()
     {
@@ -97,7 +66,7 @@ public:
      *          discard signature validation.
      * @param jwt JWT Token
      */
-    Session(const DataFormat::JWT::Token &jwt );
+    Session(const DataFormat::JWT::Token &jwt);
 
     /**
      * @brief updateLastActivity Set las activity to current time
@@ -108,7 +77,7 @@ public:
      * @param expSeconds
      * @return true if expired
      */
-    bool isLastActivityExpired(const uint32_t & expSeconds);
+    bool isLastActivityExpired(const uint32_t &expSeconds);
     /**
      * @brief getLastActivity Get the unix time from the last activity
      * @return unix time of last activity
@@ -140,13 +109,9 @@ public:
 
     DataFormat::JWT::Token getJWTAuthenticatedInfo();
 
-//    void setJWTAuthenticatedInfo(const JWT::Token &newJwtAuthenticatedInfo);
-
     std::string getDomain();
-    //void setDomain(const std::string &newDomain);
 
     std::string getImpersonator();
-    //void setImpersonator(const std::string &newImpersonator);
 
 private:
     void iUpdateLastActivity();
@@ -160,13 +125,12 @@ private:
     std::mutex m_authenticationMutex;
 };
 
-class SessionInfo {
+class SessionInfo
+{
 public:
     std::shared_ptr<Mantids30::Sessions::Session> authSession;
     std::string halfSessionId, sessionId;
     bool isImpersonation = false;
 };
 
-}
-
-
+} // namespace Mantids30::Sessions

@@ -2,8 +2,7 @@
 
 #include "b_base.h"
 
-namespace Mantids30 { namespace Memory { namespace Containers {
-
+namespace Mantids30::Memory::Containers {
 
 class B_MEM : public B_Base
 {
@@ -100,5 +99,5 @@ private:
     const char * linearMem = nullptr;
 };
 
-}}}
+}
 

@@ -5,8 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 
-namespace Mantids30 {
-namespace Program {
+namespace Mantids30::Program {
 namespace Config {
 
 class JWT
@@ -23,7 +22,8 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT signer instance or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,  const std::map<std::string, std::string> & vars = {});
+    static std::shared_ptr<DataFormat::JWT> createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+                                                            const std::map<std::string, std::string> &vars = {});
 
     /**
      * @brief Creates a JWT validator instance from configuration
@@ -32,7 +32,8 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT validator instance or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,  const std::map<std::string, std::string> & vars = {});
+    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+                                                               const std::map<std::string, std::string> &vars = {});
 
     /**
      * @brief Creates a JWT validator instance from provided key
@@ -128,5 +129,4 @@ private:
 };
 
 } // namespace Config
-} // namespace Program
-} // namespace Mantids30
+} // namespace Mantids30::Program

@@ -11,8 +11,7 @@
 #include "databasecredentials.h"
 #include "query.h"
 
-namespace Mantids30 {
-namespace Database {
+namespace Mantids30::Database {
 
 class SQLConnector
 {
@@ -95,6 +94,10 @@ public:
 
     bool connect(const std::string &host, const uint16_t &port, const DatabaseCredentials &credentials, const std::string &dbName);
 
+    virtual bool beginTransaction() { return false; }
+    virtual bool rollbackTransaction() { return false; }
+    virtual bool commitTransaction() { return false; }
+
     virtual bool isOpen() = 0;
 
     // Database Internals:
@@ -164,7 +167,7 @@ public:
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
     SQLConnector::QueryInstance qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                                         const std::vector<Memory::Abstract::Var *> &resultVars);
+                                        const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
@@ -177,8 +180,7 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    SQLConnector::QueryInstance qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters,
-                                                   const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    SQLConnector::QueryInstance qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                    const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);
@@ -276,5 +278,4 @@ private:
     std::condition_variable m_emptyQuerySetCondition; // Condition variable used to wait for an empty query set.
 };
 
-} // namespace Database
-} // namespace Mantids30
+} // namespace Mantids30::Database

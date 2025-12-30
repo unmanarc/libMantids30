@@ -5,7 +5,7 @@
 
 #include <Mantids30/Helpers/mem.h>
 
-namespace Mantids30 { namespace Memory { namespace Containers {
+namespace Mantids30::Memory::Containers {
 
 struct BinaryContainerChunk {
     /**
@@ -132,6 +132,6 @@ struct BinaryContainerChunk {
     size_t size;
     size_t offset;
 };
-}}}
+}
 
 

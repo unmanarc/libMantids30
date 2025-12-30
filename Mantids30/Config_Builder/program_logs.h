@@ -5,9 +5,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-
-namespace Mantids30 {
-namespace Program {
+namespace Mantids30::Program {
 namespace Config {
 class Logs
 {
@@ -19,6 +17,5 @@ public:
     static std::shared_ptr<Mantids30::Program::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog, const boost::property_tree::ptree &ptr);
 };
 
-}
-}
-}
+} // namespace Config
+} // namespace Mantids30::Program

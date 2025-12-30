@@ -1,29 +1,32 @@
 #pragma once
 
 #include "json/value.h"
-#include <ctime>
-#include <string>
-#include <set>
-#include <thread>
 #include <boost/thread/shared_mutex.hpp>
 #include <condition_variable>
+#include <ctime>
 #include <json/json.h>
 #include <queue>
+#include <set>
+#include <string>
+#include <thread>
 #include <unordered_map>
 
-namespace Mantids30 { namespace DataFormat {
+namespace Mantids30::DataFormat
+{
 
 /**
  * @brief Class for creating and verifying JSON Web Tokens (JWT)
  *
  */
-class JWT {
+class JWT
+{
 public:
     /**
      * @brief Enumeration for supported algorithms
      *
      */
-    enum Algorithm {
+    enum Algorithm
+    {
         HS256, /**< HMAC with SHA-256 */
         HS384, /**< HMAC with SHA-384 */
         HS512, /**< HMAC with SHA-512 */
@@ -38,31 +41,32 @@ public:
      * This struct is used to hold the details of a JWT algorithm, including
      * its name, OpenSSL NID, and whether it uses HMAC or RSA encryption.
      */
-    struct AlgorithmDetails {
+    struct AlgorithmDetails
+    {
         /**
          * @brief Construct a new AlgorithmDetails object from an algorithm enum.
          *
          * @param algorithm The algorithm enum value to construct from.
          */
-        AlgorithmDetails( Algorithm algorithm );
+        AlgorithmDetails(Algorithm algorithm);
 
         /**
          * @brief Construct a new AlgorithmDetails object from an algorithm name.
          *
          * @param algorithm The name of the algorithm to construct from.
          */
-        AlgorithmDetails( const char * algorithm );
+        AlgorithmDetails(const char *algorithm);
 
-        int nid; ///< The OpenSSL NID of the algorithm.
-        bool isUsingHMAC; ///< True if the algorithm uses HMAC encryption, false otherwise.
-        bool usingRSA; ///< True if the algorithm uses RSA encryption, false otherwise.
+        int nid;               ///< The OpenSSL NID of the algorithm.
+        bool isUsingHMAC;      ///< True if the algorithm uses HMAC encryption, false otherwise.
+        bool usingRSA;         ///< True if the algorithm uses RSA encryption, false otherwise.
         char algorithmStr[16]; ///< The name of the algorithm, as a null-terminated string.
-        Algorithm algorithm; ///< The algorithm enum value.
+        Algorithm algorithm;   ///< The algorithm enum value.
     };
 
-    class Token {
+    class Token
+    {
     public:
-
         Token() = default;
 
         Token(const std::string &payload);
@@ -112,7 +116,7 @@ public:
 
         Json::Value getAllScopesAsJSON();
 
-        void addScope(const std::string & scopeId);
+        void addScope(const std::string &scopeId);
 
         bool hasScope(const std::string &scopeId) const;
 
@@ -124,7 +128,7 @@ public:
 
         bool hasRole(const std::string &roleId) const;
 
-        std::map<std::string,Json::Value> getAllClaims();
+        std::map<std::string, Json::Value> getAllClaims();
 
         Json::Value getAllClaimsAsJSON();
 
@@ -162,17 +166,17 @@ public:
         bool m_revoked = false;
     };
 
-    class Cache {
+    class Cache
+    {
     public:
-
-        Cache()
-        {
-
-        }
+        Cache() {}
 
         // Copy constructor (thread-safe)
-        Cache(const Cache& other)
-            : m_cacheMaxByteCount(0), m_cacheCurrentByteCount(0), m_enabled(false) {
+        Cache(const Cache &other)
+            : m_cacheMaxByteCount(0)
+            , m_cacheCurrentByteCount(0)
+            , m_enabled(false)
+        {
             // Lock the destination's mutex to prevent concurrent modifications
             boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
 
@@ -185,8 +189,10 @@ public:
         }
 
         // Copy assignment operator (thread-safe)
-        Cache& operator=(const Cache& other) {
-            if (this != &other) {
+        Cache &operator=(const Cache &other)
+        {
+            if (this != &other)
+            {
                 // Lock the destination's mutex to prevent concurrent modifications
                 boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
 
@@ -201,7 +207,7 @@ public:
         }
 
         // Cache functions:
-        bool checkToken( const std::string& payload);
+        bool checkToken(const std::string &payload);
         void add(const std::string &payload);
         void evictCache();
 
@@ -213,7 +219,7 @@ public:
         void setEnabled(bool newEnabled);
 
     private:
-        std::size_t m_cacheMaxByteCount = 1*1024*1024;
+        std::size_t m_cacheMaxByteCount = 1 * 1024 * 1024;
         std::size_t m_cacheCurrentByteCount = 0;
 
         bool m_enabled;
@@ -223,7 +229,8 @@ public:
         boost::shared_mutex m_cachedTokensMutex;
     };
 
-    class Revocation {
+    class Revocation
+    {
     public:
         Revocation();
         ~Revocation();
@@ -237,13 +244,12 @@ public:
             // Copy the data
             m_expirationSignatures = other.m_expirationSignatures;
             m_revokedTokens = other.m_revokedTokens;
-            m_stopGarbageCollector = (bool)other.m_stopGarbageCollector;
+            m_stopGarbageCollector = (bool) other.m_stopGarbageCollector;
             m_garbageCollectorInterval = other.m_garbageCollectorInterval;
         }
 
         // Copy assignment operator
-        Revocation &operator=(
-            const Revocation &other)
+        Revocation &operator=(const Revocation &other)
         {
             if (this != &other)
             {
@@ -254,14 +260,14 @@ public:
                 m_expirationSignatures = other.m_expirationSignatures;
                 m_revokedTokens = other.m_revokedTokens;
                 m_garbageCollectorInterval = other.m_garbageCollectorInterval;
-                m_stopGarbageCollector = (bool)other.m_stopGarbageCollector;
+                m_stopGarbageCollector = (bool) other.m_stopGarbageCollector;
             }
             return *this;
         }
 
         // Revokation functions...
-        void addToRevocationList(const std::string& signature, std::time_t expirationTime);
-        bool isSignatureRevoked(const std::string& signature);
+        void addToRevocationList(const std::string &signature, std::time_t expirationTime);
+        bool isSignatureRevoked(const std::string &signature);
         void removeExpiredTokensFromRevocationList();
         void clear();
 
@@ -286,7 +292,8 @@ public:
      * @brief Struct for holding the result and signature of createSignature()
      *
      */
-    struct RAWSignature {
+    struct RAWSignature
+    {
         RAWSignature()
         {
             m_digest = nullptr;
@@ -295,7 +302,7 @@ public:
         ~RAWSignature()
         {
             if (m_digest)
-                delete [] m_digest;
+                delete[] m_digest;
             m_digestSize = 0;
             m_digest = nullptr;
         }
@@ -304,16 +311,17 @@ public:
          * @brief Enumeration for possible results of createSignature() or createHMACSignature() or createRSASignature
          *
          */
-        enum Result {
-            SIG_OK = 0,                   /**< Signature created successfully */
-            SIG_EMPTY_KEY = -10,          /**< The key used to sign is empty */
-            SIG_ERROR_CREATING_SIGNATURE = -1, /**< Error creating the signature */
+        enum Result
+        {
+            SIG_OK = 0,                         /**< Signature created successfully */
+            SIG_EMPTY_KEY = -10,                /**< The key used to sign is empty */
+            SIG_ERROR_CREATING_SIGNATURE = -1,  /**< Error creating the signature */
             SIG_ERROR_CREATING_RSA_OBJECT = -2, /**< Error creating the RSA object */
-            SIG_ERROR_READING_KEY = -3    /**< Error reading the key */
+            SIG_ERROR_READING_KEY = -3          /**< Error reading the key */
         };
 
-        Result m_result; /**< Result */
-        unsigned char * m_digest; /**< RAW Signature created by createSignature() */
+        Result m_result;           /**< Result */
+        unsigned char *m_digest;   /**< RAW Signature created by createSignature() */
         unsigned int m_digestSize; /**< RAW Signature size created by createSignature() */
     };
 
@@ -322,9 +330,9 @@ public:
      *
      * @param algorithm Algorithm to use for JWT
      */
-    JWT(const Algorithm& algorithm = Algorithm::HS256) : m_algorithm(algorithm)
-    {
-    }
+    JWT(const Algorithm &algorithm = Algorithm::HS256)
+        : m_algorithm(algorithm)
+    {}
 
     /**
      * @brief Check if a given algorithm is supported
@@ -333,7 +341,7 @@ public:
      * @return true if algorithm is supported
      * @return false if algorithm is not supported
      */
-    static bool isAlgorithmSupported(const std::string & algorithm);
+    static bool isAlgorithmSupported(const std::string &algorithm);
 
     /**
      * @brief Create a JWT token from a JSON payload
@@ -341,7 +349,7 @@ public:
      * @param payload JSON payload to sign
      * @return std::string JWT token
      */
-    std::string sign(const Json::Value& payload);
+    std::string sign(const Json::Value &payload);
 
     /**
      * @brief signFromToken Sign from a constructed token
@@ -349,7 +357,7 @@ public:
      * @param updateDefaultTimeValues the constructed token will be updated on the IAT, NBF and EXP claims...
      * @return JWT signed string (including the header, token and signature)
      */
-    std::string signFromToken(Token& token, bool updateDefaultTimeValues = true);
+    std::string signFromToken(Token &token, bool updateDefaultTimeValues = true);
 
     /**
      * @brief Verify the signature of a JWT token
@@ -359,7 +367,7 @@ public:
      * @return true if signature is valid
      * @return false if signature is invalid
      */
-    bool verify(const std::string& fullSignedToken, Token *tokenPayloadOutput = nullptr);
+    bool verify(const std::string &fullSignedToken, Token *tokenPayloadOutput = nullptr);
 
     /**
      * @brief Decode the string into a JWT token without verifying it.
@@ -376,7 +384,7 @@ public:
      * @param fullSignedToken
      * @return verified token (or empty object)
      */
-    Token verifyAndDecodeTokenPayload(const std::string& fullSignedToken);
+    Token verifyAndDecodeTokenPayload(const std::string &fullSignedToken);
 
     /**
      * @brief Set the shared secret for HMAC algorithms
@@ -427,14 +435,11 @@ public:
      */
     std::time_t defaultMaxTimeBeforeInSeconds() const;
 
-
-
     bool (*verificationCallback)(const std::string &fullSignedToken) = nullptr;
     Cache m_cache;
     Revocation m_revocation;
 
 private:
-
     /**
      * @brief Check if a given algorithm is an HMAC algorithm
      *
@@ -442,7 +447,7 @@ private:
      * @return true if algorithm is an HMAC algorithm
      * @return false if algorithm is not an HMAC algorithm
      */
-    bool isHMACAlgorithm(const std::string & algorithm);
+    bool isHMACAlgorithm(const std::string &algorithm);
 
     /**
      * @brief Check if a given algorithm is an RSA algorithm
@@ -451,7 +456,7 @@ private:
      * @return true if algorithm is an RSA algorithm
      * @return false if algorithm is not an RSA algorithm
      */
-    bool isRSAAlgorithm(const std::string & algorithm);
+    bool isRSAAlgorithm(const std::string &algorithm);
     /**
      * @brief Creates a header string.
      *
@@ -465,7 +470,7 @@ private:
      * @param data The input data to be signed.
      * @return RAWSignature A RAWSignature object containing the generated signature.
      */
-    std::shared_ptr<RAWSignature> createSignature(const std::string& data);
+    std::shared_ptr<RAWSignature> createSignature(const std::string &data);
 
     /**
      * @brief Generates an HMAC signature using the specified hash algorithm.
@@ -476,7 +481,7 @@ private:
      * @param digestOutLength A pointer to the length of the generated signature.
      * @return RAWSignature::Result The result of the signature generation operation.
      */
-    std::shared_ptr<RAWSignature> createHMACSignature(int hashType, const std::string& data);
+    std::shared_ptr<RAWSignature> createHMACSignature(int hashType, const std::string &data);
 
     /**
      * @brief Generates an RSA signature using the specified hash algorithm.
@@ -487,7 +492,7 @@ private:
      * @param digestOutLength A pointer to the length of the generated signature.
      * @return RAWSignature::Result The result of the signature generation operation.
      */
-    std::shared_ptr<RAWSignature> createRSASignature(int hashType, const std::string& data);
+    std::shared_ptr<RAWSignature> createRSASignature(int hashType, const std::string &data);
 
     /**
      * @brief Validates an RSA signature using the specified hash algorithm.
@@ -498,7 +503,7 @@ private:
      * @param signatureLength The length of the signature buffer.
      * @return int 0 if the signature is valid, -1 otherwise.
      */
-    int validateRSASignature(int hashType, const std::string& data, const char* signature, unsigned int signatureLength);
+    int validateRSASignature(int hashType, const std::string &data, const char *signature, unsigned int signatureLength);
 
     /**
      * @brief Returns the integer representation of the currently used hash algorithm.
@@ -540,8 +545,6 @@ private:
      * @brief Max Time In Seconds in the past for non-synchronized servers/clients validating the token
      */
     std::time_t m_defaultMaxTimeBeforeInSeconds = 60;
-
 };
 
-}}
-
+} // namespace Mantids30::DataFormat

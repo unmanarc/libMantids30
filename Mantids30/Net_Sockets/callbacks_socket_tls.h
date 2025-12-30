@@ -3,7 +3,7 @@
 #include "socket_tls.h"
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Callbacks_Socket_TLS
 {
@@ -18,5 +18,5 @@ public:
 
 };
 
-}}}
+}
 

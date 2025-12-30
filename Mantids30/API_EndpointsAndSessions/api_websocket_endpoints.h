@@ -89,7 +89,7 @@ public:
     const WebSocket::Endpoint *getWebSocketEndpointByURI(const std::string &uri) const;
 
 private:
-    Config * config = nullptr;
+    Config *config = nullptr;
 
     std::map<std::string, WebSocket::Endpoint> m_endpoints; ///< Map of WebSocket endpoints by URI path.
     std::map<std::string, WebSocket::Endpoint>::iterator it;

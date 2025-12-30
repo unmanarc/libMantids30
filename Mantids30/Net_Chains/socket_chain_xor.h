@@ -1,9 +1,10 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
+#include <Mantids30/Net_Sockets/socket_stream.h>
 
-namespace Mantids30 { namespace Network { namespace Sockets { namespace ChainProtocols {
+namespace Mantids30::Network::Sockets {
+namespace ChainProtocols {
 
 /**
  * @brief The SocketChainXOR class
@@ -15,21 +16,20 @@ public:
     Socket_Chain_XOR();
 
     // Overwritten functions:
-    ssize_t partialRead(void * data, const size_t & datalen);
-    ssize_t partialWrite(const void * data, const size_t & datalen);
+    ssize_t partialRead(void *data, const size_t &datalen);
+    ssize_t partialWrite(const void *data, const size_t &datalen);
 
     // Private functions:
     char getXorByte() const;
     void setXorByte(char value);
 
 protected:
-    void * getThis() { return this; }
+    void *getThis() { return this; }
 
 private:
-    char * getXorCopy(const void *data, const size_t & datalen);
+    char *getXorCopy(const void *data, const size_t &datalen);
     char m_xorByte;
 };
 
-
-}}}}
-
+} // namespace ChainProtocols
+} // namespace Mantids30::Network::Sockets

@@ -2,11 +2,11 @@
 
 #include <map>
 
+#include "endpoints_requirements_map.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <memory>
 #include <string>
-#include "endpoints_requirements_map.h"
 
 namespace Mantids30::API::Monolith {
 
@@ -16,19 +16,20 @@ public:
     // Enumerations for endpoint validation and return codes
     enum eEndpointValidationCodes
     {
-        VALIDATION_OK = 0x0,                  // Endpoint is valid
-        VALIDATION_ENDPOINTNOTFOUND = 0x1,      // Endpoint not found
-        VALIDATION_NOTAUTHORIZED = 0x2       // Not authorized to access the endpoint
+        VALIDATION_OK = 0x0,               // Endpoint is valid
+        VALIDATION_ENDPOINTNOTFOUND = 0x1, // Endpoint not found
+        VALIDATION_NOTAUTHORIZED = 0x2     // Not authorized to access the endpoint
     };
 
-    enum StatusCodess {
-        ENDPOINT_RET_CODE_SUCCESS = 0,            // Success return code
-        ENDPOINT_RET_CODE_UNAUTHENTICATED = -9994,// User is unauthenticated
-        ENDPOINT_RET_CODE_INVALIDLOCALAUTH = -9995,// Local authentication failed
-        ENDPOINT_RET_CODE_TIMEDOUT = -9996,       // Operation timed out
-        ENDPOINT_RET_CODE_INVALIDAUTH = -9997,    // Authentication failed
-        ENDPOINT_RET_CODE_SERVERMEMORYFULL = -9998,// Server memory is full
-        ENDPOINT_RET_CODE_NOTFOUND = -9999  // Endpoint not found
+    enum StatusCodess
+    {
+        ENDPOINT_RET_CODE_SUCCESS = 0,              // Success return code
+        ENDPOINT_RET_CODE_UNAUTHENTICATED = -9994,  // User is unauthenticated
+        ENDPOINT_RET_CODE_INVALIDLOCALAUTH = -9995, // Local authentication failed
+        ENDPOINT_RET_CODE_TIMEDOUT = -9996,         // Operation timed out
+        ENDPOINT_RET_CODE_INVALIDAUTH = -9997,      // Authentication failed
+        ENDPOINT_RET_CODE_SERVERMEMORYFULL = -9998, // Server memory is full
+        ENDPOINT_RET_CODE_NOTFOUND = -9999          // Endpoint not found
     };
 
     struct MonolithAPIEndpointFunction
@@ -36,12 +37,12 @@ public:
         /**
          * @brief Function pointer to the API endpoint.
          */
-        json (*endpoint)(void * context, std::shared_ptr<Mantids30::Sessions::Session> session, const json & parameters);
+        json (*endpoint)(void *context, std::shared_ptr<Mantids30::Sessions::Session> session, const json &parameters);
 
         /**
          * @brief Context object to pass to the function pointer.
          */
-        void * context;
+        void *context;
     };
 
     /**
@@ -55,12 +56,12 @@ public:
 
     struct EndpointDefinition
     {
-        MonolithAPIEndpointFunction endpointFunction;               // API endpoint definition
-        std::string endpointName;                 // Name of the endpoint
-        std::set<std::string> reqScopes;        // Required scopes for the endpoint
-        std::set<std::string> reqRoles;         // Required roles for the endpoint
-        bool doUsageUpdateLastSessionActivity = true;    // Flag to update last session activity on usage
-        bool isActiveSessionRequired = true;     // Flag to check if an active session is required
+        MonolithAPIEndpointFunction endpointFunction; // API endpoint definition
+        std::string endpointName;                     // Name of the endpoint
+        std::set<std::string> reqScopes;              // Required scopes for the endpoint
+        std::set<std::string> reqRoles;               // Required roles for the endpoint
+        bool doUsageUpdateLastSessionActivity = true; // Flag to update last session activity on usage
+        bool isActiveSessionRequired = true;          // Flag to check if an active session is required
     };
 
     /**
@@ -71,7 +72,7 @@ public:
      * @param endpointDefinition EndpointDefinition struct containing details about the endpoint
      * @return bool True on success, false on failure
      */
-    bool addEndpoint(const EndpointDefinition & endpointDefinition);
+    bool addEndpoint(const EndpointDefinition &endpointDefinition);
 
     /**
      * @brief Invoke an API endpoint
@@ -96,7 +97,7 @@ public:
      * @param reasons Pointer to store reasons for validation failure, if any
      * @return eEndpointValidationCodes Validation result code
      */
-    eEndpointValidationCodes validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & endpointName, json * reasons);
+    eEndpointValidationCodes validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, json *reasons);
 
     /**
      * @brief Get endpoints requirements map
@@ -105,7 +106,7 @@ public:
      * 
      * @return EndpointsRequirements_Map* Pointer to the endpoints requirements map
      */
-    EndpointsRequirements_Map * endpointsRequirements();
+    EndpointsRequirements_Map *endpointsRequirements();
 
     /**
      * @brief Check if a endpoint requires an active session
@@ -115,25 +116,23 @@ public:
      * @param endpointName Name of the endpoint to check
      * @return bool True if active session is required, false otherwise
      */
-    bool doesAPIEndpointRequireActiveSession(const std::string & endpointName);
+    bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
 
 private:
     /////////////////////////////////
     // Endpoints:
 
     // endpoint name -> endpoint.
-    std::map<std::string,MonolithAPIEndpointFunction> m_endpoints;
+    std::map<std::string, MonolithAPIEndpointFunction> m_endpoints;
 
     // endpoint name -> bool (RequireActiveSession).
-    std::map<std::string,bool> m_endpointRequireActiveSession;
+    std::map<std::string, bool> m_endpointRequireActiveSession;
 
     // endpoint name -> bool (Update last activity on usage).
-    std::map<std::string,bool> m_endpointUpdateSessionLastActivityOnUsage;
+    std::map<std::string, bool> m_endpointUpdateSessionLastActivityOnUsage;
 
     //std::string m_applicationName;
     EndpointsRequirements_Map m_endpointsScopes;
 };
 
-}
-
-
+} // namespace Mantids30::API::Monolith

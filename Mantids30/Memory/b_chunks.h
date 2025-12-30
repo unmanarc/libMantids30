@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace Mantids30 { namespace Memory { namespace Containers {
+namespace Mantids30::Memory::Containers {
 
 class B_Chunks : public B_Base
 {
@@ -167,5 +167,5 @@ private:
     std::shared_ptr<B_Base> m_mmapContainer;
 };
 
-}}}
+}
 

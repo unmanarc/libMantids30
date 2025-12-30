@@ -76,14 +76,12 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientS
             {
                 callbacks.onClientAcceptTimeoutOccurred(callbacks.contextOnTimedOut, clientSocket);
             }
-            //delete clientThread;
             return true;
         }
     }
     if (m_finalized)
     {
         // Don't introduce or start... delete it (close).
-        //delete clientThread;
         return false;
     }
     // update the counter
@@ -94,7 +92,6 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientS
             callbacks.onClientConnectionLimitPerIPReached(callbacks.contextonClientConnectionLimitPerIPReached, clientSocket);
         }
         decrementIPUsage(clientThread->getRemotePair());
-        //delete clientThread;
         return true;
     }
 
@@ -130,7 +127,7 @@ MultiThreaded::MultiThreaded()
     parameters.setParent(this);
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRB _onConnect, void *context,  _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context,  _callbackConnectionRV _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
 {
     parameters.setParent(this);
 
@@ -171,7 +168,9 @@ MultiThreaded::~MultiThreaded()
         std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).
         for (std::list<std::shared_ptr<StreamAcceptorThread>>::iterator it=m_threadList.begin(); it != m_threadList.end(); ++it)
+        {
             (*it)->stopSocket();
+        }
         // unlock until there is no threads left.
         while ( !m_threadList.empty() )
             m_condClientsEmpty.wait(lock);
@@ -197,10 +196,6 @@ bool MultiThreaded::acceptClient()
         clientThread->callbacks.onClientConnected = this->callbacks.onClientConnected;
         clientThread->callbacks.onProtocolInitializationFailure = this->callbacks.onProtocolInitializationFailure;
 
-        //clientThread->setParent(this);
-        //clientThread->setSecure(clientSocket->isSecure());
-
-
         return processClient(clientSocket,clientThread);
     }
     return false; // no more connections. (abandon)
@@ -213,7 +208,6 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> 
     {
         m_threadList.remove(x);
         decrementIPUsage(x->getRemotePair());
-        //delete x;
         m_condClientsNotFull.notify_one();
         if (m_threadList.empty())
             m_condClientsEmpty.notify_one();

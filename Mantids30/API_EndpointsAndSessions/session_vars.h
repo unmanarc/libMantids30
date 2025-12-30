@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Helpers/json.h>
-#include <string>
+#include <Mantids30/Threads/mutex_shared.h>
 #include <map>
+#include <string>
 
 namespace Mantids30::Sessions {
 
@@ -22,28 +22,27 @@ public:
      * @param varName The name of the session variable to set.
      * @param varValue The value to set for the session variable.
      */
-    void setSessionVariable(const std::string& varName, const json& varValue);
+    void setSessionVariable(const std::string &varName, const json &varValue);
 
     /**
      * @brief Returns the value of a session variable.
      * @param varName The name of the session variable to get the value for.
      * @return The value of the session variable.
      */
-    json getSessionVariableValue(const std::string & varName);
+    json getSessionVariableValue(const std::string &varName);
 
     /**
      * @brief Checks whether a session variable exists.
      * @param varName The name of the session variable to check for.
      * @return true if the session variable exists, false otherwise.
      */
-    bool doesSessionVariableExist(const std::string& varName);
+    bool doesSessionVariableExist(const std::string &varName);
 
     /**
      * @brief Clears the value of a session variable.
      * @param varName The name of the session variable to clear.
      */
-    void clearSessionVariable(const std::string& varName);
-
+    void clearSessionVariable(const std::string &varName);
 
 private:
     // This variable will persist throughout the authenticated session
@@ -53,6 +52,4 @@ private:
     Threads::Sync::Mutex_Shared m_sessionVarsMutex;
 };
 
-}
-
-
+} // namespace Mantids30::Sessions

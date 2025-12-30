@@ -5,7 +5,7 @@
 #include "socket_stream.h"
 #include <thread>
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Connector
 {
@@ -89,14 +89,6 @@ public:
     virtual int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> sock) = 0;
 
     std::atomic_bool m_stopReconnecting;
-
-
-private:/*
-    struct ThreadParameters {
-        Config parameters;
-        Connector * thisObj;
-    };
-*/
 };
 
-}}}
+}

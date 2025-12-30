@@ -4,7 +4,7 @@
 #include <atomic>
 #include <mutex>
 
-namespace Mantids30 { namespace Network { namespace Sockets { namespace NetStreams {
+namespace Mantids30::Network::Sockets  { namespace NetStreams {
 enum Side {
     SIDE_FORWARD=1,
     SIDE_BACKWARD=0
@@ -61,5 +61,5 @@ private:
     std::mutex mt_fwd, mt_rev;
 };
 
-}}}}
+}}
 

@@ -80,7 +80,6 @@ public:
         std::string password; ///< The password to use for basic authentication.
         bool isEnabled = false;       ///< Whether basic authentication is enabled or not.
     };
-
     struct Request
     {       
         // HTTP Quick Access Functions:

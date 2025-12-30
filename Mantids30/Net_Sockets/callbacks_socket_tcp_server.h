@@ -2,7 +2,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Callbacks_Socket_TCP_Server
 {
@@ -37,5 +37,5 @@ public:
     void (*onClientConnectionLimitPerIPReached)(void *context, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
 };
 
-}}}
+}
 

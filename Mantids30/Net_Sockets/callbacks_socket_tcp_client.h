@@ -3,7 +3,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Callbacks_Socket_TCP_Client
 {
@@ -33,5 +33,5 @@ public:
     bool (*onConnectionFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream>, const std::shared_ptr<void> &config ) = nullptr;
 
 };
-}}}
+}
 

@@ -12,7 +12,7 @@
  * @namespace Mantids30::Database
  * @brief Namespace containing database-related classes and functionality.
  */
-namespace Mantids30 { namespace Database {
+namespace Mantids30::Database {
 
 /**
  * @class Query
@@ -209,5 +209,5 @@ private:
     friend class SQLConnector;
 };
 
-}}
+}
 

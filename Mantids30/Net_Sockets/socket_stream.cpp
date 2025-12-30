@@ -156,16 +156,6 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_Stream::accep
     return nullptr;
 }
 
-bool Socket_Stream::postAcceptSubInitialization()
-{
-    return true;
-}
-
-bool Socket_Stream::postConnectSubInitialization()
-{
-    return true;
-}
-
 bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, size_t *receivedDataBytesCount)
 {
     if (receivedDataBytesCount != nullptr)

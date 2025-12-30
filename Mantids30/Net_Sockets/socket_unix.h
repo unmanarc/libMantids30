@@ -3,7 +3,7 @@
 #ifndef _WIN32
 #include "socket_stream.h"
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 /**
  * @brief Socket_UNIX Class for handling UNIX domain sockets.
@@ -74,5 +74,5 @@ public:
  */
 typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
 
-}}}  // namespace Mantids30::Network::Sockets
+}  // namespace Mantids30::Network::Sockets
 #endif

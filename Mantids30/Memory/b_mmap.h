@@ -4,7 +4,7 @@
 #include "filemap.h"
 #include "b_mem.h"
 
-namespace Mantids30 { namespace Memory { namespace Containers {
+namespace Mantids30::Memory::Containers {
 
 class B_MMAP: public B_Base
 {
@@ -119,5 +119,5 @@ private:
     B_MEM mem;
 };
 
-}}}
+}
 

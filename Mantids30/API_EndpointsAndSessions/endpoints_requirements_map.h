@@ -1,8 +1,8 @@
 #pragma once
-#include <map>
-#include <string>
-#include <set>
 #include "session.h"
+#include <map>
+#include <set>
+#include <string>
 
 namespace Mantids30::API::Monolith {
 
@@ -72,7 +72,7 @@ private:
      * @param endpointName The name/identifier of the endpoint
      * @return Set of required scopes for the endpoint
      */
-    std::set<std::string> getEndpointRequiredScopes(const std::string & endpointName);
+    std::set<std::string> getEndpointRequiredScopes(const std::string &endpointName);
 
     /**
      * @brief Retrieve all required roles for a specific endpoint
@@ -86,11 +86,11 @@ private:
 
     // Endpoint -> App Scope mapping
     // Stores multiple scope requirements per endpoint (using multimap to allow multiple scopes per endpoint)
-    std::multimap<std::string,std::string> m_endpointRequiredScopes;
+    std::multimap<std::string, std::string> m_endpointRequiredScopes;
 
     // Endpoint -> App Role mapping
     // Stores multiple role requirements per endpoint (using multimap to allow multiple roles per endpoint)
-    std::multimap<std::string,std::string> m_endpointRequiredRoles;
+    std::multimap<std::string, std::string> m_endpointRequiredRoles;
 };
 
-}
+} // namespace Mantids30::API::Monolith

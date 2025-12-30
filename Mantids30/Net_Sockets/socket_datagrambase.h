@@ -10,7 +10,7 @@
 #include <netinet/in.h>
 #endif
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Socket_DatagramBase : public Socket
 {
@@ -61,4 +61,4 @@ public:
 
 typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;
 
-}}}
+}

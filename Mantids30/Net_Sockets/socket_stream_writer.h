@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Socket_Stream_Writer
 {
@@ -124,5 +124,5 @@ private:
     bool writeU64(const uint64_t & c);
 };
 
-}}}
+}
 

@@ -2,8 +2,8 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30 { namespace Network { namespace Sockets { namespace NetStreams {
-
+namespace Mantids30::Network::Sockets {
+namespace NetStreams {
 
 class BufferedReader
 {
@@ -17,14 +17,14 @@ public:
         E_STREAMBUFFER_READ_MAXSIZEEXCEED = 4
     };
 
-    BufferedReader( std::shared_ptr<Sockets::Socket_Stream> stream, const size_t & maxBufferSize );
+    BufferedReader(std::shared_ptr<Sockets::Socket_Stream> stream, const size_t &maxBufferSize);
     ~BufferedReader();
 
-    eStreamBufferReadErrors bufferedReadUntil(void *data, size_t * len, int delimiter );
-    eStreamBufferReadErrors bufferedReadUntil( std::string * str, int delimiter );
+    eStreamBufferReadErrors bufferedReadUntil(void *data, size_t *len, int delimiter);
+    eStreamBufferReadErrors bufferedReadUntil(std::string *str, int delimiter);
 
-    eStreamBufferReadErrors readLineCR( std::string * str, int delimiter = '\r' );
-    eStreamBufferReadErrors readLineLF( std::string * str, int delimiter = '\n' );
+    eStreamBufferReadErrors readLineCR(std::string *str, int delimiter = '\r');
+    eStreamBufferReadErrors readLineLF(std::string *str, int delimiter = '\n');
 
     bool getBufferOK() const;
 
@@ -32,15 +32,15 @@ public:
 
 private:
     eStreamBufferReadErrors displaceAndCopy(void *data, size_t *len, size_t dlen);
-    eStreamBufferReadErrors displaceAndCopy(std::string * str, size_t dlen);
+    eStreamBufferReadErrors displaceAndCopy(std::string *str, size_t dlen);
 
     bool m_bufferOK;
-    void * m_buffer;
+    void *m_buffer;
     std::shared_ptr<Sockets::Socket_Stream> m_stream;
     size_t m_maxBufferSize, m_currentBufferSize;
 };
 
 typedef std::shared_ptr<BufferedReader> Stream_Buffer_SP;
 
-}}}}
-
+} // namespace NetStreams
+} // namespace Mantids30::Network::Sockets

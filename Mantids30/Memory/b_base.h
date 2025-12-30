@@ -13,7 +13,7 @@
 #include <optional>
 #include <Mantids30/Helpers/mem.h>
 
-namespace Mantids30 { namespace Memory { namespace Containers {
+namespace Mantids30::Memory::Containers {
 
 enum BinaryContainerMethod {
     BC_METHOD_CHUNKS,
@@ -437,5 +437,5 @@ private:
 
 };
 
-}}}
+}
 

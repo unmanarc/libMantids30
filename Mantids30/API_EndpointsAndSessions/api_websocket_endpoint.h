@@ -1,15 +1,15 @@
 #pragma once
 
 #include "api_websocket_config.h"
+#include "session.h"
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
 #include <Mantids30/Threads/safe_map.h>
-#include "session.h"
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
 
 namespace Mantids30::Network::Servers::Web {
-    class APIClientHandler;
+class APIClientHandler;
 }
 
 namespace Mantids30::API::WebSocket {

@@ -7,8 +7,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace Mantids30 { namespace Network { namespace Sockets {
-
+namespace Mantids30::Network::Sockets {
 
 class Socket_Stream_Reader
 {
@@ -225,6 +224,5 @@ private:
         * */
     uint64_t readU64(bool *readOK=nullptr);
 };
-
-}}}
+}
 
