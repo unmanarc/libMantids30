@@ -28,10 +28,7 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
-    SQLConnector::QueryInstance i = qSelect("select sql from sqlite_master where tbl_name=:tbl;",
-                                                             {{":tbl",std::make_shared<Memory::Abstract::STRING>(table)}},
-                                                               {}
-                                                               );
+    SQLConnector::QueryInstance i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
 
     if (i.getResultsOK())
         return i.query->step();
@@ -54,7 +51,8 @@ bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
 
 bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode)
 {
-    switch (mode) {
+    switch (mode)
+    {
     case SQLITE3_JOURNAL_OFF:
         return execute("PRAGMA journal_mode = OFF;");
     case SQLITE3_JOURNAL_WAL:
@@ -73,7 +71,8 @@ bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalM
 
 bool SQLConnector_SQLite3::sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode &mode)
 {
-    switch (mode) {
+    switch (mode)
+    {
     case SQLITE3_SYNC_OFF:
         return execute("PRAGMA synchronous = OFF;");
     case SQLITE3_SYNC_NORMAL:
@@ -88,10 +87,25 @@ bool SQLConnector_SQLite3::sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode
 
 std::string SQLConnector_SQLite3::getEscaped(const std::string &v)
 {
-    char * cEscaped = sqlite3_mprintf("%Q", v.c_str());
+    char *cEscaped = sqlite3_mprintf("%Q", v.c_str());
     std::string sEscaped = cEscaped;
     sqlite3_free(cEscaped);
     return sEscaped;
+}
+
+bool SQLConnector_SQLite3::beginTransaction()
+{
+    return execute("BEGIN TRANSACTION");
+}
+
+bool SQLConnector_SQLite3::rollbackTransaction()
+{
+    return execute("ROLLBACK TRANSACTION");
+}
+
+bool SQLConnector_SQLite3::commitTransaction()
+{
+    return execute("COMMIT TRANSACTION");
 }
 
 bool SQLConnector_SQLite3::connect0()
@@ -102,7 +116,7 @@ bool SQLConnector_SQLite3::connect0()
         m_ppDb = nullptr;
     }
 
-    m_rc = sqlite3_open(m_dbFilePath.c_str(),&m_ppDb);
+    m_rc = sqlite3_open(m_dbFilePath.c_str(), &m_ppDb);
     if (m_rc)
     {
         m_lastSQLError = "Error openning the database file";

@@ -3,7 +3,6 @@
 #include <Mantids30/DB/sqlconnector.h>
 #include "query_sqlite3.h"
 #include <sqlite3.h>
-#include <mutex>
 
 namespace Mantids30 { namespace Database {
 
@@ -68,6 +67,11 @@ public:
     bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode & mode);
 
     std::string getEscaped(const std::string & value) override;
+
+    bool beginTransaction() override;
+    bool rollbackTransaction() override;
+    bool commitTransaction() override;
+
 
 
 protected:
