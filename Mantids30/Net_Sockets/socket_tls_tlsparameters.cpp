@@ -179,8 +179,11 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys( SSL_CTX *ctx, SSL *sslh, std::li
     {
         // X509 mode.
         // Setup CRT/KEY for file:
-        ERR_ON_ZERO(m_publicKey && SSL_use_certificate( sslh, m_publicKey), "SSL_use_certificate Failed for local Certificate.");
-        ERR_ON_ZERO(m_privateKey && SSL_use_PrivateKey( sslh, m_privateKey), "SSL_use_PrivateKey Failed for private key.");
+        if (m_publicKey || m_privateKey)
+        {
+            ERR_ON_ZERO(m_publicKey && SSL_use_certificate( sslh, m_publicKey), "SSL_use_certificate Failed for local Certificate.");
+            ERR_ON_ZERO(m_privateKey && SSL_use_PrivateKey( sslh, m_privateKey), "SSL_use_PrivateKey Failed for private key.");
+        }
     }
     else
     {

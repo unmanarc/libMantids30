@@ -11,9 +11,8 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-namespace Mantids30 {
-namespace Network {
-namespace Sockets {
+namespace Mantids30::Network::Sockets {
+
 
 /**
  * TCP Socket Class
@@ -294,8 +293,7 @@ public:
 
         // Callbacks:
         static unsigned int cbPSKServer(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len);
-        static unsigned int cbPSKClient(
-            SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
+        static unsigned int cbPSKClient(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len);
 
         /**
          * @brief getPSKClientValue
@@ -464,6 +462,17 @@ public:
 
     TLSKeyParameters tlsKeys;
 
+    enum eDebugOptions {
+        TLS_DEBUG_PRINT_WRITE_HEX = 0x01,
+        TLS_DEBUG_PRINT_READ_HEX = 0x02,
+        TLS_DEBUG_PRINT_CLOSE = 0x04,
+        TLS_DEBUG_PRINT_WRITE_PLAIN = 0x08,
+        TLS_DEBUG_PRINT_READ_PLAIN = 0x10,
+        TLS_DEBUG_PRINT_ERRORS = 0x20,
+    };
+
+    void setDebugOptions(uint32_t debugOptions) { this->debugOptions = debugOptions; }
+
     enum eCertValidationOptions
     {
         CERT_X509_VALIDATE,
@@ -586,19 +595,20 @@ public:
 
     bool isUsingPSK() const;
 
+
+    /**
+     * function for TLS client protocol initialization after the connection starts (client-mode)...
+     * This is usually called from connectTo, however, if you transfered the socket from a TCP connection, you may want to call this function after. (Eg. after STARTTLS)
+     * @return returns true if was properly initialized.
+     */
+    bool postConnectSubInitialization() override;
+
     ////////////////////////////////////////////////////////////////////
     // Socket Overrides:
     int iShutdown(int mode) override;
     bool isSecure() override;
 
 protected:
-    /**
-     * function for TLS client protocol initialization after the connection starts (client-mode)...
-     * @return returns true if was properly initialized.
-     */
-    bool postConnectSubInitialization() override;
-
-private:
 
 
     ssize_t iPartialRead(void * data, const size_t & datalen, int ttl = 100);
@@ -620,7 +630,7 @@ private:
 
     std::mutex mutexRead, mutexWrite;
     bool m_isServer = false;
+
+    uint32_t debugOptions = 0;
 };
 } // namespace Sockets
-} // namespace Network
-} // namespace Mantids30

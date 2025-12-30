@@ -2,36 +2,35 @@
 
 #include "socket_stream.h"
 
-
 #include <memory>
 #include <openssl/bio.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
-#include <openssl/err.h>
 
-#include <string>
 #include <stdexcept>
+#include <string>
 
-#include <openssl/ssl.h>
 #include <openssl/dh.h>
-#include <openssl/x509_vfy.h>
+#include <openssl/ssl.h>
 #include <openssl/stack.h>
+#include <openssl/x509_vfy.h>
 
-#include <unistd.h>
-#include <signal.h>
 #include <fcntl.h>
-
+#include <signal.h>
+#include <unistd.h>
 
 #ifdef _WIN32
-#include <openssl/safestack.h>
 #include <Mantids30/Memory/w32compat.h>
+#include <openssl/safestack.h>
 #endif
 
 using namespace std;
 using namespace Mantids30::Network::Sockets;
 
-Socket_TLS::Socket_TLS() : tlsKeys(&m_isServer)
+Socket_TLS::Socket_TLS()
+    : tlsKeys(&m_isServer)
 {
 #ifndef WIN32
     // Ignore sigpipes in this thread (eg. SSL_Write on closed socket):
@@ -47,7 +46,7 @@ Socket_TLS::Socket_TLS() : tlsKeys(&m_isServer)
 Socket_TLS::~Socket_TLS()
 {
     if (m_sslHandler)
-        SSL_free (m_sslHandler);
+        SSL_free(m_sslHandler);
     if (m_sslContext)
         SSL_CTX_free(m_sslContext);
 }
@@ -55,10 +54,10 @@ Socket_TLS::~Socket_TLS()
 void Socket_TLS::prepareTLS()
 {
     // Register the error strings for libcrypto & libssl
-    SSL_load_error_strings ();
+    SSL_load_error_strings();
     ERR_load_crypto_strings();
     // Register the available ciphers and digests
-    SSL_library_init ();
+    SSL_library_init();
 
 #ifndef _WIN32
     sigset_t sigPipeSet;
@@ -75,7 +74,7 @@ void Socket_TLS::setTLSParent(Socket_TLS *parent)
 
 bool Socket_TLS::postConnectSubInitialization()
 {
-    if (m_sslHandler!=nullptr)
+    if (m_sslHandler != nullptr)
         return false; // already connected (don't connect again)
 
     m_isServer = false;
@@ -95,18 +94,18 @@ bool Socket_TLS::postConnectSubInitialization()
     bool usingPSK = tlsKeys.linkPSKWithTLSHandle(m_sslHandler);
 
     // Initialize TLS client certificates and keys
-    if (!tlsKeys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
+    if (!tlsKeys.initTLSKeys(m_sslContext, m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
     }
-    
-    if ( !(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates() )
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+
+    if (!(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates())
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
     else
     {
         // If there is no CA...
-        m_certValidationOptions=CERT_X509_NOVALIDATE;
+        m_certValidationOptions = CERT_X509_NOVALIDATE;
     }
 
     // Set hostname for SNI extension
@@ -120,23 +119,23 @@ bool Socket_TLS::postConnectSubInitialization()
         }
     }
 
-    if (SSL_set_fd (m_sslHandler, m_sockFD) != 1)
+    if (SSL_set_fd(m_sslHandler, m_sockFD) != 1)
     {
         m_sslErrorList.push_back("SSL_set_fd failed.");
         return false;
     }
 
-    if ( SSL_get_error(m_sslHandler, SSL_connect (m_sslHandler)) != SSL_ERROR_NONE )
+    if (SSL_get_error(m_sslHandler, SSL_connect(m_sslHandler)) != SSL_ERROR_NONE)
     {
         parseErrors();
         return false;
     }
-    
-    if ( m_certValidationOptions!=CERT_X509_NOVALIDATE )
+
+    if (m_certValidationOptions != CERT_X509_NOVALIDATE)
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || m_certValidationOptions==CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions == CERT_X509_CHECKANDPASS;
     }
     // no validate here...
     else
@@ -145,7 +144,7 @@ bool Socket_TLS::postConnectSubInitialization()
 
 bool Socket_TLS::postAcceptSubInitialization()
 {
-    if (m_sslHandler!=nullptr)
+    if (m_sslHandler != nullptr)
         return false; // already connected (don't connect again)
 
     m_isServer = true;
@@ -167,45 +166,45 @@ bool Socket_TLS::postAcceptSubInitialization()
 
     bool usingPSK = isUsingPSK();
     // If there is any configured PSK, link the key in the static list...
-    if ( usingPSK )
+    if (usingPSK)
     {
         tlsKeys.linkPSKWithTLSHandle(m_sslHandler);
     }
 
     // in server mode, use the parent keys...
-    if (!m_tlsParentConnection->tlsKeys.initTLSKeys(m_sslContext,m_sslHandler, &m_sslErrorList))
+    if (!m_tlsParentConnection->tlsKeys.initTLSKeys(m_sslContext, m_sslHandler, &m_sslErrorList))
     {
         parseErrors();
         return false;
     }
-    
-    if ( !m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates() )
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions==CERT_X509_NOVALIDATE?SSL_VERIFY_NONE:0) , nullptr);
+
+    if (!m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates())
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
     else
     {
         // If there is no CA...
-        m_certValidationOptions=CERT_X509_NOVALIDATE;
+        m_certValidationOptions = CERT_X509_NOVALIDATE;
         //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
     }
 
-    if (SSL_set_fd (m_sslHandler, m_sockFD) != 1)
+    if (SSL_set_fd(m_sslHandler, m_sockFD) != 1)
     {
         m_sslErrorList.push_back("SSL_set_fd failed.");
         return false;
     }
 
     int err;
-    if ((err=SSL_accept(m_sslHandler)) != 1)
+    if ((err = SSL_accept(m_sslHandler)) != 1)
     {
         parseErrors();
         return false;
     }
-    
-    if ( m_certValidationOptions!=CERT_X509_NOVALIDATE )
+
+    if (m_certValidationOptions != CERT_X509_NOVALIDATE)
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || m_certValidationOptions==CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions == CERT_X509_CHECKANDPASS;
     }
     // no validate here...
     else
@@ -215,13 +214,13 @@ bool Socket_TLS::postAcceptSubInitialization()
 SSL_CTX *Socket_TLS::createServerSSLContext()
 {
 #if TLS_MAX_VERSION == TLS1_VERSION
-    return SSL_CTX_new (TLSv1_server_method());
+    return SSL_CTX_new(TLSv1_server_method());
 #elif TLS_MAX_VERSION == TLS1_1_VERSION
-    return SSL_CTX_new (TLSv1_1_server_method());
+    return SSL_CTX_new(TLSv1_1_server_method());
 #elif TLS_MAX_VERSION == TLS1_2_VERSION
-    return SSL_CTX_new (TLSv1_2_server_method());
+    return SSL_CTX_new(TLSv1_2_server_method());
 #elif TLS_MAX_VERSION >= TLS1_3_VERSION
-    return SSL_CTX_new (TLS_server_method());
+    return SSL_CTX_new(TLS_server_method());
 #else
     return nullptr;
 #endif
@@ -230,13 +229,13 @@ SSL_CTX *Socket_TLS::createServerSSLContext()
 SSL_CTX *Socket_TLS::createClientSSLContext()
 {
 #if TLS_MAX_VERSION == TLS1_VERSION
-    return SSL_CTX_new (TLSv1_client_method());
+    return SSL_CTX_new(TLSv1_client_method());
 #elif TLS_MAX_VERSION == TLS1_1_VERSION
-    return SSL_CTX_new (TLSv1_1_client_method());
+    return SSL_CTX_new(TLSv1_1_client_method());
 #elif TLS_MAX_VERSION == TLS1_2_VERSION
-    return SSL_CTX_new (TLSv1_2_client_method());
+    return SSL_CTX_new(TLSv1_2_client_method());
 #elif TLS_MAX_VERSION >= TLS1_3_VERSION
-    return SSL_CTX_new (TLS_client_method());
+    return SSL_CTX_new(TLS_client_method());
 #else
     return nullptr;
 #endif
@@ -254,7 +253,6 @@ bool Socket_TLS::isUsingPSK() const
     else
         return tlsKeys.getPSKClientValue()->isUsingPSK;
 }
-
 
 bool Socket_TLS::createTLSContext()
 {
@@ -284,7 +282,6 @@ bool Socket_TLS::createTLSContext()
         }
     }
 
-
     return true;
 }
 
@@ -299,18 +296,18 @@ void Socket_TLS::parseErrors()
     }
 }
 
-bool Socket_TLS::validateTLSConnection(const bool & usingPSK)
+bool Socket_TLS::validateTLSConnection(const bool &usingPSK)
 {
     if (!m_sslHandler)
         return false;
 
-    bool bValid  = false;
+    bool bValid = false;
 
     if (!usingPSK)
     {
         X509 *cert;
         cert = SSL_get_peer_certificate(m_sslHandler);
-        if ( cert != nullptr )
+        if (cert != nullptr)
         {
             long res = SSL_get_verify_result(m_sslHandler);
             if (res == X509_V_OK)
@@ -344,10 +341,9 @@ void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
     m_certValidationOptions = newCertValidation;
 }
 
-
 string Socket_TLS::getTLSConnectionCipherName()
 {
-    if (!m_sslHandler) 
+    if (!m_sslHandler)
         return "";
     return SSL_get_cipher_name(m_sslHandler);
 }
@@ -372,14 +368,14 @@ string Socket_TLS::getTLSPeerCN() const
     if (!isUsingPSK())
     {
         char certCNText[512];
-        memset(certCNText,0,sizeof(certCNText));
+        memset(certCNText, 0, sizeof(certCNText));
 
-        X509 * cert = SSL_get_peer_certificate(m_sslHandler);
-        if(cert)
+        X509 *cert = SSL_get_peer_certificate(m_sslHandler);
+        if (cert)
         {
-            X509_NAME * certName = X509_get_subject_name(cert);
+            X509_NAME *certName = X509_get_subject_name(cert);
             if (certName)
-                X509_NAME_get_text_by_NID(certName,NID_commonName,certCNText,511);
+                X509_NAME_get_text_by_NID(certName, NID_commonName, certCNText, 511);
             X509_free(cert);
         }
         return std::string(certCNText);
@@ -412,9 +408,8 @@ int Socket_TLS::iShutdown(int mode)
     }
     else
     {
-
         // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
-        switch (SSL_shutdown (m_sslHandler))
+        switch (SSL_shutdown(m_sslHandler))
         {
         case 0:
             // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
@@ -446,7 +441,7 @@ void Socket_TLS::setServerMode(bool value)
 Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
-    if (!m_sslHandler) 
+    if (!m_sslHandler)
         return cb;
     cb.asymmetricBits = SSL_get_cipher_bits(m_sslHandler, &cb.symmetricBits);
     return cb;
@@ -454,7 +449,7 @@ Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 
 string Socket_TLS::getTLSConnectionProtocolVersion()
 {
-    if (!m_sslHandler) 
+    if (!m_sslHandler)
         return "";
     return SSL_get_version(m_sslHandler);
 }
@@ -465,7 +460,7 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
 
     m_isServer = true;
 
-    std::shared_ptr<Socket_Stream>  acceptedTCPSock = Socket_TCP::acceptConnection();
+    std::shared_ptr<Socket_Stream> acceptedTCPSock = Socket_TCP::acceptConnection();
 
     if (!acceptedTCPSock)
         return nullptr;
@@ -485,7 +480,6 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
 
     // now we should copy the file descriptor:
     acceptedTLSSock->setSocketFD(acceptedTCPSock->adquireSocketFD());
-    //delete acceptedTCPSock;
 
     // After this, the postInitialization will be called by the acceptor thread.
     return acceptedTLSSock;
@@ -495,20 +489,18 @@ ssize_t Socket_TLS::partialRead(void *data, const size_t &datalen)
 {
     std::unique_lock<std::mutex> lock(mutexRead);
 
-    return iPartialRead(data,datalen);
+    return iPartialRead(data, datalen);
 }
 
-ssize_t Socket_TLS::partialWrite(const void * data, const size_t & datalen)
+ssize_t Socket_TLS::partialWrite(const void *data, const size_t &datalen)
 {
     std::unique_lock<std::mutex> lock(mutexWrite);
 
-    return iPartialWrite(data,datalen);
+    return iPartialWrite(data, datalen);
 }
 
-ssize_t Socket_TLS::iPartialRead(
-    void *data, const size_t &datalen, int ttl)
+ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
 {
-
     if (!m_sslHandler)
     {
         m_lastError = "SSL handle is null";
@@ -524,12 +516,42 @@ ssize_t Socket_TLS::iPartialRead(
 
     if (readBytes > 0)
     {
+        // Debug print for read data
+        if ((debugOptions & TLS_DEBUG_PRINT_READ_HEX) || (debugOptions & TLS_DEBUG_PRINT_READ_PLAIN))
+        {
+            if (debugOptions & TLS_DEBUG_PRINT_READ_HEX)
+            {
+                fprintf(stderr, "[TLS READ] Read %d bytes\n", readBytes);
+                fflush(stderr);
+                // Print hex dump using BIO_dump_fp
+                BIO *bio = BIO_new(BIO_s_mem());
+                if (bio)
+                {
+                    BIO_dump_fp(stderr, (const char *) data, readBytes);
+                    fflush(stderr);
+                    BIO_free(bio);
+                }
+            }
+            else
+            {
+                std::string datax;
+                datax.append((const char *)data,readBytes);
+                fprintf(stderr,"%s",datax.c_str()); fflush(stderr);
+            }
+        }
+
         m_lastError = "";
         return readBytes;
     }
     else if (readBytes == 0)
     {
         // The connection has been closed.
+        if (debugOptions & TLS_DEBUG_PRINT_CLOSE)
+        {
+            fprintf(stderr, "[TLS CLOSE] Connection closed by peer\n");
+            fflush(stderr);
+        }
+
         m_lastError = "Connection closed by peer";
         return 0;
     }
@@ -541,14 +563,28 @@ ssize_t Socket_TLS::iPartialRead(
     case SSL_ERROR_WANT_READ:
     case SSL_ERROR_WANT_WRITE:
         // Try Again after 10ms...
+
+        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(stderr, "[TLS READ] SSL_WANT_READ/WRITE during read, retrying...\n");
+            fflush(stderr);
+        }
+
         usleep(10000);
-        return iPartialRead(data,datalen,ttl-1);
+        return iPartialRead(data, datalen, ttl - 1);
     case SSL_ERROR_SYSCALL:
     {
         int errnoCopy = errno;
         char errorBuffer[256];
         strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
         m_lastError = std::string("System call error: ") + errorBuffer;
+
+        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(stderr, "[TLS ERROR] System call error during read: %s\n", errorBuffer);
+            fflush(stderr);
+        }
+
         break;
     }
     case SSL_ERROR_ZERO_RETURN:
@@ -557,10 +593,22 @@ ssize_t Socket_TLS::iPartialRead(
         {
             parseErrors();
             m_lastError = std::string("SSL Layer Error");
+
+            if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+            {
+                fprintf(stderr, "[TLS ERROR] SSL Layer Error during read\n");
+                fflush(stderr);
+            }
             break;
         }
     default:
         m_lastError = "Unknown SSL error occurred";
+
+        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(stderr, "[TLS ERROR] Unknown SSL error occurred during read\n");
+            fflush(stderr);
+        }
     }
 
     // In case of error, close the connection.
@@ -569,8 +617,7 @@ ssize_t Socket_TLS::iPartialRead(
     return -1;
 }
 
-ssize_t Socket_TLS::iPartialWrite(
-    const void *data, const size_t &datalen, int ttl)
+ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int ttl)
 {
     if (!m_sslHandler)
     {
@@ -582,12 +629,19 @@ ssize_t Socket_TLS::iPartialWrite(
         return -1;
     }
 
-    if ( datalen>static_cast<uint64_t>(std::numeric_limits<int>::max()) )
+    if (datalen > static_cast<uint64_t>(std::numeric_limits<int>::max()))
     {
         throw std::runtime_error("Data size exceeds the maximum allowed for partial write.");
     }
 
     int chunkSize = static_cast<int>(datalen);
+
+    // Debug: Print write data if enabled
+    if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+    {
+        fprintf(stderr, "[TLS_WRITE] Writing %d bytes\n", chunkSize);
+        fflush(stderr);
+    }
 
     // TODO: sigpipe here?
     int sentBytes = SSL_write(m_sslHandler, data, chunkSize);
@@ -595,23 +649,56 @@ ssize_t Socket_TLS::iPartialWrite(
     if (sentBytes > 0)
     {
         m_lastError = "";
+
+        // Debug: Print sent bytes if enabled
+        if ((debugOptions & TLS_DEBUG_PRINT_WRITE_HEX) || (debugOptions & TLS_DEBUG_PRINT_WRITE_PLAIN))
+        {
+            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            {
+                fprintf(stderr, "[TLS_WRITE] Sent %d bytes successfully\n", sentBytes);
+                BIO_dump_fp(stderr, (const char *) data, sentBytes);
+                fflush(stderr);
+            }
+            else
+            {
+                std::string datax;
+                datax.append((const char *)data,sentBytes);
+                fprintf(stderr,"%s",datax.c_str()); fflush(stderr);
+            }
+        }
+
         return sentBytes;
     }
     else if (sentBytes == 0)
     {
         // Closed.
         m_lastError = "Connection closed";
+        // Debug: Print close event if enabled
+        if (debugOptions & TLS_DEBUG_PRINT_CLOSE)
+        {
+            fprintf(stderr, "[TLS_CLOSE] Connection closed by peer\n");
+            fflush(stderr);
+        }
+
         return sentBytes;
     }
     else
     {
         int sslErr = SSL_get_error(m_sslHandler, sentBytes);
-        switch(sslErr) {
+        switch (sslErr)
+        {
         case SSL_ERROR_WANT_READ:
         case SSL_ERROR_WANT_WRITE:
             // Wait 10ms... and try again...
             usleep(10000);
-            return iPartialWrite(data,datalen,ttl-1);
+            // Debug: Print retry info if enabled
+            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            {
+                fprintf(stderr, "[TLS_WRITE] SSL_WANT_RETRY, retrying (ttl=%d)\n", ttl);
+                fflush(stderr);
+            }
+
+            return iPartialWrite(data, datalen, ttl - 1);
         case SSL_ERROR_SYSCALL:
         {
             int errnoCopy = errno;
@@ -620,6 +707,14 @@ ssize_t Socket_TLS::iPartialWrite(
             m_lastError = std::string("System call error: ") + errorBuffer;
             parseErrors();
             Socket_TCP::iShutdown();
+
+            // Debug: Print syscall error if enabled
+            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            {
+                fprintf(stderr, "[TLS_WRITE_ERROR] System call error: %s\n", errorBuffer);
+                fflush(stderr);
+            }
+
             return -1;
         }
         case SSL_ERROR_ZERO_RETURN:
@@ -629,8 +724,14 @@ ssize_t Socket_TLS::iPartialWrite(
             m_lastError = std::string("SSL Layer Error");
             parseErrors();
             Socket_TCP::iShutdown();
+
+            // Debug: Print SSL error if enabled
+            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            {
+                fprintf(stderr, "[TLS_WRITE_ERROR] SSL error occurred\n");
+                fflush(stderr);
+            }
             return -1;
         }
     }
-
 }
