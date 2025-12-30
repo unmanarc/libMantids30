@@ -11,20 +11,14 @@ using namespace std;
 
 Listener::Listener() {}
 
-bool Listener::incomingConnection(void * context,
+void Listener::incomingConnection(void * context,
                                   std::shared_ptr<Sockets::Socket_Stream> socketStream)
 {
     Listener *threadParams = (Listener *)(context);
-
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
-
     auto connectionStatus = threadParams->handleClientConnection(socketStream);
-
     CALLBACK(threadParams->tcpCallbacks.onClientDisconnected)(threadParams->listenerContext, socketStream, connectionStatus);
-
-    return true;
 }
-
 
 bool Listener::startListeningInBackground( const Config &parameters )
 {
@@ -77,7 +71,6 @@ bool Listener::startListeningInBackground( const Config &parameters )
 
     multiThreadedAcceptor->parameters.setMaxConcurrentClients(parameters.maxConcurrentClients);
     multiThreadedAcceptor->parameters.setMaxConnectionsPerIP(parameters.maxConnectionsPerIP);
-    //multiThreadedAcceptor->setMaxWaitMSTime();
 
     // Set callbacks:
     multiThreadedAcceptor->callbacks.contextOnConnect = this;
@@ -89,12 +82,6 @@ bool Listener::startListeningInBackground( const Config &parameters )
     multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = tcpCallbacks.onClientAcceptTimeoutOccurred;
     multiThreadedAcceptor->callbacks.onClientConnectionLimitPerIPReached = tcpCallbacks.onClientConnectionLimitPerIPReached;
     multiThreadedAcceptor->callbacks.onProtocolInitializationFailure = tlsCallbacks.onProtocolInitializationFailure;
-
-/*
-    multiThreadedAcceptor->setCallbackOnConnect(&incomingConnection, threadParams);
-    multiThreadedAcceptor->setCallbackonClientConnectionLimitPerIPReached(parameters.tcpCallbacks.onClientConnectionLimitPerIPReached, listenerContext);
-    multiThreadedAcceptor->setCallbackOnInitFail(parameters.tlsCallbacks.onProtocolInitializationFailure, listenerContext);
-    multiThreadedAcceptor->setCallbackOnTimedOut(, listenerContext);*/
 
     multiThreadedAcceptor->startInBackground();
 

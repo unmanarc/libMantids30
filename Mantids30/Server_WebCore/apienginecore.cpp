@@ -80,12 +80,12 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> APIEngineCore::getLi
     return m_listenerSocket;
 }
 
-bool APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
+void APIEngineCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
 {
-    return handleConnect(this,virtualConnection);
+    handleConnect(this,virtualConnection);
 }
 
-bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)
+void APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
 
@@ -112,15 +112,12 @@ bool APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
         Memory::Streams::Parser::ErrorMSG err;
         apiWebServerClientHandler->parseObject(&err);
     }
-
-    return true;
 }
 
-bool APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream> s)
+void APIEngineCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     APIEngineCore * webserver = static_cast<APIEngineCore *>(context);
     webserver->callbacks.onProtocolInitializationFailure.call(webserver,s);
-    return true;
 }
 
 void APIEngineCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream> s)

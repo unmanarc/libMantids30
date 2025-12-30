@@ -75,7 +75,7 @@ public:
 
     APIEngineCore();
 
-    bool handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
+    void handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
 
     /**
      * @brief setAcceptMultiThreaded Configures the server to start in multi-threaded mode where the number of threads grows as connections are received.
@@ -146,11 +146,11 @@ private:
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream>);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static bool handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream>);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
