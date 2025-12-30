@@ -6,7 +6,7 @@
 #include <netdb.h>
 #endif
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Socket_UDP : public Socket_DatagramBase {
 public:
@@ -77,4 +77,4 @@ private:
 
 typedef std::shared_ptr<Socket_UDP> Socket_UDP_SP;
 
-}}}
+}
