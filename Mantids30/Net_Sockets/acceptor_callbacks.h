@@ -2,9 +2,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30 {
-namespace Network {
-namespace Sockets {
+namespace Mantids30::Network::Sockets {
 namespace Acceptors {
 
 //typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream>);
@@ -51,6 +49,4 @@ public:
 };
 
 } // namespace Acceptors
-} // namespace Sockets
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Sockets

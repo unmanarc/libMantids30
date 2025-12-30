@@ -1,50 +1,54 @@
 #pragma once
 
-#include <stdint.h>
-#include <string>
 #include <string.h>
+#include <string>
 
 #ifdef _WIN32
-#include <string.h>
 #include <WinBase.h>
+#include <string.h>
 #endif
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 #define MAX_SIZE_T std::numeric_limits<std::size_t>::max()
 
-#define CHECK_UINT_OVERFLOW_SUM(a,b) (a+b<a || a+b<b)
-#define CHECK_UINT_OVERFLOW_REM(a,b) (b>a)
+#define CHECK_UINT_OVERFLOW_SUM(a, b) (a + b < a || a + b < b)
+#define CHECK_UINT_OVERFLOW_REM(a, b) (b > a)
 
 #define KB_MULT (1024)
-#define MB_MULT (KB_MULT*1024)
-#define GB_MULT (MB_MULT*1024)
-#define TB_MULT (GB_MULT*1024)
+#define MB_MULT (KB_MULT * 1024)
+#define GB_MULT (MB_MULT * 1024)
+#define TB_MULT (GB_MULT * 1024)
 
 //#define ZeroBArray(x) memset((x),0,sizeof((x)));
 //#define ZeroBStruct(x) memset(&(x),0,sizeof(x));
 
 #ifdef HAVE_EXPLICIT_BZERO
-#define ZeroBArray(x) explicit_bzero((x),sizeof((x)))
-#define ZeroBStruct(x) explicit_bzero(&(x),sizeof(x))
-#define SecBACopy(dst,src) explicit_bzero(&dst, sizeof(dst)); strncpy(dst, src, sizeof(dst)-1)
+#define ZeroBArray(x) explicit_bzero((x), sizeof((x)))
+#define ZeroBStruct(x) explicit_bzero(&(x), sizeof(x))
+#define SecBACopy(dst, src) \
+    explicit_bzero(&dst, sizeof(dst)); \
+    strncpy(dst, src, sizeof(dst) - 1)
 #elif _WIN32
-#define ZeroBArray(x) SecureZeroMemory((x),sizeof((x)))
-#define ZeroBStruct(x) SecureZeroMemory(&(x),sizeof(x))
-#define SecBACopy(dst,src) SecureZeroMemory(&dst, sizeof(dst)); strncpy(dst, src, sizeof(dst)-1)
+#define ZeroBArray(x) SecureZeroMemory((x), sizeof((x)))
+#define ZeroBStruct(x) SecureZeroMemory(&(x), sizeof(x))
+#define SecBACopy(dst, src) \
+    SecureZeroMemory(&dst, sizeof(dst)); \
+    strncpy(dst, src, sizeof(dst) - 1)
 #else
-#define ZeroBArray(x) memset((x),0,sizeof((x)))
-#define ZeroBStruct(x) memset(&(x),0,sizeof(x))
-#define SecBACopy(dst,src) memset(&dst,0, sizeof(dst)); strncpy(dst, src, sizeof(dst)-1)
+#define ZeroBArray(x) memset((x), 0, sizeof((x)))
+#define ZeroBStruct(x) memset(&(x), 0, sizeof(x))
+#define SecBACopy(dst, src) \
+    memset(&dst, 0, sizeof(dst)); \
+    strncpy(dst, src, sizeof(dst) - 1)
 #endif
 
-#define ZeroBArrayNS(x) memset((x),0,sizeof((x)))
-#define ZeroBStructNS(x) memset(&(x),0,sizeof(x))
+#define ZeroBArrayNS(x) memset((x), 0, sizeof((x)))
+#define ZeroBStructNS(x) memset(&(x), 0, sizeof(x))
 
 class Mem
 {
 public:
-
     struct BinaryDataContainer
     {
         /**
@@ -53,14 +57,14 @@ public:
          * @param data A pointer to the binary data.
          * @param len The length of the binary data in bytes.
          */
-        BinaryDataContainer(const char* data, const size_t& len);
+        BinaryDataContainer(const char *data, const size_t &len);
 
         /**
          * Constructs a new empty BinaryDataContainer with a specified capacity.
          *
          * @param len The capacity of the container in bytes.
          */
-        BinaryDataContainer(const size_t& len);
+        BinaryDataContainer(const size_t &len);
 
         /**
          * Destroys the BinaryDataContainer and frees the memory used by its data.
@@ -83,12 +87,12 @@ public:
          *
          * @param c The byte to append.
          */
-        void operator+=(const unsigned char& c);
+        void operator+=(const unsigned char &c);
 
         /**
          * A pointer to the binary data.
          */
-        void* data;
+        void *data;
 
         /**
          * The length of the binary data in bytes.
@@ -101,18 +105,14 @@ public:
         size_t cur;
     };
 
-    static bool icharcmp(unsigned char c1,unsigned  char c2);
+    static bool icharcmp(unsigned char c1, unsigned char c2);
     static int memcmp64(const void *s1, const void *s2, size_t n);
-    static int memicmp2(const void *s1, const void *s2, const size_t &n, const bool & caseSensitive);
+    static int memicmp2(const void *s1, const void *s2, const size_t &n, const bool &caseSensitive);
     static void *memcpy64(void *dest, const void *src, size_t n);
     static void *memmove64(void *dest, const void *src, size_t n);
 
-
 private:
-
     static unsigned char m_cmpMatrix[];
-
 };
 
-}}
-
+} // namespace Mantids30::Helpers

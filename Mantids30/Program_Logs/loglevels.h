@@ -1,6 +1,7 @@
 #pragma once
 
-namespace Mantids30 { namespace Program { namespace Logs {
+namespace Mantids30::Program {
+namespace Logs {
 
 enum eLogLevels
 {
@@ -40,18 +41,18 @@ enum eLogLevel2
     LOG_TYPE_SYSTEM_HEALTH = 0x40000,
     LOG_TYPE_DATA_VALIDATION = 0x80000,
     LOG_TYPE_FILE_IO = 0x100000,
-    LOG_TYPE_CACHING = 0x200000,       // Logs related to caching mechanisms
-    LOG_TYPE_SESSION_MANAGEMENT = 0x400000, // Session creation and expiration logs
+    LOG_TYPE_CACHING = 0x200000,                 // Logs related to caching mechanisms
+    LOG_TYPE_SESSION_MANAGEMENT = 0x400000,      // Session creation and expiration logs
     LOG_TYPE_THIRD_PARTY_INTEGRATION = 0x800000, // Third-party API/service interaction logs
-    LOG_TYPE_ERROR_HANDLING = 0x1000000, // Detailed error and exception handling logs
-    LOG_TYPE_METRICS = 0x2000000,       // Application metrics and analytics logs
-    LOG_TYPE_RESOURCE_MANAGEMENT = 0x4000000, // Memory, CPU, and resource usage logs
-    LOG_TYPE_SCHEDULER = 0x8000000,     // Scheduler and task execution logs
-    LOG_TYPE_EVENT_PROCESSING = 0x10000000, // Event-driven processing logs
-    LOG_TYPE_DEPLOYMENT = 0x20000000,   // Deployment and release-related logs
-    LOG_TYPE_MAINTENANCE = 0x40000000,  // Maintenance and service logs
-    LOG_TYPE_CUSTOM = 0x80000000        // Placeholder for custom or miscellaneous logs
+    LOG_TYPE_ERROR_HANDLING = 0x1000000,         // Detailed error and exception handling logs
+    LOG_TYPE_METRICS = 0x2000000,                // Application metrics and analytics logs
+    LOG_TYPE_RESOURCE_MANAGEMENT = 0x4000000,    // Memory, CPU, and resource usage logs
+    LOG_TYPE_SCHEDULER = 0x8000000,              // Scheduler and task execution logs
+    LOG_TYPE_EVENT_PROCESSING = 0x10000000,      // Event-driven processing logs
+    LOG_TYPE_DEPLOYMENT = 0x20000000,            // Deployment and release-related logs
+    LOG_TYPE_MAINTENANCE = 0x40000000,           // Maintenance and service logs
+    LOG_TYPE_CUSTOM = 0x80000000                 // Placeholder for custom or miscellaneous logs
 };
 
-}}}
-
+} // namespace Logs
+} // namespace Mantids30::Program

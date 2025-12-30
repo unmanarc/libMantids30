@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * Provides utility functions for working with files.
@@ -45,11 +45,7 @@ public:
      * @param configFilePath The path to the configuration file to fix
      * @return true if the function succeeds, false otherwise
      */
-    static bool fixSensitiveConfigPermission(const std::string& configFilePath);
-
-
+    static bool fixSensitiveConfigPermission(const std::string &configFilePath);
 };
 
-
-}};
-
+} // namespace Mantids30::Helpers

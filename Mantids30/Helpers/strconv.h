@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * Provides utility functions for working with string conversions.
@@ -14,6 +14,4 @@ public:
 
 };
 
-
-}};
-
+}

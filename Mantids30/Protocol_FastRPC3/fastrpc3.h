@@ -1,14 +1,14 @@
 #pragma once
 
-#include <Mantids30/Helpers/json.h>
 #include <Mantids30/API_EndpointsAndSessions/session.h>
+#include <Mantids30/Helpers/json.h>
 
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
-#include <Mantids30/Threads/threadpool.h>
-#include <Mantids30/Threads/mutex_shared.h>
-#include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/callbacks_socket_tls_server.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
+#include <Mantids30/Threads/mutex.h>
+#include <Mantids30/Threads/mutex_shared.h>
+#include <Mantids30/Threads/threadpool.h>
 
 #include <Mantids30/Net_Sockets/connector.h>
 #include <Mantids30/Net_Sockets/listener.h>
@@ -18,7 +18,8 @@
 #include <cstdint>
 #include <memory>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace FastRPC {
+namespace Mantids30::Network::Protocols {
+namespace FastRPC {
 
 // TODO: online session tokens validator
 /**
@@ -31,26 +32,29 @@ public:
     //     SUBCLASS DEFINTIONS:
     ////////////////////////////////
 
-    enum eConnectionHandlerReturn {
-        CONNECTION_SHUTDOWN_OK=0,
-        CONNECTION_READ_TIMEOUT=-101,
-        CONNECTION_INVALID_PROTOCOL=-100,
-        CONNECTION_FAILED_READING_REQUESTID=-1,
-        CONNECTION_FAILED_READING_FLAGS=-2,
-        CONNECTION_FAILED_READING_METHOD_NAME=-3,
-        CONNECTION_FAILED_READING_PAYLOAD=-4,
-        CONNECTION_FAILED_READING_EXTRAAUTH=-5,
-        CONNECTION_FAILED_PARSING_PAYLOAD=-6,
-        CONNECTION_CONTINUE=1
+    enum eConnectionHandlerReturn
+    {
+        CONNECTION_SHUTDOWN_OK = 0,
+        CONNECTION_READ_TIMEOUT = -101,
+        CONNECTION_INVALID_PROTOCOL = -100,
+        CONNECTION_FAILED_READING_REQUESTID = -1,
+        CONNECTION_FAILED_READING_FLAGS = -2,
+        CONNECTION_FAILED_READING_METHOD_NAME = -3,
+        CONNECTION_FAILED_READING_PAYLOAD = -4,
+        CONNECTION_FAILED_READING_EXTRAAUTH = -5,
+        CONNECTION_FAILED_PARSING_PAYLOAD = -6,
+        CONNECTION_CONTINUE = 1
     };
 
-    enum eExecutionFlags {
+    enum eExecutionFlags
+    {
         EXEC_FLAG_EMPTY = 0,
         EXEC_FLAG_NORMAL = 1,
         EXEC_FLAG_EXTRAAUTH = 2
     };
 
-    enum eTaskExecutionErrors {
+    enum eTaskExecutionErrors
+    {
         EXEC_SUCCESS = 0,
         EXEC_ERR_PAYLOAD_TOO_LARGE = 1,
         EXEC_ERR_PEER_NOT_FOUND = 2,
@@ -62,15 +66,16 @@ public:
         EXEC_ERR_UNKNOWN = 99,
     };
 
-    enum eTaskExecutionStatus {
+    enum eTaskExecutionStatus
+    {
         EXEC_STATUS_ERR_GENERIC = 1,
         EXEC_STATUS_SUCCESS = 2,
         EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW = 3,
         EXEC_STATUS_ERR_METHOD_NOT_FOUND = 4
     };
 
-
-    class SessionPTR {
+    class SessionPTR
+    {
     public:
         SessionPTR() = default;
         ~SessionPTR() = default;
@@ -94,37 +99,34 @@ public:
         ~TaskParameters()
         {
             if (extraTokenAuth)
-                delete [] extraTokenAuth;
+                delete[] extraTokenAuth;
         }
 
         std::shared_ptr<Sockets::Socket_Stream> streamBack = nullptr;
-        uint32_t maxMessageSize=0;
-        void * caller = nullptr;
-        FastRPC3::SessionPTR * sessionHolder = nullptr;
+        uint32_t maxMessageSize = 0;
+        void *caller = nullptr;
+        FastRPC3::SessionPTR *sessionHolder = nullptr;
         std::shared_ptr<API::Monolith::Endpoints> methodsHandler;
         std::shared_ptr<DataFormat::JWT> jwtValidator = nullptr;
-        Threads::Sync::Mutex_Shared * doneSharedMutex = nullptr;
-        Threads::Sync::Mutex * socketMutex = nullptr;
+        Threads::Sync::Mutex_Shared *doneSharedMutex = nullptr;
+        Threads::Sync::Mutex *socketMutex = nullptr;
         std::string methodName, remotePeerIPAddress, remotePeerTLSCommonName, userId, domain;
-        char * extraTokenAuth = nullptr;
+        char *extraTokenAuth = nullptr;
         json payload;
         uint64_t requestId = 0;
-        void * callbacks = nullptr;
+        void *callbacks = nullptr;
     };
 
     class Connection : public Mantids30::Threads::Safe::MapItem
     {
     public:
-        Connection()
-        {
-            terminated = false;
-        }
+        Connection() { terminated = false; }
 
-        void * callbacks = nullptr;
+        void *callbacks = nullptr;
 
         // Socket
         std::shared_ptr<Sockets::Socket_Stream> stream = nullptr;
-        Threads::Sync::Mutex * socketMutex = nullptr;
+        Threads::Sync::Mutex *socketMutex = nullptr;
         std::string key;
 
         // Request ID counter.
@@ -132,58 +134,57 @@ public:
         Threads::Sync::Mutex mtReqIdCt;
 
         // Answers:
-        std::map<uint64_t,json> answers;
+        std::map<uint64_t, json> answers;
         std::mutex answersMutex;
         std::condition_variable answersCondition;
 
         // Execution Status:
-        std::map<uint64_t,uint8_t> executionStatus;
+        std::map<uint64_t, uint8_t> executionStatus;
 
         // Pending Requests:
         std::set<uint64_t> pendingRequests;
 
         // Finalization:
         std::atomic<bool> terminated;
-
     };
 
-    struct RPC3CallbackDefinitions {
-
+    struct RPC3CallbackDefinitions
+    {
         enum eTokenValidationFailedErrors
         {
-            TOKEN_VALIDATION_ERROR=1,
-            EXTRATOKEN_VALIDATION_ERROR=2,
-            EXTRATOKEN_IMPERSONATION_ERROR=3,
-            EXTRATOKEN_NOTREQUIRED_ERROR=5,
-            TOKEN_REVOKED=4,
+            TOKEN_VALIDATION_ERROR = 1,
+            EXTRATOKEN_VALIDATION_ERROR = 2,
+            EXTRATOKEN_IMPERSONATION_ERROR = 3,
+            EXTRATOKEN_NOTREQUIRED_ERROR = 5,
+            TOKEN_REVOKED = 4,
         };
 
-        void (*onMethodExecutionAuthorizerMissing)( void * context, TaskParameters * parameters ) = nullptr;
-        void (*onMethodExecutionSessionMissing)( void * context, TaskParameters * parameters ) = nullptr;
-        void (*onMethodExecutionStart)(void * context, TaskParameters * parameters,const json & payloadIn) = nullptr;
-        void (*onMethodExecutionNotAuthorized)(void * context, TaskParameters * parameters,const json & reasons) = nullptr;
-        void (*onMethodExecutionNotFound)(void * context, TaskParameters * parameters) = nullptr;
-        void (*onMethodExecutionSuccess)(void * context, TaskParameters * parameters, const double & elapsedMS,const json & payloadOut ) = nullptr;
-        void (*onMethodExecutionUnknownError)(void * context, TaskParameters * parameters ) = nullptr;
-        void (*onImpersonationFailure)(void * context, TaskParameters * parameters, const std::string & userCaller, const std::string & userCalled, const std::string & domain, const uint32_t & authSlotId ) = nullptr;
-        void (*onTokenValidationSuccess)(void * context, TaskParameters * parameters,  const std::string & jwtToken) = nullptr;
-        void (*onTokenValidationFailure)(void * context, TaskParameters * parameters,  const std::string & jwtToken, eTokenValidationFailedErrors err ) = nullptr;
+        void (*onMethodExecutionAuthorizerMissing)(void *context, TaskParameters *parameters) = nullptr;
+        void (*onMethodExecutionSessionMissing)(void *context, TaskParameters *parameters) = nullptr;
+        void (*onMethodExecutionStart)(void *context, TaskParameters *parameters, const json &payloadIn) = nullptr;
+        void (*onMethodExecutionNotAuthorized)(void *context, TaskParameters *parameters, const json &reasons) = nullptr;
+        void (*onMethodExecutionNotFound)(void *context, TaskParameters *parameters) = nullptr;
+        void (*onMethodExecutionSuccess)(void *context, TaskParameters *parameters, const double &elapsedMS, const json &payloadOut) = nullptr;
+        void (*onMethodExecutionUnknownError)(void *context, TaskParameters *parameters) = nullptr;
+        void (*onImpersonationFailure)(void *context, TaskParameters *parameters, const std::string &userCaller, const std::string &userCalled, const std::string &domain, const uint32_t &authSlotId)
+            = nullptr;
+        void (*onTokenValidationSuccess)(void *context, TaskParameters *parameters, const std::string &jwtToken) = nullptr;
+        void (*onTokenValidationFailure)(void *context, TaskParameters *parameters, const std::string &jwtToken, eTokenValidationFailedErrors err) = nullptr;
         void (*onProtocolUnexpectedResponse)(FastRPC3::Connection *connection, const std::string &answer) = nullptr;
         void (*onOutgoingTaskFailureDisconnectedPeer)(const std::string &connectionId, const std::string &methodName, const json &payload) = nullptr;
-        void (*onIncomingTaskDroppedQueueFull)(FastRPC3::TaskParameters * params) = nullptr;
+        void (*onIncomingTaskDroppedQueueFull)(FastRPC3::TaskParameters *params) = nullptr;
         void (*onOutgoingTaskFailureTimeout)(const std::string &connectionId, const std::string &methodName, const json &payload) = nullptr;
 
-        void * context = nullptr;
+        void *context = nullptr;
         // Mantids30::Sessions::getReasonText(authReason) < - to obtain the auth reason.
     };
 
-    class Config {
+    class Config
+    {
     public:
-        Config(
-                std::shared_ptr<DataFormat::JWT> _jwtValidator
-            ) :  jwtValidator(_jwtValidator)
-        {
-        }
+        Config(std::shared_ptr<DataFormat::JWT> _jwtValidator)
+            : jwtValidator(_jwtValidator)
+        {}
         /**
          * @brief pingIntvl Ping Interval (in seconds) - Set before connect / not thread safe.
          */
@@ -199,7 +200,7 @@ public:
         /**
          * @brief maxMessageSize Max JSON RAW Message Size
          */
-        std::atomic<uint32_t> maxMessageSize{10*1024*1024};
+        std::atomic<uint32_t> maxMessageSize{10 * 1024 * 1024};
         /**
          * @brief remoteExecutionTimeoutInMS Remote Execution Timeout for "runRemoteRPCMethod" function
          */
@@ -247,7 +248,6 @@ public:
          */
         bool ignoreSSLCertForSSO = false;
 
-
         void setDefaultHandlers(std::shared_ptr<API::Monolith::Endpoints> x)
         {
             methodHandlers = x;
@@ -258,10 +258,13 @@ public:
         std::shared_ptr<API::Monolith::Endpoints> defaultMethodsHandlers;
     };
 
-    class RemoteMethods {
+    class RemoteMethods
+    {
     public:
-        RemoteMethods(FastRPC3 * _parent,const std::string & _connectionId) : parent(_parent), connectionId(_connectionId) {}
-
+        RemoteMethods(FastRPC3 *_parent, const std::string &_connectionId)
+            : parent(_parent)
+            , connectionId(_connectionId)
+        {}
 
         /**
          * @brief loginViaJWTToken Logs in to the remote peer using a JWT token.
@@ -325,26 +328,20 @@ public:
          *
          * @note This function is thread-safe and can handle multiple connections simultaneously. It may return Json::nullValue due to network issues, timeouts, or other errors.
          */
-        json executeTask(const std::string &methodName,
-                         const json &payload,
-                         json * error,
-                         bool retryIfDisconnected = true,
-                         bool passSessionCommands = false,
-                         const std::string &extraJWTTokenAuth = ""
-                         );
+        json executeTask(const std::string &methodName, const json &payload, json *error, bool retryIfDisconnected = true, bool passSessionCommands = false, const std::string &extraJWTTokenAuth = "");
         /**
          * @brief runRemoteClose Run Remote Close Method
          * @param connectionId Connection ID (this class can thread-safe handle multiple connections at time)
          * @return Answer, or Json::nullValue if answer is not received or if timed out.
          */
-        bool close( );
+        bool close();
 
     private:
-        FastRPC3 * parent;
+        FastRPC3 *parent;
         std::string connectionId;
     };
 
-    RemoteMethods remote(const std::string & connectionId) { return RemoteMethods(this,connectionId); }
+    RemoteMethods remote(const std::string &connectionId) { return RemoteMethods(this, connectionId); }
 
     ////////////////////////////////
     /**
@@ -358,9 +355,7 @@ public:
      * @param threadsCount The number of threads to preload (default: 16).
      * @param taskQueues The maximum number of queued tasks per thread (default: 24).
      */
-    FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator,
-             uint32_t threadsCount = 16,
-             uint32_t taskQueues = 24);
+    FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threadsCount = 16, uint32_t taskQueues = 24);
     /**
      * @class FastRPC3
      * @brief A persistent class designed to maintain state across connections.
@@ -379,15 +374,9 @@ public:
      */
     void stop();
 
-    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override
-    {
-        return handleConnection(stream, false);
-    }
+    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override { return handleConnection(stream, false); }
 
-    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override
-    {
-        return handleConnection(stream, true);
-    }
+    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override { return handleConnection(stream, true); }
 
     /**
      * @brief handleConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
@@ -398,13 +387,11 @@ public:
      */
     int handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, bool remotePeerIsServer);
 
-
     // TODO: runRemoteRPCMethod for sending message to an specific connected user...
     // TODO: runRemoteRPCMethod for sending message to all connected users...
     // TODO: runRemoteRPCMethod for sending message to all connected users from specific role...
     // TODO: message persistence for non-connected users
     // TODO: list current sessions
-
 
     /**
      * @brief listActiveConnectionIds Get keys from the current connections.
@@ -416,7 +403,7 @@ public:
      * @param connectionId connection key
      * @return true if exist, otherwise false.
      */
-    bool doesConnectionExist( const std::string &connectionId );
+    bool doesConnectionExist(const std::string &connectionId);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // For Internal use only:
@@ -448,11 +435,12 @@ public:
      * @brief setUsingRemotePeerCommonNameAsConnectionId Set to use or not the Common Name as the connection Id.
      * @param newUseCNAsServerKey true to use the common name as the connection id.
      */
-    void setUsingRemotePeerCommonNameAsConnectionId(const bool & newUseCNAsServerKey);
+    void setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAsServerKey);
 
     struct LoginReason
     {
-        enum eReasons {
+        enum eReasons
+        {
             INTERNAL_ERROR,
             SESSION_DUPLICATE,
             TOKEN_VALIDATED,
@@ -461,11 +449,13 @@ public:
 
         eReasons reason = INTERNAL_ERROR;
 
-        Json::Value toJSONResponse() {
+        Json::Value toJSONResponse()
+        {
             Json::Value response;
             response["val"] = reason;
 
-            switch (reason) {
+            switch (reason)
+            {
             case INTERNAL_ERROR:
                 response["txt"] = "An internal error occurred. Please try again later.";
                 break;
@@ -487,10 +477,9 @@ public:
         }
     };
 
-
 private:
-
-    class LocalRPCTasks {
+    class LocalRPCTasks
+    {
     public:
         enum eExecuteLocalTaskRetCodes
         {
@@ -509,12 +498,11 @@ private:
         static void logout(std::shared_ptr<void> taskData);
     };
 
-
-    static void sendRPCAnswer(FastRPC3::TaskParameters * parameters, const std::string & answer, uint8_t executionStatus);
+    static void sendRPCAnswer(FastRPC3::TaskParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
     int processIncomingAnswer(FastRPC3::Connection *connection);
-    int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
-
+    int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone,
+                                        Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
 
     // TODO:
     /*    std::map<std::string,std::string> connectionIdToLogin;
@@ -522,14 +510,12 @@ private:
     std::multimap<std::string,std::string> loginToConnectionKey;
     std::mutex loginToConnectionKeyMutex;*/
 
-
     // Methods:
     // method name -> method.
     // ? TP or
     //  static json passwordPublicDataToJSON(const uint32_t &slotId, const Sessions::Credential &publicData);
     //  void * overwriteObject;
     //Sessions::Domains m_defaultAuthDomain;
-
 
     /**
      * @brief Stores active connections indexed by a unique key identifier.
@@ -539,7 +525,7 @@ private:
     /**
      * @brief Thread pool for handling RPC method execution.
      */
-    Mantids30::Threads::Pool::ThreadPool * m_threadPool;
+    Mantids30::Threads::Pool::ThreadPool *m_threadPool;
 
     /**
      * @brief Background thread responsible for periodic pinging to maintain connection health.
@@ -570,10 +556,7 @@ private:
      * @brief Flag indicating whether the remote peer's common name is used as the connection ID.
      */
     bool m_usingRemotePeerCommonNameAsConnectionId = false;
-
 };
 
-}}}}
-
-
-
+} // namespace FastRPC
+} // namespace Mantids30::Network::Protocols

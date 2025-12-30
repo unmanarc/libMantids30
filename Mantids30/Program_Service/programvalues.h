@@ -1,20 +1,23 @@
 #pragma once
 
-#include <string>
 #include <list>
 #include <stdint.h>
+#include <string>
 
-namespace Mantids30 { namespace Program { namespace Values {
+namespace Mantids30::Program {
+namespace Values {
 
 /**
  * @brief The ProgramValues class contains information about a program.
  */
-struct Author {
-    std::string name; /**< Author name */
+struct Author
+{
+    std::string name;  /**< Author name */
     std::string email; /**< Author email */
 };
 
-class ProgramValues {
+class ProgramValues
+{
 public:
     /**
      * Class constructor.
@@ -31,7 +34,7 @@ public:
      * Adds an author to the program.
      * @param author Author information.
      */
-    void addAuthor(const Author & author);
+    void addAuthor(const Author &author);
 
     /**
      * Returns a list with all authors of the program.
@@ -58,7 +61,7 @@ public:
      * @param subminor Subminor version.
      * @param subText Subtext.
      */
-    void setVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string & subText);
+    void setVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string &subText);
 
     /**
      * Returns the daemon name.
@@ -72,17 +75,16 @@ public:
      */
     void setDaemonName(const std::string &value);
 
-
-    std::string softwareLicense; /**< Program license. */
+    std::string softwareLicense;     /**< Program license. */
     std::string softwareDescription; /**< Program description. */
-    std::string softwareName; /**< Program name. */
+    std::string softwareName;        /**< Program name. */
 
 protected:
     std::string m_daemonName; /**< Program name. */
 
     std::list<Author> m_authors; /**< List of authors. */
-    std::string m_version; /**< Program version. */
+    std::string m_version;       /**< Program version. */
 };
 
-}}}
-
+} // namespace Values
+} // namespace Mantids30::Program

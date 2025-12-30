@@ -2,8 +2,8 @@
 
 #include <Mantids30/Memory/subparser.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
-
+namespace Mantids30::Network::Protocols {
+namespace MIME {
 
 #define ENDP_STAT_UNINITIALIZED -1
 #define ENDP_STAT_CONTINUE 0
@@ -25,5 +25,5 @@ private:
     int m_status;
 };
 
-}}}}
-
+} // namespace MIME
+} // namespace Mantids30::Network::Protocols

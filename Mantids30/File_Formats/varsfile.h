@@ -1,10 +1,11 @@
 #pragma once
 
-#include <string>
-#include <map>
 #include <list>
+#include <map>
+#include <string>
 
-namespace Mantids30 { namespace File_Formats { namespace Vars {
+namespace Mantids30::File_Formats {
+namespace Vars {
 
 enum eFileError
 {
@@ -20,7 +21,7 @@ enum eFileError
 class File
 {
 public:
-    File( const std::string & filePath );
+    File(const std::string &filePath);
 
     /**
      * @brief load Load file data into multimap
@@ -37,26 +38,26 @@ public:
      * @param varName Variable Name
      * @param varValue Variable Value
      */
-    void setVar(const std::string & varName, const std::string & varValue);
+    void setVar(const std::string &varName, const std::string &varValue);
     /**
      * @brief addVar Add Variable (multimap value, multiple vars with the same name could coexist)
      * @param varName Variable Name
      * @param varValue Variable Value
      */
-    void addVar(const std::string & varName, const std::string & varValue);
+    void addVar(const std::string &varName, const std::string &varValue);
     /**
      * @brief getVarValues Get Variable Values
      * @param varName Variable Name
      * @return list of values
      */
-    std::list<std::string> getVarValues(const std::string & varName);
+    std::list<std::string> getVarValues(const std::string &varName);
     /**
      * @brief getVarValue Get Variable Value
      * @param varName Variable Name
      * @param found returns true if varname found, if else false
      * @return First Variable Value
      */
-    std::string getVarValue(const std::string & varName, bool * found = nullptr);
+    std::string getVarValue(const std::string &varName, bool *found = nullptr);
     /**
      * @brief getVars Get Variable Vars
      * @return Full Variable Vars map.
@@ -74,14 +75,14 @@ public:
      * @param ok returns true if succeed, false if error happenned (eg. invalid string format)
      * @return pair with varName and VarValue
      */
-    std::pair<std::string,std::string> getLineVars( const std::string & line, bool * ok = nullptr );
+    std::pair<std::string, std::string> getLineVars(const std::string &line, bool *ok = nullptr);
     /**
      * @brief getLineFromVars Compose File Line Format (VarName:VarValue)
      * @param vars pair with name and value
      * @param ok returns true if succeed, false if error happenned (eg. invalid varname format)
      * @return string composed/sanitized with varName:varValue
      */
-    std::string getLineFromVars( const std::pair<std::string,std::string> & vars, bool * ok = nullptr );
+    std::string getLineFromVars(const std::pair<std::string, std::string> &vars, bool *ok = nullptr);
 
     /**
      * @brief getLastError Get Last Error
@@ -92,10 +93,8 @@ public:
 private:
     eFileError m_lastError;
     std::string m_filePath;
-    std::multimap<std::string,std::string> m_vars;
+    std::multimap<std::string, std::string> m_vars;
 };
 
-
-}}}
-
-
+} // namespace Vars
+} // namespace Mantids30::File_Formats

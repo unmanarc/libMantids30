@@ -6,9 +6,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids30 {
-namespace Network {
-namespace Protocols {
+namespace Mantids30::Network::Protocols {
 namespace APISync {
 
 /**
@@ -38,8 +36,6 @@ struct APISyncParameters
     bool useTLS = true;             ///< Whether to use TLS encryption.
     std::string privateCAPath = ""; ///< Path to the private CA certificate file (if applicable).
 };
-
-
 
 /**
  * @brief Performs an API synchronization request.
@@ -118,6 +114,4 @@ json updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *p
                                 const json &activities);
 
 } // namespace APISync
-} // namespace Protocols
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Protocols

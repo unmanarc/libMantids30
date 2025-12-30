@@ -4,9 +4,7 @@
 #include "callbacks_socket_tls_server.h"
 #include <memory>
 
-namespace Mantids30 {
-namespace Network {
-namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Listener
 {
@@ -97,6 +95,4 @@ private:
     static void incomingConnection(void *, std::shared_ptr<Sockets::Socket_Stream> bsocket);
 };
 
-} // namespace Sockets
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Sockets

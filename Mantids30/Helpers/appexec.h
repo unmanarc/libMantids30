@@ -1,10 +1,10 @@
 #pragma once
 
 #ifndef _WIN32
-#include <spawn.h>
 #include <poll.h>
-#include <stdio.h>
 #include <set>
+#include <spawn.h>
+#include <stdio.h>
 #endif
 
 #include <string>
@@ -20,12 +20,13 @@
 #define APPEXEC_UNKNOWN 4
 #define APPEXEC_ERR_CREATEPROCESS 5
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 class AppExec
 {
 public:
-    struct sAppExecResult {
+    struct sAppExecResult
+    {
         // Command output
         std::string output;
 
@@ -42,14 +43,13 @@ public:
         std::vector<std::string> args;
     };
 
-
     AppExec() = default;
     /**
      * @brief blexec blocking command execution
      * @param cmd
      * @return command execution result and output
      */
-    static sAppExecResult blexec(const sAppExecCmd& cmd);
+    static sAppExecResult blexec(const sAppExecCmd &cmd);
 };
 
 #ifndef _WIN32
@@ -63,13 +63,13 @@ public:
      * @param path path of executable
      * @return true if exist and it's an executable file, otherwise false.
      */
-    bool setExec( const std::string & path );
+    bool setExec(const std::string &path);
 
     /**
      * @brief addOpenFD Add Open File Descriptor on the application
      * @param outFile file used...
      */
-    bool addOpenFDToFile( const std::string & outFile, int fd = 1);
+    bool addOpenFDToFile(const std::string &outFile, int fd = 1);
 
     /**
      * @brief redirectStdErrToStdOut Add dup STDERR to STDOUT
@@ -80,14 +80,13 @@ public:
      * @brief addArgument Add program argument.
      * @param arg argument text
      */
-    void addArgument(const std::string & arg);
+    void addArgument(const std::string &arg);
 
     /**
      * @brief addEnvironment Add program environment var.
      * @param env environment var (in form of VAR=VALUE)
      */
-    void addEnvironment(const std::string & env);
-
+    void addEnvironment(const std::string &env);
 
     /**
      * @brief spawnProcess Initiate the process
@@ -95,7 +94,7 @@ public:
      * @param pipeStderr set to pipe here the stderr from the child
      * @return
      */
-    bool spawnProcess(bool pipeStdout=false, bool pipeStderr=false);
+    bool spawnProcess(bool pipeStdout = false, bool pipeStderr = false);
 
     /**
      * @brief waitUntilDies Wait until the process die.
@@ -133,5 +132,4 @@ private:
 };
 #endif
 
-}}
-
+} // namespace Mantids30::Helpers

@@ -3,7 +3,7 @@
 #include <list>
 #include <string>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * Determines whether a given element is present in a given list.
@@ -13,24 +13,22 @@ namespace Mantids30 { namespace Helpers {
  *
  * @return True if the element is present in the list, false otherwise.
  */
-template <typename T>
+template<typename T>
 bool contains(const std::list<T> &haystack, const T &needle)
 {
     return find(haystack.begin(), haystack.end(), needle) != haystack.end();
 }
 
-std::string listToString(const std::list<std::string> & a)
+std::string listToString(const std::list<std::string> &a)
 {
     std::string result;
 
-    for (const std::string& str : a) {
+    for (const std::string &str : a)
+    {
         result += str + "\n";
     }
 
     return result;
 }
 
-
-}}
-
-
+} // namespace Mantids30::Helpers

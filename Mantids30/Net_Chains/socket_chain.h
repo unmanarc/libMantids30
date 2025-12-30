@@ -1,13 +1,13 @@
 #pragma once
 
-#include <Mantids30/Net_Sockets/socket_stream.h>
 #include "socket_chain_protocolbase.h"
+#include <Mantids30/Net_Sockets/socket_stream.h>
 
-#include <memory>
-#include <vector>
 #include <atomic>
-#include <utility>
+#include <memory>
 #include <thread>
+#include <utility>
+#include <vector>
 
 /*
   Example:
@@ -21,12 +21,12 @@
 
 */
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Socket_Chain : public Socket_Stream
 {
 public:
-    Socket_Chain(std::shared_ptr<Socket_Stream>  _baseSocket, bool _deleteBaseSocketOnExit = true);
+    Socket_Chain(std::shared_ptr<Socket_Stream> _baseSocket, bool _deleteBaseSocketOnExit = true);
     virtual ~Socket_Chain();
 
     /**
@@ -34,13 +34,9 @@ public:
      * @param chainElement chain element (should be deleted later)
      * @return true if successfully initialized
      */
-    bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase * chainElement, bool deleteAtExit = false);
-    bool addToChain(std::pair<std::shared_ptr<Socket_Stream> , std::shared_ptr<Socket_Stream> > sockPairs,
-                    bool deleteFirstSocketOnExit = false,
-                    bool deleteSecondSocketOnExit = true,
-                    bool modeServer = false,
-                    bool detached = false,
-                    bool endPMode = false);
+    bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit = false);
+    bool addToChain(std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
+                    bool modeServer = false, bool detached = false, bool endPMode = false);
     void waitUntilFinish();
 
     ////////////////////
@@ -69,24 +65,24 @@ public:
      * @param layer layer number [0..n-1]
      * @return pair of Socket_Stream ptr
      */
-    std::pair<std::shared_ptr<Socket_Stream> , std::shared_ptr<Socket_Stream> > getSocketPairLayer(size_t layer);
+    std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > getSocketPairLayer(size_t layer);
 
     ////////////////////
     // virtuals:
     bool isConnected() override;
     int shutdownSocket(int mode = SHUT_WR) override;
-    ssize_t partialRead(void * data, const size_t & datalen) override;
-    ssize_t partialWrite(const void * data, const size_t & datalen) override;
+    ssize_t partialRead(void *data, const size_t &datalen) override;
+    ssize_t partialWrite(const void *data, const size_t &datalen) override;
 
 private:
-
-    struct sChainVectorItem {
+    struct sChainVectorItem
+    {
         sChainVectorItem()
         {
-            r0[0]=0;
-            w1[0]=true;
-            r0[1]=0;
-            w1[1]=true;
+            r0[0] = 0;
+            w1[0] = true;
+            r0[1] = 0;
+            w1[1] = true;
             detached = false;
             finished = false;
         }
@@ -94,8 +90,8 @@ private:
         /**
          * @brief sock connected pair sockets (sock[0]: up socket  sock[1]: down socket)
          */
-        std::shared_ptr<Socket_Stream>  sock[2];
-        std::thread thr1,thr2;
+        std::shared_ptr<Socket_Stream> sock[2];
+        std::thread thr1, thr2;
 
         // Results from threads...
         int r0[2];
@@ -106,15 +102,15 @@ private:
         bool modeServer;
     };
 
-
-    struct sChainTElement {
-        std::shared_ptr<Socket_Stream>  sockets[2];
-        int * r0;
-        bool * w1;
+    struct sChainTElement
+    {
+        std::shared_ptr<Socket_Stream> sockets[2];
+        int *r0;
+        bool *w1;
         bool modeFWD;
     };
 
-    static void chainThread(sChainTElement * chain);
+    static void chainThread(sChainTElement *chain);
 
     bool m_endPointReached;
     void removeSocketsOnExit();
@@ -124,5 +120,4 @@ private:
     std::vector<sChainVectorItem *> m_socketLayers;
 };
 
-}}}
-
+} // namespace Mantids30::Network::Sockets

@@ -2,8 +2,8 @@
 
 #include <string>
 
-namespace Mantids30 { namespace Helpers { namespace OTP {
-
+namespace Mantids30::Helpers {
+namespace OTP {
 
 /**
  * @class TOTP
@@ -11,9 +11,9 @@ namespace Mantids30 { namespace Helpers { namespace OTP {
  *
  * The TOTP class provides functions to generate a TOTP and to verify a given TOTP against the expected value.
  */
-class TOTP {
+class TOTP
+{
 public:
-
     /// Default constructor
     TOTP() = default;
 
@@ -42,4 +42,5 @@ public:
     static bool verifyToken(const std::string &base32Secret, const std::string &tokenInput, int aperture = 1, unsigned int interval = 30, unsigned int digits = 6);
 };
 
-}}}
+} // namespace OTP
+} // namespace Mantids30::Helpers

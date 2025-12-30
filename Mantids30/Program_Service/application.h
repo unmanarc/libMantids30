@@ -8,48 +8,45 @@ static Mantids30::Program::Arguments::GlobalArguments globalArgs;
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-
 // NOTE: when used as daemon, you have to create this writeable locations:
 //
 //               /var/log/<program_name>/
 //               /var/lock/<program_name>/
 //               /var/run/<program_name>/
 
-namespace Mantids30 { namespace Program {
+namespace Mantids30::Program {
 
 class Application
 {
 public:
-/**
+    /**
  * @brief _shutdown function called for program shutdown (close here your descriptors, connections, etc)
  */
-virtual void _shutdown()=0;
-/**
+    virtual void _shutdown() = 0;
+    /**
  * @brief _initvars Function called for variables initialization
  * @param argc
  * @param argv
  * @param globalArguments
  */
-virtual void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments * globalArguments)=0;
-/**
+    virtual void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    /**
  * @brief _config Function called for config parsing / program initialization
  * @param argc
  * @param argv
  * @param globalArguments
  * @return
  */
-virtual bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments * globalArguments)=0;
-/**
+    virtual bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    /**
  * @brief _start function called for program start
  * @param argc
  * @param argv
  * @param globalArguments
  * @return
  */
-virtual int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments * globalArguments)=0;
-
+    virtual int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
 };
-}}
+} // namespace Mantids30::Program
 
-int StartApplication(int argc, char *argv[], Mantids30::Program::Application * _app);
-
+int StartApplication(int argc, char *argv[], Mantids30::Program::Application *_app);

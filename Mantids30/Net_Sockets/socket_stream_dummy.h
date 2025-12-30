@@ -5,13 +5,10 @@
  * @brief Header file for Socket_Stream_Dummy class.
  */
 
-
-#include <Mantids30/Memory/b_chunks.h>
 #include "socket_stream.h"
+#include <Mantids30/Memory/b_chunks.h>
 
-namespace Mantids30 {
-namespace Network {
-namespace Sockets {
+namespace Mantids30::Network::Sockets {
 /**
  * @class Socket_Stream_Dummy
  * @brief Dummy socket stream implementation.
@@ -103,15 +100,12 @@ public:
      */
     void setRemotePairOverride(const char *address);
 
-
 private:
-    std::string peerName; /**< Peer name associated with the socket. */
+    std::string peerName;                  /**< Peer name associated with the socket. */
     Memory::Containers::B_Chunks sender;   /**< Sender buffer chunk container. */
     Memory::Containers::B_Chunks receiver; /**< Receiver buffer chunk container. */
     bool shuttedDownRD = false;            /**< Flag indicating if the read side has been shutdown. */
     bool shuttedDownWR = false;            /**< Flag indicating if the write side has been shutdown. */
 };
 
-} // namespace Sockets
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Sockets

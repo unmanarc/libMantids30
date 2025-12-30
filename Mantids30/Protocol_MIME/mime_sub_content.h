@@ -3,8 +3,8 @@
 //#include <Mantids30/Memory/streamableobject.h>
 #include <Mantids30/Memory/subparser.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
-
+namespace Mantids30::Network::Protocols {
+namespace MIME {
 
 class MIME_Sub_Content : public Memory::Streams::SubParser
 {
@@ -32,13 +32,14 @@ public:
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
+
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject>  m_contentContainer;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_contentContainer;
 
     std::string m_fsTmpFolder, m_boundary;
     size_t m_maxContentSize;
     size_t m_maxContentSizeUntilGoingToFS;
 };
 
-}}}}
-
+} // namespace MIME
+} // namespace Mantids30::Network::Protocols

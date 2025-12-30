@@ -5,7 +5,8 @@
 
 #include <Mantids30/Memory/streamable_object.h>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
+namespace Mantids30::Network::Protocols {
+namespace MIME {
 
 class MIME_PartMessage
 {
@@ -14,13 +15,13 @@ public:
 
     bool streamToSubParsers();
 
-    MIME_Sub_Content * getContent();
-    MIME_Sub_Header * getHeader();
+    MIME_Sub_Content *getContent();
+    MIME_Sub_Header *getHeader();
 
 private:
     MIME_Sub_Content m_content;
     MIME_Sub_Header m_header;
 };
 
-}}}}
-
+} // namespace MIME
+} // namespace Mantids30::Network::Protocols

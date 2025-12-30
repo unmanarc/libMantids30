@@ -11,9 +11,7 @@
 #include "acceptor_thread.h"
 #include "socket_stream.h"
 
-namespace Mantids30 {
-namespace Network {
-namespace Sockets {
+namespace Mantids30::Network::Sockets {
 namespace Acceptors {
 
 /**
@@ -185,6 +183,4 @@ private:
 };
 
 } // namespace Acceptors
-} // namespace Sockets
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Sockets

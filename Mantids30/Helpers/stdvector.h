@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * Determines whether a given element is present in a given vector.
@@ -13,13 +13,10 @@ namespace Mantids30 { namespace Helpers {
  *
  * @return True if the element is present in the vector, false otherwise.
  */
-template <typename T>
-bool contains( const std::vector<T>& haystack, const T& needle )
+template<typename T>
+bool contains(const std::vector<T> &haystack, const T &needle)
 {
-  return find(haystack.begin(), haystack.end(), needle) != haystack.end();
+    return find(haystack.begin(), haystack.end(), needle) != haystack.end();
 }
 
-
-}}
-
-
+} // namespace Mantids30::Helpers

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <string>
 #include <stdint.h>
+#include <string>
 
-namespace Mantids30 { namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * Represents system information about the local machine.
@@ -46,6 +46,4 @@ public:
     static LocalSysInfo getLocalSystemInfo();
 };
 
-
-
-}}
+} // namespace Mantids30::Helpers

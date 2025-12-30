@@ -1,9 +1,10 @@
 #pragma once
 
-#include <string>
 #include <Mantids30/Memory/subparser.h>
+#include <string>
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
+namespace Mantids30::Network::Protocols {
+namespace MIME {
 
 class MIME_Sub_FirstBoundary : public Memory::Streams::SubParser
 {
@@ -15,9 +16,10 @@ public:
 
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
+
 private:
     std::string m_boundary;
 };
 
-}}}}
-
+} // namespace MIME
+} // namespace Mantids30::Network::Protocols

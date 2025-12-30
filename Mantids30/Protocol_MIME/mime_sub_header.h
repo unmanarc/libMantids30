@@ -1,18 +1,19 @@
 #pragma once
 
-#include <Mantids30/Memory/subparser.h>
 #include <Mantids30/Helpers/json.h>
+#include <Mantids30/Memory/subparser.h>
 
+#include <list>
+#include <map>
 #include <memory>
 #include <string>
-#include <map>
-#include <list>
 
 /*
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace Mantids30 { namespace Network { namespace Protocols { namespace MIME {
+namespace Mantids30::Network::Protocols {
+namespace MIME {
 // ??
 /**
  * @brief The HeaderOption struct
@@ -22,37 +23,34 @@ class MIME_HeaderOption
 public:
     MIME_HeaderOption()
     {
-        m_maxHeaderOptSize=8*KB_MULT;
-        m_curHeaderOptSize=0;
-        m_maxSubOptionsCount=16;
+        m_maxHeaderOptSize = 8 * KB_MULT;
+        m_curHeaderOptSize = 0;
+        m_maxSubOptionsCount = 16;
     }
 
-    std::string getSubVar(const std::string & subVarName)
+    std::string getSubVar(const std::string &subVarName)
     {
-        if (m_subVar.find(subVarName) == m_subVar.end()) 
+        if (m_subVar.find(subVarName) == m_subVar.end())
             return "";
         return m_subVar.find(subVarName)->second;
     }
 
-    std::list<std::string> getSubVars(const std::string & subVarName)
+    std::list<std::string> getSubVars(const std::string &subVarName)
     {
         std::list<std::string> r;
         auto ret = m_subVar.equal_range(subVarName);
-        for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
+        for (std::multimap<std::string, std::string>::iterator it = ret.first; it != ret.second; ++it)
         {
-              r.push_back(it->second);
+            r.push_back(it->second);
         }
         return r;
     }
 
-    std::multimap<std::string, std::string> getAllSubVars()
-    {
-        return m_subVar;
-    }
+    std::multimap<std::string, std::string> getAllSubVars() { return m_subVar; }
 
     std::string toString();
 
-    void addSubVar(const std::string & varName, const std::string & varValue);
+    void addSubVar(const std::string &varName, const std::string &varValue);
 
     std::string getUpperName() const;
 
@@ -69,7 +67,7 @@ public:
     void setMaxSubOptions(const uint64_t &value);
 
 private:
-    bool isPermited7bitCharset(const std::string & varX);
+    bool isPermited7bitCharset(const std::string &varX);
 
     uint64_t m_maxSubOptionsCount;
     uint64_t m_maxHeaderOptSize;
@@ -78,7 +76,7 @@ private:
     std::string m_origName;
     std::string m_origValue;
     std::string m_value;
-    std::multimap<std::string,std::string> m_subVar;
+    std::multimap<std::string, std::string> m_subVar;
 };
 
 class MIME_Sub_Header : public Memory::Streams::SubParser
@@ -86,7 +84,7 @@ class MIME_Sub_Header : public Memory::Streams::SubParser
 public:
     MIME_Sub_Header();
 
-    bool streamToUpstream( ) override;
+    bool streamToUpstream() override;
 
     void clear();
 
@@ -130,19 +128,19 @@ public:
      * @param varName
      * @return nullptr if not exist.
      */
-    std::shared_ptr<MIME_HeaderOption> getOptionByName(const std::string & varName) const;
+    std::shared_ptr<MIME_HeaderOption> getOptionByName(const std::string &varName) const;
     /**
      * @brief getOptionRawStringByName Get Option STD String By Name (raw, as came from the input)
      * @param varName variable name.
      * @return "" if nothing found, or the original option value.
      */
-    std::string getOptionRawStringByName(const std::string & varName) const;
+    std::string getOptionRawStringByName(const std::string &varName) const;
     /**
      * @brief getOptionValueStringByName
      * @param varName
      * @return
      */
-    std::string getOptionValueStringByName(const std::string & varName) const;
+    std::string getOptionValueStringByName(const std::string &varName) const;
 
     /**
      * @brief getOptionAsUINT64
@@ -150,7 +148,7 @@ public:
      * @param optExist
      * @return
      */
-    uint64_t getOptionAsUINT64(const std::string & varName, uint16_t base = 10, bool * optExist = nullptr) const;
+    uint64_t getOptionAsUINT64(const std::string &varName, uint16_t base = 10, bool *optExist = nullptr) const;
     //////////////////////////////////////////////////
 
     bool addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt);
@@ -175,10 +173,10 @@ private:
     std::shared_ptr<MIME_HeaderOption> m_lastOpt;
     void parseOptionValue(std::string optionValue);
 
-    std::multimap<std::string,std::shared_ptr<MIME_HeaderOption>> m_headers;
+    std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>> m_headers;
     size_t m_maxOptions = 32; // 32 Max options
-    size_t m_maxSubOptionCount=100, m_maxSubOptionSize=2*KB_MULT;
+    size_t m_maxSubOptionCount = 100, m_maxSubOptionSize = 2 * KB_MULT;
 };
 
-}}}}
-
+} // namespace MIME
+} // namespace Mantids30::Network::Protocols
