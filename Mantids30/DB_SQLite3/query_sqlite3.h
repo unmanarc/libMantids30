@@ -3,8 +3,7 @@
 #include <Mantids30/DB/query.h>
 #include <sqlite3.h>
 
-namespace Mantids30 { namespace Database {
-
+namespace Mantids30::Database {
 /**
  * @brief The Query_SQLite3 class
  *
@@ -36,7 +35,7 @@ protected:
      * @param recursion Whether the execution is recursive or not.
      * @return true if the execution is successful, false otherwise.
      */
-    bool exec0(const ExecType & execType, bool recursion);
+    bool exec0(const ExecType &execType, bool recursion);
 
     /**
      * @brief step0 Advances the query to the next row.
@@ -45,9 +44,8 @@ protected:
     bool step0();
 
 private:
-    sqlite3_stmt *m_stmt;  ///< Pointer to the SQLite3 statement object.
-    sqlite3 *m_databaseConnectionHandler;  ///< Pointer to the SQLite3 database connection handler.
+    sqlite3_stmt *m_stmt;                 ///< Pointer to the SQLite3 statement object.
+    sqlite3 *m_databaseConnectionHandler; ///< Pointer to the SQLite3 database connection handler.
 };
 
-}}
-
+} // namespace Mantids30::Database

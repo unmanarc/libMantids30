@@ -1,11 +1,11 @@
 #pragma once
 
+#include "query_mariadb.h"
+#include <Mantids30/DB/sqlconnector.h>
 #include <memory>
 #include <mysql.h>
-#include <Mantids30/DB/sqlconnector.h>
-#include "query_mariadb.h"
 
-namespace Mantids30 { namespace Database {
+namespace Mantids30::Database {
 
 /**
  * @brief The SQLConnector_MariaDB class provides an implementation of the SQLConnector interface for the MariaDB database.
@@ -36,14 +36,14 @@ public:
      * @brief getDatabaseConnector Internal function used by the query to prepare the query with the database handler.
      * @param query The query to prepare.
      */
-    void getDatabaseConnector(Query_MariaDB * query);
+    void getDatabaseConnector(Query_MariaDB *query);
 
     /**
      * @brief dbTableExist Checks if a table with the given name exists in the MariaDB database.
      * @param table The name of the table to check.
      * @return True if the table exists, otherwise false.
      */
-    bool dbTableExist(const std::string & table);
+    bool dbTableExist(const std::string &table);
 
     /**
      * @brief getEscaped Escapes a string for use in a SQL query.
@@ -66,8 +66,7 @@ protected:
     bool connect0();
 
 private:
-    MYSQL *m_databaseConnectionHandler;    // Handler for the MariaDB database connection.
+    MYSQL *m_databaseConnectionHandler; // Handler for the MariaDB database connection.
 };
 
-}}
-
+} // namespace Mantids30::Database

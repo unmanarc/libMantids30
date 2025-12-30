@@ -4,7 +4,7 @@
 #include <mysql.h>
 #include <vector>
 
-namespace Mantids30 { namespace Database {
+namespace Mantids30::Database {
 /**
  * @brief The Query_MariaDB class provides an implementation of the abstract class Query for MariaDB database.
  */
@@ -26,13 +26,13 @@ public:
      * @param execType Type of execution, such as Select or Insert.
      * @return True if the query was executed successfully, otherwise false.
      */
-    bool exec(const ExecType & execType);
+    bool exec(const ExecType &execType);
 
     /**
      * @brief mariaDBSetDatabaseConnector Sets the MariaDB database connector for this query.
      * @param dbCnt Pointer to a MYSQL object.
      */
-    void mariaDBSetDatabaseConnector( MYSQL *dbCnt );
+    void mariaDBSetDatabaseConnector(MYSQL *dbCnt);
 
     /**
      * @brief getLastInsertRowID Gets the last inserted row ID for the query.
@@ -47,7 +47,7 @@ protected:
      * @param recursion Whether or not to perform recursive calls.
      * @return True if the query was executed successfully, otherwise false.
      */
-    bool exec0(const ExecType & execType, bool recursion);
+    bool exec0(const ExecType &execType, bool recursion);
 
     /**
      * @brief step0 Advances the current row of the result set.
@@ -82,15 +82,14 @@ private:
      * @param fieldType The field type.
      * @return The size of the variable.
      */
-    unsigned long mariaDBfetchVarSize(const size_t & col , const enum_field_types &fieldType = MYSQL_TYPE_STRING);
+    unsigned long mariaDBfetchVarSize(const size_t &col, const enum_field_types &fieldType = MYSQL_TYPE_STRING);
 
-    MYSQL * m_databaseConnectionHandler = nullptr; /**< Pointer to a MYSQL object. */
-    MYSQL_STMT * m_stmt = nullptr; /**< Pointer to a MYSQL_STMT object. */
-    MYSQL_BIND * m_bindedInputParams = nullptr; /**< Pointer to a MYSQL_BIND object for input parameters. */
-    MYSQL_BIND * m_bindedResultsParams = nullptr; /**< Pointer to a MYSQL_BIND object for result set parameters. */
+    MYSQL *m_databaseConnectionHandler = nullptr;           /**< Pointer to a MYSQL object. */
+    MYSQL_STMT *m_stmt = nullptr;                           /**< Pointer to a MYSQL_STMT object. */
+    MYSQL_BIND *m_bindedInputParams = nullptr;              /**< Pointer to a MYSQL_BIND object for input parameters. */
+    MYSQL_BIND *m_bindedResultsParams = nullptr;            /**< Pointer to a MYSQL_BIND object for result set parameters. */
     std::vector<unsigned long> m_bindedResultVarSizes = {}; /**< Vector of variable sizes for the result set. */
-    bool m_fetchLastInsertRowID = true; /**< Whether or not to fetch the last inserted row ID. */
-    std::vector<std::string> m_keysByPos; /**< Vector of keys for the result set. */
+    bool m_fetchLastInsertRowID = true;                     /**< Whether or not to fetch the last inserted row ID. */
+    std::vector<std::string> m_keysByPos;                   /**< Vector of keys for the result set. */
 };
-}}
-
+} // namespace Mantids30::Database

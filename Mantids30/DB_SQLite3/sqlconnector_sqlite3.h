@@ -1,23 +1,24 @@
 #pragma once
 
-#include <Mantids30/DB/sqlconnector.h>
 #include "query_sqlite3.h"
+#include <Mantids30/DB/sqlconnector.h>
 #include <sqlite3.h>
 
-namespace Mantids30 { namespace Database {
+namespace Mantids30::Database {
 
 class SQLConnector_SQLite3 : public SQLConnector
 {
 public:
-
-    enum eSqlite3PragmaSyncMode {
+    enum eSqlite3PragmaSyncMode
+    {
         SQLITE3_SYNC_OFF = 0,
         SQLITE3_SYNC_NORMAL = 1,
         SQLITE3_SYNC_FULL = 2,
         SQLITE3_SYNC_EXTRA = 3
     };
 
-    enum eSqlite3PragmaJournalMode {
+    enum eSqlite3PragmaJournalMode
+    {
         SQLITE3_JOURNAL_OFF,
         SQLITE3_JOURNAL_WAL,
         SQLITE3_JOURNAL_MEMORY,
@@ -53,38 +54,33 @@ public:
      * @param table table name
      * @return true if exist, otherwise false.
      */
-    bool dbTableExist(const std::string & table) override;
+    bool dbTableExist(const std::string &table) override;
 
     /**
      * @brief prepareQuery Internal function used by the query to prepare the query with the database handler.
      * @param query Query.
      * @return true if succeed.
      */
-    void putDatabaseConnectorIntoQuery( Query_SQLite3 * query );
+    void putDatabaseConnectorIntoQuery(Query_SQLite3 *query);
 
     bool sqlite3PragmaForeignKeys(bool on = true);
-    bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode & mode);
-    bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode & mode);
+    bool sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode);
+    bool sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode &mode);
 
-    std::string getEscaped(const std::string & value) override;
+    std::string getEscaped(const std::string &value) override;
 
     bool beginTransaction() override;
     bool rollbackTransaction() override;
     bool commitTransaction() override;
 
-
-
 protected:
     std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_SQLite3>(); }
     bool connect0() override;
-    bool attach0( const std::string &dbFilePath, const std::string & schemeName ) override;
-    bool detach0( const std::string & schemeName ) override;
-
+    bool attach0(const std::string &dbFilePath, const std::string &schemeName) override;
+    bool detach0(const std::string &schemeName) override;
 
 private:
     int m_rc;
     sqlite3 *m_ppDb;
-
 };
-}}
-
+} // namespace Mantids30::Database

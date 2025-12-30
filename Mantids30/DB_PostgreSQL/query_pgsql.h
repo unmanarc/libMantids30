@@ -7,7 +7,7 @@
 //#elif __has_include(<postgresql/libpq-fe.h>)
 //# include <postgresql/libpq-fe.h>
 //#endif
-namespace Mantids30 { namespace Database {
+namespace Mantids30::Database {
 
 /**
  * @brief The Query_PostgreSQL class provides an interface for executing queries on PostgreSQL databases.
@@ -30,13 +30,13 @@ public:
      * @param execType Type of execution (insert/select).
      * @return true if the query was executed successfully, false otherwise.
      */
-    bool exec(const ExecType & execType);
+    bool exec(const ExecType &execType);
 
     /**
      * @brief psqlSetDatabaseConnector Sets the database connection handler.
      * @param conn PostgreSQL connection handler.
      */
-    void psqlSetDatabaseConnector(PGconn *conn );
+    void psqlSetDatabaseConnector(PGconn *conn);
 
     /**
      * @brief psqlGetExecStatus Gets the execution status of the last query executed.
@@ -51,7 +51,7 @@ protected:
      * @param recursion Whether the function is called recursively.
      * @return true if the query was executed successfully, false otherwise.
      */
-    bool exec0(const ExecType & execType, bool recursion);
+    bool exec0(const ExecType &execType, bool recursion);
 
     /**
      * @brief step0 Advances the query result to the next row.
@@ -68,17 +68,16 @@ protected:
 private:
     std::vector<std::string> m_keysByPos; ///< Map of column names by position.
 
-    size_t m_paramCount; ///< Number of query parameters.
-    char ** m_paramValues; ///< Query parameter values.
-    int * m_paramLengths; ///< Lengths of query parameter values.
-    int * m_paramFormats; ///< Formats of query parameter values.
+    size_t m_paramCount;  ///< Number of query parameters.
+    char **m_paramValues; ///< Query parameter values.
+    int *m_paramLengths;  ///< Lengths of query parameter values.
+    int *m_paramFormats;  ///< Formats of query parameter values.
 
     ExecStatusType m_execStatus; ///< Execution status of the last query executed.
 
     PGconn *m_databaseConnectionHandler; ///< PostgreSQL connection handler.
-    PGresult* m_results; ///< Query results.
-    int m_currentRow; ///< Current row in the query result.
+    PGresult *m_results;                 ///< Query results.
+    int m_currentRow;                    ///< Current row in the query result.
 };
 
-}} // Mantids30::Database
-
+} // namespace Mantids30::Database
