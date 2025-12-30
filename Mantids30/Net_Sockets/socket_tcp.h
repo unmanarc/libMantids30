@@ -7,7 +7,7 @@
 #include <ws2tcpip.h>
 #endif
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 /**
  * TCP Socket Class
@@ -39,13 +39,6 @@ public:
      * @return returns a socket with the new established tcp connection.
      */
     virtual std::shared_ptr<Socket_Stream> acceptConnection() override;
-
-    /**
-     * Virtual function for protocol initialization after the connection starts...
-     * useful for SSL server, it runs in blocking mode and should be called apart to avoid tcp accept while block
-     * @return returns true if was properly initialized.
-     */
-    virtual bool postAcceptSubInitialization() override;
 
     int setTCPOptionBool(const int32_t & optname, bool value = true);
     int setTCPOption(const int32_t & optname,const void *optval, socklen_t optlen);
@@ -84,5 +77,5 @@ private:
 
 typedef std::shared_ptr<Socket_TCP> Socket_TCP_SP;
 
-}}}
+}
 

@@ -547,12 +547,6 @@ bool Socket_TCP::listenOn(const uint16_t & port, const char * listenOnAddr, cons
     return true;
 }
 
-
-bool Socket_TCP::postAcceptSubInitialization()
-{
-    return true;
-}
-
 int Socket_TCP::setTCPOptionBool(const int32_t &optname, bool value)
 {
     return setSocketOptionBool(
