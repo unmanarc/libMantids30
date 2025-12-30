@@ -10,7 +10,7 @@ void SubParser::initElemParser(Memory::Streams::StreamableObject *upStreamObj, b
     this->m_clientMode = clientMode;
 }
 
-std::optional<size_t> SubParser::writeIntoParser(const void *buf, size_t count)
+std::optional<size_t> SubParser::writeIntoSubParser(const void *buf, size_t count)
 {
     if (!count)
     {

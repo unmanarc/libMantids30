@@ -60,7 +60,7 @@ public:
      * @return -1 if failed, or bytes written >0. 0 on ending stream.
      */
     // TODO: size_t -1? why not ssize_t?
-    std::optional<size_t> writeIntoParser(const void * buf, size_t count);
+    std::optional<size_t> writeIntoSubParser(const void * buf, size_t count);
     /**
      * @brief stream Virtual function to stream this sub parser into upstream object
      * @return true if succeed

@@ -26,6 +26,13 @@ class Parser : public Memory::Streams::StreamableObject
 public:
     Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
     virtual ~Parser() override = default;
+
+    enum ParsingDebugOptions {
+        PARSING_DEBUG_PRINT_FAILED_STATUS = 0x1,
+        PARSING_DEBUG_PRINT_DATA_PARSED = 0x2,
+        PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS = 0x4
+    };
+
     enum ErrorMSG {
         PARSING_SUCCEED = 0,
         PARSING_ERR_INIT = -1,
@@ -49,6 +56,12 @@ public:
     void setMaxTTL(const size_t &value);
 
     void setStreamable(std::shared_ptr<StreamableObject> value);
+    void setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject);
+
+    void setParsingDebugOptions(uint32_t newParsingDebugOptions)
+    {
+        parsingDebugOptions = newParsingDebugOptions;
+    }
 
 protected:
     // Avoid to copy streaming things...
@@ -65,6 +78,7 @@ protected:
     virtual bool changeToNextParser() = 0;
 
     std::shared_ptr<Memory::Streams::StreamableObject> m_streamableObject;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_preStreamableObject;
 
     void initSubParser(SubParser * subparser);
 
@@ -84,6 +98,8 @@ private:
      * @return -1 if error, and n>0 : n length of data processed by parser, which should be equal to count.
      */
     std::optional<size_t> parseData(const void * buf, size_t count, size_t *ttl);
+
+    uint32_t parsingDebugOptions = 0;
 };
 
 
