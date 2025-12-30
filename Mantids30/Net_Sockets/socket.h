@@ -21,7 +21,7 @@
 // default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
 #define DEFAULT_SOCKRW_TIMEOUT 60*5
 
-namespace Mantids30 { namespace Network { namespace Sockets {
+namespace Mantids30::Network::Sockets {
 
 class Socket_TCP;
 /**
@@ -287,6 +287,8 @@ public:
     void setConnectionName(const std::string &newConnectionName);
 
 
+    void setRemoteServerHostname(const std::string &newRemoteServerHostname);
+
 private:
     static void socketSystemInitialization();
     //void initVars();
@@ -361,5 +363,5 @@ protected:
 
 typedef std::shared_ptr<Socket> Socket_SP;
 
-}}}
+}
 

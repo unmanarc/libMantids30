@@ -191,6 +191,11 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     return false;
 }
 
+void Socket::setRemoteServerHostname(const std::string &newRemoteServerHostname)
+{
+    m_remoteServerHostname = newRemoteServerHostname;
+}
+
 std::string Socket::getConnectionName() const
 {
     return m_connectionName;
@@ -572,7 +577,7 @@ bool Socket::isActive() const
 
 void Socket::setSocketFD(int _sockfd)
 {
-    if (m_sockFD != -1)
+    if (m_sockFD != -1 && _sockfd!=-1)
     {
         throw std::runtime_error("Assiging a file descriptor to an initialized Socket.");
     }
