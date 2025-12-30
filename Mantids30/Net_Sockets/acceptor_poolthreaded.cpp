@@ -19,7 +19,7 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> & acceptorSocket, _callbackConnectionRB _onConnect, void * context, _callbackConnectionRB _onInitFailed, _callbackConnectionRV _onTimeOut)
+PoolThreaded::PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> & acceptorSocket, _callbackConnectionRV _onConnect, void * context, _callbackConnectionRV _onInitFailed, _callbackConnectionRV _onTimeOut)
 {
     init();
     setAcceptorSocket(acceptorSocket);
@@ -99,27 +99,20 @@ void PoolThreaded::acceptorTask(std::shared_ptr<void> data)
 #ifndef _WIN32
      pthread_setname_np(pthread_self(), "poolthr:sckacpt");
 #endif
-
-     sAcceptorTaskData * taskData = (sAcceptorTaskData *)data.get();
+    sAcceptorTaskData * taskData = (sAcceptorTaskData *)data.get();
     if (taskData->clientSocket->postAcceptSubInitialization())
     {
         // Start
         if (taskData->onConnect)
         {
-            if (!taskData->onConnect(taskData->contextOnConnect, taskData->clientSocket))
-            {
-                taskData->clientSocket = nullptr;
-            }
+            taskData->onConnect(taskData->contextOnConnect, taskData->clientSocket);
         }
     }
     else
     {
         if (taskData->onInitFail)
         {
-            if (!taskData->onInitFail(taskData->contextOnInitFail, taskData->clientSocket))
-            {
-                taskData->clientSocket = nullptr;
-            }
+            taskData->onInitFail(taskData->contextOnInitFail, taskData->clientSocket);
         }
     }
 }

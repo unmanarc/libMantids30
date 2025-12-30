@@ -1,16 +1,20 @@
 #pragma once
 
 #include <atomic>
+#include <boost/property_tree/ptree.hpp>
+#include <condition_variable>
 #include <list>
 #include <map>
 #include <memory>
 #include <thread>
-#include <condition_variable>
 
 #include "acceptor_thread.h"
 #include "socket_stream.h"
 
-namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptors {
+namespace Mantids30 {
+namespace Network {
+namespace Sockets {
+namespace Acceptors {
 
 /**
  * @brief The MultiThreadedAcceptor class Accept streams on thread from a listening socket.
@@ -18,7 +22,6 @@ namespace Mantids30 { namespace Network { namespace Sockets { namespace Acceptor
 class MultiThreaded : public std::enable_shared_from_this<MultiThreaded>
 {
 public:
-
     /**
      * Constructor
      */
@@ -32,13 +35,8 @@ public:
      * @param _onTimeOut callback function on time out (default nullptr -> none)
      * @param _onClientConnectionLimitPerIPReached callback function when an ip reached the max number of connections (default nullptr -> none)
      */
-    MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket,
-                    _callbackConnectionRB _onConnect,
-                    void * context=nullptr,
-                    _callbackConnectionRB _onInitFailed=nullptr,
-                    _callbackConnectionRV _onTimeOut=nullptr,
-                    _callbackConnectionLimit _onClientConnectionLimitPerIPReached=nullptr
-                    );
+    MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context = nullptr, _callbackConnectionRV _onInitFailed = nullptr,
+                  _callbackConnectionRV _onTimeOut = nullptr, _callbackConnectionLimit _onClientConnectionLimitPerIPReached = nullptr);
     /**
      * Destructor
      * WARN: when you finalize this class, the listening socket is closed. please open another one (don't reuse it)
@@ -80,7 +78,8 @@ public:
      * @brief The Config class holds configuration parameters for managing concurrency,
      *        connection limits, and timeout settings in a multithreaded environment.
      */
-    class Config {
+    class Config
+    {
     public:
         friend class MultiThreaded;
         Config() = default;
@@ -117,6 +116,25 @@ public:
 
         void setParent(MultiThreaded *newParent);
 
+        /**
+         * @brief setConfig Set configuration parameters using a Boost Property Tree.
+         * @param ptree The Boost Property Tree containing the configuration parameters.
+         */
+        void setConfig(const boost::property_tree::ptree &ptree)
+        {
+            try
+            {
+                maxConcurrentClients = ptree.get<uint32_t>("MaxConcurrentClients", maxConcurrentClients.load());
+                maxWaitMSTime = ptree.get<uint32_t>("MaxWaitTimeInMilliseconds", maxWaitMSTime.load());
+                maxConnectionsPerIP = ptree.get<uint32_t>("MaxConcurrentConnectionsPerIP", maxConnectionsPerIP.load());
+            }
+            catch (const std::exception &e)
+            {
+                // Handle exceptions (e.g., invalid property tree format)
+                throw std::runtime_error("Failed to set configuration: " + std::string(e.what()));
+            }
+        }
+
     private:
         /**
          * @brief maxConcurrentClients Defines the maximum number of client threads that can be handled concurrently.
@@ -139,7 +157,7 @@ public:
          */
         std::atomic<uint32_t> maxConnectionsPerIP{10};
 
-        MultiThreaded * parent = nullptr;
+        MultiThreaded *parent = nullptr;
     };
 
     Config parameters;
@@ -149,12 +167,11 @@ private:
 
     bool processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
 
-    uint32_t incrementIPUsage(const std::string & ipAddr);
-    void decrementIPUsage(const std::string & ipAddr);
+    uint32_t incrementIPUsage(const std::string &ipAddr);
+    void decrementIPUsage(const std::string &ipAddr);
 
-
-    bool m_initialized=false;
-    bool m_finalized=false;
+    bool m_initialized = false;
+    bool m_finalized = false;
     std::shared_ptr<Sockets::Socket_Stream> m_acceptorSocket;
     std::list<std::shared_ptr<StreamAcceptorThread>> m_threadList;
     std::map<std::string, uint32_t> m_connectionsPerIP;
@@ -167,5 +184,7 @@ private:
     std::condition_variable m_condClientsEmpty, m_condClientsNotFull;
 };
 
-
-}}}}
+} // namespace Acceptors
+} // namespace Sockets
+} // namespace Network
+} // namespace Mantids30
