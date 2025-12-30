@@ -17,7 +17,7 @@ MIME_Sub_Header::MIME_Sub_Header()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
-    setMaxOptionSize(8*KB_MULT); // 8K per option
+    setMaxOptionSize(16*KB_MULT); // 16K per option
     m_subParserName = "MIME_Sub_Header";
 }
 
@@ -40,6 +40,11 @@ bool MIME_Sub_Header::streamToUpstream()
     }
     m_upStream->writeString("\r\n");
     return m_upStream->writeStatus.succeed;
+}
+
+void MIME_Sub_Header::clear()
+{
+    m_headers.clear();
 }
 
 bool MIME_Sub_Header::exist(const std::string &optionName) const

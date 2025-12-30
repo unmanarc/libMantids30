@@ -30,6 +30,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     if (clientKey.empty() || clientKey.length() != 24)
     {
         serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
+        connectionContinue = false;
         sendFullHTTPResponse();
         return false;
     }
@@ -41,6 +42,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
         // Optionally send back supported version
         serverResponse.headers.add("Sec-WebSocket-Version", "13");
         serverResponse.status.setCode(HTTP::Status::S_426_UPGRADE_REQUIRED);
+        connectionContinue = false;
         sendFullHTTPResponse();
         return false;
     }

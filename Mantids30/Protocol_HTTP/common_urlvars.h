@@ -2,15 +2,13 @@
 
 #include <Mantids30/Memory/parser.h>
 #include <Mantids30/Memory/vars.h>
-#include <map>
 #include <memory>
+#include <list>
+#include <utility>
 
 #include "common_urlvar_subparser.h"
 
-namespace Mantids30 {
-namespace Network {
-namespace Protocols {
-namespace HTTP {
+namespace Mantids30::Network::Protocols::HTTP {
 
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
@@ -88,11 +86,8 @@ private:
     eHTTP_URLVarStat m_currentStat = URLV_STAT_WAITING_NAME;
 
     std::string m_currentVarName;
-    std::multimap<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> m_vars;
+    std::list<std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>> m_vars;
 
     URLVarContent m_urlVarParser;
 };
 } // namespace HTTP
-} // namespace Protocols
-} // namespace Network
-} // namespace Mantids30

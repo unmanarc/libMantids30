@@ -18,7 +18,8 @@ Cookies_ClientSide::Cookies_ClientSide()
 
 void Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
-    headers->add("Cookie",toString());
+    if (!m_cookiesMap.empty())
+        headers->add("Cookie",toString());
 }
 
 std::string Cookies_ClientSide::toString() const

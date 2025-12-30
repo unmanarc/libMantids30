@@ -13,7 +13,8 @@ HTTP::HTTPv1_Base::HTTPv1_Base(bool clientMode, std::shared_ptr<StreamableObject
     initSubParser(&serverResponse.headers);
     initSubParser(&serverResponse.content);
 
-    setInternalProductVersion("Mantids30::HTTP","(+https://github.com/unmanarc/libMantids30)");
+    if ( !clientMode )
+        setInternalProductVersion("Mantids30::HTTP","(+https://github.com/unmanarc/libMantids30)");
 }
 
 bool HTTP::HTTPv1_Base::initProtocol()

@@ -94,7 +94,7 @@ bool HTTP::HTTPv1_Client::changeToNextParser()
 void HTTP::HTTPv1_Client::parseHeaders2ServerCookies()
 {
     std::list<std::shared_ptr<MIME::MIME_HeaderOption>> setCookies = serverResponse.headers.getOptionsByName("");
-    for (std::shared_ptr<MIME::MIME_HeaderOption> serverCookie : setCookies)
+    for (const std::shared_ptr<MIME::MIME_HeaderOption> & serverCookie : setCookies)
         serverResponse.cookies.parseCookie(serverCookie->getOrigValue());
 }
 
@@ -129,6 +129,11 @@ bool HTTP::HTTPv1_Client::streamClientHeaders()
     {
         clientRequest.headers.remove("Connection");
         clientRequest.headers.replace("Content-Length", std::to_string(strsize));
+
+        if (strsize == 0)
+        {
+            clientRequest.headers.remove("Content-Length");
+        }
     }
 
     // Put client cookies:

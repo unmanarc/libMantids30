@@ -106,6 +106,7 @@ public:
     bool sendWebSocketPing(const char * data, size_t len );
 
 
+
 protected:
     virtual void log( Json::Value & jWebLog ) {}
 
@@ -239,9 +240,15 @@ protected:
 
     WebSocketFrame webSocketCurrentFrame;
 
+    void reset();
+
     /*
      * * *********************************************************** *
      */
+    void setConnectionContinue(bool newConnectionContinue)
+    {
+        connectionContinue = newConnectionContinue;
+    }
 
 private:
     bool changeToNextParserFromClientHeaders();
@@ -279,6 +286,8 @@ private:
     std::string m_currentFileExtension;
     std::map<std::string, std::string> m_mimeTypes;
     void loadDefaultMIMETypes();
+
+    bool connectionContinue = true , prohibitConnectionUpgrade = false;
 };
 
 } // namespace Mantids30::Network::Protocols::HTTP

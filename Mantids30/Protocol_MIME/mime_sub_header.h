@@ -88,6 +88,8 @@ public:
 
     bool streamToUpstream( ) override;
 
+    void clear();
+
     /**
      * @brief exist exist option.
      * @param optionName

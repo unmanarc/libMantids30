@@ -29,6 +29,12 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
 {
     switch (m_currentMode)
     {
+        case PROCMODE_CHUNK_CLOSE:
+        {
+            // TODO: check if there is data, because may be new headers here...
+            m_contentStreamableObject->writeEOF();
+            return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+        }
         case PROCMODE_CHUNK_SIZE:
         {
             std::optional<size_t> targetChunkSize;
@@ -43,10 +49,12 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
                 }
                 else
                 {
-                    // Done... last chunk.
-                    // report that is last chunk.
-                    m_contentStreamableObject->writeEOF();
-                    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+                    // Done... last chunk. Get the last \r\n here..
+                    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+                    setParseDelimiter("\r\n");
+                    setParseDataTargetSize(64*KB_MULT); // !64kb max (until fails, this may include new headers?).
+                    m_currentMode = PROCMODE_CHUNK_CLOSE;
+                    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
                 }
             }
             return Memory::Streams::SubParser::PARSE_ERROR;

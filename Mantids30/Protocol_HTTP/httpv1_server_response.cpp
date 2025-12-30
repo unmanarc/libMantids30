@@ -32,17 +32,30 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
     fillLogInformation(jWebLog);
     log(jWebLog);
 
-    // Answer is the last... close the connection after it.
-    m_currentSubParser = nullptr;
+    // The answer is the last thing... we move to the start or we drop the connection...
+    if (connectionContinue)
+    {
+        m_currentSubParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
+        prohibitConnectionUpgrade = true;
+    }
+    else
+    {
+        m_currentSubParser = nullptr;
+        serverResponse.headers.replace("Connection", "close");
+    }
 
     if (!serverResponse.status.streamToUpstream())
     {
+        // Bye... upstream failed.
+        m_currentSubParser = nullptr;
         return false;
     }
 
     // Stream Server HTTP Headers
     if (!sendHTTPHeadersResponse())
     {
+        // Bye... upstream failed.
+        m_currentSubParser = nullptr;
         return false;
     }
 
@@ -51,6 +64,20 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 
     // Destroy the binary content container here:
     serverResponse.content.setStreamableObj(nullptr);
+
+    if (!streamedOK)
+    {
+        // Bye... upstream failed.
+        m_currentSubParser = nullptr;
+    }
+
+    // Prepare the HTTP server for the next request...
+    if (connectionContinue)
+    {
+        // Here we reset everything to the default values...
+        reset();
+    }
+
 
     return streamedOK;
 }
@@ -67,8 +94,8 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     // TODO: connection keep alive.
     if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
-        // Undefined size. (eg. dynamic stream), the connection ends when closed.
-        serverResponse.headers.replace("Connection", "Close");
+        // Undefined size. (eg. dynamic stream)
+        //serverResponse.headers.replace("Connection", "Close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
@@ -101,7 +128,13 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     if (serverResponse.immutableHeaders)
     {
         // No futher headers will be modified...
-        return serverResponse.headers.streamToUpstream();
+        bool r = serverResponse.headers.streamToUpstream();
+        if (!r)
+        {
+            r=!r;
+            r=!r;
+        }
+        return r;
     }
 
     if (!serverResponse.sWWWAuthenticateRealm.empty())

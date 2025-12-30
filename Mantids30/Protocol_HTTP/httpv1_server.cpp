@@ -15,8 +15,7 @@ using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-
- /**
+/**
  * @brief Constructor for HTTPv1_Server.
  *
  * Initializes the HTTP/1.x server-side parser, sets default cache control headers,
@@ -61,6 +60,12 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
         return changeToNextParserFromClientContentData();
 }
 
+void HTTP::HTTPv1_Server::reset()
+{
+    serverResponse = Response();
+    clientRequest = Request();
+}
+
 /**
  * @brief Handles parsing after the request line has been fully received.
  *
@@ -79,6 +84,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     // Validate HTTP requirements
     if (!validateHTTPv11Requirements())
     {
+        connectionContinue = false;
         return sendFullHTTPResponse();
     }
 
@@ -87,10 +93,12 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     // Gets the content length and create the container that will receive the data.
     if (!setupContentHandling(headerIncommingContentLength))
     {
+        connectionContinue = false;
         return sendFullHTTPResponse();
     }
 
-    enum eProtocolRequestType {
+    enum eProtocolRequestType
+    {
         PROTOCOL_REQUEST_SIMPLE_HTTP,
         PROTOCOL_REQUEST_WEBSOCKETS,
     };
@@ -98,62 +106,71 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     eProtocolRequestType protocolRequestType = PROTOCOL_REQUEST_SIMPLE_HTTP;
 
     // Validate WebSocket Protocol:
-    protocolRequestType = !isWebSocketConnectionRequest()? protocolRequestType:PROTOCOL_REQUEST_WEBSOCKETS;
+    protocolRequestType = !isWebSocketConnectionRequest() ? protocolRequestType : PROTOCOL_REQUEST_WEBSOCKETS;
 
     // Manage current protocol:
-    switch ( protocolRequestType )
+    switch (protocolRequestType)
     {
-        // HTTP PROTOCOL (REQ/RES)
-        case PROTOCOL_REQUEST_SIMPLE_HTTP:
+    // HTTP PROTOCOL (REQ/RES)
+    case PROTOCOL_REQUEST_SIMPLE_HTTP:
+    {
+        // Headers parsed. Allow consumer code to inspect headers
+        if (!onHTTPClientHeadersReceived())
         {
-            // Headers parsed. Allow consumer code to inspect headers
-            if (!onHTTPClientHeadersReceived())
-            {
-                // Here the consumer decided to terminate the connection.
-                m_currentSubParser = nullptr;
-                return true;
-            }
+            // Here the consumer decided to terminate the connection.
+            m_currentSubParser = nullptr;
+            return true;
+        }
 
-            if (headerIncommingContentLength == 0)
-            {
-                // No body expected, pass to the next phase.
-                return changeToNextParserFromClientContentData();
-            }
-            else
-            {
-                // Don´t respond here, change the parser to receive the content.
-                m_currentSubParser = &clientRequest.content;
-                return true;
-            }
-        } break;
-        // WEBSOCKETS PROTOCOL
-        case PROTOCOL_REQUEST_WEBSOCKETS:
+        if (headerIncommingContentLength == 0)
         {
-            if (!onWebSocketHTTPClientHeadersReceived())
-            {
-                // Not authenticated or the endpoint does not exist.
-                return sendFullHTTPResponse();
-            }
-
-            // Authentication and everything went fine, send the header and start processing messages:
-            if (setupAndSendWebSocketHeaderResponse())
-            {
-                // Connection established. <<
-                onWebSocketConnectionEstablished();
-
-                // Receive the frame header...
-                m_currentSubParser = &webSocketCurrentFrame.header;
-                return true;
-            }
-            else
-            {
-                m_currentSubParser = nullptr;
-                return false;
-            }
-
-        } break;
-        default:
+            // No body expected, pass to the next phase.
+            return changeToNextParserFromClientContentData();
+        }
+        else
+        {
+            // Don´t respond here, change the parser to receive the content.
+            m_currentSubParser = &clientRequest.content;
+            return true;
+        }
+    }
+    break;
+    // WEBSOCKETS PROTOCOL
+    case PROTOCOL_REQUEST_WEBSOCKETS:
+    {
+        if (prohibitConnectionUpgrade)
+        {
+            // Upgrade should start in the first request.
+            m_currentSubParser = nullptr;
             return false;
+        }
+
+        if (!onWebSocketHTTPClientHeadersReceived())
+        {
+            connectionContinue = false;
+            // Not authenticated or the endpoint does not exist.
+            return sendFullHTTPResponse();
+        }
+
+        // Authentication and everything went fine, send the header and start processing messages:
+        if (setupAndSendWebSocketHeaderResponse())
+        {
+            // Connection established. <<
+            onWebSocketConnectionEstablished();
+
+            // Receive the frame header...
+            m_currentSubParser = &webSocketCurrentFrame.header;
+            return true;
+        }
+        else
+        {
+            m_currentSubParser = nullptr;
+            return false;
+        }
+    }
+    break;
+    default:
+        return false;
     }
 }
 
@@ -169,11 +186,15 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
     // Request-line parsed; validate URI and HTTP version before reading headers.
     if (!prepareServerVersionOnURI())
     {
+        connectionContinue = false;
         return sendFullHTTPResponse();
     }
     else
     {
-        m_currentSubParser = !onHTTPClientURIReceived()? nullptr : &clientRequest.headers;
+        if (!onHTTPClientURIReceived())
+            m_currentSubParser = nullptr;
+        else
+            m_currentSubParser = &clientRequest.headers;
     }
     return true;
 }
@@ -189,9 +210,14 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
     // TODO: Streaming body support not yet implemented
-    m_currentSubParser = nullptr;
     serverResponse.status.setCode(onHTTPClientContentReceived());
-    return sendFullHTTPResponse();
+    bool r = sendFullHTTPResponse();
+    if (!r)
+    {
+        r = !r;
+        r = !r;
+    }
+    return r;
 }
 /**
  * @brief Sets the HTTP version for the server's response based on client request.

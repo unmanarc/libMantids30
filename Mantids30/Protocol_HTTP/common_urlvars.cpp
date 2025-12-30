@@ -11,7 +11,8 @@ using namespace Mantids30::Network::Protocols;
 
 using namespace Mantids30;
 
-HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value,false)
+HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
+    : Memory::Streams::Parser(value, false)
 {
     m_urlVarParser.setVarType(true);
 
@@ -21,8 +22,7 @@ HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
     m_currentSubParser = &m_urlVarParser;
 }
 
-std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(
-    std::shared_ptr<StreamableObject> value)
+std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(std::shared_ptr<StreamableObject> value)
 {
     auto x = std::shared_ptr<URLVars>(new URLVars(value));
     x->initSubParser(&x->m_urlVarParser);
@@ -35,13 +35,15 @@ bool HTTP::URLVars::isEmpty()
     return m_vars.empty();
 }
 
-bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
+bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
 {
     bool firstVar = true;
-    for (auto & i : m_vars)
+
+
+    for (const auto &i : m_vars)
     {
         if (firstVar)
-            firstVar=false;
+            firstVar = false;
         else
         {
             out->writeString("&");
@@ -53,7 +55,7 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
         varName.append(i.first.c_str(), i.first.size());
 
         Memory::Streams::Encoders::URL varNameEncoder;
-        varNameEncoder.transform(&varName,out);
+        varNameEncoder.transform(&varName, out);
         if (!out->writeStatus.succeed)
             return false;
 
@@ -65,7 +67,7 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
                 return false;
 
             Memory::Streams::Encoders::URL varNameEncoder2;
-            varNameEncoder2.transform(i.second.get(),out);
+            varNameEncoder2.transform(i.second.get(), out);
             if (!out->writeStatus.succeed)
                 return false;
         }
@@ -76,36 +78,43 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject * out)
 
 uint32_t HTTP::URLVars::varCount(const std::string &varName)
 {
-    uint32_t i=0;
-    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
-    for (auto iterator = range.first; iterator != range.second;) i++;
-    return i;
+    uint32_t x = 0;
+
+    for ( const auto & i : m_vars )
+    {
+        if (i.first == varName)
+            x++;
+    }
+
+    return x;
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTP::URLVars::getValue(const std::string &varName)
 {
-    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
-
-    for (auto iterator = range.first; iterator != range.second;)
-        return iterator->second;
-
+    for ( const auto & i : m_vars )
+    {
+        if (i.first == varName)
+            return i.second;
+    }
     return nullptr;
 }
 
-std::list<std::shared_ptr<Memory::Streams::StreamableObject> > HTTP::URLVars::getValues(const std::string &varName)
+std::list<std::shared_ptr<Memory::Streams::StreamableObject>> HTTP::URLVars::getValues(const std::string &varName)
 {
-    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > r;
-    auto range = m_vars.equal_range(boost::to_upper_copy(varName));
-
-    for (auto iterator = range.first; iterator != range.second;)
-        r.push_back(iterator->second);
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject>> r;
+    for ( const auto & i : m_vars )
+    {
+        if (i.first == varName)
+            r.push_back(i.second);
+    }
     return r;
 }
 
 std::set<std::string> HTTP::URLVars::getKeysList()
 {
     std::set<std::string> r;
-    for ( const auto & i : m_vars ) r.insert(i.first);
+    for (const auto &i : m_vars)
+        r.insert(i.first);
     return r;
 }
 
@@ -114,13 +123,11 @@ bool HTTP::URLVars::initProtocol()
     return true;
 }
 
-void HTTP::URLVars::endProtocol()
-{
-}
+void HTTP::URLVars::endProtocol() {}
 
 bool HTTP::URLVars::changeToNextParser()
 {
-    switch(m_currentStat)
+    switch (m_currentStat)
     {
     case URLV_STAT_WAITING_NAME:
     {
@@ -137,14 +144,16 @@ bool HTTP::URLVars::changeToNextParser()
             m_urlVarParser.setVarType(false);
             m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
         }
-    }break;
+    }
+    break;
     case URLV_STAT_WAITING_CONTENT:
     {
         addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
         m_currentStat = URLV_STAT_WAITING_NAME;
         m_urlVarParser.setVarType(true);
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
-    }break;
+    }
+    break;
     default:
         break;
     }
@@ -152,12 +161,11 @@ bool HTTP::URLVars::changeToNextParser()
     return true;
 }
 
-bool HTTP::URLVars::addVar(
-    const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
+bool HTTP::URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
     if (!varName.empty())
     {
-        m_vars.insert(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(boost::to_upper_copy(varName), data));
+        m_vars.push_back(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(varName, data));
         return true;
     }
     return false;
