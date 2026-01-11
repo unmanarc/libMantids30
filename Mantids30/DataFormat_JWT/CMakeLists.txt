@@ -75,5 +75,3 @@ check_function_exists(explicit_bzero HAVE_EXPLICIT_BZERO)
 if(HAVE_EXPLICIT_BZERO)
         add_definitions(-DHAVE_EXPLICIT_BZERO)
 endif()
-
-message("Will install to ${CMAKE_INSTALL_LIBDIR}")

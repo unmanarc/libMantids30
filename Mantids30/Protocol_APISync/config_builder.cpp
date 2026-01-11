@@ -1,9 +1,9 @@
-#include "jwt.h"
+#include "config_builder.h"
 
-
-#include "json/value.h"
-#include <Mantids30/Protocol_APISync/apisync.h>
+#include <json/value.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
+
+#include "apisync.h"
 #include <Mantids30/Helpers/file.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Program_Logs/loglevels.h>
@@ -197,7 +197,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 }
 
 std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
-                                                                                          const std::map<std::string, std::string> &vars)
+    const std::map<std::string, std::string> &vars)
 {
     Network::Protocols::APISync::APISyncParameters apiSyncParameters;
 

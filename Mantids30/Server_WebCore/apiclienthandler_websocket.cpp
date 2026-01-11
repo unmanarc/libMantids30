@@ -3,7 +3,7 @@
 
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
 
-#include "json/value.h"
+#include <json/value.h>
 #include <Mantids30/Helpers/random.h>
 
 using namespace Mantids30::Program::Logs;

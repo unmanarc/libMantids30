@@ -1,7 +1,7 @@
 #include "api_websocket_endpoints.h"
 #include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
 
-#include "json/value.h"
+#include <json/value.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>

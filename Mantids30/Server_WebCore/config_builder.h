@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Mantids30/Program_Logs/applog.h"
+#include <Mantids30/Program_Logs/applog.h>
 #include <boost/property_tree/ptree.hpp>
 #include <map>
 #include <memory>
 #include <string>
 
-#include <Mantids30/Server_WebCore/apiproxy.h>
+#include "apiproxy.h"
 
 namespace Mantids30::Program {
 namespace Config {

@@ -1,5 +1,5 @@
 #include "session_vars.h"
-#include "json/value.h"
+#include <json/value.h>
 #include <Mantids30/Threads/lock_rd.h>
 #include <Mantids30/Threads/lock_rw.h>
 

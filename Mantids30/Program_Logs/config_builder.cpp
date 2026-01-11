@@ -1,12 +1,12 @@
-#include "program_logs.h"
-#include <iostream>
+#include "config_builder.h"
+
 #include <memory>
+
 using namespace Mantids30::Program;
-std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(
-    const boost::property_tree::ptree &ptr, unsigned int logMode)
+std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
 {
-    if ( ptr.get<bool>("Logs.ToSyslog",true) )
-        logMode|=Program::Logs::MODE_SYSLOG;
+    if (ptr.get<bool>("Logs.ToSyslog", true))
+        logMode |= Program::Logs::MODE_SYSLOG;
 
     auto log = std::make_shared<Program::Logs::AppLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
@@ -20,11 +20,10 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(
     return log;
 }
 
-std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(
-    const boost::property_tree::ptree &ptr, unsigned int logMode)
+std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
 {
-    if ( ptr.get<bool>("Logs.ToSyslog",true) )
-        logMode|=Program::Logs::MODE_SYSLOG;
+    if (ptr.get<bool>("Logs.ToSyslog", true))
+        logMode |= Program::Logs::MODE_SYSLOG;
 
     auto log = std::make_shared<Program::Logs::RPCLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
@@ -82,13 +81,11 @@ std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<M
     else
         log->config.rotationSchedule.hour = std::nullopt;
 
-
     auto dayOfWeekStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfWeek");
     if (dayOfWeekStr && *dayOfWeekStr != "*")
         log->config.rotationSchedule.dayOfWeek = std::make_optional(static_cast<uint32_t>(std::stoul(*dayOfWeekStr)));
     else
         log->config.rotationSchedule.dayOfWeek = std::nullopt;
-
 
     auto dayOfMonthStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfMonth");
     if (dayOfMonthStr && *dayOfMonthStr != "*")

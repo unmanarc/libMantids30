@@ -1,4 +1,5 @@
-#include "program_configloader.h"
+#include "program_config.h"
+
 #include <Mantids30/Helpers/file.h>
 
 #include <optional>
@@ -30,9 +31,9 @@ std::optional<boost::property_tree::ptree> Mantids30::Program::Config::Loader::l
         if (isConfigFileInsecure)
         {
             log->log0(__func__, Program::Logs::LEVEL_SECURITY_ALERT,
-                          "The permissions of the '%s' file are currently not set to 0600. This may leave your API key exposed to potential security threats. To mitigate this risk, "
-                          "we are changing the permissions of the file to ensure that your API key remains secure. Please ensure that you take necessary precautions to protect your API key and "
-                          "update any affected applications or services as necessary.",configFile.c_str());
+                      "The permissions of the '%s' file are currently not set to 0600. This may leave your API key exposed to potential security threats. To mitigate this risk, "
+                      "we are changing the permissions of the file to ensure that your API key remains secure. Please ensure that you take necessary precautions to protect your API key and "
+                      "update any affected applications or services as necessary.",configFile.c_str());
 
             if (Helpers::File::fixSensitiveConfigPermission(configFile))
             {
