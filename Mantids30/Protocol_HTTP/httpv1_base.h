@@ -101,7 +101,13 @@ public:
         }
         std::shared_ptr<MIME::MIME_HeaderOption> getCookies()
         {
-            return headers.getOptionByName("Cookie");
+            auto i = headers.getOptionByName("Cookie");
+            if (!i)
+            {
+                // Return empty object when no data is available.
+                return std::make_shared<MIME::MIME_HeaderOption>();
+            }
+            return i;
         }
 
         /**
