@@ -1,8 +1,8 @@
-#include "restful_engine.h"
+#include "config_builder.h"
 
-#include "jwt.h"
-#include "program_logs.h"
-#include "apiproxyparameters.h"
+#include <Mantids30/Protocol_APISync/config_builder.h>
+#include <Mantids30/Program_Logs/config_builder.h>
+#include <Mantids30/Server_WebCore/config_builder.h>
 
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
@@ -29,14 +29,14 @@ std::set<std::string> parseCommaSeparatedString(const std::string &input)
 }
 
 Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(
-                        const boost::property_tree::ptree &config,
-                        std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog,
-                        std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog,
-                        const std::string &serviceName,
-                        const std::string & defaultResourcePath,
-                        uint64_t options,
-                        const std::map<std::string, std::string> & vars
-                        )
+    const boost::property_tree::ptree &config,
+    std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog,
+    std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog,
+    const std::string &serviceName,
+    const std::string & defaultResourcePath,
+    uint64_t options,
+    const std::map<std::string, std::string> & vars
+    )
 {
     using namespace Mantids30::Program;
     bool usingTLS = config.get<bool>("UseTLS", true);
@@ -203,13 +203,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // Use a thread pool or multi-threading based on configuration
         bool useThreadPool = config.get<bool>("Threads.UseThreadPool", false);
         uint32_t threadsCount = useThreadPool ?
-            config.get<uint32_t>("Threads.PoolSize", 10) :
-            config.get<uint32_t>("Threads.MaxThreads", 10000);
+                                    config.get<uint32_t>("Threads.PoolSize", 10) :
+                                    config.get<uint32_t>("Threads.MaxThreads", 10000);
 
         appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Using %s with %u threads",
-                  (void*)webServer,
-                  useThreadPool ? "thread pool" : "multi-threading",
-                  threadsCount);
+                     (void*)webServer,
+                     useThreadPool ? "thread pool" : "multi-threading",
+                     threadsCount);
 
         if (useThreadPool)
             webServer->setAcceptPoolThreaded(sockWebListen, threadsCount);
@@ -226,8 +226,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             {
                 std::string proxyPath = proxy.first;
                 appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service",
-                          (void*)webServer,
-                          proxyPath.c_str(), serviceName.c_str());
+                             (void*)webServer,
+                             proxyPath.c_str(), serviceName.c_str());
 
                 std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(appLog.get(), proxy.second, vars );
 
@@ -249,8 +249,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 std::string url = redirection.second.get_value<std::string>("/");
 
                 appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'",
-                          (void*)webServer,
-                          path.c_str(), url.c_str());
+                             (void*)webServer,
+                             path.c_str(), url.c_str());
 
                 webServer->config.redirections[path] = url;
             }

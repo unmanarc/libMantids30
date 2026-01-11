@@ -1,7 +1,9 @@
 #pragma once
 
+
+#include "engine.h"
+
 #include <Mantids30/Program_Logs/applog.h>
-#include <Mantids30/Server_RESTfulWebAPI/engine.h>
 #include <boost/property_tree/ptree.hpp>
 
 namespace Mantids30::Program {
