@@ -6,7 +6,7 @@
 
 namespace Mantids30::Network::Servers::Web {
 
-struct ApiProxyParameters
+struct APIProxyParameters
 {
     bool useTLS = true;
     bool checkTLSPeer = false;
@@ -21,7 +21,7 @@ struct ApiProxyParameters
 
 };
 
-Mantids30::Network::Protocols::HTTP::Status::Codes ApiProxy(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+Mantids30::Network::Protocols::HTTP::Status::Codes APIProxy(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
 
 }

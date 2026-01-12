@@ -24,7 +24,6 @@ HTTP::HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableOb
 
 bool HTTP::HTTPv1_Client::initProtocol()
 {
-
     if (!clientRequest.requestLine.streamToUpstream())
         return false;
     if (!streamClientHeaders())
@@ -127,7 +126,7 @@ bool HTTP::HTTPv1_Client::streamClientHeaders()
         return false;
     else
     {
-        clientRequest.headers.remove("Connection");
+//        clientRequest.headers.remove("Connection");
         clientRequest.headers.replace("Content-Length", std::to_string(strsize));
 
         if (strsize == 0)

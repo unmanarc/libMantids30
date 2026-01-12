@@ -16,7 +16,7 @@ using namespace Mantids30;
 // TODO: logs via callback?
 // TODO: how to prvent ../ (escapes)...
 
-HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
+HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
     const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
 {
     if (obj == nullptr)
@@ -25,7 +25,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
         return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
     }
 
-    ApiProxyParameters *proxyParameters = static_cast<ApiProxyParameters *>(obj.get());
+    APIProxyParameters *proxyParameters = static_cast<APIProxyParameters *>(obj.get());
 
     std::shared_ptr<Socket_Stream> connection;
 
@@ -72,6 +72,8 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::ApiProxy(
         {
             client.clientRequest.headers.replace(header.first, header.second);
         }
+
+        client.clientRequest.headers.replace("Connection", "close");
 
         // Make the petition...
         Parser::ErrorMSG msg;

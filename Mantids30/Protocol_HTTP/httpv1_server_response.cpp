@@ -25,15 +25,12 @@ void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
 
 bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
-#ifndef WIN32
-    pthread_setname_np(pthread_self(), "HTTP:Response");
-#endif
     json jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 
     // The answer is the last thing... we move to the start or we drop the connection...
-    if (connectionContinue)
+    if (connectionContinue && clientRequest.getHeaderOption("Connection") != "close")
     {
         m_currentSubParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
         prohibitConnectionUpgrade = true;
@@ -95,7 +92,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
         // Undefined size. (eg. dynamic stream)
-        //serverResponse.headers.replace("Connection", "Close");
+        serverResponse.headers.replace("Connection", "close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
@@ -103,7 +100,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     }
     else
     {
-        std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
+       /* std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
         if (boost::iequals(connectionType, "close"))
         {
             // On connection close, don't report the content size. (is there any reason for not reporting the size?)
@@ -116,7 +113,10 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         {
             // Defined stream object size, reporting this to the client.
             serverResponse.headers.replace("Content-Length", std::to_string(strsize));
-        }
+        }*/
+
+        if ( strsize>0 )
+            serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
     HTTP::Date currentDate;
