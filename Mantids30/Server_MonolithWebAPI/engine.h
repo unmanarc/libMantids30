@@ -5,8 +5,6 @@
 
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Memory/b_mem.h>
-#include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
-#include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/Server_WebCore/apienginecore.h>

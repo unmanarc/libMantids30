@@ -3,7 +3,6 @@
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
-#include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Threads/lock_shared.h>
 
