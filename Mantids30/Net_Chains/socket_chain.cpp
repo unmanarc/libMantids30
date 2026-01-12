@@ -206,6 +206,10 @@ ssize_t Socket_Chain::partialWrite(const void *data, const size_t &datalen)
 
 void Socket_Chain::chainThread(sChainTElement *threadInfo)
 {
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "Socket:ChainThr");
+#endif
+
     char buffer[4096];
     int bytesRead;
     bool writeSuccess = false;

@@ -121,6 +121,11 @@ bool WebLog::start()
         m_queueThread = std::thread(
             [this]()
             {
+
+#ifdef __linux__
+                pthread_setname_np(pthread_self(), "WebLog:Print");
+#endif
+
                 for (;;)
                 {
                     std::shared_ptr<json> logEntry = m_logQueue.pop(500);
@@ -158,9 +163,11 @@ void WebLog::startLogRotationOnScheduleThread()
         [this]()
         {
 
+
 #ifdef __linux__
-            pthread_setname_np(pthread_self(), "WebLogRotate");
+            pthread_setname_np(pthread_self(), "WebLog:Rotate");
 #endif
+
 
             while (m_rotationThreadRunning.load())
             {

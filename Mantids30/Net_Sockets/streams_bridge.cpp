@@ -61,6 +61,10 @@ void Bridge::sendPing()
     std::unique_lock<std::mutex> lock(m_endPingLoopMutex);
     using Ms = std::chrono::milliseconds;
 
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "SockBr:Ping");
+#endif
+
     while(!m_isPingFinished)
     {
         if (m_endPingCond.wait_for(lock,Ms(m_pingEveryMS)) == std::cv_status::timeout)
@@ -141,6 +145,11 @@ int Bridge::process()
 
 bool Bridge::processPeer(Side currentSide)
 {
+
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "SockBr:Peer");
+#endif
+
     if (currentSide>1)
         return false;
 

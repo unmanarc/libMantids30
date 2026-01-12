@@ -27,6 +27,13 @@ void GarbageCollector::loopGarbageCollector()
 {
     std::unique_lock<std::mutex> lock(m_endNotificationMutex);
 
+
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "Thrd:GCLoop");
+#endif
+
+
+
     while(!m_gcFinished)
     {
         if (m_endNotificationCondition.wait_for(lock,Ms(m_gcIntervalMs)) == std::cv_status::timeout)

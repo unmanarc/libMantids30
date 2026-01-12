@@ -17,8 +17,17 @@ void Parser::parseObject(Parser::ErrorMSG *err)
 
     this->writeStatus.finished = false;
 
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), "Parser:Init");
+#endif
+
     // Call the init protocol...
     m_initialized = initProtocol();
+
+
+#ifndef WIN32
+    pthread_setname_np(pthread_self(), "Parser:Streaming");
+#endif
 
     // If initialized ok...
     if (m_initialized)
@@ -44,7 +53,14 @@ void Parser::parseObject(Parser::ErrorMSG *err)
         }
 
         // Call: Finish the protocol (either failed or not).
+#ifndef WIN32
+        pthread_setname_np(pthread_self(), "Parser:Ending");
+#endif
         endProtocol();
+#ifndef WIN32
+        pthread_setname_np(pthread_self(), "Parser:End");
+#endif
+
     }
     else
     {

@@ -59,6 +59,9 @@ void JWT::Revocation::setGarbageCollectorInterval(const std::chrono::seconds &ne
 
 void JWT::Revocation::garbageCollector()
 {
+#ifndef _WIN32
+    pthread_setname_np(pthread_self(), "JWT:Revok:GC");
+#endif
     std::unique_lock<std::mutex> lock(m_garbageCollectorMutex);
     while (!m_stopGarbageCollector)
     {

@@ -221,7 +221,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arg
     // Start the client...
     std::thread([this]() {
 #ifdef __linux__
-        pthread_setname_np(pthread_self(), "RPC-Client");
+        pthread_setname_np(pthread_self(), "FRPC1:Client");
 #endif
         Globals::m_rpcImpl->runRPClient();
     }).detach();

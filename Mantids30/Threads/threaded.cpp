@@ -57,6 +57,10 @@ void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
 
 void Threaded::execRun()
 {
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "Thrd:Runner");
+#endif
+
     m_isRunning = true;
     m_threadRunner(m_contextRunner);
     m_isRunning = false;

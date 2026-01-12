@@ -12,6 +12,11 @@ using namespace std;
 void connectionLoopThread(Connector *parent,
                           const shared_ptr<Connector::Config> &config)
 {
+
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "Sock:CLoop");
+#endif
+
     bool cont = true;
 
     parent->m_stopReconnecting = false;
