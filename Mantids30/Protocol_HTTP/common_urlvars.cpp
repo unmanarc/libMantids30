@@ -1,6 +1,6 @@
 #include "common_urlvars.h"
 
-#include "Mantids30/Memory/streamable_null.h"
+#include <Mantids30/Memory/streamable_null.h>
 #include "streamencoder_url.h"
 #include <boost/algorithm/string.hpp>
 #include <memory>

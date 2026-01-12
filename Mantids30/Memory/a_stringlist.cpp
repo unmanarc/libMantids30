@@ -1,5 +1,5 @@
 #include "a_stringlist.h"
-#include "Mantids30/Helpers/json.h"
+#include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/lock_shared.h>
 
 using namespace Mantids30::Memory::Abstract;

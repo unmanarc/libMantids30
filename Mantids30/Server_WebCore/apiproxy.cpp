@@ -1,5 +1,5 @@
 #include "apiproxy.h"
-#include "Mantids30/Net_Sockets/socket_stream.h"
+#include <Mantids30/Net_Sockets/socket_stream.h>
 
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Net_Sockets/socket_tcp.h>

@@ -1,5 +1,5 @@
 #include "socket_stream.h"
-#include "Mantids30/Helpers/safeint.h"
+#include <Mantids30/Helpers/safeint.h>
 #include <memory>
 #include <optional>
 

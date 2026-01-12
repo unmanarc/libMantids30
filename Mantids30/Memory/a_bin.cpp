@@ -1,5 +1,5 @@
 #include "a_bin.h"
-#include "Mantids30/Helpers/encoders.h"
+#include <Mantids30/Helpers/encoders.h>
 #include <json/value.h>
 #include <string.h>
 #include <Mantids30/Threads/lock_shared.h>

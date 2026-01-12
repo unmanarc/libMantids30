@@ -1,6 +1,6 @@
 #include "b_base.h"
 
-#include "Mantids30/Helpers/safeint.h"
+#include <Mantids30/Helpers/safeint.h>
 #include "b_mmap.h"
 #include "b_ref.h"
 

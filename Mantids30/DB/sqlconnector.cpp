@@ -1,5 +1,5 @@
 #include "sqlconnector.h"
-#include "Mantids30/Memory/a_int64.h"
+#include <Mantids30/Memory/a_int64.h>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim.hpp>

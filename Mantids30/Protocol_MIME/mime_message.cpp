@@ -1,5 +1,5 @@
 #include "mime_message.h"
-#include "Mantids30/Memory/parser.h"
+#include <Mantids30/Memory/parser.h>
 
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/random.h>

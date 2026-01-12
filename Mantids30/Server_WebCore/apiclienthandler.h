@@ -3,7 +3,7 @@
 #include <json/value.h>
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamable_string.h>
-#include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
+#include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
 #include "apiserverconfig.h"
 
 #include <Mantids30/Memory/streamable_json.h>

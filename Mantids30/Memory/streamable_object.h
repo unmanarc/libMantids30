@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mantids30/Helpers/safeint.h"
+#include <Mantids30/Helpers/safeint.h>
 #include <limits>
 #include <memory>
 #include <optional>

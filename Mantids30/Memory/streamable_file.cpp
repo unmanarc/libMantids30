@@ -1,5 +1,5 @@
 #include "streamable_file.h"
-#include "Mantids30/Helpers/safeint.h"
+#include <Mantids30/Helpers/safeint.h>
 #include <fcntl.h>
 #include <optional>
 

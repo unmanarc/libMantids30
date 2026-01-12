@@ -1,5 +1,5 @@
 #include "websocket_framecontent.h"
-#include "Mantids30/Memory/subparser.h"
+#include <Mantids30/Memory/subparser.h>
 #include <cstdint>
 #include <cstring>
 #include <optional>

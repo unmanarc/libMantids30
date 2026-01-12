@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Mantids30/Program_Logs/weblog.h"
+#include <Mantids30/Program_Logs/weblog.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 

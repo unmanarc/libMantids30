@@ -1,5 +1,5 @@
 #include "streamencoder_url.h"
-#include "Mantids30/Memory/streamable_object.h"
+#include <Mantids30/Memory/streamable_object.h>
 
 #include <limits>
 #include <inttypes.h>

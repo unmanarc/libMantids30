@@ -1,5 +1,5 @@
 #pragma once
-#include "Mantids30/Helpers/json.h"
+#include <Mantids30/Helpers/json.h>
 #include "a_var.h"
 
 #include <Mantids30/Threads/mutex_shared.h>

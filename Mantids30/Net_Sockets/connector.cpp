@@ -1,5 +1,5 @@
 #include "connector.h"
-#include "Mantids30/Helpers/callbacks.h"
+#include <Mantids30/Helpers/callbacks.h>
 #include "socket_stream.h"
 #include <memory>
 #include <netinet/in.h>

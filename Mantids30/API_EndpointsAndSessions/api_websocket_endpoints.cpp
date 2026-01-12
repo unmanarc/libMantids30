@@ -1,5 +1,5 @@
 #include "api_websocket_endpoints.h"
-#include "Mantids30/Protocol_HTTP/websocket_eventtype.h"
+#include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
 
 #include <json/value.h>
 #include <Mantids30/Helpers/json.h>

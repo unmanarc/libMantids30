@@ -1,4 +1,4 @@
-#include "Mantids30/Helpers/random.h"
+#include <Mantids30/Helpers/random.h>
 #include "apiclienthandler.h"
 
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
