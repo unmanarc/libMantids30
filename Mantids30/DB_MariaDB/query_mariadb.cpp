@@ -109,7 +109,7 @@ bool Query_MariaDB::step0()
     {
         Memory::Abstract::Var *outputVar = m_resultVars[col];
 
-        std::shared_ptr<Memory::Abstract::BINARY::sBinContainer> sBin = nullptr;
+        std::shared_ptr<Memory::Abstract::BINARY::ByteArray> sBin = nullptr;
 
         unsigned char cRetBoolean = 0;
         MYSQL_BIND result = {};
@@ -173,7 +173,7 @@ bool Query_MariaDB::step0()
             unsigned long varSize = mariaDBfetchVarSize(col, MYSQL_TYPE_BLOB);
             if (varSize > 0)
             {
-                sBin = std::make_shared<Memory::Abstract::BINARY::sBinContainer>(varSize);
+                sBin = std::make_shared<Memory::Abstract::BINARY::ByteArray>(varSize);
                 result.buffer_type = MYSQL_TYPE_BLOB;
                 result.buffer = sBin->ptr;
                 result.buffer_length = sBin->dataSize;
@@ -202,7 +202,7 @@ bool Query_MariaDB::step0()
             unsigned long varSize = mariaDBfetchVarSize(col, MYSQL_TYPE_STRING);
             if (varSize > 0)
             {
-                sBin = std::make_shared<Memory::Abstract::BINARY::sBinContainer>(varSize);
+                sBin = std::make_shared<Memory::Abstract::BINARY::ByteArray>(varSize);
                 result.buffer_type = MYSQL_TYPE_STRING;
                 result.buffer = sBin->ptr;
                 result.buffer_length = sBin->dataSize;
@@ -418,7 +418,7 @@ bool Query_MariaDB::postBindInputVars()
         break;
         case Memory::Abstract::Var::TYPE_BIN:
         {
-            Memory::Abstract::BINARY::sBinContainer *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[m_keysByPos[pos]])->getValue();
+            Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[m_keysByPos[pos]])->getValue();
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_BLOB;
             m_bindedInputParams[pos].buffer_length = i->dataSize;
             m_bindedInputParams[pos].buffer = (char *) i->ptr;

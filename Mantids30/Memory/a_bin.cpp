@@ -12,13 +12,13 @@ BINARY::BINARY()
 }
 
 
-BINARY::sBinContainer *BINARY::getValue()
+BINARY::ByteArray *BINARY::getValue()
 {
     m_value.mutex.lock();
     return &m_value;
 }
 
-bool BINARY::setValue(sBinContainer *value)
+bool BINARY::setValue(ByteArray *value)
 {
     Threads::Sync::Lock_RW lock(this->m_value.mutex);
     this->m_value.ptr = new char[value->dataSize];

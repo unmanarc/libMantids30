@@ -97,7 +97,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
                 break;
             case Memory::Abstract::Var::TYPE_BIN:
             {
-                Memory::Abstract::BINARY::sBinContainer *i = ABSTRACT_SPTR_AS(BINARY, inputVar.second)->getValue();
+                Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, inputVar.second)->getValue();
 #if SQLITE_VERSION_NUMBER >= 3008007L
                 sqlite3_bind_blob64(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
 #else
@@ -280,7 +280,7 @@ bool Query_SQLite3::step0()
                     break;
                 case Memory::Abstract::Var::TYPE_BIN:
                 {
-                    Memory::Abstract::BINARY::sBinContainer binContainer;
+                    Memory::Abstract::BINARY::ByteArray binContainer;
                     binContainer.ptr = (char *) sqlite3_column_blob(m_stmt, columnpos);
                     // TODO: should bytes need to be 64-bit for blob64?
                     binContainer.dataSize = sqlite3_column_bytes(m_stmt, columnpos);

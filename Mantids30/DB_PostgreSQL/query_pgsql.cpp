@@ -95,7 +95,7 @@ bool Query_PostgreSQL::step0()
                 break;
             case Memory::Abstract::Var::TYPE_BIN:
             {
-                Memory::Abstract::BINARY::sBinContainer binContainer;
+                Memory::Abstract::BINARY::ByteArray binContainer;
                 binContainer.ptr = (char *) PQgetvalue(m_results, i, columnpos);
                 // TODO: should bytes need to be 64-bit for blob64?
                 binContainer.dataSize = PQgetlength(m_results, i, columnpos);

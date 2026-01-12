@@ -5,24 +5,24 @@
 #include <Mantids30/Helpers/encoders.h>
 #include <string.h>
 
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 
 class BINARY : public Var
 {
 public:
-    struct sBinContainer {
-        sBinContainer()
+    struct ByteArray {
+        ByteArray()
         {
             ptr = nullptr;
             dataSize = 0;
         }
-        ~sBinContainer()
+        ~ByteArray()
         {
             if (ptr)
                 delete [] ptr;
         }
-        sBinContainer(const size_t & len)
+        ByteArray(const size_t & len)
         {
             ptr = nullptr;
             if (len==0) 
@@ -33,7 +33,7 @@ public:
             memset(ptr,0,len+1);
             dataSize = len;
         }
-        sBinContainer(char * value, const size_t & len)
+        ByteArray(char * value, const size_t & len)
         {
             ptr = nullptr;
             if (len==0) 
@@ -57,8 +57,8 @@ public:
      * @brief getValue Get container memory position
      * @return container memory position and mutex locked (you have to unlock it).
      */
-    sBinContainer *getValue();
-    bool setValue(sBinContainer *value);
+    ByteArray *getValue();
+    bool setValue(ByteArray *value);
 
     std::string toString() override;
     bool fromString(const std::string & value) override;
@@ -73,8 +73,8 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    sBinContainer m_value;
+    ByteArray m_value;
 
 };
-}}}
+}
 
