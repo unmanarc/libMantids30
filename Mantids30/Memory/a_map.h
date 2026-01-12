@@ -7,7 +7,7 @@
 #include <memory>
 
 // TODO: limits...
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 
 class VariableMap
@@ -85,5 +85,5 @@ private:
     Threads::Sync::Mutex_Shared m_mutex;
 };
 
-}}}
+}
 

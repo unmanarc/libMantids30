@@ -6,7 +6,7 @@
 
 #include <Mantids30/Helpers/json.h>
 
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 #define ABSTRACT_PTR_AS(x,y) ( static_cast<Mantids30::Memory::Abstract::x *>(y))
 #define ABSTRACT_SPTR_AS(x,y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
@@ -79,7 +79,7 @@ private:
     Type m_varType;
 };
 
-}}}
+}
 
 
 

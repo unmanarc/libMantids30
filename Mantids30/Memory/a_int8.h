@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <Mantids30/Threads/mutex_shared.h>
 
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 class INT8: public Var
 {
@@ -38,5 +38,5 @@ private:
 
 };
 
-}}}
+}
 

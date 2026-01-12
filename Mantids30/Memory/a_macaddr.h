@@ -14,7 +14,7 @@
 #define ETH_ALEN 6
 
 
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 class MACADDR: public Var
 {
@@ -59,5 +59,5 @@ private:
 
 };
 
-}}}
+}
 

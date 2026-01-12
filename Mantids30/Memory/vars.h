@@ -7,7 +7,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30 { namespace Memory { namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 class Vars
 {
@@ -173,5 +173,5 @@ protected:
     size_t m_maxVarContentSize;
 };
 
-}}}
+}
 
