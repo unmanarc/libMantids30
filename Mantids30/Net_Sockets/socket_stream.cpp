@@ -2,6 +2,7 @@
 #include <Mantids30/Helpers/safeint.h>
 #include <memory>
 #include <optional>
+#include <string>
 
 #ifndef _WIN32
 #include <sys/socket.h>
@@ -95,7 +96,7 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
     std::shared_ptr<Sockets::Socket_TCP> lsock = nullptr;
 
     llsock->listenOn(0, "127.0.0.1");
-    rsock->connectTo("127.0.0.1", lsock->getPort());
+    rsock->connectTo("127.0.0.1", lsock->getLocalPort());
     lsock = std::dynamic_pointer_cast<Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
 
@@ -236,6 +237,7 @@ void Socket_Stream::deriveConnectionName()
     setConnectionName(rpcClientKey);
 }
 
+
 void Socket_Stream::writeDeSync()
 {
     // Action when everything is desynced... (better to stop R/W from the socket)
@@ -247,6 +249,8 @@ void Socket_Stream::readDeSync()
     // Action when everything is desynced... (better to stop R/W from the socket)
     shutdownSocket();
 }
+
+
 
 bool Socket_Stream::isConnected()
 {

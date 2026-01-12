@@ -10,7 +10,7 @@ using namespace Mantids30::Program::Config;
 Config example:
 
 
-; ApiProxy Configuration
+; APIProxy Configuration
 UseTLS true   ; Use TLS
 TLS
 {
@@ -29,14 +29,14 @@ ExtraHeaders
 PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
 
 */
-std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
+std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
     Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &config, const std::map<std::string, std::string> &vars)
 {
-    std::shared_ptr<ApiProxyParameters> params = std::make_shared<ApiProxyParameters>();
+    std::shared_ptr<APIProxyParameters> params = std::make_shared<APIProxyParameters>();
 
     try
     {
-        //  log->log0(__func__, Logs::LEVEL_DEBUG, "Creating ApiProxyParameters.");
+        //  log->log0(__func__, Logs::LEVEL_DEBUG, "Creating APIProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
 
         if (auto tlsHeaders = config.get_child_optional("TLS"))
@@ -67,20 +67,20 @@ std::shared_ptr<ApiProxyParameters> ApiProxyConfig::createApiProxyParams(
     }
     catch (const boost::property_tree::ptree_error &e)
     {
-        log->log0(__func__, Logs::LEVEL_ERR, "Error parsing ApiProxyParameters: %s", e.what());
+        log->log0(__func__, Logs::LEVEL_ERR, "Error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
     catch (const std::exception &e)
     {
-        log->log0(__func__, Logs::LEVEL_ERR, "General error parsing ApiProxyParameters: %s", e.what());
+        log->log0(__func__, Logs::LEVEL_ERR, "General error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
 
-    //    log->log0(__func__, Logs::LEVEL_DEBUG, "Successfully created ApiProxyParameters.");
+    //    log->log0(__func__, Logs::LEVEL_DEBUG, "Successfully created APIProxyParameters.");
     return params;
 }
 
-void ApiProxyConfig::parseExtraHeaders(
+void APIProxyConfig::parseExtraHeaders(
     Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders, const std::map<std::string, std::string> &vars)
 {
     //   log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");

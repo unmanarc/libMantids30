@@ -125,6 +125,9 @@ public:
                 maxConcurrentClients = ptree.get<uint32_t>("MaxConcurrentClients", maxConcurrentClients.load());
                 maxWaitMSTime = ptree.get<uint32_t>("MaxWaitTimeInMilliseconds", maxWaitMSTime.load());
                 maxConnectionsPerIP = ptree.get<uint32_t>("MaxConcurrentConnectionsPerIP", maxConnectionsPerIP.load());
+
+                debug = ptree.get<bool>("Debug.Enabled", debug.load());
+                debugDir = ptree.get<std::string>("Debug.Dir", debugDir);
             }
             catch (const std::exception &e)
             {
@@ -154,6 +157,9 @@ public:
          *        This helps prevent a single IP from monopolizing server resources and ensures fair distribution.
          */
         std::atomic<uint32_t> maxConnectionsPerIP{10};
+
+        std::atomic<bool> debug{false};
+        std::string debugDir = "/tmp";
 
         MultiThreaded *parent = nullptr;
     };

@@ -1,5 +1,6 @@
 #include "acceptor_thread.h"
 #include <memory>
+#include <string>
 
 #ifndef _WIN32
 #include <netinet/in.h>
@@ -48,8 +49,16 @@ std::string StreamAcceptorThread::getRemotePair() const
     return m_pClientSocket->getRemotePairStr();
 }
 
+uint16_t StreamAcceptorThread::getLocalPort()
+{
+    return m_pClientSocket->getLocalPort();
+}
+
 void StreamAcceptorThread::thread_streamclient(std::shared_ptr<StreamAcceptorThread> threadClient, void *threadedAcceptedControl)
 {
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str() );
+#endif
     threadClient->postInitConnection();
     ((MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
 }

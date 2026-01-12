@@ -78,6 +78,9 @@ public:
                 threadsCount = ptree.get<uint32_t>("ThreadsCount", threadsCount);
                 taskQueues = ptree.get<uint32_t>("TaskQueues", taskQueues);
                 queuesKeyRatio = ptree.get<float>("QueuesKeyRatio", queuesKeyRatio);
+
+                debug = ptree.get<bool>("Debug.Enabled", debug.load());
+                debugDir = ptree.get<std::string>("Debug.Dir", debugDir);
             }
             catch (const std::exception &e)
             {
@@ -110,6 +113,12 @@ public:
      * usage. Default value: 0.5 (half of the queues).
      */
         float queuesKeyRatio = 0.5;
+
+        // TODO: disable debug
+
+        std::atomic<bool> debug{false};
+        std::string debugDir = "/tmp";
+
     };
 
     Config parameters;

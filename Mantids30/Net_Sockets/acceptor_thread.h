@@ -44,6 +44,8 @@ public:
      */
     std::string getRemotePair() const;
 
+    uint16_t getLocalPort();
+
     static void thread_streamclient(std::shared_ptr<StreamAcceptorThread> threadClient, void *threadedAcceptedControl);
 
 private:

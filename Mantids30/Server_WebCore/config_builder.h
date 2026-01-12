@@ -11,11 +11,11 @@
 namespace Mantids30::Program {
 namespace Config {
 
-class ApiProxyConfig
+class APIProxyConfig
 {
 public:
-    ApiProxyConfig() = default;
-    static std::shared_ptr<Network::Servers::Web::ApiProxyParameters> createApiProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
+    APIProxyConfig() = default;
+    static std::shared_ptr<Network::Servers::Web::APIProxyParameters> createAPIProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
                                                                                            const std::map<std::string, std::string> &vars = {});
 
 private:

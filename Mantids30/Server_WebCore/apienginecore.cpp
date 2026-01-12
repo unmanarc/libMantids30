@@ -15,7 +15,7 @@ APIEngineCore::APIEngineCore()
 }
 
 void APIEngineCore::setAcceptPoolThreaded(
-    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &threadCount, const uint32_t &taskQueues)
+    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
 {
     m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
     this->m_listenerSocket = listenerSocket;
@@ -25,15 +25,14 @@ void APIEngineCore::setAcceptPoolThreaded(
     m_poolThreadedAcceptor->callbacks.onProtocolInitializationFailure = handleInitFailed;
     m_poolThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
 
-    m_poolThreadedAcceptor->parameters.threadsCount = threadCount;
-    m_poolThreadedAcceptor->parameters.taskQueues = taskQueues;
+    m_poolThreadedAcceptor->parameters.setConfig(ptree);
 
     // Set acceptor type
     m_acceptorType = AcceptorType::POOL_THREADED;
 }
 
 void APIEngineCore::setAcceptMultiThreaded(
-    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const uint32_t &maxConcurrentConnections)
+    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
 {
     m_multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
     this->m_listenerSocket = listenerSocket;
@@ -44,7 +43,7 @@ void APIEngineCore::setAcceptMultiThreaded(
     m_multiThreadedAcceptor->callbacks.onClientAcceptTimeoutOccurred = handleTimeOut;
     m_multiThreadedAcceptor->callbacks.onClientConnectionLimitPerIPReached = handleConnectionLimit;
 
-    m_multiThreadedAcceptor->parameters.setMaxConcurrentClients(maxConcurrentConnections);
+    m_multiThreadedAcceptor->parameters.setConfig(ptree);
 
     // Set acceptor type
     m_acceptorType = AcceptorType::MULTI_THREADED;

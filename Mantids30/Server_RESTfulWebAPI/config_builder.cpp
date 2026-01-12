@@ -202,19 +202,15 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         // Use a thread pool or multi-threading based on configuration
         bool useThreadPool = config.get<bool>("Threads.UseThreadPool", false);
-        uint32_t threadsCount = useThreadPool ?
-                                    config.get<uint32_t>("Threads.PoolSize", 10) :
-                                    config.get<uint32_t>("Threads.MaxThreads", 10000);
 
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Using %s with %u threads",
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Using %s",
                      (void*)webServer,
-                     useThreadPool ? "thread pool" : "multi-threading",
-                     threadsCount);
+                     useThreadPool ? "thread pool" : "multi-threading");
 
         if (useThreadPool)
-            webServer->setAcceptPoolThreaded(sockWebListen, threadsCount);
+            webServer->setAcceptPoolThreaded(sockWebListen,  config.get_child("Threads") );
         else
-            webServer->setAcceptMultiThreaded(sockWebListen, threadsCount);
+            webServer->setAcceptMultiThreaded(sockWebListen, config.get_child("Threads") );
 
         // WebServer Extras:
         if (config.find("Proxies") != config.not_found())
@@ -229,11 +225,11 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                              (void*)webServer,
                              proxyPath.c_str(), serviceName.c_str());
 
-                std::shared_ptr<Network::Servers::Web::ApiProxyParameters> param = ApiProxyConfig::createApiProxyParams(appLog.get(), proxy.second, vars );
+                std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars );
 
                 if (param!=nullptr)
                 {
-                    webServer->config.dynamicRequestHandlersByRoute[proxyPath] = {&Network::Servers::Web::ApiProxy, param};
+                    webServer->config.dynamicRequestHandlersByRoute[proxyPath] = {&Network::Servers::Web::APIProxy, param};
                 }
             }
         }

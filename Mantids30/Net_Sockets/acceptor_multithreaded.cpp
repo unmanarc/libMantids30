@@ -6,7 +6,6 @@
 using namespace Mantids30::Network::Sockets::Acceptors;
 using Ms = std::chrono::milliseconds;
 
-
 uint32_t MultiThreaded::Config::getMaxConnectionsPerIP()
 {
     std::unique_lock<std::mutex> lock(parent->m_mutexClients);
@@ -52,25 +51,26 @@ void MultiThreaded::Config::setMaxConcurrentClients(const uint32_t &value)
     parent->m_condClientsNotFull.notify_all();
 }
 
-
-void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> & tc)
+void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc)
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "MT:StreamAccept");
 #endif
 
     // Accept until it fails:
-    while (tc->acceptClient()) {}
+    while (tc->acceptClient())
+    {
+    }
 }
 
-bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
+bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(m_mutexClients);
     // free the lock (wait until another thread finish)...
-    while(m_threadList.size()>=parameters.maxConcurrentClients && !m_finalized)
+    while (m_threadList.size() >= parameters.maxConcurrentClients && !m_finalized)
     {
-        if (m_condClientsNotFull.wait_for(lock,Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout )
+        if (m_condClientsNotFull.wait_for(lock, Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout)
         {
             if (callbacks.onClientAcceptTimeoutOccurred)
             {
@@ -85,7 +85,7 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientS
         return false;
     }
     // update the counter
-    if (incrementIPUsage(clientThread->getRemotePair())>parameters.maxConnectionsPerIP)
+    if (incrementIPUsage(clientThread->getRemotePair()) > parameters.maxConnectionsPerIP)
     {
         if (callbacks.onClientConnectionLimitPerIPReached)
         {
@@ -97,7 +97,7 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream>clientS
 
     m_threadList.push_back(clientThread);
 
-    std::thread(StreamAcceptorThread::thread_streamclient,clientThread,this).detach();
+    std::thread(StreamAcceptorThread::thread_streamclient, clientThread, this).detach();
 
     return true;
 }
@@ -118,8 +118,10 @@ void MultiThreaded::decrementIPUsage(const std::string &ipAddr)
 {
     if (m_connectionsPerIP.find(ipAddr) == m_connectionsPerIP.end())
         throw std::runtime_error("decrement ip usage, but never incremented before");
-    if (m_connectionsPerIP[ipAddr]==1) m_connectionsPerIP.erase(ipAddr);
-    else m_connectionsPerIP[ipAddr]--;
+    if (m_connectionsPerIP[ipAddr] == 1)
+        m_connectionsPerIP.erase(ipAddr);
+    else
+        m_connectionsPerIP[ipAddr]--;
 }
 
 MultiThreaded::MultiThreaded()
@@ -127,7 +129,8 @@ MultiThreaded::MultiThreaded()
     parameters.setParent(this);
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context,  _callbackConnectionRV _onInitFailed, _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
+MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context, _callbackConnectionRV _onInitFailed,
+                             _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
 {
     parameters.setParent(this);
 
@@ -167,15 +170,14 @@ MultiThreaded::~MultiThreaded()
     {
         std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<std::shared_ptr<StreamAcceptorThread>>::iterator it=m_threadList.begin(); it != m_threadList.end(); ++it)
+        for (std::list<std::shared_ptr<StreamAcceptorThread>>::iterator it = m_threadList.begin(); it != m_threadList.end(); ++it)
         {
             (*it)->stopSocket();
         }
         // unlock until there is no threads left.
-        while ( !m_threadList.empty() )
+        while (!m_threadList.empty())
             m_condClientsEmpty.wait(lock);
     }
-
 
     // Now we can safetly free the acceptor socket resource.
     if (m_acceptorSocket)
@@ -196,7 +198,14 @@ bool MultiThreaded::acceptClient()
         clientThread->callbacks.onClientConnected = this->callbacks.onClientConnected;
         clientThread->callbacks.onProtocolInitializationFailure = this->callbacks.onProtocolInitializationFailure;
 
-        return processClient(clientSocket,clientThread);
+        if (parameters.debug)
+        {
+            clientSocket->setDebugOptions(Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE
+                                          | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS);
+            clientSocket->setDebugOutput(parameters.debugDir);
+        }
+
+        return processClient(clientSocket, clientThread);
     }
     return false; // no more connections. (abandon)
 }
@@ -216,7 +225,7 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> 
     return false;
 }
 
-void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> & acceptorSocket)
+void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket)
 {
     this->m_acceptorSocket = acceptorSocket;
 }
@@ -231,7 +240,7 @@ void MultiThreaded::startInBackground()
         throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
 
     m_initialized = true;
-    m_acceptorThread = std::thread(thread_streamaccept,shared_from_this());
+    m_acceptorThread = std::thread(thread_streamaccept, shared_from_this());
 }
 
 void MultiThreaded::stop()
@@ -240,7 +249,6 @@ void MultiThreaded::stop()
         m_acceptorSocket->shutdownSocket(SHUT_RDWR);
 }
 
-
 bool MultiThreaded::startBlocking()
 {
     if (!m_acceptorSocket)
@@ -248,7 +256,9 @@ bool MultiThreaded::startBlocking()
     if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
 
-    while (acceptClient()) {}
+    while (acceptClient())
+    {
+    }
     stop();
     return true;
 }

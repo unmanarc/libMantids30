@@ -49,8 +49,14 @@ void PoolThreaded::run()
         std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocket->acceptConnection();
         if (clientSocket)
         {
-            // TODO: shared_ptr
             std::shared_ptr<sAcceptorTaskData> taskData = std::make_shared<sAcceptorTaskData>();
+
+            if (parameters.debug)
+            {
+                clientSocket->setDebugOptions(Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE
+                                              | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS);
+                clientSocket->setDebugOutput(parameters.debugDir);
+            }
 
             taskData->onConnect = callbacks.onClientConnected;
             taskData->onInitFail = callbacks.onProtocolInitializationFailure;

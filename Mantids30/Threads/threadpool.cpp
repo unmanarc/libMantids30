@@ -14,7 +14,7 @@ ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
     m_terminate = false;
     m_queuedElements = 0;
     this->m_threadCount = threadsCount;
-    for (size_t i =0; i<taskQueues;i++)
+    for (size_t i = 0; i < taskQueues; i++)
     {
         m_queues[i].init = true;
     }
@@ -23,13 +23,13 @@ ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
 ThreadPool::~ThreadPool()
 {
     stop();
-    for (uint32_t i =0; i<m_threadCount;i++)
+    for (uint32_t i = 0; i < m_threadCount; i++)
         m_threads[i].join();
 }
 
 void ThreadPool::start()
 {
-    for (size_t i =0; i<m_threadCount;i++)
+    for (size_t i = 0; i < m_threadCount; i++)
     {
         m_threads[i] = std::thread(taskProcessor, this);
     }
@@ -43,9 +43,9 @@ void ThreadPool::stop()
     m_insertedElementCond.notify_all();
 }
 
-bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData, uint32_t timeoutMS,  const float &priority, const std::string &key)
+bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData, uint32_t timeoutMS, const float &priority, const std::string &key)
 {
-    size_t currentQueue = getRandomQueueByKey(key,priority);
+    size_t currentQueue = getRandomQueueByKey(key, priority);
 
     // TODO: put to best place first
     std::unique_lock<std::mutex> lk(m_queuesMutex);
@@ -55,7 +55,7 @@ bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<v
         return false;
 
     // Check if the queue is up the limit
-    while ( m_queues[currentQueue].tasks.size() > m_maxTasksPerQueue  )
+    while (m_queues[currentQueue].tasks.size() > m_maxTasksPerQueue)
     {
         if (timeoutMS == static_cast<uint32_t>(-1))
         {
@@ -74,7 +74,7 @@ bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<v
     Task toInsert;
     toInsert.data = taskData;
     toInsert.task = task;
-    m_queues[currentQueue].tasks.push( toInsert );
+    m_queues[currentQueue].tasks.push(toInsert);
 
     // Notify that there is one element in one of the lists...
     lk.unlock();
@@ -85,20 +85,20 @@ bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<v
 ThreadPool::Task ThreadPool::popTask()
 {
 #ifndef _WIN32
-     pthread_setname_np(pthread_self(), "tp_poptask");
+    pthread_setname_np(pthread_self(), "tp_poptask");
 #endif
 
     // lock and wait for an incoming task
     std::unique_lock<std::mutex> lk(m_queuesMutex);
 
-    TasksQueue * tq = getRandomTaskQueueWithElements();
-    while ( tq == nullptr )
+    TasksQueue *tq = getRandomTaskQueueWithElements();
+    while (tq == nullptr)
     {
         // No available elements...
         m_insertedElementCond.wait(lk);
 
         // On termination, empty queue means exit
-        if ( m_terminate && (tq=getRandomTaskQueueWithElements()) == nullptr)
+        if (m_terminate && (tq = getRandomTaskQueueWithElements()) == nullptr)
         {
             Task r;
             return r;
@@ -107,7 +107,7 @@ ThreadPool::Task ThreadPool::popTask()
             tq = getRandomTaskQueueWithElements();
     }
 
-    Task r= tq->tasks.front();
+    Task r = tq->tasks.front();
     tq->tasks.pop();
 
     // Notify!
@@ -120,14 +120,15 @@ ThreadPool::TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
 {
     std::vector<size_t> fullVector;
     // Randomize the full vector
-    for (size_t i=0; i<m_queues.size(); ++i) fullVector.push_back(i);
+    for (size_t i = 0; i < m_queues.size(); ++i)
+        fullVector.push_back(i);
     std::uniform_int_distribution<size_t> dis;
     m_randomMutex.lock();
-    Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(),static_cast<size_t>(dis(m_lRand)));
+    Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
     m_randomMutex.unlock();
 
     // Iterate full Vector...
-    for ( size_t i : fullVector )
+    for (size_t i : fullVector)
     {
         if (!m_queues[i].tasks.empty())
         {
@@ -144,21 +145,25 @@ size_t ThreadPool::getRandomQueueByKey(const std::string &key, const float &prio
     std::vector<size_t> fullVector;
 
     // Convert priority in vector elements...
-    size_t elements = static_cast<size_t>(m_queues.size()*priority);
-    if (elements==0) elements = 1;
-    if (elements>m_queues.size()) elements = m_queues.size();
+    size_t elements = static_cast<size_t>(m_queues.size() * priority);
+    if (elements == 0)
+        elements = 1;
+    if (elements > m_queues.size())
+        elements = m_queues.size();
 
     // Randomize the full vector using the hash of key
-    for (size_t i=0; i<m_queues.size(); ++i) fullVector.push_back(i);
+    for (size_t i = 0; i < m_queues.size(); ++i)
+        fullVector.push_back(i);
     Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
 
     // Copy the first n-elements (based on priority)
-    for (size_t i=0;i<elements;i++) reducedVector.push_back(fullVector[i]);
+    for (size_t i = 0; i < elements; i++)
+        reducedVector.push_back(fullVector[i]);
 
     // Get random element from the reduced vector:
-    std::uniform_int_distribution<> dis(0, static_cast<int>(elements-1));
+    std::uniform_int_distribution<> dis(0, static_cast<int>(elements - 1));
     m_randomMutex.lock();
-    x = reducedVector.at( static_cast<size_t>(dis(m_lRand)) );
+    x = reducedVector.at(static_cast<size_t>(dis(m_lRand)));
     m_randomMutex.unlock();
 
     return x;
@@ -173,15 +178,19 @@ void ThreadPool::setMaxTasksPerQueue(const uint32_t &value)
 {
     m_maxTasksPerQueue = value;
 
-    for (auto & i : m_queues)
+    for (auto &i : m_queues)
         i.second.cond_removedElement.notify_all();
 }
 
 void ThreadPool::taskProcessor(ThreadPool *tp)
 {
-    for (Task task = tp->popTask();
-         !task.isNull();
-         task = tp->popTask())
+
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), "ThrPool:TaskC");
+#endif
+
+
+    for (Task task = tp->popTask(); !task.isNull(); task = tp->popTask())
     {
         //std::cout << "ejecutando " << task.data << std::endl << std::flush;
         task.task(task.data);

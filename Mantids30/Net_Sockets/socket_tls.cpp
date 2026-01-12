@@ -517,18 +517,18 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
     if (readBytes > 0)
     {
         // Debug print for read data
-        if ((debugOptions & TLS_DEBUG_PRINT_READ_HEX) || (debugOptions & TLS_DEBUG_PRINT_READ_PLAIN))
+        if ((debugOptions & SOCKET_DEBUG_PRINT_READ_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_READ_PLAIN))
         {
-            if (debugOptions & TLS_DEBUG_PRINT_READ_HEX)
+            if (debugOptions & SOCKET_DEBUG_PRINT_READ_HEX)
             {
-                fprintf(stderr, "[TLS READ] Read %d bytes\n", readBytes);
-                fflush(stderr);
+                fprintf(debugFP, "<<< [TLS READ] Read %d bytes\n", readBytes);
+                fflush(debugFP);
                 // Print hex dump using BIO_dump_fp
                 BIO *bio = BIO_new(BIO_s_mem());
                 if (bio)
                 {
-                    BIO_dump_fp(stderr, (const char *) data, readBytes);
-                    fflush(stderr);
+                    BIO_dump_fp(debugFP, (const char *) data, readBytes);
+                    fflush(debugFP);
                     BIO_free(bio);
                 }
             }
@@ -536,7 +536,7 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
             {
                 std::string datax;
                 datax.append((const char *)data,readBytes);
-                fprintf(stderr,"%s",datax.c_str()); fflush(stderr);
+                fprintf(debugFP,"%s",datax.c_str()); fflush(debugFP);
             }
         }
 
@@ -546,10 +546,10 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
     else if (readBytes == 0)
     {
         // The connection has been closed.
-        if (debugOptions & TLS_DEBUG_PRINT_CLOSE)
+        if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
         {
-            fprintf(stderr, "[TLS CLOSE] Connection closed by peer\n");
-            fflush(stderr);
+            fprintf(debugFP, "+++ [TLS CLOSE] Connection closed by peer\n");
+            fflush(debugFP);
         }
 
         m_lastError = "Connection closed by peer";
@@ -564,10 +564,10 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
     case SSL_ERROR_WANT_WRITE:
         // Try Again after 10ms...
 
-        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
         {
-            fprintf(stderr, "[TLS READ] SSL_WANT_READ/WRITE during read, retrying...\n");
-            fflush(stderr);
+            fprintf(debugFP, "--- [TLS READ] SSL_WANT_READ/WRITE during read, retrying...\n");
+            fflush(debugFP);
         }
 
         usleep(10000);
@@ -579,10 +579,10 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
         strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
         m_lastError = std::string("System call error: ") + errorBuffer;
 
-        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
         {
-            fprintf(stderr, "[TLS ERROR] System call error during read: %s\n", errorBuffer);
-            fflush(stderr);
+            fprintf(debugFP, "--- [TLS ERROR] System call error during read: %s\n", errorBuffer);
+            fflush(debugFP);
         }
 
         break;
@@ -594,20 +594,20 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
             parseErrors();
             m_lastError = std::string("SSL Layer Error");
 
-            if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+            if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
             {
-                fprintf(stderr, "[TLS ERROR] SSL Layer Error during read\n");
-                fflush(stderr);
+                fprintf(debugFP, "--- [TLS ERROR] SSL Layer Error during read\n");
+                fflush(debugFP);
             }
             break;
         }
     default:
         m_lastError = "Unknown SSL error occurred";
 
-        if (debugOptions & TLS_DEBUG_PRINT_ERRORS)
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
         {
-            fprintf(stderr, "[TLS ERROR] Unknown SSL error occurred during read\n");
-            fflush(stderr);
+            fprintf(debugFP, "--- [TLS ERROR] Unknown SSL error occurred during read\n");
+            fflush(debugFP);
         }
     }
 
@@ -637,10 +637,10 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
     int chunkSize = static_cast<int>(datalen);
 
     // Debug: Print write data if enabled
-    if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+    if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
     {
-        fprintf(stderr, "[TLS_WRITE] Writing %d bytes\n", chunkSize);
-        fflush(stderr);
+        fprintf(debugFP, ">>> [TLS_WRITE] Writing %d bytes\n", chunkSize);
+        fflush(debugFP);
     }
 
     // TODO: sigpipe here?
@@ -651,19 +651,19 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
         m_lastError = "";
 
         // Debug: Print sent bytes if enabled
-        if ((debugOptions & TLS_DEBUG_PRINT_WRITE_HEX) || (debugOptions & TLS_DEBUG_PRINT_WRITE_PLAIN))
+        if ((debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_WRITE_PLAIN))
         {
-            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
             {
-                fprintf(stderr, "[TLS_WRITE] Sent %d bytes successfully\n", sentBytes);
-                BIO_dump_fp(stderr, (const char *) data, sentBytes);
-                fflush(stderr);
+                fprintf(debugFP, ">>> [TLS_WRITE] Wrote %d bytes\n", sentBytes);
+                BIO_dump_fp(debugFP, (const char *) data, sentBytes);
+                fflush(debugFP);
             }
             else
             {
                 std::string datax;
                 datax.append((const char *)data,sentBytes);
-                fprintf(stderr,"%s",datax.c_str()); fflush(stderr);
+                fprintf(debugFP,"%s",datax.c_str()); fflush(debugFP);
             }
         }
 
@@ -674,10 +674,10 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
         // Closed.
         m_lastError = "Connection closed";
         // Debug: Print close event if enabled
-        if (debugOptions & TLS_DEBUG_PRINT_CLOSE)
+        if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
         {
-            fprintf(stderr, "[TLS_CLOSE] Connection closed by peer\n");
-            fflush(stderr);
+            fprintf(debugFP, "+++ [TLS_CLOSE] Connection closed by peer\n");
+            fflush(debugFP);
         }
 
         return sentBytes;
@@ -692,10 +692,10 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             // Wait 10ms... and try again...
             usleep(10000);
             // Debug: Print retry info if enabled
-            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
             {
-                fprintf(stderr, "[TLS_WRITE] SSL_WANT_RETRY, retrying (ttl=%d)\n", ttl);
-                fflush(stderr);
+                fprintf(debugFP, "--- [TLS_WRITE] SSL_WANT_RETRY, retrying (ttl=%d)\n", ttl);
+                fflush(debugFP);
             }
 
             return iPartialWrite(data, datalen, ttl - 1);
@@ -709,10 +709,10 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             Socket_TCP::iShutdown();
 
             // Debug: Print syscall error if enabled
-            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
             {
-                fprintf(stderr, "[TLS_WRITE_ERROR] System call error: %s\n", errorBuffer);
-                fflush(stderr);
+                fprintf(debugFP, "--- [TLS_WRITE_ERROR] System call error: %s\n", errorBuffer);
+                fflush(debugFP);
             }
 
             return -1;
@@ -726,10 +726,10 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             Socket_TCP::iShutdown();
 
             // Debug: Print SSL error if enabled
-            if (debugOptions & TLS_DEBUG_PRINT_WRITE_HEX)
+            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
             {
-                fprintf(stderr, "[TLS_WRITE_ERROR] SSL error occurred\n");
-                fflush(stderr);
+                fprintf(debugFP, "--- [TLS_WRITE_ERROR] SSL error occurred\n");
+                fflush(debugFP);
             }
             return -1;
         }

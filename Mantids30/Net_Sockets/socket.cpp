@@ -1,5 +1,6 @@
 #include "socket.h"
 
+#include <openssl/bio.h>
 #include <signal.h>
 #include <unistd.h>
 #include <string.h>
@@ -224,6 +225,12 @@ Socket::Socket()
 Socket::~Socket()
 {
     closeSocket();
+
+    if (debugFP)
+    {
+        fclose(debugFP);
+        debugFP = nullptr;
+    }
 }
 
 #ifdef _WIN32
@@ -262,6 +269,8 @@ bool Socket::isConnected()
     return false;
 }
 
+
+
 bool Socket::connectTo(const char *remoteHost, const uint16_t &remotePort, const uint32_t &timeout)
 {
     return connectFrom(nullptr,remoteHost,remotePort,timeout);
@@ -291,6 +300,12 @@ int Socket::closeSocket()
     if (!isActive())
         return 0;
 
+    if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
+    {
+        fprintf(debugFP, "+++ [TCP CLOSE] Connection closed by our program\n");
+        fflush(debugFP);
+    }
+
     mutexClose.lock();
     // Prevent socket utilization / race condition.
     auto socktmp = (int)m_sockFD;
@@ -312,11 +327,9 @@ std::string Socket::getLastError() const
 
 std::string Socket::getLastBindAddress() const
 {
-    /*if (!m_lastBindValid)
-        return "";*/
-
     char addrStr[INET6_ADDRSTRLEN];
-    uint16_t port;
+    memset(addrStr,0,INET6_ADDRSTRLEN);
+    uint16_t port = 0;
 
     if (!m_useIPv6)
     {
@@ -337,7 +350,7 @@ std::string Socket::getRemotePairStr()
     return std::string(m_remotePair);
 }
 
-uint16_t Socket::getPort()
+uint16_t Socket::getLocalPort()
 {
     if (!isActive()) 
         return 0;
@@ -352,46 +365,298 @@ uint16_t Socket::getPort()
     return ntohs(sin.sin_port);
 }
 
-ssize_t Socket::partialRead(void *data, const size_t &datalen)
+Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getLocalAddressAndPort()
 {
-    if (!isActive()) 
-        return -1;
-    if (!datalen) 
-        return 0;
-    if (!m_useWriteInsteadRecv)
+    Mantids30::Network::Sockets::Socket::AddressAndPort addrAndPort;
+    if (!isActive())
+        return addrAndPort;
+
+    char addrStr[INET6_ADDRSTRLEN];
+    memset(addrStr, 0, INET6_ADDRSTRLEN);
+
+    if (!m_useIPv6)
     {
-        ssize_t recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
-        return recvLen;
+        struct sockaddr_in sin;
+        socklen_t len = sizeof(sin);
+        if (getsockname(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
+        {
+            m_lastError = "Error resolving port";
+            return addrAndPort;
+        }
+        inet_ntop(AF_INET, &sin.sin_addr, addrStr, sizeof(addrStr));
+        addrAndPort.port = ntohs(sin.sin_port);
     }
     else
     {
-        ssize_t recvLen = read(m_sockFD, static_cast<char *>(data), datalen);
+        struct sockaddr_in6 sin6;
+        socklen_t len = sizeof(sin6);
+        if (getsockname(m_sockFD, (struct sockaddr *) &sin6, &len) == -1)
+        {
+            m_lastError = "Error resolving port";
+            return addrAndPort;
+        }
+        inet_ntop(AF_INET6, &sin6.sin6_addr, addrStr, sizeof(addrStr));
+        addrAndPort.port = ntohs(sin6.sin6_port);
+    }
+    addrAndPort.address = addrStr;
+    return addrAndPort;
+}
+
+
+Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getRemoteAddressAndPort()
+{
+    Mantids30::Network::Sockets::Socket::AddressAndPort addrAndPort;
+    if (!isActive())
+        return addrAndPort;
+
+    char addrStr[INET6_ADDRSTRLEN];
+    memset(addrStr, 0, INET6_ADDRSTRLEN);
+
+    if (!m_useIPv6)
+    {
+        struct sockaddr_in sin;
+        socklen_t len = sizeof(sin);
+        if (getpeername(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
+        {
+            m_lastError = "Error resolving remote address";
+            return addrAndPort;
+        }
+        inet_ntop(AF_INET, &sin.sin_addr, addrStr, sizeof(addrStr));
+        addrAndPort.port = ntohs(sin.sin_port);
+    }
+    else
+    {
+        struct sockaddr_in6 sin6;
+        socklen_t len = sizeof(sin6);
+        if (getpeername(m_sockFD, (struct sockaddr *) &sin6, &len) == -1)
+        {
+            m_lastError = "Error resolving remote address";
+            return addrAndPort;
+        }
+        inet_ntop(AF_INET6, &sin6.sin6_addr, addrStr, sizeof(addrStr));
+        addrAndPort.port = ntohs(sin6.sin6_port);
+    }
+    addrAndPort.address = addrStr;
+    return addrAndPort;
+}
+
+
+ssize_t Socket::partialRead(void *data, const size_t &datalen)
+{
+    if (!isActive())
+    {
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] Socket not active during read\n");
+            fflush(debugFP);
+        }
+        return -1;
+    }
+    if (!datalen)
+    {
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] Attempted to read 0 bytes\n");
+            fflush(debugFP);
+        }
+        return 0;
+    }
+
+    ssize_t recvLen = 0;
+    if (!m_useWriteInsteadRecv)
+    {
+        recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
+    }
+    else
+    {
+        recvLen = read(m_sockFD, static_cast<char *>(data), datalen);
+    }
+
+    if (recvLen > 0)
+    {
+        // Debug print for read data
+        if ((debugOptions & SOCKET_DEBUG_PRINT_READ_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_READ_PLAIN))
+        {
+            if (debugOptions & SOCKET_DEBUG_PRINT_READ_HEX)
+            {
+                fprintf(debugFP, "<<< [TCP READ] Read %zd bytes\n", recvLen);
+                fflush(debugFP);
+
+                // Print hex dump using BIO_dump_fp (simplificado)
+                BIO *bio = BIO_new(BIO_s_mem());
+                if (bio)
+                {
+                    BIO_dump_fp(debugFP, (const char *) data, recvLen);
+                    fflush(debugFP);
+                    BIO_free(bio);
+                }
+            }
+            else
+            {
+                std::string datax;
+                datax.append((const char *)data, recvLen);
+                fprintf(debugFP, "%s", datax.c_str());
+                fflush(debugFP);
+            }
+        }
+
         return recvLen;
     }
+    else if (recvLen == 0)
+    {
+        if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
+        {
+            fprintf(debugFP, "+++ [TCP CLOSE] Connection closed by peer\n");
+            fflush(debugFP);
+        }
+        return 0;
+    }
+    else
+    {
+        // recvLen < 0 => error
+        int err = errno;
+        char errorBuffer[256];
+        strerror_r(err, errorBuffer, sizeof(errorBuffer));
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] recv failed: %s\n", errorBuffer);
+            fflush(debugFP);
+        }
+
+        return -1;
+    }
+
+    return recvLen;
 }
+
+
+
+void Socket::setDebugOutput(const std::string &newDebugDir)
+{
+    debugDir = newDebugDir;
+
+    if (debugDir.empty())
+    {
+        debugFP = stderr;
+    }
+    else
+    {
+
+        ////////////////////////////////////////////////////////////////////////////////////////
+        // Get current time with milliseconds
+        auto now = std::chrono::system_clock::now();
+        auto time_t = std::chrono::system_clock::to_time_t(now);
+        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+        // Format the filename
+        char unixtime[256];
+        snprintf(unixtime, sizeof(unixtime), "%ld%03d",  static_cast<long>(time_t), static_cast<int>(ms.count()));
+        ////////////////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////////////////////
+        // Generate filename with hex address of this object and current timestamp
+        char hexAddr[32];
+        snprintf(hexAddr, sizeof(hexAddr), "%p", static_cast<void *>(this));
+        // Remove "0x" prefix and convert to uppercase
+        std::string addrStr = hexAddr;
+        if (addrStr.substr(0, 2) == "0x" || addrStr.substr(0, 2) == "0X")
+            addrStr = addrStr.substr(2);
+        ////////////////////////////////////////////////////////////////////////////////////////
+
+        std::string fileName = debugDir + "/connection_" + std::string(unixtime) + "_" + addrStr + "_" + getLocalAddressAndPort().toString() + "_" + getRemoteAddressAndPort().toString() + ".tmp";
+
+        // Open file for writing
+        debugFP = fopen(fileName.c_str(), "w");
+        if (debugFP == nullptr)
+        {
+            // Fallback to stderr if file creation fails
+            debugFP = stderr;
+        }
+    }
+}
+
+
 
 ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 {
-    if (!isActive()) 
+    if (!isActive())
+    {
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] Socket not active during write\n");
+            fflush(debugFP);
+        }
         return -1;
-    if (!datalen) 
+    }
+
+    if (!datalen)
+    {
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] Attempted to write 0 bytes\n");
+            fflush(debugFP);
+        }
         return 0;
+    }
+
+    ssize_t sendLen = 0;
+
     if (!m_useWriteInsteadRecv)
     {
 #ifdef _WIN32
-        ssize_t sendLen = send(sockfd, static_cast<const char *>(data), datalen, 0);
+        sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, 0);
 #else
-        ssize_t sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, MSG_NOSIGNAL);
+        sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, MSG_NOSIGNAL);
 #endif
+    }
+    else
+    {
+        sendLen = write(m_sockFD, static_cast<const char *>(data), datalen);
+    }
+
+    if (sendLen > 0)
+    {
+        if ((debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_WRITE_PLAIN))
+        {
+            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
+            {
+                fprintf(debugFP, ">>> [TCP WRITE] Wrote %zd bytes\n", sendLen);
+                fflush(debugFP);
+
+                BIO *bio = BIO_new(BIO_s_mem());
+                if (bio)
+                {
+                    BIO_dump_fp(debugFP, (const char *) data, sendLen);
+                    fflush(debugFP);
+                    BIO_free(bio);
+                }
+            }
+            else
+            {
+                std::string datax;
+                datax.append((const char *)data, sendLen);
+                fprintf(debugFP, "%s", datax.c_str());
+                fflush(debugFP);
+            }
+        }
+
         return sendLen;
     }
     else
     {
-        ssize_t sendLen = write(m_sockFD, static_cast<const char *>(data), datalen);
-        return sendLen;
+        // sendLen <= 0 => error
+        int err = errno;
+        char errorBuffer[256];
+        strerror_r(err, errorBuffer, sizeof(errorBuffer));
+        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        {
+            fprintf(debugFP, "--- [TCP ERROR] send failed: %s\n", errorBuffer);
+            fflush(debugFP);
+        }
+
+        return -1;
     }
 }
-
 int Socket::iShutdown(
     int mode)
 {

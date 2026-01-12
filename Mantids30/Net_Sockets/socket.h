@@ -103,12 +103,49 @@ public:
      * @param true if is it connected
      */
     virtual bool isConnected();
+
+    struct AddressAndPort
+    {
+        std::string toString()
+        {
+            return address + ":" + std::to_string(port);
+        }
+        std::string address;
+        uint16_t port = 0;
+    };
+
     /**
-     * Get current used port.
+     * Get the local address and port bound to this socket.
+     * This function retrieves the local network address and port that the socket is bound to.
+     * For TCP/UDP connections, this represents the local endpoint of the connection.
+     *
+     * @return AddressAndPort structure containing the local address and port
+     * @note This function only works for active sockets that have been bound
+     * @note For listening sockets, this returns the address/port the server is bound to
+     * @note For connected sockets, this returns the local endpoint of the connection
+     */
+    AddressAndPort getLocalAddressAndPort();
+
+    /**
+     * Get the remote address and port of the connected peer.
+     * This function retrieves the network address and port of the remote peer that
+     * this socket is connected to. For TCP connections, this represents the peer's
+     * endpoint; for UDP, this represents the last peer that sent data to this socket.
+     *
+     * @return AddressAndPort structure containing the remote address and port
+     * @note This function only works for connected sockets (TCP connections)
+     * @note For UDP sockets, this returns the address of the last sender
+     * @note Returns empty structure if socket is not connected or operation fails
+     */
+    AddressAndPort getRemoteAddressAndPort();
+
+    /**
+     * Get local port.
      * Useful for TCP/UDP connections, especially on received connections.
      * @param 16-bit unsigned integer with the port (0-65535)
      */
-    uint16_t getPort();
+    uint16_t getLocalPort();
+
     /**
      * Get last error message
      * @param last error message pointer. (static mem)
@@ -289,11 +326,31 @@ public:
 
     void setRemoteServerHostname(const std::string &newRemoteServerHostname);
 
+
+    enum eDebugOptions
+    {
+        SOCKET_DEBUG_PRINT_WRITE_HEX = 0x01,
+        SOCKET_DEBUG_PRINT_READ_HEX = 0x02,
+        SOCKET_DEBUG_PRINT_CLOSE = 0x04,
+        SOCKET_DEBUG_PRINT_WRITE_PLAIN = 0x08,
+        SOCKET_DEBUG_PRINT_READ_PLAIN = 0x10,
+        SOCKET_DEBUG_PRINT_ERRORS = 0x20,
+    };
+
+    void setDebugOptions(uint32_t debugOptions) { this->debugOptions = debugOptions; }
+    void setDebugOutput(const std::string &newDebugDir);
+
+
 private:
     static void socketSystemInitialization();
     //void initVars();
 
 protected:
+
+    uint32_t debugOptions = 0;
+    std::string debugDir;
+    FILE *debugFP = nullptr;
+
     /**
      * Set remote pair address
      * Used by internal functions...

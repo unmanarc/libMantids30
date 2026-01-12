@@ -3,9 +3,9 @@
 #include "socket.h"
 #include "socket_stream_reader.h"
 #include "socket_stream_writer.h"
+#include <Mantids30/Memory/streamable_object.h>
 #include <memory>
 #include <utility>
-#include <Mantids30/Memory/streamable_object.h>
 
 namespace Mantids30::Network::Sockets {
 
@@ -67,7 +67,7 @@ public:
 
     bool streamTo(Memory::Streams::StreamableObject *out) override;
 
-    std::optional<size_t> write(const void * buf, const size_t &count) override;
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
 
     /**
      * @brief GetSocketPair Create a Pair of interconnected sockets
@@ -83,8 +83,8 @@ public:
 
     // This methods are virtual and should be implemented in sub-classes.
     // TODO: virtual redefinition?
-    virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
-    virtual bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
+    virtual bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    virtual bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
     virtual std::shared_ptr<Socket_Stream> acceptConnection();
 
     /**
@@ -108,7 +108,7 @@ public:
      * @param data null terminated string
      * @return true if the string was successfully sent
      */
-    virtual bool writeFull(const void * buf);
+    virtual bool writeFull(const void *buf);
     /**
      * Write a data block on the socket
      *
@@ -126,18 +126,16 @@ public:
      * @param receivedBytesCount if not null, this function returns the received byte count.
      * @return if it's disconnected (invalid sockfd) or it's not able to obtain at least 1 byte, then return false, otherwise true, you should check by yourself that expectedDataBytesCount == *receivedDataBytesCount
      */
-    virtual bool readFull(void * data, const size_t &expectedDataBytesCount, size_t * receivedDataBytesCount = nullptr) override;
-
-
+    virtual bool readFull(void *data, const size_t &expectedDataBytesCount, size_t *receivedDataBytesCount = nullptr) override;
 
     void deriveConnectionName();
+
 
 protected:
     void writeDeSync() override;
     void readDeSync() override;
+
 };
 
 typedef std::shared_ptr<Socket_Stream> Socket_Stream_SP;
-}
-
-
+} // namespace Mantids30::Network::Sockets

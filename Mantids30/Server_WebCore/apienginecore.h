@@ -83,9 +83,8 @@ public:
      * In this mode, each incoming connection is handled by a new thread up to the specified maximum number of concurrent connections.
      *
      * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
-     * @param maxConcurrentConnections The maximum number of allowed concurrent connections/threads. Default value is 10000.
      */
-    void setAcceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t &maxConcurrentConnections = 10000);
+    void setAcceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief setAcceptPoolThreaded Configures the server to start in pool-threaded mode with a fixed number of pre-started threads.
@@ -93,10 +92,8 @@ public:
      * In this mode, incoming connections are queued and handled by a fixed pool of worker threads. Each thread can handle multiple connections up to the specified task queue limit.
      *
      * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
-     * @param threadCount The initial number of pre-started threads in the pool. Default value is 20.
-     * @param taskQueues The maximum number of queued connections per thread. Default value is 100.
      */
-    void setAcceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const uint32_t &threadCount = 20, const uint32_t &taskQueues = 100);
+    void setAcceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief startInBackground Starts the server in the background.

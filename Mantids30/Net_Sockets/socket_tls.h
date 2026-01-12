@@ -462,16 +462,6 @@ public:
 
     TLSKeyParameters tlsKeys;
 
-    enum eDebugOptions {
-        TLS_DEBUG_PRINT_WRITE_HEX = 0x01,
-        TLS_DEBUG_PRINT_READ_HEX = 0x02,
-        TLS_DEBUG_PRINT_CLOSE = 0x04,
-        TLS_DEBUG_PRINT_WRITE_PLAIN = 0x08,
-        TLS_DEBUG_PRINT_READ_PLAIN = 0x10,
-        TLS_DEBUG_PRINT_ERRORS = 0x20,
-    };
-
-    void setDebugOptions(uint32_t debugOptions) { this->debugOptions = debugOptions; }
 
     enum eCertValidationOptions
     {
@@ -631,6 +621,5 @@ protected:
     std::mutex mutexRead, mutexWrite;
     bool m_isServer = false;
 
-    uint32_t debugOptions = 0;
 };
 } // namespace Sockets
