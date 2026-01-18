@@ -19,73 +19,14 @@ public:
     SQLConnector() = default;
     virtual ~SQLConnector();
 
-    enum eQueryPTRErrors
-    {
-        QUERY_READY_OK = 0,
-        QUERY_UNINITIALIZED = 1,
-        QUERY_FINISHED = 2,
-        QUERY_UNABLETOADQUIRELOCK = 3,
-        QUERY_SQLCONNECTORFINISHED = 4,
-        QUERY_ERRORBINDINGINPUTVARS = 5,
-        QUERY_ERRORBINDINGRESULTVARS = 6,
-        QUERY_RESULTS_FAILED = 7,
-        QUERY_SELECTCOUNT_FAILED = 8,
-        QUERY_RESULTS_OK = 100
-    };
-
-    struct QueryInstance
-    {
-        QueryInstance()
-        {
-            error = QUERY_UNINITIALIZED;
-            this->query = nullptr;
-        }
-
-        QueryInstance(std::shared_ptr<Query> query)
-        {
-            error = QUERY_READY_OK;
-            this->query = query;
-        }
-        ~QueryInstance()
-        {
-            query = nullptr;
-            error = QUERY_FINISHED;
-        }
-        std::string getErrorString()
-        {
-            switch (error)
-            {
-            case QUERY_READY_OK:
-                return "Ready to execute query";
-            case QUERY_UNINITIALIZED:
-                return "Query uninitialized";
-            case QUERY_FINISHED:
-                return "Query instance finished (should not happen)";
-            case QUERY_UNABLETOADQUIRELOCK:
-                return "Unable to acquire lock";
-            case QUERY_SQLCONNECTORFINISHED:
-                return "SQL Connector finished";
-            case QUERY_ERRORBINDINGINPUTVARS:
-                return "Error binding input variables";
-            case QUERY_ERRORBINDINGRESULTVARS:
-                return "Error binding result variables";
-            case QUERY_SELECTCOUNT_FAILED:
-                return "Error determining the number of records in the SELECT statement";
-            case QUERY_RESULTS_FAILED:
-                return query->getLastSQLError();
-            case QUERY_RESULTS_OK:
-                return "Query executed successfully";
-            }
-            return "";
-        }
-
-        bool getResultsOK() { return error == QUERY_RESULTS_OK; }
-
-        std::shared_ptr<Query> query;
-        eQueryPTRErrors error;
-    };
-
     // Database connection:
+
+
+    static bool QUERY_SUCCESS(std::shared_ptr<Query> i)
+    {
+        return i && i->isSuccessful();
+    }
+
 
     bool connect(const std::string &dbFilePath);
 
@@ -127,20 +68,9 @@ public:
     // TODO: Reconnector thread / Reconnection options.
 
     // SQL Query:
-    std::shared_ptr<Query> createQuery(eQueryPTRErrors *error);
-    SQLConnector::QueryInstance createQueryInstance();
+    std::shared_ptr<Query> createQuery();
 
     void detachQuery(Query *query);
-
-    // Fast Queries Approach (TODO: deprecate query, only work with qExecute/qSelect):
-    /**
-     * @brief execute Fast Prepared Query for non-row-return statements (non-select).
-     * @param preparedQuery Prepared SQL Query String.
-     * @param inputVars Input Vars for the prepared execute. (abstract elements will be deleted after the execute is executed)
-     * @return true if succeed.
-     */
-    bool execute(std::string *lastError, const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
-    bool execute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qExecute Fast Prepared Query for non-row-return statements. (update/insert/delete)
@@ -153,21 +83,39 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    SQLConnector::QueryInstance qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    std::shared_ptr<Query> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+
+    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {})
+    {
+        return QUERY_SUCCESS(qExecute(preparedQuery,inputVars));
+    }
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
      * @param preparedQuery Prepared SQL Query String.
      * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
-     * @param outputVars Output Vars for the step iteration.
-     * @return pair of bool and query pointer
-     *         if the query suceeed, the boolean will be true and there will be a query pointer.
-     *         if the query can't be created, the boolean will be false and the query pointer nullptr.
-     *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
-     *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
+     * @param resultVars Output Vars for the step iteration. These variables will be populated with each row's data during iteration.
+     * @return Shared pointer to a Query object that can be used to iterate through results
+     * @note The returned Query object must be used to call step() to fetch rows.
+     *       Each call to step() will populate resultVars with the current row's data.
+     *       If no rows are found, step() will return false immediately.
      */
-    SQLConnector::QueryInstance qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                        const std::vector<Memory::Abstract::Var *> &resultVars);
+    std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                                   const std::vector<Memory::Abstract::Var *> &resultVars);
+
+
+    /**
+     * @brief qSelectSingleRow Executes a prepared SELECT query and retrieves exactly one row of data.
+     * @param preparedQuery Prepared SQL Query String.
+     * @param inputVars Input Vars for the prepared query. (abstract elements will be deleted when QueryInstance is destroyed)
+     * @param resultVars Output Vars that will be populated with the single row's data.
+     * @return true if exactly one row was found and successfully retrieved, false otherwise
+     * @note This method is optimized for single-row queries. If multiple rows exist, only the first is returned.
+     *       If no rows are found, resultVars will remain in an undefined state.
+     *       The method returns false if the query fails or returns more than one row.
+     */
+    bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                          const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
@@ -180,7 +128,7 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    SQLConnector::QueryInstance qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                    const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);

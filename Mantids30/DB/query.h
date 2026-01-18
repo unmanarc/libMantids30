@@ -26,6 +26,50 @@ class Query
 {
 public:
 
+    enum QueryErrors
+    {
+        QUERY_READY_OK = 0,
+        QUERY_UNINITIALIZED = 1,
+        QUERY_FINISHED = 2,
+        QUERY_UNABLETOADQUIRELOCK = 3,
+        QUERY_SQLCONNECTORFINISHED = 4,
+        QUERY_ERRORBINDINGINPUTVARS = 5,
+        QUERY_ERRORBINDINGRESULTVARS = 6,
+        QUERY_RESULTS_FAILED = 7,
+        QUERY_SELECTCOUNT_FAILED = 8,
+        QUERY_RESULTS_OK = 100
+    };
+
+    std::string getErrorString()
+    {
+        switch (error)
+        {
+        case QUERY_READY_OK:
+            return "Ready to execute query";
+        case QUERY_UNINITIALIZED:
+            return "Query uninitialized";
+        case QUERY_FINISHED:
+            return "Query instance finished (should not happen)";
+        case QUERY_UNABLETOADQUIRELOCK:
+            return "Unable to acquire lock";
+        case QUERY_SQLCONNECTORFINISHED:
+            return "SQL Connector finished";
+        case QUERY_ERRORBINDINGINPUTVARS:
+            return "Error binding input variables";
+        case QUERY_ERRORBINDINGRESULTVARS:
+            return "Error binding result variables";
+        case QUERY_SELECTCOUNT_FAILED:
+            return "Error determining the number of records in the SELECT statement";
+        case QUERY_RESULTS_FAILED:
+            return getLastSQLError();
+        case QUERY_RESULTS_OK:
+            return "Query executed successfully";
+        }
+        return "";
+    }
+
+    bool isSuccessful() { return error == QUERY_RESULTS_OK; }
+
     /**
      * @enum ExecType
      * @brief Specifies the type of query execution: SELECT or INSERT (incl. UPDATE).
@@ -138,6 +182,10 @@ public:
     uint64_t getFilteredRecordsCount() const;
     void setFilteredRecordsCount(uint64_t newFilteredRecordsCount);
 
+    void setError(QueryErrors newError);
+
+    QueryErrors getError() const;
+
 protected:
     /**
     * @brief (Internal use) Executes the prepared SQL query.
@@ -205,6 +253,7 @@ protected:
 private:
     // Memory cleaning:
     std::list<std::shared_ptr<std::string>> m_destroyableStringsForInput, m_destroyableStringsForResults;
+    QueryErrors error = QUERY_UNINITIALIZED;
 
     friend class SQLConnector;
 };

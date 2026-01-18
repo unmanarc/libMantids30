@@ -172,6 +172,16 @@ void Query::clearDestroyableStringsForResults()
     m_destroyableStringsForResults.clear();
 }
 
+Query::QueryErrors Query::getError() const
+{
+    return error;
+}
+
+void Query::setError(QueryErrors newError)
+{
+    error = newError;
+}
+
 uint64_t Query::getTotalRecordsCount() const
 {
     return m_totalRecordsCount;

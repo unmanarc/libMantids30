@@ -1,4 +1,5 @@
 #include "sqlconnector_sqlite3.h"
+#include "Mantids30/DB/sqlconnector.h"
 #include <Mantids30/Memory/a_string.h>
 #include <unistd.h>
 
@@ -28,10 +29,10 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
-    SQLConnector::QueryInstance i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
+    auto i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
 
-    if (i.getResultsOK())
-        return i.query->step();
+    if (i && i->isSuccessful())
+        return i->step();
     else
         return false;
 }
@@ -44,9 +45,9 @@ void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
 bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
 {
     if (on)
-        return execute("PRAGMA foreign_keys = ON;");
+        return qExecuteEx("PRAGMA foreign_keys = ON;");
     else
-        return execute("PRAGMA foreign_keys = OFF;");
+        return qExecuteEx("PRAGMA foreign_keys = OFF;");
 }
 
 bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode)
@@ -54,17 +55,17 @@ bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalM
     switch (mode)
     {
     case SQLITE3_JOURNAL_OFF:
-        return execute("PRAGMA journal_mode = OFF;");
+        return qExecuteEx("PRAGMA journal_mode = OFF;");
     case SQLITE3_JOURNAL_WAL:
-        return execute("PRAGMA journal_mode = WAL;");
+        return qExecuteEx("PRAGMA journal_mode = WAL;");
     case SQLITE3_JOURNAL_MEMORY:
-        return execute("PRAGMA journal_mode = MEMORY;");
+        return qExecuteEx("PRAGMA journal_mode = MEMORY;");
     case SQLITE3_JOURNAL_PERSIST:
-        return execute("PRAGMA journal_mode = PERSIST;");
+        return qExecuteEx("PRAGMA journal_mode = PERSIST;");
     case SQLITE3_JOURNAL_TRUNCATE:
-        return execute("PRAGMA journal_mode = TRUNCATE;");
+        return qExecuteEx("PRAGMA journal_mode = TRUNCATE;");
     case SQLITE3_JOURNAL_DELETE:
-        return execute("PRAGMA journal_mode = DELETE;");
+        return qExecuteEx("PRAGMA journal_mode = DELETE;");
     }
     return false;
 }
@@ -74,13 +75,13 @@ bool SQLConnector_SQLite3::sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode
     switch (mode)
     {
     case SQLITE3_SYNC_OFF:
-        return execute("PRAGMA synchronous = OFF;");
+        return qExecuteEx("PRAGMA synchronous = OFF;");
     case SQLITE3_SYNC_NORMAL:
-        return execute("PRAGMA synchronous = NORMAL;");
+        return qExecuteEx("PRAGMA synchronous = NORMAL;");
     case SQLITE3_SYNC_FULL:
-        return execute("PRAGMA synchronous = FULL;");
+        return qExecuteEx("PRAGMA synchronous = FULL;");
     case SQLITE3_SYNC_EXTRA:
-        return execute("PRAGMA synchronous = EXTRA;");
+        return qExecuteEx("PRAGMA synchronous = EXTRA;");
     }
     return false;
 }
@@ -95,17 +96,17 @@ std::string SQLConnector_SQLite3::getEscaped(const std::string &v)
 
 bool SQLConnector_SQLite3::beginTransaction()
 {
-    return execute("BEGIN TRANSACTION");
+    return qExecuteEx("BEGIN TRANSACTION;");
 }
 
 bool SQLConnector_SQLite3::rollbackTransaction()
 {
-    return execute("ROLLBACK TRANSACTION");
+    return qExecuteEx("ROLLBACK;");
 }
 
 bool SQLConnector_SQLite3::commitTransaction()
 {
-    return execute("COMMIT TRANSACTION");
+    return qExecuteEx("COMMIT TRANSACTION");
 }
 
 bool SQLConnector_SQLite3::connect0()
@@ -129,11 +130,11 @@ bool SQLConnector_SQLite3::connect0()
 bool SQLConnector_SQLite3::attach0(const std::string &dbFilePath, const std::string &schemeName)
 {
     std::string attachQuery = "ATTACH DATABASE '" + dbFilePath + "' AS " + schemeName + ";";
-    return execute(attachQuery);
+    return qExecuteEx(attachQuery);
 }
 
 bool SQLConnector_SQLite3::detach0(const std::string &schemeName)
 {
     std::string detachQuery = "DETACH DATABASE " + schemeName + ";";
-    return execute(detachQuery);
+    return qExecuteEx(detachQuery);
 }
