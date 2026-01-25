@@ -4,8 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30 {
-namespace Helpers {
+namespace Mantids30::Helpers {
 
 /**
  * @brief A class that provides functions for encoding and decoding data in various formats.
@@ -135,7 +134,7 @@ public:
      */
     static std::string toHex(const unsigned char *data, size_t len);
 
-     /**
+    /**
      * @brief Replaces hexadecimal codes within the content string with their corresponding ASCII characters.
      *
      * This function scans the input string `content` for patterns matching the format `\0xXX`, where `XX`
@@ -192,7 +191,7 @@ public:
      *
      * @return The byte value corresponding to the hexadecimal character.
      */
-    static char hexToValue(const char & v);
+    static char hexToValue(const char &v);
 
     /**
      * @brief Converts a pair of hexadecimal characters to an unsigned byte.
@@ -242,5 +241,4 @@ private:
     static const std::string m_b64Chars;
 };
 
-} // namespace Helpers
-} // namespace Mantids30
+} // namespace Mantids30::Helpers
