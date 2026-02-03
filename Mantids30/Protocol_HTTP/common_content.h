@@ -108,11 +108,11 @@ public:
      */
     eTransmitionMode getTransmitionMode() const;
     /**
-     * @brief setContentLengthSize Set content length data size (for receiving/decoding data).
+     * @brief setCurrentSize Set content length data size (for receiving/decoding data).
      * @param contentLengthSize size.
      * @return true if limits are not exceeded.
      */
-    bool setContentLengthSize(const size_t &contentLengthSize);
+    bool setCurrentSize(const size_t &contentLengthSize);
 
     /**
      * @brief setContainerType Set Container Content Data Type (URL/MIME/BIN)

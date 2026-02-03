@@ -107,13 +107,16 @@ void HTTP::HTTPv1_Server::parseUserAgent()
 // Parse Content-Length and Content-Type headers
 bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
 {
+    // Initialize in zero:
+    clientRequest.content.setCurrentSize(0);
+
     // Extract payload size and content type hints from headers.
     contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
     string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
     if (contentLength)
     {
         clientRequest.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
-        if (!clientRequest.content.setContentLengthSize(contentLength))
+        if (!clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.
             serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);

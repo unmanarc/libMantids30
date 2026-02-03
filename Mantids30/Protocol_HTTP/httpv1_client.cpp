@@ -107,7 +107,7 @@ Memory::Streams::SubParser * HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
         serverResponse.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
-        if (!len || !serverResponse.content.setContentLengthSize(len))
+        if (!len || !serverResponse.content.setCurrentSize(len))
             return nullptr;
     }
     else if (icontains(serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"),"CHUNKED"))
