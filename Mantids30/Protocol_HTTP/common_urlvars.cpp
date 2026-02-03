@@ -15,10 +15,7 @@ HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
     : Memory::Streams::Parser(value, false)
 {
     m_urlVarParser.setVarType(true);
-
-    setMaxVarNameSize(4096);
-    setMaxVarContentSize(4096);
-
+    m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
     m_currentSubParser = &m_urlVarParser;
 }
 
@@ -135,7 +132,7 @@ bool HTTP::URLVars::changeToNextParser()
         if (m_urlVarParser.getFoundDelimiter() == "&" || m_urlVarParser.isStreamEnded())
         {
             // AMP / END:
-            addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
+            return addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
         }
         else
         {
@@ -143,27 +140,27 @@ bool HTTP::URLVars::changeToNextParser()
             m_currentStat = URLV_STAT_WAITING_CONTENT;
             m_urlVarParser.setVarType(false);
             m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
+            return true;
         }
     }
     break;
     case URLV_STAT_WAITING_CONTENT:
     {
-        addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
+        bool r = addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
         m_currentStat = URLV_STAT_WAITING_NAME;
         m_urlVarParser.setVarType(true);
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
+        return r;
     }
     break;
     default:
-        break;
+        return true;
     }
-
-    return true;
 }
 
 bool HTTP::URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
-    if (!varName.empty())
+    if (!varName.empty() && m_vars.size()<m_maxVarsCount)
     {
         m_vars.push_back(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(varName, data));
         return true;

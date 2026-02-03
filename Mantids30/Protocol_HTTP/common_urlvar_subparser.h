@@ -13,7 +13,7 @@ public:
 
 
     void setVarType(bool varName = true);
-    void setMaxObjectSize(const uint32_t &size);
+    void setMaxObjectSize(const size_t &size);
     std::shared_ptr<Memory::Containers::B_Chunks> getContentAndFlush();
     std::string getContentAsStringAndFlush();
     std::shared_ptr<Memory::Containers::B_Chunks> getCurrentContentData();

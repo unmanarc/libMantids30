@@ -230,12 +230,11 @@ private:
         MP_STATE_CONTENT
     };
 
-    void addMultiPartMessage(std::shared_ptr<MIME_PartMessage> part);
+    bool addMultiPartMessage(std::shared_ptr<MIME_PartMessage> part);
     std::string getMultiPartMessageName(std::shared_ptr<MIME_PartMessage> part);
 
     void renewCurrentPart();
 
-    size_t m_maxNumberOfParts = 128;
     size_t m_maxHeaderSubOptionsCount = 16;
     size_t m_maxHeaderSubOptionsSize = 8 * KB_MULT;
     size_t m_maxHeaderOptionsCount = 64;

@@ -29,7 +29,7 @@ void HTTP::URLVarContent::setVarType(bool varName)
         setParseMultiDelimiter({"&"}); // Parsing value...
 }
 
-void HTTP::URLVarContent::setMaxObjectSize(const uint32_t &size)
+void HTTP::URLVarContent::setMaxObjectSize(const size_t &size)
 {
     setParseDataTargetSize(size);
 }

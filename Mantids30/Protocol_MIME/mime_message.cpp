@@ -6,29 +6,25 @@
 #include <Mantids30/Memory/b_chunks.h>
 #include <Mantids30/Memory/streamable_object.h>
 
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <memory>
-#include <optional>
 
 using namespace boost;
 using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::MIME;
 using namespace Mantids30;
 
-MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> value) : Memory::Streams::Parser(value, false)
+MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> value)
+    : Memory::Streams::Parser(value, false)
 {
-    m_maxVarContentSize = 32*KB_MULT;
-
     m_currentSubParser = &m_subFirstBoundary;
 
     renewCurrentPart();
     setMultiPartBoundary(Helpers::Random::createRandomString(64));
-
 }
 
-std::shared_ptr<MIME_Message> MIME_Message::create(
-    std::shared_ptr<StreamableObject> value)
+std::shared_ptr<MIME_Message> MIME_Message::create(std::shared_ptr<StreamableObject> value)
 {
     auto x = std::shared_ptr<MIME_Message>(new MIME_Message(value));
     x->initSubParser(&x->m_subFirstBoundary);
@@ -37,8 +33,7 @@ std::shared_ptr<MIME_Message> MIME_Message::create(
     return x;
 }
 
-
-bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out)
+bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
 {
     Memory::Streams::WriteStatus cur;
     // first boundary:
@@ -46,7 +41,7 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out)
     if (!out->writeStatus.succeed)
         return false;
 
-    for (std::shared_ptr<MIME_PartMessage>  i : m_allParts)
+    for (std::shared_ptr<MIME_PartMessage> i : m_allParts)
     {
         out->writeString("\r\n");
 
@@ -54,13 +49,13 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out)
         if (!out->writeStatus.succeed)
             return false;
 
-        i->getContent()->initElemParser(out,true);
+        i->getContent()->initElemParser(out, true);
 
         // CHECK
         if (!out->writeStatus.succeed)
             return false;
 
-        i->getHeader()->initElemParser(out,true);
+        i->getHeader()->initElemParser(out, true);
 
         // CHECK
         if (!out->writeStatus.succeed)
@@ -70,9 +65,8 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject * out)
             return false;
 
         // Reset init element parsers...
-        i->getContent()->initElemParser(nullptr,true);
-        i->getHeader()->initElemParser(nullptr,true);
-
+        i->getContent()->initElemParser(nullptr, true);
+        i->getHeader()->initElemParser(nullptr, true);
 
         out->writeString("--" + m_multiPartBoundary);
 
@@ -95,9 +89,10 @@ void MIME_Message::clear()
 
 uint32_t MIME_Message::varCount(const std::string &varName)
 {
-    uint32_t ix=0;
+    uint32_t ix = 0;
     auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i) ix++;
+    for (auto i = range.first; i != range.second; ++i)
+        ix++;
     return ix;
 }
 
@@ -105,23 +100,24 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const 
 {
     auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i)
-        return (((std::shared_ptr<MIME_PartMessage> )i->second)->getContent()->getContentContainer());
+        return (((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
     return nullptr;
 }
 
-std::list<std::shared_ptr<Memory::Streams::StreamableObject> > MIME_Message::getValues(const std::string &varName)
+std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getValues(const std::string &varName)
 {
-    std::list<std::shared_ptr<Memory::Streams::StreamableObject> > values;
+    std::list<std::shared_ptr<Memory::Streams::StreamableObject>> values;
     auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
     for (auto i = range.first; i != range.second; ++i)
-        values.push_back(((std::shared_ptr<MIME_PartMessage> )i->second)->getContent()->getContentContainer());
+        values.push_back(((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
     return values;
 }
 
 std::set<std::string> MIME_Message::getKeysList()
 {
     std::set<std::string> r;
-    for ( const auto & i : m_partsByName ) r.insert(i.first);
+    for (const auto &i : m_partsByName)
+        r.insert(i.first);
     return r;
 }
 
@@ -142,7 +138,7 @@ void MIME_Message::renewCurrentPart()
     initSubParser(m_currentPart->getContent());
     initSubParser(m_currentPart->getHeader());
 
-    m_currentPart->getContent()->setBoundary( m_multiPartBoundary );
+    m_currentPart->getContent()->setBoundary(m_multiPartBoundary);
     m_currentPart->getContent()->setMaxContentSize(m_maxVarContentSize);
 
     // Header:
@@ -208,16 +204,6 @@ void MIME_Message::setMaxHeaderSubOptionsCount(const size_t &value)
     m_currentPart->getHeader()->setMaxSubOptionCount(m_maxHeaderSubOptionsCount);
 }
 
-size_t MIME_Message::getMaxParts() const
-{
-    return m_maxNumberOfParts;
-}
-
-void MIME_Message::setMaxParts(const size_t &value)
-{
-    m_maxNumberOfParts = value;
-}
-
 bool MIME_Message::changeToNextParser()
 {
     switch (m_currentState)
@@ -227,7 +213,9 @@ bool MIME_Message::changeToNextParser()
         // FIRST_BOUNDARY IS READY
         m_currentState = MP_STATE_HEADERS;
         m_currentSubParser = m_currentPart->getHeader();
-    }break;
+        return true;
+    }
+    break;
     case MP_STATE_ENDPOINT:
     {
         // ENDPOINT IS READY
@@ -238,28 +226,33 @@ bool MIME_Message::changeToNextParser()
         }
         else
             m_currentSubParser = nullptr;
-    }break;
+        return true;
+    }
+    break;
     case MP_STATE_HEADERS:
     {
         // HEADERS ARE READY
         // Callback:
-        m_onHeaderReady.call(getMultiPartMessageName(m_currentPart),m_currentPart);
+        m_onHeaderReady.call(getMultiPartMessageName(m_currentPart), m_currentPart);
         // GOTO CONTENT:
         m_currentState = MP_STATE_CONTENT;
         m_currentSubParser = m_currentPart->getContent();
-    }break;
+        return true;
+    }
+    break;
     case MP_STATE_CONTENT:
     {
         // CONTENT IS READY
         // Callback:
-        m_onContentReady.call(getMultiPartMessageName(m_currentPart),m_currentPart);
+        m_onContentReady.call(getMultiPartMessageName(m_currentPart), m_currentPart);
 
         // Put current Part.
-        addMultiPartMessage(m_currentPart);
+        bool r = addMultiPartMessage(m_currentPart);
         // new current part definition.
         renewCurrentPart();
+
         // Check if the max parts target is reached.
-        if (m_allParts.size()==m_maxNumberOfParts)
+        if (!r)
             m_currentSubParser = nullptr; // End here.
         else
         {
@@ -268,23 +261,30 @@ bool MIME_Message::changeToNextParser()
             m_subEndPBoundary.reset();
             m_currentSubParser = &m_subEndPBoundary;
         }
-    }break;
-    default:
-    {
-    }break;
+        return r;
     }
-    return true;
+    break;
+    default:
+        return true;
+    }
 }
 
-void MIME_Message::addMultiPartMessage(std::shared_ptr<MIME_PartMessage> part)
+bool MIME_Message::addMultiPartMessage(std::shared_ptr<MIME_PartMessage> part)
 {
+    if (m_allParts.size() >= m_maxVarsCount)
+        return false;
+
     m_allParts.push_back(part);
+
     // Insert by name:
     std::string varName = getMultiPartMessageName(part);
-    if (varName!="")
+    if (varName != "")
     {
-        m_partsByName.insert(std::pair<std::string,std::shared_ptr<MIME_PartMessage>>(boost::to_upper_copy(varName),part));
+        m_partsByName.insert(std::pair<std::string, std::shared_ptr<MIME_PartMessage>>(boost::to_upper_copy(varName), part));
+        return true;
     }
+
+    return false;
 }
 
 std::string MIME_Message::getMultiPartMessageName(std::shared_ptr<MIME_PartMessage> part)
@@ -297,17 +297,18 @@ std::string MIME_Message::getMultiPartMessageName(std::shared_ptr<MIME_PartMessa
     return "";
 }
 
-std::list<std::shared_ptr<MIME_PartMessage> > MIME_Message::getMultiPartMessagesByName(const std::string &varName)
+std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesByName(const std::string &varName)
 {
-    std::list<std::shared_ptr<MIME_PartMessage> > values;
+    std::list<std::shared_ptr<MIME_PartMessage>> values;
     auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i) values.push_back(i->second);
+    for (auto i = range.first; i != range.second; ++i)
+        values.push_back(i->second);
     return values;
 }
 
 std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(const std::string &varName)
 {
-    if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end()) 
+    if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end())
         return nullptr;
     return m_partsByName.find(boost::to_upper_copy(varName))->second;
 }
@@ -315,57 +316,51 @@ std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(const std:
 bool MIME_Message::addStringVar(const std::string &key, const std::string &value)
 {
     // TODO: check max size?
-    if (    m_currentPart->getHeader()->add("Content-Disposition", "form-data") &&
-        m_currentPart->getHeader()->add("name", key)
-        )
+    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", key))
     {
         auto contentBuffer = std::make_shared<Memory::Containers::B_Chunks>();
         contentBuffer->append(value.c_str(), value.size());
         m_currentPart->getContent()->replaceContentContainer(contentBuffer);
 
-        addMultiPartMessage(m_currentPart);
+        bool r = addMultiPartMessage(m_currentPart);
         renewCurrentPart();
+        return r;
     }
     else
     {
         return false;
     }
-
-    return true;
 }
 
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
     // TODO: check max size?
     auto fContainer = std::make_shared<Memory::Containers::B_MMAP>();
-    if (!fContainer->referenceFile(filePath,true,false))
+    if (!fContainer->referenceFile(filePath, true, false))
     {
         return false;
     }
-    return addStreamableObjectContainer(varName,fContainer);
+    return addStreamableObjectContainer(varName, fContainer);
 }
 
-bool MIME_Message::addVar(
-    const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
+bool MIME_Message::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
-    return addStreamableObjectContainer(varName,data);
+    return addStreamableObjectContainer(varName, data);
 }
 
-bool MIME_Message::addStreamableObjectContainer(
-    const std::string &varName, std::shared_ptr<StreamableObject> obj)
+bool MIME_Message::addStreamableObjectContainer(const std::string &varName, std::shared_ptr<StreamableObject> obj)
 {
-    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") &&
-        m_currentPart->getHeader()->add("name", varName) )
+    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", varName))
     {
         m_currentPart->getContent()->replaceContentContainer(obj);
-        addMultiPartMessage(m_currentPart);
+        bool r = addMultiPartMessage(m_currentPart);
         renewCurrentPart();
+        return r;
     }
     else
     {
         return false;
     }
-    return true;
 }
 
 std::string MIME_Message::getMultiPartType() const
@@ -398,7 +393,4 @@ bool MIME_Message::initProtocol()
     return true;
 }
 
-void MIME_Message::endProtocol()
-{
-
-}
+void MIME_Message::endProtocol() {}

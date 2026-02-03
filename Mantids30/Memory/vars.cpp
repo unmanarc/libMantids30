@@ -4,12 +4,6 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-Vars::Vars()
-{
-    m_maxVarNameSize = 256; // 256 bytes
-    m_maxVarContentSize = 128*1024; // 128Kb.
-}
-
 
 json Vars::toJSON()
 {
@@ -18,7 +12,7 @@ json Vars::toJSON()
     // Get the list of keys from the container
     std::set<std::string> keysList = getKeysList();
 
-    for (const std::string& key : keysList)
+    for (const std::string &key : keysList)
     {
         // Get the count of variables with this key
         uint32_t count = varCount(key);
@@ -66,7 +60,8 @@ bool Vars::fromJSON(const Json::Value &json)
             {
                 auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
                 bChunk->writeString(JSON_ARRAY_ASSTRING(value, i, ""));
-                addVar(key, bChunk);
+                if (!addVar(key, bChunk))
+                    return false;
             }
         }
         else
@@ -74,35 +69,20 @@ bool Vars::fromJSON(const Json::Value &json)
             // If the value is a single element, add it as a variable
             auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
             bChunk->writeString(JSON_ASSTRING_D(value, ""));
-            addVar(key, bChunk);
+            if (!addVar(key, bChunk))
+                return false;
         }
     }
 
     return true;
 }
-/*
-std::string Vars::getStringValue(const std::string &varName)
-{
-    auto * value = getValue(varName);
-    return !value?"":value->toString();
-}*/
-/*
-std::list<std::string> Vars::getStringValues(const std::string &varName)
-{
-    std::list<std::string> r;
-    auto contList = getValues(varName);
-    for (auto * b : contList)
-        r.push_back(b->toString());
-    return r;
-}*/
 
 bool Vars::exist(const std::string &varName)
 {
-    return getValue(varName)!=nullptr?true:false;
+    return getValue(varName) != nullptr ? true : false;
 }
 
-std::string Vars::getStringValue(
-    const std::string &varName)
+std::string Vars::getStringValue(const std::string &varName)
 {
     auto v = getValue(varName);
     if (v == nullptr)
@@ -110,12 +90,12 @@ std::string Vars::getStringValue(
     return v->toString();
 }
 
-uint32_t Vars::getMaxVarNameSize() const
+size_t Vars::getMaxVarNameSize() const
 {
     return m_maxVarNameSize;
 }
 
-void Vars::setMaxVarNameSize(const uint32_t &value)
+void Vars::setMaxVarNameSize(const size_t &value)
 {
     m_maxVarNameSize = value;
     iSetMaxVarNameSize();
@@ -140,4 +120,9 @@ void Vars::iSetMaxVarContentSize()
 void Vars::iSetMaxVarNameSize()
 {
     // VIRTUAL.
+}
+
+void Vars::setMaxVarsCount(size_t newMaxVarsCount)
+{
+    m_maxVarsCount = newMaxVarsCount;
 }
