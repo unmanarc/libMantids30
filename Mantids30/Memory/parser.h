@@ -75,6 +75,11 @@ protected:
     // Virtual functions to initialize the protocol.
     virtual bool initProtocol() = 0;
     virtual void endProtocol() = 0;
+
+    /**
+     * @brief changeToNextParser Change to the next parser.
+     * @return
+     */
     virtual bool changeToNextParser() = 0;
 
     std::shared_ptr<Memory::Streams::StreamableObject> m_streamableObject;

@@ -24,7 +24,6 @@ void Parser::parseObject(Parser::ErrorMSG *err)
     // Call the init protocol...
     m_initialized = initProtocol();
 
-
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "Parser:Streaming");
 #endif
