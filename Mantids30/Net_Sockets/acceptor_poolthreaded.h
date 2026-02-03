@@ -40,10 +40,7 @@ public:
        * @param _onClientConnectionLimitPerIPReached callback function when an ip
        * reached the max number of connections (default nullptr -> none)
        */
-    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket,
-                 _callbackConnectionRV _onConnect,
-                 void *context = nullptr,
-                 _callbackConnectionRV _onInitFailed = nullptr,
+    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context = nullptr, _callbackConnectionRV _onInitFailed = nullptr,
                  _callbackConnectionRV _onTimeOut = nullptr);
 
     // Destructor:
@@ -79,8 +76,10 @@ public:
                 taskQueues = ptree.get<uint32_t>("TaskQueues", taskQueues);
                 queuesKeyRatio = ptree.get<float>("QueuesKeyRatio", queuesKeyRatio);
 
-                debug = ptree.get<bool>("Debug.Enabled", debug.load());
-                debugDir = ptree.get<std::string>("Debug.Dir", debugDir);
+                debugOptions.enabled = ptree.get<bool>("Debug.Enabled", debugOptions.enabled.load());
+                debugOptions.printPlainText = ptree.get<bool>("Debug.PrintPlainText", debugOptions.printPlainText.load());
+                debugOptions.printHex = ptree.get<bool>("Debug.PrintHex", debugOptions.printHex.load());
+                debugOptions.dir = ptree.get<std::string>("Debug.Dir", debugOptions.dir);
             }
             catch (const std::exception &e)
             {
@@ -114,11 +113,15 @@ public:
      */
         float queuesKeyRatio = 0.5;
 
-        // TODO: disable debug
+        struct DebugOptions
+        {
+            std::atomic<bool> enabled{false};
+            std::atomic<bool> printPlainText{false};
+            std::atomic<bool> printHex{true};
+            std::string dir = "/tmp";
+        };
 
-        std::atomic<bool> debug{false};
-        std::string debugDir = "/tmp";
-
+        DebugOptions debugOptions;
     };
 
     Config parameters;
@@ -167,4 +170,4 @@ private:
     std::mutex m_runMutex;
 };
 
-} // namespace Acceptors
+} // namespace Mantids30::Network::Sockets::Acceptors

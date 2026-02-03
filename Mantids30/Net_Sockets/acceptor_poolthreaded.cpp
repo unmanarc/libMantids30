@@ -51,11 +51,18 @@ void PoolThreaded::run()
         {
             std::shared_ptr<sAcceptorTaskData> taskData = std::make_shared<sAcceptorTaskData>();
 
-            if (parameters.debug)
+            if (parameters.debugOptions.enabled)
             {
-                clientSocket->setDebugOptions(Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE
-                                              | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS);
-                clientSocket->setDebugOutput(parameters.debugDir);
+                uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
+
+                if (parameters.debugOptions.printHex)
+                    debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX ;
+
+                if (parameters.debugOptions.printPlainText)
+                    debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN ;
+
+                clientSocket->setDebugOptions(debugOptions);
+                clientSocket->setDebugOutput(parameters.debugOptions.dir);
             }
 
             taskData->onConnect = callbacks.onClientConnected;

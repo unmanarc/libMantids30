@@ -126,8 +126,10 @@ public:
                 maxWaitMSTime = ptree.get<uint32_t>("MaxWaitTimeInMilliseconds", maxWaitMSTime.load());
                 maxConnectionsPerIP = ptree.get<uint32_t>("MaxConcurrentConnectionsPerIP", maxConnectionsPerIP.load());
 
-                debug = ptree.get<bool>("Debug.Enabled", debug.load());
-                debugDir = ptree.get<std::string>("Debug.Dir", debugDir);
+                debugOptions.enabled = ptree.get<bool>("Debug.Enabled", debugOptions.enabled.load());
+                debugOptions.printPlainText = ptree.get<bool>("Debug.PrintPlainText", debugOptions.printPlainText.load());
+                debugOptions.printHex = ptree.get<bool>("Debug.PrintHex", debugOptions.printHex.load());
+                debugOptions.dir = ptree.get<std::string>("Debug.Dir", debugOptions.dir);
             }
             catch (const std::exception &e)
             {
@@ -158,8 +160,17 @@ public:
          */
         std::atomic<uint32_t> maxConnectionsPerIP{10};
 
-        std::atomic<bool> debug{false};
-        std::string debugDir = "/tmp";
+
+        struct DebugOptions {
+            std::atomic<bool> enabled{false};
+            std::atomic<bool> printPlainText{false};
+            std::atomic<bool> printHex{true};
+            std::string dir = "/tmp";
+        };
+
+        DebugOptions debugOptions;
+
+
 
         MultiThreaded *parent = nullptr;
     };
