@@ -17,8 +17,6 @@ protected:
 private:
     size_t getPlainBytesSize(const unsigned char * buf, size_t count);
     inline bool shouldEncodeThisByte(const unsigned char & byte) const;
-
-    //size_t m_finalBytesWritten = 0;
 };
 
 
