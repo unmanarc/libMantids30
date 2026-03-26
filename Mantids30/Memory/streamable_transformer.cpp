@@ -20,9 +20,6 @@ std::optional<size_t> Mantids30::Memory::Streams::StreamableTransformer::write(c
     if ( count == 0 ) // EOF
     {
         r = writeTransformerEOF(destObj);
-
-        // // Write the EOF after the transform.
-        // destObj->writeEOF();
     }
     else
     {
