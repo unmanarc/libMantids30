@@ -97,17 +97,17 @@ void APIEngineCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
 
     // Prepare the web services handler.
     std::shared_ptr<APIClientHandler> apiWebServerClientHandler = webserver->createNewAPIClientHandler(webserver,sock);
-
+    // Assign endpoints:
     apiWebServerClientHandler->m_websocketEndpoints = webserver->m_websocketEndpoints;
-
+    // Set client information:
     apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation( sock->getRemotePairStr(), sock->isSecure(), tlsCN );
-
     // Set the configuration:
     apiWebServerClientHandler->config = &(webserver->config);
 
+    // Callback on client connected.
     if (webserver->callbacks.onClientConnected.call(webserver,sock))
     {
-        // Handle the webservice.
+        // Handle the Web Server.
         Memory::Streams::Parser::ErrorMSG err;
         apiWebServerClientHandler->parseObject(&err);
     }

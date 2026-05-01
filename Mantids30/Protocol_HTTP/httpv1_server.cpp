@@ -62,8 +62,11 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
 
 void HTTP::HTTPv1_Server::reset()
 {
+    // Reset all components except for connection-related information, which should remain static.
     serverResponse = Response();
+    HTTPv1_Base::Request::NetworkClientInfo preservedClientInfo = clientRequest.networkClientInfo;
     clientRequest = Request();
+    clientRequest.networkClientInfo = preservedClientInfo;
 }
 
 /**
