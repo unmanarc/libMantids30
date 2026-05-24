@@ -20,6 +20,8 @@ public:
         return *this;
     }
 
+    bool isInFuture();
+
     time_t getValue();
     bool setValue(const time_t &value);
 

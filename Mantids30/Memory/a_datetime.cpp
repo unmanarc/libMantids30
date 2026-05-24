@@ -26,6 +26,13 @@ DATETIME::DATETIME(const time_t &value)
     setVarType(TYPE_DATETIME);
 }
 
+bool DATETIME::isInFuture()
+{
+    time_t now;
+    time(&now);
+    return getValue() > now;
+}
+
 time_t DATETIME::getValue()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
