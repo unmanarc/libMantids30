@@ -234,6 +234,25 @@ std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, 
     return q;
 }
 
+bool SQLConnector::qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars)
+{
+    auto i = qExecute(preparedQuery,inputVars);
+
+    if (!i)
+    {
+        m_lastSQLError = "Error preparing the SQL Query";
+        return false;
+    }
+
+    if (!i->isSuccessful())
+    {
+        m_lastSQLError = i->getLastSQLError();
+        return false;
+    }
+
+    return true;
+}
+
 bool SQLConnector::qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
 {
     auto i = qSelect(preparedQuery,inputVars,resultVars);

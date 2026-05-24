@@ -20,14 +20,6 @@ public:
     virtual ~SQLConnector();
 
     // Database connection:
-
-
-    static bool QUERY_SUCCESS(std::shared_ptr<Query> i)
-    {
-        return i && i->isSuccessful();
-    }
-
-
     bool connect(const std::string &dbFilePath);
 
     bool attach(const std::string &dbFilePath, const std::string &schemeName);
@@ -85,10 +77,7 @@ public:
      */
     std::shared_ptr<Query> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
-    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {})
-    {
-        return QUERY_SUCCESS(qExecute(preparedQuery,inputVars));
-    }
+    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
