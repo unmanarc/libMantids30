@@ -498,7 +498,13 @@ bool APIClientHandler::verifyToken(const std::string &strToken)
         return false;
 
     // Check if the current running app matches the JWT spec.
-    return JSON_ASSTRING_D(jwtToken.getClaim("app"), "") == config->appName;
+    if (JSON_ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
+        return false;
+
+    if (JSON_ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
+        return false;
+
+    return true;
 }
 
 bool APIClientHandler::isURLSafe(const std::string &url)
