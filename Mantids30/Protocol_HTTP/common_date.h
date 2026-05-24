@@ -19,6 +19,8 @@ public:
      */
     Date();
 
+    Date(const time_t & unixTime);
+
     /**
      * @brief Returns the time stored in the Date object as seconds since the Unix epoch.
      *

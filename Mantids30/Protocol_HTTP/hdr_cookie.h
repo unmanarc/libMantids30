@@ -23,7 +23,7 @@ public:
     /**
      * @brief Cookie Constructor
      */
-    Cookie();
+    Cookie() = default;
 
     /**
      * @brief toSetCookieString Get the Cookie: string for the HTTP Header (without the Cookie:).

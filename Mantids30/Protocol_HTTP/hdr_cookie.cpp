@@ -12,7 +12,6 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::HTTP::Headers;
 using namespace Mantids30;
 
-Cookie::Cookie() {}
 
 std::string Cookie::toSetCookieString(const std::string &cookieName) const
 {

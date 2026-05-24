@@ -17,6 +17,11 @@ HTTP::Date::Date()
     setCurrentTime();
 }
 
+HTTP::Date::Date(const time_t &unixTime)
+{
+    setUnixTime(unixTime);
+}
+
 time_t HTTP::Date::getUnixTime() const
 {
     return m_unixTime;
