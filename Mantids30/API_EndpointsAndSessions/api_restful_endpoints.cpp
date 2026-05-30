@@ -37,6 +37,9 @@ bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::str
     case PATCH:
         m_endpointsPATCH[endpointPath] = apiEndpointFullDefinition;
         break;
+    case OPTIONS:
+        m_endpointsOPTIONS[endpointPath] = apiEndpointFullDefinition;
+        break;
     default:
         return false;
     }
@@ -92,6 +95,13 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
     case PATCH:
         it = m_endpointsPATCH.find(endpointPath);
         if (it != m_endpointsPATCH.end())
+        {
+            endpointFullDefinition = it->second;
+        }
+        break;
+    case OPTIONS:
+        it = m_endpointsOPTIONS.find(endpointPath);
+        if (it != m_endpointsOPTIONS.end())
         {
             endpointFullDefinition = it->second;
         }
@@ -259,6 +269,10 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const std::string &httpMethodTyp
     else if (httpMethodType == "PATCH")
     {
         mode = PATCH;
+    }
+    else if (httpMethodType == "OPTIONS")
+    {
+        mode = OPTIONS;
     }
     else
     {

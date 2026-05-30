@@ -75,7 +75,8 @@ public:
         POST = 1,
         PUT = 2,
         DELETE = 3,
-        PATCH = 4
+        PATCH = 4,
+        OPTIONS = 5
     };
 
     static std::string HTTPMethodTypeToString(HTTPMethodType mode)
@@ -92,6 +93,8 @@ public:
             return "DELETE";
         case PATCH:
             return "PATCH";
+        case OPTIONS:
+            return "OPTIONS";
         default:
             return "POST";
         }
@@ -118,6 +121,10 @@ public:
         else if (str == "PATCH")
         {
             return PATCH;
+        }
+        else if (str == "OPTIONS")
+        {
+            return OPTIONS;
         }
         else
         {
@@ -213,8 +220,9 @@ public:
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
 private:
-    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;  ///< Map of PATCH endpoints.
-    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;    ///< Map of GET endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;   ///< Map of PATCH endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsOPTIONS; ///< Map of OPTIONS endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;     ///< Map of GET endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPOST;   ///< Map of POST endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.
