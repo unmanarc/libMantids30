@@ -87,7 +87,7 @@ public:
 
         void setJwtId(const std::string &jti);
 
-        void addClaim(const std::string &name, const Json::Value &value);
+        void setClaim(const std::string &name, const Json::Value &value);
 
         std::string exportPayload() const;
 

@@ -40,7 +40,7 @@ void JWT::Token::setJwtId(const std::string &jti) {
     m_claims["jti"] = jti;
 }
 
-void JWT::Token::addClaim(const std::string &name, const Json::Value &value) {
+void JWT::Token::setClaim(const std::string &name, const Json::Value &value) {
     m_claims[name] = value;
 }
 
