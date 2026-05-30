@@ -166,6 +166,9 @@ public:
         }
     }
 
+    bool hasError() const {
+        return !( httpResponseCode>=200 && httpResponseCode<=299 ) ;
+    }
 
     std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
     Network::Protocols::HTTP::Status::Codes getHTTPResponseCode() const { return httpResponseCode; }
