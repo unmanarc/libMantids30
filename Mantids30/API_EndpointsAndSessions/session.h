@@ -50,8 +50,8 @@ class Session : public Session_Vars
 public:
     enum eCheckMode
     {
-        CHECK_ALLOW_EXPIRED_PASSWORDS,
-        CHECK_DISALLOW_EXPIRED_PASSWORDS
+        CHECK_ALLOW_EXPIRED_CREDENTIALS,
+        CHECK_DISALLOW_EXPIRED_CREDENTIALS
     };
 
     /**
