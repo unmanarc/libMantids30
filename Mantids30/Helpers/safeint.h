@@ -1,9 +1,7 @@
-#ifndef SAFEINT_H
-#define SAFEINT_H
+#pragma once
 
 #include <limits>
 #include <stdexcept>
-//int safeStaticCast(unsigned long value);
 
 // Safe Add
 template<typename T>
@@ -103,5 +101,3 @@ To unsafeStaticCast(From value) {
     }
     return static_cast<To>(value);
 }
-
-#endif // SAFEINT_H
