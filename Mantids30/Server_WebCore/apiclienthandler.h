@@ -1,16 +1,16 @@
 #pragma once
 
-#include <json/value.h>
+#include "apiserverconfig.h"
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
-#include "apiserverconfig.h"
+#include <json/value.h>
 
-#include <Mantids30/Memory/streamable_json.h>
-#include <Mantids30/Protocol_HTTP/httpv1_server.h>
-#include <Mantids30/DataFormat_JWT/jwt.h>
-#include <Mantids30/Protocol_HTTP/api_return.h>
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
+#include <Mantids30/DataFormat_JWT/jwt.h>
+#include <Mantids30/Memory/streamable_json.h>
+#include <Mantids30/Protocol_HTTP/api_return.h>
+#include <Mantids30/Protocol_HTTP/httpv1_server.h>
 
 #include <memory>
 
@@ -19,19 +19,18 @@ namespace Mantids30::Network::Servers::Web {
 class APIClientHandler : public Protocols::HTTP::HTTPv1_Server
 {
 public:
-    APIServerConfig * config;
+    APIServerConfig *config;
 
     APIClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
 protected:
-
     /**
      * @brief log Log to weblog
      * @param jWebLog weblog paramaters
      */
-    void log( Json::Value & jWebLog ) override;
+    void log(Json::Value &jWebLog) override;
 
-    virtual Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string & path) { return Protocols::HTTP::Status::Codes::S_404_NOT_FOUND; }
+    virtual Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string &path) { return Protocols::HTTP::Status::Codes::S_404_NOT_FOUND; }
 
     /**
      * @brief Called when HTTP client headers are received for WebSocket connection
@@ -88,24 +87,24 @@ protected:
      * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    virtual void fillSessionExtraInfo( json & jVars ) {}
+    virtual void fillSessionExtraInfo(json &jVars) {}
     /**
      * @brief fillSessionInfo Fill user data vars like username, domain, TLS Common Name...
      * @param jVars vars to be filled into a JSON structure
      */
-    void fillSessionInfo ( json & jVars );
+    void fillSessionInfo(json &jVars);
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
      * @return return true if variable exist, else otherwise
      */
-    virtual bool doesSessionVariableExist( const std::string & varName )= 0;
+    virtual bool doesSessionVariableExist(const std::string &varName) = 0;
     /**
      * @brief getSessionVariableValue Get the session variable by name
      * @param varName variable name
      * @return return the session variable
      */
-    virtual json getSessionVariableValue( const std::string & varName  )=0;
+    virtual json getSessionVariableValue(const std::string &varName) = 0;
 
     /**
      * @brief Handles an API request and writes the response to the client.
@@ -122,23 +121,22 @@ protected:
      *
      * @return Retorn an object where the result of the API request will be stored.
      */
-    virtual API::APIReturn handleAPIRequest(const std::string & baseApiUrl,
-                                  const uint32_t & apiVersion,
-                                  const std::string &httpMethodType,
-                                  const std::string &endpointName,
-                                  const Json::Value & postParameters
-                                  ) = 0;
+    virtual API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodType, const std::string &endpointName,
+                                            const Json::Value &postParameters)
+        = 0;
+
+    virtual API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName ) = 0;
 
     /**
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    virtual void handleWebSocketEvent( Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint * ) = 0;
+    virtual void handleWebSocketEvent(Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint *) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string & baseApiUrl,const std::string & authFunctionName)
+    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
     {
         // Implement this to handle authorizations from any other IAM's
         // Meanwhile, you may want to use a proxy to a WebSessionAuthHandler or implement your own.
@@ -149,11 +147,7 @@ protected:
      * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
      * @return return code for api request
      */
-    virtual json handleAPIInfo(const std::string & baseApiUrl)
-    {
-        return Json::nullValue;
-    }
-
+    virtual json handleAPIInfo(const std::string &baseApiUrl) { return Json::nullValue; }
 
     /**
      * @brief log Log to RPC Log
@@ -162,7 +156,7 @@ protected:
      * @param outSize
      * @param fmtLog
      */
-    void log(Mantids30::Program::Logs::eLogLevels logSeverity,  const std::string &module, const uint32_t &outSize, const char *fmtLog,... );
+    void log(Mantids30::Program::Logs::eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
     /**
      * @brief Verifies a JWT token and extracts user data if valid.
      *
@@ -188,28 +182,28 @@ protected:
      * The function returns `true` if the token passes verification and the extracted data
      * is valid, otherwise `false`.
      */
-    bool verifyToken( const std::string &strToken );
+    bool verifyToken(const std::string &strToken);
     virtual bool isSessionActive() = 0;
     virtual std::set<std::string> getSessionScopes() = 0;
     virtual std::set<std::string> getSessionRoles() = 0;
     // Function to check if the URL contains any invalid characters
-    bool isURLSafe(const std::string& url);
-    bool isRedirectPathSafeForAuth(const std::string& url);
+    bool isURLSafe(const std::string &url);
+    bool isRedirectPathSafeForAuth(const std::string &url);
 
-    Protocols::HTTP::Status::Codes showBrowserMessage(const std::string & title, const std::string& message, Protocols::HTTP::Status::Codes returnCode);
-    std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string & title, const std::string& message);
+    Protocols::HTTP::Status::Codes showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode);
+    std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
 
     DataFormat::JWT::Token jwtToken;
     // This session info is used for the logs and for filling htmli variables.
     Sessions::SessionInfo currentSessionInfo;
 
 protected:
-    Protocols::HTTP::Status::Codes redirectUsingJS( const std::string & url );
+    Protocols::HTTP::Status::Codes redirectUsingJS(const std::string &url);
 
     // Websocket endpoints:
     std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
     std::string m_webSocketSessionId;
-    const API::WebSocket::Endpoint * m_webSocketCurrentEndpoint = nullptr;
+    const API::WebSocket::Endpoint *m_webSocketCurrentEndpoint = nullptr;
 
 private:
     std::string logUsername;
@@ -220,5 +214,4 @@ private:
     friend class APIEngineCore;
 };
 
-}
-
+} // namespace Mantids30::Network::Servers::Web

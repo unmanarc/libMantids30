@@ -185,12 +185,17 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
                 json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
 
-                apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, postParameters);
-
-                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
-
-                serverResponse.setContentType("application/json", true);
+                if (httpMethodMode == "OPTIONS")
+                {
+                    apiReturn = handleOptionsRequest(baseApiUrl,apiVersion,endpointName);
+                }
+                else
+                {
+                    apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, postParameters);
+                    apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                    serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                    serverResponse.setContentType("application/json", true);
+                }
 
                 ret = apiReturn.getHTTPResponseCode();
 
