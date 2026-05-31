@@ -1,5 +1,4 @@
-#ifndef API_RETURN_H
-#define API_RETURN_H
+#pragma once
 
 #include "hdr_cookie.h"
 #include "rsp_status.h"
@@ -7,8 +6,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/streamable_json.h>
 
-namespace Mantids30 {
-namespace API {
+namespace Mantids30::API {
 
 /**
  * @brief Represents the response of an API endpoint.
@@ -170,6 +168,15 @@ public:
         return !( httpResponseCode>=200 && httpResponseCode<=299 ) ;
     }
 
+    void setStatus( const Network::Protocols::HTTP::Status::Codes  & httpResponseCode )
+    {
+        this->httpResponseCode = httpResponseCode;
+    }
+    void addHeader( const std::string & headerName, const std::string & headerValue )
+    {
+        httpExtraHeaders[headerName] = headerValue;
+    }
+
     std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
     Network::Protocols::HTTP::Status::Codes getHTTPResponseCode() const { return httpResponseCode; }
 
@@ -184,6 +191,3 @@ private:
 };
 
 } // namespace API
-} // namespace Mantids30
-
-#endif // API_RETURN_H
