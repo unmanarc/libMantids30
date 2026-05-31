@@ -102,3 +102,34 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
     return apiReturn;
 }
 
+API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName)
+{
+    API::APIReturn apiReturn;
+    if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
+    {
+        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=OPTIONS, endpoint=%s}", apiVersion, endpointName.c_str());
+        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_options_request","Resource Not Found");
+        return apiReturn;
+    }
+
+    if (m_endpointsHandler[apiVersion]->isOptionsEnabled())
+    {
+        // No specific handler registered, but CORS is enabled.
+        // Respond with CORS headers using buildCORSOptionsResponse.
+        std::string origin;
+
+        origin = clientRequest.getOrigin();
+
+        // Look for per-endpoint config first, then fall back to global
+        const API::OptionsHandlerConfig *useConfig = m_endpointsHandler[apiVersion]->getGlobalOptionsConfig();
+        const API::OptionsHandlerConfig *endpointConfig =  m_endpointsHandler[apiVersion]->getOptionsConfigOnEndpoint(endpointName);
+        if (endpointConfig!=nullptr)
+        {
+            useConfig = endpointConfig;
+        }
+        return m_endpointsHandler[apiVersion]->buildCORSOptionsResponse(*useConfig, origin);
+    }
+
+    return apiReturn;
+}
+

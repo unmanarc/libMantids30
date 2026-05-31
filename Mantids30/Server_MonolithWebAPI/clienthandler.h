@@ -7,6 +7,7 @@
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_options_handler.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>
@@ -59,6 +60,10 @@ protected:
      */
     API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &postParameters) override;
 
+
+    API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName ) override;
+
+
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
@@ -96,10 +101,9 @@ protected:
     std::set<std::string> getSessionRoles() override;
 
 
-private:
+     private:
 
-    void updateActivityOnImpersonatorSession();
-
+     void updateActivityOnImpersonatorSession();
     /**
      * This function sets a JavaScript-readable cookie named "jsSessionTimeout" to track the session's remaining time.
      * The cookie is configured to be secure (transmitted only over HTTPS), readable by client-side JavaScript, and set

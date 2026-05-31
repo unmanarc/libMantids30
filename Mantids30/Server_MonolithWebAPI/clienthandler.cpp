@@ -1,4 +1,5 @@
 #include "clienthandler.h"
+#include <Mantids30/API_EndpointsAndSessions/api_options_handler.h>
 
 using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30::Program::Logs;
@@ -97,10 +98,46 @@ API::APIReturn ClientHandler::handleAPIRequest(
     break;
     }
 
-    return apiReturn;
 
+    return apiReturn;
 }
 
+API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName)
+{
+    API::APIReturn apiReturn;
+
+    auto it = m_endpointsHandlerByAPIVersion.find(apiVersion);
+    if (it == m_endpointsHandlerByAPIVersion.end())
+    {
+        // Key does not exist
+        log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
+        // Endpoint not available for this null session..
+        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
+        return apiReturn;
+    }
+
+    API::Monolith::Endpoints * endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
+
+    if (endpointsHandler->isOptionsEnabled())
+    {
+        // No specific handler registered, but CORS is enabled.
+        // Respond with CORS headers using buildCORSOptionsResponse.
+        std::string origin;
+
+        origin = clientRequest.getOrigin();
+
+        // Look for per-endpoint config first, then fall back to global
+        const API::OptionsHandlerConfig *useConfig = endpointsHandler->getGlobalOptionsConfig();
+        const API::OptionsHandlerConfig *endpointConfig =  endpointsHandler->getOptionsConfigOnEndpoint(endpointName);
+        if (endpointConfig!=nullptr)
+        {
+            useConfig = endpointConfig;
+        }
+        return endpointsHandler->buildCORSOptionsResponse(*useConfig, origin);
+    }
+
+    return apiReturn;
+}
 
 json ClientHandler::handleAPIInfo(const string &baseApiUrl)
 {

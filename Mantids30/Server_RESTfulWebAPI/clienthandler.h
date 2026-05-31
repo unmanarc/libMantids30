@@ -51,6 +51,9 @@ protected:
      */
     API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string & endpointName, const Json::Value &postParameters) override;
 
+    API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName ) override;
+
+
     /**
      * @brief isSessionActive Check if the session is active (JWT is valid)
      * @return
