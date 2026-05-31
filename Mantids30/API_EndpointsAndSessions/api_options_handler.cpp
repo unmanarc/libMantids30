@@ -1,20 +1,13 @@
 #include "api_options_handler.h"
-#include <Mantids30/Protocol_HTTP/api_return.h>
-#include <Mantids30/Protocol_HTTP/rsp_status.h>
 
-using namespace Mantids30::API::RESTful;
+using namespace Mantids30::API;
 
-
-APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig& config,
-                                   const std::string& requestOrigin)
+void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &ret, const std::string & requestOrigin) const
 {
-    APIReturn ret;
-    ret.setStatus(Mantids30::Network::Protocols::HTTP::Status::S_204_NO_CONTENT);
-
     // Set Access-Control-Allow-Origin
-    if (!requestOrigin.empty() && config.allowsOrigin(requestOrigin))
+    if (!requestOrigin.empty() && allowsOrigin(requestOrigin))
     {
-        if (config.allowsAllOrigins())
+        if (allowsAllOrigins())
         {
             ret.addHeader("Access-Control-Allow-Origin", "*");
         }
@@ -23,13 +16,13 @@ APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig& config,
             ret.addHeader("Access-Control-Allow-Origin", requestOrigin);
         }
     }
-    else if (!config.allowedOrigins.empty())
+    else if (!allowedOrigins.empty())
     {
-        ret.addHeader("Access-Control-Allow-Origin", config.getOriginsHeader());
+        ret.addHeader("Access-Control-Allow-Origin", getOriginsHeader());
     }
 
     // Set Access-Control-Allow-Methods
-    std::string methodsHeader = config.getMethodsHeader();
+    std::string methodsHeader = getMethodsHeader();
     if (!methodsHeader.empty())
     {
         ret.addHeader("Access-Control-Allow-Methods", methodsHeader);
@@ -41,7 +34,7 @@ APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig& config,
     }
 
     // Set Access-Control-Allow-Headers
-    std::string headersHeader = config.getHeadersHeader();
+    std::string headersHeader = getHeadersHeader();
     if (!headersHeader.empty())
     {
         ret.addHeader("Access-Control-Allow-Headers", headersHeader);
@@ -53,23 +46,138 @@ APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig& config,
     }
 
     // Set Access-Control-Expose-Headers (only if configured)
-    std::string exposeHeaders = config.getExposeHeadersHeader();
+    std::string exposeHeaders = getExposeHeadersHeader();
     if (!exposeHeaders.empty())
     {
         ret.addHeader("Access-Control-Expose-Headers", exposeHeaders);
     }
 
     // Set Access-Control-Allow-Credentials
-    if (config.allowCredentials)
+    if (allowCredentials)
     {
         ret.addHeader("Access-Control-Allow-Credentials", "true");
     }
 
     // Set Access-Control-Max-Age
-    if (config.maxAgeSeconds > 0)
+    if (maxAgeSeconds > 0)
     {
-        ret.addHeader("Access-Control-Max-Age", std::to_string(config.maxAgeSeconds));
+        ret.addHeader("Access-Control-Max-Age", std::to_string(maxAgeSeconds));
     }
+}
 
-    return ret;
+OptionsHandlerConfig &Mantids30::API::OptionsHandlerConfig::insertAllowedOrigin(const std::string &allowedOrigin)
+{
+    allowedOrigins.insert(allowedOrigin);
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setAllowedOrigins(const std::set<std::string> &allowedOrigins)
+{
+    this->allowedOrigins = allowedOrigins;
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::insertAllowedMethod(const std::string &allowedMethod)
+{
+    allowedMethods.insert(allowedMethod);
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setAllowedMethods(const std::set<std::string> &allowedMethods)
+{
+    this->allowedMethods = allowedMethods;
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::insertAllowedHeader(const std::string &allowedHeader)
+{
+    allowedHeaders.insert(allowedHeader);
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setAllowedHeaders(const std::set<std::string> &allowedHeaders)
+{
+    this->allowedHeaders = allowedHeaders;
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::insertExposeHeader(const std::string &exposeHeader)
+{
+    exposeHeaders.insert(exposeHeader);
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setExposeHeaders(const std::set<std::string> &exposeHeaders)
+{
+    this->exposeHeaders = exposeHeaders;
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setAllowCredentials(bool allowCredentials)
+{
+    this->allowCredentials = allowCredentials;
+    return *this;
+}
+
+OptionsHandlerConfig &OptionsHandlerConfig::setMaxAgeSeconds(int maxAgeSeconds)
+{
+    this->maxAgeSeconds = maxAgeSeconds;
+    return *this;
+}
+
+bool OptionsHandlerConfig::allowsAllOrigins() const
+{
+    return allowedOrigins.count("*") > 0;
+}
+
+bool OptionsHandlerConfig::allowsOrigin(const std::string &origin) const
+{
+    if (allowsAllOrigins())
+        return true;
+    return allowedOrigins.count(origin) > 0;
+}
+
+std::string OptionsHandlerConfig::getOriginsHeader() const
+{
+    if (allowsAllOrigins())
+        return "*";
+    if (!allowedOrigins.empty())
+        return *allowedOrigins.begin();
+    return "";
+}
+
+std::string OptionsHandlerConfig::getMethodsHeader() const
+{
+    std::string result;
+    for (const auto& method : allowedMethods)
+    {
+        if (!result.empty())
+            result += ", ";
+        result += method;
+    }
+    return result;
+}
+
+std::string OptionsHandlerConfig::getHeadersHeader() const
+{
+    std::string result;
+    for (const auto& header : allowedHeaders)
+    {
+        if (!result.empty())
+            result += ", ";
+        result += header;
+    }
+    return result;
+}
+
+std::string OptionsHandlerConfig::getExposeHeadersHeader() const
+{
+    std::string result;
+    for (const auto& header : exposeHeaders)
+    {
+        if (!result.empty())
+            result += ", ";
+        result += header;
+    }
+    return result;
 }
