@@ -1,7 +1,9 @@
 #pragma once
 
 #include <map>
+#include <set>
 
+#include "endpoints_options.h"
 #include "endpoints_requirements_map.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/mutex_shared.h>
@@ -10,7 +12,7 @@
 
 namespace Mantids30::API::Monolith {
 
-class Endpoints
+class Endpoints : public Endpoints_Options
 {
 public:
     // Enumerations for endpoint validation and return codes
@@ -118,7 +120,21 @@ public:
      */
     bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
 
-private:
+    /**
+     * @brief Set CORS/Options configuration for a specific endpoint or globally
+     * @param endpointName The endpoint name. If empty, sets global configuration.
+     * @param config The OptionsHandlerConfig containing CORS settings.
+     */
+    void setEndpointOptions(const std::string &endpointName, const OptionsHandlerConfig &config);
+
+    /**
+     * @brief Get the OptionsHandlerConfig for a specific endpoint
+     * @param endpointName The endpoint name to look up.
+     * @return Pointer to the config, or nullptr if OPTIONS is not enabled.
+     */
+    const OptionsHandlerConfig* getEndpointOptionsConfig(const std::string &endpointName) const;
+
+ private:
     /////////////////////////////////
     // Endpoints:
 

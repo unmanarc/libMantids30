@@ -4,7 +4,6 @@
 #include <memory>
 
 using namespace Mantids30::API::Monolith;
-using namespace Mantids30;
 
 bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
 {
