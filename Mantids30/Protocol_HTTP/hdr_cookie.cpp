@@ -133,6 +133,7 @@ void Cookie::setExpirationFromNow(const uint32_t &seconds)
 void Cookie::deleteCookie()
 {
     value = "";
+    sameSitePolicy = HTTP_COOKIE_SAMESITE_NONE;
     expires = std::nullopt;
     maxAge.emplace();
     maxAge = 0;

@@ -115,8 +115,8 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
             serverResponse.headers.replace("Content-Length", std::to_string(strsize));
         }*/
 
-        if ( strsize>0 )
-            serverResponse.headers.replace("Content-Length", std::to_string(strsize));
+        //if ( strsize>0 )
+        serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
     HTTP::Date currentDate;
