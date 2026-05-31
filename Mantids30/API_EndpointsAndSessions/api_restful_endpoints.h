@@ -1,5 +1,7 @@
 #pragma once
 
+#include "endpoints_options.h"
+
 #include "session.h"
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/json.h>
@@ -61,7 +63,7 @@ struct RESTfulAPIEndpointFullDefinition
  * @brief Handles the mapping of RESTful API resources to corresponding methods,
  * manages security requirements, and invokes the appropriate methods.
  */
-class Endpoints
+class Endpoints : public Endpoints_Options
 {
 public:
     /**
@@ -75,8 +77,7 @@ public:
         POST = 1,
         PUT = 2,
         DELETE = 3,
-        PATCH = 4,
-        OPTIONS = 5
+        PATCH = 4
     };
 
     static std::string HTTPMethodTypeToString(HTTPMethodType mode)
@@ -93,8 +94,6 @@ public:
             return "DELETE";
         case PATCH:
             return "PATCH";
-        case OPTIONS:
-            return "OPTIONS";
         default:
             return "POST";
         }
@@ -121,10 +120,6 @@ public:
         else if (str == "PATCH")
         {
             return PATCH;
-        }
-        else if (str == "OPTIONS")
-        {
-            return OPTIONS;
         }
         else
         {
@@ -166,6 +161,7 @@ public:
      * @brief Default constructor for Endpoints.
      */
     Endpoints() = default;
+
 
     /**
      * @brief Add a new resource to the Endpoints.
@@ -221,7 +217,6 @@ public:
 
 private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;   ///< Map of PATCH endpoints.
-    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsOPTIONS; ///< Map of OPTIONS endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;     ///< Map of GET endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPOST;   ///< Map of POST endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
