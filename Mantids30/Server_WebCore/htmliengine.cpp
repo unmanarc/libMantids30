@@ -146,8 +146,8 @@ void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, 
 
 void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler)
 {
-    std::regex reHTML("<!--<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*%>-->");
-    std::regex reJS("\\/\\/<%[jJ]([a-zA-Z\\/]+):[ ]*([^%]*)[ ]*%>\\/\\/");
+    std::regex reHTML("<!--<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>-->");
+    std::regex reJS("\\/\\/<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>\\/\\/");
 
     iProcResource_JProcessor(input, reJS, sRealFullPath, clientHandler, false);
     iProcResource_JProcessor(input, reHTML, sRealFullPath, clientHandler, true);
