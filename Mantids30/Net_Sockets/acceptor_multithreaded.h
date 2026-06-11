@@ -24,17 +24,7 @@ public:
      * Constructor
      */
     MultiThreaded();
-    /**
-     * @brief MultiThreaded Integrated constructor with all the initial parameters (after that, you are safe to run startThreaded or startBlocking)
-     * @param acceptorSocket acceptor socket
-     * @param _onConnect callback function on connect (mandatory: this will handle the connection itself)
-     * @param context object passed to all callbacks
-     * @param _onInitFailed callback function on failed initialization (default nullptr -> none)
-     * @param _onTimeOut callback function on time out (default nullptr -> none)
-     * @param _onClientConnectionLimitPerIPReached callback function when an ip reached the max number of connections (default nullptr -> none)
-     */
-    MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context = nullptr, _callbackConnectionRV _onInitFailed = nullptr,
-                  _callbackConnectionRV _onTimeOut = nullptr, _callbackConnectionLimit _onClientConnectionLimitPerIPReached = nullptr);
+
     /**
      * Destructor
      * WARN: when you finalize this class, the listening socket is closed. please open another one (don't reuse it)
@@ -58,15 +48,20 @@ public:
     void stop();
 
     /**
-     * Set the socket that will be used to accept new clients.
-     * WARNING: acceptorSocket will be deleted when this class finishes.
+     * Add an acceptor socket for accepting new clients from a distinct source.
+     * Multiple acceptor sockets can be added, each running in its own thread.
      */
-    void setAcceptorSocket(const std::shared_ptr<Socket_Stream> &acceptorSocket);
+    void addAcceptorSocket(const std::shared_ptr<Socket_Stream> &acceptorSocket);
     /**
-     * Do accept on the acceptor socket.
+     * Get the number of acceptor sockets currently registered.
+     */
+    size_t getAcceptorSocketCount() const { return m_acceptorSocketList.size(); }
+    /**
+     * Do accept on the acceptor socket at the given index.
+     * @param socketIndex Index of the acceptor socket (default 0 for backward compatibility)
      * @return true if we can still accept a new connection
      */
-    bool acceptClient();
+    bool acceptClient(size_t socketIndex = 0);
     /**
      * Finalize/Catch the client thread element (when it finishes).
      */
@@ -178,7 +173,7 @@ public:
     Config parameters;
 
 private:
-    static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc);
+    static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc, size_t socketIndex);
 
     bool processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
 
@@ -187,12 +182,12 @@ private:
 
     bool m_initialized = false;
     bool m_finalized = false;
-    std::shared_ptr<Sockets::Socket_Stream> m_acceptorSocket;
+    std::vector<std::shared_ptr<Sockets::Socket_Stream>> m_acceptorSocketList;
     std::list<std::shared_ptr<StreamAcceptorThread>> m_threadList;
     std::map<std::string, uint32_t> m_connectionsPerIP;
 
-    // thread objects:
-    std::thread m_acceptorThread;
+    // thread objects (one per acceptor socket):
+    std::vector<std::thread> m_acceptorThreadList;
 
     //
     std::mutex m_mutexClients;

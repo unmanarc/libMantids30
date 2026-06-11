@@ -51,14 +51,14 @@ void MultiThreaded::Config::setMaxConcurrentClients(const uint32_t &value)
     parent->m_condClientsNotFull.notify_all();
 }
 
-void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc)
+void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc, size_t socketIndex)
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), "MT:StreamAccept");
 #endif
 
     // Accept until it fails:
-    while (tc->acceptClient())
+    while (tc->acceptClient(socketIndex))
     {
     }
 }
@@ -129,20 +129,6 @@ MultiThreaded::MultiThreaded()
     parameters.setParent(this);
 }
 
-MultiThreaded::MultiThreaded(const std::shared_ptr<Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context, _callbackConnectionRV _onInitFailed,
-                             _callbackConnectionRV _onTimeOut, _callbackConnectionLimit _onClientConnectionLimitPerIPReached)
-{
-    parameters.setParent(this);
-
-    setAcceptorSocket(acceptorSocket);
-
-    callbacks.onClientConnected = _onConnect;
-    callbacks.onClientConnectionLimitPerIPReached = _onClientConnectionLimitPerIPReached;
-    callbacks.onProtocolInitializationFailure = _onInitFailed;
-    callbacks.onClientAcceptTimeoutOccurred = _onTimeOut;
-    callbacks.contextOnInitFail = callbacks.contextOnTimedOut = callbacks.contextOnConnect = callbacks.contextonClientConnectionLimitPerIPReached = context;
-}
-
 MultiThreaded::~MultiThreaded()
 {
     stop();
@@ -155,14 +141,24 @@ MultiThreaded::~MultiThreaded()
 
     // no aditional elements will be added, because acceptConnection will drop.
 
-    // Accept the listen-injection thread. (no new threads will be added from here)
+    // Accept all listen-injection threads. (no new threads will be added from here)
     if (m_initialized)
-        m_acceptorThread.join();
-
-    if (m_acceptorSocket)
     {
-        // Shutdown the listener here, but don't delete the object yet...
-        m_acceptorSocket->shutdownSocket();
+        for (auto &t : m_acceptorThreadList)
+        {
+            if (t.joinable())
+                t.join();
+        }
+    }
+
+    // Shutdown all acceptor sockets
+    for (auto &sock : m_acceptorSocketList)
+    {
+        if (sock)
+        {
+            // Shutdown the listener here, but don't delete the object yet...
+            sock->shutdownSocket();
+        }
     }
 
     // Close all current connections...
@@ -179,14 +175,19 @@ MultiThreaded::~MultiThreaded()
             m_condClientsEmpty.wait(lock);
     }
 
-    // Now we can safetly free the acceptor socket resource.
-    if (m_acceptorSocket)
-        m_acceptorSocket = nullptr;
+    // Now we can safely free the acceptor socket resources.
+    m_acceptorSocketList.clear();
 }
 
-bool MultiThreaded::acceptClient()
+bool MultiThreaded::acceptClient(size_t socketIndex)
 {
-    std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocket->acceptConnection();
+    // Validate socket index
+    if (socketIndex >= m_acceptorSocketList.size())
+        return false;
+    if (!m_acceptorSocketList[socketIndex])
+        return false;
+
+    std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocketList[socketIndex]->acceptConnection();
     if (clientSocket)
     {
         std::shared_ptr<StreamAcceptorThread> clientThread = std::make_shared<StreamAcceptorThread>();
@@ -232,39 +233,55 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> 
     return false;
 }
 
-void MultiThreaded::setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket)
+void MultiThreaded::addAcceptorSocket(const std::shared_ptr<Socket_Stream> &acceptorSocket)
 {
-    this->m_acceptorSocket = acceptorSocket;
+    m_acceptorSocketList.push_back(acceptorSocket);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This class should be declared always as a shared_ptr...
 void MultiThreaded::startInBackground()
 {
-    if (!m_acceptorSocket)
-        throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Socket not defined.");
+    if (m_acceptorSocketList.empty())
+        throw std::runtime_error("MultiThreaded::startInBackground() : No Acceptor Sockets defined.");
     if (!callbacks.onClientConnected)
-        throw std::runtime_error("MultiThreaded::startThreaded() : Acceptor Callback not defined.");
+        throw std::runtime_error("MultiThreaded::startInBackground() : Acceptor Callback not defined.");
 
     m_initialized = true;
-    m_acceptorThread = std::thread(thread_streamaccept, shared_from_this());
+    // Start one thread per acceptor socket
+    for (size_t i = 0; i < m_acceptorSocketList.size(); ++i)
+    {
+        m_acceptorThreadList.emplace_back(thread_streamaccept, shared_from_this(), i);
+    }
 }
 
 void MultiThreaded::stop()
 {
-    if (m_acceptorSocket)
-        m_acceptorSocket->shutdownSocket(SHUT_RDWR);
+    for (auto &sock : m_acceptorSocketList)
+    {
+        if (sock)
+            sock->shutdownSocket(SHUT_RDWR);
+    }
 }
 
 bool MultiThreaded::startBlocking()
 {
-    if (!m_acceptorSocket)
-        throw std::runtime_error("MultiThreaded::startBlocking() : Acceptor Socket not defined");
+    if (m_acceptorSocketList.empty())
+        throw std::runtime_error("MultiThreaded::startBlocking() : No Acceptor Sockets defined");
     if (!callbacks.onClientConnected)
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
 
-    while (acceptClient())
+    // Start a local thread per acceptor socket and wait for all to finish
+    m_initialized = true;
+    std::vector<std::thread> localThreads;
+    for (size_t i = 0; i < m_acceptorSocketList.size(); ++i)
     {
+        localThreads.emplace_back(thread_streamaccept, shared_from_this(), i);
+    }
+    for (auto &t : localThreads)
+    {
+        if (t.joinable())
+            t.join();
     }
     stop();
     return true;
