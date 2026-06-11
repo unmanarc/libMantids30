@@ -44,7 +44,7 @@ string HTMLIEngine::replaceByJVar(const json &value, const std::string &scriptVa
     return str;
 }
 
-HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHandler, const std::string &sRealFullPath)
+HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -80,7 +80,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIClientHandler *clientHan
     return HTTP::Status::S_200_OK;
 }
 
-void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame)
+void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)
 {
     size_t pos = 0;
 
@@ -144,7 +144,7 @@ void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, 
 }
 
 
-void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIClientHandler *clientHandler)
+void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler)
 {
     std::regex reHTML("<!--<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>-->");
     std::regex reJS("\\/\\/<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>\\/\\/");
@@ -153,7 +153,7 @@ void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std:
     iProcResource_JProcessor(input, reHTML, sRealFullPath, clientHandler, true);
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                           bool useHTMLFrame)
 {
     // %JSESSVAR PROCESSOR:
@@ -171,7 +171,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
     }
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler, bool useHTMLFrame)
+std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)
 {
     json jVars, jNull;
     jVars["softwareVersion"] = clientHandler->config->softwareVersion;
@@ -208,7 +208,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
 }
 
 // Function to process JGETVAR tags in the file content
-std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                          bool useHTMLFrame)
 {
     // Obtain using GET Vars...
@@ -225,7 +225,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scri
     }
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIClientHandler *clientHandler,
+std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                           bool useHTMLFrame)
 {
     // Obtain using POST Vars...
@@ -242,7 +242,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
     }
 }
 
-json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
+json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
     API::APIReturn apiReturn;
 
@@ -278,7 +278,7 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIClientHandl
     return apiReturn.toJSON();
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIClientHandler *clientHandler,
+std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIServer_ClientHandler *clientHandler,
                                                        bool useHTMLFrame)
 {
     // TODO: como revisar que realmente termine en ) y no haya un ) dentro del json
@@ -307,7 +307,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
     return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
 }
 
-void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIClientHandler *clientHandler, const boost::regex & exStaticText)
+void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex & exStaticText)
 {
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
@@ -350,7 +350,7 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
 
 
 // Function to process the HTMLI include tags within the file content
-void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string & contentType, std::string &fileContent, APIClientHandler *clientHandler)
+void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string & contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
 {
     // CINC PROCESSOR:
     boost::regex reIncludeHTML("<!--<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>-->", boost::regex::icase);
