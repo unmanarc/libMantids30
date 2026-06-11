@@ -109,7 +109,7 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
     return API::APIReturn();
 }
 
-std::shared_ptr<Web::APIClientHandler> Engine::createNewAPIClientHandler(APIEngineCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)
+std::shared_ptr<Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
     auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer, s);
     clientHandler->m_endpointsHandler = endpointsHandler;

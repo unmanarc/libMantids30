@@ -2,7 +2,7 @@
 
 #include <Mantids30/Protocol_APISync/config_builder.h>
 #include <Mantids30/Program_Logs/config_builder.h>
-#include <Mantids30/Server_WebCore/config_builder.h>
+#include <Mantids30/Server_WebCore/apiproxy_config.h>
 
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
@@ -270,7 +270,7 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(
     if (!sock->isSecure())
         return true;
 
-    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
+    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 
     std::shared_ptr<Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Sockets::Socket_TLS>(sock);
 
@@ -285,7 +285,7 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(
 bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(
     void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
-    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
+    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "RESTful Service Timed Out.");
     return true;
@@ -294,7 +294,7 @@ bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(
 bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(
     void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
-    Network::Servers::Web::APIEngineCore *core = (Network::Servers::Web::APIEngineCore *) data;
+    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_DEBUG, "Client Connection Limit Per IP Reached...");
     return true;
