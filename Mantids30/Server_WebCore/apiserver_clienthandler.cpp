@@ -1,4 +1,4 @@
-#include "apiclienthandler.h"
+#include "apiserver_clienthandler.h"
 #include "htmliengine.h"
 
 #include "json/config.h"
@@ -34,11 +34,11 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-APIClientHandler::APIClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
+APIServer_ClientHandler::APIServer_ClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
     : HTTPv1_Server(sock)
 {}
 
-void APIClientHandler::log(Json::Value &jWebLog)
+void APIServer_ClientHandler::log(Json::Value &jWebLog)
 {
     if (logUsername.empty())
     {
@@ -48,7 +48,7 @@ void APIClientHandler::log(Json::Value &jWebLog)
     config->webLog->log(jWebLog);
 }
 
-HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
+HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
 {
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
     std::string requestURI = clientRequest.getURI();
@@ -285,7 +285,7 @@ HTTP::Status::Codes APIClientHandler::onHTTPClientContentReceived()
 }
 
 
-void APIClientHandler::fillSessionInfo(json &jVars)
+void APIServer_ClientHandler::fillSessionInfo(json &jVars)
 {
     if (currentSessionInfo.authSession)
     {
@@ -307,7 +307,7 @@ void APIClientHandler::fillSessionInfo(json &jVars)
     jVars["userAgent"] = clientRequest.userAgent;
 }
 
-HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
+HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
 {
     // WEB RESOURCE MODE:
     HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
@@ -377,7 +377,7 @@ HTTP::Status::Codes APIClientHandler::handleRegularFileRequest()
     return ret;
 }
 
-bool APIClientHandler::versionIsSupported(const std::string &versionStr, int minVersion)
+bool APIServer_ClientHandler::versionIsSupported(const std::string &versionStr, int minVersion)
 {
     int version = strtol(versionStr.c_str(), 0, 10);
 
@@ -388,7 +388,7 @@ bool APIClientHandler::versionIsSupported(const std::string &versionStr, int min
     return version >= minVersion;
 }
 
-bool APIClientHandler::isSupportedUserAgent(const std::string &userAgent)
+bool APIServer_ClientHandler::isSupportedUserAgent(const std::string &userAgent)
 {
     // Convert to lowercase for easier comparison
     std::string details = boost::algorithm::to_lower_copy(userAgent);
@@ -460,7 +460,7 @@ bool APIClientHandler::isSupportedUserAgent(const std::string &userAgent)
     return false; // No supported browser matched
 }
 
-void APIClientHandler::log(eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
+void APIServer_ClientHandler::log(eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
 {
     va_list args;
     va_start(args, fmtLog);
@@ -487,7 +487,7 @@ void APIClientHandler::log(eLogLevels logSeverity, const std::string &module, co
     va_end(args);
 }
 
-bool APIClientHandler::verifyToken(const std::string &strToken)
+bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
 {
     // No token has been configured / for security, the token validation fails.
     if (this->config->jwtValidator == nullptr)
@@ -512,7 +512,7 @@ bool APIClientHandler::verifyToken(const std::string &strToken)
     return true;
 }
 
-bool APIClientHandler::isURLSafe(const std::string &url)
+bool APIServer_ClientHandler::isURLSafe(const std::string &url)
 {
     for (char c : url)
     {
@@ -525,7 +525,7 @@ bool APIClientHandler::isURLSafe(const std::string &url)
     return true; // URL is safe
 }
 
-bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
+bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url)
 {
     for (const auto &apiurl : config->APIURLs)
     {
@@ -537,7 +537,7 @@ bool APIClientHandler::isRedirectPathSafeForAuth(const std::string &url)
     return true;
 }
 
-HTTP::Status::Codes APIClientHandler::redirectUsingJS(const std::string &url)
+HTTP::Status::Codes APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
         return Protocols::HTTP::Status::S_200_OK;
@@ -550,7 +550,7 @@ HTTP::Status::Codes APIClientHandler::redirectUsingJS(const std::string &url)
     return Protocols::HTTP::Status::S_200_OK;
 }
 
-HTTP::Status::Codes APIClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
+HTTP::Status::Codes APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
 {
     auto sHTMLPayloadOut = createHTMLAlertMessage(title, message);
     serverResponse.setDataStreamer(sHTMLPayloadOut);
@@ -558,7 +558,7 @@ HTTP::Status::Codes APIClientHandler::showBrowserMessage(const std::string &titl
     return returnCode;
 }
 
-std::shared_ptr<Streams::StreamableString> APIClientHandler::createHTMLAlertMessage(const std::string &title, const std::string &message)
+std::shared_ptr<Streams::StreamableString> APIServer_ClientHandler::createHTMLAlertMessage(const std::string &title, const std::string &message)
 {
     std::shared_ptr<Memory::Streams::StreamableString> sPayloadOut = std::make_shared<Memory::Streams::StreamableString>();
     sPayloadOut->writeString(R"(

@@ -1,4 +1,4 @@
-#include "apiserverconfig.h"
+#include "apiserver_config.h"
 #include <memory>
 
 using namespace Mantids30::Network::Servers::Web;

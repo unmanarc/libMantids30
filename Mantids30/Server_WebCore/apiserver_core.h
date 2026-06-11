@@ -1,7 +1,7 @@
 #pragma once
 
-#include "apiclienthandler.h"
-#include "apiserverconfig.h"
+#include "apiserver_clienthandler.h"
+#include "apiserver_config.h"
 #include <Mantids30/Memory/b_mem.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
@@ -13,7 +13,7 @@
 
 namespace Mantids30::Network::Servers::Web {
 
-class APIEngineCore
+class APIServerCore
 {
 public:
 
@@ -73,7 +73,7 @@ public:
         NotificationCallback onClientConnectionLimitPerIPReached; ///< Callback invoked when the connection limit per IP address is reached.
     };
 
-    APIEngineCore();
+    APIServerCore();
 
     void handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
 
@@ -114,7 +114,7 @@ public:
     void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
 
 protected:
-    virtual std::shared_ptr<APIClientHandler> createNewAPIClientHandler(APIEngineCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
+    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
 
     /**
      * @brief checkEngineStatus Check if the engine is properly configured to be started or not.

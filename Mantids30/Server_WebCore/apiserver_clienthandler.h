@@ -1,6 +1,6 @@
 #pragma once
 
-#include "apiserverconfig.h"
+#include "apiserver_config.h"
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
@@ -16,12 +16,12 @@
 
 namespace Mantids30::Network::Servers::Web {
 
-class APIClientHandler : public Protocols::HTTP::HTTPv1_Server
+class APIServer_ClientHandler : public Protocols::HTTP::HTTPv1_Server
 {
 public:
     APIServerConfig *config;
 
-    APIClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
+    APIServer_ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
 protected:
     /**
@@ -211,7 +211,7 @@ private:
     bool versionIsSupported(const std::string &versionStr, int minVersion);
     bool isSupportedUserAgent(const std::string &userAgent);
     friend class HTMLIEngine;
-    friend class APIEngineCore;
+    friend class APIServerCore;
 };
 
 } // namespace Mantids30::Network::Servers::Web
