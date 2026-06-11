@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Server_WebCore/apiclienthandler.h>
+#include <Mantids30/Server_WebCore/apiserver_clienthandler.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include "sessionsmanager.h"
 
@@ -17,7 +17,7 @@
 
 namespace Mantids30::Network::Servers::WebMonolith {
 
-class ClientHandler : public Servers::Web::APIClientHandler
+class ClientHandler : public Servers::Web::APIServer_ClientHandler
 {
 public:
     ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);

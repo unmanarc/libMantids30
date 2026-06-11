@@ -10,7 +10,7 @@ using namespace Mantids30;
 using namespace std;
 
 ClientHandler::ClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
-    : Servers::Web::APIClientHandler(parent,sock)
+    : Servers::Web::APIServer_ClientHandler(parent,sock)
 {
 }
 
