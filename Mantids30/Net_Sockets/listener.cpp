@@ -67,7 +67,7 @@ bool Listener::startListeningInBackground( const Config &parameters )
     CALLBACK(tcpCallbacks.onListeningSuccess)(listenerContext, listenerSocket);
 
     // STREAM MANAGER:
-    multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    multiThreadedAcceptor->addAcceptorSocket(listenerSocket);
 
     multiThreadedAcceptor->parameters.setMaxConcurrentClients(parameters.maxConcurrentClients);
     multiThreadedAcceptor->parameters.setMaxConnectionsPerIP(parameters.maxConnectionsPerIP);

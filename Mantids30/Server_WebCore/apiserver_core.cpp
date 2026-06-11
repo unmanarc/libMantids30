@@ -17,7 +17,7 @@ APIServerCore::APIServerCore()
 void APIServerCore::setAcceptPoolThreaded(
     const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
 {
-    m_poolThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    m_poolThreadedAcceptor->addAcceptorSocket(listenerSocket);
     this->m_listenerSocket = listenerSocket;
 
     m_poolThreadedAcceptor->callbacks.setAllContexts(this);
@@ -34,7 +34,7 @@ void APIServerCore::setAcceptPoolThreaded(
 void APIServerCore::setAcceptMultiThreaded(
     const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
 {
-    m_multiThreadedAcceptor->setAcceptorSocket(listenerSocket);
+    m_multiThreadedAcceptor->addAcceptorSocket(listenerSocket);
     this->m_listenerSocket = listenerSocket;
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
