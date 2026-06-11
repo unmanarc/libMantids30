@@ -22,7 +22,7 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT signer instance or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+    static std::shared_ptr<DataFormat::JWT> createJWTSigner(Program::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                             const std::map<std::string, std::string> &vars = {});
 
     /**
@@ -32,7 +32,7 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT validator instance or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Program::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                const std::map<std::string, std::string> &vars = {});
 
     /**
@@ -42,7 +42,7 @@ public:
      * @param key Secret key (HMAC) or public key (RSA)
      * @return JWT validator instance or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Logs::AppLog *log, const std::string &algorithm, const std::string &key);
+    static std::shared_ptr<DataFormat::JWT> createJWTValidator(Program::Logs::AppLog *log, const std::string &algorithm, const std::string &key);
 
 private:
     static bool createHMACSecret(Program::Logs::AppLog *log, const std::string &filePath);
@@ -57,7 +57,7 @@ private:
      * @param createIfNotPresent Whether to create the file if it doesn't exist
      * @return HMAC secret string, empty if failed
      */
-    static std::string loadHMACSecret(Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent);
+    static std::string loadHMACSecret(Program::Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent);
 
     /**
      * @brief Creates JWT object with HMAC algorithm
@@ -67,7 +67,7 @@ private:
      * @param purpose "signing" or "validation" for logging
      * @return Configured JWT object or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createHMACJWT(Logs::AppLog *log, const DataFormat::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose);
+    static std::shared_ptr<DataFormat::JWT> createHMACJWT(Program::Logs::AppLog *log, const DataFormat::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose);
 
     // ==================== RSA FUNCTIONS ====================
 
@@ -80,7 +80,7 @@ private:
      * @param createRSASize RSA key size for creation
      * @return Private key PEM string, empty if failed
      */
-    static std::string loadRSAPrivateKey(Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize);
+    static std::string loadRSAPrivateKey(Program::Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize);
 
     /**
      * @brief Loads RSA public key from file
@@ -91,7 +91,7 @@ private:
      * @param createRSASize RSA key size for creation
      * @return Public key PEM string, empty if failed
      */
-    static std::string loadRSAPublicKey(Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize);
+    static std::string loadRSAPublicKey(Program::Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize);
 
     // ==================== HELPER FUNCTIONS ====================
 
@@ -101,7 +101,7 @@ private:
      * @param algorithmName Name of the algorithm to validate
      * @return true if algorithm is supported, false otherwise
      */
-    static bool validateAlgorithm(Logs::AppLog *log, const std::string &algorithmName);
+    static bool validateAlgorithm(Program::Logs::AppLog *log, const std::string &algorithmName);
 
     /**
      * @brief Removes trailing newline character from a string
@@ -116,7 +116,7 @@ private:
      * @param fileType Type of file for logging purposes
      * @return true if file permissions are secure, false otherwise
      */
-    static bool validateFilePermissions(Logs::AppLog *log, const std::string &filePath, const std::string &fileType);
+    static bool validateFilePermissions(Program::Logs::AppLog *log, const std::string &filePath, const std::string &fileType);
 
     /**
      * @brief Opens a file with optional creation
