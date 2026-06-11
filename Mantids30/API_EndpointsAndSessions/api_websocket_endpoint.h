@@ -9,7 +9,7 @@
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
 
 namespace Mantids30::Network::Servers::Web {
-class APIClientHandler;
+class APIServer_ClientHandler;
 }
 
 namespace Mantids30::API::WebSocket {
@@ -71,7 +71,7 @@ private:
     Security security;
     Config **config = nullptr; // autofilled
     void *context = nullptr;
-    friend class Mantids30::Network::Servers::Web::APIClientHandler;
+    friend class Mantids30::Network::Servers::Web::APIServer_ClientHandler;
     friend class Endpoints;
 };
 

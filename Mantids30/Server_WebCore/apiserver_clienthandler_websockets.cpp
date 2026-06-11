@@ -1,5 +1,5 @@
 #include <Mantids30/Helpers/random.h>
-#include "apiclienthandler.h"
+#include "apiserver_clienthandler.h"
 
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
 
@@ -14,7 +14,7 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-bool APIClientHandler::onWebSocketHTTPClientHeadersReceived()
+bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
 {
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
@@ -58,7 +58,7 @@ bool APIClientHandler::onWebSocketHTTPClientHeadersReceived()
     return true;
 }
 
-void APIClientHandler::onWebSocketConnectionEstablished()
+void APIServer_ClientHandler::onWebSocketConnectionEstablished()
 {
     if (!m_webSocketCurrentEndpoint)
     {
@@ -93,21 +93,21 @@ void APIClientHandler::onWebSocketConnectionEstablished()
     handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
 }
 
-void APIClientHandler::onWebSocketBinaryDataFrameReceived()
+void APIServer_ClientHandler::onWebSocketBinaryDataFrameReceived()
 {
     handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
 }
 
-void APIClientHandler::onWebSocketTextFrameReceived()
+void APIServer_ClientHandler::onWebSocketTextFrameReceived()
 {
     handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
 }
 
-void APIClientHandler::onWebSocketPingReceived() {}
+void APIServer_ClientHandler::onWebSocketPingReceived() {}
 
-void APIClientHandler::onWebSocketPongReceived() {}
+void APIServer_ClientHandler::onWebSocketPongReceived() {}
 
-void APIClientHandler::onWebSocketConnectionFinished()
+void APIServer_ClientHandler::onWebSocketConnectionFinished()
 {
     handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
     if (m_webSocketCurrentEndpoint)

@@ -3,7 +3,7 @@
 #include "api_websocket_endpoint.h"
 
 namespace Mantids30::Network::Servers::Web {
-class APIEngineCore;
+class APIServerCore;
 }
 
 namespace Mantids30::API::WebSocket {
@@ -99,7 +99,7 @@ private:
     bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
                        const WebSocketParameters &parameters);
 
-    friend class Mantids30::Network::Servers::Web::APIEngineCore;
+    friend class Mantids30::Network::Servers::Web::APIServerCore;
 };
 
 } // namespace Mantids30::API::WebSocket
