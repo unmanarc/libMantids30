@@ -9,6 +9,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 #include <mutex>
+#include <thread>
+#include <vector>
 
 // TODO: statistics
 
@@ -27,21 +29,6 @@ public:
        * @param obj Object to be passed to callbacks
        */
     PoolThreaded();
-    /**
-       * @brief PoolThreaded Integrated constructor with all the initial parameters
-       * (after that, you are safe to run startThreaded or startBlocking)
-       * @param acceptorSocket acceptor socket
-       * @param _onConnect callback function on connect (mandatory: this will handle
-       * the connection itself)
-       * @param context object passed to all callbacks
-       * @param _onInitFailed callback function on failed initialization (default
-       * nullptr -> none)
-       * @param _onTimeOut callback function on time out (default nullptr -> none)
-       * @param _onClientConnectionLimitPerIPReached callback function when an ip
-       * reached the max number of connections (default nullptr -> none)
-       */
-    PoolThreaded(const std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket, _callbackConnectionRV _onConnect, void *context = nullptr, _callbackConnectionRV _onInitFailed = nullptr,
-                 _callbackConnectionRV _onTimeOut = nullptr);
 
     // Destructor:
     ~PoolThreaded() override;
@@ -128,11 +115,16 @@ public:
     ////////
 
     /**
-       * @brief setAcceptorSocket Set Acceptor Socket, the acceptor socket is now in
-       * control of this class, deleting this class will delete the acceptor.
+       * @brief addAcceptorSocket Add an acceptor socket for accepting new clients from a distinct source.
+       * Multiple acceptor sockets can be added, each will be polled in the run loop.
        * @param value acceptor socket
        */
-    void setAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &value);
+    void addAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &value);
+    /**
+       * @brief getAcceptorSocketCount Get the number of acceptor sockets currently registered.
+       * @return number of acceptor sockets
+       */
+    size_t getAcceptorSocketCount() const { return m_acceptorSocketList.size(); }
 
     ThreadPoolCallbacks callbacks;
 
@@ -165,8 +157,9 @@ private:
 
     void init();
 
-    Mantids30::Threads::Pool::ThreadPool *m_pool = nullptr;
-    std::shared_ptr<Sockets::Socket_Stream> m_acceptorSocket;
+    std::vector<std::shared_ptr<Sockets::Socket_Stream>> m_acceptorSocketList;
+    std::vector<std::thread> m_acceptorThreads;
+    std::atomic<bool> m_running{false};
     std::mutex m_runMutex;
 };
 
