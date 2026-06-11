@@ -15,10 +15,13 @@ APIServerCore::APIServerCore()
 }
 
 void APIServerCore::setAcceptPoolThreaded(
-    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
+    const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    m_poolThreadedAcceptor->addAcceptorSocket(listenerSocket);
-    this->m_listenerSocket = listenerSocket;
+    for (auto &socket : listenerSockets)
+    {
+        m_poolThreadedAcceptor->addAcceptorSocket(socket);
+    }
+    this->m_listenerSockets = listenerSockets;
 
     m_poolThreadedAcceptor->callbacks.setAllContexts(this);
     m_poolThreadedAcceptor->callbacks.onClientConnected = handleConnect;
@@ -32,10 +35,13 @@ void APIServerCore::setAcceptPoolThreaded(
 }
 
 void APIServerCore::setAcceptMultiThreaded(
-    const std::shared_ptr<Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree)
+    const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    m_multiThreadedAcceptor->addAcceptorSocket(listenerSocket);
-    this->m_listenerSocket = listenerSocket;
+    for (auto &socket : listenerSockets)
+    {
+        m_multiThreadedAcceptor->addAcceptorSocket(socket);
+    }
+    this->m_listenerSockets = listenerSockets;
 
     m_multiThreadedAcceptor->callbacks.setAllContexts(this);
     m_multiThreadedAcceptor->callbacks.onClientConnected = handleConnect;
@@ -74,9 +80,9 @@ void APIServerCore::setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::
     m_websocketEndpoints->config = &(this->config.webSockets);
 }
 
-std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> APIServerCore::getListenerSocket() const
+std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> APIServerCore::getListenerSockets() const
 {
-    return m_listenerSocket;
+    return m_listenerSockets;
 }
 
 void APIServerCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)

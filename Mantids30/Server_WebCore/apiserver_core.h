@@ -9,6 +9,7 @@
 #include <Mantids30/Net_Sockets/socket_stream_dummy.h>
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
+#include <list>
 #include <memory>
 
 namespace Mantids30::Network::Servers::Web {
@@ -82,18 +83,18 @@ public:
      *
      * In this mode, each incoming connection is handled by a new thread up to the specified maximum number of concurrent connections.
      *
-     * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
+     * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
      */
-    void setAcceptMultiThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree = {});
+    void setAcceptMultiThreaded(const std::list<std::shared_ptr<Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief setAcceptPoolThreaded Configures the server to start in pool-threaded mode with a fixed number of pre-started threads.
      *
      * In this mode, incoming connections are queued and handled by a fixed pool of worker threads. Each thread can handle multiple connections up to the specified task queue limit.
      *
-     * @param listenerSocket The prepared listener socket (e.g., TCP, TLS) that will be used to accept incoming connections.
+     * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
      */
-    void setAcceptPoolThreaded(const std::shared_ptr<Network::Sockets::Socket_Stream> &listenerSocket, const boost::property_tree::ptree &ptree = {});
+    void setAcceptPoolThreaded(const std::list<std::shared_ptr<Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief startInBackground Starts the server in the background.
@@ -106,7 +107,7 @@ public:
     Callbacks callbacks;                    ///< The callbacks object used by the web server.
     APIServerConfig config;             ///< The api server configuration parameters
 
-    std::shared_ptr<Sockets::Socket_Stream> getListenerSocket() const;
+    std::list<std::shared_ptr<Sockets::Socket_Stream>> getListenerSockets() const;
     /**
      * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
      * @param newWebsocketEndpoints
@@ -135,7 +136,7 @@ private:
     };
 
     AcceptorType m_acceptorType = AcceptorType::NONE;
-    std::shared_ptr<Sockets::Socket_Stream> m_listenerSocket;
+    std::list<std::shared_ptr<Sockets::Socket_Stream>> m_listenerSockets;
 
     std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
     std::shared_ptr<Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
