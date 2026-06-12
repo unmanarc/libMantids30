@@ -113,5 +113,6 @@ std::shared_ptr<Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientH
 {
     auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer, s);
     clientHandler->m_endpointsHandler = endpointsHandler;
+    clientHandler->jwtAccessTokenName = jwtAccessTokenName;
     return clientHandler;
 }

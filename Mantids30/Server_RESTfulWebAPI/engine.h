@@ -20,7 +20,7 @@ public:
      * (After first initialization should not be modified)
      */
     std::map<uint32_t, std::shared_ptr<API::RESTful::Endpoints>> endpointsHandler;
-
+    std::string jwtAccessTokenName = "AccessToken";
 
     // TODO: max variable size
 protected:

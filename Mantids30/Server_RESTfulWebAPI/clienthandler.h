@@ -74,6 +74,7 @@ private:
 
     // API Version -> Endpoints:
     std::map<uint32_t,std::shared_ptr<API::RESTful::Endpoints>> m_endpointsHandler;
+    std::string jwtAccessTokenName;
 
     bool m_destroySession = false;
     bool m_JWTHeaderTokenVerified = false;

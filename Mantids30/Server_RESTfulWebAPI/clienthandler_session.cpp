@@ -15,7 +15,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
     string headerBearerToken = clientRequest.getAuthorizationBearer();
 
     // Take the auth token from the cookie (if exist)...
-    string cookieBearerToken = clientRequest.getCookie("AccessToken");
+    string cookieBearerToken = clientRequest.getCookie(jwtAccessTokenName);
 
     // In JWT apps, the thing should work as follow:
     // 1. the IAM will auth us in with a POST callback
