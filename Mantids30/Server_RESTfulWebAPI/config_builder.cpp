@@ -92,12 +92,12 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             continue;
 
         const std::string &listenerName = kv.first;
-        const auto &listenerConfig = kv.second;
+        const boost::property_tree::ptree &listenerConfig = kv.second;
 
         uint16_t listenPort = listenerConfig.get<uint16_t>("ListenPort", 0);
         std::string listenAddr = listenerConfig.get<std::string>("ListenAddr", "0.0.0.0");
 
-        auto sock = createListenerSocket(listenerConfig, appLog.get(), listenerName, options);
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> sock = createListenerSocket(listenerConfig, appLog.get(), listenerName, options);
         if (!sock)
             return nullptr;
 

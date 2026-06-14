@@ -258,7 +258,7 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_Clie
         clientHandler->log(LEVEL_ERR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
     }
 
-    // Regular expression to split the components (eg. POST/v1/myFunction)
+    // Regular expression to split the components (eg. //<%jfunc/loginMode:GET/v1/getLoginMode({})%>//)
     std::regex exFunctionNameSplit(R"(^([^/]+)/v([^/]+)/(.+)$)");
     std::smatch matches;
     if (std::regex_match(functionName, matches, exFunctionNameSplit))
@@ -275,6 +275,7 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_Clie
         apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName,  vars);
     }
 
+    // Eg. Response:     const loginMode = {"body":{"app":{"description":"Test APP","name":"TEST"},"mode":"DOMAIN"},"httpResponseCode":200};
     return apiReturn.toJSON();
 }
 
