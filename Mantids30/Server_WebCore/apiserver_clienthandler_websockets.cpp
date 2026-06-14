@@ -67,8 +67,6 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
 
     m_webSocketSessionId = Mantids30::Helpers::Random::createRandomString(16);
 
-
-
     API::WebSocket::WebSocketConnection *connection = new API::WebSocket::WebSocketConnection;
     connection->webSocketHTTPServer = this;
     connection->sessionInfo = &currentSessionInfo;
@@ -78,7 +76,6 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
         delete connection;
         throw std::runtime_error("Web Socket ID is repeated. This should not happen. Reseting");
     }
-
 
     if (config->webSockets.sendWebSocketSessionIDAtConnection)
     {
