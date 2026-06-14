@@ -181,9 +181,9 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
         // All the API will be accessible from this Origins...
-        std::string callbackAPIEndpointName = config.get<std::string>("Login.CallbackEndpointName", "callback");
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting API Login callback endpoint name to /api/v1/%s", (void *) webServer, callbackAPIEndpointName.c_str());
-        webServer->config.callbackAPIEndpointName = callbackAPIEndpointName;
+        std::string loginCallbackAPIEndpointName = config.get<std::string>("Login.CallbackEndpointName", "callback");
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting API Login callback endpoint name to /api/v1/%s", (void *) webServer, loginCallbackAPIEndpointName.c_str());
+        webServer->config.loginCallbackAPIEndpointName = loginCallbackAPIEndpointName;
 
         // The login can be made from this origins (will receive)
         // Set the permitted origin (login IAM location Origin)
@@ -248,14 +248,14 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
             for (const auto &proxy : config.get_child("Proxies"))
             {
-                std::string proxyPath = proxy.first;
-                appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service", (void *) webServer, proxyPath.c_str(), serviceName.c_str());
-
                 std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
+                param->proxyPath = proxy.first;
+
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_INFO, "[%p] Loading proxy to path '%s' at %s Service", (void *) webServer, param->proxyPath.c_str(), serviceName.c_str());
 
                 if (param != nullptr)
                 {
-                    webServer->config.dynamicRequestHandlersByRoute[proxyPath] = {&Network::Servers::Web::APIProxy, param};
+                    webServer->config.dynamicRequestHandlersByRoute[param->proxyPath] = {&Network::Servers::Web::APIProxy, param};
                 }
             }
         }

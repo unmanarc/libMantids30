@@ -54,7 +54,6 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
-
     if (!config->webServerName.empty())
     {
         serverResponse.setServerName(config->webServerName);
@@ -66,14 +65,13 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
         auto retCode = showBrowserMessage("Browser Upgrade Required",
-                                  R"(
+                                          R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
-                                  HTTP::Status::S_426_UPGRADE_REQUIRED);
+                                          HTTP::Status::S_426_UPGRADE_REQUIRED);
         return retCode;
-
     }
 
     // Do forced redirections (before session's):
@@ -118,10 +116,16 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 /// API ORIGIN VALIDATIONS:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                if (endpointName == this->config->callbackAPIEndpointName)
+                if (endpointName == this->config->loginCallbackAPIEndpointName)
                 {
+                    // This is for the callback endpoint
+                    APIServerConfig::DynamicOriginValidatorFunction defaultCallbackOriginValidator =
+                        [](const std::string &requestOrigin, const std::string &apikey, const std::set<std::string> &permittedCallbackOrigins) -> bool { return permittedCallbackOrigins.count(requestOrigin); };
+
+                    APIServerConfig::DynamicOriginValidatorFunction originValidator = this->config->dynamicLoginCallbackOriginValidator ? this->config->dynamicLoginCallbackOriginValidator : defaultCallbackOriginValidator;
+
                     // Check Login Origin... ALWAYS.
-                    if (this->config->permittedLoginOrigins.find(requestOrigin) == this->config->permittedLoginOrigins.end())
+                    if (!originValidator(requestOrigin, requestXAPIKEY, this->config->permittedLoginOrigins))
                     {
                         API::APIReturn apiReturn;
                         apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
@@ -137,41 +141,29 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 }
                 else
                 {
+                    // This is for the rest of the endpoints...
+                    APIServerConfig::DynamicOriginValidatorFunction defaultOriginValidator =
+                        [](const std::string &requestOrigin, const std::string &apikey, const std::set<std::string> &permittedAPIOrigins) -> bool { return permittedAPIOrigins.count(requestOrigin); };
+
+                    APIServerConfig::DynamicOriginValidatorFunction originValidator = this->config->dynamicOriginValidator ? this->config->dynamicOriginValidator : defaultOriginValidator;
+
                     // Check API Origin (if origin is provided)
                     if (!requestOrigin.empty())
                     {
-                        if (!this->config->dynamicOriginValidator)
+                        if (!originValidator(requestOrigin, requestXAPIKEY, this->config->permittedAPIOrigins))
                         {
-                            // Use the native method...
-                            if (this->config->permittedAPIOrigins.find(requestOrigin) == this->config->permittedAPIOrigins.end())
-                            {
-                                API::APIReturn apiReturn;
-                                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
-                                serverResponse.setContentType("application/json", true);
+                            API::APIReturn apiReturn;
+                            apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
+                            serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                            serverResponse.setContentType("application/json", true);
 
-                                log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                                apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                                ret = apiReturn.getHTTPResponseCode();
-                                isAPIURI = true;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            if (!this->config->dynamicOriginValidator(requestOrigin, requestXAPIKEY))
-                            {
-                                API::APIReturn apiReturn;
-                                apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                                serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
-                                serverResponse.setContentType("application/json", true);
+                            log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
+                                originValidator == defaultOriginValidator ? "default" : "dynamic", requestOrigin.c_str());
 
-                                log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via dynamic validator {origin=%s}", requestOrigin.c_str());
-                                apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
-                                ret = apiReturn.getHTTPResponseCode();
-                                isAPIURI = true;
-                                break;
-                            }
+                            apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                            ret = apiReturn.getHTTPResponseCode();
+                            isAPIURI = true;
+                            break;
                         }
                     }
                 }
@@ -187,7 +179,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
 
                 if (httpMethodMode == "OPTIONS")
                 {
-                    apiReturn = handleOptionsRequest(baseApiUrl,apiVersion,endpointName);
+                    apiReturn = handleOptionsRequest(baseApiUrl, apiVersion, endpointName);
                 }
                 else
                 {
@@ -284,7 +276,6 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     return ret;
 }
 
-
 void APIServer_ClientHandler::fillSessionInfo(json &jVars)
 {
     if (currentSessionInfo.authSession)
@@ -318,13 +309,10 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
     if (config->getDocumentRootPath().empty())
         return HTTP::Status::S_404_NOT_FOUND;
 
-    if ( (
-            resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
+    if ((resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
          || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "index.html")
-         || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "")
-         )
-        && !fileInfo.isDirectory
-        )
+         || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ""))
+        && !fileInfo.isDirectory)
     {
         // Evaluate...
         API::Web::ResourcesFilter::FilterEvaluationResult e;
@@ -424,15 +412,15 @@ bool APIServer_ClientHandler::isSupportedUserAgent(const std::string &userAgent)
         //  {"msie ", 11},     // Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0;  rv:11.0) like Gecko
 
         // All CLI HTTP Clients (not HTML related can be used):
-        {"curl/", 0},        // Curl (all versions)
-        {"wget/", 0},        // Wget (all versions)
-        {"httpie/", 0},      // HTTPie (all versions)
-        {"libwww-perl/", 0}, // libwww-perl (all versions)
-        {"libfetch/", 0},    // libfetch (all versions)
-        {"axel/", 0},        // Axel (all versions)
-        {"wget2/", 0},       // Wget2 (all versions)
-        {"PostmanRuntime/", 0},      // Postman (all versions)
-        {"libmantids/", 0}   // Me :-)
+        {"curl/", 0},           // Curl (all versions)
+        {"wget/", 0},           // Wget (all versions)
+        {"httpie/", 0},         // HTTPie (all versions)
+        {"libwww-perl/", 0},    // libwww-perl (all versions)
+        {"libfetch/", 0},       // libfetch (all versions)
+        {"axel/", 0},           // Axel (all versions)
+        {"wget2/", 0},          // Wget2 (all versions)
+        {"PostmanRuntime/", 0}, // Postman (all versions)
+        {"libmantids/", 0}      // Me :-)
     };
 
     // Check if the user agent matches any of the supported browsers

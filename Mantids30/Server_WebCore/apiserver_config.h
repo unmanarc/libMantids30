@@ -56,13 +56,19 @@ public:
      * @param apikey The API key associated with the request.
      * @return true if the origin is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey);
+    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey, const std::set<std::string> & permittedAPIOrigins);
 
     /**
      * @brief The dynamic origin validator callback function.
      * Set this to a custom validation function to handle dynamic origin validation.
      */
     DynamicOriginValidatorFunction dynamicOriginValidator = nullptr;
+
+    /**
+     * @brief dynamicLoginCallbackOriginValidator
+     * Set this to a custom validation function to handle the callback function (eg. login callback).
+     */
+    DynamicOriginValidatorFunction dynamicLoginCallbackOriginValidator = nullptr;
 
     // JWT Validator and signer...
     std::shared_ptr<DataFormat::JWT> jwtValidator;
@@ -97,9 +103,9 @@ public:
     std::set<std::string> permittedLoginOrigins;
 
     /**
-     * @brief callbackAPIEndpointName The method name used for JWT Token absorption from the IAM.
+     * @brief loginCallbackAPIEndpointName The method name used for JWT Token absorption from the IAM.
      */
-    std::string callbackAPIEndpointName = "callback";
+    std::string loginCallbackAPIEndpointName = "callback";
 
 
 
