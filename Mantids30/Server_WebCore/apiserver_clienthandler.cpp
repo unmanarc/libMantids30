@@ -64,7 +64,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     // effectively blocking older, less secure clients from accessing the web server.
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
-        auto retCode = showBrowserMessage("Browser Upgrade Required",
+        HTTP::Status::Codes retCode = showBrowserMessage("Browser Upgrade Required",
                                           R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
@@ -72,6 +72,15 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                                 )",
                                           HTTP::Status::S_426_UPGRADE_REQUIRED);
         return retCode;
+    }
+
+    if (config->dynamicInitialChecks)
+    {
+        HTTP::Status::Codes retCode;
+        if ((retCode = config->dynamicInitialChecks(&clientRequest,&serverResponse))!=HTTP::Status::S_200_OK)
+        {
+            return retCode;
+        }
     }
 
     // Do forced redirections (before session's):

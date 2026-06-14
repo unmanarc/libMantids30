@@ -27,6 +27,10 @@ public:
     APIServerConfig() = default;
     ~APIServerConfig();
 
+    typedef Protocols::HTTP::Status::Codes (*DynamicInitialChecks)(Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
+                                         Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response);
+    DynamicInitialChecks dynamicInitialChecks = nullptr;
+
     /**
      * @brief Callback function type for dynamic validation of access tokens.
      * This function is used when the application needs to validate an access token
