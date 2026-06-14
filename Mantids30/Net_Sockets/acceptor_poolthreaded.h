@@ -13,6 +13,7 @@
 #include <vector>
 
 // TODO: statistics
+// TODO: implement max concurrent clients
 
 namespace Mantids30::Network::Sockets::Acceptors {
 /**
@@ -31,7 +32,7 @@ public:
     PoolThreaded();
 
     // Destructor:
-    ~PoolThreaded() override;
+    ~PoolThreaded() override = default;
 
     /**
        * @brief run Don't call this function, call start(). This is a virtual

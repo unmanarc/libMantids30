@@ -15,9 +15,6 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-PoolThreaded::~PoolThreaded()
-{
-}
 
 void PoolThreaded::run()
 {

@@ -3,8 +3,6 @@
 
 using namespace Mantids30::API;
 
-Endpoints_Options::Endpoints_Options() {}
-
 void Endpoints_Options::setEndpointOptions(const std::string &endpointPath, const OptionsHandlerConfig &config)
 {
     if (endpointPath.empty())

@@ -7,7 +7,7 @@ namespace Mantids30::API {
 class Endpoints_Options
 {
 public:
-    Endpoints_Options();
+    Endpoints_Options() = default;
 
     /**
      * @brief Enable and configure OPTIONS/CORS handling for all endpoints
