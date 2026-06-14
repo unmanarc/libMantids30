@@ -26,6 +26,8 @@ ExtraHeaders
    Custom-Header "value"   ; Custom header value
 }
 
+TransformCookiePath false   ; When true, prepends the proxy internalPath to cookie Path attributes in responses
+
 PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
 
 */
@@ -48,6 +50,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
 
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
+        params->transformCookiePath = config.get<bool>("TransformCookiePath", false);
 
         log->log0(__func__,
                   Logs::LEVEL_DEBUG,

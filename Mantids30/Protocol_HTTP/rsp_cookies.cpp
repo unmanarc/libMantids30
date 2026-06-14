@@ -98,3 +98,38 @@ void Cookies_ServerSide::addClearSecureCookie(const string &cookieName)
 {
     addClearSecureCookie(cookieName,"");
 }
+
+void Cookies_ServerSide::prependPathToAllCookies(const std::string & prefix)
+{
+    if (prefix.empty())
+        return;
+
+    for (auto & cookie : m_cookiesMap)
+    {
+        // If cookie path is empty or "/", set it to the prefix directly
+        if (cookie.second->path.empty() || cookie.second->path == "/")
+        {
+            cookie.second->path = prefix;
+        }
+        else
+        {
+            // Prepend prefix to existing path (e.g., /api -> /login/api)
+            // Ensure we don't create double slashes
+            std::string cleanPrefix = prefix;
+            if (!cleanPrefix.empty() && cleanPrefix.back() == '/')
+            {
+                cleanPrefix.pop_back();
+            }
+            std::string cleanPath = cookie.second->path;
+            if (!cleanPath.empty() && cleanPath.front() == '/')
+            {
+                // Path already starts with /, just concatenate
+                cookie.second->path = cleanPrefix + cleanPath;
+            }
+            else
+            {
+                cookie.second->path = cleanPrefix + "/" + cleanPath;
+            }
+        }
+    }
+}

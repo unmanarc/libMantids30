@@ -81,6 +81,12 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
 
         if (msg == Parser::PARSING_SUCCEED)
         {
+            // Transform cookie paths if enabled
+            if (proxyParameters->transformCookiePath)
+            {
+                client.serverResponse.cookies.prependPathToAllCookies(proxyParameters->proxyPath);
+            }
+
             client.serverResponse.immutableHeaders = true;
 
             // Pass to our client.

@@ -34,6 +34,16 @@ public:
      */
     void addClearSecureCookie(const std::string & cookieName);
 
+    /**
+     * @brief prependPathToAllCookies Prepend a prefix to the Path attribute of all cookies.
+     * This is useful when proxying responses so that cookies are scoped to the proxy
+     * prefix instead of the root.
+     * For example, if a cookie has Path=/ and prefix is /login, the new Path will be /login.
+     * If the cookie already has a Path like /api, it will become /login/api.
+     * @param prefix The path prefix to prepend (should start with /).
+     */
+    void prependPathToAllCookies(const std::string & prefix);
+
 private:
     std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
 

@@ -17,7 +17,14 @@ struct APIProxyParameters
 
     std::string privateCAPath;
 
+    std::string proxyPath;
+
     std::map<std::string,std::string> extraHeaders;
+
+    /// When true, cookies received in the response will have their Path prefix
+    /// modified with the internalPath of this proxy so that the browser scopes
+    /// the cookie to the proxy prefix instead of the root.
+    bool transformCookiePath = false;
 
 };
 
