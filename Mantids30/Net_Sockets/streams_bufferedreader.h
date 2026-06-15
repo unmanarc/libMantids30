@@ -2,8 +2,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30::Network::Sockets {
-namespace NetStreams {
+namespace Mantids30::Network::Sockets::NetStreams {
 
 class BufferedReader
 {
@@ -42,5 +41,4 @@ private:
 
 typedef std::shared_ptr<BufferedReader> Stream_Buffer_SP;
 
-} // namespace NetStreams
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::NetStreams

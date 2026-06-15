@@ -5,7 +5,7 @@
 // FOR SESSION:
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 
-namespace Mantids30 { namespace API { namespace Monolith {
+namespace Mantids30::API::Monolith {
 
 class ResourcesFilter : public Web::ResourcesFilter
 {
@@ -22,6 +22,6 @@ public:
     FilterEvaluationResult evaluateURIWithSession(const std::string &uri, Mantids30::Sessions::Session * userSession);
 };
 
-}}}
+} // namespace Mantids30::API::Monolith
 
 */

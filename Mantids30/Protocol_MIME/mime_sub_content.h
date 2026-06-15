@@ -3,8 +3,7 @@
 //#include <Mantids30/Memory/streamableobject.h>
 #include <Mantids30/Memory/subparser.h>
 
-namespace Mantids30::Network::Protocols {
-namespace MIME {
+namespace Mantids30::Network::Protocols::MIME {
 
 class MIME_Sub_Content : public Memory::Streams::SubParser
 {
@@ -41,5 +40,4 @@ private:
     size_t m_maxContentSizeUntilGoingToFS;
 };
 
-} // namespace MIME
-} // namespace Mantids30::Network::Protocols
+} // namespace Mantids30::Network::Protocols::MIME

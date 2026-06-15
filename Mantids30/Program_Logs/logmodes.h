@@ -1,7 +1,6 @@
 #pragma once
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 enum eLogModes
 {
@@ -10,5 +9,4 @@ enum eLogModes
     MODE_WINEVENTS = 0x8
 };
 
-}
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs

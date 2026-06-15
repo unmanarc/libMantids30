@@ -3,7 +3,7 @@
 #include "subparser.h"
 #include <memory>
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 
 /**
@@ -109,7 +109,7 @@ private:
 
 
 
-}}}
+}
 
 
 

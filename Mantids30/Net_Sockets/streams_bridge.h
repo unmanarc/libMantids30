@@ -11,7 +11,7 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace Mantids30::Network::Sockets  { namespace NetStreams {
+namespace Mantids30::Network::Sockets::NetStreams {
 
 
 /**
@@ -170,4 +170,4 @@ private:
     std::thread m_pipeThreadP;
 };
 
-}}
+}

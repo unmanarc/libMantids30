@@ -7,8 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::Applications {
-namespace FastRPC1 {
+namespace Mantids30::Applications::FastRPC1 {
 
 class RPCClientImpl
 {
@@ -76,5 +75,4 @@ protected:
     json m_jRetrievedConfig;
     std::atomic<bool> m_failedToRetrieveC2Config;
 };
-} // namespace FastRPC1
-} // namespace Mantids30::Applications
+} // namespace Mantids30::Applications::FastRPC1

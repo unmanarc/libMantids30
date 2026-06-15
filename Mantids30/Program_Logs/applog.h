@@ -2,8 +2,7 @@
 
 #include "logbase.h"
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 /**
  * Application Logs Class
@@ -69,5 +68,4 @@ private:
     ////////////////////////////////////////////////////////////////
 };
 
-} // namespace Logs
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs

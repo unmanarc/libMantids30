@@ -2,7 +2,7 @@
 
 #include "mutex_shared.h"
 
-namespace Mantids30 { namespace Threads { namespace Sync {
+namespace Mantids30::Threads::Sync {
 
 /**
  * @brief A class that provides read-write locking mechanism using a shared mutex.
@@ -36,5 +36,5 @@ private:
 };
 
 
-}}}
+}
 

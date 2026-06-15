@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-namespace Mantids30 { namespace Threads { namespace Safe {
+namespace Mantids30::Threads::Safe {
 
 
 class MapItem
@@ -26,5 +26,5 @@ protected:
     std::atomic<bool> m_mapFinished{false};
 };
 
-}}}
+}
 

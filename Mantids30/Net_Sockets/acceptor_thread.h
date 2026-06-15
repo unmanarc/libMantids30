@@ -4,8 +4,7 @@
 
 #include "acceptor_callbacks.h"
 
-namespace Mantids30::Network::Sockets {
-namespace Acceptors {
+namespace Mantids30::Network::Sockets::Acceptors {
 
 /**
  * Class for managing the client on his thread.
@@ -52,5 +51,4 @@ private:
     std::shared_ptr<Sockets::Socket_Stream> m_pClientSocket;
 };
 
-} // namespace Acceptors
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::Acceptors

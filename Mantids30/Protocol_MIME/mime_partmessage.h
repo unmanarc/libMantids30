@@ -5,8 +5,7 @@
 
 #include <Mantids30/Memory/streamable_object.h>
 
-namespace Mantids30::Network::Protocols {
-namespace MIME {
+namespace Mantids30::Network::Protocols::MIME {
 
 class MIME_PartMessage
 {
@@ -23,5 +22,4 @@ private:
     MIME_Sub_Header m_header;
 };
 
-} // namespace MIME
-} // namespace Mantids30::Network::Protocols
+} // namespace Mantids30::Network::Protocols::MIME

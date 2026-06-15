@@ -2,8 +2,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30::Network::Sockets {
-namespace Acceptors {
+namespace Mantids30::Network::Sockets::Acceptors {
 
 //typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream>);
 typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream>);
@@ -48,5 +47,4 @@ public:
     void *contextonClientConnectionLimitPerIPReached = nullptr;
 };
 
-} // namespace Acceptors
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::Acceptors

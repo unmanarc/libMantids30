@@ -1,7 +1,6 @@
 #pragma once
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 enum eLogColors
 {
@@ -14,5 +13,4 @@ enum eLogColors
     LOG_COLOR_ORANGE = 6
 };
 
-}
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs

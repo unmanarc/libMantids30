@@ -24,7 +24,9 @@ ThreadPool::~ThreadPool()
 {
     stop();
     for (uint32_t i = 0; i < m_threadCount; i++)
+    {
         m_threads[i].join();
+    }
 }
 
 void ThreadPool::start()
@@ -184,11 +186,9 @@ void ThreadPool::setMaxTasksPerQueue(const uint32_t &value)
 
 void ThreadPool::taskProcessor(ThreadPool *tp)
 {
-
 #ifdef __linux__
     pthread_setname_np(pthread_self(), "ThrPool:TaskC");
 #endif
-
 
     for (Task task = tp->popTask(); !task.isNull(); task = tp->popTask())
     {

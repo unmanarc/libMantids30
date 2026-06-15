@@ -6,10 +6,7 @@
 
 #include "apiserver_clienthandler.h"
 
-namespace Mantids30 {
-namespace Network {
-namespace Servers {
-namespace Web {
+namespace Mantids30::Network::Servers::Web {
 
 class HTMLIEngine
 {
@@ -35,7 +32,4 @@ private:
 
 };
 
-} // namespace Web
-} // namespace Servers
-} // namespace Network
-} // namespace Mantids30
+} // namespace Mantids30::Network::Servers::Web

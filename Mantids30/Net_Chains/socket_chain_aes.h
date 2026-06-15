@@ -7,8 +7,7 @@
 #include <random>
 #include <string.h>
 
-namespace Mantids30::Network::Sockets {
-namespace ChainProtocols {
+namespace Mantids30::Network::Sockets::ChainProtocols {
 
 /**
  * @brief The Socket_Chain_AES class
@@ -167,5 +166,4 @@ private:
     const static EVP_CIPHER *m_cipher;
 };
 
-} // namespace ChainProtocols
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::ChainProtocols

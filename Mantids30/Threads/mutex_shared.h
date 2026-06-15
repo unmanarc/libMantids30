@@ -2,7 +2,7 @@
 
 #include <pthread.h>
 
-namespace Mantids30 { namespace Threads { namespace Sync {
+namespace Mantids30::Threads::Sync {
 
 /**
  * @brief The Mutex_Shared class provides a wrapper for a shared mutex using the pthread library.
@@ -51,5 +51,5 @@ private:
 };
 
 
-}}}
+}
 

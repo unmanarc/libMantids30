@@ -4,8 +4,7 @@
 #include <map>
 #include <string>
 
-namespace Mantids30::File_Formats {
-namespace Vars {
+namespace Mantids30::File_Formats::Vars {
 
 enum eFileError
 {
@@ -96,5 +95,4 @@ private:
     std::multimap<std::string, std::string> m_vars;
 };
 
-} // namespace Vars
-} // namespace Mantids30::File_Formats
+} // namespace Mantids30::File_Formats::Vars

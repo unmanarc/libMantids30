@@ -2,8 +2,7 @@
 
 #include "socket_chain_protocolbase.h"
 
-namespace Mantids30::Network::Sockets {
-namespace ChainProtocols {
+namespace Mantids30::Network::Sockets::ChainProtocols {
 
 class Socket_Chain_EndPointBase : public Socket_Chain_ProtocolBase
 {
@@ -16,5 +15,4 @@ protected:
     virtual void *getThis() = 0;
 };
 
-} // namespace ChainProtocols
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::ChainProtocols

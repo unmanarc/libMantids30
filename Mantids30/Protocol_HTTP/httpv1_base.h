@@ -33,7 +33,7 @@ enum VarSource
 };
 
 
-class HTTPv1_Base : public Memory::Streams::Parser
+class HTTPv1_Base : public Mantids30::Memory::Streams::Parser
 {
 public:
 

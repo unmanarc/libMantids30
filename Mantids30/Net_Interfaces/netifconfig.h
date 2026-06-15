@@ -14,7 +14,7 @@
 #endif
 
 
-namespace Mantids30 { namespace Network { namespace Interfaces {
+namespace Mantids30::Network::Interfaces {
 
 // LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for NETIF_VIRTUAL_WIN interfaces.
 
@@ -129,5 +129,5 @@ private:
     NetIfType m_netifType;
 };
 
-}}}
+}
 

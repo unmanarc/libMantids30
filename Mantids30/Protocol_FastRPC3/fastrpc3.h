@@ -18,8 +18,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace Mantids30::Network::Protocols {
-namespace FastRPC {
+namespace Mantids30::Network::Protocols::FastRPC {
 
 // TODO: online session tokens validator
 /**
@@ -558,5 +557,4 @@ private:
     bool m_usingRemotePeerCommonNameAsConnectionId = false;
 };
 
-} // namespace FastRPC
-} // namespace Mantids30::Network::Protocols
+} // namespace Mantids30::Network::Protocols::FastRPC

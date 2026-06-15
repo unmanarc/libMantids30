@@ -2,7 +2,7 @@
 
 #include <Mantids30/Memory/streamable_transformer.h>
 
-namespace Mantids30 { namespace Memory { namespace Streams { namespace Decoders {
+namespace Mantids30::Memory::Streams::Decoders {
 
 class URL : public Memory::Streams::StreamableTransformer
 {
@@ -22,5 +22,6 @@ private:
     uint8_t m_filled = 0;
 };
 
-}}}}
+}
+
 

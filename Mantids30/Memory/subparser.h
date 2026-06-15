@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "b_chunks.h"
 #include "b_ref.h"
@@ -13,7 +13,7 @@
 #endif
 
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 
 class SubParser
@@ -175,5 +175,5 @@ private:
     ParseStatus m_parseStatus = PARSE_GET_MORE_DATA;
 };
 
-}}}
+}
 

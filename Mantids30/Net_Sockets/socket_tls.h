@@ -622,4 +622,4 @@ protected:
     bool m_isServer = false;
 
 };
-} // namespace Sockets
+} // namespace Mantids30::Network::Sockets

@@ -6,7 +6,7 @@
 #include <memory>
 #include <chrono>
 
-namespace Mantids30 { namespace Threads { namespace Safe {
+namespace Mantids30::Threads::Safe {
 
 /**
 * @brief The Thread Safe Queue class with shared_ptr
@@ -160,4 +160,4 @@ bool SharedQueue<T>::empty()
     return m_queue.empty();
 }
 
-}}} // namespace Mantids30::Threads::Safe
+} // namespace Mantids30::Threads::Safe

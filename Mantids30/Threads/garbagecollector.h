@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace Mantids30 { namespace Threads {
+namespace Mantids30::Threads {
 
 /**
  * @brief The GarbageCollector class provides a simple garbage collector base class for managing memory in a program.
@@ -75,5 +75,6 @@ private:
 
 
 
-}}
+}
+
 

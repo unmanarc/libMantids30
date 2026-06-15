@@ -3,7 +3,7 @@
 #include "streamable_object.h"
 #include <string>
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 /**
  * @brief The StreamableString class (NOTE: not thread-safe for R/W)
@@ -26,5 +26,5 @@ private:
     std::string m_value;
 };
 
-}}}
+}
 

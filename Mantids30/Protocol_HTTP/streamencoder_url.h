@@ -3,7 +3,7 @@
 #include <Mantids30/Memory/streamable_transformer.h>
 #include <Mantids30/Memory/streamable_object.h>
 
-namespace Mantids30 { namespace Memory { namespace Streams { namespace Encoders {
+namespace Mantids30::Memory::Streams::Encoders {
 
 class URL : public Memory::Streams::StreamableTransformer
 {
@@ -20,4 +20,4 @@ private:
 };
 
 
-}}}}
+}

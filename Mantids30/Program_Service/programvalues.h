@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace Mantids30::Program {
-namespace Values {
+namespace Mantids30::Program::Values {
 
 /**
  * @brief The ProgramValues class contains information about a program.
@@ -86,5 +85,4 @@ protected:
     std::string m_version;       /**< Program version. */
 };
 
-} // namespace Values
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Values

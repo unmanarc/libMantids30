@@ -9,9 +9,7 @@
 #include <map>
 #include <condition_variable>
 
-namespace Mantids30 { namespace Threads {
-
-namespace Pool {
+namespace Mantids30::Threads::Pool {
 
 
 // TODO: statistics
@@ -127,8 +125,6 @@ private:
 };
 
 }
-
-}}
 
 
 // TODO: Failed task what to do?, using

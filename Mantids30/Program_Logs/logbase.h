@@ -8,8 +8,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 class LogBase
 {
@@ -72,5 +71,4 @@ private:
     void initialize();
 };
 
-} // namespace Logs
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs

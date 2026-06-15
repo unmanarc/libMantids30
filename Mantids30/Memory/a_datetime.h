@@ -1,13 +1,10 @@
 #pragma once
 
 #include "a_var.h"
-#include "json/config.h"
 #include <Mantids30/Threads/mutex_shared.h>
 #include <time.h>
 
-namespace Mantids30 {
-namespace Memory {
-namespace Abstract {
+namespace Mantids30::Memory::Abstract {
 
 class DATETIME : public Var
 {
@@ -45,6 +42,4 @@ private:
     time_t m_value = 0;
     Threads::Sync::Mutex_Shared m_mutex;
 };
-} // namespace Abstract
-} // namespace Memory
-} // namespace Mantids30
+} // namespace Mantids30::Memory::Abstract

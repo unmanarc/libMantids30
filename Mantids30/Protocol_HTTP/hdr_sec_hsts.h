@@ -3,7 +3,7 @@
 #include <string>
 #include <stdint.h>
 
-namespace Mantids30::Network::Protocols::HTTP { namespace Headers { namespace Security {
+namespace Mantids30::Network::Protocols::HTTP::Headers::Security {
 
 /**
  * @brief The HSTS class provides functionality for HTTP Strict Transport Security (HSTS).
@@ -55,5 +55,5 @@ private:
 };
 
 
-}}}
+}
 

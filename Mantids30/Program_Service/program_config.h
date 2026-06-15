@@ -5,8 +5,7 @@
 
 #include <optional>
 
-namespace Mantids30::Program {
-namespace Config {
+namespace Mantids30::Program::Config {
 class Loader
 {
 public:
@@ -15,5 +14,4 @@ public:
     static std::optional<boost::property_tree::ptree> loadSecureApplicationConfig(Mantids30::Program::Logs::AppLog *log, const std::string &dir, const std::string &filePath);
 };
 
-} // namespace Config
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Config

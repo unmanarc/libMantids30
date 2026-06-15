@@ -7,8 +7,7 @@
 #include <memory>
 //#include "rpcclientimpl.h"
 
-namespace Mantids30::Applications {
-namespace FastRPC1 {
+namespace Mantids30::Applications::FastRPC1 {
 
 class RPCClientApplication : public Mantids30::Program::Application
 {
@@ -61,5 +60,4 @@ protected:
     bool m_retrieveConfig;
 };
 
-} // namespace FastRPC1
-} // namespace Mantids30::Applications
+} // namespace Mantids30::Applications::FastRPC1

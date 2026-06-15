@@ -3,7 +3,7 @@
 #include "streamable_object.h"
 #include <unistd.h>
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 class StreamableNull : public Memory::Streams::StreamableObject
 {
@@ -16,5 +16,5 @@ private:
     size_t bytes = 0;
 };
 
-}}}
+}
 

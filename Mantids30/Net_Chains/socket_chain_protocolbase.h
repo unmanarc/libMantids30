@@ -4,8 +4,7 @@
 #include <memory>
 #include <utility>
 
-namespace Mantids30::Network::Sockets {
-namespace ChainProtocols {
+namespace Mantids30::Network::Sockets::ChainProtocols {
 
 class Socket_Chain_ProtocolBase
 {
@@ -25,5 +24,4 @@ private:
     bool m_serverMode = false;
 };
 
-} // namespace ChainProtocols
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::ChainProtocols

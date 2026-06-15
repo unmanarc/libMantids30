@@ -5,7 +5,7 @@
 #include <Mantids30/Helpers/appexec.h>
 #include "streamable_object.h"
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 class StreamableProcess : public Memory::Streams::StreamableObject
 {
@@ -25,6 +25,6 @@ private:
     Mantids30::Helpers::AppSpawn * m_spawner;
 };
 
-}}}
+}
 #endif
 

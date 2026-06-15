@@ -8,8 +8,7 @@
 
 #include "apiproxy.h"
 
-namespace Mantids30::Program {
-namespace Config {
+namespace Mantids30::Program::Config {
 
 class APIProxyConfig
 {
@@ -23,5 +22,4 @@ private:
                                   const std::map<std::string, std::string> &vars);
 };
 
-} // namespace Config
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Config

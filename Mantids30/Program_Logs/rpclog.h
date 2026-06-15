@@ -2,8 +2,7 @@
 
 #include "logbase.h"
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 class RPCLog : public LogBase
 {
@@ -30,5 +29,4 @@ private:
                           const char *logLevelText);
 };
 
-} // namespace Logs
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs

@@ -3,8 +3,7 @@
 #include "linerecv_subparser.h"
 #include <Mantids30/Memory/parser.h>
 
-namespace Mantids30::Network::Protocols {
-namespace Line2Line {
+namespace Mantids30::Network::Protocols::Line2Line {
 
 class LineRecv : public Memory::Streams::Parser
 {
@@ -22,5 +21,4 @@ protected:
     LineRecv_SubParser m_subParser;
 };
 
-} // namespace Line2Line
-} // namespace Mantids30::Network::Protocols
+} // namespace Mantids30::Network::Protocols::Line2Line

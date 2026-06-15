@@ -9,9 +9,7 @@
 
 #include "programvalues.h"
 
-namespace Mantids30 {
-namespace Program {
-namespace Arguments {
+namespace Mantids30::Program::Arguments {
 
 /**
  * @brief Options structure for a command line program
@@ -165,6 +163,4 @@ private:
     Mantids30::Threads::Sync::Mutex_Shared m_variablesMutex;
 };
 
-} // namespace Arguments
-} // namespace Program
-} // namespace Mantids30
+} // namespace Mantids30::Program::Arguments

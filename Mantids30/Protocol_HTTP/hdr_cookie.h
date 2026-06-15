@@ -5,7 +5,7 @@
 #include "common_date.h"
 #include <Mantids30/Helpers/json.h>
 
-namespace Mantids30::Network::Protocols::HTTP { namespace Headers {
+namespace Mantids30::Network::Protocols::HTTP::Headers {
 
 class Cookie
 {
@@ -110,5 +110,5 @@ private:
 
 };
 
-}}
+}
 

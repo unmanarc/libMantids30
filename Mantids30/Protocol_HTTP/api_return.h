@@ -190,4 +190,4 @@ private:
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
 };
 
-} // namespace API
+} // namespace Mantids30::API

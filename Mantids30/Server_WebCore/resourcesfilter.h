@@ -8,7 +8,7 @@
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
 #include <boost/regex.hpp>
 
-namespace Mantids30 { namespace API { namespace Web {
+namespace Mantids30::API::Web {
 
 class ResourcesFilter
 {
@@ -75,5 +75,5 @@ protected:
     std::list<Filter> m_filters;
 };
 
-}}}
+} // namespace Mantids30::API::Web
 

@@ -90,4 +90,4 @@ private:
 
     URLVarContent m_urlVarParser;
 };
-} // namespace HTTP
+} // namespace Mantids30::Network::Protocols::HTTP

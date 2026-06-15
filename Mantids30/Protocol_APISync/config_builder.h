@@ -5,8 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <memory>
 
-namespace Mantids30::Program {
-namespace Config {
+namespace Mantids30::Program::Config {
 
 class JWT
 {
@@ -128,5 +127,4 @@ private:
     static std::ifstream openFileWithCreation(const std::string &filePath, bool createIfNotPresent, std::function<bool()> createFunc);
 };
 
-} // namespace Config
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Config

@@ -3,7 +3,7 @@
 #include "streamable_object.h"
 #include <unistd.h>
 
-namespace Mantids30 { namespace Memory { namespace Streams {
+namespace Mantids30::Memory::Streams {
 
 /**
  * @brief The StreamableFile class (NOTE: not thread-safe for R/W)
@@ -41,5 +41,5 @@ private:
     int rd_fd,wr_fd;
 };
 
-}}}
+}
 

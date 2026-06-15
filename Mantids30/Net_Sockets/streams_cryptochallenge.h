@@ -2,8 +2,7 @@
 
 #include "socket_stream.h"
 
-namespace Mantids30::Network::Sockets {
-namespace NetStreams {
+namespace Mantids30::Network::Sockets::NetStreams {
 
 class CryptoChallenge
 {
@@ -21,5 +20,4 @@ private:
     std::shared_ptr<Sockets::Socket_Stream> m_socket;
 };
 
-} // namespace NetStreams
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::NetStreams

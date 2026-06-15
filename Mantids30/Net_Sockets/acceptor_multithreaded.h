@@ -11,8 +11,7 @@
 #include "acceptor_thread.h"
 #include "socket_stream.h"
 
-namespace Mantids30::Network::Sockets {
-namespace Acceptors {
+namespace Mantids30::Network::Sockets::Acceptors {
 
 /**
  * @brief The MultiThreadedAcceptor class Accept streams on thread from a listening socket.
@@ -194,5 +193,4 @@ private:
     std::condition_variable m_condClientsEmpty, m_condClientsNotFull;
 };
 
-} // namespace Acceptors
-} // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets::Acceptors

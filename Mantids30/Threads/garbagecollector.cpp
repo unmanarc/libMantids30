@@ -14,7 +14,7 @@ void GarbageCollector::startGarbageCollector(void (*garbageCollectorFunction)(vo
 {
     this->m_gcFunction = garbageCollectorFunction;
     this->m_gcParameter = parameter;
-    m_gcThreadObject = std::thread(backgroundGarbageCollectorLoop,this,threadName);
+    m_gcThreadObject = std::thread(backgroundGarbageCollectorLoop, this, threadName);
 }
 
 GarbageCollector::~GarbageCollector()
@@ -27,16 +27,13 @@ void GarbageCollector::loopGarbageCollector()
 {
     std::unique_lock<std::mutex> lock(m_endNotificationMutex);
 
-
 #ifdef __linux__
     pthread_setname_np(pthread_self(), "Thrd:GCLoop");
 #endif
 
-
-
-    while(!m_gcFinished)
+    while (!m_gcFinished)
     {
-        if (m_endNotificationCondition.wait_for(lock,Ms(m_gcIntervalMs)) == std::cv_status::timeout)
+        if (m_endNotificationCondition.wait_for(lock, Ms(m_gcIntervalMs)) == std::cv_status::timeout)
         {
             m_gcFunction(m_gcParameter);
         }
@@ -58,11 +55,10 @@ void GarbageCollector::stopGarbageCollector()
     m_endNotificationCondition.notify_one();
 }
 
-void GarbageCollector::backgroundGarbageCollectorLoop(GarbageCollector *threadClass, const char * threadName)
+void GarbageCollector::backgroundGarbageCollectorLoop(GarbageCollector *threadClass, const char *threadName)
 {
 #ifndef WIN32
     pthread_setname_np(pthread_self(), threadName);
 #endif
     threadClass->loopGarbageCollector();
 }
-

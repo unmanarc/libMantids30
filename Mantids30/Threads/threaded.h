@@ -4,7 +4,7 @@
 #include <atomic>
 #include <memory>
 
-namespace Mantids30 { namespace Threads {
+namespace Mantids30::Threads {
 
 /**
  * The Threaded class provides a wrapper for creating and managing threads.
@@ -76,5 +76,6 @@ private:
 
 
 
-}}
+}
+
 

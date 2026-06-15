@@ -11,9 +11,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/sharedqueue.h>
 
-namespace Mantids30 {
-namespace Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 class WebLog
 {
@@ -101,6 +99,4 @@ private:
     std::mutex m_logPrintMutex;
 };
 
-} // namespace Logs
-} // namespace Program
-} // namespace Mantids30
+} // namespace Mantids30::Program::Logs

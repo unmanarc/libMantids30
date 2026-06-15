@@ -6,7 +6,7 @@
 #include "hdr_cookie.h"
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
 
-namespace Mantids30::Network::Protocols::HTTP { namespace Response {
+namespace Mantids30::Network::Protocols::HTTP::Response {
 
 class Cookies_ServerSide
 {
@@ -48,5 +48,5 @@ private:
     std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
 
 };
-}}
+}
 

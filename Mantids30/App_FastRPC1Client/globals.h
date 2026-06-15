@@ -16,8 +16,7 @@ static std::string dirSlash = "/";
 
 #define LOG_APP Globals::m_appLog
 
-namespace Mantids30::Applications {
-namespace FastRPC1 {
+namespace Mantids30::Applications::FastRPC1 {
 
 class Globals
 {
@@ -67,5 +66,4 @@ public:
 protected:
     static boost::property_tree::ptree m_ptreeLocalConfig;
 };
-} // namespace FastRPC1
-} // namespace Mantids30::Applications
+} // namespace Mantids30::Applications::FastRPC1

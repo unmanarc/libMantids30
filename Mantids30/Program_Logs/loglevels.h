@@ -1,7 +1,6 @@
 #pragma once
 
-namespace Mantids30::Program {
-namespace Logs {
+namespace Mantids30::Program::Logs {
 
 enum eLogLevels
 {
@@ -54,5 +53,4 @@ enum eLogLevel2
     LOG_TYPE_CUSTOM = 0x80000000                 // Placeholder for custom or miscellaneous logs
 };
 
-} // namespace Logs
-} // namespace Mantids30::Program
+} // namespace Mantids30::Program::Logs
