@@ -83,7 +83,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     detectedPotentialOverlaps.push_back({defaultWebRootWithEndingSlash + requestURIWithDefaultFile, defaultWebRootWithEndingSlash, "/"}); // Add the original path
 
     // Add overlapped directories if they match the requested URI
-    for (const std::pair<std::string, std::string> &overlappedDirectory : overlappedDirectories)
+    for (const auto&overlappedDirectory : overlappedDirectories)
     {
         // All the overlapped dirs should end with /
         if (overlappedDirectory.first.empty() || overlappedDirectory.second.empty())

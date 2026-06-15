@@ -137,7 +137,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getV
 std::set<std::string> MIME_Message::getKeysList()
 {
     std::set<std::string> r;
-    for (const std::pair<std::string, std::shared_ptr<MIME_PartMessage>> &i : m_partsByName)
+    for (const auto&i : m_partsByName)
     {
         r.insert(i.first);
     }

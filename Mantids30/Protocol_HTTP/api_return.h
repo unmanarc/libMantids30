@@ -112,7 +112,7 @@ public:
         }
         if (!httpExtraHeaders.empty())
         {
-            for (const std::pair<std::string, std::string> &header : httpExtraHeaders)
+            for (const auto&header : httpExtraHeaders)
             {
                 root["extraHeaders"][header.first] = header.second;
             }
@@ -121,7 +121,7 @@ public:
         if (!cookiesMap.empty())
         {
             int i = 0;
-            for (const std::pair<std::string, Network::Protocols::HTTP::Headers::Cookie> &cookie : cookiesMap)
+            for (const auto&cookie : cookiesMap)
             {
                 root["cookies"][(int) i++] = cookie.second.toSetCookieString(cookie.first);
             }

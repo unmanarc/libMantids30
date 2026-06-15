@@ -239,7 +239,7 @@ void GlobalArguments::printHelp()
     cout << "-----" << endl;
     cout << endl;
 
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         cout << i.first << ":" << endl;
         cout << getLine(i.first.size() + 1) << endl;
@@ -322,7 +322,7 @@ void GlobalArguments::printProgramHeader()
 
 void GlobalArguments::printCurrentProgramOptionsValues()
 {
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
         {
@@ -361,7 +361,7 @@ void GlobalArguments::printCurrentProgramOptionsValues()
 std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool removeInstall)
 {
     std::string r;
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
         {
@@ -435,7 +435,7 @@ void GlobalArguments::setDefaultDaemonOption(const std::string &value)
 std::list<std::shared_ptr<CommandLineOption>> GlobalArguments::getAllCommandLineOptions()
 {
     std::list<std::shared_ptr<CommandLineOption>> x;
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
         {
@@ -476,7 +476,7 @@ std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(int shortOp
     {
         return nullptr;
     }
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         for (std::shared_ptr<CommandLineOption> v : i.second)
         {
@@ -501,7 +501,7 @@ std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(int shortOp
 
 std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(const std::string &optName)
 {
-    for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
+    for (const auto&i : m_commandOptions)
     {
         for (std::shared_ptr<CommandLineOption> v : i.second)
         {

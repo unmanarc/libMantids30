@@ -91,7 +91,7 @@ std::list<std::string> VariableMap::listVariableKeys()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const std::pair<const std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &i : m_variables)
+    for (const auto&i : m_variables)
     {
         r.push_back(i.first);
     }
@@ -103,7 +103,7 @@ std::list<std::string> VariableMap::listSubmapKeys()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const std::pair<const std::string, std::shared_ptr<VariableMap>> &i : m_submaps)
+    for (const auto&i : m_submaps)
     {
         r.push_back(i.first);
     }

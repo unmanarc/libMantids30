@@ -14,7 +14,7 @@ using namespace Mantids30;
 
 void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
-    for (const std::pair<const std::string, std::shared_ptr<HTTP::Headers::Cookie>> &cookie : m_cookiesMap)
+    for (const auto&cookie : m_cookiesMap)
     {
         headers->add("Set-Cookie", (cookie.second)->toSetCookieString(cookie.first));
     }

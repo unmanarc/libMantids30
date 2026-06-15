@@ -164,7 +164,7 @@ std::multimap<std::string, std::string> File::getVars() const
 std::map<std::string, std::string> File::getVarsMap() const
 {
     std::map<std::string, std::string> r;
-    for (const std::pair<std::string, std::string> &i : m_vars)
+    for (const auto&i : m_vars)
     {
         r[i.first] = i.second;
     }

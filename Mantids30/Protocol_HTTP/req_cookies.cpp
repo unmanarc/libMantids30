@@ -28,7 +28,7 @@ std::string Cookies_ClientSide::toString() const
     std::vector<std::string> parts;
     parts.reserve(m_cookiesMap.size());
 
-    for (const std::pair<std::string, std::string> &i : m_cookiesMap)
+    for (const auto&i : m_cookiesMap)
     {
         parts.emplace_back(i.first + "=" + i.second);
     }
