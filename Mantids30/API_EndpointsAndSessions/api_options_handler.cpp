@@ -1,4 +1,5 @@
 #include "api_options_handler.h"
+#include <boost/algorithm/string/join.hpp>
 
 using namespace Mantids30::API;
 
@@ -148,36 +149,15 @@ std::string OptionsHandlerConfig::getOriginsHeader() const
 
 std::string OptionsHandlerConfig::getMethodsHeader() const
 {
-    std::string result;
-    for (const auto& method : allowedMethods)
-    {
-        if (!result.empty())
-            result += ", ";
-        result += method;
-    }
-    return result;
+    return boost::algorithm::join(allowedMethods, ", ");
 }
 
 std::string OptionsHandlerConfig::getHeadersHeader() const
 {
-    std::string result;
-    for (const auto& header : allowedHeaders)
-    {
-        if (!result.empty())
-            result += ", ";
-        result += header;
-    }
-    return result;
+    return boost::algorithm::join(allowedHeaders, ", ");
 }
 
 std::string OptionsHandlerConfig::getExposeHeadersHeader() const
 {
-    std::string result;
-    for (const auto& header : exposeHeaders)
-    {
-        if (!result.empty())
-            result += ", ";
-        result += header;
-    }
-    return result;
+    return boost::algorithm::join(exposeHeaders, ", ");
 }
