@@ -37,7 +37,7 @@ bool File::load()
 
 bool File::save()
 {
-    std::ofstream varsfile (m_filePath, std::ofstream::out);
+    std::ofstream varsfile(m_filePath, std::ofstream::out);
     if (!varsfile.is_open())
     {
         m_lastError = CANT_OPEN_FILE;
@@ -45,9 +45,9 @@ bool File::save()
     }
 
     bool ok;
-    for ( const std::pair<std::string, std::string> & i : m_vars )
+    for (const std::pair<std::string, std::string> &i : m_vars)
     {
-        std::string value = getLineFromVars(i,&ok);
+        std::string value = getLineFromVars(i, &ok);
         if (!ok)
         {
             m_lastError = INVALID_VARNAME_FORMAT;
@@ -63,70 +63,91 @@ bool File::save()
 void File::setVar(const std::string &varName, const std::string &varValue)
 {
     m_vars.erase(varName);
-    addVar(varName,varValue);
+    addVar(varName, varValue);
 }
 
 void File::addVar(const std::string &varName, const std::string &varValue)
 {
-    m_vars.insert(std::make_pair(varName,varValue));
+    m_vars.insert(std::make_pair(varName, varValue));
 }
 
 std::list<std::string> File::getVarValues(const std::string &varName)
 {
     std::list<std::string> r;
-    std::pair<std::multimap<std::string,std::string>::iterator, std::multimap<std::string,std::string>::iterator> ret = m_vars.equal_range(varName);
-    for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
+    std::pair<std::multimap<std::string, std::string>::iterator, std::multimap<std::string, std::string>::iterator> ret = m_vars.equal_range(varName);
+    for (std::multimap<std::string, std::string>::iterator it = ret.first; it != ret.second; ++it)
     {
-          r.push_back(it->second);
+        r.push_back(it->second);
     }
     return r;
 }
 
-std::string File::getVarValue(const std::string &varName, bool * found)
+std::string File::getVarValue(const std::string &varName, bool *found)
 {
     std::multimap<std::string, std::string>::iterator i = m_vars.find(varName);
 
     if (i == m_vars.end())
     {
-        if (found) *found = false;
+        if (found)
+        {
+            *found = false;
+        }
         return "";
     }
 
-    if (found) *found = true;
+    if (found)
+    {
+        *found = true;
+    }
     return i->second;
 }
 
 std::pair<std::string, std::string> File::getLineVars(const std::string &line, bool *ok)
 {
-    std::string varName,varValue;
+    std::string varName, varValue;
     std::stringstream sStrValues(line);
 
     if (!std::getline(sStrValues, varName, ':'))
     {
-        if (ok) *ok = false;
-        return std::make_pair("","");
+        if (ok)
+        {
+            *ok = false;
+        }
+        return std::make_pair("", "");
     }
 
     if (line.size() <= varName.size())
     {
-        if (ok) *ok = false;
-        return std::make_pair("","");
+        if (ok)
+        {
+            *ok = false;
+        }
+        return std::make_pair("", "");
     }
 
-    varValue = line.substr(0,varName.size()+1);
+    varValue = line.substr(0, varName.size() + 1);
 
-    if (ok) *ok = true;
-    return std::make_pair(varName,varValue);
+    if (ok)
+    {
+        *ok = true;
+    }
+    return std::make_pair(varName, varValue);
 }
 
 std::string File::getLineFromVars(const std::pair<std::string, std::string> &vars, bool *ok)
 {
-    if (vars.first.find(":")!=std::string::npos)
+    if (vars.first.find(":") != std::string::npos)
     {
-        if (ok) *ok = false;
+        if (ok)
+        {
+            *ok = false;
+        }
         return "";
     }
-    if (ok) *ok = true;
+    if (ok)
+    {
+        *ok = true;
+    }
     return vars.first + ":" + vars.second;
 }
 
@@ -143,9 +164,9 @@ std::multimap<std::string, std::string> File::getVars() const
 std::map<std::string, std::string> File::getVarsMap() const
 {
     std::map<std::string, std::string> r;
-    for (const std::pair<std::string, std::string> & i : m_vars)
+    for (const std::pair<std::string, std::string> &i : m_vars)
     {
-        r[i.first]=i.second;
+        r[i.first] = i.second;
     }
     return r;
 }
