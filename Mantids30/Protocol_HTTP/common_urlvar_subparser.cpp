@@ -10,7 +10,7 @@ using namespace Mantids30;
 
 HTTP::URLVarContent::URLVarContent()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::MULTIDELIMITER);
     setParseMultiDelimiter({"=", "&"});
     setMaxObjectSize(4096);
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
@@ -50,12 +50,12 @@ std::string HTTP::URLVarContent::getContentAsStringAndFlush()
     return r ? *r : "";
 }
 
-Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
+Memory::Streams::SubParser::ParseResult HTTP::URLVarContent::parse()
 {
     m_pData->clear();
     if (!getParsedBuffer()->size())
     {
-        return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+        return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
     }
 
     Memory::Streams::Decoders::URL urlDecoder;
@@ -67,10 +67,10 @@ Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
     {
         // Error parsing the URLVar...
         m_pData->clear();
-        return Memory::Streams::SubParser::PARSE_ERROR;
+        return Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
-    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
 std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getCurrentContentData()

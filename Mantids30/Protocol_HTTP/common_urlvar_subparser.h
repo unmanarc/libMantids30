@@ -18,7 +18,7 @@ public:
     std::shared_ptr<Memory::Containers::B_Chunks> getCurrentContentData();
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
     std::shared_ptr<Memory::Containers::B_Chunks> m_pData;
 };
 
