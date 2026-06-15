@@ -1,16 +1,15 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
-#include <string>
-#include <random>
-#include <thread>
-#include <queue>
-#include <map>
 #include <condition_variable>
+#include <map>
+#include <memory>
+#include <queue>
+#include <random>
+#include <string>
+#include <thread>
 
 namespace Mantids30::Threads::Pool {
-
 
 // TODO: statistics
 /**
@@ -19,7 +18,6 @@ namespace Mantids30::Threads::Pool {
 class ThreadPool
 {
 public:
-
     struct Task
     {
         Task()
@@ -28,21 +26,15 @@ public:
             data = nullptr;
         }
 
-        bool isNull()
-        {
-            return task == nullptr && data == nullptr;
-        }
+        bool isNull() { return task == nullptr && data == nullptr; }
 
-        void (*task) (std::shared_ptr<void>);
+        void (*task)(std::shared_ptr<void>);
         std::shared_ptr<void> data;
     };
 
     struct TasksQueue
     {
-        TasksQueue()
-        {
-            init=true;
-        }
+        TasksQueue() { init = true; }
         std::queue<Task> tasks;
         std::condition_variable cond_removedElement;
         bool init;
@@ -72,7 +64,7 @@ public:
      * @param priority value between (0-1] to determine how many queues are available for insertion
      * @return true if inserted, false if timed out or during stop
      */
-    bool pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData , uint32_t timeoutMS = static_cast<uint32_t>(-1), const float & priority=0.5, const std::string & key = "");
+    bool pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData, uint32_t timeoutMS = static_cast<uint32_t>(-1), const float &priority = 0.5, const std::string &key = "");
     /**
      * @brief popTask function used by thread processor
      * @return task
@@ -92,14 +84,11 @@ public:
      */
     void setMaxTasksPerQueue(const uint32_t &value);
 
-
-
 private:
+    static void taskProcessor(ThreadPool *tp);
 
-    static void taskProcessor(ThreadPool * tp);
-
-    size_t getRandomQueueByKey(const std::string & key, const float & priority);
-    TasksQueue * getRandomTaskQueueWithElements(  );
+    size_t getRandomQueueByKey(const std::string &key, const float &priority);
+    TasksQueue *getRandomTaskQueueWithElements();
 
     // TERMINATION:
     bool m_terminate;
@@ -108,11 +97,11 @@ private:
     std::atomic<uint32_t> m_maxTasksPerQueue;
 
     // THREADS:
-    std::map<size_t,std::thread> m_threads;
+    std::map<size_t, std::thread> m_threads;
     uint32_t m_threadCount;
 
     // QUEUE OPERATIONS/CONDITIONS:
-    std::map<size_t,TasksQueue> m_queues;
+    std::map<size_t, TasksQueue> m_queues;
     std::mutex m_queuesMutex;
     std::condition_variable m_insertedElementCond;
     std::condition_variable m_emptyCond;
@@ -124,8 +113,6 @@ private:
     std::minstd_rand0 m_lRand;
 };
 
-}
-
+} // namespace Mantids30::Threads::Pool
 
 // TODO: Failed task what to do?, using
-

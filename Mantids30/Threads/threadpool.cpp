@@ -54,7 +54,9 @@ bool ThreadPool::pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<v
 
     // Don't insert on termination...
     if (m_terminate)
+    {
         return false;
+    }
 
     // Check if the queue is up the limit
     while (m_queues[currentQueue].tasks.size() > m_maxTasksPerQueue)
@@ -106,7 +108,9 @@ ThreadPool::Task ThreadPool::popTask()
             return r;
         }
         else if (!m_terminate)
+        {
             tq = getRandomTaskQueueWithElements();
+        }
     }
 
     Task r = tq->tasks.front();
@@ -123,7 +127,9 @@ ThreadPool::TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
     std::vector<size_t> fullVector;
     // Randomize the full vector
     for (size_t i = 0; i < m_queues.size(); ++i)
+    {
         fullVector.push_back(i);
+    }
     std::uniform_int_distribution<size_t> dis;
     m_randomMutex.lock();
     Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
@@ -149,18 +155,26 @@ size_t ThreadPool::getRandomQueueByKey(const std::string &key, const float &prio
     // Convert priority in vector elements...
     size_t elements = static_cast<size_t>(m_queues.size() * priority);
     if (elements == 0)
+    {
         elements = 1;
+    }
     if (elements > m_queues.size())
+    {
         elements = m_queues.size();
+    }
 
     // Randomize the full vector using the hash of key
     for (size_t i = 0; i < m_queues.size(); ++i)
+    {
         fullVector.push_back(i);
+    }
     Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
 
     // Copy the first n-elements (based on priority)
     for (size_t i = 0; i < elements; i++)
+    {
         reducedVector.push_back(fullVector[i]);
+    }
 
     // Get random element from the reduced vector:
     std::uniform_int_distribution<> dis(0, static_cast<int>(elements - 1));
@@ -181,7 +195,9 @@ void ThreadPool::setMaxTasksPerQueue(const uint32_t &value)
     m_maxTasksPerQueue = value;
 
     for (std::pair<const size_t, TasksQueue> &i : m_queues)
+    {
         i.second.cond_removedElement.notify_all();
+    }
 }
 
 void ThreadPool::taskProcessor(ThreadPool *tp)
