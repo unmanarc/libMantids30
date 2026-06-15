@@ -45,7 +45,7 @@ bool File::save()
     }
 
     bool ok;
-    for ( const auto & i : m_vars )
+    for ( const std::pair<std::string, std::string> & i : m_vars )
     {
         std::string value = getLineFromVars(i,&ok);
         if (!ok)
@@ -74,7 +74,7 @@ void File::addVar(const std::string &varName, const std::string &varValue)
 std::list<std::string> File::getVarValues(const std::string &varName)
 {
     std::list<std::string> r;
-    auto ret = m_vars.equal_range(varName);
+    std::pair<std::multimap<std::string,std::string>::iterator, std::multimap<std::string,std::string>::iterator> ret = m_vars.equal_range(varName);
     for (std::multimap<std::string,std::string>::iterator it=ret.first; it!=ret.second; ++it)
     {
           r.push_back(it->second);
@@ -84,7 +84,7 @@ std::list<std::string> File::getVarValues(const std::string &varName)
 
 std::string File::getVarValue(const std::string &varName, bool * found)
 {
-    auto i = m_vars.find(varName);
+    std::multimap<std::string, std::string>::iterator i = m_vars.find(varName);
 
     if (i == m_vars.end())
     {
@@ -143,7 +143,7 @@ std::multimap<std::string, std::string> File::getVars() const
 std::map<std::string, std::string> File::getVarsMap() const
 {
     std::map<std::string, std::string> r;
-    for (auto & i : m_vars)
+    for (const std::pair<std::string, std::string> & i : m_vars)
     {
         r[i.first]=i.second;
     }

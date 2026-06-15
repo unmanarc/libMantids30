@@ -26,7 +26,7 @@ const OptionsHandlerConfig *Endpoints_Options::getGlobalOptionsConfig() const
 
 const OptionsHandlerConfig *Endpoints_Options::getOptionsConfigOnEndpoint(const std::string &endpointPath) const
 {
-    auto optIt = m_perEndpointOptionsConfig.find(endpointPath);
+    std::map<std::string, OptionsHandlerConfig>::const_iterator optIt = m_perEndpointOptionsConfig.find(endpointPath);
     if (optIt != m_perEndpointOptionsConfig.end())
     {
         return &optIt->second;

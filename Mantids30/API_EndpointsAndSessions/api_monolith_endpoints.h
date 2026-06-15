@@ -16,7 +16,7 @@ class Endpoints : public Endpoints_Options
 {
 public:
     // Enumerations for endpoint validation and return codes
-    enum eEndpointValidationCodes
+    enum ValidationResult
     {
         VALIDATION_OK = 0x0,               // Endpoint is valid
         VALIDATION_ENDPOINTNOTFOUND = 0x1, // Endpoint not found
@@ -97,9 +97,9 @@ public:
      * @param session Session object for authentication and context
      * @param endpointName Name of the endpoint to validate
      * @param reasons Pointer to store reasons for validation failure, if any
-     * @return eEndpointValidationCodes Validation result code
+     * @return ValidationResult Validation result code
      */
-    eEndpointValidationCodes validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, json *reasons);
+    ValidationResult validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, json *reasons);
 
     /**
      * @brief Get endpoints requirements map

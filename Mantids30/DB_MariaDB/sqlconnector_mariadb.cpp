@@ -21,10 +21,10 @@ SQLConnector_MariaDB::~SQLConnector_MariaDB()
 
 bool SQLConnector_MariaDB::isOpen()
 {
-    if (!m_databaseConnectionHandler) 
+    if (!m_databaseConnectionHandler)
         return false;
-    auto i = qSelect("SELECT 1;", {},{} );
-    if ( i && i->isSuccessful() )
+    std::shared_ptr<Query> i = qSelect("SELECT 1;", {}, {});
+    if (i && i->isSuccessful())
         return i->step();
     return true;
 }
@@ -34,37 +34,23 @@ void SQLConnector_MariaDB::getDatabaseConnector(Query_MariaDB *query)
     query->mariaDBSetDatabaseConnector(m_databaseConnectionHandler);
 }
 
-
 std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 {
     if (!m_databaseConnectionHandler)
-        return "";
+        return {};
 
-    // Allocate buffer for the escaped string
-    char* cEscaped = new char[(2 * v.length()) + 1];  // Use length() for clarity
+    std::vector<char> buffer((2 * v.length()) + 1);
 
-    // Use mysql_real_escape_string to escape the input string
-    mysql_real_escape_string(m_databaseConnectionHandler, cEscaped, v.c_str(), v.length());
+    const unsigned long escapedLength = mysql_real_escape_string(m_databaseConnectionHandler, buffer.data(), v.c_str(), static_cast<unsigned long>(v.length()));
 
-    // Convert char array back to std::string
-    std::string escapedString(cEscaped);
-
-    // Deallocate the buffer
-    delete[] cEscaped;
-
-    return escapedString;
+    return std::string(buffer.data(), escapedLength);
 }
-
 
 bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
 {
     // Select Query:
-    auto i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
-    {
-      { ":schema", std::make_shared<Memory::Abstract::STRING>(m_dbName)},
-      { ":table", std::make_shared<Memory::Abstract::STRING>(table)}
-    },
-    {} );
+    std::shared_ptr<Query> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
+                                       {{":schema", std::make_shared<Memory::Abstract::STRING>(m_dbName)}, {":table", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
 
     if (i && i->isSuccessful())
         return i->step();
@@ -90,11 +76,9 @@ bool SQLConnector_MariaDB::connect0()
         }
     }
 
-    if (mysql_real_connect(m_databaseConnectionHandler, this->m_host.c_str(),
-                           this->m_credentials.userName.c_str(),
-                           this->m_credentials.userPassword.c_str(),
-                           this->m_dbName.c_str(),
-                           this->m_port, NULL, 0) == NULL)
+    if (mysql_real_connect(m_databaseConnectionHandler, this->m_host.c_str(), this->m_credentials.userName.c_str(), this->m_credentials.userPassword.c_str(), this->m_dbName.c_str(), this->m_port,
+                           NULL, 0)
+        == NULL)
     {
         m_lastSQLError = mysql_error(m_databaseConnectionHandler);
         mysql_close(m_databaseConnectionHandler);
@@ -104,4 +88,3 @@ bool SQLConnector_MariaDB::connect0()
 
     return true;
 }
-

@@ -1,8 +1,8 @@
 #include "logbase.h"
 
 #ifdef _WIN32
-#include <ws2tcpip.h>
 #include <shlobj.h>
+#include <ws2tcpip.h>
 #else
 #include <syslog.h>
 #endif
@@ -12,14 +12,12 @@
 using namespace Mantids30::Program::Logs;
 using namespace std;
 
-
 LogBase::LogBase(unsigned int _logMode)
 {
     // variable initialization.
     m_logMode = _logMode;
     initialize();
 }
-
 
 LogBase::~LogBase()
 {
@@ -33,15 +31,14 @@ LogBase::~LogBase()
     }
 }
 
-
 void LogBase::initialize()
 {
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        openlog( nullptr, LOG_PID, LOG_LOCAL5);
+        openlog(nullptr, LOG_PID, LOG_LOCAL5);
 #else
-        fprintf(stderr,"SysLog Not implemented on WIN32, don't use.");
+        fprintf(stderr, "SysLog Not implemented on WIN32, don't use.");
 #endif
     }
     if (isUsingStandardLog())
@@ -77,7 +74,7 @@ bool LogBase::isUsingWindowsEventLog()
 
 void LogBase::printDate(FILE *fp)
 {
-    char xdate[64]="";
+    char xdate[64] = "";
     time_t x = time(nullptr);
     struct tm *tmp = localtime(&x);
 #ifndef _WIN32
@@ -85,75 +82,74 @@ void LogBase::printDate(FILE *fp)
 #else
     strftime(xdate, 64, "%Y-%m-%dT%H:%M:%S", tmp);
 #endif
-    fprintf(fp,"%s%s", xdate, fieldSeparator.c_str());
+    fprintf(fp, "%s%s", xdate, fieldSeparator.c_str());
 }
 
 void LogBase::printColorBold(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN,str);
+    printColorForWin32(fp, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN, str);
 #else
-    fprintf(fp,"\033[1m%s\033[0m", str);
+    fprintf(fp, "\033[1m%s\033[0m", str);
 #endif
 }
 
 void LogBase::printColorBlue(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_BLUE,str);
+    printColorForWin32(fp, FOREGROUND_INTENSITY | FOREGROUND_BLUE, str);
 #else
-    fprintf(fp,"\033[1;34m%s\033[0m", str);
+    fprintf(fp, "\033[1;34m%s\033[0m", str);
 #endif
 }
 
 void LogBase::printColorGreen(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_GREEN,str);
+    printColorForWin32(fp, FOREGROUND_INTENSITY | FOREGROUND_GREEN, str);
 #else
-    fprintf(fp,"\033[1;32m%s\033[0m", str);
+    fprintf(fp, "\033[1;32m%s\033[0m", str);
 #endif
 }
 
 void LogBase::printColorRed(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED,str);
+    printColorForWin32(fp, FOREGROUND_INTENSITY | FOREGROUND_RED, str);
 #else
-    fprintf(fp,"\033[1;31m%s\033[0m", str);
+    fprintf(fp, "\033[1;31m%s\033[0m", str);
 #endif
 }
 
 void LogBase::printColorPurple(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_INTENSITY|FOREGROUND_RED|FOREGROUND_BLUE,str);
+    printColorForWin32(fp, FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE, str);
 #else
-    fprintf(fp,"\033[1;35m%s\033[0m", str);
+    fprintf(fp, "\033[1;35m%s\033[0m", str);
 #endif
 }
 
 void LogBase::printColorOrange(FILE *fp, const char *str)
 {
 #ifdef _WIN32
-    printColorForWin32(fp,FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,str);
+    printColorForWin32(fp, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY, str);
 #else
-    fprintf(fp,"\033[1;33m%s\033[0m", str);
+    fprintf(fp, "\033[1;33m%s\033[0m", str);
 #endif
 }
-
 
 void LogBase::printColorForWin32(FILE *fp, unsigned short color, const char *str)
 {
 #ifdef _WIN32
-    DWORD ouputHandleSrc = fp==stdout?STD_OUTPUT_HANDLE:STD_ERROR_HANDLE;
+    DWORD ouputHandleSrc = fp == stdout ? STD_OUTPUT_HANDLE : STD_ERROR_HANDLE;
     HANDLE outputHandle = GetStdHandle(ouputHandleSrc);
     CONSOLE_SCREEN_BUFFER_INFO *ConsoleInfo = new CONSOLE_SCREEN_BUFFER_INFO();
     GetConsoleScreenBufferInfo(outputHandle, ConsoleInfo);
     WORD OriginalColors = ConsoleInfo->wAttributes;
     delete ConsoleInfo;
     SetConsoleTextAttribute(outputHandle, color);
-    fprintf(fp, "%s", str );
+    fprintf(fp, "%s", str);
     SetConsoleTextAttribute(outputHandle, OriginalColors);
 #endif
 }
@@ -169,19 +165,14 @@ void LogBase::deactivateModuleOutput(const string &moduleName)
     m_modulesOutputExclusion.insert(moduleName);
 }
 
-string LogBase::getAlignedValue(const string &value, size_t sz)
+std::string LogBase::getAlignedValue(const std::string &value, std::size_t sz)
 {
-    if (value.size()>=sz) 
-        return value;
-    else
+    if (value.size() >= sz)
     {
-        char * tmpValue = new char[sz+2];
-        memset(tmpValue,0,sz+2);
-        memset(tmpValue,' ',sz);
-        memcpy(tmpValue,value.c_str(),value.size());
-        std::string r;
-        r=tmpValue;
-        delete [] tmpValue;
-        return r;
+        return value;
     }
+
+    std::string result(sz, ' ');
+    result.replace(0, value.size(), value);
+    return result;
 }

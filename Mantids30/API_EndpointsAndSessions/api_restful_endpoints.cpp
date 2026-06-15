@@ -58,7 +58,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
                                                 const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse)
 {
     RESTfulAPIEndpointFullDefinition endpointFullDefinition;
-    auto it = m_endpointsGET.end();
+    std::map<std::string, RESTfulAPIEndpointFullDefinition>::iterator it = m_endpointsGET.end();
 
     switch (httpMethodType)
     {
@@ -152,7 +152,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
 
     if (!isAdmin)
     {
-        for (const auto &attr : endpointFullDefinition.security.requiredScopes)
+        for (const std::string &attr : endpointFullDefinition.security.requiredScopes)
         {
             if (currentScopes.find(attr) == currentScopes.end())
             {

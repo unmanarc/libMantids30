@@ -3,15 +3,18 @@
 
 using namespace Mantids30::DataFormat;
 
-JWT::Token::Token(const std::string &payload) {
+JWT::Token::Token(const std::string &payload)
+{
     decodePayload(payload);
 }
 
-void JWT::Token::setIssuer(const std::string &issuer) {
+void JWT::Token::setIssuer(const std::string &issuer)
+{
     m_claims["iss"] = issuer;
 }
 
-void JWT::Token::setSubject(const std::string &subject) {
+void JWT::Token::setSubject(const std::string &subject)
+{
     m_claims["sub"] = subject;
 }
 
@@ -20,27 +23,33 @@ void JWT::Token::setDomain(const std::string &domain)
     m_claims["domain"] = domain;
 }
 
-void JWT::Token::setAudience(const std::string &audience) {
+void JWT::Token::setAudience(const std::string &audience)
+{
     m_claims["aud"] = audience;
 }
 
-void JWT::Token::setExpirationTime(std::time_t exp) {
+void JWT::Token::setExpirationTime(std::time_t exp)
+{
     m_claims["exp"] = static_cast<Json::Int64>(exp);
 }
 
-void JWT::Token::setNotBefore(time_t nbf) {
+void JWT::Token::setNotBefore(time_t nbf)
+{
     m_claims["nbf"] = static_cast<Json::Int64>(nbf);
 }
 
-void JWT::Token::setIssuedAt(time_t iat) {
+void JWT::Token::setIssuedAt(time_t iat)
+{
     m_claims["iat"] = static_cast<Json::Int64>(iat);
 }
 
-void JWT::Token::setJwtId(const std::string &jti) {
+void JWT::Token::setJwtId(const std::string &jti)
+{
     m_claims["jti"] = jti;
 }
 
-void JWT::Token::setClaim(const std::string &name, const Json::Value &value) {
+void JWT::Token::setClaim(const std::string &name, const Json::Value &value)
+{
     m_claims[name] = value;
 }
 
@@ -65,7 +74,8 @@ bool JWT::Token::decodePayload(const std::string &payload)
     return true;
 }
 
-std::string JWT::Token::getIssuer() const {
+std::string JWT::Token::getIssuer() const
+{
     return JSON_ASSTRING(m_claims, "iss", "");
 }
 
@@ -74,7 +84,8 @@ std::string JWT::Token::getImpersonator() const
     return JSON_ASSTRING(m_claims, "impersonator", "");
 }
 
-std::string JWT::Token::getSubject() const {
+std::string JWT::Token::getSubject() const
+{
     return JSON_ASSTRING(m_claims, "sub", "");
 }
 
@@ -83,26 +94,31 @@ std::string JWT::Token::getDomain() const
     return JSON_ASSTRING(m_claims, "domain", "");
 }
 
-std::string JWT::Token::getAudience() const {
+std::string JWT::Token::getAudience() const
+{
     return JSON_ASSTRING(m_claims, "aud", "");
 }
 
-time_t JWT::Token::getExpirationTime() const {
+time_t JWT::Token::getExpirationTime() const
+{
     // DEFULT: not expired...
     return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "exp", 0xFFFFFFFFFFFFFFFF));
 }
 
-time_t JWT::Token::getNotBefore() const {
+time_t JWT::Token::getNotBefore() const
+{
     // DEFAULT: not restriction....
     return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "nbf", 0x0));
 }
 
-time_t JWT::Token::getIssuedAt() const {
+time_t JWT::Token::getIssuedAt() const
+{
     // DEFAULT: 1969...
     return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "iat", 0x0));
 }
 
-std::string JWT::Token::getJwtId() const {
+std::string JWT::Token::getJwtId() const
+{
     return JSON_ASSTRING(m_claims, "jti", "");
 }
 
@@ -112,12 +128,12 @@ std::set<std::string> JWT::Token::getAllRoles()
 
     if (m_claims.isMember("roles"))
     {
-        const Json::Value& rolesClaims = m_claims["roles"];
+        const Json::Value &rolesClaims = m_claims["roles"];
         if (rolesClaims.isArray())
         {
-            for (const auto& role : rolesClaims)
+            for (const Json::Value &role : rolesClaims)
             {
-                roles.insert(JSON_ASSTRING_D(role,""));
+                roles.insert(JSON_ASSTRING_D(role, ""));
             }
         }
     }
@@ -148,12 +164,12 @@ bool JWT::Token::hasRole(const std::string &roleId) const
 {
     if (m_claims.isMember("roles"))
     {
-        const Json::Value& rolesClaims = m_claims["roles"];
+        const Json::Value &rolesClaims = m_claims["roles"];
         if (rolesClaims.isArray())
         {
-            for (const auto& role : rolesClaims)
+            for (const Json::Value &role : rolesClaims)
             {
-                if (JSON_ASSTRING_D(role,"") == roleId)
+                if (JSON_ASSTRING_D(role, "") == roleId)
                 {
                     return true;
                 }
@@ -169,12 +185,12 @@ std::set<std::string> JWT::Token::getAllScopes()
 
     if (m_claims.isMember("scopes"))
     {
-        const Json::Value& scopesClaims = m_claims["scopes"];
+        const Json::Value &scopesClaims = m_claims["scopes"];
         if (scopesClaims.isArray())
         {
-            for (const auto& scope : scopesClaims)
+            for (const Json::Value &scope : scopesClaims)
             {
-                scopes.insert(JSON_ASSTRING_D(scope,""));
+                scopes.insert(JSON_ASSTRING_D(scope, ""));
             }
         }
     }
@@ -206,12 +222,12 @@ bool JWT::Token::hasScope(const std::string &scopeId) const
 {
     if (m_claims.isMember("scopes"))
     {
-        const Json::Value& scopesClaims = m_claims["scopes"];
+        const Json::Value &scopesClaims = m_claims["scopes"];
         if (scopesClaims.isArray())
         {
-            for (const auto& scope : scopesClaims)
+            for (const Json::Value &scope : scopesClaims)
             {
-                if (JSON_ASSTRING_D(scope,"") == scopeId)
+                if (JSON_ASSTRING_D(scope, "") == scopeId)
                 {
                     return true;
                 }
@@ -225,7 +241,7 @@ bool JWT::Token::hasScope(const std::string &scopeId) const
 std::map<std::string, Json::Value> JWT::Token::getAllClaims()
 {
     std::map<std::string, Json::Value> claimsMap;
-    for (const auto& key : m_claims.getMemberNames())
+    for (const std::string &key : m_claims.getMemberNames())
     {
         claimsMap[key] = m_claims[key];
     }
@@ -239,10 +255,11 @@ Json::Value JWT::Token::getAllClaimsAsJSON()
 
 bool JWT::Token::isAdmin() const
 {
-    return m_claims.isMember("isAdmin") && JSON_ASBOOL_D(getClaim("isAdmin"),false);
+    return m_claims.isMember("isAdmin") && JSON_ASBOOL_D(getClaim("isAdmin"), false);
 }
 
-Json::Value JWT::Token::getClaim(const std::string &name) const {
+Json::Value JWT::Token::getClaim(const std::string &name) const
+{
     return m_claims[name];
 }
 
@@ -251,14 +268,17 @@ bool JWT::Token::hasClaim(const std::string &name) const
     return m_claims.isMember(name);
 }
 
-bool JWT::Token::isValid() const {
+bool JWT::Token::isValid() const
+{
     std::time_t currentTime = std::time(nullptr);
 
-    if (m_claims.isMember("exp") && currentTime >= getExpirationTime()) {
+    if (m_claims.isMember("exp") && currentTime >= getExpirationTime())
+    {
         return false;
     }
 
-    if (m_claims.isMember("nbf") && currentTime < getNotBefore()) {
+    if (m_claims.isMember("nbf") && currentTime < getNotBefore())
+    {
         return false;
     }
 

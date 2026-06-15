@@ -309,7 +309,7 @@ LocalSysInfo OS::getLocalSystemInfo()
     if (!editions.empty())
     {
         x.operatingSystemVersion +=  " (";
-        for ( const auto & edition : editions )
+        for ( const std::string & edition : editions )
         {
             if (!first) x.operatingSystemVersion += "/";
             x.operatingSystemVersion += edition;

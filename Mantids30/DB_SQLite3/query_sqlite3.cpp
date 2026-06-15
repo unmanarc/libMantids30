@@ -57,7 +57,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     }
 
     // Bind the parameters (in and out)
-    for (const auto &inputVar : m_inputVars)
+    for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVar : m_inputVars)
     {
         int idx = sqlite3_bind_parameter_index(m_stmt, inputVar.first.c_str());
         if (idx)
@@ -119,37 +119,37 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             break;
             case Memory::Abstract::Var::TYPE_DATETIME:
             {
-                auto i = ABSTRACT_SPTR_AS(DATETIME, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(DATETIME, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
             case Memory::Abstract::Var::TYPE_STRING:
             {
-                auto i = ABSTRACT_SPTR_AS(STRING, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(STRING, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
             case Memory::Abstract::Var::TYPE_STRINGLIST:
             {
-                auto i = ABSTRACT_SPTR_AS(STRINGLIST, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(STRINGLIST, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
             case Memory::Abstract::Var::TYPE_IPV4:
             {
-                auto i = ABSTRACT_SPTR_AS(IPV4, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(IPV4, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
             case Memory::Abstract::Var::TYPE_MACADDR:
             {
-                auto i = ABSTRACT_SPTR_AS(MACADDR, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(MACADDR, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
             case Memory::Abstract::Var::TYPE_IPV6:
             {
-                auto i = ABSTRACT_SPTR_AS(IPV6, inputVar.second)->toString();
+                std::string i = ABSTRACT_SPTR_AS(IPV6, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;

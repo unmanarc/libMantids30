@@ -8,7 +8,7 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_t
     if (ptr.get<bool>("Logs.ToSyslog", true))
         logMode |= Program::Logs::MODE_SYSLOG;
 
-    auto log = std::make_shared<Program::Logs::AppLog>(logMode);
+    std::shared_ptr<Program::Logs::AppLog> log = std::make_shared<Program::Logs::AppLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
     log->enableDateLogging = ptr.get<bool>("Logs.ShowDate", true);
     log->enableColorLogging = ptr.get<bool>("Logs.ShowColors", true);
@@ -25,7 +25,7 @@ std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_t
     if (ptr.get<bool>("Logs.ToSyslog", true))
         logMode |= Program::Logs::MODE_SYSLOG;
 
-    auto log = std::make_shared<Program::Logs::RPCLog>(logMode);
+    std::shared_ptr<Program::Logs::RPCLog> log = std::make_shared<Program::Logs::RPCLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
     log->enableColorLogging = ptr.get<bool>("Logs.ShowColors", true);
     log->enableDateLogging = ptr.get<bool>("Logs.ShowDate", true);
@@ -53,7 +53,7 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(unsigned int logMode)
 
 std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog, const boost::property_tree::ptree &config)
 {
-    auto log = std::make_shared<Program::Logs::WebLog>();
+    std::shared_ptr<Program::Logs::WebLog> log = std::make_shared<Program::Logs::WebLog>();
     log->config.appLog = appLog;
     log->config.logDirectory = config.get<std::string>("Logs.Dir", "/var/log");
     log->config.logFile = config.get<std::string>("Logs.File", "web.log");
@@ -69,31 +69,31 @@ std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<M
     // Handle rotation schedule
     boost::property_tree::ptree rotateSchedule = config.get_child("Logs.RotateSchedule", boost::property_tree::ptree());
 
-    auto minuteStr = config.get_optional<std::string>("Logs.RotateSchedule.Minute");
+    boost::optional<std::string> minuteStr = config.get_optional<std::string>("Logs.RotateSchedule.Minute");
     if (minuteStr && *minuteStr != "*")
         log->config.rotationSchedule.minute = std::make_optional(static_cast<uint32_t>(std::stoul(*minuteStr)));
     else
         log->config.rotationSchedule.minute = std::nullopt;
 
-    auto hourStr = config.get_optional<std::string>("Logs.RotateSchedule.Hour");
+    boost::optional<std::string> hourStr = config.get_optional<std::string>("Logs.RotateSchedule.Hour");
     if (hourStr && *hourStr != "*")
         log->config.rotationSchedule.hour = std::make_optional(static_cast<uint32_t>(std::stoul(*hourStr)));
     else
         log->config.rotationSchedule.hour = std::nullopt;
 
-    auto dayOfWeekStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfWeek");
+    boost::optional<std::string> dayOfWeekStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfWeek");
     if (dayOfWeekStr && *dayOfWeekStr != "*")
         log->config.rotationSchedule.dayOfWeek = std::make_optional(static_cast<uint32_t>(std::stoul(*dayOfWeekStr)));
     else
         log->config.rotationSchedule.dayOfWeek = std::nullopt;
 
-    auto dayOfMonthStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfMonth");
+    boost::optional<std::string> dayOfMonthStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfMonth");
     if (dayOfMonthStr && *dayOfMonthStr != "*")
         log->config.rotationSchedule.dayOfMonth = std::make_optional(static_cast<uint32_t>(std::stoul(*dayOfMonthStr)));
     else
         log->config.rotationSchedule.dayOfMonth = std::nullopt;
 
-    auto monthStr = config.get_optional<std::string>("Logs.RotateSchedule.Month");
+    boost::optional<std::string> monthStr = config.get_optional<std::string>("Logs.RotateSchedule.Month");
     if (monthStr && *monthStr != "*")
         log->config.rotationSchedule.month = std::make_optional(static_cast<uint32_t>(std::stoul(*monthStr)));
     else

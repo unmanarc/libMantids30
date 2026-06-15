@@ -85,12 +85,12 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
 {
     bool ok;
 
-    auto r = std::make_shared<Mem::BinaryDataContainer>(input.length());
+    std::shared_ptr<Mem::BinaryDataContainer> r = std::make_shared<Mem::BinaryDataContainer>(input.length());
 
     if (!r->data)
         return r;
 
-    auto dec = Helpers::Encoders::decodeFromBase64ToBin(input);
+    std::shared_ptr<Mem::BinaryDataContainer> dec = Helpers::Encoders::decodeFromBase64ToBin(input);
 
     if (dec->data && dec->cur >= 32)
     {
@@ -148,7 +148,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
 
 std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, const char *key, const size_t &keyLen)
 {
-    if (auto i = AES256DecryptB64ToBin(input, key, keyLen))
+    if (std::shared_ptr<Mem::BinaryDataContainer> i = AES256DecryptB64ToBin(input, key, keyLen))
     {
         return i->toString();
     }
@@ -156,7 +156,7 @@ std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, co
 }
 std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, const std::string &key)
 {
-    if (auto i = AES256DecryptB64ToBin(input, key.c_str(), key.length()))
+    if (std::shared_ptr<Mem::BinaryDataContainer> i = AES256DecryptB64ToBin(input, key.c_str(), key.length()))
     {
         return i->toString();
     }

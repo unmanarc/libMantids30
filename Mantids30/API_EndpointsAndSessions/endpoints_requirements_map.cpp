@@ -13,8 +13,8 @@ void EndpointsRequirements_Map::addEndpointRequiredScopes(const std::string &end
 std::set<std::string> EndpointsRequirements_Map::getEndpointRequiredScopes(const std::string &endpointName)
 {
     std::set<std::string> r;
-    auto it = m_endpointRequiredScopes.equal_range(endpointName);
-    for (auto itr = it.first; itr != it.second; ++itr)
+    std::pair<std::multimap<std::string, std::string>::iterator, std::multimap<std::string, std::string>::iterator> it = m_endpointRequiredScopes.equal_range(endpointName);
+    for (std::multimap<std::string, std::string>::iterator itr = it.first; itr != it.second; ++itr)
         r.insert(itr->second);
     return r;
 }
@@ -28,8 +28,8 @@ void EndpointsRequirements_Map::addEndpointRequiredRoles(const std::string &endp
 std::set<std::string> EndpointsRequirements_Map::getEndpointRequiredRoles(const std::string &endpointName)
 {
     std::set<std::string> r;
-    auto it = m_endpointRequiredRoles.equal_range(endpointName);
-    for (auto itr = it.first; itr != it.second; ++itr)
+    std::pair<std::multimap<std::string, std::string>::iterator, std::multimap<std::string, std::string>::iterator> it = m_endpointRequiredRoles.equal_range(endpointName);
+    for (std::multimap<std::string, std::string>::iterator itr = it.first; itr != it.second; ++itr)
         r.insert(itr->second);
     return r;
 }

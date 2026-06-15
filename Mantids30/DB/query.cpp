@@ -115,7 +115,7 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
     std::size_t firstKeyPos = std::string::npos;
     std::string firstKeyFound;
 
-    for (auto &key : keysIn)
+    for (std::string &key : keysIn)
     {
         std::size_t pos = sqlQuery.find(key);
         if (pos != std::string::npos)
@@ -131,7 +131,7 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
     }
 
     // not used needles will be deleted.
-    for (auto &needle : toDelete)
+    for (std::string &needle : toDelete)
         keysIn.remove(needle);
 
     // If there is a key, replace.

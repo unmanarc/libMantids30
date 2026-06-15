@@ -51,7 +51,7 @@ void RPCClientImpl::runRPClient()
                 _exit(-3);
             }
 
-            auto masterKey = Globals::m_masterKey;
+            std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
 
             // Check if using passphrase
             if (  !Globals::getLC_TLSPhraseFileForPrivateKey().empty() )
@@ -92,7 +92,7 @@ void RPCClientImpl::runRPClient()
         {
             // Load Key
             bool ok;
-            auto idpsk = loadPSK();
+            RPCClientImpl::PSKIdKey idpsk = loadPSK();
             sockRPCClient->tlsKeys.setUsingPSK();
             sockRPCClient->tlsKeys.loadPSKAsClient(idpsk.id, idpsk.psk);
         }
@@ -118,7 +118,7 @@ void RPCClientImpl::runRPClient()
                           remoteAddr.c_str(), remotePort,
                           sockRPCClient->getLastError().c_str());
 
-            for (const auto & i :sockRPCClient->getTLSErrorsAndClear())
+            for (const std::string & i :sockRPCClient->getTLSErrorsAndClear())
             {
                 if (!strstr(i.c_str(),"certificate unknown"))
                     LOG_APP->log1(__func__, remoteAddr.c_str(),Logs::LEVEL_ERR, ">>> TLS Error: %s", i.c_str());
@@ -249,7 +249,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     bool ok = false;
     PSKIdKey r;
     std::string encryptedKey = Mantids30::Helpers::File::loadFileIntoString( Globals::getLC_C2PSKSharedKeyFilePath() , &ok);
-    auto masterKey = Globals::m_masterKey;
+    std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
     if (!ok || encryptedKey.empty())
     {
         if (!ok)

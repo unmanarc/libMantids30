@@ -392,7 +392,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     bool isSignatureVerified = false;
 
     // Check that the header algorithm is supported
-    auto incomingAlgorithm = JSON_ASSTRING(header_json, "alg", "");
+    std::string incomingAlgorithm = JSON_ASSTRING(header_json, "alg", "");
     if (!isAlgorithmSupported(incomingAlgorithm))
     {
         return false;
@@ -401,7 +401,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     if (isHMACAlgorithm(incomingAlgorithm))
     {
         // Create the signature using the header and payload, and compare with the decoded signature
-        auto computed_signature = createSignature(header_b64 + '.' + payload_b64);
+        std::shared_ptr<RAWSignature> computed_signature = createSignature(header_b64 + '.' + payload_b64);
         if (computed_signature->m_result != RAWSignature::SIG_OK)
             return false;
 

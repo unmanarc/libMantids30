@@ -295,7 +295,7 @@ bool Query_MariaDB::postBindInputVars()
 {
     // Load Keys:
     std::list<std::string> keysIn;
-    for (auto &i : m_inputVars)
+    for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
         keysIn.push_back(i.first);
 
     // Replace the keys for ?:

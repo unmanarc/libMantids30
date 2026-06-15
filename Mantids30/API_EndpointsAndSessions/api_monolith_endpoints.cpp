@@ -46,7 +46,7 @@ int Endpoints::invoke(std::shared_ptr<Mantids30::Sessions::Session> session, con
     }
 }
 
-Endpoints::eEndpointValidationCodes Endpoints::validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & endpointName, json * reasons)
+Endpoints::ValidationResult Endpoints::validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string & endpointName, json * reasons)
 {
     std::set<std::string> scopesLeft, rolesLeft;
     

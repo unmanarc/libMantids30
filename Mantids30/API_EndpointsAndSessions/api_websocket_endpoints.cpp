@@ -103,7 +103,7 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
 
     if (!isAdmin)
     {
-        for (const auto &scope : endpointDef.security.requiredScopes)
+        for (const std::string &scope : endpointDef.security.requiredScopes)
         {
             if (currentScopes.find(scope) == currentScopes.end())
             {
@@ -117,7 +117,7 @@ Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, 
 
 const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
 {
-    auto it = m_endpoints.find(uri);
+    std::map<std::string, WebSocket::Endpoint>::const_iterator it = m_endpoints.find(uri);
     if (it != m_endpoints.end())
     {
         return &(it->second);

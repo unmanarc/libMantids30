@@ -180,7 +180,7 @@ void ThreadPool::setMaxTasksPerQueue(const uint32_t &value)
 {
     m_maxTasksPerQueue = value;
 
-    for (auto &i : m_queues)
+    for (std::pair<const size_t, TasksQueue> &i : m_queues)
         i.second.cond_removedElement.notify_all();
 }
 

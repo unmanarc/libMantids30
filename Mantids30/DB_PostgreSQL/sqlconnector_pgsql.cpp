@@ -21,7 +21,7 @@ bool SQLConnector_PostgreSQL::isOpen()
 {
     if (!m_databaseConnectionHandler) 
         return false;
-    auto i = qSelect("SELECT 1;", {},{} );
+    std::shared_ptr<Query> i = qSelect("SELECT 1;", {},{} );
     if (i && i->isSuccessful())
         return i->step();
     return true;
@@ -42,7 +42,7 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
         realTableName = "public." + table;
 
     // Select Query:
-    auto i = qSelect("SELECT to_regclass(:table);",
+    std::shared_ptr<Query> i = qSelect("SELECT to_regclass(:table);",
                    {
                       { ":table", std::make_shared<Memory::Abstract::STRING>(realTableName)}
                    },
@@ -132,7 +132,7 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
     char ** values = static_cast<char **>( malloc( (m_connectionValues.size()+1)*sizeof(char *)) );
 
     size_t pos = 0;
-    for ( const auto & i : m_connectionValues )
+    for ( const std::pair<std::string, std::string> & i : m_connectionValues )
     {
         values[pos++] = strdup(i.first.c_str());
     }
@@ -146,7 +146,7 @@ char **SQLConnector_PostgreSQL::getConnectionValues()
     char ** values = static_cast<char **>( malloc ((m_connectionValues.size()+1)*sizeof(char *)) );
 
     size_t pos = 0;
-    for ( const auto & i : m_connectionValues )
+    for ( const std::pair<std::string, std::string> & i : m_connectionValues )
     {
         values[pos++] = strdup(i.second.c_str());
     }

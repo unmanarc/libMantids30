@@ -56,7 +56,7 @@ bool JWT::Cache::checkToken(const std::string &payload)
     if (!m_enabled)
         return false;
 
-    auto it = m_tokenCache.find(payload);
+    std::unordered_map<std::string, bool>::iterator it = m_tokenCache.find(payload);
     return it != m_tokenCache.end();
 }
 

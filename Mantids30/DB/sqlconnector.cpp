@@ -236,7 +236,7 @@ std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, 
 
 bool SQLConnector::qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars)
 {
-    auto i = qExecute(preparedQuery,inputVars);
+    std::shared_ptr<Query> i = qExecute(preparedQuery,inputVars);
 
     if (!i)
     {
@@ -255,7 +255,7 @@ bool SQLConnector::qExecuteEx(const std::string &preparedQuery, const std::map<s
 
 bool SQLConnector::qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars)
 {
-    auto i = qSelect(preparedQuery,inputVars,resultVars);
+    std::shared_ptr<Query> i = qSelect(preparedQuery,inputVars,resultVars);
     return i && i->isSuccessful() && i->step();
 }
 

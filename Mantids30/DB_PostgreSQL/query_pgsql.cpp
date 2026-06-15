@@ -50,7 +50,7 @@ bool Query_PostgreSQL::step0()
         return false;
 
     int columnpos = 0;
-    for (const auto &outputVar : m_resultVars)
+    for (Memory::Abstract::Var *outputVar : m_resultVars)
     {
         bool isNull = PQgetisnull(m_results, i, columnpos);
         m_fieldIsNull.push_back(isNull);
@@ -175,7 +175,7 @@ bool Query_PostgreSQL::postBindInputVars()
     m_paramCount = 0;
 
     std::list<std::string> keysIn;
-    for (auto &i : m_inputVars)
+    for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
         keysIn.push_back(i.first);
 
     // Replace the named keys for $0, $1, etc...:
@@ -266,7 +266,7 @@ bool Query_PostgreSQL::postBindInputVars()
         break;
         case Memory::Abstract::Var::TYPE_BIN:
         {
-            auto *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
+            const Memory::Abstract::BINARY::ByteArray * i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
             m_paramValues[pos] = i->ptr;
             m_paramLengths[pos] = i->dataSize;
             m_paramFormats[pos] = 1;

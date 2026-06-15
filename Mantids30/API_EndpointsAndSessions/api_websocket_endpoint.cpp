@@ -10,8 +10,8 @@ Endpoint::Endpoint()
 size_t Endpoint::getActiveUserConnectionsCount(const std::string &userId) const
 {
     size_t count = 0;
-    auto keys = connectionsByIdMap->getKeys();
-    for (const auto &sessionId : keys)
+    std::set<std::string> keys = connectionsByIdMap->getKeys();
+    for (const std::string &sessionId : keys)
     {
         WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
         if (connection)
@@ -40,8 +40,8 @@ bool Endpoint::sendJSONToConnectionID(const std::string &sessionId, const Json::
 
 bool Endpoint::sendJSONToUser(const std::string &userId, const Json::Value &v) const
 {
-    auto keys = connectionsByIdMap->getKeys();
-    for (const auto &sessionId : keys)
+    std::set<std::string> keys = connectionsByIdMap->getKeys();
+    for (const std::string &sessionId : keys)
     {
         WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
         if (connection)
@@ -64,8 +64,8 @@ bool Endpoint::sendJSONToUser(const std::string &userId, const Json::Value &v) c
 size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const Json::Value &v) const
 {
     size_t i = 0;
-    auto keys = connectionsByIdMap->getKeys();
-    for (const auto &sessionId : keys)
+    std::set<std::string> keys = connectionsByIdMap->getKeys();
+    for (const std::string &sessionId : keys)
     {
         WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
         if (connection)
