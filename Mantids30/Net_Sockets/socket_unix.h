@@ -10,7 +10,8 @@ namespace Mantids30::Network::Sockets {
  *
  * This class provides methods to listen on and connect using UNIX domain sockets.
  */
-class  Socket_UNIX : public Sockets::Socket_Stream {
+class Socket_UNIX : public Sockets::Socket_Stream
+{
 public:
     /**
      * @brief Constructor for the Socket_UNIX class.
@@ -27,8 +28,8 @@ public:
      * @param backlog Number of unaccepted connections that the system will allow before refusing new connections.
      * @return True if the socket is successfully set to listen, false otherwise.
      */
-    bool listenOn(const char* path, const int32_t& recvbuffer = 0, const int32_t& backlog = 10);
-    
+    bool listenOn(const char *path, const int32_t &recvbuffer = 0, const int32_t &backlog = 10);
+
     /**
      * @brief Overridden method for listening on a specific UNIX socket path and port.
      *
@@ -41,7 +42,7 @@ public:
      * @param backlog Number of unaccepted connections that the system will allow before refusing new connections.
      * @return True if the socket is successfully set to listen, false otherwise.
      */
-    bool listenOn(const uint16_t& port, const char* path, const int32_t& recvbuffer = 0, const int32_t& backlog = 10) override;
+    bool listenOn(const uint16_t &port, const char *path, const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
 
     /**
      * @brief Connect to a remote UNIX socket.
@@ -54,7 +55,7 @@ public:
      * @param timeout Timeout in seconds for the connection attempt.
      * @return True if the connection is successful, false otherwise.
      */
-    bool connectFrom(const char* localPath, const char* remotePath, const uint16_t& port, const uint32_t& timeout = 30) override;
+    bool connectFrom(const char *localPath, const char *remotePath, const uint16_t &port, const uint32_t &timeout = 30) override;
 
     /**
      * @brief Accept an incoming connection on a listening UNIX socket.
@@ -74,5 +75,5 @@ public:
  */
 typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
 
-}  // namespace Mantids30::Network::Sockets
+} // namespace Mantids30::Network::Sockets
 #endif

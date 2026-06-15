@@ -15,7 +15,6 @@ PoolThreaded::PoolThreaded()
     init();
 }
 
-
 void PoolThreaded::run()
 {
     std::unique_lock<std::mutex> lock(this->m_runMutex);
@@ -31,7 +30,9 @@ void PoolThreaded::run()
     for (std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket : m_acceptorSocketList)
     {
         if (!acceptorSocket)
+        {
             continue;
+        }
 
         // Capture raw pointer to pool (safe: pool outlives all threads due to join() below)
         m_acceptorThreads.emplace_back(
@@ -52,10 +53,14 @@ void PoolThreaded::run()
                             uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
 
                             if (this->parameters.debugOptions.printHex)
+                            {
                                 debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX;
+                            }
 
                             if (this->parameters.debugOptions.printPlainText)
+                            {
                                 debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN;
+                            }
 
                             clientSocket->setDebugOptions(debugOptions);
                             clientSocket->setDebugOutput(this->parameters.debugOptions.dir);
@@ -71,7 +76,9 @@ void PoolThreaded::run()
                         if (!poolPtr->pushTask(&acceptorTask, taskData, this->parameters.timeoutMS, this->parameters.queuesKeyRatio, taskData->key))
                         {
                             if (this->callbacks.onClientAcceptTimeoutOccurred != nullptr)
+                            {
                                 this->callbacks.onClientAcceptTimeoutOccurred(this->callbacks.contextOnTimedOut, clientSocket);
+                            }
                         }
                     }
                 }
@@ -82,7 +89,9 @@ void PoolThreaded::run()
     for (std::thread &t : m_acceptorThreads)
     {
         if (t.joinable())
+        {
             t.join();
+        }
     }
 
     m_acceptorThreads.clear();
@@ -99,7 +108,9 @@ void PoolThreaded::stop()
     for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
+        {
             sock->shutdownSocket();
+        }
     }
 }
 

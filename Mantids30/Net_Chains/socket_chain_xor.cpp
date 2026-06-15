@@ -14,17 +14,23 @@ Socket_Chain_XOR::Socket_Chain_XOR()
 ssize_t Socket_Chain_XOR::partialRead(void *data, const size_t &datalen)
 {
     if (datalen == 0)
+    {
         return 0;
+    }
 
     ssize_t r = Mantids30::Network::Sockets::Socket::partialRead(data, datalen);
 
     if (r <= 0)
+    {
         return r;
+    }
 
     std::vector<char> datacp = getXorCopy(data, static_cast<size_t>(r));
 
     if (datacp.empty())
+    {
         return 0;
+    }
 
     std::memcpy(data, datacp.data(), static_cast<size_t>(r));
 
@@ -34,12 +40,16 @@ ssize_t Socket_Chain_XOR::partialRead(void *data, const size_t &datalen)
 ssize_t Socket_Chain_XOR::partialWrite(const void *data, const size_t &datalen)
 {
     if (datalen == 0)
+    {
         return 0;
+    }
 
     std::vector<char> datacp = getXorCopy(data, datalen);
 
     if (datacp.empty())
+    {
         return 0;
+    }
 
     return Socket::partialWrite(datacp.data(), datacp.size());
 }
@@ -61,7 +71,9 @@ std::vector<char> Socket_Chain_XOR::getXorCopy(const void *data, const size_t &d
     const char *src = static_cast<const char *>(data);
 
     for (size_t i = 0; i < datalen; ++i)
+    {
         datacp[i] = src[i] ^ m_xorByte;
+    }
 
     return datacp;
 }

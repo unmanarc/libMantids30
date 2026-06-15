@@ -13,7 +13,6 @@
 
 namespace Mantids30::Network::Sockets {
 
-
 /**
  * TCP Socket Class
  */
@@ -188,10 +187,7 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPrivateKeyFromPEMFileEP(const char *filePath, char *pass)
-        {
-            return loadPrivateKeyFromPEMFile(filePath, nullptr,static_cast<void *>(pass));
-        }
+        bool loadPrivateKeyFromPEMFileEP(const char *filePath, char *pass) { return loadPrivateKeyFromPEMFile(filePath, nullptr, static_cast<void *>(pass)); }
         /**
          * @brief loadPrivateKeyFromPEMFile Load Private Key From PEM File
          * @param filePath file path
@@ -222,10 +218,7 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPrivateKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass)
-        {
-            return loadPrivateKeyFromPEMMemory(privKeyPEMData, nullptr, static_cast<void *>(pass));
-        }
+        bool loadPrivateKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass) { return loadPrivateKeyFromPEMMemory(privKeyPEMData, nullptr, static_cast<void *>(pass)); }
         /**
          * @brief loadPrivateKeyFromPEMMemory Load Private Key from PEM formatted memory (null-terminated)
          * @note don't forget to clean the privKeyPEMData memory after use.
@@ -242,10 +235,7 @@ public:
          * @param pass null terminated password
          * @return true if loaded OK, false otherwise
          */
-        bool loadPublicKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass)
-        {
-            return loadPublicKeyFromPEMMemory(privKeyPEMData, nullptr, pass);
-        }
+        bool loadPublicKeyFromPEMMemoryEP(const char *privKeyPEMData, char *pass) { return loadPublicKeyFromPEMMemory(privKeyPEMData, nullptr, pass); }
         /**
          * @brief loadPublicKeyFromPEMMemory Load Public Key from PEM formatted memory (null-terminated)
          * @param pubKeyPEMData Public Key Memory (the memory will be destroyed on this function)
@@ -301,7 +291,6 @@ public:
          */
         PSKClientValue *getPSKClientValue();
 
-
         const PSKClientValue *getPSKClientValue() const;
 
         /**
@@ -310,9 +299,7 @@ public:
          */
         PSKServerWallet *getPSKServerWallet();
 
-
         const PSKServerWallet *getPSKServerWallet() const;
-
 
         /**
          * @brief getSecurityLevel Get OpenSSL Security Level
@@ -462,7 +449,6 @@ public:
 
     TLSKeyParameters tlsKeys;
 
-
     enum eCertValidationOptions
     {
         CERT_X509_VALIDATE,
@@ -585,7 +571,6 @@ public:
 
     bool isUsingPSK() const;
 
-
     /**
      * function for TLS client protocol initialization after the connection starts (client-mode)...
      * This is usually called from connectTo, however, if you transfered the socket from a TCP connection, you may want to call this function after. (Eg. after STARTTLS)
@@ -599,10 +584,8 @@ public:
     bool isSecure() override;
 
 protected:
-
-
-    ssize_t iPartialRead(void * data, const size_t & datalen, int ttl = 100);
-    ssize_t iPartialWrite(const void * data, const size_t & datalen, int ttl = 100);
+    ssize_t iPartialRead(void *data, const size_t &datalen, int ttl = 100);
+    ssize_t iPartialWrite(const void *data, const size_t &datalen, int ttl = 100);
 
     bool createTLSContext();
     void parseErrors();
@@ -620,6 +603,5 @@ protected:
 
     std::mutex mutexRead, mutexWrite;
     bool m_isServer = false;
-
 };
 } // namespace Mantids30::Network::Sockets

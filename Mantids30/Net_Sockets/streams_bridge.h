@@ -7,12 +7,11 @@
 #include <stdint.h>
 
 #include <atomic>
-#include <thread>
 #include <condition_variable>
 #include <mutex>
+#include <thread>
 
 namespace Mantids30::Network::Sockets::NetStreams {
-
 
 /**
  * @brief The Bridge class connect two pipe stream sockets.
@@ -20,9 +19,10 @@ namespace Mantids30::Network::Sockets::NetStreams {
 class Bridge
 {
 public:
-    enum TransmitionMode {
-        TRANSMITION_MODE_STREAM=0,
-        TRANSMITION_MODE_CHUNKSANDPING=1
+    enum TransmitionMode
+    {
+        TRANSMITION_MODE_STREAM = 0,
+        TRANSMITION_MODE_CHUNKSANDPING = 1
     };
     /**
      * @brief Socket_Bridge constructor.
@@ -57,13 +57,13 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream>  s);
+    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream> s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    std::shared_ptr<Sockets::Socket_Stream>  getPeer(Side i);
+    std::shared_ptr<Sockets::Socket_Stream> getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -126,7 +126,6 @@ public:
      */
     time_t getLastPing();
 
-
     int getLastError(Side side);
 
     /**
@@ -138,13 +137,13 @@ public:
     void setPingEveryMS(uint32_t newPingEveryMS);
 
 private:
-    static void remotePeerThread(Bridge * stp);
-    static void pingThread(Bridge * stp);
-    static void pipeThread(Bridge * stp);
+    static void remotePeerThread(Bridge *stp);
+    static void pingThread(Bridge *stp);
+    static void pipeThread(Bridge *stp);
 
     Bridge_Thread *m_bridgeThreadPrc = nullptr;
 
-    std::shared_ptr<Sockets::Socket_Stream>  m_peers[2] = {nullptr, nullptr};
+    std::shared_ptr<Sockets::Socket_Stream> m_peers[2] = {nullptr, nullptr};
     TransmitionMode m_transmitionMode = TRANSMITION_MODE_STREAM;
 
     std::atomic<size_t> m_sentBytes{0}, m_recvBytes{0};
@@ -170,4 +169,4 @@ private:
     std::thread m_pipeThreadP;
 };
 
-}
+} // namespace Mantids30::Network::Sockets::NetStreams

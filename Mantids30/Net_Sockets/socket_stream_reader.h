@@ -3,9 +3,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <string>
 #include <limits>
 #include <stdexcept>
+#include <string>
 
 namespace Mantids30::Network::Sockets {
 
@@ -15,14 +15,13 @@ public:
     Socket_Stream_Reader();
     virtual ~Socket_Stream_Reader();
 
-
     template<typename T>
-    T readU(bool *readOK=nullptr)
+    T readU(bool *readOK = nullptr)
     {
         T r = 0;
         bool _readOK;
 
-        switch(sizeof(T))
+        switch (sizeof(T))
         {
         case 1:
             r = readU8(&_readOK);
@@ -42,9 +41,15 @@ public:
         }
 
         // Sets readOK
-        if (readOK) *readOK = _readOK;
+        if (readOK)
+        {
+            *readOK = _readOK;
+        }
 
-        if (!_readOK) readDeSync();
+        if (!_readOK)
+        {
+            readDeSync();
+        }
 
         return r;
     }
@@ -57,14 +62,16 @@ public:
     * @return true if succeed.
     */
     template<typename T>
-    bool readBlockEx(void * data,T * datalen, bool mustReceiveFullDataLen = false)
+    bool readBlockEx(void *data, T *datalen, bool mustReceiveFullDataLen = false)
     {
         bool readOK;
         T len;
 
         // no data to be received:
-        if (*datalen == 0) 
+        if (*datalen == 0)
+        {
             return true;
+        }
 
         len = readU<T>(&readOK);
 
@@ -74,15 +81,17 @@ public:
             {
                 readDeSync();
                 return false;
-            }           
+            }
 
             *datalen = len;
 
-            if (!len) // Nothing to get here.
+            if (!len)
+            { // Nothing to get here.
                 return true;
+            }
 
             size_t r;
-            return (readFull(data, len, &r) && r==len);
+            return (readFull(data, len, &r) && r == len);
         }
         return false;
     }
@@ -93,22 +102,26 @@ public:
         * @return memory allocated with the retrieved data or nullptr if failed to allocate memory.
         */
     template<typename T>
-    char *readBlockWAllocEx(T * datalen)
+    char *readBlockWAllocEx(T *datalen)
     {
         bool readOK;
         T expectedBytesCount;
-        T virtualMax = std::numeric_limits<T>::max()-1;
+        T virtualMax = std::numeric_limits<T>::max() - 1;
 
         if (!datalen)
+        {
             datalen = &virtualMax;
+        }
 
-        if (*datalen> std::numeric_limits<size_t>::max())
+        if (*datalen > std::numeric_limits<size_t>::max())
+        {
             throw std::runtime_error("Potential HOF. Aborting execution");
+        }
 
         expectedBytesCount = readU<T>(&readOK);
         if (readOK)
         {
-            if (expectedBytesCount > *datalen)  // len received exceeded the max datalen permited.
+            if (expectedBytesCount > *datalen) // len received exceeded the max datalen permited.
             {
                 *datalen = 0;
                 readDeSync();
@@ -116,14 +129,14 @@ public:
             }
 
             // download and resize (be careful, datalen limit is here to prevent you to receive
-            char * odata = new char[expectedBytesCount+1];
+            char *odata = new char[expectedBytesCount + 1];
             if (!odata)
             {
                 readDeSync();
                 return nullptr; // not enough memory.
             }
 
-            memset(odata,0,expectedBytesCount+1);
+            memset(odata, 0, expectedBytesCount + 1);
 
             if (!expectedBytesCount)
             {
@@ -133,10 +146,10 @@ public:
             }
 
             size_t r;
-            bool ok = readFull(odata, expectedBytesCount,&r) && r==expectedBytesCount;
+            bool ok = readFull(odata, expectedBytesCount, &r) && r == expectedBytesCount;
             if (!ok)
             {
-                delete [] odata;
+                delete[] odata;
                 *datalen = 0;
                 readDeSync();
                 return nullptr;
@@ -144,7 +157,6 @@ public:
             *datalen = expectedBytesCount;
             return odata;
         }
-
 
         *datalen = 0;
         return nullptr;
@@ -156,73 +168,79 @@ public:
         * @param delimBytes delimiter size (max: 65535 bytes).
         * @return memory allocated with the retrieved data or nullptr if failed.
         */
-    char *readBlock32WAllocAndDelim(unsigned int * datalen, const char *delim, uint16_t delimBytes);
+    char *readBlock32WAllocAndDelim(unsigned int *datalen, const char *delim, uint16_t delimBytes);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Null terminated strings:
 
     template<typename T>
-    std::string readStringEx(bool *readOK=nullptr , const T & maxLenght = std::numeric_limits<T>::max()-1)
+    std::string readStringEx(bool *readOK = nullptr, const T &maxLenght = std::numeric_limits<T>::max() - 1)
     {
         T receivedBytes = maxLenght;
 
         if (maxLenght > std::numeric_limits<size_t>::max())
+        {
             throw std::runtime_error("Potential HOF. Aborting execution");
+        }
 
-        if (readOK) *readOK = true;
+        if (readOK)
+        {
+            *readOK = true;
+        }
 
         // readBlockWAllocEx will handle readDeSync();
-        char * data = (char *)readBlockWAllocEx<T>(&receivedBytes);
+        char *data = (char *) readBlockWAllocEx<T>(&receivedBytes);
         if (!data)
         {
-            if (readOK) *readOK = false;
+            if (readOK)
+            {
+                *readOK = false;
+            }
             return "";
         }
 
         if (!receivedBytes)
         {
-            delete [] data;
+            delete[] data;
             return "";
         }
         else
         {
-            std::string v(data,receivedBytes);
-            delete [] data;
+            std::string v(data, receivedBytes);
+            delete[] data;
             return v;
         }
     }
 
-
 protected:
-    virtual bool readFull(void * data, const size_t & datalen, size_t * bytesReceived = nullptr) = 0;
-    virtual void readDeSync()=0;
+    virtual bool readFull(void *data, const size_t &datalen, size_t *bytesReceived = nullptr) = 0;
+    virtual void readDeSync() = 0;
 
 private:
-    int32_t read64KBlockDelim(char * block, const char* delim, const uint16_t & delimBytes, const uint32_t &blockNo);
+    int32_t read64KBlockDelim(char *block, const char *delim, const uint16_t &delimBytes, const uint32_t &blockNo);
     /**
         * Read unsigned char
         * @param readOK pointer to bool variable that will be filled with the result (success or fail).
         * @return char retrived.
         * */
-    unsigned char readU8(bool *readOK=nullptr);
+    unsigned char readU8(bool *readOK = nullptr);
     /**
         * Read unsigned short (16bit)
         * @param readOK pointer to bool variable that will be filled with the result (success or fail).
         * @return char retrived.
         * */
-    uint16_t readU16(bool *readOK=nullptr);
+    uint16_t readU16(bool *readOK = nullptr);
     /**
         * Read unsigned integer (32bit)
         * @param readOK pointer to bool variable that will be filled with the result (success or fail).
         * @return char retrived.
         * */
-    uint32_t readU32(bool *readOK=nullptr);
+    uint32_t readU32(bool *readOK = nullptr);
     /**
         * Read unsigned integer (46bit)
         * @param readOK pointer to bool variable that will be filled with the result (success or fail).
         * @return char retrived.
         * */
-    uint64_t readU64(bool *readOK=nullptr);
+    uint64_t readU64(bool *readOK = nullptr);
 };
-}
-
+} // namespace Mantids30::Network::Sockets

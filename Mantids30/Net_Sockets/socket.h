@@ -2,8 +2,8 @@
 
 #include <mutex>
 #ifndef _WIN32
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <sys/socket.h>
 #else
 #include <ws2tcpip.h>
 #define SHUT_RD SD_RECEIVE
@@ -14,12 +14,12 @@
 #include <stdint.h>
 #include <unistd.h>
 
+#include <atomic>
 #include <memory>
 #include <string>
-#include <atomic>
 
 // default values to prevent network error application hangs (because not everybody supports tcp keepalives)...
-#define DEFAULT_SOCKRW_TIMEOUT 60*5
+#define DEFAULT_SOCKRW_TIMEOUT 60 * 5
 
 namespace Mantids30::Network::Sockets {
 
@@ -28,8 +28,10 @@ class Socket_TCP;
  * Socket base class
  * Manipulates all kind of sockets (udp,tcp,unix, etc)
  */
-class Socket {
+class Socket
+{
     friend class Socket_TCP;
+
 public:
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Constructors/Destructors/Copy:
@@ -42,7 +44,7 @@ public:
 
     //Keep the copy constructor and assignment operator as deleted or private to prevent duplication.
     Socket(const Socket &) = delete;
-    Socket& operator=(Socket) = delete;
+    Socket &operator=(Socket) = delete;
 
 #ifdef _WIN32
     static bool win32Init();
@@ -106,10 +108,7 @@ public:
 
     struct AddressAndPort
     {
-        std::string toString()
-        {
-            return address + ":" + std::to_string(port);
-        }
+        std::string toString() { return address + ":" + std::to_string(port); }
         std::string address;
         uint16_t port = 0;
     };
@@ -167,7 +166,7 @@ public:
      * Get remote pair address
      * @param address pair address char * (should contain at least 64 bytes)
      */
-    void getRemotePair(char * address) const;
+    void getRemotePair(char *address) const;
 
     /**
      * @brief getRemotePort Get Remote Port for listening connections
@@ -220,7 +219,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectTo(const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
+    bool connectTo(const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30);
     /**
      * @brief connectFrom Connect to remote host using a local bind address (eg. multi-homed network)
      * @param localBindAddress address to bind, if empty, use default.
@@ -229,19 +228,18 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    virtual bool connectFrom(const char * localBindAddress, const char * remoteHost, const  uint16_t & port, const uint32_t & timeout = 30);
+    virtual bool connectFrom(const char *localBindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30);
     /**
      * Try connect until it succeeds.
      */
-    void tryConnect(const char * remoteHost, const uint16_t & port, const uint32_t & timeout);
+    void tryConnect(const char *remoteHost, const uint16_t &port, const uint32_t &timeout);
     /**
      * Bind and Listen on an specific port and address (does not require to bind)
      * @param listenOnAddress address to listen on. (use :: for ipv6 or 0.0.0.0 if ipv4)
      * @param port 16-bit unsigned integer with the listening port (0-65535)
      * @return true if we can bind the port.
      */
-    virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10);
-
+    virtual bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10);
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Connection Finalization...
@@ -268,7 +266,7 @@ public:
      * @param datalen data length in bytes
      * @return return the number of bytes read by the socket, zero for end of file and -1 for error.
      */
-    virtual ssize_t partialRead(void * data, const size_t & datalen);
+    virtual ssize_t partialRead(void *data, const size_t &datalen);
     /**
      * Write a data block to the socket
      * note that this haves some limitations. some systems can only send 4k at time.
@@ -277,7 +275,7 @@ public:
      * @param datalen data length in bytes
      * @return return the number of bytes read by the socket, zero for end of file and -1 for error.
      */
-    virtual ssize_t partialWrite(const void *data, const size_t & datalen);
+    virtual ssize_t partialWrite(const void *data, const size_t &datalen);
 
     /**
      * @brief iShutdown Internal protocol Shutdown
@@ -323,9 +321,7 @@ public:
      */
     void setConnectionName(const std::string &newConnectionName);
 
-
     void setRemoteServerHostname(const std::string &newRemoteServerHostname);
-
 
     enum eDebugOptions
     {
@@ -340,13 +336,11 @@ public:
     void setDebugOptions(uint32_t debugOptions) { this->debugOptions = debugOptions; }
     void setDebugOutput(const std::string &newDebugDir);
 
-
 private:
     static void socketSystemInitialization();
     //void initVars();
 
 protected:
-
     uint32_t debugOptions = 0;
     std::string debugDir;
     FILE *debugFP = nullptr;
@@ -356,10 +350,10 @@ protected:
      * Used by internal functions...
      * @param address pair address char * (should contain at least 64 bytes)
      */
-    void setRemotePair(const char * address);
+    void setRemotePair(const char *address);
 
-    bool bindTo(const char * bindAddress = nullptr, const uint16_t &port = 0);
-    bool getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void ** res);
+    bool bindTo(const char *bindAddress = nullptr, const uint16_t &port = 0);
+    bool getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void **res);
 
     bool m_useIPv6 = false;
     /**
@@ -409,7 +403,6 @@ protected:
 
     std::mutex mutexClose;
 
-
     bool m_shutdownProtocolOnRead = false;
     bool m_shutdownProtocolOnWrite = false;
 
@@ -420,5 +413,4 @@ protected:
 
 typedef std::shared_ptr<Socket> Socket_SP;
 
-}
-
+} // namespace Mantids30::Network::Sockets

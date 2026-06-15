@@ -4,30 +4,27 @@
 #else
 #include <arpa/inet.h>
 #endif
-#include <string.h>
 #include <ctgmath>
+#include <string.h>
 
 #if __BIG_ENDIAN__
-# define htonll(x) (x)
-# define ntohll(x) (x)
+#define htonll(x) (x)
+#define ntohll(x) (x)
 #else
-# define htonll(x) (((uint64_t)htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
-# define ntohll(x) (((uint64_t)ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
+#define htonll(x) (((uint64_t) htonl((x) & 0xFFFFFFFF) << 32) | htonl((x) >> 32))
+#define ntohll(x) (((uint64_t) ntohl((x) & 0xFFFFFFFF) << 32) | ntohl((x) >> 32))
 #endif
 
 using namespace Mantids30::Network::Sockets;
 
-
-
-bool Socket_Stream_Writer::writeU8(const unsigned char& c)
+bool Socket_Stream_Writer::writeU8(const unsigned char &c)
 {
     unsigned char snd[1];
     snd[0] = c;
     return writeFull(&snd, 1); // Send 1-byte
 }
 
-
-bool Socket_Stream_Writer::writeU16(const uint16_t& c)
+bool Socket_Stream_Writer::writeU16(const uint16_t &c)
 {
     // Write 16bit unsigned integer as network short.
     uint16_t nbo;
@@ -35,8 +32,7 @@ bool Socket_Stream_Writer::writeU16(const uint16_t& c)
     return writeFull(&nbo, sizeof(uint16_t));
 }
 
-
-bool Socket_Stream_Writer::writeU32(const uint32_t& c)
+bool Socket_Stream_Writer::writeU32(const uint32_t &c)
 {
     // Write 32bit unsigned integer as network long.
     uint32_t nbo;

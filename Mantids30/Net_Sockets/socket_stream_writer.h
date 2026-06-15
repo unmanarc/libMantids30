@@ -16,11 +16,11 @@ public:
     virtual ~Socket_Stream_Writer() = default;
 
     template<typename T>
-    bool writeU(const T & c)
+    bool writeU(const T &c)
     {
         bool r = false;
 
-        switch(sizeof(T))
+        switch (sizeof(T))
         {
         case 1:
             r = writeU8(c);
@@ -38,7 +38,10 @@ public:
             r = false;
         }
 
-        if (!r) writeDeSync();
+        if (!r)
+        {
+            writeDeSync();
+        }
 
         return r;
     }
@@ -50,18 +53,26 @@ public:
          * @return true if succeed to send, otherwise false.
          */
     template<typename T>
-    bool writeBlockEx(const void * data,const T & datalen)
+    bool writeBlockEx(const void *data, const T &datalen)
     {
-        bool wr=false;
+        bool wr = false;
 
-        if (sizeof(T) == 1 && !(wr=writeU8(datalen)))
+        if (sizeof(T) == 1 && !(wr = writeU8(datalen)))
+        {
             return false;
-        else if (sizeof(T) == 2 && !(wr=writeU16(datalen)))
+        }
+        else if (sizeof(T) == 2 && !(wr = writeU16(datalen)))
+        {
             return false;
-        else if (sizeof(T) == 4 && !(wr=writeU32(datalen)))
+        }
+        else if (sizeof(T) == 4 && !(wr = writeU32(datalen)))
+        {
             return false;
-        else if (sizeof(T) == 8 && !(wr=writeU64(datalen)))
+        }
+        else if (sizeof(T) == 8 && !(wr = writeU64(datalen)))
+        {
             return false;
+        }
 
         if (!wr) // sizeof T Not supported
         {
@@ -71,20 +82,24 @@ public:
         }
 
         if (!datalen)
+        {
             return true;
+        }
 
         bool r = (writeFull(data, datalen));
 
         if (!r)
+        {
             writeDeSync();
+        }
 
         return r;
     }
 
     template<typename T>
-    bool writeStringEx(const std::string & str,const size_t & maxSize = std::numeric_limits<T>::max()-1)
+    bool writeStringEx(const std::string &str, const size_t &maxSize = std::numeric_limits<T>::max() - 1)
     {
-        if (str.size()>maxSize)
+        if (str.size() > maxSize)
         {
             writeDeSync();
             return false;
@@ -94,35 +109,34 @@ public:
     }
 
 protected:
+    virtual bool writeFull(const void *data, const size_t &datalen) = 0;
+    virtual void writeDeSync() = 0;
 
-    virtual bool writeFull(const void * data, const size_t & datalen) = 0;
-    virtual void writeDeSync()=0;
 private:
     /**
          * Write unsigned char
          * @param c char to write into the socket.
          * @return true if succeed.
          * */
-    bool writeU8(const unsigned char & c);
+    bool writeU8(const unsigned char &c);
     /**
          * Write unsigned short (16bit)
          * @param c char to write into the socket.
          * @return true if succeed.
          * */
-    bool writeU16(const uint16_t & c);
+    bool writeU16(const uint16_t &c);
     /**
          * Write unsigned integer (32bit)
          * @param c char to write into the socket.
          * @return true if succeed.
          * */
-    bool writeU32(const uint32_t & c);
+    bool writeU32(const uint32_t &c);
     /**
          * Write unsigned integer (64bit)
          * @param c char to write into the socket.
          * @return true if succeed.
          * */
-    bool writeU64(const uint64_t & c);
+    bool writeU64(const uint64_t &c);
 };
 
-}
-
+} // namespace Mantids30::Network::Sockets

@@ -11,7 +11,6 @@ Bridge::Bridge()
     setToCloseRemotePeer(true);
 }
 
-
 void Bridge::pipeThread(Bridge *stp)
 {
     stp->process();
@@ -44,14 +43,18 @@ void Bridge::pingThread(Bridge *stp)
 bool Bridge::start(bool _autoDeleteStreamPipeOnExit, bool detach)
 {
     if (!m_peers[0] || !m_peers[1])
+    {
         return false;
+    }
 
     m_autoDeleteStreamPipeOnExit = _autoDeleteStreamPipeOnExit;
 
     m_pipeThreadP = std::thread(pipeThread, this);
 
     if (m_autoDeleteStreamPipeOnExit || detach)
+    {
         m_pipeThreadP.detach();
+    }
 
     return true;
 }
@@ -65,9 +68,9 @@ void Bridge::sendPing()
     pthread_setname_np(pthread_self(), "SockBr:Ping");
 #endif
 
-    while(!m_isPingFinished)
+    while (!m_isPingFinished)
     {
-        if (m_endPingCond.wait_for(lock,Ms(m_pingEveryMS)) == std::cv_status::timeout)
+        if (m_endPingCond.wait_for(lock, Ms(m_pingEveryMS)) == std::cv_status::timeout)
         {
             // Send some ping...
             m_bridgeThreadPrc->sendPing();
@@ -88,7 +91,9 @@ int Bridge::wait()
 int Bridge::process()
 {
     if (!m_peers[SIDE_FORWARD] || !m_peers[SIDE_BACKWARD])
+    {
         return -1;
+    }
 
     if (!m_bridgeThreadPrc)
     {
@@ -96,7 +101,7 @@ int Bridge::process()
         m_autoDeleteCustomPipeOnClose = true;
     }
 
-    m_bridgeThreadPrc->setSocketEndpoints(m_peers[SIDE_BACKWARD],m_peers[SIDE_FORWARD], m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
+    m_bridgeThreadPrc->setSocketEndpoints(m_peers[SIDE_BACKWARD], m_peers[SIDE_FORWARD], m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
 
     if (m_bridgeThreadPrc->startPipeSync())
     {
@@ -104,7 +109,7 @@ int Bridge::process()
         std::thread pingerThread;
         if (m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
         {
-             pingerThread = std::thread(pingThread, this);
+            pingerThread = std::thread(pingThread, this);
         }
 
         std::thread remotePeerThreadP = std::thread(remotePeerThread, this);
@@ -123,7 +128,6 @@ int Bridge::process()
         {
             pingerThread.join();
         }
-
     }
 
     // All connections terminated.
@@ -134,7 +138,7 @@ int Bridge::process()
         m_peers[0]->closeSocket();
     }
 
-    if ( m_autoDeleteCustomPipeOnClose )
+    if (m_autoDeleteCustomPipeOnClose)
     {
         delete m_bridgeThreadPrc;
         m_bridgeThreadPrc = nullptr;
@@ -145,20 +149,21 @@ int Bridge::process()
 
 bool Bridge::processPeer(Side currentSide)
 {
-
 #ifdef __linux__
     pthread_setname_np(pthread_self(), "SockBr:Peer");
 #endif
 
-    if (currentSide>1)
+    if (currentSide > 1)
+    {
         return false;
+    }
 
-    Side oppositeSide = currentSide==SIDE_FORWARD?SIDE_BACKWARD:SIDE_FORWARD;
+    Side oppositeSide = currentSide == SIDE_FORWARD ? SIDE_BACKWARD : SIDE_FORWARD;
 
-    std::atomic<size_t> * bytesCounter = currentSide==SIDE_FORWARD?&m_sentBytes:&m_recvBytes;
+    std::atomic<size_t> *bytesCounter = currentSide == SIDE_FORWARD ? &m_sentBytes : &m_recvBytes;
 
-    int dataRecv=1;
-    while ( dataRecv > 0 )
+    int dataRecv = 1;
+    while (dataRecv > 0)
     {
         dataRecv = m_bridgeThreadPrc->processPipe(currentSide);
         // >0 : data processed
@@ -166,18 +171,18 @@ bool Bridge::processPeer(Side currentSide)
         // -1 : socket error
         // -2: write error (don't need to close or do nothing, just bye because the other peer will report the read error in the same socket)
         // -3: ping
-        if (dataRecv>0)
+        if (dataRecv > 0)
         {
-            *bytesCounter+=dataRecv;
+            *bytesCounter += dataRecv;
         }
-        else if ( (dataRecv==-1 || dataRecv==0 ) && m_shutdownRemotePeerOnFinish )
+        else if ((dataRecv == -1 || dataRecv == 0) && m_shutdownRemotePeerOnFinish)
         {
             m_lastError[oppositeSide] = dataRecv;
             m_peers[currentSide]->shutdownSocket();
             m_bridgeThreadPrc->terminate();
             m_finishingPeer = oppositeSide;
         }
-        else if ( dataRecv==-3 ) // Only pings are received from one side.
+        else if (dataRecv == -3) // Only pings are received from one side.
         {
             std::unique_lock<std::mutex> l(m_lastPingMutex);
             m_lastPingTimestamp = time(nullptr);
@@ -191,16 +196,20 @@ bool Bridge::processPeer(Side currentSide)
 
 bool Bridge::setPeer(Side i, std::shared_ptr<Socket_Stream> s)
 {
-    if (i>1)
+    if (i > 1)
+    {
         return false;
+    }
     m_peers[i] = s;
     return true;
 }
 
 std::shared_ptr<Socket_Stream> Bridge::getPeer(Side i)
 {
-    if (i>1)
+    if (i > 1)
+    {
         return nullptr;
+    }
     return m_peers[i];
 }
 
@@ -268,7 +277,9 @@ time_t Bridge::getLastPing()
 
 int Bridge::getLastError(Side side)
 {
-    if (side>1)
+    if (side > 1)
+    {
         return -1;
+    }
     return m_lastError[side];
 }

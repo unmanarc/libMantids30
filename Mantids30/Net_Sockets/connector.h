@@ -12,7 +12,6 @@ class Connector
 public:
     Connector() { m_stopReconnecting = false; }
 
-
     class Config
     {
     public:
@@ -77,7 +76,6 @@ public:
         void *context;
     };
 
-
     /**
      * @brief startConnecting Start a background process connecting to the specified host...
      *                        The server will be called "SERVER"
@@ -91,4 +89,4 @@ public:
     std::atomic_bool m_stopReconnecting;
 };
 
-}
+} // namespace Mantids30::Network::Sockets

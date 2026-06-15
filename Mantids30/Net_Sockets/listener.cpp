@@ -11,16 +11,15 @@ using namespace std;
 
 Listener::Listener() {}
 
-void Listener::incomingConnection(void * context,
-                                  std::shared_ptr<Sockets::Socket_Stream> socketStream)
+void Listener::incomingConnection(void *context, std::shared_ptr<Sockets::Socket_Stream> socketStream)
 {
-    Listener *threadParams = (Listener *)(context);
+    Listener *threadParams = (Listener *) (context);
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
     int connectionStatus = threadParams->handleClientConnection(socketStream);
     CALLBACK(threadParams->tcpCallbacks.onClientDisconnected)(threadParams->listenerContext, socketStream, connectionStatus);
 }
 
-bool Listener::startListeningInBackground( const Config &parameters )
+bool Listener::startListeningInBackground(const Config &parameters)
 {
     // TODO: this is repeated code... we should pass this to socket_tls? and personalize the socket options...
     std::shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = std::make_shared<Acceptors::MultiThreaded>();
@@ -29,7 +28,7 @@ bool Listener::startListeningInBackground( const Config &parameters )
 
     bool cont = true;
 
-    if ( parameters.useTLS )
+    if (parameters.useTLS)
     {
         std::shared_ptr<Socket_TLS> tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(listenerSocket);
         if (tlsSocket)
@@ -56,7 +55,7 @@ bool Listener::startListeningInBackground( const Config &parameters )
         }
     }
 
-    listenerSocket->setUseIPv6( parameters.useIPv6 );
+    listenerSocket->setUseIPv6(parameters.useIPv6);
 
     if (!cont || !listenerSocket->listenOn(parameters.listenPort, parameters.listenAddr.c_str()))
     {

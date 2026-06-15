@@ -12,7 +12,8 @@ namespace Mantids30::Network::Sockets {
 /**
  * TCP Socket Class
  */
-class Socket_TCP : public Sockets::Socket_Stream {
+class Socket_TCP : public Sockets::Socket_Stream
+{
 public:
     /**
      * Class constructor.
@@ -25,7 +26,7 @@ public:
      * @param port 16-bit unsigned integer with the listening TCP port (1-65535), 0 means random available port.
      * @return true if the operation succeeded.
      */
-    bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Connect to remote host using a TCP socket.
      * @param remoteHost remote hostname to connect to, can be the hostname or the ip address
@@ -33,16 +34,16 @@ public:
      * @param timeout timeout in seconds to desist the connection. (default 30)
      * @return true if successfully connected
      */
-    bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
     /**
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.
      */
     virtual std::shared_ptr<Socket_Stream> acceptConnection() override;
 
-    int setTCPOptionBool(const int32_t & optname, bool value = true);
-    int setTCPOption(const int32_t & optname,const void *optval, socklen_t optlen);
-    int getTCPOption(const int32_t &optname, void *optval, socklen_t * optlen);
+    int setTCPOptionBool(const int32_t &optname, bool value = true);
+    int setTCPOption(const int32_t &optname, const void *optval, socklen_t optlen);
+    int getTCPOption(const int32_t &optname, void *optval, socklen_t *optlen);
 
     void overrideReadTimeout(int32_t tout = -1);
     void overrideWriteTimeout(int32_t tout = -1);
@@ -65,17 +66,15 @@ public:
     void setTcpNoDelayOption(bool newTcpNoDelayOption);
 
 protected:
-
 private:
     bool tcpConnect(const unsigned short &addrType, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
     bool m_useTcpNoDelayOption;
     bool m_useTCPForceKeepAlive;
-    int m_tcpKeepIdle,m_tcpKeepCnt,m_tcpKeepInterval;
-    int32_t m_overwriteReadTimeout,m_overwriteWriteTimeout;
+    int m_tcpKeepIdle, m_tcpKeepCnt, m_tcpKeepInterval;
+    int32_t m_overwriteReadTimeout, m_overwriteWriteTimeout;
 };
 
 typedef std::shared_ptr<Socket_TCP> Socket_TCP_SP;
 
-}
-
+} // namespace Mantids30::Network::Sockets

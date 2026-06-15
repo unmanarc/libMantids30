@@ -130,11 +130,9 @@ public:
 
     void deriveConnectionName();
 
-
 protected:
     void writeDeSync() override;
     void readDeSync() override;
-
 };
 
 typedef std::shared_ptr<Socket_Stream> Socket_Stream_SP;

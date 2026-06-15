@@ -46,9 +46,13 @@ Socket_TLS::Socket_TLS()
 Socket_TLS::~Socket_TLS()
 {
     if (m_sslHandler)
+    {
         SSL_free(m_sslHandler);
+    }
     if (m_sslContext)
+    {
         SSL_CTX_free(m_sslContext);
+    }
 }
 
 void Socket_TLS::prepareTLS()
@@ -75,7 +79,9 @@ void Socket_TLS::setTLSParent(Socket_TLS *parent)
 bool Socket_TLS::postConnectSubInitialization()
 {
     if (m_sslHandler != nullptr)
+    {
         return false; // already connected (don't connect again)
+    }
 
     m_isServer = false;
 
@@ -101,7 +107,9 @@ bool Socket_TLS::postConnectSubInitialization()
     }
 
     if (!(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates())
+    {
         SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+    }
     else
     {
         // If there is no CA...
@@ -139,13 +147,17 @@ bool Socket_TLS::postConnectSubInitialization()
     }
     // no validate here...
     else
+    {
         return true;
+    }
 }
 
 bool Socket_TLS::postAcceptSubInitialization()
 {
     if (m_sslHandler != nullptr)
+    {
         return false; // already connected (don't connect again)
+    }
 
     m_isServer = true;
 
@@ -179,7 +191,9 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
 
     if (!m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates())
+    {
         SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+    }
     else
     {
         // If there is no CA...
@@ -208,7 +222,9 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
     // no validate here...
     else
+    {
         return true;
+    }
 }
 
 SSL_CTX *Socket_TLS::createServerSSLContext()
@@ -249,9 +265,13 @@ bool Socket_TLS::isServer() const
 bool Socket_TLS::isUsingPSK() const
 {
     if (m_isServer)
+    {
         return m_tlsParentConnection->tlsKeys.getPSKServerWallet()->isUsingPSK;
+    }
     else
+    {
         return tlsKeys.getPSKClientValue()->isUsingPSK;
+    }
 }
 
 bool Socket_TLS::createTLSContext()
@@ -299,7 +319,9 @@ void Socket_TLS::parseErrors()
 bool Socket_TLS::validateTLSConnection(const bool &usingPSK)
 {
     if (!m_sslHandler)
+    {
         return false;
+    }
 
     bool bValid = false;
 
@@ -321,7 +343,9 @@ bool Socket_TLS::validateTLSConnection(const bool &usingPSK)
             X509_free(cert);
         }
         else
+        {
             m_sslErrorList.push_back("Peer TLS/SSL Certificate does not exist.");
+        }
     }
     else
     {
@@ -344,7 +368,9 @@ void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
 string Socket_TLS::getTLSConnectionCipherName()
 {
     if (!m_sslHandler)
+    {
         return "";
+    }
     return SSL_get_cipher_name(m_sslHandler);
 }
 
@@ -363,7 +389,9 @@ string Socket_TLS::getPeerName() const
 string Socket_TLS::getTLSPeerCN() const
 {
     if (!m_sslHandler)
+    {
         return "";
+    }
 
     if (!isUsingPSK())
     {
@@ -375,7 +403,9 @@ string Socket_TLS::getTLSPeerCN() const
         {
             X509_NAME *certName = X509_get_subject_name(cert);
             if (certName)
+            {
                 X509_NAME_get_text_by_NID(certName, NID_commonName, certCNText, 511);
+            }
             X509_free(cert);
         }
         return std::string(certCNText);
@@ -384,9 +414,13 @@ string Socket_TLS::getTLSPeerCN() const
     {
         // the remote host is the server... no configured id.
         if (!m_isServer)
+        {
             return "server";
+        }
         else
+        {
             return tlsKeys.getPSKServerWallet()->connectedClientID;
+        }
     }
 }
 
@@ -442,7 +476,9 @@ Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 {
     sCipherBits cb;
     if (!m_sslHandler)
+    {
         return cb;
+    }
     cb.asymmetricBits = SSL_get_cipher_bits(m_sslHandler, &cb.symmetricBits);
     return cb;
 }
@@ -450,7 +486,9 @@ Socket_TLS::sCipherBits Socket_TLS::getTLSConnectionCipherBits()
 string Socket_TLS::getTLSConnectionProtocolVersion()
 {
     if (!m_sslHandler)
+    {
         return "";
+    }
     return SSL_get_version(m_sslHandler);
 }
 
@@ -463,7 +501,9 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
     std::shared_ptr<Socket_Stream> acceptedTCPSock = Socket_TCP::acceptConnection();
 
     if (!acceptedTCPSock)
+    {
         return nullptr;
+    }
 
     std::shared_ptr<Socket_TLS> acceptedTLSSock = std::make_shared<Socket_TLS>(); // Convert to this thing...
 
@@ -535,8 +575,9 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
             else
             {
                 std::string datax;
-                datax.append((const char *)data,readBytes);
-                fprintf(debugFP,"%s",datax.c_str()); fflush(debugFP);
+                datax.append((const char *) data, readBytes);
+                fprintf(debugFP, "%s", datax.c_str());
+                fflush(debugFP);
             }
         }
 
@@ -662,8 +703,9 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             else
             {
                 std::string datax;
-                datax.append((const char *)data,sentBytes);
-                fprintf(debugFP,"%s",datax.c_str()); fflush(debugFP);
+                datax.append((const char *) data, sentBytes);
+                fprintf(debugFP, "%s", datax.c_str());
+                fflush(debugFP);
             }
         }
 

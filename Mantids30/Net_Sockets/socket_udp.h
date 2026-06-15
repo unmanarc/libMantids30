@@ -8,7 +8,8 @@
 
 namespace Mantids30::Network::Sockets {
 
-class Socket_UDP : public Socket_DatagramBase {
+class Socket_UDP : public Socket_DatagramBase
+{
 public:
     /**
      * Class constructor
@@ -29,7 +30,7 @@ public:
      * @param port 16-bit unsigned integer with the listening UDP port (0-65535)
      * @return true if we can bind the port.
      */
-    bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
     /**
      * Setup parameters of UDP remote pair.
      * This connect function does not connect at all. It only set the socket and the parameters to send the information.
@@ -38,7 +39,7 @@ public:
      * @param timeout timeout in seconds to desist the connection.
      * @return true if successfully connected
      */
-    bool connectFrom(const char * bindAddress, const char * remoteHost, const uint16_t & port, const uint32_t & timeout = 30) override;
+    bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
     /**
      * Write a datagram on the socket
      * Only datagrams below 65507 bytes are valid to be sent here.
@@ -46,7 +47,7 @@ public:
      * @param datalen data length in bytes of the datagram
      * @return true if the datagram was sucessfully released by our software.
      */
-    bool writeBlock(const void * data, const size_t & datalen) override;
+    bool writeBlock(const void *data, const size_t &datalen) override;
     /**
      * Read a datagram from the socket
      * Receive the data block of maximum 65507 bytes.
@@ -77,4 +78,4 @@ private:
 
 typedef std::shared_ptr<Socket_UDP> Socket_UDP_SP;
 
-}
+} // namespace Mantids30::Network::Sockets

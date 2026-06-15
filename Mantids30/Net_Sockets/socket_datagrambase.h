@@ -22,26 +22,25 @@ public:
             data = nullptr;
             dataLength = -1;
         }
-        ~Block()
-        {
-            this->free();
-        }
+        ~Block() { this->free(); }
         void free()
         {
-            if (data) 
-                delete [] data;
+            if (data)
+            {
+                delete[] data;
+            }
         }
-        void copy(void * _data, int dlen)
+        void copy(void *_data, int dlen)
         {
-            if (dlen>0 && dlen<1024*1024) // MAX: 1Mb.
+            if (dlen > 0 && dlen < 1024 * 1024) // MAX: 1Mb.
             {
                 this->free();
                 data = new unsigned char[dlen];
-                memcpy(data,_data,dlen);
+                memcpy(data, _data, dlen);
             }
         }
         struct sockaddr socketAddress;
-        unsigned char * data;
+        unsigned char *data;
         int dataLength;
     };
 
@@ -53,12 +52,12 @@ public:
 
     // Socket specific functions:
     virtual bool isConnected() = 0;
-    virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10)  = 0;
-    virtual bool connectFrom(const char * bindAddress,const char * remoteHost, const uint16_t & port, const uint32_t &timeout = 30) = 0;
-    virtual bool writeBlock(const void * data, const size_t &datalen) = 0;
-    virtual bool readBlock(void * data, const size_t & datalen) = 0;
+    virtual bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) = 0;
+    virtual bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) = 0;
+    virtual bool writeBlock(const void *data, const size_t &datalen) = 0;
+    virtual bool readBlock(void *data, const size_t &datalen) = 0;
 };
 
 typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;
 
-}
+} // namespace Mantids30::Network::Sockets

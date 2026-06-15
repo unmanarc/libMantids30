@@ -96,9 +96,13 @@ private:
         {
             char *nBlock = new char[nAesBlock_size + aesBlock_curSize];
             if (!nBlock)
+            {
                 return false;
+            }
             if (aesBlock_curSize)
+            {
                 memcpy(nBlock, aesBlock, aesBlock_curSize);
+            }
             memcpy(nBlock + aesBlock_curSize, nAesBlock, nAesBlock_size);
             cleanAESBlock(nBlock, nAesBlock_size + aesBlock_curSize);
             return true;
@@ -113,22 +117,30 @@ private:
             {
                 char *nBlock = new char[aesBlock_curSize - bytes];
                 if (!nBlock)
+                {
                     return;
+                }
                 if (aesBlock_curSize)
+                {
                     memcpy(nBlock, aesBlock + bytes, aesBlock_curSize - bytes);
+                }
                 cleanAESBlock(nBlock, aesBlock_curSize - bytes);
             }
         }
         bool cryptoXOR(char *dataBlock, size_t dblocksize, bool dontreduce = false)
         {
             if (dblocksize > aesBlock_curSize)
+            {
                 return false;
+            }
             for (size_t i = 0; i < dblocksize; i++)
             {
                 dataBlock[i] = dataBlock[i] ^ aesBlock[i];
             }
             if (!dontreduce)
+            {
                 reduce(dblocksize);
+            }
             return true;
         }
         char handShakeIV[16];

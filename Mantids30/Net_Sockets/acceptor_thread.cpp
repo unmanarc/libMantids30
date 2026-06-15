@@ -3,8 +3,8 @@
 #include <string>
 
 #ifndef _WIN32
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #else
 #include <ws2tcpip.h>
 #endif
@@ -57,8 +57,8 @@ uint16_t StreamAcceptorThread::getLocalPort()
 void StreamAcceptorThread::thread_streamclient(std::shared_ptr<StreamAcceptorThread> threadClient, void *threadedAcceptedControl)
 {
 #ifdef __linux__
-    pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str() );
+    pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str());
 #endif
     threadClient->postInitConnection();
-    ((MultiThreaded *)threadedAcceptedControl)->finalizeThreadElement(threadClient);
+    ((MultiThreaded *) threadedAcceptedControl)->finalizeThreadElement(threadClient);
 }

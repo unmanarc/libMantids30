@@ -60,7 +60,7 @@ std::optional<size_t> Socket_Stream::write(const void *buf, const size_t &count)
 
     // Write...
     ssize_t r = partialWrite(buf, count);
-    if (r>0)
+    if (r > 0)
     {
         return r;
     }
@@ -237,7 +237,6 @@ void Socket_Stream::deriveConnectionName()
     setConnectionName(rpcClientKey);
 }
 
-
 void Socket_Stream::writeDeSync()
 {
     // Action when everything is desynced... (better to stop R/W from the socket)
@@ -250,12 +249,12 @@ void Socket_Stream::readDeSync()
     shutdownSocket();
 }
 
-
-
 bool Socket_Stream::isConnected()
 {
     if (!isActive())
+    {
         return false;
+    }
 
     struct sockaddr peer;
     socklen_t peer_len;

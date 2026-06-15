@@ -154,8 +154,8 @@ public:
          */
         std::atomic<uint32_t> maxConnectionsPerIP{10};
 
-
-        struct DebugOptions {
+        struct DebugOptions
+        {
             std::atomic<bool> enabled{false};
             std::atomic<bool> printPlainText{false};
             std::atomic<bool> printHex{true};
@@ -163,8 +163,6 @@ public:
         };
 
         DebugOptions debugOptions;
-
-
 
         MultiThreaded *parent = nullptr;
     };

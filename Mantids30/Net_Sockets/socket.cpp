@@ -1,14 +1,14 @@
 #include "socket.h"
 
 #include <chrono>
+#include <fcntl.h>
+#include <inttypes.h>
 #include <openssl/bio.h>
 #include <signal.h>
-#include <unistd.h>
-#include <string.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <inttypes.h>
 #include <stdexcept>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifdef _WIN32
 #include <Mantids30/Memory/w32compat.h>
@@ -16,9 +16,9 @@
 #include <ws2tcpip.h>
 #else
 
-#include <sys/socket.h>
-#include <netdb.h>
 #include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h>
 
 #endif
 
@@ -36,7 +36,9 @@ bool Socket::m_globalSocketInitialized = false;
 bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
 {
     if (bindAddress == nullptr)
+    {
         return true;
+    }
 
     if (!m_useIPv6)
     {
@@ -46,8 +48,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
         m_lastBindIPv4.sin_port = htons(port);
 
         // Accept * or :: as a generic listen address
-        if ((bindAddress[0] == '*' && bindAddress[1] == 0) ||
-            (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0))
+        if ((bindAddress[0] == '*' && bindAddress[1] == 0) || (bindAddress[0] == ':' && bindAddress[1] == ':' && bindAddress[2] == 0))
         {
             inet_pton(AF_INET, "0.0.0.0", &m_lastBindIPv4.sin_addr);
         }
@@ -60,7 +61,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
             }
         }
 
-        if (::bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
+        if (::bind(m_sockFD, (struct sockaddr *) &m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
@@ -88,7 +89,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
             }
         }
 
-        if (::bind(m_sockFD, (struct sockaddr *)&m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
+        if (::bind(m_sockFD, (struct sockaddr *) &m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
@@ -101,8 +102,6 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
     return true;
 }
 
-
-
 bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void **res)
 {
     addrinfo hints;
@@ -111,12 +110,12 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     ZeroBStruct(hints);
 
 #ifdef _WIN32
-    hints.ai_flags    = 0;
+    hints.ai_flags = 0;
 #else
-    hints.ai_flags    = AI_NUMERICSERV;
+    hints.ai_flags = AI_NUMERICSERV;
 #endif
     hints.ai_socktype = ai_socktype;
-    hints.ai_family   = AF_UNSPEC;
+    hints.ai_family = AF_UNSPEC;
 
     if (m_useIPv6)
     {
@@ -140,9 +139,9 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     }
 
     char serverPort[8];
-    snprintf(serverPort,sizeof(serverPort),"%" PRIu16,remotePort);
+    snprintf(serverPort, sizeof(serverPort), "%" PRIu16, remotePort);
 
-    rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **)res);
+    rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **) res);
 
     switch (rc)
     {
@@ -172,7 +171,8 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
         m_lastError = "getaddrinfo() - The specified network host exists, but does not have any network addresses defined.";
         return false;
     case EAI_NONAME:
-        m_lastError = "getaddrinfo() - The node or service is not known"; //; or both node and service are NULL; or AI_NUMERICSERV was specified in hints.ai_flags and service was not a numeric port-number string.";
+        m_lastError
+            = "getaddrinfo() - The node or service is not known"; //; or both node and service are NULL; or AI_NUMERICSERV was specified in hints.ai_flags and service was not a numeric port-number string.";
         return false;
     case EAI_SERVICE:
         m_lastError = "getaddrinfo() - The requested service is not available for the requested socket type.";
@@ -256,8 +256,10 @@ void Socket::setRecvBuffer(int buffsize)
 {
     m_recvBuffer = buffsize;
 
-    if (!isActive()) 
+    if (!isActive())
+    {
         return;
+    }
 #ifdef _WIN32
     setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
 #else
@@ -270,11 +272,9 @@ bool Socket::isConnected()
     return false;
 }
 
-
-
 bool Socket::connectTo(const char *remoteHost, const uint16_t &remotePort, const uint32_t &timeout)
 {
-    return connectFrom(nullptr,remoteHost,remotePort,timeout);
+    return connectFrom(nullptr, remoteHost, remotePort, timeout);
 }
 
 bool Socket::connectFrom(const char *, const char *, const uint16_t &, const uint32_t &)
@@ -282,8 +282,7 @@ bool Socket::connectFrom(const char *, const char *, const uint16_t &, const uin
     return false;
 }
 
-void Socket::tryConnect(const char *remoteHost, const uint16_t &port,
-                        const uint32_t &timeout)
+void Socket::tryConnect(const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     while (!connectTo(remoteHost, port, timeout))
     {
@@ -299,7 +298,9 @@ bool Socket::listenOn(const uint16_t &, const char *, const int32_t &, const int
 int Socket::closeSocket()
 {
     if (!isActive())
+    {
         return 0;
+    }
 
     if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
     {
@@ -309,7 +310,7 @@ int Socket::closeSocket()
 
     mutexClose.lock();
     // Prevent socket utilization / race condition.
-    int socktmp = (int)m_sockFD;
+    int socktmp = (int) m_sockFD;
     m_sockFD = -1;
 #ifdef _WIN32
     int i = closesocket(socktmp);
@@ -329,7 +330,7 @@ std::string Socket::getLastError() const
 std::string Socket::getLastBindAddress() const
 {
     char addrStr[INET6_ADDRSTRLEN];
-    memset(addrStr,0,INET6_ADDRSTRLEN);
+    memset(addrStr, 0, INET6_ADDRSTRLEN);
     uint16_t port = 0;
 
     if (!m_useIPv6)
@@ -353,8 +354,10 @@ std::string Socket::getRemotePairStr()
 
 uint16_t Socket::getLocalPort()
 {
-    if (!isActive()) 
+    if (!isActive())
+    {
         return 0;
+    }
 
     struct sockaddr_in sin;
     socklen_t len = sizeof(sin);
@@ -370,7 +373,9 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getLocalAddressAndPo
 {
     Mantids30::Network::Sockets::Socket::AddressAndPort addrAndPort;
     if (!isActive())
+    {
         return addrAndPort;
+    }
 
     char addrStr[INET6_ADDRSTRLEN];
     memset(addrStr, 0, INET6_ADDRSTRLEN);
@@ -403,12 +408,13 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getLocalAddressAndPo
     return addrAndPort;
 }
 
-
 Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getRemoteAddressAndPort()
 {
     Mantids30::Network::Sockets::Socket::AddressAndPort addrAndPort;
     if (!isActive())
+    {
         return addrAndPort;
+    }
 
     char addrStr[INET6_ADDRSTRLEN];
     memset(addrStr, 0, INET6_ADDRSTRLEN);
@@ -440,7 +446,6 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getRemoteAddressAndP
     addrAndPort.address = addrStr;
     return addrAndPort;
 }
-
 
 ssize_t Socket::partialRead(void *data, const size_t &datalen)
 {
@@ -495,7 +500,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
             else
             {
                 std::string datax;
-                datax.append((const char *)data, recvLen);
+                datax.append((const char *) data, recvLen);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
@@ -530,8 +535,6 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     return recvLen;
 }
 
-
-
 void Socket::setDebugOutput(const std::string &newDebugDir)
 {
     debugDir = newDebugDir;
@@ -542,7 +545,6 @@ void Socket::setDebugOutput(const std::string &newDebugDir)
     }
     else
     {
-
         ////////////////////////////////////////////////////////////////////////////////////////
         // Get current time with milliseconds
         std::chrono::time_point now = std::chrono::system_clock::now();
@@ -551,7 +553,7 @@ void Socket::setDebugOutput(const std::string &newDebugDir)
 
         // Format the filename
         char unixtime[256];
-        snprintf(unixtime, sizeof(unixtime), "%ld%03d",  static_cast<long>(xtime_t), static_cast<int>(ms.count()));
+        snprintf(unixtime, sizeof(unixtime), "%ld%03d", static_cast<long>(xtime_t), static_cast<int>(ms.count()));
         ////////////////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -561,7 +563,9 @@ void Socket::setDebugOutput(const std::string &newDebugDir)
         // Remove "0x" prefix and convert to uppercase
         std::string addrStr = hexAddr;
         if (addrStr.substr(0, 2) == "0x" || addrStr.substr(0, 2) == "0X")
+        {
             addrStr = addrStr.substr(2);
+        }
         ////////////////////////////////////////////////////////////////////////////////////////
 
         std::string fileName = debugDir + "/connection_" + std::string(unixtime) + "_" + addrStr + "_" + getLocalAddressAndPort().toString() + "_" + getRemoteAddressAndPort().toString() + ".tmp";
@@ -575,8 +579,6 @@ void Socket::setDebugOutput(const std::string &newDebugDir)
         }
     }
 }
-
-
 
 ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 {
@@ -635,7 +637,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
             else
             {
                 std::string datax;
-                datax.append((const char *)data, sendLen);
+                datax.append((const char *) data, sendLen);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
@@ -658,11 +660,12 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
         return -1;
     }
 }
-int Socket::iShutdown(
-    int mode)
+int Socket::iShutdown(int mode)
 {
     if (!isActive())
+    {
         return -10;
+    }
 
     bool rd_to_shutdown = false;
     bool wr_to_shutdown = false;
@@ -685,9 +688,13 @@ int Socket::iShutdown(
 
     // Already shutted down:
     if (m_shutdownProtocolOnRead == true)
+    {
         rd_to_shutdown = false;
+    }
     if (m_shutdownProtocolOnWrite == true)
+    {
         wr_to_shutdown = false;
+    }
 
     if (rd_to_shutdown && wr_to_shutdown)
     {
@@ -742,7 +749,7 @@ void Socket::socketSystemInitialization()
             return;
         }
 
-        if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2 )
+        if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
         {
             // not supported.
             WSACleanup();
@@ -753,7 +760,6 @@ void Socket::socketSystemInitialization()
         m_globalSocketInitialized = true;
     }
 }
-
 
 unsigned short Socket::getRemotePort() const
 {
@@ -768,7 +774,7 @@ void Socket::setRemotePort(unsigned short value)
 int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *optlen)
 {
 #ifdef _WIN32
-    return getsockopt(sockfd, level, optname, (char *)optval, optlen);
+    return getsockopt(sockfd, level, optname, (char *) optval, optlen);
 #else
     return getsockopt(m_sockFD, level, optname, optval, optlen);
 #endif
@@ -777,31 +783,35 @@ int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *opt
 int Socket::setSocketOption(int level, int optname, const void *optval, socklen_t optlen)
 {
 #ifdef _WIN32
-    return setsockopt(sockfd,  level, optname, (char *)optval, optlen);
+    return setsockopt(sockfd, level, optname, (char *) optval, optlen);
 #else
-    return setsockopt(m_sockFD,  level, optname, optval, optlen);
+    return setsockopt(m_sockFD, level, optname, optval, optlen);
 #endif
 }
 
 int Socket::setSocketOptionBool(int level, int optname, bool value)
 {
-    int flag = value?1:0;
-    return setSocketOption(level,optname,(char *) &flag, sizeof(int));
+    int flag = value ? 1 : 0;
+    return setSocketOption(level, optname, (char *) &flag, sizeof(int));
 }
 
 bool Socket::setReadTimeout(unsigned int _timeout)
 {
-    if (!isActive()) 
+    if (!isActive())
+    {
         return false;
+    }
 
     m_readTimeout = _timeout;
 
-    if (m_isInListenMode) 
+    if (m_isInListenMode)
+    {
         return true;
+    }
 
 #ifdef _WIN32
-    DWORD tout = _timeout*1000;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&tout, sizeof(DWORD))) == -1)
+    DWORD tout = _timeout * 1000;
+    if ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &tout, sizeof(DWORD))) == -1)
 #else
     struct timeval timeout;
     timeout.tv_sec = _timeout;
@@ -816,14 +826,18 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 
 bool Socket::setWriteTimeout(unsigned int _timeout)
 {
-    if (!isActive()) 
+    if (!isActive())
+    {
         return false;
+    }
     m_writeTimeout = _timeout;
-    if (m_isInListenMode) 
+    if (m_isInListenMode)
+    {
         return true;
+    }
 #ifdef _WIN32
-    int tout = _timeout*1000;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *)&tout, sizeof(int))) == -1)
+    int tout = _timeout * 1000;
+    if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *) &tout, sizeof(int))) == -1)
 #else
     struct timeval timeout;
     timeout.tv_sec = _timeout;
@@ -838,12 +852,12 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
 
 bool Socket::isActive() const
 {
-    return m_sockFD!=-1;
+    return m_sockFD != -1;
 }
 
 void Socket::setSocketFD(int _sockfd)
 {
-    if (m_sockFD != -1 && _sockfd!=-1)
+    if (m_sockFD != -1 && _sockfd != -1)
     {
         throw std::runtime_error("Assiging a file descriptor to an initialized Socket.");
     }
@@ -857,25 +871,27 @@ int Socket::adquireSocketFD()
     return sockret;
 }
 
-void Socket::getRemotePair(char * address) const
+void Socket::getRemotePair(char *address) const
 {
-    memset(address,0,INET6_ADDRSTRLEN);
-    strncpy(address, m_remotePair, INET6_ADDRSTRLEN-1);
+    memset(address, 0, INET6_ADDRSTRLEN);
+    strncpy(address, m_remotePair, INET6_ADDRSTRLEN - 1);
 }
 
-void Socket::setRemotePair(const char * address)
+void Socket::setRemotePair(const char *address)
 {
     SecBACopy(m_remotePair, address);
 }
 
 int Socket::shutdownSocket(int mode)
 {
-    if (!isActive()) 
+    if (!isActive())
+    {
         return -1;
+    }
 
     int i;
     // Shutdown sub-protocol:
-    if ((i=iShutdown(mode))!=0)
+    if ((i = iShutdown(mode)) != 0)
     {
         return i;
     }
@@ -889,7 +905,7 @@ int Socket::_shutdownSocket(int mode)
     int x = shutdown(m_sockFD, mode);
 
 #ifdef WIN32
-    if ( mode == SHUT_RDWR )
+    if (mode == SHUT_RDWR)
     {
         closeSocket();
     }
@@ -902,10 +918,10 @@ bool Socket::setBlockingMode(bool blocking)
 {
 #ifdef _WIN32
     int iResult;
-    unsigned long int iMode = (!blocking)?1:0;
+    unsigned long int iMode = (!blocking) ? 1 : 0;
     iResult = ioctlsocket(sockfd, FIONBIO, &iMode);
 
-    if (iResult!=NO_ERROR)
+    if (iResult != NO_ERROR)
     {
         switch (WSAGetLastError())
         {
@@ -934,17 +950,21 @@ bool Socket::setBlockingMode(bool blocking)
 #else
     long arg;
     // Set to blocking mode again...
-    if( (arg = fcntl(m_sockFD, F_GETFL, nullptr)) < 0)
+    if ((arg = fcntl(m_sockFD, F_GETFL, nullptr)) < 0)
     {
         m_lastError = "Error getting blocking mode... ";
         return false;
     }
     if (blocking)
+    {
         arg &= (~O_NONBLOCK);
+    }
     else
+    {
         arg |= (O_NONBLOCK);
-    
-    if( fcntl(m_sockFD, F_SETFL, arg) < 0)
+    }
+
+    if (fcntl(m_sockFD, F_SETFL, arg) < 0)
     {
         m_lastError = "Error setting blocking...";
         return false;

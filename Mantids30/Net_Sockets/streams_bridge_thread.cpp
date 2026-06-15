@@ -46,9 +46,13 @@ bool Bridge_Thread::startPipeSync()
 void Bridge_Thread::setBlockSize(uint16_t value)
 {
     if (block_fwd)
+    {
         delete[] block_fwd;
+    }
     if (m_blockBwd)
+    {
         delete[] m_blockBwd;
+    }
 
     blockSize = value;
 
@@ -78,7 +82,9 @@ int Bridge_Thread::processPipe(Side fwd)
                 std::lock_guard<std::mutex> lock(fwd == SIDE_FORWARD ? mt_fwd : mt_rev);
 
                 if (!(fwd == SIDE_FORWARD ? m_dstSocket : src)->writeFull(curBlock, bytesReceived))
+                {
                     return -2;
+                }
             }
 
             // Return for Update Counters:
@@ -100,11 +106,15 @@ int Bridge_Thread::processPipe(Side fwd)
 
                 // Write the size to be written (chunk)
                 if (!m_dstSocket->writeU<uint16_t>((uint16_t) bytesReceived))
+                {
                     return -2;
+                }
 
                 // Write the packet itself.
                 if (!m_dstSocket->writeFull(curBlock, bytesReceived))
+                {
                     return -2;
+                }
 
                 return bytesReceived;
             }
@@ -115,24 +125,32 @@ int Bridge_Thread::processPipe(Side fwd)
             bool readOK;
             bytesReceived = m_dstSocket->readU<uint16_t>(&readOK);
             if (!readOK)
+            {
                 return -1;
+            }
 
             // It's a ping! (do nothing, but validate that the connection is not terminated yet)
             if (bytesReceived == 0)
             {
                 if (m_terminated)
+                {
                     return -2;
+                }
 
                 return -3;
             }
 
             // Attempt to read from the dst
             if (!m_dstSocket->readFull(curBlock, (uint16_t) bytesReceived))
+            {
                 return -1;
+            }
 
             // Attempt to write to the src
             if (!src->writeFull(curBlock, (uint16_t) bytesReceived))
+            {
                 return -2;
+            }
 
             return bytesReceived;
         }

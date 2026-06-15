@@ -1,8 +1,8 @@
 #pragma once
 
 #include "netifconfig.h"
-#include <string>
 #include <mutex>
+#include <string>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -13,12 +13,10 @@ namespace Mantids30::Network::Interfaces {
 // LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for WIN32 applications.
 
 #ifdef _WIN32
-struct WINTAP_VERSION{
-    std::string toString()
-    {
-        return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(subminor);
-    }
-    unsigned long major,minor,subminor;
+struct WINTAP_VERSION
+{
+    std::string toString() { return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(subminor); }
+    unsigned long major, minor, subminor;
 };
 #endif
 
@@ -38,7 +36,7 @@ public:
      *                 linux: network interface name (eg. tun100 or tun%d)
      * @return true if started.
      */
-    bool start(NetworkInterfaceConfiguration * netcfg = nullptr, const std::string & netIfaceName = "");
+    bool start(NetworkInterfaceConfiguration *netcfg = nullptr, const std::string &netIfaceName = "");
     /**
      * @brief stop Stop the TAP Interface.
      */
@@ -69,13 +67,13 @@ public:
      * @param userName system username
      * @return true if interface changed owner
      */
-    bool setOwner(const char * userName);
+    bool setOwner(const char *userName);
     /**
      * @brief setGroup Set the group of the interface (security, use after start)
      * @param groupName system group
      * @return true if interface changed group owner
      */
-    bool setGroup(const char * groupName);
+    bool setGroup(const char *groupName);
     /**
      * @brief getInterfaceHandler Get Interface Handler (file descriptor)
      * @return file descriptor
@@ -168,5 +166,4 @@ private:
 #endif
 };
 
-}
-
+} // namespace Mantids30::Network::Interfaces

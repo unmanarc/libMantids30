@@ -1,6 +1,6 @@
 #include "connector.h"
-#include <Mantids30/Helpers/callbacks.h>
 #include "socket_stream.h"
+#include <Mantids30/Helpers/callbacks.h>
 #include <memory>
 #include <netinet/in.h>
 
@@ -8,11 +8,8 @@ using namespace Mantids30::Network::Sockets;
 using namespace Mantids30;
 using namespace std;
 
-
-void connectionLoopThread(Connector *parent,
-                          const shared_ptr<Connector::Config> &config)
+void connectionLoopThread(Connector *parent, const shared_ptr<Connector::Config> &config)
 {
-
 #ifdef __linux__
     pthread_setname_np(pthread_self(), "Sock:CLoop");
 #endif
@@ -21,9 +18,9 @@ void connectionLoopThread(Connector *parent,
 
     parent->m_stopReconnecting = false;
 
-    int retries=0;
+    int retries = 0;
 
-    for (;cont;)
+    for (; cont;)
     {
         std::shared_ptr<Socket_Stream> clientSocket;
 
@@ -106,7 +103,7 @@ void connectionLoopThread(Connector *parent,
                 // Connected OK...
                 CALLBACK(config->tcpCallbacks.onConnectionEstablished)(config->context, clientSocket);
 
-/*                char remotePair[INET6_ADDRSTRLEN+2];
+                /*                char remotePair[INET6_ADDRSTRLEN+2];
                 clientSocket->getRemotePair(remotePair);*/
 
                 int i = parent->handleServerConnection(clientSocket);
@@ -123,8 +120,6 @@ void connectionLoopThread(Connector *parent,
         }
     }
 }
-
-
 
 std::thread Mantids30::Network::Sockets::Connector::startConnectionLoopThread(const Connector::Config &parameters)
 {

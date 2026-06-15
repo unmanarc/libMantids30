@@ -44,11 +44,17 @@ Socket_TLS::TLSKeyParameters::TLSKeyParameters(bool *isServer)
 Socket_TLS::TLSKeyParameters::~TLSKeyParameters()
 {
     if (m_dhParameter)
+    {
         DH_free(m_dhParameter);
+    }
     if (m_privateKey)
+    {
         EVP_PKEY_free(m_privateKey);
+    }
     if (m_publicKey)
+    {
         X509_free(m_publicKey);
+    }
 
     // Remove the PSK from the static list...
     if (!m_TLSCertificateAuthorityMemory.empty())
@@ -93,11 +99,17 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys(SSL_CTX *ctx, SSL *sslh, std::lis
 {
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL
     if (m_securityLevel != -1)
+    {
         SSL_set_security_level(sslh, m_securityLevel);
+    }
     if (m_maxProtocolVersion != -1)
+    {
         SSL_set_max_proto_version(sslh, m_maxProtocolVersion);
+    }
     if (m_minProtocolVersion != -1)
+    {
         SSL_set_min_proto_version(sslh, m_minProtocolVersion);
+    }
 
     SSL_clear_options(sslh, SSL_OP_PRIORITIZE_CHACHA);
     SSL_clear_options(sslh, SSL_OP_ALLOW_NO_DHE_KEX);
@@ -149,7 +161,9 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys(SSL_CTX *ctx, SSL *sslh, std::lis
             // It takes ownership. (list now belongs to sslContext, no need to free)
             SSL_set_client_CA_list(sslh, list);
             if (m_maxVerifyDepth >= 0 - 1)
+            {
                 SSL_set_verify_depth(sslh, m_maxVerifyDepth);
+            }
         }
         // TODO: warn if the list is zero.
     }
@@ -188,10 +202,14 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys(SSL_CTX *ctx, SSL *sslh, std::lis
     else
     {
         // PSK Mode.
-        if (!*m_isServer) // Client identity is set up in the callback:
+        if (!*m_isServer)
+        { // Client identity is set up in the callback:
             SSL_set_psk_client_callback(sslh, cbPSKClient);
-        else // Server receives the identity from client:
+        }
+        else
+        { // Server receives the identity from client:
             SSL_set_psk_server_callback(sslh, cbPSKServer);
+        }
     }
 
     return true;
@@ -213,7 +231,9 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
 
     // No registered clients... (???)
     if (!pskValues)
+    {
         return 0;
+    }
 
     strncpy((char *) psk, "", max_psk_len);
 
@@ -269,11 +289,15 @@ bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMFile(const char *filePat
     if (fp)
     {
         if (m_privateKey)
+        {
             EVP_PKEY_free(m_privateKey);
+        }
         m_privateKey = nullptr;
         PEM_read_PrivateKey(fp, &m_privateKey, cbPass, u);
         if (m_privateKey)
+        {
             r = true;
+        }
         fclose(fp);
     }
     return r;
@@ -286,11 +310,15 @@ bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMFile(const char *filePath
     if (fp)
     {
         if (m_publicKey)
+        {
             X509_free(m_publicKey);
+        }
         m_publicKey = nullptr;
         PEM_read_X509(fp, &m_publicKey, cbPass, u);
         if (m_publicKey)
+        {
             r = true;
+        }
         fclose(fp);
     }
     return r;
@@ -303,11 +331,15 @@ bool Socket_TLS::TLSKeyParameters::loadPrivateKeyFromPEMMemory(const char *privK
     if (buf)
     {
         if (m_privateKey)
+        {
             EVP_PKEY_free(m_privateKey);
+        }
         m_privateKey = nullptr;
         PEM_read_bio_PrivateKey(buf, &m_privateKey, cbPass, u);
         if (m_privateKey)
+        {
             r = true;
+        }
         BIO_free(buf);
     }
     return r;
@@ -320,11 +352,15 @@ bool Socket_TLS::TLSKeyParameters::loadPublicKeyFromPEMMemory(const char *pubKey
     if (buf)
     {
         if (m_publicKey)
+        {
             X509_free(m_publicKey);
+        }
         m_publicKey = nullptr;
         PEM_read_bio_X509(buf, &m_publicKey, cbPass, u);
         if (m_publicKey)
+        {
             r = true;
+        }
         BIO_free(buf);
     }
     return r;
@@ -367,7 +403,9 @@ DH *Socket_TLS::TLSKeyParameters::get_dh4096()
     BIGNUM *p, *g;
 
     if (dh == NULL)
+    {
         return NULL;
+    }
     p = BN_bin2bn(dhp_4096, sizeof(dhp_4096), NULL);
     g = BN_bin2bn(dhg_4096, sizeof(dhg_4096), NULL);
     if (p == NULL || g == NULL || !DH_set0_pqg(dh, p, NULL, g))
@@ -420,7 +458,9 @@ const std::string &Socket_TLS::TLSKeyParameters::getCAPath() const
 bool Socket_TLS::TLSKeyParameters::loadCAFromPEMFile(const std::string &newSTLSCertificateAuthorityPath)
 {
     if (!m_TLSCertificateAuthorityMemory.empty())
+    {
         throw std::runtime_error("Can't load a CA from path if there is a established CA memory.");
+    }
 
     if (!access(newSTLSCertificateAuthorityPath.c_str(), R_OK))
     {
@@ -433,7 +473,9 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMFile(const std::string &newSTLSC
 bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData, const char *suffix)
 {
     if (!m_TLSCertificateAuthorityPath.empty())
+    {
         throw std::runtime_error("Can't load a CA into memory if there is a established CA path.");
+    }
 
     m_TLSCertificateAuthorityMemory = caCrtPEMData;
     std::string fsDirectoryPath;

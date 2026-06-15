@@ -18,14 +18,12 @@ bool Socket_Stream_Dummy::isSecure()
     return true;
 }
 
-
 bool Socket_Stream_Dummy::isConnected()
 {
     return true;
 }
 
-int Socket_Stream_Dummy::shutdownSocket(
-    int mode)
+int Socket_Stream_Dummy::shutdownSocket(int mode)
 {
     if (mode == SHUT_RDWR)
     {
@@ -68,14 +66,17 @@ ssize_t Socket_Stream_Dummy::partialRead(void *data, const size_t &datalen)
 ssize_t Socket_Stream_Dummy::partialWrite(const void *data, const size_t &datalen)
 {
     std::optional<size_t> r = receiver.append(data, datalen);
-    if (r==std::nullopt)
+    if (r == std::nullopt)
+    {
         return -1;
+    }
     else
+    {
         return *r;
+    }
 }
 
-void Socket_Stream_Dummy::setRemotePairOverride(
-    const char *address)
+void Socket_Stream_Dummy::setRemotePairOverride(const char *address)
 {
     setRemotePair(address);
 }

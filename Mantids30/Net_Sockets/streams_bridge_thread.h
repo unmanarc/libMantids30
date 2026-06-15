@@ -5,9 +5,10 @@
 #include <mutex>
 
 namespace Mantids30::Network::Sockets::NetStreams {
-enum Side {
-    SIDE_FORWARD=1,
-    SIDE_BACKWARD=0
+enum Side
+{
+    SIDE_FORWARD = 1,
+    SIDE_BACKWARD = 0
 };
 
 class Bridge_Thread
@@ -45,21 +46,19 @@ public:
     void terminate();
 
 protected:
-    std::shared_ptr<Sockets::Socket_Stream>  src;
-    char * block_fwd;
+    std::shared_ptr<Sockets::Socket_Stream> src;
+    char *block_fwd;
     uint16_t blockSize;
-   // ssize_t partialReadL(void *data, const size_t &datalen, bool fwd = true);
+    // ssize_t partialReadL(void *data, const size_t &datalen, bool fwd = true);
 
 private:
-
     std::atomic<bool> m_terminated;
     bool m_chunked;
 
-    std::shared_ptr<Sockets::Socket_Stream>  m_dstSocket;
-    char * m_blockBwd;
+    std::shared_ptr<Sockets::Socket_Stream> m_dstSocket;
+    char *m_blockBwd;
 
     std::mutex mt_fwd, mt_rev;
 };
 
-}
-
+} // namespace Mantids30::Network::Sockets::NetStreams

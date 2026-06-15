@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "socket_stream.h"
 
 namespace Mantids30::Network::Sockets {
@@ -14,11 +13,11 @@ public:
     /**
         * @brief onMaxRetryLimitReached Callback to notify when the maximum number of TLS/TCP-IP connection retries has been reached.
         */
-    void (*onMaxRetryLimitReached)(void *context,  const std::shared_ptr<void> &config ) = nullptr;
+    void (*onMaxRetryLimitReached)(void *context, const std::shared_ptr<void> &config) = nullptr;
     /**
      * @brief onPreConnectionAttempt Callback to Notify just before the TCP/TCP-IP Connection
      */
-    void (*onPreConnectionAttempt)(void *context, const std::shared_ptr<void> &config ) = nullptr;
+    void (*onPreConnectionAttempt)(void *context, const std::shared_ptr<void> &config) = nullptr;
     /**
      * @brief onConnectionTerminated Callback to Notify just after the TCP/TCP-IP Connection (with the error code as integer)
      */
@@ -26,12 +25,10 @@ public:
     /**
      * @brief onConnectionEstablished Callback to Notify when the TCP/TCP-IP connection is established and we are about to authenticate
      */
-    void (*onConnectionEstablished)(void *context, std::shared_ptr<Sockets::Socket_Stream> ) = nullptr;
+    void (*onConnectionEstablished)(void *context, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
     /**
      * @brief onConnectionFailure Callback to Notify when there is an error during the TCP/TCP-IP Connection
      */
-    bool (*onConnectionFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream>, const std::shared_ptr<void> &config ) = nullptr;
-
+    bool (*onConnectionFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream>, const std::shared_ptr<void> &config) = nullptr;
 };
-}
-
+} // namespace Mantids30::Network::Sockets

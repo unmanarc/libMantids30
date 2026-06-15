@@ -1,29 +1,28 @@
-#include <Mantids30/Memory/a_ipv4.h>
 #include "netifconfig.h"
+#include <Mantids30/Memory/a_ipv4.h>
 
-#include <string.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h> /* See NOTES */
 
 #ifndef _WIN32
-#include <sys/socket.h>
-#include <sys/ioctl.h>
 #include <arpa/inet.h>
-#include <netinet/in.h>
 #include <netinet/if_ether.h> /* includes net/ethernet.h */
+#include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
 #else
 #include "tap-windows.h"
-#include <Shlobj.h>
 #include <Mantids30/Helpers/appexec.h>
 #include <Mantids30/Memory/w32compat.h>
+#include <Shlobj.h>
 #endif
 
-#include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Helpers/appexec.h>
-
+#include <Mantids30/Helpers/mem.h>
 
 using namespace Mantids30::Network::Interfaces;
 
@@ -34,7 +33,7 @@ NetworkInterfaceConfiguration::NetworkInterfaceConfiguration()
     m_fd = -1;
     ZeroBStruct(m_ifr);
 #else
-    adapterIndex = ((DWORD)-1);
+    adapterIndex = ((DWORD) -1);
     m_fd = INVALID_HANDLE_VALUE;
 #endif
 
@@ -73,12 +72,12 @@ bool NetworkInterfaceConfiguration::apply()
         addr.sin_addr.s_addr = m_netmask.s_addr;
         memcpy(&ifr1_netmask.ifr_netmask, &addr, sizeof(addr));
 
-        if (ioctl(m_fd,SIOCSIFADDR,&ifr1_host) == -1)
+        if (ioctl(m_fd, SIOCSIFADDR, &ifr1_host) == -1)
         {
             m_lastError = "SIOCSIFADDR error @" + m_interfaceName;
             return false;
         }
-        if (ioctl(m_fd,SIOCSIFNETMASK,&ifr1_netmask) == -1)
+        if (ioctl(m_fd, SIOCSIFNETMASK, &ifr1_netmask) == -1)
         {
             m_lastError = "SIOCSIFNETMASK error @" + m_interfaceName;
             return false;
@@ -90,33 +89,41 @@ bool NetworkInterfaceConfiguration::apply()
     if (m_changeState)
     {
         if (m_stateUP)
+        {
             m_ifr.ifr_flags |= (IFF_UP | IFF_RUNNING);
+        }
         else
+        {
             m_ifr.ifr_flags &= ~(IFF_UP | IFF_RUNNING);
+        }
         m_changeState = false;
         setifr = true;
     }
     if (m_changePromiscMode)
     {
         if (m_promiscMode)
+        {
             m_ifr.ifr_flags |= (IFF_PROMISC);
+        }
         else
+        {
             m_ifr.ifr_flags &= ~(IFF_PROMISC);
+        }
         m_changePromiscMode = false;
         setifr = true;
     }
 
     // promisc + up:
-    if ( setifr )
+    if (setifr)
     {
-        if (ioctl (m_fd, SIOCSIFFLAGS, &m_ifr) == -1 )
+        if (ioctl(m_fd, SIOCSIFFLAGS, &m_ifr) == -1)
         {
             m_lastError = "SIOCSIFFLAGS error @" + m_interfaceName;
             return false;
         }
     }
 
-    if ( m_changeMTU )
+    if (m_changeMTU)
     {
         m_ifr.ifr_mtu = m_MTU;
         if (ioctl(m_fd, SIOCSIFMTU, &m_ifr) < 0)
@@ -129,16 +136,9 @@ bool NetworkInterfaceConfiguration::apply()
 #else
     if (changeIPv4Addr)
     {
-        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
-                                                               "ipv4",
-                                                               "set",
-                                                               "address",
-                                                               std::string("name="+std::to_string(m_adapterIndex)),
-                                                               "static",
-                                                               Mantids30::Memory::Abstract::IPV4::_toString(address),
-                                                               Mantids30::Memory::Abstract::IPV4::_toString(netmask)
-                                                              }));
-        if (i.error==0)
+        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
+                                                                               Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
+        if (i.error == 0)
             changeIPv4Addr = false;
         else
         {
@@ -149,14 +149,8 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeMTU)
     {
-        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
-                                                               "ipv4",
-                                                               "set",
-                                                               "interface",
-                                                               std::to_string(m_adapterIndex),
-                                                               std::string("mtu="+std::to_string(MTU))
-                                                              }));
-        if (i.error==0)
+        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
+        if (i.error == 0)
             changeMTU = false;
         else
         {
@@ -176,9 +170,9 @@ bool NetworkInterfaceConfiguration::apply()
     {
         if (m_fd != INVALID_HANDLE_VALUE)
         {
-            if (netifType==NETIF_VIRTUAL_WIN)
+            if (netifType == NETIF_VIRTUAL_WIN)
             {
-                ULONG status = stateUP?1:0;
+                ULONG status = stateUP ? 1 : 0;
 
                 DWORD len;
                 if (DeviceIoControl(m_fd, TAP_WIN_IOCTL_SET_MEDIA_STATUS, &status, sizeof status, &status, sizeof status, &len, NULL) == 0)
@@ -209,7 +203,6 @@ NetworkInterfaceConfiguration::NetIfType NetworkInterfaceConfiguration::getNetIf
     return m_netifType;
 }
 
-
 #ifdef _WIN32
 
 Mantids30::Helpers::AppExec::sAppExecCmd NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
@@ -235,12 +228,12 @@ std::string NetworkInterfaceConfiguration::getNetSHExecPath()
     if (SHGetKnownFolderPath(FOLDERID_System, 0, nullptr, &syspath_ptr) != S_OK)
         return "";
 
-    std::wstring rw( syspath_ptr );
-    std::string r( rw.begin(), rw.end() );
+    std::wstring rw(syspath_ptr);
+    std::string r(rw.begin(), rw.end());
 
     CoTaskMemFree(syspath_ptr);
 
-    r+="\\netsh.exe";
+    r += "\\netsh.exe";
 
     return r;
 }
@@ -252,12 +245,12 @@ std::string NetworkInterfaceConfiguration::getRouteExecPath()
     if (SHGetKnownFolderPath(FOLDERID_System, 0, nullptr, &syspath_ptr) != S_OK)
         return "";
 
-    std::wstring rw( syspath_ptr );
-    std::string r( rw.begin(), rw.end() );
+    std::wstring rw(syspath_ptr);
+    std::string r(rw.begin(), rw.end());
 
     CoTaskMemFree(syspath_ptr);
 
-    r+="\\route.exe";
+    r += "\\route.exe";
 
     return r;
 }
@@ -266,8 +259,10 @@ std::string NetworkInterfaceConfiguration::getRouteExecPath()
 NetworkInterfaceConfiguration::~NetworkInterfaceConfiguration()
 {
 #ifndef _WIN32
-    if (m_fd>=0)
+    if (m_fd >= 0)
+    {
         close(m_fd);
+    }
 #else
     // WIN32: HANDLE fd is handled outside this class, and only works for virtual interfaces..
 #endif
@@ -282,13 +277,15 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
     m_netifType = NETIF_GENERIC_LIN;
 
     m_interfaceName = _ifaceName;
-    if((m_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
+    if ((m_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
-        char cError[1024]="Unknown Error";
+        char cError[1024] = "Unknown Error";
 
-        snprintf(errormsg,sizeof(errormsg), "socket(AF_INET, SOCK_RAW, IPPROTO_TCP) error(%d): %s\n", errno, strerror_r(errno,cError,sizeof(cError)));
-        if (errormsg[strlen(errormsg)-1] == 0x0A)
-            errormsg[strlen(errormsg)-1] = 0;
+        snprintf(errormsg, sizeof(errormsg), "socket(AF_INET, SOCK_RAW, IPPROTO_TCP) error(%d): %s\n", errno, strerror_r(errno, cError, sizeof(cError)));
+        if (errormsg[strlen(errormsg) - 1] == 0x0A)
+        {
+            errormsg[strlen(errormsg) - 1] = 0;
+        }
 
         m_lastError = errormsg;
         return false;
@@ -296,13 +293,15 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
 
     SecBACopy(m_ifr.ifr_name, _ifaceName.c_str());
 
-    if((ioctl(m_fd, SIOCGIFFLAGS, &m_ifr) == -1))
+    if ((ioctl(m_fd, SIOCGIFFLAGS, &m_ifr) == -1))
     {
-        char cError[1024]="Unknown Error";
+        char cError[1024] = "Unknown Error";
 
-        snprintf(errormsg,sizeof(errormsg), "ioctl(SIOCGIFFLAGS) on interface %s error(%d): %s\n", _ifaceName.c_str(),errno,  strerror_r(errno,cError,sizeof(cError)));
-        if (errormsg[strlen(errormsg)-1] == 0x0A)
-            errormsg[strlen(errormsg)-1] = 0;
+        snprintf(errormsg, sizeof(errormsg), "ioctl(SIOCGIFFLAGS) on interface %s error(%d): %s\n", _ifaceName.c_str(), errno, strerror_r(errno, cError, sizeof(cError)));
+        if (errormsg[strlen(errormsg) - 1] == 0x0A)
+        {
+            errormsg[strlen(errormsg) - 1] = 0;
+        }
 
         m_lastError = errormsg;
 
@@ -313,26 +312,25 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
 #else
 void NetworkInterfaceConfiguration::openTAPW32Interface(HANDLE fd, ULONG adapterIndex)
 {
-    netifType=NETIF_VIRTUAL_WIN;
+    netifType = NETIF_VIRTUAL_WIN;
     this->m_fd = fd;
     this->m_adapterIndex = adapterIndex;
 }
 #endif
-
 
 int NetworkInterfaceConfiguration::getMTU()
 {
 #ifndef _WIN32
     struct ifreq ifr2;
     int sock2;
-    if((sock2 = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
+    if ((sock2 = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
         return 0;
     }
 
     SecBACopy(ifr2.ifr_name, m_interfaceName.c_str());
 
-    if((ioctl(sock2, SIOCGIFMTU, &ifr2) == -1))
+    if ((ioctl(sock2, SIOCGIFMTU, &ifr2) == -1))
     {
         m_lastError = "SIOCGIFMTU error @" + m_interfaceName;
         return false;
@@ -348,14 +346,15 @@ int NetworkInterfaceConfiguration::getMTU()
         if (m_fd != INVALID_HANDLE_VALUE)
         {
             DWORD len;
-            if  (DeviceIoControl(m_fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof (mtu), &mtu, sizeof (mtu), &len, NULL) == 0)
+            if (DeviceIoControl(m_fd, TAP_WIN_IOCTL_GET_MTU, &mtu, sizeof(mtu), &mtu, sizeof(mtu), &len, NULL) == 0)
             {
                 lastError = "Failed to obtain interface MTU";
                 return 0;
             }
         }
         return mtu;
-    }break;
+    }
+    break;
     default:
         return 0;
     }
@@ -376,12 +375,12 @@ ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
         m_lastError = "SIOCGIFHWADDR error @" + m_interfaceName;
         return etherHdrData;
     }
-    if (ifr1x.ifr_hwaddr.sa_family!=ARPHRD_ETHER)
+    if (ifr1x.ifr_hwaddr.sa_family != ARPHRD_ETHER)
     {
         m_lastError = "SIOCGIFHWADDR error, not an ethernet interface @" + m_interfaceName;
         return etherHdrData;
     }
-    memcpy(etherHdrData.h_dest,ifr1x.ifr_hwaddr.sa_data,6);
+    memcpy(etherHdrData.h_dest, ifr1x.ifr_hwaddr.sa_data, 6);
 #else
     switch (netifType)
     {

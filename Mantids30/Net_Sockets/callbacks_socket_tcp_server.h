@@ -7,7 +7,7 @@ namespace Mantids30::Network::Sockets {
 class Callbacks_Socket_TCP_Server
 {
 public:
-    Callbacks_Socket_TCP_Server( )  = default;
+    Callbacks_Socket_TCP_Server() = default;
 
     // Callback implementations
 
@@ -37,5 +37,4 @@ public:
     void (*onClientConnectionLimitPerIPReached)(void *context, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
 };
 
-}
-
+} // namespace Mantids30::Network::Sockets

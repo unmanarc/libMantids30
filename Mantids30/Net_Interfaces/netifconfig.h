@@ -3,16 +3,15 @@
 #include <string>
 
 #ifndef _WIN32
-#include <netinet/in.h>
 #include <linux/if.h>
 #include <linux/if_ether.h>
+#include <netinet/in.h>
 #else
-#include <vector>
-#include <windows.h>
 #include "netheaders-windows.h"
 #include <Mantids30/Helpers/appexec.h>
+#include <vector>
+#include <windows.h>
 #endif
-
 
 namespace Mantids30::Network::Interfaces {
 
@@ -39,7 +38,7 @@ public:
      * @param _ifaceName interface name.
      * @return true if openned
      */
-    bool openInterface(const std::string & _ifaceName);
+    bool openInterface(const std::string &_ifaceName);
 #else
     /**
      * @brief openTAPW32Interface Pass the interface previously openned with VirtualNetworkInterface (TAP-WINDOWS6)
@@ -72,7 +71,7 @@ public:
      * @param _address IPv4 Address
      * @param _netmask Netmask
      */
-    void setIPv4Address(const in_addr &_address,const in_addr &_netmask);
+    void setIPv4Address(const in_addr &_address, const in_addr &_netmask);
     /**
      * @brief setMTU Set the MTU
      * @param _mtu MTU value (eg. 1500)
@@ -82,12 +81,12 @@ public:
      * @brief setPromiscMode Set the interface in promiscous mode
      * @param state true for promisc
      */
-    void setPromiscMode(bool state=true);
+    void setPromiscMode(bool state = true);
     /**
      * @brief setUP Set the interface UP or DOWN
      * @param state true for UP, false for DOWN
      */
-    void setUP(bool state=true);
+    void setUP(bool state = true);
 
     // Apply:
     /**
@@ -103,8 +102,8 @@ public:
     NetIfType getNetIfType() const;
 
 #ifdef _WIN32
-    static Mantids30::Helpers::AppExec::sAppExecCmd createRouteCMD( const std::vector<std::string> & routecmdopts );
-    static Mantids30::Helpers::AppExec::sAppExecCmd createNetSHCMD( const std::vector<std::string> & netshcmdopts );
+    static Mantids30::Helpers::AppExec::sAppExecCmd createRouteCMD(const std::vector<std::string> &routecmdopts);
+    static Mantids30::Helpers::AppExec::sAppExecCmd createNetSHCMD(const std::vector<std::string> &netshcmdopts);
 #endif
 
 private:
@@ -118,16 +117,14 @@ private:
     static std::string getRouteExecPath();
 #endif
 
-
     in_addr m_address, m_netmask;
 
     std::string m_interfaceName;
     std::string m_lastError;
     int m_MTU;
-    bool m_promiscMode,m_stateUP;
+    bool m_promiscMode, m_stateUP;
     bool m_changeIPv4Addr, m_changeMTU, m_changeState, m_changePromiscMode;
     NetIfType m_netifType;
 };
 
-}
-
+} // namespace Mantids30::Network::Interfaces

@@ -37,7 +37,9 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
     int on = 1;
 
     if (isActive())
+    {
         closeSocket(); // close and release first
+    }
     // Socket initialization.
     m_sockFD = socket(m_useIPv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
     if (!isActive())
@@ -68,7 +70,9 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
 bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     if (isActive())
+    {
         closeSocket(); // close and release first
+    }
 
     m_remoteServerHostname = remoteHost;
 
@@ -114,9 +118,13 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
 bool Socket_UDP::writeBlock(const void *data, const size_t &datalen)
 {
     if (!isActive())
+    {
         return false;
+    }
     if (!m_addressInfoResolution)
+    {
         return false;
+    }
 #ifdef _WIN32
     if (sendto(sockfd, (char *) data, datalen, 0, res->ai_addr, res->ai_addrlen) == -1)
 #else
@@ -138,7 +146,9 @@ uint32_t Socket_UDP::getMinReadSize()
 void Socket_UDP::freeAddrInfo()
 {
     if (m_addressInfoResolution)
+    {
         freeaddrinfo(m_addressInfoResolution);
+    }
     m_addressInfoResolution = nullptr;
 }
 
@@ -154,7 +164,9 @@ std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
     std::shared_ptr<Socket_UDP::Block> datagramBlock;
     datagramBlock.reset(new Socket_UDP::Block);
     if (!isActive())
+    {
         return datagramBlock;
+    }
 
     socklen_t fromlen = SOCKADDR_IN_SIZE;
 

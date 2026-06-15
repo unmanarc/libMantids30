@@ -105,11 +105,15 @@ bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream> client
 uint32_t MultiThreaded::incrementIPUsage(const std::string &ipAddr)
 {
     if (m_connectionsPerIP.find(ipAddr) == m_connectionsPerIP.end())
+    {
         m_connectionsPerIP[ipAddr] = 1;
+    }
     else
     {
         if (m_connectionsPerIP[ipAddr] != UINT32_MAX)
+        {
             m_connectionsPerIP[ipAddr]++;
+        }
     }
     return m_connectionsPerIP[ipAddr];
 }
@@ -117,11 +121,17 @@ uint32_t MultiThreaded::incrementIPUsage(const std::string &ipAddr)
 void MultiThreaded::decrementIPUsage(const std::string &ipAddr)
 {
     if (m_connectionsPerIP.find(ipAddr) == m_connectionsPerIP.end())
+    {
         throw std::runtime_error("decrement ip usage, but never incremented before");
+    }
     if (m_connectionsPerIP[ipAddr] == 1)
+    {
         m_connectionsPerIP.erase(ipAddr);
+    }
     else
+    {
         m_connectionsPerIP[ipAddr]--;
+    }
 }
 
 MultiThreaded::MultiThreaded()
@@ -147,7 +157,9 @@ MultiThreaded::~MultiThreaded()
         for (std::thread &t : m_acceptorThreadList)
         {
             if (t.joinable())
+            {
                 t.join();
+            }
         }
     }
 
@@ -172,7 +184,9 @@ MultiThreaded::~MultiThreaded()
         }
         // unlock until there is no threads left.
         while (!m_threadList.empty())
+        {
             m_condClientsEmpty.wait(lock);
+        }
     }
 
     // Now we can safely free the acceptor socket resources.
@@ -183,9 +197,13 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
 {
     // Validate socket index
     if (socketIndex >= m_acceptorSocketList.size())
+    {
         return false;
+    }
     if (!m_acceptorSocketList[socketIndex])
+    {
         return false;
+    }
 
     std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocketList[socketIndex]->acceptConnection();
     if (clientSocket)
@@ -204,10 +222,14 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
             uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
 
             if (parameters.debugOptions.printHex)
+            {
                 debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX;
+            }
 
             if (parameters.debugOptions.printPlainText)
+            {
                 debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN;
+            }
 
             clientSocket->setDebugOptions(debugOptions);
             clientSocket->setDebugOutput(parameters.debugOptions.dir);
@@ -227,7 +249,9 @@ bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> 
         decrementIPUsage(x->getRemotePair());
         m_condClientsNotFull.notify_one();
         if (m_threadList.empty())
+        {
             m_condClientsEmpty.notify_one();
+        }
         return true;
     }
     return false;
@@ -243,9 +267,13 @@ void MultiThreaded::addAcceptorSocket(const std::shared_ptr<Socket_Stream> &acce
 void MultiThreaded::startInBackground()
 {
     if (m_acceptorSocketList.empty())
+    {
         throw std::runtime_error("MultiThreaded::startInBackground() : No Acceptor Sockets defined.");
+    }
     if (!callbacks.onClientConnected)
+    {
         throw std::runtime_error("MultiThreaded::startInBackground() : Acceptor Callback not defined.");
+    }
 
     m_initialized = true;
     // Start one thread per acceptor socket
@@ -260,16 +288,22 @@ void MultiThreaded::stop()
     for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
+        {
             sock->shutdownSocket(SHUT_RDWR);
+        }
     }
 }
 
 bool MultiThreaded::startBlocking()
 {
     if (m_acceptorSocketList.empty())
+    {
         throw std::runtime_error("MultiThreaded::startBlocking() : No Acceptor Sockets defined");
+    }
     if (!callbacks.onClientConnected)
+    {
         throw std::runtime_error("MultiThreaded::startBlocking() : Connection Callback not defined");
+    }
 
     // Start a local thread per acceptor socket and wait for all to finish
     m_initialized = true;
@@ -281,7 +315,9 @@ bool MultiThreaded::startBlocking()
     for (std::thread &t : localThreads)
     {
         if (t.joinable())
+        {
             t.join();
+        }
     }
     stop();
     return true;
