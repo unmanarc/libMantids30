@@ -47,7 +47,7 @@ bool JSONEval::compile(std::string expr)
 #else
         snprintf(_staticmsg, sizeof(_staticmsg), "_STATIC_%lu", pos);
 #endif
-        m_staticTexts->push_back(string(whatStaticText[1].first, whatStaticText[1].second));
+        m_staticTexts->emplace_back(string(whatStaticText[1].first, whatStaticText[1].second));
         boost::replace_all(expr, "\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"", _staticmsg);
     }
 
@@ -128,7 +128,7 @@ bool JSONEval::compile(std::string expr)
                     m_lastError = "Invalid Sub Expression #";
                     return false;
                 }
-                m_atomExpressions.push_back(std::make_pair(nullptr, subexpr_pos));
+                m_atomExpressions.emplace_back(std::make_pair(nullptr, subexpr_pos));
             }
             else
             {
@@ -139,7 +139,7 @@ bool JSONEval::compile(std::string expr)
                     m_evaluationMode = EVAL_MODE_UNDEFINED;
                     return false;
                 }
-                m_atomExpressions.push_back(std::make_pair(atomExpression, 0));
+                m_atomExpressions.emplace_back(std::make_pair(atomExpression, 0));
             }
         }
     }
@@ -154,7 +154,7 @@ bool JSONEval::evaluate(const json &values)
     {
     case EVAL_MODE_AND:
     {
-        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> &i : m_atomExpressions)
+        for (const auto&i : m_atomExpressions)
         {
             if (i.first)
             {
@@ -176,7 +176,7 @@ bool JSONEval::evaluate(const json &values)
     break;
     case EVAL_MODE_OR:
     {
-        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> &i : m_atomExpressions)
+        for (const auto&i : m_atomExpressions)
         {
             if (i.first)
             {

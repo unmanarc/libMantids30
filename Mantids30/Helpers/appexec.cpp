@@ -211,7 +211,7 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     // Pass the current environ...
     for (int i = 0; environ[i]; i++)
     {
-        _environment.push_back(environ[i]);
+        _environment.emplace_back(environ[i]);
     }
 
     char **env = static_cast<char **>(malloc((_environment.size() + 1) * sizeof(char *)));
