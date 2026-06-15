@@ -61,24 +61,24 @@ public:
      * @param mode true for persistent tun/tap device (persist to application close)
      * @return true if succeed.
      */
-    bool setPersistentMode(bool mode);
+    bool setPersistentMode(bool mode) const;
     /**
      * @brief setOwner Set the owner of the interface (security, use after start)
      * @param userName system username
      * @return true if interface changed owner
      */
-    bool setOwner(const char *userName);
+    bool setOwner(const char *userName) const;
     /**
      * @brief setGroup Set the group of the interface (security, use after start)
      * @param groupName system group
      * @return true if interface changed group owner
      */
-    bool setGroup(const char *groupName);
+    bool setGroup(const char *groupName) const;
     /**
      * @brief getInterfaceHandler Get Interface Handler (file descriptor)
      * @return file descriptor
      */
-    int getInterfaceHandler();
+    int getInterfaceHandler() const;
 
     //////////////////////////////////////////////
     /**
@@ -94,7 +94,7 @@ public:
      * @param len packet len.
      * @return packet bytes read.
      */
-    ssize_t readPacket(void *packet, unsigned int len);
+    ssize_t readPacket(void *packet, unsigned int len) const;
 #else
     // Windows specific functions:
     /**

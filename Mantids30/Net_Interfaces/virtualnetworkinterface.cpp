@@ -159,17 +159,17 @@ ssize_t VirtualNetworkInterface::writePacket(const void *packet, unsigned int le
     return write(m_fd, packet, len);
 }
 
-ssize_t VirtualNetworkInterface::readPacket(void *packet, unsigned int len)
+ssize_t VirtualNetworkInterface::readPacket(void *packet, unsigned int len) const
 {
     return read(m_fd, packet, len);
 }
 
-int VirtualNetworkInterface::getInterfaceHandler()
+int VirtualNetworkInterface::getInterfaceHandler() const
 {
     return m_fd;
 }
 
-bool VirtualNetworkInterface::setPersistentMode(bool mode)
+bool VirtualNetworkInterface::setPersistentMode(bool mode) const
 {
     if (m_fd < 0)
     {
@@ -183,7 +183,7 @@ bool VirtualNetworkInterface::setPersistentMode(bool mode)
     return true;
 }
 
-bool VirtualNetworkInterface::setOwner(const char *userName)
+bool VirtualNetworkInterface::setOwner(const char *userName) const
 {
     if (m_fd < 0)
     {
@@ -204,7 +204,7 @@ bool VirtualNetworkInterface::setOwner(const char *userName)
     return false;
 }
 
-bool VirtualNetworkInterface::setGroup(const char *groupName)
+bool VirtualNetworkInterface::setGroup(const char *groupName) const
 {
     if (m_fd < 0)
     {

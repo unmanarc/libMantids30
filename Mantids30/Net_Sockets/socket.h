@@ -108,7 +108,7 @@ public:
 
     struct AddressAndPort
     {
-        std::string toString() { return address + ":" + std::to_string(port); }
+        std::string toString() const { return address + ":" + std::to_string(port); }
         std::string address;
         uint16_t port = 0;
     };

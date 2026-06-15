@@ -23,7 +23,7 @@ public:
             dataLength = -1;
         }
         ~Block() { this->free(); }
-        void free()
+        void free() const
         {
             if (data)
             {
