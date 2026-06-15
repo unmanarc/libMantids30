@@ -24,16 +24,16 @@ RPCLog::RPCLog(const uint8_t &_logMode)
     : LogBase(_logMode)
 {}
 
-void RPCLog::log(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
+void RPCLog::log(LogLevel logLevel, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
                  const char *fmtLog, ...)
 {
     va_list args;
     va_start(args, fmtLog);
-    logVA(logSeverity, ip, sessionId, user, domain, module, outSize, fmtLog, args);
+    logVA(logLevel, ip, sessionId, user, domain, module, outSize, fmtLog, args);
     va_end(args);
 }
 
-void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
+void RPCLog::logVA(LogLevel logLevel, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
                    const char *fmtLog, va_list args)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
@@ -42,36 +42,36 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
 
     vsnprintf(buffer.data(), buffer.size(), fmtLog, args);
 
-    if (logSeverity == LEVEL_INFO)
+    if (logLevel == LogLevel::INFO)
     {
-        printStandardLog(logSeverity, stdout, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_BOLD, "INFO");
+        printStandardLog(logLevel, stdout, ip, sessionId, user, domain, module, buffer.data(), LogColor::BOLD, "INFO");
     }
-    else if (logSeverity == LEVEL_WARN)
+    else if (logLevel == LogLevel::WARN)
     {
-        printStandardLog(logSeverity, stdout, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_BLUE, "WARN");
+        printStandardLog(logLevel, stdout, ip, sessionId, user, domain, module, buffer.data(), LogColor::BLUE, "WARN");
     }
-    else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    else if ((logLevel == LogLevel::DEBUG || logLevel == LogLevel::DEBUG1) && m_debug)
     {
-        printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_GREEN, "DEBUG");
+        printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::GREEN, "DEBUG");
     }
-    else if (logSeverity == LEVEL_CRITICAL)
+    else if (logLevel == LogLevel::CRITICAL)
     {
-        printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_RED, "CRIT");
+        printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::RED, "CRIT");
     }
-    else if (logSeverity == LEVEL_SECURITY_ALERT)
+    else if (logLevel == LogLevel::SECURITY_ALERT)
     {
-        printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_ORANGE, "SECU");
+        printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::ORANGE, "SECU");
     }
-    else if (logSeverity == LEVEL_ERR)
+    else if (logLevel == LogLevel::ERR)
     {
-        printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_PURPLE, "ERR");
+        printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::PURPLE, "ERR");
     }
 
     fflush(stderr);
     fflush(stdout);
 }
 
-void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char *buffer, eLogColors color,
+void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char *buffer, LogColor color,
                               const char *logLevelText)
 {
     {
@@ -180,19 +180,19 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LEVEL_INFO)
+        if (logLevel == LogLevel::INFO)
         {
             syslog(LOG_INFO, "%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_CRITICAL)
+        else if (logLevel == LogLevel::CRITICAL)
         {
             syslog(LOG_CRIT, "%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_SECURITY_ALERT || logSeverity == LEVEL_WARN)
+        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARN)
         {
             syslog(LOG_WARNING, "%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_ERR)
+        else if (logLevel == LogLevel::ERR)
         {
             syslog(LOG_ERR, "%s", logLine.c_str());
         }
@@ -215,25 +215,25 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
             }
             switch (color)
             {
-            case LOG_COLOR_NORMAL:
+            case LogColor::NORMAL:
                 fprintf(fp, "%s", getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_BOLD:
+            case LogColor::BOLD:
                 printColorBold(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_RED:
+            case LogColor::RED:
                 printColorRed(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_GREEN:
+            case LogColor::GREEN:
                 printColorGreen(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_BLUE:
+            case LogColor::BLUE:
                 printColorBlue(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_PURPLE:
+            case LogColor::PURPLE:
                 printColorPurple(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_ORANGE:
+            case LogColor::ORANGE:
                 printColorOrange(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
             }

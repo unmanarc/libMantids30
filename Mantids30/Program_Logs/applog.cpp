@@ -25,7 +25,7 @@ AppLog::AppLog(const uint8_t &_logMode)
     : LogBase(_logMode)
 {}
 
-void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, string user, string ip, const char *buffer, eLogColors color, const char *logLevelText)
+void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string user, string ip, const char *buffer, LogColor color, const char *logLevelText)
 {
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
@@ -102,19 +102,19 @@ void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, s
     if (isUsingSyslog())
     {
 #ifndef _WIN32
-        if (logSeverity == LEVEL_INFO)
+        if (logLevel == LogLevel::INFO)
         {
             syslog(LOG_INFO, "S/%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_CRITICAL)
+        else if (logLevel == LogLevel::CRITICAL)
         {
             syslog(LOG_CRIT, "S/%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_SECURITY_ALERT || logSeverity == LEVEL_WARN)
+        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARN)
         {
             syslog(LOG_WARNING, "S/%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_ERR)
+        else if (logLevel == LogLevel::ERR)
         {
             syslog(LOG_ERR, "S/%s", logLine.c_str());
         }
@@ -137,25 +137,25 @@ void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, s
             }
             switch (color)
             {
-            case LOG_COLOR_NORMAL:
+            case LogColor::NORMAL:
                 fprintf(fp, "%s", getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_BOLD:
+            case LogColor::BOLD:
                 printColorBold(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_RED:
+            case LogColor::RED:
                 printColorRed(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_GREEN:
+            case LogColor::GREEN:
                 printColorGreen(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_BLUE:
+            case LogColor::BLUE:
                 printColorBlue(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_PURPLE:
+            case LogColor::PURPLE:
                 printColorPurple(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
-            case LOG_COLOR_ORANGE:
+            case LogColor::ORANGE:
                 printColorOrange(fp, getAlignedValue(logLevelText, 6).c_str());
                 break;
                 break;
@@ -176,7 +176,7 @@ void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, s
     }
 }
 
-void AppLog::log(const string &module, const string &user, const string &ip, eLogLevels logSeverity, const uint32_t &outSize, const char *fmtLog, ...)
+void AppLog::log(const string &module, const string &user, const string &ip, LogLevel logLevel, const uint32_t &outSize, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char *buffer = new char[outSize];
@@ -190,36 +190,36 @@ void AppLog::log(const string &module, const string &user, const string &ip, eLo
     va_start(args, fmtLog);
     vsnprintf(buffer, outSize, fmtLog, args);
 
-    if (logSeverity == LEVEL_INFO)
+    if (logLevel == LogLevel::INFO)
     {
-        printStandardLog(logSeverity, stdout, module, user, ip, buffer, LOG_COLOR_BOLD, "INFO");
+        printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logSeverity == LEVEL_WARN)
+    else if (logLevel == LogLevel::WARN)
     {
-        printStandardLog(logSeverity, stdout, module, user, ip, buffer, LOG_COLOR_BLUE, "WARN");
+        printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BLUE, "WARN");
     }
-    else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    else if ((logLevel == LogLevel::DEBUG || logLevel == LogLevel::DEBUG1) && m_debug)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_GREEN, "DEBUG");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::GREEN, "DEBUG");
     }
-    else if (logSeverity == LEVEL_CRITICAL)
+    else if (logLevel == LogLevel::CRITICAL)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_RED, "CRIT");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::RED, "CRIT");
     }
-    else if (logSeverity == LEVEL_SECURITY_ALERT)
+    else if (logLevel == LogLevel::SECURITY_ALERT)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_ORANGE, "SECU");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logSeverity == LEVEL_ERR)
+    else if (logLevel == LogLevel::ERR)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_PURPLE, "ERR");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::PURPLE, "ERR");
     }
 
     va_end(args);
     delete[] buffer;
 }
 
-void AppLog::log2(const string &module, const string &user, const string &ip, eLogLevels logSeverity, const char *fmtLog, ...)
+void AppLog::log2(const string &module, const string &user, const string &ip, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];
@@ -229,35 +229,35 @@ void AppLog::log2(const string &module, const string &user, const string &ip, eL
     va_start(args, fmtLog);
     vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
-    if (logSeverity == LEVEL_INFO)
+    if (logLevel == LogLevel::INFO)
     {
-        printStandardLog(logSeverity, stdout, module, user, ip, buffer, LOG_COLOR_BOLD, "INFO");
+        printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logSeverity == LEVEL_WARN)
+    else if (logLevel == LogLevel::WARN)
     {
-        printStandardLog(logSeverity, stdout, module, user, ip, buffer, LOG_COLOR_BLUE, "WARN");
+        printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BLUE, "WARN");
     }
-    else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    else if ((logLevel == LogLevel::DEBUG || logLevel == LogLevel::DEBUG1) && m_debug)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_GREEN, "DEBUG");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::GREEN, "DEBUG");
     }
-    else if (logSeverity == LEVEL_CRITICAL)
+    else if (logLevel == LogLevel::CRITICAL)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_RED, "CRIT");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::RED, "CRIT");
     }
-    else if (logSeverity == LEVEL_SECURITY_ALERT)
+    else if (logLevel == LogLevel::SECURITY_ALERT)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_ORANGE, "SECU");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logSeverity == LEVEL_ERR)
+    else if (logLevel == LogLevel::ERR)
     {
-        printStandardLog(logSeverity, stderr, module, user, ip, buffer, LOG_COLOR_PURPLE, "ERR");
+        printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::PURPLE, "ERR");
     }
 
     va_end(args);
 }
 
-void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity, const char *fmtLog, ...)
+void AppLog::log1(const string &module, const string &ip, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];
@@ -267,35 +267,35 @@ void AppLog::log1(const string &module, const string &ip, eLogLevels logSeverity
     va_start(args, fmtLog);
     vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
-    if (logSeverity == LEVEL_INFO)
+    if (logLevel == LogLevel::INFO)
     {
-        printStandardLog(logSeverity, stdout, module, "", ip, buffer, LOG_COLOR_BOLD, "INFO");
+        printStandardLog(logLevel, stdout, module, "", ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logSeverity == LEVEL_WARN)
+    else if (logLevel == LogLevel::WARN)
     {
-        printStandardLog(logSeverity, stdout, module, "", ip, buffer, LOG_COLOR_BLUE, "WARN");
+        printStandardLog(logLevel, stdout, module, "", ip, buffer, LogColor::BLUE, "WARN");
     }
-    else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    else if ((logLevel == LogLevel::DEBUG || logLevel == LogLevel::DEBUG1) && m_debug)
     {
-        printStandardLog(logSeverity, stderr, module, "", ip, buffer, LOG_COLOR_GREEN, "DEBUG");
+        printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::GREEN, "DEBUG");
     }
-    else if (logSeverity == LEVEL_CRITICAL)
+    else if (logLevel == LogLevel::CRITICAL)
     {
-        printStandardLog(logSeverity, stderr, module, "", ip, buffer, LOG_COLOR_RED, "CRIT");
+        printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::RED, "CRIT");
     }
-    else if (logSeverity == LEVEL_SECURITY_ALERT)
+    else if (logLevel == LogLevel::SECURITY_ALERT)
     {
-        printStandardLog(logSeverity, stderr, module, "", ip, buffer, LOG_COLOR_ORANGE, "SECU");
+        printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logSeverity == LEVEL_ERR)
+    else if (logLevel == LogLevel::ERR)
     {
-        printStandardLog(logSeverity, stderr, module, "", ip, buffer, LOG_COLOR_PURPLE, "ERR");
+        printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::PURPLE, "ERR");
     }
 
     va_end(args);
 }
 
-void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtLog, ...)
+void AppLog::log0(const string &module, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];
@@ -307,29 +307,29 @@ void AppLog::log0(const string &module, eLogLevels logSeverity, const char *fmtL
     va_start(args, fmtLog);
     vsnprintf(buffer, sizeof(buffer), fmtLog, args);
 
-    if (logSeverity == LEVEL_INFO)
+    if (logLevel == LogLevel::INFO)
     {
-        printStandardLog(logSeverity, stdout, module, "", "", buffer, LOG_COLOR_BOLD, "INFO");
+        printStandardLog(logLevel, stdout, module, "", "", buffer, LogColor::BOLD, "INFO");
     }
-    else if (logSeverity == LEVEL_WARN)
+    else if (logLevel == LogLevel::WARN)
     {
-        printStandardLog(logSeverity, stdout, module, "", "", buffer, LOG_COLOR_BLUE, "WARN");
+        printStandardLog(logLevel, stdout, module, "", "", buffer, LogColor::BLUE, "WARN");
     }
-    else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    else if ((logLevel == LogLevel::DEBUG || logLevel == LogLevel::DEBUG1) && m_debug)
     {
-        printStandardLog(logSeverity, stderr, module, "", "", buffer, LOG_COLOR_GREEN, "DEBUG");
+        printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::GREEN, "DEBUG");
     }
-    else if (logSeverity == LEVEL_CRITICAL)
+    else if (logLevel == LogLevel::CRITICAL)
     {
-        printStandardLog(logSeverity, stderr, module, "", "", buffer, LOG_COLOR_RED, "CRIT");
+        printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::RED, "CRIT");
     }
-    else if (logSeverity == LEVEL_SECURITY_ALERT)
+    else if (logLevel == LogLevel::SECURITY_ALERT)
     {
-        printStandardLog(logSeverity, stderr, module, "", "", buffer, LOG_COLOR_ORANGE, "SECU");
+        printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logSeverity == LEVEL_ERR)
+    else if (logLevel == LogLevel::ERR)
     {
-        printStandardLog(logSeverity, stderr, module, "", "", buffer, LOG_COLOR_PURPLE, "ERR");
+        printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::PURPLE, "ERR");
     }
 
     va_end(args);

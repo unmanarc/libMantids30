@@ -10,9 +10,9 @@ public:
     RPCLog(const uint8_t &_logMode = static_cast<uint8_t>(Mode::STANDARD));
     static std::string truncateSessionId(std::string sSessionId);
 
-    void logVA(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
+    void logVA(LogLevel logLevel, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
                const char *fmtLog, va_list args);
-    void log(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
+    void log(LogLevel logLevel, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
              const char *fmtLog, ...);
 
     /////////////////////////////////////////////////////////
@@ -25,7 +25,7 @@ public:
 
 private:
     // Print functions:
-    void printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char *buffer, eLogColors color,
+    void printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char *buffer, LogColor color,
                           const char *logLevelText);
 };
 

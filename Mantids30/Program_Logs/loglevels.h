@@ -1,20 +1,23 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Mantids30::Program::Logs {
 
-enum eLogLevels
+enum LogLevel : uint8_t
 {
-    LEVEL_ALL = 0x0,
-    LEVEL_INFO = 0x1,
-    LEVEL_WARN = 0x2,
-    LEVEL_CRITICAL = 0x3,
-    LEVEL_ERR = 0x4,
-    LEVEL_DEBUG = 0x5,
-    LEVEL_DEBUG1 = 0x6,
-    LEVEL_SECURITY_ALERT = 0x7
+    ALL = 0x0,
+    INFO = 0x1,
+    WARN = 0x2,
+    CRITICAL = 0x3,
+    ERR = 0x4,
+    DEBUG = 0x5,
+    DEBUG1 = 0x6,
+    SECURITY_ALERT = 0x7
 };
 
 // TODO:
+/*
 enum eLogLevel2
 {
     LOG_LEVEL_NONE = 0x00,
@@ -52,5 +55,5 @@ enum eLogLevel2
     LOG_TYPE_MAINTENANCE = 0x40000000,           // Maintenance and service logs
     LOG_TYPE_CUSTOM = 0x80000000                 // Placeholder for custom or miscellaneous logs
 };
-
+*/
 } // namespace Mantids30::Program::Logs

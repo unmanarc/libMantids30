@@ -1,16 +1,17 @@
 #pragma once
 
+#include <cstdint>
 namespace Mantids30::Program::Logs {
 
-enum eLogColors
+enum class LogColor : uint8_t
 {
-    LOG_COLOR_BOLD = 0,
-    LOG_COLOR_BLUE = 1,
-    LOG_COLOR_RED = 2,
-    LOG_COLOR_PURPLE = 3,
-    LOG_COLOR_NORMAL = 4,
-    LOG_COLOR_GREEN = 5,
-    LOG_COLOR_ORANGE = 6
+    BOLD = 0,
+    BLUE = 1,
+    RED = 2,
+    PURPLE = 3,
+    NORMAL = 4,
+    GREEN = 5,
+    ORANGE = 6
 };
 
 } // namespace Mantids30::Program::Logs
