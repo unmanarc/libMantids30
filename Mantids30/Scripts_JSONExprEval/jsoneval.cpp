@@ -121,7 +121,7 @@ bool JSONEval::compile(std::string expr)
 
         std::vector<std::string> vAtomicExpressions;
         boost::split(vAtomicExpressions,expr,boost::is_any_of("\n"));
-        for ( const auto & atomicExpr : vAtomicExpressions)
+        for ( const std::string & atomicExpr : vAtomicExpressions)
         {
             if ( boost::starts_with(atomicExpr, "_SUBEXPR_") )
             {
@@ -158,7 +158,7 @@ bool JSONEval::evaluate(const json &values)
     {
     case EVAL_MODE_AND:
     {
-        for (const auto & i : m_atomExpressions)
+        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> & i : m_atomExpressions)
         {
             if (i.first)
             {
@@ -175,7 +175,7 @@ bool JSONEval::evaluate(const json &values)
     }break;
     case EVAL_MODE_OR:
     {
-        for (const auto & i : m_atomExpressions)
+        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> & i : m_atomExpressions)
         {
             if (i.first)
             {

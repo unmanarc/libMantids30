@@ -1,13 +1,12 @@
 #include "fastrpc.h"
 #include <Mantids30/Threads/lock_shared.h>
 #include <memory>
+#include <thread>
 
 using namespace Mantids30::Network::Protocols::FastRPC;
 using namespace Mantids30;
 using Ms = std::chrono::milliseconds;
 using S = std::chrono::seconds;
-
-
 
 void fastRPCPingerThread( FastRPC1 * obj )
 {
@@ -81,8 +80,8 @@ bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &
 void FastRPC1::sendPings()
 {
     // This will create some traffic:
-    auto keys = m_connectionsByKeyId.getKeys();
-    for (const auto & i : keys)
+    std::set<std::string> keys = m_connectionsByKeyId.getKeys();
+    for (const std::string & i : keys)
     {
         // Avoid to ping more hosts during program finalization...
         if (m_finished)
@@ -315,7 +314,7 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream> stream, 
     // Now here is connected....
     if (_cb_OnConnected.fastRPCCB_OnConnected != nullptr)
     {
-        auto i = std::thread(_cb_OnConnected.fastRPCCB_OnConnected, key, _cb_OnConnected.context);
+        std::thread i = std::thread(_cb_OnConnected.fastRPCCB_OnConnected, key, _cb_OnConnected.context);
         i.detach();
     }
 
@@ -555,9 +554,8 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
     FastRPC1::Connection * connection;
     if ((connection=(FastRPC1::Connection *)m_connectionsByKeyId.openElement(connectionKey))!=nullptr)
     {
-
         connection->mtSocket->lock();
-        if (    connection->stream->writeU<uint8_t>(0) )
+        if ( connection->stream->writeU<uint8_t>(0) )
         {
         }
         connection->mtSocket->unlock();

@@ -27,7 +27,7 @@ bool MIME_Sub_Header::streamToUpstream()
     Memory::Streams::WriteStatus cur;
 
     // Write out the header option values...
-    for (auto & i : m_headers)
+    for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::reference & i : m_headers)
     {
         std::string x = i.second->toString() + std::string("\r\n");
 
@@ -54,9 +54,9 @@ bool MIME_Sub_Header::exist(const std::string &optionName) const
 
 void MIME_Sub_Header::remove(const std::string &optionName)
 {
-    auto range = m_headers.equal_range(boost::to_upper_copy(optionName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator> range = m_headers.equal_range(boost::to_upper_copy(optionName));
 
-    for (auto it = range.first; it != range.second; )
+    for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator it = range.first; it != range.second; )
     {
         //delete it->second;
         it = m_headers.erase(it);
@@ -114,8 +114,8 @@ bool MIME_Sub_Header::addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt)
 std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
 {
     std::list<std::shared_ptr<MIME_HeaderOption>> values;
-    auto range = m_headers.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i) values.push_back(i->second);
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator, std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator> range = m_headers.equal_range(boost::to_upper_copy(varName));
+    for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator i = range.first; i != range.second; ++i) values.push_back(i->second);
     return values;
 }
 

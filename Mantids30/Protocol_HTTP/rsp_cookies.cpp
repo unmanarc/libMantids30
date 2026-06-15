@@ -15,7 +15,7 @@ using namespace Mantids30;
 
 void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {
-    for (const auto & cookie :m_cookiesMap )
+    for (const std::pair<const std::string, std::shared_ptr<HTTP::Headers::Cookie>> & cookie :m_cookiesMap )
     {
         headers->add("Set-Cookie",(cookie.second)->toSetCookieString(cookie.first));
     }
@@ -104,7 +104,7 @@ void Cookies_ServerSide::prependPathToAllCookies(const std::string & prefix)
     if (prefix.empty())
         return;
 
-    for (auto & cookie : m_cookiesMap)
+    for (std::pair<const std::string, std::shared_ptr<HTTP::Headers::Cookie>> & cookie : m_cookiesMap)
     {
         // If cookie path is empty or "/", set it to the prefix directly
         if (cookie.second->path.empty() || cookie.second->path == "/")

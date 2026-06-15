@@ -8,6 +8,7 @@
 #include <Mantids30/Threads/lock_shared.h>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <chrono>
 #include <memory>
 
 using namespace Mantids30;
@@ -108,7 +109,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
         {
             json reasons;
 
-            auto i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
+            API::Monolith::Endpoints::ValidationResult i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
 
             switch (i)
             {
@@ -120,8 +121,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                 // Report:
                 CALLBACK(callbacks->onMethodExecutionStart)(callbacks->context, taskParams, taskParams->payload);
 
-                auto start = chrono::high_resolution_clock::now();
-                auto finish = chrono::high_resolution_clock::now();
+                chrono::high_resolution_clock::time_point start = chrono::high_resolution_clock::now();
+                chrono::high_resolution_clock::time_point finish = chrono::high_resolution_clock::now();
                 chrono::duration<double, milli> elapsed = finish - start;
 
                 switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
@@ -205,7 +206,7 @@ void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
     json response;
     LoginReason loginReason;
 
-    auto session = taskParams->sessionHolder->getSharedPointer();
+    std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
     std::string sJWTToken = JSON_ASSTRING(taskParams->payload, "jwtToken", "");
 

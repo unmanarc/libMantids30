@@ -3,6 +3,7 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include <utility>
 #include <vector>
 #include <string>
 
@@ -24,21 +25,15 @@ void Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 
 std::string Cookies_ClientSide::toString() const
 {
-    std::string cookies;
+    std::vector<std::string> parts;
+    parts.reserve(m_cookiesMap.size());
 
-    bool first = true;
-    for (auto & i : m_cookiesMap)
+    for (const std::pair<std::string,std::string>& i : m_cookiesMap)
     {
-        if (first)
-        {
-            cookies+="; ";
-            first = false;
-        }
-        cookies+=i.first;
-        cookies+="=";
-        cookies+=i.second;
+        parts.emplace_back(i.first + "=" + i.second);
     }
-    return cookies;
+
+    return boost::algorithm::join(parts, "; ");
 }
 
 void Cookies_ClientSide::parseFromHeaders(const std::string &cookies_str)

@@ -1,9 +1,9 @@
 #include "fastrpc3.h"
-#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
+#include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Threads/lock_shared.h>
 
@@ -39,7 +39,7 @@ FastRPC3::FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threa
     , config(jwtValidator)
 {
     m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
-    config.setDefaultHandlers( m_defaultMethodsHandlers );
+    config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
     m_isFinished = false;
@@ -53,7 +53,7 @@ FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
     , config(std::make_shared<DataFormat::JWT>())
 {
     m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
-    config.setDefaultHandlers( m_defaultMethodsHandlers );
+    config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
     m_isFinished = false;
@@ -87,8 +87,8 @@ void FastRPC3::stop()
 void FastRPC3::pingAllActiveConnections()
 {
     // This will create some traffic:
-    auto keys = m_connectionMapById.getKeys();
-    for (const auto &i : keys)
+    std::set<std::string> keys = m_connectionMapById.getKeys();
+    for (const std::string &i : keys)
     {
         // Avoid to ping more hosts during program finalization...
         if (m_isFinished)
@@ -169,7 +169,8 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
     return 1;
 }
 
-int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
+int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
+                                              FastRPC3::SessionPTR *sessionHolder)
 {
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId = 0;
@@ -186,7 +187,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
     }
 
     flags = stream->readU<uint8_t>();
-    if (flags==0)
+    if (flags == 0)
     {
         return CONNECTION_FAILED_READING_FLAGS;
     }
@@ -204,7 +205,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
         return CONNECTION_FAILED_READING_PAYLOAD;
     }
 
-    if ((flags&EXEC_FLAG_EXTRAAUTH) != 0)
+    if ((flags & EXEC_FLAG_EXTRAAUTH) != 0)
     {
         extraAuthToken = stream->readBlockWAllocEx<uint32_t>(&maxAlloc);
         if (!extraAuthToken)
@@ -213,7 +214,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
             return CONNECTION_FAILED_READING_EXTRAAUTH;
         }
     }
-    
+
     std::shared_ptr<Sessions::Session> session = sessionHolder->getSharedPointer();
 
     ////////////////////////////////////////////////////////////
@@ -254,9 +255,9 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
         if (params->methodName == "SESSION.LOGIN")
             currentTask = LocalRPCTasks::login;
         else if (params->methodName == "SESSION.LOGOUT")
-            currentTask =  LocalRPCTasks::logout;
+            currentTask = LocalRPCTasks::logout;
         else if (params->methodName == "SESSION.GETSSODATA")
-            currentTask =  LocalRPCTasks::getSSOData;
+            currentTask = LocalRPCTasks::getSSOData;
 
         if (!m_threadPool->pushTask(currentTask, params, config.queuePushTimeoutInMS, priority, key))
         {
@@ -264,7 +265,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
             CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params.get());
             sendRPCAnswer(params.get(), "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
             params->doneSharedMutex->unlockShared();
-//            delete params;
+            //            delete params;
         }
     }
     return CONNECTION_CONTINUE;

@@ -325,7 +325,7 @@ bool FrameHeader::parseExtendedLength()
     if (m_extendedLengthBytes == 2)
     {
         uint8_t data[2];
-        auto x = getParsedBuffer()->copyOut(data, 2, 0);
+        std::optional<size_t> x = getParsedBuffer()->copyOut(data, 2, 0);
         if (x == std::nullopt || *x != 2)
         {
             return false;
@@ -336,7 +336,7 @@ bool FrameHeader::parseExtendedLength()
     else if (m_extendedLengthBytes == 8)
     {
         uint8_t data[8];
-        auto x = getParsedBuffer()->copyOut(data, 8, 0);
+        std::optional<size_t> x = getParsedBuffer()->copyOut(data, 8, 0);
         if (x == std::nullopt || *x != 8)
         {
             return false;
@@ -367,7 +367,7 @@ bool FrameHeader::parseExtendedLength()
 bool FrameHeader::parseMaskingKey()
 {
     uint8_t data[4];
-    auto x = getParsedBuffer()->copyOut(data, 4, 0);
+    std::optional<size_t> x = getParsedBuffer()->copyOut(data, 4, 0);
     if (x == std::nullopt || *x != 4)
     {
         return false;

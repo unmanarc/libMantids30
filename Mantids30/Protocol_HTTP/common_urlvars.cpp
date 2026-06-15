@@ -1,7 +1,7 @@
 #include "common_urlvars.h"
 
-#include <Mantids30/Memory/streamable_null.h>
 #include "streamencoder_url.h"
+#include <Mantids30/Memory/streamable_null.h>
 #include <boost/algorithm/string.hpp>
 #include <memory>
 
@@ -21,7 +21,7 @@ HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
 
 std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(std::shared_ptr<StreamableObject> value)
 {
-    auto x = std::shared_ptr<URLVars>(new URLVars(value));
+    std::shared_ptr<URLVars> x = std::shared_ptr<URLVars>(new URLVars(value));
     x->initSubParser(&x->m_urlVarParser);
     x->m_initialized = x->initProtocol();
     return x;
@@ -36,8 +36,7 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
 {
     bool firstVar = true;
 
-
-    for (const auto &i : m_vars)
+    for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
     {
         if (firstVar)
             firstVar = false;
@@ -45,7 +44,9 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
         {
             out->writeString("&");
             if (!out->writeStatus.succeed)
+            {
                 return false;
+            }
         }
 
         Memory::Containers::B_Chunks varName;
@@ -54,19 +55,25 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
         Memory::Streams::Encoders::URL varNameEncoder;
         varNameEncoder.transform(&varName, out);
         if (!out->writeStatus.succeed)
+        {
             return false;
+        }
 
         if ((i.second)->size())
         {
             out->writeString("=");
 
             if (!out->writeStatus.succeed)
+            {
                 return false;
+            }
 
             Memory::Streams::Encoders::URL varNameEncoder2;
             varNameEncoder2.transform(i.second.get(), out);
             if (!out->writeStatus.succeed)
+            {
                 return false;
+            }
         }
     }
 
@@ -77,10 +84,12 @@ uint32_t HTTP::URLVars::varCount(const std::string &varName)
 {
     uint32_t x = 0;
 
-    for ( const auto & i : m_vars )
+    for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
     {
         if (i.first == varName)
+        {
             x++;
+        }
     }
 
     return x;
@@ -88,10 +97,12 @@ uint32_t HTTP::URLVars::varCount(const std::string &varName)
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTP::URLVars::getValue(const std::string &varName)
 {
-    for ( const auto & i : m_vars )
+    for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
     {
         if (i.first == varName)
+        {
             return i.second;
+        }
     }
     return nullptr;
 }
@@ -99,10 +110,12 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::URLVars::getValue(const
 std::list<std::shared_ptr<Memory::Streams::StreamableObject>> HTTP::URLVars::getValues(const std::string &varName)
 {
     std::list<std::shared_ptr<Memory::Streams::StreamableObject>> r;
-    for ( const auto & i : m_vars )
+    for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
     {
         if (i.first == varName)
+        {
             r.push_back(i.second);
+        }
     }
     return r;
 }
@@ -110,8 +123,10 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> HTTP::URLVars::get
 std::set<std::string> HTTP::URLVars::getKeysList()
 {
     std::set<std::string> r;
-    for (const auto &i : m_vars)
+    for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
+    {
         r.insert(i.first);
+    }
     return r;
 }
 
@@ -160,7 +175,7 @@ bool HTTP::URLVars::changeToNextParser()
 
 bool HTTP::URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
 {
-    if (!varName.empty() && m_vars.size()<m_maxVarsCount)
+    if (!varName.empty() && m_vars.size() < m_maxVarsCount)
     {
         m_vars.push_back(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(varName, data));
         return true;
@@ -182,11 +197,15 @@ size_t HTTP::URLVars::size()
 void HTTP::URLVars::iSetMaxVarContentSize()
 {
     if (m_currentStat == URLV_STAT_WAITING_CONTENT)
+    {
         m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
+    }
 }
 
 void HTTP::URLVars::iSetMaxVarNameSize()
 {
     if (m_currentStat == URLV_STAT_WAITING_NAME)
+    {
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
+    }
 }

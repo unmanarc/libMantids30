@@ -21,7 +21,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     {
         log->log0(__func__, Logs::LEVEL_DEBUG, "Using TLS connection.");
 
-        auto socket = std::make_shared<Socket_TLS>();
+        std::shared_ptr<Socket_TLS> socket = std::make_shared<Socket_TLS>();
 
         if (proxyParameters->checkTLSPeer)
         {
@@ -45,7 +45,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     else
     {
         log->log0(__func__, Logs::LEVEL_WARN, "Using plain TCP connection.");
-        auto socket = std::make_shared<Socket_TCP>();
+        std::shared_ptr<Socket_TCP> socket = std::make_shared<Socket_TCP>();
         connection = socket;
     }
 
@@ -56,7 +56,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
 
         HTTP::HTTPv1_Client client(connection);
 
-        auto strJSONRequest = std::make_shared<Memory::Streams::StreamableJSON>();
+        std::shared_ptr<Memory::Streams::StreamableJSON> strJSONRequest = std::make_shared<Memory::Streams::StreamableJSON>();
 
         *strJSONRequest->getValue() = jsonRequest;
         (*strJSONRequest->getValue())["APIKEY"] = apiKey;
@@ -68,7 +68,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         client.clientRequest.content.setStreamableObj(strJSONRequest);
         client.clientRequest.headers.add("Content-Type", "application/json");
 
-        auto strJSONResponse = std::make_shared<Memory::Streams::StreamableJSON>();
+        std::shared_ptr<Memory::Streams::StreamableJSON> strJSONResponse = std::make_shared<Memory::Streams::StreamableJSON>();
 
         client.serverResponse.setDataStreamer(strJSONResponse);
 
@@ -139,7 +139,7 @@ void APISync::APISyncParameters::loadFromInfoTree(const boost::property_tree::pt
     useTLS = ptr.get<bool>("UseTLS", true);
     apiSyncPort = ptr.get<uint16_t>("APISyncPort", 7081);
 
-    if (auto tlsHeaders = ptr.get_child_optional("TLS"))
+    if (boost::optional<const boost::property_tree::ptree&> tlsHeaders = ptr.get_child_optional("TLS"))
     {
         checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
         usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);

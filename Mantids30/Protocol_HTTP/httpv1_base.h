@@ -1,28 +1,28 @@
 #pragma once
 
 #include <Mantids30/Memory/parser.h>
+#include <Mantids30/Memory/streamable_json.h>
+#include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Memory/vars.h>
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
+
 #include <memory>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <string>
 
-#include <Mantids30/Memory/streamable_json.h>
-#include <Mantids30/Memory/streamable_string.h>
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
 #include "hdr_sec_hsts.h"
-#include "hdr_sec_xssprotection.h"
 #include "hdr_sec_xframeopts.h"
+#include "hdr_sec_xssprotection.h"
 #include "req_requestline.h"
-//#include "req_cookies.h"
 #include "rsp_cookies.h"
 #include "rsp_status.h"
 #include "streamdecoder_url.h"
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
-#define HTTP_PRODUCT_VERSION_MINOR 5
+#define HTTP_PRODUCT_VERSION_MINOR 6
 
 namespace Mantids30::Network::Protocols::HTTP {
 
@@ -32,11 +32,9 @@ enum VarSource
     VARS_GET
 };
 
-
 class HTTPv1_Base : public Mantids30::Memory::Streams::Parser
 {
 public:
-
     /**
      * @brief A struct representing security settings for the web server.
      *
@@ -46,10 +44,10 @@ public:
      */
     struct Security
     {
-        Headers::Security::XFrameOpts XFrameOpts;   ///< The X-Frame-Options setting.
+        Headers::Security::XFrameOpts XFrameOpts;       ///< The X-Frame-Options setting.
         Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
-        Headers::Security::HSTS HSTS;               ///< The HSTS (HTTP Strict Transport Security) setting.
-        bool disableNoSniffContentType = false;     ///< Whether or not to disable the no-sniff content type header.
+        Headers::Security::HSTS HSTS;                   ///< The HSTS (HTTP Strict Transport Security) setting.
+        bool disableNoSniffContentType = false;         ///< Whether or not to disable the no-sniff content type header.
     };
 
     /**
@@ -69,19 +67,19 @@ public:
          * @param username The username to use for authentication.
          * @param password The password to use for authentication.
          */
-        void setAuthentication(const std::string& username, const std::string& password)
+        void setAuthentication(const std::string &username, const std::string &password)
         {
             isEnabled = true;
             this->username = username;
             this->password = password;
         }
 
-        std::string username; ///< The username to use for basic authentication.
-        std::string password; ///< The password to use for basic authentication.
-        bool isEnabled = false;       ///< Whether basic authentication is enabled or not.
+        std::string username;   ///< The username to use for basic authentication.
+        std::string password;   ///< The password to use for basic authentication.
+        bool isEnabled = false; ///< Whether basic authentication is enabled or not.
     };
     struct Request
-    {       
+    {
         // HTTP Quick Access Functions:
         /**
          * @brief getVars Get Vars
@@ -101,7 +99,7 @@ public:
         }
         std::shared_ptr<MIME::MIME_HeaderOption> getCookies()
         {
-            auto i = headers.getOptionByName("Cookie");
+            std::shared_ptr<MIME::MIME_HeaderOption> i = headers.getOptionByName("Cookie");
             if (!i)
             {
                 // Return empty object when no data is available.
@@ -146,7 +144,7 @@ public:
 
         std::multimap<std::string, std::string> getAllCookies()
         {
-            std::shared_ptr<MIME::MIME_HeaderOption>cookiesSubVars = headers.getOptionByName("Cookie");
+            std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
                 return {};
             return cookiesSubVars->getAllSubVars();
@@ -179,16 +177,9 @@ public:
             return ""; // Return empty if format is invalid or parsing fails
         }
 
-        std::string getOrigin()
-        {
-            return getHeaderOption("Origin");
-        }
+        std::string getOrigin() { return getHeaderOption("Origin"); }
 
-        std::string getReferer()
-        {
-            return getHeaderOption("Referer");
-        }
-
+        std::string getReferer() { return getHeaderOption("Referer"); }
 
         /**
          * @brief getCookie Get Cookie
@@ -207,31 +198,22 @@ public:
          * @brief getContentType Get Content Type
          * @return
          */
-        std::string getContentType()
-        {
-            return headers.getOptionRawStringByName("Content-Type");
-        }
+        std::string getContentType() { return headers.getOptionRawStringByName("Content-Type"); }
         /**
          * @brief getURI Get URI
          * @return
          */
-        std::string getURI()
-        {
-            return requestLine.getURI();
-        }
+        std::string getURI() { return requestLine.getURI(); }
         /**
          * @brief getHeaderOption Get Client Header Option Value By Option Name.
          * @param optionName Option Name
          * @return Option Value
          */
-        std::string getHeaderOption(const std::string & optionName)
+        std::string getHeaderOption(const std::string &optionName) { return headers.getOptionRawStringByName(optionName); }
+
+        struct NetworkClientInfo
         {
-            return headers.getOptionRawStringByName(optionName);
-        }
-
-        struct NetworkClientInfo {
-
-            void setClientInformation(const std::string & ipAddress, const bool &secure, const std::string &tlsCommonName)
+            void setClientInformation(const std::string &ipAddress, const bool &secure, const std::string &tlsCommonName)
             {
                 this->tlsCommonName = tlsCommonName;
                 strncpy(REMOTE_ADDR, ipAddress.c_str(), sizeof(REMOTE_ADDR));
@@ -246,13 +228,16 @@ public:
                 sessionInfo["tls"]["commonName"] = tlsCommonName;
                 return sessionInfo;
             }
-            void fromJSON(const json& sessionInfo)
+            void fromJSON(const json &sessionInfo)
             {
-                snprintf( REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s",JSON_ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
+                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", JSON_ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
                 isSecure = JSON_ASBOOL_D(sessionInfo["isSecureConnection"], false);
-                if (sessionInfo.isObject() && sessionInfo["tls"].isObject()) {
+                if (sessionInfo.isObject() && sessionInfo["tls"].isObject())
+                {
                     tlsCommonName = JSON_ASSTRING_D(sessionInfo["tls"]["commonName"], "");
-                } else {
+                }
+                else
+                {
                     tlsCommonName = "";
                 }
             }
@@ -299,17 +284,14 @@ public:
          * @brief setServerTokens Set Server Header
          * @param serverTokens Server Header Product Name and Version (eg. MyLLS/5.0)
          */
-        void setServerName(const std::string &sServerName)
-        {
-            headers.replace("Server", sServerName);
-        }
+        void setServerName(const std::string &sServerName) { headers.replace("Server", sServerName); }
 
         /**
          * @brief setResponseContentType Set Response Content Type
          * @param contentType Content Type (eg. application/json, text/html)
          * @param bNoSniff tell the browser do not sniff/guess the content type
          */
-        void setContentType(const std::string & contentType, bool bNoSniff = true)
+        void setContentType(const std::string &contentType, bool bNoSniff = true)
         {
             this->contentType = contentType;
             security.disableNoSniffContentType = bNoSniff;
@@ -338,19 +320,13 @@ public:
          * @param cookieName
          * @return
          */
-        void addCookieClearSecure(const std::string &cookieName, const std::string path)
-        {
-            cookies.addClearSecureCookie(cookieName, path);
-        }
+        void addCookieClearSecure(const std::string &cookieName, const std::string path) { cookies.addClearSecureCookie(cookieName, path); }
         /**
          * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
          * @param cookieName
          * @return
          */
-        void addCookieClearSecure(const std::string &cookieName)
-        {
-            cookies.addClearSecureCookie(cookieName);
-        }
+        void addCookieClearSecure(const std::string &cookieName) { cookies.addClearSecureCookie(cookieName); }
         /**
          * @brief setSecureCookie Set Response Secure Cookie (Secure,httpOnly,SameSite)
          * @param cookieName
@@ -358,7 +334,7 @@ public:
          * @param uMaxAge
          * @return
          */
-        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge, const std::string & path )
+        void setSecureCookie(const std::string &cookieName, const std::string &cookieValue, const uint32_t &uMaxAge, const std::string &path)
         {
             Headers::Cookie val;
             val.setExpirationFromNow(uMaxAge);
@@ -368,7 +344,7 @@ public:
             val.httpOnly = true;
             val.maxAge = uMaxAge;
             val.sameSitePolicy = Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
-            setCookie(cookieName,val);
+            setCookie(cookieName, val);
         }
 
         /**
@@ -378,38 +354,35 @@ public:
          * @param uMaxAge
          * @return
          */
-        void setSecureCookie(const std::string &cookieName, const std::string & cookieValue, const uint32_t & uMaxAge )
-        {
-            setSecureCookie(cookieName,cookieValue,uMaxAge,"");
-        }
+        void setSecureCookie(const std::string &cookieName, const std::string &cookieValue, const uint32_t &uMaxAge) { setSecureCookie(cookieName, cookieValue, uMaxAge, ""); }
         /**
          * @brief setInsecureCookie Set HTTP Simple Cookie (don't use, very insecure)
          * @param cookieName name of the cookie variable
          * @param cookieValue value of the cookie.
          * @return false if already exist
          */
-        void setInsecureCookie( const std::string &sCookieName, const std::string & sCookieValue )
+        void setInsecureCookie(const std::string &sCookieName, const std::string &sCookieValue)
         {
             Headers::Cookie val;
             val.value = sCookieValue;
-            setCookie(sCookieName,val);
+            setCookie(sCookieName, val);
         }
         /**
          * @brief setCookie Set HTTP Cookie with full options
          * @param cookieName name of the cookie variable
          * @param cookieValue value of the cookie.
          */
-        void setCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue )
+        void setCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue)
         {
             // Remove cookie
             cookies.removeCookie(sCookieName);
-            cookies.addCookieVal(sCookieName,sCookieValue);
+            cookies.addCookieVal(sCookieName, sCookieValue);
         }
         /**
          * @brief setRedirectLocation Redirect site to another URL
          * @param location URL string
          */
-        Mantids30::Network::Protocols::HTTP::Status::Codes setRedirectLocation(const std::string & location, bool temporary = true)
+        Mantids30::Network::Protocols::HTTP::Status::Codes setRedirectLocation(const std::string &location, bool temporary = true)
         {
             headers.replace("Location", location);
 
@@ -422,7 +395,6 @@ public:
                 return HTTP::Status::S_308_PERMANENT_REDIRECT;
         }
 
-
         /**
          * @brief code Response - Server code response. (HTTP Version, Response code, message)
          */
@@ -434,7 +406,7 @@ public:
         /**
          * @brief headers - Options Values.
          */
-        MIME::MIME_Sub_Header headers;        
+        MIME::MIME_Sub_Header headers;
         /**
          * @brief security Response Security
          */
@@ -471,20 +443,21 @@ public:
     };
 
     HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);
-    virtual ~HTTPv1_Base()  override  = default;
+    virtual ~HTTPv1_Base() override = default;
 
     Request clientRequest;
     Response serverResponse;
+
 protected:
     virtual bool initProtocol() override;
     virtual void endProtocol() override;
 
-    virtual void * getThis()=0;
-    virtual bool changeToNextParser()  override = 0;
+    virtual void *getThis() = 0;
+    virtual bool changeToNextParser() override = 0;
 
 private:
-    void setInternalProductVersion(const std::string & prodName, const std::string & extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR, const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
+    void setInternalProductVersion(const std::string &prodName, const std::string &extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR,
+                                   const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

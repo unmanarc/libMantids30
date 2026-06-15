@@ -26,7 +26,7 @@ MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> va
 
 std::shared_ptr<MIME_Message> MIME_Message::create(std::shared_ptr<StreamableObject> value)
 {
-    auto x = std::shared_ptr<MIME_Message>(new MIME_Message(value));
+    std::shared_ptr<MIME_Message> x = std::shared_ptr<MIME_Message>(new MIME_Message(value));
     x->initSubParser(&x->m_subFirstBoundary);
     x->initSubParser(&x->m_subEndPBoundary);
     x->m_initialized = x->initProtocol();
@@ -90,16 +90,16 @@ void MIME_Message::clear()
 uint32_t MIME_Message::varCount(const std::string &varName)
 {
     uint32_t ix = 0;
-    auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i)
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
         ix++;
     return ix;
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const std::string &varName)
 {
-    auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i)
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
         return (((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
     return nullptr;
 }
@@ -107,8 +107,8 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const 
 std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getValues(const std::string &varName)
 {
     std::list<std::shared_ptr<Memory::Streams::StreamableObject>> values;
-    auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i)
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
         values.push_back(((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
     return values;
 }
@@ -116,7 +116,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getV
 std::set<std::string> MIME_Message::getKeysList()
 {
     std::set<std::string> r;
-    for (const auto &i : m_partsByName)
+    for (const std::pair<std::string, std::shared_ptr<MIME_PartMessage>> &i : m_partsByName)
         r.insert(i.first);
     return r;
 }
@@ -300,8 +300,8 @@ std::string MIME_Message::getMultiPartMessageName(std::shared_ptr<MIME_PartMessa
 std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesByName(const std::string &varName)
 {
     std::list<std::shared_ptr<MIME_PartMessage>> values;
-    auto range = m_partsByName.equal_range(boost::to_upper_copy(varName));
-    for (auto i = range.first; i != range.second; ++i)
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
         values.push_back(i->second);
     return values;
 }
@@ -318,7 +318,7 @@ bool MIME_Message::addStringVar(const std::string &key, const std::string &value
     // TODO: check max size?
     if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", key))
     {
-        auto contentBuffer = std::make_shared<Memory::Containers::B_Chunks>();
+        std::shared_ptr<Memory::Containers::B_Chunks> contentBuffer = std::make_shared<Memory::Containers::B_Chunks>();
         contentBuffer->append(value.c_str(), value.size());
         m_currentPart->getContent()->replaceContentContainer(contentBuffer);
 
@@ -335,7 +335,7 @@ bool MIME_Message::addStringVar(const std::string &key, const std::string &value
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
     // TODO: check max size?
-    auto fContainer = std::make_shared<Memory::Containers::B_MMAP>();
+    std::shared_ptr<Memory::Containers::B_MMAP> fContainer = std::make_shared<Memory::Containers::B_MMAP>();
     if (!fContainer->referenceFile(filePath, true, false))
     {
         return false;

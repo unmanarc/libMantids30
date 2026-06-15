@@ -153,7 +153,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
         }
     }
 
-    auto payloadLength = webSocketCurrentFrame.header.getPayloadLength();
+    uint64_t payloadLength = webSocketCurrentFrame.header.getPayloadLength();
 
     // Pass to the content.
     if (payloadLength)

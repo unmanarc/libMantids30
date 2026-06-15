@@ -27,7 +27,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 
     std::string requestedURI = clientRequest.getURI();
 
-    auto resolveDirPathWithSlashAtEnd = [](const std::string &serverDirectoryPath) -> std::string
+    std::string (*resolveDirPathWithSlashAtEnd)(const std::string &) = [](const std::string &serverDirectoryPath) -> std::string
     {
         // Use unique_ptr for automatic memory management
         std::unique_ptr<char, decltype(&free)> resolvedPathUniquePtr(realpath(serverDirectoryPath.c_str(), nullptr), &free);
@@ -84,7 +84,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     detectedPotentialOverlaps.push_back({defaultWebRootWithEndingSlash + requestURIWithDefaultFile, defaultWebRootWithEndingSlash, "/"}); // Add the original path
 
     // Add overlapped directories if they match the requested URI
-    for (const auto &overlappedDirectory : overlappedDirectories)
+    for (const std::pair<std::string, std::string> &overlappedDirectory : overlappedDirectories)
     {
         // All the overlapped dirs should end with /
         if (overlappedDirectory.first.empty() || overlappedDirectory.second.empty())
@@ -133,7 +133,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
         {
             bool pathFound = false;
 
-            for (const auto &rpInfo : detectedPotentialOverlaps)
+            for (const RequestedOverlapInfo &rpInfo : detectedPotentialOverlaps)
             {
                 selectedOverlap = rpInfo;
                 if ((cFullPath = realpath(rpInfo.fileSystemRealPath.c_str(), nullptr)) != nullptr)

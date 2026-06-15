@@ -28,14 +28,14 @@ using namespace Mantids30::Program::Config;
 
 std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
-    const auto itAppName = vars.find("APP");
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APP' variable in JWT configuration request.");
         return std::nullopt;
     }
 
-    const auto itApiKey = vars.find("APIKEY");
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APIKEY' variable in JWT configuration request.");
@@ -55,14 +55,14 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30:
 /*
 std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
-    const auto itAppName = vars.find("APP");
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APP' variable in JWT signing key request.");
         return std::nullopt;
     }
 
-    const auto itApiKey = vars.find("APIKEY");
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APIKEY' variable in JWT signing key request.");
@@ -81,14 +81,14 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
 */
 std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
-    const auto itAppName = vars.find("APP");
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APP' variable in JWT validation key request.");
         return std::nullopt;
     }
 
-    const auto itApiKey = vars.find("APIKEY");
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
         log->log0(__func__, Logs::LEVEL_ERR, "Missing 'APIKEY' variable in JWT validation key request.");
@@ -111,7 +111,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        if (auto x = ptr.get_child_optional("APISync"))
+        if (boost::optional<const boost::property_tree::ptree&> x = ptr.get_child_optional("APISync"))
         {
             apiSyncParameters.loadFromInfoTree(*x);
         }
@@ -128,7 +128,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
     }
     else
     {
-        auto jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
+        std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
             algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
@@ -190,7 +190,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
             return nullptr;
         }
 
-        auto jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<DataFormat::JWT> jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
         jwtSigner->setPrivateSecret(privateKey);
         return jwtSigner;
     }
@@ -203,7 +203,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        if (auto x = ptr.get_child_optional("APISync"))
+        if (boost::optional<const boost::property_tree::ptree&> x = ptr.get_child_optional("APISync"))
         {
             apiSyncParameters.loadFromInfoTree(*x);
         }
@@ -220,7 +220,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
     }
     else
     {
-        auto jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
+        std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
             algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
@@ -249,7 +249,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
         }
         else
         {
-            auto key = getApplicationJWTValidationKey(log, &apiSyncParameters, vars);
+            std::optional<std::string> key = getApplicationJWTValidationKey(log, &apiSyncParameters, vars);
             if (key)
             {
                 hmacSecret = (*key);
@@ -276,7 +276,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
         }
         else
         {
-            auto key = getApplicationJWTValidationKey(log, &apiSyncParameters, vars);
+            std::optional<std::string> key = getApplicationJWTValidationKey(log, &apiSyncParameters, vars);
             if (key)
             {
                 publicKey = (*key);
@@ -290,7 +290,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
             return nullptr;
         }
 
-        auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<DataFormat::JWT> jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(publicKey);
         return jwtValidator;
     }
@@ -322,7 +322,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
             return nullptr;
         }
 
-        auto jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<DataFormat::JWT> jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(key);
         log->log0(__func__, Logs::LEVEL_INFO, "JWT Public Validation Key Loaded.");
         return jwtValidator;
@@ -388,7 +388,7 @@ std::ifstream JWT::openFileWithCreation(const std::string &filePath, bool create
 std::string JWT::loadHMACSecret(Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent)
 {
     // Open file with optional creation
-    auto hmacFile = openFileWithCreation(hmacFilePath, createIfNotPresent, [&]() { return createHMACSecret(log, hmacFilePath); });
+    std::ifstream hmacFile = openFileWithCreation(hmacFilePath, createIfNotPresent, [&]() { return createHMACSecret(log, hmacFilePath); });
 
     if (!hmacFile.is_open())
     {
@@ -423,7 +423,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createHMACJWT(Logs::AppLog *log, const Dat
         return nullptr;
     }
 
-    auto jwt = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    std::shared_ptr<DataFormat::JWT> jwt = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
     jwt->setSharedSecret(hmacSecret);
 
     DataFormat::JWT::AlgorithmDetails adt = DataFormat::JWT::AlgorithmDetails(algorithmDetails.algorithm);
