@@ -17,7 +17,7 @@ public:
     struct FilterEvaluationResult
     {
         bool accept = true;
-        std::string redirectLocation = "";
+        std::string redirectLocation;
     };
 
     enum FilterAction

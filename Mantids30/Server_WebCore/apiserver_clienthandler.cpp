@@ -542,7 +542,7 @@ bool APIServer_ClientHandler::isURLSafe(const std::string &url)
     return true; // URL is safe
 }
 
-bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url)
+bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url) const
 {
     for (const std::string &apiurl : config->APIURLs)
     {

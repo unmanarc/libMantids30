@@ -188,7 +188,7 @@ protected:
     virtual std::set<std::string> getSessionRoles() = 0;
     // Function to check if the URL contains any invalid characters
     bool isURLSafe(const std::string &url);
-    bool isRedirectPathSafeForAuth(const std::string &url);
+    bool isRedirectPathSafeForAuth(const std::string &url) const;
 
     Protocols::HTTP::Status::Codes showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode);
     std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
