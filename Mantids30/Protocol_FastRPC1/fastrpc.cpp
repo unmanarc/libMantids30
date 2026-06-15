@@ -98,7 +98,7 @@ void FastRPC1::setPingInterval(uint32_t _intvl)
     m_pingIntvl = _intvl;
 }
 
-uint32_t FastRPC1::getPingInterval()
+uint32_t FastRPC1::getPingInterval() const
 {
     return m_pingIntvl;
 }

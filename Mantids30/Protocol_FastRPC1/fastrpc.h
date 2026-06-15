@@ -130,7 +130,7 @@ public:
      * @brief getPingInterval Get ping interval
      * @return ping interval in seconds
      */
-    uint32_t getPingInterval();
+    uint32_t getPingInterval() const;
 
     /**
      * @brief processConnection Process Connection Stream and manage bidirectional events from each side (Q/A).

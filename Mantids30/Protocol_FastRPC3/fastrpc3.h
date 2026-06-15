@@ -450,7 +450,7 @@ public:
 
         eReasons reason = INTERNAL_ERROR;
 
-        Json::Value toJSONResponse()
+        Json::Value toJSONResponse() const
         {
             Json::Value response;
             response["val"] = reason;
