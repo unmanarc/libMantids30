@@ -273,7 +273,7 @@ std::string JSONEval::getLastCompilerError() const
     return m_lastError;
 }
 
-bool JSONEval::calcNegative(bool r)
+bool JSONEval::calcNegative(bool r) const
 {
     if (m_negativeExpression)
     {

@@ -153,7 +153,7 @@ bool AtomicExpression::evaluate(const json &values)
     return calcNegative(false);
 }
 
-bool AtomicExpression::calcNegative(bool r)
+bool AtomicExpression::calcNegative(bool r) const
 {
     if (m_negativeExpression)
     {

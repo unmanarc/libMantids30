@@ -32,7 +32,7 @@ public:
     void setStaticTexts(std::shared_ptr<std::vector<std::string>> value);
 
 private:
-    bool calcNegative(bool r);
+    bool calcNegative(bool r) const;
     bool substractExpressions(const std::string &regex, const eEvalOperator &op);
 
     std::shared_ptr<std::vector<std::string>> m_staticTexts;

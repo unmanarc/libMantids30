@@ -28,7 +28,7 @@ public:
     bool isCompiled() const;
 
 private:
-    bool calcNegative(bool r);
+    bool calcNegative(bool r) const;
 
     /**
      * @brief detectSubExpr Detect and replace sub expression
