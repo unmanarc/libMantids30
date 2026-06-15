@@ -30,7 +30,7 @@ public:
          */
         struct NotificationCallback
         {
-            NotificationCallback() {}
+            NotificationCallback() = default;
 
             /**
              * @brief NotificationCallback Constructor.
@@ -126,7 +126,7 @@ protected:
     std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
 
 private:
-    enum class AcceptorType
+    enum class AcceptorType : uint8_t
     {
         NONE,
         POOL_THREADED,
