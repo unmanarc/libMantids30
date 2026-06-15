@@ -4,26 +4,30 @@
 #include <stdlib.h>
 #include <string.h>
 
-namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
+namespace DataStructs {
 
-struct sDataBuffer {
-
+struct sDataBuffer
+{
     sDataBuffer()
     {
-        len=0;
-        data=nullptr;
+        len = 0;
+        data = nullptr;
     }
     ~sDataBuffer()
     {
-        if (data) free(data);
+        if (data)
+            free(data);
     }
 
-    bool setData(void * data, uint16_t len)
+    bool setData(void *data, uint16_t len)
     {
         if (data && len)
         {
             this->data = malloc(len);
-            if (!this->data) 
+            if (!this->data)
                 return false;
             this->len = len;
             memcpy(this->data, data, len);
@@ -32,9 +36,11 @@ struct sDataBuffer {
         return true;
     }
 
-    void * data;
+    void *data;
     uint16_t len;
 };
 
-}}}}
-
+} // namespace DataStructs
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids

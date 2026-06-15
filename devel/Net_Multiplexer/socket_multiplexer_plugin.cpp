@@ -4,15 +4,9 @@
 
 using namespace Mantids::Network::Multiplexor;
 
-Socket_Mutiplexer_Plugin::Socket_Mutiplexer_Plugin()
-{
+Socket_Mutiplexer_Plugin::Socket_Mutiplexer_Plugin() {}
 
-}
-
-Socket_Mutiplexer_Plugin::~Socket_Mutiplexer_Plugin()
-{
-
-}
+Socket_Mutiplexer_Plugin::~Socket_Mutiplexer_Plugin() {}
 
 std::string Socket_Mutiplexer_Plugin::getPluginId() const
 {
@@ -26,7 +20,7 @@ void Socket_Mutiplexer_Plugin::setPluginId(const std::string &value)
 
 bool Socket_Mutiplexer_Plugin::sendJSON16(const json &value)
 {
-    return ((Socket_Multiplexer *)multiplexerPtr)->plugin_SendJson(pluginId, value);
+    return ((Socket_Multiplexer *) multiplexerPtr)->plugin_SendJson(pluginId, value);
 }
 
 void Socket_Mutiplexer_Plugin::setMultiplexerPtr(void *value)

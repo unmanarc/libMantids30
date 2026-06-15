@@ -3,11 +3,10 @@
 
 // TODO: timeout callback
 
-
 using namespace Mantids::Network::Multiplexor;
 using Ms = std::chrono::milliseconds;
 
-LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiplexedSocketLocalObject, unsigned int milliseconds)
+LineID Socket_Multiplexer::connect(const json &connectionParams, void *multiplexedSocketLocalObject, unsigned int milliseconds)
 {
     if (mtLock_multiplexedSocket.try_lock_for(Ms(milliseconds)))
     {
@@ -17,12 +16,8 @@ LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiple
         sock->setConnectionParams(connectionParams);
 
         LineID localLineId = sock->getLineID().localLineId;
-        if (    localLineId != NULL_LINE
-                && multiplexedSocket->writeU8(DataStructs::MPLX_LINE_CONNECT)
-                && sendOnMultiplexedSocket_LineID(localLineId)
-                && multiplexedSocket->writeU32(sock->getLocalWindowSize())
-                && multiplexedSocket->writeString16(connectionParams.toStyledString())
-                )
+        if (localLineId != NULL_LINE && multiplexedSocket->writeU8(DataStructs::MPLX_LINE_CONNECT) && sendOnMultiplexedSocket_LineID(localLineId)
+            && multiplexedSocket->writeU32(sock->getLocalWindowSize()) && multiplexedSocket->writeString16(connectionParams.toStyledString()))
         {
             mtLock_multiplexedSocket.unlock();
             return localLineId;
@@ -43,27 +38,26 @@ LineID Socket_Multiplexer::connect(const json &connectionParams, void * multiple
 
 void Socket_Multiplexer::client_HandlerConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock)
 {
-    if (!cbClientConnectAccepted.callbackFunction) 
+    if (!cbClientConnectAccepted.callbackFunction)
         return;
-    Streams::StreamSocket * ssock = cbClientConnectAccepted.callbackFunction(cbClientConnectAccepted.obj, sock);
-    if (ssock) sock->processLine(ssock,this);
+    Streams::StreamSocket *ssock = cbClientConnectAccepted.callbackFunction(cbClientConnectAccepted.obj, sock);
+    if (ssock)
+        sock->processLine(ssock, this);
     // remove/close the remote connection
-    multiplexedSocket_sendLineData(sock->getLineID(),nullptr,0);
+    multiplexedSocket_sendLineData(sock->getLineID(), nullptr, 0);
     // unregister the connection...
     stopAndRemoveLine(sock);
-    if (destroySocketOnClient) 
+    if (destroySocketOnClient)
         delete ssock;
 }
 
 void Socket_Multiplexer::client_FailedConnection_Callback(std::shared_ptr<Socket_Multiplexed_Line> sock, DataStructs::eConnectFailedReason reason)
 {
-    if (!cbClientConnectFailed.callbackFunction) 
+    if (!cbClientConnectFailed.callbackFunction)
         return;
     cbClientConnectFailed.callbackFunction(cbClientConnectFailed.obj, sock, reason);
     stopAndRemoveLine(sock);
 }
-
-
 
 bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 {
@@ -77,13 +71,13 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
     lineId.localLineId = recvFromMultiplexedSocket_LineID(&readen);
     lineId.remoteLineId = recvFromMultiplexedSocket_LineID(&readen);
     remoteWindowSize = multiplexedSocket->readU32(&readen);
-    msg = (DataStructs::eLineAcceptAnswerMSG)multiplexedSocket->readU8(&readen);
+    msg = (DataStructs::eLineAcceptAnswerMSG) multiplexedSocket->readU8(&readen);
     sJMessage = multiplexedSocket->readString(&readen, 25); //(max: 32Mb)
 
     if (readen)
     {
         Json::CharReaderBuilder builder;
-        Json::CharReader * reader = builder.newCharReader();
+        Json::CharReader *reader = builder.newCharReader();
         std::string errors;
         reader->parse(sJMessage.c_str(), sJMessage.c_str() + sJMessage.size(), &(jAcceptMsg), &errors);
         delete reader;
@@ -98,7 +92,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
                 break;
             case DataStructs::INIT_LINE_ANS_ESTABLISHED:
             {
-                DataStructs::sConnectionThreadParams * cntThrParams = new DataStructs::sConnectionThreadParams;
+                DataStructs::sConnectionThreadParams *cntThrParams = new DataStructs::sConnectionThreadParams;
                 if (!cntThrParams)
                 {
                     // FATAL ERROR: object is waiting for destruction on this thread. will lead to memory corruption/leak
@@ -116,7 +110,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 
                 // Start the connection thread
 
-                std::thread(clientHandleConnectionThread,cntThrParams).detach();
+                std::thread(clientHandleConnectionThread, cntThrParams).detach();
                 /*
                  * TODO: handle thread fail, but at this point, a failed thread implies program termination
                 {
@@ -126,7 +120,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
                     delete cntThrParams;
                     return false;
                 }*/
-            } break;
+            }
+            break;
             case DataStructs::INIT_LINE_ANS_THREADFAILED:
             case DataStructs::INIT_LINE_ANS_BADPARAMS:
             case DataStructs::INIT_LINE_ANS_FAILED:
@@ -135,7 +130,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
             case DataStructs::INIT_LINE_ANS_BADLOCALLINE:
             case DataStructs::INIT_LINE_ANS_NOTAUTHORIZED:
             {
-                DataStructs::sConnectionThreadParams * cntThrParams = new DataStructs::sConnectionThreadParams;
+                DataStructs::sConnectionThreadParams *cntThrParams = new DataStructs::sConnectionThreadParams;
 
                 if (!cntThrParams)
                 {
@@ -147,13 +142,20 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
                 cntThrParams->chSock = chSock;
                 cntThrParams->multiPlexer = this;
 
-                if (msg == DataStructs::INIT_LINE_ANS_THREADFAILED) cntThrParams->reason = DataStructs::E_CONN_FAILED_ANSTHREAD;
-                else if (msg == DataStructs::INIT_LINE_ANS_BADPARAMS) cntThrParams->reason = DataStructs::E_CONN_FAILED_BADPARAMS;
-                else if (msg == DataStructs::INIT_LINE_ANS_FAILED) cntThrParams->reason = DataStructs::E_CONN_FAILED;
-                else if (msg == DataStructs::INIT_LINE_ANS_NOCALLBACK) cntThrParams->reason = DataStructs::E_CONN_FAILED_NOCALLBACK;
-                else if (msg == DataStructs::INIT_LINE_ANS_BADSERVERSOCK) cntThrParams->reason = DataStructs::E_CONN_FAILED_BADSERVERSOCK;
-                else if (msg == DataStructs::INIT_LINE_ANS_BADLOCALLINE) cntThrParams->reason = DataStructs::E_CONN_FAILED_BADLOCALLINE;
-                else if (msg == DataStructs::INIT_LINE_ANS_NOTAUTHORIZED) cntThrParams->reason = DataStructs::E_CONN_FAILED_NOTAUTHORIZED;
+                if (msg == DataStructs::INIT_LINE_ANS_THREADFAILED)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_ANSTHREAD;
+                else if (msg == DataStructs::INIT_LINE_ANS_BADPARAMS)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_BADPARAMS;
+                else if (msg == DataStructs::INIT_LINE_ANS_FAILED)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED;
+                else if (msg == DataStructs::INIT_LINE_ANS_NOCALLBACK)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_NOCALLBACK;
+                else if (msg == DataStructs::INIT_LINE_ANS_BADSERVERSOCK)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_BADSERVERSOCK;
+                else if (msg == DataStructs::INIT_LINE_ANS_BADLOCALLINE)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_BADLOCALLINE;
+                else if (msg == DataStructs::INIT_LINE_ANS_NOTAUTHORIZED)
+                    cntThrParams->reason = DataStructs::E_CONN_FAILED_NOTAUTHORIZED;
 
                 std::thread(clientHandleConnectionFailedThread, cntThrParams).detach();
                 /*
@@ -164,7 +166,8 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
                     delete cntThrParams;
                     return false;
                 }*/
-            }break;
+            }
+            break;
             }
         }
         else
@@ -176,4 +179,3 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 
     return false;
 }
-

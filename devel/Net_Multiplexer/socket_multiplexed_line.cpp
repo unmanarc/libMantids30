@@ -1,9 +1,8 @@
 #include "socket_multiplexed_line.h"
 #include "socket_multiplexer.h"
 #include "vars.h"
-#include <thread>
 #include <Mantids30/Threads/lock_shared.h>
-
+#include <thread>
 
 using namespace Mantids::Network::Multiplexor;
 
@@ -27,8 +26,8 @@ Socket_Multiplexed_Line::Socket_Multiplexed_Line()
 
 Socket_Multiplexed_Line::~Socket_Multiplexed_Line()
 {
-    DataStructs::sDataBuffer * datab;
-    while ((datab=getBufferElement(false))!=nullptr)
+    DataStructs::sDataBuffer *datab;
+    while ((datab = getBufferElement(false)) != nullptr)
     {
         delete datab;
     }
@@ -43,7 +42,6 @@ void Socket_Multiplexed_Line::_lshutdown()
         lineAttachedSocket->shutdownSocket();
 }
 
-
 bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSocket, void *multiPlexer)
 {
     if (!lineAttachedSocket || !multiPlexer)
@@ -51,7 +49,7 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
         return false;
     }
 
-    Socket_Multiplexer * multiplexedSocket = (Socket_Multiplexer *)multiPlexer;
+    Socket_Multiplexer *multiplexedSocket = (Socket_Multiplexer *) multiPlexer;
 
     {
         // TODO: atomic this vars.
@@ -60,19 +58,19 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
         this->multiPlexer = multiplexedSocket;
     }
 
-    std::thread x = std::thread(processLineThread,this);
+    std::thread x = std::thread(processLineThread, this);
 
     ////////////////////////////////
-    char data[MUX_LINE_SENDBUF+8];
+    char data[MUX_LINE_SENDBUF + 8];
 
     // TODO: manage shutdowns.
     bool _continue = true;
     while (_continue)
     {
         uint32_t avBytes = getRemoteAvailableBytes();
-        uint32_t avlen = avBytes>MUX_LINE_SENDBUF?MUX_LINE_SENDBUF:avBytes;
+        uint32_t avlen = avBytes > MUX_LINE_SENDBUF ? MUX_LINE_SENDBUF : avBytes;
         int len;
-        if ((len = lineAttachedSocket->partialRead(data,avlen))>0)
+        if ((len = lineAttachedSocket->partialRead(data, avlen)) > 0)
         {
             Threads::Sync::Lock_RD lock_1(rwLock_Vars);
             Threads::Sync::Lock_RD lock_2(rwLock_LineID);
@@ -82,20 +80,20 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
                 // Can't write into multiplexed socket, get out.
 
                 // TODO: check this
-                _lshutdown();// close socket to force processbuffer to leave if is blocking on writeBlock
+                _lshutdown();                                   // close socket to force processbuffer to leave if is blocking on writeBlock
                 addBufferElement(new DataStructs::sDataBuffer); // add empty buffer if it's blocking on getbufferelement
                 _continue = false;
             }
             else
             {
                 std::unique_lock<std::mutex> lock(mtLock_RemoteProccesedBytes);
-                remoteUnprocessedBytes+=len;
+                remoteUnprocessedBytes += len;
             }
         }
         else
         {
             //
-            _lshutdown(); // close socket to force processbuffer to leave if is blocking on writeBlock
+            _lshutdown();                                   // close socket to force processbuffer to leave if is blocking on writeBlock
             addBufferElement(new DataStructs::sDataBuffer); // add empty buffer if it's blocking on getbufferelement
             _continue = false;
         }
@@ -103,7 +101,6 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
 
     x.join();
     return true;
-
 }
 
 void Socket_Multiplexed_Line::finalizeProcessor()
@@ -125,22 +122,22 @@ void Socket_Multiplexed_Line::waitForProcessLine()
 
 bool Socket_Multiplexed_Line::processBuffer()
 {
-    bool r=true;
-    DataStructs::sDataBuffer * datab = getBufferElement();
+    bool r = true;
+    DataStructs::sDataBuffer *datab = getBufferElement();
     if (!datab->len)
     {
         // TODO: prevent double close
         _lshutdown();
-        r=false; // terminate here.
+        r = false; // terminate here.
     }
     else
     {
         Threads::Sync::Lock_RD lock(rwLock_Vars);
-        if (!lineAttachedSocket->writeBlock(datab->data,datab->len))
+        if (!lineAttachedSocket->writeBlock(datab->data, datab->len))
         {
             // TODO: if can't write maybe can't read, but anyway, close it.
             _lshutdown();
-            r=false; // already terminated.
+            r = false; // already terminated.
         }
     }
     delete datab;
@@ -150,12 +147,12 @@ bool Socket_Multiplexed_Line::processBuffer()
 // TODO: prevent micro-chunks flood
 bool Socket_Multiplexed_Line::addBufferElement(void *data, uint16_t len)
 {
-    DataStructs::sDataBuffer * datab = new DataStructs::sDataBuffer;
+    DataStructs::sDataBuffer *datab = new DataStructs::sDataBuffer;
     if (!datab)
     {
         return false;
     }
-    if (!datab->setData(data,len))
+    if (!datab->setData(data, len))
     {
         delete datab;
         return false;
@@ -167,7 +164,7 @@ bool Socket_Multiplexed_Line::addBufferElement(void *data, uint16_t len)
 bool Socket_Multiplexed_Line::isValidLine()
 {
     Threads::Sync::Lock_RD lock(rwLock_LineID);
-    return lineID.localLineId!=NULL_LINE;
+    return lineID.localLineId != NULL_LINE;
 }
 
 void Socket_Multiplexed_Line::setLineLocalID(const LineID &value)
@@ -190,20 +187,20 @@ void Socket_Multiplexed_Line::setRemoteWindowSize(const uint32_t &value)
 
 bool Socket_Multiplexed_Line::addProcessedBytes(const uint16_t &value)
 {
-    bool r=true;
+    bool r = true;
     std::unique_lock<std::mutex> lock(mtLock_RemoteProccesedBytes);
-    if  (remoteUnprocessedFinished)
+    if (remoteUnprocessedFinished)
     {
-        remoteUnprocessedBytes=0;
+        remoteUnprocessedBytes = 0;
     }
     else
     {
-        if (value>remoteUnprocessedBytes)
+        if (value > remoteUnprocessedBytes)
         {
-            remoteUnprocessedBytes=0;
+            remoteUnprocessedBytes = 0;
         }
         else
-            remoteUnprocessedBytes-=value;
+            remoteUnprocessedBytes -= value;
     }
     lock.unlock();
     psigRemoteProccesedBytesNotFull.notify_one();
@@ -218,25 +215,25 @@ uint32_t Socket_Multiplexed_Line::getLocalWindowSize() const
 uint32_t Socket_Multiplexed_Line::getRemoteAvailableBytes()
 {
     std::unique_lock<std::mutex> lock(mtLock_RemoteProccesedBytes);
-    while (remoteUnprocessedBytes>=remoteWindowSize)
+    while (remoteUnprocessedBytes >= remoteWindowSize)
     {
         psigRemoteProccesedBytesNotFull.wait(lock);
     }
-    return (remoteWindowSize-remoteUnprocessedBytes);
+    return (remoteWindowSize - remoteUnprocessedBytes);
 }
 
 void Socket_Multiplexed_Line::resetRemoteAvailableBytes()
 {
     std::unique_lock<std::mutex> lock(mtLock_RemoteProccesedBytes);
-    remoteUnprocessedBytes=0;
-    remoteUnprocessedFinished=true;
+    remoteUnprocessedBytes = 0;
+    remoteUnprocessedFinished = true;
     lock.unlock();
     psigRemoteProccesedBytesNotFull.notify_one();
 }
 
 DataStructs::sDataBuffer *Socket_Multiplexed_Line::getBufferElement(bool emptyBlocking)
 {
-    DataStructs::sDataBuffer * dbuf = nullptr;
+    DataStructs::sDataBuffer *dbuf = nullptr;
     if (true)
     {
         std::unique_lock<std::mutex> lock(mtLock_BufferHeap);
@@ -257,7 +254,7 @@ DataStructs::sDataBuffer *Socket_Multiplexed_Line::getBufferElement(bool emptyBl
         dbuf = dataBuffer.front();
         dataBuffer.pop();
 
-        localWindowUsedBuffer-=dbuf->len;
+        localWindowUsedBuffer -= dbuf->len;
     }
 
     psigBufferNotFull.notify_one();
@@ -268,7 +265,7 @@ DataStructs::sDataBuffer *Socket_Multiplexed_Line::getBufferElement(bool emptyBl
         Threads::Sync::Lock_RD lock_2(rwLock_LineID);
 
         if (multiPlexer)
-            ((Socket_Multiplexer *)multiPlexer)->multiplexedSocket_sendReadenBytes(lineID,dbuf->len);
+            ((Socket_Multiplexer *) multiPlexer)->multiplexedSocket_sendReadenBytes(lineID, dbuf->len);
     }
 
     return dbuf;
@@ -286,7 +283,9 @@ void Socket_Multiplexed_Line::setConnectionParams(const json &value)
 
 void Socket_Multiplexed_Line::processLineThread(Socket_Multiplexed_Line *multiplexedLine)
 {
-    while (multiplexedLine->processBuffer()) {}
+    while (multiplexedLine->processBuffer())
+    {
+    }
 }
 
 DataStructs::sLineID Socket_Multiplexed_Line::getLineID()
@@ -296,7 +295,7 @@ DataStructs::sLineID Socket_Multiplexed_Line::getLineID()
 }
 
 void *Socket_Multiplexed_Line::getLocalObject()
-{   
+{
     Threads::Sync::Lock_RD lock(rwLock_LocalObject);
     return localObject;
 }
@@ -307,18 +306,18 @@ void Socket_Multiplexed_Line::setLocalObject(void *value)
     localObject = value;
 }
 
-void Socket_Multiplexed_Line::addBufferElement( DataStructs::sDataBuffer * dbuf )
+void Socket_Multiplexed_Line::addBufferElement(DataStructs::sDataBuffer *dbuf)
 {
     std::unique_lock<std::mutex> lock(mtLock_BufferHeap);
 
     // TODO restrict incoming packets > to the whole localWindowSize (terminate the connection)
-    while (  (dbuf->len+localWindowUsedBuffer) >=  ((localWindowSize*2)+1) )
+    while ((dbuf->len + localWindowUsedBuffer) >= ((localWindowSize * 2) + 1))
     {
         psigBufferNotFull.wait(lock);
     }
 
     dataBuffer.push(dbuf);
-    localWindowUsedBuffer+=dbuf->len;
+    localWindowUsedBuffer += dbuf->len;
 
     lock.unlock();
     psigBufferNotEmpty.notify_one();

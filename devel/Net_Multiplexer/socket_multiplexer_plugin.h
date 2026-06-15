@@ -1,9 +1,11 @@
 #pragma once
 
-#include <string>
 #include <Helpers/json.h>
+#include <string>
 
-namespace Mantids { namespace Network { namespace Multiplexor {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
 
 class Socket_Mutiplexer_Plugin
 {
@@ -16,13 +18,13 @@ public:
      * @brief processJSON16 Process JSON (up to 64Kb in size)
      * @param value json value.
      */
-    virtual void processJSON16(const json & value) {}
+    virtual void processJSON16(const json &value) {}
     /**
      * @brief processData Process data block.
      * @param data
      * @param len
      */
-    virtual void processData(const char * data, const unsigned int &len) {}
+    virtual void processData(const char *data, const unsigned int &len) {}
     /**
      * @brief eventOnBackLineConnect Called before processing the protocol.
      */
@@ -39,12 +41,14 @@ public:
 
 protected:
     void setPluginId(const std::string &value);
-    bool sendJSON16(const json & value);
+    bool sendJSON16(const json &value);
 
-    void * multiplexerPtr;
+    void *multiplexerPtr;
+
 private:
     std::string pluginId;
 };
 
-}}}
-
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids

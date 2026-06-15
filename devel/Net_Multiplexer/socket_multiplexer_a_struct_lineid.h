@@ -5,7 +5,10 @@
 
 #define NULL_LINE std::numeric_limits<LineID>::max()
 
-namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
+namespace DataStructs {
 
 struct sLineID
 {
@@ -17,5 +20,7 @@ struct sLineID
     LineID localLineId, remoteLineId;
 };
 
-}}}}
-
+} // namespace DataStructs
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids

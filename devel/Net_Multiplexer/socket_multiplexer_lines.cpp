@@ -14,9 +14,7 @@ Socket_Multiplexer_Lines::Socket_Multiplexer_Lines()
     maxMissedSearches = 0xFF;
 }
 
-Socket_Multiplexer_Lines::~Socket_Multiplexer_Lines()
-{
-}
+Socket_Multiplexer_Lines::~Socket_Multiplexer_Lines() {}
 
 // for outgoing connection ( syn/ack equiv should set the remote number )
 std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::registerLine()
@@ -32,7 +30,7 @@ std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::registerLine(
         mtLock_OnEmptyLines.lock();
 
     // Look out for your line id.
-    LineID i=findLocalAvailableSlot();
+    LineID i = findLocalAvailableSlot();
     if (i != NULL_LINE)
     {
         r->setLineLocalID(i);
@@ -84,12 +82,12 @@ void Socket_Multiplexer_Lines::stopAndRemoveLine(std::shared_ptr<Socket_Multiple
 
 LineID Socket_Multiplexer_Lines::findLocalAvailableSlot()
 {
-    for (uint32_t i=0;i<maxMissedSearches;i++)
+    for (uint32_t i = 0; i < maxMissedSearches; i++)
     {
         LineID ntry = dis(gen);
         if (ntry != NULL_LINE)
         {
-            if (multiplexedLinesMap.find(ntry)==multiplexedLinesMap.end())
+            if (multiplexedLinesMap.find(ntry) == multiplexedLinesMap.end())
                 return ntry;
         }
     }
@@ -104,14 +102,14 @@ uint32_t Socket_Multiplexer_Lines::getMaxMissedSearches() const
 void Socket_Multiplexer_Lines::closeAndWaitForEveryLine()
 {
     // Prevent new connections...
-     // TODO: lock rwLock_MultiplexedLines
+    // TODO: lock rwLock_MultiplexedLines
     //bNoNewConnections = true;
 
     // Send close data.
     if (true)
     {
         Threads::Sync::Lock_RD lock(rwLock_MultiplexedLines);
-        for ( std::pair<LineID,std::shared_ptr<Socket_Multiplexed_Line>> cs : multiplexedLinesMap )
+        for (std::pair<LineID, std::shared_ptr<Socket_Multiplexed_Line>> cs : multiplexedLinesMap)
         {
             cs.second->_lshutdown(); // the loosy way.
 
@@ -144,4 +142,3 @@ void Socket_Multiplexer_Lines::preventNewConnections()
     Threads::Sync::Lock_RW lock(rwLock_MultiplexedLines);
     bNoNewConnections = true;
 }
-

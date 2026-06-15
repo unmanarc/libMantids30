@@ -1,12 +1,14 @@
 #pragma once
 
-#include <map>
-#include <random>
-#include <atomic>
-#include <memory>
 #include "socket_multiplexed_line.h"
+#include <atomic>
+#include <map>
+#include <memory>
+#include <random>
 
-namespace Mantids { namespace Network { namespace Multiplexor {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
 
 class Socket_Multiplexer_Lines
 {
@@ -49,5 +51,6 @@ private:
     bool bNoNewConnections;
 };
 
-}}}
-
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids

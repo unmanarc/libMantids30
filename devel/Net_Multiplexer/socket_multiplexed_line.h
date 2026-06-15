@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <queue>
-#include <mutex>
-#include <condition_variable>
 #include <Helpers/json.h>
+#include <condition_variable>
+#include <mutex>
+#include <queue>
 
 #include <Mantids30/Threads/mutex.h>
 #include <Mantids30/Threads/mutex_shared.h>
@@ -17,7 +17,9 @@
 
 #include <Mantids30/Net_Sockets/streamsocket.h>
 
-namespace Mantids { namespace Network { namespace Multiplexor {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
 
 class Socket_Multiplexed_Line
 {
@@ -32,7 +34,7 @@ public:
      * @param len 0: connection finalized, n: data lenght
      * @return true if written, false if not (eg. out of memory)
      */
-    bool addBufferElement(void * data, uint16_t len);
+    bool addBufferElement(void *data, uint16_t len);
     /////////////////////////////////////////////////////////////////////////////////////////////
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,7 @@ public:
      * @param multiPlexer interface pointer
      * @return true if processed, false for memory related problems (undefined behaviour).
      */
-    bool processLine(Streams::StreamSocket * lineAttachedSocket, void * multiPlexer);
+    bool processLine(Streams::StreamSocket *lineAttachedSocket, void *multiPlexer);
     /**
      * @brief finalizeProcessor
      */
@@ -93,35 +95,35 @@ public:
     void setConnectionParams(const json &value);
 
 private:
-    static void processLineThread(Socket_Multiplexed_Line * multiplexedLine);
-
+    static void processLineThread(Socket_Multiplexed_Line *multiplexedLine);
 
     uint32_t getRemoteAvailableBytes();
-    void addBufferElement( DataStructs::sDataBuffer * dbuf );
-    DataStructs::sDataBuffer * getBufferElement( bool emptyBlocking = true );
+    void addBufferElement(DataStructs::sDataBuffer *dbuf);
+    DataStructs::sDataBuffer *getBufferElement(bool emptyBlocking = true);
 
-    Streams::StreamSocket * lineAttachedSocket; // xmutexVars mutex.
-    void * multiPlexer; // xmutexVars mutex.
-    void * localObject; // rwLock_LocalObject mutex.
+    Streams::StreamSocket *lineAttachedSocket; // xmutexVars mutex.
+    void *multiPlexer;                         // xmutexVars mutex.
+    void *localObject;                         // rwLock_LocalObject mutex.
 
-    uint32_t localWindowSize; // unmodified constant.
-    uint32_t localWindowUsedBuffer; // mutexBufferHeap mutex
-    uint32_t remoteWindowSize; // mutexRemoteProccesedBytes mutex.
+    uint32_t localWindowSize;        // unmodified constant.
+    uint32_t localWindowUsedBuffer;  // mutexBufferHeap mutex
+    uint32_t remoteWindowSize;       // mutexRemoteProccesedBytes mutex.
     uint32_t remoteUnprocessedBytes; // mutexRemoteProccesedBytes mutex.
 
     DataStructs::sLineID lineID; // xMutexLineID mutex.
 
-    bool processLineFinished; // mtProcessLineFinished mutex.
+    bool processLineFinished;       // mtProcessLineFinished mutex.
     bool remoteUnprocessedFinished; // mutexRemoteProccesedBytes mutex.
 
-   json connectionParams;
+    json connectionParams;
 
     std::queue<DataStructs::sDataBuffer *> dataBuffer;
 
     Threads::Sync::Mutex_Shared rwLock_LocalObject, rwLock_Vars, rwLock_LineID;
     Threads::Sync::Mutex mtLock_BufferHeap, mtLock_RemoteProccesedBytes, mtLock_ProcessLineFinished;
-    std::condition_variable psigRemoteProccesedBytesNotFull,psigBufferNotFull,psigBufferNotEmpty,psigProcessLineFinished;
+    std::condition_variable psigRemoteProccesedBytesNotFull, psigBufferNotFull, psigBufferNotEmpty, psigProcessLineFinished;
 };
 
-}}}
-
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids

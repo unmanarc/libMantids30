@@ -12,11 +12,11 @@ Socket_Multiplexer::Socket_Multiplexer()
     localName = "localhost";
     noSendData = true;
 
-    destroySocketOnClient=false;
-    destroySocketOnServer=false;
+    destroySocketOnClient = false;
+    destroySocketOnServer = false;
 
     peerMultiplexorVersion = 0;
-    multiplexedSocket=nullptr;
+    multiplexedSocket = nullptr;
 }
 
 Socket_Multiplexer::~Socket_Multiplexer()
@@ -30,7 +30,7 @@ Socket_Multiplexer::~Socket_Multiplexer()
 
 bool Socket_Multiplexer::plugin_Add(Socket_Mutiplexer_Plugin *plugin)
 {
-    if (plugins.find(plugin->getPluginId())==plugins.end())
+    if (plugins.find(plugin->getPluginId()) == plugins.end())
     {
         plugin->setMultiplexerPtr(this);
         plugins[plugin->getPluginId()] = plugin;
@@ -39,8 +39,8 @@ bool Socket_Multiplexer::plugin_Add(Socket_Mutiplexer_Plugin *plugin)
     return false;
 }
 
-void Socket_Multiplexer::run(Streams::StreamSocket *multiplexedSocket, const std::string & localName)
-{  
+void Socket_Multiplexer::run(Streams::StreamSocket *multiplexedSocket, const std::string &localName)
+{
     bool readOK;
     this->multiplexedSocket = multiplexedSocket;
     this->localName = localName;
@@ -57,16 +57,18 @@ void Socket_Multiplexer::run(Streams::StreamSocket *multiplexedSocket, const std
             {
                 if (multiplexedSocket->writeString8(localName))
                 {
-                    this->remoteName = multiplexedSocket->readString(&readOK,8);
+                    this->remoteName = multiplexedSocket->readString(&readOK, 8);
                     if (readOK)
                     {
-                        for (auto & i : plugins)
-                            ((Socket_Mutiplexer_Plugin *)i.second)->eventOnMultiplexedSocketConnect();
+                        for (auto &i : plugins)
+                            ((Socket_Mutiplexer_Plugin *) i.second)->eventOnMultiplexedSocketConnect();
                         unlockNewConnections();
                         noSendData = false;
                         // TODO check this...
                         mtLock_multiplexedSocket.unlock();
-                        while (processMultiplexedSocket()) {}
+                        while (processMultiplexedSocket())
+                        {
+                        }
                         noSendData = true;
                         mtLock_multiplexedSocket.lock();
                     }
@@ -78,8 +80,8 @@ void Socket_Multiplexer::run(Streams::StreamSocket *multiplexedSocket, const std
     // TODO: check this block...
     mtLock_multiplexedSocket.unlock();
     // Connections still trying to send something? sending nothing from here.
-    for (auto & i : plugins)
-        ((Socket_Mutiplexer_Plugin *)i.second)->eventOnMultiplexedSocketFinalization();
+    for (auto &i : plugins)
+        ((Socket_Mutiplexer_Plugin *) i.second)->eventOnMultiplexedSocketFinalization();
     //forceCloseAllChannels();
     preventNewConnections();
     closeAndWaitForEveryLine();
@@ -101,40 +103,43 @@ void Socket_Multiplexer::forceClose()
 bool Socket_Multiplexer::processMultiplexedSocket()
 {
     bool readen;
-    DataStructs::eMultiplexedSocketMessage msg = (DataStructs::eMultiplexedSocketMessage)multiplexedSocket->readU8(&readen);
-    if (!readen) 
+    DataStructs::eMultiplexedSocketMessage msg = (DataStructs::eMultiplexedSocketMessage) multiplexedSocket->readU8(&readen);
+    if (!readen)
         return false;
 
-    switch(msg)
+    switch (msg)
     {
     case DataStructs::MPLX_CLOSE_ACK2:
     {
-//        multiplexedSocket->shutdownSocket();
-    } return false;
+        //        multiplexedSocket->shutdownSocket();
+    }
+        return false;
     case DataStructs::MPLX_CLOSE_ACK1:
     {
         // Ordered back multiplexed socket close (reverse).
         // all the connections in the remote side are closed now.
         // closing this side (if there is one)
         //closeAndWaitForEveryLine();
-        if (!multiplexedSocket_sendCloseACK2()) 
+        if (!multiplexedSocket_sendCloseACK2())
             return false;
         //multiplexedSocket->shutdownSocket();
-    } return false;
+    }
+        return false;
     case DataStructs::MPLX_MSG_CLOSE:
     {
         // Ordered multiplexed socket Close.
         //closeAndWaitForEveryLine();
         if (!multiplexedSocket_sendCloseACK1())
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_LINE_CONNECT:
     {
         // line connection start
         bool authorized = true;
-        for (auto & i : plugins)
+        for (auto &i : plugins)
         {
-            if (!((Socket_Mutiplexer_Plugin *)i.second)->eventOnLineConnect())
+            if (!((Socket_Mutiplexer_Plugin *) i.second)->eventOnLineConnect())
             {
                 authorized = false;
                 break;
@@ -142,37 +147,43 @@ bool Socket_Multiplexer::processMultiplexedSocket()
         }
         if (!processMultiplexedSocketCommand_Line_Connect(authorized))
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_PLUGIN_DATA:
     {
         // multiplexed socket recv plugin data
         if (!processMultiplexedSocketCommand_Plugin_Data())
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_PLUGIN_JSON:
     {
         // multiplexed socket recv plugin json (up to 64kb)
         if (!processMultiplexedSocketCommand_Plugin_JSON16())
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_LINE_CONNECT_ANS:
     {
         // multiplexed socket recv connection answer
         if (!processMultiplexedSocketCommand_Line_ConnectionAnswer())
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_LINE_DATA:
     {
         // multiplexed socket recv line data.
         if (!processMultiplexedSocketCommand_Line_Data())
             return false;
-    } break;
+    }
+    break;
     case DataStructs::MPLX_LINE_BYTESREADEN:
     {
         // multiplexed socket update bytes readen
         if (!processMultiplexedSocketCommand_Line_UpdateReadenBytes())
             return false;
-    } break;
+    }
+    break;
     default:
         break;
     }
@@ -190,7 +201,7 @@ bool Socket_Multiplexer::sendOnMultiplexedSocket_LineID(const LineID &chId)
         return multiplexedSocket->writeU32(chId);
 }
 
-LineID Socket_Multiplexer::recvFromMultiplexedSocket_LineID(bool * readen)
+LineID Socket_Multiplexer::recvFromMultiplexedSocket_LineID(bool *readen)
 {
     if (sizeof(LineID) == 1)
         return multiplexedSocket->readU8(readen);
@@ -206,7 +217,6 @@ bool Socket_Multiplexer::close()
     std::unique_lock<std::timed_mutex> lock(mtLock_multiplexedSocket);
     return multiplexedSocket->writeU8(DataStructs::MPLX_MSG_CLOSE);
 }
-
 
 bool Socket_Multiplexer::multiplexedSocket_sendCloseACK1()
 {
@@ -235,21 +245,21 @@ void Socket_Multiplexer::setDestroySocketOnServer(bool value)
 void Socket_Multiplexer::serverAcceptConnectionThread(DataStructs::sServerLineInitThreadParams *thrParams)
 {
     // here, the callback should initialize the server piece (make the connections, etc)
-    static_cast<Socket_Multiplexer *>(thrParams->multiPlexer)->server_AcceptConnection_Callback(thrParams->lineID, thrParams->remoteWindowSize,thrParams->jConnectionParams);
+    static_cast<Socket_Multiplexer *>(thrParams->multiPlexer)->server_AcceptConnection_Callback(thrParams->lineID, thrParams->remoteWindowSize, thrParams->jConnectionParams);
     delete thrParams;
 }
 
 void Socket_Multiplexer::clientHandleConnectionFailedThread(DataStructs::sConnectionThreadParams *thrParams)
 {
     // here, the callback should initialize the server piece (make the connections, etc)
-    ((Socket_Multiplexer *)thrParams->multiPlexer)->client_FailedConnection_Callback(thrParams->chSock, thrParams->reason);
+    ((Socket_Multiplexer *) thrParams->multiPlexer)->client_FailedConnection_Callback(thrParams->chSock, thrParams->reason);
     delete thrParams;
 }
 
 void Socket_Multiplexer::clientHandleConnectionThread(DataStructs::sConnectionThreadParams *thrParams)
 {
     // here, the callback should initialize the server piece (make the connections, etc)
-    ((Socket_Multiplexer *)thrParams->multiPlexer)->client_HandlerConnection_Callback(thrParams->chSock);
+    ((Socket_Multiplexer *) thrParams->multiPlexer)->client_HandlerConnection_Callback(thrParams->chSock);
     delete thrParams;
 }
 

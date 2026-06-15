@@ -1,25 +1,26 @@
 #pragma once
 
-
 #include <memory>
 #include <stdint.h>
 
 #include "socket_multiplexer_callbacks.h"
 
-namespace Mantids { namespace Network { namespace Multiplexor { namespace DataStructs {
+namespace Mantids {
+namespace Network {
+namespace Multiplexor {
+namespace DataStructs {
 
-struct sServerLineInitThreadParams {
-    sServerLineInitThreadParams()
-    {
-        multiPlexer = nullptr;
-    }
+struct sServerLineInitThreadParams
+{
+    sServerLineInitThreadParams() { multiPlexer = nullptr; }
     sLineID lineID;
     uint32_t remoteWindowSize;
     json jConnectionParams;
-    void * multiPlexer;
+    void *multiPlexer;
 };
 
-struct sConnectionThreadParams {
+struct sConnectionThreadParams
+{
     sConnectionThreadParams()
     {
         multiPlexer = nullptr;
@@ -27,8 +28,10 @@ struct sConnectionThreadParams {
     }
     std::shared_ptr<Socket_Multiplexed_Line> chSock;
     eConnectFailedReason reason;
-    void * multiPlexer;
+    void *multiPlexer;
 };
 
-}}}}
-
+} // namespace DataStructs
+} // namespace Multiplexor
+} // namespace Network
+} // namespace Mantids
