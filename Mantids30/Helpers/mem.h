@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string.h>
+#include <cstring>
 #include <string>
 
 #ifdef _WIN32
 #include <WinBase.h>
-#include <string.h>
+#include <cstring>
 #endif
 
 namespace Mantids30::Helpers {
@@ -76,7 +76,7 @@ public:
          *
          * @return The binary data as a string.
          */
-        std::string toString() const
+        [[nodiscard]] std::string toString() const
         {
             std::string str(static_cast<char *>(data), length);
             return str;

@@ -67,11 +67,11 @@ class Endpoints : public Endpoints_Options
 {
 public:
     /**
-     * @enum HTTPMethodType
+     * @enum HTTPMethod
      *
      * @brief Enumeration for different RESTful method modes.
      */
-    enum HTTPMethodType
+    enum class HTTPMethod : std::uint8_t
     {
         GET = 0,
         POST = 1,
@@ -80,59 +80,55 @@ public:
         PATCH = 4
     };
 
-    static std::string HTTPMethodTypeToString(HTTPMethodType mode)
+    static std::string HTTPMethodToString(HTTPMethod mode)
     {
         switch (mode)
         {
-        case GET:
+        case HTTPMethod::GET:
             return "GET";
-        case POST:
+        case HTTPMethod::POST:
             return "POST";
-        case PUT:
+        case HTTPMethod::PUT:
             return "PUT";
-        case DELETE:
+        case HTTPMethod::DELETE:
             return "DELETE";
-        case PATCH:
+        case HTTPMethod::PATCH:
             return "PATCH";
         default:
             return "POST";
         }
     }
 
-    static HTTPMethodType stringToHTTPMethodType(const std::string &str)
+    static HTTPMethod stringToHTTPMethod(const std::string &str)
     {
         if (str == "GET")
         {
-            return GET;
-        }
-        else if (str == "POST")
-        {
-            return POST;
+            return HTTPMethod::GET;
         }
         else if (str == "PUT")
         {
-            return PUT;
+            return HTTPMethod::PUT;
         }
         else if (str == "DELETE")
         {
-            return DELETE;
+            return HTTPMethod::DELETE;
         }
         else if (str == "PATCH")
         {
-            return PATCH;
+            return HTTPMethod::PATCH;
         }
         else
         {
-            return POST; // default: POST
+            return HTTPMethod::POST; // default: POST
         }
     }
 
     /**
-     * @enum ErrorCodes
+     * @enum HandleResult
      *
      * @brief Enumeration for possible error codes.
      */
-    enum ErrorCodes
+    enum class HandleResult : std::int8_t
     {
         SUCCESS = 0,
         INVALID_METHOD_MODE = -1,
@@ -142,11 +138,11 @@ public:
         INTERNAL_ERROR = -5
     };
 
-    enum SecurityOptions
+    enum Security : std::uint8_t
     {
         NO_AUTH = 0,
-        REQUIRE_JWT_HEADER_AUTH = 1,
-        REQUIRE_JWT_COOKIE_AUTH = 2 //,
+        REQUIRE_JWT_HEADER_AUTH = 1 << 0,
+        REQUIRE_JWT_COOKIE_AUTH = 1 << 1
         //REQUIRE_GENERIC_ANTICSRF_TOKEN=4//,
         //REQUIRE_JWT_COOKIE_HASH=8
     };
@@ -173,7 +169,7 @@ public:
      * @param endpointDefinition The function pointer to the endpoint definition.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes, void *context,
+    bool addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const Security &securityOptions, const std::set<std::string> &requiredScopes, void *context,
                      APIEndpointFunctionType endpointDefinition);
 
     /**
@@ -184,7 +180,7 @@ public:
      * @param apiEndpointFullDefinition The RESTfulAPIDefinition struct containing apiEndpointFullDefinition, security, and object pointer.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
+    bool addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
 
     /**
      * @brief Invoke a resource and return the error code.
@@ -197,8 +193,8 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes handleEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
-                              bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut);
+    [[nodiscard]] HandleResult handleEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
@@ -211,8 +207,8 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    ErrorCodes handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters, const std::set<std::string> &currentScopes, bool isAdmin,
-                              const SecurityParameters &securityParameters, APIReturn *payloadOut);
+    [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
 private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;  ///< Map of PATCH endpoints.

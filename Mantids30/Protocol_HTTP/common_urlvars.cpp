@@ -189,7 +189,7 @@ size_t HTTP::URLVars::size()
 {
     Memory::Streams::StreamableNull nullobj;
     streamTo(&nullobj);
-    if (nullobj.writeStatus.succeed == true)
+    if (nullobj.writeStatus.succeed)
     {
         return nullobj.writeStatus.bytesWritten;
     }

@@ -30,15 +30,15 @@ public:
      * @brief Get the global CORS configuration
      * @return Reference to the global OPTIONS/CORS config
      */
-    const OptionsHandlerConfig *getGlobalOptionsConfig() const;
+    [[nodiscard]] const OptionsHandlerConfig *getGlobalOptionsConfig() const;
 
-    const OptionsHandlerConfig *getOptionsConfigOnEndpoint(const std::string &endpointPath) const;
+    [[nodiscard]] const OptionsHandlerConfig *getOptionsConfigOnEndpoint(const std::string &endpointPath) const;
 
     /**
      * @brief Check if OPTIONS/CORS handling is enabled
      * @return true if CORS is enabled
      */
-    bool isOptionsEnabled() const { return m_optionsEnabled; }
+    [[nodiscard]] bool isOptionsEnabled() const { return m_optionsEnabled; }
     /**
  * @brief Build a default CORS OPTIONS response from the configuration
  *
@@ -46,7 +46,7 @@ public:
  * @param requestOrigin The Origin header from the request (optional)
  * @return APIReturn with CORS headers set
  */
-    APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig &config, const std::string &requestOrigin = "");
+    [[nodiscard]] APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig &config, const std::string &requestOrigin = "");
 
 private:
     OptionsHandlerConfig m_globalOptionsConfig;                             ///< Global CORS/OPTIONS configuration

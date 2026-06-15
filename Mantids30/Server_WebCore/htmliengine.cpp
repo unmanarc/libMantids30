@@ -150,7 +150,7 @@ void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, 
 void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler)
 {
     std::regex reHTML("<!--<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>-->");
-    std::regex reJS("\\/\\/<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>\\/\\/");
+    std::regex reJS(R"(\/\/<%[jJ]([a-zA-Z0-9_\/]+):[ ]*([^%]*)[ ]*%>\/\/)");
 
     iProcResource_JProcessor(input, reJS, sRealFullPath, clientHandler, false);
     iProcResource_JProcessor(input, reHTML, sRealFullPath, clientHandler, true);
@@ -287,7 +287,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
                                                        bool useHTMLFrame)
 {
     // TODO: como revisar que realmente termine en ) y no haya un ) dentro del json
-    std::regex exStaticJsonFunction("([^\\(]+)\\(([^\\)]*)\\)");
+    std::regex exStaticJsonFunction(R"(([^\(]+)\(([^\)]*)\))");
 
     std::smatch whatStaticText;
     std::string::const_iterator start = functionDef.begin();
@@ -361,8 +361,12 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
 void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
 {
     // CINC PROCESSOR:
-    boost::regex reIncludeHTML("<!--<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>-->", boost::regex::icase);
-    boost::regex reIncludeJS("//<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>//", boost::regex::icase);
+    boost::regex
+        reIncludeHTML(R"(<!--<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>-->)",
+                      boost::regex::icase);
+    boost::
+        regex reIncludeJS(R"(//<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>//)",
+                          boost::regex::icase);
 
     if (contentType == "application/javacript")
     {

@@ -2,7 +2,7 @@
 
 #include "socket.h"
 #include <memory>
-#include <string.h>
+#include <cstring>
 
 #ifdef _WIN32
 #include <winsock2.h>

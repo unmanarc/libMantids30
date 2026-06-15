@@ -22,14 +22,14 @@ Engine::Engine()
     jwtRevokeDef.endpointDefinition = &revokeJWT;
     jwtRevokeDef.security.requiredScopes = {"IAM"};
     jwtRevokeDef.context = this;
-    handler->addEndpoint(Endpoints::POST, "jwt/revoke", jwtRevokeDef);
-    handler->addEndpoint(Endpoints::PUT, "websockets/topics/subscribe", Endpoints::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
-    handler->addEndpoint(Endpoints::DELETE, "websockets/topics/unsubscribe", Endpoints::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
+    handler->addEndpoint(Endpoints::HTTPMethod::POST, "jwt/revoke", jwtRevokeDef);
+    handler->addEndpoint(Endpoints::HTTPMethod::PUT, "websockets/topics/subscribe", Endpoints::Security::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
+    handler->addEndpoint(Endpoints::HTTPMethod::DELETE, "websockets/topics/unsubscribe", Endpoints::Security::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
 
     endpointsHandler[0] = handler;
 }
 
-Engine::~Engine() {}
+
 
 API::APIReturn Engine::revokeJWT(void *context,                                        // Context pointer
                                  const API::RESTful::RequestParameters &request,       // Parameters from the RESTful request
@@ -40,7 +40,7 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
     time_t expirationTime = JSON_ASUINT64(*request.inputJSON, "expiration", 0);
     ((Engine *) context)->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
 
-    return API::APIReturn();
+    return {};
 }
 
 API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestParameters &request, Sessions::ClientDetails &authClientDetails)
@@ -70,7 +70,7 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
     }
 
     // Suscripción exitosa
-    return API::APIReturn();
+    return {};
 }
 
 API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestParameters &request, Sessions::ClientDetails &authClientDetails)
@@ -100,7 +100,7 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
     }
 
     // Desuscripción exitosa
-    return API::APIReturn();
+    return {};
 }
 
 std::shared_ptr<Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)

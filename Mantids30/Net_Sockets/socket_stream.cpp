@@ -12,7 +12,7 @@
 #include <ws2tcpip.h>
 
 #endif
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 #include <Mantids30/Helpers/random.h>

@@ -3,7 +3,7 @@
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Memory/a_allvars.h>
 #include <memory>
-#include <string.h>
+#include <cstring>
 
 #include <errmsg.h>
 
@@ -543,7 +543,7 @@ int Query_MariaDB::reconnection(const ExecType &execType, bool recursion)
             // Otherwise, keep reconnecting...
 
             // ...
-            if (result2 == true)
+            if (result2)
             {
                 throw std::runtime_error("how this can be true?.");
             }
@@ -597,7 +597,7 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         int i = 0;
         if ((i = reconnection(execType, recursion)) >= 0)
         {
-            return i == 1 ? true : false;
+            return i == 1;
         }
 
         m_lastSQLError = mysql_stmt_error(m_stmt);
@@ -631,7 +631,7 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         int i = 0;
         if ((i = reconnection(execType, recursion)) >= 0)
         {
-            return i == 1 ? true : false;
+            return i == 1;
         }
 
         // When failed with another error:

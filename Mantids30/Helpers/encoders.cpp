@@ -1,12 +1,12 @@
 #include "encoders.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
-#include <inttypes.h>
+#include <cinttypes>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <random>
-#include <string.h>
+#include <cstring>
 
 using namespace std;
 using namespace Mantids30::Helpers;

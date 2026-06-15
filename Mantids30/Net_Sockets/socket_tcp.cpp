@@ -17,7 +17,7 @@
 #endif
 
 #include <errno.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 using namespace Mantids30::Network;

@@ -123,20 +123,20 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
         }
         if (boost::icontains(contentType, "multipart/form-data"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
+            clientRequest.content.setContainerType(HTTP::Content::ContentType::MIME);
             clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
         }
         else if (boost::icontains(contentType, "application/x-www-form-urlencoded"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
+            clientRequest.content.setContainerType(HTTP::Content::ContentType::URL);
         }
         else if (boost::icontains(contentType, "application/json"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_JSON);
+            clientRequest.content.setContainerType(HTTP::Content::ContentType::JSON);
         }
         else
         {
-            clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_BIN);
+            clientRequest.content.setContainerType(HTTP::Content::ContentType::BIN);
         }
         /////////////////////////////////////////////////////////////////////////////////////
     }

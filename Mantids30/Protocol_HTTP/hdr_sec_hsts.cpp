@@ -3,7 +3,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
 using namespace Mantids30::Network::Protocols;
@@ -37,7 +37,7 @@ std::string HSTS::toString() const
 {
     if (isActivated)
     {
-        string r = "";
+        string r;
 
         if (m_maxAge)
         {

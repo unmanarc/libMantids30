@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Network::Protocols::HTTP::Headers::Security {
@@ -37,7 +37,7 @@ public:
      *
      * @return The HSTS policy as a string value.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     /**
      * @brief Parses the given HSTS policy string and sets the options accordingly.

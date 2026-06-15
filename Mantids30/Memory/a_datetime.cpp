@@ -3,8 +3,8 @@
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Threads/lock_shared.h>
 
-#include <stdlib.h>
-#include <time.h>
+#include <cstdlib>
+#include <ctime>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -113,7 +113,7 @@ string DATETIME::getPlainLclTimeStr(time_t v)
 
     v -= timezone;
 
-    tm tmTime;
+    tm tmTime{};
 #ifdef _WIN32
     gmtime_s(&tmTime, &v);
 #else
@@ -129,7 +129,7 @@ string DATETIME::getISOTimeStr(const time_t &v)
     char sTime[64];
     sTime[64 - 1] = 0;
 
-    tm tmTime;
+    tm tmTime{};
 #ifdef _WIN32
     gmtime_s(&tmTime, &v);
 #else
@@ -144,10 +144,10 @@ string DATETIME::getISOTimeStr(const time_t &v)
 time_t DATETIME::fromISOTimeStr(const string &v)
 {
     // Thanks to: https://stackoverflow.com/questions/26895428/how-do-i-parse-an-iso-8601-date-with-optional-milliseconds-to-a-struct-tm-in-c
-    tm tmTime;
+    tm tmTime{};
     ZeroBStruct(tmTime);
 
-    if (v.find(" ") != std::string::npos)
+    if (v.find(' ') != std::string::npos)
     {
         if (sscanf(v.c_str(), "%d-%d-%d %d:%d:%d", &(tmTime.tm_year), &(tmTime.tm_mon), &(tmTime.tm_mday), &(tmTime.tm_hour), &(tmTime.tm_min), &(tmTime.tm_sec)) >= 6)
         {
@@ -157,7 +157,7 @@ time_t DATETIME::fromISOTimeStr(const string &v)
         tmTime.tm_mon -= 1;     // 0-11
         return mktime(&tmTime) - timezone;
     }
-    else if (v.find("T") != std::string::npos)
+    else if (v.find('T') != std::string::npos)
     {
         float s;
         int tzh = 0, tzm = 0;

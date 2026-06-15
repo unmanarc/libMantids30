@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Mantids30::Program::Logs {
 
-enum eLogModes
+enum class Mode : uint8_t
 {
-    MODE_SYSLOG = 0x1,
-    MODE_STANDARD = 0x2,
-    MODE_WINEVENTS = 0x8
+    SYSLOG = 0x1,
+    STANDARD = 0x2,
+    WINEVENTS = 0x8
 };
 
 } // namespace Mantids30::Program::Logs

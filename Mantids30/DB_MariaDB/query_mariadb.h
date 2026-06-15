@@ -38,7 +38,7 @@ public:
      * @brief getLastInsertRowID Gets the last inserted row ID for the query.
      * @return The last inserted row ID.
      */
-    my_ulonglong getLastInsertRowID() const;
+    [[nodiscard]] my_ulonglong getLastInsertRowID() const;
 
 protected:
     /**
@@ -47,19 +47,19 @@ protected:
      * @param recursion Whether or not to perform recursive calls.
      * @return True if the query was executed successfully, otherwise false.
      */
-    bool exec0(const ExecType &execType, bool recursion);
+    [[nodiscard]] bool exec0(const ExecType &execType, bool recursion);
 
     /**
      * @brief step0 Advances the current row of the result set.
      * @return True if the current row was successfully advanced, otherwise false.
      */
-    bool step0();
+    [[nodiscard]] bool step0();
 
     /**
      * @brief postBindInputVars Binds the input parameters for the prepared statement.
      * @return True if the input parameters were successfully bound, otherwise false.
      */
-    bool postBindInputVars();
+    [[nodiscard]] bool postBindInputVars();
 
 private:
     /**

@@ -326,7 +326,7 @@ bool SQLConnector::reconnect(unsigned int magic)
     if (magic == 0xFFFFABCD)
     {
         bool connected = false;
-        for (uint32_t i = 0; (!m_maxReconnectionAttempts || i < m_maxReconnectionAttempts) && connected == false; i++)
+        for (uint32_t i = 0; (!m_maxReconnectionAttempts || i < m_maxReconnectionAttempts) && !connected; i++)
         {
             connected = connect0();
             if (!connected)

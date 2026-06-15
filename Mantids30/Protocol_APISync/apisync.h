@@ -3,7 +3,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <boost/property_tree/ptree.hpp>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Network::Protocols::APISync {

@@ -15,10 +15,10 @@ class SQLConnector_PostgreSQL : public SQLConnector
 {
 public:
     SQLConnector_PostgreSQL();
-    ~SQLConnector_PostgreSQL();
-    std::string driverName() { return "PGSQL"; }
+    ~SQLConnector_PostgreSQL() override;
+    std::string driverName() override { return "PGSQL"; }
 
-    bool isOpen();
+    bool isOpen() override;
     // Query:
 
     /**
@@ -33,11 +33,11 @@ public:
      * @param table table name
      * @return true if exist, otherwise false.
      */
-    bool dbTableExist(const std::string &table);
+    [[nodiscard]] bool dbTableExist(const std::string &table) override;
 
     // Escape:
-    std::string getEscaped(const std::string &v);
-    int getPsqlEscapeError() const;
+    [[nodiscard]] std::string getEscaped(const std::string &v) override;
+    [[nodiscard]] int getPsqlEscapeError() const;
 
     // To be used before the connection establishment:
 
@@ -46,8 +46,8 @@ public:
     void psqlSetConnectionSSLMode(const std::string &value);
 
 protected:
-    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_PostgreSQL>(); };
-    bool connect0();
+    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_PostgreSQL>(); };
+    bool connect0() override;
 
 private:
     void fillConnectionArray();

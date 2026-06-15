@@ -11,7 +11,7 @@ public:
     VARCHAR(const size_t &varSize);
     VARCHAR(const size_t &varSize, char *value);
     VARCHAR(VARCHAR &var);
-    virtual ~VARCHAR() override;
+    ~VARCHAR() override;
 
     /**
      * @brief operator =  Copy Value from a null terminated string (check with getWasTruncated)
@@ -24,14 +24,14 @@ public:
         return *this;
     }
 
-    std::string toString() override;
-    bool fromString(const std::string &value) override;
+    [[nodiscard]] std::string toString() override;
+    [[nodiscard]] bool fromString(const std::string &value) override;
 
     /**
      * @brief getValue Get the null terminated string (can be reused)
      * @return null terminated string.
      */
-    char *getValue();
+    [[nodiscard]] char *getValue();
     /**
      * @brief setValue Copy Value from a null terminated string
      * @param value null terminated string
@@ -39,18 +39,18 @@ public:
      */
     bool setValue(char *value);
 
-    size_t getVarSize();
+    [[nodiscard]] size_t getVarSize();
 
-    void *getDirectMemory() override { return &m_value; }
+    [[nodiscard]] void *getDirectMemory() override { return &m_value; }
 
     /**
      * @brief getWasTruncated Get if the last copy operation was truncated.
      * @return true if truncated.
      */
-    bool getWasTruncated();
+    [[nodiscard]] bool getWasTruncated();
 
-    unsigned long getFillSize() const;
-    unsigned long *getFillSizePTR() { return &m_fillSize; }
+    [[nodiscard]] unsigned long getFillSize() const;
+    [[nodiscard]] unsigned long *getFillSizePTR() { return &m_fillSize; }
 
     json toJSON() override;
     bool fromJSON(const json &value) override;

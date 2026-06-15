@@ -2,7 +2,7 @@
 
 #include "a_var.h"
 #include <Mantids30/Threads/mutex_shared.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace Mantids30::Memory::Abstract {
 

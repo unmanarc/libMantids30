@@ -219,7 +219,7 @@ bool FileMap::closeFile(bool respectDeleteFileOnDestruction)
     }
 
     // If there is an order to destroy the file, destroy the file.
-    if (deleteFileOnDestruction && respectDeleteFileOnDestruction && currentFileName.size())
+    if (deleteFileOnDestruction && respectDeleteFileOnDestruction && !currentFileName.empty())
     {
         remove(currentFileName.c_str());
     }

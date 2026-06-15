@@ -92,7 +92,7 @@ bool Socket_TLS::postConnectSubInitialization()
 
     if (!(m_sslHandler = SSL_new(m_sslContext)))
     {
-        m_sslErrorList.push_back("SSL_new failed.");
+        m_sslErrorList.emplace_back("SSL_new failed.");
         return false;
     }
 
@@ -122,14 +122,14 @@ bool Socket_TLS::postConnectSubInitialization()
         // Using system certificates...
         if (!SSL_set_tlsext_host_name(m_sslHandler, m_remoteServerHostname.c_str()))
         {
-            m_sslErrorList.push_back("Unable to set TLS extension host name.");
+            m_sslErrorList.emplace_back("Unable to set TLS extension host name.");
             return false;
         }
     }
 
     if (SSL_set_fd(m_sslHandler, m_sockFD) != 1)
     {
-        m_sslErrorList.push_back("SSL_set_fd failed.");
+        m_sslErrorList.emplace_back("SSL_set_fd failed.");
         return false;
     }
 

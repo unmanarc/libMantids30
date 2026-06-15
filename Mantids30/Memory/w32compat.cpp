@@ -1,8 +1,8 @@
 #include "w32compat.h"
 #ifdef _WIN32
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <winsock2.h>
 #include <ws2ipdef.h>

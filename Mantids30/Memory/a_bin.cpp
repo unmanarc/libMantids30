@@ -2,7 +2,7 @@
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Threads/lock_shared.h>
 #include <json/value.h>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Memory::Abstract;
 

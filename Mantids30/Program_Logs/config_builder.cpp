@@ -3,11 +3,11 @@
 #include <memory>
 
 using namespace Mantids30::Program;
-std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
+std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
-        logMode |= Program::Logs::MODE_SYSLOG;
+        logMode |= static_cast<uint8_t>(Program::Logs::Mode::SYSLOG);
     }
 
     std::shared_ptr<Program::Logs::AppLog> log = std::make_shared<Program::Logs::AppLog>(logMode);
@@ -22,11 +22,11 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_t
     return log;
 }
 
-std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
+std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
-        logMode |= Program::Logs::MODE_SYSLOG;
+        logMode |= static_cast<uint8_t>(Program::Logs::Mode::SYSLOG);
     }
 
     std::shared_ptr<Program::Logs::RPCLog> log = std::make_shared<Program::Logs::RPCLog>(logMode);
@@ -43,7 +43,7 @@ std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_t
     return log;
 }
 
-std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(unsigned int logMode)
+std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(uint8_t logMode)
 {
     std::shared_ptr<Program::Logs::AppLog> initLog = std::make_shared<Program::Logs::AppLog>(logMode);
     initLog->enableAttributeNameLogging = false;
@@ -55,7 +55,7 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(unsigned int logMode)
     return initLog;
 }
 
-std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog, const boost::property_tree::ptree &config)
+std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog>& appLog, const boost::property_tree::ptree &config)
 {
     std::shared_ptr<Program::Logs::WebLog> log = std::make_shared<Program::Logs::WebLog>();
     log->config.appLog = appLog;

@@ -1,7 +1,7 @@
 #include "streamencoder_url.h"
 #include <Mantids30/Memory/streamable_object.h>
 
-#include <inttypes.h>
+#include <cinttypes>
 #include <limits>
 
 #include <Mantids30/Memory/b_chunks.h>
@@ -48,7 +48,7 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
         }
 
         // Stop reading on bad transmition..
-        if (dst->writeStatus.succeed == false)
+        if (!dst->writeStatus.succeed)
         {
             return readenBytes;
         }

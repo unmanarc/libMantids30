@@ -1,6 +1,6 @@
 #include "a_int16.h"
 #include <Mantids30/Threads/lock_shared.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -47,12 +47,7 @@ bool INT16::fromString(const std::string &value)
         return true;
     }
     this->m_value = (int16_t) strtol(value.c_str(), nullptr, 10);
-    if (value != "0" && this->m_value == 0)
-    {
-        return false;
-    }
-
-    return true;
+    return !(value != "0" && this->m_value == 0);
 }
 
 std::shared_ptr<Var> INT16::protectedCopy()

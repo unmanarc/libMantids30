@@ -147,43 +147,43 @@ public:
     * @brief Retrieves the last inserted row ID.
     * @return The last inserted row ID.
     */
-    unsigned long long getLastInsertRowID() const;
+    [[nodiscard]] unsigned long long getLastInsertRowID() const;
 
     // Error Management:
     /**
     * @brief Retrieves the last SQL error message.
     * @return The last SQL error message as a string.
     */
-    std::string getLastSQLError() const;
+    [[nodiscard]] std::string getLastSQLError() const;
     /**
     * @brief Retrieves the last SQL return value.
     * @return The last SQL return value as an integer.
     */
-    int getLastSQLReturnValue() const;
+    [[nodiscard]] int getLastSQLReturnValue() const;
     /**
      * @brief getNumRecords Get the retrieved records count on SELECT statement
      * warning: does not apply to sqlite3
      * @return number of records retrieved by the select statement
      */
-    uint64_t getNumRecords() const;
+    [[nodiscard]] uint64_t getNumRecords() const;
     /**
      * @brief getAffectedRecords Get Affected Records by INSERT/UPDATE/DELETE commands
      * @return number of affected rows.
      */
-    uint64_t getAffectedRecords() const;
+    [[nodiscard]] uint64_t getAffectedRecords() const;
 
-    bool getFetchLastInsertRowID() const;
+    [[nodiscard]] bool getFetchLastInsertRowID() const;
     void setFetchLastInsertRowID(bool newFetchLastInsertRowID);
 
-    uint64_t getTotalRecordsCount() const;
+    [[nodiscard]] uint64_t getTotalRecordsCount() const;
     void setTotalRecordsCount(uint64_t newTotalRecordsCount);
 
-    uint64_t getFilteredRecordsCount() const;
+    [[nodiscard]] uint64_t getFilteredRecordsCount() const;
     void setFilteredRecordsCount(uint64_t newFilteredRecordsCount);
 
     void setError(QueryErrors newError);
 
-    QueryErrors getError() const;
+    [[nodiscard]] QueryErrors getError() const;
 
 protected:
     /**

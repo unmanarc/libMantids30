@@ -75,11 +75,7 @@ bool Mantids30::Helpers::File::fixSensitiveConfigPermission(const std::string &c
 {
 #ifndef _WIN32
     // Change the value to 0600
-    if (chmod(configFilePath.c_str(), 0600) != 0)
-    {
-        return false;
-    }
-    return true;
+    return chmod(configFilePath.c_str(), 0600) == 0;
 #else
     // TODO: win32 fix for secure file permissions...
     return true;

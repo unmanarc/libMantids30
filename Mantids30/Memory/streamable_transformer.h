@@ -1,7 +1,7 @@
 #pragma once
 
 #include <optional>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "streamable_object.h"
 

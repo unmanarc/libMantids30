@@ -14,7 +14,7 @@
 #define SLASHB '\\'
 #define SLASH "\\"
 #include <boost/algorithm/string/predicate.hpp>
-#include <stdlib.h>
+#include <cstdlib>
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
 #else
 #define SLASH "/"

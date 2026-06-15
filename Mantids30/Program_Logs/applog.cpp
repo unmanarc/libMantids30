@@ -10,8 +10,8 @@
 #include <syslog.h>
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -21,13 +21,12 @@
 using namespace std;
 using namespace Mantids30::Program::Logs;
 
-AppLog::AppLog(unsigned int _logMode)
+AppLog::AppLog(const uint8_t &_logMode)
     : LogBase(_logMode)
 {}
 
 void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, string user, string ip, const char *buffer, eLogColors color, const char *logLevelText)
 {
-    if (true)
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
         if (m_modulesOutputExclusion.find(module) != m_modulesOutputExclusion.end())
@@ -107,15 +106,11 @@ void AppLog::printStandardLog(eLogLevels logSeverity, FILE *fp, string module, s
         {
             syslog(LOG_INFO, "S/%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_WARN)
-        {
-            syslog(LOG_WARNING, "S/%s", logLine.c_str());
-        }
         else if (logSeverity == LEVEL_CRITICAL)
         {
             syslog(LOG_CRIT, "S/%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_SECURITY_ALERT)
+        else if (logSeverity == LEVEL_SECURITY_ALERT || logSeverity == LEVEL_WARN)
         {
             syslog(LOG_WARNING, "S/%s", logLine.c_str());
         }

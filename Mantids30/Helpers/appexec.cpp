@@ -9,7 +9,7 @@
 
 #include <fcntl.h>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 #include <sys/types.h>
 
 #ifdef _WIN32

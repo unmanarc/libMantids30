@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Mantids30/Helpers/json.h>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Network::Protocols::HTTP {

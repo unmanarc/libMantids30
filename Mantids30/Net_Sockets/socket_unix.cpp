@@ -3,7 +3,7 @@
 
 #ifndef _WIN32
 
-#include <string.h>
+#include <cstring>
 #include <sys/types.h>
 #include <unistd.h>
 

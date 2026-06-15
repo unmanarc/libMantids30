@@ -9,7 +9,7 @@
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Helpers/safeint.h>
 #include <Mantids30/Threads/lock_shared.h>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Memory::Abstract;
 

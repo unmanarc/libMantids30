@@ -1,6 +1,6 @@
 #include "b_chunks.h"
 #include <optional>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Memory::Containers;
 
@@ -666,21 +666,13 @@ std::optional<size_t> B_Chunks::findChar(const int &c, const size_t &roOffset, s
                 char *pos_upper = static_cast<char *>(memchr(currentChunk.data, std::toupper(c), currentSearchSpace));
                 char *pos_lower = static_cast<char *>(memchr(currentChunk.data, std::tolower(c), currentSearchSpace));
 
-                if (pos_upper && pos_lower && pos_upper <= pos_lower)
+                if (pos_upper && pos_lower)
                 {
-                    pos = pos_upper;
+                    pos = std::min(pos_upper, pos_lower);
                 }
-                else if (pos_upper && pos_lower && pos_lower < pos_upper)
+                else
                 {
-                    pos = pos_lower;
-                }
-                else if (pos_upper)
-                {
-                    pos = pos_upper;
-                }
-                else if (pos_lower)
-                {
-                    pos = pos_lower;
+                    pos = pos_upper ? pos_upper : pos_lower;
                 }
             }
 

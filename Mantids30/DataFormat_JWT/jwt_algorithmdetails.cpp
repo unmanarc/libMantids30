@@ -67,12 +67,9 @@ JWT::AlgorithmDetails::AlgorithmDetails(const char *algorithm)
     {
         *this = AlgorithmDetails(JWT::Algorithm::RS384);
     }
-    else if (!strncmp(algorithm, "RS512", 16))
-    {
-        *this = AlgorithmDetails(JWT::Algorithm::RS512);
-    }
     else
     {
+        // DEFAULT RS512
         *this = AlgorithmDetails(JWT::Algorithm::RS512);
     }
 }

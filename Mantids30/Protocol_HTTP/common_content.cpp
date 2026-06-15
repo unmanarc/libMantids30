@@ -163,7 +163,7 @@ HTTP::Content::eTransmitionMode HTTP::Content::getTransmitionMode() const
 
 std::shared_ptr<HTTP::URLVars> HTTP::Content::getUrlPostVars()
 {
-    if (m_containerType == CONTENT_TYPE_URL && m_usingInternalOutStream)
+    if (m_containerType == ContentType::URL && m_usingInternalOutStream)
     {
         return std::dynamic_pointer_cast<URLVars>(m_contentStreamableObject);
     }
@@ -172,7 +172,7 @@ std::shared_ptr<HTTP::URLVars> HTTP::Content::getUrlPostVars()
 
 std::shared_ptr<Memory::Streams::StreamableJSON> HTTP::Content::getJSONVars()
 {
-    if (m_containerType == CONTENT_TYPE_JSON && m_usingInternalOutStream)
+    if (m_containerType == ContentType::JSON && m_usingInternalOutStream)
     {
         return std::dynamic_pointer_cast<Memory::Streams::StreamableJSON>(m_contentStreamableObject);
     }
@@ -181,14 +181,14 @@ std::shared_ptr<Memory::Streams::StreamableJSON> HTTP::Content::getJSONVars()
 
 std::shared_ptr<Protocols::MIME::MIME_Message> HTTP::Content::getMultiPartVars()
 {
-    if (m_containerType == CONTENT_TYPE_MIME && m_usingInternalOutStream)
+    if (m_containerType == ContentType::MIME && m_usingInternalOutStream)
     {
         return std::dynamic_pointer_cast<Protocols::MIME::MIME_Message>(m_contentStreamableObject);
     }
     throw std::runtime_error("Invalid operation: getMultiPartVars should not be called when the content type is not MIME.");
 }
 
-HTTP::Content::eDataType HTTP::Content::getContainerType() const
+HTTP::Content::ContentType HTTP::Content::getContainerType() const
 {
     return m_containerType;
 }
@@ -199,11 +199,11 @@ std::shared_ptr<Memory::Abstract::Vars> HTTP::Content::postVars()
     {
         throw std::runtime_error("Error: not using internal output stream");
     }
-    if (m_containerType == CONTENT_TYPE_BIN)
+    if (m_containerType == ContentType::BIN)
     {
         throw std::runtime_error("Error: container type is binary");
     }
-    if (m_containerType == CONTENT_TYPE_JSON)
+    if (m_containerType == ContentType::JSON)
     {
         throw std::runtime_error("Error: container type is JSON");
     }
@@ -216,23 +216,23 @@ std::shared_ptr<Memory::Abstract::Vars> HTTP::Content::postVars()
     return vars;
 }
 
-void HTTP::Content::setContainerType(const HTTP::Content::eDataType &value)
+void HTTP::Content::setContainerType(const HTTP::Content::ContentType &value)
 {
     m_containerType = value;
     if (m_usingInternalOutStream)
     {
         switch (m_containerType)
         {
-        case CONTENT_TYPE_MIME:
+        case ContentType::MIME:
             m_contentStreamableObject = MIME::MIME_Message::create();
             break;
-        case CONTENT_TYPE_URL:
+        case ContentType::URL:
             m_contentStreamableObject = URLVars::create();
             break;
-        case CONTENT_TYPE_JSON:
+        case ContentType::JSON:
             m_contentStreamableObject = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();
             break;
-        case CONTENT_TYPE_BIN:
+        case ContentType::BIN:
             m_contentStreamableObject = std::make_shared<Memory::Containers::B_Chunks>();
             break;
         }
@@ -316,7 +316,7 @@ bool HTTP::Content::setCurrentSize(const size_t &contentLengthSize)
 
 void HTTP::Content::setMaxBinPostMemoryBeforeFS(const size_t &value)
 {
-    if (m_containerType == CONTENT_TYPE_BIN && m_usingInternalOutStream)
+    if (m_containerType == ContentType::BIN && m_usingInternalOutStream)
     {
         std::dynamic_pointer_cast<Memory::Containers::B_Chunks>(m_contentStreamableObject)->setMaxSizeInMemoryBeforeMovingToDisk(value);
     }

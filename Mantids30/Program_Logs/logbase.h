@@ -13,7 +13,7 @@ namespace Mantids30::Program::Logs {
 class LogBase
 {
 public:
-    LogBase(unsigned int _logMode);
+    LogBase(const uint8_t &_logMode);
     virtual ~LogBase();
 
     // Thread-safe:
@@ -43,9 +43,9 @@ public:
     std::string fieldSeparator = " ";       ///< The string used to separate log fields.
 
 protected:
-    bool isUsingWindowsEventLog() const;
-    bool isUsingSyslog() const;
-    bool isUsingStandardLog() const;
+    [[nodiscard]] bool isUsingWindowsEventLog() const;
+    [[nodiscard]] bool isUsingSyslog() const;
+    [[nodiscard]] bool isUsingStandardLog() const;
 
     void printDate(FILE *fp) const;
     void printColorBold(FILE *fp, const char *str);
@@ -56,11 +56,11 @@ protected:
     void printColorOrange(FILE *fp, const char *str);
     void printColorForWin32(FILE *fp, unsigned short color, const char *str);
 
-    static std::string getAlignedValue(const std::string &value, size_t sz);
+    [[nodiscard]] static std::string getAlignedValue(const std::string &value, size_t sz);
 
     // Thread-safe:
     bool m_debug = false;                   ///< Debug flag
-    unsigned int m_logMode = MODE_STANDARD; ///< Log mode (MODE_SYSLOG,MODE_STANDARD,MODE_WINEVENTS)
+    unsigned int m_logMode = static_cast<unsigned int>(Mode::STANDARD); ///< Log mode (Mode::SYSLOG,Mode::STANDARD,Mode::WINEVENTS)
     std::mutex m_logMutex;                  ///< Mutex for the log
 
     // Modules Exclusion.

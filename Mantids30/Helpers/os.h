@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Helpers {
@@ -43,7 +43,7 @@ public:
      *
      * @return A LocalSysInfo object containing system information about the local machine.
      */
-    static LocalSysInfo getLocalSystemInfo();
+    [[nodiscard]] static LocalSysInfo getLocalSystemInfo();
 };
 
 } // namespace Mantids30::Helpers

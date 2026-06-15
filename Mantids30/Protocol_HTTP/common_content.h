@@ -13,12 +13,12 @@ namespace Mantids30::Network::Protocols::HTTP {
 class Content : public Memory::Streams::SubParser
 {
 public:
-    enum eDataType
+    enum class ContentType : uint8_t
     {
-        CONTENT_TYPE_BIN,
-        CONTENT_TYPE_MIME,
-        CONTENT_TYPE_URL,
-        CONTENT_TYPE_JSON
+        BIN,
+        MIME,
+        URL,
+        JSON
     };
 
     enum eProcessingMode
@@ -80,12 +80,12 @@ public:
      */
     std::shared_ptr<Memory::Abstract::Vars> postVars();
     /**
-     * @brief getMultiPartVars Get the MultiPart POST vars (read/write), call only when the ContainerType is CONTENT_TYPE_MIME, otherwise, runtime error will be triggered
+     * @brief getMultiPartVars Get the MultiPart POST vars (read/write), call only when the ContainerType is MIME, otherwise, runtime error will be triggered
      * @return full MIME message
      */
     std::shared_ptr<MIME::MIME_Message> getMultiPartVars();
     /**
-     * @brief getUrlPostVars Get URL formatted POST Vars (read/write), call only when the ContainerType is CONTENT_TYPE_URL, otherwise, runtime error will be triggered
+     * @brief getUrlPostVars Get URL formatted POST Vars (read/write), call only when the ContainerType is URL, otherwise, runtime error will be triggered
      * @return URL Var object
      */
     std::shared_ptr<URLVars> getUrlPostVars();
@@ -119,12 +119,12 @@ public:
      * @brief setContainerType Set Container Content Data Type (URL/MIME/BIN)
      * @param value type
      */
-    void setContainerType(const eDataType &value);
+    void setContainerType(const ContentType &value);
     /**
      * @brief getContainerType Get container content data type (URL/MIME/BIN)
      * @return type
      */
-    eDataType getContainerType() const;
+    ContentType getContainerType() const;
 
     //////////////////////////////////////////////////
     // Security:
@@ -148,7 +148,7 @@ private:
     // Parsing Optimization:
     eTransmitionMode m_transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
     eProcessingMode m_currentMode = PROCMODE_CONTENT_LENGTH;
-    eDataType m_containerType = CONTENT_TYPE_BIN;
+    ContentType m_containerType = ContentType::BIN;
 
     // Security Parameters (for parsing):
     size_t m_securityMaxPostDataSize = 17 * MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).

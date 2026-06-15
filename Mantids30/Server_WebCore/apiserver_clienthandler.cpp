@@ -17,12 +17,12 @@
 #include <json/value.h>
 #include <memory>
 #include <regex>
-#include <stdarg.h>
+#include <cstdarg>
 #include <string>
 #include <vector>
 
 #ifdef _WIN32
-#include <stdlib.h>
+#include <cstdlib>
 #define realpath(N, R) _fullpath((R), (N), _MAX_PATH)
 #endif
 
@@ -534,7 +534,7 @@ bool APIServer_ClientHandler::isURLSafe(const std::string &url)
     for (char c : url)
     {
         // Allow only alphanumeric characters, '-', '_', '.', and '/'
-        if (!(isalnum(c) || c == '-' || c == '_' || c == '.' || c == '/'))
+        if (!isalnum(c) && c != '-' && c != '_' && c != '.' && c != '/')
         {
             return false; // Found an unsafe character
         }

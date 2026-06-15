@@ -9,8 +9,8 @@
 #include <syslog.h>
 #endif
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -20,7 +20,7 @@
 
 using namespace Mantids30::Program::Logs;
 
-RPCLog::RPCLog(unsigned int _logMode)
+RPCLog::RPCLog(const uint8_t &_logMode)
     : LogBase(_logMode)
 {}
 
@@ -74,7 +74,6 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
 void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, std::string sessionId, std::string user, std::string domain, std::string module, const char *buffer, eLogColors color,
                               const char *logLevelText)
 {
-    if (true)
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
         if (m_modulesOutputExclusion.find(module) != m_modulesOutputExclusion.end())
@@ -185,15 +184,11 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
         {
             syslog(LOG_INFO, "%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_WARN)
-        {
-            syslog(LOG_WARNING, "%s", logLine.c_str());
-        }
         else if (logSeverity == LEVEL_CRITICAL)
         {
             syslog(LOG_CRIT, "%s", logLine.c_str());
         }
-        else if (logSeverity == LEVEL_SECURITY_ALERT)
+        else if (logSeverity == LEVEL_SECURITY_ALERT || logSeverity == LEVEL_WARN)
         {
             syslog(LOG_WARNING, "%s", logLine.c_str());
         }

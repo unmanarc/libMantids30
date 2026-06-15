@@ -20,7 +20,7 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams)
+void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTaskParams)
 {
     bool functionFound = false;
 
@@ -113,7 +113,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 
             switch (i)
             {
-            case API::Monolith::Endpoints::VALIDATION_OK:
+            case API::Monolith::Endpoints::ValidationResult::VALIDATION_OK:
             {
                 if (session)
                 {
@@ -129,7 +129,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 
                 switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
                 {
-                case API::Monolith::Endpoints::ENDPOINT_RET_CODE_SUCCESS:
+                case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_SUCCESS:
 
                     finish = chrono::high_resolution_clock::now();
                     elapsed = finish - start;
@@ -139,7 +139,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                     functionFound = true;
                     fullResponse["statusCode"] = 200;
                     break;
-                case API::Monolith::Endpoints::ENDPOINT_RET_CODE_NOTFOUND:
+                case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_NOTFOUND:
 
                     CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
                     fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
@@ -151,7 +151,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                 }
             }
             break;
-            case API::Monolith::Endpoints::VALIDATION_NOTAUTHORIZED:
+            case API::Monolith::Endpoints::ValidationResult::VALIDATION_NOTAUTHORIZED:
             {
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
@@ -159,7 +159,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
                 fullResponse["statusCode"] = ELT_RET_NOTAUTHORIZED;
             }
             break;
-            case API::Monolith::Endpoints::VALIDATION_ENDPOINTNOTFOUND:
+            case API::Monolith::Endpoints::ValidationResult::VALIDATION_ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
@@ -184,7 +184,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
+void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> & taskData)
 {
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     FastRPC3 *caller = static_cast<FastRPC3 *>(taskParams->caller);
@@ -198,7 +198,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
+void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
 {
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     RPC3CallbackDefinitions *callbacks = static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks);
@@ -249,7 +249,7 @@ void FastRPC3::LocalRPCTasks::login(std::shared_ptr<void> taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::logout(std::shared_ptr<void> taskData)
+void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> & taskData)
 {
     FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     json response;

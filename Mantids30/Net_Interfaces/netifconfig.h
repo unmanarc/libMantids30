@@ -38,7 +38,7 @@ public:
      * @param _ifaceName interface name.
      * @return true if openned
      */
-    bool openInterface(const std::string &_ifaceName);
+    [[nodiscard]] bool openInterface(const std::string &_ifaceName);
 #else
     /**
      * @brief openTAPW32Interface Pass the interface previously openned with VirtualNetworkInterface (TAP-WINDOWS6)
@@ -53,17 +53,17 @@ public:
      * @brief getMTU Get the interface MTU
      * @return interface MTU
      */
-    int getMTU();
+    [[nodiscard]] int getMTU();
     /**
      * @brief getEthernetAddress Get the ethernet MAC Address of the interface
      * @return mac address is setted in the return h_dest
      */
-    ethhdr getEthernetAddress();
+    [[nodiscard]] ethhdr getEthernetAddress();
     /**
      * @brief getLastError Get last error
      * @return empty if no error, or a string containing the last error
      */
-    std::string getLastError() const;
+    [[nodiscard]] std::string getLastError() const;
 
     // Setters:
     /**
@@ -93,17 +93,17 @@ public:
      * @brief apply Apply the settings
      * @return true if successfully applied.
      */
-    bool apply();
+    [[nodiscard]] bool apply();
 
     /**
      * @brief getNetIfType Get Network Interface Type.
      * @return Network Interface Type (Generic Linux, Virtual TAP Windows)
      */
-    NetIfType getNetIfType() const;
+    [[nodiscard]] NetIfType getNetIfType() const;
 
 #ifdef _WIN32
-    static Mantids30::Helpers::AppExec::sAppExecCmd createRouteCMD(const std::vector<std::string> &routecmdopts);
-    static Mantids30::Helpers::AppExec::sAppExecCmd createNetSHCMD(const std::vector<std::string> &netshcmdopts);
+    [[nodiscard]] static Mantids30::Helpers::AppExec::sAppExecCmd createRouteCMD(const std::vector<std::string> &routecmdopts);
+    [[nodiscard]] static Mantids30::Helpers::AppExec::sAppExecCmd createNetSHCMD(const std::vector<std::string> &netshcmdopts);
 #endif
 
 private:

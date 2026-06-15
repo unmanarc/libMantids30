@@ -104,9 +104,9 @@ public:
      * @param varName Variable Name
      * @return true if exist
      */
-    bool exist(const std::string &varName);
+    [[nodiscard]] bool exist(const std::string &varName);
 
-    std::string getStringValue(const std::string &varName);
+    [[nodiscard]] std::string getStringValue(const std::string &varName);
     ///////////////////////////////////////
     // Virtuals...
     /**
@@ -114,29 +114,29 @@ public:
      * @param varName Variable Name
      * @return number of values
      */
-    virtual uint32_t varCount(const std::string &varName) = 0;
+    [[nodiscard]] virtual uint32_t varCount(const std::string &varName) = 0;
     /**
      * @brief getValue Get the first Memory Container for a variable name
      * @param varName variable name
      * @return first memory container abstract
      */
-    virtual std::shared_ptr<Memory::Streams::StreamableObject> getValue(const std::string &varName) = 0;
+    [[nodiscard]] virtual std::shared_ptr<Memory::Streams::StreamableObject> getValue(const std::string &varName) = 0;
     /**
      * @brief getValues Get all the memory containers associated with a variable name
      * @param varName variable name
      * @return list of memory containers abstracts
      */
-    virtual std::list<std::shared_ptr<Memory::Streams::StreamableObject>> getValues(const std::string &varName) = 0;
+    [[nodiscard]] virtual std::list<std::shared_ptr<Memory::Streams::StreamableObject>> getValues(const std::string &varName) = 0;
     /**
      * @brief getKeysList Get a set of all the registered variable names
      * @return set of all registered variable names
      */
-    virtual std::set<std::string> getKeysList() = 0;
+    [[nodiscard]] virtual std::set<std::string> getKeysList() = 0;
     /**
      * @brief isEmpty Get if the variable container is empty
      * @return true if no variable is inserted
      */
-    virtual bool isEmpty() = 0;
+    [[nodiscard]] virtual bool isEmpty() = 0;
 
     ///////////////////////////////////////
     // Security options:
@@ -144,7 +144,7 @@ public:
      * @brief getMaxVarNameSize Get the maximum size for a variable name
      * @return maximum size for a variable name
      */
-    size_t getMaxVarNameSize() const;
+    [[nodiscard]] size_t getMaxVarNameSize() const;
     /**
      * @brief setMaxVarNameSize Set the maximum size for a variable name
      * @param value maximum size for a variable name
@@ -155,7 +155,7 @@ public:
      * @brief getMaxVarContentSize Get the maximum size for a variable content value
      * @return maximum size for a variable content value
      */
-    size_t getMaxVarContentSize() const;
+    [[nodiscard]] size_t getMaxVarContentSize() const;
     /**
      * @brief setMaxVarContentSize Set the maximum size for a variable content value
      * @param value maximum size for a variable content value
@@ -170,7 +170,7 @@ public:
      * @param data data container
      * @return true if added, false otherwise.
      */
-    virtual bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) = 0;
+    [[nodiscard]] virtual bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) = 0;
 
     /**
      * @brief setMaxVarsCount Set Maxium Number of variables allowed

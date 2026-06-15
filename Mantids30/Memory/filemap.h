@@ -17,7 +17,7 @@ public:
 
     FileMap &operator=(FileMap &bc);
 
-    bool mmapDisplace(const size_t &offsetBytes);
+    [[nodiscard]] bool mmapDisplace(const size_t &offsetBytes);
 
     // thanks to larsmans: http://stackoverflow.com/questions/4460507/appending-to-a-memory-mapped-file
     /**
@@ -26,7 +26,7 @@ public:
      * @param count bytes to be appended.
      * @return -1 if error, or bytes written (can be zero or different to nbytes).
      */
-    std::optional<size_t> mmapAppend(void const *buf, const size_t &count);
+    [[nodiscard]] std::optional<size_t> mmapAppend(void const *buf, const size_t &count);
 
     /**
      * @brief mmapPrepend Prepend data to the mmap memory.
@@ -34,7 +34,7 @@ public:
      * @param count bytes to be preapended.
      * @return -1 if error, or bytes written (can be zero or different to nbytes).
      */
-    std::optional<size_t> mmapPrepend(void const *buf, const size_t &count);
+    [[nodiscard]] std::optional<size_t> mmapPrepend(void const *buf, const size_t &count);
 
     /**
      * @brief closeFile Close currently openned file.
@@ -45,7 +45,7 @@ public:
 
     // Mmap/FILE MODE methods:
     // TODO: use mmap64... or plain seek mode...
-    bool mmapTruncate(const size_t &nSize);
+    [[nodiscard]] bool mmapTruncate(const size_t &nSize);
 
     /**
      * @brief openFile Open file and Map to Memory
@@ -54,13 +54,13 @@ public:
      * @param createFile
      * @return
      */
-    bool openFile(const std::string &filePath, bool readOnly, bool createFile);
+    [[nodiscard]] bool openFile(const std::string &filePath, bool readOnly, bool createFile);
 
-    std::string getCurrentFileName() const;
+    [[nodiscard]] std::string getCurrentFileName() const;
 
-    size_t getFileOpenSize() const;
+    [[nodiscard]] size_t getFileOpenSize() const;
 
-    char *getMmapAddr() const;
+    [[nodiscard]] char *getMmapAddr() const;
 
     void setDeleteFileOnDestruction(bool value);
 

@@ -2,7 +2,7 @@
 #include "sqlconnector_sqlite3.h"
 #include <Mantids30/Memory/a_allvars.h>
 #include <boost/algorithm/string/predicate.hpp>
-#include <string.h>
+#include <cstring>
 
 #include <stdexcept>
 
@@ -253,7 +253,7 @@ bool Query_SQLite3::step0()
                 switch (outputVar->getVarType())
                 {
                 case Memory::Abstract::Var::TYPE_BOOL:
-                    ABSTRACT_PTR_AS(BOOL, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos) ? true : false);
+                    ABSTRACT_PTR_AS(BOOL, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos) != 0);
                     break;
                 case Memory::Abstract::Var::TYPE_INT8:
                     ABSTRACT_PTR_AS(INT8, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));

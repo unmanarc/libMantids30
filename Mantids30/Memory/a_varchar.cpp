@@ -1,6 +1,6 @@
 #include "a_varchar.h"
 #include <Mantids30/Threads/lock_shared.h>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Memory::Abstract;
 

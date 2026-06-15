@@ -7,7 +7,7 @@ namespace Mantids30::Program::Logs {
 class RPCLog : public LogBase
 {
 public:
-    RPCLog(unsigned int _logMode = MODE_STANDARD);
+    RPCLog(const uint8_t &_logMode = static_cast<uint8_t>(Mode::STANDARD));
     static std::string truncateSessionId(std::string sSessionId);
 
     void logVA(eLogLevels logSeverity, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,

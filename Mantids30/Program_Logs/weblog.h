@@ -4,7 +4,7 @@
 #include <atomic>
 #include <fstream>
 #include <optional>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <thread>
 

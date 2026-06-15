@@ -7,7 +7,7 @@ using namespace Mantids30::File_Formats::Vars;
 File::File(const std::string &filePath)
 {
     this->m_filePath = filePath;
-    m_lastError = FILE_NO_ERROR;
+    m_lastError = VarFileError::FILE_NO_ERROR;
 }
 
 bool File::load()
@@ -15,7 +15,7 @@ bool File::load()
     std::ifstream varsfile(m_filePath);
     if (!varsfile.is_open())
     {
-        m_lastError = CANT_OPEN_FILE;
+        m_lastError = VarFileError::CANT_OPEN_FILE;
         return false;
     }
     std::string line;
@@ -25,7 +25,7 @@ bool File::load()
         std::pair<std::string, std::string> lineVars = getLineVars(line, &ok);
         if (!ok)
         {
-            m_lastError = INVALID_FILE_FORMAT;
+            m_lastError = VarFileError::INVALID_FILE_FORMAT;
             varsfile.close();
             return false;
         }
@@ -39,18 +39,18 @@ bool File::save()
 {
     std::ofstream varsfile(m_filePath, std::ofstream::out);
     if (!varsfile.is_open())
-    {
-        m_lastError = CANT_OPEN_FILE;
-        return false;
-    }
+        {
+            m_lastError = VarFileError::CANT_OPEN_FILE;
+            return false;
+        }
 
-    bool ok;
+        bool ok;
     for (const std::pair<std::string, std::string> &i : m_vars)
     {
         std::string value = getLineFromVars(i, &ok);
         if (!ok)
         {
-            m_lastError = INVALID_VARNAME_FORMAT;
+            m_lastError = VarFileError::INVALID_VARNAME_FORMAT;
             varsfile.close();
             return false;
         }
@@ -151,7 +151,7 @@ std::string File::getLineFromVars(const std::pair<std::string, std::string> &var
     return vars.first + ":" + vars.second;
 }
 
-eFileError File::getLastError() const
+VarFileError File::getLastError() const
 {
     return m_lastError;
 }

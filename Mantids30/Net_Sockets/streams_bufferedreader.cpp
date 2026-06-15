@@ -1,5 +1,5 @@
 #include "streams_bufferedreader.h"
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;

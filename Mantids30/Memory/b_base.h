@@ -4,7 +4,7 @@
 #include <list>
 #include <memory>
 #include <optional>
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
 
 #include "b_chunk.h"

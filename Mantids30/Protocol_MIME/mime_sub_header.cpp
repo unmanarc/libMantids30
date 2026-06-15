@@ -48,7 +48,7 @@ void MIME_Sub_Header::clear()
 
 bool MIME_Sub_Header::exist(const std::string &optionName) const
 {
-    return getOptionByName(optionName) != nullptr ? true : false;
+    return getOptionByName(optionName) != nullptr;
 }
 
 void MIME_Sub_Header::remove(const std::string &optionName)
@@ -155,7 +155,7 @@ uint64_t MIME_Sub_Header::getOptionAsUINT64(const std::string &varName, uint16_t
         optExist = &lOptExist;
     }
     std::shared_ptr<MIME_HeaderOption> opt = getOptionByName(varName);
-    *optExist = opt != nullptr ? true : false;
+    *optExist = opt != nullptr;
     if (*optExist)
     {
         r = strtoull(opt->getValue().c_str(), nullptr, base);

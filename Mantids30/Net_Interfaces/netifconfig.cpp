@@ -2,8 +2,8 @@
 #include <Mantids30/Memory/a_ipv4.h>
 
 #include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <unistd.h>
 
 #include <sys/types.h> /* See NOTES */

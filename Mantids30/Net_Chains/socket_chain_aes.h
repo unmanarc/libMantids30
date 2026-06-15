@@ -5,7 +5,7 @@
 #include <Mantids30/Net_Sockets/socket_stream.h>
 #include <openssl/evp.h>
 #include <random>
-#include <string.h>
+#include <cstring>
 
 namespace Mantids30::Network::Sockets::ChainProtocols {
 

@@ -11,10 +11,10 @@ class Logs
 {
 public:
     Logs() = default;
-    static std::shared_ptr<Mantids30::Program::Logs::AppLog> createInitLog(unsigned int logMode = Mantids30::Program::Logs::MODE_STANDARD);
-    static std::shared_ptr<Mantids30::Program::Logs::AppLog> createAppLog(const boost::property_tree::ptree &ptr, unsigned int logMode = Mantids30::Program::Logs::MODE_STANDARD);
-    static std::shared_ptr<Mantids30::Program::Logs::RPCLog> createRPCLog(const boost::property_tree::ptree &ptr, unsigned int logMode = Mantids30::Program::Logs::MODE_STANDARD);
-    static std::shared_ptr<Mantids30::Program::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog, const boost::property_tree::ptree &ptr);
+    static std::shared_ptr<Mantids30::Program::Logs::AppLog> createInitLog(uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
+    static std::shared_ptr<Mantids30::Program::Logs::AppLog> createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
+    static std::shared_ptr<Mantids30::Program::Logs::RPCLog> createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
+    static std::shared_ptr<Mantids30::Program::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog>& appLog, const boost::property_tree::ptree &ptr);
 };
 
 } // namespace Mantids30::Program::Config

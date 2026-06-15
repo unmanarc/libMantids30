@@ -119,11 +119,7 @@ bool StreamableJSON::setValue(const std::string &value)
     Mantids30::Helpers::JSONReader2 reader;
     m_strValue = value;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
-    if (!parsingSuccessful)
-    {
-        return false;
-    }
-    return true;
+    return parsingSuccessful;
 }
 
 void StreamableJSON::setMaxSize(const size_t &value)

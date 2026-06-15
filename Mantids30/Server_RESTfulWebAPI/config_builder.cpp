@@ -6,7 +6,7 @@
 
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
-#include <inttypes.h>
+#include <cinttypes>
 #include <memory>
 
 using namespace Mantids30;
@@ -39,12 +39,12 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 
     bool isTLS = (protocol == "TLS");
 
-    if (isTLS == false && (options & Mantids30::Program::Config::REST_ENGINE_MANDATORY_SSL))
+    if (!isTLS && (options & Mantids30::Program::Config::REST_ENGINE_MANDATORY_SSL))
     {
         appLog->log0(__func__, LEVEL_CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is required/mandatory for this service.");
         return nullptr;
     }
-    if (isTLS == true && (options & Mantids30::Program::Config::REST_ENGINE_NO_SSL))
+    if (isTLS && (options & Mantids30::Program::Config::REST_ENGINE_NO_SSL))
     {
         appLog->log0(__func__, LEVEL_CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is not available on this service.");
         return nullptr;

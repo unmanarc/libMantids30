@@ -12,7 +12,7 @@ class Engine : public Web::APIServerCore
 {
 public:
     Engine();
-    ~Engine();
+    ~Engine() = default;
 
     /**
      * @brief endpointsHandler RESTful endpoints per API Version. (version->endpoint handler)

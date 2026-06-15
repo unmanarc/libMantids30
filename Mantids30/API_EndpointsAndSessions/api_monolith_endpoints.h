@@ -16,14 +16,14 @@ class Endpoints : public Endpoints_Options
 {
 public:
     // Enumerations for endpoint validation and return codes
-    enum ValidationResult
+    enum class ValidationResult : std::uint8_t
     {
         VALIDATION_OK = 0x0,               // Endpoint is valid
         VALIDATION_ENDPOINTNOTFOUND = 0x1, // Endpoint not found
         VALIDATION_NOTAUTHORIZED = 0x2     // Not authorized to access the endpoint
     };
 
-    enum StatusCodess
+    enum class StatusCode : std::int16_t
     {
         ENDPOINT_RET_CODE_SUCCESS = 0,              // Success return code
         ENDPOINT_RET_CODE_UNAUTHENTICATED = -9994,  // User is unauthenticated
@@ -33,6 +33,7 @@ public:
         ENDPOINT_RET_CODE_SERVERMEMORYFULL = -9998, // Server memory is full
         ENDPOINT_RET_CODE_NOTFOUND = -9999          // Endpoint not found
     };
+
 
     struct MonolithAPIEndpointFunction
     {
@@ -87,7 +88,7 @@ public:
      * @param payloadOut Pointer to store the output JSON from the endpoint
      * @return int Return code indicating success or failure
      */
-    int invoke(std::shared_ptr<Sessions::Session> session, const std::string &endpointName, const json &payload, json *payloadOut);
+    [[nodiscard]] StatusCode invoke(const std::shared_ptr<Sessions::Session> &session, const std::string &endpointName, const json &payload, json *payloadOut);
 
     /**
      * @brief Validate endpoint requirements
@@ -99,7 +100,7 @@ public:
      * @param reasons Pointer to store reasons for validation failure, if any
      * @return ValidationResult Validation result code
      */
-    ValidationResult validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, json *reasons);
+    [[nodiscard]] ValidationResult validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, json *reasons);
 
     /**
      * @brief Get endpoints requirements map
@@ -108,7 +109,7 @@ public:
      * 
      * @return EndpointsRequirements_Map* Pointer to the endpoints requirements map
      */
-    EndpointsRequirements_Map *endpointsRequirements();
+    [[nodiscard]] EndpointsRequirements_Map *endpointsRequirements();
 
     /**
      * @brief Check if a endpoint requires an active session
@@ -118,7 +119,7 @@ public:
      * @param endpointName Name of the endpoint to check
      * @return bool True if active session is required, false otherwise
      */
-    bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
+    [[nodiscard]] bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
 
     /**
      * @brief Set CORS/Options configuration for a specific endpoint or globally
@@ -132,7 +133,7 @@ public:
      * @param endpointName The endpoint name to look up.
      * @return Pointer to the config, or nullptr if OPTIONS is not enabled.
      */
-    const OptionsHandlerConfig *getEndpointOptionsConfig(const std::string &endpointName) const;
+    [[nodiscard]] const OptionsHandlerConfig *getEndpointOptionsConfig(const std::string &endpointName) const;
 
 private:
     /////////////////////////////////

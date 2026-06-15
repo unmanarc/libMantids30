@@ -1,7 +1,7 @@
 #include "rpcclientimpl.h"
 #include "globals.h"
 #include <cstdint>
-#include <inttypes.h>
+#include <cinttypes>
 #include <memory>
 #include <optional>
 #include <string>
@@ -210,12 +210,12 @@ bool RPCClientImpl::retrieveConfigFromC2()
                 json ans;
                 ans["x"] = m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError);
 
-                if (rpcError["succeed"].asBool() == false)
+                if (!rpcError["succeed"].asBool())
                 {
                     LOG_APP->log0(__func__, Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s", rpcError["errorMessage"].asCString());
                 }
 
-                if (JSON_ASBOOL(ans, "x", false) == false)
+                if (!JSON_ASBOOL(ans, "x", false))
                 {
                     LOG_APP->log0(__func__, Logs::LEVEL_ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }

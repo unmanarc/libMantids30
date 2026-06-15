@@ -161,7 +161,7 @@ public:
         }
     }
 
-    bool hasError() const { return !(httpResponseCode >= 200 && httpResponseCode <= 299); }
+    bool hasError() const { return httpResponseCode < 200 || httpResponseCode > 299; }
     void setStatus(const Network::Protocols::HTTP::Status::Codes &httpResponseCode) { this->httpResponseCode = httpResponseCode; }
     void addHeader(const std::string &headerName, const std::string &headerValue) { httpExtraHeaders[headerName] = headerValue; }
 

@@ -5,7 +5,7 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 
 namespace Mantids30::Memory::Streams {
@@ -46,7 +46,7 @@ struct WriteStatus
 
     WriteStatus &operator+=(const ssize_t &x)
     {
-        if ((succeed == false || finished == true) && x >= 0)
+        if ((!succeed || finished) && x >= 0)
         {
             // you should not be writting anymore here.
             throw std::runtime_error("Trying to write into an already finished write object.");

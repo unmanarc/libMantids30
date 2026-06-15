@@ -2,7 +2,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#include <inttypes.h>
+#include <cinttypes>
 #include <string>
 #include <vector>
 

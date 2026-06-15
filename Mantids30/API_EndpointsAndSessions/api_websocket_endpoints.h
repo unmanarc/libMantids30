@@ -18,11 +18,11 @@ class Endpoints
 {
 public:
     /**
-     * @enum ErrorCodes
+     * @enum HandleResult
      *
      * @brief Enumeration for possible error codes.
      */
-    enum ErrorCodes
+    enum HandleResult
     {
         SUCCESS = 0,
         INVALID_EVENT_TYPE = -1,
@@ -32,7 +32,7 @@ public:
         INTERNAL_ERROR = -5
     };
 
-    enum SecurityOptions
+    enum Security
     {
         NO_AUTH = 0,
         REQUIRE_JWT_HEADER_AUTH = 1,
@@ -70,7 +70,7 @@ public:
      * @param securityParameters
      * @return
      */
-    Endpoints::ErrorCodes checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters);
+    Endpoints::HandleResult checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters);
 
     /**
      * @brief Handle WebSocket event and return the error code.
@@ -79,14 +79,14 @@ public:
      * @param parameters The WebSocket parameters.
      * @return The error code indicating the result of event handling.
      */
-    ErrorCodes handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content, WebSocket::WebSocketParameters &parameters);
+    HandleResult handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content, WebSocket::WebSocketParameters &parameters);
 
     /**
      * @brief getWebSocketEndpointByURI
      * @param uri
      * @return
      */
-    const WebSocket::Endpoint *getWebSocketEndpointByURI(const std::string &uri) const;
+    [[nodiscard]] const WebSocket::Endpoint *getWebSocketEndpointByURI(const std::string &uri) const;
 
 private:
     Config *config = nullptr;

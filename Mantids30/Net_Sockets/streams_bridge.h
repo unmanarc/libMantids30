@@ -4,7 +4,7 @@
 #include "streams_bridge_thread.h"
 
 #include <cstdint>
-#include <stdint.h>
+#include <cstdint>
 
 #include <atomic>
 #include <condition_variable>

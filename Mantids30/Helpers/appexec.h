@@ -4,7 +4,7 @@
 #include <poll.h>
 #include <set>
 #include <spawn.h>
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #include <string>

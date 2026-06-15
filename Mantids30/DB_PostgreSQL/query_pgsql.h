@@ -23,14 +23,14 @@ public:
     /**
      * @brief Query_PostgreSQL destructor.
      */
-    ~Query_PostgreSQL();
+    ~Query_PostgreSQL() override;
 
     /**
      * @brief exec Executes a SQL statement.
      * @param execType Type of execution (insert/select).
      * @return true if the query was executed successfully, false otherwise.
      */
-    bool exec(const ExecType &execType);
+    [[nodiscard]] bool exec(const ExecType &execType);
 
     /**
      * @brief psqlSetDatabaseConnector Sets the database connection handler.
@@ -42,7 +42,7 @@ public:
      * @brief psqlGetExecStatus Gets the execution status of the last query executed.
      * @return Execution status of the last query.
      */
-    ExecStatusType psqlGetExecStatus() const;
+    [[nodiscard]] ExecStatusType psqlGetExecStatus() const;
 
 protected:
     /**
@@ -51,19 +51,19 @@ protected:
      * @param recursion Whether the function is called recursively.
      * @return true if the query was executed successfully, false otherwise.
      */
-    bool exec0(const ExecType &execType, bool recursion);
+    bool exec0(const ExecType &execType, bool recursion) override;
 
     /**
      * @brief step0 Advances the query result to the next row.
      * @return true if there is a next row, false otherwise.
      */
-    bool step0();
+    bool step0() override;
 
     /**
      * @brief postBindInputVars Processes the input parameters after binding.
      * @return true if the input parameters are processed successfully, false otherwise.
      */
-    bool postBindInputVars();
+    bool postBindInputVars() override;
 
 private:
     std::vector<std::string> m_keysByPos; ///< Map of column names by position.

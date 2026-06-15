@@ -3,7 +3,7 @@
 #include <Mantids30/Memory/a_allvars.h>
 #include <memory>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 
 #include <stdexcept>
 
@@ -365,7 +365,7 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
                     return result2;
                 }
                 // ...
-                if (result2 == true)
+                if (result2)
                 {
                     throw std::runtime_error("how this can be true?.");
                 }

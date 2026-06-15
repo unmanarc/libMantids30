@@ -35,7 +35,7 @@ struct ClientDetails
      */
     std::string userAgent;
 
-    Json::Value toJSON() const
+    [[nodiscard]] Json::Value toJSON() const
     {
         Json::Value json;
         json["ip"] = ipAddress;

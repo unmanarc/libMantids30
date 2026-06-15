@@ -88,70 +88,70 @@ public:
 
         void setClaim(const std::string &name, const Json::Value &value);
 
-        std::string exportPayload() const;
+        [[nodiscard]] std::string exportPayload() const;
 
         bool decodePayload(const std::string &payload);
 
         // Getter functions for standard claims
-        std::string getIssuer() const;
+        [[nodiscard]] std::string getIssuer() const;
 
-        std::string getImpersonator() const;
+        [[nodiscard]] std::string getImpersonator() const;
 
-        std::string getSubject() const;
+        [[nodiscard]] std::string getSubject() const;
 
-        std::string getDomain() const;
+        [[nodiscard]] std::string getDomain() const;
 
-        std::string getAudience() const;
+        [[nodiscard]] std::string getAudience() const;
 
-        std::time_t getExpirationTime() const;
+        [[nodiscard]] std::time_t getExpirationTime() const;
 
-        std::time_t getNotBefore() const;
+        [[nodiscard]] std::time_t getNotBefore() const;
 
-        std::time_t getIssuedAt() const;
+        [[nodiscard]] std::time_t getIssuedAt() const;
 
-        std::string getJwtId() const;
+        [[nodiscard]] std::string getJwtId() const;
 
-        std::set<std::string> getAllScopes();
+        [[nodiscard]] std::set<std::string> getAllScopes();
 
-        Json::Value getAllScopesAsJSON();
+        [[nodiscard]] Json::Value getAllScopesAsJSON();
 
         void addScope(const std::string &scopeId);
 
-        bool hasScope(const std::string &scopeId) const;
+        [[nodiscard]] bool hasScope(const std::string &scopeId) const;
 
-        std::set<std::string> getAllRoles();
+        [[nodiscard]] std::set<std::string> getAllRoles();
 
-        Json::Value getAllRolesAsJSON();
+        [[nodiscard]] Json::Value getAllRolesAsJSON();
 
         void addRole(const std::string &roleId);
 
-        bool hasRole(const std::string &roleId) const;
+        [[nodiscard]] bool hasRole(const std::string &roleId) const;
 
-        std::map<std::string, Json::Value> getAllClaims();
+        [[nodiscard]] std::map<std::string, Json::Value> getAllClaims();
 
-        Json::Value getAllClaimsAsJSON();
+        [[nodiscard]] Json::Value getAllClaimsAsJSON();
 
-        bool isAdmin() const;
+        [[nodiscard]] bool isAdmin() const;
 
         // Getter function for custom claims
-        Json::Value getClaim(const std::string &name) const;
+        [[nodiscard]] Json::Value getClaim(const std::string &name) const;
 
         // Function to check if claim exist...
-        bool hasClaim(const std::string &name) const;
+        [[nodiscard]] bool hasClaim(const std::string &name) const;
 
         // Function to validate if the token is still valid and verified...
-        bool isValid() const;
+        [[nodiscard]] bool isValid() const;
 
         // Internal function to set the verified status...
         void setSignatureVerified(bool newVerified);
 
-        Json::Value *getClaimsPTR();
+        [[nodiscard]] Json::Value *getClaimsPTR();
 
         /**
          * @brief isRevoked Return true if the signature was revoked, false otherwise
          * @return
          */
-        bool isRevoked() const;
+        [[nodiscard]] bool isRevoked() const;
 
         /**
          * @brief setRevoked Set true if the signature was revoked
@@ -206,23 +206,21 @@ public:
         }
 
         // Cache functions:
-        bool checkToken(const std::string &payload);
+        [[nodiscard]] bool checkToken(const std::string &payload);
         void add(const std::string &payload);
         void evictCache();
 
         void setCacheMaxByteCount(std::size_t maxByteCount);
-        std::size_t getCacheMaxByteCount();
+        [[nodiscard]] std::size_t getCacheMaxByteCount();
         void clear();
 
-        bool isEnabled();
+        [[nodiscard]] bool isEnabled();
         void setEnabled(bool newEnabled);
 
     private:
         std::size_t m_cacheMaxByteCount = 1 * 1024 * 1024;
         std::size_t m_cacheCurrentByteCount = 0;
-
-        bool m_enabled;
-
+        bool m_enabled = false;
         std::unordered_map<std::string, bool> m_tokenCache;
         std::queue<std::string> m_cacheQueue;
         boost::shared_mutex m_cachedTokensMutex;
@@ -266,11 +264,11 @@ public:
 
         // Revokation functions...
         void addToRevocationList(const std::string &signature, std::time_t expirationTime);
-        bool isSignatureRevoked(const std::string &signature);
+        [[nodiscard]] bool isSignatureRevoked(const std::string &signature);
         void removeExpiredTokensFromRevocationList();
         void clear();
 
-        std::chrono::seconds garbageCollectorInterval() const;
+        [[nodiscard]] std::chrono::seconds garbageCollectorInterval() const;
         void setGarbageCollectorInterval(const std::chrono::seconds &newGarbageCollectorInterval);
 
     private:

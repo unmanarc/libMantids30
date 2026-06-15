@@ -97,10 +97,7 @@ public:
     {
         ~TaskParameters()
         {
-            if (extraTokenAuth)
-            {
-                delete[] extraTokenAuth;
-            }
+            delete[] extraTokenAuth;
         }
 
         std::shared_ptr<Sockets::Socket_Stream> streamBack = nullptr;
@@ -121,7 +118,7 @@ public:
     class Connection : public Mantids30::Threads::Safe::MapItem
     {
     public:
-        Connection() { terminated = false; }
+        Connection() = default;
 
         void *callbacks = nullptr;
 
@@ -143,10 +140,10 @@ public:
         std::map<uint64_t, uint8_t> executionStatus;
 
         // Pending Requests:
-        std::set<uint64_t> pendingRequests;
+        std::set<uint64_t> pendingRequests{0};
 
         // Finalization:
-        std::atomic<bool> terminated;
+        std::atomic<bool> terminated{false};
     };
 
     struct RPC3CallbackDefinitions
@@ -249,7 +246,7 @@ public:
          */
         bool ignoreSSLCertForSSO = false;
 
-        void setDefaultHandlers(std::shared_ptr<API::Monolith::Endpoints> x)
+        void setDefaultHandlers(const std::shared_ptr<API::Monolith::Endpoints>& x)
         {
             methodHandlers = x;
             defaultMethodsHandlers = x;
@@ -493,10 +490,10 @@ private:
             ELT_RET_INTERNALERROR = 500
         };
 
-        static void executeLocalTask(std::shared_ptr<void> taskData);
-        static void getSSOData(std::shared_ptr<void> taskData);
-        static void login(std::shared_ptr<void> taskData);
-        static void logout(std::shared_ptr<void> taskData);
+        static void executeLocalTask(const std::shared_ptr<void>& taskData);
+        static void getSSOData(const std::shared_ptr<void> & taskData);
+        static void login(const std::shared_ptr<void> &taskData);
+        static void logout(const std::shared_ptr<void> & taskData);
     };
 
     static void sendRPCAnswer(FastRPC3::TaskParameters *parameters, const std::string &answer, uint8_t executionStatus);

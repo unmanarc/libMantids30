@@ -29,7 +29,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string decodeFromBase64Obf(std::string const &sB64Buf, const uint64_t &seed = 0xAA12017BEA385A7B);
+    [[nodiscard]] static std::string decodeFromBase64Obf(std::string const &sB64Buf, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on binary data.
@@ -40,7 +40,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string encodeToBase64Obf(unsigned char const *buf, size_t count, const uint64_t &seed = 0xAA12017BEA385A7B);
+    [[nodiscard]] static std::string encodeToBase64Obf(unsigned char const *buf, size_t count, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on a string.
@@ -50,7 +50,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    static std::string encodeToBase64Obf(const std::string &buf, const uint64_t &seed = 0xAA12017BEA385A7B);
+    [[nodiscard]] static std::string encodeToBase64Obf(const std::string &buf, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Decodes a base64-encoded string to binary data.
@@ -64,7 +64,7 @@ public:
      * @return A shared pointer to a BinaryDataContainer object containing the decoded binary data. If decoding fails,
      *         an empty shared pointer is returned.
      */
-    static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string const &input, bool url = false);
+    [[nodiscard]] static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string const &input, bool url = false);
 
     /**
      * @brief Decodes a base64-encoded string.
@@ -77,7 +77,7 @@ public:
      *
      * @return The decoded string. If decoding fails, an empty string is returned.
      */
-    static std::string decodeFromBase64(std::string const &input, bool url = false);
+    [[nodiscard]] static std::string decodeFromBase64(std::string const &input, bool url = false);
 
     /**
      * @brief Decodes a base32-encoded string.
@@ -86,7 +86,7 @@ public:
      *
      * @return The decoded string.
      */
-    static std::string decodeFromBase32(const std::string &base32Value);
+    [[nodiscard]] static std::string decodeFromBase32(const std::string &base32Value);
     /**
      * @brief Performs a base64 encoding on a string.
      *
@@ -94,7 +94,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    static std::string encodeToBase64(const std::string &buf, bool url = false);
+    [[nodiscard]] static std::string encodeToBase64(const std::string &buf, bool url = false);
     /**
      * @brief Performs a base64 encoding on binary data.
      *
@@ -103,7 +103,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    static std::string encodeToBase64(unsigned char const *buf, size_t count, bool url = false);
+    [[nodiscard]] static std::string encodeToBase64(unsigned char const *buf, size_t count, bool url = false);
 
     /**
      * @brief Encodes a string for use in a URL.
@@ -113,7 +113,7 @@ public:
      *
      * @return The encoded URL string.
      */
-    static std::string toURL(const std::string &str, const URL_ENCODING_TYPE &urlEncodingType = STRICT_ENCODING);
+    [[nodiscard]] static std::string toURL(const std::string &str, const URL_ENCODING_TYPE &urlEncodingType = STRICT_ENCODING);
 
     /**
      * @brief Decodes a string that has been encoded for use in a URL.
@@ -122,7 +122,7 @@ public:
      *
      * @return The decoded string.
      */
-    static std::string fromURL(const std::string &urlEncodedStr);
+    [[nodiscard]] static std::string fromURL(const std::string &urlEncodedStr);
 
     /**
      * @brief Performs a hexadecimal encoding on binary data.
@@ -132,7 +132,7 @@ public:
      *
      * @return The hexadecimal-encoded string.
      */
-    static std::string toHex(const unsigned char *data, size_t len);
+    [[nodiscard]] static std::string toHex(const unsigned char *data, size_t len);
 
     /**
      * @brief Replaces hexadecimal codes within the content string with their corresponding ASCII characters.
@@ -182,7 +182,7 @@ public:
      *
      * @return The ASCII hexadecimal character corresponding to the nibble.
      */
-    static char toHexFrom4bitChar(char value, const char &part);
+    [[nodiscard]] static char toHexFrom4bitChar(char value, const char &part);
 
     /**
      * @brief Converts a hexadecimal character to its corresponding byte value.
@@ -191,7 +191,7 @@ public:
      *
      * @return The byte value corresponding to the hexadecimal character.
      */
-    static char hexToValue(const char &v);
+    [[nodiscard]] static char hexToValue(const char &v);
 
     /**
      * @brief Converts a pair of hexadecimal characters to an unsigned byte.
@@ -212,7 +212,7 @@ public:
      * unsigned char byte = hexPairToByte("1A"); // Returns the byte 0x1A
      * @endcode
      */
-    static unsigned char hexPairToByte(const char *bytes);
+    [[nodiscard]] static unsigned char hexPairToByte(const char *bytes);
 
 private:
     /**

@@ -41,35 +41,34 @@ public:
     };
 
     Var();
-    std::shared_ptr<Var> copy();
+    [[nodiscard]] std::shared_ptr<Var> copy();
     virtual ~Var() = default;
 
     // NON-THREADSAFE ACCESS TO THE RAW MEMORY:
-    virtual void *getDirectMemory();
+    [[nodiscard]] virtual void *getDirectMemory();
 
-    static std::shared_ptr<Var> makeAbstract(Type type, const std::string &defValue = "");
+    [[nodiscard]] static std::shared_ptr<Var> makeAbstract(Type type, const std::string &defValue = "");
 
-    virtual json toJSON();
-    ;
-    virtual bool fromJSON(const json &value);
+    [[nodiscard]] virtual json toJSON();
+    [[nodiscard]] virtual bool fromJSON(const json &value);
 
     /**
      * @brief toString Transform the Variable To a Readable string.
      * @return readable string
      */
-    virtual std::string toString();
+    [[nodiscard]] virtual std::string toString();
     /**
      * @brief fromString Set the Variable value from a readable string.
      * @param value readable string
      * @return true if accepted.
      */
-    virtual bool fromString(const std::string &value);
+    [[nodiscard]] virtual bool fromString(const std::string &value);
 
     // VAR TYPE:
-    Type getVarType() const;
+    [[nodiscard]] Type getVarType() const;
     void setVarType(const Type &value);
 
-    bool isNull();
+    [[nodiscard]] bool isNull();
     void setIsNull(bool newIsNull);
 
 protected:

@@ -1,11 +1,11 @@
 #include "streamable_object.h"
 #include "streamable_string.h"
 #include <optional>
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdio>
 
 #ifdef _WIN32
-#include <stdlib.h>
+#include <cstdlib>
 #endif
 
 using namespace Mantids30::Memory::Streams;

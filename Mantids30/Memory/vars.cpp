@@ -82,7 +82,7 @@ bool Vars::fromJSON(const Json::Value &json)
 
 bool Vars::exist(const std::string &varName)
 {
-    return getValue(varName) != nullptr ? true : false;
+    return getValue(varName) != nullptr;
 }
 
 std::string Vars::getStringValue(const std::string &varName)

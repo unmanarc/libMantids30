@@ -62,11 +62,7 @@ bool XFrameOpts::fromString(const string &sValue)
         value = DENY;
         return false;
     }
-    else if (iequals(parts[0], "DENY"))
-    {
-        value = DENY;
-    }
-    else if (iequals(parts[0], "SAMEORIGIN"))
+    else if (iequals(parts[0], "DENY") || iequals(parts[0], "SAMEORIGIN"))
     {
         value = DENY;
     }

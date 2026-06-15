@@ -36,7 +36,7 @@ public:
      *                 linux: network interface name (eg. tun100 or tun%d)
      * @return true if started.
      */
-    bool start(NetworkInterfaceConfiguration *netcfg = nullptr, const std::string &netIfaceName = "");
+    [[nodiscard]] bool start(NetworkInterfaceConfiguration *netcfg = nullptr, const std::string &netIfaceName = "");
     /**
      * @brief stop Stop the TAP Interface.
      */
@@ -47,12 +47,12 @@ public:
      * @brief getLastError Get the last error ocurred.
      * @return string with the last error ocurred.
      */
-    std::string getLastError() const;
+    [[nodiscard]] std::string getLastError() const;
     /**
      * @brief getInterfaceRealName Get the interface real name
      * @return in linux is the generated tun/tap device name, in windows is the CLSID introduced in start.
      */
-    std::string getInterfaceRealName() const;
+    [[nodiscard]] std::string getInterfaceRealName() const;
 
 #ifndef _WIN32
     // Linux specific functions:
@@ -61,24 +61,24 @@ public:
      * @param mode true for persistent tun/tap device (persist to application close)
      * @return true if succeed.
      */
-    bool setPersistentMode(bool mode) const;
+    [[nodiscard]] bool setPersistentMode(bool mode) const;
     /**
      * @brief setOwner Set the owner of the interface (security, use after start)
      * @param userName system username
      * @return true if interface changed owner
      */
-    bool setOwner(const char *userName) const;
+    [[nodiscard]] bool setOwner(const char *userName) const;
     /**
      * @brief setGroup Set the group of the interface (security, use after start)
      * @param groupName system group
      * @return true if interface changed group owner
      */
-    bool setGroup(const char *groupName) const;
+    [[nodiscard]] bool setGroup(const char *groupName) const;
     /**
      * @brief getInterfaceHandler Get Interface Handler (file descriptor)
      * @return file descriptor
      */
-    int getInterfaceHandler() const;
+    [[nodiscard]] int getInterfaceHandler() const;
 
     //////////////////////////////////////////////
     /**
@@ -87,46 +87,46 @@ public:
      * @param len packet len.
      * @return packet bytes written (must be packet len).
      */
-    ssize_t writePacket(const void *packet, unsigned int len);
+    [[nodiscard]] ssize_t writePacket(const void *packet, unsigned int len);
     /**
      * @brief readPacket Read Packet from interface (sync)
      * @param packet packet bytes.
      * @param len packet len.
      * @return packet bytes read.
      */
-    ssize_t readPacket(void *packet, unsigned int len) const;
+    [[nodiscard]] ssize_t readPacket(void *packet, unsigned int len) const;
 #else
     // Windows specific functions:
     /**
      * @brief getWinTapHandler Get Windows TAP Handler (internal purporse)
      * @return TAP Handler.
      */
-    HANDLE getWinTapHandler();
+    [[nodiscard]] HANDLE getWinTapHandler();
     /**
      * @brief getWinTapDevicePath Get Windows TAP Device Path
      * @return device path
      */
-    std::string getWinTapDevicePath() const;
+    [[nodiscard]] std::string getWinTapDevicePath() const;
     /**
      * @brief getWinTapAdapterIndex Get Windows Interface Adapter Index (useful for netsh)
      * @return integer of the index adapter.
      */
-    ULONG getWinTapAdapterIndex();
+    [[nodiscard]] ULONG getWinTapAdapterIndex();
     /**
      * @brief getWinTapVersion Get TAP-Windows6 Adapter Version.
      * @return version (maj,min,sub)
      */
-    WINTAP_VERSION getWinTapVersion();
+    [[nodiscard]] WINTAP_VERSION getWinTapVersion();
     /**
      * @brief getWinTapDeviceInfo Get TAP-Windows6 Device Information String.
      * @return Device Information String.
      */
-    std::string getWinTapDeviceInfo();
+    [[nodiscard]] std::string getWinTapDeviceInfo();
     /**
      * @brief getWinTapLogLine Get TAP-Windows6 Device Debug Information String.
      * @return Device Debug Information string.
      */
-    std::string getWinTapLogLine();
+    [[nodiscard]] std::string getWinTapLogLine();
 
     /**
      * @brief writePacket Write Packet to interface (sync)
@@ -134,14 +134,14 @@ public:
      * @param len packet len.
      * @return packet bytes written (must be packet len).
      */
-    DWORD writePacket(const void *packet, DWORD len);
+    [[nodiscard]] DWORD writePacket(const void *packet, DWORD len);
     /**
      * @brief readPacket Read Packet from interface (sync)
      * @param packet packet bytes.
      * @param len packet len.
      * @return packet bytes read.
      */
-    int readPacket(void *packet, DWORD len);
+    [[nodiscard]] int readPacket(void *packet, DWORD len);
 #endif
 
 private:

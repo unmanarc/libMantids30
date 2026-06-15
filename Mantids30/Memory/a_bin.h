@@ -3,7 +3,7 @@
 #include "a_var.h"
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Threads/mutex_shared.h>
-#include <string.h>
+#include <cstring>
 
 namespace Mantids30::Memory::Abstract {
 

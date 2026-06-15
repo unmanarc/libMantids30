@@ -7,12 +7,12 @@
 #include <syslog.h>
 #endif
 
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Program::Logs;
 using namespace std;
 
-LogBase::LogBase(unsigned int _logMode)
+LogBase::LogBase(const uint8_t &_logMode)
 {
     // variable initialization.
     m_logMode = _logMode;
@@ -59,17 +59,17 @@ void LogBase::setDebug(bool value)
 
 bool LogBase::isUsingSyslog() const
 {
-    return (m_logMode & MODE_SYSLOG) == MODE_SYSLOG;
+    return (m_logMode & static_cast<unsigned int>(Mode::SYSLOG)) == static_cast<unsigned int>(Mode::SYSLOG);
 }
 
 bool LogBase::isUsingStandardLog() const
 {
-    return (m_logMode & MODE_STANDARD) == MODE_STANDARD;
+    return (m_logMode & static_cast<unsigned int>(Mode::STANDARD)) == static_cast<unsigned int>(Mode::STANDARD);
 }
 
 bool LogBase::isUsingWindowsEventLog() const
 {
-    return (m_logMode & MODE_WINEVENTS) == MODE_WINEVENTS;
+    return (m_logMode & static_cast<unsigned int>(Mode::WINEVENTS)) == static_cast<unsigned int>(Mode::WINEVENTS);
 }
 
 void LogBase::printDate(FILE *fp) const

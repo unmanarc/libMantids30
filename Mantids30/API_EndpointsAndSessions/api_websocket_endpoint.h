@@ -56,14 +56,14 @@ public:
     WebSocketEventFunctionType sessionEndHandler = nullptr;
 
     // Public Methods:
-    size_t getActiveUserConnectionsCount(const std::string &userId) const;
-    bool sendJSONToConnectionID(const std::string &sessionId, const Json::Value &v) const;
-    bool sendJSONToUser(const std::string &userId, const Json::Value &v) const;
-    size_t sendJSONToSubscriptionTopic(const std::string &topicId, const Json::Value &v) const;
+    [[nodiscard]] size_t getActiveUserConnectionsCount(const std::string &userId) const;
+    [[nodiscard]] bool sendJSONToConnectionID(const std::string &sessionId, const Json::Value &v) const;
+    [[nodiscard]] bool sendJSONToUser(const std::string &userId, const Json::Value &v) const;
+    [[nodiscard]] size_t sendJSONToSubscriptionTopic(const std::string &topicId, const Json::Value &v) const;
 
     // User Functions:
-    bool joinTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
-    bool leaveTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
+    [[nodiscard]] bool joinTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
+    [[nodiscard]] bool leaveTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
 
 private:
     // Private Members:

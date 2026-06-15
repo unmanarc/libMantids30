@@ -1,9 +1,9 @@
 #include "application.h"
 
 // STD:
-#include <inttypes.h>
+#include <cinttypes>
 #include <signal.h>
-#include <stdio.h>
+#include <cstdio>
 
 #ifndef _WIN32
 #include <linux/limits.h>
@@ -22,7 +22,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 #include <Mantids30/Helpers/mem.h>

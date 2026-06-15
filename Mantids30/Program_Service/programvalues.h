@@ -1,7 +1,7 @@
 #pragma once
 
 #include <list>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Program::Values {

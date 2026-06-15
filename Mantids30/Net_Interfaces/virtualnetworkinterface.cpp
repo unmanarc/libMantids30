@@ -1,6 +1,6 @@
 #include "virtualnetworkinterface.h"
 
-#include <inttypes.h>
+#include <cinttypes>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -17,7 +17,7 @@
 #endif
 
 #include <fcntl.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 
 #include <Mantids30/Helpers/mem.h>

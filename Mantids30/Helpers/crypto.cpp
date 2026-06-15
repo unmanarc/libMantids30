@@ -6,7 +6,6 @@
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/ossl_typ.h>
-#include <openssl/sha.h>
 #include <optional>
 #include <sys/types.h>
 
@@ -38,7 +37,7 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
         // Initialize the encryption...
         if ((err = EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, derivedKey, salt)) == 1)
         {
-            if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL))
+            if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, nullptr))
             {
                 int len;
                 size_t cipherOutLength = 32;
@@ -120,7 +119,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
             // Initialize the encryption...
             if ((err = EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, derivedKey, salt)) == 1)
             {
-                if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, NULL))
+                if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_SET_IVLEN, 16, nullptr))
                 {
                     int len = -1;
                     if (EVP_DecryptUpdate(ctx, (unsigned char *) r->data, &len, static_cast<unsigned char *>(dec->data) + 32, dec->cur - 32) == 1 && len >= 0)
@@ -175,57 +174,62 @@ std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, co
 
 std::string Crypto::calcSHA1(const std::string &password)
 {
-    std::string r;
-    unsigned char buffer_sha2[SHA_DIGEST_LENGTH + 1];
-    SHA_CTX sha1;
-    SHA1_Init(&sha1);
-    SHA1_Update(&sha1, (const unsigned char *) password.c_str(), password.length());
-    SHA1_Final(buffer_sha2, &sha1);
-    return Encoders::toHex(buffer_sha2, SHA_DIGEST_LENGTH);
+    unsigned char buffer[EVP_MAX_MD_SIZE + 1];
+    unsigned int digestLen = 0;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha1(), nullptr);
+    EVP_DigestUpdate(ctx, (const unsigned char *) password.c_str(), password.length());
+    EVP_DigestFinal_ex(ctx, buffer, &digestLen);
+    EVP_MD_CTX_free(ctx);
+    return Encoders::toHex(buffer, digestLen);
 }
 
 std::string Crypto::calcSHA256(const std::string &password)
 {
-    std::string r;
-    unsigned char buffer_sha2[SHA256_DIGEST_LENGTH + 1];
-    SHA256_CTX sha2;
-    SHA256_Init(&sha2);
-    SHA256_Update(&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA256_Final(buffer_sha2, &sha2);
-    return Encoders::toHex(buffer_sha2, SHA256_DIGEST_LENGTH);
+    unsigned char buffer[EVP_MAX_MD_SIZE + 1];
+    unsigned int digestLen = 0;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+    EVP_DigestUpdate(ctx, (const unsigned char *) password.c_str(), password.length());
+    EVP_DigestFinal_ex(ctx, buffer, &digestLen);
+    EVP_MD_CTX_free(ctx);
+    return Encoders::toHex(buffer, digestLen);
 }
 
 std::string Crypto::calcSHA512(const std::string &password)
 {
-    std::string r;
-    unsigned char buffer_sha2[SHA512_DIGEST_LENGTH + 1];
-    SHA512_CTX sha2;
-    SHA512_Init(&sha2);
-    SHA512_Update(&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA512_Final(buffer_sha2, &sha2);
-    return Encoders::toHex(buffer_sha2, SHA512_DIGEST_LENGTH);
+    unsigned char buffer[EVP_MAX_MD_SIZE + 1];
+    unsigned int digestLen = 0;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha512(), nullptr);
+    EVP_DigestUpdate(ctx, (const unsigned char *) password.c_str(), password.length());
+    EVP_DigestFinal_ex(ctx, buffer, &digestLen);
+    EVP_MD_CTX_free(ctx);
+    return Encoders::toHex(buffer, digestLen);
 }
 
 std::string Crypto::calcSSHA256(const std::string &password, const unsigned char *ssalt)
 {
-    std::string r;
-    unsigned char buffer_sha2[SHA256_DIGEST_LENGTH + 1];
-    SHA256_CTX sha2;
-    SHA256_Init(&sha2);
-    SHA256_Update(&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA256_Update(&sha2, ssalt, 4);
-    SHA256_Final(buffer_sha2, &sha2);
-    return Encoders::toHex(buffer_sha2, SHA256_DIGEST_LENGTH);
+    unsigned char buffer[EVP_MAX_MD_SIZE + 1];
+    unsigned int digestLen = 0;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
+    EVP_DigestUpdate(ctx, (const unsigned char *) password.c_str(), password.length());
+    EVP_DigestUpdate(ctx, ssalt, 4);
+    EVP_DigestFinal_ex(ctx, buffer, &digestLen);
+    EVP_MD_CTX_free(ctx);
+    return Encoders::toHex(buffer, digestLen);
 }
 
 std::string Crypto::calcSSHA512(const std::string &password, const unsigned char *ssalt)
 {
-    std::string r;
-    unsigned char buffer_sha2[SHA512_DIGEST_LENGTH + 1];
-    SHA512_CTX sha2;
-    SHA512_Init(&sha2);
-    SHA512_Update(&sha2, (const unsigned char *) password.c_str(), password.length());
-    SHA512_Update(&sha2, ssalt, 4);
-    SHA512_Final(buffer_sha2, &sha2);
-    return Encoders::toHex(buffer_sha2, SHA512_DIGEST_LENGTH);
+    unsigned char buffer[EVP_MAX_MD_SIZE + 1];
+    unsigned int digestLen = 0;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha512(), nullptr);
+    EVP_DigestUpdate(ctx, (const unsigned char *) password.c_str(), password.length());
+    EVP_DigestUpdate(ctx, ssalt, 4);
+    EVP_DigestFinal_ex(ctx, buffer, &digestLen);
+    EVP_MD_CTX_free(ctx);
+    return Encoders::toHex(buffer, digestLen);
 }

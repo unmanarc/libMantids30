@@ -6,7 +6,7 @@
 #include <openssl/ssl.h>
 #include <openssl/tls1.h>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 
 using namespace std;
 using namespace Mantids30::Network::Sockets;

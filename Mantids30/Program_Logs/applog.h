@@ -14,7 +14,7 @@ public:
      * Class constructor.
      * @param _logMode Log mode (or combination)
      */
-    AppLog(unsigned int _logMode = MODE_STANDARD);
+    AppLog(const uint8_t & _logMode = static_cast<unsigned int>(Mode::STANDARD));
 
     /**
      * Log an application event with user and IP information and max out size.

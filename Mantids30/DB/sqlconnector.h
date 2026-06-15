@@ -41,21 +41,21 @@ public:
 
     virtual std::string getEscaped(const std::string &value) = 0;
 
-    std::string getLastSQLError() const;
+    [[nodiscard]] std::string getLastSQLError() const;
 
     //std::queue<std::string> getErrorsAndFlush();
 
-    std::string getDBHostname() const;
+    [[nodiscard]] std::string getDBHostname() const;
 
-    DatabaseCredentials getDBCredentialData() const;
+    [[nodiscard]] DatabaseCredentials getDBCredentialData() const;
 
-    DatabaseCredentials getDBFullCredentialData() const;
+    [[nodiscard]] DatabaseCredentials getDBFullCredentialData() const;
 
-    uint16_t getDBPort() const;
+    [[nodiscard]] uint16_t getDBPort() const;
 
-    std::string getDBFilePath() const;
+    [[nodiscard]] std::string getDBFilePath() const;
 
-    std::string getDBName() const;
+    [[nodiscard]] std::string getDBName() const;
 
     // TODO: Reconnector thread / Reconnection options.
 
@@ -77,7 +77,7 @@ public:
      */
     std::shared_ptr<Query> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
-    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    [[nodiscard]] bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
@@ -89,7 +89,7 @@ public:
      *       Each call to step() will populate resultVars with the current row's data.
      *       If no rows are found, step() will return false immediately.
      */
-    std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    [[nodiscard]] std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                    const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
@@ -102,7 +102,7 @@ public:
      *       If no rows are found, resultVars will remain in an undefined state.
      *       The method returns false if the query fails or returns more than one row.
      */
-    bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars);
+    [[nodiscard]] bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
@@ -115,7 +115,7 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    [[nodiscard]] std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                               const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);
@@ -124,7 +124,7 @@ public:
      * @brief getReconnectIntervalSeconds Get Sleep time in seconds between reconnections
      * @return Sleep time in seconds between reconnections
      */
-    uint32_t getReconnectIntervalSeconds() const;
+    [[nodiscard]] uint32_t getReconnectIntervalSeconds() const;
     /**
      * @brief setReconnectIntervalSeconds Set Sleep time in seconds between reconnections
      * @param newReconnectIntervalSeconds sleep time in seconds between reconnections
@@ -135,7 +135,7 @@ public:
      * @brief getMaxReconnectionAttempts Get Max reconnection attempts during a failed query
      * @return max reconnection attempts
      */
-    uint32_t getMaxReconnectionAttempts() const;
+    [[nodiscard]] uint32_t getMaxReconnectionAttempts() const;
     /**
      * @brief setMaxReconnectionAttempts Set Max reconnection attempts during a failed query
      * @param newMaxReconnectionAttempts max reconnection attempts during a query
@@ -146,7 +146,7 @@ public:
      * @brief getMaxQueryLockMilliseconds Get Max milliseconds to wait in query to adquire database lock
      * @return Max milliseconds to wait in query to adquire database lock (or 0 to wait indefinitely)
      */
-    uint64_t getMaxQueryLockMilliseconds() const;
+    [[nodiscard]] uint64_t getMaxQueryLockMilliseconds() const;
     /**
      * @brief setMaxQueryLockMilliseconds Set Max Milliseconds to wait in query to adquire database lock before failure
      * @param newMaxQueryLockMilliseconds Max milliseconds to wait in query to adquire database lock (or 0 to wait indefinitely)
@@ -162,7 +162,7 @@ public:
     *
     * @return true if exceptions are thrown on query failure, false otherwise.
     */
-    bool throwCPPErrorOnQueryFailure() const;
+    [[nodiscard]] bool throwCPPErrorOnQueryFailure() const;
 
     /**
     * @brief Sets the behavior for handling query failures in the database class.
@@ -177,7 +177,7 @@ public:
     */
     void setThrowCPPErrorOnQueryFailure(bool newThrowCPPErrorOnQueryFailure);
 
-    bool throwCPPErrorOnUniqueFailure() const;
+    [[nodiscard]] bool throwCPPErrorOnUniqueFailure() const;
 
     void setThrowCPPErrorOnUniqueFailure(bool newThrowCPPErrorOnUniqueFailure);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Mantids30/Helpers/mem.h>
-#include <string.h>
+#include <cstring>
 
 namespace Mantids30::Memory::Containers {
 
@@ -24,10 +24,7 @@ struct BinaryContainerChunk
      */
     void destroy()
     {
-        if (data)
-        {
-            delete[] data;
-        }
+        delete[] data;
         data = nullptr;
         size = 0;
     }
@@ -108,14 +105,14 @@ struct BinaryContainerChunk
      * @brief Offset of the next/following chunk.
      * @return Current Offset + Size of this container (absolute offset in bytes of the next chunk)
      */
-    size_t nextOffset() const { return size + offset; }
+    [[nodiscard]] size_t nextOffset() const { return size + offset; }
 
     /**
      * @brief Ask if some absolute offset belongs to this chunk.
      * @param l_offset requested absolute offset in bytes.
      * @return true if the requested offset is on this chunk
      */
-    bool containsOffset(const size_t &l_offset) { return (l_offset >= offset && l_offset < nextOffset()); }
+    [[nodiscard]] bool containsOffset(const size_t &l_offset) const { return (l_offset >= offset && l_offset < nextOffset()); }
 
     /**
      * @brief Move the chunk to some specific offset for manipulation

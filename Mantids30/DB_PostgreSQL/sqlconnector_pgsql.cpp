@@ -1,6 +1,6 @@
 #include "sqlconnector_pgsql.h"
 #include <Mantids30/Memory/a_string.h>
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
 using namespace Mantids30::Database;
 

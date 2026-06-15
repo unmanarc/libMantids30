@@ -196,7 +196,7 @@ HTTP::HTTPv1_Client::PostMIMERequest HTTP::HTTPv1_Client::prepareRequestAsPostMI
     setClientRequest(hostName, uriPath);
 
     clientRequest.requestLine.setHTTPMethod("POST");
-    clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_MIME);
+    clientRequest.content.setContainerType(HTTP::Content::ContentType::MIME);
 
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
     req.postVars = clientRequest.content.getMultiPartVars();
@@ -210,7 +210,7 @@ HTTP::HTTPv1_Client::PostURLRequest HTTP::HTTPv1_Client::prepareRequestAsPostURL
 
     setClientRequest(hostName, uriPath);
     clientRequest.requestLine.setHTTPMethod("POST");
-    clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_URL);
+    clientRequest.content.setContainerType(HTTP::Content::ContentType::URL);
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
     req.postVars = clientRequest.content.getUrlPostVars();
 

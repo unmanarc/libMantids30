@@ -1,6 +1,6 @@
 #include "common_content_chunked_subparser.h"
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;

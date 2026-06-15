@@ -28,12 +28,7 @@ bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::st
 {
     m_query = value;
 
-    if (!bindInputVars(vars))
-    {
-        return false;
-    }
-
-    return true;
+    return bindInputVars(vars);
 }
 
 bool Query::bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)

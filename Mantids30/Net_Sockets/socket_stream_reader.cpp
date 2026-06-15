@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #endif
 #include <ctgmath>
-#include <string.h>
+#include <cstring>
 
 #if __BIG_ENDIAN__
 #define htonll(x) (x)

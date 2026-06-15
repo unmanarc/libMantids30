@@ -2,11 +2,11 @@
 
 #include <chrono>
 #include <fcntl.h>
-#include <inttypes.h>
+#include <cinttypes>
 #include <openssl/bio.h>
 #include <signal.h>
 #include <stdexcept>
-#include <string.h>
+#include <cstring>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -687,11 +687,11 @@ int Socket::iShutdown(int mode)
     }
 
     // Already shutted down:
-    if (m_shutdownProtocolOnRead == true)
+    if (m_shutdownProtocolOnRead)
     {
         rd_to_shutdown = false;
     }
-    if (m_shutdownProtocolOnWrite == true)
+    if (m_shutdownProtocolOnWrite)
     {
         wr_to_shutdown = false;
     }

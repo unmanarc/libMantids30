@@ -32,22 +32,12 @@ bool AtomicExpression::compile(std::string expr)
     }
     this->m_expr = expr;
 
-    if (substractExpressions("^IS_EQUAL\\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_ISEQUAL))
-    {
-    }
-    else if (substractExpressions("^REGEX_MATCH\\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_REGEXMATCH))
-    {
-    }
-    else if (substractExpressions("^CONTAINS\\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_CONTAINS))
-    {
-    }
-    else if (substractExpressions("^STARTS_WITH\\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_STARTSWITH))
-    {
-    }
-    else if (substractExpressions("^ENDS_WITH\\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_ENDSWITH))
-    {
-    }
-    else if (substractExpressions("^IS_NULL\\((?<RIGHT_EXPR>[^\\)]+)\\)$", EVAL_OPERATOR_ISNULL))
+    if (substractExpressions(R"(^IS_EQUAL\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ISEQUAL)
+        || substractExpressions(R"(^REGEX_MATCH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_REGEXMATCH)
+        || substractExpressions(R"(^CONTAINS\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_CONTAINS)
+        || substractExpressions(R"(^STARTS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_STARTSWITH)
+        || substractExpressions(R"(^ENDS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ENDSWITH)
+        || substractExpressions(R"(^IS_NULL\((?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ISNULL))
     {
     }
     else

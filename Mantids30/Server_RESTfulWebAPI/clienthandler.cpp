@@ -57,26 +57,26 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
     securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
     securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
 
-    API::RESTful::Endpoints::ErrorCodes result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, inputParameters, currentScopes, isAdmin, securityParameters, &apiReturn);
+    API::RESTful::Endpoints::HandleResult result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, inputParameters, currentScopes, isAdmin, securityParameters, &apiReturn);
 
     switch (result)
     {
-    case API::RESTful::Endpoints::SUCCESS:
+    case API::RESTful::Endpoints::HandleResult::SUCCESS:
         log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "API REST Endpoint Executed {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::Endpoints::INVALID_METHOD_MODE:
+    case API::RESTful::Endpoints::HandleResult::INVALID_METHOD_MODE:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Endpoint Mode {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::Endpoints::RESOURCE_NOT_FOUND:
+    case API::RESTful::Endpoints::HandleResult::RESOURCE_NOT_FOUND:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Endpoint Not Found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::Endpoints::AUTHENTICATION_REQUIRED:
+    case API::RESTful::Endpoints::HandleResult::AUTHENTICATION_REQUIRED:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::Endpoints::INVALID_SCOPE:
+    case API::RESTful::Endpoints::HandleResult::INVALID_SCOPE:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
-    case API::RESTful::Endpoints::INTERNAL_ERROR:
+    case API::RESTful::Endpoints::HandleResult::INTERNAL_ERROR:
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Internal Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     default:

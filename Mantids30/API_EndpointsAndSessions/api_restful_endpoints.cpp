@@ -7,35 +7,35 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
 using namespace API::RESTful;
 
-bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const uint32_t &SecurityOptions, const std::set<std::string> requiredScopes, void *context,
+bool Endpoints::addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const Security &securityOptions, const std::set<std::string>& requiredScopes, void *context,
                             APIEndpointFunctionType endpointDefinition)
 {
     RESTfulAPIEndpointFullDefinition def;
     def.endpointDefinition = endpointDefinition;
     def.context = context;
-    def.security.requireJWTHeaderAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_HEADER_AUTH;
-    def.security.requireJWTCookieAuthentication = SecurityOptions & Endpoints::SecurityOptions::REQUIRE_JWT_COOKIE_AUTH;
+    def.security.requireJWTHeaderAuthentication = (securityOptions & Endpoints::Security::REQUIRE_JWT_HEADER_AUTH);
+    def.security.requireJWTCookieAuthentication = (securityOptions & Endpoints::Security::REQUIRE_JWT_COOKIE_AUTH);
     def.security.requiredScopes = requiredScopes;
     return addEndpoint(httpMethodType, endpointPath, def);
 }
 
-bool Endpoints::addEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition)
+bool Endpoints::addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition)
 {
     switch (httpMethodType)
     {
-    case GET:
+    case HTTPMethod::GET:
         m_endpointsGET[endpointPath] = apiEndpointFullDefinition;
         break;
-    case POST:
+    case HTTPMethod::POST:
         m_endpointsPOST[endpointPath] = apiEndpointFullDefinition;
         break;
-    case PUT:
+    case HTTPMethod::PUT:
         m_endpointsPUT[endpointPath] = apiEndpointFullDefinition;
         break;
-    case DELETE:
+    case HTTPMethod::DELETE:
         m_endpointsDELETE[endpointPath] = apiEndpointFullDefinition;
         break;
-    case PATCH:
+    case HTTPMethod::PATCH:
         m_endpointsPATCH[endpointPath] = apiEndpointFullDefinition;
         break;
     default:
@@ -54,7 +54,7 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const RequestParameters 
     return clientDetails;
 }
 
-Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+Endpoints::HandleResult Endpoints::handleEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
                                                 const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse)
 {
     RESTfulAPIEndpointFullDefinition endpointFullDefinition;
@@ -62,35 +62,35 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
 
     switch (httpMethodType)
     {
-    case GET:
+    case HTTPMethod::GET:
         it = m_endpointsGET.find(endpointPath);
         if (it != m_endpointsGET.end())
         {
             endpointFullDefinition = it->second;
         }
         break;
-    case POST:
+    case HTTPMethod::POST:
         it = m_endpointsPOST.find(endpointPath);
         if (it != m_endpointsPOST.end())
         {
             endpointFullDefinition = it->second;
         }
         break;
-    case PUT:
+    case HTTPMethod::PUT:
         it = m_endpointsPUT.find(endpointPath);
         if (it != m_endpointsPUT.end())
         {
             endpointFullDefinition = it->second;
         }
         break;
-    case DELETE:
+    case HTTPMethod::DELETE:
         it = m_endpointsDELETE.find(endpointPath);
         if (it != m_endpointsDELETE.end())
         {
             endpointFullDefinition = it->second;
         }
         break;
-    case PATCH:
+    case HTTPMethod::PATCH:
         it = m_endpointsPATCH.find(endpointPath);
         if (it != m_endpointsPATCH.end())
         {
@@ -102,7 +102,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         {
             apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid Method Mode");
         }
-        return INVALID_METHOD_MODE;
+        return HandleResult::INVALID_METHOD_MODE;
     }
 
     if (endpointFullDefinition.endpointDefinition == nullptr)
@@ -111,7 +111,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         {
             apiResponse->setError(HTTP::Status::S_404_NOT_FOUND, "invalid_invokation", "Resource not found");
         }
-        return RESOURCE_NOT_FOUND;
+        return HandleResult::RESOURCE_NOT_FOUND;
     }
 
     if (endpointFullDefinition.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
@@ -120,7 +120,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         {
             apiResponse->setError(HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Header Required");
         }
-        return AUTHENTICATION_REQUIRED;
+        return HandleResult::AUTHENTICATION_REQUIRED;
     }
 
     if (endpointFullDefinition.security.requireJWTCookieAuthentication && !securityParameters.haveJWTAuthCookie)
@@ -129,7 +129,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         {
             apiResponse->setError(HTTP::Status::S_403_FORBIDDEN, "invalid_invokation", "JWT Authentication Cookie Required");
         }
-        return AUTHENTICATION_REQUIRED;
+        return HandleResult::AUTHENTICATION_REQUIRED;
     }
 
     //authMode.haveGenericCSRFToken = !m_clientRequest.getCookie("GenCSRFToken").empty() &&  == m_clientRequest.getCookie("GenCSRFToken");
@@ -160,7 +160,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
                 {
                     apiResponse->setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_invokation", "Invalid Scope");
                 }
-                return INVALID_SCOPE;
+                return HandleResult::INVALID_SCOPE;
             }
         }
     }
@@ -181,7 +181,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
             {
                 // Bad parsing... (should be JSON or empty)
                 apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during GET");
-                return INTERNAL_ERROR;
+                return HandleResult::INTERNAL_ERROR;
             }
             else
             {
@@ -190,11 +190,11 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         }
         else
         {
-            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
+            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::ContentType::JSON)
             {
                 // Bad parsing... (should be parsed as JSON...)
                 apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during POST");
-                return INTERNAL_ERROR;
+                return HandleResult::INTERNAL_ERROR;
             }
         }
     }
@@ -225,7 +225,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         *apiResponse = endpointFullDefinition.endpointDefinition(endpointFullDefinition.context, // Context
                                                                  inputParameters,                // Parameters from the RESTful request in JSON format
                                                                  clientDetails);
-        return SUCCESS;
+        return HandleResult::SUCCESS;
     }
 
     if (apiResponse != nullptr)
@@ -233,33 +233,33 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const HTTPMethodType &httpMethod
         apiResponse->setError(HTTP::Status::S_500_INTERNAL_SERVER_ERROR, "invalid_invokation", "Internal error");
     }
 
-    return INTERNAL_ERROR;
+    return HandleResult::INTERNAL_ERROR;
 }
 
-Endpoints::ErrorCodes Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
+Endpoints::HandleResult Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
                                                 bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut)
 {
-    HTTPMethodType mode;
+    HTTPMethod mode;
 
     if (httpMethodType == "GET")
     {
-        mode = GET;
+        mode = HTTPMethod::GET;
     }
     else if (httpMethodType == "POST")
     {
-        mode = POST;
+        mode = HTTPMethod::POST;
     }
     else if (httpMethodType == "PUT")
     {
-        mode = PUT;
+        mode = HTTPMethod::PUT;
     }
     else if (httpMethodType == "DELETE")
     {
-        mode = DELETE;
+        mode = HTTPMethod::DELETE;
     }
     else if (httpMethodType == "PATCH")
     {
-        mode = PATCH;
+        mode = HTTPMethod::PATCH;
     }
     else
     {
@@ -267,7 +267,7 @@ Endpoints::ErrorCodes Endpoints::handleEndpoint(const std::string &httpMethodTyp
         {
             payloadOut->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Invalid method mode string");
         }
-        return INVALID_METHOD_MODE;
+        return HandleResult::INVALID_METHOD_MODE;
     }
 
     return handleEndpoint(mode, endpointPath, inputParameters, currentScopes, isAdmin, securityParameters, payloadOut);

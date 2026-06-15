@@ -45,12 +45,7 @@ bool INT8::fromString(const std::string &value)
         return true;
     }
     this->m_value = static_cast<int8_t>(strtol(value.c_str(), nullptr, 10));
-    if (value != "0" && this->m_value == 0)
-    {
-        return false;
-    }
-
-    return true;
+    return !(value != "0" && this->m_value == 0);
 }
 std::shared_ptr<Var> INT8::protectedCopy()
 {

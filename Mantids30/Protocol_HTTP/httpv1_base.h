@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <netinet/in.h>
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #include "common_content.h"
@@ -133,7 +133,7 @@ public:
             else
             {
                 // Other methods use the body content.
-                if (content.getContainerType() == HTTP::Content::CONTENT_TYPE_JSON)
+                if (content.getContainerType() == HTTP::Content::ContentType::JSON)
                 {
                     return content.getJSONVars();
                 }

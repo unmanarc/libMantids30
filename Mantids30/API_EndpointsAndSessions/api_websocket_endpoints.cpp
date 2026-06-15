@@ -75,7 +75,7 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
     return true;
 }
 
-Endpoints::ErrorCodes Endpoints::checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters)
+Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters)
 {
     it = m_endpoints.find(endpointPath);
     if (it == m_endpoints.end())
@@ -125,7 +125,7 @@ const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) con
     return nullptr;
 }
 
-Endpoints::ErrorCodes Endpoints::handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
                                              WebSocket::WebSocketParameters &parameters)
 {
     if (it == m_endpoints.end())

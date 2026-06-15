@@ -268,7 +268,7 @@ std::shared_ptr<void> FastRPC1::getOverwriteObject() const
     return m_overwriteContext;
 }
 
-void FastRPC1::setOverwriteObject(std::shared_ptr<void> newOverwriteObject)
+void FastRPC1::setOverwriteObject(const std::shared_ptr<void> & newOverwriteObject)
 {
     m_overwriteContext = newOverwriteObject;
 }
@@ -377,7 +377,7 @@ int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream> stream, 
     return ret;
 }
 
-void FastRPC1::executeRPCTask(std::shared_ptr<void> taskData)
+void FastRPC1::executeRPCTask(const std::shared_ptr<void> & taskData)
 {
     FastRPC1::ThreadParameters *params = (FastRPC1::ThreadParameters *) (taskData.get());
 

@@ -1,6 +1,6 @@
 #include "streamable_string.h"
 #include <optional>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Memory::Streams;
 

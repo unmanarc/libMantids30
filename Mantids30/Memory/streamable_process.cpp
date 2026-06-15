@@ -2,7 +2,7 @@
 #include <optional>
 
 #ifndef _WIN32
-#include <string.h>
+#include <cstring>
 
 Mantids30::Memory::Streams::StreamableProcess::StreamableProcess(Helpers::AppSpawn *spawner)
 {

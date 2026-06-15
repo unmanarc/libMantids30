@@ -4,7 +4,7 @@
 
 #include <limits>
 #include <stdexcept>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Network::Sockets {
@@ -55,45 +55,45 @@ public:
     template<typename T>
     bool writeBlockEx(const void *data, const T &datalen)
     {
+        static_assert(sizeof(T) == 1 || sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8, "Unsupported length variable size");
+
         bool wr = false;
 
-        if (sizeof(T) == 1 && !(wr = writeU8(datalen)))
+        if constexpr (sizeof(T) == 1)
         {
-            return false;
+            wr = writeU8(datalen);
         }
-        else if (sizeof(T) == 2 && !(wr = writeU16(datalen)))
+        else if constexpr (sizeof(T) == 2)
         {
-            return false;
+            wr = writeU16(datalen);
         }
-        else if (sizeof(T) == 4 && !(wr = writeU32(datalen)))
+        else if constexpr (sizeof(T) == 4)
         {
-            return false;
+            wr = writeU32(datalen);
         }
-        else if (sizeof(T) == 8 && !(wr = writeU64(datalen)))
+        else if constexpr (sizeof(T) == 8)
+        {
+            wr = writeU64(datalen);
+        }
+
+        if (!wr)
         {
             return false;
         }
 
-        if (!wr) // sizeof T Not supported
-        {
-            throw std::runtime_error("Code Error: writting block with invalid lenght variable size.");
-            writeDeSync();
-            return false;
-        }
-
-        if (!datalen)
+        if (datalen == 0)
         {
             return true;
         }
 
-        bool r = (writeFull(data, datalen));
+        const bool ok = writeFull(data, datalen);
 
-        if (!r)
+        if (!ok)
         {
             writeDeSync();
         }
 
-        return r;
+        return ok;
     }
 
     template<typename T>

@@ -36,14 +36,7 @@ std::string BOOL::toString()
 bool BOOL::fromString(const std::string &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-    if (value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T")
-    {
-        this->m_value = true;
-    }
-    else
-    {
-        this->m_value = false;
-    }
+    this->m_value = value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T";
     return true;
 }
 

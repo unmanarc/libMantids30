@@ -5,7 +5,7 @@
 #include <iostream>
 #include <locale>
 #include <sstream>
-#include <string.h>
+#include <cstring>
 
 using namespace Mantids30::Network::Protocols;
 

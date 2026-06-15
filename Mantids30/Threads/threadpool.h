@@ -28,7 +28,7 @@ public:
 
         bool isNull() const { return task == nullptr && data == nullptr; }
 
-        void (*task)(std::shared_ptr<void>);
+        void (*task)(const std::shared_ptr<void> &);
         std::shared_ptr<void> data;
     };
 
@@ -64,7 +64,7 @@ public:
      * @param priority value between (0-1] to determine how many queues are available for insertion
      * @return true if inserted, false if timed out or during stop
      */
-    bool pushTask(void (*task)(std::shared_ptr<void>), std::shared_ptr<void> taskData, uint32_t timeoutMS = static_cast<uint32_t>(-1), const float &priority = 0.5, const std::string &key = "");
+    bool pushTask(void (*task)(const std::shared_ptr<void> &), std::shared_ptr<void> taskData, uint32_t timeoutMS = static_cast<uint32_t>(-1), const float &priority = 0.5, const std::string &key = "");
     /**
      * @brief popTask function used by thread processor
      * @return task

@@ -252,7 +252,7 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
     {
         params->doneSharedMutex->lockShared();
 
-        void (*currentTask)(std::shared_ptr<void>) = LocalRPCTasks::executeLocalTask;
+        void (*currentTask)(const std::shared_ptr<void> &) = LocalRPCTasks::executeLocalTask;
 
         if (params->methodName == "SESSION.LOGIN")
         {

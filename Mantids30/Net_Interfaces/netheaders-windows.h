@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#include <stdint.h>
+#include <cstdint>
 
 ////////// derived from linux/icmp.h //////////
 #define ICMP_ECHOREPLY 0

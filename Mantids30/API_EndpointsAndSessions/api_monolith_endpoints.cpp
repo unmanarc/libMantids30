@@ -26,12 +26,15 @@ bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
     return false; // Endpoint with given name already exists, cannot add
 }
 
-int Endpoints::invoke(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, const json &payload, json *payloadOut)
+Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Sessions::Session> &session,
+                      const std::string &endpointName,
+                      const json &payload,
+                      json *payloadOut)
 {
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
     {
-        return ENDPOINT_RET_CODE_NOTFOUND; // Endpoint not found, return error code
+        return StatusCode::ENDPOINT_RET_CODE_NOTFOUND; // Endpoint not found, return error code
     }
     else
     {
@@ -44,18 +47,18 @@ int Endpoints::invoke(std::shared_ptr<Mantids30::Sessions::Session> session, con
             session->updateLastActivity();
         }
 
-        return ENDPOINT_RET_CODE_SUCCESS; // Endpoint invoked successfully, return success code
+        return StatusCode::ENDPOINT_RET_CODE_SUCCESS; // Endpoint invoked successfully, return success code
     }
 }
 
-Endpoints::ValidationResult Endpoints::validateEndpointRequirements(std::shared_ptr<Mantids30::Sessions::Session> session, const std::string &endpointName, json *reasons)
+Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session>& session, const std::string &endpointName, json *reasons)
 {
     std::set<std::string> scopesLeft, rolesLeft;
 
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
     {
-        return VALIDATION_ENDPOINTNOTFOUND; // Endpoint not found, return validation code indicating this
+        return ValidationResult::VALIDATION_ENDPOINTNOTFOUND; // Endpoint not found, return validation code indicating this
     }
 
     // Checks if an active session is required for the specified endpoint and validates it
@@ -63,14 +66,14 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(std::shared_
     {
         if (!session)
         {
-            return VALIDATION_NOTAUTHORIZED; // No session provided but one is required, return unauthorized code
+            return ValidationResult::VALIDATION_NOTAUTHORIZED; // No session provided but one is required, return unauthorized code
         }
     }
 
     // Validates whether the session meets the roles and scopes requirements for the endpoint
     if (m_endpointsScopes.validateEndpoint(session, endpointName, rolesLeft, scopesLeft))
     {
-        return VALIDATION_OK; // All requirements met, return validation code indicating success
+        return ValidationResult::VALIDATION_OK; // All requirements met, return validation code indicating success
     }
     else
     {
@@ -78,7 +81,7 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(std::shared_
         (*reasons)["rolesLeft"] = Helpers::setToJSON(rolesLeft);
         (*reasons)["scopesLeft"] = Helpers::setToJSON(scopesLeft);
 
-        return VALIDATION_NOTAUTHORIZED; // Requirements not met, return unauthorized code
+        return ValidationResult::VALIDATION_NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }
 }
 

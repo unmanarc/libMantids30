@@ -24,7 +24,7 @@ void RPCClientApplication::_shutdown()
     rpcShutdown();
 }
 
-void RPCClientApplication::_initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments)
+void RPCClientApplication::_initvars(int argc, char *argv[], Arguments::GlobalArguments *globalArguments)
 {
     // init program vars.
     globalArguments->setInifiniteWaitAtEnd(true);
@@ -48,7 +48,7 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Mantids30::Program:
     globalArguments->addCommandLineOption("Encoding", 0, "encode", "Encode Configuration String", "", Mantids30::Memory::Abstract::Var::TYPE_STRING);
 }
 
-bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments)
+bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArguments *globalArguments)
 {
     if (!globalArguments->getCommandLineOptionValue("encode")->toString().empty())
     {
@@ -76,9 +76,9 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
                 configPath = configDir + "/config.ini";
 #endif
     // process config here.
-    unsigned int logMode = Mantids30::Program::Logs::MODE_STANDARD;
+    uint8_t logMode = static_cast<uint8_t>(Logs::Mode::STANDARD);
 
-    Logs::AppLog initLog(Mantids30::Program::Logs::MODE_STANDARD);
+    Logs::AppLog initLog(static_cast<uint8_t>(Logs::Mode::STANDARD));
     initLog.enableEmptyFieldLogging = true;
     initLog.enableAttributeNameLogging = false;
     initLog.moduleFieldMinWidth = 36;
@@ -111,7 +111,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     // Set Config:
     if (!access(configPath.c_str(), R_OK))
     {
-        boost::property_tree::ini_parser::read_ini(configPath.c_str(), pMainConfig);
+        boost::property_tree::ini_parser::read_ini(configPath, pMainConfig);
     }
     else
     {
@@ -126,7 +126,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     // Use syslog option:
     if (Globals::getLC_LogsUsingSyslog())
     {
-        logMode |= Mantids30::Program::Logs::MODE_SYSLOG;
+        logMode |= static_cast<uint8_t>(Logs::Mode::SYSLOG);
     }
     // Applog instance
     Globals::m_appLog = std::make_shared<Logs::AppLog>(logMode);
@@ -147,14 +147,14 @@ bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Program::A
     return rpcConfig(argc, argv, globalArguments);
 }
 
-int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments)
+int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArguments *globalArguments)
 {
     std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
 
     bool cont = true;
 
     // Check keys:
-    if (1)
+    if (true)
     {
         Network::Sockets::Socket_TLS sock;
 

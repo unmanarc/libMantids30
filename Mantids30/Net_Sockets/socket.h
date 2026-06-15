@@ -11,7 +11,7 @@
 #define SHUT_RDWR SD_BOTH
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <unistd.h>
 
 #include <atomic>
