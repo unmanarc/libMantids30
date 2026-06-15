@@ -19,27 +19,28 @@ namespace Mantids30::Memory::Streams {
 class SubParser
 {
 public:
-    enum ParseStatus
+    enum class ParseResult : uint8_t
     {
-        PARSE_ERROR,
-        PARSE_GET_MORE_DATA,
-        PARSE_GOTO_NEXT_SUBPARSER
-        // TODO: PARSE_STAT_NEXT_MAINPARSER
+        ERROR,
+        GET_MORE_DATA,
+        GOTO_NEXT_SUBPARSER
+        // TODO: ParseResult::STAT_NEXT_MAINPARSER
     };
 
-    enum ParseMode
+    enum class ParseStrategy : uint8_t
     {
-        PARSE_MODE_DELIMITER,        // wait for delimiter
-        PARSE_MODE_SIZE,             // wait for size
-        PARSE_MODE_VALIDATOR,        // wait for validation (TODO)
-        PARSE_MODE_CONNECTION_END,   // wait for connection end
-        PARSE_MODE_DIRECT,           // don't wait, just parse.
-        PARSE_MODE_DIRECT_DELIMITER, // parse direct until multi-delimiter (// TODO:)
-        PARSE_MODE_MULTIDELIMITER    //,       // wait for any of those delimiters
-                                     //        PARSE_MODE_FREEPARSER             // TODO
+        DELIMITER,        // wait for delimiter
+        SIZE,             // wait for size
+        VALIDATOR,        // wait for validation (TODO)
+        CONNECTION_END,   // wait for connection end
+        DIRECT,           // don't wait, just parse.
+        DIRECT_DELIMITER, // parse direct until multi-delimiter (// TODO:)
+        MULTIDELIMITER    //,       // wait for any of those delimiters
+                                     //        ParseStrategy::FREEPARSER             // TODO
     };
 
     SubParser() = default;
+    SubParser(SubParser &) = delete;
     virtual ~SubParser() = default;
 
     void initElemParser(StreamableObject *upStreamObj, bool clientMode);
@@ -49,12 +50,12 @@ public:
      * @brief getParseStatus
      * @return
      */
-    ParseStatus getParseStatus() const;
+    ParseResult getParseStatus() const;
     /**
      * @brief Set Parse Status
      * @param value
      */
-    void setParseStatus(const ParseStatus &value);
+    void setParseResult(const ParseResult &value);
     /**
      * Write Stream Data Into Object.
      * @param buf binary data to be written on the object.
@@ -96,13 +97,12 @@ protected:
     {
         return *this; // NO-OP Copy...
     }
-    SubParser(SubParser &) = delete;
 
     /**
      * @brief Parse is called when the parser in writeStream reached the completion of ParseMode
      * @return Parse Status (ERROR: Parse Error, OK_CONTINUE: Ok, continue parsing, OK_END: )
      */
-    virtual ParseStatus parse() = 0;
+    virtual ParseResult parse() = 0;
     /**
      * @brief ParseValidator On Parsing mode Validator, Parse Validator should return the size of the content that matches with the validation (eg. xml, json)
      * @param bc container with the data to be analyzed.
@@ -113,7 +113,7 @@ protected:
      * @brief Set Parse Mode
      * @param value parse mode (delimiter, size, or validator)
      */
-    void setParseMode(const ParseMode &value);
+    void setParseStrategy(const ParseStrategy &value);
     /**
      * @brief setParseDelimiter Set Parse Delimiter
      * @param value Parse Delimiter
@@ -168,8 +168,8 @@ private:
 
     std::list<std::string> m_parseMultiDelimiter;
 
-    ParseMode m_parseMode = PARSE_MODE_DELIMITER;
-    ParseStatus m_parseStatus = PARSE_GET_MORE_DATA;
+    ParseStrategy m_parseMode = ParseStrategy::DELIMITER;
+    ParseResult m_parseStatus = ParseResult::GET_MORE_DATA;
 };
 
 } // namespace Mantids30::Memory::Streams

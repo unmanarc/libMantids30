@@ -142,7 +142,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
     if (m_currentSubParser != nullptr)
     {
         // Default state: get more data...
-        m_currentSubParser->setParseStatus(SubParser::PARSE_GET_MORE_DATA);
+        m_currentSubParser->setParseResult(SubParser::ParseResult::GET_MORE_DATA);
 
         // Here, the parser should call the sub stream parser parse function and set the new status.
         writtenBytes = m_currentSubParser->writeIntoSubParser(buf, count);
@@ -166,11 +166,11 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         // TODO: what if error? how to tell the parser that it should analize the connection up to there (without correctness).
         switch (m_currentSubParser->getParseStatus())
         {
-        case SubParser::PARSE_GOTO_NEXT_SUBPARSER:
+        case SubParser::ParseResult::GOTO_NEXT_SUBPARSER:
         {
             if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - PARSE_GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -191,7 +191,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
 
             if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - PARSE_GOTO_NEXT_SUBPARSER changed to %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER changed to %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -207,11 +207,11 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             }
         }
         break;
-        case SubParser::PARSE_GET_MORE_DATA:
+        case SubParser::ParseResult::GET_MORE_DATA:
         {
             if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - PARSE_GET_MORE_DATA requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GET_MORE_DATA requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
             // More data required... (TODO: check this)
@@ -222,10 +222,10 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         }
         break;
             // Bad parsing... end here.
-        case SubParser::PARSE_ERROR:
+        case SubParser::ParseResult::ERROR:
             if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - PARSE_STAT_ERROR executed from %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
