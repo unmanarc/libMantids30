@@ -1,10 +1,9 @@
 #include "session_vars.h"
-#include <json/value.h>
 #include <Mantids30/Threads/lock_rd.h>
 #include <Mantids30/Threads/lock_rw.h>
+#include <json/value.h>
 
 using namespace Mantids30::Sessions;
-
 
 void Session_Vars::setSessionVariable(const std::string &varName, const json &varValue)
 {
@@ -15,13 +14,13 @@ void Session_Vars::setSessionVariable(const std::string &varName, const json &va
 json Session_Vars::getSessionVariableValue(const std::string &varName)
 {
     Threads::Sync::Lock_RD lock(m_sessionVarsMutex);
-    return (m_sessionVariables.find(varName) != m_sessionVariables.end() ? m_sessionVariables[varName]: Json::nullValue );
+    return (m_sessionVariables.find(varName) != m_sessionVariables.end() ? m_sessionVariables[varName] : Json::nullValue);
 }
 
 bool Session_Vars::doesSessionVariableExist(const std::string &varName)
 {
     Threads::Sync::Lock_RD lock(m_sessionVarsMutex);
-    return (m_sessionVariables.find(varName) != m_sessionVariables.end() ?true:false );
+    return (m_sessionVariables.find(varName) != m_sessionVariables.end() ? true : false);
 }
 
 void Session_Vars::clearSessionVariable(const std::string &varName)

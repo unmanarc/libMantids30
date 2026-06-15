@@ -1,10 +1,10 @@
 #include "api_websocket_endpoints.h"
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
 
-#include <json/value.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
+#include <json/value.h>
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Protocols;
@@ -136,7 +136,11 @@ Endpoints::ErrorCodes Endpoints::handleEvent(const Network::Protocols::WebSocket
     const WebSocket::Endpoint &endpointDef = it->second;
 
     if (invokeHandler(endpointDef, eventType, content, parameters))
+    {
         return SUCCESS;
+    }
     else
+    {
         return INVALID_EVENT_TYPE;
+    }
 }

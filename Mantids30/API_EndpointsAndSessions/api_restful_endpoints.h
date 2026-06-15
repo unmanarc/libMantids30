@@ -162,7 +162,6 @@ public:
      */
     Endpoints() = default;
 
-
     /**
      * @brief Add a new resource to the Endpoints.
      *
@@ -216,8 +215,8 @@ public:
                               const SecurityParameters &securityParameters, APIReturn *payloadOut);
 
 private:
-    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;   ///< Map of PATCH endpoints.
-    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;     ///< Map of GET endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;  ///< Map of PATCH endpoints.
+    std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsGET;    ///< Map of GET endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPOST;   ///< Map of POST endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.

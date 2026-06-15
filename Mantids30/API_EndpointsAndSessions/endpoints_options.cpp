@@ -38,6 +38,6 @@ Mantids30::API::APIReturn Endpoints_Options::buildCORSOptionsResponse(const Mant
 {
     Mantids30::API::APIReturn ret;
     ret.setStatus(Mantids30::Network::Protocols::HTTP::Status::S_204_NO_CONTENT);
-    config.configureAPIReturnOptionsHeaders(ret,requestOrigin);
+    config.configureAPIReturnOptionsHeaders(ret, requestOrigin);
     return ret;
 }

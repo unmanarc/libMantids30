@@ -3,7 +3,7 @@
 
 using namespace Mantids30::API;
 
-void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &ret, const std::string & requestOrigin) const
+void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &ret, const std::string &requestOrigin) const
 {
     // Set Access-Control-Allow-Origin
     if (!requestOrigin.empty() && allowsOrigin(requestOrigin))
@@ -134,16 +134,22 @@ bool OptionsHandlerConfig::allowsAllOrigins() const
 bool OptionsHandlerConfig::allowsOrigin(const std::string &origin) const
 {
     if (allowsAllOrigins())
+    {
         return true;
+    }
     return allowedOrigins.count(origin) > 0;
 }
 
 std::string OptionsHandlerConfig::getOriginsHeader() const
 {
     if (allowsAllOrigins())
+    {
         return "*";
+    }
     if (!allowedOrigins.empty())
+    {
         return *allowedOrigins.begin();
+    }
     return "";
 }
 

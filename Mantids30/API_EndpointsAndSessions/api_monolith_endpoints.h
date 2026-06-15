@@ -132,9 +132,9 @@ public:
      * @param endpointName The endpoint name to look up.
      * @return Pointer to the config, or nullptr if OPTIONS is not enabled.
      */
-    const OptionsHandlerConfig* getEndpointOptionsConfig(const std::string &endpointName) const;
+    const OptionsHandlerConfig *getEndpointOptionsConfig(const std::string &endpointName) const;
 
- private:
+private:
     /////////////////////////////////
     // Endpoints:
 

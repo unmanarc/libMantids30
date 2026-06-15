@@ -17,33 +17,28 @@ public:
      *                     If set, applies only to that specific endpoint.
      * @param config The CORS configuration to apply
      */
-    void setEndpointOptions(const std::string& endpointPath, const OptionsHandlerConfig& config);
+    void setEndpointOptions(const std::string &endpointPath, const OptionsHandlerConfig &config);
 
     /**
      * @brief Enable and configure OPTIONS/CORS handling for all endpoints
      *
      * @param config The CORS configuration to apply
      */
-    void setEndpointOptions(const OptionsHandlerConfig& config) { setEndpointOptions("",config);  }
+    void setEndpointOptions(const OptionsHandlerConfig &config) { setEndpointOptions("", config); }
 
     /**
      * @brief Get the global CORS configuration
      * @return Reference to the global OPTIONS/CORS config
      */
-    const OptionsHandlerConfig * getGlobalOptionsConfig() const;
+    const OptionsHandlerConfig *getGlobalOptionsConfig() const;
 
-
-    const OptionsHandlerConfig * getOptionsConfigOnEndpoint( const std::string& endpointPath ) const;
-
+    const OptionsHandlerConfig *getOptionsConfigOnEndpoint(const std::string &endpointPath) const;
 
     /**
      * @brief Check if OPTIONS/CORS handling is enabled
      * @return true if CORS is enabled
      */
-    bool isOptionsEnabled() const
-    {
-        return m_optionsEnabled;
-    }
+    bool isOptionsEnabled() const { return m_optionsEnabled; }
     /**
  * @brief Build a default CORS OPTIONS response from the configuration
  *
@@ -51,15 +46,12 @@ public:
  * @param requestOrigin The Origin header from the request (optional)
  * @return APIReturn with CORS headers set
  */
-    APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig& config,
-                                       const std::string& requestOrigin = "");
-
-
+    APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig &config, const std::string &requestOrigin = "");
 
 private:
-    OptionsHandlerConfig m_globalOptionsConfig;                    ///< Global CORS/OPTIONS configuration
+    OptionsHandlerConfig m_globalOptionsConfig;                             ///< Global CORS/OPTIONS configuration
     std::map<std::string, OptionsHandlerConfig> m_perEndpointOptionsConfig; ///< Per-endpoint CORS configuration
-    bool m_optionsEnabled = false;                                 ///< Whether OPTIONS/CORS handling is enabled
+    bool m_optionsEnabled = false;                                          ///< Whether OPTIONS/CORS handling is enabled
 };
 
-}
+} // namespace Mantids30::API
