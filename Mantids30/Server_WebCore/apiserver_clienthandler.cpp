@@ -65,19 +65,19 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
         HTTP::Status::Codes retCode = showBrowserMessage("Browser Upgrade Required",
-                                          R"(
+                                                         R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
-                                          HTTP::Status::S_426_UPGRADE_REQUIRED);
+                                                         HTTP::Status::S_426_UPGRADE_REQUIRED);
         return retCode;
     }
 
     if (config->dynamicInitialChecks)
     {
         HTTP::Status::Codes retCode;
-        if ((retCode = config->dynamicInitialChecks(&clientRequest,&serverResponse))!=HTTP::Status::S_200_OK)
+        if ((retCode = config->dynamicInitialChecks(&clientRequest, &serverResponse)) != HTTP::Status::S_200_OK)
         {
             return retCode;
         }
@@ -86,7 +86,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     // Do forced redirections (before session's):
     if (config->redirections.find(requestURI) != config->redirections.end())
     {
-        auto retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
+        HTTP::Status::Codes retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
         return retCode;
     }
 
@@ -104,7 +104,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
         logUsername = currentSessionInfo.authSession->getUser();
     }
 
-    for (const auto &baseApiUrl : config->APIURLs)
+    for (const std::string &baseApiUrl : config->APIURLs)
     {
         if (boost::starts_with(requestURI, baseApiUrl + "/"))
         {
@@ -128,10 +128,12 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 if (endpointName == this->config->loginCallbackAPIEndpointName)
                 {
                     // This is for the callback endpoint
-                    APIServerConfig::DynamicOriginValidatorFunction defaultCallbackOriginValidator =
-                        [](const std::string &requestOrigin, const std::string &apikey, const std::set<std::string> &permittedCallbackOrigins) -> bool { return permittedCallbackOrigins.count(requestOrigin); };
+                    APIServerConfig::DynamicOriginValidatorFunction defaultCallbackOriginValidator = [](const std::string &requestOrigin, const std::string &apikey,
+                                                                                                        const std::set<std::string> &permittedCallbackOrigins) -> bool
+                    { return permittedCallbackOrigins.count(requestOrigin); };
 
-                    APIServerConfig::DynamicOriginValidatorFunction originValidator = this->config->dynamicLoginCallbackOriginValidator ? this->config->dynamicLoginCallbackOriginValidator : defaultCallbackOriginValidator;
+                    APIServerConfig::DynamicOriginValidatorFunction originValidator = this->config->dynamicLoginCallbackOriginValidator ? this->config->dynamicLoginCallbackOriginValidator
+                                                                                                                                        : defaultCallbackOriginValidator;
 
                     // Check Login Origin... ALWAYS.
                     if (!originValidator(requestOrigin, requestXAPIKEY, this->config->permittedLoginOrigins))
@@ -201,13 +203,13 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 ret = apiReturn.getHTTPResponseCode();
 
                 // Set cookies to the server (eg. refresher token cookie)...
-                for (auto &i : apiReturn.cookiesMap)
+                for (const std::pair<std::string, HTTP::Headers::Cookie> &i : apiReturn.cookiesMap)
                 {
                     serverResponse.setCookie(i.first, i.second);
                 }
 
                 // Set headers to the server response (eg. CORS)...
-                for (auto &i : apiReturn.httpExtraHeaders)
+                for (const std::pair<std::string, std::string> &i : apiReturn.httpExtraHeaders)
                 {
                     serverResponse.headers.add(i.first, i.second);
                 }
@@ -254,7 +256,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
         bool isDynamicContent = false;
 
         // Iterate through all registered dynamic request handlers in the map.
-        for (const auto &route : config->dynamicRequestHandlersByRoute)
+        for (const std::pair<std::string, APIServerConfig::DynamicRequestHandlerDef> &route : config->dynamicRequestHandlersByRoute)
         {
             // Check if the request URI starts with the route's path, indicating a match.
             if (boost::starts_with(requestURI, route.first + "/"))
@@ -433,7 +435,7 @@ bool APIServer_ClientHandler::isSupportedUserAgent(const std::string &userAgent)
     };
 
     // Check if the user agent matches any of the supported browsers
-    for (const auto &browser : supportedBrowsers)
+    for (const BrowserSupport &browser : supportedBrowsers)
     {
         size_t pos = details.find(browser.name);
         if (pos != std::string::npos)
@@ -524,7 +526,7 @@ bool APIServer_ClientHandler::isURLSafe(const std::string &url)
 
 bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url)
 {
-    for (const auto &apiurl : config->APIURLs)
+    for (const std::string &apiurl : config->APIURLs)
     {
         if (boost::starts_with(url, apiurl + "/"))
         {
@@ -549,7 +551,7 @@ HTTP::Status::Codes APIServer_ClientHandler::redirectUsingJS(const std::string &
 
 HTTP::Status::Codes APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
 {
-    auto sHTMLPayloadOut = createHTMLAlertMessage(title, message);
+    std::shared_ptr<Streams::StreamableString> sHTMLPayloadOut = createHTMLAlertMessage(title, message);
     serverResponse.setDataStreamer(sHTMLPayloadOut);
     serverResponse.setContentType("text/html", true);
     return returnCode;

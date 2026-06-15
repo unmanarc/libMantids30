@@ -6,7 +6,7 @@ using namespace Mantids30::Network::Servers::Web;
 
 APIServerConfig::~APIServerConfig()
 {
-    for (const auto & i : m_memToBeFreed)
+    for (char * i : m_memToBeFreed)
     {
         free(i);
     }

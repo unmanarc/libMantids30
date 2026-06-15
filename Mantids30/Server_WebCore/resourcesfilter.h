@@ -32,7 +32,7 @@ public:
     {
         void compileRegex()
         {
-            for ( const auto &i : sRegexs )
+            for ( const std::string &i : sRegexs )
             {
                 this->regexPatterns.push_back( boost::regex(i.c_str(),boost::regex::extended ));
             }

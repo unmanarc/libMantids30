@@ -31,8 +31,8 @@ TransformCookiePath false   ; When true, prepends the proxy internalPath to cook
 PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
 
 */
-std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
-    Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &config, const std::map<std::string, std::string> &vars)
+std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
+                                                                         const std::map<std::string, std::string> &vars)
 {
     std::shared_ptr<APIProxyParameters> params = std::make_shared<APIProxyParameters>();
 
@@ -41,7 +41,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
         //  log->log0(__func__, Logs::LEVEL_DEBUG, "Creating APIProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
 
-        if (auto tlsHeaders = config.get_child_optional("TLS"))
+        if (boost::optional<const boost::property_tree::ptree&> tlsHeaders = config.get_child_optional("TLS"))
         {
             params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
             params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
@@ -52,18 +52,14 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
         params->transformCookiePath = config.get<bool>("TransformCookiePath", false);
 
-        log->log0(__func__,
-                  Logs::LEVEL_DEBUG,
-                  "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, " "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
-                  params->useTLS ? "true" : "false",
-                  params->checkTLSPeer ? "true" : "false",
-                  params->usePrivateCA ? "true" : "false",
-                  params->remoteHost.c_str(),
-                  static_cast<unsigned int>(params->remotePort),
-                  params->privateCAPath.c_str());
+        log->log0(__func__, Logs::LEVEL_DEBUG,
+                  "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, "
+                  "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
+                  params->useTLS ? "true" : "false", params->checkTLSPeer ? "true" : "false", params->usePrivateCA ? "true" : "false", params->remoteHost.c_str(),
+                  static_cast<unsigned int>(params->remotePort), params->privateCAPath.c_str());
 
         // Parse extra headers
-        if (auto extraHeaders = config.get_child_optional("ExtraHeaders"))
+        if (boost::optional<const boost::property_tree::ptree&> extraHeaders = config.get_child_optional("ExtraHeaders"))
         {
             parseExtraHeaders(log, *extraHeaders, params->extraHeaders, vars);
         }
@@ -83,16 +79,16 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(
     return params;
 }
 
-void APIProxyConfig::parseExtraHeaders(
-    Mantids30::Program::Logs::AppLog * log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders, const std::map<std::string, std::string> &vars)
+void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders,
+                                       const std::map<std::string, std::string> &vars)
 {
     //   log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");
-    for (const auto &pair : headersTree)
+    for (const std::pair<std::string const&, boost::property_tree::ptree> &pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
 
         // Replace %VARIABLE% with the corresponding value from vars
-        for (const auto &varPair : vars)
+        for (const std::pair<std::string const&, std::string> &varPair : vars)
         {
             const std::string varPlaceholder = "%" + varPair.first + "%";
             size_t pos = 0;

@@ -5,6 +5,7 @@
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 
 #include <Mantids30/Protocol_HTTP/httpv1_client.h>
+#include <memory>
 
 using namespace Mantids30::Network::Sockets;
 using namespace Mantids30::Network::Protocols;
@@ -31,7 +32,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
 
     if (proxyParameters->useTLS)
     {
-        auto socket = std::make_shared<Socket_TLS>();
+        std::shared_ptr<Socket_TLS> socket = std::make_shared<Socket_TLS>();
 
         if (proxyParameters->checkTLSPeer)
         {
@@ -52,7 +53,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
     }
     else
     {
-        auto socket = std::make_shared<Socket_TCP>();
+        std::shared_ptr<Socket_TCP> socket = std::make_shared<Socket_TCP>();
         connection = socket;
     }
 
@@ -68,7 +69,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
         client.clientRequest.requestLine.setRequestURI( internalPath );
 
         // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
-        for (const auto& header : proxyParameters->extraHeaders)
+        for (const std::pair<std::string, std::string> &header : proxyParameters->extraHeaders)
         {
             client.clientRequest.headers.replace(header.first, header.second);
         }

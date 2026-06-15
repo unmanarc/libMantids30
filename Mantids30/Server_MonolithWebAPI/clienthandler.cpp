@@ -10,43 +10,41 @@ using namespace Mantids30;
 using namespace std;
 
 ClientHandler::ClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
-    : Servers::Web::APIServer_ClientHandler(parent,sock)
-{
-}
+    : Servers::Web::APIServer_ClientHandler(parent, sock)
+{}
 
-API::APIReturn ClientHandler::handleAPIRequest(
-    const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName, const Json::Value &postParameters)
+API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName,
+                                               const Json::Value &postParameters)
 {
     API::APIReturn apiReturn;
     //json jPayloadIn;
     Mantids30::Helpers::JSONReader2 reader;
 
-    auto it = m_endpointsHandlerByAPIVersion.find(apiVersion);
+    std::map<uint32_t, API::Monolith::Endpoints *>::iterator it = m_endpointsHandlerByAPIVersion.find(apiVersion);
     if (it == m_endpointsHandlerByAPIVersion.end())
     {
         // Key does not exist
         log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint Not Found");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
     }
 
-    API::Monolith::Endpoints * endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
+    API::Monolith::Endpoints *endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
 
     // TODO: upgrade Token (2fa) y/o  token acompañante.
     if (endpointsHandler->doesAPIEndpointRequireActiveSession(endpointName) && !m_currentWebSession)
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "This endpoint requires full authentication / session {endpoint=%s}", endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint Not Found");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
     }
 
     json reasons;
 
     // Validate that the endpoint requirements are satisfied.
-    auto i = endpointsHandler->validateEndpointRequirements(
-        currentSessionInfo.authSession, endpointName, &reasons);
+    API::Monolith::Endpoints::ValidationResult i = endpointsHandler->validateEndpointRequirements(currentSessionInfo.authSession, endpointName, &reasons);
 
     switch (i)
     {
@@ -55,26 +53,27 @@ API::APIReturn ClientHandler::handleAPIRequest(
         log(LEVEL_INFO, "monolithAPI", 2048, "Executing Web Endpoint {endpoint=%s}", endpointName.c_str());
         log(LEVEL_DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(postParameters).c_str());
 
-        auto start = chrono::high_resolution_clock::now();
-        auto finish = chrono::high_resolution_clock::now();
+        chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> start = chrono::high_resolution_clock::now();
+        chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> finish = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = finish - start;
 
-        switch (endpointsHandler->invoke(currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON() ))
+        switch (endpointsHandler->invoke(currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON()))
         {
         case API::Monolith::Endpoints::ENDPOINT_RET_CODE_SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
             log(LEVEL_INFO, "monolithAPI", 2048, "Web Endpoint executed OK {endpoint=%s, elapsedMS=%f}", endpointName.c_str(), elapsed.count());
-            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Endpoint executed OK - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
+            log(LEVEL_DEBUG, "monolithAPI", 8192, "Web Endpoint executed OK - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),
+                Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
             break;
         case API::Monolith::Endpoints::ENDPOINT_RET_CODE_NOTFOUND:
             log(LEVEL_ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
-            apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
+            apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
             break;
         default:
             log(LEVEL_ERR, "monolithAPI", 2048, "Unknown error during web endpoint execution {endpoint=%s}", endpointName.c_str());
-            apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Endpoint unauthorized.");
+            apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
             break;
         }
     }
@@ -83,9 +82,8 @@ API::APIReturn ClientHandler::handleAPIRequest(
     {
         // Endpoint unauthorized.
         log(LEVEL_ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
-        apiReturn.setError( HTTP::Status::S_401_UNAUTHORIZED,"invalid_api_handling","Endpoint unauthorized.");
+        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
         apiReturn.setReasons(reasons);
-
     }
     break;
     case API::Monolith::Endpoints::VALIDATION_ENDPOINTNOTFOUND:
@@ -93,11 +91,10 @@ API::APIReturn ClientHandler::handleAPIRequest(
     {
         log(LEVEL_ERR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
         // Endpoint not found.
-        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
     }
     break;
     }
-
 
     return apiReturn;
 }
@@ -106,17 +103,17 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
 {
     API::APIReturn apiReturn;
 
-    auto it = m_endpointsHandlerByAPIVersion.find(apiVersion);
+    std::map<uint32_t, API::Monolith::Endpoints *>::const_iterator it = m_endpointsHandlerByAPIVersion.find(apiVersion);
     if (it == m_endpointsHandlerByAPIVersion.end())
     {
         // Key does not exist
         log(LEVEL_ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_handling","Endpoint not found.");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
         return apiReturn;
     }
 
-    API::Monolith::Endpoints * endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
+    API::Monolith::Endpoints *endpointsHandler = m_endpointsHandlerByAPIVersion[apiVersion];
 
     if (endpointsHandler->isOptionsEnabled())
     {
@@ -128,8 +125,8 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
 
         // Look for per-endpoint config first, then fall back to global
         const API::OptionsHandlerConfig *useConfig = endpointsHandler->getGlobalOptionsConfig();
-        const API::OptionsHandlerConfig *endpointConfig =  endpointsHandler->getOptionsConfigOnEndpoint(endpointName);
-        if (endpointConfig!=nullptr)
+        const API::OptionsHandlerConfig *endpointConfig = endpointsHandler->getOptionsConfigOnEndpoint(endpointName);
+        if (endpointConfig != nullptr)
         {
             useConfig = endpointConfig;
         }
@@ -153,8 +150,8 @@ json ClientHandler::handleAPIInfo(const string &baseApiUrl)
     }*/
 
     // Obtener la fecha de compilación
-    const char* buildDate = __DATE__; // Macro estándar para fecha de compilación
-    const char* buildTime = __TIME__; // Macro estándar para hora de compilación
+    const char *buildDate = __DATE__; // Macro estándar para fecha de compilación
+    const char *buildTime = __TIME__; // Macro estándar para hora de compilación
 
     x["version"] = config->softwareVersion;
     x["softwareName"] = config->softwareName;
@@ -183,15 +180,13 @@ bool ClientHandler::validateSessionAntiCSRFMechanism()
     string sessionIdFromCookie = clientRequest.getCookie(CURRENT_SESSIONID_COOKIENAME);
 
     // Validate session header == cookie, in theory, JS does not allow header manipulation via CSRF
-    if ( sessionIdFromHeader == RPCLog::truncateSessionId(sessionIdFromCookie)  )
+    if (sessionIdFromHeader == RPCLog::truncateSessionId(sessionIdFromCookie))
     {
         return true;
     }
 
     string referer = clientRequest.getHeaderOption("Referer");
-    log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Invalid CSRF Validation {path=%s, referer=%s}",
-        clientRequest.getURI().c_str(), referer.c_str());
+    log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Invalid CSRF Validation {path=%s, referer=%s}", clientRequest.getURI().c_str(), referer.c_str());
 
     return false;
 }
-

@@ -15,7 +15,7 @@ Engine::Engine()
 
 std::shared_ptr<Network::Servers::Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
-    auto webHandler = std::make_shared<ClientHandler>(webServer,s);
+    std::shared_ptr<ClientHandler> webHandler = std::make_shared<ClientHandler>(webServer,s);
 
     webHandler->m_endpointsHandlerByAPIVersion = endpointsHandlerByAPIVersion;
     webHandler->m_sessionsManager = &sessionsManager;

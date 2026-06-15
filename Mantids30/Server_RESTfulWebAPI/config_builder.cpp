@@ -52,7 +52,7 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 
     if (isTLS)
     {
-        auto tlsSocket = std::make_shared<Sockets::Socket_TLS>();
+        std::shared_ptr<Sockets::Socket_TLS> tlsSocket = std::make_shared<Sockets::Socket_TLS>();
         tlsSocket->tlsKeys.setSecurityLevel(-1);
 
         if (!tlsSocket->tlsKeys.loadPublicKeyFromPEMFile(listenerConfig.get<std::string>("TLS.CertFile", "snakeoil.crt").c_str()))
@@ -86,7 +86,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     std::list<std::shared_ptr<Sockets::Socket_Stream>> listenerSockets;
 
     // Parse all Listener_* blocks
-    for (const auto &kv : config)
+    for (const std::pair<std::string const&, boost::property_tree::ptree> &kv : config)
     {
         if (kv.first.find("Listener_") != 0)
             continue;
@@ -148,7 +148,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         try
         {
             const boost::property_tree::ptree &overlappedDirs = config.get_child("OverlappedDirectories");
-            for (const auto &dirPair : overlappedDirs)
+            for (const std::pair<std::string const&, boost::property_tree::ptree> &dirPair : overlappedDirs)
             {
                 const std::string &mountPoint = dirPair.first;
                 const boost::property_tree::ptree &dirConfig = dirPair.second;
@@ -246,7 +246,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading proxies...", (void *) webServer);
             // Loading proxies...
 
-            for (const auto &proxy : config.get_child("Proxies"))
+            for (const std::pair<std::string const&, boost::property_tree::ptree> &proxy : config.get_child("Proxies"))
             {
                 std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
@@ -265,7 +265,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading redirections...", (void *) webServer);
             // Loading redirections...
 
-            for (const auto &redirection : config.get_child("Redirections"))
+            for (const std::pair<std::string const&, boost::property_tree::ptree> &redirection : config.get_child("Redirections"))
             {
                 std::string path = redirection.first;
                 std::string url = redirection.second.get_value<std::string>("/");

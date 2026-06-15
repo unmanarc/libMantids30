@@ -23,14 +23,14 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
 
     /* try
     {*/
-    for (const auto & i : root)
+    for (const boost::property_tree::ptree::value_type & i : root)
     {
         Filter filter;
 
-        auto pRegexs = i.second.get_child_optional("uriRegex");
+        boost::optional<const boost::property_tree::ptree&> pRegexs = i.second.get_child_optional("uriRegex");
         if (pRegexs)
         {
-            for (const auto & i : pRegexs.get())
+            for (const boost::property_tree::ptree::value_type & i : pRegexs.get())
             {
                 filter.sRegexs.push_back(i.second.get_value<std::string>());
             }
@@ -38,37 +38,37 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         filter.compileRegex();
 
 
-        auto pRequiredScopes = i.second.get_child_optional("requiredScopes");
+        boost::optional<const boost::property_tree::ptree&> pRequiredScopes = i.second.get_child_optional("requiredScopes");
         if (pRequiredScopes)
         {
-            for (const auto & i : pRequiredScopes.get())
+            for (const boost::property_tree::ptree::value_type & i : pRequiredScopes.get())
             {
                 filter.requiredScopes.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pDisallowedScopes =  i.second.get_child_optional("disallowedScopes");
+        boost::optional<const boost::property_tree::ptree&> pDisallowedScopes =  i.second.get_child_optional("disallowedScopes");
         if (pDisallowedScopes)
         {
-            for (const auto & i : pDisallowedScopes.get())
+            for (const boost::property_tree::ptree::value_type & i : pDisallowedScopes.get())
             {
                 filter.rejectedScopes.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pRequiredRoles = i.second.get_child_optional("requiredRoles");
+        boost::optional<const boost::property_tree::ptree&> pRequiredRoles = i.second.get_child_optional("requiredRoles");
         if (pRequiredRoles)
         {
-            for (const auto & i : pRequiredRoles.get())
+            for (const boost::property_tree::ptree::value_type & i : pRequiredRoles.get())
             {
                 filter.requiredRoles.push_back(i.second.get_value<std::string>());
             }
         }
 
-        auto pDisallowedRoles =  i.second.get_child_optional("disallowedRoles");
+        boost::optional<const boost::property_tree::ptree&> pDisallowedRoles =  i.second.get_child_optional("disallowedRoles");
         if (pDisallowedRoles)
         {
-            for (const auto & i : pDisallowedRoles.get())
+            for (const boost::property_tree::ptree::value_type & i : pDisallowedRoles.get())
             {
                 filter.rejectedRoles.push_back(i.second.get_value<std::string>());
             }
@@ -118,7 +118,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
         bool filterMatchesRequirements=true;
 
         // Check required scopes
-        for (const auto & requiredScope : filter.requiredScopes)
+        for (const std::string & requiredScope : filter.requiredScopes)
         {
             if (!filterMatchesRequirements)
                 break;
@@ -128,7 +128,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
         }
 
         // Check rejected permissions
-        for (const auto & rejectedScope : filter.rejectedScopes)
+        for (const std::string & rejectedScope : filter.rejectedScopes)
         {
             if (!filterMatchesRequirements)
                 break;
@@ -139,7 +139,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
 
 
         // Check required roles
-        for (const auto & requiredRole : filter.requiredRoles)
+        for (const std::string & requiredRole : filter.requiredRoles)
         {
             if (!filterMatchesRequirements)
                 break;
@@ -149,7 +149,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
         }
 
         // Check rejected roles
-        for (const auto & rejectedRole : filter.rejectedRoles)
+        for (const std::string & rejectedRole : filter.rejectedRoles)
         {
             if (!filterMatchesRequirements)
                 break;
@@ -183,7 +183,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
 
         // Check if the URI matches any of the filter's regex patterns
         boost::cmatch what;
-        for (const auto & uriRegexPattern : filter.regexPatterns)
+        for (const boost::regex & uriRegexPattern : filter.regexPatterns)
         {
             if (boost::regex_match(uri.c_str(), what, uriRegexPattern))
             {

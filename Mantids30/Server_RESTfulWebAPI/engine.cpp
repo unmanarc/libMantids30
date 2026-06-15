@@ -111,7 +111,7 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
 
 std::shared_ptr<Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s)
 {
-    auto clientHandler = std::make_shared<RESTful::ClientHandler>(webServer, s);
+    std::shared_ptr<RESTful::ClientHandler> clientHandler = std::make_shared<RESTful::ClientHandler>(webServer, s);
     clientHandler->m_endpointsHandler = endpointsHandler;
     clientHandler->jwtAccessTokenName = jwtAccessTokenName;
     return clientHandler;

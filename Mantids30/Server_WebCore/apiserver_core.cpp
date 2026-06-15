@@ -1,7 +1,7 @@
 #include "apiserver_core.h"
 
-#include <Mantids30/Protocol_HTTP/httpv1_server.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
+#include <Mantids30/Protocol_HTTP/httpv1_server.h>
 
 #include <memory>
 
@@ -14,10 +14,9 @@ APIServerCore::APIServerCore()
     m_poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
 }
 
-void APIServerCore::setAcceptPoolThreaded(
-    const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
+void APIServerCore::setAcceptPoolThreaded(const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    for (auto &socket : listenerSockets)
+    for (const std::shared_ptr<Sockets::Socket_Stream> &socket : listenerSockets)
     {
         m_poolThreadedAcceptor->addAcceptorSocket(socket);
     }
@@ -34,10 +33,9 @@ void APIServerCore::setAcceptPoolThreaded(
     m_acceptorType = AcceptorType::POOL_THREADED;
 }
 
-void APIServerCore::setAcceptMultiThreaded(
-    const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
+void APIServerCore::setAcceptMultiThreaded(const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    for (auto &socket : listenerSockets)
+    for (const std::shared_ptr<Sockets::Socket_Stream> &socket : listenerSockets)
     {
         m_multiThreadedAcceptor->addAcceptorSocket(socket);
     }
@@ -87,31 +85,31 @@ std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> APIServer
 
 void APIServerCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
 {
-    handleConnect(this,virtualConnection);
+    handleConnect(this, virtualConnection);
 }
 
 void APIServerCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
-    APIServerCore * webserver = static_cast<APIServerCore *>(context);
+    APIServerCore *webserver = static_cast<APIServerCore *>(context);
 
     std::string tlsCN;
     if (sock->isSecure())
     {
-        std::shared_ptr<Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TLS>( sock );
+        std::shared_ptr<Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TLS>(sock);
         tlsCN = tlsSock->getTLSPeerCN();
     }
 
     // Prepare the web services handler.
-    std::shared_ptr<APIServer_ClientHandler> apiWebServerClientHandler = webserver->createNewAPIServer_ClientHandler(webserver,sock);
+    std::shared_ptr<APIServer_ClientHandler> apiWebServerClientHandler = webserver->createNewAPIServer_ClientHandler(webserver, sock);
     // Assign endpoints:
     apiWebServerClientHandler->m_websocketEndpoints = webserver->m_websocketEndpoints;
     // Set client information:
-    apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation( sock->getRemotePairStr(), sock->isSecure(), tlsCN );
+    apiWebServerClientHandler->clientRequest.networkClientInfo.setClientInformation(sock->getRemotePairStr(), sock->isSecure(), tlsCN);
     // Set the configuration:
     apiWebServerClientHandler->config = &(webserver->config);
 
     // Callback on client connected.
-    if (webserver->callbacks.onClientConnected.call(webserver,sock))
+    if (webserver->callbacks.onClientConnected.call(webserver, sock))
     {
         // Handle the Web Server.
         Memory::Streams::Parser::ErrorMSG err;
@@ -119,16 +117,16 @@ void APIServerCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     }
 }
 
-void APIServerCore::handleInitFailed(void * context, std::shared_ptr<Sockets::Socket_Stream> s)
+void APIServerCore::handleInitFailed(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
-    APIServerCore * webserver = static_cast<APIServerCore *>(context);
-    webserver->callbacks.onProtocolInitializationFailure.call(webserver,s);
+    APIServerCore *webserver = static_cast<APIServerCore *>(context);
+    webserver->callbacks.onProtocolInitializationFailure.call(webserver, s);
 }
 
 void APIServerCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
-    APIServerCore * webserver = static_cast<APIServerCore *>(context);
-    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
+    APIServerCore *webserver = static_cast<APIServerCore *>(context);
+    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");
@@ -140,8 +138,8 @@ void APIServerCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket
 
 void APIServerCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
 {
-    APIServerCore * webserver = static_cast<APIServerCore *>(context);
-    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver,s))
+    APIServerCore *webserver = static_cast<APIServerCore *>(context);
+    if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))
     {
         s->writeString("HTTP/1.1 503 Service Temporarily Unavailable\r\n");
         s->writeString("Content-Type: text/html; charset=UTF-8\r\n");
