@@ -83,12 +83,12 @@ void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, co
                                        const std::map<std::string, std::string> &vars)
 {
     //   log->log0(__func__, Logs::LogLevel::DEBUG, "Starting to parse extra headers.");
-    for (const std::pair<std::string const &, boost::property_tree::ptree> &pair : headersTree)
+    for (const auto&pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
 
         // Replace %VARIABLE% with the corresponding value from vars
-        for (const std::pair<std::string const &, std::string> &varPair : vars)
+        for (const auto&varPair : vars)
         {
             const std::string varPlaceholder = "%" + varPair.first + "%";
             size_t pos = 0;

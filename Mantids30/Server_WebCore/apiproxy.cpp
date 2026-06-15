@@ -67,7 +67,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(const std::string
         client.clientRequest.requestLine.setRequestURI(internalPath);
 
         // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
-        for (const std::pair<std::string, std::string> &header : proxyParameters->extraHeaders)
+        for (const auto&header : proxyParameters->extraHeaders)
         {
             client.clientRequest.headers.replace(header.first, header.second);
         }

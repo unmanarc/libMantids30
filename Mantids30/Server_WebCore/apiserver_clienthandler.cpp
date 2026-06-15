@@ -203,13 +203,13 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 ret = apiReturn.getHTTPResponseCode();
 
                 // Set cookies to the server (eg. refresher token cookie)...
-                for (const std::pair<std::string, HTTP::Headers::Cookie> &i : apiReturn.cookiesMap)
+                for (const auto&i : apiReturn.cookiesMap)
                 {
                     serverResponse.setCookie(i.first, i.second);
                 }
 
                 // Set headers to the server response (eg. CORS)...
-                for (const std::pair<std::string, std::string> &i : apiReturn.httpExtraHeaders)
+                for (const auto&i : apiReturn.httpExtraHeaders)
                 {
                     serverResponse.headers.add(i.first, i.second);
                 }
@@ -256,7 +256,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
         bool isDynamicContent = false;
 
         // Iterate through all registered dynamic request handlers in the map.
-        for (const std::pair<std::string, APIServerConfig::DynamicRequestHandlerDef> &route : config->dynamicRequestHandlersByRoute)
+        for (const auto&route : config->dynamicRequestHandlersByRoute)
         {
             // Check if the request URI starts with the route's path, indicating a match.
             if (boost::starts_with(requestURI, route.first + "/"))
