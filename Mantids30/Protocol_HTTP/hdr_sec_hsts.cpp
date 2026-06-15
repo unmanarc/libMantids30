@@ -33,7 +33,7 @@ void HSTS::setDefaults()
     m_maxAge = 0;
 }
 
-std::string HSTS::toString()
+std::string HSTS::toString() const
 {
     if (isActivated)
     {

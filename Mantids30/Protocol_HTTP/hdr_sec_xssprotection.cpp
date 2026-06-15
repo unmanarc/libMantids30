@@ -13,7 +13,7 @@ using namespace boost::algorithm;
 
 XSSProtection::XSSProtection() {}
 
-string XSSProtection::toString()
+string XSSProtection::toString() const
 {
     if (!isActivated)
     {

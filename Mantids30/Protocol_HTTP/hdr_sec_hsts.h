@@ -37,7 +37,7 @@ public:
      *
      * @return The HSTS policy as a string value.
      */
-    std::string toString();
+    std::string toString() const;
 
     /**
      * @brief Parses the given HSTS policy string and sets the options accordingly.

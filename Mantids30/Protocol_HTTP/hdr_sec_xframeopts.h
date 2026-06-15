@@ -79,7 +79,7 @@ public:
      *
      * @return The X-Frame-Options header as a string value.
      */
-    std::string toString();
+    std::string toString() const;
 
     /**
      * @brief Parses the given X-Frame-Options header string and sets the options accordingly.

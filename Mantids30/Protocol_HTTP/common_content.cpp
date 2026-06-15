@@ -15,7 +15,7 @@ HTTP::Content::Content()
     m_subParserName = "Content";
 }
 
-bool HTTP::Content::isDefaultStreamableObj()
+bool HTTP::Content::isDefaultStreamableObj() const
 {
     return m_usingInternalOutStream;
 }

@@ -30,7 +30,7 @@ bool XFrameOpts::isNotActivated() const
     return value == NONE;
 }
 
-string Mantids30::Network::Protocols::HTTP::Headers::Security::XFrameOpts::toString()
+string Mantids30::Network::Protocols::HTTP::Headers::Security::XFrameOpts::toString() const
 {
     switch (value)
     {

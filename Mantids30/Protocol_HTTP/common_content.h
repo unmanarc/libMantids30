@@ -53,7 +53,7 @@ public:
      * @brief isDefaultStreamableObj Get if the default streamable output is in use.
      * @return true if is it use, false if replaced by another one
      */
-    bool isDefaultStreamableObj();
+    bool isDefaultStreamableObj() const;
     /**
      * @brief writer Same of getStreamableObject
      * @return current streamable output

@@ -10,7 +10,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-std::string CacheControl::toString()
+std::string CacheControl::toString() const
 {
     std::string r;
     if (optionMustRevalidate)

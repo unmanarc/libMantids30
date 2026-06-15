@@ -10,7 +10,7 @@ class CacheControl
 public:
     CacheControl() = default;
 
-    std::string toString();
+    std::string toString() const;
     void fromString(const std::string &str);
 
     /**
