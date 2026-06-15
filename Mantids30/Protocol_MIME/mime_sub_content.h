@@ -30,7 +30,7 @@ public:
     void setMaxContentSizeUntilGoingToFS(const size_t &value);
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     std::shared_ptr<Memory::Streams::StreamableObject> m_contentContainer;

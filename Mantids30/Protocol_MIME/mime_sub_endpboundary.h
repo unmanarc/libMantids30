@@ -18,7 +18,7 @@ public:
     int getStatus() const;
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     int m_status;

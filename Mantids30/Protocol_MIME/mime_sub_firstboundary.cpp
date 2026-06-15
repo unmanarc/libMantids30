@@ -4,7 +4,7 @@ using namespace Mantids30;
 
 MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
     m_subParserName = "MIME_Sub_FirstBoundary";
 }
@@ -22,11 +22,11 @@ void MIME_Sub_FirstBoundary::setBoundary(const std::string &value)
     m_boundary = value;
 }
 
-Memory::Streams::SubParser::ParseStatus MIME_Sub_FirstBoundary::parse()
+Memory::Streams::SubParser::ParseResult MIME_Sub_FirstBoundary::parse()
 {
 #ifdef DEBUG
     printf("Initial Delimiter %s received on MIME First Boundary.\n", boundary.c_str());
     fflush(stdout);
 #endif
-    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }

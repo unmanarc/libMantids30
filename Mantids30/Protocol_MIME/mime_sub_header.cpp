@@ -15,7 +15,7 @@ using namespace std;
 
 MIME_Sub_Header::MIME_Sub_Header()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setMaxOptionSize(16 * KB_MULT); // 16K per option
     m_subParserName = "MIME_Sub_Header";
@@ -173,7 +173,7 @@ void MIME_Sub_Header::setMaxOptions(const size_t &value)
     m_maxOptions = value;
 }
 
-Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
+Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
 {
     if (!getParsedBuffer()->size())
     {
@@ -181,14 +181,14 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Header::parse()
         printf("Parsing MIME header lines (END).\n");
         fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("Parsing MIME header (line).\n");
     fflush(stdout);
 #endif
     parseOptionValue(getParsedBuffer()->toStringEx());
-    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+    return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
 void MIME_Sub_Header::parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName)

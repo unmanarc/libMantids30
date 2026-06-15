@@ -14,7 +14,7 @@ public:
     void setBoundary(const std::string &value);
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     std::string m_boundary;

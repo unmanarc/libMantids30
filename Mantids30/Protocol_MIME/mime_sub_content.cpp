@@ -21,7 +21,7 @@ MIME_Sub_Content::MIME_Sub_Content()
 
     m_contentContainer = nullptr;
     replaceContentContainer(std::make_shared<Memory::Containers::B_Chunks>());
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT_DELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DIRECT_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 
     m_subParserName = "MIME_Sub_Content";
@@ -71,7 +71,7 @@ void MIME_Sub_Content::setFsTmpFolder(const std::string &value)
     m_fsTmpFolder = value;
 }
 
-Memory::Streams::SubParser::ParseStatus MIME_Sub_Content::parse()
+Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
     getParsedBuffer()->appendTo(*m_contentContainer);
@@ -82,13 +82,13 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Content::parse()
         printf("%p MIME_Sub_Content: Delimiter %s received.\n", this, boundary.c_str());
         fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("%p MIME_Sub_Content: requesting more data.\n", this);
     fflush(stdout);
 #endif
-    return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+    return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
 std::string MIME_Sub_Content::getBoundary() const

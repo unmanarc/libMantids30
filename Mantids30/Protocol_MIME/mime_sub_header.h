@@ -166,7 +166,7 @@ public:
     void setMaxSubOptionSize(const size_t &value);
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     void parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName);
