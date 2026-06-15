@@ -26,7 +26,7 @@ public:
             data = nullptr;
         }
 
-        bool isNull() { return task == nullptr && data == nullptr; }
+        bool isNull() const { return task == nullptr && data == nullptr; }
 
         void (*task)(std::shared_ptr<void>);
         std::shared_ptr<void> data;

@@ -43,11 +43,11 @@ public:
     std::string fieldSeparator = " ";       ///< The string used to separate log fields.
 
 protected:
-    bool isUsingWindowsEventLog();
-    bool isUsingSyslog();
-    bool isUsingStandardLog();
+    bool isUsingWindowsEventLog() const;
+    bool isUsingSyslog() const;
+    bool isUsingStandardLog() const;
 
-    void printDate(FILE *fp);
+    void printDate(FILE *fp) const;
     void printColorBold(FILE *fp, const char *str);
     void printColorBlue(FILE *fp, const char *str);
     void printColorGreen(FILE *fp, const char *str);

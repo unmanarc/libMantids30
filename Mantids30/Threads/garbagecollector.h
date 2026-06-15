@@ -65,12 +65,12 @@ private:
     std::mutex m_endNotificationMutex;                  ///< The mutex to ensure thread safety when notifying the end of the garbage collector thread loop.
     std::condition_variable m_endNotificationCondition; ///< The condition variable to wait for the end of the garbage collector thread loop.
 
-    void (*m_gcFunction)(void *parameter); ///< The garbage collection function to run intervalically.
-    void *m_gcParameter;                   ///< The object to pass to the garbage collection function.
+    void (*m_gcFunction)(void *parameter){}; ///< The garbage collection function to run intervalically.
+    void *m_gcParameter{};                   ///< The object to pass to the garbage collection function.
 
-    bool m_gcFinished;                    ///< Whether the garbage collector thread has finished.
-    std::thread m_gcThreadObject;         ///< The garbage collector thread object.
-    std::atomic<uint32_t> m_gcIntervalMs; ///< The interval between each garbage collection in milliseconds.
+    bool m_gcFinished;                      ///< Whether the garbage collector thread has finished.
+    std::thread m_gcThreadObject;           ///< The garbage collector thread object.
+    std::atomic<uint32_t> m_gcIntervalMs{}; ///< The interval between each garbage collection in milliseconds.
 };
 
 } // namespace Mantids30::Threads

@@ -57,22 +57,22 @@ void LogBase::setDebug(bool value)
     m_debug = value;
 }
 
-bool LogBase::isUsingSyslog()
+bool LogBase::isUsingSyslog() const
 {
     return (m_logMode & MODE_SYSLOG) == MODE_SYSLOG;
 }
 
-bool LogBase::isUsingStandardLog()
+bool LogBase::isUsingStandardLog() const
 {
     return (m_logMode & MODE_STANDARD) == MODE_STANDARD;
 }
 
-bool LogBase::isUsingWindowsEventLog()
+bool LogBase::isUsingWindowsEventLog() const
 {
     return (m_logMode & MODE_WINEVENTS) == MODE_WINEVENTS;
 }
 
-void LogBase::printDate(FILE *fp)
+void LogBase::printDate(FILE *fp) const
 {
     char xdate[64] = "";
     time_t x = time(nullptr);
