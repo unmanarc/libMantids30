@@ -71,7 +71,7 @@ public:
      * @brief copyStreamToInternalResponseContent Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
      */
-    bool copyStreamToInternalResponseContent(std::shared_ptr<Memory::Streams::StreamableObject> source);
+    bool copyStreamToInternalResponseContent(const std::shared_ptr<Memory::Streams::StreamableObject> &source);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OTHER FUNCTIONS:

@@ -65,7 +65,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
             return false;
         }
 
-        std::string getRelativePath()
+        std::string getRelativePath() const
         {
             // Eg. Relative Path: /assets/style.css
             return urlPathPrefix + fileSystemRealPath.substr(serverWebRootWithEndingSlash.size());

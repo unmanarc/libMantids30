@@ -97,7 +97,7 @@ public:
             }
             return nullptr;
         }
-        std::shared_ptr<MIME::MIME_HeaderOption> getCookies()
+        std::shared_ptr<MIME::MIME_HeaderOption> getCookies() const
         {
             std::shared_ptr<MIME::MIME_HeaderOption> i = headers.getOptionByName("Cookie");
             if (!i)
@@ -142,7 +142,7 @@ public:
             return nullptr;
         }
 
-        std::multimap<std::string, std::string> getAllCookies()
+        std::multimap<std::string, std::string> getAllCookies() const
         {
             std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
@@ -190,7 +190,7 @@ public:
          * @param sCookieName
          * @return
          */
-        std::string getCookie(const std::string &sCookieName)
+        std::string getCookie(const std::string &sCookieName) const
         {
             std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
@@ -204,18 +204,18 @@ public:
          * @brief getContentType Get Content Type
          * @return
          */
-        std::string getContentType() { return headers.getOptionRawStringByName("Content-Type"); }
+        std::string getContentType() const { return headers.getOptionRawStringByName("Content-Type"); }
         /**
          * @brief getURI Get URI
          * @return
          */
-        std::string getURI() { return requestLine.getURI(); }
+        std::string getURI() const { return requestLine.getURI(); }
         /**
          * @brief getHeaderOption Get Client Header Option Value By Option Name.
          * @param optionName Option Name
          * @return Option Value
          */
-        std::string getHeaderOption(const std::string &optionName) { return headers.getOptionRawStringByName(optionName); }
+        std::string getHeaderOption(const std::string &optionName) const { return headers.getOptionRawStringByName(optionName); }
 
         struct NetworkClientInfo
         {

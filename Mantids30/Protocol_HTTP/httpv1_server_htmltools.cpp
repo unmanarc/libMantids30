@@ -8,9 +8,9 @@ std::string HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
 {
     std::string output;
     output.reserve(rawStr.size());
-    for (size_t i = 0; rawStr.size() != i; i++)
+    for (const char &i : rawStr)
     {
-        switch (rawStr[i])
+        switch (i)
         {
         case '<':
             output.append("&lt;");
@@ -28,7 +28,7 @@ std::string HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
             output.append("&apos;");
             break;
         default:
-            output.append(&rawStr[i], 1);
+            output.append(&i, 1);
             break;
         }
     }

@@ -182,7 +182,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     return serverResponse.headers.streamToUpstream();
 }
 
-bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(std::shared_ptr<Memory::Streams::StreamableObject> source)
+bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(const std::shared_ptr<Memory::Streams::StreamableObject> &source)
 {
     if (!serverResponse.content.getStreamableObject())
     {
