@@ -22,7 +22,7 @@ public:
      *
      * @brief Enumeration for possible error codes.
      */
-    enum HandleResult
+    enum HandleResult: int8_t
     {
         SUCCESS = 0,
         INVALID_EVENT_TYPE = -1,
@@ -32,12 +32,12 @@ public:
         INTERNAL_ERROR = -5
     };
 
-    enum Security
+    enum Security : uint8_t
     {
         NO_AUTH = 0,
-        REQUIRE_JWT_HEADER_AUTH = 1,
-        REQUIRE_JWT_COOKIE_AUTH = 2,
-        REQUIRE_SESSION = 4,
+        REQUIRE_JWT_HEADER_AUTH = 1 << 0,
+        REQUIRE_JWT_COOKIE_AUTH = 1 << 1,
+        REQUIRE_SESSION = 1 << 2
     };
 
     struct SecurityParameters
@@ -70,7 +70,7 @@ public:
      * @param securityParameters
      * @return
      */
-    Endpoints::HandleResult checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters);
+    HandleResult checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters);
 
     /**
      * @brief Handle WebSocket event and return the error code.
