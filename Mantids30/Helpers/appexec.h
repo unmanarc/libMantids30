@@ -99,7 +99,7 @@ public:
     /**
      * @brief waitUntilDies Wait until the process die.
      */
-    void waitUntilProcessEnds();
+    void waitUntilProcessEnds() const;
 
     /**
      * @brief pollResponse Poll response (detect from where there is data to read, stdout/stdin), remember to wait for the process after the pollResponse loop.

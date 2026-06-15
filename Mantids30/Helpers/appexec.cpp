@@ -298,7 +298,7 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     return s == 0;
 }
 
-void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
+void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds() const
 {
     int s, status;
     do
