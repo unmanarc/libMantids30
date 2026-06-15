@@ -11,9 +11,13 @@ bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
     Memory::Streams::WriteStatus cur;
 
     if (!m_isFormatted)
+    {
         m_strValue = Mantids30::Helpers::jsonToString(m_root);
+    }
     else
+    {
         m_strValue = m_root.toStyledString();
+    }
 
     return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
 }
@@ -76,12 +80,16 @@ void StreamableJSON::clear()
 json *StreamableJSON::processValue()
 {
     if (m_isFull)
+    {
         return nullptr;
+    }
 
     Mantids30::Helpers::JSONReader2 reader;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     if (!parsingSuccessful)
+    {
         return nullptr;
+    }
     return &m_root;
 }
 
@@ -112,7 +120,9 @@ bool StreamableJSON::setValue(const std::string &value)
     m_strValue = value;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     if (!parsingSuccessful)
+    {
         return false;
+    }
     return true;
 }
 

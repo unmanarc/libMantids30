@@ -75,13 +75,17 @@ in6_addr IPV6::_fromString(const std::string &value, bool *ok)
     if (value.empty())
     {
         if (ok)
+        {
             *ok = true;
+        }
         return xvalue;
     }
 
     bool r = inet_pton(AF_INET6, value.c_str(), &xvalue) == 1;
     if (ok)
+    {
         *ok = r;
+    }
 
     return xvalue;
 }
@@ -90,14 +94,18 @@ std::shared_ptr<Var> IPV6::protectedCopy()
 {
     std::shared_ptr<IPV6> var = std::make_shared<IPV6>();
     if (var)
+    {
         *var = getValue();
+    }
     return var;
 }
 
 json IPV6::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }

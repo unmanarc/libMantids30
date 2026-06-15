@@ -75,10 +75,14 @@ struct WriteStatus
         bytesWritten = safeAdd(bytesWritten, x.bytesWritten);
 
         if (!x.succeed)
+        {
             succeed = false;
+        }
 
         if (x.finished)
+        {
             finished = true;
+        }
 
         return *this;
     }

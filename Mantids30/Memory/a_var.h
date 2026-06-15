@@ -1,22 +1,23 @@
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <string>
-#include <atomic>
 
 #include <Mantids30/Helpers/json.h>
 
 namespace Mantids30::Memory::Abstract {
 
-#define ABSTRACT_PTR_AS(x,y) ( static_cast<Mantids30::Memory::Abstract::x *>(y))
-#define ABSTRACT_SPTR_AS(x,y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
-#define MAKE_VAR(x,y)  std::make_shared<Mantids30::Memory::Abstract::x>(y)
-#define MAKE_NULL_VAR  std::make_shared<Mantids30::Memory::Abstract::Var>()
+#define ABSTRACT_PTR_AS(x, y) (static_cast<Mantids30::Memory::Abstract::x *>(y))
+#define ABSTRACT_SPTR_AS(x, y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
+#define MAKE_VAR(x, y) std::make_shared<Mantids30::Memory::Abstract::x>(y)
+#define MAKE_NULL_VAR std::make_shared<Mantids30::Memory::Abstract::Var>()
 
 class Var
 {
 public:
-    enum Type {
+    enum Type
+    {
         TYPE_BOOL,
         TYPE_INT8,
         TYPE_INT16,
@@ -44,12 +45,13 @@ public:
     virtual ~Var() = default;
 
     // NON-THREADSAFE ACCESS TO THE RAW MEMORY:
-    virtual void * getDirectMemory();
+    virtual void *getDirectMemory();
 
-    static std::shared_ptr<Var> makeAbstract(Type type, const std::string & defValue = "");
+    static std::shared_ptr<Var> makeAbstract(Type type, const std::string &defValue = "");
 
-    virtual json toJSON();;
-    virtual bool fromJSON(const json & value);
+    virtual json toJSON();
+    ;
+    virtual bool fromJSON(const json &value);
 
     /**
      * @brief toString Transform the Variable To a Readable string.
@@ -61,7 +63,7 @@ public:
      * @param value readable string
      * @return true if accepted.
      */
-    virtual bool fromString(const std::string & value);
+    virtual bool fromString(const std::string &value);
 
     // VAR TYPE:
     Type getVarType() const;
@@ -75,11 +77,7 @@ protected:
     std::atomic<bool> m_isNull = true;
 
 private:
-
     Type m_varType;
 };
 
-}
-
-
-
+} // namespace Mantids30::Memory::Abstract

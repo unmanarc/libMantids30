@@ -5,7 +5,6 @@
 
 namespace Mantids30::Memory::Streams {
 
-
 /**
  * @brief The ProtocolParser_Base class
  *
@@ -27,13 +26,15 @@ public:
     Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
     virtual ~Parser() override = default;
 
-    enum ParsingDebugOptions {
+    enum ParsingDebugOptions
+    {
         PARSING_DEBUG_PRINT_FAILED_STATUS = 0x1,
         PARSING_DEBUG_PRINT_DATA_PARSED = 0x2,
         PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS = 0x4
     };
 
-    enum ErrorMSG {
+    enum ErrorMSG
+    {
         PARSING_SUCCEED = 0,
         PARSING_ERR_INIT = -1,
         PARSING_ERR_PARSING = -2,
@@ -58,18 +59,15 @@ public:
     void setStreamable(std::shared_ptr<StreamableObject> value);
     void setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject);
 
-    void setParsingDebugOptions(uint32_t newParsingDebugOptions)
-    {
-        parsingDebugOptions = newParsingDebugOptions;
-    }
+    void setParsingDebugOptions(uint32_t newParsingDebugOptions) { parsingDebugOptions = newParsingDebugOptions; }
 
 protected:
     // Avoid to copy streaming things...
-    Parser& operator=(const Parser&)
+    Parser &operator=(const Parser &)
     {
         return *this; // NO-OP Copy...
     }
-    Parser(Parser&) = delete;
+    Parser(Parser &) = delete;
 
     //////////////////////////////////////////
     // Virtual functions to initialize the protocol.
@@ -85,9 +83,9 @@ protected:
     std::shared_ptr<Memory::Streams::StreamableObject> m_streamableObject;
     std::shared_ptr<Memory::Streams::StreamableObject> m_preStreamableObject;
 
-    void initSubParser(SubParser * subparser);
+    void initSubParser(SubParser *subparser);
 
-    SubParser * m_currentSubParser = nullptr;
+    SubParser *m_currentSubParser = nullptr;
     size_t m_maxTTL = 4096;
     bool m_initialized = false;
     bool m_clientMode;
@@ -102,14 +100,9 @@ private:
      * @param ttl Time To Live Counter.
      * @return -1 if error, and n>0 : n length of data processed by parser, which should be equal to count.
      */
-    std::optional<size_t> parseData(const void * buf, size_t count, size_t *ttl);
+    std::optional<size_t> parseData(const void *buf, size_t count, size_t *ttl);
 
     uint32_t parsingDebugOptions = 0;
 };
 
-
-
-}
-
-
-
+} // namespace Mantids30::Memory::Streams

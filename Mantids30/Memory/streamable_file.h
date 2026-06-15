@@ -21,13 +21,13 @@ public:
      * @param __mode File Mode, eg. 0700
      * @return result from system open function
      */
-    int open(const char *path, int oflag, mode_t __mode );
+    int open(const char *path, int oflag, mode_t __mode);
     /**
      * @brief streamTo Stream all the content to another StreamableObject
      * @param out output
      * @return true if streamed ok
      */
-    virtual bool streamTo(Memory::Streams::StreamableObject * out) override;
+    virtual bool streamTo(Memory::Streams::StreamableObject *out) override;
     /**
      * @brief write Write/Append into the file
      * @param buf buffer to be written
@@ -38,8 +38,7 @@ public:
 
 private:
     void closeAll();
-    int rd_fd,wr_fd;
+    int rd_fd, wr_fd;
 };
 
-}
-
+} // namespace Mantids30::Memory::Streams

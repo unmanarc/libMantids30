@@ -5,7 +5,8 @@
 
 namespace Mantids30::Memory::Containers {
 
-struct BinaryContainerChunk {
+struct BinaryContainerChunk
+{
     /**
      * @brief BinaryContainerChunk Constructor
      */
@@ -24,7 +25,9 @@ struct BinaryContainerChunk {
     void destroy()
     {
         if (data)
-            delete [] data;
+        {
+            delete[] data;
+        }
         data = nullptr;
         size = 0;
     }
@@ -36,18 +39,22 @@ struct BinaryContainerChunk {
     void displace(size_t displLen)
     {
         if (!data)
+        {
             return;
-        if (!displLen) 
+        }
+        if (!displLen)
+        {
             return;
-        if (displLen>=size)
+        }
+        if (displLen >= size)
         {
             destroy();
             return;
         }
 
-        size_t nContainerSize = size-displLen;
-        char * ndata = new char[nContainerSize];
-        memcpy(ndata,data+displLen,nContainerSize);
+        size_t nContainerSize = size - displLen;
+        char *ndata = new char[nContainerSize];
+        memcpy(ndata, data + displLen, nContainerSize);
         destroy();
         data = ndata;
         size = nContainerSize;
@@ -57,16 +64,20 @@ struct BinaryContainerChunk {
 
     void truncate(size_t nSize)
     {
-        if (nSize>=(offset+size)) 
+        if (nSize >= (offset + size))
+        {
             return;
-        if (!nSize || nSize == offset) 
+        }
+        if (!nSize || nSize == offset)
+        {
             return;
+        }
 
         // Current new chunk size.
-        nSize-=offset;
+        nSize -= offset;
 
-        char * ndata = new char[nSize];
-        memcpy(ndata,data,nSize);
+        char *ndata = new char[nSize];
+        memcpy(ndata, data, nSize);
 
         destroy();
 
@@ -80,14 +91,16 @@ struct BinaryContainerChunk {
      * @param count size of data to be copied.
      * @return true if succeed. false otherwise.
      */
-    bool copy(const void * buf, size_t count)
+    bool copy(const void *buf, size_t count)
     {
         destroy();
         data = new char[count];
         if (!data)
+        {
             return false;
+        }
         size = count;
-        memcpy(data,buf,count);
+        memcpy(data, buf, count);
         return true;
     }
 
@@ -95,20 +108,14 @@ struct BinaryContainerChunk {
      * @brief Offset of the next/following chunk.
      * @return Current Offset + Size of this container (absolute offset in bytes of the next chunk)
      */
-    size_t nextOffset()
-    {
-        return size+offset;
-    }
+    size_t nextOffset() { return size + offset; }
 
     /**
      * @brief Ask if some absolute offset belongs to this chunk.
      * @param l_offset requested absolute offset in bytes.
      * @return true if the requested offset is on this chunk
      */
-    bool containsOffset(const size_t &l_offset)
-    {
-        return (l_offset>=offset && l_offset<nextOffset());
-    }
+    bool containsOffset(const size_t &l_offset) { return (l_offset >= offset && l_offset < nextOffset()); }
 
     /**
      * @brief Move the chunk to some specific offset for manipulation
@@ -123,13 +130,11 @@ struct BinaryContainerChunk {
         data += l_offset;
     }
 
-    const char * rodata;
+    const char *rodata;
     size_t rosize;
 
-    char * data;
+    char *data;
     size_t size;
     size_t offset;
 };
-}
-
-
+} // namespace Mantids30::Memory::Containers

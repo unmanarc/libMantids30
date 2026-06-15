@@ -1,17 +1,17 @@
 #pragma once
 
 #include "a_var.h"
-#include <Mantids30/Threads/mutex_shared.h>
 #include <Mantids30/Helpers/encoders.h>
+#include <Mantids30/Threads/mutex_shared.h>
 #include <string.h>
 
 namespace Mantids30::Memory::Abstract {
 
-
 class BINARY : public Var
 {
 public:
-    struct ByteArray {
+    struct ByteArray
+    {
         ByteArray()
         {
             ptr = nullptr;
@@ -20,32 +20,42 @@ public:
         ~ByteArray()
         {
             if (ptr)
-                delete [] ptr;
+            {
+                delete[] ptr;
+            }
         }
-        ByteArray(const size_t & len)
+        ByteArray(const size_t &len)
         {
             ptr = nullptr;
-            if (len==0) 
+            if (len == 0)
+            {
                 return;
-            ptr = new char[len+1];
-            if (!ptr) 
+            }
+            ptr = new char[len + 1];
+            if (!ptr)
+            {
                 return;
-            memset(ptr,0,len+1);
+            }
+            memset(ptr, 0, len + 1);
             dataSize = len;
         }
-        ByteArray(char * value, const size_t & len)
+        ByteArray(char *value, const size_t &len)
         {
             ptr = nullptr;
-            if (len==0) 
+            if (len == 0)
+            {
                 return;
-            ptr = new char[len+1];
-            if (!ptr) 
+            }
+            ptr = new char[len + 1];
+            if (!ptr)
+            {
                 return;
+            }
             ptr[len] = 0;
             dataSize = len;
-            memcpy(ptr,value,len);
+            memcpy(ptr, value, len);
         }
-        char * ptr;
+        char *ptr;
         size_t dataSize;
         Threads::Sync::Mutex_Shared mutex;
     };
@@ -61,20 +71,17 @@ public:
     bool setValue(ByteArray *value);
 
     std::string toString() override;
-    bool fromString(const std::string & value) override;
+    bool fromString(const std::string &value) override;
 
     json toJSON() override;
     bool fromJSON(const json &value) override;
 
-
-    void * getDirectMemory() override { return &m_value; }
+    void *getDirectMemory() override { return &m_value; }
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
     ByteArray m_value;
-
 };
-}
-
+} // namespace Mantids30::Memory::Abstract

@@ -6,14 +6,12 @@ using namespace Mantids30::Memory::Abstract;
 BOOL::BOOL()
 {
     setVarType(TYPE_BOOL);
-
 }
 
 BOOL::BOOL(const bool &value)
 {
     setVarType(TYPE_BOOL);
     this->m_value = value;
-
 }
 
 bool BOOL::getValue()
@@ -39,9 +37,13 @@ bool BOOL::fromString(const std::string &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
     if (value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T")
+    {
         this->m_value = true;
+    }
     else
+    {
         this->m_value = false;
+    }
     return true;
 }
 
@@ -50,7 +52,9 @@ json BOOL::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }
@@ -68,6 +72,8 @@ std::shared_ptr<Var> BOOL::protectedCopy()
 
     std::shared_ptr<BOOL> var = std::make_shared<BOOL>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }

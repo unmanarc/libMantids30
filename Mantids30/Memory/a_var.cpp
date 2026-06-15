@@ -31,10 +31,11 @@ std::shared_ptr<Var> Var::copy()
 {
     std::shared_ptr<Var> var = protectedCopy();
     if (var)
+    {
         var->setVarType(this->getVarType());
+    }
     return var;
 }
-
 
 void *Var::getDirectMemory()
 {
@@ -108,14 +109,22 @@ std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defVal
     }
 
     if (v)
+    {
         v->fromString(defValue);
+    }
 
     return v;
 }
 
-json Var::toJSON() { return json::null; }
+json Var::toJSON()
+{
+    return json::null;
+}
 
-bool Var::fromJSON(const json &value) { return true; }
+bool Var::fromJSON(const json &value)
+{
+    return true;
+}
 
 std::string Var::toString()
 {

@@ -7,7 +7,6 @@ using namespace Mantids30::Memory::Abstract;
 INT8::INT8()
 {
     setVarType(TYPE_INT8);
-
 }
 
 INT8::INT8(const int8_t &value)
@@ -47,7 +46,9 @@ bool INT8::fromString(const std::string &value)
     }
     this->m_value = static_cast<int8_t>(strtol(value.c_str(), nullptr, 10));
     if (value != "0" && this->m_value == 0)
+    {
         return false;
+    }
 
     return true;
 }
@@ -57,7 +58,9 @@ std::shared_ptr<Var> INT8::protectedCopy()
 
     std::shared_ptr<INT8> var = std::make_shared<INT8>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
@@ -66,7 +69,9 @@ json INT8::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }

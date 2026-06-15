@@ -59,7 +59,6 @@ void Parser::parseObject(Parser::ErrorMSG *err)
 #ifndef WIN32
         pthread_setname_np(pthread_self(), "Parser:End");
 #endif
-
     }
     else
     {
@@ -199,9 +198,13 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             // If the parser is changed to nullptr, then the connection is ended (-2).
             // Parsed OK :)... Pass to the next stage
             if (m_currentSubParser == nullptr)
+            {
                 this->writeStatus.finished = true;
+            }
             if (m_currentSubParser == nullptr || writtenBytes.value() == count)
+            {
                 return writtenBytes;
+            }
         }
         break;
         case SubParser::PARSE_GET_MORE_DATA:
@@ -213,7 +216,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             }
             // More data required... (TODO: check this)
             if (writtenBytes.value() == count)
+            {
                 return writtenBytes;
+            }
         }
         break;
             // Bad parsing... end here.
@@ -251,12 +256,16 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         std::optional<size_t> x = parseData(buf, count, ttl);
 
         if (x == std::nullopt)
+        {
             return std::nullopt;
+        }
 
         return x.value() + writtenBytes.value();
     }
     else
+    {
         return writtenBytes;
+    }
 }
 
 void Parser::initSubParser(SubParser *subparser)

@@ -8,7 +8,6 @@ using namespace Mantids30::Memory::Abstract;
 DOUBLE::DOUBLE()
 {
     setVarType(TYPE_DOUBLE);
-
 }
 
 DOUBLE::DOUBLE(const double &value)
@@ -59,7 +58,9 @@ json DOUBLE::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }
@@ -77,6 +78,8 @@ std::shared_ptr<Var> DOUBLE::protectedCopy()
 
     std::shared_ptr<DOUBLE> var = std::make_shared<DOUBLE>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }

@@ -21,13 +21,12 @@ std::optional<size_t> StreamableString::write(const void *buf, const size_t &cou
     catch (const std::string &exception)
     {
         // Set error:
-        writeStatus+=-1;
+        writeStatus += -1;
         return std::nullopt;
     }
 }
 
-StreamableString &StreamableString::operator=(
-    const std::string &str)
+StreamableString &StreamableString::operator=(const std::string &str)
 {
     setValue(str);
     return *this;
@@ -38,8 +37,7 @@ const std::string &StreamableString::getValue() const
     return m_value;
 }
 
-void StreamableString::setValue(
-    const std::string &newValue)
+void StreamableString::setValue(const std::string &newValue)
 {
     m_value = newValue;
 }

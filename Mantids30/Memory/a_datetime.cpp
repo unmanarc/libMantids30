@@ -16,7 +16,6 @@ using namespace std;
 DATETIME::DATETIME()
 {
     setVarType(TYPE_DATETIME);
-
 }
 
 DATETIME::DATETIME(const time_t &value)
@@ -80,7 +79,9 @@ json DATETIME::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return (Json::UInt64) m_value;
 }
@@ -99,7 +100,9 @@ std::shared_ptr<Var> DATETIME::protectedCopy()
 
     std::shared_ptr<DATETIME> var = std::make_shared<DATETIME>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
@@ -162,7 +165,9 @@ time_t DATETIME::fromISOTimeStr(const string &v)
         {
             // Fix the sign on minutes:
             if (tzh < 0)
+            {
                 tzm *= -1;
+            }
         }
 
         tmTime.tm_year -= 1900;  // Year since 1900

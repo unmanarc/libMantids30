@@ -100,14 +100,13 @@ Mantids30::Memory::Containers::B_Base *SubParser::getParsedBuffer()
     return &m_parsedBuffer;
 }
 
-
 std::optional<size_t> SubParser::appendToUnparsedBuffer(const void *buf, size_t count)
 {
     std::optional<size_t> bytesAppended = 0;
     size_t leftSize = m_unparsedBuffer.getSizeLeft();
 
     // Overflow of the subparser buffer...
-    if (!leftSize && count>0)
+    if (!leftSize && count > 0)
     {
 #ifdef DEBUG_PARSER
         printf("%p Subparser unparsed buffer size exceeded. can't continue with the parsing....\n", this);
@@ -123,7 +122,7 @@ std::optional<size_t> SubParser::appendToUnparsedBuffer(const void *buf, size_t 
     if (count > 0)
     {
         bytesAppended = m_unparsedBuffer.append(buf, count);
-        if (bytesAppended==std::nullopt || bytesAppended.value() != count)
+        if (bytesAppended == std::nullopt || bytesAppended.value() != count)
         {
             // Failed to append this data (weird...)
             m_unparsedBuffer.clear();
@@ -137,11 +136,13 @@ std::optional<size_t> SubParser::appendToUnparsedBuffer(const void *buf, size_t 
 std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t count)
 {
     size_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
-    std::optional<size_t> needlePos = std::nullopt, bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> needlePos = std::nullopt, bytesAppended = appendToUnparsedBuffer(buf, count);
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     bytesToDisplace = bytesAppended.value();
     m_parsedBuffer.reference(&m_unparsedBuffer);
@@ -181,11 +182,13 @@ std::optional<size_t> SubParser::parseByMultiDelimiter(const void *buf, size_t c
 std::optional<size_t> SubParser::parseByDelimiter(const void *buf, size_t count)
 {
     size_t prevSize = m_unparsedBuffer.size(), bytesToDisplace = 0;
-    std::optional<size_t> needlePos, bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> needlePos, bytesAppended = appendToUnparsedBuffer(buf, count);
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     bytesToDisplace = bytesAppended.value();
     m_parsedBuffer.reference(&m_unparsedBuffer);
@@ -199,7 +202,7 @@ std::optional<size_t> SubParser::parseByDelimiter(const void *buf, size_t count)
 #endif
 
     needlePos = m_unparsedBuffer.find(m_parseDelimiter.c_str(), m_parseDelimiter.size());
-    if (needlePos!=std::nullopt)
+    if (needlePos != std::nullopt)
     {
         // needle found.
         m_parsedBuffer.reference(&m_unparsedBuffer, 0, needlePos.value());
@@ -248,12 +251,14 @@ std::optional<size_t> SubParser::parseBySize(const void *buf, size_t count)
         return 0;
     }
 
-    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf, count);
     size_t bytesToDisplace = 0;
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     // will only displace the bytes appended to the buffer.
     // because the buffer can only handle the max requested size.
@@ -301,12 +306,14 @@ std::optional<size_t> SubParser::parseByValidator(const void *, size_t)
 
 std::optional<size_t> SubParser::parseByConnectionEnd(const void *buf, size_t count)
 {
-    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf, count);
     size_t bytesToDisplace = 0;
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     bytesToDisplace = bytesAppended.value();
 
@@ -321,14 +328,13 @@ std::optional<size_t> SubParser::parseByConnectionEnd(const void *buf, size_t co
         fflush(stdout);
 #endif
 
-        setParseStatus(parse()); // analyze on connection end.
+        setParseStatus(parse());  // analyze on connection end.
         m_unparsedBuffer.clear(); // Destroy the container data.
         return 0;
     }
 
     return bytesToDisplace;
 }
-
 
 /*
 
@@ -342,12 +348,14 @@ std::optional<size_t> SubParser::parseByConnectionEnd(const void *buf, size_t co
 */
 std::optional<size_t> SubParser::parseDirect(const void *buf, size_t count)
 {
-    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf, count);
     size_t bytesToDisplace = 0;
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     bytesToDisplace = bytesAppended.value();
 
@@ -375,12 +383,14 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
     std::optional<size_t> delimPos;
     m_delimiterFound = "";
 
-    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf,count);
+    std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf, count);
     size_t bytesToDisplace = 0;
 
     // Error appending data...
     if (bytesAppended == std::nullopt)
+    {
         return std::nullopt;
+    }
 
     bytesToDisplace = bytesAppended.value();
 
@@ -408,9 +418,13 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
             setParseStatus(parse());
 
             if (bytesOfPossibleDelim)
+            {
                 m_unparsedBuffer.displace(m_unparsedBuffer.size() - bytesOfPossibleDelim); // Displace the parsed elements and leave the possible delimiter in the buffer...
+            }
             else
+            {
                 m_unparsedBuffer.clear(); // Reset the container data for the next element.
+            }
             break;
         }
 
@@ -427,7 +441,9 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
             m_parsedBuffer.reference(&m_unparsedBuffer);
         }
         else
+        {
             m_parsedBuffer.reference(&m_unparsedBuffer, 0, delimPos.value());
+        }
 
         setParseStatus(parse());
         m_unparsedBuffer.clear(); // Reset the container data for the next element.
@@ -460,7 +476,6 @@ Mantids30::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t 
     r.reference(&m_unparsedBuffer, m_unparsedBuffer.size() - bytes);
     return r;
 }
-
 
 std::string SubParser::getFoundDelimiter() const
 {
@@ -501,6 +516,8 @@ bool SubParser::isStreamEnded() const
 void SubParser::setParseMode(const ParseMode &value)
 {
     if (value == PARSE_MODE_DIRECT)
+    {
         setParseDataTargetSize(std::numeric_limits<size_t>::max());
+    }
     m_parseMode = value;
 }

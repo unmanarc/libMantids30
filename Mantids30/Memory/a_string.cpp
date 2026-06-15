@@ -28,7 +28,9 @@ bool STRING::setValue(const std::string &value)
 bool STRING::setValue(const char *value)
 {
     if (!value)
+    {
         return fromString("");
+    }
 
     return fromString(value);
 }
@@ -51,14 +53,18 @@ std::shared_ptr<Var> STRING::protectedCopy()
 
     std::shared_ptr<STRING> var = std::make_shared<STRING>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
 json STRING::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }

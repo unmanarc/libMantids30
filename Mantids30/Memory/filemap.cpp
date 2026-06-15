@@ -1,23 +1,23 @@
 #include "filemap.h"
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #ifndef _WIN32
 #include <sys/mman.h>
 #else
 #include <io.h>
-#define MAP_FAILED	((void *) -1)
+#define MAP_FAILED ((void *) -1)
 
 #ifdef __USE_FILE_OFFSET64
-# define LOADDR(v) (0xFFFFFFFF&(v))
-# define HIADDR(v) (v>>0x20)
+#define LOADDR(v) (0xFFFFFFFF & (v))
+#define HIADDR(v) (v >> 0x20)
 #else
-# define LOADDR(v) (v)
-# define HIADDR(v) (0x0)
+#define LOADDR(v) (v)
+#define HIADDR(v) (0x0)
 #endif
 
 #endif
@@ -30,7 +30,6 @@ using namespace Mantids30::Memory::Containers;
  * @brief emptyMap Virtual Memory Space used for empty file maps..
  */
 static char emptyMap[1] = {0};
-
 
 FileMap::FileMap()
 {
@@ -70,7 +69,7 @@ void FileMap::cleanVars()
 #ifdef _WIN32
     hFileMapping = nullptr;
 #endif
-    fileOpenSize=0;
+    fileOpenSize = 0;
 }
 
 void FileMap::setDeleteFileOnDestruction(bool value)
@@ -82,12 +81,12 @@ bool FileMap::unMapFile()
 {
     bool ret = true;
     // Check if mmap is present, is not invalid and is not the emptyMap, so we can unmap it.
-    if (mmapAddr && mmapAddr!=MAP_FAILED && mmapAddr!=emptyMap)
+    if (mmapAddr && mmapAddr != MAP_FAILED && mmapAddr != emptyMap)
     {
 #ifndef _WIN32
-        ret = munmap(mmapAddr,fileOpenSize)==0;
+        ret = munmap(mmapAddr, fileOpenSize) == 0;
 #else
-        ret = UnmapViewOfFile(mmapAddr)!=0;
+        ret = UnmapViewOfFile(mmapAddr) != 0;
 #endif
     }
 
@@ -106,7 +105,9 @@ bool FileMap::unMapFile()
 bool FileMap::mapFileUsingCurrentFileDescriptor(size_t len)
 {
     if (fd == -1)
+    {
         return false;
+    }
 
     // Establish the new file size.
     this->fileOpenSize = len;
@@ -121,28 +122,21 @@ bool FileMap::mapFileUsingCurrentFileDescriptor(size_t len)
     }
 
 #ifndef _WIN32
-    this->mmapAddr = static_cast<char *>(mmap(nullptr, len, (readOnly? PROT_READ : PROT_READ | PROT_WRITE), MAP_SHARED, fd, 0));
+    this->mmapAddr = static_cast<char *>(mmap(nullptr, len, (readOnly ? PROT_READ : PROT_READ | PROT_WRITE), MAP_SHARED, fd, 0));
     if (this->mmapAddr == MAP_FAILED)
     {
         closeFile();
         return false;
     }
 #else
-    HANDLE hFileDescriptor = (HANDLE)_get_osfhandle(fd);
-    if ((hFileMapping=CreateFileMapping(hFileDescriptor,
-                             NULL,
-                             (readOnly? PAGE_READONLY : PAGE_READWRITE),
-                             HIADDR(len), LOADDR(len),
-                             NULL)) == NULL)
+    HANDLE hFileDescriptor = (HANDLE) _get_osfhandle(fd);
+    if ((hFileMapping = CreateFileMapping(hFileDescriptor, NULL, (readOnly ? PAGE_READONLY : PAGE_READWRITE), HIADDR(len), LOADDR(len), NULL)) == NULL)
     {
         // Can't map the file...
         closeFile();
         return false;
     }
-    if ((this->mmapAddr=(char *)MapViewOfFile(hFileMapping,
-                                              readOnly? FILE_MAP_READ : FILE_MAP_ALL_ACCESS,
-                                              0,0,
-                                              len)) == NULL)
+    if ((this->mmapAddr = (char *) MapViewOfFile(hFileMapping, readOnly ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS, 0, 0, len)) == NULL)
     {
         // Can't map the file...
         CloseHandle(hFileMapping);
@@ -171,40 +165,44 @@ std::string FileMap::getCurrentFileName() const
 
 bool FileMap::mmapDisplace(const size_t &offsetBytes)
 {
-    Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr+offsetBytes, fileOpenSize-offsetBytes);
-    return mmapTruncate(fileOpenSize-offsetBytes);
+    Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
+    return mmapTruncate(fileOpenSize - offsetBytes);
 }
 
 std::optional<size_t> FileMap::mmapAppend(const void *buf, const size_t &count)
 {
-    if (!count) 
+    if (!count)
+    {
         return 0;
+    }
     /////////////////////////////
 
     size_t curOpenSize = fileOpenSize;
-    if (!mmapTruncate(fileOpenSize+count)) 
+    if (!mmapTruncate(fileOpenSize + count))
     {
         return std::nullopt;
     }
 
-    memcpy(mmapAddr+curOpenSize,buf,count);
+    memcpy(mmapAddr + curOpenSize, buf, count);
     return count;
 }
 
 std::optional<size_t> FileMap::mmapPrepend(const void *buf, const size_t &count)
 {
-    if (!count) 
+    if (!count)
+    {
         return 0;
+    }
 
     /////////////////////////////
     size_t curOpenSize = fileOpenSize;
-    if (!mmapTruncate(fileOpenSize+count))
+    if (!mmapTruncate(fileOpenSize + count))
     {
         return std::nullopt;
     }
 
-    Mantids30::Helpers::Mem::memmove64(mmapAddr,mmapAddr+count,curOpenSize);
-    Mantids30::Helpers::Mem::memcpy64(mmapAddr,buf,count);
+    Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
+    Mantids30::Helpers::Mem::memcpy64(mmapAddr, buf, count);
 
     return count;
 }
@@ -215,7 +213,10 @@ bool FileMap::closeFile(bool respectDeleteFileOnDestruction)
     unMapFile();
 
     // If there is a file descriptor, close the file descriptor:
-    if (fd!=-1) close(fd);
+    if (fd != -1)
+    {
+        close(fd);
+    }
 
     // If there is an order to destroy the file, destroy the file.
     if (deleteFileOnDestruction && respectDeleteFileOnDestruction && currentFileName.size())
@@ -232,8 +233,10 @@ bool FileMap::closeFile(bool respectDeleteFileOnDestruction)
 bool FileMap::mmapTruncate(const size_t &nSize)
 {
     // Check if file descriptor is invalid (not file opened)
-    if (fd==-1 || readOnly)
+    if (fd == -1 || readOnly)
+    {
         return false;
+    }
 
     // Unmap the file:
     if (!unMapFile())
@@ -244,7 +247,7 @@ bool FileMap::mmapTruncate(const size_t &nSize)
     }
 
     // Truncate the file...
-    if (ftruncate64(fd,nSize)!=0)
+    if (ftruncate64(fd, nSize) != 0)
     {
         closeFile();
         return false;
@@ -261,7 +264,7 @@ bool FileMap::openFile(const std::string &filePath, bool readOnly, bool createFi
 
     // Open the file descriptor:
     struct stat64 sbuf;
-    int oflags = readOnly? O_RDONLY : (createFile? O_RDWR | O_APPEND | O_CREAT : O_RDWR | O_APPEND );
+    int oflags = readOnly ? O_RDONLY : (createFile ? O_RDWR | O_APPEND | O_CREAT : O_RDWR | O_APPEND);
     if ((fd = open(filePath.c_str(), oflags, 0600)) == -1)
     {
         return false;

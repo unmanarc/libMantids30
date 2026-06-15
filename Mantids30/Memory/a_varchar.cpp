@@ -67,7 +67,9 @@ bool VARCHAR::fromString(const std::string &value)
         memcpy(this->m_value, value.c_str(), szVar);
     }
     else
+    {
         this->m_value[0] = 0;
+    }
 
     return r;
 }
@@ -101,7 +103,9 @@ bool VARCHAR::setValue(char *value)
         memcpy(this->m_value, value, szVar);
     }
     else
+    {
         this->m_value[0] = 0;
+    }
     return r;
 }
 
@@ -127,7 +131,9 @@ unsigned long VARCHAR::getFillSize() const
 json VARCHAR::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }

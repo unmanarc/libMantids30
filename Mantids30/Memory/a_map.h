@@ -1,14 +1,13 @@
 #pragma once
 
 #include "a_var.h"
-#include <map>
-#include <list>
 #include <Mantids30/Threads/mutex_shared.h>
+#include <list>
+#include <map>
 #include <memory>
 
 // TODO: limits...
 namespace Mantids30::Memory::Abstract {
-
 
 class VariableMap
 {
@@ -85,5 +84,4 @@ private:
     Threads::Sync::Mutex_Shared m_mutex;
 };
 
-}
-
+} // namespace Mantids30::Memory::Abstract

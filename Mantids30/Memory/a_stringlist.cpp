@@ -69,8 +69,10 @@ std::string STRINGLIST::toString()
             // Close the encapsulation
             result += '"';
         }
-        else // If not, introduce the element.
+        else
+        { // If not, introduce the element.
             result += element;
+        }
     }
 
     return result;
@@ -185,14 +187,18 @@ std::shared_ptr<Var> STRINGLIST::protectedCopy()
 {
     std::shared_ptr<STRINGLIST> var = std::make_shared<STRINGLIST>();
     if (var)
+    {
         *var = getValue();
+    }
     return var;
 }
 
 Json::Value STRINGLIST::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     Threads::Sync::Lock_RD lock(m_mutex);
     Json::Value j(Json::arrayValue);
@@ -206,7 +212,9 @@ Json::Value STRINGLIST::toJSON()
 bool STRINGLIST::fromJSON(const Json::Value &value)
 {
     if (!value.isArray())
+    {
         return false;
+    }
 
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value.clear();

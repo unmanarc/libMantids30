@@ -20,13 +20,13 @@ std::string StreamableObject::toString()
 bool StreamableObject::writeEOF()
 {
     // Writting 0 (ZERO) to the socket will trigger the EOF.
-    if (write(nullptr, 0)!=std::nullopt)
+    if (write(nullptr, 0) != std::nullopt)
     {
         return true;
     }
     else
     {
-        writeStatus.succeed+=-1;
+        writeStatus.succeed += -1;
         return false;
     }
 }
@@ -41,7 +41,7 @@ bool StreamableObject::writeFullStreamWithEOF(const void *buf, const size_t &cou
     // Here everything is written OK.
     if (!writeEOF())
     {
-        writeStatus.succeed+=-1;
+        writeStatus.succeed += -1;
         return false;
     }
 
@@ -57,7 +57,7 @@ bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
         std::optional<size_t> cur = write(static_cast<const char *>(buf) + writtenBytes, count - writtenBytes);
         if (cur == std::nullopt || !writeStatus.succeed)
         {
-            writeStatus.succeed+=-1;
+            writeStatus.succeed += -1;
             return false;
         }
         writtenBytes += cur.value();
@@ -96,7 +96,9 @@ size_t StreamableObject::strPrintf(const char *format, ...)
     }
 
     if (var)
+    {
         free(var);
+    }
 
     //////
 

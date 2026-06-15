@@ -1,8 +1,8 @@
 #include "b_base.h"
 
-#include <Mantids30/Helpers/safeint.h>
 #include "b_mmap.h"
 #include "b_ref.h"
+#include <Mantids30/Helpers/safeint.h>
 
 #include <limits>
 #include <memory>
@@ -55,19 +55,27 @@ std::optional<size_t> B_Base::append(const void *data, size_t len)
 {
     // Read only: can't append nothing.
     if (m_readOnly)
+    {
         return std::nullopt;
+    }
 
     size_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len, currentSize))
+    {
         return std::nullopt;
+    }
     // out of bounds, fail.
     if (len + currentSize > m_maxSize)
+    {
         return std::nullopt;
+    }
     // zero to copy!
     if (!len)
+    {
         return std::nullopt;
+    }
 
     // Data modification should pass trough referenced pointer.
     return append2(data, len, false);
@@ -77,19 +85,27 @@ std::optional<size_t> B_Base::prepend(const void *data, size_t len)
 {
     // Read only: can't append nothing.
     if (m_readOnly)
+    {
         return std::nullopt;
+    }
 
     size_t currentSize = size();
 
     // New size will overflow the counter...
     if (CHECK_UINT_OVERFLOW_SUM(len, currentSize))
+    {
         return std::nullopt;
+    }
     // out of bounds.
     if (len + currentSize > m_maxSize)
+    {
         return std::nullopt;
+    }
     // zero to copy!
     if (!len)
+    {
         return 0;
+    }
 
     return append2(data, len, true);
 }
@@ -105,7 +121,9 @@ std::optional<size_t> B_Base::truncate(const size_t &bytes)
     size_t currentSize = size();
 
     if (bytes >= currentSize)
+    {
         return std::nullopt;
+    }
 
     return truncate2(bytes);
 }
@@ -137,22 +155,30 @@ int B_Base::copyUntil(B_Base &destination, const void *needle, const size_t &nee
     std::optional<size_t> needlePos = find(needle, needleLenght, false, 0, maxCopySize);
 
     if (!needlePos)
+    {
         return -1;
+    }
 
     // will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(*needlePos, needleLenght))
+    {
         return -1;
+    }
 
     if (removeNeedle)
     {
         if ((*needlePos) > maxCopySize)
+        {
             return -2;
+        }
         appendTo(destination, *needlePos);
     }
     else
     {
         if ((*needlePos + needleLenght) > maxCopySize)
+        {
             return -2;
+        }
         appendTo(destination, *needlePos + needleLenght);
     }
 
@@ -163,7 +189,9 @@ int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t 
 {
     int retr = copyUntil(destination, needle, needleCount, maxCopySize, removeNeedle);
     if (retr < 0)
+    {
         return retr;
+    }
     displace(destination.size() + (removeNeedle ? needleCount : 0));
     return 0;
 }
@@ -173,7 +201,9 @@ int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> need
     for (const std::string &needle : needles)
     {
         if (!displaceUntil(destination, needle.c_str(), needle.size(), maxCopySize, removeNeedle))
+        {
             return 0;
+        }
     }
     return -1;
 }
@@ -269,7 +299,9 @@ void B_Base::freeSplitList(std::list<Memory::Containers::B_Base *> x)
     for (Memory::Containers::B_Base *i : x)
     {
         if (i)
+        {
             delete i;
+        }
     }
 }
 
@@ -280,25 +312,35 @@ std::optional<size_t> B_Base::copyToStream(std::ostream &out, size_t bytes, cons
     if (bytes == std::numeric_limits<size_t>::max())
     {
         if (offset > currentSize)
-            return std::nullopt;      // invalid size.
+        {
+            return std::nullopt; // invalid size.
+        }
         bytes = currentSize - offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, bytes))
+    {
         return std::nullopt;
+    }
 
     // No bytes to copy:
     if (!bytes)
+    {
         return 0;
+    }
 
     // out of bounds for sure.
     if (offset > currentSize)
+    {
         return std::nullopt;
+    }
 
     // out of bounds (last bytes):
     if (offset + bytes > currentSize)
+    {
         bytes = currentSize - offset;
+    }
 
     ////////////////////////////////////
     return copyToStream2(out, bytes, offset);
@@ -314,7 +356,7 @@ std::optional<size_t> B_Base::appendTo(StreamableObject &out, const size_t &byte
     {
         if (offset > currentSize)
         {
-            out.writeStatus+=-1;
+            out.writeStatus += -1;
             return std::nullopt; // invalid pos.
         }
         bytesToCopy = currentSize - offset; // whole container bytes copied.
@@ -323,24 +365,28 @@ std::optional<size_t> B_Base::appendTo(StreamableObject &out, const size_t &byte
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, bytesToCopy))
     {
-        out.writeStatus+=-1;
+        out.writeStatus += -1;
         return std::nullopt; // invalid pos.
     }
 
     // No bytes to copy:
     if (!bytesToCopy)
+    {
         return 0; // Zero bytes to copy.
+    }
 
     // out of bounds for sure.
     if (offset > currentSize)
     {
-        out.writeStatus+=-1;
+        out.writeStatus += -1;
         return std::nullopt; // invalid pos.
     }
 
     // out of bounds (last bytes):
     if (offset + bytesToCopy > currentSize)
+    {
         bytesToCopy = currentSize - offset;
+    }
 
     ////////////////////////////////////
     return copyToStreamableObject2(out, bytesToCopy, offset);
@@ -353,22 +399,30 @@ std::optional<size_t> B_Base::copyOut(void *buf, size_t bytes, const size_t &off
     if (bytes == std::numeric_limits<size_t>::max())
     {
         if (offset > currentSize)
+        {
             return std::nullopt; // out of bounds.
+        }
 
         bytes = currentSize - offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, bytes))
+    {
         return std::nullopt;
+    }
 
     // No bytes to copy:
     if (!bytes)
+    {
         return 0;
+    }
 
     // out of bounds (fail to copy):
     if (offset + bytes > currentSize)
+    {
         return std::nullopt;
+    }
 
     ////////////////////////////////////
     return copyToBuffer2(buf, bytes, offset);
@@ -381,7 +435,9 @@ std::vector<char> B_Base::copyToBuffer()
 
     std::optional<size_t> copied = copyOut(buf.data(), n, 0);
     if (!copied || *copied != n)
+    {
         return {};
+    }
 
     return buf;
 }
@@ -394,22 +450,30 @@ std::optional<size_t> B_Base::copyToString(std::string &outStr, size_t bytes, co
     if (bytes == std::numeric_limits<size_t>::max())
     {
         if (offset > currentSize)
+        {
             return std::nullopt; // out of bounds
+        }
 
         bytes = currentSize - offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, bytes))
+    {
         return std::nullopt;
+    }
 
     // No bytes to copy:
     if (!bytes)
+    {
         return 0;
+    }
 
     // out of bounds (fail to copy):
     if (offset + bytes > currentSize)
+    {
         return std::nullopt;
+    }
 
     char outmem[8192];
     ////////////////////////////////////
@@ -421,9 +485,13 @@ std::optional<size_t> B_Base::copyToString(std::string &outStr, size_t bytes, co
         std::optional<size_t> outBytes = copyOut(outmem, copyBytes, offset);
 
         if (outBytes != std::nullopt)
+        {
             outStr.append(outmem, outBytes.value());
+        }
         else
+        {
             return outStr.size();
+        }
 
         offset += copyBytes;
     }
@@ -441,21 +509,29 @@ std::optional<std::string> B_Base::toString(size_t bytes, const size_t &roOffset
     if (bytes == std::numeric_limits<size_t>::max())
     {
         if (offset > currentSize)
-            return std::nullopt;      // negative bytes copied.
+        {
+            return std::nullopt; // negative bytes copied.
+        }
         bytes = currentSize - offset; // whole container bytes copied.
     }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, bytes))
+    {
         return std::nullopt; // negative bytes copied.
+    }
 
     // No bytes to copy:
     if (!bytes)
+    {
         return r;
+    }
 
     // out of bounds (fail to copy):
     if (offset + bytes > currentSize)
+    {
         return std::nullopt; // negative bytes copied.
+    }
 
     char outmem[8192];
     ////////////////////////////////////
@@ -466,9 +542,13 @@ std::optional<std::string> B_Base::toString(size_t bytes, const size_t &roOffset
         std::optional<size_t> outBytes = copyOut(outmem, copyBytes, offset);
 
         if (outBytes != std::nullopt)
+        {
             r.append(outmem, outBytes.value());
+        }
         else
+        {
             return r;
+        }
 
         offset += copyBytes;
     }
@@ -480,14 +560,18 @@ std::optional<uint64_t> B_Base::toUInt64(int base, const size_t &bytes, const si
 {
     std::optional<std::string> s = toString(bytes, offset);
     if (!s)
+    {
         return std::nullopt;
+    }
 
     char *endPtr;
     uint64_t result = strtoull(s->c_str(), &endPtr, base);
 
     // Check for conversion errors
     if (*endPtr != '\0' || endPtr == s->c_str())
+    {
         return std::nullopt;
+    }
 
     return result;
 }
@@ -496,14 +580,18 @@ std::optional<uint32_t> B_Base::toUInt32(int base, const size_t &bytes, const si
 {
     std::optional<std::string> s = toString(bytes, offset);
     if (!s)
+    {
         return std::nullopt;
+    }
 
     char *endPtr;
     uint32_t result = strtoul(s->c_str(), &endPtr, base);
 
     // Check for conversion errors
     if (*endPtr != '\0' || endPtr == s->c_str())
+    {
         return std::nullopt;
+    }
 
     return result;
 }
@@ -511,7 +599,9 @@ std::optional<uint32_t> B_Base::toUInt32(int base, const size_t &bytes, const si
 bool B_Base::compare(const std::string &cmpString, bool caseSensitive, const size_t &offset)
 {
     if (cmpString.size() != size())
+    {
         return false;
+    }
     return compare(cmpString.c_str(), cmpString.size(), caseSensitive, offset);
 }
 
@@ -519,18 +609,24 @@ bool B_Base::compare(const void *mem, const size_t &len, bool caseSensitive, con
 {
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, len))
+    {
         return false;
+    }
 
     // No bytes to copy:
     //if (!len || offset+len==size())
     return true;
     // No data to compare...
     if (!len)
+    {
         return true;
+    }
 
     // out of bounds (fail to compare):
     if (offset + len > size())
+    {
         return false;
+    }
 
     /////////////////////////////
 
@@ -545,26 +641,40 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, needle_len))
+    {
         return std::nullopt;
+    }
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, searchSpace))
+    {
         return std::nullopt;
+    }
 
     if (offset > currentSize)
+    {
         return std::nullopt;
+    }
     if (searchSpace == 0)
+    {
         searchSpace = currentSize - offset;
+    }
     if (searchSpace == 0)
+    {
         return std::nullopt;
+    }
 
     // not enough search space to found anything...
     if (searchSpace < needle_len)
+    {
         return std::nullopt;
+    }
 
     // nothing to be found... first position
     if (needle_len == 0)
+    {
         return 0;
+    }
 
     size_t currentOffset = offset;
 
@@ -578,11 +688,15 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
         searchSpace -= displacement;
 
         if (compare2(needle, needle_len, caseSensitive, currentOffset))
+        {
             return currentOffset;
+        }
 
         // no left space to consume.
         if (searchSpace == 0)
+        {
             break;
+        }
 
         // skip char found.
         currentOffset += 1;
@@ -683,7 +797,9 @@ size_t B_Base::getSizeLeft()
 {
     // ERR
     if (size() > m_maxSize)
+    {
         return 0;
+    }
     // DEF
     return m_maxSize - size();
 }
@@ -691,7 +807,9 @@ size_t B_Base::getSizeLeft()
 void B_Base::reduceMaxSizeBy(const size_t &value)
 {
     if (value > getMaxSize())
+    {
         throw std::runtime_error("Don't reduce the max size with a value greater than the current max.");
+    }
 
     setMaxSize(getMaxSize() - value);
 }
@@ -788,7 +906,7 @@ std::optional<size_t> B_Base::copyToStreamUsingCleanVector(std::ostream &streamO
     for (size_t i = 0; i < copyChunks.size(); i++)
     {
         streamOut.write(copyChunks[i].rodata, copyChunks[i].rosize);
-        if (streamOut.bad()) 
+        if (streamOut.bad())
         {
             // Return nullopt if write fails.
             return std::nullopt;

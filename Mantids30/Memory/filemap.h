@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <optional>
+#include <string>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -15,8 +15,7 @@ public:
     FileMap();
     ~FileMap();
 
-
-    FileMap & operator=(FileMap & bc);
+    FileMap &operator=(FileMap &bc);
 
     bool mmapDisplace(const size_t &offsetBytes);
 
@@ -42,8 +41,7 @@ public:
      * @param respectDeleteFileOnDestruction if false, will not destroy the file at all.
      * @return true if close suceeded
      */
-    bool closeFile(bool respectDeleteFileOnDestruction=true);
-
+    bool closeFile(bool respectDeleteFileOnDestruction = true);
 
     // Mmap/FILE MODE methods:
     // TODO: use mmap64... or plain seek mode...
@@ -56,8 +54,7 @@ public:
      * @param createFile
      * @return
      */
-    bool openFile(const std::string & filePath, bool readOnly, bool createFile);
-
+    bool openFile(const std::string &filePath, bool readOnly, bool createFile);
 
     std::string getCurrentFileName() const;
 
@@ -68,7 +65,6 @@ public:
     void setDeleteFileOnDestruction(bool value);
 
 private:
-
     bool unMapFile();
     bool mapFileUsingCurrentFileDescriptor(size_t len);
     void cleanVars();
@@ -88,7 +84,7 @@ private:
     /**
      * @brief linearMemOriginalPointer original pointer used
      */
-    char * mmapAddr;
+    char *mmapAddr;
     /**
      * @brief containerBytesOriginalBytes original container size.
      */
@@ -104,5 +100,4 @@ private:
 #endif
 };
 
-}
-
+} // namespace Mantids30::Memory::Containers

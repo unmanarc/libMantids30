@@ -4,7 +4,6 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-
 json Vars::toJSON()
 {
     Json::Value jsonMap;
@@ -61,7 +60,9 @@ bool Vars::fromJSON(const Json::Value &json)
                 std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
                 bChunk->writeString(JSON_ARRAY_ASSTRING(value, i, ""));
                 if (!addVar(key, bChunk))
+                {
                     return false;
+                }
             }
         }
         else
@@ -70,7 +71,9 @@ bool Vars::fromJSON(const Json::Value &json)
             std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
             bChunk->writeString(JSON_ASSTRING_D(value, ""));
             if (!addVar(key, bChunk))
+            {
                 return false;
+            }
         }
     }
 
@@ -86,7 +89,9 @@ std::string Vars::getStringValue(const std::string &varName)
 {
     std::shared_ptr<Mantids30::Memory::Streams::StreamableObject> v = getValue(varName);
     if (v == nullptr)
+    {
         return "";
+    }
     return v->toString();
 }
 

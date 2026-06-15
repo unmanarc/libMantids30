@@ -36,14 +36,18 @@ std::string VariableMap::getVariableAsString(const std::string &variableName)
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (m_variables.find(variableName) == m_variables.end())
+    {
         return "";
+    }
     return m_variables[variableName]->toString();
 }
 
 void VariableMap::removeVariable(const std::string &variableName, bool lock)
 {
     if (lock)
+    {
         m_mutex.lock();
+    }
 
     if (m_variables.find(variableName) != m_variables.end())
     {
@@ -55,7 +59,9 @@ void VariableMap::removeVariable(const std::string &variableName, bool lock)
     }
 
     if (lock)
+    {
         m_mutex.unlock();
+    }
 }
 
 std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
@@ -63,7 +69,9 @@ std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (m_variables.find(variableName) == m_variables.end())
+    {
         return nullptr;
+    }
     return m_variables[variableName];
 }
 
@@ -72,7 +80,9 @@ std::shared_ptr<VariableMap> VariableMap::getSubmap(const std::string &variableN
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (m_submaps.find(variableName) == m_submaps.end())
+    {
         return nullptr;
+    }
     return m_submaps[variableName];
 }
 
@@ -82,7 +92,9 @@ std::list<std::string> VariableMap::listVariableKeys()
 
     std::list<std::string> r;
     for (const std::pair<const std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &i : m_variables)
+    {
         r.push_back(i.first);
+    }
     return r;
 }
 
@@ -92,6 +104,8 @@ std::list<std::string> VariableMap::listSubmapKeys()
 
     std::list<std::string> r;
     for (const std::pair<const std::string, std::shared_ptr<VariableMap>> &i : m_submaps)
+    {
         r.push_back(i.first);
+    }
     return r;
 }

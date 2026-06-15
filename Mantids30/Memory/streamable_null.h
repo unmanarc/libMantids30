@@ -16,5 +16,4 @@ private:
     size_t bytes = 0;
 };
 
-}
-
+} // namespace Mantids30::Memory::Streams

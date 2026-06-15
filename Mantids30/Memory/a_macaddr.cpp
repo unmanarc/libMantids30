@@ -113,7 +113,9 @@ uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
     memset(_macaddr, 0, sizeof(_macaddr));
     bool okv = _fromString(value, _macaddr);
     if (ok)
+    {
         *ok = okv;
+    }
     return ntohll(*((uint64_t *) _macaddr));
 }
 
@@ -129,13 +131,17 @@ std::shared_ptr<Var> MACADDR::protectedCopy()
 {
     std::shared_ptr<MACADDR> var = std::make_shared<MACADDR>();
     if (var)
+    {
         *var = getValue();
+    }
     return var;
 }
 json MACADDR::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }

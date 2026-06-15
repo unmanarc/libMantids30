@@ -1,7 +1,7 @@
 #include "b_mmap.h"
 #include <optional>
-#include <sys/timeb.h>
 #include <random>
+#include <sys/timeb.h>
 
 using namespace Mantids30::Memory::Containers;
 
@@ -30,7 +30,7 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
     FileMap bcr;
 
     // Open the file:
-    if (!bcr.openFile( filePath.size()? filePath : getRandomFileName(), readOnly, createFile))
+    if (!bcr.openFile(filePath.size() ? filePath : getRandomFileName(), readOnly, createFile))
     {
         // Failed to open the referenced file.
 
@@ -46,7 +46,7 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
     }
 
     // Destroy current memory and assign reference values:
-    mem.reference(bcr.getMmapAddr(),bcr.getFileOpenSize());
+    mem.reference(bcr.getMmapAddr(), bcr.getFileOpenSize());
 
     // Copy file descriptor and other things.
     fileReference = bcr;
@@ -62,17 +62,17 @@ void B_MMAP::setDeleteFileOnDestruction(bool value)
 size_t B_MMAP::size()
 {
     // TODO: check
-//    std::cout << "B_MMAP::  Getting size() " << mem.size() << std::endl << std::flush;
+    //    std::cout << "B_MMAP::  Getting size() " << mem.size() << std::endl << std::flush;
     return mem.size();
 }
 
 std::optional<size_t> B_MMAP::findChar(const int &c, const size_t &offset, size_t searchSpace, bool caseSensitive)
 {
-    if (caseSensitive && !std::isalpha(c)) 
+    if (caseSensitive && !std::isalpha(c))
     {
         caseSensitive = false;
     }
-    return mem.findChar(c,offset,searchSpace, caseSensitive);
+    return mem.findChar(c, offset, searchSpace, caseSensitive);
 }
 
 std::optional<size_t> B_MMAP::truncate2(const size_t &bytes)
@@ -98,11 +98,15 @@ std::optional<size_t> B_MMAP::append2(const void *buf, const size_t &len, bool p
     std::optional<size_t> addedBytes;
 
     if (prependMode)
-        addedBytes = fileReference.mmapPrepend(buf,len);
+    {
+        addedBytes = fileReference.mmapPrepend(buf, len);
+    }
     else
-        addedBytes = fileReference.mmapAppend(buf,len);
+    {
+        addedBytes = fileReference.mmapAppend(buf, len);
+    }
 
-    if (addedBytes==std::nullopt)
+    if (addedBytes == std::nullopt)
     {
         //clear(); // :(
         // Failed.
@@ -118,12 +122,15 @@ std::optional<size_t> B_MMAP::displace2(const size_t &roBytesToDisplace)
 {
     size_t bytesToDisplace = roBytesToDisplace;
 
-
-    if (bytesToDisplace>fileReference.getFileOpenSize())
+    if (bytesToDisplace > fileReference.getFileOpenSize())
+    {
         return std::nullopt;
+    }
 
     if (!fileReference.mmapDisplace(bytesToDisplace))
+    {
         return std::nullopt;
+    }
 
     reMapMemoryContainer();
 
@@ -137,28 +144,28 @@ bool B_MMAP::clear2()
 
 std::optional<size_t> B_MMAP::copyToStream2(std::ostream &out, const size_t &bytes, const size_t &offset)
 {
-    return mem.copyToStream(out,bytes,offset);
+    return mem.copyToStream(out, bytes, offset);
 }
 
 std::optional<size_t> B_MMAP::copyToStreamableObject2(StreamableObject &bc, const size_t &bytes, const size_t &offset)
 {
-    return mem.appendTo(bc,bytes,offset);
+    return mem.appendTo(bc, bytes, offset);
 }
 
 std::optional<size_t> B_MMAP::copyToBuffer2(void *buf, const size_t &count, const size_t &offset)
 {
-    return mem.copyOut(buf,count,offset);
+    return mem.copyOut(buf, count, offset);
 }
 
 bool B_MMAP::compare2(const void *buf, const size_t &count, bool caseSensitive, const size_t &offset)
 {
-    return this->mem.compare(buf,count,caseSensitive,offset);
+    return this->mem.compare(buf, count, caseSensitive, offset);
 }
 
 void B_MMAP::reMapMemoryContainer()
 {
     setContainerBytes(fileReference.getFileOpenSize());
-    mem.reference(fileReference.getMmapAddr(),size());
+    mem.reference(fileReference.getMmapAddr(), size());
 }
 
 std::string B_MMAP::getRandomFileName()
@@ -167,11 +174,13 @@ std::string B_MMAP::getRandomFileName()
     char baseChars[] = "abcdefghijklmnopqrstuvwxyz0123456789";
     std::string randomStr;
     std::mt19937 rg{std::random_device{}()};
-    std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(baseChars)-2);
+    std::uniform_int_distribution<std::string::size_type> pick(0, sizeof(baseChars) - 2);
     randomStr.reserve(length);
 
-    while(length--)
+    while (length--)
+    {
         randomStr += baseChars[pick(rg)];
+    }
 
     return m_fsDirectoryPath + FS_DIRSLASH + m_fsBaseFileName + "." + randomStr;
 }
@@ -179,7 +188,7 @@ std::string B_MMAP::getRandomFileName()
 bool B_MMAP::createEmptyFile(const std::string &)
 {
     // Creates file here.
-//    FileMap bcr;
+    //    FileMap bcr;
     // TODO:
     /*
     if (!access(fileName.c_str(), F_OK)) 
@@ -198,4 +207,3 @@ bool B_MMAP::createEmptyFile(const std::string &)
     return true;*/
     return false;
 }
-

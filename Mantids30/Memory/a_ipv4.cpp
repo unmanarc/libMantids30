@@ -13,7 +13,6 @@ using namespace Mantids30::Memory::Abstract;
 
 IPV4::IPV4()
 {
-
     setVarType(TYPE_IPV4);
 }
 
@@ -70,11 +69,15 @@ uint64_t IPV4::u64pow(uint32_t base, uint32_t exponent)
     uint64_t result = base;
 
     if (exponent == 0)
+    {
         return 1;
+    }
     else
     {
         for (uint32_t ec = 1; ec < exponent; ec++)
+        {
             result *= 2;
+        }
         return result;
     }
 }
@@ -95,7 +98,9 @@ bool IPV4::_matchRange(const char *haystack, const in_addr &needle)
 
     std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(haystack, &ok);
     if (!ok)
+    {
         return false;
+    }
 
     return _matchRange(v.first, v.second, needle);
 }
@@ -106,7 +111,9 @@ bool IPV4::_matchRange(const char *haystack, const char *needle)
 
     in_addr aNeedle = _fromString(needle, &ok);
     if (!ok)
+    {
         return false;
+    }
 
     return _matchRange(haystack, aNeedle);
 }
@@ -115,7 +122,9 @@ bool IPV4::_matchRange(const in_addr &haystack, uint8_t cidr, const in_addr &nee
 {
     uint8_t baseNetmaskCIDR = cidr;
     if (baseNetmaskCIDR > 32)
+    {
         return false;
+    }
 
     uint32_t baseNetmask = htonl(u64pow(2, baseNetmaskCIDR) - 1);
 
@@ -130,74 +139,140 @@ uint8_t IPV4::_toCIDRMask(const in_addr &value)
     std::string maskValue = _toString(value);
 
     if (maskValue == "255.255.255.255")
+    {
         return 32;
+    }
     if (maskValue == "255.255.255.254")
+    {
         return 31;
+    }
     if (maskValue == "255.255.255.252")
+    {
         return 30;
+    }
     if (maskValue == "255.255.255.248")
+    {
         return 29;
+    }
     if (maskValue == "255.255.255.240")
+    {
         return 28;
+    }
     if (maskValue == "255.255.255.224")
+    {
         return 27;
+    }
     if (maskValue == "255.255.255.192")
+    {
         return 26;
+    }
     if (maskValue == "255.255.255.128")
+    {
         return 25;
+    }
 
     if (maskValue == "255.255.255.0")
+    {
         return 24;
+    }
     if (maskValue == "255.255.254.0")
+    {
         return 23;
+    }
     if (maskValue == "255.255.252.0")
+    {
         return 22;
+    }
     if (maskValue == "255.255.248.0")
+    {
         return 21;
+    }
     if (maskValue == "255.255.240.0")
+    {
         return 20;
+    }
     if (maskValue == "255.255.224.0")
+    {
         return 19;
+    }
     if (maskValue == "255.255.192.0")
+    {
         return 18;
+    }
     if (maskValue == "255.255.128.0")
+    {
         return 17;
+    }
 
     if (maskValue == "255.255.0.0")
+    {
         return 16;
+    }
     if (maskValue == "255.254.0.0")
+    {
         return 15;
+    }
     if (maskValue == "255.252.0.0")
+    {
         return 14;
+    }
     if (maskValue == "255.248.0.0")
+    {
         return 13;
+    }
     if (maskValue == "255.240.0.0")
+    {
         return 12;
+    }
     if (maskValue == "255.224.0.0")
+    {
         return 11;
+    }
     if (maskValue == "255.192.0.0")
+    {
         return 10;
+    }
     if (maskValue == "255.128.0.0")
+    {
         return 9;
+    }
 
     if (maskValue == "255.0.0.0")
+    {
         return 8;
+    }
     if (maskValue == "254.0.0.0")
+    {
         return 7;
+    }
     if (maskValue == "252.0.0.0")
+    {
         return 6;
+    }
     if (maskValue == "248.0.0.0")
+    {
         return 5;
+    }
     if (maskValue == "240.0.0.0")
+    {
         return 4;
+    }
     if (maskValue == "224.0.0.0")
+    {
         return 3;
+    }
     if (maskValue == "192.0.0.0")
+    {
         return 2;
+    }
     if (maskValue == "128.0.0.0")
+    {
         return 1;
+    }
     if (maskValue == "0.0.0.0")
+    {
         return 0;
+    }
 
     return 255;
 }
@@ -207,9 +282,13 @@ in_addr IPV4::_fromCIDRMask(const uint8_t &value, bool *ok)
     if (ok)
     {
         if (value > 32)
+        {
             *ok = false;
+        }
         else
+        {
             *ok = true;
+        }
     }
 
     if (value <= 32)
@@ -243,13 +322,17 @@ in_addr IPV4::_fromString(const std::string &value, bool *ok)
     if (value.empty())
     {
         if (ok)
+        {
             *ok = true;
+        }
         return xvalue;
     }
 
     bool r = inet_pton(AF_INET, value.c_str(), &xvalue) == 1;
     if (ok)
+    {
         *ok = r;
+    }
 
     return xvalue;
 }
@@ -272,7 +355,9 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
         if (detectedNetmask.size() != 1 && detectedNetmask.size() != 2)
         {
             if (ok)
+            {
                 *ok = false;
+            }
         }
         else
         {
@@ -280,11 +365,15 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
             if (r.second > 32)
             {
                 if (ok)
+                {
                     *ok = false;
+                }
                 r.second = 0;
             }
             else
+            {
                 r.first = _fromString(value.substr(0, value.find_first_of('/')), ok);
+            }
         }
     }
     return r;
@@ -294,14 +383,18 @@ std::shared_ptr<Var> IPV4::protectedCopy()
 {
     std::shared_ptr<IPV4> var = std::make_shared<IPV4>();
     if (var)
+    {
         var->setValue(getValue(), getCidrMask());
+    }
     return var;
 }
 
 json IPV4::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }

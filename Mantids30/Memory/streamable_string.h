@@ -13,11 +13,11 @@ class StreamableString : public Memory::Streams::StreamableObject
 public:
     StreamableString() = default;
 
-    virtual bool streamTo(Memory::Streams::StreamableObject * out) override;
+    virtual bool streamTo(Memory::Streams::StreamableObject *out) override;
 
     virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
 
-    StreamableString& operator=(const std::string& str);
+    StreamableString &operator=(const std::string &str);
 
     const std::string &getValue() const;
     void setValue(const std::string &newValue);
@@ -26,5 +26,4 @@ private:
     std::string m_value;
 };
 
-}
-
+} // namespace Mantids30::Memory::Streams

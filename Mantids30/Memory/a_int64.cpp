@@ -7,7 +7,6 @@ using namespace Mantids30::Memory::Abstract;
 INT64::INT64()
 {
     setVarType(TYPE_INT64);
-
 }
 
 INT64::INT64(const int64_t &value)
@@ -51,7 +50,9 @@ bool INT64::fromString(const std::string &value)
 
     this->m_value = strtoll(value.c_str(), nullptr, 10);
     if (value != "0" && this->m_value == 0)
+    {
         return false;
+    }
 
     return true;
 }
@@ -62,7 +63,9 @@ std::shared_ptr<Var> INT64::protectedCopy()
 
     std::shared_ptr<INT64> var = std::make_shared<INT64>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
@@ -71,7 +74,9 @@ json INT64::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }

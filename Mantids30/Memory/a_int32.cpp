@@ -6,7 +6,6 @@ using namespace Mantids30::Memory::Abstract;
 INT32::INT32()
 {
     setVarType(TYPE_INT32);
-
 }
 
 INT32::INT32(const int32_t &value)
@@ -48,7 +47,9 @@ bool INT32::fromString(const std::string &value)
 
     this->m_value = strtol(value.c_str(), nullptr, 10);
     if (value != "0" && this->m_value == 0)
+    {
         return false;
+    }
 
     return true;
 }
@@ -59,7 +60,9 @@ std::shared_ptr<Var> INT32::protectedCopy()
 
     std::shared_ptr<INT32> var = std::make_shared<INT32>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
@@ -68,7 +71,9 @@ json INT32::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }

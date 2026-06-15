@@ -2,8 +2,8 @@
 
 #include "a_var.h"
 #ifdef _WIN32
-#include <winsock2.h>
 #include <in6addr.h>
+#include <winsock2.h>
 #else
 #include <netinet/in.h>
 #endif
@@ -11,32 +11,31 @@
 
 namespace Mantids30::Memory::Abstract {
 
-class IPV6: public Var
+class IPV6 : public Var
 {
 public:
     IPV6();
     IPV6(const in6_addr &value);
     IPV6(const std::string &value);
-    IPV6& operator=(const in6_addr & value)
+    IPV6 &operator=(const in6_addr &value)
     {
         setValue(value);
         return *this;
     }
 
     in6_addr getValue();
-    bool setValue(const in6_addr & value);
+    bool setValue(const in6_addr &value);
 
-    void * getDirectMemory() override { return &m_value; }
+    void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string & value) override;
+    bool fromString(const std::string &value) override;
 
-    static std::string _toString(const in6_addr & value);
-    static in6_addr _fromString(const std::string & value, bool * ok = nullptr);
+    static std::string _toString(const in6_addr &value);
+    static in6_addr _fromString(const std::string &value, bool *ok = nullptr);
 
     json toJSON() override;
-    bool fromJSON(const json & value) override;
-
+    bool fromJSON(const json &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;
@@ -44,8 +43,6 @@ protected:
 private:
     in6_addr m_value;
     Threads::Sync::Mutex_Shared m_mutex;
-
 };
 
-}
-
+} // namespace Mantids30::Memory::Abstract

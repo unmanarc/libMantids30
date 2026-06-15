@@ -5,28 +5,27 @@
 
 namespace Mantids30::Memory::Abstract {
 
-class STRING: public Var
+class STRING : public Var
 {
 public:
     STRING();
-    STRING(const std::string & value);
-    STRING& operator=(const std::string & value)
+    STRING(const std::string &value);
+    STRING &operator=(const std::string &value)
     {
         setValue(value);
         return *this;
     }
     std::string getValue();
     bool setValue(const std::string &value);
-    bool setValue(const char * value);
+    bool setValue(const char *value);
 
-    void * getDirectMemory() override { return &m_value; }
+    void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string & value) override;
-
+    bool fromString(const std::string &value) override;
 
     json toJSON() override;
-    bool fromJSON(const json & value) override;
+    bool fromJSON(const json &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;
@@ -34,8 +33,6 @@ protected:
 private:
     std::string m_value;
     Threads::Sync::Mutex_Shared m_mutex;
-
 };
 
-}
-
+} // namespace Mantids30::Memory::Abstract

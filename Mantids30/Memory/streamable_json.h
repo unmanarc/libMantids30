@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/Memory/streamable_object.h>
 #include <Mantids30/Helpers/json.h>
+#include <Mantids30/Memory/streamable_object.h>
 
 namespace Mantids30::Memory::Streams {
 
@@ -20,19 +20,19 @@ public:
      * @brief processValue Proccess current string into m_root and return the internal json pointer if parsing succeed, otherwise return nullptr.
      * @return
      */
-    json * processValue();
+    json *processValue();
     /**
      * @brief getValue Return the pointer to the internal json.
      * @return
      */
-    json * getValue();
+    json *getValue();
 
     bool isEmpty();
 
-    StreamableJSON& operator=(const Json::Value& value);
+    StreamableJSON &operator=(const Json::Value &value);
 
-    void setValue(const json & value);
-    bool setValue(const std::string & value);
+    void setValue(const json &value);
+    bool setValue(const std::string &value);
 
     void setMaxSize(const size_t &value);
 
@@ -40,15 +40,11 @@ public:
     void setIsFormatted(bool value);
 
 private:
-
     size_t m_maxSize = std::numeric_limits<size_t>::max();
     std::string m_strValue;
     json m_root;
     bool m_isFormatted = true;
     bool m_isFull = false;
-
 };
 
-}
-
-
+} // namespace Mantids30::Memory::Streams

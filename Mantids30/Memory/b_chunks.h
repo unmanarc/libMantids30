@@ -12,7 +12,7 @@ class B_Chunks : public B_Base
 {
 public:
     B_Chunks();
-    B_Chunks(const std::string & str);
+    B_Chunks(const std::string &str);
     ~B_Chunks() override;
 
     /**
@@ -55,7 +55,7 @@ public:
      * @brief setMaxChunkSize Set Maximum Chunk Size on BC_METHOD_CHUNKS
      * @param value Max Chunk size in bytes.
      */
-    void setMaxChunkSize(const size_t & value);
+    void setMaxChunkSize(const size_t &value);
     /**
      * @brief size Get Container Data Size in bytes
      * @return data size in bytes
@@ -67,8 +67,7 @@ public:
      * @param offset
      * @return
      */
-    std::optional<size_t> findChar(const int &c, const size_t &roOffset = 0, size_t  searchSpace = 0, bool caseSensitive = false) override;
-
+    std::optional<size_t> findChar(const int &c, const size_t &roOffset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
 
 protected:
     /**
@@ -84,7 +83,7 @@ protected:
      * @param prependMode mode: true will prepend the data, false will append.
      * @return true if succeed
      */
-    std::optional<size_t> append2(const void * buf, const size_t &len, bool prependMode = false) override;
+    std::optional<size_t> append2(const void *buf, const size_t &len, bool prependMode = false) override;
     /**
      * @brief remove n bytes at the beggining shrinking the container
      * @param bytes bytes to be removed
@@ -103,7 +102,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::optional<size_t> copyToStream2(std::ostream & bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
+    std::optional<size_t> copyToStream2(std::ostream &bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
     * @brief Internal Copy function to copy this container to a new one.
     * @param out data stream out
@@ -111,7 +110,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::optional<size_t> copyToStreamableObject2(StreamableObject & bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
+    std::optional<size_t> copyToStreamableObject2(StreamableObject &bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
@@ -119,7 +118,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return number of bytes copied (in bytes)
      */
-    std::optional<size_t> copyToBuffer2(void * buf, const size_t &bytes, const size_t &offset = 0) override;
+    std::optional<size_t> copyToBuffer2(void *buf, const size_t &bytes, const size_t &offset = 0) override;
     /**
      * @brief Compare memory with the container
      * @param mem Memory to be compared
@@ -127,10 +126,9 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare2(const void * buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0 ) override;
+    bool compare2(const void *buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0) override;
 
 private:
-
     bool clearMmapedContainer();
     bool clearChunks();
 
@@ -167,5 +165,4 @@ private:
     std::shared_ptr<B_Base> m_mmapContainer;
 };
 
-}
-
+} // namespace Mantids30::Memory::Containers

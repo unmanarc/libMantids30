@@ -7,7 +7,7 @@ namespace Mantids30::Memory::Containers {
 class B_Ref : public B_Base
 {
 public:
-    B_Ref(B_Base *bc = nullptr, const size_t &offset=0, const size_t &maxBytes=0);
+    B_Ref(B_Base *bc = nullptr, const size_t &offset = 0, const size_t &maxBytes = 0);
     ~B_Ref() override;
     /**
      * @brief reference another binary container into this container.
@@ -15,7 +15,7 @@ public:
      * @param offset start position.
      * @param maxBytes max bytes to be referenced (std::numeric_limits<size_t>::max(): unlimited, but if maxBytes>0, it will be readOnly)
      */
-    bool reference(B_Base * bc, const size_t &offset=0, const size_t &maxBytes = std::numeric_limits<size_t>::max());
+    bool reference(B_Base *bc, const size_t &offset = 0, const size_t &maxBytes = std::numeric_limits<size_t>::max());
     /**
      * @brief getReferencedBC Get referenced object
      * @return referenced object pointer.
@@ -32,7 +32,7 @@ public:
      * @param offset
      * @return
      */
-    std::optional<size_t> findChar(const int & c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
+    std::optional<size_t> findChar(const int &c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
 
 protected:
     /**
@@ -45,7 +45,7 @@ protected:
      * @brief Append is disabled.
      * @return 0.
      */
-    std::optional<size_t> append2(const void * buf, const size_t &len, bool prependMode = false) override;
+    std::optional<size_t> append2(const void *buf, const size_t &len, bool prependMode = false) override;
     /**
      * @brief remove n bytes at the beggining shrinking the container
      * @param bytes bytes to be removed
@@ -64,7 +64,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::optional<size_t> copyToStream2(std::ostream & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
+    std::optional<size_t> copyToStream2(std::ostream &out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
     * @brief Internal Copy function to copy this container to a new one.
     * @param out data stream out
@@ -80,7 +80,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return number of bytes copied (in bytes)
      */
-    std::optional<size_t> copyToBuffer2(void * buf, const size_t &bytes, const size_t &offset = 0) override;
+    std::optional<size_t> copyToBuffer2(void *buf, const size_t &bytes, const size_t &offset = 0) override;
     /**
      * @brief Compare memory with the container
      * @param mem Memory to be compared
@@ -88,14 +88,13 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare2(const void * buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0 ) override;
-
+    bool compare2(const void *buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0) override;
 
 private:
     /**
      * @brief referencedBC referenced Binary container (then, this container will not work autonomous)
      */
-    B_Base * referencedBC;
+    B_Base *referencedBC;
     /**
      * @brief referecedOffset binary container reference offset in bytes
      */
@@ -104,8 +103,6 @@ private:
      * @brief referencedMaxBytes binary container reference bytes to be referenced
      */
     size_t referencedMaxBytes;
-
 };
 
-}
-
+} // namespace Mantids30::Memory::Containers

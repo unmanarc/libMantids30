@@ -48,7 +48,9 @@ bool UINT8::fromString(const std::string &value)
 
     this->m_value = static_cast<uint8_t>(strtoul(value.c_str(), nullptr, 10));
     if (value != "0" && this->m_value == 0)
+    {
         return false;
+    }
 
     return true;
 }
@@ -59,7 +61,9 @@ std::shared_ptr<Var> UINT8::protectedCopy()
 
     std::shared_ptr<UINT8> var = std::make_shared<UINT8>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
@@ -68,7 +72,9 @@ json UINT8::toJSON()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return m_value;
 }

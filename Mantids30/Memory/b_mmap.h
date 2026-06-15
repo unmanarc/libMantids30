@@ -1,12 +1,12 @@
 #pragma once
 
 #include "b_base.h"
-#include "filemap.h"
 #include "b_mem.h"
+#include "filemap.h"
 
 namespace Mantids30::Memory::Containers {
 
-class B_MMAP: public B_Base
+class B_MMAP : public B_Base
 {
 public:
     B_MMAP();
@@ -18,7 +18,7 @@ public:
      * @param filePath file to be referenced.
      * @return true if succeed
      */
-    bool referenceFile(const std::string & filePath = "", bool readOnly = false, bool createFile = true);
+    bool referenceFile(const std::string &filePath = "", bool readOnly = false, bool createFile = true);
     /**
      * @brief getCurrentFileName Get current FileName Full Path
      * @return Full path string
@@ -38,7 +38,7 @@ public:
      * @param offset
      * @return
      */
-    std::optional<size_t> findChar(const int & c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
+    std::optional<size_t> findChar(const int &c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) override;
 
 protected:
     /**
@@ -54,7 +54,7 @@ protected:
      * @param prependMode mode: true will prepend the data, false will append.
      * @return appended bytes
      */
-    std::optional<size_t> append2(const void * buf, const size_t &len, bool prependMode = false) override;
+    std::optional<size_t> append2(const void *buf, const size_t &len, bool prependMode = false) override;
     /**
      * @brief remove n bytes at the beggining shrinking the container
      * @param bytes bytes to be removed
@@ -73,7 +73,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::optional<size_t> copyToStream2(std::ostream & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
+    std::optional<size_t> copyToStream2(std::ostream &out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
     * @brief Internal Copy function to copy this container to a new one.
     * @param bc Binary container.
@@ -81,7 +81,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
     * @return
     */
-    std::optional<size_t> copyToStreamableObject2(StreamableObject & bc,const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
+    std::optional<size_t> copyToStreamableObject2(StreamableObject &bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) override;
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
@@ -89,7 +89,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return number of bytes copied (in bytes)
      */
-    std::optional<size_t> copyToBuffer2(void * buf, const size_t &count, const size_t &offset = 0) override;
+    std::optional<size_t> copyToBuffer2(void *buf, const size_t &count, const size_t &offset = 0) override;
     /**
      * @brief Compare memory with the container
      * @param mem Memory to be compared
@@ -97,7 +97,7 @@ protected:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare2(const void * buf, const size_t &count, bool caseSensitive = true, const size_t &offset = 0) override;
+    bool compare2(const void *buf, const size_t &count, bool caseSensitive = true, const size_t &offset = 0) override;
 
 private:
     void reMapMemoryContainer();
@@ -111,13 +111,11 @@ private:
      * @brief Creates empty file on the filesystem to use it in future.
      * @return true if the file was successfully created at the specified fileName (or produced one)
      */
-    bool createEmptyFile(const std::string & fileName);
-
+    bool createEmptyFile(const std::string &fileName);
 
     // File:
     FileMap fileReference;
     B_MEM mem;
 };
 
-}
-
+} // namespace Mantids30::Memory::Containers

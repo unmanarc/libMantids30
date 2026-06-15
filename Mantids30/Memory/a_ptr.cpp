@@ -58,14 +58,18 @@ std::shared_ptr<Var> PTR::protectedCopy()
 
     std::shared_ptr<PTR> var = std::make_shared<PTR>();
     if (var)
+    {
         *var = this->m_value;
+    }
     return var;
 }
 
 json PTR::toJSON()
 {
     if (isNull())
+    {
         return Json::nullValue;
+    }
 
     return toString();
 }
