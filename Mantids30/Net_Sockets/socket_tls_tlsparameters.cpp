@@ -90,7 +90,7 @@ bool Socket_TLS::TLSKeyParameters::linkPSKWithTLSHandle(SSL *_sslh)
     { \
         if (func == 0) \
         { \
-            keyErrors->push_back(err); \
+            keyErrors->emplace_back(err); \
             return false; \
         } \
     }
@@ -142,12 +142,12 @@ bool Socket_TLS::TLSKeyParameters::initTLSKeys(SSL_CTX *ctx, SSL *sslh, std::lis
     // Validate:
     if (m_publicKey && !m_privateKey)
     {
-        keyErrors->push_back("If there is a X.509 certificate, a private key must be provided.");
+        keyErrors->emplace_back("If there is a X.509 certificate, a private key must be provided.");
         return false;
     }
     else if (!m_publicKey && m_privateKey)
     {
-        keyErrors->push_back("If there is a X.509 private key, a certificate key must be provided.");
+        keyErrors->emplace_back("If there is a X.509 private key, a certificate key must be provided.");
         return false;
     }
 

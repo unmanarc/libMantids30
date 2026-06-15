@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include <cinttypes>
 #include <openssl/bio.h>
-#include <signal.h>
+#include <csignal>
 #include <stdexcept>
 #include <cstring>
 #include <sys/types.h>

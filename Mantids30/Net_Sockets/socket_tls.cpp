@@ -18,7 +18,7 @@
 #include <openssl/x509_vfy.h>
 
 #include <fcntl.h>
-#include <signal.h>
+#include <csignal>
 #include <unistd.h>
 
 #ifdef _WIN32
@@ -169,7 +169,7 @@ bool Socket_TLS::postAcceptSubInitialization()
     // ssl empty, create a new one.
     if (!(m_sslHandler = SSL_new(m_sslContext)))
     {
-        m_sslErrorList.push_back("SSL_new failed.");
+        m_sslErrorList.emplace_back("SSL_new failed.");
         return false;
     }
 
@@ -203,7 +203,7 @@ bool Socket_TLS::postAcceptSubInitialization()
 
     if (SSL_set_fd(m_sslHandler, m_sockFD) != 1)
     {
-        m_sslErrorList.push_back("SSL_set_fd failed.");
+        m_sslErrorList.emplace_back("SSL_set_fd failed.");
         return false;
     }
 
@@ -288,7 +288,7 @@ bool Socket_TLS::createTLSContext()
         m_sslContext = createServerSSLContext();
         if (!m_sslContext)
         {
-            m_sslErrorList.push_back("TLS_server_method() Failed.");
+            m_sslErrorList.emplace_back("TLS_server_method() Failed.");
             return false;
         }
     }
@@ -297,7 +297,7 @@ bool Socket_TLS::createTLSContext()
         m_sslContext = createClientSSLContext();
         if (!m_sslContext)
         {
-            m_sslErrorList.push_back("TLS_client_method() Failed.");
+            m_sslErrorList.emplace_back("TLS_client_method() Failed.");
             return false;
         }
     }
@@ -312,7 +312,7 @@ void Socket_TLS::parseErrors()
     while ((err = ERR_get_error()) != 0)
     {
         ERR_error_string_n(err, buf, sizeof(buf));
-        m_sslErrorList.push_back(buf);
+        m_sslErrorList.emplace_back(buf);
     }
 }
 
@@ -338,13 +338,13 @@ bool Socket_TLS::validateTLSConnection(const bool &usingPSK)
             }
             else
             {
-                m_sslErrorList.push_back("Peer TLS/SSL Certificate Verification Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));
+                m_sslErrorList.emplace_back("Peer TLS/SSL Certificate Verification Error (" + std::to_string(res) + "): " + std::string(X509_verify_cert_error_string(res)));
             }
             X509_free(cert);
         }
         else
         {
-            m_sslErrorList.push_back("Peer TLS/SSL Certificate does not exist.");
+            m_sslErrorList.emplace_back("Peer TLS/SSL Certificate does not exist.");
         }
     }
     else
