@@ -57,7 +57,7 @@ std::shared_ptr<Var> UINT8::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    auto var = std::make_shared<UINT8>();
+    std::shared_ptr<UINT8> var = std::make_shared<UINT8>();
     if (var)
         *var = this->m_value;
     return var;

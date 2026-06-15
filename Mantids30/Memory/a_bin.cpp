@@ -67,7 +67,7 @@ std::shared_ptr<Var> BINARY::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(this->m_value.mutex);
 
-    auto var = std::make_shared<BINARY>();
+    std::shared_ptr<BINARY> var = std::make_shared<BINARY>();
     if (!var->setValue(&(this->m_value)))
     {
         return nullptr;

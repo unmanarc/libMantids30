@@ -140,7 +140,7 @@ void Var::setVarType(const Type &value)
 
 std::shared_ptr<Var> Var::protectedCopy()
 {
-    auto var = std::make_shared<Var>();
+    std::shared_ptr<Var> var = std::make_shared<Var>();
     return var;
 }
 bool Var::isNull()

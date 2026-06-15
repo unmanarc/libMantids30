@@ -191,7 +191,7 @@ std::optional<size_t> SubParser::parseByDelimiter(const void *buf, size_t count)
     m_parsedBuffer.reference(&m_unparsedBuffer);
 
 #ifdef DEBUG_PARSER
-    auto x = m_unparsedBuffer.toString();
+    std::string x = m_unparsedBuffer.toString();
     printf("%p Searching delimiter...\n", this);
     fflush(stdout);
     BIO_dump_fp(stdout, (char *) parseDelimiter.c_str(), m_parseDelimiter.size());

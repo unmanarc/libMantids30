@@ -104,7 +104,7 @@ bool IPV4::_matchRange(const char *haystack, const char *needle)
 {
     bool ok = true;
 
-    auto aNeedle = _fromString(needle, &ok);
+    in_addr aNeedle = _fromString(needle, &ok);
     if (!ok)
         return false;
 
@@ -113,14 +113,14 @@ bool IPV4::_matchRange(const char *haystack, const char *needle)
 
 bool IPV4::_matchRange(const in_addr &haystack, uint8_t cidr, const in_addr &needle)
 {
-    auto baseNetmaskCIDR = cidr;
+    uint8_t baseNetmaskCIDR = cidr;
     if (baseNetmaskCIDR > 32)
         return false;
 
     uint32_t baseNetmask = htonl(u64pow(2, baseNetmaskCIDR) - 1);
 
-    auto cmp01 = (htonl(haystack.s_addr)) & baseNetmask;
-    auto cmp02 = (htonl(needle.s_addr)) & baseNetmask;
+    uint32_t cmp01 = (htonl(haystack.s_addr)) & baseNetmask;
+    uint32_t cmp02 = (htonl(needle.s_addr)) & baseNetmask;
 
     return cmp01 == cmp02;
 }
@@ -292,7 +292,7 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
 
 std::shared_ptr<Var> IPV4::protectedCopy()
 {
-    auto var = std::make_shared<IPV4>();
+    std::shared_ptr<IPV4> var = std::make_shared<IPV4>();
     if (var)
         var->setValue(getValue(), getCidrMask());
     return var;

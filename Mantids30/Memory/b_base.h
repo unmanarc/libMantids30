@@ -171,7 +171,7 @@ public:
 
     std::string toStringEx(size_t bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0)
     {
-        auto r = toString(bytes, offset);
+        std::optional<std::string> r = toString(bytes, offset);
         return r ? *r : "";
     }
 

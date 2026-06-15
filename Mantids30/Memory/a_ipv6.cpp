@@ -55,7 +55,7 @@ std::string IPV6::toString()
 bool IPV6::fromString(const std::string &value)
 {
     bool r;
-    auto ipaddr = _fromString(value, &r);
+    in6_addr ipaddr = _fromString(value, &r);
     setValue(ipaddr);
     return r;
 }
@@ -88,7 +88,7 @@ in6_addr IPV6::_fromString(const std::string &value, bool *ok)
 
 std::shared_ptr<Var> IPV6::protectedCopy()
 {
-    auto var = std::make_shared<IPV6>();
+    std::shared_ptr<IPV6> var = std::make_shared<IPV6>();
     if (var)
         *var = getValue();
     return var;

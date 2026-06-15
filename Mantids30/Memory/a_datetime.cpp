@@ -97,7 +97,7 @@ std::shared_ptr<Var> DATETIME::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    auto var = std::make_shared<DATETIME>();
+    std::shared_ptr<DATETIME> var = std::make_shared<DATETIME>();
     if (var)
         *var = this->m_value;
     return var;

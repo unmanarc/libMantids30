@@ -140,6 +140,6 @@ bool VARCHAR::fromJSON(const json &value)
 std::shared_ptr<Var> VARCHAR::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(this->m_mutex);
-    auto var = std::make_shared<VARCHAR>(this->m_varSize, this->m_value);
+    std::shared_ptr<VARCHAR> var = std::make_shared<VARCHAR>(this->m_varSize, this->m_value);
     return var;
 }

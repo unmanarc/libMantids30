@@ -127,7 +127,7 @@ std::string MACADDR::_fromHASHToString(const uint64_t &value)
 
 std::shared_ptr<Var> MACADDR::protectedCopy()
 {
-    auto var = std::make_shared<MACADDR>();
+    std::shared_ptr<MACADDR> var = std::make_shared<MACADDR>();
     if (var)
         *var = getValue();
     return var;

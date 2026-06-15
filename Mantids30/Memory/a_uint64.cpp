@@ -67,7 +67,7 @@ std::shared_ptr<Var> UINT64::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    auto var = std::make_shared<UINT64>();
+    std::shared_ptr<UINT64> var = std::make_shared<UINT64>();
     if (var)
         *var = this->m_value;
     return var;

@@ -50,7 +50,7 @@ bool Vars::fromJSON(const Json::Value &json)
         return false; // Not a JSON object
     }
 
-    for (const auto &key : json.getMemberNames())
+    for (const std::string &key : json.getMemberNames())
     {
         const Json::Value &value = json[key];
         if (value.isArray())
@@ -58,7 +58,7 @@ bool Vars::fromJSON(const Json::Value &json)
             // If the value is an array, add each element as a separate variable
             for (Json::ArrayIndex i = 0; i < value.size(); ++i)
             {
-                auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
+                std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
                 bChunk->writeString(JSON_ARRAY_ASSTRING(value, i, ""));
                 if (!addVar(key, bChunk))
                     return false;
@@ -67,7 +67,7 @@ bool Vars::fromJSON(const Json::Value &json)
         else
         {
             // If the value is a single element, add it as a variable
-            auto bChunk = std::make_shared<Memory::Containers::B_Chunks>();
+            std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
             bChunk->writeString(JSON_ASSTRING_D(value, ""));
             if (!addVar(key, bChunk))
                 return false;
@@ -84,7 +84,7 @@ bool Vars::exist(const std::string &varName)
 
 std::string Vars::getStringValue(const std::string &varName)
 {
-    auto v = getValue(varName);
+    std::shared_ptr<Mantids30::Memory::Streams::StreamableObject> v = getValue(varName);
     if (v == nullptr)
         return "";
     return v->toString();

@@ -29,7 +29,7 @@ public:
     template<typename T>
     T getTValue(const std::string &varName)
     {
-        auto value = getValue(varName);
+        std::shared_ptr<Memory::Streams::StreamableObject> value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -49,7 +49,7 @@ public:
     template<typename T>
     T getTValue(const std::string &varName, const T &defaultValue)
     {
-        auto value = getValue(varName);
+        std::shared_ptr<Memory::Streams::StreamableObject> value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -75,9 +75,9 @@ public:
     std::list<T> getTValues(const std::string &varName)
     {
         std::list<T> resultList;
-        auto contList = getValues(varName);
+        std::list<std::shared_ptr<Memory::Streams::StreamableObject>> contList = getValues(varName);
 
-        for (const auto &value : contList)
+        for (const std::shared_ptr<Memory::Streams::StreamableObject> &value : contList)
         {
             std::istringstream iss(value->toString());
             T valueResult;
@@ -187,9 +187,9 @@ protected:
     // They should be aligned with upstream protocol limits (e.g. HTTP max content size)
     // and adjusted carefully if relaxed.
 
-    size_t m_maxVarNameSize    = 1 * KB_MULT;   // Maximum variable name length (1 KB)
-    size_t m_maxVarContentSize = 16 * MB_MULT;  // Maximum content size per variable (16 MB)
-    size_t m_maxVarsCount      = 512;           // Maximum number of variables allowed
+    size_t m_maxVarNameSize = 1 * KB_MULT;     // Maximum variable name length (1 KB)
+    size_t m_maxVarContentSize = 16 * MB_MULT; // Maximum content size per variable (16 MB)
+    size_t m_maxVarsCount = 512;               // Maximum number of variables allowed
 };
 
 } // namespace Mantids30::Memory::Abstract

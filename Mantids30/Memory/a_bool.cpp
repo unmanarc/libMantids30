@@ -66,7 +66,7 @@ std::shared_ptr<Var> BOOL::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    auto var = std::make_shared<BOOL>();
+    std::shared_ptr<BOOL> var = std::make_shared<BOOL>();
     if (var)
         *var = this->m_value;
     return var;

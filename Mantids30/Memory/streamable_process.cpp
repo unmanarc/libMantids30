@@ -18,7 +18,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject * 
 {
     for (;;)
     {
-        auto rsp =m_spawner->pollResponse();
+        std::set<int> rsp =m_spawner->pollResponse();
 
         // Nothing to read?
         if (rsp.empty())

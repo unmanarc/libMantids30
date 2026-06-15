@@ -183,7 +183,7 @@ bool STRINGLIST::fromString(const std::string &inputString)
 
 std::shared_ptr<Var> STRINGLIST::protectedCopy()
 {
-    auto var = std::make_shared<STRINGLIST>();
+    std::shared_ptr<STRINGLIST> var = std::make_shared<STRINGLIST>();
     if (var)
         *var = getValue();
     return var;
@@ -196,7 +196,7 @@ Json::Value STRINGLIST::toJSON()
 
     Threads::Sync::Lock_RD lock(m_mutex);
     Json::Value j(Json::arrayValue);
-    for (const auto &item : m_value)
+    for (const std::string &item : m_value)
     {
         j.append(item);
     }
@@ -210,7 +210,7 @@ bool STRINGLIST::fromJSON(const Json::Value &value)
 
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value.clear();
-    for (const auto &item : value)
+    for (const json &item : value)
     {
         if (item.isString())
         {

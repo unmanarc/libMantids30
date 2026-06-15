@@ -49,7 +49,7 @@ std::shared_ptr<Var> STRING::protectedCopy()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
-    auto var = std::make_shared<STRING>();
+    std::shared_ptr<STRING> var = std::make_shared<STRING>();
     if (var)
         *var = this->m_value;
     return var;

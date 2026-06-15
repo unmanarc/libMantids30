@@ -1,4 +1,4 @@
-﻿#include "b_chunks.h"
+#include "b_chunks.h"
 #include <optional>
 #include <string.h>
 
@@ -307,7 +307,7 @@ std::optional<size_t> B_Chunks::copyToStream2(std::ostream &bc, const size_t &ro
     std::vector<BinaryContainerChunk> copyChunks;
 
     // iterate over chunks and put that data on the new bc.
-    for (auto & i : m_chunksVector)
+    for (BinaryContainerChunk & i : m_chunksVector)
     {
         BinaryContainerChunk currentChunk = i;
 
@@ -377,7 +377,7 @@ std::optional<size_t> B_Chunks::copyToStreamableObject2(
     std::vector<BinaryContainerChunk> copyChunks;
 
     // iterate over chunks and put that data on the new bc.
-    for (auto & i : m_chunksVector)
+    for (BinaryContainerChunk & i : m_chunksVector)
     {
         BinaryContainerChunk currentChunk = i;
 

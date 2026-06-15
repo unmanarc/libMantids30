@@ -34,7 +34,7 @@ B_Base &B_Base::operator=(B_Base &bc)
 
 void B_Base::print(FILE *f)
 {
-    auto str = toString();
+    std::optional<std::string> str = toString();
     if (str)
     {
         fprintf(f, "%s", str->c_str());
@@ -170,7 +170,7 @@ int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t 
 
 int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle)
 {
-    for (const auto &needle : needles)
+    for (const std::string &needle : needles)
     {
         if (!displaceUntil(destination, needle.c_str(), needle.size(), maxCopySize, removeNeedle))
             return 0;
@@ -266,7 +266,7 @@ std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list
 
 void B_Base::freeSplitList(std::list<Memory::Containers::B_Base *> x)
 {
-    for (auto i : x)
+    for (Memory::Containers::B_Base *i : x)
     {
         if (i)
             delete i;
@@ -478,7 +478,7 @@ std::optional<std::string> B_Base::toString(size_t bytes, const size_t &roOffset
 
 std::optional<uint64_t> B_Base::toUInt64(int base, const size_t &bytes, const size_t &offset)
 {
-    auto s = toString(bytes, offset);
+    std::optional<std::string> s = toString(bytes, offset);
     if (!s)
         return std::nullopt;
 
@@ -494,7 +494,7 @@ std::optional<uint64_t> B_Base::toUInt64(int base, const size_t &bytes, const si
 
 std::optional<uint32_t> B_Base::toUInt32(int base, const size_t &bytes, const size_t &offset)
 {
-    auto s = toString(bytes, offset);
+    std::optional<std::string> s = toString(bytes, offset);
     if (!s)
         return std::nullopt;
 
