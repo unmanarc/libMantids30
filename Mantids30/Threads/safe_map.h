@@ -116,8 +116,10 @@ std::set<T> Map<T>::getKeys()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
     std::set<T> ret;
-    for (const std::pair<T, MapElement> &i : m_keyValueMap)
+    for (const auto &i : m_keyValueMap)
+    {
         ret.insert(i.first);
+    }
     return ret;
 }
 
@@ -163,7 +165,9 @@ bool Map<T>::releaseElement(const T &key)
     if (m_keyValueMap.find(key) != m_keyValueMap.end())
     {
         if (m_keyValueMap[key].numReaders == 0)
+        {
             throw std::runtime_error("Invalid close on Mutex MAP");
+        }
 
         m_keyValueMap[key].numReaders--;
         // if no more readers... emit the signal to notify it:
