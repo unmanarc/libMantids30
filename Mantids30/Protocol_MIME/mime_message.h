@@ -109,7 +109,7 @@ public:
             context = nullptr;
         }
 
-        void call(const std::string &partName, std::shared_ptr<MIME_PartMessage> partMessage)
+        void call(const std::string &partName, std::shared_ptr<MIME_PartMessage> partMessage) const
         {
             if (callbackFunction != nullptr)
             {
