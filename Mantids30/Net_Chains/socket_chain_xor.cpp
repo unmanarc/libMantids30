@@ -64,7 +64,7 @@ void Socket_Chain_XOR::setXorByte(char value)
     m_xorByte = value;
 }
 
-std::vector<char> Socket_Chain_XOR::getXorCopy(const void *data, const size_t &datalen)
+std::vector<char> Socket_Chain_XOR::getXorCopy(const void *data, const size_t &datalen) const
 {
     std::vector<char> datacp(datalen);
 

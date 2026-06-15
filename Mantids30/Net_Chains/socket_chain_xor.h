@@ -27,7 +27,7 @@ protected:
     void *getThis() { return this; }
 
 private:
-    std::vector<char> getXorCopy(const void *data, const size_t &datalen);
+    std::vector<char> getXorCopy(const void *data, const size_t &datalen) const;
     char m_xorByte;
 };
 

@@ -357,7 +357,7 @@ void Socket_Chain_AES::regenIV(sSideParams *param)
     memcpy(param->currentIV + 8, &(r64[1]), 8);
 }
 
-char *Socket_Chain_AES::genPlainText()
+char *Socket_Chain_AES::genPlainText() const
 {
     char *vGen = new char[m_aesRegenBlockSize];
     for (size_t i = 0; i < m_aesRegenBlockSize; i++)

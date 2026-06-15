@@ -159,7 +159,7 @@ private:
      * @brief genPlainText Get Plain Text for generating the AES Block.
      * @return plain text (you should delete it with delete[])
      */
-    char *genPlainText();
+    char *genPlainText() const;
     /**
      * @brief phase1Key Key Negotiation Password... (PSK)
      */
