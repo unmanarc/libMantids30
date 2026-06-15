@@ -1,21 +1,20 @@
 #pragma once
 
+#include <iostream>
+#include <list>
+#include <memory>
+#include <optional>
+#include <vector>
+#include <stdio.h>
 
 #include "b_chunk.h"
-
 #include "streamable_object.h"
-
-#include <memory>
-#include <stdio.h>
-#include <list>
-#include <vector>
-#include <iostream>
-#include <optional>
 #include <Mantids30/Helpers/mem.h>
 
 namespace Mantids30::Memory::Containers {
 
-enum BinaryContainerMethod {
+enum BinaryContainerMethod
+{
     BC_METHOD_CHUNKS,
     BC_METHOD_MEM,
     BC_METHOD_BCREF,
@@ -32,12 +31,12 @@ public:
      * @brief operator = copy the data of a container into another container (does not copy limits or flags like read only)
      * @param bc element to be copied.
      */
-    B_Base & operator=(B_Base & bc);
+    B_Base &operator=(B_Base &bc);
 
     /**
      * @brief print print to stdout...
      */
-    void print(FILE * f = stdout);
+    void print(FILE *f = stdout);
 
     // Data Agregattion method method:
     /**
@@ -45,27 +44,27 @@ public:
      * @param buf Pointer to the memory buffer to prepend.
      * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes prepended.
      */
-    std::optional<size_t> prepend(const void * buf);
+    std::optional<size_t> prepend(const void *buf);
     /**
      * @brief Append null-terminated linear memory to this container.
      * @param buf Pointer to the null-terminated memory buffer to append.
      * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes appended.
      */
-    std::optional<size_t> append(const void * buf);
+    std::optional<size_t> append(const void *buf);
     /**
     * @brief Append linear memory to this container.
     * @param buf Pointer to the memory buffer to append.
     * @param len Number of bytes in the memory buffer to append.
     * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes appended.
     */
-    std::optional<size_t> append(const void * buf, size_t len);
+    std::optional<size_t> append(const void *buf, size_t len);
     /**
      * @brief Prepend linear memory to this container.
      * @param buf Pointer to the memory buffer to prepend.
      * @param len Number of bytes in the memory buffer to prepend.
      * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes prepended.
      */
-    std::optional<size_t> prepend(const void * buf, size_t len);
+    std::optional<size_t> prepend(const void *buf, size_t len);
     // Memory shrinking..
     /**
      * @brief remove n bytes at the beggining shrinking the container
@@ -102,7 +101,7 @@ public:
      *         - -1: Failed to copy data (general error).
      *         - -2: Maximum copy size reached without finding the delimiter.
      */
-    int copyUntil(B_Base & destination, const void * needle, const size_t &needleLenght, const size_t &maxCopySize, bool removeNeedle = false );
+    int copyUntil(B_Base &destination, const void *needle, const size_t &needleLenght, const size_t &maxCopySize, bool removeNeedle = false);
     /**
      * @brief displaceUntil move until some byte sequence
      * @param destination Binary container where the resulted data will be saved.
@@ -111,7 +110,7 @@ public:
      * @param maxCopySize maximum bytes to be retrieved in bytes.
      * @return retr return codes [0:found, -1:failed, not found, -2:failed, out of size]
      */
-    int displaceUntil(B_Base & destination, const void * needle, const size_t &needleCount, const size_t &maxCopySize, bool removeNeedle = false );
+    int displaceUntil(B_Base &destination, const void *needle, const size_t &needleCount, const size_t &maxCopySize, bool removeNeedle = false);
     /**
      * @brief displaceUntil move until any of the specified byte sequences
      * @param destination Binary container where the resulting data will be saved.
@@ -120,7 +119,7 @@ public:
      * @param removeNeedle If true, removes the found needle from the original container.
      * @return Return codes [0:found, -1:failed, not found, -2:failed, out of size]
      */
-    int displaceUntil(B_Base & destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle = true );
+    int displaceUntil(B_Base &destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle = true);
     /**
      * @brief freeSplitList Free a list of binary containers.
      * @param x List of binary containers to be freed.
@@ -141,7 +140,7 @@ public:
     * @param offset displacement in bytes where the data starts.
     * @return -1 if error, 0 if no data appended (eg. max reached), n bytes appended.
     */
-    std::optional<size_t> appendTo(StreamableObject & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
+    std::optional<size_t> appendTo(StreamableObject &out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
     /**
      * @brief Copy append to another binary container.
      * @param bc destination binary container
@@ -149,7 +148,7 @@ public:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return number of bytes copied (in bytes) or std::nullopt if the operation was not successful.
      */
-    std::optional<size_t> copyOut(void * buf, size_t bytes, const size_t &offset = 0);
+    std::optional<size_t> copyOut(void *buf, size_t bytes, const size_t &offset = 0);
     /**
      * @brief Copy the contents of this container into a new std::unique_ptr<char[]>.
      * @return A std::unique_ptr<char[]> containing a copy of the container's data.
@@ -161,7 +160,7 @@ public:
      * @param offset offset displacement
      * @return bytes copied or std::numeric_limits<size_t>::max() if error.
      */
-    std::optional<size_t> copyToString(std::string & str,size_t bytes = std::numeric_limits<size_t>::max(), const size_t & offset = 0);
+    std::optional<size_t> copyToString(std::string &str, size_t bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
     /**
      * @brief toString create string with the data contained here.
      * @param bytes bytes to copy (std::numeric_limits<size_t>::max(): all bytes)
@@ -170,11 +169,10 @@ public:
      */
     std::optional<std::string> toString(size_t bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
 
-
     std::string toStringEx(size_t bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0)
     {
-        auto r = toString(bytes,offset);
-        return r?*r:"";
+        auto r = toString(bytes, offset);
+        return r ? *r : "";
     }
 
     /**
@@ -184,7 +182,7 @@ public:
      * @param offset offset displacement
      * @return std::numeric_limits<size_t>::max() if error, n if converted.
      */
-    std::optional<uint64_t> toUInt64(int base=10, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
+    std::optional<uint64_t> toUInt64(int base = 10, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0);
     /**
      * @brief toUInt32 Convert container data to 32-bit unsigned integer
      * @param base eg. 10 for base10 numeric, and 16 for hex
@@ -202,7 +200,7 @@ public:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare(const void * mem, const size_t &len, bool caseSensitive = true, const size_t &offset = 0 );
+    bool compare(const void *mem, const size_t &len, bool caseSensitive = true, const size_t &offset = 0);
     /**
      * @brief Compare memory with the container
      * @param cmpString string to be compared
@@ -210,7 +208,7 @@ public:
      * @param offset starting point (offset) in bytes, default: 0 (start)
      * @return true where comparison returns equeal.
      */
-    bool compare(const std::string & cmpString, bool caseSensitive = false, const size_t &offset = 0 );
+    bool compare(const std::string &cmpString, bool caseSensitive = false, const size_t &offset = 0);
 
     /**
      * @brief findChar Find the position of a character within the container.
@@ -226,7 +224,7 @@ public:
      * @return A pair where the first element is a boolean indicating whether the character was found, and the second element
      *         is the position of the character in bytes from the start of the container (or std::numeric_limits<size_t>::max() if not found).
      */
-    virtual std::optional<size_t> findChar(const int & c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) = 0;
+    virtual std::optional<size_t> findChar(const int &c, const size_t &offset = 0, size_t searchSpace = 0, bool caseSensitive = false) = 0;
 
     /**
      * @brief find memory into the container
@@ -236,7 +234,7 @@ public:
      * @param searchSpace search space size in bytes where is going to find the needle. (zero for all the space)
      * @return position of the needle (if found)
      */
-    std::optional<size_t> find(const void * needle, const size_t &needle_len, bool caseSensitive = true, const size_t &offset = 0, size_t searchSpace = 0);
+    std::optional<size_t> find(const void *needle, const size_t &needle_len, bool caseSensitive = true, const size_t &offset = 0, size_t searchSpace = 0);
     /**
      * @brief find memory into the container
      * @param needle memory data to be found.
@@ -245,7 +243,7 @@ public:
      * @param searchSpace search space size in bytes where is going to find the needle. (zero for all the space)
      * @return position of the needle (if found)
      */
-    std::optional<size_t> find(const std::list<std::string> &needles, std::string & needleFound, bool caseSensitive = true, const size_t &offset = 0, const size_t &searchSpace = 0);
+    std::optional<size_t> find(const std::list<std::string> &needles, std::string &needleFound, bool caseSensitive = true, const size_t &offset = 0, const size_t &searchSpace = 0);
 
     // Data Size:
     /**
@@ -316,7 +314,6 @@ public:
      */
     virtual std::string getCurrentFileName() const;
 
-
 protected:
     /**
      * @brief truncate the current container to n bytes.
@@ -343,8 +340,8 @@ protected:
      * @param prependMode mode: true will prepend the data, false will append.
      * @return pair containing a boolean indicating success and the number of bytes processed.
      */
-    virtual std::optional<size_t> append2(const void * buf, const size_t &len, bool prependMode) = 0;
-    
+    virtual std::optional<size_t> append2(const void *buf, const size_t &len, bool prependMode) = 0;
+
     /**
     * @brief Internal Copy function to copy this container to a stream
     * @param out data stream out
@@ -352,7 +349,7 @@ protected:
     * @param offset displacement in bytes where the data starts.
      * @return pair containing a boolean indicating success and the number of bytes processed.
     */
-    virtual std::optional<size_t> copyToStream2(std::ostream & out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) = 0;
+    virtual std::optional<size_t> copyToStream2(std::ostream &out, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) = 0;
 
     /**
      * @brief Internal Copy function to copy this container to a new one with status update.
@@ -361,7 +358,7 @@ protected:
      * @param offset displacement in bytes where the data starts.
      * @return pair containing a boolean indicating success and the number of bytes processed.
      */
-    virtual std::optional<size_t> copyToStreamableObject2(StreamableObject & bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) = 0;
+    virtual std::optional<size_t> copyToStreamableObject2(StreamableObject &bc, const size_t &bytes = std::numeric_limits<size_t>::max(), const size_t &offset = 0) = 0;
     /**
      * @brief Copy data from the container to an external buffer
      * @param buf Destination buffer where data will be copied
@@ -369,7 +366,7 @@ protected:
      * @param offset Starting point (offset) in bytes, default is 0 (start)
      * @return Pair containing a boolean indicating success and the number of bytes copied
      */
-    virtual std::optional<size_t> copyToBuffer2(void * buf, const size_t &bytes, const size_t &offset = 0) = 0;
+    virtual std::optional<size_t> copyToBuffer2(void *buf, const size_t &bytes, const size_t &offset = 0) = 0;
     /**
      * @brief Compare data in the container with an external memory buffer
      * @param buf Memory buffer to compare against
@@ -378,19 +375,19 @@ protected:
      * @param offset Starting point (offset) in bytes for comparison, default is 0 (start)
      * @return Boolean indicating whether the comparison was successful and the contents were equal
      */
-    virtual bool compare2(const void * buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0 ) = 0;
+    virtual bool compare2(const void *buf, const size_t &len, bool caseSensitive = true, const size_t &offset = 0) = 0;
 
     /**
      * @brief incContainerBytesCount Internal function to increase container bytes count.
      * @param i Number of bytes to add to the container's byte count
      */
-    void incContainerBytesCount(const size_t & i);
+    void incContainerBytesCount(const size_t &i);
 
     /**
      * @brief decContainerBytesCount Internal function to decrease container bytes count.
      * @param i Number of bytes to subtract from the container's byte count
      */
-    void decContainerBytesCount(const size_t & i);
+    void decContainerBytesCount(const size_t &i);
 
     // Auxiliar:
     std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks);
@@ -400,7 +397,6 @@ protected:
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
     // Variables::
-
 
     // FS directives:
     /**
@@ -434,8 +430,6 @@ protected:
 
 private:
     bool clear0();
-
 };
 
-}
-
+} // namespace Mantids30::Memory::Containers

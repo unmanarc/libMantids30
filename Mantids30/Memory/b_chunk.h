@@ -1,9 +1,7 @@
 #pragma once
 
-#include <string.h>
-#include <stdint.h>
-
 #include <Mantids30/Helpers/mem.h>
+#include <string.h>
 
 namespace Mantids30::Memory::Containers {
 
