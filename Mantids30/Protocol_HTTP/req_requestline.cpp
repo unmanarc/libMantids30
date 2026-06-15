@@ -17,7 +17,7 @@ using namespace Mantids30;
 RequestLine::RequestLine()
 {
     m_getVars = HTTP::URLVars::create();
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128 * KB_MULT); // 128K
 
@@ -58,7 +58,7 @@ bool RequestLine::streamToUpstream()
     return m_upStream->writeStatus.succeed;
 }
 
-Memory::Streams::SubParser::ParseStatus RequestLine::parse()
+Memory::Streams::SubParser::ParseResult RequestLine::parse()
 {
     std::string clientRequest = getParsedBuffer()->toStringEx();
 
@@ -68,7 +68,7 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
     // We need almost 2 parameters.
     if (requestParts.size() < 2)
     {
-        return Memory::Streams::SubParser::PARSE_ERROR;
+        return Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
@@ -77,7 +77,7 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 
     parseURI();
 
-    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
 void RequestLine::parseURI()

@@ -7,7 +7,7 @@ using namespace Mantids30::Network::Protocols::WebSocket;
 
 FrameHeader::FrameHeader()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
     setParseDataTargetSize(2); // Start with first 2 bytes
     m_subParserName = "WebSocket_FrameHeader";
 }
@@ -194,7 +194,7 @@ void FrameHeader::prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength,
     m_parseState = STATE_COMPLETE; // Indicate that the header is ready to be written
 }
 
-Mantids30::Memory::Streams::SubParser::ParseStatus FrameHeader::parse()
+Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
 {
     switch (m_parseState)
     {
@@ -206,40 +206,40 @@ Mantids30::Memory::Streams::SubParser::ParseStatus FrameHeader::parse()
         if (x == std::nullopt || *x != 2)
         {
             // Error, parsed buffer is not delivered as expected.
-            return PARSE_ERROR;
+            return ParseResult::ERROR;
         }
         if (!parseFirstByte(data[0]) || !parseSecondByte(data[1]))
         {
-            return PARSE_ERROR;
+            return ParseResult::ERROR;
         }
         // Determine next state based on payload length
         if (m_payloadLength == 126)
         {
             m_parseState = STATE_EXTENDED_LENGTH_16;
             m_extendedLengthBytes = 2;
-            setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(2);
-            return PARSE_GET_MORE_DATA;
+            return ParseResult::GET_MORE_DATA;
         }
         else if (m_payloadLength == 127)
         {
             m_parseState = STATE_EXTENDED_LENGTH_64;
             m_extendedLengthBytes = 8;
-            setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(8);
-            return PARSE_GET_MORE_DATA;
+            return ParseResult::GET_MORE_DATA;
         }
         else if (m_masked)
         {
             m_parseState = STATE_MASKING_KEY;
-            setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(4);
-            return PARSE_GET_MORE_DATA;
+            return ParseResult::GET_MORE_DATA;
         }
         else
         {
             m_parseState = STATE_COMPLETE;
-            return PARSE_GOTO_NEXT_SUBPARSER;
+            return ParseResult::GOTO_NEXT_SUBPARSER;
         }
     }
     break;
@@ -247,33 +247,33 @@ Mantids30::Memory::Streams::SubParser::ParseStatus FrameHeader::parse()
     case STATE_EXTENDED_LENGTH_64:
         if (!parseExtendedLength())
         {
-            return PARSE_ERROR;
+            return ParseResult::ERROR;
         }
         if (m_masked)
         {
             m_parseState = STATE_MASKING_KEY;
-            return PARSE_GET_MORE_DATA;
+            return ParseResult::GET_MORE_DATA;
         }
         else
         {
             m_parseState = STATE_COMPLETE;
-            return PARSE_GOTO_NEXT_SUBPARSER;
+            return ParseResult::GOTO_NEXT_SUBPARSER;
         }
         break;
 
     case STATE_MASKING_KEY:
         if (!parseMaskingKey())
         {
-            return PARSE_ERROR;
+            return ParseResult::ERROR;
         }
         m_parseState = STATE_COMPLETE;
-        return PARSE_GOTO_NEXT_SUBPARSER;
+        return ParseResult::GOTO_NEXT_SUBPARSER;
 
     case STATE_COMPLETE:
-        return PARSE_GOTO_NEXT_SUBPARSER;
+        return ParseResult::GOTO_NEXT_SUBPARSER;
     }
 
-    return PARSE_ERROR;
+    return ParseResult::ERROR;
 }
 
 bool FrameHeader::parseFirstByte(uint8_t byte)

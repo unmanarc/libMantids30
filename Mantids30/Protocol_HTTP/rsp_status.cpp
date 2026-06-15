@@ -60,13 +60,13 @@ std::map<unsigned short, std::string> HTTP::Status::m_responseStatusCodesTable =
 
 HTTP::Status::Status()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setParseDataTargetSize(128);
     m_subParserName = "Status";
 }
 
-Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
+Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
 {
     std::string clientRequest = getParsedBuffer()->toStringEx();
 
@@ -76,7 +76,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
     // We need almost 2 parameters.
     if (requestParts.size() < 2)
     {
-        return Memory::Streams::SubParser::PARSE_ERROR;
+        return Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
     m_httpVersion.parse(requestParts[0]);
@@ -95,7 +95,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Status::parse()
         }
     }
 
-    return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
 std::string HTTP::Status::getMessage() const

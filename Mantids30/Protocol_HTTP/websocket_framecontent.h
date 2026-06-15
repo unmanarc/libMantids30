@@ -47,7 +47,7 @@ public:
     bool streamToUpstream() override;
 
 protected:
-    virtual ParseStatus parse() override;
+    virtual ParseResult parse() override;
 
 private:
     void unmaskData(uint8_t *data, size_t length);

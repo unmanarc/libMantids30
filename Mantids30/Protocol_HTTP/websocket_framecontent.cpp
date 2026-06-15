@@ -8,7 +8,7 @@ using namespace Mantids30::Network::Protocols::WebSocket;
 
 FrameContent::FrameContent()
 {
-    setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
     m_content = std::make_shared<Memory::Containers::B_Chunks>();
     m_subParserName = "WebSocket_FrameContent";
 }
@@ -52,12 +52,12 @@ void FrameContent::setValidateUtf8(bool validate)
     m_validateUtf8 = validate;
 }
 
-Mantids30::Memory::Streams::SubParser::ParseStatus FrameContent::parse()
+Mantids30::Memory::Streams::SubParser::ParseResult FrameContent::parse()
 {
     Mantids30::Memory::Containers::B_Base *buffer = getParsedBuffer();
     if (!buffer)
     {
-        return PARSE_ERROR;
+        return ParseResult::ERROR;
     }
 
     std::vector<char> currentPayload = buffer->copyToBuffer();
@@ -71,17 +71,17 @@ Mantids30::Memory::Streams::SubParser::ParseStatus FrameContent::parse()
     std::optional<size_t> x = m_content->append(currentPayload.data(), currentPayload.size());
     if (x == std::nullopt)
     {
-        return PARSE_ERROR;
+        return ParseResult::ERROR;
     }
 
     // Validate UTF-8 if needed
     if (m_isComplete && m_validateUtf8 && !validateUtf8Payload())
     {
         m_lastValidationResult = VALIDATION_INVALID_UTF8;
-        return PARSE_ERROR;
+        return ParseResult::ERROR;
     }
 
-    return PARSE_GOTO_NEXT_SUBPARSER;
+    return ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
 void FrameContent::unmaskData(uint8_t *data, size_t length)

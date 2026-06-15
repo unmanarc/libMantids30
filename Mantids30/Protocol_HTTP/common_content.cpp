@@ -27,7 +27,7 @@ void HTTP::Content::setSecurityMaxPostDataSize(const size_t &value)
     m_securityMaxPostDataSize = value;
 }
 
-Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
+Memory::Streams::SubParser::ParseResult HTTP::Content::parse()
 {
     switch (m_currentMode)
     {
@@ -35,7 +35,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
     {
         // TODO: check if there is data, because may be new headers here...
         m_contentStreamableObject->writeEOF();
-        return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
     case ProcessingMode::CHUNK_SIZE:
     {
@@ -44,41 +44,41 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
         {
             if (targetChunkSize > 0)
             {
-                setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+                setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
                 setParseDataTargetSize(*targetChunkSize);
                 m_currentMode = ProcessingMode::CHUNK_DATA;
-                return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+                return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
             }
             else
             {
                 // Done... last chunk. Get the last \r\n here..
-                setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+                setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
                 setParseDelimiter("\r\n");
                 setParseDataTargetSize(64 * KB_MULT); // !64kb max (until fails, this may include new headers?).
                 m_currentMode = ProcessingMode::CHUNK_CLOSE;
-                return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+                return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
             }
         }
-        return Memory::Streams::SubParser::PARSE_ERROR;
+        return Memory::Streams::SubParser::ParseResult::ERROR;
     }
     case ProcessingMode::CHUNK_DATA:
     {
         // Ok, continue
-        setParseMode(Memory::Streams::SubParser::PARSE_MODE_SIZE);
+        setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
         setParseDataTargetSize(2); // for CRLF.
         m_currentMode = ProcessingMode::CHUNK_CRLF;
         // Proccess chunk into mem...
         // TODO: validate when outstream is filled up.
         getParsedBuffer()->appendTo(*m_contentStreamableObject);
-        return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+        return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
     }
     case ProcessingMode::CHUNK_CRLF:
     {
-        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+        setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(1 * KB_MULT); // !1kb max (until fails).
         m_currentMode = ProcessingMode::CHUNK_SIZE;
-        return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+        return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
     }
     case ProcessingMode::CONTENT_LENGTH:
     {
@@ -89,7 +89,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
 #ifdef DEBUG
             printf("%p Content ProcessingMode::CONTENT_LENGTH - left to parse: %lu\n", this, getUnparsedDataSize());
 #endif
-            return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+            return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
         }
         else
         {
@@ -98,7 +98,7 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
 #endif
             // End of stream reached...
             m_contentStreamableObject->writeEOF();
-            return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+            return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
         }
     }
     case ProcessingMode::CONNECTION_CLOSE:
@@ -109,17 +109,17 @@ Memory::Streams::SubParser::ParseStatus HTTP::Content::parse()
             // Parsing data...
             // TODO: validate when outstream is filled up.
             getParsedBuffer()->appendTo(*m_contentStreamableObject);
-            return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
+            return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
         }
         else
         {
             // No more data to parse, ending and processing it...
             m_contentStreamableObject->writeEOF();
-            return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
+            return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
         }
     }
     }
-    return Memory::Streams::SubParser::PARSE_ERROR;
+    return Memory::Streams::SubParser::ParseResult::ERROR;
 }
 
 std::optional<uint32_t> HTTP::Content::parseHttpChunkSize()
@@ -275,7 +275,7 @@ void HTTP::Content::setTransmitionMode(const TransmissionMode &value)
     case TransmissionMode::CONNECTION_CLOSE:
     {
         // TODO: disable connection-close for client->server
-        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
+        setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DIRECT);
         setParseDataTargetSize(m_securityMaxPostDataSize); // !1kb max (until fails).
         m_currentMode = ProcessingMode::CONNECTION_CLOSE;
     }
@@ -283,7 +283,7 @@ void HTTP::Content::setTransmitionMode(const TransmissionMode &value)
     case TransmissionMode::CHUNKS:
     {
         // TODO: disable chunk transmition for client->server
-        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
+        setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
         setParseDelimiter("\r\n");
         setParseDataTargetSize(64); // 64 bytes max (until fails).
         m_currentMode = ProcessingMode::CHUNK_SIZE;
@@ -291,7 +291,7 @@ void HTTP::Content::setTransmitionMode(const TransmissionMode &value)
     break;
     case TransmissionMode::CONTENT_LENGTH:
     {
-        setParseMode(Memory::Streams::SubParser::PARSE_MODE_DIRECT);
+        setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DIRECT);
         m_currentMode = ProcessingMode::CONTENT_LENGTH;
     }
     break;

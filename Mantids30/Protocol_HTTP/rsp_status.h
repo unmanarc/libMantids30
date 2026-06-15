@@ -96,7 +96,7 @@ public:
     bool streamToUpstream() override;
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     HTTP::Version m_httpVersion;

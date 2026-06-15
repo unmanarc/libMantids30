@@ -81,7 +81,7 @@ public:
     void prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength, bool masked, const std::array<uint8_t, 4> &maskingKey = {0, 0, 0, 0});
 
 protected:
-    virtual ParseStatus parse() override;
+    virtual ParseResult parse() override;
 
 private:
     bool parseFirstByte(uint8_t byte);

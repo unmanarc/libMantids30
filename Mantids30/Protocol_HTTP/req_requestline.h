@@ -59,7 +59,7 @@ public:
     std::string toString() const;
 
 protected:
-    Memory::Streams::SubParser::ParseStatus parse() override;
+    Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     void parseURI();
