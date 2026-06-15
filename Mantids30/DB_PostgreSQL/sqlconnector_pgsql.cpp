@@ -1,14 +1,14 @@
 #include "sqlconnector_pgsql.h"
 #include <Mantids30/Memory/a_string.h>
 #include <cstring>
+#include <string>
 #include <unistd.h>
 using namespace Mantids30::Database;
 
+
 SQLConnector_PostgreSQL::SQLConnector_PostgreSQL()
 {
-    m_databaseConnectionHandler = nullptr;
     m_port = 5432;
-    m_connectionTimeout = 10;
 }
 
 SQLConnector_PostgreSQL::~SQLConnector_PostgreSQL()
@@ -119,18 +119,18 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
 {
     m_connectionValues.clear();
 
-    if (m_dbName.size())
+    if (!m_dbName.empty())
     {
         m_connectionValues["dbname"] = m_dbName;
     }
-    if (m_host.size())
+    if (!m_host.empty())
     {
         m_connectionValues["hostname"] = m_host;
     }
 
     if (m_port != 5432)
     {
-        m_connectionValues["port"] = m_port;
+        m_connectionValues["port"] = std::to_string(m_port);
     }
 
     if (!m_credentials.userName.empty())
@@ -139,13 +139,13 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
         m_connectionValues["password"] = m_credentials.userPassword;
     }
 
-    m_connectionValues["connect_timeout"] = m_connectionTimeout;
+    m_connectionValues["connect_timeout"] = std::to_string(m_connectionTimeout);
 
-    if (m_connectionOptions.size())
+    if (!m_connectionOptions.empty())
     {
         m_connectionValues["options"] = m_connectionOptions;
     }
-    if (m_connectionSSLMode.size())
+    if (!m_connectionSSLMode.empty())
     {
         m_connectionValues["sslmode"] = m_connectionSSLMode;
     }
@@ -156,7 +156,7 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
     char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for (const std::pair<std::string, std::string> &i : m_connectionValues)
+    for (const auto&i : m_connectionValues)
     {
         values[pos++] = strdup(i.first.c_str());
     }
@@ -170,7 +170,7 @@ char **SQLConnector_PostgreSQL::getConnectionValues()
     char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for (const std::pair<std::string, std::string> &i : m_connectionValues)
+    for (const auto&i : m_connectionValues)
     {
         values[pos++] = strdup(i.second.c_str());
     }
