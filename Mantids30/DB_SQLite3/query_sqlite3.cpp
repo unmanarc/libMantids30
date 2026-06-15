@@ -37,7 +37,9 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     ((SQLConnector_SQLite3 *) m_pSQLConnector)->putDatabaseConnectorIntoQuery(this);
 
     if (!m_databaseConnectionHandler)
+    {
         return false;
+    }
 
     const char *tail;
     m_lastSQLReturnValue = sqlite3_prepare_v2(m_databaseConnectionHandler, m_query.c_str(), m_query.length(), &m_stmt, &tail);
@@ -49,7 +51,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         {
             printf("--------------------------------\n");
             printf("SQL Query:\n");
-            printf("%s\n",m_query.c_str());
+            printf("%s\n", m_query.c_str());
             fflush(stdout);
             throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
         }
@@ -183,21 +185,22 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         m_affectedRecords = sqlite3_changes(m_databaseConnectionHandler);
 
         if (m_fetchLastInsertRowID)
+        {
             m_lastInsertRowID = sqlite3_last_insert_rowid(m_databaseConnectionHandler);
+        }
 
         if (!sqlite3IsDone())
         {
             m_lastSQLError = sqlite3_errmsg(m_databaseConnectionHandler);
 
-
-            if (boost::algorithm::icontains(m_lastSQLError,"UNIQUE constraint failed"))
+            if (boost::algorithm::icontains(m_lastSQLError, "UNIQUE constraint failed"))
             {
                 // This error sometimes is not an DB error :)
                 if (m_throwCPPErrorOnUniqueFailure)
                 {
                     printf("--------------------------------\n");
                     printf("SQL Query:\n");
-                    printf("%s\n",m_query.c_str());
+                    printf("%s\n", m_query.c_str());
                     fflush(stdout);
                     throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
                 }
@@ -206,7 +209,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             {
                 printf("--------------------------------\n");
                 printf("SQL Query:\n");
-                printf("%s\n",m_query.c_str());
+                printf("%s\n", m_query.c_str());
                 fflush(stdout);
 
                 throw std::runtime_error("Error during insert query: " + m_lastSQLError);
@@ -214,7 +217,9 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             return false;
         }
         else
+        {
             return true;
+        }
     }
     else
     {

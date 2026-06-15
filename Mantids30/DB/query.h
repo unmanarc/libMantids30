@@ -1,12 +1,12 @@
 #pragma once
 
 #include <Mantids30/Memory/a_var.h>
-#include <map>
 #include <list>
+#include <map>
 #include <memory>
-#include <vector>
 #include <mutex>
 #include <string>
+#include <vector>
 
 /**
  * @namespace Mantids30::Database
@@ -25,7 +25,6 @@ namespace Mantids30::Database {
 class Query
 {
 public:
-
     enum QueryErrors
     {
         QUERY_READY_OK = 0,
@@ -96,7 +95,7 @@ public:
      * @param milliseconds The number of milliseconds for the lock timeout.
      * @return True if successful, false otherwise.
      */
-    bool setSqlConnector(void *value, std::timed_mutex * mtDatabaseLockMutex, const uint64_t & milliseconds);
+    bool setSqlConnector(void *value, std::timed_mutex *mtDatabaseLockMutex, const uint64_t &milliseconds);
 
     // Query Prepare:
     /**
@@ -105,13 +104,13 @@ public:
      * @param vars Optional input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars = {} );
+    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars = {});
     /**
      * @brief Binds input variables to the prepared SQL query.
      * @param vars The map of input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool bindInputVars(const std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> & vars);
+    bool bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars);
     /**
      * @brief Binds result variables to the prepared SQL query.
      * @param vars The vector of result variables to bind.
@@ -128,7 +127,7 @@ public:
      * @param execType The type of query execution (SELECT or INSERT).
      * @return True if successful, false otherwise.
      */
-    bool exec(const ExecType & execType);
+    bool exec(const ExecType &execType);
 
     // GET ROW FROM SELECT Results:
     /**
@@ -142,7 +141,7 @@ public:
      * @param column The index of the column.
      * @return True if NULL, false otherwise.
      */
-    bool isNull(const size_t & column);
+    bool isNull(const size_t &column);
 
     /**
     * @brief Retrieves the last inserted row ID.
@@ -193,7 +192,7 @@ protected:
     * @param recursion A boolean value representing whether the call is recursive.
     * @return True if successful, false otherwise.
     */
-    virtual bool exec0(const ExecType & execType, bool recursion)=0;
+    virtual bool exec0(const ExecType &execType, bool recursion) = 0;
     /**
     * @brief (Internal use) Retrieves the next row from SELECT results.
     * @return True if successful, false otherwise.
@@ -222,11 +221,11 @@ protected:
     // Query:
     bool m_bindInputVars = false;
     bool m_bindResultVars = false;
-    std::map<std::string,std::shared_ptr<Memory::Abstract::Var>> m_inputVars;
+    std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> m_inputVars;
     std::string m_query;
 
     // Internals:
-    void * m_pSQLConnector = nullptr;
+    void *m_pSQLConnector = nullptr;
 
     // Errors:
     std::string m_lastSQLError;
@@ -241,7 +240,7 @@ protected:
     uint64_t m_affectedRecords = 0;
     uint64_t m_totalRecordsCount = std::numeric_limits<uint64_t>::max();
     uint64_t m_filteredRecordsCount = std::numeric_limits<uint64_t>::max();
-    std::timed_mutex * m_databaseLockMutex = nullptr;
+    std::timed_mutex *m_databaseLockMutex = nullptr;
 
     /**
      * @brief m_fetchLastInsertRowID if true, the query will retrieve/update the last inserted RowID. (modify before the query)
@@ -250,6 +249,7 @@ protected:
 
     bool m_throwCPPErrorOnQueryFailure = false;
     bool m_throwCPPErrorOnUniqueFailure = false;
+
 private:
     // Memory cleaning:
     std::list<std::shared_ptr<std::string>> m_destroyableStringsForInput, m_destroyableStringsForResults;
@@ -258,5 +258,4 @@ private:
     friend class SQLConnector;
 };
 
-}
-
+} // namespace Mantids30::Database

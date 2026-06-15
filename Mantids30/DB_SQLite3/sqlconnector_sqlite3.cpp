@@ -13,7 +13,9 @@ SQLConnector_SQLite3::SQLConnector_SQLite3()
 SQLConnector_SQLite3::~SQLConnector_SQLite3()
 {
     if (m_ppDb)
+    {
         sqlite3_close(m_ppDb);
+    }
 }
 
 bool SQLConnector_SQLite3::connectInMemory()
@@ -32,9 +34,13 @@ bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
     std::shared_ptr<Query> i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
 
     if (i && i->isSuccessful())
+    {
         return i->step();
+    }
     else
+    {
         return false;
+    }
 }
 
 void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
@@ -45,9 +51,13 @@ void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
 bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
 {
     if (on)
+    {
         return qExecuteEx("PRAGMA foreign_keys = ON;");
+    }
     else
+    {
         return qExecuteEx("PRAGMA foreign_keys = OFF;");
+    }
 }
 
 bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode)

@@ -1,6 +1,6 @@
 #include "sqlconnector_pgsql.h"
-#include <string.h>
 #include <Mantids30/Memory/a_string.h>
+#include <string.h>
 #include <unistd.h>
 using namespace Mantids30::Database;
 
@@ -14,16 +14,22 @@ SQLConnector_PostgreSQL::SQLConnector_PostgreSQL()
 SQLConnector_PostgreSQL::~SQLConnector_PostgreSQL()
 {
     if (m_databaseConnectionHandler)
+    {
         PQfinish(m_databaseConnectionHandler);
+    }
 }
 
 bool SQLConnector_PostgreSQL::isOpen()
 {
-    if (!m_databaseConnectionHandler) 
+    if (!m_databaseConnectionHandler)
+    {
         return false;
-    std::shared_ptr<Query> i = qSelect("SELECT 1;", {},{} );
+    }
+    std::shared_ptr<Query> i = qSelect("SELECT 1;", {}, {});
     if (i && i->isSuccessful())
+    {
         return i->step();
+    }
     return true;
 }
 
@@ -36,17 +42,17 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
 {
     std::string realTableName;
 
-    if (memchr(table.c_str(),'.',table.size()))
+    if (memchr(table.c_str(), '.', table.size()))
+    {
         realTableName = table;
+    }
     else
+    {
         realTableName = "public." + table;
+    }
 
     // Select Query:
-    std::shared_ptr<Query> i = qSelect("SELECT to_regclass(:table);",
-                   {
-                      { ":table", std::make_shared<Memory::Abstract::STRING>(realTableName)}
-                   },
-                   {} );
+    std::shared_ptr<Query> i = qSelect("SELECT to_regclass(:table);", {{":table", std::make_shared<Memory::Abstract::STRING>(realTableName)}}, {});
 
     if (i && i->isSuccessful())
     {
@@ -61,8 +67,10 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
 std::string SQLConnector_PostgreSQL::getEscaped(const std::string &v)
 {
     if (!m_databaseConnectionHandler)
+    {
         return "";
-    char cEscaped[(2 * v.size())+1];
+    }
+    char cEscaped[(2 * v.size()) + 1];
     PQescapeStringConn(m_databaseConnectionHandler, cEscaped, v.c_str(), v.size(), &m_psqlEscapeError);
     cEscaped[(2 * v.size())] = 0;
     return cEscaped;
@@ -73,21 +81,23 @@ bool SQLConnector_PostgreSQL::connect0()
     if (m_databaseConnectionHandler)
     {
         PQfinish(m_databaseConnectionHandler);
-        m_databaseConnectionHandler =nullptr;
+        m_databaseConnectionHandler = nullptr;
     }
 
     fillConnectionArray();
 
-    char ** ccKeys = getConnectionKeys();
-    char ** ccValues = getConnectionValues();
+    char **ccKeys = getConnectionKeys();
+    char **ccValues = getConnectionValues();
 
-    m_databaseConnectionHandler = PQconnectdbParams(ccKeys,ccValues,0);
+    m_databaseConnectionHandler = PQconnectdbParams(ccKeys, ccValues, 0);
 
     destroyArray(ccKeys);
     destroyArray(ccValues);
 
     if (!m_databaseConnectionHandler)
+    {
         return false;
+    }
 
     if (m_databaseConnectionHandler)
     {
@@ -109,10 +119,19 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
 {
     m_connectionValues.clear();
 
-    if (m_dbName.size()) m_connectionValues["dbname"] = m_dbName;
-    if (m_host.size()) m_connectionValues["hostname"] = m_host;
+    if (m_dbName.size())
+    {
+        m_connectionValues["dbname"] = m_dbName;
+    }
+    if (m_host.size())
+    {
+        m_connectionValues["hostname"] = m_host;
+    }
 
-    if (m_port!=5432) m_connectionValues["port"] = m_port;
+    if (m_port != 5432)
+    {
+        m_connectionValues["port"] = m_port;
+    }
 
     if (!m_credentials.userName.empty())
     {
@@ -122,17 +141,22 @@ void SQLConnector_PostgreSQL::fillConnectionArray()
 
     m_connectionValues["connect_timeout"] = m_connectionTimeout;
 
-    if (m_connectionOptions.size()) m_connectionValues["options"] = m_connectionOptions;
-    if (m_connectionSSLMode.size()) m_connectionValues["sslmode"] = m_connectionSSLMode;
-
+    if (m_connectionOptions.size())
+    {
+        m_connectionValues["options"] = m_connectionOptions;
+    }
+    if (m_connectionSSLMode.size())
+    {
+        m_connectionValues["sslmode"] = m_connectionSSLMode;
+    }
 }
 
 char **SQLConnector_PostgreSQL::getConnectionKeys()
 {
-    char ** values = static_cast<char **>( malloc( (m_connectionValues.size()+1)*sizeof(char *)) );
+    char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for ( const std::pair<std::string, std::string> & i : m_connectionValues )
+    for (const std::pair<std::string, std::string> &i : m_connectionValues)
     {
         values[pos++] = strdup(i.first.c_str());
     }
@@ -143,10 +167,10 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
 
 char **SQLConnector_PostgreSQL::getConnectionValues()
 {
-    char ** values = static_cast<char **>( malloc ((m_connectionValues.size()+1)*sizeof(char *)) );
+    char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for ( const std::pair<std::string, std::string> & i : m_connectionValues )
+    for (const std::pair<std::string, std::string> &i : m_connectionValues)
     {
         values[pos++] = strdup(i.second.c_str());
     }
@@ -157,13 +181,12 @@ char **SQLConnector_PostgreSQL::getConnectionValues()
 
 void SQLConnector_PostgreSQL::destroyArray(char **values)
 {
-    for ( size_t pos=0;values[pos]!=nullptr;pos++ )
+    for (size_t pos = 0; values[pos] != nullptr; pos++)
     {
         free(values[pos]);
     }
     free(values);
 }
-
 
 int SQLConnector_PostgreSQL::getPsqlEscapeError() const
 {

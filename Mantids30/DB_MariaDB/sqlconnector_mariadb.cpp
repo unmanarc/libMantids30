@@ -16,16 +16,22 @@ SQLConnector_MariaDB::SQLConnector_MariaDB()
 SQLConnector_MariaDB::~SQLConnector_MariaDB()
 {
     if (m_databaseConnectionHandler)
+    {
         mysql_close(m_databaseConnectionHandler);
+    }
 }
 
 bool SQLConnector_MariaDB::isOpen()
 {
     if (!m_databaseConnectionHandler)
+    {
         return false;
+    }
     std::shared_ptr<Query> i = qSelect("SELECT 1;", {}, {});
     if (i && i->isSuccessful())
+    {
         return i->step();
+    }
     return true;
 }
 
@@ -37,7 +43,9 @@ void SQLConnector_MariaDB::getDatabaseConnector(Query_MariaDB *query)
 std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 {
     if (!m_databaseConnectionHandler)
+    {
         return {};
+    }
 
     std::vector<char> buffer((2 * v.length()) + 1);
 
@@ -53,9 +61,13 @@ bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
                                        {{":schema", std::make_shared<Memory::Abstract::STRING>(m_dbName)}, {":table", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
 
     if (i && i->isSuccessful())
+    {
         return i->step();
+    }
     else
+    {
         return false;
+    }
 }
 
 bool SQLConnector_MariaDB::connect0()

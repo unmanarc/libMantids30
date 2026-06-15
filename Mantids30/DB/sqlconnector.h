@@ -92,7 +92,6 @@ public:
     std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                    const std::vector<Memory::Abstract::Var *> &resultVars);
 
-
     /**
      * @brief qSelectSingleRow Executes a prepared SELECT query and retrieves exactly one row of data.
      * @param preparedQuery Prepared SQL Query String.
@@ -103,8 +102,7 @@ public:
      *       If no rows are found, resultVars will remain in an undefined state.
      *       The method returns false if the query fails or returns more than one row.
      */
-    bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                          const std::vector<Memory::Abstract::Var *> &resultVars);
+    bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
@@ -118,7 +116,7 @@ public:
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
     std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                                   const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
+                                              const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);
 

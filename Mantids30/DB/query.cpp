@@ -19,7 +19,9 @@ Query::~Query()
     clearDestroyableStringsForResults();
 
     if (m_databaseLockMutex)
+    {
         m_databaseLockMutex->unlock();
+    }
 }
 
 bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)
@@ -87,7 +89,7 @@ bool Query::exec(const ExecType &execType)
 
 bool Query::step()
 {
-    for (Mantids30::Memory::Abstract::Var * var: m_resultVars)
+    for (Mantids30::Memory::Abstract::Var *var : m_resultVars)
     {
         // Reset null status.
         var->setIsNull(false);
@@ -127,12 +129,16 @@ bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysI
             }
         }
         else
+        {
             toDelete.push_back(key);
+        }
     }
 
     // not used needles will be deleted.
     for (std::string &needle : toDelete)
+    {
         keysIn.remove(needle);
+    }
 
     // If there is a key, replace.
     if (firstKeyPos != std::string::npos)
@@ -229,11 +235,15 @@ bool Query::setSqlConnector(void *value, std::timed_mutex *mtDatabaseLockMutex, 
 
     // Adquire the lock here (some DB's can only handle one query at time)
     if (milliseconds == 0)
+    {
         mtDatabaseLockMutex->lock();
+    }
     else
     {
         if (mtDatabaseLockMutex->try_lock_for(std::chrono::milliseconds(milliseconds)))
+        {
             return true;
+        }
         else
         {
             // No need to unlock at the end...

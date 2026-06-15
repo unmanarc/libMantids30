@@ -26,7 +26,9 @@ Query_PostgreSQL::Query_PostgreSQL()
 Query_PostgreSQL::~Query_PostgreSQL()
 {
     if (m_results)
+    {
         PQclear(m_results);
+    }
     m_results = nullptr;
 
     free(m_paramValues);
@@ -40,14 +42,20 @@ bool Query_PostgreSQL::step0()
 {
     //  :)
     if (!m_results)
+    {
         return false;
+    }
     if (m_execStatus != PGRES_TUPLES_OK)
+    {
         return false;
+    }
 
     int i = m_currentRow;
 
     if (m_currentRow >= PQntuples(m_results))
+    {
         return false;
+    }
 
     int columnpos = 0;
     for (Memory::Abstract::Var *outputVar : m_resultVars)
@@ -176,7 +184,9 @@ bool Query_PostgreSQL::postBindInputVars()
 
     std::list<std::string> keysIn;
     for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
+    {
         keysIn.push_back(i.first);
+    }
 
     // Replace the named keys for $0, $1, etc...:
     while (replaceFirstKey(m_query, keysIn, m_keysByPos, std::string("$") + std::to_string(m_paramCount)))
@@ -266,7 +276,7 @@ bool Query_PostgreSQL::postBindInputVars()
         break;
         case Memory::Abstract::Var::TYPE_BIN:
         {
-            const Memory::Abstract::BINARY::ByteArray * i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
+            const Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
             m_paramValues[pos] = i->ptr;
             m_paramLengths[pos] = i->dataSize;
             m_paramFormats[pos] = 1;
@@ -330,7 +340,9 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
     ((SQLConnector_PostgreSQL *) m_pSQLConnector)->getDatabaseConnector(this);
 
     if (!m_databaseConnectionHandler)
+    {
         return false;
+    }
 
     // Prepare the query:
     m_results = PQexecPrepared(m_databaseConnectionHandler, m_query.c_str(), m_paramCount, m_paramValues, m_paramLengths, m_paramFormats, 0);
@@ -349,10 +361,14 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
 
                 // If there is any result, return the result...
                 if (m_results)
+                {
                     return result2;
+                }
                 // ...
                 if (result2 == true)
+                {
                     throw std::runtime_error("how this can be true?.");
+                }
 
                 // If no result (eg. disconnected again), then, keep the loop reconnecting
             }
@@ -388,7 +404,9 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
     {
         m_affectedRecords = strtoull(PQcmdTuples(m_results), 0, 10);
         if (m_fetchLastInsertRowID)
+        {
             m_lastInsertRowID = PQoidValue(m_results);
+        }
         return m_execStatus == PGRES_COMMAND_OK;
     }
 }

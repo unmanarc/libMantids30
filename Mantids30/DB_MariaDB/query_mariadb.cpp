@@ -85,9 +85,13 @@ Query_MariaDB::~Query_MariaDB()
 
     // Destroy main items:
     if (m_bindedInputParams)
+    {
         delete[] m_bindedInputParams;
+    }
     if (m_bindedResultsParams)
+    {
         delete[] m_bindedResultsParams;
+    }
 
     // Destroy the statement
     if (m_stmt)
@@ -102,7 +106,9 @@ bool Query_MariaDB::step0()
     bool r = mysql_stmt_fetch(m_stmt) == 0;
 
     if (!r)
+    {
         return false;
+    }
 
     // Now bind each variable.
     for (size_t col = 0; col < m_resultVars.size(); col++)
@@ -296,7 +302,9 @@ bool Query_MariaDB::postBindInputVars()
     // Load Keys:
     std::list<std::string> keysIn;
     for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
+    {
         keysIn.push_back(i.first);
+    }
 
     // Replace the keys for ?:
     while (replaceFirstKey(m_query, keysIn, m_keysByPos, "?"))
@@ -304,7 +312,9 @@ bool Query_MariaDB::postBindInputVars()
     }
 
     if (!m_keysByPos.size())
+    {
         return true;
+    }
 
     // Create the bind struct...
     m_bindedInputParams = new MYSQL_BIND[m_keysByPos.size()];
@@ -526,13 +536,17 @@ int Query_MariaDB::reconnection(const ExecType &execType, bool recursion)
 
             // if Resulted in another error or success
             if (!connectionError())
+            {
                 return result2 ? 1 : 0;
+            }
 
             // Otherwise, keep reconnecting...
 
             // ...
             if (result2 == true)
+            {
                 throw std::runtime_error("how this can be true?.");
+            }
         }
         else
         {
@@ -564,7 +578,9 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     ((SQLConnector_MariaDB *) m_pSQLConnector)->getDatabaseConnector(this);
 
     if (!m_databaseConnectionHandler)
+    {
         return false;
+    }
 
     // Prepare the query (will lock the db while using ppDb):
     m_stmt = mysql_stmt_init(m_databaseConnectionHandler);
@@ -580,7 +596,9 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         m_lastSQLErrno = mysql_stmt_errno(m_stmt);
         int i = 0;
         if ((i = reconnection(execType, recursion)) >= 0)
+        {
             return i == 1 ? true : false;
+        }
 
         m_lastSQLError = mysql_stmt_error(m_stmt);
 
@@ -612,7 +630,9 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         m_lastSQLErrno = mysql_stmt_errno(m_stmt);
         int i = 0;
         if ((i = reconnection(execType, recursion)) >= 0)
+        {
             return i == 1 ? true : false;
+        }
 
         // When failed with another error:
         m_lastSQLError = mysql_stmt_error(m_stmt);
@@ -640,7 +660,9 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     if (execType != EXEC_TYPE_SELECT)
     {
         if (m_fetchLastInsertRowID)
+        {
             m_lastInsertRowID = mysql_stmt_insert_id(m_stmt);
+        }
         m_affectedRecords = mysql_stmt_num_rows(m_stmt);
     }
     else
@@ -667,7 +689,11 @@ unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_f
     bind.error = &isTruncated;
 
     if (mysql_stmt_fetch_column(m_stmt, &bind, col, 0) == 0)
+    {
         return r;
+    }
     else
+    {
         return 0;
+    }
 }
