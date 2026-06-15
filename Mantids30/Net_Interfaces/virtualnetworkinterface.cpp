@@ -52,7 +52,7 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration * netcfg, cons
 
     if (m_fd != INVALID_HANDLE_VALUE)
     {
-        interfaceRealName=netIfaceName;
+        m_interfaceRealName=netIfaceName;
         // TODO: destroy this event.
         m_overlapped.hEvent = CreateEvent(NULL, true, false, NULL);
     }
@@ -63,7 +63,7 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration * netcfg, cons
         netcfg->setUP(true);
         if (!netcfg->apply())
         {
-            lastError = "Failed to configure the interface.";
+            m_lastError = "Failed to configure the interface.";
         }
     }
     return m_fd!=INVALID_HANDLE_VALUE;
@@ -248,7 +248,7 @@ std::string VirtualNetworkInterface::getWinTapLogLine()
 
 DWORD VirtualNetworkInterface::writePacket(const void *packet, DWORD len)
 {
-    std::unique_lock<std::mutex> lock(mutexWrite);
+    std::unique_lock<std::mutex> lock(m_mutexWrite);
 
     OVERLAPPED overlapped;
     memset(&overlapped, 0, sizeof(overlapped));
@@ -270,7 +270,7 @@ int VirtualNetworkInterface::readPacket(void *packet, DWORD len)
 {
     int wait_result;
 
-    auto leninit=len;
+    DWORD leninit=len;
 
     if (!ReadFile(m_fd, packet, len, &len, &m_overlapped))
     {

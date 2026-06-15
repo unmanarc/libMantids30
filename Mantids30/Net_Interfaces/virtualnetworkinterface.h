@@ -3,7 +3,6 @@
 #include "netifconfig.h"
 #include <string>
 #include <mutex>
-#include <stdint.h>
 
 #ifdef _WIN32
 #include <windows.h>

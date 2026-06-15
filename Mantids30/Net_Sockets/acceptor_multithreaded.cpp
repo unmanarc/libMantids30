@@ -144,7 +144,7 @@ MultiThreaded::~MultiThreaded()
     // Accept all listen-injection threads. (no new threads will be added from here)
     if (m_initialized)
     {
-        for (auto &t : m_acceptorThreadList)
+        for (std::thread &t : m_acceptorThreadList)
         {
             if (t.joinable())
                 t.join();
@@ -152,7 +152,7 @@ MultiThreaded::~MultiThreaded()
     }
 
     // Shutdown all acceptor sockets
-    for (auto &sock : m_acceptorSocketList)
+    for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
         {
@@ -204,10 +204,10 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
             uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
 
             if (parameters.debugOptions.printHex)
-                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX ;
+                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX;
 
             if (parameters.debugOptions.printPlainText)
-                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN ;
+                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN;
 
             clientSocket->setDebugOptions(debugOptions);
             clientSocket->setDebugOutput(parameters.debugOptions.dir);
@@ -257,7 +257,7 @@ void MultiThreaded::startInBackground()
 
 void MultiThreaded::stop()
 {
-    for (auto &sock : m_acceptorSocketList)
+    for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
             sock->shutdownSocket(SHUT_RDWR);
@@ -278,7 +278,7 @@ bool MultiThreaded::startBlocking()
     {
         localThreads.emplace_back(thread_streamaccept, shared_from_this(), i);
     }
-    for (auto &t : localThreads)
+    for (std::thread &t : localThreads)
     {
         if (t.joinable())
             t.join();

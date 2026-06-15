@@ -16,22 +16,22 @@ void Listener::incomingConnection(void * context,
 {
     Listener *threadParams = (Listener *)(context);
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
-    auto connectionStatus = threadParams->handleClientConnection(socketStream);
+    int connectionStatus = threadParams->handleClientConnection(socketStream);
     CALLBACK(threadParams->tcpCallbacks.onClientDisconnected)(threadParams->listenerContext, socketStream, connectionStatus);
 }
 
 bool Listener::startListeningInBackground( const Config &parameters )
 {
     // TODO: this is repeated code... we should pass this to socket_tls? and personalize the socket options...
-    shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = make_shared<Acceptors::MultiThreaded>();
+    std::shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = std::make_shared<Acceptors::MultiThreaded>();
 
-    shared_ptr<Socket_Stream> listenerSocket = parameters.useTLS ? std::make_shared<Socket_TLS>() : std::make_shared<Socket_TCP>();
+    std::shared_ptr<Socket_Stream> listenerSocket = parameters.useTLS ? std::make_shared<Socket_TLS>() : std::make_shared<Socket_TCP>();
 
     bool cont = true;
 
     if ( parameters.useTLS )
     {
-        auto tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(listenerSocket);
+        std::shared_ptr<Socket_TLS> tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(listenerSocket);
         if (tlsSocket)
         {
             if (!parameters.tlsCACertificatePath.empty() && !tlsSocket->tlsKeys.loadCAFromPEMFile(parameters.tlsCACertificatePath))

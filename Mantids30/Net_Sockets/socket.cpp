@@ -1,5 +1,6 @@
 #include "socket.h"
 
+#include <chrono>
 #include <openssl/bio.h>
 #include <signal.h>
 #include <unistd.h>
@@ -308,7 +309,7 @@ int Socket::closeSocket()
 
     mutexClose.lock();
     // Prevent socket utilization / race condition.
-    auto socktmp = (int)m_sockFD;
+    int socktmp = (int)m_sockFD;
     m_sockFD = -1;
 #ifdef _WIN32
     int i = closesocket(socktmp);
@@ -544,13 +545,13 @@ void Socket::setDebugOutput(const std::string &newDebugDir)
 
         ////////////////////////////////////////////////////////////////////////////////////////
         // Get current time with milliseconds
-        auto now = std::chrono::system_clock::now();
-        auto time_t = std::chrono::system_clock::to_time_t(now);
-        auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+        std::chrono::time_point now = std::chrono::system_clock::now();
+        time_t xtime_t = std::chrono::system_clock::to_time_t(now);
+        std::chrono::milliseconds ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()) % 1000;
 
         // Format the filename
         char unixtime[256];
-        snprintf(unixtime, sizeof(unixtime), "%ld%03d",  static_cast<long>(time_t), static_cast<int>(ms.count()));
+        snprintf(unixtime, sizeof(unixtime), "%ld%03d",  static_cast<long>(xtime_t), static_cast<int>(ms.count()));
         ////////////////////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////////////////////

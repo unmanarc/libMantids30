@@ -2,6 +2,7 @@
 
 #include "socket_chain_protocolbase.h"
 #include <Mantids30/Net_Sockets/socket_stream.h>
+#include <vector>
 
 namespace Mantids30::Network::Sockets::ChainProtocols {
 
@@ -26,7 +27,7 @@ protected:
     void *getThis() { return this; }
 
 private:
-    char *getXorCopy(const void *data, const size_t &datalen);
+    std::vector<char> getXorCopy(const void *data, const size_t &datalen);
     char m_xorByte;
 };
 

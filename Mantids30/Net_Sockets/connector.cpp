@@ -46,7 +46,7 @@ void connectionLoopThread(Connector *parent,
 
         if (config->useTLS)
         {
-            auto tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(clientSocket);
+            std::shared_ptr<Socket_TLS> tlsSocket = std::dynamic_pointer_cast<Socket_TLS>(clientSocket);
             if (tlsSocket)
             {
                 // CA Cert Path Defined.

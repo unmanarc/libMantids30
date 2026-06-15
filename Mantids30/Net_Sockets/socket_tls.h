@@ -67,7 +67,7 @@ public:
 
             ~PSKServerWallet()
             {
-                for (auto &i : pskByClientIdMap)
+                for (std::pair<const std::string, std::string> &i : pskByClientIdMap)
                 {
                     // Erase the PSK data from memory.
                     i.second.resize(i.second.capacity(), 0);

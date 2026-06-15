@@ -129,7 +129,7 @@ bool NetworkInterfaceConfiguration::apply()
 #else
     if (changeIPv4Addr)
     {
-        auto i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
+        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
                                                                "ipv4",
                                                                "set",
                                                                "address",
@@ -149,7 +149,7 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeMTU)
     {
-        auto i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
+        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface",
                                                                "ipv4",
                                                                "set",
                                                                "interface",

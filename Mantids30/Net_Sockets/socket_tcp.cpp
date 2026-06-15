@@ -251,7 +251,7 @@ bool Socket_TCP::tcpConnect(const unsigned short & addrFamily, const sockaddr *a
     if (res2 < 0)
     {
 #ifdef _WIN32
-        auto werr = WSAGetLastError();
+        int werr = WSAGetLastError();
         if (werr == WSAEWOULDBLOCK)
 #else
         if (errno == EINPROGRESS || !errno)

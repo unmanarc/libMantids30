@@ -44,7 +44,7 @@ int Socket_Stream_Dummy::shutdownSocket(
 
 ssize_t Socket_Stream_Dummy::partialRead(void *data, const size_t &datalen)
 {
-    auto storedDataSize = sender.size();
+    size_t storedDataSize = sender.size();
     if (!storedDataSize)
     {
         return 0;
