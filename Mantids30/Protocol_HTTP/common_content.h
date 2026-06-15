@@ -13,7 +13,7 @@ namespace Mantids30::Network::Protocols::HTTP {
 class Content : public Memory::Streams::SubParser
 {
 public:
-    enum class ContentType : uint8_t
+    enum class ContainerType : uint8_t
     {
         BIN,
         MIME,
@@ -21,21 +21,21 @@ public:
         JSON
     };
 
-    enum eProcessingMode
+    enum ProcessingMode : uint8_t
     {
-        PROCMODE_CHUNK_SIZE,
-        PROCMODE_CHUNK_DATA,
-        PROCMODE_CHUNK_CRLF,
-        PROCMODE_CHUNK_CLOSE,
-        PROCMODE_CONTENT_LENGTH,
-        PROCMODE_CONNECTION_CLOSE
+        CHUNK_SIZE,
+        CHUNK_DATA,
+        CHUNK_CRLF,
+        CHUNK_CLOSE,
+        CONTENT_LENGTH,
+        CONNECTION_CLOSE
     };
 
-    enum eTransmitionMode
+    enum class TransmissionMode : uint8_t
     {
-        TRANSMIT_MODE_CHUNKS,
-        TRANSMIT_MODE_CONTENT_LENGTH,
-        TRANSMIT_MODE_CONNECTION_CLOSE
+        CHUNKS,
+        CONTENT_LENGTH,
+        CONNECTION_CLOSE
     };
 
     Content();
@@ -68,7 +68,7 @@ public:
      * @brief setStreamableObj Set the streamable output (eg. a file?)
      * @param outDataContainer stream that will be used for the content trnasmission
      */
-    void setStreamableObj(std::shared_ptr<Memory::Streams::StreamableObject> outDataContainer);
+    void setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject>& outDataContainer);
     /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<size_t>::max() if size not defined, or >=0 if size defined.
@@ -102,12 +102,12 @@ public:
      * @brief setTransmitionMode Set the transmission mode (chunked, content-lenght, connection-close)
      * @param value mode
      */
-    void setTransmitionMode(const eTransmitionMode &value);
+    void setTransmitionMode(const TransmissionMode &value);
     /**
      * @brief getTransmitionMode Get the transmission mode (chunked, content-lenght, connection-close)
      * @return mode
      */
-    eTransmitionMode getTransmitionMode() const;
+    TransmissionMode getTransmitionMode() const;
     /**
      * @brief setCurrentSize Set content length data size (for receiving/decoding data).
      * @param contentLengthSize size.
@@ -119,12 +119,12 @@ public:
      * @brief setContainerType Set Container Content Data Type (URL/MIME/BIN)
      * @param value type
      */
-    void setContainerType(const ContentType &value);
+    void setContainerType(const ContainerType &value);
     /**
      * @brief getContainerType Get container content data type (URL/MIME/BIN)
      * @return type
      */
-    ContentType getContainerType() const;
+    ContainerType getContainerType() const;
 
     //////////////////////////////////////////////////
     // Security:
@@ -146,9 +146,9 @@ private:
     std::optional<uint32_t> parseHttpChunkSize();
 
     // Parsing Optimization:
-    eTransmitionMode m_transmitionMode = TRANSMIT_MODE_CONNECTION_CLOSE;
-    eProcessingMode m_currentMode = PROCMODE_CONTENT_LENGTH;
-    ContentType m_containerType = ContentType::BIN;
+    TransmissionMode m_transmitionMode = TransmissionMode::CONNECTION_CLOSE;
+    ProcessingMode m_currentMode = ProcessingMode::CONTENT_LENGTH;
+    ContainerType m_containerType = ContainerType::BIN;
 
     // Security Parameters (for parsing):
     size_t m_securityMaxPostDataSize = 17 * MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).

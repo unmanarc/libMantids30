@@ -133,7 +133,7 @@ public:
             else
             {
                 // Other methods use the body content.
-                if (content.getContainerType() == HTTP::Content::ContentType::JSON)
+                if (content.getContainerType() == HTTP::Content::ContainerType::JSON)
                 {
                     return content.getJSONVars();
                 }

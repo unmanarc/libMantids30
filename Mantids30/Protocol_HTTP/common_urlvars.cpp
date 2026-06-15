@@ -179,7 +179,7 @@ bool HTTP::URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::C
 {
     if (!varName.empty() && m_vars.size() < m_maxVarsCount)
     {
-        m_vars.push_back(std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>(varName, data));
+        m_vars.emplace_back(varName, data);
         return true;
     }
     return false;

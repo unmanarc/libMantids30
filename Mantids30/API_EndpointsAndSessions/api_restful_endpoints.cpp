@@ -190,7 +190,7 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTPMethod &httpMethodTy
         }
         else
         {
-            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::ContentType::JSON)
+            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::ContainerType::JSON)
             {
                 // Bad parsing... (should be parsed as JSON...)
                 apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during POST");

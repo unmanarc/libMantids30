@@ -112,12 +112,12 @@ void HTTP::HTTPv1_Client::parseHeaders2ServerCookies()
 
 Memory::Streams::SubParser *HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
 {
-    serverResponse.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONNECTION_CLOSE);
+    serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONNECTION_CLOSE);
     // Set Content Data Reception Mode.
     if (serverResponse.headers.exist("Content-Length"))
     {
         uint64_t len = serverResponse.headers.getOptionAsUINT64("Content-Length");
-        serverResponse.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+        serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
         if (!len || !serverResponse.content.setCurrentSize(len))
@@ -127,7 +127,7 @@ Memory::Streams::SubParser *HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
     }
     else if (icontains(serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"), "CHUNKED"))
     {
-        serverResponse.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CHUNKS);
+        serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CHUNKS);
     }
 
     return &serverResponse.content;
@@ -196,7 +196,7 @@ HTTP::HTTPv1_Client::PostMIMERequest HTTP::HTTPv1_Client::prepareRequestAsPostMI
     setClientRequest(hostName, uriPath);
 
     clientRequest.requestLine.setHTTPMethod("POST");
-    clientRequest.content.setContainerType(HTTP::Content::ContentType::MIME);
+    clientRequest.content.setContainerType(HTTP::Content::ContainerType::MIME);
 
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
     req.postVars = clientRequest.content.getMultiPartVars();
@@ -210,7 +210,7 @@ HTTP::HTTPv1_Client::PostURLRequest HTTP::HTTPv1_Client::prepareRequestAsPostURL
 
     setClientRequest(hostName, uriPath);
     clientRequest.requestLine.setHTTPMethod("POST");
-    clientRequest.content.setContainerType(HTTP::Content::ContentType::URL);
+    clientRequest.content.setContainerType(HTTP::Content::ContainerType::URL);
     req.urlVars = std::dynamic_pointer_cast<HTTP::URLVars>(clientRequest.requestLine.urlVars());
     req.postVars = clientRequest.content.getUrlPostVars();
 

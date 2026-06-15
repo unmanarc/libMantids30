@@ -114,7 +114,7 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
     string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
     if (contentLength)
     {
-        clientRequest.content.setTransmitionMode(HTTP::Content::TRANSMIT_MODE_CONTENT_LENGTH);
+        clientRequest.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
         if (!clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.
@@ -123,20 +123,20 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
         }
         if (boost::icontains(contentType, "multipart/form-data"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContentType::MIME);
+            clientRequest.content.setContainerType(HTTP::Content::ContainerType::MIME);
             clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
         }
         else if (boost::icontains(contentType, "application/x-www-form-urlencoded"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContentType::URL);
+            clientRequest.content.setContainerType(HTTP::Content::ContainerType::URL);
         }
         else if (boost::icontains(contentType, "application/json"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContentType::JSON);
+            clientRequest.content.setContainerType(HTTP::Content::ContainerType::JSON);
         }
         else
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContentType::BIN);
+            clientRequest.content.setContainerType(HTTP::Content::ContainerType::BIN);
         }
         /////////////////////////////////////////////////////////////////////////////////////
     }
