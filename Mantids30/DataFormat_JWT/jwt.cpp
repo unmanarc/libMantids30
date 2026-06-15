@@ -6,11 +6,13 @@
 
 using namespace Mantids30::DataFormat;
 
-std::string JWT::createHeader() {
+std::string JWT::createHeader()
+{
     Json::Value header;
     header["typ"] = "JWT";
 
-    switch (m_algorithm) {
+    switch (m_algorithm)
+    {
     case Algorithm::HS256:
         header["alg"] = "HS256";
         break;
@@ -40,36 +42,48 @@ std::string JWT::createHeader() {
 bool JWT::isAlgorithmSupported(const std::string &algorithm)
 {
     if (algorithm == "HS256")
+    {
         return true;
+    }
     if (algorithm == "RS256")
+    {
         return true;
+    }
 
     if (algorithm == "HS384")
+    {
         return true;
+    }
     if (algorithm == "RS384")
+    {
         return true;
+    }
 
     if (algorithm == "HS512")
+    {
         return true;
+    }
     if (algorithm == "RS512")
+    {
         return true;
+    }
 
     return false;
 }
 
-std::shared_ptr<JWT::RAWSignature> JWT::createSignature(const std::string& data) {
-
+std::shared_ptr<JWT::RAWSignature> JWT::createSignature(const std::string &data)
+{
     std::shared_ptr<JWT::RAWSignature> r;
 
     AlgorithmDetails algorithmDetails(m_algorithm);
 
     if (algorithmDetails.isUsingHMAC)
     {
-        r = createHMACSignature(algorithmDetails.nid,data);
+        r = createHMACSignature(algorithmDetails.nid, data);
     }
     else if (algorithmDetails.usingRSA)
     {
-        r = createRSASignature(algorithmDetails.nid,data);
+        r = createRSASignature(algorithmDetails.nid, data);
     }
 
     return r;
@@ -81,18 +95,11 @@ std::shared_ptr<JWT::RAWSignature> JWT::createHMACSignature(int hashType, const 
     r.reset(new JWT::RAWSignature);
 
     r->m_digestSize = EVP_MAX_MD_SIZE + 1;
-    r->m_digest = new unsigned char [r->m_digestSize];
+    r->m_digest = new unsigned char[r->m_digestSize];
 
     if (!m_sharedSecret.empty() && r->m_digest)
     {
-        HMAC(   EVP_get_digestbynid(hashType),
-                m_sharedSecret.data(),
-                m_sharedSecret.size(),
-                reinterpret_cast<const unsigned char*>(data.data()),
-                data.size(),
-                r->m_digest,
-                &(r->m_digestSize)
-                );
+        HMAC(EVP_get_digestbynid(hashType), m_sharedSecret.data(), m_sharedSecret.size(), reinterpret_cast<const unsigned char *>(data.data()), data.size(), r->m_digest, &(r->m_digestSize));
         r->m_result = RAWSignature::SIG_OK;
         return r;
     }
@@ -106,9 +113,9 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
     r.reset(new JWT::RAWSignature);
 
     r->m_result = RAWSignature::SIG_OK;
-    EVP_PKEY* pkey = nullptr;
-    RSA* rsa = nullptr;
-    BIO* bio = nullptr;
+    EVP_PKEY *pkey = nullptr;
+    RSA *rsa = nullptr;
+    BIO *bio = nullptr;
     size_t sig_len = 0;
 
     // Read the private key from a string
@@ -119,11 +126,10 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
         BIO_free(bio);
         if (pkey)
         {
-            EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+            EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
 
             if (mdctx)
             {
-
                 if (EVP_DigestSignInit(mdctx, NULL, EVP_get_digestbynid(hashType), NULL, pkey) == 1)
                 {
                     EVP_DigestSignUpdate(mdctx, data.c_str(), data.length());
@@ -131,9 +137,9 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
                     EVP_DigestSignFinal(mdctx, NULL, &signature_len);
                     r->m_digestSize = signature_len;
 
-                    if (r->m_digestSize>0)
+                    if (r->m_digestSize > 0)
                     {
-                        r->m_digest = new unsigned char [r->m_digestSize];
+                        r->m_digest = new unsigned char[r->m_digestSize];
                         if (r->m_digest)
                         {
                             EVP_DigestSignFinal(mdctx, r->m_digest, &signature_len);
@@ -141,14 +147,19 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
                             r->m_result = RAWSignature::SIG_OK;
                         }
                         else
+                        {
                             r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                        }
                     }
                     else
+                    {
                         r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                    }
                 }
                 else
+                {
                     r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
-
+                }
 
                 EVP_MD_CTX_free(mdctx);
             }
@@ -172,9 +183,9 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
 int JWT::validateRSASignature(int hashType, const std::string &data, const char *signature, unsigned int signatureLength)
 {
     int error = 0;
-    EVP_PKEY* pkey = nullptr;
-    RSA* rsa = nullptr;
-    BIO* bio = nullptr;
+    EVP_PKEY *pkey = nullptr;
+    RSA *rsa = nullptr;
+    BIO *bio = nullptr;
 
     // Read the public key from a string
     bio = BIO_new_mem_buf(m_publicSecret.data(), m_publicSecret.size());
@@ -185,15 +196,14 @@ int JWT::validateRSASignature(int hashType, const std::string &data, const char 
         if (pkey)
         {
             // Verificar el JWT utilizando RS256
-            EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+            EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
             if (mdctx)
             {
-
                 EVP_DigestVerifyInit(mdctx, NULL, EVP_get_digestbynid(hashType), NULL, pkey);
                 EVP_DigestVerifyUpdate(mdctx, data.c_str(), data.length());
 
                 // TODO: signatureLength can be greater and don't affect the validation?
-                error = EVP_DigestVerifyFinal(mdctx, reinterpret_cast<const unsigned char*>(signature), signatureLength) == 1 ? 0 : -1;
+                error = EVP_DigestVerifyFinal(mdctx, reinterpret_cast<const unsigned char *>(signature), signatureLength) == 1 ? 0 : -1;
 
                 // Liberar recursos
                 EVP_MD_CTX_free(mdctx);
@@ -213,7 +223,8 @@ int JWT::validateRSASignature(int hashType, const std::string &data, const char 
 int JWT::getHashTypeNumber()
 {
     int hashType = 0;
-    switch (m_algorithm) {
+    switch (m_algorithm)
+    {
     case Algorithm::HS256:
         hashType = NID_sha256;
         break;
@@ -264,22 +275,34 @@ void JWT::setPrivateSecret(const std::string &newPrivateSecret)
 bool JWT::isHMACAlgorithm(const std::string &algorithm)
 {
     if (algorithm == "HS256")
+    {
         return true;
+    }
     if (algorithm == "HS384")
+    {
         return true;
+    }
     if (algorithm == "HS512")
+    {
         return true;
+    }
     return false;
 }
 
 bool JWT::isRSAAlgorithm(const std::string &algorithm)
 {
     if (algorithm == "RS256")
+    {
         return true;
+    }
     if (algorithm == "RS384")
+    {
         return true;
+    }
     if (algorithm == "RS512")
+    {
         return true;
+    }
     return false;
 }
 
@@ -295,7 +318,7 @@ void JWT::setSharedSecret(const std::string &newSharedSecret)
     m_cache.clear();
 }
 
-std::string JWT::sign(const Json::Value& payload)
+std::string JWT::sign(const Json::Value &payload)
 {
     Json::StreamWriterBuilder writer;
     std::string payload_str = Json::writeString(writer, payload);
@@ -305,7 +328,9 @@ std::string JWT::sign(const Json::Value& payload)
     std::shared_ptr<JWT::RAWSignature> eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
 
     if (eSignature->m_result == RAWSignature::SIG_OK)
-        signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest,eSignature->m_digestSize, true);
+    {
+        signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest, eSignature->m_digestSize, true);
+    }
 
     return header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true) + '.' + signature;
 }
@@ -314,20 +339,21 @@ std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
 {
     if (updateDefaultTimeValues)
     {
-        token.setExpirationTime( time(nullptr) + m_defaultExpirationTimeInSeconds );
-        token.setIssuedAt( time(nullptr) );
-        token.setNotBefore( time(nullptr) - m_defaultMaxTimeBeforeInSeconds );
+        token.setExpirationTime(time(nullptr) + m_defaultExpirationTimeInSeconds);
+        token.setIssuedAt(time(nullptr));
+        token.setNotBefore(time(nullptr) - m_defaultMaxTimeBeforeInSeconds);
     }
 
     return sign(*(token.getClaimsPTR()));
 }
 
-
 bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOutput)
 {
     JWT::Token dummyToken;
     if (!tokenPayloadOutput)
+    {
         tokenPayloadOutput = &dummyToken;
+    }
 
     // Find the positions of the '.' characters that separate the header, payload, and signature
     size_t pos_header = fullSignedToken.find('.');
@@ -348,7 +374,6 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
     std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
     std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
-
 
     // If we have a backchannel to check the token itself, check trough backchannel.
     if (verificationCallback)
@@ -403,7 +428,9 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
         // Create the signature using the header and payload, and compare with the decoded signature
         std::shared_ptr<RAWSignature> computed_signature = createSignature(header_b64 + '.' + payload_b64);
         if (computed_signature->m_result != RAWSignature::SIG_OK)
+        {
             return false;
+        }
 
         isSignatureVerified = false;
 
@@ -459,10 +486,13 @@ bool JWT::decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayload
 
 JWT::Token JWT::verifyAndDecodeTokenPayload(const std::string &fullSignedToken)
 {
-    JWT::Token r,empty;
+    JWT::Token r, empty;
     if (verify(fullSignedToken, &r))
+    {
         return r;
+    }
     else
+    {
         return empty;
+    }
 }
-

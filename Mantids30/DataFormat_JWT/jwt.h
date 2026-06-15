@@ -1,18 +1,17 @@
 #pragma once
 
-#include <json/value.h>
 #include <boost/thread/shared_mutex.hpp>
 #include <condition_variable>
 #include <ctime>
 #include <json/json.h>
+#include <json/value.h>
 #include <queue>
 #include <set>
 #include <string>
 #include <thread>
 #include <unordered_map>
 
-namespace Mantids30::DataFormat
-{
+namespace Mantids30::DataFormat {
 
 /**
  * @brief Class for creating and verifying JSON Web Tokens (JWT)
@@ -302,7 +301,9 @@ public:
         ~RAWSignature()
         {
             if (m_digest)
+            {
                 delete[] m_digest;
+            }
             m_digestSize = 0;
             m_digest = nullptr;
         }

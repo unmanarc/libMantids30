@@ -13,7 +13,8 @@ JWT::Revocation::~Revocation()
 {
     m_stopGarbageCollector = true;
     m_garbageCollectorCondition.notify_one();
-    if (m_garbageCollectorThread.joinable()) {
+    if (m_garbageCollectorThread.joinable())
+    {
         m_garbageCollectorThread.join();
     }
 }
@@ -21,7 +22,7 @@ JWT::Revocation::~Revocation()
 void JWT::Revocation::addToRevocationList(const std::string &signature, time_t expirationTime)
 {
     boost::unique_lock<boost::shared_mutex> writeLock(m_revokedTokensMutex);
-    m_expirationSignatures.insert({expirationTime, signature}); 
+    m_expirationSignatures.insert({expirationTime, signature});
     m_revokedTokens.insert(signature);
 }
 
@@ -43,7 +44,7 @@ void JWT::Revocation::removeExpiredTokensFromRevocationList()
     {
         m_revokedTokens.erase(it->second);
     }
-    
+
     m_expirationSignatures.erase(m_expirationSignatures.begin(), upperBound);
 }
 
