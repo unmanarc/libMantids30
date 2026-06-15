@@ -76,7 +76,7 @@ public:
          *
          * @return The binary data as a string.
          */
-        std::string toString()
+        std::string toString() const
         {
             std::string str(static_cast<char *>(data), length);
             return str;

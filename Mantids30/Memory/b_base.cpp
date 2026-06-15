@@ -196,7 +196,7 @@ int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t 
     return 0;
 }
 
-int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle)
+int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> &needles, const size_t &maxCopySize, bool removeNeedle)
 {
     for (const std::string &needle : needles)
     {

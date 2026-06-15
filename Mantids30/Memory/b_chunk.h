@@ -108,7 +108,7 @@ struct BinaryContainerChunk
      * @brief Offset of the next/following chunk.
      * @return Current Offset + Size of this container (absolute offset in bytes of the next chunk)
      */
-    size_t nextOffset() { return size + offset; }
+    size_t nextOffset() const { return size + offset; }
 
     /**
      * @brief Ask if some absolute offset belongs to this chunk.

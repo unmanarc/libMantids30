@@ -119,7 +119,7 @@ public:
      * @param removeNeedle If true, removes the found needle from the original container.
      * @return Return codes [0:found, -1:failed, not found, -2:failed, out of size]
      */
-    int displaceUntil(B_Base &destination, const std::list<std::string> needles, const size_t &maxCopySize, bool removeNeedle = true);
+    int displaceUntil(B_Base &destination, const std::list<std::string> &needles, const size_t &maxCopySize, bool removeNeedle = true);
     /**
      * @brief freeSplitList Free a list of binary containers.
      * @param x List of binary containers to be freed.
@@ -417,16 +417,16 @@ protected:
     /**
      * @brief readOnly defined if it's in read-only mode or not.
      */
-    bool m_readOnly;
+    bool m_readOnly = false;
 
     /**
      * @brief containerBytes container current size in bytes.
      */
-    size_t m_containerBytes;
+    size_t m_containerBytes = 0;
     /**
      * @brief maxSize Maximum size of the container
      */
-    size_t m_maxSize;
+    size_t m_maxSize = 0;
 
 private:
     bool clear0();
