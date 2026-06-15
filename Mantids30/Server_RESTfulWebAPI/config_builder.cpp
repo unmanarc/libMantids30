@@ -86,10 +86,12 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     std::list<std::shared_ptr<Sockets::Socket_Stream>> listenerSockets;
 
     // Parse all Listener_* blocks
-    for (const std::pair<std::string const&, boost::property_tree::ptree> &kv : config)
+    for (const std::pair<std::string const &, boost::property_tree::ptree> &kv : config)
     {
         if (kv.first.find("Listener_") != 0)
+        {
             continue;
+        }
 
         const std::string &listenerName = kv.first;
         const boost::property_tree::ptree &listenerConfig = kv.second;
@@ -99,7 +101,9 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> sock = createListenerSocket(listenerConfig, appLog.get(), listenerName, options);
         if (!sock)
+        {
             return nullptr;
+        }
 
         if (sock->listenOn(listenPort, listenAddr.c_str()))
         {
@@ -148,7 +152,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         try
         {
             const boost::property_tree::ptree &overlappedDirs = config.get_child("OverlappedDirectories");
-            for (const std::pair<std::string const&, boost::property_tree::ptree> &dirPair : overlappedDirs)
+            for (const std::pair<std::string const &, boost::property_tree::ptree> &dirPair : overlappedDirs)
             {
                 const std::string &mountPoint = dirPair.first;
                 const boost::property_tree::ptree &dirConfig = dirPair.second;
@@ -174,9 +178,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         std::string rawOrigins = config.get<std::string>("API.Origins", "");
 
         if (!rawOrigins.empty())
+        {
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted API origins from %s", (void *) webServer, rawOrigins.c_str());
+        }
         else
+        {
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] API Origins are not set. External calls to this API will be blocked", (void *) webServer);
+        }
 
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
@@ -190,9 +198,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         std::string loginOrigins = config.get<std::string>("Login.Origins", "");
 
         if (loginOrigins.empty())
+        {
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] This web server does not allow any Login Origin (Callback Disabled)", (void *) webServer);
+        }
         else
+        {
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Setting permitted login origins from %s", (void *) webServer, loginOrigins.c_str());
+        }
 
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
         // Set the login IAM location:
@@ -236,9 +248,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Using %s", (void *) webServer, useThreadPool ? "thread pool" : "multi-threading");
 
         if (useThreadPool)
+        {
             webServer->setAcceptPoolThreaded(listenerSockets, config.get_child("Threads"));
+        }
         else
+        {
             webServer->setAcceptMultiThreaded(listenerSockets, config.get_child("Threads"));
+        }
 
         // WebServer Extras:
         if (config.find("Proxies") != config.not_found())
@@ -246,7 +262,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading proxies...", (void *) webServer);
             // Loading proxies...
 
-            for (const std::pair<std::string const&, boost::property_tree::ptree> &proxy : config.get_child("Proxies"))
+            for (const std::pair<std::string const &, boost::property_tree::ptree> &proxy : config.get_child("Proxies"))
             {
                 std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
@@ -265,7 +281,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             appLog->log0(__func__, ::Mantids30::Program::Logs::LEVEL_DEBUG, "[%p] Loading redirections...", (void *) webServer);
             // Loading redirections...
 
-            for (const std::pair<std::string const&, boost::property_tree::ptree> &redirection : config.get_child("Redirections"))
+            for (const std::pair<std::string const &, boost::property_tree::ptree> &redirection : config.get_child("Redirections"))
             {
                 std::string path = redirection.first;
                 std::string url = redirection.second.get_value<std::string>("/");
@@ -283,7 +299,9 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
 {
     if (!sock->isSecure())
+    {
         return true;
+    }
 
     Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 
@@ -292,7 +310,9 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *
     for (const std::string &i : secSocket->getTLSErrorsAndClear())
     {
         if (!strstr(i.c_str(), "certificate unknown"))
+        {
             core->config.appLog->log1(__func__, sock->getRemotePairStr(), Program::Logs::LEVEL_ERR, "TLS: %s", i.c_str());
+        }
     }
     return true;
 }

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Server_WebCore/apiserver_core.h>
 #include <memory>
@@ -27,18 +27,18 @@ protected:
     std::shared_ptr<Web::APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) override;
 
 private:
-    static API::APIReturn revokeJWT(  void *context,                                        // Context pointer
-                                      const API::RESTful::RequestParameters &request, // Authentication token (JWT)
-                                      Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
-                                    );
-    static API::APIReturn subscribeToTopic(  void *context,                                        // Context pointer
-                                    const API::RESTful::RequestParameters &request, // Authentication token (JWT)
+    static API::APIReturn revokeJWT(void *context,                                        // Context pointer
+                                    const API::RESTful::RequestParameters &request,       // Authentication token (JWT)
                                     Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
-                                    );
-    static API::APIReturn unsubscribeFromTopic(  void *context,                                        // Context pointer
-                                    const API::RESTful::RequestParameters &request, // Authentication token (JWT)
-                                    Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
-                                    );
+    );
+    static API::APIReturn subscribeToTopic(void *context,                                        // Context pointer
+                                           const API::RESTful::RequestParameters &request,       // Authentication token (JWT)
+                                           Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+    );
+    static API::APIReturn unsubscribeFromTopic(void *context,                                        // Context pointer
+                                               const API::RESTful::RequestParameters &request,       // Authentication token (JWT)
+                                               Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+    );
 };
 
-}
+} // namespace Mantids30::Network::Servers::RESTful

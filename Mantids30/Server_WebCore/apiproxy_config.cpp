@@ -41,7 +41,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
         //  log->log0(__func__, Logs::LEVEL_DEBUG, "Creating APIProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
 
-        if (boost::optional<const boost::property_tree::ptree&> tlsHeaders = config.get_child_optional("TLS"))
+        if (boost::optional<const boost::property_tree::ptree &> tlsHeaders = config.get_child_optional("TLS"))
         {
             params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
             params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
@@ -59,7 +59,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
                   static_cast<unsigned int>(params->remotePort), params->privateCAPath.c_str());
 
         // Parse extra headers
-        if (boost::optional<const boost::property_tree::ptree&> extraHeaders = config.get_child_optional("ExtraHeaders"))
+        if (boost::optional<const boost::property_tree::ptree &> extraHeaders = config.get_child_optional("ExtraHeaders"))
         {
             parseExtraHeaders(log, *extraHeaders, params->extraHeaders, vars);
         }
@@ -83,12 +83,12 @@ void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, co
                                        const std::map<std::string, std::string> &vars)
 {
     //   log->log0(__func__, Logs::LEVEL_DEBUG, "Starting to parse extra headers.");
-    for (const std::pair<std::string const&, boost::property_tree::ptree> &pair : headersTree)
+    for (const std::pair<std::string const &, boost::property_tree::ptree> &pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
 
         // Replace %VARIABLE% with the corresponding value from vars
-        for (const std::pair<std::string const&, std::string> &varPair : vars)
+        for (const std::pair<std::string const &, std::string> &varPair : vars)
         {
             const std::string varPlaceholder = "%" + varPair.first + "%";
             size_t pos = 0;

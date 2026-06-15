@@ -1,17 +1,17 @@
 #include "clienthandler.h"
-#include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <json/value.h>
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
+#include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
-#include <Mantids30/Helpers/encoders.h>
+#include <Mantids30/Protocol_HTTP/rsp_status.h>
+#include <json/value.h>
 
 #include <json/config.h>
 #include <memory>
 #include <string>
 
-#include <string>
 #include <json/json.h>
+#include <string>
 
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
@@ -22,29 +22,23 @@ using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
+ClientHandler::ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock)
+    : Servers::Web::APIServer_ClientHandler(parent, sock)
+{}
 
-ClientHandler::ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock) : Servers::Web::APIServer_ClientHandler(parent,sock)
-{
-}
-
-API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
-                                     const uint32_t & apiVersion,
-                                     const string &httpMethodMode,
-                                     const string &endpointName,
-                                     const Json::Value & postParameters
-                                               )
+API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const uint32_t &apiVersion, const string &httpMethodMode, const string &endpointName, const Json::Value &postParameters)
 {
     API::APIReturn apiReturn;
     set<string> currentScopes;
     bool isAdmin = false;
-    bool authenticated =false;
+    bool authenticated = false;
     API::RESTful::RequestParameters inputParameters;
 
-    inputParameters.jwtSigner       = this->config->jwtSigner;
-    inputParameters.jwtValidator    = this->config->jwtValidator;
-    inputParameters.clientRequest   = &clientRequest;
+    inputParameters.jwtSigner = this->config->jwtSigner;
+    inputParameters.jwtValidator = this->config->jwtValidator;
+    inputParameters.clientRequest = &clientRequest;
 
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         isAdmin = jwtToken.isAdmin();
         currentScopes = jwtToken.getAllScopes();
@@ -54,24 +48,16 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
-        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_api_request","Resource Not Found");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_request", "Resource Not Found");
         return apiReturn;
     }
-
 
     json x;
     API::RESTful::Endpoints::SecurityParameters securityParameters;
     securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
     securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
 
-    API::RESTful::Endpoints::ErrorCodes result = m_endpointsHandler[apiVersion]->handleEndpoint( httpMethodMode,
-                                                                                                    endpointName,
-                                                                                                    inputParameters,
-                                                                                                    currentScopes,
-                                                                                                    isAdmin,
-                                                                                                    securityParameters,
-                                                                                                    &apiReturn
-                                                                                                   );
+    API::RESTful::Endpoints::ErrorCodes result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, inputParameters, currentScopes, isAdmin, securityParameters, &apiReturn);
 
     switch (result)
     {
@@ -95,7 +81,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string & baseApiUrl,
         break;
     default:
         log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "API REST Unknown Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
-        apiReturn.setError( Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR,"invalid_api_request","Unknown Error");
+        apiReturn.setError(Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR, "invalid_api_request", "Unknown Error");
         break;
     }
 
@@ -108,7 +94,7 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
         log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=OPTIONS, endpoint=%s}", apiVersion, endpointName.c_str());
-        apiReturn.setError( HTTP::Status::S_404_NOT_FOUND,"invalid_options_request","Resource Not Found");
+        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_options_request", "Resource Not Found");
         return apiReturn;
     }
 
@@ -122,8 +108,8 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
 
         // Look for per-endpoint config first, then fall back to global
         const API::OptionsHandlerConfig *useConfig = m_endpointsHandler[apiVersion]->getGlobalOptionsConfig();
-        const API::OptionsHandlerConfig *endpointConfig =  m_endpointsHandler[apiVersion]->getOptionsConfigOnEndpoint(endpointName);
-        if (endpointConfig!=nullptr)
+        const API::OptionsHandlerConfig *endpointConfig = m_endpointsHandler[apiVersion]->getOptionsConfigOnEndpoint(endpointName);
+        if (endpointConfig != nullptr)
         {
             useConfig = endpointConfig;
         }
@@ -132,4 +118,3 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
 
     return apiReturn;
 }
-

@@ -11,7 +11,7 @@ class ResourcesFilter : public Web::ResourcesFilter
 {
 public:
     ResourcesFilter();*/
-    /**
+/**
      * @brief Evaluates a URI based on the filters and user session.
      *
      * @param uri The URI to evaluate.

@@ -3,10 +3,9 @@
 
 using namespace Mantids30::Network::Servers::Web;
 
-
 APIServerConfig::~APIServerConfig()
 {
-    for (char * i : m_memToBeFreed)
+    for (char *i : m_memToBeFreed)
     {
         free(i);
     }
@@ -19,14 +18,16 @@ void APIServerConfig::setSoftwareVersion(const uint32_t major, const uint32_t mi
 
 bool APIServerConfig::isDocumentRootPathAccesible() const
 {
-    return !access(m_documentRootPath.c_str(),R_OK);
+    return !access(m_documentRootPath.c_str(), R_OK);
 }
 
 bool APIServerConfig::setDocumentRootPath(const std::string &value)
 {
     // Check if the provided path has read access.
     if (access(value.c_str(), R_OK))
+    {
         return false;
+    }
 
     // Set the local path for resources.
     m_documentRootPath = value;
@@ -136,5 +137,3 @@ std::string APIServerConfig::getDocumentRootPath() const
 {
     return m_documentRootPath;
 }
-
-

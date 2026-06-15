@@ -318,7 +318,9 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
 
     // if there are no web resources path, return 404 without data.
     if (config->getDocumentRootPath().empty())
+    {
         return HTTP::Status::S_404_NOT_FOUND;
+    }
 
     if ((resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
          || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, "index.html")
@@ -340,12 +342,18 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
         {
             // and there is not redirect's, the resoponse code will be 200 (OK)
             if (e.redirectLocation.empty())
+            {
                 ret = HTTP::Status::S_200_OK;
-            else // otherwise you will need to redirect.
+            }
+            else
+            { // otherwise you will need to redirect.
                 ret = serverResponse.setRedirectLocation(e.redirectLocation);
+            }
         }
-        else // If not, drop a 403 (forbidden)
+        else
+        { // If not, drop a 403 (forbidden)
             ret = HTTP::Status::S_403_FORBIDDEN;
+        }
 
         //log(LEVEL_DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
     }
@@ -382,7 +390,9 @@ bool APIServer_ClientHandler::versionIsSupported(const std::string &versionStr, 
 
     // Failed to retrieve the version.
     if (version < 0)
+    {
         return false;
+    }
 
     return version >= minVersion;
 }
@@ -481,7 +491,9 @@ void APIServer_ClientHandler::log(eLogLevels logSeverity, const std::string &mod
     }
 
     if (config->rpcLog)
+    {
         config->rpcLog->logVA(logSeverity, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
+    }
 
     va_end(args);
 }
@@ -499,14 +511,20 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     bool x = this->config->jwtValidator->verify(strToken, &jwtToken);
 
     if (!x)
+    {
         return false;
+    }
 
     // Check if the current running app matches the JWT spec.
     if (JSON_ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
+    {
         return false;
+    }
 
     if (JSON_ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
+    {
         return false;
+    }
 
     return true;
 }
@@ -539,7 +557,9 @@ bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url)
 HTTP::Status::Codes APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
+    {
         return Protocols::HTTP::Status::S_200_OK;
+    }
 
     std::shared_ptr<Memory::Streams::StreamableString> htmlOutput = std::make_shared<Memory::Streams::StreamableString>();
     htmlOutput->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");

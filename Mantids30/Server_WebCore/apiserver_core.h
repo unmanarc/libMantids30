@@ -2,13 +2,13 @@
 
 #include "apiserver_clienthandler.h"
 #include "apiserver_config.h"
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/Memory/b_mem.h>
 #include <Mantids30/Net_Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Net_Sockets/acceptor_poolthreaded.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/socket_stream_dummy.h>
 #include <Mantids30/Program_Logs/rpclog.h>
-#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <list>
 #include <memory>
 
@@ -17,7 +17,6 @@ namespace Mantids30::Network::Servers::Web {
 class APIServerCore
 {
 public:
-
     struct Callbacks
     {
         /**
@@ -31,19 +30,14 @@ public:
          */
         struct NotificationCallback
         {
-            NotificationCallback()
-            {
-            }
+            NotificationCallback() {}
 
             /**
              * @brief NotificationCallback Constructor.
              *
              * @param callbackFunction The callback function to be invoked.
              */
-            NotificationCallback( bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>) )
-            {
-                this->callbackFunction=callbackFunction;
-            }
+            NotificationCallback(bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>)) { this->callbackFunction = callbackFunction; }
 
             /**
              * @brief call Invokes the callback function with the provided context and socket.
@@ -55,7 +49,9 @@ public:
             bool call(void *context, std::shared_ptr<Sockets::Socket_Stream> sock) const
             {
                 if (!callbackFunction)
+                {
                     return true;
+                }
                 return callbackFunction(context, sock);
             }
             /**
@@ -68,9 +64,9 @@ public:
             bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
         };
 
-        NotificationCallback onClientConnected;            ///< Callback invoked when a new client connects.
-        NotificationCallback onProtocolInitializationFailure; ///< Callback invoked when protocol initialization fails.
-        NotificationCallback onClientAcceptTimeoutOccurred;  ///< Callback invoked when a client connection times out during acceptance.
+        NotificationCallback onClientConnected;                   ///< Callback invoked when a new client connects.
+        NotificationCallback onProtocolInitializationFailure;     ///< Callback invoked when protocol initialization fails.
+        NotificationCallback onClientAcceptTimeoutOccurred;       ///< Callback invoked when a client connection times out during acceptance.
         NotificationCallback onClientConnectionLimitPerIPReached; ///< Callback invoked when the connection limit per IP address is reached.
     };
 
@@ -104,8 +100,8 @@ public:
     void startInBackground();
 
     // Seteables (before starting the acceptor, non-thread safe):
-    Callbacks callbacks;                    ///< The callbacks object used by the web server.
-    APIServerConfig config;             ///< The api server configuration parameters
+    Callbacks callbacks;    ///< The callbacks object used by the web server.
+    APIServerConfig config; ///< The api server configuration parameters
 
     std::list<std::shared_ptr<Sockets::Socket_Stream>> getListenerSockets() const;
     /**
@@ -115,7 +111,7 @@ public:
     void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
 
 protected:
-    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore * webServer, std::shared_ptr<Sockets::Socket_Stream> s ) { return nullptr; }
+    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) { return nullptr; }
 
     /**
      * @brief checkEngineStatus Check if the engine is properly configured to be started or not.
@@ -128,8 +124,10 @@ protected:
      * @brief m_websocketEndpoints WebSocket endpoints shared pointer
      */
     std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
+
 private:
-    enum class AcceptorType {
+    enum class AcceptorType
+    {
         NONE,
         POOL_THREADED,
         MULTI_THREADED,
@@ -158,8 +156,6 @@ private:
      * @brief _onConnectionLimit
      */
     static void handleConnectionLimit(void *, std::shared_ptr<Sockets::Socket_Stream>);
-
-
 };
 
-}
+} // namespace Mantids30::Network::Servers::Web

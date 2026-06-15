@@ -1,9 +1,8 @@
 #pragma once
 
-#include <string>
-#include <list>
 #include <Mantids30/Helpers/json.h>
-
+#include <list>
+#include <string>
 
 #define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
 #include <boost/regex.hpp>
@@ -23,18 +22,18 @@ public:
 
     enum FilterAction
     {
-        RFILTER_ACCEPT=0,
-        RFILTER_DENY=1,
-        RFILTER_REDIRECT=2
+        RFILTER_ACCEPT = 0,
+        RFILTER_DENY = 1,
+        RFILTER_REDIRECT = 2
     };
 
     struct Filter
     {
         void compileRegex()
         {
-            for ( const std::string &i : sRegexs )
+            for (const std::string &i : sRegexs)
             {
-                this->regexPatterns.push_back( boost::regex(i.c_str(),boost::regex::extended ));
+                this->regexPatterns.push_back(boost::regex(i.c_str(), boost::regex::extended));
             }
         }
 
@@ -51,9 +50,8 @@ public:
         FilterAction action = RFILTER_ACCEPT;
     };
 
-    bool loadFiltersFromFile(const std::string & filePath);
-    void addFilter(const Filter & filter);
-
+    bool loadFiltersFromFile(const std::string &filePath);
+    void addFilter(const Filter &filter);
 
     /**
      * @brief Evaluates a given URI against a set of filters to determine the appropriate action.
@@ -68,12 +66,10 @@ public:
      * @return A FilterEvaluationResult object containing the evaluation results, including whether to accept
      *         or deny the URI, and an optional redirect location.
      */
-    FilterEvaluationResult evaluateURI(const std::string & uri, const std::set<std::string> & scopes,const std::set<std::string> & roles, bool isSessionActive );
+    FilterEvaluationResult evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive);
 
 protected:
-
     std::list<Filter> m_filters;
 };
 
 } // namespace Mantids30::API::Web
-

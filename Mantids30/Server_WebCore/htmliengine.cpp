@@ -1,5 +1,4 @@
 #include "htmliengine.h"
-#include <json/value.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Program_Logs/rpclog.h>
@@ -7,6 +6,7 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <json/value.h>
 
 #include <boost/regex.hpp>
 #include <fstream>
@@ -36,9 +36,13 @@ string HTMLIEngine::replaceByJVar(const json &value, const std::string &scriptVa
     if (!scriptVarName.empty())
     {
         if (useHTMLFrame)
+        {
             str = "<script>\nconst " + scriptVarName + " = " + str + ";\n</script>";
+        }
         else
+        {
             str = "const " + scriptVarName + " = " + str + ";\n";
+        }
     }
 
     return str;
@@ -72,7 +76,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *cl
     }
 
     // CINC PROCESSOR:
-    procResource_HTMLIEngineInclude(sRealFullPath,clientHandler->serverResponse.contentType, fileContent, clientHandler);
+    procResource_HTMLIEngineInclude(sRealFullPath, clientHandler->serverResponse.contentType, fileContent, clientHandler);
     procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
 
     // Stream the generated content...
@@ -143,7 +147,6 @@ void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, 
     }
 }
 
-
 void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler)
 {
     std::regex reHTML("<!--<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>-->");
@@ -171,7 +174,8 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
     }
 }
 
-std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)
+std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                      bool useHTMLFrame)
 {
     json jVars, jNull;
     jVars["softwareVersion"] = clientHandler->config->softwareVersion;
@@ -268,11 +272,11 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_Clie
         std::string FUNCTION_NAME = matches[3];
         uint32_t xversion = static_cast<uint32_t>(strtoul(VERSION.c_str(), nullptr, 10));
 
-        apiReturn = clientHandler->handleAPIRequest("/", xversion, METHOD_MODE, FUNCTION_NAME,  vars);
+        apiReturn = clientHandler->handleAPIRequest("/", xversion, METHOD_MODE, FUNCTION_NAME, vars);
     }
     else
     {
-        apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName,  vars);
+        apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName, vars);
     }
 
     // Eg. Response:     const loginMode = {"body":{"app":{"description":"Test APP","name":"TEST"},"mode":"DOMAIN"},"httpResponseCode":200};
@@ -308,7 +312,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
     return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
 }
 
-void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex & exStaticText)
+void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex &exStaticText)
 {
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
@@ -332,9 +336,13 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
         {
             std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)), std::istreambuf_iterator<char>());
             if (!tag.empty() && tag.size() > 1 && tag.at(0) == '/')
+            {
                 boost::replace_all(fileContent, fulltag, "<" + tag.substr(1) + ">" + includeFileContent + "</" + tag.substr(1) + ">");
+            }
             else
+            {
                 boost::replace_all(fileContent, fulltag, includeFileContent);
+            }
         }
         else
         {
@@ -349,16 +357,19 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
     }
 }
 
-
 // Function to process the HTMLI include tags within the file content
-void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string & contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
+void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
 {
     // CINC PROCESSOR:
     boost::regex reIncludeHTML("<!--<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>-->", boost::regex::icase);
     boost::regex reIncludeJS("//<\\%?include(?<SCRIPT_TAG_NAME>[^\\:]*):[ ]*(?<PATH>[^\\%]+)[ ]*\\%>//", boost::regex::icase);
 
     if (contentType == "application/javacript")
-        iProcResource_HTMLIEngineInclude(sRealFullPath,fileContent,clientHandler,reIncludeJS);
+    {
+        iProcResource_HTMLIEngineInclude(sRealFullPath, fileContent, clientHandler, reIncludeJS);
+    }
     else
-        iProcResource_HTMLIEngineInclude(sRealFullPath,fileContent,clientHandler,reIncludeHTML);
+    {
+        iProcResource_HTMLIEngineInclude(sRealFullPath, fileContent, clientHandler, reIncludeHTML);
+    }
 }

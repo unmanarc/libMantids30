@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Mantids30/Helpers/json.h>
 #include <Mantids30/API_EndpointsAndSessions/session.h>
-#include <Mantids30/Threads/safe_map.h>
-#include <Mantids30/Threads/garbagecollector.h>
+#include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
+#include <Mantids30/Threads/garbagecollector.h>
+#include <Mantids30/Threads/safe_map.h>
 #include <memory>
 #include <mutex>
 
@@ -13,33 +13,19 @@ namespace Mantids30::Network::Servers::WebMonolith {
 class WebSession : public Threads::Safe::MapItem
 {
 public:
-
     WebSession(std::shared_ptr<Mantids30::Sessions::Session> authSession, const json &newNetworkClientInfo)
     {
         this->networkClientInfo = newNetworkClientInfo;
         this->authSession = authSession;
     }
 
-    bool compareUserAgent( const std::string & userAgent )
-    {
-        return JSON_ASSTRING(networkClientInfo,"userAgent","") == userAgent;
-    }
+    bool compareUserAgent(const std::string &userAgent) { return JSON_ASSTRING(networkClientInfo, "userAgent", "") == userAgent; }
 
-    bool compareRemoteAddress( const std::string & remoteAddress )
-    {
-        return JSON_ASSTRING(networkClientInfo,"remoteAddress","") == remoteAddress;
-    }
+    bool compareRemoteAddress(const std::string &remoteAddress) { return JSON_ASSTRING(networkClientInfo, "remoteAddress", "") == remoteAddress; }
 
-    std::shared_ptr<Mantids30::Sessions::Session> getAuthSession()
-    {
-        return authSession;
-    }
+    std::shared_ptr<Mantids30::Sessions::Session> getAuthSession() { return authSession; }
 
-    json toJSON()
-    {
-        return networkClientInfo;
-    }
-
+    json toJSON() { return networkClientInfo; }
 
 private:
     std::shared_ptr<Mantids30::Sessions::Session> authSession;
@@ -52,7 +38,7 @@ class WebSessionsManager : public Threads::GarbageCollector
 public:
     WebSessionsManager();
 
-    static void threadGC(void * sessManager);
+    static void threadGC(void *sessManager);
     void gc();
 
     /**
@@ -79,7 +65,6 @@ public:
     uint32_t getMaxSessionsPerUser() const;
     void setMaxSessionsPerUser(const uint32_t &value);
 
-
     //void impersonateSession(const std::string & sessionID,std::shared_ptr<Sessions::Session> impersonatedSession);
 
     /**
@@ -88,26 +73,26 @@ public:
      *                The session object will be deleted when the session is destroyed.
      * @return Session ID
      */
-    std::string createSession(std::shared_ptr<Sessions::Session> session, const json & sessionInfo, uint64_t *maxAge);
+    std::string createSession(std::shared_ptr<Sessions::Session> session, const json &sessionInfo, uint64_t *maxAge);
     /**
      * @brief destroySession destroy the session element and session ID
      * @param sessionID Session ID String
      * @return true if destroyed, false otherwise (maybe there is no session with this ID)
      */
-    bool destroySession(const std::string & sessionID);
+    bool destroySession(const std::string &sessionID);
     /**
      * @brief openSession Get the Web Session element and adquire a read lock on it.
      * @param sessionID Session ID
      * @param maxAge time left for session to expire
      * @return pointer to the web session.
      */
-    WebSession *openSession(const std::string & sessionID, uint64_t *maxAge);
+    WebSession *openSession(const std::string &sessionID, uint64_t *maxAge);
     /**
      * @brief releaseSession Release the session lock
      * @param sessionID
      * @return true if the session reader was released. false otherwise
      */
-    bool releaseSession(const std::string & sessionID);
+    bool releaseSession(const std::string &sessionID);
     /**
      * @brief Validates the format of a session ID.
      *
@@ -117,7 +102,7 @@ public:
      * @param sessionID The session ID to validate.
      * @return true if the session ID matches the format; false otherwise.
      */
-    static bool validateSessionIDFormat(const std::string& sessionID);
+    static bool validateSessionIDFormat(const std::string &sessionID);
     /**
      * @brief Retrieves all active sessions for a given user from the web session manager.
      *
@@ -127,7 +112,7 @@ public:
      * @param effectiveUserName The username for which to retrieve session details.
      * @return A JSON object containing the user sessions, with session details as key-value pairs.
      */
-    json getUserSessionsInfo(const std::string & effectiveUserName);
+    json getUserSessionsInfo(const std::string &effectiveUserName);
 
 private:
     Threads::Safe::Map<std::string> m_sessions;
@@ -139,6 +124,4 @@ private:
     uint32_t m_maxSessionsPerUser = 0;
 };
 
-
-}
-
+} // namespace Mantids30::Network::Servers::WebMonolith

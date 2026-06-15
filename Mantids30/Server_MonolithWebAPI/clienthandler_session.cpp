@@ -56,9 +56,9 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         if (!config->allowFloatingClients)
         {
             // check if the IP changed
-            if (!m_currentWebSession->compareRemoteAddress( clientRequest.networkClientInfo.REMOTE_ADDR))
+            if (!m_currentWebSession->compareRemoteAddress(clientRequest.networkClientInfo.REMOTE_ADDR))
             {
-                log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Floating IP not allowed for session {sessionId=%s}",RPCLog::truncateSessionId(m_sessionID).c_str());
+                log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Floating IP not allowed for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
                 // No session to load.
                 m_sessionID = "";
                 m_impersonatorSessionID = "";
@@ -67,13 +67,12 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         }
         if (!m_currentWebSession->compareUserAgent(clientRequest.userAgent))
         {
-            log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "User Agent not allowed to change for session {sessionId=%s}",RPCLog::truncateSessionId(m_sessionID).c_str());
+            log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "User Agent not allowed to change for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
             // No session to load.
             m_sessionID = "";
             m_impersonatorSessionID = "";
             return Protocols::HTTP::Status::S_403_FORBIDDEN;
         }
-
     }
     else
     {
@@ -101,7 +100,6 @@ void ClientHandler::sessionCleanup()
     sessionLogout();
 }
 
-
 bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
     if (isSessionActive())
@@ -118,7 +116,6 @@ json ClientHandler::getSessionVariableValue(const string &varName)
         return currentSessionInfo.authSession->getSessionVariableValue(varName);
     }
     return {};
-
 }
 
 void ClientHandler::fillSessionExtraInfo(json &jVars)
@@ -126,7 +123,7 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
     jVars["maxAge"] = (Json::UInt64) 0;
     if (isSessionActive())
     {
-        jVars["maxAge"] =(Json::UInt64) m_sessionMaxAge;
+        jVars["maxAge"] = (Json::UInt64) m_sessionMaxAge;
     }
 }
 
@@ -155,10 +152,10 @@ set<string> ClientHandler::getSessionRoles()
 
 void ClientHandler::updateActivityOnImpersonatorSession()
 {
-    if ( !m_impersonatorSessionID.empty() )
+    if (!m_impersonatorSessionID.empty())
     {
         uint64_t maxAge;
-        WebSession * webSession = m_sessionsManager->openSession(m_impersonatorSessionID, &maxAge);
+        WebSession *webSession = m_sessionsManager->openSession(m_impersonatorSessionID, &maxAge);
         if (webSession)
         {
             webSession->getAuthSession()->updateLastActivity();
@@ -181,7 +178,7 @@ void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
     serverResponse.setCookie("jsSessionTimeout", simpleJSSecureCookie);
 }
 
-void ClientHandler::setJSSessionHalfIDCookie( const string & sessionID )
+void ClientHandler::setJSSessionHalfIDCookie(const string &sessionID)
 {
     // This cookie is readeable by the javascript code inside the web, so the web will know the half session id.
     // The other half is not known, so the javascript can't substract the session id to exfiltrate the session.
@@ -212,7 +209,7 @@ void ClientHandler::sessionLogout()
     }
 
     // Check if the m_impersonatorSessionID contains the parent session and is currently valid.
-    WebSession * parentWebSession = m_sessionsManager->openSession(m_impersonatorSessionID, &parentSessionMaxAge);
+    WebSession *parentWebSession = m_sessionsManager->openSession(m_impersonatorSessionID, &parentSessionMaxAge);
     if (parentWebSession)
     {
         // detected impersonation:
@@ -236,16 +233,18 @@ void ClientHandler::sessionLogout()
             setJSSessionTimeOutCookie(parentSessionMaxAge);
             setJSSessionHalfIDCookie(m_impersonatorSessionID);
             // Remove the impersonation cookie:
-            serverResponse.addCookieClearSecure(IMPERSONATOR_SESSIONID_COOKIENAME,"/");
+            serverResponse.addCookieClearSecure(IMPERSONATOR_SESSIONID_COOKIENAME, "/");
             // Fall back to the impersonator cookie.
-            serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_impersonatorSessionID, m_sessionMaxAge,"/");
+            serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_impersonatorSessionID, m_sessionMaxAge, "/");
             log(LEVEL_INFO, "monolithAPI", 2048, "Impersonation Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
         }
     }
 
     // destroy the current session anyway (if defined), by example if the session is not in the manager, when you don't require to destroy it.
     if (!m_sessionID.empty())
+    {
         m_sessionsManager->destroySession(m_sessionID);
+    }
 
     // We are at the end, now, bye.
 }

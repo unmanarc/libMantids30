@@ -1,8 +1,8 @@
 #include "apiproxy.h"
 #include <Mantids30/Net_Sockets/socket_stream.h>
 
-#include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Net_Sockets/socket_tcp.h>
+#include <Mantids30/Net_Sockets/socket_tls.h>
 
 #include <Mantids30/Protocol_HTTP/httpv1_client.h>
 #include <memory>
@@ -17,8 +17,7 @@ using namespace Mantids30;
 // TODO: logs via callback?
 // TODO: how to prvent ../ (escapes)...
 
-HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
-    const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
+HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
 {
     if (obj == nullptr)
     {
@@ -49,7 +48,6 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
         }
 
         connection = socket;
-
     }
     else
     {
@@ -58,7 +56,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
     }
 
     // Make the connection
-    if (connection->connectTo( proxyParameters->remoteHost.c_str(), proxyParameters->remotePort ))
+    if (connection->connectTo(proxyParameters->remoteHost.c_str(), proxyParameters->remotePort))
     {
         HTTP::HTTPv1_Client client(connection);
 
@@ -66,7 +64,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
         client.clientRequest = *request;
 
         // Use the new internal path (removing the proxy original URL)...
-        client.clientRequest.requestLine.setRequestURI( internalPath );
+        client.clientRequest.requestLine.setRequestURI(internalPath);
 
         // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
         for (const std::pair<std::string, std::string> &header : proxyParameters->extraHeaders)
@@ -93,7 +91,7 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(
             // Pass to our client.
             *response = client.serverResponse;
 
-            return (HTTP::Status::Codes)client.serverResponse.status.getCode();
+            return (HTTP::Status::Codes) client.serverResponse.status.getCode();
         }
 
         return HTTP::Status::S_502_BAD_GATEWAY;

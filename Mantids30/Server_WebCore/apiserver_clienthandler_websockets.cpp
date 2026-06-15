@@ -1,10 +1,10 @@
-#include <Mantids30/Helpers/random.h>
 #include "apiserver_clienthandler.h"
+#include <Mantids30/Helpers/random.h>
 
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
 
-#include <json/value.h>
 #include <Mantids30/Helpers/random.h>
+#include <json/value.h>
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
@@ -47,8 +47,8 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
 
     m_webSocketCurrentEndpoint = m_websocketEndpoints->getWebSocketEndpointByURI(clientRequest.getURI());
 
-    size_t userConnectionCount = m_webSocketCurrentEndpoint->getActiveUserConnectionsCount( currentSessionInfo.authSession->getUser() );
-    if (  userConnectionCount >= config->webSockets.maxConnectionsPerUserPerEndpoint )
+    size_t userConnectionCount = m_webSocketCurrentEndpoint->getActiveUserConnectionsCount(currentSessionInfo.authSession->getUser());
+    if (userConnectionCount >= config->webSockets.maxConnectionsPerUserPerEndpoint)
     {
         sessionCleanup();
         serverResponse.status.setCode(HTTP::Status::S_429_TOO_MANY_REQUESTS);

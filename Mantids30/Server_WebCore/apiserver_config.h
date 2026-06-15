@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Program_Logs/applog.h>
@@ -28,7 +28,7 @@ public:
     ~APIServerConfig();
 
     typedef Protocols::HTTP::Status::Codes (*DynamicInitialChecks)(Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
-                                         Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response);
+                                                                   Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response);
     DynamicInitialChecks dynamicInitialChecks = nullptr;
 
     /**
@@ -60,7 +60,7 @@ public:
      * @param apikey The API key associated with the request.
      * @return true if the origin is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey, const std::set<std::string> & permittedAPIOrigins);
+    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey, const std::set<std::string> &permittedAPIOrigins);
 
     /**
      * @brief The dynamic origin validator callback function.
@@ -110,8 +110,6 @@ public:
      * @brief loginCallbackAPIEndpointName The method name used for JWT Token absorption from the IAM.
      */
     std::string loginCallbackAPIEndpointName = "callback";
-
-
 
     API::WebSocket::Config webSockets;
 

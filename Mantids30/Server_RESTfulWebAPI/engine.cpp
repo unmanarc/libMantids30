@@ -83,26 +83,20 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_400_BAD_REQUEST,
-                              "missing_parameters",
-                              "Required parameters (uri, webSocketSessionId, topicId) are missing");
+        return API::APIReturn(Protocols::HTTP::Status::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
     }
 
     // Obtener el endpoint WebSocket
     const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND,
-                              "invalid_uri",
-                              "WebSocket endpoint not found");
+        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
     }
 
     // Intentar dejar el tema de suscripción
     if (!endpoint->leaveTopicSubscription(webSocketSessionId, topicId))
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND,
-                              "not_subscribed",
-                              "Client is not subscribed to this topic");
+        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic");
     }
 
     // Desuscripción exitosa

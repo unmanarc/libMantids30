@@ -32,9 +32,9 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
     if (!headerBearerToken.empty())
     {
         // First we check the header, if the header have a token, continue with it
-        if ( this->config->dynamicTokenValidator!=nullptr )
+        if (this->config->dynamicTokenValidator != nullptr)
         {
-            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&jwtToken);
+            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
         }
         else
         {
@@ -44,9 +44,9 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
     else if (!cookieBearerToken.empty())
     {
         // if not, continue with the cookie.
-        if ( this->config->dynamicTokenValidator!=nullptr )
+        if (this->config->dynamicTokenValidator != nullptr)
         {
-            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken,clientRequest.headers.getOptionValueStringByName("x-api-key"),&jwtToken);
+            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
         }
         else
         {
@@ -54,7 +54,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         }
     }
 
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         // If verification is successful and the token is valid, populate user data.
         // Extract and store user-related information from the token.
@@ -76,7 +76,7 @@ void ClientHandler::sessionCleanup()
 void ClientHandler::fillSessionExtraInfo(json &jVars)
 {
     jVars["maxAge"] = 0;
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         jVars["maxAge"] = jwtToken.getExpirationTime() - time(nullptr);
     }
@@ -84,7 +84,7 @@ void ClientHandler::fillSessionExtraInfo(json &jVars)
 
 bool ClientHandler::doesSessionVariableExist(const string &varName)
 {
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         return jwtToken.hasClaim(varName);
     }
@@ -93,7 +93,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
 
 json ClientHandler::getSessionVariableValue(const string &varName)
 {
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         return jwtToken.getClaim(varName);
     }
@@ -102,12 +102,12 @@ json ClientHandler::getSessionVariableValue(const string &varName)
 
 bool ClientHandler::isSessionActive()
 {
-    return ( m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified );
+    return (m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified);
 }
 
 set<string> ClientHandler::getSessionScopes()
 {
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         return jwtToken.getAllScopes();
     }
@@ -116,7 +116,7 @@ set<string> ClientHandler::getSessionScopes()
 
 set<string> ClientHandler::getSessionRoles()
 {
-    if ( isSessionActive() )
+    if (isSessionActive())
     {
         return jwtToken.getAllRoles();
     }

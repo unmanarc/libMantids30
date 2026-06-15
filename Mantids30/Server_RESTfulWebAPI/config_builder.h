@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "engine.h"
 
 #include <Mantids30/Program_Logs/applog.h>

@@ -37,7 +37,7 @@ HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl,
     }
     else
     {
-        log(LEVEL_WARN,"monolithAPI", 65535, "A/404: Authentication Function Not Found.");
+        log(LEVEL_WARN, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
         return HTTP::Status::S_404_NOT_FOUND;
     }
 }
@@ -53,18 +53,18 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
 
     if (isSessionActive())
     {
-        string effectiveUserName  = currentSessionInfo.authSession->getUser();
+        string effectiveUserName = currentSessionInfo.authSession->getUser();
         x["loggedUser"]["username"] = effectiveUserName;
         x["isImpersonation"] = currentSessionInfo.isImpersonation;
         x["impersonator"] = currentSessionInfo.authSession->getImpersonator();
         x["scopes"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
         x["roles"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
-        x["currentActivity"]["first"] = (Json::UInt64)currentSessionInfo.authSession->getFirstActivity();
-        x["currentActivity"]["last"] = (Json::UInt64)currentSessionInfo.authSession->getLastActivity();
+        x["currentActivity"]["first"] = (Json::UInt64) currentSessionInfo.authSession->getFirstActivity();
+        x["currentActivity"]["last"] = (Json::UInt64) currentSessionInfo.authSession->getLastActivity();
         x["currentActivity"]["sessionMaxAge"] = (Json::UInt64) m_sessionMaxAge;
         if (m_sessionsManager)
         {
-            x["limits"]["maxInactiveTime"] =(Json::UInt64) m_sessionsManager->getMaxInactiveSeconds();
+            x["limits"]["maxInactiveTime"] = (Json::UInt64) m_sessionsManager->getMaxInactiveSeconds();
             x["limits"]["maxSessionsPerUser"] = (Json::UInt64) m_sessionsManager->getMaxSessionsPerUser();
             x["loggedUser"]["sessionsInfo"] = m_sessionsManager->getUserSessionsInfo(effectiveUserName);
         }
@@ -76,16 +76,14 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
     return ret;
 }
 
-
 HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
     string requestOrigin = clientRequest.getOrigin();
 
-    if ( config->permittedLoginOrigins.find(requestOrigin) == config->permittedLoginOrigins.end() )
+    if (config->permittedLoginOrigins.find(requestOrigin) == config->permittedLoginOrigins.end())
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048,
-            "Unauthorized login attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Unauthorized login attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
@@ -106,14 +104,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         if (isImpersonation && !(this->config->allowImpersonation))
         {
             // LOG
-            log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Impersonation not allowed on this application.");
+            log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonation not allowed on this application.");
             return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
         }
 
         if (!isImpersonation && m_currentWebSession)
         {
             // LOG
-            log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Login token override is not allowed. Please logout first.");
+            log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Login token override is not allowed. Please logout first.");
             return HTTP::Status::S_403_FORBIDDEN;
         }
 
@@ -123,33 +121,33 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
             impersonatorUser = currentSessionInfo.authSession->getUser();
             impersonatorDomain = currentSessionInfo.authSession->getDomain();
 
-            if ( currentSessionInfo.authSession )
+            if (currentSessionInfo.authSession)
             {
-                string jwtDomain = JSON_ASSTRING_D(jwtToken.getClaim("domain"),"");
-                string jwtImpersonator = JSON_ASSTRING_D(jwtToken.getClaim("impersonator"),"");
+                string jwtDomain = JSON_ASSTRING_D(jwtToken.getClaim("domain"), "");
+                string jwtImpersonator = JSON_ASSTRING_D(jwtToken.getClaim("impersonator"), "");
 
-                if ( impersonatorUser != jwtImpersonator )
+                if (impersonatorUser != jwtImpersonator)
                 {
                     // LOG
-                    log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Impersonator in token does not match with logged in session.");
+                    log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonator in token does not match with logged in session.");
                     return HTTP::Status::S_403_FORBIDDEN;
                 }
 
                 if (jwtDomain != impersonatorDomain && this->config->allowImpersonationBetweenDifferentDomains)
                 {
                     // LOG
-                    log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Impersonation is not allowed between different domains.");
+                    log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonation is not allowed between different domains.");
                     return HTTP::Status::S_403_FORBIDDEN;
                 }
             }
         }
 
         // TODO: exit impersonation.
-        shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>( jwtToken );
+        shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>(jwtToken);
 
         json networkClientInfo = clientRequest.networkClientInfo.toJSON();
         networkClientInfo["userAgent"] = clientRequest.userAgent;
-        networkClientInfo["startTime"] = (uint64_t)time(nullptr);
+        networkClientInfo["startTime"] = (uint64_t) time(nullptr);
 
         // TODO: migrar esto en libMantids2 a shared pointer.
         m_sessionID = m_sessionsManager->createSession(session, networkClientInfo, &m_sessionMaxAge);
@@ -170,23 +168,18 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         if (isImpersonation)
         {
             log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using impersonation token {user=%s, sessionId=%s} by impersonator {user=%s, sessionId=%s}",
-                currentSessionInfo.authSession->getUser().c_str(),
-                RPCLog::truncateSessionId(m_sessionID).c_str(),
-                impersonatorUser.c_str(),
-                RPCLog::truncateSessionId(impersonatorSessionID).c_str());
+                currentSessionInfo.authSession->getUser().c_str(), RPCLog::truncateSessionId(m_sessionID).c_str(), impersonatorUser.c_str(), RPCLog::truncateSessionId(impersonatorSessionID).c_str());
         }
         else
         {
-            log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using token {user=%s, sessionId=%s}",
-                currentSessionInfo.authSession->getUser().c_str(),
-                RPCLog::truncateSessionId(m_sessionID).c_str());
+            log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using token {user=%s, sessionId=%s}", currentSessionInfo.authSession->getUser().c_str(), RPCLog::truncateSessionId(m_sessionID).c_str());
         }
 
         // Set the session ID as a session cookie...
         // Same site is enforced as strict, so CSRF should not be available, not accesible via JS
         // However the cookie will be sent when an application lives in the same server...
         // but the application will not be able to know the sessionId to be sent on the header.
-        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge,"/");
+        serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_sessionID, m_sessionMaxAge, "/");
         if (isImpersonation)
         {
             serverResponse.setSecureCookie(IMPERSONATOR_SESSIONID_COOKIENAME, impersonatorSessionID, m_sessionMaxAge, "/");
@@ -197,7 +190,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         string redirectURL = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("redirectURI");
         if (redirectURL.empty())
         {
-            redirectURL = "/";  // Default to home page
+            redirectURL = "/"; // Default to home page
         }
         return redirectUsingJS(redirectURL);
 
@@ -232,7 +225,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLogoutFunction()
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
-        log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Failed to logout (external origin or CSRF attempt)");
+        log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Failed to logout (external origin or CSRF attempt)");
         return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
     }
 
@@ -247,7 +240,7 @@ HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
-        log(LEVEL_SECURITY_ALERT,"monolithAPI", 65535, "Failed to update the last activity (external origin or CSRF attempt)");
+        log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Failed to update the last activity (external origin or CSRF attempt)");
         return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
     }
 
@@ -258,4 +251,3 @@ HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
 
     return HTTP::Status::S_202_ACCEPTED;
 }
-

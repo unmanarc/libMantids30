@@ -125,7 +125,7 @@ protected:
                                             const Json::Value &postParameters)
         = 0;
 
-    virtual API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName ) = 0;
+    virtual API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
 
     /**
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
