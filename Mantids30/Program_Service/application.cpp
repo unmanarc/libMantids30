@@ -2,7 +2,7 @@
 
 // STD:
 #include <cinttypes>
-#include <signal.h>
+#include <csignal>
 #include <cstdio>
 
 #ifndef _WIN32
