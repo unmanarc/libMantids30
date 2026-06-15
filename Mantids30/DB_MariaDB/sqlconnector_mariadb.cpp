@@ -89,8 +89,8 @@ bool SQLConnector_MariaDB::connect0()
     }
 
     if (mysql_real_connect(m_databaseConnectionHandler, this->m_host.c_str(), this->m_credentials.userName.c_str(), this->m_credentials.userPassword.c_str(), this->m_dbName.c_str(), this->m_port,
-                           NULL, 0)
-        == NULL)
+                           nullptr, 0)
+        == nullptr)
     {
         m_lastSQLError = mysql_error(m_databaseConnectionHandler);
         mysql_close(m_databaseConnectionHandler);

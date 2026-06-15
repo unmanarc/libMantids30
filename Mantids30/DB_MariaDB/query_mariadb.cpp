@@ -301,7 +301,7 @@ bool Query_MariaDB::postBindInputVars()
 {
     // Load Keys:
     std::list<std::string> keysIn;
-    for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
+    for (const auto &i : m_inputVars)
     {
         keysIn.push_back(i.first);
     }
@@ -311,7 +311,7 @@ bool Query_MariaDB::postBindInputVars()
     {
     }
 
-    if (!m_keysByPos.size())
+    if (m_keysByPos.empty())
     {
         return true;
     }
@@ -684,7 +684,7 @@ unsigned long Query_MariaDB::mariaDBfetchVarSize(const size_t &col, const enum_f
     bind.buffer_type = fieldType;
     bind.buffer = aBuffer;
     bind.buffer_length = 64;
-    bind.is_null = 0;
+    bind.is_null = nullptr;
     bind.length = &r;
     bind.error = &isTruncated;
 

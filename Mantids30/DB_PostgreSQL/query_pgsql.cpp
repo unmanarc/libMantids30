@@ -183,7 +183,7 @@ bool Query_PostgreSQL::postBindInputVars()
     m_paramCount = 0;
 
     std::list<std::string> keysIn;
-    for (const std::pair<std::string, std::shared_ptr<Memory::Abstract::Var>> &i : m_inputVars)
+    for (const auto&i : m_inputVars)
     {
         keysIn.push_back(i.first);
     }
