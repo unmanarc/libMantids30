@@ -6,7 +6,9 @@ using namespace Mantids30::Program;
 std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
+    {
         logMode |= Program::Logs::MODE_SYSLOG;
+    }
 
     std::shared_ptr<Program::Logs::AppLog> log = std::make_shared<Program::Logs::AppLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
@@ -23,7 +25,9 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_t
 std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_tree::ptree &ptr, unsigned int logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
+    {
         logMode |= Program::Logs::MODE_SYSLOG;
+    }
 
     std::shared_ptr<Program::Logs::RPCLog> log = std::make_shared<Program::Logs::RPCLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
@@ -71,33 +75,53 @@ std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<M
 
     boost::optional<std::string> minuteStr = config.get_optional<std::string>("Logs.RotateSchedule.Minute");
     if (minuteStr && *minuteStr != "*")
+    {
         log->config.rotationSchedule.minute = std::make_optional(static_cast<uint32_t>(std::stoul(*minuteStr)));
+    }
     else
+    {
         log->config.rotationSchedule.minute = std::nullopt;
+    }
 
     boost::optional<std::string> hourStr = config.get_optional<std::string>("Logs.RotateSchedule.Hour");
     if (hourStr && *hourStr != "*")
+    {
         log->config.rotationSchedule.hour = std::make_optional(static_cast<uint32_t>(std::stoul(*hourStr)));
+    }
     else
+    {
         log->config.rotationSchedule.hour = std::nullopt;
+    }
 
     boost::optional<std::string> dayOfWeekStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfWeek");
     if (dayOfWeekStr && *dayOfWeekStr != "*")
+    {
         log->config.rotationSchedule.dayOfWeek = std::make_optional(static_cast<uint32_t>(std::stoul(*dayOfWeekStr)));
+    }
     else
+    {
         log->config.rotationSchedule.dayOfWeek = std::nullopt;
+    }
 
     boost::optional<std::string> dayOfMonthStr = config.get_optional<std::string>("Logs.RotateSchedule.DayOfMonth");
     if (dayOfMonthStr && *dayOfMonthStr != "*")
+    {
         log->config.rotationSchedule.dayOfMonth = std::make_optional(static_cast<uint32_t>(std::stoul(*dayOfMonthStr)));
+    }
     else
+    {
         log->config.rotationSchedule.dayOfMonth = std::nullopt;
+    }
 
     boost::optional<std::string> monthStr = config.get_optional<std::string>("Logs.RotateSchedule.Month");
     if (monthStr && *monthStr != "*")
+    {
         log->config.rotationSchedule.month = std::make_optional(static_cast<uint32_t>(std::stoul(*monthStr)));
+    }
     else
+    {
         log->config.rotationSchedule.month = std::nullopt;
+    }
 
     // Handle max file size
     std::string maxFileSizeStr = config.get<std::string>("Logs.MaxFileSize", "100Mb");

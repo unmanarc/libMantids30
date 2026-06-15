@@ -144,9 +144,13 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
         if (curOptChar == 0)
         {
             if (longOpts[longIndex].val)
+            {
                 fprintf(stderr, "ERR: Argument -%c / --%s value not specified.\n", longOpts[longIndex].val, longOpts[longIndex].name);
+            }
             else
+            {
                 fprintf(stderr, "ERR: Argument --%s value not specified.\n", longOpts[longIndex].name);
+            }
 
             return false;
         }
@@ -164,9 +168,13 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
                 else if (optarg && !absVar->fromString(optarg))
                 {
                     if (longOpts[longIndex].val && longOpts[longIndex].val < 256)
+                    {
                         fprintf(stderr, "ERR: Argument -%c / --%s value not parsed correctly.\n", longOpts[longIndex].val, longOpts[longIndex].name);
+                    }
                     else
+                    {
                         fprintf(stderr, "ERR: Argument --%s value not parsed correctly.\n", longOpts[longIndex].name);
+                    }
                     return false;
                 }
 
@@ -189,9 +197,13 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
         if (optIter->isMandatory && cmdOptionsFulfilled.find(optIter) == cmdOptionsFulfilled.end())
         {
             if (optIter->shortOption && optIter->shortOption < 256)
+            {
                 fprintf(stderr, "ERR: Argument -%c / --%s value was required but not parsed.\n", optIter->shortOption, optIter->name.c_str());
+            }
             else
+            {
                 fprintf(stderr, "ERR: Argument --%s value was required but not parsed.\n", optIter->name.c_str());
+            }
 
             fulfilled = false;
         }
@@ -255,7 +267,9 @@ void GlobalArguments::printHelp()
             if (!v->isMandatory)
             {
                 if (v->optionType != Var::TYPE_BOOL)
+                {
                     printf(" : %s (default: %s)\n", v->description.c_str(), v->defaultValue.c_str());
+                }
                 else
                 {
                     BOOL defValue;
@@ -264,7 +278,9 @@ void GlobalArguments::printHelp()
                 }
             }
             else
+            {
                 printf(" : %s (required argument)\n", v->description.c_str());
+            }
         }
         cout << endl;
     }
@@ -369,7 +385,9 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool remov
             }
 
             if (removeInstall && (varNameToPrint == "install" || varNameToPrint == "reinstall" || varNameToPrint == "uninstall"))
+            {
                 continue;
+            }
 
             for (std::shared_ptr<Var> &var : v->parsedOption)
             {
@@ -434,7 +452,9 @@ uint32_t GlobalArguments::getMaxOptNameSize(std::list<std::shared_ptr<CommandLin
     {
         uint32_t cursize = x->name.size(); // + (x->optionType!=TYPE_BOOL? strlen(" <value>") : 0 );
         if (cursize > max)
+        {
             max = cursize;
+        }
     }
     return max;
 }
@@ -443,7 +463,9 @@ string GlobalArguments::getLine(const uint32_t &size)
 {
     string line;
     for (uint32_t i = 0; i < size; i++)
+    {
         line += "-";
+    }
     return line;
 }
 
@@ -451,20 +473,26 @@ string GlobalArguments::getLine(const uint32_t &size)
 std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(int shortOption)
 {
     if (!shortOption)
+    {
         return nullptr;
+    }
     for (const std::pair<std::string, std::list<std::shared_ptr<CommandLineOption>>> &i : m_commandOptions)
     {
         for (std::shared_ptr<CommandLineOption> v : i.second)
         {
             if (shortOption == v->shortOption)
+            {
                 return v;
+            }
 
             if (shortOption > 0 && shortOption < 256)
             {
                 char x[2] = {0, 0};
                 x[0] = shortOption;
                 if (x == v->name)
+                {
                     return v;
+                }
             }
         }
     }
@@ -478,9 +506,13 @@ std::shared_ptr<CommandLineOption> GlobalArguments::getProgramOption(const std::
         for (std::shared_ptr<CommandLineOption> v : i.second)
         {
             if (optName == v->name)
+            {
                 return v;
+            }
             if (optName.size() == 1 && v->shortOption > 0 && v->shortOption < 256 && optName.at(0) == v->shortOption)
+            {
                 return v;
+            }
         }
     }
     return nullptr;

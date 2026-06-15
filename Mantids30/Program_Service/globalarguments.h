@@ -54,7 +54,8 @@ public:
      * @param isMandatory Mandatory argument (required to start)
      * @return true if added, otherwise false.
      */
-    bool addCommandLineOption(const std::string &optGroup, char shortOption, const std::string &optName, const std::string &description, const std::string &defaultValue, const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
+    bool addCommandLineOption(const std::string &optGroup, char shortOption, const std::string &optName, const std::string &description, const std::string &defaultValue,
+                              const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
     /**
      * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced Value
      * @param optionName Option Name (Full name)

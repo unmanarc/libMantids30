@@ -1,9 +1,8 @@
 #include "programvalues.h"
-#include <vector>
 #include <sstream>
+#include <vector>
 
 using namespace Mantids30::Program::Values;
-
 
 void ProgramValues::initProgramName(const std::string &value)
 {
@@ -12,13 +11,15 @@ void ProgramValues::initProgramName(const std::string &value)
     // Split into /.
     std::istringstream f(value);
     std::string s;
-    while (getline(f, s, '/')) paths.push_back(s);
+    while (getline(f, s, '/'))
+    {
+        paths.push_back(s);
+    }
 
-    softwareName = !paths.size()? "unknownprogram" : paths.at(paths.size()-1);
+    softwareName = !paths.size() ? "unknownprogram" : paths.at(paths.size() - 1);
     softwareDescription = softwareName;
     m_daemonName = softwareName;
 }
-
 
 void ProgramValues::addAuthor(const Author &author)
 {
@@ -42,7 +43,7 @@ void ProgramValues::setVersion(const std::string &value)
 
 void ProgramValues::setVersion(const uint32_t major, const uint32_t minor, const uint32_t subminor, const std::string &subText)
 {
-    setVersion(std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(subminor) +  (subText.empty()? "" : (" " + subText))  );
+    setVersion(std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(subminor) + (subText.empty() ? "" : (" " + subText)));
 }
 
 std::string ProgramValues::getDaemonName() const

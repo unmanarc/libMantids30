@@ -3,14 +3,14 @@
 
 #include <chrono>
 
+#include <ctime>
 #include <filesystem>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <ctime>
 
-#include <Mantids30/Helpers/safeint.h>
 #include <Mantids30/Helpers/encoders.h>
+#include <Mantids30/Helpers/safeint.h>
 #include <Mantids30/Helpers/strconv.h>
 
 #include <boost/algorithm/string.hpp>
@@ -156,18 +156,18 @@ bool WebLog::log(const json &logValues)
 void WebLog::startLogRotationOnScheduleThread()
 {
     if (m_rotationThreadRunning.load())
+    {
         return;
+    }
 
     m_rotationThreadRunning.store(true);
     m_rotationThread = std::thread(
         [this]()
         {
 
-
 #ifdef __linux__
             pthread_setname_np(pthread_self(), "WebLog:Rotate");
 #endif
-
 
             while (m_rotationThreadRunning.load())
             {

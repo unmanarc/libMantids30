@@ -43,17 +43,29 @@ void RPCLog::logVA(eLogLevels logSeverity, const std::string &ip, const std::str
     vsnprintf(buffer.data(), buffer.size(), fmtLog, args);
 
     if (logSeverity == LEVEL_INFO)
+    {
         printStandardLog(logSeverity, stdout, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_BOLD, "INFO");
+    }
     else if (logSeverity == LEVEL_WARN)
+    {
         printStandardLog(logSeverity, stdout, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_BLUE, "WARN");
+    }
     else if ((logSeverity == LEVEL_DEBUG || logSeverity == LEVEL_DEBUG1) && m_debug)
+    {
         printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_GREEN, "DEBUG");
+    }
     else if (logSeverity == LEVEL_CRITICAL)
+    {
         printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_RED, "CRIT");
+    }
     else if (logSeverity == LEVEL_SECURITY_ALERT)
+    {
         printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_ORANGE, "SECU");
+    }
     else if (logSeverity == LEVEL_ERR)
+    {
         printStandardLog(logSeverity, stderr, ip, sessionId, user, domain, module, buffer.data(), LOG_COLOR_PURPLE, "ERR");
+    }
 
     fflush(stderr);
     fflush(stdout);
@@ -66,7 +78,9 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
         if (m_modulesOutputExclusion.find(module) != m_modulesOutputExclusion.end())
+        {
             return;
+        }
     }
 
     user = Helpers::Encoders::toURL(user, Helpers::Encoders::QUOTEPRINT_ENCODING);
@@ -76,15 +90,25 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
     if (!enableAttributeNameLogging && enableEmptyFieldLogging)
     {
         if (ip.empty())
+        {
             ip = "-";
+        }
         if (sessionId.empty())
+        {
             sessionId = "-";
+        }
         if (user.empty())
+        {
             user = "-";
+        }
         if (domain.empty())
+        {
             domain = "-";
+        }
         if (module.empty())
+        {
             module = "-";
+        }
     }
 
     std::string logLine;
@@ -92,37 +116,61 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
     if (enableAttributeNameLogging)
     {
         if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+        {
             logLine += "IPADDR=" + getAlignedValue("\"" + ip + "\"", INET_ADDRSTRLEN) + fieldSeparator;
+        }
         if ((sessionId.empty() && enableEmptyFieldLogging) || !sessionId.empty())
+        {
             logLine += "SESSID=" + getAlignedValue("\"" + sessionId + "\"", 15) + fieldSeparator;
+        }
         if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+        {
             logLine += "USER=" + getAlignedValue("\"" + user + "\"", userFieldMinWidth) + fieldSeparator;
+        }
         if (((domain.empty() && enableEmptyFieldLogging) || !domain.empty()) && enableDomainLogging)
+        {
             logLine += "DOMAIN=" + getAlignedValue("\"" + domain + "\"", domainFieldMinWidth) + fieldSeparator;
+        }
         if (((module.empty() && enableEmptyFieldLogging) || !module.empty()) && enableModuleLogging)
+        {
             logLine += "MODULE=" + getAlignedValue("\"" + module + "\"", moduleFieldMinWidth) + "" + fieldSeparator;
+        }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
+        {
             logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+        }
     }
     else
     {
         if ((ip.empty() && enableEmptyFieldLogging) || !ip.empty())
+        {
             logLine += getAlignedValue("\"" + ip + "\"", INET_ADDRSTRLEN) + fieldSeparator;
+        }
 
         if ((sessionId.empty() && enableEmptyFieldLogging) || !sessionId.empty())
+        {
             logLine += getAlignedValue("\"" + sessionId + "\"", 15) + fieldSeparator;
+        }
 
         if ((user.empty() && enableEmptyFieldLogging) || !user.empty())
+        {
             logLine += getAlignedValue("\"" + user + "\"", userFieldMinWidth) + fieldSeparator;
+        }
 
         if (((domain.empty() && enableEmptyFieldLogging) || !domain.empty()) && enableDomainLogging)
+        {
             logLine += getAlignedValue("\"" + domain + "\"", domainFieldMinWidth) + fieldSeparator;
+        }
 
         if (((module.empty() && enableEmptyFieldLogging) || !module.empty()) && enableModuleLogging)
+        {
             logLine += getAlignedValue("\"" + module + "\"", moduleFieldMinWidth) + fieldSeparator;
+        }
 
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
+        {
             logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+        }
     }
 
     if (isUsingWindowsEventLog())
@@ -134,15 +182,25 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
     {
 #ifndef _WIN32
         if (logSeverity == LEVEL_INFO)
+        {
             syslog(LOG_INFO, "%s", logLine.c_str());
+        }
         else if (logSeverity == LEVEL_WARN)
+        {
             syslog(LOG_WARNING, "%s", logLine.c_str());
+        }
         else if (logSeverity == LEVEL_CRITICAL)
+        {
             syslog(LOG_CRIT, "%s", logLine.c_str());
+        }
         else if (logSeverity == LEVEL_SECURITY_ALERT)
+        {
             syslog(LOG_WARNING, "%s", logLine.c_str());
+        }
         else if (logSeverity == LEVEL_ERR)
+        {
             syslog(LOG_ERR, "%s", logLine.c_str());
+        }
 #endif
     }
 
@@ -157,7 +215,9 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
         if (enableColorLogging)
         {
             if (enableAttributeNameLogging)
+            {
                 fprintf(fp, "LEVEL=");
+            }
             switch (color)
             {
             case LOG_COLOR_NORMAL:
@@ -202,6 +262,8 @@ void RPCLog::printStandardLog(eLogLevels logSeverity, FILE *fp, std::string ip, 
 std::string RPCLog::truncateSessionId(std::string sSessionId)
 {
     if (sSessionId.size() > 12)
+    {
         sSessionId.erase(12, std::string::npos);
+    }
     return sSessionId;
 }
