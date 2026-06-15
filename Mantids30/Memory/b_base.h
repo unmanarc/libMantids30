@@ -57,7 +57,7 @@ public:
     * @param len Number of bytes in the memory buffer to append.
     * @return A pair where the first element is a boolean indicating success or failure, and the second element is the number of bytes appended.
     */
-    std::optional<size_t> append(const void *buf, size_t len);
+    std::optional<size_t> append(const void *data, size_t len);
     /**
      * @brief Prepend linear memory to this container.
      * @param buf Pointer to the memory buffer to prepend.

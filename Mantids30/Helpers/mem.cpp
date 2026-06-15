@@ -90,12 +90,12 @@ bool Mem::icharcmp(unsigned char c1, unsigned char c2)
     return m_cmpMatrix[c1] == m_cmpMatrix[c2];
 }
 
-int Mem::memcmp64(const void *s1, const void *s2, size_t n)
+int Mem::memcmp64(const void *s1, const void *s2, size_t numBytes)
 {
     constexpr size_t blockSize = 64 * KB_MULT;
-    for (size_t offset = 0; offset < n; offset += blockSize)
+    for (size_t offset = 0; offset < numBytes; offset += blockSize)
     {
-        size_t currentBlock = std::min(n - offset, blockSize);
+        size_t currentBlock = std::min(numBytes - offset, blockSize);
         int result = memcmp(static_cast<const char *>(s1) + offset, static_cast<const char *>(s2) + offset, currentBlock);
         if (result != 0)
         {
@@ -105,17 +105,17 @@ int Mem::memcmp64(const void *s1, const void *s2, size_t n)
     return 0;
 }
 
-int Mem::memicmp2(const void *s1, const void *s2, const size_t &n, const bool &caseSensitive)
+int Mem::memicmp2(const void *s1, const void *s2, const size_t &numBytes, const bool &caseSensitive)
 {
     if (caseSensitive)
     {
-        return memcmp64(s1, s2, n);
+        return memcmp64(s1, s2, numBytes);
     }
     else
     {
         const unsigned char *p1 = static_cast<const unsigned char *>(s1);
         const unsigned char *p2 = static_cast<const unsigned char *>(s2);
-        for (size_t i = 0; i < n; ++i)
+        for (size_t i = 0; i < numBytes; ++i)
         {
             if (!icharcmp(p1[i], p2[i]))
             {
@@ -126,19 +126,19 @@ int Mem::memicmp2(const void *s1, const void *s2, const size_t &n, const bool &c
     }
 }
 
-void *Mem::memcpy64(void *destination, const void *source, size_t numBytes)
+void *Mem::memcpy64(void *dest, const void *src, size_t numBytes)
 {
     size_t currentOffset = 0;
     while (numBytes > 0)
     {
         size_t blockSizeToCopy = std::min(numBytes, static_cast<size_t>(64 * KB_MULT));
-        memcpy(static_cast<char *>(destination) + currentOffset, static_cast<const char *>(source) + currentOffset, blockSizeToCopy);
+        memcpy(static_cast<char *>(dest) + currentOffset, static_cast<const char *>(src) + currentOffset, blockSizeToCopy);
         currentOffset += blockSizeToCopy;
         numBytes -= blockSizeToCopy;
         currentOffset += blockSizeToCopy;
         numBytes -= blockSizeToCopy;
     }
-    return destination;
+    return dest;
 }
 void *Mem::memmove64(void *dest, const void *src, size_t numBytes)
 {

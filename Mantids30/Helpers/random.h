@@ -19,7 +19,7 @@ public:
      * @param bytes will generate 2 HEX bytes per byte requested (eg. 2 -> ABCD)
      * @return random string in hex
      */
-    static std::string createRandomHexString(std::string::size_type bytes);
+    static std::string createRandomHexString(std::string::size_type length);
 
     /**
      * @brief createRandomSalt32 Create a random number of 32bit into salt

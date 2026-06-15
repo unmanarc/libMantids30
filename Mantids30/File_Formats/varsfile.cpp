@@ -45,7 +45,7 @@ bool File::save()
         }
 
         bool ok;
-    for (const std::pair<std::string, std::string> &i : m_vars)
+    for (const auto &i : m_vars)
     {
         std::string value = getLineFromVars(i, &ok);
         if (!ok)

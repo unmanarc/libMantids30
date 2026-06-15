@@ -106,10 +106,10 @@ public:
     };
 
     static bool icharcmp(unsigned char c1, unsigned char c2);
-    static int memcmp64(const void *s1, const void *s2, size_t n);
-    static int memicmp2(const void *s1, const void *s2, const size_t &n, const bool &caseSensitive);
-    static void *memcpy64(void *dest, const void *src, size_t n);
-    static void *memmove64(void *dest, const void *src, size_t n);
+    static int memcmp64(const void *s1, const void *s2, size_t numBytes);
+    static int memicmp2(const void *s1, const void *s2, const size_t &numBytes, const bool &caseSensitive);
+    static void *memcpy64(void *dest, const void *src, size_t numBytes);
+    static void *memmove64(void *dest, const void *src, size_t numBytes);
 
 private:
     static unsigned char m_cmpMatrix[];
