@@ -42,7 +42,7 @@ std::set<std::string> EndpointsRequirements_Map::getEndpointRequiredRoles(const 
     return r;
 }
 
-bool EndpointsRequirements_Map::validateEndpoint(std::shared_ptr<Sessions::Session> session, const std::string &endpointName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft)
+bool EndpointsRequirements_Map::validateEndpoint(const std::shared_ptr<Sessions::Session>& session, const std::string &endpointName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft)
 {
     if (!session)
     {

@@ -96,7 +96,7 @@ private:
 
     Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);
 
-    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
                        const WebSocketParameters &parameters);
 
     friend class Mantids30::Network::Servers::Web::APIServerCore;

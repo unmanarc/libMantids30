@@ -29,7 +29,7 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
     return clientDetails;
 }
 
-bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
                               const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;

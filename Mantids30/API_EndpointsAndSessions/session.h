@@ -48,17 +48,6 @@ struct ClientDetails
 class Session : public Session_Vars
 {
 public:
-    enum eCheckMode
-    {
-        CHECK_ALLOW_EXPIRED_CREDENTIALS,
-        CHECK_DISALLOW_EXPIRED_CREDENTIALS
-    };
-
-    /**
-     * @brief Session Initialize session class.
-     */
-    //Session();
-
     /**
      * @brief Session Initialize a session based on a JWT token
      *          Warning: you should verify that the token is valid previous to the initialization
@@ -77,12 +66,12 @@ public:
      * @param expSeconds
      * @return true if expired
      */
-    bool isLastActivityExpired(const uint32_t &expSeconds);
+    [[nodiscard]] bool isLastActivityExpired(const uint32_t &expSeconds);
     /**
      * @brief getLastActivity Get the unix time from the last activity
      * @return unix time of last activity
      */
-    time_t getLastActivity();
+    [[nodiscard]] time_t getLastActivity();
     /**
      * @brief setLastActivity Set last activity time (for assign operations), use updateLastActivity for updating this value
      * @param value unix time
@@ -92,7 +81,7 @@ public:
      * @brief getUser Get the user name
      * @return user id string (userName)
      */
-    std::string getUser();
+    [[nodiscard]] std::string getUser();
     /**
      * @brief setAuthenticatedUser Set/Change the authenticated user
      * @param value user that authenticated
@@ -102,16 +91,16 @@ public:
      * @brief getFirstActivity Get the unix time from where you created this session
      * @return unix time
      */
-    time_t getFirstActivity();
+    [[nodiscard]] time_t getFirstActivity();
 
     // TODO: Validate that the session has not been revoked.
-    bool isSessionRevoked() { return false; }
+    [[nodiscard]] bool isSessionRevoked() { return false; }
 
-    DataFormat::JWT::Token getJWTAuthenticatedInfo();
+    [[nodiscard]] DataFormat::JWT::Token getJWTAuthenticatedInfo();
 
-    std::string getDomain();
+    [[nodiscard]] std::string getDomain();
 
-    std::string getImpersonator();
+    [[nodiscard]] std::string getImpersonator();
 
 private:
     void iUpdateLastActivity();

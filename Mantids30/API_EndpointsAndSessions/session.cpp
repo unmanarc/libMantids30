@@ -8,7 +8,6 @@ using namespace Mantids30::DataFormat;
 Session::Session(const JWT::Token &jwt)
     : m_firstActivityTimestamp(time(nullptr))
     , m_lastActivityTimestamp(time(nullptr))
-//: Session() // Delegates to the default constructor
 {
     m_jwtAuthenticatedInfo = jwt;
     m_impersonator = jwt.getImpersonator();
