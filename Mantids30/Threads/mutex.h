@@ -4,7 +4,7 @@
 
 namespace Mantids30::Threads::Sync {
 
-typedef std::mutex Mutex;
+using Mutex = std::mutex;
 #define Lock_Mutex(x) std::lock_guard(x)
 
 } // namespace Mantids30::Threads::Sync
