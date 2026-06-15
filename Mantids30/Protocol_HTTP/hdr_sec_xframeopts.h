@@ -46,11 +46,12 @@ public:
     /**
      * @brief Enumeration of the possible values for the X-Frame-Options header.
      */
-    enum eOptsValues {
-        NONE = 0, ///< X-Frame-Options value of "none".
-        DENY = 1, ///< X-Frame-Options value of "deny".
+    enum eOptsValues
+    {
+        NONE = 0,       ///< X-Frame-Options value of "none".
+        DENY = 1,       ///< X-Frame-Options value of "deny".
         SAMEORIGIN = 2, ///< X-Frame-Options value of "sameorigin".
-        ALLOWFROM = 3 ///< X-Frame-Options value of "allow-from".
+        ALLOWFROM = 3   ///< X-Frame-Options value of "allow-from".
     };
 
     /**
@@ -92,6 +93,4 @@ public:
     eOptsValues value = DENY; ///< The X-Frame-Options value.
 };
 
-
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP::Headers::Security

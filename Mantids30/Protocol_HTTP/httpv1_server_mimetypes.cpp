@@ -17,7 +17,9 @@ bool HTTP::HTTPv1_Server::detectContentTypeFromFilePath(const string &sFilePath)
     const char *cFileExtension = strrchr(sFilePath.c_str(), '.');
 
     if (!cFileExtension || cFileExtension[1] == 0)
+    {
         return false;
+    }
 
     m_currentFileExtension = boost::to_lower_copy(std::string(cFileExtension));
 
@@ -34,8 +36,6 @@ std::string HTTP::HTTPv1_Server::getCurrentFileExtension() const
 {
     return m_currentFileExtension;
 }
-
-
 
 void HTTP::HTTPv1_Server::loadDefaultMIMETypes()
 {

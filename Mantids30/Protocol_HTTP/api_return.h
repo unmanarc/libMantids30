@@ -92,7 +92,9 @@ public:
     Json::Value *responseJSON()
     {
         if (!body)
+        {
             return nullptr;
+        }
         return body->getValue();
     }
 

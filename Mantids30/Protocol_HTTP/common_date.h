@@ -1,8 +1,8 @@
 #pragma once
 
-#include <time.h>
-#include <string>
 #include <stdint.h>
+#include <string>
+#include <time.h>
 
 namespace Mantids30::Network::Protocols::HTTP {
 
@@ -19,7 +19,7 @@ public:
      */
     Date();
 
-    Date(const time_t & unixTime);
+    Date(const time_t &unixTime);
 
     /**
      * @brief Returns the time stored in the Date object as seconds since the Unix epoch.
@@ -33,7 +33,7 @@ public:
      *
      * @param unixTime The time as seconds since the Unix epoch to set.
      */
-    void setUnixTime(const time_t& unixTime);
+    void setUnixTime(const time_t &unixTime);
 
     /**
      * @brief Returns a string representation of the Date object in HTTP format.
@@ -48,7 +48,7 @@ public:
      * @param fTime The string to parse.
      * @return true if the parsing was successful, false otherwise.
      */
-    bool fromString(const std::string& fTime);
+    bool fromString(const std::string &fTime);
 
     /**
      * @brief Sets the Date object to the current time.
@@ -60,13 +60,10 @@ public:
      *
      * @param seconds The number of seconds to increment the time by.
      */
-    void incTime(const uint32_t& seconds);
+    void incTime(const uint32_t &seconds);
 
 private:
     time_t m_unixTime; ///< The time stored in the Date object as seconds since the Unix epoch.
 };
 
-
-
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

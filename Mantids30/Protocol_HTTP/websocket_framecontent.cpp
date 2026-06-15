@@ -28,7 +28,7 @@ void FrameContent::reset()
 bool FrameContent::streamToUpstream()
 {
     std::optional<size_t> x = m_content->appendTo(*m_upStream);
-    return  x != std::nullopt && *x == m_content->size();
+    return x != std::nullopt && *x == m_content->size();
 }
 
 void FrameContent::setPayloadLength(uint64_t length)
@@ -65,11 +65,11 @@ Mantids30::Memory::Streams::SubParser::ParseStatus FrameContent::parse()
     // Unmask if needed
     if (m_masked)
     {
-        unmaskData( (uint8_t *) currentPayload.data(),currentPayload.size() );
+        unmaskData((uint8_t *) currentPayload.data(), currentPayload.size());
     }
 
-    std::optional<size_t> x= m_content->append(currentPayload.data(),currentPayload.size());
-    if ( x==std::nullopt )
+    std::optional<size_t> x = m_content->append(currentPayload.data(), currentPayload.size());
+    if (x == std::nullopt)
     {
         return PARSE_ERROR;
     }
@@ -97,13 +97,14 @@ bool FrameContent::validateUtf8Payload()
     uint8_t utf8BytesRemaining = 0;
     uint32_t utf8Codepoint = 0;
 
-
     for (size_t i = 0; i < m_content->size(); ++i)
     {
         uint8_t byte;
 
-        if (m_content->copyOut(&byte,1,i) == std::nullopt)
+        if (m_content->copyOut(&byte, 1, i) == std::nullopt)
+        {
             return false;
+        }
 
         if (utf8BytesRemaining == 0)
         {

@@ -1,20 +1,20 @@
 #pragma once
 
-#include <optional>
-#include <string>
 #include "common_date.h"
 #include <Mantids30/Helpers/json.h>
+#include <optional>
+#include <string>
 
 namespace Mantids30::Network::Protocols::HTTP::Headers {
 
 class Cookie
 {
 public:
-
     /**
      * @brief The eSameSitePolicy enum
      */
-    enum eSameSitePolicy {
+    enum eSameSitePolicy
+    {
         HTTP_COOKIE_SAMESITE_NONE = 0,
         HTTP_COOKIE_SAMESITE_LAX = 1,
         HTTP_COOKIE_SAMESITE_STRICT = 2
@@ -30,13 +30,13 @@ public:
      * @param cookieName Name of the cookie
      * @return string value for the http header.
      */
-    std::string toSetCookieString(const std::string & cookieName) const;
+    std::string toSetCookieString(const std::string &cookieName) const;
     /**
      * @brief fromSetCookieString Parse cookie from the HTTP Cookie: string  (after the Cookie:)
      * @param setCookieValue cookie value
      * @param cookieName cookie name output, if value not found, the cookie Name is not filled.
      */
-    void fromSetCookieString(const std::string & setCookieValue, std::string * cookieName);
+    void fromSetCookieString(const std::string &setCookieValue, std::string *cookieName);
 
     ///////////////////////////////////////////////////////////////////////////////
     /**
@@ -52,12 +52,12 @@ public:
      * @brief setExpiration Set Expiration to UNIX date
      * @param exp unix date
      */
-    void setExpiration(const time_t& exp);
+    void setExpiration(const time_t &exp);
     /**
      * @brief setExpirationFromNow Set Expiration in seconds from now
      * @param seconds seconds from now
      */
-    void setExpirationFromNow(const uint32_t& seconds);
+    void setExpirationFromNow(const uint32_t &seconds);
 
     /**
      * @brief deleteCookie Mark the cookie for deletion by setting max-age to 0
@@ -93,12 +93,12 @@ public:
     /**
      * @brief Indicates if the cookie is transmitted only over secure protocols.
      */
-    bool secure=true;
+    bool secure = true;
 
     /**
      * @brief Indicates if the cookie is accessible only through HTTP (not via JavaScript).
      */
-    bool httpOnly=true;
+    bool httpOnly = true;
 
     /**
      * @brief The SameSite policy of the cookie.
@@ -107,8 +107,6 @@ public:
 
 private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
-
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP::Headers

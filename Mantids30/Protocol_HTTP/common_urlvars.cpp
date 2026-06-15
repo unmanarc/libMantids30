@@ -39,7 +39,9 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
     for (const std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>> &i : m_vars)
     {
         if (firstVar)
+        {
             firstVar = false;
+        }
         else
         {
             out->writeString("&");

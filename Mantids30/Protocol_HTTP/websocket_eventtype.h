@@ -15,4 +15,4 @@ enum EventType
     SESSION_END = 3
 };
 
-}
+} // namespace Mantids30::Network::Protocols::WebSocket

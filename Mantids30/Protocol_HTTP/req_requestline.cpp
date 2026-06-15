@@ -1,11 +1,11 @@
 #include "req_requestline.h"
 
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
 #include "streamdecoder_url.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 using namespace boost;
@@ -19,7 +19,7 @@ RequestLine::RequestLine()
     m_getVars = HTTP::URLVars::create();
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_DELIMITER);
     setParseDelimiter("\r\n");
-    setSecurityMaxURLSize(128*KB_MULT); // 128K
+    setSecurityMaxURLSize(128 * KB_MULT); // 128K
 
     m_subParserName = "RequestLine";
 }
@@ -27,25 +27,33 @@ RequestLine::RequestLine()
 bool RequestLine::streamToUpstream()
 {
     // Act as a client. Send data from here.
-    m_upStream->writeString(m_requestMethod + " " + m_requestURI );
+    m_upStream->writeString(m_requestMethod + " " + m_requestURI);
     if (!m_upStream->writeStatus.succeed)
+    {
         return false;
+    }
 
     if (!m_getVars->isEmpty())
     {
         m_upStream->writeString("?");
 
         if (!m_upStream->writeStatus.succeed)
+        {
             return false;
+        }
 
         if (!m_getVars->streamTo(m_upStream))
+        {
             return false;
+        }
     }
 
-    m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n") );
+    m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n"));
 
     if (!m_upStream->writeStatus.succeed)
+    {
         return false;
+    }
 
     return m_upStream->writeStatus.succeed;
 }
@@ -55,15 +63,17 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
     std::string clientRequest = getParsedBuffer()->toStringEx();
 
     vector<string> requestParts;
-    split(requestParts,clientRequest,is_any_of("\t "),token_compress_on);
+    split(requestParts, clientRequest, is_any_of("\t "), token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size()<2) 
+    if (requestParts.size() < 2)
+    {
         return Memory::Streams::SubParser::PARSE_ERROR;
+    }
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
     m_requestURI = requestParts[1];
-    m_httpVersion.parse(requestParts.size()>2?requestParts[2]:"HTTP/1.0");
+    m_httpVersion.parse(requestParts.size() > 2 ? requestParts[2] : "HTTP/1.0");
 
     parseURI();
 
@@ -72,12 +82,12 @@ Memory::Streams::SubParser::ParseStatus RequestLine::parse()
 
 void RequestLine::parseURI()
 {
-    size_t found=m_requestURI.find("?");
+    size_t found = m_requestURI.find("?");
 
-    if (found!=std::string::npos)
+    if (found != std::string::npos)
     {
         // We have parameters..
-        m_requestGETVarsRawString = m_requestURI.c_str()+found+1;
+        m_requestGETVarsRawString = m_requestURI.c_str() + found + 1;
         m_requestURI.resize(found);
         parseGETVars();
     }
@@ -92,7 +102,7 @@ void RequestLine::parseURI()
 
 void RequestLine::parseGETVars()
 {
-    m_getVars->writeFullStreamWithEOF(m_requestGETVarsRawString.c_str(),m_requestGETVarsRawString.size());
+    m_getVars->writeFullStreamWithEOF(m_requestGETVarsRawString.c_str(), m_requestGETVarsRawString.size());
 }
 
 std::string RequestLine::getRequestGETVarsRawString() const
@@ -103,7 +113,9 @@ std::string RequestLine::getRequestGETVarsRawString() const
 bool RequestLine::fromJSON(const Json::Value &json)
 {
     if (!json.isObject())
+    {
         return false;
+    }
 
     setHTTPMethod(JSON_ASSTRING(json, "method", ""));
     setRequestURI(JSON_ASSTRING(json, "uri", ""));
@@ -125,13 +137,17 @@ json RequestLine::toJSON() const
 
 string RequestLine::toString() const
 {
-    if ( m_requestGETVarsRawString.empty() )
+    if (m_requestGETVarsRawString.empty())
+    {
         return getHTTPMethod() + " " + getURI() + " " + m_httpVersion.toString();
+    }
     else
+    {
         return getHTTPMethod() + " " + getURI() + "?" + m_requestGETVarsRawString + " " + m_httpVersion.toString();
+    }
 }
 
-HTTP::Version * RequestLine::getHTTPVersion()
+HTTP::Version *RequestLine::getHTTPVersion()
 {
     return &m_httpVersion;
 }
@@ -165,4 +181,3 @@ void RequestLine::setSecurityMaxURLSize(size_t value)
 {
     setParseDataTargetSize(value);
 }
-

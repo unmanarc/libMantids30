@@ -2,8 +2,8 @@
 #include <stdexcept>
 #include <vector>
 
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
 using namespace Mantids30::Network::Protocols;
@@ -12,16 +12,14 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-XFrameOpts::XFrameOpts()
-{
-}
+XFrameOpts::XFrameOpts() {}
 
 XFrameOpts::XFrameOpts(const eOptsValues &value, const string &allowFromURL)
 {
     this->value = value;
     this->allowFromURL = allowFromURL;
 
-    if (!allowFromURL.empty() && value!=ALLOWFROM)
+    if (!allowFromURL.empty() && value != ALLOWFROM)
     {
         throw runtime_error("Using allowFromURL without ALLOWFROM");
     }
@@ -55,7 +53,7 @@ string Mantids30::Network::Protocols::HTTP::Headers::Security::XFrameOpts::toStr
 bool XFrameOpts::fromString(const string &sValue)
 {
     vector<string> parts;
-    split(parts,sValue,is_any_of(" "),token_compress_on);
+    split(parts, sValue, is_any_of(" "), token_compress_on);
 
     *this = XFrameOpts();
 
@@ -64,15 +62,15 @@ bool XFrameOpts::fromString(const string &sValue)
         value = DENY;
         return false;
     }
-    else if ( iequals(parts[0],"DENY") )
+    else if (iequals(parts[0], "DENY"))
     {
         value = DENY;
     }
-    else if ( iequals(parts[0],"SAMEORIGIN") )
+    else if (iequals(parts[0], "SAMEORIGIN"))
     {
         value = DENY;
     }
-    else if ( iequals(parts[0],"ALLOW-FROM") && parts.size()>=2 )
+    else if (iequals(parts[0], "ALLOW-FROM") && parts.size() >= 2)
     {
         value = DENY;
         allowFromURL = parts[1];

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/Memory/streamable_transformer.h>
 #include <Mantids30/Memory/streamable_object.h>
+#include <Mantids30/Memory/streamable_transformer.h>
 
 namespace Mantids30::Memory::Streams::Encoders {
 
@@ -15,9 +15,8 @@ protected:
     size_t writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) override;
 
 private:
-    size_t getPlainBytesSize(const unsigned char * buf, size_t count);
-    inline bool shouldEncodeThisByte(const unsigned char & byte) const;
+    size_t getPlainBytesSize(const unsigned char *buf, size_t count);
+    inline bool shouldEncodeThisByte(const unsigned char &byte) const;
 };
 
-
-}
+} // namespace Mantids30::Memory::Streams::Encoders

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <map>
 #include "hdr_cookie.h"
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
+#include <map>
+#include <memory>
+#include <string>
 
 namespace Mantids30::Network::Protocols::HTTP::Response {
 
@@ -13,26 +13,26 @@ class Cookies_ServerSide
 public:
     Cookies_ServerSide() = default;
 
-    void putOnHeaders(MIME::MIME_Sub_Header * headers) const;
+    void putOnHeaders(MIME::MIME_Sub_Header *headers) const;
 
-    std::string getCookieValueByName(const std::string & cookieName);
-    std::shared_ptr<Headers::Cookie> getCookieByName(const std::string & cookieName);
+    std::string getCookieValueByName(const std::string &cookieName);
+    std::shared_ptr<Headers::Cookie> getCookieByName(const std::string &cookieName);
 
-    bool parseCookie(const std::string & cookie_str);
-    bool addCookieVal(const std::string & cookieName, const Headers::Cookie & cookieValue);
+    bool parseCookie(const std::string &cookie_str);
+    bool addCookieVal(const std::string &cookieName, const Headers::Cookie &cookieValue);
 
-    bool removeCookie(const std::string & cookieName);
+    bool removeCookie(const std::string &cookieName);
 
     /**
      * @brief addClearCookie Add cookie with empty values (to clear the previous cookie)
      * @param cookieName cookie Name
      */
-    void addClearSecureCookie(const std::string & cookieName, const std::string & path);
+    void addClearSecureCookie(const std::string &cookieName, const std::string &path);
     /**
      * @brief addClearCookie Add cookie with empty values (to clear the previous cookie)
      * @param cookieName cookie Name
      */
-    void addClearSecureCookie(const std::string & cookieName);
+    void addClearSecureCookie(const std::string &cookieName);
 
     /**
      * @brief prependPathToAllCookies Prepend a prefix to the Path attribute of all cookies.
@@ -42,11 +42,9 @@ public:
      * If the cookie already has a Path like /api, it will become /login/api.
      * @param prefix The path prefix to prepend (should start with /).
      */
-    void prependPathToAllCookies(const std::string & prefix);
+    void prependPathToAllCookies(const std::string &prefix);
 
 private:
     std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
-
 };
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP::Response

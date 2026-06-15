@@ -10,7 +10,7 @@ using namespace std;
 void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
 {
     jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-    jWebLog["timestamp"] = (Json::UInt64)time(nullptr);
+    jWebLog["timestamp"] = (Json::UInt64) time(nullptr);
     jWebLog["requestLine"] = clientRequest.requestLine.toString();
     jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
     jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
@@ -75,7 +75,6 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
         reset();
     }
 
-
     return streamedOK;
 }
 
@@ -96,11 +95,13 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmitionMode() == HTTP::Content::TRANSMIT_MODE_CHUNKS)
+        {
             serverResponse.headers.replace("Transfer-Encoding", "Chunked");
+        }
     }
     else
     {
-       /* std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
+        /* std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
         if (boost::iequals(connectionType, "close"))
         {
             // On connection close, don't report the content size. (is there any reason for not reporting the size?)
@@ -123,7 +124,9 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     currentDate.setCurrentTime();
 
     if (serverResponse.includeDate)
+    {
         serverResponse.headers.replace("Date", currentDate.toString());
+    }
 
     if (serverResponse.immutableHeaders)
     {
@@ -131,8 +134,8 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         bool r = serverResponse.headers.streamToUpstream();
         if (!r)
         {
-            r=!r;
-            r=!r;
+            r = !r;
+            r = !r;
         }
         return r;
     }
@@ -151,26 +154,33 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
 
     std::string cacheOptions = serverResponse.cacheControl.toString();
     if (!cacheOptions.empty())
+    {
         serverResponse.headers.replace("Cache-Control", cacheOptions);
+    }
 
     if (!serverResponse.security.XFrameOpts.isNotActivated())
+    {
         serverResponse.headers.replace("X-Frame-Options", serverResponse.security.XFrameOpts.toString());
+    }
 
     // TODO: check if this is a secure connection.. (Over TLS?)
     if (serverResponse.security.HSTS.isActivated)
+    {
         serverResponse.headers.replace("Strict-Transport-Security", serverResponse.security.HSTS.toString());
+    }
 
     // Content Type...
     if (!serverResponse.contentType.empty())
     {
         serverResponse.headers.replace("Content-Type", serverResponse.contentType);
         if (serverResponse.security.disableNoSniffContentType)
+        {
             serverResponse.headers.replace("X-Content-Type-Options", "nosniff");
+        }
     }
 
     return serverResponse.headers.streamToUpstream();
 }
-
 
 bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(std::shared_ptr<Memory::Streams::StreamableObject> source)
 {
@@ -187,5 +197,3 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getRespo
 {
     return serverResponse.content.getStreamableObject();
 }
-
-

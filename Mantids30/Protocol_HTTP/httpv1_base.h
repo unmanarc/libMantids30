@@ -146,7 +146,9 @@ public:
         {
             std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
+            {
                 return {};
+            }
             return cookiesSubVars->getAllSubVars();
         }
 
@@ -172,7 +174,9 @@ public:
                 iss >> keyword >> headerBearerToken;
 
                 if (keyword == "Bearer" && !headerBearerToken.empty())
+                {
                     return headerBearerToken;
+                }
             }
             return ""; // Return empty if format is invalid or parsing fails
         }
@@ -190,7 +194,9 @@ public:
         {
             std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
+            {
                 return "";
+            }
             // TODO: mayus
             return cookiesSubVars->getSubVar(sCookieName);
         }
@@ -390,9 +396,13 @@ public:
             setDataStreamer(nullptr);
 
             if (temporary)
+            {
                 return HTTP::Status::S_307_TEMPORARY_REDIRECT;
+            }
             else
+            {
                 return HTTP::Status::S_308_PERMANENT_REDIRECT;
+            }
         }
 
         /**

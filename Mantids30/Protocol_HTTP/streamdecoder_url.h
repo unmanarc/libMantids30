@@ -8,20 +8,18 @@ class URL : public Memory::Streams::StreamableTransformer
 {
 public:
     URL() = default;
-    static std::string decodeURLStr(const std::string & url);
+    static std::string decodeURLStr(const std::string &url);
 
 protected:
     size_t writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) override;
     size_t writeTransformerEOF(Memory::Streams::StreamableObject *dst) override;
 
 private:
-    size_t getPlainBytesSize(const unsigned char * buf, size_t count, unsigned char *byteDetected);
+    size_t getPlainBytesSize(const unsigned char *buf, size_t count, unsigned char *byteDetected);
     bool flushBytesAndResetFilledCounter(Memory::Streams::StreamableObject *dst);
 
     unsigned char m_bytes[3];
     uint8_t m_filled = 0;
 };
 
-}
-
-
+} // namespace Mantids30::Memory::Streams::Decoders

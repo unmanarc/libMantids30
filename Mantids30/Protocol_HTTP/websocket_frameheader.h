@@ -67,8 +67,7 @@ public:
     void setMaxPayloadSize(uint64_t maxSize) { m_maxPayloadSize = maxSize; }
     void setRequireMasking(bool require) { m_requireMasking = require; }
 
-    bool streamToUpstream( ) override;
-
+    bool streamToUpstream() override;
 
     // Close connection response
     void prepareCloseFrame(uint64_t payloadLength);
@@ -79,10 +78,11 @@ public:
     // Ping initiation
     void preparePingFrame(uint64_t payloadLength);
 
-    void prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength, bool masked, const std::array<uint8_t, 4>& maskingKey = {0,0,0,0});
+    void prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength, bool masked, const std::array<uint8_t, 4> &maskingKey = {0, 0, 0, 0});
 
 protected:
     virtual ParseStatus parse() override;
+
 private:
     bool parseFirstByte(uint8_t byte);
     bool parseSecondByte(uint8_t byte);

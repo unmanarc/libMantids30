@@ -52,19 +52,29 @@ bool FrameHeader::streamToUpstream()
     // First byte: FIN + RSV1-3 + Opcode
     uint8_t firstByte = 0;
     if (m_fin)
+    {
         firstByte |= 0x80;
+    }
     if (m_rsv1)
+    {
         firstByte |= 0x40;
+    }
     if (m_rsv2)
+    {
         firstByte |= 0x20;
+    }
     if (m_rsv3)
+    {
         firstByte |= 0x10;
+    }
     firstByte |= (m_opcode & 0x0F);
 
     // Second byte: MASK + Payload length
     uint8_t secondByte = 0;
     if (m_masked)
+    {
         secondByte |= 0x80;
+    }
 
     char bytes[2];
     bytes[0] = static_cast<char>(firstByte);
@@ -181,7 +191,7 @@ void FrameHeader::prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength,
     }
 
     // You might also reset any parser state here since this is for outbound use
-    m_parseState = STATE_COMPLETE;  // Indicate that the header is ready to be written
+    m_parseState = STATE_COMPLETE; // Indicate that the header is ready to be written
 }
 
 Mantids30::Memory::Streams::SubParser::ParseStatus FrameHeader::parse()

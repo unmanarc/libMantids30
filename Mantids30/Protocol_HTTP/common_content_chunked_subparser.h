@@ -7,15 +7,14 @@ namespace Mantids30::Network::Protocols::HTTP {
 class ContentChunkedTransformer : public Memory::Streams::StreamableObject
 {
 public:
-    ContentChunkedTransformer(Memory::Streams::StreamableObject * upStreamOut);
-    ~ContentChunkedTransformer( );
+    ContentChunkedTransformer(Memory::Streams::StreamableObject *upStreamOut);
+    ~ContentChunkedTransformer();
 
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 
 private:
     size_t m_pos = 0;
-    Memory::Streams::StreamableObject * upStreamOut = nullptr;
+    Memory::Streams::StreamableObject *upStreamOut = nullptr;
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

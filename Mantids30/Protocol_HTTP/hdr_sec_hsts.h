@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <stdint.h>
+#include <string>
 
 namespace Mantids30::Network::Protocols::HTTP::Headers::Security {
 
@@ -45,15 +45,13 @@ public:
      * @param sValue The HSTS policy string to parse.
      * @return true if the parsing was successful, false otherwise.
      */
-    bool fromString(const std::string& sValue);
+    bool fromString(const std::string &sValue);
 
-    bool isActivated = false; ///< Whether the HSTS policy is activated.
-    bool isPreloadEnabled = false; ///< Whether to use the preload option.
+    bool isActivated = false;         ///< Whether the HSTS policy is activated.
+    bool isPreloadEnabled = false;    ///< Whether to use the preload option.
     bool isSubdomainIncluded = false; ///< Whether to include subdomains in the HSTS policy.
 private:
     uint32_t m_maxAge = 0; ///< The maximum age in seconds for which the HSTS policy is enforced.
 };
 
-
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP::Headers::Security

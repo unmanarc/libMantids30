@@ -10,7 +10,6 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-
 std::string CacheControl::toString()
 {
     std::string r;
@@ -66,8 +65,7 @@ std::string CacheControl::toString()
     return r;
 }
 
-void CacheControl::fromString(
-    const std::string &str)
+void CacheControl::fromString(const std::string &str)
 {
     vector<string> params;
     split(params, str, is_any_of(", "), token_compress_on);

@@ -1,11 +1,11 @@
 #include "common_date.h"
 
-#include <string.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <iostream>
-#include <sstream>
-#include <locale>
 #include <iomanip>
+#include <iostream>
+#include <locale>
+#include <sstream>
+#include <string.h>
 
 using namespace Mantids30::Network::Protocols;
 
@@ -42,11 +42,11 @@ std::string HTTP::Date::toString() const
     timeinfo = to_tm(t);
 
 #ifndef _WIN32
-//    if (timeinfo.tm_zone)
-//        timeinfo.tm_hour+=timeinfo.tm_zone; // TODO: check when tm_zone is not zero
-    strftime (buffer,sizeof(buffer),"%a, %d %b %Y %T GMT",&timeinfo);
+    //    if (timeinfo.tm_zone)
+    //        timeinfo.tm_hour+=timeinfo.tm_zone; // TODO: check when tm_zone is not zero
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %T GMT", &timeinfo);
 #else
-    strftime (buffer,sizeof(buffer),"%a, %d %b %Y %H:%M:%S GMT",&timeinfo);
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", &timeinfo);
 #endif
 
     return std::string(buffer);
@@ -54,10 +54,9 @@ std::string HTTP::Date::toString() const
 
 bool HTTP::Date::fromString(const std::string &fTime)
 {
-
 #ifndef _WIN32
     struct tm timeinfo;
-    memset(&timeinfo,0, sizeof(tm));
+    memset(&timeinfo, 0, sizeof(tm));
     if (strptime(fTime.c_str(), "%a, %d %b %Y %H:%M:%S %Z", &timeinfo) != NULL)
     {
         std::time_t tt = std::mktime(&timeinfo);
@@ -66,7 +65,7 @@ bool HTTP::Date::fromString(const std::string &fTime)
     }
     else
     {
-        m_unixTime=0;
+        m_unixTime = 0;
         return false;
     }
 #else
@@ -83,11 +82,10 @@ bool HTTP::Date::fromString(const std::string &fTime)
     }
     else
     {
-        m_unixTime = mktime ( &t );
+        m_unixTime = mktime(&t);
         return true;
     }
 #endif
-
 
     // TODO: check this function (specially with different locales).
     // TODO: check hour zones changes.

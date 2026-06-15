@@ -30,7 +30,9 @@ public:
     std::string getSubVar(const std::string &subVarName)
     {
         if (m_subVar.find(subVarName) == m_subVar.end())
+        {
             return "";
+        }
         return m_subVar.find(subVarName)->second;
     }
 

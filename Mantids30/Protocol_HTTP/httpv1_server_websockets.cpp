@@ -15,7 +15,7 @@ bool HTTP::HTTPv1_Server::isWebSocketConnectionRequest()
     const string connectionHeader = clientRequest.headers.getOptionValueStringByName("CONNECTION");
     const string upgradeHeader = clientRequest.headers.getOptionValueStringByName("UPGRADE");
 
-    return (boost::iequals(connectionHeader,"upgrade") && boost::iequals(upgradeHeader,"websocket"));
+    return (boost::iequals(connectionHeader, "upgrade") && boost::iequals(upgradeHeader, "websocket"));
 }
 
 bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
@@ -73,7 +73,9 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
             // Trim whitespace if any
             size_t start = selectedProtocol.find_first_not_of(" \t");
             if (start != string::npos)
+            {
                 selectedProtocol = selectedProtocol.substr(start);
+            }
             serverResponse.headers.add("Sec-WebSocket-Protocol", selectedProtocol);
         }
         else
@@ -94,7 +96,8 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
     bool isFinal = false;
     size_t bytesSent = 0;
 
-    do {
+    do
+    {
         size_t remaining = len - bytesSent;
         size_t frameSize = (remaining > MAX_FRAME_SIZE) ? MAX_FRAME_SIZE : remaining;
 
@@ -102,9 +105,7 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
         isFinal = (bytesSent + frameSize >= len);
 
         // Determine opcode: first frame is TEXT, continuation frames are CONTINUATION
-        WebSocket::FrameHeader::OpCode opcode = (bytesSent == 0)
-                                                    ? mode
-                                                    : WebSocket::FrameHeader::OPCODE_CONTINUATION;
+        WebSocket::FrameHeader::OpCode opcode = (bytesSent == 0) ? mode : WebSocket::FrameHeader::OPCODE_CONTINUATION;
 
         // Create and send frame header
         WebSocket::FrameHeader frmhdr;
@@ -125,17 +126,15 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
         }
 
         bytesSent += frameSize;
-
-    } while (bytesSent < len);
+    }
+    while (bytesSent < len);
 
     return true;
 }
 
-
-
 bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
 {
-    if ( webSocketCurrentFrame.content.isFirstFrame() )
+    if (webSocketCurrentFrame.content.isFirstFrame())
     {
         webSocketCurrentFrame.frameType = webSocketCurrentFrame.header.getOpCode();
         switch (webSocketCurrentFrame.frameType)
@@ -160,12 +159,12 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
     {
         // Set the data to be absorved by the content.
         bool isMasked = webSocketCurrentFrame.header.isMasked();
-        webSocketCurrentFrame.content.setMasked( isMasked );
-        if( isMasked )
+        webSocketCurrentFrame.content.setMasked(isMasked);
+        if (isMasked)
         {
-            webSocketCurrentFrame.content.setMaskingKey( webSocketCurrentFrame.header.getMaskingKey() );
+            webSocketCurrentFrame.content.setMaskingKey(webSocketCurrentFrame.header.getMaskingKey());
         }
-        webSocketCurrentFrame.content.setPayloadLength( payloadLength );
+        webSocketCurrentFrame.content.setPayloadLength(payloadLength);
 
         // Set the parser to introduce the data into the content.
         m_currentSubParser = &webSocketCurrentFrame.content;
@@ -212,18 +211,19 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
     {
         onWebSocketConnectionFinished();
         WebSocket::FrameHeader closeHeader;
-        closeHeader.initElemParser( m_streamableObject.get() , false );
+        closeHeader.initElemParser(m_streamableObject.get(), false);
         closeHeader.prepareCloseFrame(0);
         closeHeader.streamToUpstream();
         webSocketCurrentFrame.content.reset();
         webSocketCurrentFrame.header.reset();
         m_currentSubParser = nullptr;
         return true;
-    } break;
+    }
+    break;
     case WebSocket::FrameHeader::OPCODE_PING:
     {
         WebSocket::FrameHeader pongHeader;
-        pongHeader.initElemParser( m_streamableObject.get() , false );
+        pongHeader.initElemParser(m_streamableObject.get(), false);
         pongHeader.preparePongFrame(0);
         if (!pongHeader.streamToUpstream())
         {
@@ -234,12 +234,14 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
             return false;
         }
         onWebSocketPingReceived();
-    }break;
+    }
+    break;
     case WebSocket::FrameHeader::OPCODE_PONG:
     {
         webSocketCurrentFrame.lastPongReceived = time(nullptr);
         onWebSocketPongReceived();
-    } break;
+    }
+    break;
     }
     // 0 bytes = Next header...
     // Reset the content.
@@ -251,12 +253,12 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
 
 bool HTTP::HTTPv1_Server::sendWebSocketText(const char *data, const size_t &len)
 {
-    return sendWebSocketData(data,len,WebSocket::FrameHeader::OPCODE_TEXT);
+    return sendWebSocketData(data, len, WebSocket::FrameHeader::OPCODE_TEXT);
 }
 
 bool HTTP::HTTPv1_Server::sendWebSocketBinaryData(const char *data, const size_t &len)
 {
-    return sendWebSocketData(data,len,WebSocket::FrameHeader::OPCODE_BINARY);
+    return sendWebSocketData(data, len, WebSocket::FrameHeader::OPCODE_BINARY);
 }
 
 bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
@@ -267,7 +269,7 @@ bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
     }
 
     WebSocket::FrameHeader pingHeader;
-    pingHeader.initElemParser( m_streamableObject.get() , false );
+    pingHeader.initElemParser(m_streamableObject.get(), false);
     pingHeader.preparePingFrame(len);
     if (!pingHeader.streamToUpstream())
     {
@@ -283,5 +285,5 @@ bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
 
 bool HTTP::HTTPv1_Server::sendWebSocketText(const std::string &data)
 {
-    return sendWebSocketText(data.c_str(),data.size());
+    return sendWebSocketText(data.c_str(), data.size());
 }

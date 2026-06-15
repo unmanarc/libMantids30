@@ -125,23 +125,31 @@ std::optional<uint32_t> HTTP::Content::parseHttpChunkSize()
     const std::optional<uint32_t> parsed = getParsedBuffer()->toUInt32(16);
 
     if (!parsed)
+    {
         return std::nullopt;
+    }
 
     const uint32_t chunkSize = *parsed;
 
     // Max chunk size exceeded.
     if (chunkSize > m_securityMaxHttpChunkSize)
+    {
         return std::nullopt;
+    }
 
     // Already bad?
     if (m_currentContentLengthSize > m_securityMaxPostDataSize)
+    {
         return std::nullopt;
+    }
 
     // Remaining Available Size...
     const size_t remaining = m_securityMaxPostDataSize - m_currentContentLengthSize;
 
     if (chunkSize > remaining)
+    {
         return std::nullopt;
+    }
 
     m_currentContentLengthSize += chunkSize;
 
@@ -156,21 +164,27 @@ HTTP::Content::eTransmitionMode HTTP::Content::getTransmitionMode() const
 std::shared_ptr<HTTP::URLVars> HTTP::Content::getUrlPostVars()
 {
     if (m_containerType == CONTENT_TYPE_URL && m_usingInternalOutStream)
+    {
         return std::dynamic_pointer_cast<URLVars>(m_contentStreamableObject);
+    }
     throw std::runtime_error("Invalid operation: getUrlPostVars should not be called when the content type is not URL.");
 }
 
 std::shared_ptr<Memory::Streams::StreamableJSON> HTTP::Content::getJSONVars()
 {
     if (m_containerType == CONTENT_TYPE_JSON && m_usingInternalOutStream)
+    {
         return std::dynamic_pointer_cast<Memory::Streams::StreamableJSON>(m_contentStreamableObject);
+    }
     throw std::runtime_error("Invalid operation: getJSONVars should not be called when the content type is not JSON.");
 }
 
 std::shared_ptr<Protocols::MIME::MIME_Message> HTTP::Content::getMultiPartVars()
 {
     if (m_containerType == CONTENT_TYPE_MIME && m_usingInternalOutStream)
+    {
         return std::dynamic_pointer_cast<Protocols::MIME::MIME_Message>(m_contentStreamableObject);
+    }
     throw std::runtime_error("Invalid operation: getMultiPartVars should not be called when the content type is not MIME.");
 }
 
@@ -337,6 +351,8 @@ void HTTP::Content::setStreamableObj(std::shared_ptr<Memory::Streams::Streamable
 size_t HTTP::Content::getStreamSize()
 {
     if (!m_contentStreamableObject)
+    {
         return 0;
+    }
     return m_contentStreamableObject->size();
 }

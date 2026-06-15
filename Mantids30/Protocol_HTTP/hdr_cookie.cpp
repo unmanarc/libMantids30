@@ -12,23 +12,34 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocols::HTTP::Headers;
 using namespace Mantids30;
 
-
 std::string Cookie::toSetCookieString(const std::string &cookieName) const
 {
     std::string opts = cookieName + "=" + value + "; ";
 
     if (expires.has_value())
+    {
         opts += "Expires=" + expires->toString() + "; ";
+    }
     if (maxAge.has_value())
+    {
         opts += "Max-Age=" + std::to_string(*maxAge) + "; ";
+    }
     if (secure)
+    {
         opts += "Secure; ";
+    }
     if (httpOnly)
+    {
         opts += "HttpOnly; ";
+    }
     if (!domain.empty())
+    {
         opts += "Domain=" + domain + "; ";
+    }
     if (!path.empty())
+    {
         opts += "Path=" + path + "; ";
+    }
 
     switch (sameSitePolicy)
     {
@@ -75,23 +86,39 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
                 expires->fromString(var.second);
             }
             else if (varNameUpper == "MAX-AGE")
+            {
                 maxAge = strtoul(var.second.c_str(), nullptr, 10);
+            }
             else if (varNameUpper == "SECURE")
+            {
                 secure = true;
+            }
             else if (varNameUpper == "HTTPONLY")
+            {
                 httpOnly = true;
+            }
             else if (varNameUpper == "DOMAIN")
+            {
                 domain = var.second;
+            }
             else if (varNameUpper == "PATH")
+            {
                 path = var.second;
+            }
             else if (varNameUpper == "SAMESITE")
             {
                 if (boost::iequals(var.second, "LAX"))
+                {
                     sameSitePolicy = HTTP_COOKIE_SAMESITE_LAX;
+                }
                 else if (boost::iequals(var.second, "STRICT"))
+                {
                     sameSitePolicy = HTTP_COOKIE_SAMESITE_STRICT;
+                }
                 else
+                {
                     sameSitePolicy = HTTP_COOKIE_SAMESITE_NONE;
+                }
             }
             else
             {

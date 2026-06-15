@@ -1,8 +1,8 @@
 #include "hdr_sec_xssprotection.h"
 #include <vector>
 
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
 using namespace Mantids30::Network::Protocols;
@@ -11,9 +11,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-XSSProtection::XSSProtection()
-{
-}
+XSSProtection::XSSProtection() {}
 
 string XSSProtection::toString()
 {
@@ -25,9 +23,13 @@ string XSSProtection::toString()
     {
         string r = "1";
         if (enableBlockingMode)
-            r+= "; mode=block";
+        {
+            r += "; mode=block";
+        }
         if (!reportURL.empty())
-            r+= "; report=" + reportURL;
+        {
+            r += "; report=" + reportURL;
+        }
         return r;
     }
 }
@@ -35,9 +37,9 @@ string XSSProtection::toString()
 bool XSSProtection::fromString(const string &sValue)
 {
     vector<string> parts;
-    split(parts,sValue,is_any_of("; "),token_compress_on);
+    split(parts, sValue, is_any_of("; "), token_compress_on);
 
-    *this=XSSProtection();
+    *this = XSSProtection();
 
     if (parts.empty())
     {
@@ -45,20 +47,24 @@ bool XSSProtection::fromString(const string &sValue)
     }
     else if (parts.size() == 1)
     {
-        isActivated = parts[0]=="1";
+        isActivated = parts[0] == "1";
     }
     else if (parts.size() >= 2)
     {
-        isActivated = parts[0]=="1";
+        isActivated = parts[0] == "1";
         if (isActivated)
         {
             enableBlockingMode = false;
-            for ( size_t i=1; i<parts.size();i++ )
+            for (size_t i = 1; i < parts.size(); i++)
             {
-                if (iequals(parts[i],"mode=block"))
+                if (iequals(parts[i], "mode=block"))
+                {
                     enableBlockingMode = true;
-                else if (istarts_with(parts[i],"report="))
+                }
+                else if (istarts_with(parts[i], "report="))
+                {
                     reportURL = parts[i].substr(7);
+                }
             }
         }
     }

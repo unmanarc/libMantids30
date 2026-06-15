@@ -95,7 +95,6 @@ bool HTTP::HTTPv1_Server::parseBasicAuth(const string &authHeader)
     return true;
 }
 
-
 void HTTP::HTTPv1_Server::parseUserAgent()
 {
     if (clientRequest.headers.exist("User-Agent"))
@@ -136,24 +135,21 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
             clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_JSON);
         }
         else
+        {
             clientRequest.content.setContainerType(HTTP::Content::CONTENT_TYPE_BIN);
+        }
         /////////////////////////////////////////////////////////////////////////////////////
     }
     return true;
 }
 
-
-
 bool HTTP::HTTPv1_Server::validateHTTPv11Requirements()
 {
     // HTTP/1.1+ requires Host header
-    if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 &&
-        clientRequest.virtualHost.empty())
+    if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 && clientRequest.virtualHost.empty())
     {
         serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
         return false;
     }
     return true;
 }
-
-

@@ -14,15 +14,16 @@ namespace Mantids30::Network::Protocols::HTTP {
 class HTTPv1_Client : public HTTPv1_Base
 {
 public:
-    HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject>  sobject);
+    HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject> sobject);
     /**
      * @brief setClientRequest Set client request
      * @param hostName host name
      * @param uriPath requested Uniform Resource Indetifier Path
      */
-    void setClientRequest(const std::string & hostName, const std::string & uriPath);
+    void setClientRequest(const std::string &hostName, const std::string &uriPath);
 
-    struct PostMIMERequest {
+    struct PostMIMERequest
+    {
         std::shared_ptr<Protocols::MIME::MIME_Message> postVars;
         std::shared_ptr<HTTP::URLVars> urlVars;
     };
@@ -31,9 +32,10 @@ public:
      * @param hostName
      * @param uriPath
      */
-    PostMIMERequest prepareRequestAsPostMIME( const std::string & hostName, const std::string & uriPath );
+    PostMIMERequest prepareRequestAsPostMIME(const std::string &hostName, const std::string &uriPath);
 
-    struct PostURLRequest {
+    struct PostURLRequest
+    {
         std::shared_ptr<HTTP::URLVars> postVars;
         std::shared_ptr<HTTP::URLVars> urlVars;
     };
@@ -42,30 +44,30 @@ public:
      * @param hostName
      * @param uriPath
      */
-    PostURLRequest prepareRequestAsPostURL( const std::string & hostName, const std::string & uriPath );
+    PostURLRequest prepareRequestAsPostURL(const std::string &hostName, const std::string &uriPath);
     /**
      * @brief getResponseHeader Get Response Header from the server as string
      * @param headerName Header Name
      * @return string with the header value
      */
-    std::string getResponseHeader(const std::string & headerName);
+    std::string getResponseHeader(const std::string &headerName);
     /**
      * @brief setReferer Set Referer URL
      * @param refererURL referer URL
      */
-    void setReferer(const std::string & refererURL);
+    void setReferer(const std::string &refererURL);
     /**
      * @brief addURLVar Add URL GET Variable
      * @param varName Variable Name
      * @param varValue Variable Value
      */
-    void addURLVar(const std::string & varName, const std::string & varValue);
+    void addURLVar(const std::string &varName, const std::string &varValue);
     /**
      * @brief addCookieValue Add cookie.
      * @param cookieName Cookie Name
      * @param cookieVal Coookie Value
      */
-    void addCookie(const std::string & cookieName, const std::string & cookieVal);
+    void addCookie(const std::string &cookieName, const std::string &cookieVal);
     /**
      * @brief setAuthenticationBasic
      * @param user
@@ -81,7 +83,7 @@ public:
 protected:
     bool initProtocol() override;
 
-    void * getThis() override { return this; }
+    void *getThis() override { return this; }
     bool changeToNextParser() override;
 
     /**
@@ -100,6 +102,7 @@ protected:
      * @brief onFinished emit this signal when connection is ended.
      */
     virtual void onFinished() {}
+
 private:
     void parseHeaders2ServerCookies();
     Memory::Streams::SubParser *parseHeaders2TransmitionMode();
@@ -111,5 +114,4 @@ private:
     std::string m_serverContentType;
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

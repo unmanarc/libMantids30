@@ -12,8 +12,8 @@ using namespace Mantids30;
 MIME_Sub_Content::MIME_Sub_Content()
 {
 #ifdef _WIN32
-    char tempPath[MAX_PATH+1];
-    GetTempPathA(MAX_PATH,tempPath);
+    char tempPath[MAX_PATH + 1];
+    GetTempPathA(MAX_PATH, tempPath);
     setFsTmpFolder(tempPath);
 #else
     setFsTmpFolder("/tmp");
@@ -27,12 +27,13 @@ MIME_Sub_Content::MIME_Sub_Content()
     m_subParserName = "MIME_Sub_Content";
 }
 
-
 bool MIME_Sub_Content::streamToUpstream()
 {
     // TODO: interpret content encoding...
     if (!m_contentContainer->streamTo(m_upStream))
+    {
         return false;
+    }
 
     m_upStream->writeString("\r\n--" + m_boundary);
 
@@ -47,7 +48,7 @@ size_t MIME_Sub_Content::getMaxContentSize() const
 void MIME_Sub_Content::setMaxContentSize(const size_t &value)
 {
     m_maxContentSize = value;
-    setParseDataTargetSize(m_maxContentSize+m_boundary.size()+4);
+    setParseDataTargetSize(m_maxContentSize + m_boundary.size() + 4);
 }
 
 size_t MIME_Sub_Content::getMaxContentSizeUntilGoingToFS() const
@@ -78,12 +79,14 @@ Memory::Streams::SubParser::ParseStatus MIME_Sub_Content::parse()
     {
         // finished (delimiter found).
 #ifdef DEBUG
-        printf("%p MIME_Sub_Content: Delimiter %s received.\n", this, boundary.c_str());fflush(stdout);
+        printf("%p MIME_Sub_Content: Delimiter %s received.\n", this, boundary.c_str());
+        fflush(stdout);
 #endif
         return Memory::Streams::SubParser::PARSE_GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
-    printf("%p MIME_Sub_Content: requesting more data.\n", this);fflush(stdout);
+    printf("%p MIME_Sub_Content: requesting more data.\n", this);
+    fflush(stdout);
 #endif
     return Memory::Streams::SubParser::PARSE_GET_MORE_DATA;
 }
@@ -97,7 +100,7 @@ void MIME_Sub_Content::setBoundary(const std::string &value)
 {
     m_boundary = value;
     setParseDelimiter("\r\n--" + m_boundary);
-    setParseDataTargetSize(m_maxContentSize+m_boundary.size()+4);
+    setParseDataTargetSize(m_maxContentSize + m_boundary.size() + 4);
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentContainer() const
@@ -107,7 +110,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentC
 
 void MIME_Sub_Content::replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value)
 {
-//    if (contentContainer) 
-//  delete contentContainer;
+    //    if (contentContainer)
+    //  delete contentContainer;
     m_contentContainer = value;
 }

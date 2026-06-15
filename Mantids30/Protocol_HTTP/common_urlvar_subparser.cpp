@@ -11,22 +11,24 @@ using namespace Mantids30;
 HTTP::URLVarContent::URLVarContent()
 {
     setParseMode(Memory::Streams::SubParser::PARSE_MODE_MULTIDELIMITER);
-    setParseMultiDelimiter({"=","&"});
+    setParseMultiDelimiter({"=", "&"});
     setMaxObjectSize(4096);
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
     m_subParserName = "URLVarContent";
 }
 
-HTTP::URLVarContent::~URLVarContent()
-{
-}
+HTTP::URLVarContent::~URLVarContent() {}
 
 void HTTP::URLVarContent::setVarType(bool varName)
 {
     if (varName)
-        setParseMultiDelimiter({"=","&"}); // Parsing name...
+    {
+        setParseMultiDelimiter({"=", "&"}); // Parsing name...
+    }
     else
+    {
         setParseMultiDelimiter({"&"}); // Parsing value...
+    }
 }
 
 void HTTP::URLVarContent::setMaxObjectSize(const size_t &size)
@@ -45,7 +47,7 @@ std::string HTTP::URLVarContent::getContentAsStringAndFlush()
 {
     std::optional<std::string> r = m_pData->toString();
     m_pData = std::make_shared<Memory::Containers::B_Chunks>();
-    return r?*r:"";
+    return r ? *r : "";
 }
 
 Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
@@ -58,8 +60,8 @@ Memory::Streams::SubParser::ParseStatus HTTP::URLVarContent::parse()
 
     Memory::Streams::Decoders::URL urlDecoder;
     urlDecoder.transform(getParsedBuffer(), // Parsed Buffer.
-                         m_pData.get() // pData.
-                         );
+                         m_pData.get()      // pData.
+    );
 
     if (!m_pData->writeStatus.succeed)
     {

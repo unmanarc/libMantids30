@@ -39,7 +39,9 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
     // first boundary:
     out->writeString("--" + m_multiPartBoundary);
     if (!out->writeStatus.succeed)
+    {
         return false;
+    }
 
     for (std::shared_ptr<MIME_PartMessage> i : m_allParts)
     {
@@ -47,22 +49,30 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
 
         // CHECK
         if (!out->writeStatus.succeed)
+        {
             return false;
+        }
 
         i->getContent()->initElemParser(out, true);
 
         // CHECK
         if (!out->writeStatus.succeed)
+        {
             return false;
+        }
 
         i->getHeader()->initElemParser(out, true);
 
         // CHECK
         if (!out->writeStatus.succeed)
+        {
             return false;
+        }
 
         if (!i->streamToSubParsers())
+        {
             return false;
+        }
 
         // Reset init element parsers...
         i->getContent()->initElemParser(nullptr, true);
@@ -72,7 +82,9 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
 
         // CHECK
         if (!out->writeStatus.succeed)
+        {
             return false;
+        }
     }
 
     out->writeString("--\r\n");
@@ -90,26 +102,35 @@ void MIME_Message::clear()
 uint32_t MIME_Message::varCount(const std::string &varName)
 {
     uint32_t ix = 0;
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
+        boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
+    {
         ix++;
+    }
     return ix;
 }
 
 std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const std::string &varName)
 {
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
+        boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
+    {
         return (((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
+    }
     return nullptr;
 }
 
 std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getValues(const std::string &varName)
 {
     std::list<std::shared_ptr<Memory::Streams::StreamableObject>> values;
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
+        boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
+    {
         values.push_back(((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
+    }
     return values;
 }
 
@@ -117,7 +138,9 @@ std::set<std::string> MIME_Message::getKeysList()
 {
     std::set<std::string> r;
     for (const std::pair<std::string, std::shared_ptr<MIME_PartMessage>> &i : m_partsByName)
+    {
         r.insert(i.first);
+    }
     return r;
 }
 
@@ -225,7 +248,9 @@ bool MIME_Message::changeToNextParser()
             m_currentSubParser = m_currentPart->getHeader();
         }
         else
+        {
             m_currentSubParser = nullptr;
+        }
         return true;
     }
     break;
@@ -253,7 +278,9 @@ bool MIME_Message::changeToNextParser()
 
         // Check if the max parts target is reached.
         if (!r)
+        {
             m_currentSubParser = nullptr; // End here.
+        }
         else
         {
             // Goto boundary.
@@ -272,7 +299,9 @@ bool MIME_Message::changeToNextParser()
 bool MIME_Message::addMultiPartMessage(std::shared_ptr<MIME_PartMessage> part)
 {
     if (m_allParts.size() >= m_maxVarsCount)
+    {
         return false;
+    }
 
     m_allParts.push_back(part);
 
@@ -300,16 +329,21 @@ std::string MIME_Message::getMultiPartMessageName(std::shared_ptr<MIME_PartMessa
 std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesByName(const std::string &varName)
 {
     std::list<std::shared_ptr<MIME_PartMessage>> values;
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(boost::to_upper_copy(varName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
+        boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
+    {
         values.push_back(i->second);
+    }
     return values;
 }
 
 std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(const std::string &varName)
 {
     if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end())
+    {
         return nullptr;
+    }
     return m_partsByName.find(boost::to_upper_copy(varName))->second;
 }
 
@@ -385,7 +419,9 @@ void MIME_Message::setMultiPartBoundary(const std::string &value)
     m_subFirstBoundary.setBoundary(m_multiPartBoundary);
 
     if (m_currentPart)
+    {
         m_currentPart->getContent()->setBoundary(m_multiPartBoundary);
+    }
 }
 
 bool MIME_Message::initProtocol()

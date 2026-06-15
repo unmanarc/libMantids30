@@ -44,7 +44,7 @@ public:
     // Reset for new frame
     void reset();
 
-    bool streamToUpstream( ) override;
+    bool streamToUpstream() override;
 
 protected:
     virtual ParseStatus parse() override;

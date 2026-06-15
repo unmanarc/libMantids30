@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Mantids30/Memory/streamable_json.h>
 #include "common_urlvars.h"
+#include <Mantids30/Memory/streamable_json.h>
 
-#include <Mantids30/Memory/subparser.h>
 #include <Mantids30/Memory/b_base.h>
+#include <Mantids30/Memory/subparser.h>
 #include <Mantids30/Protocol_MIME/mime_message.h>
 #include <memory>
 
@@ -13,14 +13,16 @@ namespace Mantids30::Network::Protocols::HTTP {
 class Content : public Memory::Streams::SubParser
 {
 public:
-    enum eDataType {
+    enum eDataType
+    {
         CONTENT_TYPE_BIN,
         CONTENT_TYPE_MIME,
         CONTENT_TYPE_URL,
         CONTENT_TYPE_JSON
     };
 
-    enum eProcessingMode {
+    enum eProcessingMode
+    {
         PROCMODE_CHUNK_SIZE,
         PROCMODE_CHUNK_DATA,
         PROCMODE_CHUNK_CRLF,
@@ -29,7 +31,8 @@ public:
         PROCMODE_CONNECTION_CLOSE
     };
 
-    enum eTransmitionMode {
+    enum eTransmitionMode
+    {
         TRANSMIT_MODE_CHUNKS,
         TRANSMIT_MODE_CONTENT_LENGTH,
         TRANSMIT_MODE_CONNECTION_CLOSE
@@ -38,7 +41,6 @@ public:
     Content();
     ~Content() override = default;
 
-
     //////////////////////////////////////////////////////////////////
     //  ------------------ STREAMABLE OUTPUT ------------------
     //////////////////////////////////////////////////////////////////
@@ -46,7 +48,7 @@ public:
      * @brief stream Stream the output to upStream
      * @return true if written
      */
-    bool streamToUpstream( ) override;
+    bool streamToUpstream() override;
     /**
      * @brief isDefaultStreamableObj Get if the default streamable output is in use.
      * @return true if is it use, false if replaced by another one
@@ -93,7 +95,6 @@ public:
      */
     std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONVars();
 
-
     //////////////////////////////////////////////////////////////////
     // ------------------ TRANSMISSION AND CONTENT ------------------
     //////////////////////////////////////////////////////////////////
@@ -125,7 +126,6 @@ public:
      */
     eDataType getContainerType() const;
 
-
     //////////////////////////////////////////////////
     // Security:
     /**
@@ -151,10 +151,9 @@ private:
     eDataType m_containerType = CONTENT_TYPE_BIN;
 
     // Security Parameters (for parsing):
-    size_t m_securityMaxPostDataSize = 17*MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
+    size_t m_securityMaxPostDataSize = 17 * MB_MULT; // 17Mb intermediate buffer (suitable for 16mb max chunk...).
     size_t m_currentContentLengthSize = 0;
-    uint32_t m_securityMaxHttpChunkSize = 16*MB_MULT; // 16mb.
+    uint32_t m_securityMaxHttpChunkSize = 16 * MB_MULT; // 16mb.
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

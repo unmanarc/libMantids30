@@ -86,7 +86,7 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
         {
             m_filled = 0;
             unsigned char val;
-            val = Helpers::Encoders::hexPairToByte((char *)m_bytes + 1);
+            val = Helpers::Encoders::hexPairToByte((char *) m_bytes + 1);
 
             if (!dst->writeFullStream(&val, 1))
             {

@@ -49,15 +49,25 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
 {
     // Server mode progresses through request line → headers → body.
     if (m_currentSubParser == &clientRequest.requestLine)
+    {
         return changeToNextParserFromClientRequestLine();
+    }
     else if (m_currentSubParser == &clientRequest.headers)
+    {
         return changeToNextParserFromClientHeaders();
+    }
     else if (m_currentSubParser == &webSocketCurrentFrame.header)
+    {
         return changeToNextParserFromWebSocketFrameHeader();
+    }
     else if (m_currentSubParser == &webSocketCurrentFrame.content)
+    {
         return changeToNextParserFromWebSocketFrameContent();
+    }
     else
+    {
         return changeToNextParserFromClientContentData();
+    }
 }
 
 void HTTP::HTTPv1_Server::reset()
@@ -195,9 +205,13 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
     else
     {
         if (!onHTTPClientURIReceived())
+        {
             m_currentSubParser = nullptr;
+        }
         else
+        {
             m_currentSubParser = &clientRequest.headers;
+        }
     }
     return true;
 }

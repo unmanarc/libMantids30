@@ -2,8 +2,8 @@
 
 #include <Mantids30/Memory/parser.h>
 #include <Mantids30/Memory/vars.h>
-#include <memory>
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "common_urlvar_subparser.h"
@@ -65,10 +65,7 @@ public:
     /**
      * @brief clear all vars.
      */
-    void clear() override
-    {
-        m_vars.clear();
-    }
+    void clear() override { m_vars.clear(); }
 
     size_t size() override;
 

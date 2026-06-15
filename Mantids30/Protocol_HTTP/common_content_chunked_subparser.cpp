@@ -5,8 +5,7 @@
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30;
 
-HTTP::ContentChunkedTransformer::ContentChunkedTransformer(
-    StreamableObject *upStreamOut)
+HTTP::ContentChunkedTransformer::ContentChunkedTransformer(StreamableObject *upStreamOut)
 {
     this->upStreamOut = upStreamOut;
 }
@@ -21,36 +20,36 @@ std::optional<size_t> HTTP::ContentChunkedTransformer::write(const void *buf, co
     if (count == 0)
     {
         // Set finished status (EOF)
-        if (!upStreamOut->writeString(m_pos == 0? "0\r\n\r\n" : "\r\n0\r\n\r\n"))
+        if (!upStreamOut->writeString(m_pos == 0 ? "0\r\n\r\n" : "\r\n0\r\n\r\n"))
         {
-            writeStatus+=-1;
+            writeStatus += -1;
             return std::nullopt;
         }
         return 0;
     }
 
-    if (count+64<count)
+    if (count + 64 < count)
     {
         // Error writting on this (source error...).
-        writeStatus+=-1;
-        upStreamOut->writeStatus+=-1;
+        writeStatus += -1;
+        upStreamOut->writeStatus += -1;
         return std::nullopt;
     }
 
-    upStreamOut->strPrintf(m_pos == 0?"%X\r\n":"\r\n%X\r\n", (unsigned int)count);
+    upStreamOut->strPrintf(m_pos == 0 ? "%X\r\n" : "\r\n%X\r\n", (unsigned int) count);
     if (!upStreamOut->writeStatus.succeed)
     {
-        writeStatus+=-1;
+        writeStatus += -1;
         return std::nullopt;
     }
 
-    if (!upStreamOut->writeFullStream(buf,count))
+    if (!upStreamOut->writeFullStream(buf, count))
     {
         return std::nullopt;
     }
     else
     {
-        m_pos+=count;
+        m_pos += count;
     }
 
     return count;

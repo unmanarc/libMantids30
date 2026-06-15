@@ -1,10 +1,9 @@
 #include "hdr_sec_hsts.h"
 #include <vector>
 
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <stdlib.h>
-
 
 using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
 using namespace Mantids30::Network::Protocols;
@@ -20,18 +19,18 @@ HSTS::HSTS()
 
 HSTS::HSTS(uint32_t maxAge, bool includeSubDomains, bool preload)
 {
-    this->isActivated=true;
-    this->isPreloadEnabled=preload;
-    this->isSubdomainIncluded=includeSubDomains;
-    this->m_maxAge=maxAge;
+    this->isActivated = true;
+    this->isPreloadEnabled = preload;
+    this->isSubdomainIncluded = includeSubDomains;
+    this->m_maxAge = maxAge;
 }
 
 void HSTS::setDefaults()
 {
-    isActivated=false;
-    isPreloadEnabled=false;
-    isSubdomainIncluded=false;
-    m_maxAge=0;
+    isActivated = false;
+    isPreloadEnabled = false;
+    isSubdomainIncluded = false;
+    m_maxAge = 0;
 }
 
 std::string HSTS::toString()
@@ -41,14 +40,22 @@ std::string HSTS::toString()
         string r = "";
 
         if (m_maxAge)
-            r+= "; max-age=" + std::to_string(m_maxAge);
+        {
+            r += "; max-age=" + std::to_string(m_maxAge);
+        }
         if (isSubdomainIncluded)
-            r+= "; includeSubDomains";
+        {
+            r += "; includeSubDomains";
+        }
         if (isPreloadEnabled)
-            r+= "; preload";
+        {
+            r += "; preload";
+        }
 
-        if (r.size()>2)
+        if (r.size() > 2)
+        {
             return r.substr(2);
+        }
     }
     return "";
 }
@@ -56,23 +63,31 @@ std::string HSTS::toString()
 bool HSTS::fromString(const std::string &sValue)
 {
     vector<string> parts;
-    split(parts,sValue,is_any_of("; "),token_compress_on);
+    split(parts, sValue, is_any_of("; "), token_compress_on);
 
     setDefaults();
 
     if (sValue.empty())
+    {
         isActivated = false;
+    }
     else
     {
         isActivated = true;
-        for ( size_t i=0; i<parts.size();i++ )
+        for (size_t i = 0; i < parts.size(); i++)
         {
-            if (iequals(parts[i],"preload"))
+            if (iequals(parts[i], "preload"))
+            {
                 isPreloadEnabled = true;
-            else if (iequals(parts[i],"includeSubDomains"))
+            }
+            else if (iequals(parts[i], "includeSubDomains"))
+            {
                 isSubdomainIncluded = true;
-            else if (istarts_with(parts[i],"max-age="))
-                m_maxAge = strtoul(parts[i].substr(0).c_str(),nullptr,10);
+            }
+            else if (istarts_with(parts[i], "max-age="))
+            {
+                m_maxAge = strtoul(parts[i].substr(0).c_str(), nullptr, 10);
+            }
         }
     }
     return true;

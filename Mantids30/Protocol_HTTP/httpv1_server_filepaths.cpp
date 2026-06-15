@@ -8,20 +8,19 @@
 using namespace boost;
 using namespace boost::algorithm;
 
-
 using namespace Mantids30::Network::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
 using namespace std;
 
-
-
 bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, LocalRequestedFileInfo *info,
-                                                   const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
+                                                       const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
 {
     if (!info)
+    {
         throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
+    }
 
     info->reset();
 
@@ -57,9 +56,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     {
         bool detectPathTraversal()
         {
-            if (fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                    // outside dir?
+            if (fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                       // outside dir?
                 || memcmp(serverWebRootWithEndingSlash.c_str(), fileSystemRealPath.c_str(), serverWebRootWithEndingSlash.size()) != 0 // not matching?
-                )
+            )
             {
                 return true;
             }
@@ -72,14 +71,14 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
             return urlPathPrefix + fileSystemRealPath.substr(serverWebRootWithEndingSlash.size());
         }
 
-        std::string fileSystemRealPath; // Eg. /var/assets/style.css or /var/assets/js/ for dir
+        std::string fileSystemRealPath;           // Eg. /var/assets/style.css or /var/assets/js/ for dir
         std::string serverWebRootWithEndingSlash; // Eg. /var/assets/
-        std::string urlPathPrefix; // Eg. /assets/, /
+        std::string urlPathPrefix;                // Eg. /assets/, /
         struct stat fileStats;
     };
 
     std::vector<RequestedOverlapInfo> detectedPotentialOverlaps;
-    std::string requestURIWithoutLeadingSlash = (requestedURI.size()<=1) ? "/" : requestedURI.substr(1);
+    std::string requestURIWithoutLeadingSlash = (requestedURI.size() <= 1) ? "/" : requestedURI.substr(1);
     std::string requestURIWithDefaultFile = requestURIWithoutLeadingSlash + defaultFileToAppend;
     detectedPotentialOverlaps.push_back({defaultWebRootWithEndingSlash + requestURIWithDefaultFile, defaultWebRootWithEndingSlash, "/"}); // Add the original path
 
@@ -88,7 +87,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     {
         // All the overlapped dirs should end with /
         if (overlappedDirectory.first.empty() || overlappedDirectory.second.empty())
+        {
             continue;
+        }
 
         if (boost::starts_with(requestedURI, overlappedDirectory.first))
         {
@@ -99,13 +100,13 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
             }
 
             // Compute the full path with overlapped directory
-            RequestedOverlapInfo oInfo = {overlappedWebRootWithEndingSlash + requestURIWithDefaultFile.substr(overlappedDirectory.first.size() - 1), overlappedWebRootWithEndingSlash, overlappedDirectory.first};
+            RequestedOverlapInfo oInfo = {overlappedWebRootWithEndingSlash + requestURIWithDefaultFile.substr(overlappedDirectory.first.size() - 1), overlappedWebRootWithEndingSlash,
+                                          overlappedDirectory.first};
             detectedPotentialOverlaps.push_back(oInfo);
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
     // Compute the full requested path:
     RequestedOverlapInfo selectedOverlap;
@@ -147,7 +148,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 
                     // Put a slash at the end of the computed dir resource (when dir)...
                     if ((info->isDirectory = S_ISDIR(selectedOverlap.fileStats.st_mode)) == true)
+                    {
                         selectedOverlap.fileSystemRealPath += (selectedOverlap.fileSystemRealPath.back() == SLASHB ? "" : std::string(SLASH));
+                    }
 
                     // Path OK, continue.
 
@@ -164,7 +167,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
             }
 
             if (!pathFound)
+            {
                 return false;
+            }
         }
     }
 
@@ -178,7 +183,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 
         // Don't get directories when we are appending something.
         if (!defaultFileToAppend.empty())
+        {
             return false;
+        }
 
         info->fullPath = selectedOverlap.fileSystemRealPath;
         info->relativePath = selectedOverlap.getRelativePath();
@@ -196,7 +203,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 #else
             (boost::iends_with(requestedPathInfo.fsPath, ".exe") || boost::iends_with(requestedPathInfo.fsPath, ".bat") || boost::iends_with(requestedPathInfo.fsPath, ".com"))
 #endif
-            )
+        )
         {
             // file is executable... don't map, and the most important: don't create cache in the browser...
             // Very useful for CGI-like implementations...
@@ -224,7 +231,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
                 fileModificationDate.setUnixTime(selectedOverlap.fileStats.st_mtim.tv_sec);
 #endif
                 if (serverResponse.includeDate)
+                {
                     serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
+                }
 
                 serverResponse.cacheControl.optionNoCache = false;
                 serverResponse.cacheControl.optionNoStore = false;
@@ -246,7 +255,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
+    {
         throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
+    }
 
     info->reset();
 
@@ -254,7 +265,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
         char *cServerDir;
         // Check Server Dir Real Path:
         if ((cServerDir = realpath((sServerDir).c_str(), nullptr)) == nullptr)
+        {
             return false;
+        }
 
         sServerDir = cServerDir;
 
@@ -309,7 +322,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
 bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
+    {
         throw std::runtime_error(std::string(__func__) + std::string(" Should be called with info object... Aborting..."));
+    }
 
     info->reset();
 
@@ -317,7 +332,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, 
         char *cServerDir;
         // Check Server Dir Real Path:
         if ((cServerDir = realpath((sServerDir).c_str(), nullptr)) == nullptr)
+        {
             return false;
+        }
 
         sServerDir = cServerDir;
 
@@ -346,10 +363,14 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, 
             stat(sFullComputedRealPath.c_str(), &stats);
             // Put a slash at the end of the computed dir resource (when dir)...
             if ((info->isDirectory = S_ISDIR(stats.st_mode)) == true)
+            {
                 sFullComputedRealPath += (sFullComputedRealPath.back() == SLASHB ? "" : std::string(SLASH));
+            }
         }
-        else // Non-Existant File.
+        else
+        { // Non-Existant File.
             return false;
+        }
     }
 
     // Check for transversal access hacking attempts...
@@ -365,4 +386,3 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, 
 
     return true;
 }
-

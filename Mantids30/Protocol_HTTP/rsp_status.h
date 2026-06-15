@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Mantids30/Memory/subparser.h>
 #include "common_version.h"
+#include <Mantids30/Memory/subparser.h>
 #include <map>
 
 namespace Mantids30::Network::Protocols::HTTP {
@@ -9,7 +9,8 @@ namespace Mantids30::Network::Protocols::HTTP {
 class Status : public Memory::Streams::SubParser
 {
 public:
-    enum Codes {
+    enum Codes
+    {
         S_100_CONTINUE = 100,
         S_101_SWITCHING_PROTOCOLS = 101,
         S_200_OK = 200,
@@ -64,7 +65,7 @@ public:
      * @brief getHTTPVersion - Get HTTP Version Object
      * @return Version Object
      */
-    HTTP::Version * getHTTPVersion();
+    HTTP::Version *getHTTPVersion();
     /**
      * @brief getResponsStatusCodes - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
@@ -92,7 +93,8 @@ public:
      */
     static std::string getStringTranslation(unsigned short code);
 
-    bool streamToUpstream( ) override;
+    bool streamToUpstream() override;
+
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
@@ -102,8 +104,5 @@ private:
     std::string m_statusMessage;
 
     static std::map<unsigned short, std::string> m_responseStatusCodesTable;
-
-
 };
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP

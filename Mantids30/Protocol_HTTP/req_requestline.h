@@ -1,14 +1,13 @@
 #pragma once
 
-#include <Mantids30/Memory/subparser.h>
 #include <Mantids30/Memory/b_base.h>
+#include <Mantids30/Memory/subparser.h>
 
-#include <string>
-#include "common_version.h"
 #include "common_urlvars.h"
+#include "common_version.h"
+#include <string>
 
 namespace Mantids30::Network::Protocols::HTTP::Request {
-
 
 class RequestLine : public Memory::Streams::SubParser
 {
@@ -29,7 +28,7 @@ public:
      * @brief getHttpVersion Get HTTP Version requested.
      * @return version object requested.
      */
-    HTTP::Version * getHTTPVersion();
+    HTTP::Version *getHTTPVersion();
     /**
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
@@ -58,7 +57,7 @@ public:
     json toJSON() const;
 
     std::string toString() const;
-    
+
 protected:
     Memory::Streams::SubParser::ParseStatus parse() override;
 
@@ -84,5 +83,4 @@ private:
     std::shared_ptr<HTTP::URLVars> m_getVars;
 };
 
-}
-
+} // namespace Mantids30::Network::Protocols::HTTP::Request

@@ -2,12 +2,12 @@
 
 #include "httpv1_base.h"
 
-#include "websocket_frameheader.h"
 #include "websocket_framecontent.h"
+#include "websocket_frameheader.h"
 
+#include <atomic>
 #include <json/value.h>
 #include <memory>
-#include <atomic>
 #include <string>
 
 #ifdef _WIN32
@@ -100,15 +100,13 @@ public:
      */
     static std::string htmlEncode(const std::string &rawStr);
 
-    bool sendWebSocketText( const std::string & data );
-    bool sendWebSocketText( const char * data, const size_t & len );
-    bool sendWebSocketBinaryData( const char * data, const size_t & len );
-    bool sendWebSocketPing(const char * data, size_t len );
-
-
+    bool sendWebSocketText(const std::string &data);
+    bool sendWebSocketText(const char *data, const size_t &len);
+    bool sendWebSocketBinaryData(const char *data, const size_t &len);
+    bool sendWebSocketPing(const char *data, size_t len);
 
 protected:
-    virtual void log( Json::Value & jWebLog ) {}
+    virtual void log(Json::Value &jWebLog) {}
 
     /**
      * @brief verifyStaticContentExistence Check if the path exist in the static content
@@ -230,8 +228,8 @@ protected:
      */
     virtual void onWebSocketConnectionFinished() {}
 
-
-    struct WebSocketFrame {
+    struct WebSocketFrame
+    {
         WebSocket::FrameHeader::OpCode frameType = WebSocket::FrameHeader::OPCODE_CONTINUATION;
         WebSocket::FrameHeader header;
         WebSocket::FrameContent content;
@@ -245,10 +243,7 @@ protected:
     /*
      * * *********************************************************** *
      */
-    void setConnectionContinue(bool newConnectionContinue)
-    {
-        connectionContinue = newConnectionContinue;
-    }
+    void setConnectionContinue(bool newConnectionContinue) { connectionContinue = newConnectionContinue; }
 
 private:
     bool changeToNextParserFromClientHeaders();
@@ -266,7 +261,7 @@ private:
     // WebSocket:
     bool isWebSocketConnectionRequest();
     bool setupAndSendWebSocketHeaderResponse();
-    bool sendWebSocketData( const char * data, const size_t & len, WebSocket::FrameHeader::OpCode mode );
+    bool sendWebSocketData(const char *data, const size_t &len, WebSocket::FrameHeader::OpCode mode);
 
     // Headers:
     void parseAllClientHeaders();
@@ -278,7 +273,7 @@ private:
     void parseUserAgent();
     bool setupContentHandling(size_t &contentLength);
 
-    void fillLogInformation(Json::Value & logValues);
+    void fillLogInformation(Json::Value &logValues);
 
     /////
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
@@ -287,7 +282,7 @@ private:
     std::map<std::string, std::string> m_mimeTypes;
     void loadDefaultMIMETypes();
 
-    bool connectionContinue = true , prohibitConnectionUpgrade = false;
+    bool connectionContinue = true, prohibitConnectionUpgrade = false;
 };
 
 } // namespace Mantids30::Network::Protocols::HTTP

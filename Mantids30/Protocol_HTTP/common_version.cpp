@@ -1,10 +1,10 @@
 #include "common_version.h"
-#include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #include <inttypes.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 using namespace std;
 using namespace boost;
@@ -13,14 +13,12 @@ using namespace Mantids30::Network::Protocols;
 
 using namespace Mantids30;
 
-
-
 void HTTP::Version::parse(const std::string &version)
 {
     vector<string> versionParts;
-    split(versionParts,version,is_any_of("/"),token_compress_on);
+    split(versionParts, version, is_any_of("/"), token_compress_on);
 
-    if (versionParts.size()!=2)
+    if (versionParts.size() != 2)
     {
         m_minorVersion = 0;
         m_majorVersion = 1;
@@ -28,17 +26,17 @@ void HTTP::Version::parse(const std::string &version)
     else
     {
         vector<string> versionMinorMajor;
-        split(versionMinorMajor,versionParts[1],is_any_of("."),token_compress_on);
+        split(versionMinorMajor, versionParts[1], is_any_of("."), token_compress_on);
 
-        if (versionMinorMajor.size()!=2)
+        if (versionMinorMajor.size() != 2)
         {
             m_majorVersion = 1;
             m_minorVersion = 0;
         }
         else
         {
-            m_majorVersion = strtoul(versionMinorMajor[0].c_str(),nullptr,10);
-            m_minorVersion = strtoul(versionMinorMajor[1].c_str(),nullptr,10);
+            m_majorVersion = strtoul(versionMinorMajor[0].c_str(), nullptr, 10);
+            m_minorVersion = strtoul(versionMinorMajor[1].c_str(), nullptr, 10);
         }
     }
 }
@@ -46,7 +44,7 @@ void HTTP::Version::parse(const std::string &version)
 string HTTP::Version::toString() const
 {
     char cHTTPVersion[128];
-    snprintf(cHTTPVersion,sizeof(cHTTPVersion),"HTTP/%" PRIu16 ".%" PRIu16, m_majorVersion, m_minorVersion);
+    snprintf(cHTTPVersion, sizeof(cHTTPVersion), "HTTP/%" PRIu16 ".%" PRIu16, m_majorVersion, m_minorVersion);
     std::string sHTTPVersion = cHTTPVersion;
     return sHTTPVersion;
 }
@@ -63,7 +61,10 @@ void HTTP::Version::setMinor(const uint16_t &value)
 
 void HTTP::Version::upgradeMinor(const uint16_t &value)
 {
-    if (value > m_minorVersion) m_minorVersion = value;
+    if (value > m_minorVersion)
+    {
+        m_minorVersion = value;
+    }
 }
 
 uint16_t HTTP::Version::getMajor() const
@@ -75,4 +76,3 @@ void HTTP::Version::setMajor(const uint16_t &value)
 {
     m_majorVersion = value;
 }
-

@@ -37,14 +37,11 @@ public:
      * @param sValue The X-XSS-Protection header string to parse.
      * @return true if the parsing was successful, false otherwise.
      */
-    bool fromString(const std::string & sValue);
+    bool fromString(const std::string &sValue);
 
-    bool isActivated = true; ///< Whether the X-XSS-Protection header is activated.
+    bool isActivated = true;        ///< Whether the X-XSS-Protection header is activated.
     bool enableBlockingMode = true; ///< Whether blocking is enabled for the X-XSS-Protection header.
-    std::string reportURL; ///< The URL to report violations to for the X-XSS-Protection header.
+    std::string reportURL;          ///< The URL to report violations to for the X-XSS-Protection header.
 };
 
-}
-
-
-
+} // namespace Mantids30::Network::Protocols::HTTP::Headers::Security

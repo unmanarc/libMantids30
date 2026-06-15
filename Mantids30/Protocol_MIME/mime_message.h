@@ -112,7 +112,9 @@ public:
         void call(const std::string &partName, std::shared_ptr<MIME_PartMessage> partMessage)
         {
             if (callbackFunction != nullptr)
+            {
                 callbackFunction(context, partName, partMessage);
+            }
         }
 
         void (*callbackFunction)(void *context, const std::string &partName, std::shared_ptr<MIME_PartMessage> partMessage);
