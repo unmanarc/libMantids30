@@ -1,0 +1,7 @@
+---
+Checks: '-*,readability-braces-around-statements'
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+CheckOptions:
+  - {key: readability-braces-around-statements.ShortCaseStatementBraces.Value, value: 'Never'}
+  - {key: readability-braces-around-statements.AllowBracesInEmptyBlocks, value: true}
