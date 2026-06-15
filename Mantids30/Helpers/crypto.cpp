@@ -28,7 +28,9 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
     int err;
 
     if (!ctx)
+    {
         return out;
+    }
 
     // Derive the key...
     if (PKCS5_PBKDF2_HMAC(key, safeStaticCast<uint32_t, size_t>(keyLen), salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
@@ -66,7 +68,9 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
     EVP_CIPHER_CTX_free(ctx);
 
     if (!ok)
+    {
         return std::nullopt;
+    }
 
     return out;
 }
@@ -88,7 +92,9 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
     std::shared_ptr<Mem::BinaryDataContainer> r = std::make_shared<Mem::BinaryDataContainer>(input.length());
 
     if (!r->data)
+    {
         return r;
+    }
 
     std::shared_ptr<Mem::BinaryDataContainer> dec = Helpers::Encoders::decodeFromBase64ToBin(input);
 
@@ -104,7 +110,9 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
         int err;
 
         if (!ctx)
+        {
             return r;
+        }
 
         // Derive the key...
         if (PKCS5_PBKDF2_HMAC(key, safeStaticCast<uint32_t, size_t>(keyLen), salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
@@ -142,7 +150,9 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
     }
 
     if (ok)
+    {
         return r;
+    }
     return nullptr;
 }
 

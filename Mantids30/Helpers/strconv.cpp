@@ -86,5 +86,4 @@ size_t Mantids30::Helpers::StringConversions::getSizeFromString(const std::strin
         throw std::overflow_error("Object size too large");
         return 0;
     }
-
 }

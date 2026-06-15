@@ -61,7 +61,9 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
         cont3[2] = ((cont4[2] & 0x3) << 6) + cont4[3];
 
         for (y = 0; (y < x - 1); y++)
+        {
             decodedString += cont3[y] ^ dis(gen);
+        }
     }
 
     return decodedString;
@@ -75,10 +77,14 @@ string Encoders::encodeToBase64Obf(const unsigned char *buf, size_t count, const
 
     unsigned char *obfBuf = static_cast<unsigned char *>(malloc(count));
     if (!obfBuf)
+    {
         return "";
+    }
 
     for (size_t i = 0; i < count; i++)
+    {
         obfBuf[i] = buf[i] ^ dis(gen);
+    }
 
     r = encodeToBase64(obfBuf, count);
     free(obfBuf);
@@ -339,7 +345,9 @@ string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url
 string Encoders::toURL(const string &str, const URL_ENCODING_TYPE &urlEncodingType)
 {
     if (!str.size())
+    {
         return "";
+    }
 
     size_t x = 0;
     string out;
@@ -365,7 +373,9 @@ string Encoders::fromURL(const string &urlEncodedStr)
 {
     std::string r;
     if (!urlEncodedStr.size())
+    {
         return "";
+    }
 
     for (size_t i = 0; i < urlEncodedStr.size(); i++)
     {
@@ -425,7 +435,9 @@ void Encoders::replaceHexCodes(std::string &content)
 void Encoders::fromHex(const string &hexValue, unsigned char *data, size_t maxlen)
 {
     if ((hexValue.size() / 2) < maxlen)
+    {
         maxlen = (hexValue.size() / 2);
+    }
     for (size_t i = 0; i < (maxlen * 2); i += 2)
     {
         data[i / 2] = hexToValue(hexValue.at(i)) * 0x10 + hexToValue(hexValue.at(i + 1));
@@ -462,11 +474,17 @@ char Encoders::toHexFrom4bitChar(char nibble, const char &position)
 char Encoders::hexToValue(const char &v)
 {
     if (v >= '0' && v <= '9')
+    {
         return v - '0';
+    }
     if (v >= 'A' && v <= 'F')
+    {
         return v - 'A' + 10;
+    }
     if (v >= 'a' && v <= 'f')
+    {
         return v - 'a' + 10;
+    }
     return 0;
 }
 
@@ -474,7 +492,9 @@ unsigned char Encoders::hexPairToByte(const char *bytes)
 {
     // Invalid HEX Code:
     if (!isxdigit(bytes[0]) || !isxdigit(bytes[1]))
+    {
         return 0;
+    }
 
     // Valid HEX Code:
     char hexStr[3] = {static_cast<char>(bytes[0]), static_cast<char>(bytes[1]), '\0'};
@@ -487,15 +507,21 @@ bool Encoders::getIfMustBeURLEncoded(char c, const URL_ENCODING_TYPE &urlEncodin
     {
         // All printable chars but "
         if (c == '\"')
+        {
             return true;
+        }
         if (c >= 32 && c <= 126)
+        {
             return false;
+        }
     }
     else
     {
         // be strict: Only very safe chars...
         if (isalnum(c))
+        {
             return false;
+        }
     }
 
     return true;
@@ -507,9 +533,13 @@ size_t Encoders::calcURLEncodingExpandedStringSize(const string &str, const URL_
     for (size_t i = 0; i < str.size(); i++)
     {
         if (getIfMustBeURLEncoded(str.at(i), urlEncodingType))
+        {
             x += 3;
+        }
         else
+        {
             x += 1;
+        }
     }
     return x;
 }

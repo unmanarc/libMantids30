@@ -3,15 +3,15 @@
 #include <vector>
 
 #ifdef _WIN32
-#include <windows.h>
-#include <sysinfoapi.h>
 #include <set>
+#include <sysinfoapi.h>
+#include <windows.h>
 #else
 #include <algorithm>
-#include <fstream>
+#include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string.hpp>
+#include <fstream>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -20,27 +20,25 @@ using namespace boost::algorithm;
 
 using namespace Mantids30::Helpers;
 
-
-
 LocalSysInfo OS::getLocalSystemInfo()
 {
     LocalSysInfo x;
 
 #ifndef _WIN32
-    char hostname[ 1024+1 ];
-    gethostname(hostname,1024);
+    char hostname[1024 + 1];
+    gethostname(hostname, 1024);
     x.hostname = hostname;
 #else
-    char buffer[1024+1];
-    ZeroMemory(buffer,1025);
+    char buffer[1024 + 1];
+    ZeroMemory(buffer, 1025);
     DWORD dwSize = _countof(buffer);
-    GetComputerNameExA((COMPUTER_NAME_FORMAT)1, buffer, &dwSize);
+    GetComputerNameExA((COMPUTER_NAME_FORMAT) 1, buffer, &dwSize);
     x.hostname = buffer;
 #endif
 
 #ifndef _WIN32
-    std::string name = "Linux",version;
-    std::ifstream infile( "/etc/os-release" );
+    std::string name = "Linux", version;
+    std::ifstream infile("/etc/os-release");
 
     if (infile.is_open())
     {
@@ -49,20 +47,20 @@ LocalSysInfo OS::getLocalSystemInfo()
         {
             lineInFile.erase(std::remove(lineInFile.begin(), lineInFile.end(), '\n'), lineInFile.end());
 
-            if (boost::starts_with(lineInFile,"NAME="))
+            if (boost::starts_with(lineInFile, "NAME="))
             {
                 name = lineInFile.substr(5);
-                if ( name.size()>2 &&  name.at(0) == '"')
+                if (name.size() > 2 && name.at(0) == '"')
                 {
                     name.erase(0, 1);
                     name.erase(name.size() - 1);
                 }
             }
 
-            if (boost::starts_with(lineInFile,"VERSION="))
+            if (boost::starts_with(lineInFile, "VERSION="))
             {
                 version = lineInFile.substr(8);
-                if (version.size()>2 && version.at(0) == '"')
+                if (version.size() > 2 && version.at(0) == '"')
                 {
                     version.erase(0, 1);
                     version.erase(version.size() - 1);
@@ -83,24 +81,28 @@ LocalSysInfo OS::getLocalSystemInfo()
         if (std::getline(infile, lineInFile, '\n'))
         {
             std::vector<std::string> versionParts;
-            split(versionParts,lineInFile,is_any_of(" "),token_compress_on);
-            if (versionParts.size()>=3)
+            split(versionParts, lineInFile, is_any_of(" "), token_compress_on);
+            if (versionParts.size() >= 3)
             {
-                char * kernelFullVersion = strdup(versionParts.at(2).c_str());
+                char *kernelFullVersion = strdup(versionParts.at(2).c_str());
 
-                char * pos1=nullptr,*pos2=nullptr;
-                if ((pos1=strrchr(kernelFullVersion,'.')) || (pos2=strrchr(kernelFullVersion,'-')))
+                char *pos1 = nullptr, *pos2 = nullptr;
+                if ((pos1 = strrchr(kernelFullVersion, '.')) || (pos2 = strrchr(kernelFullVersion, '-')))
                 {
-                    char * arch = (pos1>pos2?pos1:pos2);
-                    arch[0]=0;
+                    char *arch = (pos1 > pos2 ? pos1 : pos2);
+                    arch[0] = 0;
                     arch++;
 
                     x.processorArchitectureName = boost::to_upper_copy(std::string(arch));
 
-                    if ( icontains(x.processorArchitectureName, "64") )
+                    if (icontains(x.processorArchitectureName, "64"))
+                    {
                         x.processorArchitectureBits = 64;
+                    }
                     else
+                    {
                         x.processorArchitectureBits = 32;
+                    }
 
                     x.operatingSystemVersion += " (Kernel " + std::string(kernelFullVersion) + ")";
                 }
@@ -111,15 +113,17 @@ LocalSysInfo OS::getLocalSystemInfo()
     }
 
     // Get Processor Count:
-    uint16_t threadCount=0;
+    uint16_t threadCount = 0;
     infile.open("/proc/cpuinfo");
     if (infile.is_open())
     {
         std::string lineInFile;
         while (std::getline(infile, lineInFile, '\n'))
         {
-            if (starts_with(lineInFile,"processor\x09:"))
+            if (starts_with(lineInFile, "processor\x09:"))
+            {
                 threadCount++;
+            }
         }
         infile.close();
     }
@@ -127,22 +131,22 @@ LocalSysInfo OS::getLocalSystemInfo()
     x.threadCount = threadCount;
 
     // Get MemTotal:
-    size_t memTotal=0;
+    size_t memTotal = 0;
     infile.open("/proc/meminfo");
     if (infile.is_open())
     {
         std::string lineInFile;
         while (std::getline(infile, lineInFile, '\n'))
         {
-            if (starts_with(lineInFile,"MemTotal:"))
+            if (starts_with(lineInFile, "MemTotal:"))
             {
                 std::vector<std::string> memTotalTokenized;
-                split(memTotalTokenized,lineInFile,is_any_of(" "),token_compress_on);
-                if (memTotalTokenized.size()>=3)
+                split(memTotalTokenized, lineInFile, is_any_of(" "), token_compress_on);
+                if (memTotalTokenized.size() >= 3)
                 {
-                    if ( memTotalTokenized[2] == "kB")
+                    if (memTotalTokenized[2] == "kB")
                     {
-                        memTotal = strtoull(memTotalTokenized[1].c_str(),0,10)*1024;
+                        memTotal = strtoull(memTotalTokenized[1].c_str(), 0, 10) * 1024;
                     }
                 }
             }
@@ -158,7 +162,7 @@ LocalSysInfo OS::getLocalSystemInfo()
     ZeroMemory(&osviex, sizeof(OSVERSIONINFOEX));
     osviex.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    GetVersionExA((LPOSVERSIONINFOA)&osviex);
+    GetVersionExA((LPOSVERSIONINFOA) &osviex);
 
     x.operatingSystemName = "Windows";
 
@@ -166,7 +170,7 @@ LocalSysInfo OS::getLocalSystemInfo()
     //  https://www.techthoughts.info/windows-version-numbers/
     //  https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-osversioninfoexa
     //  https://docs.microsoft.com/en-us/windows/uwp/publish/trademark-and-copyright-protection
-    switch(osviex.dwMajorVersion)
+    switch (osviex.dwMajorVersion)
     {
     case 10:
 
@@ -186,7 +190,7 @@ LocalSysInfo OS::getLocalSystemInfo()
                 x.operatingSystemName = "Microsoft Windows (R) 10 - Redstone 5";
             else if (osviex.dwBuildNumber == 17134)
                 x.operatingSystemName = "Microsoft Windows (R) 10 - Redstone 4";
-            else if (osviex.dwBuildNumber ==  16299)
+            else if (osviex.dwBuildNumber == 16299)
                 x.operatingSystemName = "Microsoft Windows (R) 10 - Redstone 3";
             else if (osviex.dwBuildNumber == 15063)
                 x.operatingSystemName = "Microsoft Windows (R) 10 - Redstone 2";
@@ -200,7 +204,7 @@ LocalSysInfo OS::getLocalSystemInfo()
         else
         {
             // 2016/2019/2021 server...
-            if (osviex.dwBuildNumber<17677)
+            if (osviex.dwBuildNumber < 17677)
             {
                 x.operatingSystemName = "Microsoft Windows (R) Server 2016";
 
@@ -216,12 +220,12 @@ LocalSysInfo OS::getLocalSystemInfo()
                     x.operatingSystemName = "Microsoft Windows (R) Server 2016 - TP5";
                 if (osviex.dwBuildNumber == 14393)
                     x.operatingSystemName = "Microsoft Windows (R) Server 2016 - RTM - LTSC";
-                if (osviex.dwBuildNumber == 16299 )
+                if (osviex.dwBuildNumber == 16299)
                     x.operatingSystemName = "Microsoft Windows (R) Server 2016 - SAC - Core Only";
                 if (osviex.dwBuildNumber == 17134)
                     x.operatingSystemName = "Microsoft Windows (R) Server 2016 - SAC - Core Only";
             }
-            else if (osviex.dwBuildNumber>=17677 && osviex.dwBuildNumber<19042)
+            else if (osviex.dwBuildNumber >= 17677 && osviex.dwBuildNumber < 19042)
             {
                 x.operatingSystemName = "Microsoft Windows (R) Server 2019";
 
@@ -246,24 +250,24 @@ LocalSysInfo OS::getLocalSystemInfo()
 
         break;
     case 6:
-        switch(osviex.dwMinorVersion)
+        switch (osviex.dwMinorVersion)
         {
         case 3:
-            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION)? "Microsoft Windows (R) 8.1" : "Microsoft Windows (R) Server 2012 R2";
+            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION) ? "Microsoft Windows (R) 8.1" : "Microsoft Windows (R) Server 2012 R2";
             break;
         case 2:
-            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION)? "Microsoft Windows (R) 8" : "Microsoft Windows (R) Server 2012";
+            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION) ? "Microsoft Windows (R) 8" : "Microsoft Windows (R) Server 2012";
             break;
         case 1:
-            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION)? "Microsoft Windows (R) 7" : "Microsoft Windows (R) Server 2008 R2";
+            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION) ? "Microsoft Windows (R) 7" : "Microsoft Windows (R) Server 2008 R2";
             break;
         case 0:
-            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION)? "Microsoft Windows (R) Vista" : "Microsoft Windows (R) Server 2008";
+            x.operatingSystemName = (osviex.wProductType == VER_NT_WORKSTATION) ? "Microsoft Windows (R) Vista" : "Microsoft Windows (R) Server 2008";
             break;
         }
         break;
     case 5:
-        switch(osviex.dwMinorVersion)
+        switch (osviex.dwMinorVersion)
         {
         case 2:
             if (GetSystemMetrics(SM_SERVERR2) != 0)
@@ -284,7 +288,8 @@ LocalSysInfo OS::getLocalSystemInfo()
             x.operatingSystemName = "Microsoft Windows (R) 2000";
             break;
         }
-        break;    default:
+        break;
+    default:
         break;
     }
 
@@ -292,32 +297,32 @@ LocalSysInfo OS::getLocalSystemInfo()
 
     std::set<std::string> editions;
 
-    if (osviex.wSuiteMask&VER_SUITE_BACKOFFICE)
+    if (osviex.wSuiteMask & VER_SUITE_BACKOFFICE)
         editions.insert("BackOffice");
-    if (osviex.wSuiteMask&VER_SUITE_BLADE)
+    if (osviex.wSuiteMask & VER_SUITE_BLADE)
         editions.insert("Web Edition");
-    if (osviex.wSuiteMask&VER_SUITE_COMPUTE_SERVER)
+    if (osviex.wSuiteMask & VER_SUITE_COMPUTE_SERVER)
         editions.insert("Compute Cluster Edition");
-    if (osviex.wSuiteMask&VER_SUITE_DATACENTER)
+    if (osviex.wSuiteMask & VER_SUITE_DATACENTER)
         editions.insert("Datacenter Edition");
-    if (osviex.wSuiteMask&VER_SUITE_EMBEDDEDNT)
+    if (osviex.wSuiteMask & VER_SUITE_EMBEDDEDNT)
         editions.insert("Embedded");
-    if (osviex.wSuiteMask&VER_SUITE_STORAGE_SERVER)
+    if (osviex.wSuiteMask & VER_SUITE_STORAGE_SERVER)
         editions.insert("Storage Server");
 
     bool first = true;
     if (!editions.empty())
     {
-        x.operatingSystemVersion +=  " (";
-        for ( const std::string & edition : editions )
+        x.operatingSystemVersion += " (";
+        for (const std::string &edition : editions)
         {
-            if (!first) x.operatingSystemVersion += "/";
+            if (!first)
+                x.operatingSystemVersion += "/";
             x.operatingSystemVersion += edition;
             first = false;
         }
-        x.operatingSystemVersion +=  ")";
+        x.operatingSystemVersion += ")";
     }
-
 
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
@@ -328,45 +333,50 @@ LocalSysInfo OS::getLocalSystemInfo()
     {
         x.processorArchitectureName = "X86_64";
         x.processorArchitectureBits = 64;
-    }break;
+    }
+    break;
     case PROCESSOR_ARCHITECTURE_ARM:
     {
         x.processorArchitectureName = "ARM";
         x.processorArchitectureBits = 32;
-    }break;
+    }
+    break;
 #ifdef PROCESSOR_ARCHITECTURE_ARM64
     case PROCESSOR_ARCHITECTURE_ARM64:
     {
         x.processorArchitectureName = "ARM64";
         x.processorArchitectureBits = 64;
-    }break;
+    }
+    break;
 #endif
     case PROCESSOR_ARCHITECTURE_IA64:
     {
         x.processorArchitectureName = "IA64";
         x.processorArchitectureBits = 64;
-    }break;
+    }
+    break;
     case PROCESSOR_ARCHITECTURE_INTEL:
     {
         x.processorArchitectureName = "X86";
         x.processorArchitectureBits = 32;
-    }break;
+    }
+    break;
     case PROCESSOR_ARCHITECTURE_UNKNOWN:
     default:
     {
         x.processorArchitectureName = "UNK";
-    }break;
+    }
+    break;
     }
 
     x.threadCount = sysInfo.dwNumberOfProcessors;
 
     MEMORYSTATUSEX statex;
-    statex.dwLength = sizeof (statex);
-    GlobalMemoryStatusEx (&statex);
+    statex.dwLength = sizeof(statex);
+    GlobalMemoryStatusEx(&statex);
 
     x.memorySize = statex.ullTotalPhys;
 
 #endif
     return x;
-
 }

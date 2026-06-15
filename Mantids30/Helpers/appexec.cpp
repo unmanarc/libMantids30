@@ -3,28 +3,31 @@
 #ifdef _WIN32
 #include <boost/algorithm/string/predicate.hpp>
 #else
-#include <unistd.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #endif
 
-#include <string.h>
-#include <stdexcept>
-#include <sys/types.h>
 #include <fcntl.h>
+#include <stdexcept>
+#include <string.h>
+#include <sys/types.h>
 
 #ifdef _WIN32
 #include <windows.h>
 
-struct sAppPIPE {
+struct sAppPIPE
+{
     sAppPIPE()
     {
-        hRead=INVALID_HANDLE_VALUE;
-        hWrite=INVALID_HANDLE_VALUE;
+        hRead = INVALID_HANDLE_VALUE;
+        hWrite = INVALID_HANDLE_VALUE;
     }
     ~sAppPIPE()
     {
-        if (hRead!=INVALID_HANDLE_VALUE) CloseHandle(hRead);
-        if (hWrite!=INVALID_HANDLE_VALUE) CloseHandle(hWrite);
+        if (hRead != INVALID_HANDLE_VALUE)
+            CloseHandle(hRead);
+        if (hWrite != INVALID_HANDLE_VALUE)
+            CloseHandle(hWrite);
     }
 
     SECURITY_ATTRIBUTES createInheritedSecAttribs()
@@ -50,7 +53,7 @@ struct sAppPIPE {
         return 0;
     }
 
-    HANDLE hRead,hWrite;
+    HANDLE hRead, hWrite;
 };
 #endif
 
@@ -66,27 +69,27 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     sAppPIPE pipes;
     std::string sCmd;
 
-    rt.output="";
-    rt.result=-1;
-    rt.error =APPEXEC_UNKNOWN;
+    rt.output = "";
+    rt.result = -1;
+    rt.error = APPEXEC_UNKNOWN;
 
     // Structs sanitization:
-    memset(&runningProcInfo,0, sizeof(PROCESS_INFORMATION));
-    memset(&procInteractParams,0, sizeof(STARTUPINFO));
+    memset(&runningProcInfo, 0, sizeof(PROCESS_INFORMATION));
+    memset(&procInteractParams, 0, sizeof(STARTUPINFO));
 
     ///////////////////////////////////////////////////////////////////////////////////
     // create the execution path:
-    sCmd+=cmd.arg0;
-    for (size_t i=0;i<cmd.args.size();i++)
+    sCmd += cmd.arg0;
+    for (size_t i = 0; i < cmd.args.size(); i++)
     {
-        sCmd+=" " + cmd.args.at(i);
+        sCmd += " " + cmd.args.at(i);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Initialize the pipes for getting the process output:
     int err;
-    if ((err=pipes.init())!=0)
-        return {"",-1,err};
+    if ((err = pipes.init()) != 0)
+        return {"", -1, err};
 
     procInteractParams.cb = sizeof(STARTUPINFO);
     procInteractParams.hStdInput = nullptr;
@@ -96,11 +99,11 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Execute the process:
-    if (!CreateProcessA(nullptr,(char *)sCmd.c_str(),nullptr,nullptr,TRUE,0,nullptr,nullptr,
-                        &procInteractParams,  // STARTUPINFO process interaction
+    if (!CreateProcessA(nullptr, (char *) sCmd.c_str(), nullptr, nullptr, TRUE, 0, nullptr, nullptr,
+                        &procInteractParams, // STARTUPINFO process interaction
                         &runningProcInfo))
     {
-        return {"",-1,APPEXEC_ERR_CREATEPROCESS};
+        return {"", -1, APPEXEC_ERR_CREATEPROCESS};
     }
 
     CloseHandle(pipes.hWrite);
@@ -111,12 +114,11 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     for (;;)
     {
         DWORD bytesRead;
-        if (    !ReadFile( pipes.hRead, buf, 4096, &bytesRead, nullptr)
-                || bytesRead == 0 )
+        if (!ReadFile(pipes.hRead, buf, 4096, &bytesRead, nullptr) || bytesRead == 0)
             break;
-        rt.output += std::string(buf,0,bytesRead);
+        rt.output += std::string(buf, 0, bytesRead);
     }
-    memset(buf,0,sizeof(buf));
+    memset(buf, 0, sizeof(buf));
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Wait until program finishes:
@@ -124,14 +126,14 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     {
         CloseHandle(runningProcInfo.hThread);
         CloseHandle(runningProcInfo.hProcess);
-        return {"",-1,APPEXEC_ERR_WAITFORSINGLEOBJECT};
+        return {"", -1, APPEXEC_ERR_WAITFORSINGLEOBJECT};
     }
 
     DWORD lpExitCode;
     GetExitCodeProcess(runningProcInfo.hProcess, &lpExitCode);
 
     rt.result = lpExitCode;
-    rt.error =APPEXEC_NOERR;
+    rt.error = APPEXEC_NOERR;
 
     CloseHandle(runningProcInfo.hThread);
     CloseHandle(runningProcInfo.hProcess);
@@ -145,27 +147,27 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     return rt;
 }
 
-
 #ifndef _WIN32
 
 Mantids30::Helpers::AppSpawn::AppSpawn()
 {
     m_fileActionsp = &m_fileActions;
 
-    if ((posix_spawn_file_actions_init (m_fileActionsp)) != 0)
+    if ((posix_spawn_file_actions_init(m_fileActionsp)) != 0)
+    {
         throw std::runtime_error("Unable to create file actions in execution.");
-
+    }
 }
 
 bool Mantids30::Helpers::AppSpawn::setExec(const std::string &path)
 {
     if (
-        #ifndef _WIN32
-            !access(path.c_str(),X_OK)
-        #else
-            boost::iends_with(path,".exe") || boost::iends_with(path,".bat") || boost::iends_with(path,".com")
-        #endif
-            )
+#ifndef _WIN32
+        !access(path.c_str(), X_OK)
+#else
+        boost::iends_with(path, ".exe") || boost::iends_with(path, ".bat") || boost::iends_with(path, ".com")
+#endif
+    )
     {
         m_execPath = path;
         return true;
@@ -175,13 +177,12 @@ bool Mantids30::Helpers::AppSpawn::setExec(const std::string &path)
 
 bool Mantids30::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
 {
-    return posix_spawn_file_actions_addopen (m_fileActionsp, fd, outFile.c_str(),
-                                             O_WRONLY | O_CREAT | O_TRUNC, 0644)==0;
+    return posix_spawn_file_actions_addopen(m_fileActionsp, fd, outFile.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644) == 0;
 }
 
 bool Mantids30::Helpers::AppSpawn::redirectStdErrToStdOut()
 {
-    return posix_spawn_file_actions_adddup2 (m_fileActionsp, STDOUT_FILENO, STDERR_FILENO)==0;
+    return posix_spawn_file_actions_adddup2(m_fileActionsp, STDOUT_FILENO, STDERR_FILENO) == 0;
 }
 
 void Mantids30::Helpers::AppSpawn::addArgument(const std::string &arg)
@@ -197,50 +198,49 @@ void Mantids30::Helpers::AppSpawn::addEnvironment(const std::string &env)
 bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
     // Create the argv...
-    char ** argv = static_cast<char **>(malloc( (m_arguments.size()+2)*sizeof(char *) ));
+    char **argv = static_cast<char **>(malloc((m_arguments.size() + 2) * sizeof(char *)));
     argv[0] = static_cast<char *>(strdup(m_execPath.c_str()));
-    for (size_t i=1; i<(m_arguments.size()+1);i++)
+    for (size_t i = 1; i < (m_arguments.size() + 1); i++)
     {
-        argv[i] = static_cast<char *>(strdup(m_arguments[i-1].c_str()));
+        argv[i] = static_cast<char *>(strdup(m_arguments[i - 1].c_str()));
     }
-    argv[m_arguments.size()+1] = nullptr;
+    argv[m_arguments.size() + 1] = nullptr;
 
     // Create the env...
     std::vector<std::string> _environment = m_environment;
     // Pass the current environ...
-    for (int i=0;environ[i];i++ )
+    for (int i = 0; environ[i]; i++)
     {
         _environment.push_back(environ[i]);
     }
 
-    char ** env = static_cast<char **>(malloc( (_environment.size()+1)*sizeof(char *) ));
-    for (size_t i=0; i<_environment.size();i++)
+    char **env = static_cast<char **>(malloc((_environment.size() + 1) * sizeof(char *)));
+    for (size_t i = 0; i < _environment.size(); i++)
     {
         env[i] = static_cast<char *>(strdup(_environment[i].c_str()));
     }
     env[_environment.size()] = nullptr;
 
-
     if (pipeStdout)
     {
-        if(pipe(m_piStdOut)!=0)
+        if (pipe(m_piStdOut) != 0)
         {
             throw std::runtime_error("Unable to create pipes.");
         }
 
         // Ask the remote process to close the pipes side 0.
-        posix_spawn_file_actions_addclose(m_fileActionsp,m_piStdOut[0]);
+        posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdOut[0]);
 
         // Ask the remote process to link pipes side 1 with stdout
-        posix_spawn_file_actions_adddup2(m_fileActionsp,m_piStdOut[1], STDOUT_FILENO);
+        posix_spawn_file_actions_adddup2(m_fileActionsp, m_piStdOut[1], STDOUT_FILENO);
 
         // Ask the remote process to close the pipes side 1
-        posix_spawn_file_actions_addclose(m_fileActionsp,m_piStdOut[1]);
+        posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdOut[1]);
     }
 
     if (pipeStderr)
     {
-        if(pipe(m_piStdErr)!=0)
+        if (pipe(m_piStdErr) != 0)
         {
             throw std::runtime_error("Unable to create pipes.");
         }
@@ -255,55 +255,52 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
         posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdErr[1]);
     }
 
-
     // Execute:
-    int s = posix_spawn(&m_childPid, m_execPath.c_str(), m_fileActionsp, m_attrp,
-                        &argv[0], env);
+    int s = posix_spawn(&m_childPid, m_execPath.c_str(), m_fileActionsp, m_attrp, &argv[0], env);
 
     if (pipeStdout)
     {
         // close the pipe side 1 in the parent process..
         close(m_piStdOut[1]);
-        m_plist = { {m_piStdOut[0],POLLIN} };
+        m_plist = {{m_piStdOut[0], POLLIN}};
     }
 
     if (pipeStderr)
     {
         // close the pipe side 1 in the parent process..
         close(m_piStdErr[1]);
-        m_plist.push_back({m_piStdErr[0],POLLIN});
+        m_plist.push_back({m_piStdErr[0], POLLIN});
     }
 
     // Destroy objects:
-    for (int i=0; argv[i]; i++)
+    for (int i = 0; argv[i]; i++)
     {
         free(argv[i]);
     }
     free(argv);
 
     // Destroy objects:
-    for (int i=0; env[i]; i++)
+    for (int i = 0; env[i]; i++)
     {
         free(env[i]);
     }
     free(env);
 
-
-    if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp))!=0))
+    if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp)) != 0))
     {
         throw std::runtime_error("Unable to destroy execution attributes.");
     }
-    if (m_fileActionsp != nullptr && ((s = posix_spawn_file_actions_destroy(m_fileActionsp)))!=0 )
+    if (m_fileActionsp != nullptr && ((s = posix_spawn_file_actions_destroy(m_fileActionsp))) != 0)
     {
         throw std::runtime_error("Unable to destroy file actions execution.");
     }
 
-    return s==0;
+    return s == 0;
 }
 
 void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
 {
-    int s,status;
+    int s, status;
     do
     {
         s = waitpid(m_childPid, &status, WUNTRACED | WCONTINUED);
@@ -311,22 +308,27 @@ void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
         {
             return;
         }
-    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
+    while (!WIFEXITED(status) && !WIFSIGNALED(status));
 }
 
 std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
 {
     std::set<int> r;
-    if (  poll(&m_plist[0],m_plist.size(),-1)>0 )
+    if (poll(&m_plist[0], m_plist.size(), -1) > 0)
     {
-        for (size_t i=0; i<m_plist.size(); i++)
+        for (size_t i = 0; i < m_plist.size(); i++)
         {
-            if ( (m_plist[i].revents&POLLIN)!=0 )
+            if ((m_plist[i].revents & POLLIN) != 0)
             {
-                if ( m_plist[i].fd == m_piStdOut[0] )
+                if (m_plist[i].fd == m_piStdOut[0])
+                {
                     r.insert(STDOUT_FILENO);
-                else if ( m_plist[i].fd == m_piStdErr[0] )
+                }
+                else if (m_plist[i].fd == m_piStdErr[0])
+                {
                     r.insert(STDERR_FILENO);
+                }
             }
         }
     }

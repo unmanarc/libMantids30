@@ -6,7 +6,6 @@
 using namespace std;
 using namespace Mantids30::Helpers;
 
-
 std::string Random::createRandomString(size_t length)
 {
     // Define the character set containing all possible characters for the random string.
@@ -67,7 +66,7 @@ std::string Random::createRandomHexString(size_t length)
             unsigned char byte = buffer[i];
 
             // Get the first hexadecimal digit from the higher nibble of the byte.
-            randomString[i * 2]     = charset[(byte >> 4) % maxIndex];
+            randomString[i * 2] = charset[(byte >> 4) % maxIndex];
 
             // Get the second hexadecimal digit from the lower nibble of the byte.
             randomString[i * 2 + 1] = charset[byte % maxIndex];
@@ -83,8 +82,7 @@ std::string Random::createRandomHexString(size_t length)
     return randomString;
 }
 
-void Random::createRandomSalt32(
-    unsigned char *salt)
+void Random::createRandomSalt32(unsigned char *salt)
 {
     if (!RAND_bytes(salt, sizeof(uint32_t)))
     {
@@ -92,8 +90,7 @@ void Random::createRandomSalt32(
     }
 }
 
-void Random::createRandomSalt128(
-    unsigned char *salt)
+void Random::createRandomSalt128(unsigned char *salt)
 {
     if (!RAND_bytes(salt, 16))
     {

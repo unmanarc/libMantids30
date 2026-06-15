@@ -13,12 +13,10 @@ namespace Mantids30::Helpers {
  *
  * @return True if the element is present in the set, false otherwise.
  */
-template <typename T>
-bool contains( const std::set<T>& haystack, const T& needle )
+template<typename T>
+bool contains(const std::set<T> &haystack, const T &needle)
 {
-  return find(haystack.begin(), haystack.end(), needle) != haystack.end();
+    return find(haystack.begin(), haystack.end(), needle) != haystack.end();
 }
 
-}
-
-
+} // namespace Mantids30::Helpers

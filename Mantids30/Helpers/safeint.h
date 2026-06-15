@@ -5,8 +5,7 @@
 
 // Safe Add
 template<typename T>
-T safeAdd(
-    T a, T b)
+T safeAdd(T a, T b)
 {
     if (a > 0 && b > 0 && std::numeric_limits<T>::max() - a < b)
     {
@@ -21,8 +20,7 @@ T safeAdd(
 
 // Safe Subtract
 template<typename T>
-T safeSubtract(
-    T a, T b)
+T safeSubtract(T a, T b)
 {
     if (b > 0 && a < std::numeric_limits<T>::min() + b)
     {
@@ -37,8 +35,7 @@ T safeSubtract(
 
 // Safe Multiply
 template<typename T>
-T safeMultiply(
-    T a, T b)
+T safeMultiply(T a, T b)
 {
     if (a > 0 && b > 0 && a > std::numeric_limits<T>::max() / b)
     {
@@ -61,8 +58,7 @@ T safeMultiply(
 
 // Safe Divide
 template<typename T>
-T safeDivide(
-    T a, T b)
+T safeDivide(T a, T b)
 {
     if (b == 0)
     {
@@ -77,8 +73,7 @@ T safeDivide(
 
 // Safe Static Cast
 template<typename To, typename From>
-To safeStaticCast(
-    From value)
+To safeStaticCast(From value)
 {
     if (value > static_cast<From>(std::numeric_limits<To>::max()))
     {
@@ -92,11 +87,14 @@ To safeStaticCast(
 }
 
 template<typename To, typename From>
-To unsafeStaticCast(From value) {
-    if (value > static_cast<From>(std::numeric_limits<To>::max())) {
+To unsafeStaticCast(From value)
+{
+    if (value > static_cast<From>(std::numeric_limits<To>::max()))
+    {
         return To{};
     }
-    if (value < static_cast<From>(std::numeric_limits<To>::min())) {
+    if (value < static_cast<From>(std::numeric_limits<To>::min()))
+    {
         return To{};
     }
     return static_cast<To>(value);

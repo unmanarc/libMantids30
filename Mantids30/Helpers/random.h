@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 #include <random>
+#include <string>
 
 namespace Mantids30::Helpers {
 
@@ -25,13 +25,13 @@ public:
      * @brief createRandomSalt32 Create a random number of 32bit into salt
      * @param salt output variable.
      */
-    static void createRandomSalt32(unsigned char * salt);
+    static void createRandomSalt32(unsigned char *salt);
 
     /**
      * @brief createRandomSalt128 Create a random number of 128bit into salt
      * @param salt output variable.
      */
-    static void createRandomSalt128(unsigned char * salt);
+    static void createRandomSalt128(unsigned char *salt);
 
     /**
      * @brief safe_random_shuffle Suffle a vector
@@ -39,14 +39,15 @@ public:
      * @param last vector end()
      * @param hash Hash function
      */
-    template <class RandomAccessIterator>
+    template<class RandomAccessIterator>
     static void safe_random_shuffle(RandomAccessIterator first, RandomAccessIterator last, std::size_t hash)
     {
         std::minstd_rand0 gen(hash);
         typename std::iterator_traits<RandomAccessIterator>::difference_type i, n;
         n = (last - first);
 
-        if (n <= 1) {
+        if (n <= 1)
+        {
             // No need to shuffle if there are 0 or 1 elements
             return;
         }
@@ -68,5 +69,4 @@ public:
     }
 };
 
-}
-
+} // namespace Mantids30::Helpers

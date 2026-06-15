@@ -1,19 +1,18 @@
 #include "datatables.h"
 #include <regex>
 
-static std::string getColumnNameFromColumnPos(const json &dataTablesFilters, const uint32_t & pos)
+static std::string getColumnNameFromColumnPos(const json &dataTablesFilters, const uint32_t &pos)
 {
-    if (JSON_ISARRAY(dataTablesFilters,"columns"))
+    if (JSON_ISARRAY(dataTablesFilters, "columns"))
     {
-        if (pos>=dataTablesFilters["columns"].size())
+        if (pos >= dataTablesFilters["columns"].size())
         {
             return "";
         }
-        return JSON_ASSTRING(dataTablesFilters["columns"][pos],"data","");
+        return JSON_ASSTRING(dataTablesFilters["columns"][pos], "data", "");
     }
     return "";
 }
-
 
 std::string Mantids30::Helpers::DataTables::getOrderByStatement(const json &dataTablesFilters)
 {

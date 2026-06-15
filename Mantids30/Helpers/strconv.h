@@ -10,8 +10,7 @@ namespace Mantids30::Helpers {
 class StringConversions
 {
 public:
-    static size_t getSizeFromString(const std::string & szString);
-
+    static size_t getSizeFromString(const std::string &szString);
 };
 
-}
+} // namespace Mantids30::Helpers
