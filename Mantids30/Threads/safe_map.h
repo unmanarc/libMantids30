@@ -1,13 +1,13 @@
 #pragma once
 
-#include <mutex>
+#include <atomic>
 #include <condition_variable>
 #include <map>
+#include <mutex>
 #include <set>
-#include <atomic>
 
-#include <unistd.h>
 #include <stdexcept>
+#include <unistd.h>
 
 #include "safe_mapitem.h"
 
@@ -22,7 +22,7 @@ namespace Mantids30::Threads::Safe {
  *
  * @tparam T The type of the keys in the map.
  */
-template <class T>
+template<class T>
 class Map
 {
 public:
@@ -44,7 +44,7 @@ public:
      * @param key The key to check.
      * @return true if the key exists in the map, false otherwise.
      */
-    bool isMember(const T& key);
+    bool isMember(const T &key);
 
     /**
      * @brief Adds an element with the given key to the map.
@@ -53,7 +53,7 @@ public:
      * @param element The element to add.
      * @return true if the element was added successfully, false otherwise.
      */
-    bool addElement(const T& key, MapItem* element);
+    bool addElement(const T &key, MapItem *element);
 
     /**
      * @brief Opens the element with the given key for reading.
@@ -63,7 +63,7 @@ public:
      * @param key The key for the element.
      * @return A pointer to the MapItem object associated with the key, or nullptr if the key is not found.
      */
-    MapItem* openElement(const T& key);
+    MapItem *openElement(const T &key);
 
     /**
      * @brief Releases the element with the given key after reading.
@@ -71,7 +71,7 @@ public:
      * @param key The key for the element.
      * @return true if the element was released successfully, false otherwise.
      */
-    bool releaseElement(const T& key);
+    bool releaseElement(const T &key);
 
     /**
      * @brief Destroys the element with the given key.
@@ -101,15 +101,14 @@ private:
             numReaders = 0;
             item = nullptr;
         }
-        MapItem* item;
+        MapItem *item;
         std::atomic<uint32_t> numReaders;
         std::condition_variable noReadersCondition;
     };
 
-
-    std::map<T, MapElement> m_keyValueMap; ///< The map storing key-value pairs.
+    std::map<T, MapElement> m_keyValueMap;           ///< The map storing key-value pairs.
     std::condition_variable m_noItemsOnMapCondition; ///< The condition variable to wait for the map to become empty.
-    std::mutex m_keyValueMapMutex; ///< The mutex to ensure thread safety when accessing the map.
+    std::mutex m_keyValueMapMutex;                   ///< The mutex to ensure thread safety when accessing the map.
 };
 
 template<class T>
@@ -117,7 +116,8 @@ std::set<T> Map<T>::getKeys()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
     std::set<T> ret;
-    for (const auto & i : m_keyValueMap) ret.insert(i.first);
+    for (const std::pair<T, MapElement> &i : m_keyValueMap)
+        ret.insert(i.first);
     return ret;
 }
 
@@ -148,7 +148,8 @@ MapItem *Map<T>::openElement(const T &key)
     if (m_keyValueMap.find(key) != m_keyValueMap.end() && m_keyValueMap[key].item)
     {
         m_keyValueMap[key].numReaders++;
-        return m_keyValueMap[key].item;;
+        return m_keyValueMap[key].item;
+        ;
     }
     return nullptr;
 }
@@ -161,7 +162,7 @@ bool Map<T>::releaseElement(const T &key)
 
     if (m_keyValueMap.find(key) != m_keyValueMap.end())
     {
-        if (m_keyValueMap[key].numReaders==0)
+        if (m_keyValueMap[key].numReaders == 0)
             throw std::runtime_error("Invalid close on Mutex MAP");
 
         m_keyValueMap[key].numReaders--;
@@ -180,14 +181,13 @@ bool Map<T>::destroyElement(const T key)
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
 
-    if (    m_keyValueMap.find(key) != m_keyValueMap.end()
-            && m_keyValueMap[key].item != nullptr )
+    if (m_keyValueMap.find(key) != m_keyValueMap.end() && m_keyValueMap[key].item != nullptr)
     {
         // No more open readers and destroy element.. (inaccesible for openElement and for destroyElement)
-        MapItem * delElement = m_keyValueMap[key].item;
+        MapItem *delElement = m_keyValueMap[key].item;
         m_keyValueMap[key].item = nullptr;
 
-        for (;m_keyValueMap[key].numReaders != 0;)
+        for (; m_keyValueMap[key].numReaders != 0;)
         {
             delElement->stopReaders();
             // unlock and retake the lock until signal is emited.
@@ -210,8 +210,7 @@ template<class T>
 void Map<T>::waitForEmptyMap()
 {
     std::unique_lock<std::mutex> lock(m_keyValueMapMutex);
-    m_noItemsOnMapCondition.wait(lock, [this]{ return m_keyValueMap.empty(); });
+    m_noItemsOnMapCondition.wait(lock, [this] { return m_keyValueMap.empty(); });
 }
 
-}
-
+} // namespace Mantids30::Threads::Safe
