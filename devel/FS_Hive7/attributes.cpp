@@ -2,10 +2,7 @@
 
 using namespace Mantids::Files::Hive7;
 
-Attributes::Attributes()
-{
-
-}
+Attributes::Attributes() {}
 
 std::string Attributes::getName() const
 {

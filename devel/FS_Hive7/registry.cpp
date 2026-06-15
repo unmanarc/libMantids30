@@ -2,7 +2,6 @@
 
 using namespace Mantids::Files::Hive7;
 
-
 Registry::Registry()
 {
     type = H7_REG_EMPTY;

@@ -2,7 +2,9 @@
 
 #include <string>
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 class Attributes
 {
@@ -24,12 +26,13 @@ public:
     void setCreationTime(const timespec &value);
 
 protected:
-    std::string name,description;
+    std::string name, description;
 
     struct timespec accessTime;
     struct timespec modificationTime;
     struct timespec creationTime;
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids

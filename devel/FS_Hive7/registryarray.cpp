@@ -2,8 +2,4 @@
 
 using namespace Mantids::Files::Hive7;
 
-
-RegistryArray::RegistryArray()
-{
-
-}
+RegistryArray::RegistryArray() {}

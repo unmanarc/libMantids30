@@ -2,7 +2,9 @@
 
 #include <string>
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 class FileReader
 {
@@ -18,16 +20,17 @@ protected:
     bool isOpen();
     bool reOpen();
 
-    bool readUInt64At( uint64_t * val, const uint64_t & position );
-    bool writeUInt64At( const uint64_t & val, const uint64_t & position );
+    bool readUInt64At(uint64_t *val, const uint64_t &position);
+    bool writeUInt64At(const uint64_t &val, const uint64_t &position);
 
-    bool readAt( char * buf, const uint32_t & buflen, const uint64_t & position );
-    bool writeAt( char * buf, const uint32_t & buflen, const uint64_t & position );
-    bool writeAtEnd( char * buf, const uint32_t & buflen );
+    bool readAt(char *buf, const uint32_t &buflen, const uint64_t &position);
+    bool writeAt(char *buf, const uint32_t &buflen, const uint64_t &position);
+    bool writeAtEnd(char *buf, const uint32_t &buflen);
 
-    FILE * fp;
+    FILE *fp;
     std::string filePath;
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids

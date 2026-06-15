@@ -1,9 +1,11 @@
 #pragma once
 
-#include <string>
 #include <map>
+#include <string>
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 struct sH7FilePermission
 {
@@ -23,10 +25,11 @@ public:
 protected:
     std::string owner, group;
 
-    sH7FilePermission permsOwner,permsGroup,permsOthers;
+    sH7FilePermission permsOwner, permsGroup, permsOthers;
 
-    std::map<std::string, sH7FilePermission> permsACLUsers,permsACLGroups;
+    std::map<std::string, sH7FilePermission> permsACLUsers, permsACLGroups;
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids

@@ -1,11 +1,13 @@
 #pragma once
 
-#include <string>
+#include "directory.h"
 #include "filereader.h"
 #include "registry.h"
-#include "directory.h"
+#include <string>
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 enum eH7Error
 {
@@ -18,7 +20,7 @@ enum eH7Error
 class H7File : private FileReader
 {
 public:
-    H7File( const std::string & filePath );
+    H7File(const std::string &filePath);
     ~H7File();
 
     // TODO: tags
@@ -38,5 +40,6 @@ private:
     uint64_t currentFileSize;
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids

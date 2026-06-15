@@ -1,13 +1,15 @@
 #pragma once
 
-#include "registryarray.h"
-#include "registry.h"
 #include "link.h"
+#include "registry.h"
+#include "registryarray.h"
 
-#include <string>
 #include <list>
+#include <string>
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 enum eH7FileType
 {
@@ -28,23 +30,24 @@ public:
     //std::list<std::pair<eHive7FileType,std::string>> find( StackedRules );
 
     // Links
-    Link createLink( const std::string & linkName,  Registry reg,  bool soft = true );
-    Link createLink( const std::string & linkName,  RegistryArray reg,  bool soft = true );
-    Link createLink( const std::string & linkName,  Directory dir,  bool soft = true );
-    Link openLink(  const std::string & linkName );
+    Link createLink(const std::string &linkName, Registry reg, bool soft = true);
+    Link createLink(const std::string &linkName, RegistryArray reg, bool soft = true);
+    Link createLink(const std::string &linkName, Directory dir, bool soft = true);
+    Link openLink(const std::string &linkName);
 
     // Registry Arrays
-    Registry createRegArray( const std::string & regArrayName );
-    Registry openRegArray(  const std::string & regArrayName );
+    Registry createRegArray(const std::string &regArrayName);
+    Registry openRegArray(const std::string &regArrayName);
 
     // Registries
-    Registry createReg( const std::string & regName );
-    Registry openReg(  const std::string & regName );
+    Registry createReg(const std::string &regName);
+    Registry openReg(const std::string &regName);
 
     // Directories
-    Directory createDir( const std::string & dirName );
-    Directory openDir( const std::string & dirName );
+    Directory createDir(const std::string &dirName);
+    Directory openDir(const std::string &dirName);
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids

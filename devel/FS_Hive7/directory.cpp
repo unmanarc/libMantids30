@@ -2,8 +2,4 @@
 
 using namespace Mantids::Files::Hive7;
 
-
-Directory::Directory()
-{
-
-}
+Directory::Directory() {}

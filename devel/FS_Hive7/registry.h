@@ -3,7 +3,9 @@
 #include "attributes.h"
 #include "permissions.h"
 
-namespace Mantids { namespace Files { namespace Hive7 {
+namespace Mantids {
+namespace Files {
+namespace Hive7 {
 
 enum eH7RegistryType
 {
@@ -28,24 +30,24 @@ class Registry : public Attributes, public Permissions
 public:
     Registry();
 
-    void appendBytes(const char * bytes, const uint64_t size);
-    void setBytes(const char * bytes, const uint64_t size);
+    void appendBytes(const char *bytes, const uint64_t size);
+    void setBytes(const char *bytes, const uint64_t size);
 
-    void appendString16(const std::string & value);
-    void setString16(const std::string & value);
+    void appendString16(const std::string &value);
+    void setString16(const std::string &value);
 
-    void appendString8(const std::string & value);
-    void setString8(const std::string & value);
+    void appendString8(const std::string &value);
+    void setString8(const std::string &value);
 
-    void setUInt8( const uint8_t & value );
-    void setUInt16( const uint16_t & value );
-    void setUInt32( const uint32_t & value );
-    void setUInt64( const uint16_t & value );
+    void setUInt8(const uint8_t &value);
+    void setUInt16(const uint16_t &value);
+    void setUInt32(const uint32_t &value);
+    void setUInt64(const uint16_t &value);
 
-    void setInt8( const int8_t & value );
-    void setInt16( const int16_t & value );
-    void setInt32( const int32_t & value );
-    void setInt64( const int16_t & value );
+    void setInt8(const int8_t &value);
+    void setInt16(const int16_t &value);
+    void setInt32(const int32_t &value);
+    void setInt64(const int16_t &value);
 
     std::string asString();
 
@@ -62,7 +64,7 @@ public:
     eH7RegistryType getType() const;
 
 private:
-    std::string encryption,compression;
+    std::string encryption, compression;
     std::string signatureVersion, signatureHash;
 
     // TODO: linked file tagging...
@@ -70,5 +72,6 @@ private:
     eH7RegistryType type;
 };
 
-}}}
-
+} // namespace Hive7
+} // namespace Files
+} // namespace Mantids
