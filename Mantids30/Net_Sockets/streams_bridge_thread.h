@@ -5,16 +5,16 @@
 #include <mutex>
 
 namespace Mantids30::Network::Sockets::NetStreams {
-enum Side
+enum Side : uint8_t
 {
-    SIDE_FORWARD = 1,
-    SIDE_BACKWARD = 0
+    FORWARD = 1,
+    BACKWARD = 0
 };
 
 class Bridge_Thread
 {
 public:
-    Bridge_Thread();
+    Bridge_Thread() = default;
     virtual ~Bridge_Thread();
 
     void setSocketEndpoints(std::shared_ptr<Sockets::Socket_Stream> src, std::shared_ptr<Sockets::Socket_Stream> dst, bool chunked);
@@ -47,16 +47,16 @@ public:
 
 protected:
     std::shared_ptr<Sockets::Socket_Stream> src;
-    char *block_fwd;
-    uint16_t blockSize;
+    char *block_fwd = nullptr;
+    uint16_t blockSize{8192};
     // ssize_t partialReadL(void *data, const size_t &datalen, bool fwd = true);
 
 private:
-    std::atomic<bool> m_terminated;
-    bool m_chunked;
+    std::atomic<bool> m_terminated{false};
+    bool m_chunked = false;
 
     std::shared_ptr<Sockets::Socket_Stream> m_dstSocket;
-    char *m_blockBwd;
+    char *m_block_rev = nullptr;
 
     std::mutex mt_fwd, mt_rev;
 };

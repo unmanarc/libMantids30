@@ -4,8 +4,6 @@
 #include "streams_bridge_thread.h"
 
 #include <cstdint>
-#include <cstdint>
-
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -19,10 +17,10 @@ namespace Mantids30::Network::Sockets::NetStreams {
 class Bridge
 {
 public:
-    enum TransmitionMode
+    enum class TransmissionMode : uint8_t
     {
-        TRANSMITION_MODE_STREAM = 0,
-        TRANSMITION_MODE_CHUNKSANDPING = 1
+        STREAM = 0,
+        CHUNKSANDPING = 1
     };
     /**
      * @brief Socket_Bridge constructor.
@@ -38,7 +36,7 @@ public:
      * @brief wait will block-wait until thread finishes
      * @return -1 failed, 0: socket 0 closed the connection, 1: socket 1 closed the connection.
      */
-    int wait();
+    [[nodiscard]] int wait();
 
     /**
      * @brief process, begin the communication between peers blocking until it ends.
@@ -50,7 +48,7 @@ public:
      * @param i peer number (0 or 1)
      * @return true if transmitted and closed, false if failed.
      */
-    bool processPeer(Side i);
+    bool processPeer(Side currentSide);
     /**
      * @brief SetPeer Set Stream Socket Peer (0 or 1)
      * @param i peer number: 0 or 1.
@@ -63,7 +61,7 @@ public:
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    std::shared_ptr<Sockets::Socket_Stream> getPeer(Side i);
+    [[nodiscard]] std::shared_ptr<Sockets::Socket_Stream> getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -83,22 +81,22 @@ public:
      * @brief getSentBytes Get bytes transmitted from peer 0 to peer 1.
      * @return bytes transmitted.
      */
-    size_t getSentBytes() const;
+    [[nodiscard]] size_t getSentBytes() const;
     /**
      * @brief getRecvBytes Get bytes  transmitted from peer 1 to peer 0.
      * @return bytes transmitted.
      */
-    size_t getRecvBytes() const;
+    [[nodiscard]] size_t getRecvBytes() const;
     /**
      * @brief isAutoDeleteStreamPipeOnThreadExit Get if this class autodeletes when pipe is over.
      * @return true if autodelete is on.
      */
-    bool isAutoDeleteStreamPipeOnThreadExit() const;
+    [[nodiscard]] bool isAutoDeleteStreamPipeOnThreadExit() const;
     /**
      * @brief isAutoDeleteSocketsOnExit Get if pipe endpoint sockets are going to be deleted when this class is destroyed.
      * @return true if it's going to be deleted.
      */
-    bool isAutoDeleteSocketsOnExit() const;
+    [[nodiscard]] bool isAutoDeleteSocketsOnExit() const;
     /**
      * @brief setAutoDeleteSocketsOnExit Set if pipe endpoint sockets are going to be deleted when this class is destroyed.
      * @param value true if you want sockets to be deleted on exit.
@@ -111,29 +109,29 @@ public:
     void setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit = false);
 
     /**
-     * @brief getTransmitionMode Get Transmition Mode
+     * @brief getTransmissionMode Get Transmition Mode
      * @return value with the mode (chunked or streamed)
      */
-    TransmitionMode getTransmitionMode() const;
+    [[nodiscard]] TransmissionMode getTransmissionMode() const;
     /**
-     * @brief setTransmitionMode set the transmition mode
-     * @param newTransmitionMode  value with the mode (chunked or streamed)
+     * @brief setTransmissionMode set the transmition mode
+     * @param newTransmissionMode  value with the mode (chunked or streamed)
      */
-    void setTransmitionMode(TransmitionMode newTransmitionMode);
+    void setTransmissionMode(TransmissionMode newTransmissionMode);
     /**
      * @brief getLastPing Get Last Ping (in unix epoch time)
      * @return last ping
      */
-    time_t getLastPing();
+    [[nodiscard]] time_t getLastPing();
 
-    int getLastError(Side side);
+    [[nodiscard]] int getLastError(Side side);
 
     /**
      * @brief sendPing (internal function)
      */
     void sendPing();
 
-    uint32_t getPingEveryMS() const;
+    [[nodiscard]] uint32_t getPingEveryMS() const;
     void setPingEveryMS(uint32_t newPingEveryMS);
 
 private:
@@ -144,7 +142,7 @@ private:
     Bridge_Thread *m_bridgeThreadPrc = nullptr;
 
     std::shared_ptr<Sockets::Socket_Stream> m_peers[2] = {nullptr, nullptr};
-    TransmitionMode m_transmitionMode = TRANSMITION_MODE_STREAM;
+    TransmissionMode m_transmitionMode = TransmissionMode::STREAM;
 
     std::atomic<size_t> m_sentBytes{0}, m_recvBytes{0};
     std::atomic<int> m_finishingPeer{-1};

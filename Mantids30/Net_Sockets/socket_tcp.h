@@ -19,7 +19,7 @@ public:
      * Class constructor.
      */
     Socket_TCP();
-    virtual ~Socket_TCP();
+    ~Socket_TCP() override = default;
     /**
      * Listen on an specific TCP port and address
      * @param listenOnAddress address to listen on. (use * for any address)
@@ -39,7 +39,7 @@ public:
      * Accept a new TCP connection on a listening socket.
      * @return returns a socket with the new established tcp connection.
      */
-    virtual std::shared_ptr<Socket_Stream> acceptConnection() override;
+    std::shared_ptr<Socket_Stream> acceptConnection() override;
 
     int setTCPOptionBool(const int32_t &optname, bool value = true);
     int setTCPOption(const int32_t &optname, const void *optval, socklen_t optlen);
@@ -48,7 +48,7 @@ public:
     void overrideReadTimeout(int32_t tout = -1);
     void overrideWriteTimeout(int32_t tout = -1);
 
-    virtual bool isSecure() override;
+    bool isSecure() override;
 
     int getTcpKeepIdle() const;
     void setTcpKeepIdle(int newTcpKeepIdle);
@@ -67,7 +67,7 @@ public:
 
 protected:
 private:
-    bool tcpConnect(const unsigned short &addrType, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
+    bool tcpConnect(const unsigned short &addrFamily, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
     bool m_useTcpNoDelayOption;
     bool m_useTCPForceKeepAlive;
@@ -75,6 +75,6 @@ private:
     int32_t m_overwriteReadTimeout, m_overwriteWriteTimeout;
 };
 
-typedef std::shared_ptr<Socket_TCP> Socket_TCP_SP;
+using Socket_TCP_SP = std::shared_ptr<Socket_TCP>;
 
 } // namespace Mantids30::Network::Sockets

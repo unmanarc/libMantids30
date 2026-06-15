@@ -32,7 +32,7 @@ void Bridge::setPingEveryMS(uint32_t newPingEveryMS)
 
 void Bridge::remotePeerThread(Bridge *stp)
 {
-    stp->processPeer(SIDE_BACKWARD);
+    stp->processPeer(Side::BACKWARD);
 }
 
 void Bridge::pingThread(Bridge *stp)
@@ -90,7 +90,7 @@ int Bridge::wait()
 
 int Bridge::process()
 {
-    if (!m_peers[SIDE_FORWARD] || !m_peers[SIDE_BACKWARD])
+    if (!m_peers[Side::FORWARD] || !m_peers[Side::BACKWARD])
     {
         return -1;
     }
@@ -101,30 +101,30 @@ int Bridge::process()
         m_autoDeleteCustomPipeOnClose = true;
     }
 
-    m_bridgeThreadPrc->setSocketEndpoints(m_peers[SIDE_BACKWARD], m_peers[SIDE_FORWARD], m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING);
+    m_bridgeThreadPrc->setSocketEndpoints(m_peers[Side::BACKWARD], m_peers[Side::FORWARD], m_transmitionMode == TransmissionMode::CHUNKSANDPING);
 
     if (m_bridgeThreadPrc->startPipeSync())
     {
         m_isPingFinished = false;
         std::thread pingerThread;
-        if (m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        if (m_transmitionMode == TransmissionMode::CHUNKSANDPING)
         {
             pingerThread = std::thread(pingThread, this);
         }
 
         std::thread remotePeerThreadP = std::thread(remotePeerThread, this);
-        processPeer(SIDE_FORWARD);
+        processPeer(Side::FORWARD);
         remotePeerThreadP.join();
 
         // Wait until the ping loop is in "rest mode"
-        if (m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        if (m_transmitionMode == TransmissionMode::CHUNKSANDPING)
         {
             std::unique_lock<std::mutex> lock(m_endPingLoopMutex);
             // and notify that there is no more pings
             m_isPingFinished = true;
             m_endPingCond.notify_one();
         }
-        if (m_transmitionMode == TRANSMITION_MODE_CHUNKSANDPING)
+        if (m_transmitionMode == TransmissionMode::CHUNKSANDPING)
         {
             pingerThread.join();
         }
@@ -158,9 +158,9 @@ bool Bridge::processPeer(Side currentSide)
         return false;
     }
 
-    Side oppositeSide = currentSide == SIDE_FORWARD ? SIDE_BACKWARD : SIDE_FORWARD;
+    Side oppositeSide = currentSide == Side::FORWARD ? Side::BACKWARD : Side::FORWARD;
 
-    std::atomic<size_t> *bytesCounter = currentSide == SIDE_FORWARD ? &m_sentBytes : &m_recvBytes;
+    std::atomic<size_t> *bytesCounter = currentSide == Side::FORWARD ? &m_sentBytes : &m_recvBytes;
 
     int dataRecv = 1;
     while (dataRecv > 0)
@@ -259,14 +259,14 @@ void Bridge::setCustomPipeProcessor(Bridge_Thread *value, bool deleteOnExit)
     m_bridgeThreadPrc = value;
 }
 
-Bridge::TransmitionMode Bridge::getTransmitionMode() const
+Bridge::TransmissionMode Bridge::getTransmissionMode() const
 {
     return m_transmitionMode;
 }
 
-void Bridge::setTransmitionMode(TransmitionMode newTransmitionMode)
+void Bridge::setTransmissionMode(TransmissionMode newTransmissionMode)
 {
-    m_transmitionMode = newTransmitionMode;
+    m_transmitionMode = newTransmissionMode;
 }
 
 time_t Bridge::getLastPing()

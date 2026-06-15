@@ -9,19 +9,12 @@
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;
 
-Bridge_Thread::Bridge_Thread()
-{
-    block_fwd = nullptr;
-    m_blockBwd = nullptr;
-    m_chunked = false;
-    m_terminated = false;
-    setBlockSize(8192);
-}
+
 
 Bridge_Thread::~Bridge_Thread()
 {
     delete[] block_fwd;
-    delete[] m_blockBwd;
+    delete[] m_block_rev;
 }
 
 void Bridge_Thread::setSocketEndpoints(std::shared_ptr<Socket_Stream> src, std::shared_ptr<Socket_Stream> dst, bool chunked)
@@ -45,19 +38,13 @@ bool Bridge_Thread::startPipeSync()
 
 void Bridge_Thread::setBlockSize(uint16_t value)
 {
-    if (block_fwd)
-    {
-        delete[] block_fwd;
-    }
-    if (m_blockBwd)
-    {
-        delete[] m_blockBwd;
-    }
+    delete[] block_fwd;
+    delete[] m_block_rev;
 
     blockSize = value;
 
     block_fwd = new char[value];
-    m_blockBwd = new char[value];
+    m_block_rev = new char[value];
 }
 
 void Bridge_Thread::terminate()
@@ -67,7 +54,7 @@ void Bridge_Thread::terminate()
 
 int Bridge_Thread::processPipe(Side fwd)
 {
-    char *curBlock = fwd == SIDE_FORWARD ? block_fwd : m_blockBwd;
+    char *curBlock = fwd == Side::FORWARD ? block_fwd : m_block_rev;
 
     int bytesReceived;
 
@@ -76,12 +63,12 @@ int Bridge_Thread::processPipe(Side fwd)
         // Stream mode: read and write from the both peers
 
         // TODO: if writer is done...
-        if ((bytesReceived = (fwd == SIDE_FORWARD ? src : m_dstSocket)->partialRead(curBlock, blockSize)) > 0)
+        if ((bytesReceived = (fwd == Side::FORWARD ? src : m_dstSocket)->partialRead(curBlock, blockSize)) > 0)
         {
             {
-                std::lock_guard<std::mutex> lock(fwd == SIDE_FORWARD ? mt_fwd : mt_rev);
+                std::lock_guard<std::mutex> lock(fwd == Side::FORWARD ? mt_fwd : mt_rev);
 
-                if (!(fwd == SIDE_FORWARD ? m_dstSocket : src)->writeFull(curBlock, bytesReceived))
+                if (!(fwd == Side::FORWARD ? m_dstSocket : src)->writeFull(curBlock, bytesReceived))
                 {
                     return -2;
                 }
@@ -93,7 +80,7 @@ int Bridge_Thread::processPipe(Side fwd)
     }
     else
     {
-        if (fwd == SIDE_FORWARD)
+        if (fwd == Side::FORWARD)
         {
             // 0->1 (encapsulate)
 

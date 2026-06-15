@@ -27,7 +27,7 @@ class Socket_Chain : public Socket_Stream
 {
 public:
     Socket_Chain(std::shared_ptr<Socket_Stream> _baseSocket, bool _deleteBaseSocketOnExit = true);
-    virtual ~Socket_Chain();
+    ~Socket_Chain() override;
 
     /**
      * @brief addToChain Add the chain element to the socket chains...
@@ -77,16 +77,6 @@ public:
 private:
     struct sChainVectorItem
     {
-        sChainVectorItem()
-        {
-            r0[0] = 0;
-            w1[0] = true;
-            r0[1] = 0;
-            w1[1] = true;
-            detached = false;
-            finished = false;
-        }
-
         /**
          * @brief sock connected pair sockets (sock[0]: up socket  sock[1]: down socket)
          */
@@ -94,23 +84,23 @@ private:
         std::thread thr1, thr2;
 
         // Results from threads...
-        int r0[2];
-        bool w1[2];
+        int r0[2]{0,0};
+        bool w1[2]{true,true};
 
-        std::atomic<bool> detached, finished;
-        bool deleteFirstSocketOnExit, deleteSecondSocketOnExit;
-        bool modeServer;
+        std::atomic<bool> detached{false}, finished{false};
+        bool deleteFirstSocketOnExit{false}, deleteSecondSocketOnExit{false};
+        bool modeServer{false};
     };
 
     struct sChainTElement
     {
         std::shared_ptr<Socket_Stream> sockets[2];
-        int *r0;
-        bool *w1;
-        bool modeFWD;
+        int *r0 = nullptr;
+        bool *w1 = nullptr;
+        bool modeFWD = false;
     };
 
-    static void chainThread(sChainTElement *chain);
+    static void chainThread(sChainTElement *threadInfo);
 
     bool m_endPointReached;
     void removeSocketsOnExit();

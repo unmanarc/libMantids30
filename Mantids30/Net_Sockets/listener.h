@@ -9,7 +9,7 @@ namespace Mantids30::Network::Sockets {
 class Listener
 {
 public:
-    Listener();
+    Listener() = default;
 
     class Config
     {
@@ -92,7 +92,7 @@ public:
     void *listenerContext;
 
 private:
-    static void incomingConnection(void *, std::shared_ptr<Sockets::Socket_Stream> bsocket);
+    static void incomingConnection(void *context, std::shared_ptr<Sockets::Socket_Stream> socketStream);
 };
 
 } // namespace Mantids30::Network::Sockets

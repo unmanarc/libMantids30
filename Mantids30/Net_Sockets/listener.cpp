@@ -9,7 +9,6 @@ using namespace Mantids30::Network::Sockets;
 using namespace Mantids30;
 using namespace std;
 
-Listener::Listener() {}
 
 void Listener::incomingConnection(void *context, std::shared_ptr<Sockets::Socket_Stream> socketStream)
 {
