@@ -1,8 +1,8 @@
 #include "jsoneval.h"
 
-#include <boost/regex.hpp>
-#include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/regex.hpp>
 
 #include <cctype>
 #include <clocale>
@@ -10,7 +10,6 @@
 
 using namespace std;
 using namespace Mantids30::Scripts::Expressions;
-
 
 JSONEval::JSONEval(const std::string &expr)
 {
@@ -39,19 +38,17 @@ bool JSONEval::compile(std::string expr)
     // PRECOMPILE _STATIC_TEXT
     boost::regex exStaticText("\"(?<STATIC_TEXT>[^\"]*)\"");
     boost::match_results<string::const_iterator> whatStaticText;
-    for (string::const_iterator start = expr.begin(), end =  expr.end();
-         boost::regex_search(start, end, whatStaticText, exStaticText, flags);
-         start = expr.begin(), end =  expr.end())
+    for (string::const_iterator start = expr.begin(), end = expr.end(); boost::regex_search(start, end, whatStaticText, exStaticText, flags); start = expr.begin(), end = expr.end())
     {
         size_t pos = m_staticTexts->size();
         char _staticmsg[128];
 #ifdef _WIN32
-        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%llu",pos);
+        snprintf(_staticmsg, sizeof(_staticmsg), "_STATIC_%llu", pos);
 #else
-        snprintf(_staticmsg,sizeof(_staticmsg),"_STATIC_%lu",pos);
+        snprintf(_staticmsg, sizeof(_staticmsg), "_STATIC_%lu", pos);
 #endif
         m_staticTexts->push_back(string(whatStaticText[1].first, whatStaticText[1].second));
-        boost::replace_all(expr,"\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"" ,_staticmsg);
+        boost::replace_all(expr, "\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"", _staticmsg);
     }
 
     if (expr.find('\"') != std::string::npos)
@@ -74,26 +71,26 @@ bool JSONEval::compile(std::string expr)
     }
 
     // Compress double spaces...
-    while ( expr.find("  ") != std::string::npos)
+    while (expr.find("  ") != std::string::npos)
     {
-        boost::replace_all(expr,"  ", " ");
+        boost::replace_all(expr, "  ", " ");
     }
 
     // detect/compile sub expressions
 
     size_t sePos = 0;
-    while ((sePos=detectSubExpr(expr,sePos))!=expr.size() && sePos!=(expr.size()+1))
+    while ((sePos = detectSubExpr(expr, sePos)) != expr.size() && sePos != (expr.size() + 1))
     {
     }
 
-    if (sePos == (expr.size()+1))
+    if (sePos == (expr.size() + 1))
     {
         m_lastError = "bad parenthesis balancing";
         return false;
     }
 
     // Separate AND/OR
-    if (  expr.find(" && ") != std::string::npos &&  expr.find(" || ") != std::string::npos )
+    if (expr.find(" && ") != std::string::npos && expr.find(" || ") != std::string::npos)
     {
         m_evaluationMode = EVAL_MODE_UNDEFINED;
         m_lastError = "Expression with both and/or and no precedence order";
@@ -105,33 +102,33 @@ bool JSONEval::compile(std::string expr)
         if (expr.find(" && ") != std::string::npos)
         {
             m_evaluationMode = EVAL_MODE_AND;
-            boost::replace_all(expr," && " ,"\n");
+            boost::replace_all(expr, " && ", "\n");
         }
         else
         {
             m_evaluationMode = EVAL_MODE_OR;
-            boost::replace_all(expr," || " ,"\n");
+            boost::replace_all(expr, " || ", "\n");
         }
 
-        if ( expr.find(" ") != std::string::npos )
+        if (expr.find(" ") != std::string::npos)
         {
             m_lastError = "Invalid Operator (only and/or is admitted)";
             return false;
         }
 
         std::vector<std::string> vAtomicExpressions;
-        boost::split(vAtomicExpressions,expr,boost::is_any_of("\n"));
-        for ( const std::string & atomicExpr : vAtomicExpressions)
+        boost::split(vAtomicExpressions, expr, boost::is_any_of("\n"));
+        for (const std::string &atomicExpr : vAtomicExpressions)
         {
-            if ( boost::starts_with(atomicExpr, "_SUBEXPR_") )
+            if (boost::starts_with(atomicExpr, "_SUBEXPR_"))
             {
-                size_t subexpr_pos = strtoul(atomicExpr.substr(9).c_str(),nullptr,10);
-                if (subexpr_pos>=m_subExpressions.size())
+                size_t subexpr_pos = strtoul(atomicExpr.substr(9).c_str(), nullptr, 10);
+                if (subexpr_pos >= m_subExpressions.size())
                 {
                     m_lastError = "Invalid Sub Expression #";
                     return false;
                 }
-                m_atomExpressions.push_back(std::make_pair(nullptr,subexpr_pos));
+                m_atomExpressions.push_back(std::make_pair(nullptr, subexpr_pos));
             }
             else
             {
@@ -142,10 +139,9 @@ bool JSONEval::compile(std::string expr)
                     m_evaluationMode = EVAL_MODE_UNDEFINED;
                     return false;
                 }
-                m_atomExpressions.push_back(std::make_pair(atomExpression,0));
+                m_atomExpressions.push_back(std::make_pair(atomExpression, 0));
             }
         }
-
     }
 
     m_lastError = "";
@@ -158,38 +154,48 @@ bool JSONEval::evaluate(const json &values)
     {
     case EVAL_MODE_AND:
     {
-        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> & i : m_atomExpressions)
+        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> &i : m_atomExpressions)
         {
             if (i.first)
             {
                 if (!i.first->evaluate(values))
+                {
                     return calcNegative(false); // Short circuit.
+                }
             }
             else
             {
-                if ( !m_subExpressions[i.second]->evaluate(values) )
+                if (!m_subExpressions[i.second]->evaluate(values))
+                {
                     return calcNegative(false); // Short circuit.
+                }
             }
         }
         return calcNegative(true);
-    }break;
+    }
+    break;
     case EVAL_MODE_OR:
     {
-        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> & i : m_atomExpressions)
+        for (const std::pair<std::shared_ptr<AtomicExpression>, size_t> &i : m_atomExpressions)
         {
             if (i.first)
             {
                 if (i.first->evaluate(values))
+                {
                     return calcNegative(true); // Short circuit.
+                }
             }
             else
             {
-                if ( m_subExpressions[i.second]->evaluate(values) )
+                if (m_subExpressions[i.second]->evaluate(values))
+                {
                     return calcNegative(true); // Short circuit.
+                }
             }
         }
         return calcNegative(false);
-    }break;
+    }
+    break;
     default:
         return false;
     }
@@ -197,56 +203,58 @@ bool JSONEval::evaluate(const json &values)
 
 size_t JSONEval::detectSubExpr(string &expr, size_t start)
 {
-    int level=0;
+    int level = 0;
     bool inSubExpr = false;
 
-    size_t firstByte=0;
+    size_t firstByte = 0;
 
-    for (size_t i=start;i<expr.size();i++)
+    for (size_t i = start; i < expr.size(); i++)
     {
         if (expr.at(i) == '(')
         {
             if (level == 0)
             {
-                inSubExpr=true;
+                inSubExpr = true;
                 firstByte = i;
             }
             level++;
         }
         else if (expr.at(i) == ')')
         {
-            if (level == 0) 
-                return expr.size()+1;
+            if (level == 0)
+            {
+                return expr.size() + 1;
+            }
             level--;
-            if (level==0 && inSubExpr)
+            if (level == 0 && inSubExpr)
             {
                 /////////////////////////////
-                std::string subexpr = expr.substr(firstByte+1,i-firstByte-1);
+                std::string subexpr = expr.substr(firstByte + 1, i - firstByte - 1);
 
                 size_t pos = m_subExpressions.size();
                 char _staticmsg[128];
 
 #ifdef _WIN32
-                snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%llu",pos);
+                snprintf(_staticmsg, sizeof(_staticmsg), "_SUBEXPR_%llu", pos);
 #else
-                snprintf(_staticmsg,sizeof(_staticmsg),"_SUBEXPR_%lu",pos);
+                snprintf(_staticmsg, sizeof(_staticmsg), "_SUBEXPR_%lu", pos);
 #endif
 
-                if (firstByte>0 && isalnum(expr.at(firstByte-1)))
+                if (firstByte > 0 && isalnum(expr.at(firstByte - 1)))
                 {
                     // FUNCTION, do not replace, next evaluation should be done after it.
-                    return i+1;
+                    return i + 1;
                 }
-                else if (firstByte>0 && expr.at(firstByte-1)=='!')
+                else if (firstByte > 0 && expr.at(firstByte - 1) == '!')
                 {
-                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr,m_staticTexts,true));
-                    boost::replace_first(expr,"!(" + subexpr + ")" ,_staticmsg);
+                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr, m_staticTexts, true));
+                    boost::replace_first(expr, "!(" + subexpr + ")", _staticmsg);
                     return 0;
                 }
                 else
                 {
-                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr,m_staticTexts,false));
-                    boost::replace_first(expr,"(" + subexpr + ")" ,_staticmsg);
+                    m_subExpressions.push_back(std::make_shared<JSONEval>(subexpr, m_staticTexts, false));
+                    boost::replace_first(expr, "(" + subexpr + ")", _staticmsg);
                     return 0;
                 }
             }
@@ -267,7 +275,9 @@ std::string JSONEval::getLastCompilerError() const
 
 bool JSONEval::calcNegative(bool r)
 {
-    if (m_negativeExpression) 
+    if (m_negativeExpression)
+    {
         return !r;
+    }
     return r;
 }
