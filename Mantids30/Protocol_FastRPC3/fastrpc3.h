@@ -98,7 +98,9 @@ public:
         ~TaskParameters()
         {
             if (extraTokenAuth)
+            {
                 delete[] extraTokenAuth;
+            }
         }
 
         std::shared_ptr<Sockets::Socket_Stream> streamBack = nullptr;

@@ -139,7 +139,7 @@ void APISync::APISyncParameters::loadFromInfoTree(const boost::property_tree::pt
     useTLS = ptr.get<bool>("UseTLS", true);
     apiSyncPort = ptr.get<uint16_t>("APISyncPort", 7081);
 
-    if (boost::optional<const boost::property_tree::ptree&> tlsHeaders = ptr.get_child_optional("TLS"))
+    if (boost::optional<const boost::property_tree::ptree &> tlsHeaders = ptr.get_child_optional("TLS"))
     {
         checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
         usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);

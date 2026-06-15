@@ -92,7 +92,9 @@ void FastRPC3::pingAllActiveConnections()
     {
         // Avoid to ping more hosts during program finalization...
         if (m_isFinished)
+        {
             return;
+        }
         // Run unexistant remote function to update the las received message.
         remote(i).executeTask("_pingNotFound_", {}, nullptr, false);
     }
@@ -253,11 +255,17 @@ int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> str
         void (*currentTask)(std::shared_ptr<void>) = LocalRPCTasks::executeLocalTask;
 
         if (params->methodName == "SESSION.LOGIN")
+        {
             currentTask = LocalRPCTasks::login;
+        }
         else if (params->methodName == "SESSION.LOGOUT")
+        {
             currentTask = LocalRPCTasks::logout;
+        }
         else if (params->methodName == "SESSION.GETSSODATA")
+        {
             currentTask = LocalRPCTasks::getSSOData;
+        }
 
         if (!m_threadPool->pushTask(currentTask, params, config.queuePushTimeoutInMS, priority, key))
         {
@@ -354,10 +362,14 @@ int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, b
         case 0:
             // Remote shutdown
             // TODO: clean up on exit and send the signal back?
-            if (!readOK) // <- read timeout.
+            if (!readOK)
+            { // <- read timeout.
                 ret = CONNECTION_READ_TIMEOUT;
+            }
             else
+            {
                 ret = CONNECTION_SHUTDOWN_OK;
+            }
             break;
         default:
             // Invalid protocol.

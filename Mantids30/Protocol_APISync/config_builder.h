@@ -66,7 +66,8 @@ private:
      * @param purpose "signing" or "validation" for logging
      * @return Configured JWT object or nullptr on failure
      */
-    static std::shared_ptr<DataFormat::JWT> createHMACJWT(Program::Logs::AppLog *log, const DataFormat::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose);
+    static std::shared_ptr<DataFormat::JWT> createHMACJWT(Program::Logs::AppLog *log, const DataFormat::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret,
+                                                          const std::string &purpose);
 
     // ==================== RSA FUNCTIONS ====================
 

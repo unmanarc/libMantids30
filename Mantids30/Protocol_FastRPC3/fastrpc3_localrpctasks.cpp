@@ -1,6 +1,6 @@
-#include <Mantids30/DataFormat_JWT/jwt.h>
 #include "fastrpc3.h"
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
+#include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -99,10 +99,10 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
         fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
     }
 
-    if (  !taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName) // method does not require session.
-        || // OR
+    if (!taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName)             // method does not require session.
+        ||                                                                                                   // OR
         (taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName) && session) // method require session and there is session.
-        )
+    )
     {
         // There is an extra authentication token and session is OK.
         if (!sessionFailed)
@@ -116,7 +116,9 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
             case API::Monolith::Endpoints::VALIDATION_OK:
             {
                 if (session)
+                {
                     session->updateLastActivity();
+                }
 
                 // Report:
                 CALLBACK(callbacks->onMethodExecutionStart)(callbacks->context, taskParams, taskParams->payload);
@@ -173,7 +175,6 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
         fullResponse["statusCode"] = ELT_RET_REQSESSION;
     }
 
-
     //Json::StreamWriterBuilder builder;
     //builder.settings_["indentation"] = "";
 
@@ -186,7 +187,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(std::shared_ptr<void> vTaskParams
 void FastRPC3::LocalRPCTasks::getSSOData(std::shared_ptr<void> taskData)
 {
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
-    FastRPC3 * caller = static_cast<FastRPC3 *>(taskParams->caller);
+    FastRPC3 *caller = static_cast<FastRPC3 *>(taskParams->caller);
 
     json data;
     data["loginURL"] = caller->config.loginURL;

@@ -17,24 +17,21 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-json FastRPC3::RemoteMethods::loginViaJWTToken( const std::string & jwtToken, json *error )
+json FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &jwtToken, json *error)
 {
     json jAuthData;
     jAuthData["jwtToken"] = jwtToken;
-    return executeTask( "SESSION.LOGIN", jAuthData, error, true, true);
+    return executeTask("SESSION.LOGIN", jAuthData, error, true, true);
 }
 
-json FastRPC3::RemoteMethods::executeTask(const string &methodName,
-                                          const json &payload,
-                                          json *error,
-                                          bool retryIfDisconnected,
-                                          bool passSessionCommands,
-                                          const string &extraJWTTokenAuth)
+json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &payload, json *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
 {
     json r;
 
     if (!passSessionCommands && boost::starts_with(methodName, "SESSION."))
+    {
         return r;
+    }
 
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -86,17 +83,17 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
 
     uint8_t flags = EXEC_FLAG_NORMAL;
     if (!extraJWTTokenAuth.empty())
-        flags|=EXEC_FLAG_EXTRAAUTH;
+    {
+        flags |= EXEC_FLAG_EXTRAAUTH;
+    }
 
     connection->socketMutex->lock();
 
     bool dataTransmitOK = true;
 
     if (connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
-        connection->stream->writeU<uint64_t>(requestId) &&
-        connection->stream->writeU<uint8_t>(flags) &&
-        connection->stream->writeStringEx<uint8_t>(methodName) &&
-        connection->stream->writeStringEx<uint32_t>(output, parent->config.maxMessageSize))
+        connection->stream->writeU<uint64_t>(requestId) && connection->stream->writeU<uint8_t>(flags) && connection->stream->writeStringEx<uint8_t>(methodName)
+        && connection->stream->writeStringEx<uint32_t>(output, parent->config.maxMessageSize))
     {
     }
     else
@@ -104,11 +101,9 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
         dataTransmitOK = false;
     }
 
-    if ((flags&EXEC_FLAG_EXTRAAUTH)!=0)
+    if ((flags & EXEC_FLAG_EXTRAAUTH) != 0)
     {
-        if (dataTransmitOK
-            && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size())
-            )
+        if (dataTransmitOK && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size()))
         {
         }
         else
@@ -222,13 +217,13 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName,
 
 bool FastRPC3::RemoteMethods::logout(json *error)
 {
-    json x = parent->remote(connectionId).executeTask( "SESSION.LOGOUT", {}, error, true, true);
+    json x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
     return JSON_ASBOOL_D(x, false);
 }
 
 json FastRPC3::RemoteMethods::getSSOData(json *error)
 {
-    return parent->remote(connectionId).executeTask( "SESSION.GETSSODATA", {}, error, true, true );
+    return parent->remote(connectionId).executeTask("SESSION.GETSSODATA", {}, error, true, true);
 }
 
 bool FastRPC3::RemoteMethods::close()

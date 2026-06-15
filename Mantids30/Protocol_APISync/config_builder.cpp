@@ -1,7 +1,7 @@
 #include "config_builder.h"
 
-#include <json/value.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
+#include <json/value.h>
 
 #include "apisync.h"
 #include <Mantids30/Helpers/file.h>
@@ -111,7 +111,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        if (boost::optional<const boost::property_tree::ptree&> x = ptr.get_child_optional("APISync"))
+        if (boost::optional<const boost::property_tree::ptree &> x = ptr.get_child_optional("APISync"))
         {
             apiSyncParameters.loadFromInfoTree(*x);
         }
@@ -134,7 +134,9 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
             algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
         }
         else
+        {
             return nullptr;
+        }
     }
 
     // Validate algorithm
@@ -197,13 +199,13 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 }
 
 std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
-    const std::map<std::string, std::string> &vars)
+                                                                                          const std::map<std::string, std::string> &vars)
 {
     Network::Protocols::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
-        if (boost::optional<const boost::property_tree::ptree&> x = ptr.get_child_optional("APISync"))
+        if (boost::optional<const boost::property_tree::ptree &> x = ptr.get_child_optional("APISync"))
         {
             apiSyncParameters.loadFromInfoTree(*x);
         }
@@ -226,7 +228,9 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
             algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
         }
         else
+        {
             return nullptr;
+        }
     }
 
     // Validate algorithm
@@ -255,7 +259,9 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
                 hmacSecret = (*key);
             }
             else
+            {
                 return nullptr;
+            }
         }
         return createHMACJWT(log, algorithmDetails, hmacSecret, "validation");
     }
@@ -282,7 +288,9 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWT
                 publicKey = (*key);
             }
             else
+            {
                 return nullptr;
+            }
         }
 
         if (publicKey.empty())
@@ -462,7 +470,9 @@ bool JWT::createHMACSecret(Logs::AppLog *log, const std::string &filePath)
         }
     }
     else
+    {
         log->log0(__func__, Logs::LEVEL_ERR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
+    }
 
     return r;
 }
@@ -627,16 +637,24 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                 }
             }
             else
+            {
                 log->log0(__func__, Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (2)");
+            }
         }
         else
+        {
             log->log0(__func__, Logs::LEVEL_ERR, "Failed to generate X.509 RSA Keys (1)");
+        }
     }
 
     if (pkey)
+    {
         EVP_PKEY_free(pkey);
+    }
     if (ctx)
+    {
         EVP_PKEY_CTX_free(ctx);
+    }
 
     return success;
 }
