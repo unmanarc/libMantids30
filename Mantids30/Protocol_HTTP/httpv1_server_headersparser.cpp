@@ -114,7 +114,7 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
     string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
     if (contentLength)
     {
-        clientRequest.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
+        clientRequest.content.setTransmissionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
         if (!clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.

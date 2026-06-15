@@ -3,66 +3,66 @@
 
 using namespace Mantids30::API;
 
-void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &ret, const std::string &requestOrigin) const
+void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &apiReturn, const std::string &requestOrigin) const
 {
     // Set Access-Control-Allow-Origin
     if (!requestOrigin.empty() && allowsOrigin(requestOrigin))
     {
         if (allowsAllOrigins())
         {
-            ret.addHeader("Access-Control-Allow-Origin", "*");
+            apiReturn.addHeader("Access-Control-Allow-Origin", "*");
         }
         else
         {
-            ret.addHeader("Access-Control-Allow-Origin", requestOrigin);
+            apiReturn.addHeader("Access-Control-Allow-Origin", requestOrigin);
         }
     }
     else if (!allowedOrigins.empty())
     {
-        ret.addHeader("Access-Control-Allow-Origin", getOriginsHeader());
+        apiReturn.addHeader("Access-Control-Allow-Origin", getOriginsHeader());
     }
 
     // Set Access-Control-Allow-Methods
     std::string methodsHeader = getMethodsHeader();
     if (!methodsHeader.empty())
     {
-        ret.addHeader("Access-Control-Allow-Methods", methodsHeader);
+        apiReturn.addHeader("Access-Control-Allow-Methods", methodsHeader);
     }
     else
     {
         // Default methods if none configured
-        ret.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        apiReturn.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     }
 
     // Set Access-Control-Allow-Headers
     std::string headersHeader = getHeadersHeader();
     if (!headersHeader.empty())
     {
-        ret.addHeader("Access-Control-Allow-Headers", headersHeader);
+        apiReturn.addHeader("Access-Control-Allow-Headers", headersHeader);
     }
     else
     {
         // Default headers if none configured
-        ret.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        apiReturn.addHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     }
 
     // Set Access-Control-Expose-Headers (only if configured)
     std::string exposeHeaders = getExposeHeadersHeader();
     if (!exposeHeaders.empty())
     {
-        ret.addHeader("Access-Control-Expose-Headers", exposeHeaders);
+        apiReturn.addHeader("Access-Control-Expose-Headers", exposeHeaders);
     }
 
     // Set Access-Control-Allow-Credentials
     if (allowCredentials)
     {
-        ret.addHeader("Access-Control-Allow-Credentials", "true");
+        apiReturn.addHeader("Access-Control-Allow-Credentials", "true");
     }
 
     // Set Access-Control-Max-Age
     if (maxAgeSeconds > 0)
     {
-        ret.addHeader("Access-Control-Max-Age", std::to_string(maxAgeSeconds));
+        apiReturn.addHeader("Access-Control-Max-Age", std::to_string(maxAgeSeconds));
     }
 }
 

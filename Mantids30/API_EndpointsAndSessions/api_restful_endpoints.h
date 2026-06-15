@@ -194,7 +194,7 @@ public:
      * @return The error code indicating the result of the method invocation.
      */
     [[nodiscard]] HandleResult handleEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
-                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut);
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.

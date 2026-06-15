@@ -15,28 +15,28 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
 {
     std::shared_ptr<Socket_Stream> connection;
 
-    log->log0(__func__, Logs::LEVEL_INFO, "Requesting API Synchronization using '%s' for app '%s'.", functionName.c_str(), appName.c_str());
+    log->log0(__func__, Logs::LogLevel::INFO, "Requesting API Synchronization using '%s' for app '%s'.", functionName.c_str(), appName.c_str());
 
     if (proxyParameters->useTLS)
     {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Using TLS connection.");
+        log->log0(__func__, Logs::LogLevel::DEBUG, "Using TLS connection.");
 
         std::shared_ptr<Socket_TLS> socket = std::make_shared<Socket_TLS>();
 
         if (proxyParameters->checkTLSPeer)
         {
-            log->log0(__func__, Logs::LEVEL_DEBUG, "Enabling certificate validation.");
+            log->log0(__func__, Logs::LogLevel::DEBUG, "Enabling certificate validation.");
             socket->setCertValidation(Socket_TLS::CERT_X509_VALIDATE);
             socket->tlsKeys.setUseSystemCertificates(!proxyParameters->usePrivateCA);
             if (proxyParameters->usePrivateCA)
             {
-                log->log0(__func__, Logs::LEVEL_DEBUG, "Using private CA from path: '%s'.", proxyParameters->privateCAPath.c_str());
+                log->log0(__func__, Logs::LogLevel::DEBUG, "Using private CA from path: '%s'.", proxyParameters->privateCAPath.c_str());
                 socket->tlsKeys.loadCAFromPEMFile(proxyParameters->privateCAPath);
             }
         }
         else
         {
-            log->log0(__func__, Logs::LEVEL_WARN, "Skipping TLS certificate validation.");
+            log->log0(__func__, Logs::LogLevel::WARN, "Skipping TLS certificate validation.");
             socket->setCertValidation(Socket_TLS::CERT_X509_NOVALIDATE);
         }
 
@@ -44,7 +44,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     }
     else
     {
-        log->log0(__func__, Logs::LEVEL_WARN, "Using plain TCP connection.");
+        log->log0(__func__, Logs::LogLevel::WARN, "Using plain TCP connection.");
         std::shared_ptr<Socket_TCP> socket = std::make_shared<Socket_TCP>();
         connection = socket;
     }
@@ -52,7 +52,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     // Make the connection
     if (connection->connectTo(proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort))
     {
-        log->log0(__func__, Logs::LEVEL_DEBUG, "Connected to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
+        log->log0(__func__, Logs::LogLevel::DEBUG, "Connected to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
 
         HTTP::HTTPv1_Client client(connection);
 
@@ -80,23 +80,23 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         {
             if (client.serverResponse.status.getCode() != HTTP::Status::S_200_OK)
             {
-                log->log0(__func__, Logs::LEVEL_ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
+                log->log0(__func__, Logs::LogLevel::ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
                           strJSONResponse->getValue()->toStyledString().c_str());
             }
             else
             {
-                log->log0(__func__, Logs::LEVEL_DEBUG, "API request to %s successful.", functionName.c_str());
+                log->log0(__func__, Logs::LogLevel::DEBUG, "API request to %s successful.", functionName.c_str());
                 return *strJSONResponse->getValue();
             }
         }
         else
         {
-            log->log0(__func__, Logs::LEVEL_ERR, "Failed to parse API response. Error code: %d.", static_cast<int>(msg));
+            log->log0(__func__, Logs::LogLevel::ERR, "Failed to parse API response. Error code: %d.", static_cast<int>(msg));
         }
     }
     else
     {
-        log->log0(__func__, Logs::LEVEL_ERR, "Failed to connect to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
+        log->log0(__func__, Logs::LogLevel::ERR, "Failed to connect to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
     }
 
     return {};

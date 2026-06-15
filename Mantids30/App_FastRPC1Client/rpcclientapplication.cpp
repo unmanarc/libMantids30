@@ -20,7 +20,7 @@ using namespace Mantids30::Program;
 
 void RPCClientApplication::_shutdown()
 {
-    LOG_APP->log0(__func__, Logs::LEVEL_INFO, "SIGTERM received.");
+    LOG_APP->log0(__func__, Logs::LogLevel::INFO, "SIGTERM received.");
     rpcShutdown();
 }
 
@@ -86,23 +86,23 @@ bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArgu
 
     if (m_versionCodeName.empty())
     {
-        initLog.log(__func__, "", "", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d, PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
+        initLog.log(__func__, "", "", Logs::LogLevel::INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d, PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
                     m_appVersionSubMinor, getpid());
     }
     else
     {
-        initLog.log(__func__, "", "", Logs::LEVEL_INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
+        initLog.log(__func__, "", "", Logs::LogLevel::INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
                     m_appVersionSubMinor, m_versionCodeName.c_str(), getpid());
     }
 
-    initLog.log0(__func__, Logs::LEVEL_INFO, "Using config dir: %s", configDir.c_str());
-    initLog.log0(__func__, Logs::LEVEL_INFO, "Loading configuration: %s", configPath.c_str());
+    initLog.log0(__func__, Logs::LogLevel::INFO, "Using config dir: %s", configDir.c_str());
+    initLog.log0(__func__, Logs::LogLevel::INFO, "Loading configuration: %s", configPath.c_str());
 
     boost::property_tree::ptree pMainConfig;
 
     if (access(configDir.c_str(), R_OK))
     {
-        initLog.log0(__func__, Logs::LEVEL_CRITICAL, "Missing configuration dir: %s", configDir.c_str());
+        initLog.log0(__func__, Logs::LogLevel::CRITICAL, "Missing configuration dir: %s", configDir.c_str());
         return false;
     }
 
@@ -115,7 +115,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArgu
     }
     else
     {
-        initLog.log0(__func__, Logs::LEVEL_CRITICAL, "Missing configuration file: %s, loading defaults...", configPath.c_str());
+        initLog.log0(__func__, Logs::LogLevel::CRITICAL, "Missing configuration file: %s, loading defaults...", configPath.c_str());
     }
 
     // Copy Config Main
@@ -168,7 +168,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
             // Check CA if present
             if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
-                LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+                LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
             }
         }
         else
@@ -176,13 +176,13 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
             // Check CA always...
             if (!sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
             {
-                LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+                LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont = false;
             }
 
             if (!Globals::getLC_TLSCertFilePath().empty() && !sock.tlsKeys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
             {
-                LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
+                LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
                 cont = false;
             }
 
@@ -196,7 +196,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
                                                                              masterKey->length);
                 if (!keyPassPhrase)
                 {
-                    LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
+                    LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
                     cont = false;
                 }
                 else
@@ -204,7 +204,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
                     // Key Passphrase Available...
                     if (!Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP(Globals::getLC_TLSKeyFilePath().c_str(), (char *) keyPassPhrase->c_str()))
                     {
-                        LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
+                        LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
                         cont = false;
                     }
                 }
@@ -214,14 +214,14 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
                 // No Key Passphrase...
                 if (!Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFile(Globals::getLC_TLSKeyFilePath().c_str()))
                 {
-                    LOG_APP->log0(__func__, Logs::LEVEL_CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
+                    LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
                     cont = false;
                 }
             }
 
             if (cont)
             {
-                LOG_APP->log0(__func__, Logs::LEVEL_INFO, "PKI X.509 credentials loaded from the internal storage");
+                LOG_APP->log0(__func__, Logs::LogLevel::INFO, "PKI X.509 credentials loaded from the internal storage");
             }
         }
     }
@@ -263,6 +263,6 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
     int r = rpcStart(argc, argv, globalArguments);
 
     // Everything is running ok here...
-    LOG_APP->log0(__func__, Logs::LEVEL_INFO, (globalArguments->softwareDescription + " started up, PID: %d").c_str(), getpid());
+    LOG_APP->log0(__func__, Logs::LogLevel::INFO, (globalArguments->softwareDescription + " started up, PID: %d").c_str(), getpid());
     return r;
 }

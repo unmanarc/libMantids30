@@ -99,15 +99,15 @@ public:
     // ------------------ TRANSMISSION AND CONTENT ------------------
     //////////////////////////////////////////////////////////////////
     /**
-     * @brief setTransmitionMode Set the transmission mode (chunked, content-lenght, connection-close)
+     * @brief setTransmissionMode Set the transmission mode (chunked, content-lenght, connection-close)
      * @param value mode
      */
-    void setTransmitionMode(const TransmissionMode &value);
+    void setTransmissionMode(const TransmissionMode &value);
     /**
-     * @brief getTransmitionMode Get the transmission mode (chunked, content-lenght, connection-close)
+     * @brief getTransmissionMode Get the transmission mode (chunked, content-lenght, connection-close)
      * @return mode
      */
-    TransmissionMode getTransmitionMode() const;
+    TransmissionMode getTransmissionMode() const;
     /**
      * @brief setCurrentSize Set content length data size (for receiving/decoding data).
      * @param contentLengthSize size.

@@ -92,7 +92,7 @@ bool HTTP::HTTPv1_Client::changeToNextParser()
         // Parse server cookies...
         parseHeaders2ServerCookies();
         // Parse the transmition mode requested and act according it.
-        m_currentSubParser = parseHeaders2TransmitionMode();
+        m_currentSubParser = parseHeaders2TransmissionMode();
     }
     else // END.
     {
@@ -110,14 +110,14 @@ void HTTP::HTTPv1_Client::parseHeaders2ServerCookies()
     }
 }
 
-Memory::Streams::SubParser *HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
+Memory::Streams::SubParser *HTTP::HTTPv1_Client::parseHeaders2TransmissionMode()
 {
-    serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONNECTION_CLOSE);
+    serverResponse.content.setTransmissionMode(HTTP::Content::TransmissionMode::CONNECTION_CLOSE);
     // Set Content Data Reception Mode.
     if (serverResponse.headers.exist("Content-Length"))
     {
         uint64_t len = serverResponse.headers.getOptionAsUINT64("Content-Length");
-        serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
+        serverResponse.content.setTransmissionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
         if (!len || !serverResponse.content.setCurrentSize(len))
@@ -127,7 +127,7 @@ Memory::Streams::SubParser *HTTP::HTTPv1_Client::parseHeaders2TransmitionMode()
     }
     else if (icontains(serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"), "CHUNKED"))
     {
-        serverResponse.content.setTransmitionMode(HTTP::Content::TransmissionMode::CHUNKS);
+        serverResponse.content.setTransmissionMode(HTTP::Content::TransmissionMode::CHUNKS);
     }
 
     return &serverResponse.content;

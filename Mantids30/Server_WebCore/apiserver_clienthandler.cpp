@@ -143,7 +143,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                         serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                         serverResponse.setContentType("application/json", true);
 
-                        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+                        log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
                         apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                         ret = apiReturn.getHTTPResponseCode();
                         isAPIURI = true;
@@ -168,7 +168,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                             serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                             serverResponse.setContentType("application/json", true);
 
-                            log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
+                            log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
                                 originValidator == defaultOriginValidator ? "default" : "dynamic", requestOrigin.c_str());
 
                             apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
@@ -355,7 +355,7 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
             ret = HTTP::Status::S_403_FORBIDDEN;
         }
 
-        //log(LEVEL_DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
+        //log(LogLevel::DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
     }
     else
     {
@@ -469,7 +469,7 @@ bool APIServer_ClientHandler::isSupportedUserAgent(const std::string &userAgent)
     return false; // No supported browser matched
 }
 
-void APIServer_ClientHandler::log(eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
+void APIServer_ClientHandler::log(LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
 {
     va_list args;
     va_start(args, fmtLog);
@@ -492,7 +492,7 @@ void APIServer_ClientHandler::log(eLogLevels logSeverity, const std::string &mod
 
     if (config->rpcLog)
     {
-        config->rpcLog->logVA(logSeverity, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
+        config->rpcLog->logVA(logLevel, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
     }
 
     va_end(args);
@@ -503,7 +503,7 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     // No token has been configured / for security, the token validation fails.
     if (this->config->jwtValidator == nullptr)
     {
-        log(LEVEL_SECURITY_ALERT, "restAPI", 2048, "JWT token validation disabled: no JWT validator configured. Access denied for security reasons.");
+        log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "JWT token validation disabled: no JWT validator configured. Access denied for security reasons.");
         return false;
     }
 

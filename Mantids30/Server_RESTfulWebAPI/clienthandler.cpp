@@ -1,17 +1,18 @@
 #include "clienthandler.h"
+
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Program_Logs/loglevels.h>
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <json/value.h>
 
+#include <json/value.h>
 #include <json/config.h>
+#include <json/json.h>
+
 #include <memory>
 #include <string>
 
-#include <json/json.h>
-#include <string>
 
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
@@ -47,7 +48,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
 
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_request", "Resource Not Found");
         return apiReturn;
     }
@@ -62,25 +63,25 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
     switch (result)
     {
     case API::RESTful::Endpoints::HandleResult::SUCCESS:
-        log(eLogLevels::LEVEL_DEBUG, "restAPI", 2048, "API REST Endpoint Executed {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::DEBUG, "restAPI", 2048, "API REST Endpoint Executed {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::INVALID_METHOD_MODE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Endpoint Mode {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API REST Invalid Endpoint Mode {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::RESOURCE_NOT_FOUND:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Endpoint Not Found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API REST Endpoint Not Found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::AUTHENTICATION_REQUIRED:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::INVALID_SCOPE:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::INTERNAL_ERROR:
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API REST Internal Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API REST Internal Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     default:
-        log(eLogLevels::LEVEL_ERR, "restAPI", 2048, "API REST Unknown Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::ERR, "restAPI", 2048, "API REST Unknown Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         apiReturn.setError(Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR, "invalid_api_request", "Unknown Error");
         break;
     }
@@ -93,7 +94,7 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     API::APIReturn apiReturn;
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
-        log(eLogLevels::LEVEL_WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=OPTIONS, endpoint=%s}", apiVersion, endpointName.c_str());
+        log(LogLevel::WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=OPTIONS, endpoint=%s}", apiVersion, endpointName.c_str());
         apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_options_request", "Resource Not Found");
         return apiReturn;
     }

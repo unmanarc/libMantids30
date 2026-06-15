@@ -48,7 +48,7 @@ void Cookies_ClientSide::parseFromHeaders(const std::string &cookies_str)
 
 void Cookies_ClientSide::parseCookie(string cookie)
 {
-    size_t found = cookie.find("=");
+    size_t found = cookie.find('=');
 
     if (found != std::string::npos)
     {

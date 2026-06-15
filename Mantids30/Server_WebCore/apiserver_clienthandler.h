@@ -151,12 +151,12 @@ protected:
 
     /**
      * @brief log Log to RPC Log
-     * @param logSeverity
+     * @param logLevel
      * @param module
      * @param outSize
      * @param fmtLog
      */
-    void log(Mantids30::Program::Logs::eLogLevels logSeverity, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
+    void log(Mantids30::Program::Logs::LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
     /**
      * @brief Verifies a JWT token and extracts user data if valid.
      *

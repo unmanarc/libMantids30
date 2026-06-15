@@ -105,7 +105,7 @@ protected:
 
 private:
     void parseHeaders2ServerCookies();
-    Memory::Streams::SubParser *parseHeaders2TransmitionMode();
+    Memory::Streams::SubParser *parseHeaders2TransmissionMode();
 
     bool streamClientHeaders();
 

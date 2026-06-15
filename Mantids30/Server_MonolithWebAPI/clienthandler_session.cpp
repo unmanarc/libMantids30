@@ -16,7 +16,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
 
     if (!WebSessionsManager::validateSessionIDFormat(m_sessionID))
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Invalid session ID format");
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Invalid session ID format");
         // No session to load.
         m_sessionID = "";
         m_impersonatorSessionID = "";
@@ -25,7 +25,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
 
     if (!WebSessionsManager::validateSessionIDFormat(m_impersonatorSessionID))
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Invalid impersonator session ID format");
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Invalid impersonator session ID format");
         // No session to load.
         m_sessionID = "";
         m_impersonatorSessionID = "";
@@ -36,7 +36,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
     if (!m_sessionID.empty() && !validateSessionAntiCSRFMechanism())
     {
         // Invalid request.
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Anti-CSRF Failed. Header does not match with cookie.");
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Anti-CSRF Failed. Header does not match with cookie.");
         return Protocols::HTTP::Status::S_403_FORBIDDEN;
     }
 
@@ -58,7 +58,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
             // check if the IP changed
             if (!m_currentWebSession->compareRemoteAddress(clientRequest.networkClientInfo.REMOTE_ADDR))
             {
-                log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Floating IP not allowed for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
+                log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Floating IP not allowed for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
                 // No session to load.
                 m_sessionID = "";
                 m_impersonatorSessionID = "";
@@ -67,7 +67,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         }
         if (!m_currentWebSession->compareUserAgent(clientRequest.userAgent))
         {
-            log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "User Agent not allowed to change for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
+            log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "User Agent not allowed to change for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
             // No session to load.
             m_sessionID = "";
             m_impersonatorSessionID = "";
@@ -225,7 +225,7 @@ void ClientHandler::sessionLogout()
             serverResponse.addCookieClearSecure("jsSessionTimeout", "/");
             serverResponse.addCookieClearSecure("jsSessionHalfID", "/");
             serverResponse.addCookieClearSecure(CURRENT_SESSIONID_COOKIENAME, "/");
-            log(LEVEL_INFO, "monolithAPI", 2048, "Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
+            log(LogLevel::INFO, "monolithAPI", 2048, "Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
         }
         else
         {
@@ -236,7 +236,7 @@ void ClientHandler::sessionLogout()
             serverResponse.addCookieClearSecure(IMPERSONATOR_SESSIONID_COOKIENAME, "/");
             // Fall back to the impersonator cookie.
             serverResponse.setSecureCookie(CURRENT_SESSIONID_COOKIENAME, m_impersonatorSessionID, m_sessionMaxAge, "/");
-            log(LEVEL_INFO, "monolithAPI", 2048, "Impersonation Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
+            log(LogLevel::INFO, "monolithAPI", 2048, "Impersonation Logged Out {sessionId=%s}", RPCLog::truncateSessionId(cookieSessionID).c_str());
         }
     }
 

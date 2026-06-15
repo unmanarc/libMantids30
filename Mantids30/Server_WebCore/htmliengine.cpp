@@ -67,7 +67,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *cl
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())
         {
-            clientHandler->log(LEVEL_ERR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
+            clientHandler->log(LogLevel::ERR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
             return HTTP::Status::S_404_NOT_FOUND;
         }
         // Pass the file to a string.
@@ -165,7 +165,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
     if (!clientHandler->doesSessionVariableExist(varName))
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        clientHandler->log(LogLevel::ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
         return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
     else
@@ -191,7 +191,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
     if (!isSessionVar && !isJVar)
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        clientHandler->log(LogLevel::ERR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
         return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
     else
@@ -224,7 +224,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scri
     else
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        clientHandler->log(LogLevel::ERR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
         return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
 }
@@ -241,7 +241,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
     else
     {
         // look in post/get
-        clientHandler->log(LEVEL_ERR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        clientHandler->log(LogLevel::ERR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
         return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
     }
 }
@@ -259,7 +259,7 @@ json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_Clie
 
     if (!charReader->parse(functionInput.c_str(), functionInput.c_str() + functionInput.length(), &vars, &errs))
     {
-        clientHandler->log(LEVEL_ERR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
+        clientHandler->log(LogLevel::ERR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
     }
 
     // Regular expression to split the components (eg. //<%jfunc/loginMode:GET/v1/getLoginMode({})%>//)
@@ -348,7 +348,7 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
         {
             boost::replace_all(fileContent, fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
 
-            clientHandler->log(LEVEL_ERR, "HTMLI", 2048, "Included file not found: '%s' in resource '%s'", streamFilePath.c_str(), sRealFullPath.c_str());
+            clientHandler->log(LogLevel::ERR, "HTMLI", 2048, "Included file not found: '%s' in resource '%s'", streamFilePath.c_str(), sRealFullPath.c_str());
         }
 
         // // Move the start iterator to the beginning (maybe we need to reprocess the whole thing after some modifications)...

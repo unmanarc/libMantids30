@@ -94,7 +94,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         serverResponse.headers.replace("Connection", "close");
         serverResponse.headers.remove("Content-Length");
         /////////////////////
-        if (serverResponse.content.getTransmitionMode() == HTTP::Content::TransmissionMode::CHUNKS)
+        if (serverResponse.content.getTransmissionMode() == HTTP::Content::TransmissionMode::CHUNKS)
         {
             serverResponse.headers.replace("Transfer-Encoding", "Chunked");
         }

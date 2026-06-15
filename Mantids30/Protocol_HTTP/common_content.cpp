@@ -158,7 +158,7 @@ std::optional<uint32_t> HTTP::Content::parseHttpChunkSize()
     return chunkSize;
 }
 
-HTTP::Content::TransmissionMode HTTP::Content::getTransmitionMode() const
+HTTP::Content::TransmissionMode HTTP::Content::getTransmissionMode() const
 {
     return m_transmitionMode;
 }
@@ -266,7 +266,7 @@ bool HTTP::Content::streamToUpstream()
     return true;
 }
 
-void HTTP::Content::setTransmitionMode(const TransmissionMode &value)
+void HTTP::Content::setTransmissionMode(const TransmissionMode &value)
 {
     m_transmitionMode = value;
 

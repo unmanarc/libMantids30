@@ -37,7 +37,7 @@ HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl,
     }
     else
     {
-        log(LEVEL_WARN, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
+        log(LogLevel::WARN, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
         return HTTP::Status::S_404_NOT_FOUND;
     }
 }
@@ -83,7 +83,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 
     if (config->permittedLoginOrigins.find(requestOrigin) == config->permittedLoginOrigins.end())
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048, "Unauthorized login attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Unauthorized login attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
         return HTTP::Status::S_401_UNAUTHORIZED;
     }
 
@@ -104,14 +104,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         if (isImpersonation && !(this->config->allowImpersonation))
         {
             // LOG
-            log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonation not allowed on this application.");
+            log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonation not allowed on this application.");
             return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
         }
 
         if (!isImpersonation && m_currentWebSession)
         {
             // LOG
-            log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Login token override is not allowed. Please logout first.");
+            log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Login token override is not allowed. Please logout first.");
             return HTTP::Status::S_403_FORBIDDEN;
         }
 
@@ -129,14 +129,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
                 if (impersonatorUser != jwtImpersonator)
                 {
                     // LOG
-                    log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonator in token does not match with logged in session.");
+                    log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonator in token does not match with logged in session.");
                     return HTTP::Status::S_403_FORBIDDEN;
                 }
 
                 if (jwtDomain != impersonatorDomain && this->config->allowImpersonationBetweenDifferentDomains)
                 {
                     // LOG
-                    log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Impersonation is not allowed between different domains.");
+                    log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonation is not allowed between different domains.");
                     return HTTP::Status::S_403_FORBIDDEN;
                 }
             }
@@ -167,12 +167,12 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         // TODO: log levels ORED...
         if (isImpersonation)
         {
-            log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using impersonation token {user=%s, sessionId=%s} by impersonator {user=%s, sessionId=%s}",
+            log(LogLevel::INFO, "monolithAPI", 2048, "Logged in using impersonation token {user=%s, sessionId=%s} by impersonator {user=%s, sessionId=%s}",
                 currentSessionInfo.authSession->getUser().c_str(), RPCLog::truncateSessionId(m_sessionID).c_str(), impersonatorUser.c_str(), RPCLog::truncateSessionId(impersonatorSessionID).c_str());
         }
         else
         {
-            log(LEVEL_INFO, "monolithAPI", 2048, "Logged in using token {user=%s, sessionId=%s}", currentSessionInfo.authSession->getUser().c_str(), RPCLog::truncateSessionId(m_sessionID).c_str());
+            log(LogLevel::INFO, "monolithAPI", 2048, "Logged in using token {user=%s, sessionId=%s}", currentSessionInfo.authSession->getUser().c_str(), RPCLog::truncateSessionId(m_sessionID).c_str());
         }
 
         // Set the session ID as a session cookie...
@@ -200,7 +200,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
 
             if (!isURLSafe(redirectURL) || !isRedirectPathSafeForAuth(redirectURL))
             {
-                log(LEVEL_SECURITY_ALERT, "monolithAPI", 2048,
+                log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048,
                     "Invalid redirect URL {path=%s, origin=%s}", redirectURL.c_str(), requestOrigin.c_str());
             }
             else
@@ -225,7 +225,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLogoutFunction()
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Failed to logout (external origin or CSRF attempt)");
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Failed to logout (external origin or CSRF attempt)");
         return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
     }
 
@@ -240,7 +240,7 @@ HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
-        log(LEVEL_SECURITY_ALERT, "monolithAPI", 65535, "Failed to update the last activity (external origin or CSRF attempt)");
+        log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Failed to update the last activity (external origin or CSRF attempt)");
         return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
     }
 

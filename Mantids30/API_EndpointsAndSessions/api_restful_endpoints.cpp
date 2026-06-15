@@ -177,7 +177,7 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTPMethod &httpMethodTy
     {
         if (inputParameters.clientRequest->requestLine.getHTTPMethod() == "GET")
         {
-            if (inputParameters.clientRequest->requestLine.getRequestGETVarsRawString().size())
+            if (!inputParameters.clientRequest->requestLine.getRequestGETVarsRawString().empty())
             {
                 // Bad parsing... (should be JSON or empty)
                 apiResponse->setError(HTTP::Status::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during GET");
