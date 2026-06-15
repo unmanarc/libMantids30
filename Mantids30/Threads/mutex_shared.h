@@ -50,6 +50,4 @@ private:
     pthread_rwlock_t m_sharedMutex; ///< The shared mutex.
 };
 
-
-}
-
+} // namespace Mantids30::Threads::Sync

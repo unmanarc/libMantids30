@@ -4,7 +4,6 @@
 
 namespace Mantids30::Threads::Safe {
 
-
 class MapItem
 {
 public:
@@ -26,5 +25,4 @@ protected:
     std::atomic<bool> m_mapFinished{false};
 };
 
-}
-
+} // namespace Mantids30::Threads::Safe

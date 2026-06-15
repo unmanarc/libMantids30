@@ -23,7 +23,7 @@ public:
      * @param mutex A reference to a `Mutex_Shared` object to lock.
      * @param dontlock If set to `true`, the lock is not acquired during construction.
      */
-    Lock_RD(Mutex_Shared& mutex, bool dontAcquireLock = false);
+    Lock_RD(Mutex_Shared &mutex, bool dontAcquireLock = false);
 
     /**
      * @brief Destroys the `Lock_RD` object and releases the lock.
@@ -31,10 +31,8 @@ public:
     ~Lock_RD();
 
 private:
-    Mutex_Shared* m_sharedMutex; ///< A pointer to the shared mutex.
-    bool m_dontAcquireLock; ///< Whether to acquire the lock during construction.
+    Mutex_Shared *m_sharedMutex; ///< A pointer to the shared mutex.
+    bool m_dontAcquireLock;      ///< Whether to acquire the lock during construction.
 };
 
-}
-
-
+} // namespace Mantids30::Threads::Sync

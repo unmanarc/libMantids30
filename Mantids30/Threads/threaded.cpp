@@ -50,7 +50,7 @@ void Threaded::setThreadStopper(void (*threadStopper)(void *), void *context)
     this->m_contextStopper = context;
 }
 
-void Threaded::bgRunner(const std::shared_ptr<Threaded> & t)
+void Threaded::bgRunner(const std::shared_ptr<Threaded> &t)
 {
     t->execRun();
 }

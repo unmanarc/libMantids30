@@ -21,7 +21,7 @@ public:
      *
      * @param intervalMS The interval between each garbage collection in milliseconds.
      */
-    GarbageCollector(const uint32_t& intervalMS = 3000);
+    GarbageCollector(const uint32_t &intervalMS = 3000);
     /**
      * @brief Destructs the GarbageCollector object and stops the garbage collector thread.
      */
@@ -34,7 +34,7 @@ public:
      * @param parameter The object to pass to the garbage collection function.
      * @param threadName The name of the garbage collector thread.
      */
-    void startGarbageCollector(void (*garbageCollectorFunction)(void* parameter), void* parameter, const char* threadName = "GC:Generic");
+    void startGarbageCollector(void (*garbageCollectorFunction)(void *parameter), void *parameter, const char *threadName = "GC:Generic");
 
     /**
      * @brief Loops the garbage collector function until it completes. (internal function, don't call)
@@ -46,7 +46,7 @@ public:
      *
      * @param msInterval The interval between each garbage collection in milliseconds.
      */
-    void setGarbageCollectorInterval(const uint32_t& msInterval);
+    void setGarbageCollectorInterval(const uint32_t &msInterval);
 
     /**
      * @brief stopGarbageCollector Stop the garbage collector (manually)
@@ -60,21 +60,17 @@ private:
      * @param gcThreadClass A pointer to the GarbageCollector object.
      * @param threadName The name of the garbage collector thread.
      */
-    static void backgroundGarbageCollectorLoop(GarbageCollector* gcThreadClass, const char* threadName);
+    static void backgroundGarbageCollectorLoop(GarbageCollector *gcThreadClass, const char *threadName);
 
-    std::mutex m_endNotificationMutex; ///< The mutex to ensure thread safety when notifying the end of the garbage collector thread loop.
+    std::mutex m_endNotificationMutex;                  ///< The mutex to ensure thread safety when notifying the end of the garbage collector thread loop.
     std::condition_variable m_endNotificationCondition; ///< The condition variable to wait for the end of the garbage collector thread loop.
 
-    void (*m_gcFunction)(void* parameter); ///< The garbage collection function to run intervalically.
-    void* m_gcParameter; ///< The object to pass to the garbage collection function.
+    void (*m_gcFunction)(void *parameter); ///< The garbage collection function to run intervalically.
+    void *m_gcParameter;                   ///< The object to pass to the garbage collection function.
 
-    bool m_gcFinished; ///< Whether the garbage collector thread has finished.
-    std::thread m_gcThreadObject; ///< The garbage collector thread object.
+    bool m_gcFinished;                    ///< Whether the garbage collector thread has finished.
+    std::thread m_gcThreadObject;         ///< The garbage collector thread object.
     std::atomic<uint32_t> m_gcIntervalMs; ///< The interval between each garbage collection in milliseconds.
 };
 
-
-
-}
-
-
+} // namespace Mantids30::Threads

@@ -4,8 +4,8 @@ using namespace Mantids30::Threads::Sync;
 
 Mutex_Shared::Mutex_Shared()
 {
-    int i=0;
-    if ((i=pthread_rwlock_init(&m_sharedMutex, nullptr)))
+    int i = 0;
+    if ((i = pthread_rwlock_init(&m_sharedMutex, nullptr)))
     {
         throw std::runtime_error("R/W Mutex Creating Failed with " + std::to_string(i));
     }
@@ -18,8 +18,8 @@ Mutex_Shared::~Mutex_Shared()
 
 void Mutex_Shared::lock()
 {
-    int i=0;
-    if ((i=pthread_rwlock_wrlock(&m_sharedMutex)))
+    int i = 0;
+    if ((i = pthread_rwlock_wrlock(&m_sharedMutex)))
     {
         throw std::runtime_error("Write Mutex Lock Failed with " + std::to_string(i));
     }
@@ -27,17 +27,17 @@ void Mutex_Shared::lock()
 
 void Mutex_Shared::unlock()
 {
-    int i=0;
-    if ((i=pthread_rwlock_unlock(&m_sharedMutex)))
+    int i = 0;
+    if ((i = pthread_rwlock_unlock(&m_sharedMutex)))
     {
-        throw std::runtime_error("Mutex Unlock Failed with " + std::to_string(i) );
+        throw std::runtime_error("Mutex Unlock Failed with " + std::to_string(i));
     }
 }
 
 void Mutex_Shared::lockShared()
 {
-    int i=0;
-    if ((i=pthread_rwlock_rdlock(&m_sharedMutex)))
+    int i = 0;
+    if ((i = pthread_rwlock_rdlock(&m_sharedMutex)))
     {
         throw std::runtime_error("Read Mutex Lock Failed." + std::to_string(i));
     }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <thread>
 #include <atomic>
 #include <memory>
+#include <thread>
 
 namespace Mantids30::Threads {
 
@@ -65,17 +65,12 @@ private:
     void join();
 
     // Member variables:
-    void (*m_threadRunner)(void *runnerArg);  // The function executed in the thread.
-    void * m_contextRunner;  // The object passed to the threadRunner function.
-    void (*m_threadStopper)(void *stopperArg);  // The function called when stopping the thread.
-    void * m_contextStopper;  // The object passed to the threadStopper function.
-    std::atomic<bool> m_isRunning;  // Whether the thread is currently running.
-    std::thread m_threadObj;  // The thread object.
+    void (*m_threadRunner)(void *runnerArg);   // The function executed in the thread.
+    void *m_contextRunner;                     // The object passed to the threadRunner function.
+    void (*m_threadStopper)(void *stopperArg); // The function called when stopping the thread.
+    void *m_contextStopper;                    // The object passed to the threadStopper function.
+    std::atomic<bool> m_isRunning;             // Whether the thread is currently running.
+    std::thread m_threadObj;                   // The thread object.
 };
 
-
-
-
-}
-
-
+} // namespace Mantids30::Threads
