@@ -170,7 +170,7 @@ bool Socket_Chain_AES::postAcceptSubInitialization()
     m_readParams.handshake = *hshdr;
 
     // Check the decryption:
-    if (memcmp(m_readParams.handshake.magicBytes, "IHDR", 4))
+    if (memcmp(m_readParams.handshake.magicBytes, "IHDR", 4) != 0)
     {
         return false;
     }
