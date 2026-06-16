@@ -58,7 +58,7 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
     {
-        return ValidationResult::VALIDATION_ENDPOINTNOTFOUND; // Endpoint not found, return validation code indicating this
+        return ValidationResult::ENDPOINTNOTFOUND; // Endpoint not found, return validation code indicating this
     }
 
     // Checks if an active session is required for the specified endpoint and validates it
@@ -66,14 +66,14 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
     {
         if (!session)
         {
-            return ValidationResult::VALIDATION_NOTAUTHORIZED; // No session provided but one is required, return unauthorized code
+            return ValidationResult::NOTAUTHORIZED; // No session provided but one is required, return unauthorized code
         }
     }
 
     // Validates whether the session meets the roles and scopes requirements for the endpoint
     if (m_endpointsScopes.validateEndpoint(session, endpointName, rolesLeft, scopesLeft))
     {
-        return ValidationResult::VALIDATION_OK; // All requirements met, return validation code indicating success
+        return ValidationResult::SUCCESS; // All requirements met, return validation code indicating success
     }
     else
     {
@@ -81,7 +81,7 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
         (*reasons)["rolesLeft"] = Helpers::setToJSON(rolesLeft);
         (*reasons)["scopesLeft"] = Helpers::setToJSON(scopesLeft);
 
-        return ValidationResult::VALIDATION_NOTAUTHORIZED; // Requirements not met, return unauthorized code
+        return ValidationResult::NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }
 }
 

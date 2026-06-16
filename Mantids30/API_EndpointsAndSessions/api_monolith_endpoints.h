@@ -18,9 +18,9 @@ public:
     // Enumerations for endpoint validation and return codes
     enum class ValidationResult : std::uint8_t
     {
-        VALIDATION_OK = 0x0,               // Endpoint is valid
-        VALIDATION_ENDPOINTNOTFOUND = 0x1, // Endpoint not found
-        VALIDATION_NOTAUTHORIZED = 0x2     // Not authorized to access the endpoint
+        SUCCESS = 0x0,          // Endpoint is valid
+        ENDPOINTNOTFOUND = 0x1, // Endpoint not found
+        NOTAUTHORIZED = 0x2     // Not authorized to access the endpoint
     };
 
     enum class StatusCode : std::int16_t

@@ -44,8 +44,8 @@ void RPCClientApplication::_initvars(int argc, char *argv[], Arguments::GlobalAr
     defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir;
 #endif
 
-    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir", "Configuration directory", m_defaultConfigDir, Mantids30::Memory::Abstract::Var::TYPE_STRING);
-    globalArguments->addCommandLineOption("Encoding", 0, "encode", "Encode Configuration String", "", Mantids30::Memory::Abstract::Var::TYPE_STRING);
+    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir", "Configuration directory", m_defaultConfigDir, Mantids30::Memory::Abstract::Var::Type::STRING);
+    globalArguments->addCommandLineOption("Encoding", 0, "encode", "Encode Configuration String", "", Mantids30::Memory::Abstract::Var::Type::STRING);
 }
 
 bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArguments *globalArguments)

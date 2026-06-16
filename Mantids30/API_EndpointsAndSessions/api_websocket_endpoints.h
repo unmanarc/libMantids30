@@ -75,7 +75,7 @@ public:
     /**
      * @brief Handle WebSocket event and return the error code.
      *
-     * @param eventType The type of WebSocket event (SESSION_START, MESSAGE_RECEIVED, SESSION_END).
+     * @param eventType The type of WebSocket event (EventType::SESSION_START, EventType::MESSAGE_RECEIVED, EventType::SESSION_END).
      * @param parameters The WebSocket parameters.
      * @return The error code indicating the result of event handling.
      */

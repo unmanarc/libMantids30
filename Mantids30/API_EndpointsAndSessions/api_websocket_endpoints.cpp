@@ -36,16 +36,16 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
 
     switch (eventType)
     {
-    case Network::Protocol::WebSocket::SESSION_START:
+    case Network::Protocol::WebSocket::EventType::SESSION_START:
         handler = endpointDef.sessionStartHandler;
         break;
-    case Network::Protocol::WebSocket::RECEIVED_MESSAGE_TEXT:
+    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT:
         handler = endpointDef.textMessageReceivedHandler;
         break;
-    case Network::Protocol::WebSocket::RECEIVED_MESSAGE_BINARY:
+    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_BINARY:
         handler = endpointDef.binaryMessageReceivedHandler;
         break;
-    case Network::Protocol::WebSocket::SESSION_END:
+    case Network::Protocol::WebSocket::EventType::SESSION_END:
         handler = endpointDef.sessionEndHandler;
         break;
     default:
@@ -62,7 +62,7 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
         Json::Value header;
         std::string errs;
         std::vector<char> buf = content->copyToBuffer();
-        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocol::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::SESSION_END))
+        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
         {
             if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
             {
