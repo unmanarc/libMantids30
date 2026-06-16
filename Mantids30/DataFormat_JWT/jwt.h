@@ -172,9 +172,6 @@ public:
 
         // Copy constructor (thread-safe)
         Cache(const Cache &other)
-            : m_cacheMaxByteCount(0)
-            , m_cacheCurrentByteCount(0)
-            , m_enabled(false)
         {
             // Lock the destination's mutex to prevent concurrent modifications
             boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
@@ -218,7 +215,7 @@ public:
         void setEnabled(bool newEnabled);
 
     private:
-        std::size_t m_cacheMaxByteCount = 1 * 1024 * 1024;
+        std::size_t m_cacheMaxByteCount = 0;
         std::size_t m_cacheCurrentByteCount = 0;
         bool m_enabled = false;
         std::unordered_map<std::string, bool> m_tokenCache;
@@ -279,10 +276,10 @@ public:
         boost::shared_mutex m_revokedTokensMutex;
 
         std::thread m_garbageCollectorThread;
-        std::atomic_bool m_stopGarbageCollector;
+        std::atomic_bool m_stopGarbageCollector {false};
         std::condition_variable m_garbageCollectorCondition;
         std::mutex m_garbageCollectorMutex;
-        std::chrono::seconds m_garbageCollectorInterval;
+        std::chrono::seconds m_garbageCollectorInterval {std::chrono::seconds(10)};
     };
 
     /**
