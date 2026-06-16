@@ -351,10 +351,8 @@ std::string MIME_HeaderOption::toString()
 bool MIME_HeaderOption::isPermited7bitCharset(const std::string &varX)
 {
     // No strange chars on our vars...
-    for (size_t i = 0; i < varX.size(); i++)
-    {
-        if (varX[i] < 32 || varX[i] > 126)
-        {
+    for (char i : varX) {
+        if (i < 32 || i > 126) {
             return false;
         }
     }
