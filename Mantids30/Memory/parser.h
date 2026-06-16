@@ -23,28 +23,30 @@ namespace Mantids30::Memory::Streams {
 class Parser : public Memory::Streams::StreamableObject
 {
 public:
-    Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
+    Parser(const std::shared_ptr<Memory::Streams::StreamableObject> &value, bool clientMode);
     ~Parser() override = default;
+    Parser(Parser &) = delete;
 
-    enum ParsingDebugOptions
+    enum DebugOptions : uint8_t
     {
-        PARSING_DEBUG_PRINT_FAILED_STATUS = 0x1,
-        PARSING_DEBUG_PRINT_DATA_PARSED = 0x2,
-        PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS = 0x4
+        NONE = 0,
+        PRINT_FAILED_STATUS = 0x1,
+        PRINT_DATA_PARSED = 0x2,
+        PRINT_INTERNAL_DYNAMICS = 0x4
     };
 
-    enum ErrorMSG
+    enum class ParseResult : int8_t
     {
-        PARSING_SUCCEED = 0,
-        PARSING_ERR_INIT = -1,
-        PARSING_ERR_PARSING = -2,
+        SUCCEED = 0,
+        ERR_INIT = -1,
+        ERR_PARSING = -2,
     };
 
     /**
      * @brief parseObject Parse streamable object (init/parse/end)
-     * @param err: (0:succeed, -1:failed to initialize, -2:failed to read, -3:failed to parse/write)
+     * @param result: (0:succeed, -1:failed to initialize, -2:failed to read, -3:failed to parse/write)
      */
-    void parseObject(ErrorMSG *err);
+    void parseObject(ParseResult *result);
 
     //////////////////////////////////////////
     std::optional<size_t> write(const void *buf, const size_t &count) override;
@@ -56,10 +58,10 @@ public:
      */
     void setMaxTTL(const size_t &value);
 
-    void setStreamable(std::shared_ptr<StreamableObject> value);
+    void setStreamable(const std::shared_ptr<StreamableObject> & value);
     void setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject);
 
-    void setParsingDebugOptions(uint32_t newParsingDebugOptions) { parsingDebugOptions = newParsingDebugOptions; }
+    void setParsingDebugOptions(DebugOptions newParsingDebugOptions) { parsingDebugOptions = newParsingDebugOptions; }
 
 protected:
     // Avoid to copy streaming things...
@@ -67,7 +69,6 @@ protected:
     {
         return *this; // NO-OP Copy...
     }
-    Parser(Parser &) = delete;
 
     //////////////////////////////////////////
     // Virtual functions to initialize the protocol.
@@ -102,7 +103,7 @@ private:
      */
     std::optional<size_t> parseData(const void *buf, size_t count, size_t *ttl);
 
-    uint32_t parsingDebugOptions = 0;
+    Parser::DebugOptions parsingDebugOptions = DebugOptions::NONE;
 };
 
 } // namespace Mantids30::Memory::Streams

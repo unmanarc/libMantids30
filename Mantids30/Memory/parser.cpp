@@ -5,15 +5,15 @@
 
 using namespace Mantids30::Memory::Streams;
 
-Parser::Parser(std::shared_ptr<StreamableObject> value, bool clientMode)
+Parser::Parser(const std::shared_ptr<StreamableObject> & value, bool clientMode)
 {
     this->m_clientMode = clientMode;
     this->m_streamableObject = value;
 }
 
-void Parser::parseObject(Parser::ErrorMSG *err)
+void Parser::parseObject(Parser::ParseResult *result)
 {
-    *err = PARSING_SUCCEED;
+    *result = ParseResult::SUCCEED;
 
     this->writeStatus.finished = false;
 
@@ -48,7 +48,7 @@ void Parser::parseObject(Parser::ErrorMSG *err)
         // Protocol Failed Somewhere...
         if (!succeed)
         {
-            *err = PARSING_ERR_PARSING;
+            *result = ParseResult::ERR_PARSING;
         }
 
         // Call: Finish the protocol (either failed or not).
@@ -63,7 +63,7 @@ void Parser::parseObject(Parser::ErrorMSG *err)
     else
     {
         // status: failed.
-        *err = PARSING_ERR_INIT;
+        *result = ParseResult::ERR_INIT;
     }
 }
 
@@ -78,18 +78,18 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
         size_t ttl = 0;
         std::optional<size_t> r = parseData("", 0, &ttl);
 
-        if (r == std::nullopt && (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS))
+        if (r == std::nullopt && (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS))
         {
-            fprintf(stderr, "\033[31m[PARSING_ERROR] - %p -  During protocol finalization (Write EOF) for parser\033[0m\n", this);
+            fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p -  During protocol finalization (Write EOF) for parser\033[0m\n", this);
             fflush(stderr);
         }
 
         return r;
     }
 
-    if (parsingDebugOptions & PARSING_DEBUG_PRINT_DATA_PARSED)
+    if (parsingDebugOptions & Parser::DebugOptions::PRINT_DATA_PARSED)
     {
-        fprintf(stderr, "[PARSING_DEBUG] - %p - Writting %lu bytes on parser (Current SubParser: %s)\n", this, count,
+        fprintf(stderr, "[ParseResult::DEBUG] - %p - Writting %lu bytes on parser (Current SubParser: %s)\n", this, count,
                 (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
         fflush(stderr);
         BIO_dump_fp(stderr, static_cast<const char *>(buf), count);
@@ -99,19 +99,19 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
     // The content streamed is parsed here:
     std::optional<size_t> r = parseData(buf, count, &ttl);
 
-    if (parsingDebugOptions & PARSING_DEBUG_PRINT_DATA_PARSED)
+    if (parsingDebugOptions & Parser::DebugOptions::PRINT_DATA_PARSED)
     {
         if (r.has_value())
         {
-            fprintf(stderr, "[PARSING_DEBUG] - %p - %ld bytes written on parser (Current SubParser: %s)\n", this, r.value(),
+            fprintf(stderr, "[ParseResult::DEBUG] - %p - %ld bytes written on parser (Current SubParser: %s)\n", this, r.value(),
                     (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
             fflush(stderr);
         }
     }
 
-    if (r == std::nullopt && (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS))
+    if (r == std::nullopt && (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS))
     {
-        fprintf(stderr, "\033[31m[PARSING_ERROR] - %p -  During protocol data streaming\033[0m\n", this);
+        fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p -  During protocol data streaming\033[0m\n", this);
         fflush(stderr);
     }
 
@@ -123,9 +123,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
     if (*ttl > m_maxTTL)
     {
         // TODO: reset TTL?
-        if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
+        if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
         {
-            fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - Parser reaching TTL %zu\033[0m\n", this, *ttl);
+            fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Parser reaching TTL %zu\033[0m\n", this, *ttl);
             fflush(stderr);
         }
 
@@ -150,9 +150,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         // Failed to write this into the parser...
         if (writtenBytes == std::nullopt)
         {
-            if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
+            if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - Failed to write data into parser %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Failed to write data into parser %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
 
                 fflush(stderr);
@@ -168,9 +168,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         {
         case SubParser::ParseResult::GOTO_NEXT_SUBPARSER:
         {
-            if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
+            if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -179,9 +179,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             // Check if there is next parser...
             if (!changeToNextParser())
             {
-                if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
+                if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
                 {
-                    fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - Subprotocol %s failed to change to the next subparser\033[0m\n", this,
+                    fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Subprotocol %s failed to change to the next subparser\033[0m\n", this,
                             (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                     fflush(stderr);
                 }
@@ -189,9 +189,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
                 return std::nullopt;
             }
 
-            if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
+            if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER changed to %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER changed to %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -209,9 +209,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         break;
         case SubParser::ParseResult::GET_MORE_DATA:
         {
-            if (parsingDebugOptions & PARSING_DEBUG_PRINT_INTERNAL_DYNAMICS)
+            if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[PARSING_INTERNAL] - %p - ParseResult::GET_MORE_DATA requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GET_MORE_DATA requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
             // More data required... (TODO: check this)
@@ -223,9 +223,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         break;
             // Bad parsing... end here.
         case SubParser::ParseResult::ERROR:
-            if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
+            if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[PARSING_ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -235,9 +235,9 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
     }
     else
     {
-        if (parsingDebugOptions & PARSING_DEBUG_PRINT_FAILED_STATUS)
+        if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
         {
-            fprintf(stderr, "\033[31m[PARSING_OOB] - %p - Parsing was finished and we are trying to write more data here.\033[0m\n", this);
+            fprintf(stderr, "\033[31m[ParseResult::OOB] - %p - Parsing was finished and we are trying to write more data here.\033[0m\n", this);
             fflush(stderr);
             BIO_dump_fp(stderr, static_cast<const char *>(buf), count);
             fflush(stderr);
@@ -285,7 +285,7 @@ void Parser::setPreStreamableObject(const std::shared_ptr<Memory::Streams::Strea
     m_preStreamableObject = newPreStreamableObject;
 }
 
-void Parser::setStreamable(std::shared_ptr<Memory::Streams::StreamableObject> value)
+void Parser::setStreamable(const std::shared_ptr<Memory::Streams::StreamableObject> & value)
 {
     m_streamableObject = value;
 }
