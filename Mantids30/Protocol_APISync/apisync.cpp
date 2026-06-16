@@ -64,7 +64,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         // Set POST as request method
         client.clientRequest.requestLine.setHTTPMethod("POST");
         client.clientRequest.requestLine.setRequestURI("/api/v1/" + functionName);
-        client.clientRequest.getVars(HTTP::VARS_GET)->addVar("APP", std::make_shared<Memory::Containers::B_Chunks>(appName));
+        client.clientRequest.getVarsBySource(HTTP::Source::GET)->addVar("APP", std::make_shared<Memory::Containers::B_Chunks>(appName));
         client.clientRequest.content.setStreamableObj(strJSONRequest);
         client.clientRequest.headers.add("Content-Type", "application/json");
 

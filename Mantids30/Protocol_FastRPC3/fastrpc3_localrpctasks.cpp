@@ -113,7 +113,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
 
             switch (i)
             {
-            case API::Monolith::Endpoints::ValidationResult::VALIDATION_OK:
+            case API::Monolith::Endpoints::ValidationResult::SUCCESS:
             {
                 if (session)
                 {
@@ -151,7 +151,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                 }
             }
             break;
-            case API::Monolith::Endpoints::ValidationResult::VALIDATION_NOTAUTHORIZED:
+            case API::Monolith::Endpoints::ValidationResult::NOTAUTHORIZED:
             {
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
@@ -159,7 +159,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                 fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::NOT_AUTHORIZED);
             }
             break;
-            case API::Monolith::Endpoints::ValidationResult::VALIDATION_ENDPOINTNOTFOUND:
+            case API::Monolith::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
