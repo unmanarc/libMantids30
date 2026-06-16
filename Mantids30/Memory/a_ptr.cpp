@@ -45,7 +45,7 @@ bool PTR::fromString(const std::string &value)
 
     if (value.empty())
     {
-        this->m_value = 0;
+        this->m_value = nullptr;
         return true;
     }
     this->m_value = (void *) (strtol(value.c_str(), nullptr, 16));

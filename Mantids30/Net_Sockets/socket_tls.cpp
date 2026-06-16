@@ -37,7 +37,7 @@ Socket_TLS::Socket_TLS()
     sigset_t set;
     sigemptyset(&set);
     sigaddset(&set, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &set, NULL);
+    pthread_sigmask(SIG_BLOCK, &set, nullptr);
 #endif
 
     setCertValidation(X509ValidationOption::VALIDATE);
@@ -67,7 +67,7 @@ void Socket_TLS::prepareTLS()
     sigset_t sigPipeSet;
     sigemptyset(&sigPipeSet);
     sigaddset(&sigPipeSet, SIGPIPE);
-    pthread_sigmask(SIG_BLOCK, &sigPipeSet, NULL);
+    pthread_sigmask(SIG_BLOCK, &sigPipeSet, nullptr);
 #endif
 }
 

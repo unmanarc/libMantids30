@@ -386,7 +386,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
 bool APIServer_ClientHandler::versionIsSupported(const std::string &versionStr, int minVersion)
 {
-    int version = strtol(versionStr.c_str(), 0, 10);
+    int version = strtol(versionStr.c_str(), nullptr, 10);
 
     // Failed to retrieve the version.
     if (version < 0)

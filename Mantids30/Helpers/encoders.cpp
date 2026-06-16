@@ -39,7 +39,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
 
             for (x = 0; (x < 3); x++)
             {
-                decodedString += cont3[x] ^ dis(gen);
+                decodedString += std::to_string(cont3[x] ^ dis(gen));
             }
             x = 0;
         }
@@ -498,7 +498,7 @@ unsigned char Encoders::hexPairToByte(const char *bytes)
 
     // Valid HEX Code:
     char hexStr[3] = {static_cast<char>(bytes[0]), static_cast<char>(bytes[1]), '\0'};
-    return (unsigned char) strtol(hexStr, NULL, 16);
+    return (unsigned char) strtol(hexStr, nullptr, 16);
 }
 
 bool Encoders::getIfMustBeURLEncoded(char c, const URL_ENCODING_TYPE &urlEncodingType)

@@ -361,7 +361,7 @@ std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &valu
         }
         else
         {
-            r.second = std::strtoul(detectedNetmask.c_str(), 0, 10);
+            r.second = std::strtoul(detectedNetmask.c_str(), nullptr, 10);
             if (r.second > 32)
             {
                 if (ok)

@@ -146,7 +146,7 @@ LocalSysInfo OS::getLocalSystemInfo()
                 {
                     if (memTotalTokenized[2] == "kB")
                     {
-                        memTotal = strtoull(memTotalTokenized[1].c_str(), 0, 10) * 1024;
+                        memTotal = strtoull(memTotalTokenized[1].c_str(), nullptr, 10) * 1024;
                     }
                 }
             }
