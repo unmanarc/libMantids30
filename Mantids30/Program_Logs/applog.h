@@ -1,6 +1,9 @@
 #pragma once
 
 #include "logbase.h"
+#include "logcolors.h"
+#include "loglevels.h"
+
 
 namespace Mantids30::Program::Logs {
 

@@ -59,17 +59,17 @@ void LogBase::setDebug(bool value)
 
 bool LogBase::isUsingSyslog() const
 {
-    return (m_logMode & static_cast<unsigned int>(Mode::SYSLOG)) == static_cast<unsigned int>(Mode::SYSLOG);
+    return (m_logMode & Mode::SYSLOG) == Mode::SYSLOG;
 }
 
 bool LogBase::isUsingStandardLog() const
 {
-    return (m_logMode & static_cast<unsigned int>(Mode::STANDARD)) == static_cast<unsigned int>(Mode::STANDARD);
+    return (m_logMode & Mode::STANDARD) == Mode::STANDARD;
 }
 
 bool LogBase::isUsingWindowsEventLog() const
 {
-    return (m_logMode & static_cast<unsigned int>(Mode::WINEVENTS)) == static_cast<unsigned int>(Mode::WINEVENTS);
+    return (m_logMode & Mode::WINEVENTS) == Mode::WINEVENTS;
 }
 
 void LogBase::printDate(FILE *fp) const

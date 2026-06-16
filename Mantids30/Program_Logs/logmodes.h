@@ -4,7 +4,7 @@
 
 namespace Mantids30::Program::Logs {
 
-enum class Mode : uint8_t
+enum Mode : uint8_t
 {
     SYSLOG = 0x1,
     STANDARD = 0x2,

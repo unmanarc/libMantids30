@@ -1,7 +1,5 @@
 #pragma once
 
-#include "logcolors.h"
-#include "loglevels.h"
 #include "logmodes.h"
 
 #include <mutex>
