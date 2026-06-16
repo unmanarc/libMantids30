@@ -21,7 +21,7 @@ struct CommandLineOption
         defaultValVar = nullptr;
         shortOption = 0;
         isMandatory = true;
-        optionType = Mantids30::Memory::Abstract::Var::TYPE_BOOL;
+        optionType = Mantids30::Memory::Abstract::Var::Type::BOOL;
     }
 
     std::string defaultValue; /**< The default value for the option. */

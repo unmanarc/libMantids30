@@ -314,12 +314,12 @@ void WebLog::printLogToFile(const json *value)
             std::string userAgent = JSON_ASSTRING(*value, "userAgent", "-");
 
             // URL encode (sanitize) string fields for log format
-            referer = Helpers::Encoders::toURL(referer, Helpers::Encoders::QUOTEPRINT_ENCODING);
-            remoteHost = Helpers::Encoders::toURL(remoteHost, Helpers::Encoders::QUOTEPRINT_ENCODING);
-            identity = Helpers::Encoders::toURL(identity, Helpers::Encoders::QUOTEPRINT_ENCODING);
-            user = Helpers::Encoders::toURL(user, Helpers::Encoders::QUOTEPRINT_ENCODING);
-            userAgent = Helpers::Encoders::toURL(userAgent, Helpers::Encoders::QUOTEPRINT_ENCODING);
-            requestLine = Helpers::Encoders::toURL(requestLine, Helpers::Encoders::QUOTEPRINT_ENCODING);
+            referer = Helpers::Encoders::toURL(referer, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            remoteHost = Helpers::Encoders::toURL(remoteHost, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            identity = Helpers::Encoders::toURL(identity, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            userAgent = Helpers::Encoders::toURL(userAgent, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            requestLine = Helpers::Encoders::toURL(requestLine, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
             // Convert timestamp to the required format (e.g., "10/Oct/2023:13:55:36")
             struct tm *timeinfo = std::localtime(&timestamp);

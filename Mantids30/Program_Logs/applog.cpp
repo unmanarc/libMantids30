@@ -35,7 +35,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string
         }
     }
 
-    user = Helpers::Encoders::toURL(user, Helpers::Encoders::QUOTEPRINT_ENCODING);
+    user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
     if (!enableAttributeNameLogging)
     {
@@ -71,7 +71,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
     else
@@ -90,7 +90,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
 

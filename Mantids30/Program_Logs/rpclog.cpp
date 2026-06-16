@@ -82,9 +82,9 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         }
     }
 
-    user = Helpers::Encoders::toURL(user, Helpers::Encoders::QUOTEPRINT_ENCODING);
-    domain = Helpers::Encoders::toURL(domain, Helpers::Encoders::QUOTEPRINT_ENCODING);
-    sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId), Helpers::Encoders::QUOTEPRINT_ENCODING);
+    user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    domain = Helpers::Encoders::toURL(domain, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId), Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
     if (!enableAttributeNameLogging && enableEmptyFieldLogging)
     {
@@ -136,7 +136,7 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
     else
@@ -168,7 +168,7 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
 
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
 

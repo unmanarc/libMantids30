@@ -67,7 +67,7 @@ bool GlobalArguments::getCommandLineOptionBooleanValue(const string &optionName)
     {
         return false;
     }
-    if (var->getVarType() != Var::TYPE_BOOL)
+    if (var->getVarType() != Var::Type::BOOL)
     {
         return false;
     }
@@ -124,11 +124,11 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             char val[2];
             val[0] = optIter->shortOption;
             val[1] = 0;
-            optString += string(val) + (optIter->optionType == Var::TYPE_BOOL ? "::" : ":");
+            optString += string(val) + (optIter->optionType == Var::Type::BOOL ? "::" : ":");
         }
         // Put the long option
         longOpts[iLongOptPos++] = {optIter->name.c_str(),                                                         // Option variable
-                                   optIter->optionType == Var::TYPE_BOOL ? optional_argument : required_argument, // With argument?
+                                   optIter->optionType == Var::Type::BOOL ? optional_argument : required_argument, // With argument?
                                    nullptr, optIter->shortOption};
         // Put the default values:
         optIter->defaultValVar = Var::makeAbstract(optIter->optionType, optIter->defaultValue);
@@ -161,7 +161,7 @@ bool GlobalArguments::parseCommandLineOptions(int argc, char *argv[])
             {
                 std::shared_ptr<Var> absVar = Var::makeAbstract(optValue->optionType, "");
 
-                if (((optarg != nullptr && !optarg[0]) || !optarg) && optValue->optionType == Var::TYPE_BOOL)
+                if (((optarg != nullptr && !optarg[0]) || !optarg) && optValue->optionType == Var::Type::BOOL)
                 {
                     absVar->fromString("1");
                 }
@@ -262,11 +262,11 @@ void GlobalArguments::printHelp()
                 printf(printer.c_str(), v->name.c_str());
             }
 
-            printf(v->optionType != Var::TYPE_BOOL ? " <value>" : "        ");
+            printf(v->optionType != Var::Type::BOOL ? " <value>" : "        ");
 
             if (!v->isMandatory)
             {
-                if (v->optionType != Var::TYPE_BOOL)
+                if (v->optionType != Var::Type::BOOL)
                 {
                     printf(" : %s (default: %s)\n", v->description.c_str(), v->defaultValue.c_str());
                 }
