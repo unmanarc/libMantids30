@@ -18,7 +18,6 @@ public:
     SharedQueue()
     {
         m_maxItems = &m_localMaxItems;
-        m_localMaxItems = 0xFFFFFFFF;
     }
 
     ~SharedQueue()
@@ -47,7 +46,7 @@ public:
      * @brief getMaxItems Get max items allowed
      * @return integer with max items allowed.
      */
-    size_t getMaxItems();
+    [[nodiscard]] size_t getMaxItems();
 
     /**
      * @brief push Push a new item
@@ -62,23 +61,23 @@ public:
      * @param tmout_msecs Timeout in milliseconds if the queue is empty (default: 100 seconds), or zero if you don't want to wait
      * @return shared_ptr to the first item in the queue or nullptr if timeout/empty
      */
-    std::shared_ptr<T> pop(const uint32_t &tmout_msecs = 100000);
+    [[nodiscard]] std::shared_ptr<T> pop(const uint32_t &tmout_msecs = 100000);
 
     /**
      * @brief size Current Queue Size
      * @return size in size_t format
      */
-    size_t size();
+    [[nodiscard]] size_t size();
 
     /**
      * @brief empty Check if queue is empty
      * @return true if empty, false otherwise
      */
-    bool empty();
+    [[nodiscard]] bool empty();
 
 private:
-    std::atomic<size_t> *m_maxItems;
-    std::atomic<size_t> m_localMaxItems;
+    std::atomic<size_t> *m_maxItems = nullptr;
+    std::atomic<size_t> m_localMaxItems{std::numeric_limits<std::size_t>::max()};
     std::mutex m_mQueue;
     std::condition_variable m_notEmptyCond, m_notFullCond;
     std::queue<std::shared_ptr<T>> m_queue;
