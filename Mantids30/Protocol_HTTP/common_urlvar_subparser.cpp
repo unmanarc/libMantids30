@@ -17,7 +17,7 @@ HTTP::URLVarContent::URLVarContent()
     m_subParserName = "URLVarContent";
 }
 
-HTTP::URLVarContent::~URLVarContent() {}
+HTTP::URLVarContent::~URLVarContent() = default;
 
 void HTTP::URLVarContent::setVarType(bool varName)
 {

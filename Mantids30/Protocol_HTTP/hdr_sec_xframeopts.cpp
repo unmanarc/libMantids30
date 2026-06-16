@@ -12,7 +12,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-XFrameOpts::XFrameOpts() {}
+XFrameOpts::XFrameOpts() = default;
 
 XFrameOpts::XFrameOpts(const eOptsValues &value, const string &allowFromURL)
 {

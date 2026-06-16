@@ -76,7 +76,7 @@ private:
 
     struct sSideParams
     {
-        sSideParams() {}
+        sSideParams() = default;
         ~sSideParams()
         {
             cleanAESBlock();

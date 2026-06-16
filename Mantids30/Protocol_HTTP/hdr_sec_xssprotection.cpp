@@ -11,7 +11,7 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-XSSProtection::XSSProtection() {}
+XSSProtection::XSSProtection() = default;
 
 string XSSProtection::toString() const
 {

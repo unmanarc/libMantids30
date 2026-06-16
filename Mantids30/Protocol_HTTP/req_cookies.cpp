@@ -13,7 +13,7 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocol::HTTP::Request;
 using namespace Mantids30;
 
-Cookies_ClientSide::Cookies_ClientSide() {}
+Cookies_ClientSide::Cookies_ClientSide() = default;
 
 void Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
 {

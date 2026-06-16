@@ -12,7 +12,7 @@ FrameHeader::FrameHeader()
     m_subParserName = "WebSocket_FrameHeader";
 }
 
-FrameHeader::~FrameHeader() {}
+FrameHeader::~FrameHeader() = default;
 
 void FrameHeader::reset()
 {

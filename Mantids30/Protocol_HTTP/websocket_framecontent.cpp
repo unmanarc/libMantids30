@@ -13,7 +13,7 @@ FrameContent::FrameContent()
     m_subParserName = "WebSocket_FrameContent";
 }
 
-FrameContent::~FrameContent() {}
+FrameContent::~FrameContent() = default;
 
 void FrameContent::reset()
 {

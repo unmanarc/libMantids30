@@ -17,9 +17,9 @@
 
 using namespace Mantids30::Network::Sockets;
 
-Socket_Stream_Reader::Socket_Stream_Reader() {}
+Socket_Stream_Reader::Socket_Stream_Reader() = default;
 
-Socket_Stream_Reader::~Socket_Stream_Reader() {}
+Socket_Stream_Reader::~Socket_Stream_Reader() = default;
 
 unsigned char Socket_Stream_Reader::readU8(bool *readOK)
 {
