@@ -13,9 +13,9 @@ class StreamableString : public Memory::Streams::StreamableObject
 public:
     StreamableString() = default;
 
-    virtual bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
 
-    virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
 
     StreamableString &operator=(const std::string &str);
 

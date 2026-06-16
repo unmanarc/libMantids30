@@ -12,7 +12,7 @@ class StreamableFile : public Memory::Streams::StreamableObject
 {
 public:
     StreamableFile(int _rd_fd = STDIN_FILENO, int _wr_fd = STDOUT_FILENO);
-    ~StreamableFile();
+    ~StreamableFile() override;
 
     /**
      * @brief open Open File function
@@ -27,14 +27,14 @@ public:
      * @param out output
      * @return true if streamed ok
      */
-    virtual bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
     /**
      * @brief write Write/Append into the file
      * @param buf buffer to be written
      * @param count size of the buffed to be written
      * @return Write Status from the operation
      */
-    virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
 
 private:
     void closeAll();

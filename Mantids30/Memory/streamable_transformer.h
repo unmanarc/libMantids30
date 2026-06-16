@@ -15,7 +15,7 @@ class StreamableTransformer : private StreamableObject
 {
 public:
     StreamableTransformer() = default;
-    virtual ~StreamableTransformer() = default;
+    ~StreamableTransformer() override = default;
     void transform(Memory::Streams::StreamableObject *in, Memory::Streams::StreamableObject *out);
 
 protected:

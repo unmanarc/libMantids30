@@ -24,7 +24,7 @@ class Parser : public Memory::Streams::StreamableObject
 {
 public:
     Parser(std::shared_ptr<Memory::Streams::StreamableObject> value, bool clientMode);
-    virtual ~Parser() override = default;
+    ~Parser() override = default;
 
     enum ParsingDebugOptions
     {
@@ -47,7 +47,7 @@ public:
     void parseObject(ErrorMSG *err);
 
     //////////////////////////////////////////
-    virtual std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
 
     //////////////////////////////////////////
     /**

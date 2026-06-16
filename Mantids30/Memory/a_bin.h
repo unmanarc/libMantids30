@@ -17,13 +17,7 @@ public:
             ptr = nullptr;
             dataSize = 0;
         }
-        ~ByteArray()
-        {
-            if (ptr)
-            {
-                delete[] ptr;
-            }
-        }
+        ~ByteArray() { delete[] ptr; }
         ByteArray(const size_t &len)
         {
             ptr = nullptr;
@@ -61,7 +55,7 @@ public:
     };
 
     BINARY();
-    virtual ~BINARY() override = default;
+    ~BINARY() override = default;
 
     /**
      * @brief getValue Get container memory position
