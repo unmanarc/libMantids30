@@ -78,20 +78,20 @@ std::string STRINGLIST::toString()
     return result;
 }
 
-bool STRINGLIST::fromString(const std::string &inputString)
+bool STRINGLIST::fromString(const std::string &inputStringList)
 {
     std::list<std::string> finalValues;
     std::string::size_type currentPosition = 0, startOfCurrentField = 0;
     bool inQuotes = false, processWithoutQuotes = false;
     std::string currentFieldValue;
 
-    while (currentPosition < inputString.size())
+    while (currentPosition < inputStringList.size())
     {
         currentFieldValue = "";
 
         if (!inQuotes)
         {
-            if (!processWithoutQuotes && inputString.at(currentPosition) == '"')
+            if (!processWithoutQuotes && inputStringList.at(currentPosition) == '"')
             {
                 // Inside Quotes begin...
                 inQuotes = true;
@@ -104,19 +104,19 @@ bool STRINGLIST::fromString(const std::string &inputString)
                 processWithoutQuotes = false;
 
                 // Not Inside Quotes... find the coma value and put the current value...
-                std::string::size_type commaPosition = inputString.find_first_of(',', currentPosition);
+                std::string::size_type commaPosition = inputStringList.find_first_of(',', currentPosition);
                 // Last word....
                 if (commaPosition != std::string::npos)
                 {
                     // Others fields left...
-                    currentFieldValue = inputString.substr(currentPosition, commaPosition - currentPosition);
+                    currentFieldValue = inputStringList.substr(currentPosition, commaPosition - currentPosition);
                     finalValues.push_back(currentFieldValue);
                     currentPosition = commaPosition + 1;
                 }
                 else
                 {
                     // End of string Field (not any other comma)...
-                    currentFieldValue = inputString.substr(currentPosition, std::string::npos);
+                    currentFieldValue = inputStringList.substr(currentPosition, std::string::npos);
                     finalValues.push_back(currentFieldValue);
                     //currentPosition+=currentFieldValue.size();
                     break;
@@ -126,12 +126,12 @@ bool STRINGLIST::fromString(const std::string &inputString)
         else
         {
             // In Quotes...
-            while (currentPosition < inputString.size())
+            while (currentPosition < inputStringList.size())
             {
-                char currentChar = inputString.at(currentPosition);
+                char currentChar = inputStringList.at(currentPosition);
                 if (currentChar == '\"')
                 {
-                    if (currentPosition + 1 == inputString.size())
+                    if (currentPosition + 1 == inputStringList.size())
                     {
                         // End of String (not any other comma)...
                         finalValues.push_back(currentFieldValue);
@@ -140,7 +140,7 @@ bool STRINGLIST::fromString(const std::string &inputString)
                         inQuotes = false;
                         break;
                     }
-                    else if (inputString.at(currentPosition + 1) == ',')
+                    else if (inputStringList.at(currentPosition + 1) == ',')
                     {
                         // Field completed on ", now take the field and push into the values.
                         // Process this field...
@@ -150,7 +150,7 @@ bool STRINGLIST::fromString(const std::string &inputString)
                         currentPosition += 2;
                         startOfCurrentField = currentPosition;
                     }
-                    else if (inputString.at(currentPosition + 1) == '\"' && currentPosition + 2 != inputString.size())
+                    else if (inputStringList.at(currentPosition + 1) == '\"' && currentPosition + 2 != inputStringList.size())
                     {
                         // Double Quote... take only one..
                         currentFieldValue += currentChar;
