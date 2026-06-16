@@ -16,7 +16,7 @@
 #include <netinet/tcp.h>
 #endif
 
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
 #include <unistd.h>
 

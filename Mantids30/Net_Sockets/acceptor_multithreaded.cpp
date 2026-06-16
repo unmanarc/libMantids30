@@ -178,9 +178,9 @@ MultiThreaded::~MultiThreaded()
     {
         std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).
-        for (std::list<std::shared_ptr<StreamAcceptorThread>>::iterator it = m_threadList.begin(); it != m_threadList.end(); ++it)
+        for (auto & it : m_threadList)
         {
-            (*it)->stopSocket();
+            it->stopSocket();
         }
         // unlock until there is no threads left.
         while (!m_threadList.empty())
@@ -219,16 +219,16 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
 
         if (parameters.debugOptions.enabled)
         {
-            uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
+            uint32_t debugOptions = Socket::DebugOptions::PRINT_CLOSE | Socket::DebugOptions::PRINT_ERRORS;
 
             if (parameters.debugOptions.printHex)
             {
-                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX;
+                debugOptions |= Socket::DebugOptions::PRINT_WRITE_HEX | Socket::DebugOptions::PRINT_READ_HEX;
             }
 
             if (parameters.debugOptions.printPlainText)
             {
-                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN;
+                debugOptions |= Socket::DebugOptions::PRINT_READ_PLAIN | Socket::DebugOptions::PRINT_WRITE_PLAIN;
             }
 
             clientSocket->setDebugOptions(debugOptions);

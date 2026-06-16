@@ -89,7 +89,7 @@ public:
        *        This allows maintaining application-specific state during callback
        * execution.
        */
-    void *listenerContext;
+    void *listenerContext=nullptr;
 
 private:
     static void incomingConnection(void *context, const std::shared_ptr<Socket_Stream> &socketStream);

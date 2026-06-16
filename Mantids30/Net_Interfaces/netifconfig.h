@@ -15,7 +15,7 @@
 
 namespace Mantids30::Network::Interfaces {
 
-// LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for NETIF_VIRTUAL_WIN interfaces.
+// LICENSE WARNING: This class is licensed under GPLv2 (not LGPL) for NetIfType::VIRTUAL_WIN interfaces.
 
 /**
  * @brief The NetworkInterfaceConfiguration class Network Interface Configuration
@@ -23,10 +23,10 @@ namespace Mantids30::Network::Interfaces {
 class NetworkInterfaceConfiguration
 {
 public:
-    enum NetIfType
+    enum class NetIfType : uint8_t
     {
-        NETIF_GENERIC_LIN,
-        NETIF_VIRTUAL_WIN
+        GENERIC_LIN,
+        VIRTUAL_WIN
     };
 
     NetworkInterfaceConfiguration();
@@ -108,8 +108,8 @@ public:
 
 private:
 #ifndef _WIN32
-    struct ifreq m_ifr;
-    int m_fd;
+    struct ifreq m_ifr = {0};
+    int m_fd = -1;
 #else
     ULONG m_adapterIndex;
     HANDLE m_fd;
@@ -117,14 +117,13 @@ private:
     static std::string getRouteExecPath();
 #endif
 
-    in_addr m_address, m_netmask;
-
+    in_addr m_address = {0}, m_netmask = {0};
     std::string m_interfaceName;
     std::string m_lastError;
-    int m_MTU;
-    bool m_promiscMode, m_stateUP;
-    bool m_changeIPv4Addr, m_changeMTU, m_changeState, m_changePromiscMode;
-    NetIfType m_netifType;
+    int m_MTU=0;
+    bool m_promiscMode=false, m_stateUP=true;
+    bool m_changeIPv4Addr=false, m_changeMTU=false, m_changeState=false, m_changePromiscMode=false;
+    NetIfType m_netifType=NetIfType::GENERIC_LIN;
 };
 
 } // namespace Mantids30::Network::Interfaces

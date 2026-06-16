@@ -50,16 +50,16 @@ void PoolThreaded::run()
 
                         if (this->parameters.debugOptions.enabled)
                         {
-                            uint32_t debugOptions = Socket_Stream::SOCKET_DEBUG_PRINT_CLOSE | Socket_Stream::SOCKET_DEBUG_PRINT_ERRORS;
+                            uint32_t debugOptions = Socket::DebugOptions::PRINT_CLOSE | Socket::DebugOptions::PRINT_ERRORS;
 
                             if (this->parameters.debugOptions.printHex)
                             {
-                                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_HEX | Socket_Stream::SOCKET_DEBUG_PRINT_READ_HEX;
+                                debugOptions |= Socket::DebugOptions::PRINT_WRITE_HEX | Socket::DebugOptions::PRINT_READ_HEX;
                             }
 
                             if (this->parameters.debugOptions.printPlainText)
                             {
-                                debugOptions |= Socket_Stream::SOCKET_DEBUG_PRINT_READ_PLAIN | Socket_Stream::SOCKET_DEBUG_PRINT_WRITE_PLAIN;
+                                debugOptions |= Socket::DebugOptions::PRINT_READ_PLAIN | Socket::DebugOptions::PRINT_WRITE_PLAIN;
                             }
 
                             clientSocket->setDebugOptions(debugOptions);

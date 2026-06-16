@@ -302,7 +302,7 @@ int Socket::closeSocket()
         return 0;
     }
 
-    if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
+    if (debugOptions & Socket::DebugOptions::PRINT_CLOSE)
     {
         fprintf(debugFP, "+++ [TCP CLOSE] Connection closed by our program\n");
         fflush(debugFP);
@@ -451,7 +451,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
 {
     if (!isActive())
     {
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] Socket not active during read\n");
             fflush(debugFP);
@@ -460,7 +460,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     }
     if (!datalen)
     {
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] Attempted to read 0 bytes\n");
             fflush(debugFP);
@@ -481,9 +481,9 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     if (recvLen > 0)
     {
         // Debug print for read data
-        if ((debugOptions & SOCKET_DEBUG_PRINT_READ_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_READ_PLAIN))
+        if ((debugOptions & Socket::DebugOptions::PRINT_READ_HEX) || (debugOptions & Socket::DebugOptions::PRINT_READ_PLAIN))
         {
-            if (debugOptions & SOCKET_DEBUG_PRINT_READ_HEX)
+            if (debugOptions & Socket::DebugOptions::PRINT_READ_HEX)
             {
                 fprintf(debugFP, "<<< [TCP READ] Read %zd bytes\n", recvLen);
                 fflush(debugFP);
@@ -510,7 +510,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     }
     else if (recvLen == 0)
     {
-        if (debugOptions & SOCKET_DEBUG_PRINT_CLOSE)
+        if (debugOptions & Socket::DebugOptions::PRINT_CLOSE)
         {
             fprintf(debugFP, "+++ [TCP CLOSE] Connection closed by peer\n");
             fflush(debugFP);
@@ -523,7 +523,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
         int err = errno;
         char errorBuffer[256];
         strerror_r(err, errorBuffer, sizeof(errorBuffer));
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] recv failed: %s\n", errorBuffer);
             fflush(debugFP);
@@ -584,7 +584,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 {
     if (!isActive())
     {
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] Socket not active during write\n");
             fflush(debugFP);
@@ -594,7 +594,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 
     if (!datalen)
     {
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] Attempted to write 0 bytes\n");
             fflush(debugFP);
@@ -619,9 +619,9 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
 
     if (sendLen > 0)
     {
-        if ((debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX) || (debugOptions & SOCKET_DEBUG_PRINT_WRITE_PLAIN))
+        if ((debugOptions & Socket::DebugOptions::PRINT_WRITE_HEX) || (debugOptions & Socket::DebugOptions::PRINT_WRITE_PLAIN))
         {
-            if (debugOptions & SOCKET_DEBUG_PRINT_WRITE_HEX)
+            if (debugOptions & Socket::DebugOptions::PRINT_WRITE_HEX)
             {
                 fprintf(debugFP, ">>> [TCP WRITE] Wrote %zd bytes\n", sendLen);
                 fflush(debugFP);
@@ -651,7 +651,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
         int err = errno;
         char errorBuffer[256];
         strerror_r(err, errorBuffer, sizeof(errorBuffer));
-        if (debugOptions & SOCKET_DEBUG_PRINT_ERRORS)
+        if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
             fprintf(debugFP, "--- [TCP ERROR] send failed: %s\n", errorBuffer);
             fflush(debugFP);

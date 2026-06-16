@@ -1,7 +1,7 @@
 #include "netifconfig.h"
 #include <Mantids30/Memory/a_ipv4.h>
 
-#include <errno.h>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
@@ -28,23 +28,12 @@ using namespace Mantids30::Network::Interfaces;
 
 NetworkInterfaceConfiguration::NetworkInterfaceConfiguration()
 {
-    m_MTU = 0;
 #ifndef _WIN32
-    m_fd = -1;
     ZeroBStruct(m_ifr);
 #else
     adapterIndex = ((DWORD) -1);
     m_fd = INVALID_HANDLE_VALUE;
 #endif
-
-    m_netifType = NETIF_GENERIC_LIN;
-
-    m_promiscMode = false;
-    m_stateUP = true;
-    m_changeIPv4Addr = false;
-    m_changeMTU = false;
-    m_changePromiscMode = false;
-    m_changeState = false;
 }
 
 bool NetworkInterfaceConfiguration::apply()
@@ -53,13 +42,13 @@ bool NetworkInterfaceConfiguration::apply()
     // Linux:
     if (m_changeIPv4Addr)
     {
-        struct ifreq ifr1_host;
-        struct ifreq ifr1_netmask;
+        struct ifreq ifr1_host{0};
+        struct ifreq ifr1_netmask{0};
 
         ZeroBStruct(ifr1_host);
         ZeroBStruct(ifr1_netmask);
 
-        sockaddr_in addr;
+        sockaddr_in addr{0};
         ZeroBStruct(addr);
 
         ifr1_host = m_ifr;
@@ -170,7 +159,7 @@ bool NetworkInterfaceConfiguration::apply()
     {
         if (m_fd != INVALID_HANDLE_VALUE)
         {
-            if (netifType == NETIF_VIRTUAL_WIN)
+            if (netifType == NetIfType::VIRTUAL_WIN)
             {
                 ULONG status = stateUP ? 1 : 0;
 
@@ -274,7 +263,7 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
     char errormsg[4096];
     errormsg[4095] = 0;
 
-    m_netifType = NETIF_GENERIC_LIN;
+    m_netifType = NetIfType::GENERIC_LIN;
 
     m_interfaceName = _ifaceName;
     if ((m_fd = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
@@ -312,7 +301,7 @@ bool NetworkInterfaceConfiguration::openInterface(const std::string &_ifaceName)
 #else
 void NetworkInterfaceConfiguration::openTAPW32Interface(HANDLE fd, ULONG adapterIndex)
 {
-    netifType = NETIF_VIRTUAL_WIN;
+    netifType = NetIfType::VIRTUAL_WIN;
     this->m_fd = fd;
     this->m_adapterIndex = adapterIndex;
 }
@@ -321,7 +310,7 @@ void NetworkInterfaceConfiguration::openTAPW32Interface(HANDLE fd, ULONG adapter
 int NetworkInterfaceConfiguration::getMTU()
 {
 #ifndef _WIN32
-    struct ifreq ifr2;
+    struct ifreq ifr2{0};
     int sock2;
     if ((sock2 = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {
@@ -340,7 +329,7 @@ int NetworkInterfaceConfiguration::getMTU()
 #else
     switch (netifType)
     {
-    case NETIF_VIRTUAL_WIN:
+    case NetIfType::VIRTUAL_WIN:
     {
         ULONG mtu = 1500;
         if (m_fd != INVALID_HANDLE_VALUE)
@@ -364,7 +353,7 @@ int NetworkInterfaceConfiguration::getMTU()
 
 ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
 {
-    ethhdr etherHdrData;
+    ethhdr etherHdrData{0};
     ZeroBStruct(etherHdrData);
 
 #ifndef _WIN32
@@ -384,7 +373,7 @@ ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
 #else
     switch (netifType)
     {
-    case NETIF_VIRTUAL_WIN:
+    case NetIfType::VIRTUAL_WIN:
         if (m_fd != INVALID_HANDLE_VALUE)
         {
             DWORD len;

@@ -323,14 +323,14 @@ public:
 
     void setRemoteServerHostname(const std::string &newRemoteServerHostname);
 
-    enum eDebugOptions
+    enum DebugOptions : uint8_t
     {
-        SOCKET_DEBUG_PRINT_WRITE_HEX = 0x01,
-        SOCKET_DEBUG_PRINT_READ_HEX = 0x02,
-        SOCKET_DEBUG_PRINT_CLOSE = 0x04,
-        SOCKET_DEBUG_PRINT_WRITE_PLAIN = 0x08,
-        SOCKET_DEBUG_PRINT_READ_PLAIN = 0x10,
-        SOCKET_DEBUG_PRINT_ERRORS = 0x20,
+        PRINT_WRITE_HEX = 0x01,
+        PRINT_READ_HEX = 0x02,
+        PRINT_CLOSE = 0x04,
+        PRINT_WRITE_PLAIN = 0x08,
+        PRINT_READ_PLAIN = 0x10,
+        PRINT_ERRORS = 0x20,
     };
 
     void setDebugOptions(uint32_t debugOptions) { this->debugOptions = debugOptions; }
@@ -411,6 +411,6 @@ protected:
 #endif
 };
 
-typedef std::shared_ptr<Socket> Socket_SP;
+using Socket_SP = std::shared_ptr<Socket>;
 
 } // namespace Mantids30::Network::Sockets
