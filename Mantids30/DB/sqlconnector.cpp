@@ -22,9 +22,9 @@ SQLConnector::~SQLConnector()
     }
 }
 
-bool SQLConnector::connect(const std::string &file)
+bool SQLConnector::connect(const std::string &dbFilePath)
 {
-    this->m_dbFilePath = file;
+    this->m_dbFilePath = dbFilePath;
     return connect0();
 }
 
