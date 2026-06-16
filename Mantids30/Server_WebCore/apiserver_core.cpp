@@ -112,7 +112,7 @@ void APIServerCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     if (webserver->callbacks.onClientConnected.call(webserver, sock))
     {
         // Handle the Web Server.
-        Memory::Streams::Parser::ErrorMSG err;
+        Memory::Streams::Parser::ParseResult err;
         apiWebServerClientHandler->parseObject(&err);
     }
 }

@@ -75,10 +75,10 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
         client.clientRequest.headers.replace("Connection", "close");
 
         // Make the petition...
-        Parser::ErrorMSG msg;
+        Parser::ParseResult msg;
         client.parseObject(&msg);
 
-        if (msg == Parser::PARSING_SUCCEED)
+        if (msg == Parser::ParseResult::SUCCEED)
         {
             // Transform cookie paths if enabled
             if (proxyParameters->transformCookiePath)
