@@ -1,9 +1,7 @@
 #include "clienthandler.h"
 
-#include <json/config.h>
-#include <string>
-
 #include <json/json.h>
+#include <json/config.h>
 #include <string>
 
 using namespace Mantids30::Network::Servers::RESTful;
