@@ -21,12 +21,7 @@ class Socket_TLS : public Socket_TCP
 public:
     struct sCipherBits
     {
-        sCipherBits()
-        {
-            asymmetricBits = 0;
-            symmetricBits = 0;
-        }
-        int asymmetricBits, symmetricBits;
+        int asymmetricBits = 0, symmetricBits = 0;
     };
 
     class TLSKeyParameters
@@ -34,8 +29,6 @@ public:
     public:
         struct PSKClientValue
         {
-            PSKClientValue() { isUsingPSK = false; }
-
             ~PSKClientValue()
             {
                 std::unique_lock<std::mutex> lock(mtMutex);
@@ -54,7 +47,7 @@ public:
                 this->identity = _identity;
             }
 
-            bool isUsingPSK;
+            bool isUsingPSK = false;
             std::string psk;
             std::string identity;
             std::mutex mtMutex;
@@ -591,7 +584,7 @@ protected:
     void parseErrors();
     bool validateTLSConnection(const bool &usingPSK);
 
-    Socket_TLS *m_tlsParentConnection;
+    Socket_TLS *m_tlsParentConnection = nullptr;
 
     X509ValidationOption m_certValidationOptions = X509ValidationOption::VALIDATE;
     SSL *m_sslHandler = nullptr;
