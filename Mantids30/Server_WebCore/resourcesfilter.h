@@ -33,12 +33,12 @@ public:
         {
             for (const std::string &i : sRegexs)
             {
-                this->regexPatterns.push_back(boost::regex(i.c_str(), boost::regex::extended));
+                this->regexPatterns.emplace_back(i.c_str(), boost::regex::extended);
             }
         }
 
         std::list<boost::regex> regexPatterns;
-        std::string redirectLocation = "";
+        std::string redirectLocation;
         std::list<std::string> requiredScopes, rejectedScopes;
         std::list<std::string> requiredRoles, rejectedRoles;
         std::list<std::string> sRegexs;
