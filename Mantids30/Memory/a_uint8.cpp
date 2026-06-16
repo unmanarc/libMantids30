@@ -5,13 +5,13 @@ using namespace Mantids30::Memory::Abstract;
 
 UINT8::UINT8()
 {
-    setVarType(TYPE_UINT8);
+    setVarType(Type::UINT8);
 }
 
 UINT8::UINT8(const uint8_t &value)
 {
     this->m_value = value;
-    setVarType(TYPE_UINT8);
+    setVarType(Type::UINT8);
 }
 
 uint8_t UINT8::getValue()

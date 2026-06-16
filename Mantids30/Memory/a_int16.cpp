@@ -6,14 +6,14 @@ using namespace Mantids30::Memory::Abstract;
 
 INT16::INT16()
 {
-    setVarType(TYPE_INT16);
+    setVarType(Type::INT16);
 }
 
 INT16::INT16(const int16_t &value)
 {
     this->m_value = value;
 
-    setVarType(TYPE_INT16);
+    setVarType(Type::INT16);
 }
 
 int16_t INT16::getValue()

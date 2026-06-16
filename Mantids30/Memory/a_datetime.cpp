@@ -15,14 +15,14 @@ using namespace std;
 
 DATETIME::DATETIME()
 {
-    setVarType(TYPE_DATETIME);
+    setVarType(Type::DATETIME);
 }
 
 DATETIME::DATETIME(const time_t &value)
 {
     this->m_value = value;
 
-    setVarType(TYPE_DATETIME);
+    setVarType(Type::DATETIME);
 }
 
 bool DATETIME::isInFuture()

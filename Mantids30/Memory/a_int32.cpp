@@ -5,14 +5,14 @@ using namespace Mantids30::Memory::Abstract;
 
 INT32::INT32()
 {
-    setVarType(TYPE_INT32);
+    setVarType(Type::INT32);
 }
 
 INT32::INT32(const int32_t &value)
 {
     this->m_value = value;
 
-    setVarType(TYPE_INT32);
+    setVarType(Type::INT32);
 }
 
 int32_t INT32::getValue()

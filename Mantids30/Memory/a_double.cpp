@@ -7,12 +7,12 @@ using namespace Mantids30::Memory::Abstract;
 
 DOUBLE::DOUBLE()
 {
-    setVarType(TYPE_DOUBLE);
+    setVarType(Type::DOUBLE);
 }
 
 DOUBLE::DOUBLE(const double &value)
 {
-    setVarType(TYPE_DOUBLE);
+    setVarType(Type::DOUBLE);
 
     this->m_value = value;
 }

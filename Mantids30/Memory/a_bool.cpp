@@ -5,12 +5,12 @@ using namespace Mantids30::Memory::Abstract;
 
 BOOL::BOOL()
 {
-    setVarType(TYPE_BOOL);
+    setVarType(Type::BOOL);
 }
 
 BOOL::BOOL(const bool &value)
 {
-    setVarType(TYPE_BOOL);
+    setVarType(Type::BOOL);
     this->m_value = value;
 }
 

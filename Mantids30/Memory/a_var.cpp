@@ -24,7 +24,7 @@ using namespace Mantids30::Memory::Abstract;
 
 Var::Var()
 {
-    m_varType = TYPE_NULL;
+    m_varType = Type::VOID;
 }
 
 std::shared_ptr<Var> Var::copy()
@@ -47,61 +47,61 @@ std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defVal
     std::shared_ptr<Var> v = nullptr;
     switch (type)
     {
-    case Var::TYPE_NULL:
+    case Var::Type::VOID:
         v = std::make_shared<Var>();
         break;
-    case Var::TYPE_BOOL:
+    case Var::Type::BOOL:
         v = std::make_shared<BOOL>();
         break;
-    case Var::TYPE_INT8:
+    case Var::Type::INT8:
         v = std::make_shared<INT8>();
         break;
-    case Var::TYPE_INT16:
+    case Var::Type::INT16:
         v = std::make_shared<INT16>();
         break;
-    case Var::TYPE_INT32:
+    case Var::Type::INT32:
         v = std::make_shared<INT32>();
         break;
-    case Var::TYPE_INT64:
+    case Var::Type::INT64:
         v = std::make_shared<INT64>();
         break;
-    case Var::TYPE_UINT8:
+    case Var::Type::UINT8:
         v = std::make_shared<UINT8>();
         break;
-    case Var::TYPE_UINT16:
+    case Var::Type::UINT16:
         v = std::make_shared<UINT16>();
         break;
-    case Var::TYPE_UINT32:
+    case Var::Type::UINT32:
         v = std::make_shared<UINT32>();
         break;
-    case Var::TYPE_UINT64:
+    case Var::Type::UINT64:
         v = std::make_shared<UINT64>();
         break;
-    case Var::TYPE_DOUBLE:
+    case Var::Type::DOUBLE:
         v = std::make_shared<DOUBLE>();
         break;
-    case Var::TYPE_DATETIME:
+    case Var::Type::DATETIME:
         v = std::make_shared<DATETIME>();
         break;
-    case Var::TYPE_BIN:
+    case Var::Type::BIN:
         v = std::make_shared<BINARY>();
         break;
-    case Var::TYPE_STRING:
+    case Var::Type::STRING:
         v = std::make_shared<STRING>();
         break;
-    case Var::TYPE_STRINGLIST:
+    case Var::Type::STRINGLIST:
         v = std::make_shared<STRINGLIST>();
         break;
-    case Var::TYPE_IPV4:
+    case Var::Type::IPV4:
         v = std::make_shared<IPV4>();
         break;
-    case Var::TYPE_MACADDR:
+    case Var::Type::MACADDR:
         v = std::make_shared<MACADDR>();
         break;
-    case Var::TYPE_IPV6:
+    case Var::Type::IPV6:
         v = std::make_shared<IPV6>();
         break;
-    case Var::TYPE_VARCHAR:
+    case Var::Type::VARCHAR:
         v = std::make_shared<VARCHAR>(defValue.size() + 1024);
         break;
     default:

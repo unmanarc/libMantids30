@@ -5,12 +5,12 @@ using namespace Mantids30::Memory::Abstract;
 
 UINT16::UINT16()
 {
-    setVarType(TYPE_UINT16);
+    setVarType(Type::UINT16);
 }
 
 UINT16::UINT16(const uint16_t &value)
 {
-    setVarType(TYPE_UINT16);
+    setVarType(Type::UINT16);
     this->m_value = value;
 }
 

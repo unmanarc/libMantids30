@@ -6,14 +6,14 @@ using namespace Mantids30::Memory::Abstract;
 
 INT64::INT64()
 {
-    setVarType(TYPE_INT64);
+    setVarType(Type::INT64);
 }
 
 INT64::INT64(const int64_t &value)
 {
     this->m_value = value;
 
-    setVarType(TYPE_INT64);
+    setVarType(Type::INT64);
 }
 
 int64_t INT64::getValue()

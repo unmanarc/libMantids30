@@ -5,12 +5,12 @@ using namespace Mantids30::Memory::Abstract;
 
 UINT64::UINT64()
 {
-    setVarType(TYPE_UINT64);
+    setVarType(Type::UINT64);
 }
 
 UINT64::UINT64(const uint64_t &value)
 {
-    setVarType(TYPE_UINT64);
+    setVarType(Type::UINT64);
     this->m_value = value;
 }
 

@@ -8,7 +8,7 @@ using namespace Mantids30::Memory::Abstract;
 
 BINARY::BINARY()
 {
-    setVarType(TYPE_BIN);
+    setVarType(Type::BIN);
 }
 
 BINARY::ByteArray *BINARY::getValue()

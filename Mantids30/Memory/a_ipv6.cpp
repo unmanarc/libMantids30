@@ -14,19 +14,19 @@ using namespace Mantids30::Memory::Abstract;
 IPV6::IPV6()
 {
     ZeroBStruct(m_value);
-    setVarType(TYPE_IPV6);
+    setVarType(Type::IPV6);
 }
 
 IPV6::IPV6(const in6_addr &value)
 {
-    setVarType(TYPE_IPV6);
+    setVarType(Type::IPV6);
     ZeroBStruct(this->m_value);
     setValue(value);
 }
 
 IPV6::IPV6(const std::string &value)
 {
-    setVarType(TYPE_IPV6);
+    setVarType(Type::IPV6);
     setValue(_fromString(value));
 }
 

@@ -13,12 +13,12 @@ using namespace Mantids30::Memory::Abstract;
 
 IPV4::IPV4()
 {
-    setVarType(TYPE_IPV4);
+    setVarType(Type::IPV4);
 }
 
 IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
 {
-    setVarType(TYPE_IPV4);
+    setVarType(Type::IPV4);
     in_addr x;
     x.s_addr = value;
     setValue(x, cidrMask);
@@ -26,7 +26,7 @@ IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
 
 IPV4::IPV4(const std::string &value)
 {
-    setVarType(TYPE_IPV4);
+    setVarType(Type::IPV4);
     std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(value);
     setValue(v.first, v.second);
 }

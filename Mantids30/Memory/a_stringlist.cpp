@@ -6,12 +6,12 @@ using namespace Mantids30::Memory::Abstract;
 
 STRINGLIST::STRINGLIST()
 {
-    setVarType(TYPE_STRINGLIST);
+    setVarType(Type::STRINGLIST);
 }
 
 STRINGLIST::STRINGLIST(const std::list<std::string> &value)
 {
-    setVarType(TYPE_STRINGLIST);
+    setVarType(Type::STRINGLIST);
     this->m_value = value;
 }
 

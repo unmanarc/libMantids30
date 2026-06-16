@@ -6,7 +6,7 @@ using namespace Mantids30::Memory::Abstract;
 
 VARCHAR::VARCHAR(const size_t &varSize)
 {
-    setVarType(TYPE_VARCHAR);
+    setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
     this->m_value = static_cast<char *>(malloc(varSize + 1));
@@ -15,7 +15,7 @@ VARCHAR::VARCHAR(const size_t &varSize)
 
 VARCHAR::VARCHAR(const size_t &varSize, char *value)
 {
-    setVarType(TYPE_VARCHAR);
+    setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
     this->m_value = static_cast<char *>(malloc(varSize + 1));
@@ -25,7 +25,7 @@ VARCHAR::VARCHAR(const size_t &varSize, char *value)
 
 VARCHAR::VARCHAR(VARCHAR &var)
 {
-    setVarType(TYPE_VARCHAR);
+    setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = var.getVarSize();
     this->m_value = static_cast<char *>(malloc(m_varSize + 1));

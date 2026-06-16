@@ -5,12 +5,12 @@ using namespace Mantids30::Memory::Abstract;
 
 STRING::STRING()
 {
-    setVarType(TYPE_STRING);
+    setVarType(Type::STRING);
 }
 
 STRING::STRING(const std::string &value)
 {
-    setVarType(TYPE_STRING);
+    setVarType(Type::STRING);
     this->m_value = value;
 }
 

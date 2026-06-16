@@ -6,12 +6,12 @@ using namespace Mantids30::Memory::Abstract;
 
 PTR::PTR()
 {
-    setVarType(TYPE_PTR);
+    setVarType(Type::PTR);
 }
 
 PTR::PTR(void *value)
 {
-    setVarType(TYPE_PTR);
+    setVarType(Type::PTR);
     this->m_value = value;
 }
 

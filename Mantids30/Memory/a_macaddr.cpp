@@ -15,24 +15,24 @@ using namespace Mantids30::Memory::Abstract;
 
 MACADDR::MACADDR()
 {
-    setVarType(TYPE_MACADDR);
+    setVarType(Type::MACADDR);
 }
 
 MACADDR::MACADDR(const unsigned char *macaddr)
 {
-    setVarType(TYPE_MACADDR);
+    setVarType(Type::MACADDR);
     setValue(macaddr);
 }
 
 MACADDR::MACADDR(const std::string &value)
 {
-    setVarType(TYPE_MACADDR);
+    setVarType(Type::MACADDR);
     _fromString(value, m_macaddr);
 }
 
 MACADDR::MACADDR(const uint64_t &value)
 {
-    setVarType(TYPE_MACADDR);
+    setVarType(Type::MACADDR);
     _fromHASH(value, m_macaddr);
 }
 
