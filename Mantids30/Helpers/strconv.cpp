@@ -43,7 +43,7 @@ size_t Mantids30::Helpers::StringConversions::getSizeFromString(const std::strin
 
     // Apply unit multiplier
     long double multiplier = 1;
-    if (unitPart == "b" || unitPart == "")
+    if (unitPart == "b" || unitPart.empty())
     {
         multiplier = 1;
     }
