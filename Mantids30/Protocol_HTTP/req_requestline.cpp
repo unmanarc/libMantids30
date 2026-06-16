@@ -10,8 +10,8 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols::HTTP::Request;
+using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Network::Protocol::HTTP::Request;
 using namespace Mantids30;
 
 RequestLine::RequestLine()

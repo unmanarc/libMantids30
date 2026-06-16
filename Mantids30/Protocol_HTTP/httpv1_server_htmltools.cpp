@@ -1,6 +1,6 @@
 #include "httpv1_server.h"
 
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 
 using namespace std;
 

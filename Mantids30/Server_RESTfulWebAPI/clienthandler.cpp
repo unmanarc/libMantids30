@@ -1,4 +1,5 @@
 #include "clienthandler.h"
+#include "Mantids30/API_EndpointsAndSessions/security.h"
 
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/Helpers/encoders.h>
@@ -17,7 +18,7 @@
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::DataFormat;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
@@ -49,14 +50,14 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
         log(LogLevel::WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_request", "Resource Not Found");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_request", "Resource Not Found");
         return apiReturn;
     }
 
     json x;
-    API::RESTful::Endpoints::SecurityParameters securityParameters;
-    securityParameters.haveJWTAuthCookie = m_JWTCookieTokenVerified;
-    securityParameters.haveJWTAuthHeader = m_JWTHeaderTokenVerified;
+    API::Security::ReceivedAuth securityParameters;
+    securityParameters.hasVerifiedJWTAccessTokenCookie = m_isAccessTokenCookieJWTVerified;
+    securityParameters.hasVerifiedJWTAuthorizationHeader = m_isAuthorizationHeaderJWTVerified;
 
     API::RESTful::Endpoints::HandleResult result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, inputParameters, currentScopes, isAdmin, securityParameters, &apiReturn);
 
@@ -82,7 +83,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
         break;
     default:
         log(LogLevel::ERR, "restAPI", 2048, "API REST Unknown Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
-        apiReturn.setError(Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR, "invalid_api_request", "Unknown Error");
+        apiReturn.setError(Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR, "invalid_api_request", "Unknown Error");
         break;
     }
 
@@ -95,7 +96,7 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
     {
         log(LogLevel::WARN, "restAPI", 2048, "API Version Not Found / Resource Not found {ver=%u, mode=OPTIONS, endpoint=%s}", apiVersion, endpointName.c_str());
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_options_request", "Resource Not Found");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_options_request", "Resource Not Found");
         return apiReturn;
     }
 

@@ -12,7 +12,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::MIME;
+using namespace Mantids30::Network::Protocol::MIME;
 using namespace Mantids30;
 
 MIME_Message::MIME_Message(std::shared_ptr<Memory::Streams::StreamableObject> value)

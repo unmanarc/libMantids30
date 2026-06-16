@@ -3,7 +3,9 @@
 #include "endpoints_options.h"
 
 #include "session.h"
+#include "security.h"
 #include <Mantids30/DataFormat_JWT/jwt.h>
+#include <Mantids30/Protocol_HTTP/methods.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
@@ -21,7 +23,7 @@ namespace Mantids30::API::RESTful {
 // Struct to hold HTTP request parameters
 struct RequestParameters
 {
-    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
+    Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
     Json::Value emptyJSON;
     Json::Value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
 
@@ -44,16 +46,8 @@ using APIEndpointFunctionType = APIReturn (*)(void *context,                    
  */
 struct RESTfulAPIEndpointFullDefinition
 {
-    struct Security
-    {
-        bool requireJWTHeaderAuthentication = true;
-        bool requireJWTCookieAuthentication = true;
-        std::set<std::string> requiredScopes;
-        //bool requireGenericAntiCSRFToken = true;
-        //bool requireJWTCookieHash = true;
-    };
     APIEndpointFunctionType endpointDefinition = nullptr;
-    Security security;
+    API::Security::Configuration security;
     void *context = nullptr;
 };
 
@@ -66,62 +60,7 @@ struct RESTfulAPIEndpointFullDefinition
 class Endpoints : public Endpoints_Options
 {
 public:
-    /**
-     * @enum HTTPMethod
-     *
-     * @brief Enumeration for different RESTful method modes.
-     */
-    enum class HTTPMethod : std::uint8_t
-    {
-        GET = 0,
-        POST = 1,
-        PUT = 2,
-        DELETE = 3,
-        PATCH = 4
-    };
 
-    static std::string HTTPMethodToString(HTTPMethod mode)
-    {
-        switch (mode)
-        {
-        case HTTPMethod::GET:
-            return "GET";
-        case HTTPMethod::POST:
-            return "POST";
-        case HTTPMethod::PUT:
-            return "PUT";
-        case HTTPMethod::DELETE:
-            return "DELETE";
-        case HTTPMethod::PATCH:
-            return "PATCH";
-        default:
-            return "POST";
-        }
-    }
-
-    static HTTPMethod stringToHTTPMethod(const std::string &str)
-    {
-        if (str == "GET")
-        {
-            return HTTPMethod::GET;
-        }
-        else if (str == "PUT")
-        {
-            return HTTPMethod::PUT;
-        }
-        else if (str == "DELETE")
-        {
-            return HTTPMethod::DELETE;
-        }
-        else if (str == "PATCH")
-        {
-            return HTTPMethod::PATCH;
-        }
-        else
-        {
-            return HTTPMethod::POST; // default: POST
-        }
-    }
 
     /**
      * @enum HandleResult
@@ -136,21 +75,6 @@ public:
         AUTHENTICATION_REQUIRED = -3,
         INVALID_SCOPE = -4,
         INTERNAL_ERROR = -5
-    };
-
-    enum Security : std::uint8_t
-    {
-        NO_AUTH = 0,
-        REQUIRE_JWT_HEADER_AUTH = 1 << 0,
-        REQUIRE_JWT_COOKIE_AUTH = 1 << 1
-        //REQUIRE_GENERIC_ANTICSRF_TOKEN=4//,
-        //REQUIRE_JWT_COOKIE_HASH=8
-    };
-
-    struct SecurityParameters
-    {
-        bool haveJWTAuthHeader = false;
-        bool haveJWTAuthCookie = false;
     };
 
     /**
@@ -169,7 +93,7 @@ public:
      * @param endpointDefinition The function pointer to the endpoint definition.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const Security &securityOptions, const std::set<std::string> &requiredScopes, void *context,
+    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements, const std::set<std::string> &requiredScopes, void *context,
                      APIEndpointFunctionType endpointDefinition);
 
     /**
@@ -180,7 +104,7 @@ public:
      * @param apiEndpointFullDefinition The RESTfulAPIDefinition struct containing apiEndpointFullDefinition, security, and object pointer.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
+    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
 
     /**
      * @brief Invoke a resource and return the error code.
@@ -193,8 +117,8 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    [[nodiscard]] HandleResult handleEndpoint(const HTTPMethod &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
-                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *apiResponse);
+    [[nodiscard]] HandleResult handleEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
@@ -208,7 +132,7 @@ public:
      * @return The error code indicating the result of the method invocation.
      */
     [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
-                                              const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters, APIReturn *payloadOut);
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut);
 
 private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;  ///< Map of PATCH endpoints.

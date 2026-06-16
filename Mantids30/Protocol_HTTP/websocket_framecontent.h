@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace Mantids30::Network::Protocols::WebSocket {
+namespace Mantids30::Network::Protocol::WebSocket {
 
 class FrameContent : public Memory::Streams::SubParser
 {
@@ -71,4 +71,4 @@ private:
     uint64_t m_maxContentSize = 512 * 1024; // 512Kb default
 };
 
-} // namespace Mantids30::Network::Protocols::WebSocket
+} // namespace Mantids30::Network::Protocol::WebSocket

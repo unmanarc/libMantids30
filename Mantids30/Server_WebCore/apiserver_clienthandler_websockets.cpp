@@ -5,7 +5,7 @@
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -21,8 +21,8 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
         serverResponse.setServerName(config->webServerName);
     }
 
-    HTTP::Status::Codes rtmp;
-    if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
+    HTTP::Status::Code rtmp;
+    if ((rtmp = sessionStart()) != HTTP::Status::Code::S_200_OK)
     {
         serverResponse.status.setCode(rtmp);
         return false;
@@ -35,7 +35,7 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
     }
 
     // Session started here.
-    if ((rtmp = checkWebSocketRequestURI(requestURI)) != HTTP::Status::S_200_OK)
+    if ((rtmp = checkWebSocketRequestURI(requestURI)) != HTTP::Status::Code::S_200_OK)
     {
         sessionCleanup();
         serverResponse.status.setCode(rtmp);
@@ -48,7 +48,7 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
     if (userConnectionCount >= config->webSockets.maxConnectionsPerUserPerEndpoint)
     {
         sessionCleanup();
-        serverResponse.status.setCode(HTTP::Status::S_429_TOO_MANY_REQUESTS);
+        serverResponse.status.setCode(HTTP::Status::Code::S_429_TOO_MANY_REQUESTS);
         return false;
     }
 
@@ -84,17 +84,17 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
         sendWebSocketText(jSessionId.toStyledString());
     }
 
-    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketBinaryDataFrameReceived()
 {
-    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketTextFrameReceived()
 {
-    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketPingReceived() {}
@@ -103,7 +103,7 @@ void APIServer_ClientHandler::onWebSocketPongReceived() {}
 
 void APIServer_ClientHandler::onWebSocketConnectionFinished()
 {
-    handleWebSocketEvent(Network::Protocols::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
     if (m_webSocketCurrentEndpoint)
     {
         m_webSocketCurrentEndpoint->connectionsByIdMap->destroyElement(m_webSocketSessionId);

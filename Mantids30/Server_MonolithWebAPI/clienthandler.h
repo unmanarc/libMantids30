@@ -27,7 +27,7 @@ protected:
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
-    Protocols::HTTP::Status::Codes sessionStart() override;
+    Protocol::HTTP::Status::Code sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      * @return S_200_OK for good cleaning.
@@ -38,9 +38,9 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    void handleWebSocketEvent(Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint *) override;
+    void handleWebSocketEvent(Network::Protocol::WebSocket::EventType, const API::WebSocket::Endpoint *) override;
 
-    Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string &path) override;
+    Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) override;
 
     /**
      * @brief Handles an API request and writes the response to the client.
@@ -67,7 +67,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName) override;
+    Protocol::HTTP::Status::Code handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName) override;
 
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
@@ -120,10 +120,10 @@ private:
 
     void sessionLogout();
 
-    Protocols::HTTP::Status::Codes handleAuthUpdateLastActivityFunction();
-    Protocols::HTTP::Status::Codes handleAuthLoginFunction();
-    Protocols::HTTP::Status::Codes handleAuthRetrieveInfoFunction();
-    Protocols::HTTP::Status::Codes handleAuthLogoutFunction();
+    Protocol::HTTP::Status::Code handleAuthUpdateLastActivityFunction();
+    Protocol::HTTP::Status::Code handleAuthLoginFunction();
+    Protocol::HTTP::Status::Code handleAuthRetrieveInfoFunction();
+    Protocol::HTTP::Status::Code handleAuthLogoutFunction();
 
     bool validateSessionAntiCSRFMechanism();
 

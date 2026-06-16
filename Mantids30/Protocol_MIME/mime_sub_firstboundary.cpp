@@ -1,5 +1,5 @@
 #include "mime_sub_firstboundary.h"
-using namespace Mantids30::Network::Protocols::MIME;
+using namespace Mantids30::Network::Protocol::MIME;
 using namespace Mantids30;
 
 MIME_Sub_FirstBoundary::MIME_Sub_FirstBoundary()

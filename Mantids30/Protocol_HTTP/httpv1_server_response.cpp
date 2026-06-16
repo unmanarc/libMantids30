@@ -1,7 +1,7 @@
 #include "httpv1_server.h"
 #include <boost/algorithm/string/predicate.hpp>
 
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -14,7 +14,7 @@ void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
     jWebLog["requestLine"] = clientRequest.requestLine.toString();
     jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
     jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
-    jWebLog["responseStatus"] = serverResponse.status.getCode();
+    jWebLog["responseStatus"] = static_cast<uint16_t>(serverResponse.status.getCode());
 
     size_t strsize;
     if ((strsize = serverResponse.content.getStreamSize()) != std::numeric_limits<size_t>::max())

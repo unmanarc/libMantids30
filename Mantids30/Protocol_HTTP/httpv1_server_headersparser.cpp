@@ -4,7 +4,7 @@
 #include <Mantids30/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -118,7 +118,7 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
         if (!clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.
-            serverResponse.status.setCode(HTTP::Status::S_413_PAYLOAD_TOO_LARGE);
+            serverResponse.status.setCode(HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
             return false;
         }
         if (boost::icontains(contentType, "multipart/form-data"))
@@ -148,7 +148,7 @@ bool HTTP::HTTPv1_Server::validateHTTPv11Requirements()
     // HTTP/1.1+ requires Host header
     if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 && clientRequest.virtualHost.empty())
     {
-        serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
+        serverResponse.status.setCode(HTTP::Status::Code::S_400_BAD_REQUEST);
         return false;
     }
     return true;

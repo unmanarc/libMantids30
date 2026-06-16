@@ -9,7 +9,7 @@
 #include <Mantids30/Threads/threadpool.h>
 #include <memory>
 
-namespace Mantids30::Network::Protocols::FastRPC {
+namespace Mantids30::Network::Protocol::FastRPC {
 
 /**
  * @brief The FastRPC class: Bidirectional client-sync/server-async-thread-pooled no-auth RPC Manager
@@ -302,4 +302,4 @@ private:
     std::condition_variable m_pingCond;
 };
 
-} // namespace Mantids30::Network::Protocols::FastRPC
+} // namespace Mantids30::Network::Protocol::FastRPC

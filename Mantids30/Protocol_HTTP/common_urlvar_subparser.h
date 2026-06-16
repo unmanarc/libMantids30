@@ -3,7 +3,7 @@
 #include <Mantids30/Memory/subparser.h>
 #include <memory>
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 class URLVarContent : public Memory::Streams::SubParser
 {
@@ -22,4 +22,4 @@ protected:
     std::shared_ptr<Memory::Containers::B_Chunks> m_pData;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

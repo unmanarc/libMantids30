@@ -16,7 +16,7 @@
 
 namespace Mantids30::Network::Servers::Web {
 
-class APIServer_ClientHandler : public Protocols::HTTP::HTTPv1_Server
+class APIServer_ClientHandler : public Protocol::HTTP::HTTPv1_Server
 {
 public:
     APIServerConfig *config;
@@ -30,7 +30,7 @@ protected:
      */
     void log(Json::Value &jWebLog) override;
 
-    virtual Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string &path) { return Protocols::HTTP::Status::Codes::S_404_NOT_FOUND; }
+    virtual Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Protocol::HTTP::Status::Code::S_404_NOT_FOUND; }
 
     /**
      * @brief Called when HTTP client headers are received for WebSocket connection
@@ -72,12 +72,12 @@ protected:
      * @brief onHTTPClientContentReceived Process web client request
      * @return http response code.
      */
-    Protocols::HTTP::Status::Codes onHTTPClientContentReceived() override;
+    Protocol::HTTP::Status::Code onHTTPClientContentReceived() override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
-    virtual Protocols::HTTP::Status::Codes sessionStart() = 0;
+    virtual Protocol::HTTP::Status::Code sessionStart() = 0;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      * @return S_200_OK for good cleaning.
@@ -131,16 +131,16 @@ protected:
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    virtual void handleWebSocketEvent(Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint *) = 0;
+    virtual void handleWebSocketEvent(Network::Protocol::WebSocket::EventType, const API::WebSocket::Endpoint *) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocols::HTTP::Status::Codes handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
+    virtual Protocol::HTTP::Status::Code handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
     {
         // Implement this to handle authorizations from any other IAM's
         // Meanwhile, you may want to use a proxy to a WebSessionAuthHandler or implement your own.
-        return Protocols::HTTP::Status::S_501_NOT_IMPLEMENTED;
+        return Protocol::HTTP::Status::Code::S_501_NOT_IMPLEMENTED;
     }
 
     /**
@@ -190,7 +190,7 @@ protected:
     bool isURLSafe(const std::string &url);
     bool isRedirectPathSafeForAuth(const std::string &url) const;
 
-    Protocols::HTTP::Status::Codes showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode);
+    Protocol::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Protocol::HTTP::Status::Code returnCode);
     std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
 
     DataFormat::JWT::Token jwtToken;
@@ -198,7 +198,7 @@ protected:
     Sessions::SessionInfo currentSessionInfo;
 
 protected:
-    Protocols::HTTP::Status::Codes redirectUsingJS(const std::string &url);
+    Protocol::HTTP::Status::Code redirectUsingJS(const std::string &url);
 
     // Websocket endpoints:
     std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
@@ -207,7 +207,7 @@ protected:
 
 private:
     std::string logUsername;
-    Protocols::HTTP::Status::Codes handleRegularFileRequest();
+    Protocol::HTTP::Status::Code handleRegularFileRequest();
     bool versionIsSupported(const std::string &versionStr, int minVersion);
     bool isSupportedUserAgent(const std::string &userAgent);
     friend class HTMLIEngine;

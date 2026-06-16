@@ -16,14 +16,14 @@ public:
     ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
 
 protected:
-    Protocols::HTTP::Status::Codes checkWebSocketRequestURI(const std::string &path) override;
+    Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) override;
 
-    void handleWebSocketEvent(Network::Protocols::WebSocket::EventType, const API::WebSocket::Endpoint *) override;
+    void handleWebSocketEvent(Network::Protocol::WebSocket::EventType, const API::WebSocket::Endpoint *) override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
-    Protocols::HTTP::Status::Codes sessionStart() override;
+    Protocol::HTTP::Status::Code sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      */
@@ -76,8 +76,8 @@ private:
     std::string jwtAccessTokenName;
 
     bool m_destroySession = false;
-    bool m_JWTHeaderTokenVerified = false;
-    bool m_JWTCookieTokenVerified = false;
+    bool m_isAuthorizationHeaderJWTVerified = false;
+    bool m_isAccessTokenCookieJWTVerified = false;
     friend class Engine;
 };
 

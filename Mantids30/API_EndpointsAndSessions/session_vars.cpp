@@ -20,7 +20,7 @@ json Session_Vars::getSessionVariableValue(const std::string &varName)
 bool Session_Vars::doesSessionVariableExist(const std::string &varName)
 {
     Threads::Sync::Lock_RD lock(m_sessionVarsMutex);
-    return (m_sessionVariables.find(varName) != m_sessionVariables.end() ? true : false);
+    return (m_sessionVariables.find(varName) != m_sessionVariables.end());
 }
 
 void Session_Vars::clearSessionVariable(const std::string &varName)

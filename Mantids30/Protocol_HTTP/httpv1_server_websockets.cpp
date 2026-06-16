@@ -6,7 +6,7 @@
 #include <Mantids30/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -29,7 +29,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     // Check if key exists and is valid (should be 16 bytes base64 encoded = 24 chars)
     if (clientKey.empty() || clientKey.length() != 24)
     {
-        serverResponse.status.setCode(HTTP::Status::S_400_BAD_REQUEST);
+        serverResponse.status.setCode(HTTP::Status::Code::S_400_BAD_REQUEST);
         connectionContinue = false;
         sendFullHTTPResponse();
         return false;
@@ -41,7 +41,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     {
         // Optionally send back supported version
         serverResponse.headers.add("Sec-WebSocket-Version", "13");
-        serverResponse.status.setCode(HTTP::Status::S_426_UPGRADE_REQUIRED);
+        serverResponse.status.setCode(HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
         connectionContinue = false;
         sendFullHTTPResponse();
         return false;
@@ -53,7 +53,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     const string acceptKey = Helpers::Encoders::encodeToBase64(sha1Hash, false);
 
     // Set response headers for successful WebSocket upgrade
-    serverResponse.status.setCode(HTTP::Status::S_101_SWITCHING_PROTOCOLS);
+    serverResponse.status.setCode(HTTP::Status::Code::S_101_SWITCHING_PROTOCOLS);
 
     serverResponse.headers.add("Upgrade", "websocket");
     serverResponse.headers.add("Connection", "Upgrade");

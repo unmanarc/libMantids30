@@ -154,7 +154,6 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
     bool cont = true;
 
     // Check keys:
-    if (true)
     {
         Network::Sockets::Socket_TLS sock;
 
@@ -166,7 +165,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
             Globals::m_rpcImpl->loadPSK();
 
             // Check CA if present
-            if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath()))
             {
                 LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
             }
@@ -174,7 +173,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
         else
         {
             // Check CA always...
-            if (!sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath().c_str()))
+            if (!sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath()))
             {
                 LOG_APP->log0(__func__, Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
                 cont = false;

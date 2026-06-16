@@ -20,15 +20,14 @@ namespace Mantids30::Network::Servers::Web {
 class APIServerConfig
 {
 public:
-    using ClientDetails = Mantids30::Sessions::ClientDetails;
-    using RequestParameters = Mantids30::API::RESTful::RequestParameters;
-    using APIReturn = Mantids30::API::APIReturn;
+    using ClientDetails = Sessions::ClientDetails;
+    using RequestParameters = API::RESTful::RequestParameters;
+    using APIReturn = API::APIReturn;
 
     APIServerConfig() = default;
     ~APIServerConfig();
 
-    typedef Protocols::HTTP::Status::Codes (*DynamicInitialChecks)(Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
-                                                                   Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response);
+    typedef Protocol::HTTP::Status::Code (*DynamicInitialChecks)(Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response);
     DynamicInitialChecks dynamicInitialChecks = nullptr;
 
     /**
@@ -42,7 +41,7 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicTokenValidatorFunction)(const std::string &token, const std::string &apikey, Mantids30::DataFormat::JWT::Token *accessToken);
+    typedef bool (*DynamicTokenValidatorFunction)(const std::string &token, const std::string &apikey, DataFormat::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.
@@ -242,11 +241,11 @@ public:
      * - `request` (HTTPv1_Base::Request*): Pointer to the HTTP request object.
      * - `response` (HTTPv1_Base::Response*): Pointer to the HTTP response object.
      *
-     * The handler returns a value of type `Protocols::HTTP::Status::Codes` representing the
+     * The handler returns a value of type `Protocol::HTTP::Status::Code` representing the
      * response status code.
      */
-    typedef Protocols::HTTP::Status::Codes (*DynamicRequestHandler)(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
-                                                                    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+    typedef Protocol::HTTP::Status::Code (*DynamicRequestHandler)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request,
+                                                                  Protocol::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
     struct DynamicRequestHandlerDef
     {
@@ -273,7 +272,7 @@ public:
      *     information about the client request.
      *   - `HTTPv1_Base::Response* response`: Pointer to the HTTP response object, used to
      *     generate the response to the client.
-     *   - **Return**: A `Protocols::HTTP::Status::Codes` representing the status of the
+     *   - **Return**: A `Protocol::HTTP::Status::Codes` representing the status of the
      *     response, such as success or error codes.
      *
      * This map enables efficient routing by allowing the server to quickly look up and execute
@@ -312,7 +311,7 @@ public:
      * @brief getStaticContentElements Get static content element...
      * @return
      */
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> getStaticContentElements();
+    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> getStaticContentElements();
 
     /**
      * @brief Adds an overlapped directory mapping for internal paths to filesystem paths.
@@ -359,7 +358,7 @@ private:
      */
     std::list<std::pair<std::string, std::string>> m_overlappedDirectories;
 
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
+    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> m_staticContentElements;
     std::mutex m_internalContentMutex;
     std::list<char *> m_memToBeFreed;
 };

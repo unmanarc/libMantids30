@@ -7,7 +7,7 @@
 #include <json/value.h>
 
 using namespace Mantids30;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace API::WebSocket;
 
 bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocket::Endpoint &endpointDefinition)
@@ -29,23 +29,23 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
     return clientDetails;
 }
 
-bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
+bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
                               const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;
 
     switch (eventType)
     {
-    case Network::Protocols::WebSocket::SESSION_START:
+    case Network::Protocol::WebSocket::SESSION_START:
         handler = endpointDef.sessionStartHandler;
         break;
-    case Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT:
+    case Network::Protocol::WebSocket::RECEIVED_MESSAGE_TEXT:
         handler = endpointDef.textMessageReceivedHandler;
         break;
-    case Network::Protocols::WebSocket::RECEIVED_MESSAGE_BINARY:
+    case Network::Protocol::WebSocket::RECEIVED_MESSAGE_BINARY:
         handler = endpointDef.binaryMessageReceivedHandler;
         break;
-    case Network::Protocols::WebSocket::SESSION_END:
+    case Network::Protocol::WebSocket::SESSION_END:
         handler = endpointDef.sessionEndHandler;
         break;
     default:
@@ -62,7 +62,7 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
         Json::Value header;
         std::string errs;
         std::vector<char> buf = content->copyToBuffer();
-        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocols::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocols::WebSocket::SESSION_END))
+        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocol::WebSocket::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::SESSION_END))
         {
             if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
             {
@@ -125,7 +125,7 @@ const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) con
     return nullptr;
 }
 
-Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content,
+Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
                                              WebSocket::WebSocketParameters &parameters)
 {
     if (it == m_endpoints.end())

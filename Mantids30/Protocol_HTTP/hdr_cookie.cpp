@@ -9,7 +9,7 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::HTTP::Headers;
+using namespace Mantids30::Network::Protocol::HTTP::Headers;
 using namespace Mantids30;
 
 std::string Cookie::toSetCookieString(const std::string &cookieName) const

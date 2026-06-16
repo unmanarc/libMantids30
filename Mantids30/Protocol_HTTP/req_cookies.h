@@ -5,7 +5,7 @@
 
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
 
-namespace Mantids30::Network::Protocols::HTTP::Request {
+namespace Mantids30::Network::Protocol::HTTP::Request {
 
 class Cookies_ClientSide
 {
@@ -36,4 +36,4 @@ private:
     std::map<std::string, std::string> m_cookiesMap;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Request
+} // namespace Mantids30::Network::Protocol::HTTP::Request

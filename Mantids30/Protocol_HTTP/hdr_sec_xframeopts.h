@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Headers::Security {
+namespace Mantids30::Network::Protocol::HTTP::Headers::Security {
 /*
 class XFrameOpts
 {
@@ -93,4 +93,4 @@ public:
     eOptsValues value = DENY; ///< The X-Frame-Options value.
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Headers::Security
+} // namespace Mantids30::Network::Protocol::HTTP::Headers::Security

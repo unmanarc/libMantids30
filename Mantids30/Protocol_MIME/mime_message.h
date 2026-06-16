@@ -10,7 +10,7 @@
 #include "mime_sub_endpboundary.h"
 #include "mime_sub_firstboundary.h"
 
-namespace Mantids30::Network::Protocols::MIME {
+namespace Mantids30::Network::Protocol::MIME {
 
 class MIME_Message : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
@@ -261,4 +261,4 @@ private:
     sMIMECallback m_onContentReady;
 };
 
-} // namespace Mantids30::Network::Protocols::MIME
+} // namespace Mantids30::Network::Protocol::MIME

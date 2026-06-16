@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocols::APISync {
+namespace Mantids30::Network::Protocol::APISync {
 
 /**
  * @brief Structure to hold API synchronization parameters.
@@ -112,4 +112,4 @@ json getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *prox
 json updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
                                 const json &activities);
 
-} // namespace Mantids30::Network::Protocols::APISync
+} // namespace Mantids30::Network::Protocol::APISync

@@ -5,7 +5,7 @@
 #include <boost/optional.hpp>
 #include <cstdint>
 
-namespace Mantids30::Network::Protocols::WebSocket {
+namespace Mantids30::Network::Protocol::WebSocket {
 
 class FrameHeader : public Memory::Streams::SubParser
 {
@@ -113,4 +113,4 @@ private:
     ErrorCode m_lastError = ERROR_NONE;
 };
 
-} // namespace Mantids30::Network::Protocols::WebSocket
+} // namespace Mantids30::Network::Protocol::WebSocket

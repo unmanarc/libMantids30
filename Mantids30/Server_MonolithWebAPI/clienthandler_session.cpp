@@ -3,13 +3,13 @@
 using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
 // This function is called at the beggining.
-HTTP::Status::Codes ClientHandler::sessionStart()
+HTTP::Status::Code ClientHandler::sessionStart()
 {
     m_sessionID = clientRequest.getCookie(CURRENT_SESSIONID_COOKIENAME);
     m_impersonatorSessionID = clientRequest.getCookie(IMPERSONATOR_SESSIONID_COOKIENAME);
@@ -20,7 +20,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         // No session to load.
         m_sessionID = "";
         m_impersonatorSessionID = "";
-        return Protocols::HTTP::Status::S_403_FORBIDDEN;
+        return HTTP::Status::Code::S_403_FORBIDDEN;
     }
 
     if (!WebSessionsManager::validateSessionIDFormat(m_impersonatorSessionID))
@@ -29,7 +29,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         // No session to load.
         m_sessionID = "";
         m_impersonatorSessionID = "";
-        return Protocols::HTTP::Status::S_403_FORBIDDEN;
+        return HTTP::Status::Code::S_403_FORBIDDEN;
     }
 
     // Loading session, please validate the Anti-CSRF for sessions before.
@@ -37,7 +37,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
     {
         // Invalid request.
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Anti-CSRF Failed. Header does not match with cookie.");
-        return Protocols::HTTP::Status::S_403_FORBIDDEN;
+        return HTTP::Status::Code::S_403_FORBIDDEN;
     }
 
     // update activity on impersonation parent on each access...
@@ -62,7 +62,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
                 // No session to load.
                 m_sessionID = "";
                 m_impersonatorSessionID = "";
-                return Protocols::HTTP::Status::S_403_FORBIDDEN;
+                return HTTP::Status::Code::S_403_FORBIDDEN;
             }
         }
         if (!m_currentWebSession->compareUserAgent(clientRequest.userAgent))
@@ -71,7 +71,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
             // No session to load.
             m_sessionID = "";
             m_impersonatorSessionID = "";
-            return Protocols::HTTP::Status::S_403_FORBIDDEN;
+            return HTTP::Status::Code::S_403_FORBIDDEN;
         }
     }
     else
@@ -80,7 +80,7 @@ HTTP::Status::Codes ClientHandler::sessionStart()
         m_destroySession = true;
         m_sessionID = ""; // Invalidate this session ID and continue without session.
     }
-    return Protocols::HTTP::Status::S_200_OK;
+    return HTTP::Status::Code::S_200_OK;
 }
 
 // This function is called at the end.
@@ -173,7 +173,7 @@ void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
     simpleJSSecureCookie.httpOnly = false;
     simpleJSSecureCookie.setExpirationFromNow(maxAge);
     simpleJSSecureCookie.maxAge = maxAge;
-    simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+    simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
     simpleJSSecureCookie.path = "/";
     serverResponse.setCookie("jsSessionTimeout", simpleJSSecureCookie);
 }
@@ -189,7 +189,7 @@ void ClientHandler::setJSSessionHalfIDCookie(const string &sessionID)
         simpleJSSecureCookie.httpOnly = false;
         simpleJSSecureCookie.setExpirationFromNow(m_sessionMaxAge);
         simpleJSSecureCookie.maxAge = (m_sessionMaxAge);
-        simpleJSSecureCookie.sameSitePolicy = Protocols::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+        simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
         simpleJSSecureCookie.value = RPCLog::truncateSessionId(sessionID);
         simpleJSSecureCookie.path = "/"; // all the site.
         serverResponse.setCookie("jsSessionHalfID", simpleJSSecureCookie);

@@ -3,12 +3,12 @@
 using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
-HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
+HTTP::Status::Code ClientHandler::handleAuthFunctions(const string &baseApiUrl, const string &authFunctionName)
 {
     // Login callback:
     if (authFunctionName == "login")
@@ -38,13 +38,13 @@ HTTP::Status::Codes ClientHandler::handleAuthFunctions(const string &baseApiUrl,
     else
     {
         log(LogLevel::WARN, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
-        return HTTP::Status::S_404_NOT_FOUND;
+        return HTTP::Status::Code::S_404_NOT_FOUND;
     }
 }
 
-HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
+HTTP::Status::Code ClientHandler::handleAuthRetrieveInfoFunction()
 {
-    Protocols::HTTP::Status::Codes ret;
+    HTTP::Status::Code ret;
     shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = make_shared<Memory::Streams::StreamableJSON>();
     serverResponse.setDataStreamer(jPayloadOutStr);
     serverResponse.setContentType("application/json", true);
@@ -71,12 +71,12 @@ HTTP::Status::Codes ClientHandler::handleAuthRetrieveInfoFunction()
     }
 
     jPayloadOutStr->setValue(x);
-    ret = HTTP::Status::S_200_OK;
+    ret = HTTP::Status::Code::S_200_OK;
 
     return ret;
 }
 
-HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
+HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 {
     // Here we will absorb the JWT... and transform that on a session...
     string requestOrigin = clientRequest.getOrigin();
@@ -84,7 +84,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
     if (config->permittedLoginOrigins.find(requestOrigin) == config->permittedLoginOrigins.end())
     {
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Unauthorized login attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-        return HTTP::Status::S_401_UNAUTHORIZED;
+        return HTTP::Status::Code::S_401_UNAUTHORIZED;
     }
 
     // TODO: en el futuro permitir header usando un policy y OPTIONS.
@@ -105,14 +105,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         {
             // LOG
             log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonation not allowed on this application.");
-            return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
+            return HTTP::Status::Code::S_405_METHOD_NOT_ALLOWED;
         }
 
         if (!isImpersonation && m_currentWebSession)
         {
             // LOG
             log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Login token override is not allowed. Please logout first.");
-            return HTTP::Status::S_403_FORBIDDEN;
+            return HTTP::Status::Code::S_403_FORBIDDEN;
         }
 
         if (m_currentWebSession && isImpersonation)
@@ -130,14 +130,14 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
                 {
                     // LOG
                     log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonator in token does not match with logged in session.");
-                    return HTTP::Status::S_403_FORBIDDEN;
+                    return HTTP::Status::Code::S_403_FORBIDDEN;
                 }
 
                 if (jwtDomain != impersonatorDomain && this->config->allowImpersonationBetweenDifferentDomains)
                 {
                     // LOG
                     log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Impersonation is not allowed between different domains.");
-                    return HTTP::Status::S_403_FORBIDDEN;
+                    return HTTP::Status::Code::S_403_FORBIDDEN;
                 }
             }
         }
@@ -154,7 +154,7 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
         if (m_sessionID == "")
         {
             // Too many sessions for this user or error inserting the session.
-            return HTTP::Status::S_503_SERVICE_UNAVAILABLE;
+            return HTTP::Status::Code::S_503_SERVICE_UNAVAILABLE;
         }
 
         // If session id is found, populate user data.
@@ -219,29 +219,29 @@ HTTP::Status::Codes ClientHandler::handleAuthLoginFunction()
     return serverResponse.setRedirectLocation(config->redirectLocationOnLoginFailed);
 }
 
-HTTP::Status::Codes ClientHandler::handleAuthLogoutFunction()
+HTTP::Status::Code ClientHandler::handleAuthLogoutFunction()
 {
     string requestOrigin = clientRequest.getOrigin();
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Failed to logout (external origin or CSRF attempt)");
-        return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
+        return HTTP::Status::Code::S_405_METHOD_NOT_ALLOWED;
     }
 
     m_destroySession = true;
-    return HTTP::Status::S_202_ACCEPTED;
+    return HTTP::Status::Code::S_202_ACCEPTED;
 }
 
 // With this API, we can update the last activity.
-HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
+HTTP::Status::Code ClientHandler::handleAuthUpdateLastActivityFunction()
 {
     string requestOrigin = clientRequest.getOrigin();
 
     if (!requestOrigin.empty() || !validateSessionAntiCSRFMechanism())
     {
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 65535, "Failed to update the last activity (external origin or CSRF attempt)");
-        return HTTP::Status::S_405_METHOD_NOT_ALLOWED;
+        return HTTP::Status::Code::S_405_METHOD_NOT_ALLOWED;
     }
 
     if (m_currentWebSession)
@@ -249,5 +249,5 @@ HTTP::Status::Codes ClientHandler::handleAuthUpdateLastActivityFunction()
         m_currentWebSession->getAuthSession()->updateLastActivity();
     }
 
-    return HTTP::Status::S_202_ACCEPTED;
+    return HTTP::Status::Code::S_202_ACCEPTED;
 }

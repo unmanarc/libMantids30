@@ -4,7 +4,7 @@
 #include <string>
 #include <ctime>
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 /**
  * @brief The Date class provides functionality for HTTP dates.
@@ -66,4 +66,4 @@ private:
     time_t m_unixTime; ///< The time stored in the Date object as seconds since the Unix epoch.
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

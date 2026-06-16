@@ -6,10 +6,12 @@
 #include <Mantids30/Helpers/json.h>
 #include <memory>
 
+#include "Mantids30/API_EndpointsAndSessions/security.h"
 #include "clienthandler.h"
 
 using namespace Mantids30;
 using namespace Network::Servers;
+using namespace Network::Protocol;
 using namespace Network::Servers::RESTful;
 using namespace API::RESTful;
 
@@ -22,9 +24,9 @@ Engine::Engine()
     jwtRevokeDef.endpointDefinition = &revokeJWT;
     jwtRevokeDef.security.requiredScopes = {"IAM"};
     jwtRevokeDef.context = this;
-    handler->addEndpoint(Endpoints::HTTPMethod::POST, "jwt/revoke", jwtRevokeDef);
-    handler->addEndpoint(Endpoints::HTTPMethod::PUT, "websockets/topics/subscribe", Endpoints::Security::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
-    handler->addEndpoint(Endpoints::HTTPMethod::DELETE, "websockets/topics/unsubscribe", Endpoints::Security::REQUIRE_JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
+    handler->addEndpoint(HTTP::Method::POST, "jwt/revoke", jwtRevokeDef);
+    handler->addEndpoint(HTTP::Method::PUT, "websockets/topics/subscribe", API::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
+    handler->addEndpoint(HTTP::Method::DELETE, "websockets/topics/unsubscribe", API::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
 
     endpointsHandler[0] = handler;
 }
@@ -53,20 +55,20 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
+        return API::APIReturn(HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
     }
 
     // Obtener el endpoint WebSocket
     const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
+        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
     }
 
     // Intentar unirse al tema de suscripción
     if (!endpoint->joinTopicSubscription(webSocketSessionId, topicId))
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic");
+        return API::APIReturn(HTTP::Status::Code::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic");
     }
 
     // Suscripción exitosa
@@ -83,20 +85,20 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
+        return API::APIReturn(HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
     }
 
     // Obtener el endpoint WebSocket
     const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
+        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
     }
 
     // Intentar dejar el tema de suscripción
     if (!endpoint->leaveTopicSubscription(webSocketSessionId, topicId))
     {
-        return API::APIReturn(Protocols::HTTP::Status::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic");
+        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic");
     }
 
     // Desuscripción exitosa

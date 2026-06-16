@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 // TODO: CHECK THIS CLASS
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -181,11 +181,11 @@ std::shared_ptr<Memory::Streams::StreamableJSON> HTTP::Content::getJSONVars()
     throw std::runtime_error("Invalid operation: getJSONVars should not be called when the content type is not JSON.");
 }
 
-std::shared_ptr<Protocols::MIME::MIME_Message> HTTP::Content::getMultiPartVars()
+std::shared_ptr<Protocol::MIME::MIME_Message> HTTP::Content::getMultiPartVars()
 {
     if (m_containerType == ContainerType::MIME && m_usingInternalOutStream)
     {
-        return std::dynamic_pointer_cast<Protocols::MIME::MIME_Message>(m_contentStreamableObject);
+        return std::dynamic_pointer_cast<Protocol::MIME::MIME_Message>(m_contentStreamableObject);
     }
     throw std::runtime_error("Invalid operation: getMultiPartVars should not be called when the content type is not MIME.");
 }

@@ -4,7 +4,7 @@
 #include <cstring>
 #include <optional>
 
-using namespace Mantids30::Network::Protocols::WebSocket;
+using namespace Mantids30::Network::Protocol::WebSocket;
 
 FrameContent::FrameContent()
 {

@@ -12,7 +12,7 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace Mantids30::Network::Protocols::MIME {
+namespace Mantids30::Network::Protocol::MIME {
 // ??
 /**
  * @brief The HeaderOption struct
@@ -179,4 +179,4 @@ private:
     size_t m_maxSubOptionCount = 100, m_maxSubOptionSize = 2 * KB_MULT;
 };
 
-} // namespace Mantids30::Network::Protocols::MIME
+} // namespace Mantids30::Network::Protocol::MIME

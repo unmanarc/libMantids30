@@ -3,7 +3,7 @@
 #include <memory>
 #include <thread>
 
-using namespace Mantids30::Network::Protocols::FastRPC;
+using namespace Mantids30::Network::Protocol::FastRPC;
 using namespace Mantids30;
 using Ms = std::chrono::milliseconds;
 using S = std::chrono::seconds;

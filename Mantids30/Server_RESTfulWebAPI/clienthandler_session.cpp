@@ -3,13 +3,13 @@
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::DataFormat;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
-Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
+Network::Protocol::HTTP::Status::Code ClientHandler::sessionStart()
 {
     // Check for the authorization bearer token...
     string headerBearerToken = clientRequest.getAuthorizationBearer();
@@ -34,11 +34,11 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         // First we check the header, if the header have a token, continue with it
         if (this->config->dynamicTokenValidator != nullptr)
         {
-            m_JWTHeaderTokenVerified = this->config->dynamicTokenValidator(headerBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
+            m_isAuthorizationHeaderJWTVerified = this->config->dynamicTokenValidator(headerBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
         }
         else
         {
-            m_JWTHeaderTokenVerified = verifyToken(headerBearerToken);
+            m_isAuthorizationHeaderJWTVerified = verifyToken(headerBearerToken);
         }
     }
     else if (!cookieBearerToken.empty())
@@ -46,11 +46,11 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         // if not, continue with the cookie.
         if (this->config->dynamicTokenValidator != nullptr)
         {
-            m_JWTCookieTokenVerified = this->config->dynamicTokenValidator(cookieBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
+            m_isAccessTokenCookieJWTVerified = this->config->dynamicTokenValidator(cookieBearerToken, clientRequest.headers.getOptionValueStringByName("x-api-key"), &jwtToken);
         }
         else
         {
-            m_JWTCookieTokenVerified = verifyToken(cookieBearerToken);
+            m_isAccessTokenCookieJWTVerified = verifyToken(cookieBearerToken);
         }
     }
 
@@ -65,7 +65,7 @@ Network::Protocols::HTTP::Status::Codes ClientHandler::sessionStart()
         currentSessionInfo.isImpersonation = !(currentSessionInfo.authSession->getImpersonator().empty());
     }
 
-    return Protocols::HTTP::Status::S_200_OK;
+    return HTTP::Status::Code::S_200_OK;
 }
 
 void ClientHandler::sessionCleanup()
@@ -102,7 +102,7 @@ json ClientHandler::getSessionVariableValue(const string &varName)
 
 bool ClientHandler::isSessionActive()
 {
-    return (m_JWTHeaderTokenVerified || m_JWTCookieTokenVerified);
+    return (m_isAuthorizationHeaderJWTVerified || m_isAccessTokenCookieJWTVerified);
 }
 
 set<string> ClientHandler::getSessionScopes()

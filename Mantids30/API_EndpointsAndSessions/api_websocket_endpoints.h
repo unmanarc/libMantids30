@@ -35,8 +35,8 @@ public:
     enum Security : uint8_t
     {
         NO_AUTH = 0,
-        REQUIRE_JWT_HEADER_AUTH = 1 << 0,
-        REQUIRE_JWT_COOKIE_AUTH = 1 << 1,
+        JWT_HEADER_AUTH = 1 << 0,
+        JWT_COOKIE_AUTH = 1 << 1,
         REQUIRE_SESSION = 1 << 2
     };
 
@@ -79,7 +79,7 @@ public:
      * @param parameters The WebSocket parameters.
      * @return The error code indicating the result of event handling.
      */
-    HandleResult handleEvent(const Network::Protocols::WebSocket::EventType &eventType, std::shared_ptr<Memory::Containers::B_Chunks> content, WebSocket::WebSocketParameters &parameters);
+    HandleResult handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content, WebSocket::WebSocketParameters &parameters);
 
     /**
      * @brief getWebSocketEndpointByURI
@@ -96,7 +96,7 @@ private:
 
     Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);
 
-    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocols::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
+    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
                        const WebSocketParameters &parameters);
 
     friend class Mantids30::Network::Servers::Web::APIServerCore;

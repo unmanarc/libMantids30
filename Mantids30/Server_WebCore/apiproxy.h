@@ -27,7 +27,7 @@ struct APIProxyParameters
     bool transformCookiePath = false;
 };
 
-Mantids30::Network::Protocols::HTTP::Status::Codes APIProxy(const std::string &internalPath, Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *request,
-                                                            Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+Mantids30::Network::Protocol::HTTP::Status::Code APIProxy(const std::string &internalPath, Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *request,
+                                                            Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
 
 } // namespace Mantids30::Network::Servers::Web

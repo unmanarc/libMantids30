@@ -20,7 +20,7 @@ class Endpoint;
 // Struct to hold WebSocket request parameters
 struct WebSocketParameters
 {
-    Mantids30::Network::Protocols::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
+    Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
     DataFormat::JWT::Token emptyToken;                                                  ///< Holds a default empty token
     DataFormat::JWT::Token *jwtToken = &emptyToken;                                     ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
     std::shared_ptr<DataFormat::JWT> jwtValidator;                                      ///< Holds the JWT Validator

@@ -26,7 +26,7 @@ using namespace Mantids30::Program::Config;
 
 // ==================== MAIN FACTORY FUNCTIONS ====================
 
-std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -42,7 +42,7 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30:
         return std::nullopt;
     }
 
-    json response = Network::Protocols::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
+    json response = Network::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT configuration from API.");
@@ -53,7 +53,7 @@ std::optional<Json::Value> getApplicationJWTConfig(Logs::AppLog *log, Mantids30:
 }
 
 /*
-std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -69,7 +69,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
         return std::nullopt;
     }
 
-    json response = Network::Protocols::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    json response = Network::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT signing key from API.");
@@ -79,7 +79,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
     return response.asString();
 }
 */
-std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocols::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -95,7 +95,7 @@ std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Man
         return std::nullopt;
     }
 
-    json response = Network::Protocols::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    json response = Network::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT validation key from API.");
@@ -107,7 +107,7 @@ std::optional<std::string> getApplicationJWTValidationKey(Logs::AppLog *log, Man
 
 std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
-    Network::Protocols::APISync::APISyncParameters apiSyncParameters;
+    Network::Protocol::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -201,7 +201,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
 std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::JWT::createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                           const std::map<std::string, std::string> &vars)
 {
-    Network::Protocols::APISync::APISyncParameters apiSyncParameters;
+    Network::Protocol::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {

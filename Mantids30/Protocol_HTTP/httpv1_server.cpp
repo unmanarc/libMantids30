@@ -11,7 +11,7 @@ using namespace boost;
 using namespace boost::algorithm;
 
 using namespace std;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -249,7 +249,7 @@ bool HTTP::HTTPv1_Server::prepareServerVersionOnURI()
     // Validate major version
     if (clientRequest.requestLine.getHTTPVersion()->getMajor() != 1)
     {
-        serverResponse.status.setCode(HTTP::Status::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        serverResponse.status.setCode(HTTP::Status::Code::S_505_HTTP_VERSION_NOT_SUPPORTED);
         return false;
     }
     else

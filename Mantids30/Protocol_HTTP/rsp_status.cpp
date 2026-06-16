@@ -2,14 +2,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-#include <optional>
 #include <string>
 #include <vector>
 
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
 std::map<unsigned short, std::string> HTTP::Status::m_responseStatusCodesTable = {{100, {"Continue"}},
@@ -80,7 +79,7 @@ Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
     }
 
     m_httpVersion.parse(requestParts[0]);
-    m_statusCode = strtoul(requestParts[1].c_str(), nullptr, 10);
+    m_statusCode = static_cast<Code>(strtoul(requestParts[1].c_str(), nullptr, 10));
     m_statusMessage = "";
 
     if (requestParts.size() >= 3)
@@ -120,19 +119,19 @@ string HTTP::Status::getStringTranslation(unsigned short code)
 bool HTTP::Status::streamToUpstream()
 {
     // Act as a client. Send data from here.
-    return m_upStream->writeString(m_httpVersion.toString() + " " + std::to_string(m_statusCode) + " " + m_statusMessage + "\r\n");
+    return m_upStream->writeString(m_httpVersion.toString() + " " + std::to_string(static_cast<uint16_t>(m_statusCode)) + " " + m_statusMessage + "\r\n");
 }
 
-void HTTP::Status::setCode(Status::Codes code)
+void HTTP::Status::setCode(Status::Code code)
 {
-    if (code != HTTP::Status::S_999_NOT_SET)
+    if (code != HTTP::Status::Code::S_999_NOT_SET)
     {
-        m_statusCode = (unsigned short) code;
-        setResponseMessage(getStringTranslation(code));
+        m_statusCode = code;
+        setResponseMessage(getStringTranslation(static_cast<uint16_t>(code)));
     }
 }
 
-unsigned short HTTP::Status::getCode() const
+HTTP::Status::Code HTTP::Status::getCode() const
 {
     return m_statusCode;
 }

@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Headers {
+namespace Mantids30::Network::Protocol::HTTP::Headers {
 
 class Cookie
 {
@@ -109,4 +109,4 @@ private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Headers
+} // namespace Mantids30::Network::Protocol::HTTP::Headers

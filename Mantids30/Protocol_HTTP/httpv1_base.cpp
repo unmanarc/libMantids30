@@ -1,6 +1,6 @@
 #include "httpv1_base.h"
 
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
 HTTP::HTTPv1_Base::HTTPv1_Base(bool clientMode, std::shared_ptr<StreamableObject> sobject)

@@ -9,7 +9,7 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
 HTTP::HTTPv1_Client::HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject> sobject)

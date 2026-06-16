@@ -11,7 +11,7 @@
 
 using namespace Mantids30;
 using namespace Network::Sockets;
-using namespace Network::Protocols::FastRPC;
+using namespace Network::Protocol::FastRPC;
 using namespace std;
 
 using Ms = chrono::milliseconds;

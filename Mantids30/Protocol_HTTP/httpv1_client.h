@@ -9,7 +9,7 @@
 // TODO: reuse the connection?...
 // TODO: header: :scheme:https (begins with :)
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
 {
@@ -24,7 +24,7 @@ public:
 
     struct PostMIMERequest
     {
-        std::shared_ptr<Protocols::MIME::MIME_Message> postVars;
+        std::shared_ptr<Protocol::MIME::MIME_Message> postVars;
         std::shared_ptr<HTTP::URLVars> urlVars;
     };
     /**
@@ -114,4 +114,4 @@ private:
     std::string m_serverContentType;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

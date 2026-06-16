@@ -1,6 +1,6 @@
 #include "mime_partmessage.h"
 
-using namespace Mantids30::Network::Protocols::MIME;
+using namespace Mantids30::Network::Protocol::MIME;
 
 bool MIME_PartMessage::streamToSubParsers()
 {

@@ -27,7 +27,7 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 class HTTPv1_Server : public HTTPv1_Base
 {
@@ -133,7 +133,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return HTTP Status Code (will be delivered in the HTTP Response Header)
     */
-    virtual Mantids30::Network::Protocols::HTTP::Status::Codes onHTTPClientContentReceived() { return HTTP::Status::S_200_OK; }
+    virtual Mantids30::Network::Protocol::HTTP::Status::Code onHTTPClientContentReceived() { return HTTP::Status::Code::S_200_OK; }
 
     void *getThis() override { return this; }
     bool changeToNextParser() override;
@@ -194,7 +194,7 @@ protected:
     {
         // Here you can validate the headers, cookies, check the path
         // and/or send response indicating that the connection is not continuing.
-        serverResponse.status.setCode(HTTP::Status::S_404_NOT_FOUND);
+        serverResponse.status.setCode(HTTP::Status::Code::S_404_NOT_FOUND);
         return false;
     }
     /**
@@ -285,4 +285,4 @@ private:
     bool connectionContinue = true, prohibitConnectionUpgrade = false;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

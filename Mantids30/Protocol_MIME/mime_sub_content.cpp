@@ -2,7 +2,7 @@
 #include <Mantids30/Memory/subparser.h>
 #include <memory>
 
-using namespace Mantids30::Network::Protocols::MIME;
+using namespace Mantids30::Network::Protocol::MIME;
 using namespace Mantids30;
 
 #ifdef _WIN32

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Headers {
+namespace Mantids30::Network::Protocol::HTTP::Headers {
 
 class CacheControl
 {
@@ -64,4 +64,4 @@ public:
     uint32_t sMaxAge = 0;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Headers
+} // namespace Mantids30::Network::Protocol::HTTP::Headers

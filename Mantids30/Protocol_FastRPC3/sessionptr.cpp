@@ -1,6 +1,6 @@
 #include "fastrpc3.h"
 
-using namespace Mantids30::Network::Protocols::FastRPC;
+using namespace Mantids30::Network::Protocol::FastRPC;
 using namespace Mantids30::DataFormat;
 using namespace Mantids30;
 

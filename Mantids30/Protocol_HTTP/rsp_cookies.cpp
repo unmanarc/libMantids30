@@ -8,8 +8,8 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocols::HTTP::Response;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol::HTTP::Response;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
 void Cookies_ServerSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const

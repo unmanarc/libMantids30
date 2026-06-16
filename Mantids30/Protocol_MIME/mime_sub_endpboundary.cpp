@@ -1,6 +1,6 @@
 #include "mime_sub_endpboundary.h"
 
-using namespace Mantids30::Network::Protocols::MIME;
+using namespace Mantids30::Network::Protocol::MIME;
 using namespace Mantids30;
 
 MIME_Sub_EndPBoundary::MIME_Sub_EndPBoundary()

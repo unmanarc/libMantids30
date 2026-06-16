@@ -4,7 +4,7 @@
 using namespace Mantids30::Network::Servers::WebMonolith;
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
@@ -26,7 +26,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
         // Key does not exist
         log(LogLevel::ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
     }
 
@@ -37,7 +37,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     {
         log(LogLevel::ERR, "monolithAPI", 2048, "This endpoint requires full authentication / session {endpoint=%s}", endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
     }
 
@@ -69,11 +69,11 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
             break;
         case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_NOTFOUND:
             log(LogLevel::ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
-            apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
+            apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
             break;
         default:
             log(LogLevel::ERR, "monolithAPI", 2048, "Unknown error during web endpoint execution {endpoint=%s}", endpointName.c_str());
-            apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
+            apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
             break;
         }
     }
@@ -82,7 +82,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     {
         // Endpoint unauthorized.
         log(LogLevel::ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
-        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
+        apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
         apiReturn.setReasons(reasons);
     }
     break;
@@ -91,7 +91,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     {
         log(LogLevel::ERR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
         // Endpoint not found.
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
     }
     break;
     }
@@ -109,7 +109,7 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
         // Key does not exist
         log(LogLevel::ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
-        apiReturn.setError(HTTP::Status::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
+        apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
         return apiReturn;
     }
 

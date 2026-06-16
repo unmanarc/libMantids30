@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Response {
+namespace Mantids30::Network::Protocol::HTTP::Response {
 
 class Cookies_ServerSide
 {
@@ -47,4 +47,4 @@ public:
 private:
     std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
 };
-} // namespace Mantids30::Network::Protocols::HTTP::Response
+} // namespace Mantids30::Network::Protocol::HTTP::Response

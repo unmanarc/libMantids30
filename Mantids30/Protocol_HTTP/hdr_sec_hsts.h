@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Headers::Security {
+namespace Mantids30::Network::Protocol::HTTP::Headers::Security {
 
 /**
  * @brief The HSTS class provides functionality for HTTP Strict Transport Security (HSTS).
@@ -54,4 +54,4 @@ private:
     uint32_t m_maxAge = 0; ///< The maximum age in seconds for which the HSTS policy is enforced.
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Headers::Security
+} // namespace Mantids30::Network::Protocol::HTTP::Headers::Security

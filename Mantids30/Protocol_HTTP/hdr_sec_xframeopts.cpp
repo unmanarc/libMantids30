@@ -5,8 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-using namespace Mantids30::Network::Protocols::HTTP::Headers::Security;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol::HTTP::Headers::Security;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 using namespace std;
 using namespace boost;
@@ -30,7 +30,7 @@ bool XFrameOpts::isNotActivated() const
     return value == NONE;
 }
 
-string Mantids30::Network::Protocols::HTTP::Headers::Security::XFrameOpts::toString() const
+string Mantids30::Network::Protocol::HTTP::Headers::Security::XFrameOpts::toString() const
 {
     switch (value)
     {

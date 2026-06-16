@@ -1,7 +1,7 @@
 #include "linerecv.h"
 #include <memory>
 
-using namespace Mantids30::Network::Protocols::Line2Line;
+using namespace Mantids30::Network::Protocol::Line2Line;
 
 LineRecv::LineRecv(std::shared_ptr<Memory::Streams::StreamableObject> sobject)
     : Memory::Streams::Parser(sobject, false)

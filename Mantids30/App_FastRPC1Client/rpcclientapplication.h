@@ -12,15 +12,14 @@ namespace Mantids30::Applications::FastRPC1 {
 class RPCClientApplication : public Mantids30::Program::Application
 {
 public:
-    RPCClientApplication(std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey)
+    RPCClientApplication(const std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> & masterKey)
     {
         Globals::m_masterKey = masterKey;
-        m_retrieveConfig = false;
     }
-    void _shutdown();
-    void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments);
-    bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments);
-    int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments);
+    void _shutdown() override;
+    void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
+    bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
+    int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
 
 protected:
     /**
@@ -54,10 +53,10 @@ protected:
     virtual void processRetrievedConfig() {};
 
     //
-    uint32_t m_appVersionMajor, m_appVersionMinor, m_appVersionSubMinor;
+    uint32_t m_appVersionMajor=0, m_appVersionMinor=0, m_appVersionSubMinor=1;
     std::string m_versionCodeName;
     std::string m_defaultConfigDir;
-    bool m_retrieveConfig;
+    bool m_retrieveConfig=false;
 };
 
 } // namespace Mantids30::Applications::FastRPC1

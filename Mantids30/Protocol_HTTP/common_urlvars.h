@@ -8,7 +8,7 @@
 
 #include "common_urlvar_subparser.h"
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
@@ -87,4 +87,4 @@ private:
 
     URLVarContent m_urlVarParser;
 };
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

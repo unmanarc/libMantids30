@@ -8,7 +8,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Program;
 using namespace Mantids30::Network::Sockets;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 
 json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName,
                                                const std::string &apiKey)
@@ -78,7 +78,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
 
         if (msg == Mantids30::Memory::Streams::Parser::PARSING_SUCCEED)
         {
-            if (client.serverResponse.status.getCode() != HTTP::Status::S_200_OK)
+            if (client.serverResponse.status.getCode() != HTTP::Status::Code::S_200_OK)
             {
                 log->log0(__func__, Logs::LogLevel::ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
                           strJSONResponse->getValue()->toStyledString().c_str());

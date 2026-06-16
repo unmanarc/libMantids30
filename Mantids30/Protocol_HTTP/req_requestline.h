@@ -7,7 +7,7 @@
 #include "common_version.h"
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP::Request {
+namespace Mantids30::Network::Protocol::HTTP::Request {
 
 class RequestLine : public Memory::Streams::SubParser
 {
@@ -83,4 +83,4 @@ private:
     std::shared_ptr<HTTP::URLVars> m_getVars;
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP::Request
+} // namespace Mantids30::Network::Protocol::HTTP::Request

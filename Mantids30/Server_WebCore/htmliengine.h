@@ -11,7 +11,7 @@ namespace Mantids30::Network::Servers::Web {
 class HTMLIEngine
 {
 public:
-    static Protocols::HTTP::Status::Codes processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
+    static Protocol::HTTP::Status::Code processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
 
 private:
     static json procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);

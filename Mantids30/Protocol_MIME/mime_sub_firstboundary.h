@@ -3,7 +3,7 @@
 #include <Mantids30/Memory/subparser.h>
 #include <string>
 
-namespace Mantids30::Network::Protocols::MIME {
+namespace Mantids30::Network::Protocol::MIME {
 
 class MIME_Sub_FirstBoundary : public Memory::Streams::SubParser
 {
@@ -20,4 +20,4 @@ private:
     std::string m_boundary;
 };
 
-} // namespace Mantids30::Network::Protocols::MIME
+} // namespace Mantids30::Network::Protocol::MIME

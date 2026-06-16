@@ -37,7 +37,7 @@ const OptionsHandlerConfig *Endpoints_Options::getOptionsConfigOnEndpoint(const 
 Mantids30::API::APIReturn Endpoints_Options::buildCORSOptionsResponse(const Mantids30::API::OptionsHandlerConfig &config, const std::string &requestOrigin)
 {
     Mantids30::API::APIReturn ret;
-    ret.setStatus(Mantids30::Network::Protocols::HTTP::Status::S_204_NO_CONTENT);
+    ret.setStatus(Mantids30::Network::Protocol::HTTP::Status::Code::S_204_NO_CONTENT);
     config.configureAPIReturnOptionsHeaders(ret, requestOrigin);
     return ret;
 }

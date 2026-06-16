@@ -14,8 +14,8 @@
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -48,7 +48,7 @@ string HTMLIEngine::replaceByJVar(const json &value, const std::string &scriptVa
     return str;
 }
 
-HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
+HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -68,7 +68,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *cl
         if (!fileStream.is_open())
         {
             clientHandler->log(LogLevel::ERR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
-            return HTTP::Status::S_404_NOT_FOUND;
+            return HTTP::Status::Code::S_404_NOT_FOUND;
         }
         // Pass the file to a string.
         fileContent = std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
@@ -81,7 +81,7 @@ HTTP::Status::Codes HTMLIEngine::processResourceFile(APIServer_ClientHandler *cl
 
     // Stream the generated content...
     clientHandler->getResponseContentStreamableObject()->writeString(fileContent);
-    return HTTP::Status::S_200_OK;
+    return HTTP::Status::Code::S_200_OK;
 }
 
 void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)

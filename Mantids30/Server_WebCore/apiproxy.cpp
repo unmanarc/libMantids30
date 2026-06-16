@@ -8,7 +8,7 @@
 #include <memory>
 
 using namespace Mantids30::Network::Sockets;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory::Streams;
 
 using namespace Mantids30::Network::Servers::Web;
@@ -17,12 +17,12 @@ using namespace Mantids30;
 // TODO: logs via callback?
 // TODO: how to prvent ../ (escapes)...
 
-HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
+HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj)
 {
     if (obj == nullptr)
     {
         throw std::runtime_error("Undefined API Proxy Object.");
-        return HTTP::Status::S_500_INTERNAL_SERVER_ERROR;
+        return HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
     }
 
     APIProxyParameters *proxyParameters = static_cast<APIProxyParameters *>(obj.get());
@@ -91,13 +91,13 @@ HTTP::Status::Codes Mantids30::Network::Servers::Web::APIProxy(const std::string
             // Pass to our client.
             *response = client.serverResponse;
 
-            return (HTTP::Status::Codes) client.serverResponse.status.getCode();
+            return (HTTP::Status::Code) client.serverResponse.status.getCode();
         }
 
-        return HTTP::Status::S_502_BAD_GATEWAY;
+        return HTTP::Status::Code::S_502_BAD_GATEWAY;
     }
     else
     {
-        return HTTP::Status::S_502_BAD_GATEWAY;
+        return HTTP::Status::Code::S_502_BAD_GATEWAY;
     }
 }

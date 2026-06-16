@@ -24,7 +24,7 @@
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 6
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 enum VarSource
 {
@@ -258,7 +258,7 @@ public:
         /**
          * @brief clientRequest - URL Request (Request type, URL, GET Vars, and HTTP version)
          */
-        Mantids30::Network::Protocols::HTTP::Request::RequestLine requestLine;
+        Mantids30::Network::Protocol::HTTP::Request::RequestLine requestLine;
         /**
          * @brief content - Content Data.
          */
@@ -388,7 +388,7 @@ public:
          * @brief setRedirectLocation Redirect site to another URL
          * @param location URL string
          */
-        Mantids30::Network::Protocols::HTTP::Status::Codes setRedirectLocation(const std::string &location, bool temporary = true)
+        Mantids30::Network::Protocol::HTTP::Status::Code setRedirectLocation(const std::string &location, bool temporary = true)
         {
             headers.replace("Location", location);
 
@@ -397,18 +397,18 @@ public:
 
             if (temporary)
             {
-                return HTTP::Status::S_307_TEMPORARY_REDIRECT;
+                return HTTP::Status::Code::S_307_TEMPORARY_REDIRECT;
             }
             else
             {
-                return HTTP::Status::S_308_PERMANENT_REDIRECT;
+                return HTTP::Status::Code::S_308_PERMANENT_REDIRECT;
             }
         }
 
         /**
          * @brief code Response - Server code response. (HTTP Version, Response code, message)
          */
-        Mantids30::Network::Protocols::HTTP::Status status;
+        Mantids30::Network::Protocol::HTTP::Status status;
         /**
          * @brief content - Content Data.
          */
@@ -470,4 +470,4 @@ private:
                                    const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

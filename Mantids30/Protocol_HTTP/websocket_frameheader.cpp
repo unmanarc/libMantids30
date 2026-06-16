@@ -3,7 +3,7 @@
 #include <netinet/in.h>
 #include <optional>
 
-using namespace Mantids30::Network::Protocols::WebSocket;
+using namespace Mantids30::Network::Protocol::WebSocket;
 
 FrameHeader::FrameHeader()
 {

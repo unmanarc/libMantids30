@@ -28,7 +28,7 @@
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Memory;
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
@@ -48,9 +48,9 @@ void APIServer_ClientHandler::log(Json::Value &jWebLog)
     config->webLog->log(jWebLog);
 }
 
-HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
+HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
 {
-    HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
@@ -64,20 +64,20 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     // effectively blocking older, less secure clients from accessing the web server.
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
-        HTTP::Status::Codes retCode = showBrowserMessage("Browser Upgrade Required",
+        HTTP::Status::Code retCode = showBrowserMessage("Browser Upgrade Required",
                                                          R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
-                                                         HTTP::Status::S_426_UPGRADE_REQUIRED);
+                                                         HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
         return retCode;
     }
 
     if (config->dynamicInitialChecks)
     {
-        HTTP::Status::Codes retCode;
-        if ((retCode = config->dynamicInitialChecks(&clientRequest, &serverResponse)) != HTTP::Status::S_200_OK)
+        HTTP::Status::Code retCode;
+        if ((retCode = config->dynamicInitialChecks(&clientRequest, &serverResponse)) != HTTP::Status::Code::S_200_OK)
         {
             return retCode;
         }
@@ -86,12 +86,12 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
     // Do forced redirections (before session's):
     if (config->redirections.find(requestURI) != config->redirections.end())
     {
-        HTTP::Status::Codes retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
+        HTTP::Status::Code retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
         return retCode;
     }
 
-    HTTP::Status::Codes rtmp;
-    if ((rtmp = sessionStart()) != HTTP::Status::S_200_OK)
+    HTTP::Status::Code rtmp;
+    if ((rtmp = sessionStart()) != HTTP::Status::Code::S_200_OK)
     {
         return rtmp;
     }
@@ -144,7 +144,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                         serverResponse.setContentType("application/json", true);
 
                         log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                        apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                         ret = apiReturn.getHTTPResponseCode();
                         isAPIURI = true;
                         break;
@@ -171,7 +171,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                             log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
                                 originValidator == defaultOriginValidator ? "default" : "dynamic", requestOrigin.c_str());
 
-                            apiReturn.setError(HTTP::Status::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                            apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                             ret = apiReturn.getHTTPResponseCode();
                             isAPIURI = true;
                             break;
@@ -234,7 +234,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
                 std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
                 jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
                 jPayloadOutStr->setValue(handleAPIInfo(baseApiUrl));
-                ret = HTTP::Status::S_200_OK;
+                ret = HTTP::Status::Code::S_200_OK;
                 serverResponse.setDataStreamer(jPayloadOutStr);
                 serverResponse.setContentType("application/json", true);
                 isAPIURI = true;
@@ -243,7 +243,7 @@ HTTP::Status::Codes APIServer_ClientHandler::onHTTPClientContentReceived()
             else
             {
                 // Invalid Format...
-                ret = HTTP::Status::S_404_NOT_FOUND;
+                ret = HTTP::Status::Code::S_404_NOT_FOUND;
                 break;
             }
         }
@@ -309,17 +309,17 @@ void APIServer_ClientHandler::fillSessionInfo(json &jVars)
     jVars["userAgent"] = clientRequest.userAgent;
 }
 
-HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
+HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 {
     // WEB RESOURCE MODE:
-    HTTP::Status::Codes ret = HTTP::Status::S_404_NOT_FOUND;
+    HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
     LocalRequestedFileInfo fileInfo;
     uint64_t uMaxAge = 0;
 
     // if there are no web resources path, return 404 without data.
     if (config->getDocumentRootPath().empty())
     {
-        return HTTP::Status::S_404_NOT_FOUND;
+        return HTTP::Status::Code::S_404_NOT_FOUND;
     }
 
     if ((resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
@@ -343,7 +343,7 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
             // and there is not redirect's, the resoponse code will be 200 (OK)
             if (e.redirectLocation.empty())
             {
-                ret = HTTP::Status::S_200_OK;
+                ret = HTTP::Status::Code::S_200_OK;
             }
             else
             { // otherwise you will need to redirect.
@@ -352,7 +352,7 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
         }
         else
         { // If not, drop a 403 (forbidden)
-            ret = HTTP::Status::S_403_FORBIDDEN;
+            ret = HTTP::Status::Code::S_403_FORBIDDEN;
         }
 
         //log(LogLevel::DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
@@ -362,7 +362,7 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
         // File not found at this point (404)
     }
 
-    if (ret != HTTP::Status::S_200_OK)
+    if (ret != HTTP::Status::Code::S_200_OK)
     {
         // For NON-200 responses, will stream nothing....
         serverResponse.setDataStreamer(nullptr);
@@ -376,7 +376,7 @@ HTTP::Status::Codes APIServer_ClientHandler::handleRegularFileRequest()
     }
 
     // And if the file is not found and there are redirections, set the redirection:
-    if (ret == HTTP::Status::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
+    if (ret == HTTP::Status::Code::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
     {
         ret = serverResponse.setRedirectLocation(config->redirectPathOn404);
     }
@@ -554,11 +554,11 @@ bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url) 
     return true;
 }
 
-HTTP::Status::Codes APIServer_ClientHandler::redirectUsingJS(const std::string &url)
+HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
     {
-        return Protocols::HTTP::Status::S_200_OK;
+        return HTTP::Status::Code::S_200_OK;
     }
 
     std::shared_ptr<Memory::Streams::StreamableString> htmlOutput = std::make_shared<Memory::Streams::StreamableString>();
@@ -566,10 +566,10 @@ HTTP::Status::Codes APIServer_ClientHandler::redirectUsingJS(const std::string &
     serverResponse.setDataStreamer(htmlOutput);
     serverResponse.setContentType("text/html", true);
 
-    return Protocols::HTTP::Status::S_200_OK;
+    return HTTP::Status::Code::S_200_OK;
 }
 
-HTTP::Status::Codes APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Protocols::HTTP::Status::Codes returnCode)
+HTTP::Status::Code APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, HTTP::Status::Code returnCode)
 {
     std::shared_ptr<Streams::StreamableString> sHTMLPayloadOut = createHTMLAlertMessage(title, message);
     serverResponse.setDataStreamer(sHTMLPayloadOut);

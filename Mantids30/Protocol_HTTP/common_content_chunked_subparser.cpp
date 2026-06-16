@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
 HTTP::ContentChunkedTransformer::ContentChunkedTransformer(StreamableObject *upStreamOut)

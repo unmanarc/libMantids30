@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 /**
  * @brief The Version class provides functionality for HTTP versions.
@@ -98,4 +98,4 @@ private:
     uint16_t m_majorVersion = 1; ///< The major version number.
 };
 
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

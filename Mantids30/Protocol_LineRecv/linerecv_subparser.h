@@ -2,7 +2,7 @@
 
 #include <Mantids30/Memory/subparser.h>
 
-namespace Mantids30::Network::Protocols::Line2Line {
+namespace Mantids30::Network::Protocol::Line2Line {
 
 class LineRecv_SubParser : public Memory::Streams::SubParser
 {
@@ -18,4 +18,4 @@ protected:
     std::string m_parsedString;
     Memory::Streams::SubParser::ParseResult parse() override;
 };
-} // namespace Mantids30::Network::Protocols::Line2Line
+} // namespace Mantids30::Network::Protocol::Line2Line

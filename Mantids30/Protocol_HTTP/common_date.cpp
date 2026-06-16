@@ -7,7 +7,7 @@
 #include <sstream>
 #include <cstring>
 
-using namespace Mantids30::Network::Protocols;
+using namespace Mantids30::Network::Protocol;
 
 using namespace Mantids30;
 using namespace boost::posix_time;
