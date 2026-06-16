@@ -18,7 +18,7 @@ class SQLConnector_MariaDB : public SQLConnector
 {
 public:
     SQLConnector_MariaDB();
-    ~SQLConnector_MariaDB();
+    ~SQLConnector_MariaDB() override;
 
     /**
      * @brief driverName Returns the name of the database driver ("MARIADB").
