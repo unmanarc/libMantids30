@@ -93,7 +93,7 @@ Query_MariaDB::~Query_MariaDB()
     {
         mysql_stmt_free_result(m_stmt);
         mysql_stmt_close(m_stmt);
-        m_stmt = NULL;
+        m_stmt = nullptr;
     }
 }
 bool Query_MariaDB::step0()
@@ -319,7 +319,7 @@ bool Query_MariaDB::postBindInputVars()
         ZeroBStruct(m_bindedInputParams[pos]);
 
         m_bindedInputParams[pos].is_unsigned = 0;
-        m_bindedInputParams[pos].length = 0;
+        m_bindedInputParams[pos].length = nullptr;
 
         /*
         Bind params here.
