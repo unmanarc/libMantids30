@@ -31,7 +31,7 @@ public:
      */
     void setDeleteFileOnDestruction(bool value);
 
-    virtual size_t size() override;
+    size_t size() override;
     /**
      * @brief findChar
      * @param c

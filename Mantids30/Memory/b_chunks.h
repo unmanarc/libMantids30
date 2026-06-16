@@ -52,7 +52,7 @@ public:
      */
     void setMaxChunks(const size_t &value);
     /**
-     * @brief setMaxChunkSize Set Maximum Chunk Size on BC_METHOD_CHUNKS
+     * @brief setMaxChunkSize Set Maximum Chunk Size on StorageMethod::CHUNKS
      * @param value Max Chunk size in bytes.
      */
     void setMaxChunkSize(const size_t &value);
@@ -60,7 +60,7 @@ public:
      * @brief size Get Container Data Size in bytes
      * @return data size in bytes
      */
-    virtual size_t size() override;
+    size_t size() override;
     /**
      * @brief findChar
      * @param c

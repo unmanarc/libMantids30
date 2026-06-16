@@ -1,22 +1,17 @@
 #include "b_base.h"
-
 #include "b_mmap.h"
-#include "b_ref.h"
+
 #include <Mantids30/Helpers/safeint.h>
 
 #include <limits>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <utility>
 
 using namespace Mantids30::Memory::Containers;
 
 B_Base::B_Base()
 {
-    m_maxSize = std::numeric_limits<size_t>::max();
-    m_readOnly = false;
-    m_storeMethod = BC_METHOD_NULL;
     clear0();
 }
 
@@ -294,14 +289,11 @@ std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list
     return x;
 }*/
 
-void B_Base::freeSplitList(std::list<Memory::Containers::B_Base *> x)
+void B_Base::freeSplitList(const std::list<Memory::Containers::B_Base *>& x)
 {
     for (Memory::Containers::B_Base *i : x)
     {
-        if (i)
-        {
-            delete i;
-        }
+        delete i;
     }
 }
 
@@ -898,38 +890,38 @@ void B_Base::setContainerBytes(const size_t &value)
     m_containerBytes = value;
 }
 
-std::optional<size_t> B_Base::copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks)
+std::optional<size_t> B_Base::copyToStreamUsingCleanVector(std::ostream &streamOut, const std::vector<BinaryContainerChunk> &copyChunks)
 {
     size_t dataCopied = 0;
 
     // Appending mode.
-    for (size_t i = 0; i < copyChunks.size(); i++)
+    for (auto &copyChunk : copyChunks)
     {
-        streamOut.write(copyChunks[i].rodata, copyChunks[i].rosize);
+        streamOut.write(copyChunk.rodata, copyChunk.rosize);
         if (streamOut.bad())
         {
             // Return nullopt if write fails.
             return std::nullopt;
         }
-        dataCopied += copyChunks[i].rosize;
+        dataCopied += copyChunk.rosize;
     }
 
     return dataCopied;
 }
 
-std::optional<size_t> B_Base::copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, std::vector<BinaryContainerChunk> copyChunks)
+std::optional<size_t> B_Base::copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, const std::vector<BinaryContainerChunk> &copyChunks)
 {
     size_t dataCopied = 0;
 
     // Appending mode.
-    for (size_t i = 0; i < copyChunks.size(); i++)
+    for (const auto &copyChunk : copyChunks)
     {
-        if (!bcOut.writeFullStream(copyChunks[i].rodata, copyChunks[i].rosize))
+        if (!bcOut.writeFullStream(copyChunk.rodata, copyChunk.rosize))
         {
             return std::nullopt;
         }
 
-        dataCopied = safeAdd(copyChunks[i].rosize, dataCopied);
+        dataCopied = safeAdd(copyChunk.rosize, dataCopied);
     }
 
     return dataCopied;

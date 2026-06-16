@@ -13,7 +13,7 @@ using namespace Mantids30::Memory::Containers;
 
 B_MMAP::B_MMAP()
 {
-    m_storeMethod = BC_METHOD_FILEMMAP;
+    m_storageMethod = StorageMethod::FILEMMAP;
     m_readOnly = false;
     setContainerBytes(0);
     B_MMAP::clear2();

@@ -6,7 +6,7 @@ using namespace Mantids30::Memory::Containers;
 
 B_Chunks::B_Chunks()
 {
-    m_storeMethod = BC_METHOD_CHUNKS;
+    m_storageMethod = StorageMethod::CHUNKS;
 
     m_maxChunkSize = 64 * KB_MULT; // 64Kb.
     m_maxChunks = 256 * KB_MULT;   // 256K chunks (16Gb of RAM)

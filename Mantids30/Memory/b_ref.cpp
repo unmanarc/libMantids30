@@ -4,7 +4,7 @@ using namespace Mantids30::Memory::Containers;
 
 B_Ref::B_Ref(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 {
-    m_storeMethod = BC_METHOD_BCREF;
+    m_storageMethod = StorageMethod::BCREF;
     referencedBC = nullptr;
 
     B_Ref::clear2();

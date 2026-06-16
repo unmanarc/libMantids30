@@ -5,7 +5,7 @@ using namespace Mantids30::Memory::Containers;
 
 B_MEM::B_MEM(const void *buf, const uint32_t &len)
 {
-    m_storeMethod = BC_METHOD_MEM;
+    m_storageMethod = StorageMethod::MEM;
     m_readOnly = true;
     setContainerBytes(0);
     B_MEM::clear2();

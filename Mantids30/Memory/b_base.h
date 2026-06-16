@@ -13,20 +13,22 @@
 
 namespace Mantids30::Memory::Containers {
 
-enum BinaryContainerMethod
+
+enum class StorageMethod : uint8_t
 {
-    BC_METHOD_CHUNKS,
-    BC_METHOD_MEM,
-    BC_METHOD_BCREF,
-    BC_METHOD_FILEMMAP,
-    BC_METHOD_NULL
+    CHUNKS,
+    MEM,
+    BCREF,
+    FILEMMAP,
+    VOID
 };
+
 
 class B_Base : public Streams::StreamableObject
 {
 public:
     B_Base();
-    virtual ~B_Base() override;
+    ~B_Base() override;
     /**
      * @brief operator = copy the data of a container into another container (does not copy limits or flags like read only)
      * @param bc element to be copied.
@@ -124,7 +126,7 @@ public:
      * @brief freeSplitList Free a list of binary containers.
      * @param x List of binary containers to be freed.
      */
-    static void freeSplitList(std::list<Memory::Containers::B_Base *> x);
+    static void freeSplitList(const std::list<Memory::Containers::B_Base *>& x);
     /**
     * @brief Append this current container to a new one.
     * @param out Binary container.
@@ -250,7 +252,7 @@ public:
      * @brief size Get Container Data Size in bytes
      * @return data size in bytes
      */
-    virtual size_t size() override;
+    size_t size() override;
     /**
      * @brief Is the container Null
      * @return true if container size is 0.
@@ -390,8 +392,8 @@ protected:
     void decContainerBytesCount(const size_t &i);
 
     // Auxiliar:
-    std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, std::vector<BinaryContainerChunk> copyChunks);
-    std::optional<size_t> copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, std::vector<BinaryContainerChunk> copyChunks);
+    std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, const std::vector<BinaryContainerChunk>& copyChunks);
+    std::optional<size_t> copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, const std::vector<BinaryContainerChunk> &copyChunks);
 
     void setContainerBytes(const size_t &value);
 
@@ -412,7 +414,7 @@ protected:
     /**
      * @brief storeMethod Storage Mechanism used (read only memory reference, chunks, file)
      */
-    BinaryContainerMethod m_storeMethod;
+    StorageMethod m_storageMethod = StorageMethod::VOID;
 
     /**
      * @brief readOnly defined if it's in read-only mode or not.
@@ -426,7 +428,7 @@ protected:
     /**
      * @brief maxSize Maximum size of the container
      */
-    size_t m_maxSize = 0;
+    size_t m_maxSize = {std::numeric_limits<size_t>::max()};
 
 private:
     bool clear0();
