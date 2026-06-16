@@ -168,7 +168,7 @@ public:
     class Cache
     {
     public:
-        Cache() {}
+        Cache() = default;
 
         // Copy constructor (thread-safe)
         Cache(const Cache &other)
