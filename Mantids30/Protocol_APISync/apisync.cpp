@@ -73,10 +73,10 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         client.serverResponse.setDataStreamer(strJSONResponse);
 
         // Make the petition...
-        Mantids30::Memory::Streams::Parser::ErrorMSG msg;
+        Mantids30::Memory::Streams::Parser::ParseResult msg;
         client.parseObject(&msg);
 
-        if (msg == Mantids30::Memory::Streams::Parser::PARSING_SUCCEED)
+        if (msg == Mantids30::Memory::Streams::Parser::ParseResult::SUCCEED)
         {
             if (client.serverResponse.status.getCode() != HTTP::Status::Code::S_200_OK)
             {
