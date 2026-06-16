@@ -130,11 +130,11 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
 
             if (mdctx)
             {
-                if (EVP_DigestSignInit(mdctx, NULL, EVP_get_digestbynid(hashType), NULL, pkey) == 1)
-                {
+                if (EVP_DigestSignInit(mdctx, nullptr, EVP_get_digestbynid(hashType), nullptr, pkey)
+                    == 1) {
                     EVP_DigestSignUpdate(mdctx, data.c_str(), data.length());
                     size_t signature_len = 0;
-                    EVP_DigestSignFinal(mdctx, NULL, &signature_len);
+                    EVP_DigestSignFinal(mdctx, nullptr, &signature_len);
                     r->m_digestSize = signature_len;
 
                     if (r->m_digestSize > 0)
@@ -155,9 +155,7 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
                     {
                         r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
                     }
-                }
-                else
-                {
+                } else {
                     r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
                 }
 
@@ -199,7 +197,7 @@ int JWT::validateRSASignature(int hashType, const std::string &data, const char 
             EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
             if (mdctx)
             {
-                EVP_DigestVerifyInit(mdctx, NULL, EVP_get_digestbynid(hashType), NULL, pkey);
+                EVP_DigestVerifyInit(mdctx, nullptr, EVP_get_digestbynid(hashType), nullptr, pkey);
                 EVP_DigestVerifyUpdate(mdctx, data.c_str(), data.length());
 
                 // TODO: signatureLength can be greater and don't affect the validation?

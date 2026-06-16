@@ -402,7 +402,7 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
     }
     else
     {
-        m_affectedRecords = strtoull(PQcmdTuples(m_results), 0, 10);
+        m_affectedRecords = strtoull(PQcmdTuples(m_results), nullptr, 10);
         if (m_fetchLastInsertRowID)
         {
             m_lastInsertRowID = PQoidValue(m_results);

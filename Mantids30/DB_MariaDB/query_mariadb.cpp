@@ -497,7 +497,7 @@ bool Query_MariaDB::postBindInputVars()
             else
             {
                 m_bindedInputParams[pos].buffer_length = 0;
-                m_bindedInputParams[pos].buffer = 0;
+                m_bindedInputParams[pos].buffer = nullptr;
             }
         }
         break;
@@ -523,7 +523,7 @@ int Query_MariaDB::reconnection(const ExecType &execType, bool recursion)
             {
                 mysql_stmt_free_result(m_stmt);
                 mysql_stmt_close(m_stmt);
-                m_stmt = NULL;
+                m_stmt = nullptr;
             }
 
             // Reconnected... executing the query again...
