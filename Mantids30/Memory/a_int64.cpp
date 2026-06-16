@@ -45,11 +45,20 @@ bool INT64::fromString(const std::string &value)
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
 
-    this->m_value = strtoll(value.c_str(), nullptr, 10);
-    return !(value != "0" && this->m_value == 0);
+    char* end = nullptr;
+    long long result = strtoll(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > INT64_MAX || result < INT64_MIN)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<int64_t>(result);
+    return true;
 }
 
 std::shared_ptr<Var> INT64::protectedCopy()

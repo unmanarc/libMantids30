@@ -42,10 +42,20 @@ bool INT8::fromString(const std::string &value)
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
-    this->m_value = static_cast<int8_t>(strtol(value.c_str(), nullptr, 10));
-    return !(value != "0" && this->m_value == 0);
+
+    char* end = nullptr;
+    long result = strtol(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > INT8_MAX || result < INT8_MIN)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<int8_t>(result);
+    return true;
 }
 std::shared_ptr<Var> INT8::protectedCopy()
 {

@@ -57,11 +57,20 @@ bool UINT64::fromString(const std::string &value)
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
 
-    this->m_value = strtoull(value.c_str(), nullptr, 10);
-    return !(value != "0" && this->m_value == 0);
+    char* end = nullptr;
+    unsigned long long result = strtoull(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > UINT64_MAX)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<uint64_t>(result);
+    return true;
 }
 
 std::shared_ptr<Var> UINT64::protectedCopy()

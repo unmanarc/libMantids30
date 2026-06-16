@@ -44,10 +44,20 @@ bool INT16::fromString(const std::string &value)
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
-    this->m_value = (int16_t) strtol(value.c_str(), nullptr, 10);
-    return !(value != "0" && this->m_value == 0);
+
+    char* end = nullptr;
+    long result = strtol(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > INT16_MAX || result < INT16_MIN)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<int16_t>(result);
+    return true;
 }
 
 std::shared_ptr<Var> INT16::protectedCopy()

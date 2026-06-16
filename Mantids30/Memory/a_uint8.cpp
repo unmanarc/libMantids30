@@ -43,11 +43,20 @@ bool UINT8::fromString(const std::string &value)
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
 
-    this->m_value = static_cast<uint8_t>(strtoul(value.c_str(), nullptr, 10));
-    return !(value != "0" && this->m_value == 0);
+    char* end = nullptr;
+    unsigned long result = strtoul(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > UINT8_MAX)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<uint8_t>(result);
+    return true;
 }
 
 std::shared_ptr<Var> UINT8::protectedCopy()

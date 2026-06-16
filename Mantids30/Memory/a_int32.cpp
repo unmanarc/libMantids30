@@ -39,14 +39,24 @@ std::string INT32::toString()
 bool INT32::fromString(const std::string &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
+
     if (value.empty())
     {
         this->m_value = 0;
-        return true;
+        return false;
     }
 
-    this->m_value = strtol(value.c_str(), nullptr, 10);
-    return !(value != "0" && this->m_value == 0);
+    char* end = nullptr;
+    long result = strtol(value.c_str(), &end, 10);
+
+    if (end == value.c_str() || *end != '\0' || result > INT32_MAX || result < INT32_MIN)
+    {
+        this->m_value = 0;
+        return false;
+    }
+
+    this->m_value = static_cast<int32_t>(result);
+    return true;
 }
 
 std::shared_ptr<Var> INT32::protectedCopy()
