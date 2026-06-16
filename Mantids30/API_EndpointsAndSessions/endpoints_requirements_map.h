@@ -72,7 +72,7 @@ private:
      * @param endpointName The name/identifier of the endpoint
      * @return Set of required scopes for the endpoint
      */
-    std::set<std::string> getEndpointRequiredScopes(const std::string &endpointName);
+    [[nodiscard]] std::set<std::string> getEndpointRequiredScopes(const std::string &endpointName);
 
     /**
      * @brief Retrieve all required roles for a specific endpoint
@@ -82,7 +82,7 @@ private:
      * @param endpointName The name/identifier of the endpoint
      * @return Set of required roles for the endpoint
      */
-    std::set<std::string> getEndpointRequiredRoles(const std::string &endpointName);
+    [[nodiscard]] std::set<std::string> getEndpointRequiredRoles(const std::string &endpointName);
 
     // Endpoint -> App Scope mapping
     // Stores multiple scope requirements per endpoint (using multimap to allow multiple scopes per endpoint)

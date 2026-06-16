@@ -29,14 +29,14 @@ public:
      * @param varName The name of the session variable to get the value for.
      * @return The value of the session variable.
      */
-    json getSessionVariableValue(const std::string &varName);
+    [[nodiscard]] json getSessionVariableValue(const std::string &varName);
 
     /**
      * @brief Checks whether a session variable exists.
      * @param varName The name of the session variable to check for.
      * @return true if the session variable exists, false otherwise.
      */
-    bool doesSessionVariableExist(const std::string &varName);
+    [[nodiscard]] bool doesSessionVariableExist(const std::string &varName);
 
     /**
      * @brief Clears the value of a session variable.

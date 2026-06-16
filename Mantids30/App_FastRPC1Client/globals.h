@@ -25,31 +25,31 @@ public:
 
     static void setLocalInitConfig(const boost::property_tree::ptree &config);
 
-    static bool getLC_LogsUsingSyslog() { return m_ptreeLocalConfig.get<bool>("Logs.Syslog", true); }
+    [[nodiscard]] static bool getLC_LogsUsingSyslog() { return m_ptreeLocalConfig.get<bool>("Logs.Syslog", true); }
 
-    static bool getLC_LogsShowColors() { return m_ptreeLocalConfig.get<bool>("Logs.ShowColors", true); }
+    [[nodiscard]] static bool getLC_LogsShowColors() { return m_ptreeLocalConfig.get<bool>("Logs.ShowColors", true); }
 
-    static bool getLC_LogsShowDate() { return m_ptreeLocalConfig.get<bool>("Logs.ShowDate", true); }
+    [[nodiscard]] static bool getLC_LogsShowDate() { return m_ptreeLocalConfig.get<bool>("Logs.ShowDate", true); }
 
-    static bool getLC_LogsDebug() { return m_ptreeLocalConfig.get<bool>("Logs.Debug", false); }
+    [[nodiscard]] static bool getLC_LogsDebug() { return m_ptreeLocalConfig.get<bool>("Logs.Debug", false); }
 
-    static uint16_t getLC_C2TimeBetweenConnections() { return m_ptreeLocalConfig.get<uint16_t>("C2.TimeBetweenConnections", 15); }
+    [[nodiscard]] static uint16_t getLC_C2TimeBetweenConnections() { return m_ptreeLocalConfig.get<uint16_t>("C2.TimeBetweenConnections", 15); }
 
-    static uint16_t getLC_C2RemotePort() { return m_ptreeLocalConfig.get<uint16_t>("C2.RemotePort", 37001); }
+    [[nodiscard]] static uint16_t getLC_C2RemotePort() { return m_ptreeLocalConfig.get<uint16_t>("C2.RemotePort", 37001); }
 
-    static std::string getLC_C2RemoteAddress() { return m_ptreeLocalConfig.get<std::string>("C2.RemoteAddr", "127.0.0.1"); }
+    [[nodiscard]] static std::string getLC_C2RemoteAddress() { return m_ptreeLocalConfig.get<std::string>("C2.RemoteAddr", "127.0.0.1"); }
 
-    static std::string getLC_RemoteConfigFilePath() { return m_ptreeLocalConfig.get<std::string>("C2.LocalConfig", "remote.dat"); }
+    [[nodiscard]] static std::string getLC_RemoteConfigFilePath() { return m_ptreeLocalConfig.get<std::string>("C2.LocalConfig", "remote.dat"); }
 
-    static std::string getLC_TLSCAFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.CAFile", "keys" + dirSlash + "ca.crt"); }
+    [[nodiscard]] static std::string getLC_TLSCAFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.CAFile", "keys" + dirSlash + "ca.crt"); }
 
-    static std::string getLC_TLSCertFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.CertFile", "keys" + dirSlash + "pubcert.crt"); }
+    [[nodiscard]] static std::string getLC_TLSCertFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.CertFile", "keys" + dirSlash + "pubcert.crt"); }
 
-    static std::string getLC_TLSKeyFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.KeyFile", "keys" + dirSlash + "priv.key"); }
+    [[nodiscard]] static std::string getLC_TLSKeyFilePath() { return m_ptreeLocalConfig.get<std::string>("TLS.KeyFile", "keys" + dirSlash + "priv.key"); }
 
-    static std::string getLC_TLSPhraseFileForPrivateKey() { return m_ptreeLocalConfig.get<std::string>("TLS.PhraseFile", "keys" + dirSlash + "phrase.key"); }
+    [[nodiscard]] static std::string getLC_TLSPhraseFileForPrivateKey() { return m_ptreeLocalConfig.get<std::string>("TLS.PhraseFile", "keys" + dirSlash + "phrase.key"); }
 
-    static bool getLC_C2UsePSK() { return m_ptreeLocalConfig.get<bool>("C2.UsePSK", true); }
+    [[nodiscard]] static bool getLC_C2UsePSK() { return m_ptreeLocalConfig.get<bool>("C2.UsePSK", true); }
 
     static std::string getLC_C2PSKSharedKeyFilePath() { return m_ptreeLocalConfig.get<std::string>("C2.SharedFile", "keys" + dirSlash + "shared.key"); }
 
