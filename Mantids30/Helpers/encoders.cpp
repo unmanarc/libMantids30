@@ -342,7 +342,7 @@ string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url
     return result;
 }
 
-string Encoders::toURL(const string &str, const URL_ENCODING_TYPE &urlEncodingType)
+string Encoders::toURL(const string &str, const Type &urlEncodingType)
 {
     if (!str.size())
     {
@@ -501,9 +501,9 @@ unsigned char Encoders::hexPairToByte(const char *bytes)
     return (unsigned char) strtol(hexStr, nullptr, 16);
 }
 
-bool Encoders::getIfMustBeURLEncoded(char c, const URL_ENCODING_TYPE &urlEncodingType)
+bool Encoders::getIfMustBeURLEncoded(char c, const Type &urlEncodingType)
 {
-    if (urlEncodingType == QUOTEPRINT_ENCODING)
+    if (urlEncodingType == Type::QUOTEPRINT_ENCODING)
     {
         // All printable chars but "
         if (c == '\"')
@@ -527,7 +527,7 @@ bool Encoders::getIfMustBeURLEncoded(char c, const URL_ENCODING_TYPE &urlEncodin
     return true;
 }
 
-size_t Encoders::calcURLEncodingExpandedStringSize(const string &str, const URL_ENCODING_TYPE &urlEncodingType)
+size_t Encoders::calcURLEncodingExpandedStringSize(const string &str, const Type &urlEncodingType)
 {
     size_t x = 0;
     for (size_t i = 0; i < str.size(); i++)

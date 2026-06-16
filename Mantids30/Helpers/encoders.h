@@ -15,7 +15,7 @@ public:
     /**
      * @brief An enumeration of the URL encoding types that can be used.
      */
-    enum URL_ENCODING_TYPE
+    enum class Type : uint8_t
     {
         STRICT_ENCODING,
         QUOTEPRINT_ENCODING
@@ -113,7 +113,7 @@ public:
      *
      * @return The encoded URL string.
      */
-    [[nodiscard]] static std::string toURL(const std::string &str, const URL_ENCODING_TYPE &urlEncodingType = STRICT_ENCODING);
+    [[nodiscard]] static std::string toURL(const std::string &str, const Type &urlEncodingType = Type::STRICT_ENCODING);
 
     /**
      * @brief Decodes a string that has been encoded for use in a URL.
@@ -223,7 +223,7 @@ private:
      *
      * @return True if the character must be URL-encoded, false otherwise.
      */
-    static bool getIfMustBeURLEncoded(char c, const URL_ENCODING_TYPE &urlEncodingType);
+    static bool getIfMustBeURLEncoded(char c, const Type &urlEncodingType);
 
     /**
      * @brief Calculates the size of an expanded URL-encoded string.
@@ -233,7 +233,7 @@ private:
      *
      * @return The size of the expanded URL-encoded string.
      */
-    static size_t calcURLEncodingExpandedStringSize(const std::string &str, const URL_ENCODING_TYPE &urlEncodingType);
+    static size_t calcURLEncodingExpandedStringSize(const std::string &str, const Type &urlEncodingType);
 
     /**
      * @brief The set of characters used in base64 encoding.

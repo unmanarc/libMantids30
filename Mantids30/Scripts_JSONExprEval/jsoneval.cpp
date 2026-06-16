@@ -13,17 +13,17 @@ using namespace Mantids30::Scripts::Expressions;
 
 JSONEval::JSONEval(const std::string &expr)
 {
-    m_isCompiled = compile(expr);
+    m_isCompiled = parseExpression(expr);
 }
 
 JSONEval::JSONEval(const string &expr, const std::shared_ptr<std::vector<string>> &staticTexts, bool negativeExpression)
 {
     this->m_negativeExpression = negativeExpression;
     this->m_staticTexts = staticTexts;
-    m_isCompiled = compile(expr);
+    m_isCompiled = parseExpression(expr);
 }
 
-bool JSONEval::compile(std::string expr)
+bool JSONEval::parseExpression(std::string expr)
 {
     if (!m_staticTexts)
     {
@@ -79,7 +79,7 @@ bool JSONEval::compile(std::string expr)
     // detect/compile sub expressions
 
     size_t sePos = 0;
-    while ((sePos = detectSubExpr(expr, sePos)) != expr.size() && sePos != (expr.size() + 1))
+    while ((sePos = extractSubExpressions(expr, sePos)) != expr.size() && sePos != (expr.size() + 1))
     {
     }
 
@@ -92,7 +92,7 @@ bool JSONEval::compile(std::string expr)
     // Separate AND/OR
     if (expr.find(" && ") != std::string::npos && expr.find(" || ") != std::string::npos)
     {
-        m_evaluationMode = EVAL_MODE_UNDEFINED;
+        m_evaluationMode = EvaluationMode::UNDEFINED;
         m_lastError = "Expression with both and/or and no precedence order";
         return false;
     }
@@ -101,12 +101,12 @@ bool JSONEval::compile(std::string expr)
         // split
         if (expr.find(" && ") != std::string::npos)
         {
-            m_evaluationMode = EVAL_MODE_AND;
+            m_evaluationMode = EvaluationMode::AND;
             boost::replace_all(expr, " && ", "\n");
         }
         else
         {
-            m_evaluationMode = EVAL_MODE_OR;
+            m_evaluationMode = EvaluationMode::OR;
             boost::replace_all(expr, " || ", "\n");
         }
 
@@ -136,7 +136,7 @@ bool JSONEval::compile(std::string expr)
                 if (!atomExpression->compile(atomicExpr))
                 {
                     m_lastError = "Invalid Atomic Expression";
-                    m_evaluationMode = EVAL_MODE_UNDEFINED;
+                    m_evaluationMode = EvaluationMode::UNDEFINED;
                     return false;
                 }
                 m_atomExpressions.emplace_back(atomExpression, 0);
@@ -152,7 +152,7 @@ bool JSONEval::evaluate(const json &values)
 {
     switch (m_evaluationMode)
     {
-    case EVAL_MODE_AND:
+    case EvaluationMode::AND:
     {
         for (const auto&i : m_atomExpressions)
         {
@@ -160,21 +160,21 @@ bool JSONEval::evaluate(const json &values)
             {
                 if (!i.first->evaluate(values))
                 {
-                    return calcNegative(false); // Short circuit.
+                    return applyNegation(false); // Short circuit.
                 }
             }
             else
             {
                 if (!m_subExpressions[i.second]->evaluate(values))
                 {
-                    return calcNegative(false); // Short circuit.
+                    return applyNegation(false); // Short circuit.
                 }
             }
         }
-        return calcNegative(true);
+        return applyNegation(true);
     }
     break;
-    case EVAL_MODE_OR:
+    case EvaluationMode::OR:
     {
         for (const auto&i : m_atomExpressions)
         {
@@ -182,18 +182,18 @@ bool JSONEval::evaluate(const json &values)
             {
                 if (i.first->evaluate(values))
                 {
-                    return calcNegative(true); // Short circuit.
+                    return applyNegation(true); // Short circuit.
                 }
             }
             else
             {
                 if (m_subExpressions[i.second]->evaluate(values))
                 {
-                    return calcNegative(true); // Short circuit.
+                    return applyNegation(true); // Short circuit.
                 }
             }
         }
-        return calcNegative(false);
+        return applyNegation(false);
     }
     break;
     default:
@@ -201,7 +201,7 @@ bool JSONEval::evaluate(const json &values)
     }
 }
 
-size_t JSONEval::detectSubExpr(string &expr, size_t start)
+size_t JSONEval::extractSubExpressions(string &expr, size_t start)
 {
     int level = 0;
     bool inSubExpr = false;
@@ -273,7 +273,7 @@ std::string JSONEval::getLastCompilerError() const
     return m_lastError;
 }
 
-bool JSONEval::calcNegative(bool r) const
+bool JSONEval::applyNegation(bool r) const
 {
     if (m_negativeExpression)
     {

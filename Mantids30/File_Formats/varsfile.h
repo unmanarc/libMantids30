@@ -1,17 +1,18 @@
 #pragma once
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
 
 namespace Mantids30::File_Formats::Vars {
 
-enum class VarFileError : int
+enum class LastError : uint8_t
 {
     INVALID_FILE_FORMAT,
     INVALID_VARNAME_FORMAT,
     CANT_OPEN_FILE,
-    FILE_NO_ERROR
+    NO_ERROR
 };
 
 /**
@@ -61,7 +62,7 @@ public:
      * @brief getVars Get Variable Vars
      * @return Full Variable Vars map.
      */
-    [[nodiscard]] std::multimap<std::string, std::string> getVars() const;
+    [[nodiscard]] std::multimap<std::string, std::string> getVarsBySource() const;
     /**
      * @brief getVars Get Variable Vars in map format (one element per key)
      * @return Full Variable Vars map.
@@ -87,10 +88,10 @@ public:
      * @brief getLastError Get Last Error
      * @return last error
      */
-    [[nodiscard]] VarFileError getLastError() const;
+    [[nodiscard]] LastError getLastError() const;
 
 private:
-    VarFileError m_lastError;
+    LastError m_lastError;
     std::string m_filePath;
     std::multimap<std::string, std::string> m_vars;
 };

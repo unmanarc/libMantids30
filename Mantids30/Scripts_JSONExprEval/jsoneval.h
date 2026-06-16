@@ -9,18 +9,18 @@ namespace Mantids30::Scripts::Expressions {
 class JSONEval
 {
 public:
-    enum eEvalMode
+    enum class EvaluationMode : uint8_t
     {
-        EVAL_MODE_OR,
-        EVAL_MODE_AND,
-        EVAL_MODE_UNDEFINED
+        OR,
+        AND,
+        UNDEFINED
     };
 
     JSONEval() = default;
     JSONEval(const std::string &expr);
     JSONEval(const std::string &expr, const std::shared_ptr<std::vector<std::string>> & staticTexts, bool negativeExpression);
 
-    bool compile(std::string expr);
+    bool parseExpression(std::string expr);
     bool evaluate(const json &values);
 
     [[nodiscard]] std::string getLastCompilerError() const;
@@ -28,14 +28,14 @@ public:
     [[nodiscard]] bool isCompiled() const;
 
 private:
-    [[nodiscard]] bool calcNegative(bool r) const;
+    [[nodiscard]] bool applyNegation(bool r) const;
 
     /**
-     * @brief detectSubExpr Detect and replace sub expression
+     * @brief extractSubExpressions Detect and replace sub expression
      * @param expr expression string (without quotes)
      * @return -1 if failed, 0 if succeed, 1 if no more expressions
      */
-    size_t detectSubExpr(std::string &expr, size_t start);
+    size_t extractSubExpressions(std::string &expr, size_t start);
 
     std::string m_expression, m_lastError;
     std::shared_ptr<std::vector<std::string>> m_staticTexts = nullptr;
@@ -44,7 +44,7 @@ private:
 
     bool m_negativeExpression = false;
     bool m_isCompiled = false;
-    eEvalMode m_evaluationMode = EVAL_MODE_UNDEFINED;
+    EvaluationMode m_evaluationMode = EvaluationMode::UNDEFINED;
 };
 
 } // namespace Mantids30::Scripts::Expressions

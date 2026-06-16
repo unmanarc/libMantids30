@@ -100,10 +100,10 @@ std::shared_ptr<JWT::RAWSignature> JWT::createHMACSignature(int hashType, const 
     if (!m_sharedSecret.empty() && r->m_digest)
     {
         HMAC(EVP_get_digestbynid(hashType), m_sharedSecret.data(), m_sharedSecret.size(), reinterpret_cast<const unsigned char *>(data.data()), data.size(), r->m_digest, &(r->m_digestSize));
-        r->m_result = RAWSignature::SIG_OK;
+        r->m_result = RAWSignature::Result::SUCCESS;
         return r;
     }
-    r->m_result = RAWSignature::SIG_EMPTY_KEY;
+    r->m_result = RAWSignature::Result::EMPTY_KEY;
     return r;
 }
 
@@ -112,7 +112,7 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
     std::shared_ptr<JWT::RAWSignature> r;
     r.reset(new JWT::RAWSignature);
 
-    r->m_result = RAWSignature::SIG_OK;
+    r->m_result = RAWSignature::Result::SUCCESS;
     EVP_PKEY *pkey = nullptr;
     RSA *rsa = nullptr;
     BIO *bio = nullptr;
@@ -144,26 +144,26 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
                         {
                             EVP_DigestSignFinal(mdctx, r->m_digest, &signature_len);
                             //  r->m_digestSize = signature_len;
-                            r->m_result = RAWSignature::SIG_OK;
+                            r->m_result = RAWSignature::Result::SUCCESS;
                         }
                         else
                         {
-                            r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                            r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
                         }
                     }
                     else
                     {
-                        r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                        r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
                     }
                 } else {
-                    r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                    r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
                 }
 
                 EVP_MD_CTX_free(mdctx);
             }
             else
             {
-                r->m_result = RAWSignature::SIG_ERROR_CREATING_SIGNATURE;
+                r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
             }
 
             EVP_PKEY_free(pkey);
@@ -171,7 +171,7 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
         else
         {
             // Error reading the private key
-            r->m_result = RAWSignature::SIG_ERROR_READING_KEY;
+            r->m_result = RAWSignature::Result::ERROR_READING_KEY;
         }
     }
 
@@ -325,7 +325,7 @@ std::string JWT::sign(const Json::Value &payload)
 
     std::shared_ptr<JWT::RAWSignature> eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
 
-    if (eSignature->m_result == RAWSignature::SIG_OK)
+    if (eSignature->m_result == RAWSignature::Result::SUCCESS)
     {
         signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest, eSignature->m_digestSize, true);
     }
@@ -425,7 +425,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     {
         // Create the signature using the header and payload, and compare with the decoded signature
         std::shared_ptr<RAWSignature> computed_signature = createSignature(header_b64 + '.' + payload_b64);
-        if (computed_signature->m_result != RAWSignature::SIG_OK)
+        if (computed_signature->m_result != RAWSignature::Result::SUCCESS)
         {
             return false;
         }

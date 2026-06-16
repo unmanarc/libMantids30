@@ -51,8 +51,8 @@ bool AtomicExpression::compile(std::string expr)
 
 bool AtomicExpression::evaluate(const json &values)
 {
-    std::set<std::string> lvalues = m_left.resolve(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
-    std::set<std::string> rvalues = m_right.resolve(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
+    std::set<std::string> lvalues = m_left.resolveValueSet(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
+    std::set<std::string> rvalues = m_right.resolveValueSet(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
 
     switch (m_evalOperator)
     {
@@ -132,7 +132,7 @@ bool AtomicExpression::evaluate(const json &values)
         // Regex, any of.
         for (const std::string &lvalue : lvalues)
         {
-            if (m_right.getRegexp() && boost::regex_match(lvalue.c_str(), what, *m_right.getRegexp()))
+            if (m_right.getCompiledRegex() && boost::regex_match(lvalue.c_str(), what, *m_right.getCompiledRegex()))
             {
                 return calcNegative(true);
             }
@@ -159,21 +159,21 @@ bool AtomicExpression::substractExpressions(const std::string &regex, const Oper
 
     for (string::const_iterator start = m_expr.begin(), end = m_expr.end(); boost::regex_search(start, end, whatDataDecomposed, exOperatorEqual, flags); start = whatDataDecomposed[0].second)
     {
-        m_left.setExpr(string(whatDataDecomposed[1].first, whatDataDecomposed[1].second));
+        m_left.setRawExpression(string(whatDataDecomposed[1].first, whatDataDecomposed[1].second));
         if (op != Operator::ISNULL)
         {
-            m_right.setExpr(string(whatDataDecomposed[2].first, whatDataDecomposed[2].second));
+            m_right.setRawExpression(string(whatDataDecomposed[2].first, whatDataDecomposed[2].second));
         }
         else
         {
-            m_right.setExpr("");
+            m_right.setRawExpression("");
         }
 
-        if (!m_left.calcMode())
+        if (!m_left.determineExpressionType())
         {
             return false;
         }
-        if (!m_right.calcMode())
+        if (!m_right.determineExpressionType())
         {
             return false;
         }

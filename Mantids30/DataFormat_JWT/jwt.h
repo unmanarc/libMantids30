@@ -292,25 +292,25 @@ public:
         ~RAWSignature()
         {
             delete[] m_digest;
-
-            m_digestSize = 0;
             m_digest = nullptr;
+            m_digestSize = 0;
         }
 
         /**
          * @brief Enumeration for possible results of createSignature() or createHMACSignature() or createRSASignature
          *
          */
-        enum Result
+        enum class Result : int8_t
         {
-            SIG_OK = 0,                         /**< Signature created successfully */
-            SIG_EMPTY_KEY = -10,                /**< The key used to sign is empty */
-            SIG_ERROR_CREATING_SIGNATURE = -1,  /**< Error creating the signature */
-            SIG_ERROR_CREATING_RSA_OBJECT = -2, /**< Error creating the RSA object */
-            SIG_ERROR_READING_KEY = -3          /**< Error reading the key */
+            SUCCESS = 0,                    /**< Signature created successfully */
+            EMPTY_KEY = -10,                /**< The key used to sign is empty */
+            ERROR_CREATING_SIGNATURE = -1,  /**< Error creating the signature */
+            ERROR_CREATING_RSA_OBJECT = -2, /**< Error creating the RSA object */
+            ERROR_READING_KEY = -3,         /**< Error reading the key */
+            ERROR_UNKNOWN = -4
         };
 
-        Result m_result;           /**< Result */
+        Result m_result = Result::ERROR_UNKNOWN;           /**< Result */
         unsigned char *m_digest=nullptr;   /**< RAW Signature created by createSignature() */
         unsigned int m_digestSize=0; /**< RAW Signature size created by createSignature() */
     };
