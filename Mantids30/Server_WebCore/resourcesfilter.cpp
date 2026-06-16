@@ -77,15 +77,15 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
         std::string sAction = boost::to_upper_copy(i.second.get<std::string>("action"));
         if (sAction == "REDIRECT")
         {
-            filter.action = RFILTER_REDIRECT;
+            filter.action = FilterAction::REDIRECT;
         }
         if (sAction == "DENY")
         {
-            filter.action = RFILTER_DENY;
+            filter.action = FilterAction::DENY;
         }
         if (sAction == "ACCEPT")
         {
-            filter.action = RFILTER_ACCEPT;
+            filter.action = FilterAction::ACCEPT;
         }
 
         filter.redirectLocation = i.second.get_optional<std::string>("redirectLocation") ? i.second.get<std::string>("redirectLocation") : "";
@@ -215,14 +215,14 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
             {
                 switch (filter.action)
                 {
-                case RFILTER_ACCEPT:
+                case FilterAction::ACCEPT:
                     evaluationResult.accept = true;
                     break;
-                case RFILTER_REDIRECT:
+                case FilterAction::REDIRECT:
                     evaluationResult.accept = true;
                     evaluationResult.redirectLocation = filter.redirectLocation;
                     break;
-                case RFILTER_DENY:
+                case FilterAction::DENY:
                 default:
                     evaluationResult.accept = false;
                     break;

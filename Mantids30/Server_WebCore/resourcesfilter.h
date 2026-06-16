@@ -20,11 +20,11 @@ public:
         std::string redirectLocation;
     };
 
-    enum FilterAction
+    enum class FilterAction : uint8_t
     {
-        RFILTER_ACCEPT = 0,
-        RFILTER_DENY = 1,
-        RFILTER_REDIRECT = 2
+        ACCEPT = 0,
+        DENY = 1,
+        REDIRECT = 2
     };
 
     struct Filter
@@ -47,7 +47,7 @@ public:
         bool disallowSession = false;
         //bool disallowLogin = false;
 
-        FilterAction action = RFILTER_ACCEPT;
+        FilterAction action = FilterAction::ACCEPT;
     };
 
     bool loadFiltersFromFile(const std::string &filePath);

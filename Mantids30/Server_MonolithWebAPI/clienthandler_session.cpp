@@ -173,7 +173,7 @@ void ClientHandler::setJSSessionTimeOutCookie(const uint64_t &maxAge)
     simpleJSSecureCookie.httpOnly = false;
     simpleJSSecureCookie.setExpirationFromNow(maxAge);
     simpleJSSecureCookie.maxAge = maxAge;
-    simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+    simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::SameSitePolicy::STRICT;
     simpleJSSecureCookie.path = "/";
     serverResponse.setCookie("jsSessionTimeout", simpleJSSecureCookie);
 }
@@ -189,7 +189,7 @@ void ClientHandler::setJSSessionHalfIDCookie(const string &sessionID)
         simpleJSSecureCookie.httpOnly = false;
         simpleJSSecureCookie.setExpirationFromNow(m_sessionMaxAge);
         simpleJSSecureCookie.maxAge = (m_sessionMaxAge);
-        simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+        simpleJSSecureCookie.sameSitePolicy = Protocol::HTTP::Headers::Cookie::SameSitePolicy::STRICT;
         simpleJSSecureCookie.value = RPCLog::truncateSessionId(sessionID);
         simpleJSSecureCookie.path = "/"; // all the site.
         serverResponse.setCookie("jsSessionHalfID", simpleJSSecureCookie);

@@ -216,9 +216,9 @@ std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scri
                                                          bool useHTMLFrame)
 {
     // Obtain using GET Vars...
-    if (clientHandler->clientRequest.getVars(HTTP::VARS_GET)->exist(varName))
+    if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_GET)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
+        return replaceByJVar(clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
@@ -233,9 +233,9 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
                                                           bool useHTMLFrame)
 {
     // Obtain using POST Vars...
-    if (clientHandler->clientRequest.getVars(HTTP::VARS_POST)->exist(varName))
+    if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVars(HTTP::VARS_POST)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
+        return replaceByJVar(clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else

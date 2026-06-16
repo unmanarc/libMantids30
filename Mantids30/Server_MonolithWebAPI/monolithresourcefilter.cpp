@@ -66,14 +66,14 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURIWithSession(
                 {
                     switch (  filter.action  )
                     {
-                    case RFILTER_ACCEPT:
+                    case FilterAction::ACCEPT:
                         evaluationResult.accept = true;
                         break;
-                    case RFILTER_REDIRECT:
+                    case FilterAction::REDIRECT:
                         evaluationResult.accept = true;
                         evaluationResult.redirectLocation = filter.redirectLocation;
                         break;
-                    case RFILTER_DENY:
+                    case FilterAction::DENY:
                     default:
                         evaluationResult.accept = false;
                         break;
@@ -131,14 +131,14 @@ ResourcesFilter::sFilterEvaluation ResourcesFilter::evaluateAction(const std::st
             {
                 switch (  filter.action  )
                 {
-                case RFILTER_ACCEPT:
+                case FilterAction::ACCEPT:
                     evalRet.accept = true;
                     break;
-                case RFILTER_REDIRECT:
+                case FilterAction::REDIRECT:
                     evalRet.accept = true;
                     evalRet.redirectLocation = filter.redirectLocation;
                     break;
-                case RFILTER_DENY:
+                case FilterAction::DENY:
                 default:
                     evalRet.accept = false;
                     break;

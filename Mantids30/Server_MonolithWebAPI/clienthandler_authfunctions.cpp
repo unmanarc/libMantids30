@@ -90,7 +90,7 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
     // TODO: en el futuro permitir header usando un policy y OPTIONS.
 
     // Check for the authorization bearer token...
-    string postLoginToken = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("accessToken");
+    string postLoginToken = clientRequest.getVarsBySource(HTTP::Source::POST)->getStringValue("accessToken");
     bool isJWTHeaderTokenVerified = verifyToken(postLoginToken);
 
     // The token is OK (authenticated).
@@ -187,7 +187,7 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 
         // Redirect to the URL specified by the 'redirectURI' parameter from the authentication provider,
         // or a default homepage if none is provided securely.
-        string redirectURL = clientRequest.getVars(HTTP::VARS_POST)->getStringValue("redirectURI");
+        string redirectURL = clientRequest.getVarsBySource(HTTP::Source::POST)->getStringValue("redirectURI");
         if (redirectURL.empty())
         {
             redirectURL = "/"; // Default to home page

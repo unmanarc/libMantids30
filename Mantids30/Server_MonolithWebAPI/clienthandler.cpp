@@ -48,7 +48,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
 
     switch (i)
     {
-    case API::Monolith::Endpoints::ValidationResult::VALIDATION_OK:
+    case API::Monolith::Endpoints::ValidationResult::SUCCESS:
     {
         log(LogLevel::INFO, "monolithAPI", 2048, "Executing Web Endpoint {endpoint=%s}", endpointName.c_str());
         log(LogLevel::DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(postParameters).c_str());
@@ -78,7 +78,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
         }
     }
     break;
-    case API::Monolith::Endpoints::ValidationResult::VALIDATION_NOTAUTHORIZED:
+    case API::Monolith::Endpoints::ValidationResult::NOTAUTHORIZED:
     {
         // Endpoint unauthorized.
         log(LogLevel::ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
@@ -86,7 +86,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
         apiReturn.setReasons(reasons);
     }
     break;
-    case API::Monolith::Endpoints::ValidationResult::VALIDATION_ENDPOINTNOTFOUND:
+    case API::Monolith::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
     default:
     {
         log(LogLevel::ERR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
