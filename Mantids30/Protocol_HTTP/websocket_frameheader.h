@@ -20,24 +20,24 @@ public:
         OPCODE_PONG = 0xA
     };
 
-    enum ParseState
+    enum class ParseState : uint8_t
     {
-        STATE_FIRST_2BYTES,
-        STATE_EXTENDED_LENGTH_16,
-        STATE_EXTENDED_LENGTH_64,
-        STATE_MASKING_KEY,
-        STATE_COMPLETE
+        FIRST_2BYTES,
+        EXTENDED_LENGTH_16,
+        EXTENDED_LENGTH_64,
+        MASKING_KEY,
+        COMPLETE
     };
 
-    enum ErrorCode
+    enum class LastError : uint8_t
     {
-        ERROR_NONE = 0,
-        ERROR_INVALID_OPCODE,
-        ERROR_INVALID_RSV_BITS,
-        ERROR_CONTROL_FRAME_TOO_LARGE,
-        ERROR_FRAGMENTED_CONTROL_FRAME,
-        ERROR_INVALID_UTF8,
-        ERROR_PAYLOAD_TOO_LARGE
+        NONE,
+        INVALID_OPCODE,
+        INVALID_RSV_BITS,
+        CONTROL_FRAME_TOO_LARGE,
+        FRAGMENTED_CONTROL_FRAME,
+        INVALID_UTF8,
+        PAYLOAD_TOO_LARGE
     };
 
     FrameHeader();
@@ -61,7 +61,7 @@ public:
     bool isDataFrame() const;
     bool isValidOpCode() const;
 
-    ErrorCode getLastError() const { return m_lastError; }
+    LastError getLastError() const { return m_lastError; }
 
     // Configuration
     void setMaxPayloadSize(uint64_t maxSize) { m_maxPayloadSize = maxSize; }
@@ -100,7 +100,7 @@ private:
     std::array<uint8_t, 4> m_maskingKey = {0, 0, 0, 0};
 
     // Parsing state
-    ParseState m_parseState = STATE_FIRST_2BYTES;
+    ParseState m_parseState = ParseState::FIRST_2BYTES;
     uint8_t m_extendedLengthBytes = 0;
     uint8_t m_extendedLengthBytesRead = 0;
     uint8_t m_maskingKeyBytesRead = 0;
@@ -110,7 +110,7 @@ private:
     bool m_requireMasking = true;           // true for server, false for client
 
     // Error tracking
-    ErrorCode m_lastError = ERROR_NONE;
+    LastError m_lastError = LastError::NONE;
 };
 
 } // namespace Mantids30::Network::Protocol::WebSocket

@@ -58,7 +58,7 @@ bool HTTP::HTTPv1_Client::changeToNextParser()
 
         // Security:
         // Parse Xframeopts...
-        serverResponse.security.XFrameOpts.fromString(serverResponse.headers.getOptionRawStringByName("X-Frame-Options"));
+        serverResponse.security.XFrameOptions.fromString(serverResponse.headers.getOptionRawStringByName("X-Frame-Options"));
         // Parse XSS Protection.
         serverResponse.security.XSSProtection.fromString(serverResponse.headers.getOptionRawStringByName("X-XSS-Protection"));
         // Parse HSTS Configuration.

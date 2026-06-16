@@ -11,12 +11,12 @@ namespace Mantids30::Network::Protocol::WebSocket {
 class FrameContent : public Memory::Streams::SubParser
 {
 public:
-    enum ValidationResult
+    enum class ValidationResult : uint8_t
     {
-        VALIDATION_OK,
-        VALIDATION_INVALID_UTF8,
-        VALIDATION_INCOMPLETE_UTF8,
-        VALIDATION_ERROR
+        SUCCESS,
+        INVALID_UTF8,
+        INCOMPLETE_UTF8,
+        ERROR
     };
 
     FrameContent();
@@ -66,7 +66,7 @@ private:
     bool m_isFirstFrame = false;
 
     // UTF-8 validation state
-    ValidationResult m_lastValidationResult = VALIDATION_OK;
+    ValidationResult m_lastValidationResult = ValidationResult::SUCCESS;
 
     uint64_t m_maxContentSize = 512 * 1024; // 512Kb default
 };

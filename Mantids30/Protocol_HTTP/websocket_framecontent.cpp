@@ -21,7 +21,7 @@ void FrameContent::reset()
     m_isComplete = false;
     m_masked = false;
     m_maskingKey = {0, 0, 0, 0};
-    m_lastValidationResult = VALIDATION_OK;
+    m_lastValidationResult = ValidationResult::SUCCESS;
     m_content->clear();
 }
 
@@ -77,7 +77,7 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameContent::parse()
     // Validate UTF-8 if needed
     if (m_isComplete && m_validateUtf8 && !validateUtf8Payload())
     {
-        m_lastValidationResult = VALIDATION_INVALID_UTF8;
+        m_lastValidationResult = ValidationResult::INVALID_UTF8;
         return ParseResult::ERROR;
     }
 
@@ -186,13 +186,13 @@ FrameContent::ValidationResult FrameContent::validateContent()
 {
     if (!m_validateUtf8)
     {
-        return VALIDATION_OK;
+        return ValidationResult::SUCCESS;
     }
 
-    if (m_lastValidationResult != VALIDATION_OK)
+    if (m_lastValidationResult != ValidationResult::SUCCESS)
     {
         return m_lastValidationResult;
     }
 
-    return VALIDATION_OK;
+    return ValidationResult::SUCCESS;
 }

@@ -11,13 +11,13 @@ class Cookie
 {
 public:
     /**
-     * @brief The eSameSitePolicy enum
+     * @brief The SameSitePolicy enum
      */
-    enum eSameSitePolicy
+    enum class SameSitePolicy : uint8_t
     {
-        HTTP_COOKIE_SAMESITE_NONE = 0,
-        HTTP_COOKIE_SAMESITE_LAX = 1,
-        HTTP_COOKIE_SAMESITE_STRICT = 2
+        NONE = 0,
+        LAX = 1,
+        STRICT = 2
     };
 
     /**
@@ -103,7 +103,7 @@ public:
     /**
      * @brief The SameSite policy of the cookie.
      */
-    eSameSitePolicy sameSitePolicy = HTTP_COOKIE_SAMESITE_STRICT;
+    SameSitePolicy sameSitePolicy = SameSitePolicy::STRICT;
 
 private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);

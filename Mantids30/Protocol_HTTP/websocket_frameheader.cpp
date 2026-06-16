@@ -24,11 +24,11 @@ void FrameHeader::reset()
     m_masked = false;
     m_payloadLength = 0;
     m_maskingKey = {0, 0, 0, 0};
-    m_parseState = STATE_FIRST_2BYTES;
+    m_parseState = ParseState::FIRST_2BYTES;
     m_extendedLengthBytes = 0;
     m_extendedLengthBytesRead = 0;
     m_maskingKeyBytesRead = 0;
-    m_lastError = ERROR_NONE;
+    m_lastError = LastError::NONE;
     setParseDataTargetSize(2);
 }
 
@@ -191,14 +191,14 @@ void FrameHeader::prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength,
     }
 
     // You might also reset any parser state here since this is for outbound use
-    m_parseState = STATE_COMPLETE; // Indicate that the header is ready to be written
+    m_parseState = ParseState::COMPLETE; // Indicate that the header is ready to be written
 }
 
 Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
 {
     switch (m_parseState)
     {
-    case STATE_FIRST_2BYTES:
+    case ParseState::FIRST_2BYTES:
     {
         uint8_t data[2] = {0, 0};
 
@@ -215,7 +215,7 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         // Determine next state based on payload length
         if (m_payloadLength == 126)
         {
-            m_parseState = STATE_EXTENDED_LENGTH_16;
+            m_parseState = ParseState::EXTENDED_LENGTH_16;
             m_extendedLengthBytes = 2;
             setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(2);
@@ -223,7 +223,7 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         }
         else if (m_payloadLength == 127)
         {
-            m_parseState = STATE_EXTENDED_LENGTH_64;
+            m_parseState = ParseState::EXTENDED_LENGTH_64;
             m_extendedLengthBytes = 8;
             setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(8);
@@ -231,45 +231,45 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         }
         else if (m_masked)
         {
-            m_parseState = STATE_MASKING_KEY;
+            m_parseState = ParseState::MASKING_KEY;
             setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(4);
             return ParseResult::GET_MORE_DATA;
         }
         else
         {
-            m_parseState = STATE_COMPLETE;
+            m_parseState = ParseState::COMPLETE;
             return ParseResult::GOTO_NEXT_SUBPARSER;
         }
     }
     break;
-    case STATE_EXTENDED_LENGTH_16:
-    case STATE_EXTENDED_LENGTH_64:
+    case ParseState::EXTENDED_LENGTH_16:
+    case ParseState::EXTENDED_LENGTH_64:
         if (!parseExtendedLength())
         {
             return ParseResult::ERROR;
         }
         if (m_masked)
         {
-            m_parseState = STATE_MASKING_KEY;
+            m_parseState = ParseState::MASKING_KEY;
             return ParseResult::GET_MORE_DATA;
         }
         else
         {
-            m_parseState = STATE_COMPLETE;
+            m_parseState = ParseState::COMPLETE;
             return ParseResult::GOTO_NEXT_SUBPARSER;
         }
         break;
 
-    case STATE_MASKING_KEY:
+    case ParseState::MASKING_KEY:
         if (!parseMaskingKey())
         {
             return ParseResult::ERROR;
         }
-        m_parseState = STATE_COMPLETE;
+        m_parseState = ParseState::COMPLETE;
         return ParseResult::GOTO_NEXT_SUBPARSER;
 
-    case STATE_COMPLETE:
+    case ParseState::COMPLETE:
         return ParseResult::GOTO_NEXT_SUBPARSER;
     }
 
@@ -287,21 +287,21 @@ bool FrameHeader::parseFirstByte(uint8_t byte)
     // Validate RSV bits (should be 0 unless extensions are negotiated)
     if (m_rsv1 || m_rsv2 || m_rsv3)
     {
-        m_lastError = ERROR_INVALID_RSV_BITS;
+        m_lastError = LastError::INVALID_RSV_BITS;
         return false;
     }
 
     // Validate opcode
     if (!isValidOpCode())
     {
-        m_lastError = ERROR_INVALID_OPCODE;
+        m_lastError = LastError::INVALID_OPCODE;
         return false;
     }
 
     // Control frames must not be fragmented
     if (isControlFrame() && !m_fin)
     {
-        m_lastError = ERROR_FRAGMENTED_CONTROL_FRAME;
+        m_lastError = LastError::FRAGMENTED_CONTROL_FRAME;
         return false;
     }
 
@@ -316,14 +316,14 @@ bool FrameHeader::parseSecondByte(uint8_t byte)
     // Validate masking requirement
     if (m_requireMasking && !m_masked)
     {
-        m_lastError = ERROR_INVALID_OPCODE;
+        m_lastError = LastError::INVALID_OPCODE;
         return false;
     }
 
     // Control frames must have payload length <= 125
     if (isControlFrame() && m_payloadLength > 125)
     {
-        m_lastError = ERROR_CONTROL_FRAME_TOO_LARGE;
+        m_lastError = LastError::CONTROL_FRAME_TOO_LARGE;
         return false;
     }
 
@@ -367,7 +367,7 @@ bool FrameHeader::parseExtendedLength()
     // Validate payload size
     if (m_payloadLength > m_maxPayloadSize)
     {
-        m_lastError = ERROR_PAYLOAD_TOO_LARGE;
+        m_lastError = LastError::PAYLOAD_TOO_LARGE;
         return false;
     }
 

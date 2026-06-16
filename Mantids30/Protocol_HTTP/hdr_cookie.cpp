@@ -43,13 +43,13 @@ std::string Cookie::toSetCookieString(const std::string &cookieName) const
 
     switch (sameSitePolicy)
     {
-    case HTTP_COOKIE_SAMESITE_NONE:
+    case SameSitePolicy::NONE:
         opts += "SameSite=None; ";
         break;
-    case HTTP_COOKIE_SAMESITE_STRICT:
+    case SameSitePolicy::STRICT:
         opts += "SameSite=Strict; ";
         break;
-    case HTTP_COOKIE_SAMESITE_LAX:
+    case SameSitePolicy::LAX:
     default:
         opts += "SameSite=Lax; ";
         break;
@@ -109,15 +109,15 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
             {
                 if (boost::iequals(var.second, "LAX"))
                 {
-                    sameSitePolicy = HTTP_COOKIE_SAMESITE_LAX;
+                    sameSitePolicy = SameSitePolicy::LAX;
                 }
                 else if (boost::iequals(var.second, "STRICT"))
                 {
-                    sameSitePolicy = HTTP_COOKIE_SAMESITE_STRICT;
+                    sameSitePolicy = SameSitePolicy::STRICT;
                 }
                 else
                 {
-                    sameSitePolicy = HTTP_COOKIE_SAMESITE_NONE;
+                    sameSitePolicy = SameSitePolicy::NONE;
                 }
             }
             else
@@ -160,7 +160,7 @@ void Cookie::setExpirationFromNow(const uint32_t &seconds)
 void Cookie::deleteCookie()
 {
     value = "";
-    sameSitePolicy = HTTP_COOKIE_SAMESITE_NONE;
+    sameSitePolicy = SameSitePolicy::NONE;
     expires = std::nullopt;
     maxAge.emplace();
     maxAge = 0;

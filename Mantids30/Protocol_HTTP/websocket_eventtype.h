@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 namespace Mantids30::Network::Protocol::WebSocket {
 
 /**
@@ -7,7 +8,7 @@ namespace Mantids30::Network::Protocol::WebSocket {
      *
      * @brief Enumeration for different WebSocket event types.
      */
-enum EventType
+enum class EventType : uint8_t
 {
     SESSION_START = 0,
     RECEIVED_MESSAGE_BINARY = 1,

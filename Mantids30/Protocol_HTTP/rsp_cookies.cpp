@@ -90,7 +90,7 @@ void Cookies_ServerSide::addClearSecureCookie(const std::string &cookieName, con
 
     c.deleteCookie();
 
-    c.sameSitePolicy = Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+    c.sameSitePolicy = Headers::Cookie::SameSitePolicy::STRICT;
 
     if (m_cookiesMap.find(cookieName) != m_cookiesMap.end())
     {

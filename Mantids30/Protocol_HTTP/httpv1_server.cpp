@@ -32,7 +32,7 @@ HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &conn
     serverResponse.cacheControl.optionMustRevalidate = true;
 
     // Start parsing from the request line
-    m_currentSubParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
+    m_currentSubParser = static_cast<Memory::Streams::SubParser *>(&clientRequest.requestLine);
 
     loadDefaultMIMETypes();
 }
@@ -110,22 +110,22 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         return sendFullHTTPResponse();
     }
 
-    enum eProtocolRequestType
+    enum ProtocolType
     {
-        PROTOCOL_REQUEST_SIMPLE_HTTP,
-        PROTOCOL_REQUEST_WEBSOCKETS,
+        SIMPLE_HTTP,
+        WEBSOCKETS,
     };
 
-    eProtocolRequestType protocolRequestType = PROTOCOL_REQUEST_SIMPLE_HTTP;
+    ProtocolType protocolRequestType = ProtocolType::SIMPLE_HTTP;
 
     // Validate WebSocket Protocol:
-    protocolRequestType = !isWebSocketConnectionRequest() ? protocolRequestType : PROTOCOL_REQUEST_WEBSOCKETS;
+    protocolRequestType = !isWebSocketConnectionRequest() ? protocolRequestType : ProtocolType::WEBSOCKETS;
 
     // Manage current protocol:
     switch (protocolRequestType)
     {
     // HTTP PROTOCOL (REQ/RES)
-    case PROTOCOL_REQUEST_SIMPLE_HTTP:
+    case ProtocolType::SIMPLE_HTTP:
     {
         // Headers parsed. Allow consumer code to inspect headers
         if (!onHTTPClientHeadersReceived())
@@ -149,7 +149,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
     }
     break;
     // WEBSOCKETS PROTOCOL
-    case PROTOCOL_REQUEST_WEBSOCKETS:
+    case ProtocolType::WEBSOCKETS:
     {
         if (prohibitConnectionUpgrade)
         {

@@ -1,52 +1,23 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 namespace Mantids30::Network::Protocol::HTTP::Headers::Security {
-/*
-class XFrameOpts
-{
-public:
-    enum eOptsValues {
-        HTTP_XFRAME_NONE=0,
-        HTTP_XFRAME_DENY=1,
-        HTTP_XFRAME_SAMEORIGIN=2,
-        HTTP_XFRAME_ALLOWFROM=3
-    };
 
-    XFrameOpts();
-    XFrameOpts(const eOptsValues & value, const std::string & fromURL);
-
-    void setDefaults();
-
-    bool isNotActivated() const;
-
-    std::string toString();
-    bool fromString(const std::string & sValue);
-
-    std::string getFromURL() const;
-    void setFromURL(const std::string &value);
-
-    eOptsValues getValue() const;
-
-private:
-    eOptsValues value;
-    std::string fromURL;
-};
-*/
 
 /**
- * @brief The XFrameOpts class provides functionality for the X-Frame-Options header.
+ * @brief The XFrameOptions class provides functionality for the X-Frame-Options header.
  *
  * The class provides functions to set and get the X-Frame-Options header value, including options for "none", "deny", "sameorigin", and "allow-from".
  */
-class XFrameOpts
+class XFrameOptions
 {
 public:
     /**
      * @brief Enumeration of the possible values for the X-Frame-Options header.
      */
-    enum eOptsValues
+    enum class Option : uint8_t
     {
         NONE = 0,       ///< X-Frame-Options value of "none".
         DENY = 1,       ///< X-Frame-Options value of "deny".
@@ -55,17 +26,17 @@ public:
     };
 
     /**
-     * @brief Constructs a new XFrameOpts object with default values.
+     * @brief Constructs a new XFrameOptions object with default values.
      */
-    XFrameOpts();
+    XFrameOptions() = default;
 
     /**
-     * @brief Constructs a new XFrameOpts object with the given options.
+     * @brief Constructs a new XFrameOptions object with the given options.
      *
      * @param value The X-Frame-Options value.
      * @param fromURL The URL to allow frames from when the value is "allow-from".
      */
-    XFrameOpts(const eOptsValues &value, const std::string &allowFromURL = "");
+    XFrameOptions(const Option &value, const std::string &allowFromURL = "");
 
     /**
      * @brief Returns whether the X-Frame-Options header is not activated.
@@ -90,7 +61,7 @@ public:
     bool fromString(const std::string &sValue);
 
     std::string allowFromURL; ///< The URL to allow frames from when the value is "allow-from".
-    eOptsValues value = DENY; ///< The X-Frame-Options value.
+    Option value = Option::DENY; ///< The X-Frame-Options value.
 };
 
 } // namespace Mantids30::Network::Protocol::HTTP::Headers::Security

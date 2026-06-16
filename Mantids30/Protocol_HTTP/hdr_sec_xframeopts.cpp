@@ -12,70 +12,92 @@ using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
 
-XFrameOpts::XFrameOpts() = default;
-
-XFrameOpts::XFrameOpts(const eOptsValues &value, const string &allowFromURL)
+XFrameOptions::XFrameOptions(const Option &value, const string &allowFromURL)
 {
     this->value = value;
     this->allowFromURL = allowFromURL;
 
-    if (!allowFromURL.empty() && value != ALLOWFROM)
+    if (!allowFromURL.empty() && value != Option::ALLOWFROM)
     {
         throw runtime_error("Using allowFromURL without ALLOWFROM");
     }
 }
 
-bool XFrameOpts::isNotActivated() const
+bool XFrameOptions::isNotActivated() const
 {
-    return value == NONE;
+    return value == Option::NONE;
 }
 
-string Mantids30::Network::Protocol::HTTP::Headers::Security::XFrameOpts::toString() const
+string Mantids30::Network::Protocol::HTTP::Headers::Security::XFrameOptions::toString() const
 {
     switch (value)
     {
-    case DENY:
+    case Option::DENY:
         return "DENY";
         break;
-    case ALLOWFROM:
+    case Option::ALLOWFROM:
         return "ALLOW-FROM " + allowFromURL;
         break;
-    case SAMEORIGIN:
+    case Option::SAMEORIGIN:
         return "SAMEORIGIN";
         break;
-    case NONE:
+    case Option::NONE:
     default:
         return "";
         break;
     }
 }
 
-bool XFrameOpts::fromString(const string &sValue)
+bool XFrameOptions::fromString(const string &sValue)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = XFrameOptions();
+
+    if (sValue.empty())
+    {
+        return false;
+    }
+
+    // Split the header value by space
+    // Note: Assuming 'split' and 'is_any_of' are from Boost or a similar utility.
+    // If using std::string, you'd need a custom splitter or stringstream.
     vector<string> parts;
     split(parts, sValue, is_any_of(" "), token_compress_on);
 
-    *this = XFrameOpts();
-
     if (parts.empty())
     {
-        value = DENY;
-        return false;
-    }
-    else if (iequals(parts[0], "DENY") || iequals(parts[0], "SAMEORIGIN"))
-    {
-        value = DENY;
-    }
-    else if (iequals(parts[0], "ALLOW-FROM") && parts.size() >= 2)
-    {
-        value = DENY;
-        allowFromURL = parts[1];
-    }
-    else
-    {
-        value = DENY;
         return false;
     }
 
-    return true;
+    // Normalize the first part to lower case for comparison if iequals doesn't handle it internally
+    // Assuming iequals is case-insensitive equality check
+
+    if (iequals(parts[0], "DENY"))
+    {
+        value = Option::DENY;
+        return true;
+    }
+
+    if (iequals(parts[0], "SAMEORIGIN"))
+    {
+        value = Option::SAMEORIGIN;
+        return true;
+    }
+
+    if (iequals(parts[0], "ALLOW-FROM"))
+    {
+        if (parts.size() < 2)
+        {
+            // ALLOW-FROM requires a URL
+            return false;
+        }
+
+        value = Option::ALLOWFROM;
+        allowFromURL = parts[1];
+        return true;
+    }
+
+    // Unknown or invalid header value
+    return false;
 }

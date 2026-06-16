@@ -158,9 +158,9 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         serverResponse.headers.replace("Cache-Control", cacheOptions);
     }
 
-    if (!serverResponse.security.XFrameOpts.isNotActivated())
+    if (!serverResponse.security.XFrameOptions.isNotActivated())
     {
-        serverResponse.headers.replace("X-Frame-Options", serverResponse.security.XFrameOpts.toString());
+        serverResponse.headers.replace("X-Frame-Options", serverResponse.security.XFrameOptions.toString());
     }
 
     // TODO: check if this is a secure connection.. (Over TLS?)

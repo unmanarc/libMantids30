@@ -26,10 +26,10 @@
 
 namespace Mantids30::Network::Protocol::HTTP {
 
-enum VarSource
+enum class Source : uint8_t
 {
-    VARS_POST,
-    VARS_GET
+    POST,
+    GET
 };
 
 class HTTPv1_Base : public Mantids30::Memory::Streams::Parser
@@ -44,7 +44,7 @@ public:
      */
     struct Security
     {
-        Headers::Security::XFrameOpts XFrameOpts;       ///< The X-Frame-Options setting.
+        Headers::Security::XFrameOptions XFrameOptions;       ///< The X-Frame-Options setting.
         Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
         Headers::Security::HSTS HSTS;                   ///< The HSTS (HTTP Strict Transport Security) setting.
         bool disableNoSniffContentType = false;         ///< Whether or not to disable the no-sniff content type header.
@@ -86,13 +86,13 @@ public:
          * @param source
          * @return
          */
-        std::shared_ptr<Memory::Abstract::Vars> getVars(const VarSource &source)
+        std::shared_ptr<Memory::Abstract::Vars> getVarsBySource(const Source &source)
         {
             switch (source)
             {
-            case VARS_POST:
+            case Source::POST:
                 return content.postVars();
-            case VARS_GET:
+            case Source::GET:
                 return requestLine.urlVars();
             }
             return nullptr;
@@ -162,7 +162,7 @@ public:
          * @return The extracted bearer token as a string, or an empty string if the Authorization
          * header is missing, incorrectly formatted, or any parsing error occurs.
          */
-        std::string getAuthorizationBearer()
+        std::string getAuthorizationBearer() const
         {
             std::string authorization = getHeaderOption("Authorization");
             if (!authorization.empty())
@@ -181,9 +181,9 @@ public:
             return ""; // Return empty if format is invalid or parsing fails
         }
 
-        std::string getOrigin() { return getHeaderOption("Origin"); }
+        std::string getOrigin() const { return getHeaderOption("Origin"); }
 
-        std::string getReferer() { return getHeaderOption("Referer"); }
+        std::string getReferer() const { return getHeaderOption("Referer"); }
 
         /**
          * @brief getCookie Get Cookie
@@ -250,7 +250,7 @@ public:
 
             char REMOTE_ADDR[INET6_ADDRSTRLEN] = "";
             bool isSecure = false;
-            std::string tlsCommonName = "";
+            std::string tlsCommonName;
         };
 
         NetworkClientInfo networkClientInfo;
@@ -326,7 +326,7 @@ public:
          * @param cookieName
          * @return
          */
-        void addCookieClearSecure(const std::string &cookieName, const std::string path) { cookies.addClearSecureCookie(cookieName, path); }
+        void addCookieClearSecure(const std::string &cookieName, const std::string& path) { cookies.addClearSecureCookie(cookieName, path); }
         /**
          * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
          * @param cookieName
@@ -349,7 +349,7 @@ public:
             val.secure = true;
             val.httpOnly = true;
             val.maxAge = uMaxAge;
-            val.sameSitePolicy = Headers::Cookie::HTTP_COOKIE_SAMESITE_STRICT;
+            val.sameSitePolicy = Headers::Cookie::SameSitePolicy::STRICT;
             setCookie(cookieName, val);
         }
 
