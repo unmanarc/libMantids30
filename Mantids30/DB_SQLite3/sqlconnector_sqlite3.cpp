@@ -5,10 +5,6 @@
 
 using namespace Mantids30::Database;
 
-SQLConnector_SQLite3::SQLConnector_SQLite3()
-{
-    m_ppDb = nullptr;
-}
 
 SQLConnector_SQLite3::~SQLConnector_SQLite3()
 {
@@ -48,7 +44,7 @@ void SQLConnector_SQLite3::putDatabaseConnectorIntoQuery(Query_SQLite3 *query)
     query->setDatabaseConnectionHandler(m_ppDb);
 }
 
-bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
+bool SQLConnector_SQLite3::setPragmaForeignKeys(bool on)
 {
     if (on)
     {
@@ -60,37 +56,37 @@ bool SQLConnector_SQLite3::sqlite3PragmaForeignKeys(bool on)
     }
 }
 
-bool SQLConnector_SQLite3::sqlite3PragmaJournalMode(const eSqlite3PragmaJournalMode &mode)
+bool SQLConnector_SQLite3::setPragmaJournalMode(const PragmaJournalMode &mode)
 {
     switch (mode)
     {
-    case SQLITE3_JOURNAL_OFF:
+    case PragmaJournalMode::OFF:
         return qExecuteEx("PRAGMA journal_mode = OFF;");
-    case SQLITE3_JOURNAL_WAL:
+    case PragmaJournalMode::WAL:
         return qExecuteEx("PRAGMA journal_mode = WAL;");
-    case SQLITE3_JOURNAL_MEMORY:
+    case PragmaJournalMode::MEMORY:
         return qExecuteEx("PRAGMA journal_mode = MEMORY;");
-    case SQLITE3_JOURNAL_PERSIST:
+    case PragmaJournalMode::PERSIST:
         return qExecuteEx("PRAGMA journal_mode = PERSIST;");
-    case SQLITE3_JOURNAL_TRUNCATE:
+    case PragmaJournalMode::TRUNCATE:
         return qExecuteEx("PRAGMA journal_mode = TRUNCATE;");
-    case SQLITE3_JOURNAL_DELETE:
+    case PragmaJournalMode::DELETE:
         return qExecuteEx("PRAGMA journal_mode = DELETE;");
     }
     return false;
 }
 
-bool SQLConnector_SQLite3::sqlite3PragmaSynchronous(const eSqlite3PragmaSyncMode &mode)
+bool SQLConnector_SQLite3::setPragmaSynchronous(const PragmaSyncMode &mode)
 {
     switch (mode)
     {
-    case SQLITE3_SYNC_OFF:
+    case PragmaSyncMode::OFF:
         return qExecuteEx("PRAGMA synchronous = OFF;");
-    case SQLITE3_SYNC_NORMAL:
+    case PragmaSyncMode::NORMAL:
         return qExecuteEx("PRAGMA synchronous = NORMAL;");
-    case SQLITE3_SYNC_FULL:
+    case PragmaSyncMode::FULL:
         return qExecuteEx("PRAGMA synchronous = FULL;");
-    case SQLITE3_SYNC_EXTRA:
+    case PragmaSyncMode::EXTRA:
         return qExecuteEx("PRAGMA synchronous = EXTRA;");
     }
     return false;
@@ -133,7 +129,7 @@ bool SQLConnector_SQLite3::connect0()
         m_lastSQLError = "Error openning the database file";
         return false;
     }
-    sqlite3PragmaForeignKeys();
+    setPragmaForeignKeys();
     return true;
 }
 

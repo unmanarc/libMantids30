@@ -104,7 +104,7 @@ bool Query::isNull(const size_t &column)
     return m_fieldIsNull[column];
 }
 
-bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string replaceBy)
+bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string& replaceBy)
 {
     std::list<std::string> toDelete;
 
@@ -173,12 +173,12 @@ void Query::clearDestroyableStringsForResults()
     m_destroyableStringsForResults.clear();
 }
 
-Query::QueryErrors Query::getError() const
+Query::Result Query::getError() const
 {
     return error;
 }
 
-void Query::setError(QueryErrors newError)
+void Query::setError(Result newError)
 {
     error = newError;
 }

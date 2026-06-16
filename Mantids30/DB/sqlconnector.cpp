@@ -77,7 +77,7 @@ std::shared_ptr<Query> SQLConnector::createQuery()
     if (!attachQuery(query.get()))
     {
         // Query no attached, destroying it...
-        query->setError(Query::QUERY_SQLCONNECTORFINISHED);
+        query->setError(Query::Query::Result::SQL_CONNECTOR_FINISHED);
         return query;
     }
 
@@ -87,11 +87,11 @@ std::shared_ptr<Query> SQLConnector::createQuery()
     if (!query->setSqlConnector(this, &m_databaseLockMutex, m_maxQueryLockMilliseconds))
     {
         // Query will be detached by itself...
-        query->setError(Query::QUERY_UNABLETOADQUIRELOCK);
+        query->setError(Query::Query::Result::UNABLE_TO_ADQUIRE_LOCK);
         return query;
     }
 
-    query->setError(Query::QUERY_READY_OK);
+    query->setError(Query::Query::Result::READY);
     return query;
 }
 
@@ -109,12 +109,12 @@ void SQLConnector::detachQuery(Query *query)
     }
 }
 
-std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
+std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string,std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
                                              const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> q = createQuery();
 
-    if (q && q->getError() != Query::QUERY_READY_OK)
+    if (q && q->getError() != Query::Query::Result::READY)
     {
         return q;
     }
@@ -123,17 +123,17 @@ std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, c
     {
         if (q->bindResultVars(resultVars))
         {
-            q->setError(q->exec(Query::EXEC_TYPE_SELECT) ? Query::QUERY_RESULTS_OK : Query::QUERY_RESULTS_FAILED);
+            q->setError(q->exec(Query::ExecType::SELECT) ? Query::Query::Result::SUCCESS : Query::Query::Result::RESULTS_FAILED);
             return q;
         }
         else
         {
-            q->error = Query::QUERY_ERRORBINDINGRESULTVARS;
+            q->error = Query::Query::Result::ERROR_BINDING_RESULT_VARS;
         }
     }
     else
     {
-        q->error = Query::QUERY_ERRORBINDINGINPUTVARS;
+        q->error = Query::Query::Result::ERROR_BINDING_INPUT_VARS;
     }
 
     return q;
@@ -176,7 +176,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string preparedQuer
 
         if (!countResultQuery->isSuccessful() || !countResultQuery->step())
         {
-            countResultQuery->setError(Query::QUERY_SELECTCOUNT_FAILED);
+            countResultQuery->setError(Query::Query::Result::SELECTCOUNT_FAILED);
             return countResultQuery;
         }
     }
@@ -190,7 +190,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string preparedQuer
 
         if (!countResultQuery->isSuccessful() || !countResultQuery->step())
         {
-            countResultQuery->setError(Query::QUERY_SELECTCOUNT_FAILED);
+            countResultQuery->setError(Query::Query::Result::SELECTCOUNT_FAILED);
             return countResultQuery;
         }
     }
@@ -232,19 +232,19 @@ std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, 
 {
     std::shared_ptr<Query> q = createQuery();
 
-    if (q && q->getError() != Query::QUERY_READY_OK)
+    if (q && q->getError() != Query::Query::Result::READY)
     {
         return q;
     }
 
     if (q->setPreparedSQLQuery(preparedQuery, inputVars))
     {
-        q->error = q->exec(Query::EXEC_TYPE_INSERT) ? Query::QUERY_RESULTS_OK : Query::QUERY_RESULTS_FAILED;
+        q->error = q->exec(Query::ExecType::INSERT) ? Query::Query::Result::SUCCESS : Query::Query::Result::RESULTS_FAILED;
         return q;
     }
     else
     {
-        q->error = Query::QUERY_ERRORBINDINGINPUTVARS;
+        q->error = Query::Query::Result::ERROR_BINDING_INPUT_VARS;
     }
 
     return q;

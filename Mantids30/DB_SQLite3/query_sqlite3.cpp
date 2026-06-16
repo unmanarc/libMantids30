@@ -176,7 +176,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     m_affectedRecords = 0;
 
     // if insert, only do one step.
-    if (execType == EXEC_TYPE_INSERT)
+    if (execType == ExecType::INSERT)
     {
         // execute...
         m_lastSQLReturnValue = sqlite3_step(m_stmt);
