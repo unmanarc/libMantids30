@@ -246,7 +246,6 @@ protected:
      * @brief m_fetchLastInsertRowID if true, the query will retrieve/update the last inserted RowID. (modify before the query)
      */
     bool m_fetchLastInsertRowID = true;
-
     bool m_throwCPPErrorOnQueryFailure = false;
     bool m_throwCPPErrorOnUniqueFailure = false;
 
