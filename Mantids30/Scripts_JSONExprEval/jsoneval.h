@@ -18,7 +18,7 @@ public:
 
     JSONEval() = default;
     JSONEval(const std::string &expr);
-    JSONEval(const std::string &expr, std::shared_ptr<std::vector<std::string>> staticTexts, bool negativeExpression);
+    JSONEval(const std::string &expr, const std::shared_ptr<std::vector<std::string>> & staticTexts, bool negativeExpression);
 
     bool compile(std::string expr);
     bool evaluate(const json &values);

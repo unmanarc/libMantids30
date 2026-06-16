@@ -7,7 +7,7 @@ using namespace Mantids30::Scripts::Expressions;
 
 using namespace std;
 
-AtomicExpressionSide::AtomicExpressionSide(std::shared_ptr<vector<string>> staticTexts)
+AtomicExpressionSide::AtomicExpressionSide(const std::shared_ptr<vector<string>> &staticTexts)
 {
     this->m_staticTexts = staticTexts;
 }
@@ -105,7 +105,7 @@ std::shared_ptr<boost::regex> AtomicExpressionSide::getRegexp() const
     return m_regexp;
 }
 
-void AtomicExpressionSide::setRegexp(std::shared_ptr<boost::regex> value)
+void AtomicExpressionSide::setRegexp(const std::shared_ptr<boost::regex> &value)
 {
     m_regexp = value;
 }

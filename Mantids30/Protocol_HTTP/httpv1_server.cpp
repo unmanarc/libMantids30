@@ -23,7 +23,7 @@ using namespace Mantids30;
  *
  * @param connectionStream Shared pointer to the streamable object used for communication.
  */
-HTTP::HTTPv1_Server::HTTPv1_Server(std::shared_ptr<StreamableObject> connectionStream)
+HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &connectionStream)
     : HTTPv1_Base(false, connectionStream)
 {
     // Default to a conservative cache policy for dynamic responses.

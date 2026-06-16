@@ -8,11 +8,11 @@
 using namespace std;
 using namespace Mantids30::Scripts::Expressions;
 
-AtomicExpression::AtomicExpression(std::shared_ptr<std::vector<std::string>> staticTexts)
+AtomicExpression::AtomicExpression(const std::shared_ptr<std::vector<std::string>> & staticTexts)
     : m_left(staticTexts)
     , m_right(staticTexts)
 {
-    m_evalOperator = EVAL_OPERATOR_UNDEFINED;
+    m_evalOperator = Operator::UNDEFINED;
     m_ignoreCase = false;
     m_negativeExpression = false;
     setStaticTexts(staticTexts);
@@ -32,17 +32,16 @@ bool AtomicExpression::compile(std::string expr)
     }
     this->m_expr = expr;
 
-    if (substractExpressions(R"(^IS_EQUAL\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ISEQUAL)
-        || substractExpressions(R"(^REGEX_MATCH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_REGEXMATCH)
-        || substractExpressions(R"(^CONTAINS\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_CONTAINS)
-        || substractExpressions(R"(^STARTS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_STARTSWITH)
-        || substractExpressions(R"(^ENDS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ENDSWITH)
-        || substractExpressions(R"(^IS_NULL\((?<RIGHT_EXPR>[^\)]+)\)$)", EVAL_OPERATOR_ISNULL))
+    if (substractExpressions(R"(^IS_EQUAL\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::ISEQUAL)
+        || substractExpressions(R"(^REGEX_MATCH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::REGEXMATCH)
+        || substractExpressions(R"(^CONTAINS\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::CONTAINS)
+        || substractExpressions(R"(^STARTS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::STARTSWITH)
+        || substractExpressions(R"(^ENDS_WITH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::ENDSWITH) || substractExpressions(R"(^IS_NULL\((?<RIGHT_EXPR>[^\)]+)\)$)", Operator::ISNULL))
     {
     }
     else
     {
-        m_evalOperator = EVAL_OPERATOR_UNDEFINED;
+        m_evalOperator = Operator::UNDEFINED;
         m_negativeExpression = false;
         return false;
     }
@@ -52,14 +51,14 @@ bool AtomicExpression::compile(std::string expr)
 
 bool AtomicExpression::evaluate(const json &values)
 {
-    std::set<std::string> lvalues = m_left.resolve(values, m_evalOperator == EVAL_OPERATOR_REGEXMATCH, m_ignoreCase);
-    std::set<std::string> rvalues = m_right.resolve(values, m_evalOperator == EVAL_OPERATOR_REGEXMATCH, m_ignoreCase);
+    std::set<std::string> lvalues = m_left.resolve(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
+    std::set<std::string> rvalues = m_right.resolve(values, m_evalOperator == Operator::REGEXMATCH, m_ignoreCase);
 
     switch (m_evalOperator)
     {
-    case EVAL_OPERATOR_UNDEFINED:
+    case Operator::UNDEFINED:
         return calcNegative(false);
-    case EVAL_OPERATOR_ENDSWITH:
+    case Operator::ENDSWITH:
         for (const std::string &lvalue : lvalues)
         {
             for (const std::string &rvalue : rvalues)
@@ -75,7 +74,7 @@ bool AtomicExpression::evaluate(const json &values)
             }
         }
         return calcNegative(false);
-    case EVAL_OPERATOR_STARTSWITH:
+    case Operator::STARTSWITH:
         for (const std::string &lvalue : lvalues)
         {
             for (const std::string &rvalue : rvalues)
@@ -91,7 +90,7 @@ bool AtomicExpression::evaluate(const json &values)
             }
         }
         return calcNegative(false);
-    case EVAL_OPERATOR_ISEQUAL:
+    case Operator::ISEQUAL:
         for (const std::string &rvalue : rvalues)
         {
             if (!m_ignoreCase && lvalues.find(rvalue) != lvalues.end())
@@ -110,9 +109,9 @@ bool AtomicExpression::evaluate(const json &values)
             }
         }
         return calcNegative(false);
-    case EVAL_OPERATOR_ISNULL:
+    case Operator::ISNULL:
         return calcNegative(lvalues.empty());
-    case EVAL_OPERATOR_CONTAINS:
+    case Operator::CONTAINS:
         for (const std::string &lvalue : lvalues)
         {
             for (const std::string &rvalue : rvalues)
@@ -128,7 +127,7 @@ bool AtomicExpression::evaluate(const json &values)
             }
         }
         return calcNegative(false);
-    case EVAL_OPERATOR_REGEXMATCH:
+    case Operator::REGEXMATCH:
         boost::cmatch what;
         // Regex, any of.
         for (const std::string &lvalue : lvalues)
@@ -152,7 +151,7 @@ bool AtomicExpression::calcNegative(bool r) const
     return r;
 }
 
-bool AtomicExpression::substractExpressions(const std::string &regex, const eEvalOperator &op)
+bool AtomicExpression::substractExpressions(const std::string &regex, const Operator &op)
 {
     boost::regex exOperatorEqual(regex);
     boost::match_results<string::const_iterator> whatDataDecomposed;
@@ -161,7 +160,7 @@ bool AtomicExpression::substractExpressions(const std::string &regex, const eEva
     for (string::const_iterator start = m_expr.begin(), end = m_expr.end(); boost::regex_search(start, end, whatDataDecomposed, exOperatorEqual, flags); start = whatDataDecomposed[0].second)
     {
         m_left.setExpr(string(whatDataDecomposed[1].first, whatDataDecomposed[1].second));
-        if (op != EVAL_OPERATOR_ISNULL)
+        if (op != Operator::ISNULL)
         {
             m_right.setExpr(string(whatDataDecomposed[2].first, whatDataDecomposed[2].second));
         }
@@ -185,7 +184,7 @@ bool AtomicExpression::substractExpressions(const std::string &regex, const eEva
     return false;
 }
 
-void AtomicExpression::setStaticTexts(std::shared_ptr<std::vector<std::string>> value)
+void AtomicExpression::setStaticTexts(const std::shared_ptr<std::vector<std::string>> &value)
 {
     m_staticTexts = value;
 }

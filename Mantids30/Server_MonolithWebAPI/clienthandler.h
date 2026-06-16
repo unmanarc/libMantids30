@@ -20,7 +20,7 @@ namespace Mantids30::Network::Servers::WebMonolith {
 class ClientHandler : public Servers::Web::APIServer_ClientHandler
 {
 public:
-    ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
+    ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock);
 
 protected:
     /**

@@ -50,7 +50,7 @@ public:
         bool exists = false;
     };
 
-    HTTPv1_Server(std::shared_ptr<Memory::Streams::StreamableObject> connectionStream);
+    HTTPv1_Server(const std::shared_ptr<Memory::Streams::StreamableObject> &connectionStream);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
@@ -82,7 +82,7 @@ public:
      * @param path The path under which the content will be served.
      * @param contentElement The shared pointer to the memory content element to be served.
      */
-    void addStaticContent(const std::string &path, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> contentElement);
+    void addStaticContent(const std::string &path, const std::shared_ptr<Mantids30::Memory::Containers::B_MEM> &contentElement);
 
     /**
      * @brief setStaticContentElements Sets the entire map of static content elements.
@@ -90,7 +90,7 @@ public:
      * It's useful for bulk updates or initialization of static content.
      * @param value A map of paths to memory content elements.
      */
-    void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> &value);
+    void setStaticContentElements(const std::map<std::string,std::shared_ptr<Memory::Containers::B_MEM>> &value);
 
     /**
      * @brief htmlEncode Encodes a raw string into HTML-safe format.

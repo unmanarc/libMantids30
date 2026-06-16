@@ -25,13 +25,13 @@ public:
 
     enum class StatusCode : std::int16_t
     {
-        ENDPOINT_RET_CODE_SUCCESS = 0,              // Success return code
-        ENDPOINT_RET_CODE_UNAUTHENTICATED = -9994,  // User is unauthenticated
-        ENDPOINT_RET_CODE_INVALIDLOCALAUTH = -9995, // Local authentication failed
-        ENDPOINT_RET_CODE_TIMEDOUT = -9996,         // Operation timed out
-        ENDPOINT_RET_CODE_INVALIDAUTH = -9997,      // Authentication failed
-        ENDPOINT_RET_CODE_SERVERMEMORYFULL = -9998, // Server memory is full
-        ENDPOINT_RET_CODE_NOTFOUND = -9999          // Endpoint not found
+        SUCCESS = 0,              // Success return code
+        UNAUTHENTICATED = -9994,  // User is unauthenticated
+        INVALIDLOCALAUTH = -9995, // Local authentication failed
+        TIMEDOUT = -9996,         // Operation timed out
+        INVALIDAUTH = -9997,      // Authentication failed
+        SERVERMEMORYFULL = -9998, // Server memory is full
+        NOTFOUND = -9999          // Endpoint not found
     };
 
 
@@ -40,7 +40,7 @@ public:
         /**
          * @brief Function pointer to the API endpoint.
          */
-        json (*endpoint)(void *context, std::shared_ptr<Mantids30::Sessions::Session> session, const json &parameters);
+        json (*endpoint)(void *context, const std::shared_ptr<Mantids30::Sessions::Session> & session, const json &parameters);
 
         /**
          * @brief Context object to pass to the function pointer.

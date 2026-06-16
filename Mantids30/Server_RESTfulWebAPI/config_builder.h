@@ -17,14 +17,14 @@ class RESTful_Engine
 {
 public:
     RESTful_Engine() = default;
-    static Network::Servers::RESTful::Engine *createRESTfulEngine(const boost::property_tree::ptree &ptr, std::shared_ptr<Mantids30::Program::Logs::AppLog> log,
-                                                                  std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog, const std::string &serviceName, const std::string &defaultResourcePath,
+    static Network::Servers::RESTful::Engine *createRESTfulEngine(const boost::property_tree::ptree &ptr, const std::shared_ptr<Mantids30::Program::Logs::AppLog> &log,
+                                                                  const std::shared_ptr<Mantids30::Program::Logs::RPCLog> &rpcLog, const std::string &serviceName, const std::string &defaultResourcePath,
                                                                   uint64_t options = 0, const std::map<std::string, std::string> &vars = {});
 
 private:
-    static bool handleProtocolInitializationFailure(void *data, std::shared_ptr<Network::Sockets::Socket_Stream> sock);
-    static bool handleClientAcceptTimeoutOccurred(void *data, std::shared_ptr<Network::Sockets::Socket_Stream> sock);
-    static bool handleClientConnectionLimitPerIPReached(void *data, std::shared_ptr<Network::Sockets::Socket_Stream> sock);
+    static bool handleProtocolInitializationFailure(void *data, const std::shared_ptr<Network::Sockets::Socket_Stream> &sock);
+    static bool handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Network::Sockets::Socket_Stream> &sock);
+    static bool handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Network::Sockets::Socket_Stream> &sock);
 };
 
 } // namespace Mantids30::Program::Config

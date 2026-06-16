@@ -170,7 +170,7 @@ std::pair<string, string> Cookie::getVarNameAndValue(const string &var)
 {
     std::pair<string, string> r;
 
-    size_t found = var.find("=");
+    size_t found = var.find('=');
 
     if (found != std::string::npos)
     {

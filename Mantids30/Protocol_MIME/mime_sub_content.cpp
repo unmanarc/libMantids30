@@ -108,7 +108,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentC
     return m_contentContainer;
 }
 
-void MIME_Sub_Content::replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value)
+void MIME_Sub_Content::replaceContentContainer(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
 {
     //    if (contentContainer)
     //  delete contentContainer;

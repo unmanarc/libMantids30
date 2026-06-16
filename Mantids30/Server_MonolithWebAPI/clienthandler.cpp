@@ -9,7 +9,7 @@ using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
-ClientHandler::ClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
+ClientHandler::ClientHandler(void *parent, const std::shared_ptr<StreamableObject> &sock)
     : Servers::Web::APIServer_ClientHandler(parent, sock)
 {}
 
@@ -59,7 +59,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
 
         switch (endpointsHandler->invoke(currentSessionInfo.authSession, endpointName, postParameters, apiReturn.responseJSON()))
         {
-        case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_SUCCESS:
+        case API::Monolith::Endpoints::StatusCode::SUCCESS:
 
             finish = chrono::high_resolution_clock::now();
             elapsed = finish - start;
@@ -67,7 +67,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
             log(LogLevel::DEBUG, "monolithAPI", 8192, "Web Endpoint executed OK - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),
                 Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
             break;
-        case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_NOTFOUND:
+        case API::Monolith::Endpoints::StatusCode::NOTFOUND:
             log(LogLevel::ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
             apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
             break;

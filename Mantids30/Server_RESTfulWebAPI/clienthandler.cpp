@@ -24,7 +24,7 @@ using namespace Mantids30::Memory;
 using namespace Mantids30;
 using namespace std;
 
-ClientHandler::ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock)
+ClientHandler::ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock)
     : Servers::Web::APIServer_ClientHandler(parent, sock)
 {}
 

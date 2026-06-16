@@ -152,7 +152,7 @@ public:
     uint64_t getOptionAsUINT64(const std::string &varName, uint16_t base = 10, bool *optExist = nullptr) const;
     //////////////////////////////////////////////////
 
-    bool addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt);
+    bool addHeaderOption(const std::shared_ptr<MIME_HeaderOption> &opt);
 
     //////////////////////////////////////////////////
     // Security:
@@ -169,7 +169,7 @@ protected:
     Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
-    void parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName);
+    void parseSubValues(const std::shared_ptr<MIME_HeaderOption> & opt, const std::string &strName);
 
     std::shared_ptr<MIME_HeaderOption> m_lastOpt;
     void parseOptionValue(std::string optionValue);

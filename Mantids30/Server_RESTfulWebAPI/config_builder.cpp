@@ -77,10 +77,10 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 }
 
 Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(const boost::property_tree::ptree &config,
-                                                                                                              std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog,
-                                                                                                              std::shared_ptr<Mantids30::Program::Logs::RPCLog> rpcLog, const std::string &serviceName,
-                                                                                                              const std::string &defaultResourcePath, uint64_t options,
-                                                                                                              const std::map<std::string, std::string> &vars)
+                                                                                                               const std::shared_ptr<Mantids30::Program::Logs::AppLog> &appLog,
+                                                                                                               const std::shared_ptr<Mantids30::Program::Logs::RPCLog> &rpcLog, const std::string &serviceName,
+                                                                                                               const std::string &defaultResourcePath, uint64_t options,
+                                                                                                               const std::map<std::string, std::string> &vars)
 {
     using namespace Mantids30::Program;
     std::list<std::shared_ptr<Sockets::Socket_Stream>> listenerSockets;
@@ -296,7 +296,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     }
 }
 
-bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
+bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
     if (!sock->isSecure())
     {
@@ -317,7 +317,7 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *
     return true;
 }
 
-bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
+bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
     Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 
@@ -325,7 +325,7 @@ bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *da
     return true;
 }
 
-bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(void *data, std::shared_ptr<Sockets::Socket_Stream> sock)
+bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
     Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
 

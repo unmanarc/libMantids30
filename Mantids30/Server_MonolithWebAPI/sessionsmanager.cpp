@@ -51,7 +51,7 @@ void WebSessionsManager::setMaxInactiveSeconds(const uint32_t &value)
     m_MaxInactiveSeconds = value;
 }
 
-std::string WebSessionsManager::createSession(std::shared_ptr<Mantids30::Sessions::Session> session, const json &networkClientInfo, uint64_t *maxAge)
+std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const json &networkClientInfo, uint64_t *maxAge)
 {
     std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
 

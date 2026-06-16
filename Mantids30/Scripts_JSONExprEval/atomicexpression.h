@@ -13,32 +13,32 @@ namespace Mantids30::Scripts::Expressions {
 class AtomicExpression
 {
 public:
-    enum eEvalOperator
+    enum class Operator : uint8_t
     {
-        EVAL_OPERATOR_CONTAINS, // operator for multi items..
-        EVAL_OPERATOR_REGEXMATCH,
-        EVAL_OPERATOR_ISEQUAL,
-        EVAL_OPERATOR_STARTSWITH,
-        EVAL_OPERATOR_ENDSWITH,
-        EVAL_OPERATOR_ISNULL,
-        EVAL_OPERATOR_UNDEFINED
+        CONTAINS, // operator for multi items..
+        REGEXMATCH,
+        ISEQUAL,
+        STARTSWITH,
+        ENDSWITH,
+        ISNULL,
+        UNDEFINED
     };
 
-    AtomicExpression(std::shared_ptr<std::vector<std::string>> staticTexts);
+    AtomicExpression(const std::shared_ptr<std::vector<std::string> > &staticTexts);
 
     bool compile(std::string expr);
-    bool evaluate(const json &values);
+    [[nodiscard]] bool evaluate(const json &values);
 
-    void setStaticTexts(std::shared_ptr<std::vector<std::string>> value);
+    void setStaticTexts(const std::shared_ptr<std::vector<std::string>> & value);
 
 private:
-    bool calcNegative(bool r) const;
-    bool substractExpressions(const std::string &regex, const eEvalOperator &op);
+    [[nodiscard]] bool calcNegative(bool r) const;
+    bool substractExpressions(const std::string &regex, const Operator &op);
 
     std::shared_ptr<std::vector<std::string>> m_staticTexts;
     std::string m_expr;
     AtomicExpressionSide m_left, m_right;
-    eEvalOperator m_evalOperator;
+    Operator m_evalOperator;
     bool m_negativeExpression, m_ignoreCase;
 };
 

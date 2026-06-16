@@ -30,7 +30,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
 
     json fullResponse;
     json responsePayload;
-    fullResponse["statusCode"] = ELT_RET_SUCCESS;
+    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::SUCCESS);
 
     Helpers::JSONReader2 reader;
     bool sessionFailed = false;
@@ -58,8 +58,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                 else
                 {
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_NOTREQUIRED_ERROR);
-                    fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_NOTREQUIRED_ERROR);
+                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
                 }
             }
             else
@@ -77,16 +77,16 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                     // report the problem...
                     // This is not an impersonator token.
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_IMPERSONATION_ERROR);
-                    fullResponse["statusCode"] = ELT_RET_INVALIDIMPERSONATOR;
+                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_IMPERSONATION_ERROR);
+                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_IMPERSONATOR_TOKEN);
                 }
             }
         }
         else
         {
             sessionFailed = true;
-            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::EXTRATOKEN_VALIDATION_ERROR);
-            fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_SIGNATURE_ERROR);
+            fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
         }
     }
 
@@ -95,8 +95,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
     {
         sessionFailed = true;
         session = nullptr;
-        CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TOKEN_REVOKED);
-        fullResponse["statusCode"] = ELT_RET_TOKENFAILED;
+        CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::SESSION_REVOKED_ERROR);
+        fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
     }
 
     if (!taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName)             // method does not require session.
@@ -129,7 +129,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
 
                 switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
                 {
-                case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_SUCCESS:
+                case API::Monolith::Endpoints::StatusCode::SUCCESS:
 
                     finish = chrono::high_resolution_clock::now();
                     elapsed = finish - start;
@@ -139,14 +139,14 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                     functionFound = true;
                     fullResponse["statusCode"] = 200;
                     break;
-                case API::Monolith::Endpoints::StatusCode::ENDPOINT_RET_CODE_NOTFOUND:
+                case API::Monolith::Endpoints::StatusCode::NOTFOUND:
 
                     CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
-                    fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
+                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
                     break;
                 default:
                     CALLBACK(callbacks->onMethodExecutionUnknownError)(callbacks->context, taskParams);
-                    fullResponse["statusCode"] = ELT_RET_INTERNALERROR;
+                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INTERNAL_ERROR);
                     break;
                 }
             }
@@ -156,14 +156,14 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
                 fullResponse["auth"]["reasons"] = reasons;
-                fullResponse["statusCode"] = ELT_RET_NOTAUTHORIZED;
+                fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::NOT_AUTHORIZED);
             }
             break;
             case API::Monolith::Endpoints::ValidationResult::VALIDATION_ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
-                fullResponse["statusCode"] = ELT_RET_METHODNOTIMPLEMENTED;
+                fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
             }
             break;
             }
@@ -172,7 +172,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
     else
     {
         CALLBACK(callbacks->onMethodExecutionSessionMissing)(callbacks->context, taskParams);
-        fullResponse["statusCode"] = ELT_RET_REQSESSION;
+        fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::REQUIRED_SESSION_NOT_FOUND);
     }
 
     //Json::StreamWriterBuilder builder;
@@ -205,7 +205,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
 
     // CREATE NEW SESSION:
     json response;
-    LoginReason loginReason;
+    LoginAuthentication loginAuthResult;
 
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
@@ -214,7 +214,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
     if (session)
     {
         // Close the session before.
-        loginReason.reason = LoginReason::SESSION_DUPLICATE;
+        loginAuthResult.result = LoginAuthentication::Result::SESSION_DUPLICATE;
     }
     else
     {
@@ -228,23 +228,23 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
                 //session->setUser(token.getSubject());
                 session->updateLastActivity();
 
-                loginReason.reason = LoginReason::TOKEN_VALIDATED;
+                loginAuthResult.result = LoginAuthentication::Result::TOKEN_VALIDATED;
                 CALLBACK(callbacks->onTokenValidationSuccess)(callbacks->context, taskParams, sJWTToken);
             }
             else
             {
-                loginReason.reason = LoginReason::INTERNAL_ERROR;
+                loginAuthResult.result = LoginAuthentication::Result::INTERNAL_ERROR;
                 CALLBACK(callbacks->onMethodExecutionUnknownError)(callbacks->context, taskParams);
             }
         }
         else
         {
-            loginReason.reason = LoginReason::TOKEN_FAILED;
-            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, sJWTToken, RPC3CallbackDefinitions::TOKEN_VALIDATION_ERROR);
+            loginAuthResult.result = LoginAuthentication::Result::TOKEN_FAILED;
+            CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, sJWTToken, RPC3CallbackDefinitions::TokenValidationStatus::SIGNATURE_ERROR);
         }
     }
 
-    response = loginReason.toJSONResponse();
+    response = loginAuthResult.toJSONResponse();
     sendRPCAnswer(taskParams, response.toStyledString(), EXEC_STATUS_SUCCESS);
     taskParams->doneSharedMutex->unlockShared();
 }

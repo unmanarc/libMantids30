@@ -20,7 +20,7 @@ public:
     void setFsTmpFolder(const std::string &value);
 
     std::shared_ptr<Memory::Streams::StreamableObject> getContentContainer() const;
-    void replaceContentContainer(std::shared_ptr<Memory::Streams::StreamableObject> value);
+    void replaceContentContainer(const std::shared_ptr<Memory::Streams::StreamableObject> &value);
 
     std::string getBoundary() const;
     void setBoundary(const std::string &value);

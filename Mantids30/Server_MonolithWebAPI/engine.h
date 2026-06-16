@@ -24,7 +24,7 @@ public:
     WebSessionsManager sessionsManager;
 
 protected:
-    std::shared_ptr<Web::APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) override;
+    std::shared_ptr<Web::APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Sockets::Socket_Stream> &s) override;
 };
 
 } // namespace Mantids30::Network::Servers::WebMonolith

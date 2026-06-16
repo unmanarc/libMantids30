@@ -21,7 +21,7 @@ public:
         EXPR_MODE_UNDEFINED
     };
 
-    AtomicExpressionSide(std::shared_ptr<std::vector<std::string>> staticTexts);
+    AtomicExpressionSide(const std::shared_ptr<std::vector<std::string>> &staticTexts);
 
     bool calcMode();
     std::string getExpr() const;
@@ -30,7 +30,7 @@ public:
     std::set<std::string> resolve(const json &v, bool resolveRegex, bool ignoreCase);
 
     std::shared_ptr<boost::regex> getRegexp() const;
-    void setRegexp(std::shared_ptr<boost::regex> value);
+    void setRegexp(const std::shared_ptr<boost::regex> &value);
 
     eExpressionSideMode getMode() const;
 

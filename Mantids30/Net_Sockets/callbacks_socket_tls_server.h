@@ -14,7 +14,7 @@ public:
     /**
      * @brief onProtocolInitializationFailure Callback to Notify when there is an authentication error during the incoming TLS/TCP-IP Connection
      */
-    void (*onProtocolInitializationFailure)(void *context, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
+    void (*onProtocolInitializationFailure)(void *context, const std::shared_ptr<Sockets::Socket_Stream> &) = nullptr;
 };
 
 } // namespace Mantids30::Network::Sockets

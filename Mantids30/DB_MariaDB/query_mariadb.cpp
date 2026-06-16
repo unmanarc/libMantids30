@@ -657,7 +657,7 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
     }
 
     ///////////////
-    if (execType != EXEC_TYPE_SELECT)
+    if (execType != ExecType::SELECT)
     {
         if (m_fetchLastInsertRowID)
         {

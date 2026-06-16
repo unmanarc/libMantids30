@@ -35,17 +35,17 @@ public:
     /**
      * Set socket
      */
-    void setClientSocket(std::shared_ptr<Sockets::Socket_Stream> _clientSocket);
+    void setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> &_clientSocket);
 
     /**
      * @brief getRemotePair Get Remote Host Address
      * @return remote pair null terminated string.
      */
-    std::string getRemotePair() const;
+    [[nodiscard]] std::string getRemotePair() const;
 
-    uint16_t getLocalPort();
+    [[nodiscard]] uint16_t getLocalPort();
 
-    static void thread_streamclient(std::shared_ptr<StreamAcceptorThread> threadClient, void *threadedAcceptedControl);
+    static void thread_streamclient(const std::shared_ptr<StreamAcceptorThread> &threadClient, void *threadedAcceptedControl);
 
 private:
     std::shared_ptr<Sockets::Socket_Stream> m_pClientSocket;

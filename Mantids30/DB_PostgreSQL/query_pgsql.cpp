@@ -395,7 +395,7 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
         return false;
     }
 
-    if (execType == EXEC_TYPE_SELECT)
+    if (execType == ExecType::SELECT)
     {
         m_numRecords = PQntuples(m_results);
         return m_execStatus == PGRES_TUPLES_OK;

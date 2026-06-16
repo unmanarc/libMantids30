@@ -11,7 +11,7 @@ using namespace Mantids30::Network::Protocol;
 
 using namespace Mantids30;
 
-HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
+HTTP::URLVars::URLVars(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
     : Memory::Streams::Parser(value, false)
 {
     m_urlVarParser.setVarType(true);
@@ -19,7 +19,7 @@ HTTP::URLVars::URLVars(std::shared_ptr<Memory::Streams::StreamableObject> value)
     m_currentSubParser = &m_urlVarParser;
 }
 
-std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(std::shared_ptr<StreamableObject> value)
+std::shared_ptr<HTTP::URLVars> HTTP::URLVars::create(const std::shared_ptr<StreamableObject> &value)
 {
     std::shared_ptr<URLVars> x = std::shared_ptr<URLVars>(new URLVars(value));
     x->initSubParser(&x->m_urlVarParser);
@@ -143,7 +143,7 @@ bool HTTP::URLVars::changeToNextParser()
 {
     switch (m_currentStat)
     {
-    case URLV_STAT_WAITING_NAME:
+    case URLVarsParsingStatus::WAITING_FOR_NAME:
     {
         m_currentVarName = m_urlVarParser.getContentAsStringAndFlush();
         if (m_urlVarParser.getFoundDelimiter() == "&" || m_urlVarParser.isStreamEnded())
@@ -154,17 +154,17 @@ bool HTTP::URLVars::changeToNextParser()
         else
         {
             // EQUAL:
-            m_currentStat = URLV_STAT_WAITING_CONTENT;
+            m_currentStat = URLVarsParsingStatus::WAITING_FOR_CONTENT;
             m_urlVarParser.setVarType(false);
             m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
             return true;
         }
     }
     break;
-    case URLV_STAT_WAITING_CONTENT:
+    case URLVarsParsingStatus::WAITING_FOR_CONTENT:
     {
         bool r = addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
-        m_currentStat = URLV_STAT_WAITING_NAME;
+        m_currentStat = URLVarsParsingStatus::WAITING_FOR_NAME;
         m_urlVarParser.setVarType(true);
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
         return r;
@@ -175,7 +175,7 @@ bool HTTP::URLVars::changeToNextParser()
     }
 }
 
-bool HTTP::URLVars::addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data)
+bool HTTP::URLVars::addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> & data)
 {
     if (!varName.empty() && m_vars.size() < m_maxVarsCount)
     {
@@ -198,7 +198,7 @@ size_t HTTP::URLVars::size()
 
 void HTTP::URLVars::iSetMaxVarContentSize()
 {
-    if (m_currentStat == URLV_STAT_WAITING_CONTENT)
+    if (m_currentStat == URLVarsParsingStatus::WAITING_FOR_CONTENT)
     {
         m_urlVarParser.setMaxObjectSize(m_maxVarContentSize);
     }
@@ -206,7 +206,7 @@ void HTTP::URLVars::iSetMaxVarContentSize()
 
 void HTTP::URLVars::iSetMaxVarNameSize()
 {
-    if (m_currentStat == URLV_STAT_WAITING_NAME)
+    if (m_currentStat == URLVarsParsingStatus::WAITING_FOR_NAME)
     {
         m_urlVarParser.setMaxObjectSize(m_maxVarNameSize);
     }

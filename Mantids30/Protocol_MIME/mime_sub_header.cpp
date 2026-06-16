@@ -103,7 +103,7 @@ size_t MIME_Sub_Header::getOptionsSize()
     return m_headers.size();
 }
 
-bool MIME_Sub_Header::addHeaderOption(std::shared_ptr<MIME_HeaderOption> opt)
+bool MIME_Sub_Header::addHeaderOption(const std::shared_ptr<MIME_HeaderOption> &opt)
 {
     if (m_headers.size() == m_maxOptions)
     {
@@ -191,7 +191,7 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
     return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
-void MIME_Sub_Header::parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, const std::string &strName)
+void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &opt, const std::string &strName)
 {
     // hello weo; doaie; fa = "hello world;" hehe; asd=399; aik=""
     std::vector<std::string> vStaticTexts;
@@ -232,8 +232,8 @@ void MIME_Sub_Header::parseSubValues(std::shared_ptr<MIME_HeaderOption> opt, con
     {
         if (boost::contains(value, "="))
         {
-            std::string sVarName = value.substr(0, value.find("="));
-            std::string sVarValue = value.substr(value.find("=") + 1);
+            std::string sVarName = value.substr(0, value.find('='));
+            std::string sVarValue = value.substr(value.find('=') + 1);
 
             boost::trim(sVarName);
             boost::trim(sVarValue);

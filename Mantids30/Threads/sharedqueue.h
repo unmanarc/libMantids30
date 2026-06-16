@@ -54,7 +54,7 @@ public:
      * @param tmout_msecs Timeout in milliseconds if the queue is full (default: 100 seconds), or zero if you don't want to wait
      * @return true if pushed successfully, false if timeout or no wait
      */
-    bool push(std::shared_ptr<T> item, const uint32_t &tmout_msecs = 100000);
+    bool push(const std::shared_ptr<T> &item, const uint32_t &tmout_msecs = 100000);
 
     /**
      * @brief pop Pop the item (automatically managed by shared_ptr)
@@ -102,7 +102,7 @@ size_t SharedQueue<T>::getMaxItems()
 }
 
 template<class T>
-bool SharedQueue<T>::push(std::shared_ptr<T> item, const uint32_t &tmout_msecs)
+bool SharedQueue<T>::push(const std::shared_ptr<T> &item, const uint32_t &tmout_msecs)
 {
     if (!item)
     { // Don't allow null shared_ptr

@@ -13,7 +13,7 @@ namespace Mantids30::Network::Servers::WebMonolith {
 class WebSession : public Threads::Safe::MapItem
 {
 public:
-    WebSession(std::shared_ptr<Mantids30::Sessions::Session> authSession, const json &newNetworkClientInfo)
+    WebSession(const std::shared_ptr<Mantids30::Sessions::Session> &authSession, const json &newNetworkClientInfo)
     {
         this->networkClientInfo = newNetworkClientInfo;
         this->authSession = authSession;
@@ -73,7 +73,7 @@ public:
      *                The session object will be deleted when the session is destroyed.
      * @return Session ID
      */
-    std::string createSession(std::shared_ptr<Sessions::Session> session, const json &sessionInfo, uint64_t *maxAge);
+    std::string createSession(const std::shared_ptr<Sessions::Session> &session, const json &sessionInfo, uint64_t *maxAge);
     /**
      * @brief destroySession destroy the session element and session ID
      * @param sessionID Session ID String

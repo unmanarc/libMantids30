@@ -21,7 +21,7 @@ class APIServer_ClientHandler : public Protocol::HTTP::HTTPv1_Server
 public:
     APIServerConfig *config;
 
-    APIServer_ClientHandler(void *parent, std::shared_ptr<Memory::Streams::StreamableObject> sock);
+    APIServer_ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock);
 
 protected:
     /**

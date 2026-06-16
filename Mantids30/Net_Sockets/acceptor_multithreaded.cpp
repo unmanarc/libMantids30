@@ -63,7 +63,7 @@ void MultiThreaded::thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc
     }
 }
 
-bool MultiThreaded::processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread)
+bool MultiThreaded::processClient(const std::shared_ptr<Socket_Stream> &clientSocket, const std::shared_ptr<StreamAcceptorThread> & clientThread)
 {
     // Introduce the new client thread into the list.
     std::unique_lock<std::mutex> lock(m_mutexClients);
@@ -240,7 +240,7 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
     return false; // no more connections. (abandon)
 }
 
-bool MultiThreaded::finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> x)
+bool MultiThreaded::finalizeThreadElement(const std::shared_ptr<StreamAcceptorThread> & x)
 {
     std::unique_lock<std::mutex> lock(m_mutexClients);
     if (std::find(m_threadList.begin(), m_threadList.end(), x) != m_threadList.end())

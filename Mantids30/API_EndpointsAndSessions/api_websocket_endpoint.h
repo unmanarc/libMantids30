@@ -31,7 +31,7 @@ struct WebSocketParameters
 };
 
 // Callback function types for WebSocket events
-using WebSocketEventFunctionType = void (*)(void *context, std::shared_ptr<Memory::Containers::B_Chunks> content, const Json::Value &jsonContent, const WebSocket::WebSocketParameters &parameters,
+using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> & content, const Json::Value &jsonContent, const WebSocket::WebSocketParameters &parameters,
                                             Mantids30::Sessions::ClientDetails &authClientDetails);
 
 class Endpoint

@@ -55,7 +55,7 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(Side i, std::shared_ptr<Sockets::Socket_Stream> s);
+    bool setPeer(Side i, const std::shared_ptr<Sockets::Socket_Stream> &s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)

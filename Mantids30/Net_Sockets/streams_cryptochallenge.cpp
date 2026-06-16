@@ -5,7 +5,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets::NetStreams;
 
-CryptoChallenge::CryptoChallenge(std::shared_ptr<Sockets::Socket_Stream> socket)
+CryptoChallenge::CryptoChallenge(const std::shared_ptr<Sockets::Socket_Stream> &socket)
 {
     this->m_socket = socket;
 }

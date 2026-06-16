@@ -34,7 +34,7 @@ void vrsyncRPCPingerThread(FastRPC3 *obj)
     }
 }
 
-FastRPC3::FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
+FastRPC3::FastRPC3(const std::shared_ptr<DataFormat::JWT> & jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
     : m_defaultMethodsHandlers()
     , config(jwtValidator)
 {
@@ -171,8 +171,8 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
     return 1;
 }
 
-int FastRPC3::processIncomingExecutionRequest(std::shared_ptr<Socket_Stream> stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
-                                              FastRPC3::SessionPTR *sessionHolder)
+int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Stream> &stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
+                                               FastRPC3::SessionPTR *sessionHolder)
 {
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId = 0;
@@ -289,7 +289,7 @@ void FastRPC3::setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAs
     m_usingRemotePeerCommonNameAsConnectionId = newUseCNAsServerKey;
 }
 
-int FastRPC3::handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, bool remotePeerIsServer)
+int FastRPC3::handleConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream, bool remotePeerIsServer)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "VSRPC:ProcStr");

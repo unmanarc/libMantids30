@@ -14,7 +14,7 @@ namespace Mantids30::Network::Protocol::HTTP {
 class HTTPv1_Client : public HTTPv1_Base
 {
 public:
-    HTTPv1_Client(std::shared_ptr<Memory::Streams::StreamableObject> sobject);
+    HTTPv1_Client(const std::shared_ptr<Memory::Streams::StreamableObject> &sobject);
     /**
      * @brief setClientRequest Set client request
      * @param hostName host name

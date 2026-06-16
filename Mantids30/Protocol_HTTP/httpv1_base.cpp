@@ -3,7 +3,7 @@
 using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
-HTTP::HTTPv1_Base::HTTPv1_Base(bool clientMode, std::shared_ptr<StreamableObject> sobject)
+HTTP::HTTPv1_Base::HTTPv1_Base(bool clientMode, const std::shared_ptr<StreamableObject> &sobject)
     : Memory::Streams::Parser(sobject, clientMode)
 {
     initSubParser(&clientRequest.requestLine);

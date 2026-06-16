@@ -95,10 +95,7 @@ public:
 
     struct TaskParameters
     {
-        ~TaskParameters()
-        {
-            delete[] extraTokenAuth;
-        }
+        ~TaskParameters() { delete[] extraTokenAuth; }
 
         std::shared_ptr<Sockets::Socket_Stream> streamBack = nullptr;
         uint32_t maxMessageSize = 0;
@@ -148,13 +145,13 @@ public:
 
     struct RPC3CallbackDefinitions
     {
-        enum eTokenValidationFailedErrors
+        enum class TokenValidationStatus : uint8_t
         {
-            TOKEN_VALIDATION_ERROR = 1,
-            EXTRATOKEN_VALIDATION_ERROR = 2,
+            SIGNATURE_ERROR = 1,
+            EXTRATOKEN_SIGNATURE_ERROR = 2,
             EXTRATOKEN_IMPERSONATION_ERROR = 3,
             EXTRATOKEN_NOTREQUIRED_ERROR = 5,
-            TOKEN_REVOKED = 4,
+            SESSION_REVOKED_ERROR = 4,
         };
 
         void (*onMethodExecutionAuthorizerMissing)(void *context, TaskParameters *parameters) = nullptr;
@@ -167,7 +164,7 @@ public:
         void (*onImpersonationFailure)(void *context, TaskParameters *parameters, const std::string &userCaller, const std::string &userCalled, const std::string &domain, const uint32_t &authSlotId)
             = nullptr;
         void (*onTokenValidationSuccess)(void *context, TaskParameters *parameters, const std::string &jwtToken) = nullptr;
-        void (*onTokenValidationFailure)(void *context, TaskParameters *parameters, const std::string &jwtToken, eTokenValidationFailedErrors err) = nullptr;
+        void (*onTokenValidationFailure)(void *context, TaskParameters *parameters, const std::string &jwtToken, TokenValidationStatus err) = nullptr;
         void (*onProtocolUnexpectedResponse)(FastRPC3::Connection *connection, const std::string &answer) = nullptr;
         void (*onOutgoingTaskFailureDisconnectedPeer)(const std::string &connectionId, const std::string &methodName, const json &payload) = nullptr;
         void (*onIncomingTaskDroppedQueueFull)(FastRPC3::TaskParameters *params) = nullptr;
@@ -180,7 +177,7 @@ public:
     class Config
     {
     public:
-        Config(std::shared_ptr<DataFormat::JWT> _jwtValidator)
+        Config(const std::shared_ptr<DataFormat::JWT> &_jwtValidator)
             : jwtValidator(_jwtValidator)
         {}
         /**
@@ -246,7 +243,7 @@ public:
          */
         bool ignoreSSLCertForSSO = false;
 
-        void setDefaultHandlers(const std::shared_ptr<API::Monolith::Endpoints>& x)
+        void setDefaultHandlers(const std::shared_ptr<API::Monolith::Endpoints> &x)
         {
             methodHandlers = x;
             defaultMethodsHandlers = x;
@@ -339,7 +336,7 @@ public:
         std::string connectionId;
     };
 
-    RemoteMethods remote(const std::string &connectionId) { return RemoteMethods(this, connectionId); }
+    RemoteMethods remote(const std::string &connectionId) { return {this, connectionId}; }
 
     ////////////////////////////////
     /**
@@ -353,7 +350,7 @@ public:
      * @param threadsCount The number of threads to preload (default: 16).
      * @param taskQueues The maximum number of queued tasks per thread (default: 24).
      */
-    FastRPC3(std::shared_ptr<DataFormat::JWT> jwtValidator, uint32_t threadsCount = 16, uint32_t taskQueues = 24);
+    FastRPC3(const std::shared_ptr<DataFormat::JWT> &jwtValidator, uint32_t threadsCount = 16, uint32_t taskQueues = 24);
     /**
      * @class FastRPC3
      * @brief A persistent class designed to maintain state across connections.
@@ -372,18 +369,18 @@ public:
      */
     void stop();
 
-    int handleClientConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override { return handleConnection(stream, false); }
+    int handleClientConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream) override { return handleConnection(stream, false); }
 
-    int handleServerConnection(std::shared_ptr<Sockets::Socket_Stream> stream) override { return handleConnection(stream, true); }
+    int handleServerConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream) override { return handleConnection(stream, true); }
 
     /**
-     * @brief handleConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
-     * @param stream Stream Socket to be handled with this fast rpc protocol.
-     * @param serverMode true if the remote peer is a server
-     * @param remotePair remote pair IP address detected by the acceptor
-     * @return
-     */
-    int handleConnection(std::shared_ptr<Sockets::Socket_Stream> stream, bool remotePeerIsServer);
+      * @brief handleConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
+      * @param stream Stream Socket to be handled with this fast rpc protocol.
+      * @param serverMode true if the remote peer is a server
+      * @param remotePair remote pair IP address detected by the acceptor
+      * @return
+      */
+    int handleConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream, bool remotePeerIsServer);
 
     // TODO: runRemoteRPCMethod for sending message to an specific connected user...
     // TODO: runRemoteRPCMethod for sending message to all connected users...
@@ -428,16 +425,16 @@ public:
      * @brief isUsingRemotePeerCommonNameAsConnectionId Get if using the Common Name as the connection ID
      * @return true if using the Common Name as the connection ID
      */
-    bool isUsingRemotePeerCommonNameAsConnectionId() const;
+    [[nodiscard]] bool isUsingRemotePeerCommonNameAsConnectionId() const;
     /**
      * @brief setUsingRemotePeerCommonNameAsConnectionId Set to use or not the Common Name as the connection Id.
      * @param newUseCNAsServerKey true to use the common name as the connection id.
      */
     void setUsingRemotePeerCommonNameAsConnectionId(const bool &newUseCNAsServerKey);
 
-    struct LoginReason
+    struct LoginAuthentication
     {
-        enum eReasons
+        enum class Result : uint8_t
         {
             INTERNAL_ERROR,
             SESSION_DUPLICATE,
@@ -445,25 +442,25 @@ public:
             TOKEN_FAILED
         };
 
-        eReasons reason = INTERNAL_ERROR;
+        Result result = Result::INTERNAL_ERROR;
 
-        Json::Value toJSONResponse() const
+        [[nodiscard]] Json::Value toJSONResponse() const
         {
             Json::Value response;
-            response["val"] = reason;
+            response["val"] = static_cast<uint8_t>(result);
 
-            switch (reason)
+            switch (result)
             {
-            case INTERNAL_ERROR:
+            case Result::INTERNAL_ERROR:
                 response["txt"] = "An internal error occurred. Please try again later.";
                 break;
-            case SESSION_DUPLICATE:
+            case Result::SESSION_DUPLICATE:
                 response["txt"] = "A duplicate session was detected. Ensure only one active session exists for each token.";
                 break;
-            case TOKEN_VALIDATED:
+            case Result::TOKEN_VALIDATED:
                 response["txt"] = "The JWT token has been successfully validated.";
                 break;
-            case TOKEN_FAILED:
+            case Result::TOKEN_FAILED:
                 response["txt"] = "JWT token validation failed. Please check the token configuration and try again.";
                 break;
             default:
@@ -479,27 +476,27 @@ private:
     class LocalRPCTasks
     {
     public:
-        enum eExecuteLocalTaskRetCodes
+        enum class LocalTaskExecutionResult : uint16_t
         {
-            ELT_RET_SUCCESS = 0,
-            ELT_RET_TOKENFAILED = 1,
-            ELT_RET_INVALIDIMPERSONATOR = 2,
-            ELT_RET_REQSESSION = 3,
-            ELT_RET_METHODNOTIMPLEMENTED = 404,
-            ELT_RET_NOTAUTHORIZED = 403,
-            ELT_RET_INTERNALERROR = 500
+            SUCCESS = 0,
+            INVALID_TOKEN = 1,
+            INVALID_IMPERSONATOR_TOKEN = 2,
+            REQUIRED_SESSION_NOT_FOUND = 3,
+            METHOD_NOT_IMPLEMENTED = 404,
+            NOT_AUTHORIZED = 403,
+            INTERNAL_ERROR = 500
         };
 
-        static void executeLocalTask(const std::shared_ptr<void>& taskData);
-        static void getSSOData(const std::shared_ptr<void> & taskData);
+        static void executeLocalTask(const std::shared_ptr<void> &taskData);
+        static void getSSOData(const std::shared_ptr<void> &taskData);
         static void login(const std::shared_ptr<void> &taskData);
-        static void logout(const std::shared_ptr<void> & taskData);
+        static void logout(const std::shared_ptr<void> &taskData);
     };
 
     static void sendRPCAnswer(FastRPC3::TaskParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
     int processIncomingAnswer(FastRPC3::Connection *connection);
-    int processIncomingExecutionRequest(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone,
+    int processIncomingExecutionRequest(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone,
                                         Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
 
     // TODO:

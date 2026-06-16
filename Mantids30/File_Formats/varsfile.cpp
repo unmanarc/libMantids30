@@ -136,7 +136,7 @@ std::pair<std::string, std::string> File::getLineVars(const std::string &line, b
 
 std::string File::getLineFromVars(const std::pair<std::string, std::string> &vars, bool *ok)
 {
-    if (vars.first.find(":") != std::string::npos)
+    if (vars.first.find(':') != std::string::npos)
     {
         if (ok)
         {

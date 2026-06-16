@@ -34,7 +34,7 @@ Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Session
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
     {
-        return StatusCode::ENDPOINT_RET_CODE_NOTFOUND; // Endpoint not found, return error code
+        return StatusCode::NOTFOUND; // Endpoint not found, return error code
     }
     else
     {
@@ -47,7 +47,7 @@ Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Session
             session->updateLastActivity();
         }
 
-        return StatusCode::ENDPOINT_RET_CODE_SUCCESS; // Endpoint invoked successfully, return success code
+        return StatusCode::SUCCESS; // Endpoint invoked successfully, return success code
     }
 }
 

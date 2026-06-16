@@ -7,7 +7,7 @@ namespace Mantids30::Network::Sockets::NetStreams {
 class CryptoChallenge
 {
 public:
-    CryptoChallenge(std::shared_ptr<Sockets::Socket_Stream> socket);
+    CryptoChallenge(const std::shared_ptr<Sockets::Socket_Stream> &socket);
     /**
      * @brief mutualChallengeResponseSHA256Auth Create a Mutual Challenge-Reponse Authentication with the remote host
      * @param localKey Local Key

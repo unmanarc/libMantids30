@@ -286,7 +286,7 @@ void GlobalArguments::printHelp()
     }
 }
 
-bool GlobalArguments::addStaticVariable(const string &name, std::shared_ptr<Var> var)
+bool GlobalArguments::addStaticVariable(const string &name, const std::shared_ptr<Var> &var)
 {
     Threads::Sync::Lock_RW lock(m_variablesMutex);
     if (m_variables.find(name) == m_variables.end())

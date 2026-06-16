@@ -3,7 +3,7 @@
 
 using namespace Mantids30::Network::Protocol::Line2Line;
 
-LineRecv::LineRecv(std::shared_ptr<Memory::Streams::StreamableObject> sobject)
+LineRecv::LineRecv(const std::shared_ptr<Memory::Streams::StreamableObject> &sobject)
     : Memory::Streams::Parser(sobject, false)
 {
     m_initialized = initProtocol();

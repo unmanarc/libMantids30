@@ -16,7 +16,7 @@ JSONEval::JSONEval(const std::string &expr)
     m_isCompiled = compile(expr);
 }
 
-JSONEval::JSONEval(const string &expr, std::shared_ptr<std::vector<std::string>> staticTexts, bool negativeExpression)
+JSONEval::JSONEval(const string &expr, const std::shared_ptr<std::vector<string>> &staticTexts, bool negativeExpression)
 {
     this->m_negativeExpression = negativeExpression;
     this->m_staticTexts = staticTexts;
@@ -47,7 +47,7 @@ bool JSONEval::compile(std::string expr)
 #else
         snprintf(_staticmsg, sizeof(_staticmsg), "_STATIC_%lu", pos);
 #endif
-        m_staticTexts->emplace_back(string(whatStaticText[1].first, whatStaticText[1].second));
+        m_staticTexts->emplace_back(whatStaticText[1].first, whatStaticText[1].second);
         boost::replace_all(expr, "\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"", _staticmsg);
     }
 
@@ -110,7 +110,7 @@ bool JSONEval::compile(std::string expr)
             boost::replace_all(expr, " || ", "\n");
         }
 
-        if (expr.find(" ") != std::string::npos)
+        if (expr.find(' ') != std::string::npos)
         {
             m_lastError = "Invalid Operator (only and/or is admitted)";
             return false;
@@ -128,7 +128,7 @@ bool JSONEval::compile(std::string expr)
                     m_lastError = "Invalid Sub Expression #";
                     return false;
                 }
-                m_atomExpressions.emplace_back(std::make_pair(nullptr, subexpr_pos));
+                m_atomExpressions.emplace_back(nullptr, subexpr_pos);
             }
             else
             {
@@ -139,7 +139,7 @@ bool JSONEval::compile(std::string expr)
                     m_evaluationMode = EVAL_MODE_UNDEFINED;
                     return false;
                 }
-                m_atomExpressions.emplace_back(std::make_pair(atomExpression, 0));
+                m_atomExpressions.emplace_back(atomExpression, 0);
             }
         }
     }

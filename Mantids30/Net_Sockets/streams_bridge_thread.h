@@ -17,7 +17,7 @@ public:
     Bridge_Thread() = default;
     virtual ~Bridge_Thread();
 
-    void setSocketEndpoints(std::shared_ptr<Sockets::Socket_Stream> src, std::shared_ptr<Sockets::Socket_Stream> dst, bool chunked);
+    void setSocketEndpoints(const std::shared_ptr<Sockets::Socket_Stream> &src, const std::shared_ptr<Sockets::Socket_Stream> &dst, bool chunked);
 
     bool sendPing();
 

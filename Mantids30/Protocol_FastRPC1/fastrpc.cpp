@@ -113,7 +113,7 @@ bool FastRPC1::waitPingInterval()
     return false;
 }
 
-json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, std::shared_ptr<void> context, const json &payload, bool *found)
+json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const json &payload, bool *found)
 {
     json r;
     Threads::Sync::Lock_RD lock(m_methodsMutex);
@@ -196,8 +196,8 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
     return 1;
 }
 
-int FastRPC1::processQuery(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
-                           std::shared_ptr<void> context, const std::string &data)
+int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
+                           const std::shared_ptr<void> &context, const std::string &data)
 {
     uint32_t maxAlloc = m_maxMessageSize;
     uint64_t requestId;
@@ -293,8 +293,8 @@ void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
     m_remoteExecutionTimeoutInMS = value;
 }
 
-int FastRPC1::processConnection(std::shared_ptr<Sockets::Socket_Stream> stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor,
-                                std::shared_ptr<void> context, const std::string &data)
+int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor,
+                                const std::shared_ptr<void> &context, const std::string &data)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "FRPC:procCNT");

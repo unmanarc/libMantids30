@@ -26,7 +26,7 @@ namespace Mantids30::Network::Sockets {
 class Socket_Chain : public Socket_Stream
 {
 public:
-    Socket_Chain(std::shared_ptr<Socket_Stream> _baseSocket, bool _deleteBaseSocketOnExit = true);
+    Socket_Chain(const std::shared_ptr<Socket_Stream> &_baseSocket, bool _deleteBaseSocketOnExit = true);
     ~Socket_Chain() override;
 
     /**
@@ -35,7 +35,7 @@ public:
      * @return true if successfully initialized
      */
     bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit = false);
-    bool addToChain(std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
+    bool addToChain(const std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> &sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
                     bool modeServer = false, bool detached = false, bool endPMode = false);
     void waitUntilFinish();
 

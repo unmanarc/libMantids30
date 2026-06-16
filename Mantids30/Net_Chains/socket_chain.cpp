@@ -3,7 +3,7 @@
 
 using namespace Mantids30::Network::Sockets;
 
-Socket_Chain::Socket_Chain(std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> _baseSocket, bool _deleteBaseSocketOnExit)
+Socket_Chain::Socket_Chain(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> & _baseSocket, bool _deleteBaseSocketOnExit)
 {
     m_endPointReached = false;
     m_deleteBaseSocketOnExit = _deleteBaseSocketOnExit;
@@ -111,7 +111,7 @@ bool Socket_Chain::addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainEl
                       chainElement->isEndPoint());
 }
 
-bool Socket_Chain::addToChain(std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> > sockPairs,
+bool Socket_Chain::addToChain(const std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> &sockPairs,
                               bool deleteFirstSocketOnExit, bool deleteSecondSocketOnExit, bool modeServer, bool detached, bool endPMode)
 {
     if (m_endPointReached)
@@ -201,7 +201,7 @@ int Socket_Chain::shutdownSocket(int mode)
 
 ssize_t Socket_Chain::partialRead(void *data, const size_t &datalen)
 {
-    if (m_socketLayers.size() == 0 && !m_baseSocket)
+    if (m_socketLayers.empty() && !m_baseSocket)
     {
         return -1;
     }
@@ -216,7 +216,7 @@ ssize_t Socket_Chain::partialRead(void *data, const size_t &datalen)
 
 ssize_t Socket_Chain::partialWrite(const void *data, const size_t &datalen)
 {
-    if (m_socketLayers.size() == 0 && !m_baseSocket)
+    if (m_socketLayers.empty() && !m_baseSocket)
     {
         return -1;
     }

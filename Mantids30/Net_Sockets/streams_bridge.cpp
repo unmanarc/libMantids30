@@ -194,7 +194,7 @@ bool Bridge::processPeer(Side currentSide)
     return true;
 }
 
-bool Bridge::setPeer(Side i, std::shared_ptr<Socket_Stream> s)
+bool Bridge::setPeer(Side i, const std::shared_ptr<Socket_Stream> &s)
 {
     if (i > 1)
     {

@@ -16,7 +16,7 @@ public:
         E_STREAMBUFFER_READ_MAXSIZEEXCEED = 4
     };
 
-    BufferedReader(std::shared_ptr<Sockets::Socket_Stream> stream, const size_t &maxBufferSize);
+    BufferedReader(const std::shared_ptr<Sockets::Socket_Stream> &stream, const size_t &maxBufferSize);
     ~BufferedReader();
 
     eStreamBufferReadErrors bufferedReadUntil(void *data, size_t *len, int delimiter);

@@ -118,7 +118,7 @@ bool APIServerConfig::addOverlappedDirectory(std::string internalPath, std::stri
     }
 
     // Add the mapping to our internal structure or configuration
-    m_overlappedDirectories.emplace_back(std::make_pair(internalPath, fsPath));
+    m_overlappedDirectories.emplace_back(internalPath, fsPath);
     return true;
 }
 

@@ -13,13 +13,7 @@ namespace Mantids30::Network::Protocol::HTTP {
 class URLVars : public Memory::Abstract::Vars, public Memory::Streams::Parser
 {
 public:
-    enum eHTTP_URLVarStat
-    {
-        URLV_STAT_WAITING_NAME,
-        URLV_STAT_WAITING_CONTENT
-    };
-
-    static std::shared_ptr<URLVars> create(std::shared_ptr<StreamableObject> value = nullptr);
+    static std::shared_ptr<URLVars> create(const std::shared_ptr<StreamableObject> &value = nullptr);
     ~URLVars() override = default;
 
     /////////////////////////////////////////////////////
@@ -61,7 +55,7 @@ public:
      * @param varName Var Name
      * @param data Variable Data (will be destroyed during URLVars destruction)
      */
-    bool addVar(const std::string &varName, std::shared_ptr<Memory::Containers::B_Chunks> data) override;
+    bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> & data) override;
     /**
      * @brief clear all vars.
      */
@@ -78,9 +72,15 @@ protected:
     bool changeToNextParser() override;
 
 private:
-    URLVars(std::shared_ptr<StreamableObject> value = nullptr);
+    URLVars(const std::shared_ptr<StreamableObject> &value = nullptr);
 
-    eHTTP_URLVarStat m_currentStat = URLV_STAT_WAITING_NAME;
+    enum class URLVarsParsingStatus : uint8_t
+    {
+        WAITING_FOR_NAME,
+        WAITING_FOR_CONTENT
+    };
+
+    URLVarsParsingStatus m_currentStat = URLVarsParsingStatus::WAITING_FOR_NAME;
 
     std::string m_currentVarName;
     std::list<std::pair<std::string, std::shared_ptr<Memory::Containers::B_Chunks>>> m_vars;

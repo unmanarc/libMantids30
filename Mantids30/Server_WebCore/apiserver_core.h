@@ -37,7 +37,7 @@ public:
              *
              * @param callbackFunction The callback function to be invoked.
              */
-            NotificationCallback(bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>)) { this->callbackFunction = callbackFunction; }
+            NotificationCallback(bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &)) { this->callbackFunction = callbackFunction; }
 
             /**
              * @brief call Invokes the callback function with the provided context and socket.
@@ -46,7 +46,7 @@ public:
              * @param sock The socket connection to be processed.
              * @return True if the callback returns true, false otherwise.
              */
-            bool call(void *context, std::shared_ptr<Sockets::Socket_Stream> sock) const
+            bool call(void *context, const std::shared_ptr<Sockets::Socket_Stream> &sock) const
             {
                 if (!callbackFunction)
                 {
@@ -61,7 +61,7 @@ public:
              * @param sock The newly established socket connection.
              * @return True to continue processing the connection, false to cancel it.
              */
-            bool (*callbackFunction)(void *, std::shared_ptr<Sockets::Socket_Stream>) = nullptr;
+             bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &) = nullptr;
         };
 
         NotificationCallback onClientConnected;                   ///< Callback invoked when a new client connects.
@@ -72,7 +72,7 @@ public:
 
     APIServerCore();
 
-    void handleVirtualConnection(std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> virtualString);
+    void handleVirtualConnection(const std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> &virtualConnection);
 
     /**
      * @brief setAcceptMultiThreaded Configures the server to start in multi-threaded mode where the number of threads grows as connections are received.
@@ -111,7 +111,7 @@ public:
     void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
 
 protected:
-    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, std::shared_ptr<Sockets::Socket_Stream> s) { return nullptr; }
+    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Sockets::Socket_Stream> &s) { return nullptr; }
 
     /**
      * @brief checkEngineStatus Check if the engine is properly configured to be started or not.
@@ -142,20 +142,20 @@ private:
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static void handleConnect(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleConnect(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static void handleInitFailed(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleInitFailed(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void handleTimeOut(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleTimeOut(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
 
     /**
      * @brief _onConnectionLimit
      */
-    static void handleConnectionLimit(void *, std::shared_ptr<Sockets::Socket_Stream>);
+    static void handleConnectionLimit(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
 };
 
 } // namespace Mantids30::Network::Servers::Web

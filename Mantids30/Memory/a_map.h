@@ -20,7 +20,7 @@ public:
      * @param variableName The name of the variable.
      * @param submap A shared pointer to the submap.
      */
-    void insertOrUpdateSubmap(const std::string &variableName, std::shared_ptr<VariableMap> vars);
+    void insertOrUpdateSubmap(const std::string &variableName, const std::shared_ptr<VariableMap> &vars);
 
     /**
      * @brief Create or update a variable from a string representation based on its type.
@@ -35,7 +35,7 @@ public:
      * @param variableName The name of the variable.
      * @param variable A shared pointer to the variable.
      */
-    void insertOrUpdateVariable(const std::string &variableName, std::shared_ptr<Var> variable);
+    void insertOrUpdateVariable(const std::string &variableName, const std::shared_ptr<Var> &variable);
 
     /**
      * @brief Retrieve the string representation of a variable.

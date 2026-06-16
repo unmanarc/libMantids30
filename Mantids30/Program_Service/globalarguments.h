@@ -82,7 +82,7 @@ public:
      * @param var Add Variable Pointer (abstract)
      * @return true if added, false if not
      */
-    bool addStaticVariable(const std::string &name, std::shared_ptr<Memory::Abstract::Var> var);
+    bool addStaticVariable(const std::string &name, const std::shared_ptr<Memory::Abstract::Var> &var);
     /**
      * @brief getStaticVariable Get static variable
      * @param name Variable Name

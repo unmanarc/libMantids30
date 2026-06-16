@@ -34,7 +34,7 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-APIServer_ClientHandler::APIServer_ClientHandler(void *parent, std::shared_ptr<StreamableObject> sock)
+APIServer_ClientHandler::APIServer_ClientHandler(void *parent, const std::shared_ptr<StreamableObject> &sock)
     : HTTPv1_Server(sock)
 {}
 

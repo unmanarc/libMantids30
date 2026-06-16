@@ -83,12 +83,12 @@ std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> APIServer
     return m_listenerSockets;
 }
 
-void APIServerCore::handleVirtualConnection(std::shared_ptr<Sockets::Socket_Stream_Dummy> virtualConnection)
+void APIServerCore::handleVirtualConnection(const std::shared_ptr<Sockets::Socket_Stream_Dummy> &virtualConnection)
 {
     handleConnect(this, virtualConnection);
 }
 
-void APIServerCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket_Stream> sock)
+void APIServerCore::handleConnect(void *context, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
 
@@ -117,13 +117,13 @@ void APIServerCore::handleConnect(void *context, std::shared_ptr<Sockets::Socket
     }
 }
 
-void APIServerCore::handleInitFailed(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
+void APIServerCore::handleInitFailed(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     webserver->callbacks.onProtocolInitializationFailure.call(webserver, s);
 }
 
-void APIServerCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
+void APIServerCore::handleTimeOut(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))
@@ -136,7 +136,7 @@ void APIServerCore::handleTimeOut(void *context, std::shared_ptr<Sockets::Socket
     }
 }
 
-void APIServerCore::handleConnectionLimit(void *context, std::shared_ptr<Sockets::Socket_Stream> s)
+void APIServerCore::handleConnectionLimit(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))

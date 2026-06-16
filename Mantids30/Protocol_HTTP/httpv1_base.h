@@ -307,7 +307,7 @@ public:
          * @brief Set the container used for transmitting data.
          * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-        void setDataStreamer(std::shared_ptr<Memory::Streams::StreamableObject> dataStream)
+         void setDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
         {
             if (!dataStream)
             {
@@ -452,7 +452,7 @@ public:
         bool includeDate = true;
     };
 
-    HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);
+    HTTPv1_Base(bool clientMode, const std::shared_ptr<Memory::Streams::StreamableObject> &sobject);
     ~HTTPv1_Base() override = default;
 
     Request clientRequest;

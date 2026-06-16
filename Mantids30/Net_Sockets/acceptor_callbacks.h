@@ -4,9 +4,8 @@
 
 namespace Mantids30::Network::Sockets::Acceptors {
 
-//typedef bool (*_callbackConnectionRB)(void *, std::shared_ptr<Sockets::Socket_Stream>);
-typedef void (*_callbackConnectionRV)(void *, std::shared_ptr<Sockets::Socket_Stream>);
-typedef void (*_callbackConnectionLimit)(void *, std::shared_ptr<Sockets::Socket_Stream>);
+using _callbackConnectionRV = void (*)(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
+using _callbackConnectionLimit = void (*)(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
 
 class StreamAcceptorThreadCallbacks
 {

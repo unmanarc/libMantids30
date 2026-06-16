@@ -82,7 +82,7 @@ Memory::Streams::SubParser::ParseResult RequestLine::parse()
 
 void RequestLine::parseURI()
 {
-    size_t found = m_requestURI.find("?");
+    size_t found = m_requestURI.find('?');
 
     if (found != std::string::npos)
     {

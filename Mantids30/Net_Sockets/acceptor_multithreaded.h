@@ -64,7 +64,7 @@ public:
     /**
      * Finalize/Catch the client thread element (when it finishes).
      */
-    bool finalizeThreadElement(std::shared_ptr<StreamAcceptorThread> x);
+    bool finalizeThreadElement(const std::shared_ptr<StreamAcceptorThread> &x);
 
     /**
      * @brief The Config class holds configuration parameters for managing concurrency,
@@ -172,7 +172,7 @@ public:
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc, size_t socketIndex);
 
-    bool processClient(std::shared_ptr<Sockets::Socket_Stream> clientSocket, std::shared_ptr<StreamAcceptorThread> clientThread);
+    bool processClient(const std::shared_ptr<Sockets::Socket_Stream> & clientSocket, const std::shared_ptr<StreamAcceptorThread> & clientThread);
 
     uint32_t incrementIPUsage(const std::string &ipAddr);
     void decrementIPUsage(const std::string &ipAddr);
