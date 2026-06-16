@@ -52,7 +52,7 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    unsigned char m_macaddr[ETH_ALEN];
+    unsigned char m_macaddr[ETH_ALEN]{0,0,0,0,0,0};
     Threads::Sync::Mutex_Shared m_mutex;
 };
 

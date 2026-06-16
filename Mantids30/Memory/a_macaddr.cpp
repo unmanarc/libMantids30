@@ -16,7 +16,6 @@ using namespace Mantids30::Memory::Abstract;
 MACADDR::MACADDR()
 {
     setVarType(TYPE_MACADDR);
-    memset(m_macaddr, 0, sizeof(m_macaddr));
 }
 
 MACADDR::MACADDR(const unsigned char *macaddr)
