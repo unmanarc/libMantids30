@@ -22,7 +22,6 @@ RPCClientImpl::RPCClientImpl()
 {
     m_getClientConfigCmd = "getClientConfig";
     m_updateClientConfigLoadTimeCmd = "updateClientConfigLoadTime";
-    m_failedToRetrieveC2Config = false;
 }
 
 void RPCClientImpl::runRPClient()
@@ -185,7 +184,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
     json jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
-    if (rpcError["succeed"].asBool() == true)
+    if (rpcError["succeed"].asBool())
     {
         // Translate this config to the configuration file...
         std::string sRemoteConfig = jRemoteConfig.toStyledString();

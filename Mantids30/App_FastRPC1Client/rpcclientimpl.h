@@ -73,6 +73,6 @@ protected:
 
     Mantids30::Network::Protocol::FastRPC::FastRPC1 m_fastRPC;
     json m_jRetrievedConfig;
-    std::atomic<bool> m_failedToRetrieveC2Config;
+    std::atomic<bool> m_failedToRetrieveC2Config{false};
 };
 } // namespace Mantids30::Applications::FastRPC1
