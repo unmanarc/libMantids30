@@ -12,29 +12,32 @@
 
 // Define STDOUT_FILENO/STDERR_FILENO:
 #include <unistd.h>
-
-#define APPEXEC_NOERR 0
-#define APPEXEC_ERR_CREATEPIPE 1
-#define APPEXEC_ERR_SETHANDLEINFORMATION 2
-#define APPEXEC_ERR_WAITFORSINGLEOBJECT 3
-#define APPEXEC_UNKNOWN 4
-#define APPEXEC_ERR_CREATEPROCESS 5
+#include <cstdint>
 
 namespace Mantids30::Helpers {
 
 class AppExec
 {
 public:
-    struct sAppExecResult
+    enum class Status : uint8_t {
+        SUCCESS = 0,
+        PIPE_CREATION_FAILED = 1,
+        HANDLE_INFORMATION_SETTING_FAILED = 2,
+        WAIT_FOR_PROCESS_FAILED = 3,
+        UNKNOWN_ERROR = 4,
+        PROCESS_CREATION_FAILED = 5
+    };
+
+    struct ExecutionResult
     {
         // Command output
         std::string output;
 
         // Result (usually 0: success)
-        int result;
+        int exitCode;
 
-        // Errors (DEFINED):
-        int error;
+        // Execution Status (DEFINED):
+        AppExec::Status status;
     };
 
     struct sAppExecCmd
@@ -49,7 +52,7 @@ public:
      * @param cmd
      * @return command execution result and output
      */
-    static sAppExecResult blexec(const sAppExecCmd &cmd);
+    static ExecutionResult blexec(const sAppExecCmd &cmd);
 };
 
 #ifndef _WIN32
@@ -121,13 +124,13 @@ private:
     std::string m_execPath;
     std::vector<std::string> m_arguments;
     std::vector<std::string> m_environment;
-    pid_t m_childPid;
-    posix_spawnattr_t m_attr;
+    pid_t m_childPid{0};
+    posix_spawnattr_t m_attr{};
     posix_spawnattr_t *m_attrp = nullptr;
-    posix_spawn_file_actions_t m_fileActions;
+    posix_spawn_file_actions_t m_fileActions{};
     posix_spawn_file_actions_t *m_fileActionsp = nullptr;
-    int m_piStdOut[2];
-    int m_piStdErr[2];
+    int m_piStdOut[2]{0,0};
+    int m_piStdErr[2]{0,0};
     std::vector<pollfd> m_plist;
 };
 #endif

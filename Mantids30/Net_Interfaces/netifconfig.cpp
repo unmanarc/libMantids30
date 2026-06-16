@@ -136,7 +136,7 @@ bool NetworkInterfaceConfiguration::apply()
 #else
     if (changeIPv4Addr)
     {
-        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
+        ExecutionResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
                                                                                Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
         if (i.error == 0)
             changeIPv4Addr = false;
@@ -149,7 +149,7 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeMTU)
     {
-        sAppExecResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
+        ExecutionResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
         if (i.error == 0)
             changeMTU = false;
         else

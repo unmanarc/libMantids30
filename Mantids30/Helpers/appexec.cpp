@@ -40,26 +40,26 @@ struct sAppPIPE
 
         return r;
     }
-    int init()
+    Mantids30::Helpers::AppExec::Status init()
     {
         SECURITY_ATTRIBUTES secAttribs = createInheritedSecAttribs();
 
         if (!CreatePipe(&hRead, &hWrite, &secAttribs, 0))
-            return APPEXEC_ERR_CREATEPIPE;
+            return Mantids30::Helpers::AppExec::Status::PIPE_CREATION_FAILED;
 
         if (!SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0))
-            return APPEXEC_ERR_SETHANDLEINFORMATION;
+            return Mantids30::Helpers::AppExec::Status::HANDLE_INFORMATION_SETTING_FAILED;
 
-        return 0;
+        return Mantids30::Helpers::AppExec::Status::SUCCESS;
     }
 
     HANDLE hRead, hWrite;
 };
 #endif
 
-Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(const sAppExecCmd &cmd)
+Mantids30::Helpers::AppExec::ExecutionResult Mantids30::Helpers::AppExec::blexec(const sAppExecCmd &cmd)
 {
-    sAppExecResult rt;
+    ExecutionResult rt;
 
 #ifdef _WIN32
     ///////////////////////////////////////////////////////////////////////////////////
@@ -70,8 +70,8 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     std::string sCmd;
 
     rt.output = "";
-    rt.result = -1;
-    rt.error = APPEXEC_UNKNOWN;
+    rt.exitCode = -1;
+    rt.status = AppExec::Status::UNKNOWN_ERROR;
 
     // Structs sanitization:
     memset(&runningProcInfo, 0, sizeof(PROCESS_INFORMATION));
@@ -87,8 +87,8 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Initialize the pipes for getting the process output:
-    int err;
-    if ((err = pipes.init()) != 0)
+    AppExec::Status err;
+    if ((err = pipes.init()) != AppExec::Status::SUCCESS)
         return {"", -1, err};
 
     procInteractParams.cb = sizeof(STARTUPINFO);
@@ -103,7 +103,7 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
                         &procInteractParams, // STARTUPINFO process interaction
                         &runningProcInfo))
     {
-        return {"", -1, APPEXEC_ERR_CREATEPROCESS};
+        return {"", -1, AppExec::Status::PROCESS_CREATION_FAILED};
     }
 
     CloseHandle(pipes.hWrite);
@@ -126,14 +126,14 @@ Mantids30::Helpers::AppExec::sAppExecResult Mantids30::Helpers::AppExec::blexec(
     {
         CloseHandle(runningProcInfo.hThread);
         CloseHandle(runningProcInfo.hProcess);
-        return {"", -1, APPEXEC_ERR_WAITFORSINGLEOBJECT};
+        return {"", -1, AppExec::Status::WAIT_FOR_PROCESS_FAILED};
     }
 
     DWORD lpExitCode;
     GetExitCodeProcess(runningProcInfo.hProcess, &lpExitCode);
 
-    rt.result = lpExitCode;
-    rt.error = APPEXEC_NOERR;
+    rt.exitCode = lpExitCode;
+    rt.status = AppExec::Status::SUCCESS;
 
     CloseHandle(runningProcInfo.hThread);
     CloseHandle(runningProcInfo.hProcess);
@@ -317,15 +317,15 @@ std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
     std::set<int> r;
     if (poll(&m_plist[0], m_plist.size(), -1) > 0)
     {
-        for (size_t i = 0; i < m_plist.size(); i++)
+        for (auto & i : m_plist)
         {
-            if ((m_plist[i].revents & POLLIN) != 0)
+            if ((i.revents & POLLIN) != 0)
             {
-                if (m_plist[i].fd == m_piStdOut[0])
+                if (i.fd == m_piStdOut[0])
                 {
                     r.insert(STDOUT_FILENO);
                 }
-                else if (m_plist[i].fd == m_piStdErr[0])
+                else if (i.fd == m_piStdErr[0])
                 {
                     r.insert(STDERR_FILENO);
                 }
