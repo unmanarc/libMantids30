@@ -30,7 +30,7 @@ private:
      * @brief toString Convert the cookie to string to send on headers.
      * @return string with cookies.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     void parseCookie(std::string cookie);
     std::map<std::string, std::string> m_cookiesMap;

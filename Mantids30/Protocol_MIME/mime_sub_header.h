@@ -53,18 +53,18 @@ public:
 
     void addSubVar(const std::string &varName, const std::string &varValue);
 
-    std::string getUpperName() const;
+    [[nodiscard]] std::string getUpperName() const;
 
-    std::string getOrigName() const;
+    [[nodiscard]] std::string getOrigName() const;
     void setOrigName(const std::string &value);
 
-    std::string getValue() const;
+    [[nodiscard]] std::string getValue() const;
     void setValue(const std::string &value);
 
-    std::string getOrigValue() const;
+    [[nodiscard]] std::string getOrigValue() const;
     void setOrigValue(const std::string &value);
 
-    uint64_t getMaxSubOptions() const;
+    [[nodiscard]] uint64_t getMaxSubOptions() const;
     void setMaxSubOptions(const uint64_t &value);
 
 private:

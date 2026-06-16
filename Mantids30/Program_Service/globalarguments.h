@@ -113,27 +113,27 @@ public:
     std::string getCurrentProgramOptionsValuesAsBashLine(bool removeInstall = false);
 
     // Wait forever functions:
-    bool isInifiniteWaitAtEnd() const;
+    [[nodiscard]] bool isInifiniteWaitAtEnd() const;
     void setInifiniteWaitAtEnd(bool value);
 
     /**
      * @brief getDefaultHelpOption Get Default option to be used for help (Eg. help for --help)
      * @return default help option
      */
-    std::string getDefaultHelpOption() const;
+    [[nodiscard]] std::string getDefaultHelpOption() const;
     void setDefaultHelpOption(const std::string &value);
 
 #ifndef _WIN32
     void setUid(uint16_t newUid);
     void setGid(uint16_t newGid);
-    uint16_t getUid() const;
-    uint16_t getGid() const;
+    [[nodiscard]] uint16_t getUid() const;
+    [[nodiscard]] uint16_t getGid() const;
 
     /**
      * @brief getDefaultDaemonOption Get Default option to deamon compatible (Eg. daemon for --daemon)
      * @return default daemon option
      */
-    std::string getDefaultDaemonOption() const;
+    [[nodiscard]] std::string getDefaultDaemonOption() const;
     void setDefaultDaemonOption(const std::string &value);
 #endif
 

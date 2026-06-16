@@ -103,7 +103,7 @@ public:
     Callbacks callbacks;    ///< The callbacks object used by the web server.
     APIServerConfig config; ///< The api server configuration parameters
 
-    std::list<std::shared_ptr<Sockets::Socket_Stream>> getListenerSockets() const;
+    [[nodiscard]] std::list<std::shared_ptr<Sockets::Socket_Stream>> getListenerSockets() const;
     /**
      * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
      * @param newWebsocketEndpoints

@@ -72,14 +72,14 @@ public:
      *
      * @return true if the X-Frame-Options header is not activated, false otherwise.
      */
-    bool isNotActivated() const;
+    [[nodiscard]] bool isNotActivated() const;
 
     /**
      * @brief Returns the X-Frame-Options header as a string value.
      *
      * @return The X-Frame-Options header as a string value.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     /**
      * @brief Parses the given X-Frame-Options header string and sets the options accordingly.

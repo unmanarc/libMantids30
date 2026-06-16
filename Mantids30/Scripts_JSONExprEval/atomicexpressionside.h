@@ -24,15 +24,15 @@ public:
     AtomicExpressionSide(const std::shared_ptr<std::vector<std::string>> &staticTexts);
 
     bool calcMode();
-    std::string getExpr() const;
+    [[nodiscard]] std::string getExpr() const;
     void setExpr(const std::string &value);
 
     std::set<std::string> resolve(const json &v, bool resolveRegex, bool ignoreCase);
 
-    std::shared_ptr<boost::regex> getRegexp() const;
+    [[nodiscard]] std::shared_ptr<boost::regex> getRegexp() const;
     void setRegexp(const std::shared_ptr<boost::regex> &value);
 
-    eExpressionSideMode getMode() const;
+    [[nodiscard]] eExpressionSideMode getMode() const;
 
 private:
     std::set<std::string> recompileRegex(const std::string &r, bool ignoreCase);

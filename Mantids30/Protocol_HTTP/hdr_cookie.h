@@ -30,7 +30,7 @@ public:
      * @param cookieName Name of the cookie
      * @return string value for the http header.
      */
-    std::string toSetCookieString(const std::string &cookieName) const;
+    [[nodiscard]] std::string toSetCookieString(const std::string &cookieName) const;
     /**
      * @brief fromSetCookieString Parse cookie from the HTTP Cookie: string  (after the Cookie:)
      * @param setCookieValue cookie value
@@ -43,7 +43,7 @@ public:
      * @brief getExpiration Get Expiration
      * @return Unix Time for the Expiration, nullopt if it's a session cookie, and 0 if it's marked to be removed.
      */
-    std::optional<time_t> getExpiration() const;
+    [[nodiscard]] std::optional<time_t> getExpiration() const;
     /**
      * @brief setAsSessionCookie Set the cookie as a session cookie
      */

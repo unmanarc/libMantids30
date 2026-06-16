@@ -37,10 +37,10 @@ public:
         RotateSchedule rotationSchedule;
 
         void setMaxFileSize(const std::string &maxFileSize);
-        size_t getMaxFileSize() const;
+        [[nodiscard]] size_t getMaxFileSize() const;
 
         void setLogFormat(const std::string &logFormat);
-        LogFormat getLogFormat() const;
+        [[nodiscard]] LogFormat getLogFormat() const;
 
         // Log Path:
         std::string logDirectory = "/var/log";

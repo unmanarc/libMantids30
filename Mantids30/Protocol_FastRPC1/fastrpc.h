@@ -130,7 +130,7 @@ public:
      * @brief getPingInterval Get ping interval
      * @return ping interval in seconds
      */
-    uint32_t getPingInterval() const;
+    [[nodiscard]] uint32_t getPingInterval() const;
 
     /**
      * @brief processConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
@@ -215,7 +215,7 @@ public:
      * @brief getReadTimeout Get R/W Timeout
      * @return W/R timeout in seconds
      */
-    uint32_t getRWTimeout() const;
+    [[nodiscard]] uint32_t getRWTimeout() const;
     /**
      * @brief setRWTimeout   This timeout will be setted on processConnection, call this function before that.
      *
@@ -234,7 +234,7 @@ public:
      * @brief getOverwriteObject
      * @return
      */
-    std::shared_ptr<void> getOverwriteObject() const;
+    [[nodiscard]] std::shared_ptr<void> getOverwriteObject() const;
     /**
      * @brief setOverwriteObject Set overwrite object for functions
      * @param newOverwriteObject object.

@@ -26,7 +26,7 @@ public:
      *
      * @return The time as seconds since the Unix epoch.
      */
-    time_t getUnixTime() const;
+    [[nodiscard]] time_t getUnixTime() const;
 
     /**
      * @brief Sets the time stored in the Date object to the given value as seconds since the Unix epoch.
@@ -40,7 +40,7 @@ public:
      *
      * @return The string representation of the date.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     /**
      * @brief Parses a string in HTTP format and sets the Date object to the corresponding date.

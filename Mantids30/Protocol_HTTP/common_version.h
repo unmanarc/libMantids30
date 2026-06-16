@@ -31,14 +31,14 @@ public:
      *
      * @return The HTTP version as a string.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
 
     /**
      * @brief Returns the minor version number.
      *
      * @return The minor version number.
      */
-    uint16_t getMinor() const;
+    [[nodiscard]] uint16_t getMinor() const;
 
     /**
      * @brief Sets the minor version number to the given value.
@@ -59,7 +59,7 @@ public:
      *
      * @return The major version number.
      */
-    uint16_t getMajor() const;
+    [[nodiscard]] uint16_t getMajor() const;
 
     /**
      * @brief Sets the major version number to the given value.
@@ -73,7 +73,7 @@ public:
      *
      * @return A JSON representation of the Version object.
      */
-    std::string toJSON() const
+    [[nodiscard]] std::string toJSON() const
     {
         Json::Value root;
         root["major"] = static_cast<int>(m_majorVersion);

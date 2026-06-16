@@ -45,7 +45,7 @@ public:
      * Returns the program version.
      * @return Program version.
      */
-    std::string getVersion() const;
+    [[nodiscard]] std::string getVersion() const;
 
     /**
      * Sets the program version.
@@ -66,7 +66,7 @@ public:
      * Returns the daemon name.
      * @return Daemon name.
      */
-    std::string getDaemonName() const;
+    [[nodiscard]] std::string getDaemonName() const;
 
     /**
      * Sets the daemon name.

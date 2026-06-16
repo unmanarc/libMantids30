@@ -48,7 +48,7 @@ public:
      *
      * @return The GC wait time in milliseconds.
      */
-    uint32_t getGcWaitTime() const;
+    [[nodiscard]] uint32_t getGcWaitTime() const;
     /**
      * @brief Sets the garbage collection (GC) wait time.
      *
@@ -59,10 +59,10 @@ public:
      */
     void setGcWaitTime(const uint32_t &value);
 
-    uint32_t getMaxInactiveSeconds() const;
+    [[nodiscard]] uint32_t getMaxInactiveSeconds() const;
     void setMaxInactiveSeconds(const uint32_t &value);
 
-    uint32_t getMaxSessionsPerUser() const;
+    [[nodiscard]] uint32_t getMaxSessionsPerUser() const;
     void setMaxSessionsPerUser(const uint32_t &value);
 
     //void impersonateSession(const std::string & sessionID,std::shared_ptr<Sessions::Session> impersonatedSession);

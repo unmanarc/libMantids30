@@ -30,7 +30,7 @@ public:
      *
      * @return The X-XSS-Protection header as a string value.
      */
-    std::string toString() const;
+    [[nodiscard]] std::string toString() const;
     /**
      * @brief Parses the given X-XSS-Protection header string and sets the options accordingly.
      *

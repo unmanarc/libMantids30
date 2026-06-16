@@ -23,12 +23,12 @@ public:
     bool compile(std::string expr);
     bool evaluate(const json &values);
 
-    std::string getLastCompilerError() const;
+    [[nodiscard]] std::string getLastCompilerError() const;
 
-    bool isCompiled() const;
+    [[nodiscard]] bool isCompiled() const;
 
 private:
-    bool calcNegative(bool r) const;
+    [[nodiscard]] bool calcNegative(bool r) const;
 
     /**
      * @brief detectSubExpr Detect and replace sub expression

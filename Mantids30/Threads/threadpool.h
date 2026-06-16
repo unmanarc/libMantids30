@@ -26,7 +26,7 @@ public:
             data = nullptr;
         }
 
-        bool isNull() const { return task == nullptr && data == nullptr; }
+        [[nodiscard]] bool isNull() const { return task == nullptr && data == nullptr; }
 
         void (*task)(const std::shared_ptr<void> &);
         std::shared_ptr<void> data;
@@ -76,7 +76,7 @@ public:
      *        Each queue operates in a wait mode and will reject additional tasks if this limit is exceeded.
      * @return Maximum number of tasks per queue.
      */
-    uint32_t getMaxTasksPerQueue() const;
+    [[nodiscard]] uint32_t getMaxTasksPerQueue() const;
     /**
      * @brief setMaxTasksPerQueue Sets the maximum number of tasks that a single queue can store.
      *        This value determines the queue capacity and helps prevent overload by limiting queued tasks.
