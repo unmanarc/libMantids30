@@ -27,7 +27,7 @@ public:
     APIServerConfig() = default;
     ~APIServerConfig();
 
-    typedef Protocol::HTTP::Status::Code (*DynamicInitialChecks)(Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response);
+    using DynamicInitialChecks = Protocol::HTTP::Status::Code (*)(Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response);
     DynamicInitialChecks dynamicInitialChecks = nullptr;
 
     /**
@@ -41,7 +41,7 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicTokenValidatorFunction)(const std::string &token, const std::string &apikey, DataFormat::JWT::Token *accessToken);
+    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, const std::string &apikey, DataFormat::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.
@@ -59,7 +59,7 @@ public:
      * @param apikey The API key associated with the request.
      * @return true if the origin is valid for the given API key, false otherwise.
      */
-    typedef bool (*DynamicOriginValidatorFunction)(const std::string &origin, const std::string &apikey, const std::set<std::string> &permittedAPIOrigins);
+    using DynamicOriginValidatorFunction = bool (*)(const std::string &origin, const std::string &apikey, const std::set<std::string> &permittedAPIOrigins);
 
     /**
      * @brief The dynamic origin validator callback function.
@@ -244,8 +244,8 @@ public:
      * The handler returns a value of type `Protocol::HTTP::Status::Code` representing the
      * response status code.
      */
-    typedef Protocol::HTTP::Status::Code (*DynamicRequestHandler)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request,
-                                                                  Protocol::HTTP::HTTPv1_Base::Response *response, std::shared_ptr<void> obj);
+    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request,
+                                                                   Protocol::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> & obj);
 
     struct DynamicRequestHandlerDef
     {
@@ -333,10 +333,10 @@ public:
      *
      * @return const std::list<std::pair<std::string, std::string>>& The list of overlapped directories.
      */
-    const std::list<std::pair<std::string, std::string>> &getOverlappedDirectories() const;
+    [[nodiscard]] const std::list<std::pair<std::string, std::string>> &getOverlappedDirectories() const;
 
-    std::string getDocumentRootPath() const;
-    bool isDocumentRootPathAccesible() const;
+    [[nodiscard]] std::string getDocumentRootPath() const;
+    [[nodiscard]] bool isDocumentRootPathAccesible() const;
 
 private:
     /**
