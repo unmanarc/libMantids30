@@ -25,9 +25,9 @@ public:
     eStreamBufferReadErrors readLineCR(std::string *str, int delimiter = '\r');
     eStreamBufferReadErrors readLineLF(std::string *str, int delimiter = '\n');
 
-    bool getBufferOK() const;
+    [[nodiscard]] bool getBufferOK() const;
 
-    size_t getBufferSize() const;
+    [[nodiscard]] size_t getBufferSize() const;
 
 private:
     eStreamBufferReadErrors displaceAndCopy(void *data, size_t *len, size_t dlen);

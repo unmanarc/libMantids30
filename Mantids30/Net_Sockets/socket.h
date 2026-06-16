@@ -99,7 +99,7 @@ public:
      * Check if we have an initialized socket.
      * @return true if the socket is a valid file descriptor
      */
-    bool isActive() const;
+    [[nodiscard]] bool isActive() const;
     /**
      * Check if the remote pair is connected or not.
      * @param true if is it connected
@@ -108,7 +108,7 @@ public:
 
     struct AddressAndPort
     {
-        std::string toString() const { return address + ":" + std::to_string(port); }
+        [[nodiscard]] std::string toString() const { return address + ":" + std::to_string(port); }
         std::string address;
         uint16_t port = 0;
     };
@@ -149,13 +149,13 @@ public:
      * Get last error message
      * @param last error message pointer. (static mem)
      */
-    std::string getLastError() const;
+    [[nodiscard]] std::string getLastError() const;
 
     /**
      * @brief Get the last bind address and port in normalized string format.
      * @return A string in the format "IP:Port".
      */
-    std::string getLastBindAddress() const;
+    [[nodiscard]] std::string getLastBindAddress() const;
 
     /**
      * @brief getRemotePairStr Non-Efficient get remote pair string (useful only for cheap print operations)
@@ -172,7 +172,7 @@ public:
      * @brief getRemotePort Get Remote Port for listening connections
      * @return remote port 0-65535
      */
-    unsigned short getRemotePort() const;
+    [[nodiscard]] unsigned short getRemotePort() const;
     /**
      * Set remote port
      * Used by internal functions...
@@ -289,7 +289,7 @@ public:
      * @brief getUseIPv6 Get if using IPv6 Functions
      * @return true if using IPv6
      */
-    bool getUseIPv6() const;
+    [[nodiscard]] bool getUseIPv6() const;
     /**
      * @brief setUseIPv6 Set socket to use IPv6 (default: false), must be called before connect/listen functions.
      * note: some protocols like unix sockets does not use ipv6 at all.
@@ -307,7 +307,7 @@ public:
      *
      * @return The name associated with this connection.
      */
-    std::string getConnectionName() const;
+    [[nodiscard]] std::string getConnectionName() const;
 
     /**
      * @brief Set a name for this connection.

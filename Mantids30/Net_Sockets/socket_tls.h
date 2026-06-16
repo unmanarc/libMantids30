@@ -62,7 +62,7 @@ public:
 
         struct PSKServerWallet
         {
-            typedef bool (*cbPSK)(void *data, const std::string &id, std::string *psk);
+            using cbPSK = bool (*)(void *data, const std::string &id, std::string *psk);
 
             ~PSKServerWallet()
             {
@@ -246,7 +246,7 @@ public:
          * @brief getTLSCipherList Get the TLS Cipher List
          * @return configured TLS cipher list (openssl format)
          */
-        const std::string &getTLSCipherList() const;
+        [[nodiscard]] const std::string &getTLSCipherList() const;
         /**
          * @brief setTLSCipherList Set the TLS Cipher List
          * @param newSTLSCipherList  TLS cipher list string (openssl format)
@@ -256,7 +256,7 @@ public:
          * @brief getCAPath Get Certificate Authority File Path
          * @return Certificate Authority File Path
          */
-        const std::string &getCAPath() const;
+        [[nodiscard]] const std::string &getCAPath() const;
         /**
          * @brief loadCAFromPEMFile Load Certificate Authority from PEM formatted file (the file must survive until the end of the connection)
          * @param newSTLSCertificateAuthorityPath Certificate Authority File Path
@@ -274,7 +274,7 @@ public:
          * @brief getVerifyMaxDepth Get Verify Max Depth
          * @return max number of intermediary CA's
          */
-        int getVerifyMaxDepth() const;
+        [[nodiscard]] int getVerifyMaxDepth() const;
         /**
          * @brief setVerifyMaxDepth Set Verify Max Depth
          * @param newIVerifyMaxDepth max number of intermediary CA's
@@ -291,7 +291,7 @@ public:
          */
         PSKClientValue *getPSKClientValue();
 
-        const PSKClientValue *getPSKClientValue() const;
+        [[nodiscard]] const PSKClientValue *getPSKClientValue() const;
 
         /**
          * @brief getPSKServerWallet
@@ -299,13 +299,13 @@ public:
          */
         PSKServerWallet *getPSKServerWallet();
 
-        const PSKServerWallet *getPSKServerWallet() const;
+        [[nodiscard]] const PSKServerWallet *getPSKServerWallet() const;
 
         /**
          * @brief getSecurityLevel Get OpenSSL Security Level
          * @return Locally Configured Security Level
          */
-        int getSecurityLevel() const;
+        [[nodiscard]] int getSecurityLevel() const;
         /**
          * @brief setSecurityLevel Set the locally configured security level for openssl (documentation taken from https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_security_level.html)
          * @param newSecurityLevel
@@ -342,7 +342,7 @@ public:
          * @brief getMinProtocolVersion Get Minimum TLS Protocol Version
          * @return Minimum TLS Protocol Version (in openssl define version eg. TLS1_2_VERSION)
          */
-        int getMinProtocolVersion() const;
+        [[nodiscard]] int getMinProtocolVersion() const;
         /**
          * @brief setMinProtocolVersion Set the Minimum TLS Protocol Version
          * @param newMinProtocolVersion TLS Protocol Version (in openssl define version eg. TLS1_2_VERSION)
@@ -352,7 +352,7 @@ public:
          * @brief getMaxProtocolVersion Get the Max TLS Protocol Version
          * @return TLS Max Protocol Version (in openssl define version eg. TLS1_2_VERSION)
          */
-        int getMaxProtocolVersion() const;
+        [[nodiscard]] int getMaxProtocolVersion() const;
         /**
          * @brief setMaxProtocolVersion Set the Max TLS Protocol Version
          * @param newMaxProtocolVersion  TLS Max Protocol Version (in openssl define version eg. TLS1_3_VERSION)
@@ -362,7 +362,7 @@ public:
          * @brief getUseSystemCertificates Get if using default verify locations
          * @return true for using default verify locations
          */
-        bool getUseSystemCertificates() const;
+        [[nodiscard]] bool getUseSystemCertificates() const;
         /**
          * @brief setUseSystemCertificates Set to use default verify locations (default: false)
          * @param newBVerifyDefaultLocations true to use default verify locations
@@ -372,7 +372,7 @@ public:
          * @brief getTLSSharedGroups Get the locally configured TLSv1.3 Shared Groups
          * @return locally configured groups by setTLSSharedGroups
          */
-        const std::string &getTLSSharedGroups() const;
+        [[nodiscard]] const std::string &getTLSSharedGroups() const;
         /**
          * @brief setTLSSharedGroups Set TLSv1.3 Shared Groups (P-256, P-384, P-521, X25519, X448, ffdhe2048, ffdhe3072, ffdhe4096, ffdhe6144, ffdhe8192)
          * @param newSTLSSharedGroups groups separated by :
@@ -382,14 +382,14 @@ public:
          * @brief getSTLSCipherSuites Get locally configured TLSv1.3 Cipher Suites
          * @return string with ciphersuites (ref. https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_cipher_list.html)
          */
-        const std::string &getSTLSCipherSuites() const;
+        [[nodiscard]] const std::string &getSTLSCipherSuites() const;
         /**
          * @brief setSTLSCipherSuites Set locally configured TLSv1.3 cipher suites
          * @param newSTLSCipherSuites string with ciphersuites (ref. https://www.openssl.org/docs/man1.1.1/man3/SSL_CTX_set_cipher_list.html)
          */
         void setSTLSCipherSuites(const std::string &newSTLSCipherSuites);
 
-        bool getValidateServerHostname() const;
+        [[nodiscard]] bool getValidateServerHostname() const;
         void setValidateServerHostname(bool newValidateServerHostname);
 
     private:
@@ -397,7 +397,7 @@ public:
          * @brief get_dh4096 Get the default configured Diffie Hellman 4096bit parameter
          * @return diffie hellman key.
          */
-        static DH *get_dh4096(void);
+        static DH *get_dh4096();
 
         // SSL Key Parameters
         DH *m_dhParameter = nullptr;
@@ -449,11 +449,11 @@ public:
 
     TLSKeyParameters tlsKeys;
 
-    enum eCertValidationOptions
+    enum class X509ValidationOption : uint8_t
     {
-        CERT_X509_VALIDATE,
-        CERT_X509_CHECKANDPASS,
-        CERT_X509_NOVALIDATE
+        VALIDATE,
+        CHECKANDPASS,
+        NOVALIDATE
     };
 
     /**
@@ -560,12 +560,12 @@ public:
      * @brief getCertValidation Get if we are accepting Invalid Server Certificates
      * @return Validation Option (validate, not validate or validate but ignore)
      */
-    eCertValidationOptions getCertValidation() const;
+    X509ValidationOption getCertValidation() const;
     /**
      * @brief setCertValidation Set if we are accepting Invalid Server Certificates
      * @param newCertValidation (validate, not validate or validate but ignore)
      */
-    void setCertValidation(eCertValidationOptions newCertValidation);
+    void setCertValidation(X509ValidationOption newCertValidation);
 
     bool isServer() const;
 
@@ -593,7 +593,7 @@ protected:
 
     Socket_TLS *m_tlsParentConnection;
 
-    eCertValidationOptions m_certValidationOptions = CERT_X509_VALIDATE;
+    X509ValidationOption m_certValidationOptions = X509ValidationOption::VALIDATE;
     SSL *m_sslHandler = nullptr;
     SSL_CTX *m_sslContext = nullptr;
     SSL_CTX *createServerSSLContext();

@@ -40,7 +40,7 @@ Socket_TLS::Socket_TLS()
     pthread_sigmask(SIG_BLOCK, &set, NULL);
 #endif
 
-    setCertValidation(CERT_X509_VALIDATE);
+    setCertValidation(X509ValidationOption::VALIDATE);
 }
 
 Socket_TLS::~Socket_TLS()
@@ -108,12 +108,12 @@ bool Socket_TLS::postConnectSubInitialization()
 
     if (!(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates())
     {
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
     }
     else
     {
         // If there is no CA...
-        m_certValidationOptions = CERT_X509_NOVALIDATE;
+        m_certValidationOptions = X509ValidationOption::NOVALIDATE;
     }
 
     // Set hostname for SNI extension
@@ -139,11 +139,11 @@ bool Socket_TLS::postConnectSubInitialization()
         return false;
     }
 
-    if (m_certValidationOptions != CERT_X509_NOVALIDATE)
+    if (m_certValidationOptions != X509ValidationOption::NOVALIDATE)
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || m_certValidationOptions == CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions == X509ValidationOption::CHECKANDPASS;
     }
     // no validate here...
     else
@@ -192,13 +192,13 @@ bool Socket_TLS::postAcceptSubInitialization()
 
     if (!m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates())
     {
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == CERT_X509_NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
     }
     else
     {
         // If there is no CA...
-        m_certValidationOptions = CERT_X509_NOVALIDATE;
-        //SSL_set_verify(sslh, CERT_X509_NOVALIDATE, nullptr);
+        m_certValidationOptions = X509ValidationOption::NOVALIDATE;
+        //SSL_set_verify(sslh, X509ValidationOption::NOVALIDATE, nullptr);
     }
 
     if (SSL_set_fd(m_sslHandler, m_sockFD) != 1)
@@ -214,11 +214,11 @@ bool Socket_TLS::postAcceptSubInitialization()
         return false;
     }
 
-    if (m_certValidationOptions != CERT_X509_NOVALIDATE)
+    if (m_certValidationOptions != X509ValidationOption::NOVALIDATE)
     {
         // Using PKI, need to validate the certificate.
         // connected+validated!
-        return validateTLSConnection(usingPSK) || m_certValidationOptions == CERT_X509_CHECKANDPASS;
+        return validateTLSConnection(usingPSK) || m_certValidationOptions == X509ValidationOption::CHECKANDPASS;
     }
     // no validate here...
     else
@@ -355,12 +355,12 @@ bool Socket_TLS::validateTLSConnection(const bool &usingPSK)
     return bValid;
 }
 
-Socket_TLS::eCertValidationOptions Socket_TLS::getCertValidation() const
+Socket_TLS::X509ValidationOption Socket_TLS::getCertValidation() const
 {
     return m_certValidationOptions;
 }
 
-void Socket_TLS::setCertValidation(eCertValidationOptions newCertValidation)
+void Socket_TLS::setCertValidation(X509ValidationOption newCertValidation)
 {
     m_certValidationOptions = newCertValidation;
 }
