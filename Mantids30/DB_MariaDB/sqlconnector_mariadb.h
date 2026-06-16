@@ -24,13 +24,13 @@ public:
      * @brief driverName Returns the name of the database driver ("MARIADB").
      * @return The name of the database driver.
      */
-    std::string driverName() { return "MARIADB"; }
+    std::string driverName() override { return "MARIADB"; }
 
     /**
      * @brief isOpen Returns true if the database connection is open, otherwise false.
      * @return True if the database connection is open, otherwise false.
      */
-    bool isOpen();
+    bool isOpen() override;
 
     /**
      * @brief getDatabaseConnector Internal function used by the query to prepare the query with the database handler.
@@ -43,30 +43,30 @@ public:
      * @param table The name of the table to check.
      * @return True if the table exists, otherwise false.
      */
-    bool dbTableExist(const std::string &table);
+    bool dbTableExist(const std::string &table) override;
 
     /**
      * @brief getEscaped Escapes a string for use in a SQL query.
      * @param v The string to escape.
      * @return The escaped string.
      */
-    std::string getEscaped(const std::string &v);
+    std::string getEscaped(const std::string &v) override;
 
 protected:
     /**
      * @brief createQuery0 Creates a new instance of the Query_MariaDB class.
      * @return A new instance of the Query_MariaDB class.
      */
-    std::shared_ptr<Query> createQuery0() { return std::make_shared<Query_MariaDB>(); };
+    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_MariaDB>(); };
 
     /**
      * @brief connect0 Establishes a connection to the MariaDB database.
      * @return True if the connection was successful, otherwise false.
      */
-    bool connect0();
+    bool connect0() override;
 
 private:
-    MYSQL *m_databaseConnectionHandler; // Handler for the MariaDB database connection.
+    MYSQL *m_databaseConnectionHandler = nullptr; // Handler for the MariaDB database connection.
 };
 
 } // namespace Mantids30::Database

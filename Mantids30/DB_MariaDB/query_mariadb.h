@@ -19,7 +19,7 @@ public:
     /**
      * @brief ~Query_MariaDB destructor.
      */
-    ~Query_MariaDB();
+    ~Query_MariaDB() override;
 
     /**
      * @brief exec Executes a direct SQL query.
@@ -47,19 +47,19 @@ protected:
      * @param recursion Whether or not to perform recursive calls.
      * @return True if the query was executed successfully, otherwise false.
      */
-    [[nodiscard]] bool exec0(const ExecType &execType, bool recursion);
+    [[nodiscard]] bool exec0(const ExecType &execType, bool recursion) override;
 
     /**
      * @brief step0 Advances the current row of the result set.
      * @return True if the current row was successfully advanced, otherwise false.
      */
-    [[nodiscard]] bool step0();
+    [[nodiscard]] bool step0() override;
 
     /**
      * @brief postBindInputVars Binds the input parameters for the prepared statement.
      * @return True if the input parameters were successfully bound, otherwise false.
      */
-    [[nodiscard]] bool postBindInputVars();
+    [[nodiscard]] bool postBindInputVars() override;
 
 private:
     /**
@@ -88,7 +88,7 @@ private:
     MYSQL_STMT *m_stmt = nullptr;                           /**< Pointer to a MYSQL_STMT object. */
     MYSQL_BIND *m_bindedInputParams = nullptr;              /**< Pointer to a MYSQL_BIND object for input parameters. */
     MYSQL_BIND *m_bindedResultsParams = nullptr;            /**< Pointer to a MYSQL_BIND object for result set parameters. */
-    std::vector<unsigned long> m_bindedResultVarSizes = {}; /**< Vector of variable sizes for the result set. */
+    std::vector<unsigned long> m_bindedResultVarSizes;      /**< Vector of variable sizes for the result set. */
     bool m_fetchLastInsertRowID = true;                     /**< Whether or not to fetch the last inserted row ID. */
     std::vector<std::string> m_keysByPos;                   /**< Vector of keys for the result set. */
 };
