@@ -2,8 +2,8 @@
 #include "sqlconnector_mariadb.h"
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Memory/a_allvars.h>
-#include <memory>
 #include <cstring>
+#include <memory>
 
 #include <errmsg.h>
 
@@ -84,14 +84,9 @@ Query_MariaDB::~Query_MariaDB()
     }
 
     // Destroy main items:
-    if (m_bindedInputParams)
-    {
-        delete[] m_bindedInputParams;
-    }
-    if (m_bindedResultsParams)
-    {
-        delete[] m_bindedResultsParams;
-    }
+
+    delete[] m_bindedInputParams;
+    delete[] m_bindedResultsParams;
 
     // Destroy the statement
     if (m_stmt)
