@@ -3,7 +3,6 @@
 #include <Mantids30/Memory/streamable_object.h>
 
 #include <limits>
-#include <stdexcept>
 #include <cstdint>
 #include <string>
 
