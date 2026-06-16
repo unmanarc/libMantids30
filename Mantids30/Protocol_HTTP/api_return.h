@@ -19,7 +19,7 @@ public:
      */
     APIReturn() = default;
 
-    APIReturn(Network::Protocols::HTTP::Status::Codes code) { this->httpResponseCode = code; }
+    APIReturn(Network::Protocol::HTTP::Status::Code code) { this->httpResponseCode = code; }
 
     /**
      * @brief Parameterized constructor for APIReturn.
@@ -45,13 +45,13 @@ public:
      * @brief Parameterized constructor for APIReturn using error.
      * @param body The body of the response.
      */
-    APIReturn(const Network::Protocols::HTTP::Status::Codes &httpResponseCode, const std::string &error, const std::string &message)
+    APIReturn(const Network::Protocol::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
     {
         // Initialize the body member variable with the provided json object.
         setError(httpResponseCode, error, message);
     }
 
-    void setError(const Network::Protocols::HTTP::Status::Codes &httpResponseCode, const std::string &error, const std::string &message)
+    void setError(const Network::Protocol::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
     {
         this->httpResponseCode = httpResponseCode;
         if (body)
@@ -65,11 +65,11 @@ public:
     * @brief Returns a string representation of the HTTP status code and error message.
     * @return A string in the format "<code>http status code</code> - <code>error message</code>".
     */
-    std::string getErrorString() const
+    [[nodiscard]] std::string getErrorString() const
     {
         std::string errorString = std::to_string(static_cast<int>(httpResponseCode)) + " - ";
 
-        if (httpResponseCode != Network::Protocols::HTTP::Status::S_200_OK)
+        if (httpResponseCode != Network::Protocol::HTTP::Status::Code::S_200_OK)
         {
             errorString += JSON_ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
         }
@@ -89,7 +89,7 @@ public:
         }
     }
 
-    Json::Value *responseJSON()
+    [[nodiscard]] Json::Value *responseJSON()
     {
         if (!body)
         {
@@ -102,7 +102,7 @@ public:
      * @brief Exports all the data of this class to JSON format for use in an API server.
      * @return A Json::Value object containing the HTTP response code and body.
      */
-    Json::Value toJSON() const
+    [[nodiscard]] Json::Value toJSON() const
     {
         Json::Value root;
         root["httpResponseCode"] = static_cast<int>(httpResponseCode);
@@ -112,7 +112,7 @@ public:
         }
         if (!httpExtraHeaders.empty())
         {
-            for (const auto&header : httpExtraHeaders)
+            for (const auto &header : httpExtraHeaders)
             {
                 root["extraHeaders"][header.first] = header.second;
             }
@@ -121,7 +121,7 @@ public:
         if (!cookiesMap.empty())
         {
             int i = 0;
-            for (const auto&cookie : cookiesMap)
+            for (const auto &cookie : cookiesMap)
             {
                 root["cookies"][(int) i++] = cookie.second.toSetCookieString(cookie.first);
             }
@@ -136,7 +136,7 @@ public:
      */
     void fromJSON(const Json::Value &jsonValue)
     {
-        httpResponseCode = (Network::Protocols::HTTP::Status::Codes) JSON_ASUINT(jsonValue, "httpResponseCode", (unsigned int) Network::Protocols::HTTP::Status::S_500_INTERNAL_SERVER_ERROR);
+        httpResponseCode = (Network::Protocol::HTTP::Status::Code) JSON_ASUINT(jsonValue, "httpResponseCode", (unsigned int) Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR);
         if (jsonValue.isMember("body") && body)
         {
             body->setValue(jsonValue["body"]);
@@ -153,7 +153,7 @@ public:
             for (int i = 0; i < jsonValue["cookies"].size(); ++i)
             {
                 std::string cookieString = jsonValue["cookies"][i].asString();
-                Mantids30::Network::Protocols::HTTP::Headers::Cookie cookie;
+                Mantids30::Network::Protocol::HTTP::Headers::Cookie cookie;
                 std::string cookieName;
                 cookie.fromSetCookieString(cookieString, &cookieName);
                 cookiesMap[cookieName] = cookie;
@@ -161,20 +161,24 @@ public:
         }
     }
 
-    bool hasError() const { return httpResponseCode < 200 || httpResponseCode > 299; }
-    void setStatus(const Network::Protocols::HTTP::Status::Codes &httpResponseCode) { this->httpResponseCode = httpResponseCode; }
+    [[nodiscard]] bool hasError() const
+    {
+        uint16_t code = static_cast<uint16_t>(httpResponseCode);
+        return code < 200 || code > 299;
+    }
+    void setStatus(const Network::Protocol::HTTP::Status::Code &httpResponseCode) { this->httpResponseCode = httpResponseCode; }
     void addHeader(const std::string &headerName, const std::string &headerValue) { httpExtraHeaders[headerName] = headerValue; }
 
-    std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
-    Network::Protocols::HTTP::Status::Codes getHTTPResponseCode() const { return httpResponseCode; }
+    [[nodiscard]] std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
+    [[nodiscard]] Network::Protocol::HTTP::Status::Code getHTTPResponseCode() const { return httpResponseCode; }
 
-    std::map<std::string, Mantids30::Network::Protocols::HTTP::Headers::Cookie> cookiesMap;
+    std::map<std::string, Mantids30::Network::Protocol::HTTP::Headers::Cookie> cookiesMap;
     std::map<std::string, std::string> httpExtraHeaders;
 
     std::string redirectURL;
 
 private:
-    Network::Protocols::HTTP::Status::Codes httpResponseCode = Network::Protocols::HTTP::Status::S_200_OK; ///< HTTP status code of the response.
+    Network::Protocol::HTTP::Status::Code httpResponseCode = Network::Protocol::HTTP::Status::Code::S_200_OK; ///< HTTP status code of the response.
     std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
 };
 

@@ -2,14 +2,16 @@
 
 #include "common_version.h"
 #include <Mantids30/Memory/subparser.h>
+#include <cstdint>
 #include <map>
 
-namespace Mantids30::Network::Protocols::HTTP {
+namespace Mantids30::Network::Protocol::HTTP {
 
 class Status : public Memory::Streams::SubParser
 {
 public:
-    enum Codes
+
+    enum class Code : uint16_t
     {
         S_100_CONTINUE = 100,
         S_101_SWITCHING_PROTOCOLS = 101,
@@ -59,27 +61,29 @@ public:
         S_999_NOT_SET = 1000
     };
 
+
+
     Status();
 
     /**
      * @brief getHTTPVersion - Get HTTP Version Object
      * @return Version Object
      */
-    HTTP::Version *getHTTPVersion();
+    [[nodiscard]] HTTP::Version *getHTTPVersion();
     /**
      * @brief getResponsStatusCodes - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
      */
-    unsigned short getCode() const;
+    [[nodiscard]] Code getCode() const;
     /**
      * @brief Set response code and message from a fixed list.
      */
-    void setCode(Codes code);
+    void setCode(Code code);
     /**
      * @brief getMessage - Get HTTP Response Code Message (Ex. Not found)
      * @return response code message
      */
-    std::string getMessage() const;
+    [[nodiscard]] std::string getMessage() const;
     /**
      * @brief setResponseMessage - Set HTTP Response Code Message (Ex. Not found)
      * @param value response code message
@@ -91,18 +95,18 @@ public:
      * @param code HTTP Code (eg. 404)
      * @return String
      */
-    static std::string getStringTranslation(unsigned short code);
+    [[nodiscard]] static std::string getStringTranslation(unsigned short code);
 
-    bool streamToUpstream() override;
+    [[nodiscard]] bool streamToUpstream() override;
 
 protected:
     Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     HTTP::Version m_httpVersion;
-    unsigned short m_statusCode = S_999_NOT_SET;
+    Code m_statusCode = Code::S_999_NOT_SET;
     std::string m_statusMessage;
 
     static std::map<unsigned short, std::string> m_responseStatusCodesTable;
 };
-} // namespace Mantids30::Network::Protocols::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP
