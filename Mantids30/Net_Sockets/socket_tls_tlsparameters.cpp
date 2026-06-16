@@ -402,18 +402,18 @@ DH *Socket_TLS::TLSKeyParameters::get_dh4096()
     DH *dh = DH_new();
     BIGNUM *p, *g;
 
-    if (dh == NULL)
+    if (dh == nullptr)
     {
-        return NULL;
+        return nullptr;
     }
-    p = BN_bin2bn(dhp_4096, sizeof(dhp_4096), NULL);
-    g = BN_bin2bn(dhg_4096, sizeof(dhg_4096), NULL);
-    if (p == NULL || g == NULL || !DH_set0_pqg(dh, p, NULL, g))
+    p = BN_bin2bn(dhp_4096, sizeof(dhp_4096), nullptr);
+    g = BN_bin2bn(dhg_4096, sizeof(dhg_4096), nullptr);
+    if (p == nullptr || g == nullptr || !DH_set0_pqg(dh, p, nullptr, g))
     {
         DH_free(dh);
         BN_free(p);
         BN_free(g);
-        return NULL;
+        return nullptr;
     }
     return dh;
 }
