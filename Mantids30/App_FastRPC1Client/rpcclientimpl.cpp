@@ -45,7 +45,7 @@ void RPCClientImpl::runRPClient()
             // Set the SO default security level:
             sockRPCClient->tlsKeys.setSecurityLevel(-1);
 
-            if (!sockRPCClient->tlsKeys.loadCAFromPEMFile(caCertPath.c_str()))
+            if (!sockRPCClient->tlsKeys.loadCAFromPEMFile(caCertPath))
             {
                 LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort,
                               caCertPath.c_str());
@@ -127,7 +127,11 @@ void RPCClientImpl::runRPClient()
             {
                 if (!strstr(i.c_str(), "certificate unknown"))
                 {
-                    LOG_APP->log1(__func__, remoteAddr.c_str(), Logs::LogLevel::ERR, ">>> TLS Error: %s", i.c_str());
+                    LOG_APP->log1(__func__,
+                                  remoteAddr,
+                                  Logs::LogLevel::ERR,
+                                  ">>> TLS Error: %s",
+                                  i.c_str());
                 }
             }
         }
