@@ -24,7 +24,7 @@ public:
      * @brief Enumeration for supported algorithms
      *
      */
-    enum Algorithm
+    enum class Algorithm : uint8_t
     {
         HS256, /**< HMAC with SHA-256 */
         HS384, /**< HMAC with SHA-384 */
