@@ -77,7 +77,7 @@ public:
      */
     std::shared_ptr<Query> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
-    [[nodiscard]] bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)

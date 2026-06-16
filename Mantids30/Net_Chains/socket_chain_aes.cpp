@@ -1,7 +1,6 @@
 #include "socket_chain_aes.h"
 #include <openssl/conf.h>
 #include <openssl/err.h>
-#include <openssl/sha.h>
 #include <random>
 
 #ifdef _WIN32
@@ -35,10 +34,8 @@ void Socket_Chain_AES::setPhase1Key256(const char *pass)
 
 void Socket_Chain_AES::setPhase1Key(const char *pass)
 {
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, pass, strlen(pass));
-    SHA256_Final((unsigned char *) m_phase1Key, &sha256);
+    unsigned int hashLen = 0;
+    EVP_Digest((const void *)pass, strlen(pass), (unsigned char *)m_phase1Key, &hashLen, EVP_sha256(), nullptr);
 }
 
 ssize_t Socket_Chain_AES::partialRead(void *data, const size_t &datalen)

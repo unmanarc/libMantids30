@@ -8,11 +8,11 @@ class Socket_Chain_EndPointBase : public Socket_Chain_ProtocolBase
 {
 public:
     Socket_Chain_EndPointBase() = default;
-    virtual ~Socket_Chain_EndPointBase() = default;
-    bool isEndPoint();
+    ~Socket_Chain_EndPointBase() override = default;
+    bool isEndPoint() override;
 
 protected:
-    virtual void *getThis() = 0;
+    void *getThis() override = 0;
 };
 
 } // namespace Mantids30::Network::Sockets::ChainProtocols

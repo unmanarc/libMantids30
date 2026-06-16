@@ -9,7 +9,6 @@ using namespace Mantids30::Database;
 
 SQLConnector_MariaDB::SQLConnector_MariaDB()
 {
-    m_databaseConnectionHandler = nullptr;
     m_port = 3306;
 }
 
@@ -18,6 +17,7 @@ SQLConnector_MariaDB::~SQLConnector_MariaDB()
     if (m_databaseConnectionHandler)
     {
         mysql_close(m_databaseConnectionHandler);
+        m_databaseConnectionHandler = nullptr;
     }
 }
 
@@ -51,7 +51,7 @@ std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 
     const unsigned long escapedLength = mysql_real_escape_string(m_databaseConnectionHandler, buffer.data(), v.c_str(), static_cast<unsigned long>(v.length()));
 
-    return std::string(buffer.data(), escapedLength);
+    return {buffer.data(), escapedLength};
 }
 
 bool SQLConnector_MariaDB::dbTableExist(const std::string &table)

@@ -16,15 +16,15 @@ public:
     Socket_Chain_XOR();
 
     // Overwritten functions:
-    ssize_t partialRead(void *data, const size_t &datalen);
-    ssize_t partialWrite(const void *data, const size_t &datalen);
+    ssize_t partialRead(void *data, const size_t &datalen) override;
+    ssize_t partialWrite(const void *data, const size_t &datalen) override;
 
     // Private functions:
     char getXorByte() const;
     void setXorByte(char value);
 
 protected:
-    void *getThis() { return this; }
+    void *getThis() override { return this; }
 
 private:
     std::vector<char> getXorCopy(const void *data, const size_t &datalen) const;
