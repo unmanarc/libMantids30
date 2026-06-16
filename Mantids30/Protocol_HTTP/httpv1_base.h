@@ -453,17 +453,17 @@ public:
     };
 
     HTTPv1_Base(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> sobject);
-    virtual ~HTTPv1_Base() override = default;
+    ~HTTPv1_Base() override = default;
 
     Request clientRequest;
     Response serverResponse;
 
 protected:
-    virtual bool initProtocol() override;
-    virtual void endProtocol() override;
+    bool initProtocol() override;
+    void endProtocol() override;
 
     virtual void *getThis() = 0;
-    virtual bool changeToNextParser() override = 0;
+    bool changeToNextParser() override = 0;
 
 private:
     void setInternalProductVersion(const std::string &prodName, const std::string &extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR,

@@ -20,7 +20,7 @@ public:
     };
 
     FrameContent();
-    virtual ~FrameContent();
+    ~FrameContent() override;
 
     // Configuration
     void setPayloadLength(uint64_t length);
@@ -47,7 +47,7 @@ public:
     bool streamToUpstream() override;
 
 protected:
-    virtual ParseResult parse() override;
+    ParseResult parse() override;
 
 private:
     void unmaskData(uint8_t *data, size_t length);

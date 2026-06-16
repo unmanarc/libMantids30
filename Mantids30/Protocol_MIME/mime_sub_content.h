@@ -9,7 +9,7 @@ class MIME_Sub_Content : public Memory::Streams::SubParser
 {
 public:
     MIME_Sub_Content();
-    ~MIME_Sub_Content() = default;
+    ~MIME_Sub_Content() override = default;
 
     bool streamToUpstream() override;
 

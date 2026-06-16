@@ -41,7 +41,7 @@ public:
     };
 
     FrameHeader();
-    virtual ~FrameHeader();
+    ~FrameHeader() override;
 
     // Reset the header for parsing a new frame
     void reset();
@@ -81,7 +81,7 @@ public:
     void prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength, bool masked, const std::array<uint8_t, 4> &maskingKey = {0, 0, 0, 0});
 
 protected:
-    virtual ParseResult parse() override;
+    ParseResult parse() override;
 
 private:
     bool parseFirstByte(uint8_t byte);

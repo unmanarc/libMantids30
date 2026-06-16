@@ -8,7 +8,7 @@ class ContentChunkedTransformer : public Memory::Streams::StreamableObject
 {
 public:
     ContentChunkedTransformer(Memory::Streams::StreamableObject *upStreamOut);
-    ~ContentChunkedTransformer();
+    ~ContentChunkedTransformer() override;
 
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 

@@ -9,15 +9,15 @@ class LineRecv : public Memory::Streams::Parser
 {
 public:
     LineRecv(std::shared_ptr<StreamableObject> sobject);
-    virtual ~LineRecv() override = default;
+    ~LineRecv() override = default;
     void setMaxLineSize(const uint32_t &maxLineSize);
 
 protected:
     virtual bool processParsedLine(const std::string &line) = 0;
 
-    virtual bool initProtocol() override;
-    virtual void endProtocol() override {}
-    virtual bool changeToNextParser() override;
+    bool initProtocol() override;
+    void endProtocol() override {}
+    bool changeToNextParser() override;
     LineRecv_SubParser m_subParser;
 };
 
