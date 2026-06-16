@@ -4,8 +4,6 @@ using namespace Mantids30::DataFormat;
 
 JWT::Revocation::Revocation()
 {
-    m_stopGarbageCollector = false;
-    m_garbageCollectorInterval = std::chrono::seconds(10);
     m_garbageCollectorThread = std::thread(&Revocation::garbageCollector, this);
 }
 

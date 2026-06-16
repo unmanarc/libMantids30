@@ -276,10 +276,10 @@ public:
         boost::shared_mutex m_revokedTokensMutex;
 
         std::thread m_garbageCollectorThread;
-        std::atomic_bool m_stopGarbageCollector {false};
+        std::atomic_bool m_stopGarbageCollector{false};
         std::condition_variable m_garbageCollectorCondition;
         std::mutex m_garbageCollectorMutex;
-        std::chrono::seconds m_garbageCollectorInterval {std::chrono::seconds(10)};
+        std::chrono::seconds m_garbageCollectorInterval{std::chrono::seconds(10)};
     };
 
     /**
@@ -288,17 +288,11 @@ public:
      */
     struct RAWSignature
     {
-        RAWSignature()
-        {
-            m_digest = nullptr;
-            m_digestSize = 0;
-        }
+        RAWSignature() = default;
         ~RAWSignature()
         {
-            if (m_digest)
-            {
-                delete[] m_digest;
-            }
+            delete[] m_digest;
+
             m_digestSize = 0;
             m_digest = nullptr;
         }
@@ -317,8 +311,8 @@ public:
         };
 
         Result m_result;           /**< Result */
-        unsigned char *m_digest;   /**< RAW Signature created by createSignature() */
-        unsigned int m_digestSize; /**< RAW Signature size created by createSignature() */
+        unsigned char *m_digest=nullptr;   /**< RAW Signature created by createSignature() */
+        unsigned int m_digestSize=0; /**< RAW Signature size created by createSignature() */
     };
 
     /**
