@@ -39,7 +39,7 @@ private:
 
     std::shared_ptr<boost::regex> m_regexp;
     std::shared_ptr<std::vector<std::string>> m_staticTexts;
-    uint32_t m_staticIndex;
+    uint32_t m_staticIndex{0};
     std::string m_expr;
     eExpressionSideMode m_mode = EXPR_MODE_UNDEFINED;
 };

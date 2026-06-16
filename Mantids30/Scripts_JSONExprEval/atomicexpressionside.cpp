@@ -57,7 +57,7 @@ set<string> AtomicExpressionSide::resolve(const json &v, bool resolveRegex, bool
     case EXPR_MODE_JSONPATH:
     {
         Json::Path path(m_expr.substr(1));
-        json result = path.resolve(v);
+        const json& result = path.resolve(v);
         set<string> res;
 
         if (result.size() == 0 && !result.isNull())
