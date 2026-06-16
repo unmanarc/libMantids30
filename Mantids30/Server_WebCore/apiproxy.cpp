@@ -35,7 +35,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
 
         if (proxyParameters->checkTLSPeer)
         {
-            socket->setCertValidation(Socket_TLS::CERT_X509_VALIDATE);
+            socket->setCertValidation(Socket_TLS::X509ValidationOption::VALIDATE);
             socket->tlsKeys.setUseSystemCertificates(!proxyParameters->usePrivateCA);
             if (proxyParameters->usePrivateCA)
             {
@@ -44,7 +44,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
         }
         else
         {
-            socket->setCertValidation(Socket_TLS::CERT_X509_NOVALIDATE);
+            socket->setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
         }
 
         connection = socket;

@@ -26,7 +26,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         if (proxyParameters->checkTLSPeer)
         {
             log->log0(__func__, Logs::LogLevel::DEBUG, "Enabling certificate validation.");
-            socket->setCertValidation(Socket_TLS::CERT_X509_VALIDATE);
+            socket->setCertValidation(Socket_TLS::X509ValidationOption::VALIDATE);
             socket->tlsKeys.setUseSystemCertificates(!proxyParameters->usePrivateCA);
             if (proxyParameters->usePrivateCA)
             {
@@ -37,7 +37,7 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
         else
         {
             log->log0(__func__, Logs::LogLevel::WARN, "Skipping TLS certificate validation.");
-            socket->setCertValidation(Socket_TLS::CERT_X509_NOVALIDATE);
+            socket->setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
         }
 
         connection = socket;
