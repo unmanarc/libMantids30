@@ -19,7 +19,7 @@ std::string Mantids30::Helpers::DataTables::getOrderByStatement(const json &data
     std::string orderByStatement;
     // Manejo de ordenamiento (order)
     const Json::Value &orderArray = dataTablesFilters["order"];
-    if (JSON_ISARRAY_D(orderArray) && orderArray.size() > 0)
+    if (JSON_ISARRAY_D(orderArray) && !orderArray.empty())
     {
         const Json::Value &orderArrayElement = orderArray[0];
         std::string columnName = getColumnNameFromColumnPos(dataTablesFilters, JSON_ASUINT(orderArrayElement, "column", 0));
