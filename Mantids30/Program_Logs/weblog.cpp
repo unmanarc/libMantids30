@@ -21,17 +21,17 @@
 
 using namespace Mantids30::Program::Logs;
 
-void Mantids30::Program::Logs::WebLog::Config::setMaxFileSize(const std::string &maxFileSize)
+void WebLog::Config::setMaxFileSize(const std::string &maxFileSize)
 {
     m_maxFileSize = Helpers::StringConversions::getSizeFromString(maxFileSize);
 }
 
-size_t Mantids30::Program::Logs::WebLog::Config::getMaxFileSize() const
+size_t WebLog::Config::getMaxFileSize() const
 {
     return m_maxFileSize;
 }
 
-void Mantids30::Program::Logs::WebLog::Config::setLogFormat(const std::string &logFormat)
+void WebLog::Config::setLogFormat(const std::string &logFormat)
 {
     // Convert to lowercase for case-insensitive comparison
     std::string formatStr = boost::to_lower_copy(logFormat);
@@ -53,7 +53,7 @@ void Mantids30::Program::Logs::WebLog::Config::setLogFormat(const std::string &l
     }
 }
 
-Mantids30::Program::Logs::WebLog::Config::LogFormat Mantids30::Program::Logs::WebLog::Config::getLogFormat() const
+WebLog::Config::LogFormat WebLog::Config::getLogFormat() const
 {
     return m_logFormat;
 }
@@ -72,7 +72,7 @@ bool WebLog::start()
             catch (const std::filesystem::filesystem_error &e)
             {
                 // Handle error appropriately (e.g. throw exception or log to stderr)
-                config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::ERR, "Failed to create log directory '%s': %s", config.logDirectory.c_str(), e.what());
+                config.appLog->log0("WebLog", LogLevel::ERR, "Failed to create log directory '%s': %s", config.logDirectory.c_str(), e.what());
                 return false;
             }
         }
@@ -83,7 +83,7 @@ bool WebLog::start()
     if (!m_logFileHandle.is_open())
     {
         // Handle error appropriately (e.g. throw exception or log to stderr)
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::ERR, "Failed to open log file '%s/%s'", config.logDirectory.c_str(), config.logFile.c_str());
+        config.appLog->log0("WebLog", LogLevel::ERR, "Failed to open log file '%s/%s'", config.logDirectory.c_str(), config.logFile.c_str());
         return false;
     }
 
@@ -94,13 +94,13 @@ bool WebLog::start()
     if (config.appLog)
     {
         std::string logPath = config.logDirectory + "/" + config.logFile;
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::INFO, "Starting WebLog to %s", logPath.c_str());
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Log format: %s", (config.m_logFormat == Config::JSON ? "JSON" : "Combined"));
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Max file size: %zu bytes", config.m_maxFileSize);
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Max backups: %u", config.maxBackups);
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Rotation on size: %s", config.rotateOnSize ? "true" : "false");
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Rotation on schedule: %s", config.rotateOnSchedule ? "true" : "false");
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::DEBUG, "Use threaded queue: %s", config.useThreadedQueue ? "true" : "false");
+        config.appLog->log0("WebLog", LogLevel::INFO, "Starting WebLog to %s", logPath.c_str());
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Log format: %s", (config.m_logFormat == Config::JSON ? "JSON" : "Combined"));
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Max file size: %zu bytes", config.m_maxFileSize);
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Max backups: %u", config.maxBackups);
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Rotation on size: %s", config.rotateOnSize ? "true" : "false");
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Rotation on schedule: %s", config.rotateOnSchedule ? "true" : "false");
+        config.appLog->log0("WebLog", LogLevel::DEBUG, "Use threaded queue: %s", config.useThreadedQueue ? "true" : "false");
     }
 
     if (config.useThreadedQueue)
@@ -233,7 +233,7 @@ void WebLog::forceLogRotation()
     if (config.appLog)
     {
         std::string logPath = config.logDirectory + "/" + config.logFile;
-        config.appLog->log0("WebLog", Mantids30::Program::Logs::LogLevel::INFO, "Rotating log file: %s", logPath.c_str());
+        config.appLog->log0("WebLog", LogLevel::INFO, "Rotating log file: %s", logPath.c_str());
     }
 
     // Perform rotation logic here...
@@ -245,7 +245,7 @@ void WebLog::forceLogRotation()
     m_logFileHandle.close();
 
     // Rotate existing files
-    for (int i = config.maxBackups; i > 0; --i)
+    for (unsigned int i = config.maxBackups; i > 0; --i)
     {
         std::string oldFile = config.logDirectory + "/" + config.logFile + "." + std::to_string(i - 1);
         std::string newFile = config.logDirectory + "/" + config.logFile + "." + std::to_string(i);
@@ -279,7 +279,6 @@ void WebLog::forceLogRotation()
 
 void WebLog::printLogToFile(const json *value)
 {
-    if (1)
     {
         std::unique_lock<std::mutex> lock(m_logPrintMutex);
         switch (config.m_logFormat)
