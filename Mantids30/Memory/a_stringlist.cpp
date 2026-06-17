@@ -87,7 +87,7 @@ bool STRINGLIST::fromString(const std::string &inputStringList)
 
     while (currentPosition < inputStringList.size())
     {
-        currentFieldValue = "";
+        currentFieldValue.clear();
 
         if (!inQuotes)
         {
@@ -136,7 +136,7 @@ bool STRINGLIST::fromString(const std::string &inputStringList)
                         // End of String (not any other comma)...
                         finalValues.push_back(currentFieldValue);
                         currentPosition++;
-                        currentFieldValue = "";
+                        currentFieldValue.clear();
                         inQuotes = false;
                         break;
                     }
@@ -145,7 +145,7 @@ bool STRINGLIST::fromString(const std::string &inputStringList)
                         // Field completed on ", now take the field and push into the values.
                         // Process this field...
                         finalValues.push_back(currentFieldValue);
-                        currentFieldValue = "";
+                        currentFieldValue.clear();
                         inQuotes = false;
                         currentPosition += 2;
                         startOfCurrentField = currentPosition;

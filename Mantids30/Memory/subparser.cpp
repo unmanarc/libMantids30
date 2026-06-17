@@ -381,7 +381,7 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
 {
     size_t prevSize = m_unparsedBuffer.size();
     std::optional<size_t> delimPos;
-    m_delimiterFound = "";
+    m_delimiterFound.clear();
 
     std::optional<size_t> bytesAppended = appendToUnparsedBuffer(buf, count);
     size_t bytesToDisplace = 0;

@@ -62,7 +62,7 @@ FileMap &FileMap::operator=(FileMap &bc)
 void FileMap::cleanVars()
 {
     readOnly = false;
-    currentFileName = "";
+    currentFileName.clear();
     deleteFileOnDestruction = false;
     fd = -1;
     mmapAddr = nullptr;

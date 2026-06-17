@@ -502,8 +502,8 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData,
     Memory::Streams::StreamableFile sFile;
     if (sFile.open(m_TLSCertificateAuthorityPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600) == -1)
     {
-        m_TLSCertificateAuthorityPath = "";
-        m_TLSCertificateAuthorityMemory = "";
+        m_TLSCertificateAuthorityPath.clear();
+        m_TLSCertificateAuthorityMemory.clear();
         remove(m_TLSCertificateAuthorityPath.c_str());
         return false;
     }

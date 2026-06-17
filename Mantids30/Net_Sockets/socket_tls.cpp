@@ -581,7 +581,7 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
             }
         }
 
-        m_lastError = "";
+        m_lastError.clear();
         return readBytes;
     }
     else if (readBytes == 0)
@@ -689,7 +689,7 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
 
     if (sentBytes > 0)
     {
-        m_lastError = "";
+        m_lastError.clear();
 
         // Debug: Print sent bytes if enabled
         if ((debugOptions & Socket::DebugOptions::PRINT_WRITE_HEX) || (debugOptions & Socket::DebugOptions::PRINT_WRITE_PLAIN))
