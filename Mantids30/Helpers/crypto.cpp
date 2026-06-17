@@ -32,7 +32,7 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
     }
 
     // Derive the key...
-    if (PKCS5_PBKDF2_HMAC(key, safeStaticCast<uint32_t, size_t>(keyLen), salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
+    if (PKCS5_PBKDF2_HMAC(key, safe_cast_or<int>(keyLen,0) , salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
     {
         // Initialize the encryption...
         if ((err = EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, derivedKey, salt)) == 1)
@@ -114,7 +114,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
         }
 
         // Derive the key...
-        if (PKCS5_PBKDF2_HMAC(key, safeStaticCast<uint32_t, size_t>(keyLen), salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
+        if (PKCS5_PBKDF2_HMAC(key, safe_cast_or<int>(keyLen,0), salt, sizeof(salt), 100000, EVP_sha256(), sizeof(derivedKey), derivedKey) == 1)
         {
             // Initialize the encryption...
             if ((err = EVP_DecryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, derivedKey, salt)) == 1)
