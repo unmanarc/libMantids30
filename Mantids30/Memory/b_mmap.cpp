@@ -30,7 +30,7 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
     FileMap bcr;
 
     // Open the file:
-    if (!bcr.openFile(filePath.size() ? filePath : getRandomFileName(), readOnly, createFile))
+    if (!bcr.openFile(!filePath.empty() ? filePath : getRandomFileName(), readOnly, createFile))
     {
         // Failed to open the referenced file.
 
@@ -62,7 +62,7 @@ void B_MMAP::setDeleteFileOnDestruction(bool value)
 size_t B_MMAP::size()
 {
     // TODO: check
-    //    std::cout << "B_MMAP::  Getting size() " << mem.size() << std::endl << std::flush;
+    //    std::cout << "B_MMAP::  Getting size() " << mem.size() << '\n' << std::flush;
     return mem.size();
 }
 

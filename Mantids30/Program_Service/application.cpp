@@ -100,7 +100,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
     globalArgs.addCommandLineOption("Other Options", 'h', "help", "Show information usage.", "0", Mantids30::Memory::Abstract::Var::Type::BOOL);
 
     /////////////////////////
-    struct timeval time;
+    struct timeval time{};
     gettimeofday(&time, nullptr);
     srand(((time.tv_sec * 1000) + (time.tv_usec / 1000)) * getpid());
 
@@ -111,7 +111,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
     // Parse program options.
     if (!globalArgs.parseCommandLineOptions(argc, argv))
     {
-        cout << "# ERR: Failed to Load CMD Line Parameters." << endl << flush;
+        cout << "# ERR: Failed to Load CMD Line Parameters.\n" << flush;
         return -2;
     }
 
@@ -128,7 +128,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
         return 0;
     }
 
-    if (globalArgs.getCommandLineOptionValue("install")->toString() != "" || globalArgs.getCommandLineOptionValue("uninstall")->toString() != "")
+    if (!globalArgs.getCommandLineOptionValue("install")->toString().empty() || !globalArgs.getCommandLineOptionValue("uninstall")->toString().empty())
     {
         // :)
 #ifdef WIN32
@@ -239,7 +239,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
     // Load/Prepare the configuration based in command line arguments.
     if (!appPTR->_config(argc, argv, &globalArgs))
     {
-        cout << "# ERR: Failed to Load Configuration." << endl << flush;
+        cout << "# ERR: Failed to Load Configuration.\n" << flush;
         return -1;
     }
 
@@ -252,7 +252,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
         {
             if (setgid(globalArgs.getGid()))
             {
-                cout << "# ERR: Failed to drop privileged to group" << globalArgs.getGid() << endl << flush;
+                cout << "# ERR: Failed to drop privileged to group" << globalArgs.getGid() << '\n' << flush;
                 return -3;
             }
         }
@@ -260,19 +260,19 @@ int StartApplication(int argc, char *argv[], Application *_app)
         {
             if (setuid(globalArgs.getUid()))
             {
-                cout << "# ERR: Failed to drop privileged to user" << globalArgs.getUid() << endl << flush;
+                cout << "# ERR: Failed to drop privileged to user" << globalArgs.getUid() << '\n' << flush;
                 return -4;
             }
         }
         // Now change EUID/EGID...
         if (setegid(globalArgs.getGid()) != 0)
         {
-            cout << "# ERR: Failed to drop extended privileged to group" << globalArgs.getGid() << endl << flush;
+            cout << "# ERR: Failed to drop extended privileged to group" << globalArgs.getGid() << '\n' << flush;
             return -5;
         }
         if (seteuid(globalArgs.getUid()) != 0)
         {
-            cout << "# ERR: Failed to drop extended privileged to user" << globalArgs.getUid() << endl << flush;
+            cout << "# ERR: Failed to drop extended privileged to user" << globalArgs.getUid() << '\n' << flush;
             return -6;
         }
     }
@@ -294,7 +294,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
         }
         else
         {
-            cout << "# " << "> This program is running with background threads, press CTRL-C to exit..." << endl << flush;
+            cout << "# " << "> This program is running with background threads, press CTRL-C to exit...\n" << flush;
 #ifndef WIN32
             pthread_setname_np(pthread_self(), "Main:LoopWait");
 #endif
@@ -347,19 +347,21 @@ static void child_handler(int signum)
     switch (signum)
     {
     case SIGALRM:
-        cerr << globalArgs.getDaemonName() << " child handler: SIGALRM" << endl << flush;
+        cerr << globalArgs.getDaemonName() << " child handler: SIGALRM\n" << flush;
         _exit(EXIT_FAILURE);
     case SIGUSR1:
         _exit(EXIT_SUCCESS);
     case SIGCHLD:
-        cerr << globalArgs.getDaemonName() << " child handler: SIGCHLD" << endl << flush;
+        cerr << globalArgs.getDaemonName() << " child handler: SIGCHLD\n" << flush;
         _exit(EXIT_FAILURE);
+    default:
+        break;
     }
 }
 
 static int get_lock()
 {
-    struct flock lplock;
+    struct flock lplock{};
 
     string lockFile = "/var/lock/" + globalArgs.getDaemonName() + "/state.lock";
 
@@ -382,7 +384,7 @@ static int get_lock()
     return 1;
 }
 
-static void free_lock(void)
+static void free_lock()
 {
     if (lockfd >= 0)
     {
@@ -453,7 +455,7 @@ static void daemonize()
     // Create the lock file as the current proccess, and if it does not work get out of here.
     if (get_lock() == 0)
     {
-        cerr << "ERR: " << globalArgs.getDaemonName() << " unable to create lock file..." << endl << flush;
+        cerr << "ERR: " << globalArgs.getDaemonName() << " unable to create lock file...\n" << flush;
         fflush(stdout);
         syslog(LOG_ERR, "unable to create lock file.");
         _exit(EXIT_FAILURE);

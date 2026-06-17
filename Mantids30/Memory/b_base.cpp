@@ -703,7 +703,7 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
     /*
     if (searchSpace == 0) searchSpace = currentSize;
 
-    //std::cout << "B_Base::find  Getting size() " << containerBytes << std::endl << std::flush;
+    //std::cout << "B_Base::find  Getting size() " << containerBytes << '\n' << std::flush;
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len)) 
@@ -752,7 +752,7 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
 
 std::optional<size_t> B_Base::find(const std::list<std::string> &needles, std::string &needleFound, bool caseSensitive, const size_t &offset, const size_t &searchSpace)
 {
-    needleFound = "";
+    needleFound.clear();
     for (const std::string &needle : needles)
     {
         std::optional<size_t> f = find(needle.c_str(), needle.size(), caseSensitive, offset, searchSpace);

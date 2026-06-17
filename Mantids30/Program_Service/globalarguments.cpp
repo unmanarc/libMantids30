@@ -83,7 +83,7 @@ std::shared_ptr<Var> GlobalArguments::getCommandLineOptionValue(const string &op
     {
         return nullptr;
     }
-    if (opt->parsedOption.size() == 0)
+    if (opt->parsedOption.empty())
     {
         return opt->defaultValVar;
     }
@@ -100,7 +100,7 @@ std::list<std::shared_ptr<Var>> GlobalArguments::getCommandLineOptionValues(cons
         return v;
     }
 
-    if (!opt->parsedOption.size())
+    if (opt->parsedOption.empty())
     {
         v.push_back(opt->defaultValVar);
         return v;
@@ -234,15 +234,15 @@ uint16_t GlobalArguments::getGid() const
 
 void GlobalArguments::printHelp()
 {
-    cout << endl;
-    cout << "Help:" << endl;
-    cout << "-----" << endl;
-    cout << endl;
+    cout << '\n';
+    cout << "Help:\n";
+    cout << "-----\n";
+    cout << '\n';
 
     for (const auto &i : m_commandOptions)
     {
-        cout << i.first << ":" << endl;
-        cout << getLine(i.first.size() + 1) << endl;
+        cout << i.first << ":\n";
+        cout << getLine(i.first.size() + 1) << '\n';
 
         uint32_t msize = getMaxOptNameSize(i.second);
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
@@ -250,14 +250,14 @@ void GlobalArguments::printHelp()
             if (v->shortOption && v->shortOption < 256)
             {
                 string printer = "-%c ";
-                printer += (v->name != "") ? "--%-" : "  %";
+                printer += (!v->name.empty()) ? "--%-" : "  %";
                 printer += to_string(msize) + "s";
                 printf(printer.c_str(), v->shortOption, v->name.c_str());
             }
             else
             {
                 string printer = "   ";
-                printer += (v->name != "") ? "--%-" : "  %";
+                printer += (!v->name.empty()) ? "--%-" : "  %";
                 printer += to_string(msize) + "s";
                 printf(printer.c_str(), v->name.c_str());
             }
@@ -282,7 +282,7 @@ void GlobalArguments::printHelp()
                 printf(" : %s (required argument)\n", v->description.c_str());
             }
         }
-        cout << endl;
+        cout << '\n';
     }
 }
 
@@ -309,15 +309,15 @@ std::shared_ptr<Var> GlobalArguments::getStaticVariable(const string &name)
 
 void GlobalArguments::printProgramHeader()
 {
-    cout << "# " << softwareDescription << " (" << softwareName << ") v" << m_version << endl;
+    cout << "# " << softwareDescription << " (" << softwareName << ") v" << m_version << '\n';
 
     for (const Program::Values::Author &i : m_authors)
     {
-        cout << "# " << "Author:  " << i.name << " (" << i.email << ")" << endl;
+        cout << "# " << "Author:  " << i.name << " (" << i.email << ")\n";
     }
 
-    cout << "# " << "License: " << softwareLicense << endl;
-    cout << "# " << endl << flush;
+    cout << "# " << "License: " << softwareLicense << '\n';
+    cout << "# \n" << flush;
 }
 
 void GlobalArguments::printCurrentProgramOptionsValues()
@@ -326,7 +326,7 @@ void GlobalArguments::printCurrentProgramOptionsValues()
     {
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
         {
-            std::string varNameToPrint = "";
+            std::string varNameToPrint;
             if (v->shortOption > 0 && v->shortOption < 256)
             {
                 if (v->name.empty())
@@ -365,7 +365,7 @@ std::string GlobalArguments::getCurrentProgramOptionsValuesAsBashLine(bool remov
     {
         for (const std::shared_ptr<CommandLineOption> &v : i.second)
         {
-            std::string varNameToPrint = "";
+            std::string varNameToPrint;
             if (v->shortOption > 0 && v->shortOption < 256)
             {
                 if (v->name.empty())
@@ -445,7 +445,7 @@ std::list<std::shared_ptr<CommandLineOption>> GlobalArguments::getAllCommandLine
     return x;
 }
 
-uint32_t GlobalArguments::getMaxOptNameSize(std::list<std::shared_ptr<CommandLineOption>> options)
+uint32_t GlobalArguments::getMaxOptNameSize(const std::list<std::shared_ptr<CommandLineOption>> & options)
 {
     unsigned int max = 1;
     for (const std::shared_ptr<CommandLineOption> &x : options)

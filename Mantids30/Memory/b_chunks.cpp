@@ -72,7 +72,7 @@ size_t B_Chunks::size()
     {
         return m_mmapContainer->size();
     }
-    //std::cout << "B_Chunks::  Getting size() " << containerBytes << std::endl << std::flush;
+    //std::cout << "B_Chunks::  Getting size() " << containerBytes << '\n' << std::flush;
     return m_containerBytes;
 }
 
@@ -190,7 +190,7 @@ std::optional<size_t> B_Chunks::append2(const void *buf, const size_t &roLen, bo
         // Append or prepend the data.
         if (!prependMode)
         {
-            if (!m_chunksVector.size())
+            if (m_chunksVector.empty())
             {
                 bcc.offset = 0;
             }
@@ -238,7 +238,7 @@ std::optional<size_t> B_Chunks::displace2(const size_t &roBytesToDisplace)
 
     while (bytesToDisplace)
     {
-        if (!m_chunksVector.size())
+        if (m_chunksVector.empty())
         {
             return displaced; // not completely displaced
         }
@@ -712,7 +712,7 @@ void B_Chunks::recalcChunkOffsets()
 size_t B_Chunks::I_Chunk_GetPosForOffset(const size_t &offset, size_t curpos, size_t curmax, size_t curmin)
 {
     // The Search Algorithm!
-    if (!m_chunksVector.size())
+    if (m_chunksVector.empty())
     {
         return MAX_SIZE_T;
     }
