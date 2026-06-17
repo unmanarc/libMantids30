@@ -92,9 +92,9 @@ std::optional<size_t> B_Ref::append2(const void *buf, const size_t &len, bool pr
     }
 }
 
-std::optional<size_t> B_Ref::displace2(const size_t &roBytesToDisplace)
+std::optional<size_t> B_Ref::displace2(const size_t &bytes)
 {
-    size_t bytesToDisplace = roBytesToDisplace;
+    size_t bytesToDisplace = bytes;
     if (!referencedBC)
     {
         return std::nullopt;
