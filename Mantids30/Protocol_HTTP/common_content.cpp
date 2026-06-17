@@ -14,7 +14,7 @@ using namespace Mantids30;
 
 HTTP::Content::Content()
 {
-    m_subParserName = "";
+    m_subParserName.clear();
 }
 
 bool HTTP::Content::isDefaultStreamableObj() const

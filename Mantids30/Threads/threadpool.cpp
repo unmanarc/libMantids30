@@ -208,7 +208,7 @@ void ThreadPool::taskProcessor(ThreadPool *tp)
 
     for (Task task = tp->popTask(); !task.isNull(); task = tp->popTask())
     {
-        //std::cout << "ejecutando " << task.data << std::endl << std::flush;
+        //std::cout << "ejecutando " << task.data << '\n' << std::flush;
         task.task(task.data);
     }
 }

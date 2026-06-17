@@ -16,7 +16,7 @@ void ProgramValues::initProgramName(const std::string &value)
         paths.push_back(s);
     }
 
-    softwareName = !paths.size() ? "unknownprogram" : paths.at(paths.size() - 1);
+    softwareName = paths.empty() ? "unknownprogram" : paths.at(paths.size() - 1);
     softwareDescription = softwareName;
     m_daemonName = softwareName;
 }
