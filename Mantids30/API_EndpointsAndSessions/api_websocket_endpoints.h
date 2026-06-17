@@ -22,7 +22,7 @@ public:
      *
      * @brief Enumeration for possible error codes.
      */
-    enum HandleResult : int8_t
+    enum class HandleResult : int8_t
     {
         SUCCESS = 0,
         INVALID_EVENT_TYPE = -1,
