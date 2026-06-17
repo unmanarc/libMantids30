@@ -148,7 +148,7 @@ private:
     uint16_t m_uid, m_gid;
 #endif
     std::list<std::shared_ptr<CommandLineOption>> getAllCommandLineOptions();
-    uint32_t getMaxOptNameSize(std::list<std::shared_ptr<CommandLineOption>> options);
+    uint32_t getMaxOptNameSize(const std::list<std::shared_ptr<CommandLineOption> > &options);
     std::string getLine(const uint32_t &size);
 
     std::shared_ptr<CommandLineOption> getProgramOption(int shortOption);

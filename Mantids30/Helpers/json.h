@@ -8,7 +8,7 @@
 #include <set>
 
 // Define a shorthand for the Json::Value type
-typedef Json::Value json;
+using json = Json::Value;
 
 // jsoncpp macros:
 #define JSON_ASCSTRING(j, x, def) ((j).isObject() && (j).isMember(x) && (j)[x].isString() ? (j)[x].asCString() : (def))

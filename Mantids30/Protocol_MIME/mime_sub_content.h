@@ -33,11 +33,11 @@ protected:
     Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject> m_contentContainer;
+    std::shared_ptr<Memory::Streams::StreamableObject> m_contentContainer = nullptr;;
 
     std::string m_fsTmpFolder, m_boundary;
-    size_t m_maxContentSize;
-    size_t m_maxContentSizeUntilGoingToFS;
+    size_t m_maxContentSize{0};
+    size_t m_maxContentSizeUntilGoingToFS{0};
 };
 
 } // namespace Mantids30::Network::Protocol::MIME

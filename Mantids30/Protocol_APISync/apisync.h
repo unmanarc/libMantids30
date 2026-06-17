@@ -33,7 +33,7 @@ struct APISyncParameters
     bool checkTLSPeer = true;       ///< Whether to validate TLS peer certificate.
     bool usePrivateCA = false;      ///< Whether to use a custom CA certificate.
     bool useTLS = true;             ///< Whether to use TLS encryption.
-    std::string privateCAPath = ""; ///< Path to the private CA certificate file (if applicable).
+    std::string privateCAPath; ///< Path to the private CA certificate file (if applicable).
 };
 
 /**

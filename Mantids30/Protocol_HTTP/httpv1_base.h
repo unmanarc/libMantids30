@@ -244,7 +244,7 @@ public:
                 }
                 else
                 {
-                    tlsCommonName = "";
+                    tlsCommonName.clear();
                 }
             }
 
