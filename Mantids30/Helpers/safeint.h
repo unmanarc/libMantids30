@@ -5,7 +5,7 @@
 
 // Safe Add
 template<typename T>
-T safeAdd(T a, T b)
+T safe_add(T a, T b)
 {
     if (a > 0 && b > 0 && std::numeric_limits<T>::max() - a < b)
     {
@@ -20,7 +20,7 @@ T safeAdd(T a, T b)
 
 // Safe Subtract
 template<typename T>
-T safeSubtract(T a, T b)
+T safe_sub(T a, T b)
 {
     if (b > 0 && a < std::numeric_limits<T>::min() + b)
     {
@@ -35,7 +35,7 @@ T safeSubtract(T a, T b)
 
 // Safe Multiply
 template<typename T>
-T safeMultiply(T a, T b)
+T safe_mul(T a, T b)
 {
     if (a > 0 && b > 0 && a > std::numeric_limits<T>::max() / b)
     {
@@ -58,7 +58,7 @@ T safeMultiply(T a, T b)
 
 // Safe Divide
 template<typename T>
-T safeDivide(T a, T b)
+T safe_div(T a, T b)
 {
     if (b == 0)
     {
@@ -71,21 +71,86 @@ T safeDivide(T a, T b)
     return a / b;
 }
 
-// Safe Static Cast
-template<typename To, typename From>
-To safeStaticCast(From value)
+// Forward declaration
+template<class To, class From>
+constexpr bool in_range_17(From value);
+
+/**
+ * Performs a safe cast from From to To.
+ * If the value is outside the representable range of To, returns default_value.
+ * Only supports integral-to-integral conversions.
+ */
+template<class To, class From>
+constexpr To safe_cast_or(From value, To default_value)
 {
-    if (value > static_cast<From>(std::numeric_limits<To>::max()))
-    {
-        throw std::out_of_range("Safe Static Cast: Value out of range for target type");
-    }
-    if (value < static_cast<From>(std::numeric_limits<To>::min()))
-    {
-        throw std::underflow_error("Safe Static Cast: Value out of range for target type");
-    }
-    return static_cast<To>(value);
+    static_assert(std::is_integral_v<To>, "To must be an integral type");
+    static_assert(std::is_integral_v<From>, "From must be an integral type");
+    static_assert(!std::is_same_v<To, From>, "To and From must be different types");
+
+    return in_range_17<To>(value) ? static_cast<To>(value) : default_value;
 }
 
+/**
+ * Checks if a value of type From can be safely represented in type To.
+ * Only valid for integral types.
+ */
+template<class To, class From>
+constexpr bool in_range_17(From value)
+{
+    static_assert(std::is_integral_v<To>, "To must be an integral type");
+    static_assert(std::is_integral_v<From>, "From must be an integral type");
+
+    using ToLimits = std::numeric_limits<To>;
+    using FromLimits = std::numeric_limits<From>;
+
+    constexpr bool to_signed = ToLimits::is_signed;
+    constexpr bool from_signed = FromLimits::is_signed;
+
+    if constexpr (to_signed && from_signed)
+    {
+        if constexpr (ToLimits::digits > FromLimits::digits)
+        {
+            return true;
+        }
+
+        return value >= static_cast<From>(ToLimits::min()) && value <= static_cast<From>(ToLimits::max());
+    }
+    else if constexpr (to_signed && !from_signed)
+    {
+        if constexpr (ToLimits::digits > FromLimits::digits)
+        {
+            return true;
+        }
+
+        return value <= static_cast<From>(ToLimits::max());
+    }
+    else if constexpr (!to_signed && from_signed)
+    {
+        if (value < 0)
+        {
+            return false;
+        }
+
+        // Después de descartar negativos, si To tiene al menos tantos bits,
+        // todos los valores positivos de From caben en To.
+        if constexpr (ToLimits::digits >= FromLimits::digits)
+        {
+            return true;
+        }
+
+        return value <= static_cast<From>(ToLimits::max());
+    }
+    else
+    {
+        if constexpr (ToLimits::digits > FromLimits::digits)
+        {
+            return true;
+        }
+
+        return value <= static_cast<From>(ToLimits::max());
+    }
+}
+/*
 template<typename To, typename From>
 To unsafeStaticCast(From value)
 {
@@ -99,3 +164,4 @@ To unsafeStaticCast(From value)
     }
     return static_cast<To>(value);
 }
+*/
