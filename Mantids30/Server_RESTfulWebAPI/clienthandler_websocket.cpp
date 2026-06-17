@@ -30,17 +30,17 @@ HTTP::Status::Code ClientHandler::checkWebSocketRequestURI(const std::string &pa
 
     switch (m_websocketEndpoints->checkEndpoint(path, currentScopes, isAdmin, securityParameters))
     {
-    case API::WebSocket::Endpoints::SUCCESS:
+    case API::WebSocket::Endpoints::HandleResult::SUCCESS:
         return HTTP::Status::Code::S_200_OK;
-    case API::WebSocket::Endpoints::INVALID_EVENT_TYPE:
+    case API::WebSocket::Endpoints::HandleResult::INVALID_EVENT_TYPE:
         return HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
-    case API::WebSocket::Endpoints::ENDPOINT_NOT_FOUND:
+    case API::WebSocket::Endpoints::HandleResult::ENDPOINT_NOT_FOUND:
         return HTTP::Status::Code::S_404_NOT_FOUND;
-    case API::WebSocket::Endpoints::AUTHENTICATION_REQUIRED:
+    case API::WebSocket::Endpoints::HandleResult::AUTHENTICATION_REQUIRED:
         return HTTP::Status::Code::S_401_UNAUTHORIZED;
-    case API::WebSocket::Endpoints::INVALID_SCOPE:
+    case API::WebSocket::Endpoints::HandleResult::INVALID_SCOPE:
         return HTTP::Status::Code::S_403_FORBIDDEN;
-    case API::WebSocket::Endpoints::INTERNAL_ERROR:
+    case API::WebSocket::Endpoints::HandleResult::INTERNAL_ERROR:
     default:
         return HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
         break;

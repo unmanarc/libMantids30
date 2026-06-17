@@ -81,7 +81,7 @@ Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath
     it = m_endpoints.find(endpointPath);
     if (it == m_endpoints.end())
     {
-        return ENDPOINT_NOT_FOUND;
+        return HandleResult::ENDPOINT_NOT_FOUND;
     }
 
     const WebSocket::Endpoint &endpointDef = it->second;
@@ -89,17 +89,17 @@ Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath
     // Security checks
     if (endpointDef.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
     {
-        return AUTHENTICATION_REQUIRED;
+        return HandleResult::AUTHENTICATION_REQUIRED;
     }
 
     if (endpointDef.security.requireJWTCookieAuthentication && !securityParameters.haveJWTAuthCookie)
     {
-        return AUTHENTICATION_REQUIRED;
+        return HandleResult::AUTHENTICATION_REQUIRED;
     }
 
     if (endpointDef.security.requireSession && !securityParameters.haveSession)
     {
-        return AUTHENTICATION_REQUIRED;
+        return HandleResult::AUTHENTICATION_REQUIRED;
     }
 
     if (!isAdmin)
@@ -108,12 +108,12 @@ Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath
         {
             if (currentScopes.find(scope) == currentScopes.end())
             {
-                return INVALID_SCOPE;
+                return HandleResult::INVALID_SCOPE;
             }
         }
     }
 
-    return SUCCESS;
+    return HandleResult::SUCCESS;
 }
 
 const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
@@ -131,17 +131,17 @@ Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocke
 {
     if (it == m_endpoints.end())
     {
-        return ENDPOINT_NOT_FOUND;
+        return HandleResult::ENDPOINT_NOT_FOUND;
     }
 
     const WebSocket::Endpoint &endpointDef = it->second;
 
     if (invokeHandler(endpointDef, eventType, content, parameters))
     {
-        return SUCCESS;
+        return HandleResult::SUCCESS;
     }
     else
     {
-        return INVALID_EVENT_TYPE;
+        return HandleResult::INVALID_EVENT_TYPE;
     }
 }
