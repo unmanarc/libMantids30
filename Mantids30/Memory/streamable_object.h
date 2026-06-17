@@ -54,7 +54,7 @@ struct WriteStatus
 
         if (x > 0)
         {
-            bytesWritten = safeAdd(bytesWritten, (size_t) x);
+            bytesWritten = safe_add(bytesWritten, (size_t) x);
         }
         else if (x == 0)
         {
@@ -72,7 +72,7 @@ struct WriteStatus
 
     WriteStatus &operator+=(const WriteStatus &x)
     {
-        bytesWritten = safeAdd(bytesWritten, x.bytesWritten);
+        bytesWritten = safe_add(bytesWritten, x.bytesWritten);
 
         if (!x.succeed)
         {

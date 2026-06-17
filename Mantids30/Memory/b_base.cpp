@@ -921,7 +921,7 @@ std::optional<size_t> B_Base::copyToStreamableObjectUsingCleanVector(StreamableO
             return std::nullopt;
         }
 
-        dataCopied = safeAdd(copyChunk.rosize, dataCopied);
+        dataCopied = safe_add(copyChunk.rosize, dataCopied);
     }
 
     return dataCopied;

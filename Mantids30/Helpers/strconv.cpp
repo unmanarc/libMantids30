@@ -76,10 +76,10 @@ size_t Mantids30::Helpers::StringConversions::getSizeFromString(const std::strin
         return 0;
     }
 
-    // Check for overflow using safeMultiply
+    // Check for overflow using safe_mul
     try
     {
-        return safeMultiply<long double>(static_cast<uint64_t>(fileSize), multiplier);
+        return safe_mul<long double>(static_cast<uint64_t>(fileSize), multiplier);
     }
     catch (const std::overflow_error &e)
     {
