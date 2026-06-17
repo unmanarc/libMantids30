@@ -18,7 +18,7 @@ public:
     /**
      * Class constructor.
      */
-    Socket_TCP();
+    Socket_TCP() = default;
     ~Socket_TCP() override = default;
     /**
      * Listen on an specific TCP port and address
@@ -69,10 +69,10 @@ protected:
 private:
     bool tcpConnect(const unsigned short &addrFamily, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
-    bool m_useTcpNoDelayOption;
-    bool m_useTCPForceKeepAlive;
-    int m_tcpKeepIdle, m_tcpKeepCnt, m_tcpKeepInterval;
-    int32_t m_overwriteReadTimeout, m_overwriteWriteTimeout;
+    bool m_useTcpNoDelayOption{true};
+    bool m_useTCPForceKeepAlive{false};
+    int m_tcpKeepIdle{10}, m_tcpKeepCnt{5}, m_tcpKeepInterval{5};
+    int32_t m_overwriteReadTimeout{-1}, m_overwriteWriteTimeout{-1};
 };
 
 using Socket_TCP_SP = std::shared_ptr<Socket_TCP>;

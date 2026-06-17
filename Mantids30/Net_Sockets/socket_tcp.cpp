@@ -23,24 +23,11 @@
 using namespace Mantids30::Network;
 using namespace Mantids30::Network::Sockets;
 
-Socket_TCP::Socket_TCP()
-{
-    m_useTCPForceKeepAlive = false;
-
-    m_tcpKeepIdle = 10;
-    m_tcpKeepCnt = 5;
-    m_tcpKeepInterval = 5;
-
-    m_useTcpNoDelayOption = true;
-
-    m_overwriteReadTimeout = -1;
-    m_overwriteWriteTimeout = -1;
-}
 
 bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     addrinfo *res = nullptr;
-    m_lastError = "";
+    m_lastError.clear();
     if (!getAddrInfo(remoteHost, port, SOCK_STREAM, (void **) &res))
     {
         // Bad name resolution...
@@ -162,7 +149,7 @@ std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
     std::shared_ptr<Socket_Stream> cursocket;
 
     int32_t clilen;
-    struct sockaddr_in cli_addr;
+    struct sockaddr_in cli_addr{};
     clilen = sizeof(cli_addr);
 
     if ((sdconn = accept(m_sockFD, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen)) >= 0)
@@ -272,7 +259,7 @@ bool Socket_TCP::tcpConnect(const unsigned short &addrFamily, const sockaddr *ad
         {
             fd_set myset;
 
-            struct timeval tv;
+            struct timeval tv{};
             tv.tv_sec = timeout;
             tv.tv_usec = 0;
             FD_ZERO(&myset);
