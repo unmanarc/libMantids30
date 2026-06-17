@@ -30,7 +30,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
         {
             for (x = 0; x < 4; x++)
             {
-                cont4[x] = (unsigned char) m_b64Chars.find(cont4[x]);
+                cont4[x] = static_cast<unsigned char>(m_b64Chars.find(static_cast<char>(cont4[x])));
             }
 
             cont3[0] = (cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
@@ -39,7 +39,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
 
             for (x = 0; (x < 3); x++)
             {
-                decodedString += std::to_string(cont3[x] ^ dis(gen));
+                decodedString += static_cast<char>(cont3[x] ^ static_cast<unsigned char>(dis(gen)));
             }
             x = 0;
         }
@@ -53,7 +53,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
         }
         for (y = 0; y < 4; y++)
         {
-            cont4[y] = (unsigned char) m_b64Chars.find(cont4[y]);
+            cont4[y] = static_cast<unsigned char>(m_b64Chars.find(static_cast<char>(cont4[y])));
         }
 
         cont3[0] = (cont4[0] << 2) + ((cont4[1] & 0x30) >> 4);
@@ -62,7 +62,7 @@ string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed
 
         for (y = 0; (y < x - 1); y++)
         {
-            decodedString += cont3[y] ^ dis(gen);
+            decodedString += static_cast<char>(cont3[y] ^ static_cast<unsigned char>(dis(gen)));
         }
     }
 
@@ -108,7 +108,6 @@ std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const 
 
     const std::string *inputx = &input;
     std::string inputurl;
-    std::string result;
 
     if (url) // Check if url is not null
     {
