@@ -71,39 +71,89 @@ bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
     if (sscanf(src.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X", &a, &b, &c, &d, &e, &f) == 6 || sscanf(src.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &a, &b, &c, &d, &e, &f) == 6
         || sscanf(src.c_str(), "%02X-%02X-%02X-%02X-%02X-%02X", &a, &b, &c, &d, &e, &f) == 6 || sscanf(src.c_str(), "%02x-%02x-%02x-%02x-%02x-%02x", &a, &b, &c, &d, &e, &f) == 6)
     {
-        dst[0] = unsafeStaticCast<unsigned char, unsigned int>(a);
-        dst[1] = unsafeStaticCast<unsigned char, unsigned int>(b);
-        dst[2] = unsafeStaticCast<unsigned char, unsigned int>(c);
-        dst[3] = unsafeStaticCast<unsigned char, unsigned int>(d);
-        dst[4] = unsafeStaticCast<unsigned char, unsigned int>(e);
-        dst[5] = unsafeStaticCast<unsigned char, unsigned int>(f);
+        dst[0] = safe_cast_or<unsigned char>(a, 0);
+        dst[1] = safe_cast_or<unsigned char>(b, 0);
+        dst[2] = safe_cast_or<unsigned char>(c, 0);
+        dst[3] = safe_cast_or<unsigned char>(d, 0);
+        dst[4] = safe_cast_or<unsigned char>(e, 0);
+        dst[5] = safe_cast_or<unsigned char>(f, 0);
         r = true;
     }
 
     return r;
 }
 
+/**
+ * Converts a 64-bit hash value to a 6-byte MAC address in network byte order (big-endian).
+ * The highest 6 bytes of the 64-bit value are used, with the most significant byte first.
+ *
+ * @param src The 64-bit hash value.
+ * @param dst Pointer to a 6-byte buffer for the MAC address.
+ */
 void MACADDR::_fromHASH(const uint64_t &src, unsigned char *dst)
 {
-    memset(dst, 0, sizeof(ETH_ALEN));
-    char dst2[sizeof(uint64_t)];
-    *((uint64_t *) dst2) = htonll(src);
-    memcpy(dst, dst2, ETH_ALEN);
+    if (!dst)
+    {
+        return;
+    }
+
+    // Clear destination
+    std::memset(dst, 0, ETH_ALEN);
+
+    // Extract the top 6 bytes from the 64-bit value.
+    // We shift right to get the most significant bytes first (big-endian order).
+    // Byte 0: bits 56-63
+    // Byte 1: bits 48-55
+    // ...
+    // Byte 5: bits 0-7 is NOT used; we use bits 8-15?
+    // Actually, to preserve the hash value's significance, we typically take the most significant 6 bytes.
+
+    // Let's define: dst[0] is the most significant byte of the MAC (network order).
+    // We take the top 6 bytes of the 64-bit integer.
+
+    dst[0] = static_cast<unsigned char>((src >> 56) & 0xFF);
+    dst[1] = static_cast<unsigned char>((src >> 48) & 0xFF);
+    dst[2] = static_cast<unsigned char>((src >> 40) & 0xFF);
+    dst[3] = static_cast<unsigned char>((src >> 32) & 0xFF);
+    dst[4] = static_cast<unsigned char>((src >> 24) & 0xFF);
+    dst[5] = static_cast<unsigned char>((src >> 16) & 0xFF);
+}
+
+/**
+ * Converts a 6-byte MAC address (in network byte order, big-endian) to a 64-bit hash.
+ * The MAC address is placed into the most significant 6 bytes of the 64-bit value.
+ *
+ * @param value Pointer to a 6-byte MAC address.
+ * @return A 64-bit hash value.
+ */
+uint64_t MACADDR::_toHash(const unsigned char *value)
+{
+    if (!value)
+    {
+        return 0;
+    }
+
+    // Construct uint64_t from 6 bytes, treating the first byte as most significant.
+    uint64_t hash = 0;
+
+    // We place the MAC bytes into the top 6 bytes of the 64-bit integer.
+    // This matches the _fromHASH logic.
+
+    hash |= static_cast<uint64_t>(value[0]) << 56;
+    hash |= static_cast<uint64_t>(value[1]) << 48;
+    hash |= static_cast<uint64_t>(value[2]) << 40;
+    hash |= static_cast<uint64_t>(value[3]) << 32;
+    hash |= static_cast<uint64_t>(value[4]) << 24;
+    hash |= static_cast<uint64_t>(value[5]) << 16;
+
+    return hash;
 }
 
 std::string MACADDR::_toString(const unsigned char *value)
 {
     char addr[32];
     snprintf(addr, 32, "%02X:%02X:%02X:%02X:%02X:%02X", value[0], value[1], value[2], value[3], value[4], value[5]);
-    return std::string(addr);
-}
-
-uint64_t MACADDR::_toHash(const unsigned char *value)
-{
-    unsigned char _macaddr[sizeof(uint64_t)];
-    *((uint64_t *) _macaddr) = 0;
-    memcpy(_macaddr, value, 6);
-    return ntohll(*((uint64_t *) _macaddr));
+    return {addr};
 }
 
 uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
@@ -115,7 +165,7 @@ uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
     {
         *ok = okv;
     }
-    return ntohll(*((uint64_t *) _macaddr));
+    return _toHash(_macaddr);
 }
 
 std::string MACADDR::_fromHASHToString(const uint64_t &value)
@@ -135,6 +185,7 @@ std::shared_ptr<Var> MACADDR::protectedCopy()
     }
     return var;
 }
+
 json MACADDR::toJSON()
 {
     if (isNull())
