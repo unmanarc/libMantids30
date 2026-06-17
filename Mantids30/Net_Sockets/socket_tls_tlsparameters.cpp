@@ -228,26 +228,25 @@ void Socket_TLS::TLSKeyParameters::setValidateServerHostname(bool newValidateSer
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *identity, unsigned char *psk, unsigned int max_psk_len)
 {
     PSKServerWallet *pskValues = PSKStaticHdlr::getServerWallet(ssl);
-
     // No registered clients... (???)
     if (!pskValues)
     {
         return 0;
     }
 
+    if (static_cast<uint64_t>(max_psk_len) > static_cast<uint64_t>(std::numeric_limits<int>::max()))
+        return 0;
+
     strncpy((char *) psk, "", max_psk_len);
-
     std::string _psk;
-
     // Using callback strategy if callback is defined, otherwise use the local map...
     if ((pskValues->pskCallback ? pskValues->pskCallback(pskValues->data, identity, &_psk) : pskValues->getPSKByClientID(identity, &_psk)))
     {
         // Set the provided ID.
         pskValues->connectedClientID = identity;
-
         // return the proper key for the iPSK negotiation.
         snprintf((char *) psk, max_psk_len, "%s", _psk.c_str());
-        return safeStaticCast<unsigned int, size_t>(strlen(reinterpret_cast<char *>(psk)));
+        return safe_cast_or<uint32_t>(strlen(reinterpret_cast<char *>(psk)), 0);
     }
     // No ID found.
     return 0;
@@ -255,11 +254,21 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
 
 unsigned int Socket_TLS::TLSKeyParameters::cbPSKClient(SSL *ssl, const char *hint, char *identity, unsigned int max_identity_len, unsigned char *psk, unsigned int max_psk_len)
 {
+    if (static_cast<uint64_t>(max_psk_len) > static_cast<uint64_t>(std::numeric_limits<int>::max()))
+    {
+        return 0;
+    }
+    if (static_cast<uint64_t>(max_identity_len) > static_cast<uint64_t>(std::numeric_limits<int>::max()))
+    {
+        return 0;
+    }
+
     PSKClientValue *pskValue = PSKStaticHdlr::getClientValue(ssl);
+
     snprintf((char *) psk, max_psk_len, "%s", pskValue->psk.c_str());
     snprintf(identity, max_identity_len, "%s", pskValue->identity.c_str());
 
-    return safeStaticCast<unsigned int, size_t>(strlen(reinterpret_cast<char *>(psk)));
+    return safe_cast_or<uint32_t>(strlen(reinterpret_cast<char *>(psk)), 0);
 }
 
 Socket_TLS::TLSKeyParameters::PSKClientValue *Socket_TLS::TLSKeyParameters::getPSKClientValue()
