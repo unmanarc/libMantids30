@@ -144,7 +144,7 @@ bool JSONEval::parseExpression(std::string expr)
         }
     }
 
-    m_lastError = "";
+    m_lastError.clear();
     return true;
 }
 

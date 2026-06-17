@@ -84,7 +84,7 @@ void Cookies_ServerSide::addClearSecureCookie(const std::string &cookieName, con
     {
         c.path = path;
     }
-    c.value = "";
+    c.value.clear();
     c.secure = true;
     c.httpOnly = true;
 

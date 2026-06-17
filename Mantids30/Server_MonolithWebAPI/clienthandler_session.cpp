@@ -18,8 +18,8 @@ HTTP::Status::Code ClientHandler::sessionStart()
     {
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Invalid session ID format");
         // No session to load.
-        m_sessionID = "";
-        m_impersonatorSessionID = "";
+        m_sessionID.clear();
+        m_impersonatorSessionID.clear();
         return HTTP::Status::Code::S_403_FORBIDDEN;
     }
 
@@ -27,8 +27,8 @@ HTTP::Status::Code ClientHandler::sessionStart()
     {
         log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Invalid impersonator session ID format");
         // No session to load.
-        m_sessionID = "";
-        m_impersonatorSessionID = "";
+        m_sessionID.clear();
+        m_impersonatorSessionID.clear();
         return HTTP::Status::Code::S_403_FORBIDDEN;
     }
 
@@ -60,8 +60,8 @@ HTTP::Status::Code ClientHandler::sessionStart()
             {
                 log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "Floating IP not allowed for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
                 // No session to load.
-                m_sessionID = "";
-                m_impersonatorSessionID = "";
+                m_sessionID.clear();
+                m_impersonatorSessionID.clear();
                 return HTTP::Status::Code::S_403_FORBIDDEN;
             }
         }
@@ -69,8 +69,8 @@ HTTP::Status::Code ClientHandler::sessionStart()
         {
             log(LogLevel::SECURITY_ALERT, "monolithAPI", 2048, "User Agent not allowed to change for session {sessionId=%s}", RPCLog::truncateSessionId(m_sessionID).c_str());
             // No session to load.
-            m_sessionID = "";
-            m_impersonatorSessionID = "";
+            m_sessionID.clear();
+            m_impersonatorSessionID.clear();
             return HTTP::Status::Code::S_403_FORBIDDEN;
         }
     }
@@ -78,7 +78,7 @@ HTTP::Status::Code ClientHandler::sessionStart()
     {
         // No session found with this session id, then execute anything without session and then logout.
         m_destroySession = true;
-        m_sessionID = ""; // Invalidate this session ID and continue without session.
+        m_sessionID.clear(); // Invalidate this session ID and continue without session.
     }
     return HTTP::Status::Code::S_200_OK;
 }

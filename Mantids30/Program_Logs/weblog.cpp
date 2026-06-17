@@ -331,7 +331,7 @@ void WebLog::printLogToFile(const json *value)
             std::string logLine = remoteHost + " " + identity + " " + user + " [" + formattedTimestamp + "] \"" + requestLine + "\" " + (responseStatus == 0 ? "-" : std::to_string(responseStatus))
                                   + " " + (bytesSent == std::nullopt ? "-" : std::to_string(*bytesSent)) + " \"" + referer + "\" \"" + userAgent + "\"";
 
-            m_logFileHandle << logLine << std::endl;
+            m_logFileHandle << logLine << '\n';
             m_logCurrentSize += logLine.size() + 1;
         }
         break;

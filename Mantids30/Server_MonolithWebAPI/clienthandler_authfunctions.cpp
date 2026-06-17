@@ -151,7 +151,7 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 
         // TODO: migrar esto en libMantids2 a shared pointer.
         m_sessionID = m_sessionsManager->createSession(session, networkClientInfo, &m_sessionMaxAge);
-        if (m_sessionID == "")
+        if (m_sessionID.empty())
         {
             // Too many sessions for this user or error inserting the session.
             return HTTP::Status::Code::S_503_SERVICE_UNAVAILABLE;

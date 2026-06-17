@@ -19,11 +19,9 @@ MIME_Sub_Content::MIME_Sub_Content()
     setFsTmpFolder("/tmp");
 #endif
 
-    m_contentContainer = nullptr;
     replaceContentContainer(std::make_shared<Memory::Containers::B_Chunks>());
     setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DIRECT_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-
     m_subParserName = "MIME_Sub_Content";
 }
 
@@ -75,7 +73,7 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
     getParsedBuffer()->appendTo(*m_contentContainer);
-    if (getFoundDelimiter().size())
+    if (!getFoundDelimiter().empty())
     {
         // finished (delimiter found).
 #ifdef DEBUG
@@ -110,7 +108,5 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentC
 
 void MIME_Sub_Content::replaceContentContainer(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
 {
-    //    if (contentContainer)
-    //  delete contentContainer;
     m_contentContainer = value;
 }

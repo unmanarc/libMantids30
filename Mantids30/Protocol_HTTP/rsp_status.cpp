@@ -80,7 +80,7 @@ Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
 
     m_httpVersion.parse(requestParts[0]);
     m_statusCode = static_cast<Code>(strtoul(requestParts[1].c_str(), nullptr, 10));
-    m_statusMessage = "";
+    m_statusMessage.clear();
 
     if (requestParts.size() >= 3)
     {

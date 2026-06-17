@@ -35,7 +35,7 @@ bool APIServerConfig::setDocumentRootPath(const std::string &value)
     // If the provided path is empty, reset the path and return true.
     if (value.empty())
     {
-        m_documentRootPath = "";
+        m_documentRootPath.clear();
         return true;
     }
 

@@ -69,7 +69,7 @@ Mantids30::Helpers::AppExec::ExecutionResult Mantids30::Helpers::AppExec::blexec
     sAppPIPE pipes;
     std::string sCmd;
 
-    rt.output = "";
+    rt.output.clear();
     rt.exitCode = -1;
     rt.status = AppExec::Status::UNKNOWN_ERROR;
 
