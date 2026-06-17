@@ -1,8 +1,8 @@
 #include "a_bin.h"
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Threads/lock_shared.h>
-#include <json/value.h>
 #include <cstring>
+#include <json/value.h>
 
 using namespace Mantids30::Memory::Abstract;
 

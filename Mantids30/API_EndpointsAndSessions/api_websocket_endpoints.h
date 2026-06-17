@@ -22,7 +22,7 @@ public:
      *
      * @brief Enumeration for possible error codes.
      */
-    enum HandleResult: int8_t
+    enum HandleResult : int8_t
     {
         SUCCESS = 0,
         INVALID_EVENT_TYPE = -1,
@@ -79,7 +79,7 @@ public:
      * @param parameters The WebSocket parameters.
      * @return The error code indicating the result of event handling.
      */
-    HandleResult handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content, WebSocket::WebSocketParameters &parameters);
+    HandleResult handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content, WebSocket::WebSocketParameters &parameters);
 
     /**
      * @brief getWebSocketEndpointByURI
@@ -96,7 +96,7 @@ private:
 
     Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);
 
-    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
+    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
                        const WebSocketParameters &parameters);
 
     friend class Mantids30::Network::Servers::Web::APIServerCore;

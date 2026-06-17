@@ -244,8 +244,8 @@ public:
      * The handler returns a value of type `Protocol::HTTP::Status::Code` representing the
      * response status code.
      */
-    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request,
-                                                                   Protocol::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> & obj);
+    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response,
+                                                                   const std::shared_ptr<void> &obj);
 
     struct DynamicRequestHandlerDef
     {

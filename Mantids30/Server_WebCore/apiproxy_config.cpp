@@ -83,12 +83,12 @@ void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, co
                                        const std::map<std::string, std::string> &vars)
 {
     //   log->log0(__func__, Logs::LogLevel::DEBUG, "Starting to parse extra headers.");
-    for (const auto&pair : headersTree)
+    for (const auto &pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
 
         // Replace %VARIABLE% with the corresponding value from vars
-        for (const auto&varPair : vars)
+        for (const auto &varPair : vars)
         {
             const std::string varPlaceholder = "%" + varPair.first + "%";
             size_t pos = 0;

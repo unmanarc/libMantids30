@@ -64,7 +64,7 @@ protected:
      * @param sockRPCClient TLS Socket
      * @return if false, the connection will not continue
      */
-    virtual bool postConnect(const std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> & sockRPCClient) { return true; }
+    virtual bool postConnect(const std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> &sockRPCClient) { return true; }
 
     virtual std::string decryptStr(const std::string &src) { return src; };
     virtual std::string encryptStr(const std::string &src) { return src; };

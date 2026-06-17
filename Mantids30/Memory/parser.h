@@ -58,7 +58,7 @@ public:
      */
     void setMaxTTL(const size_t &value);
 
-    void setStreamable(const std::shared_ptr<StreamableObject> & value);
+    void setStreamable(const std::shared_ptr<StreamableObject> &value);
     void setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject);
 
     void setParsingDebugOptions(DebugOptions newParsingDebugOptions) { parsingDebugOptions = newParsingDebugOptions; }

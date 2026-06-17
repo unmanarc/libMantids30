@@ -57,7 +57,7 @@ set<string> AtomicExpressionSide::resolveValueSet(const json &v, bool resolveReg
     case Type::JSONPATH:
     {
         Json::Path path(m_expr.substr(1));
-        const json& result = path.resolve(v);
+        const json &result = path.resolve(v);
         set<string> res;
 
         if (result.empty() && !result.isNull())

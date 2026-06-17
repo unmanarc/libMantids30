@@ -55,7 +55,7 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(uint8_t logMode)
     return initLog;
 }
 
-std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog>& appLog, const boost::property_tree::ptree &config)
+std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> &appLog, const boost::property_tree::ptree &config)
 {
     std::shared_ptr<Program::Logs::WebLog> log = std::make_shared<Program::Logs::WebLog>();
     log->config.appLog = appLog;

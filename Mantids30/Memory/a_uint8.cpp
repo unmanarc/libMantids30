@@ -46,7 +46,7 @@ bool UINT8::fromString(const std::string &value)
         return false;
     }
 
-    char* end = nullptr;
+    char *end = nullptr;
     unsigned long result = strtoul(value.c_str(), &end, 10);
 
     if (end == value.c_str() || *end != '\0' || result > UINT8_MAX)

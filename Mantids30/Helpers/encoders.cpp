@@ -2,11 +2,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <cinttypes>
+#include <cstring>
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <openssl/evp.h>
 #include <random>
-#include <cstring>
 
 using namespace std;
 using namespace Mantids30::Helpers;

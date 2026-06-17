@@ -3,9 +3,9 @@
 #include "socket_stream.h"
 #include "streams_bridge_thread.h"
 
-#include <cstdint>
 #include <atomic>
 #include <condition_variable>
+#include <cstdint>
 #include <mutex>
 #include <thread>
 

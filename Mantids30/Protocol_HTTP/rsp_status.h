@@ -10,7 +10,6 @@ namespace Mantids30::Network::Protocol::HTTP {
 class Status : public Memory::Streams::SubParser
 {
 public:
-
     enum class Code : uint16_t
     {
         S_100_CONTINUE = 100,
@@ -60,8 +59,6 @@ public:
         S_511_NETWORK_AUTHENTICATION_REQUIRED = 511,
         S_999_NOT_SET = 1000
     };
-
-
 
     Status();
 

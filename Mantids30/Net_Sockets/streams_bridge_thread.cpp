@@ -9,8 +9,6 @@
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;
 
-
-
 Bridge_Thread::~Bridge_Thread()
 {
     delete[] block_fwd;

@@ -10,7 +10,7 @@ VariableMap::~VariableMap()
     m_submaps.clear();
 }
 
-void VariableMap::insertOrUpdateSubmap(const std::string &variableName, const std::shared_ptr<VariableMap> & vars)
+void VariableMap::insertOrUpdateSubmap(const std::string &variableName, const std::shared_ptr<VariableMap> &vars)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
 
@@ -23,7 +23,7 @@ void VariableMap::setVariableFromString(const std::string &variableName, Var::Ty
     insertOrUpdateVariable(variableName, Var::makeAbstract(varType, str));
 }
 
-void VariableMap::insertOrUpdateVariable(const std::string &variableName, const std::shared_ptr<Var> & var)
+void VariableMap::insertOrUpdateVariable(const std::string &variableName, const std::shared_ptr<Var> &var)
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
@@ -91,7 +91,7 @@ std::list<std::string> VariableMap::listVariableKeys()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const auto&i : m_variables)
+    for (const auto &i : m_variables)
     {
         r.push_back(i.first);
     }
@@ -103,7 +103,7 @@ std::list<std::string> VariableMap::listSubmapKeys()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     std::list<std::string> r;
-    for (const auto&i : m_submaps)
+    for (const auto &i : m_submaps)
     {
         r.push_back(i.first);
     }

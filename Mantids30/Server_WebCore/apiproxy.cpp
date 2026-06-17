@@ -17,7 +17,8 @@ using namespace Mantids30;
 // TODO: logs via callback?
 // TODO: how to prvent ../ (escapes)...
 
-HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> & obj)
+HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response,
+                                                              const std::shared_ptr<void> &obj)
 {
     if (obj == nullptr)
     {
@@ -67,7 +68,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
         client.clientRequest.requestLine.setRequestURI(internalPath);
 
         // Replace current headers with extra headers (eg. x-api-key... X-Originating-IP )
-        for (const auto&header : proxyParameters->extraHeaders)
+        for (const auto &header : proxyParameters->extraHeaders)
         {
             client.clientRequest.headers.replace(header.first, header.second);
         }

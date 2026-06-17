@@ -9,8 +9,8 @@ using namespace Mantids30;
 using namespace Mantids30::Network::Protocol;
 using namespace API::RESTful;
 
-bool Endpoints::addEndpoint(const HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements, const std::set<std::string>& requiredScopes, void *context,
-                            APIEndpointFunctionType endpointDefinition)
+bool Endpoints::addEndpoint(const HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements, const std::set<std::string> &requiredScopes,
+                            void *context, APIEndpointFunctionType endpointDefinition)
 {
     RESTfulAPIEndpointFullDefinition def;
     def.endpointDefinition = endpointDefinition;
@@ -55,7 +55,7 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const RequestParameters 
 }
 
 Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
-                                                const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse)
+                                                  const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse)
 {
     RESTfulAPIEndpointFullDefinition endpointFullDefinition;
     std::map<std::string, RESTfulAPIEndpointFullDefinition>::iterator it = m_endpointsGET.end();
@@ -181,7 +181,6 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
         }
     }
 
-
     if (endpointFullDefinition.endpointDefinition != nullptr && apiResponse != nullptr)
     {
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(inputParameters);
@@ -201,7 +200,7 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
 }
 
 Endpoints::HandleResult Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
-                                                bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut)
+                                                  bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut)
 {
     HTTP::Method mode;
 

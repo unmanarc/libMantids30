@@ -310,9 +310,9 @@ public:
             ERROR_UNKNOWN = -4
         };
 
-        Result m_result = Result::ERROR_UNKNOWN;           /**< Result */
-        unsigned char *m_digest=nullptr;   /**< RAW Signature created by createSignature() */
-        unsigned int m_digestSize=0; /**< RAW Signature size created by createSignature() */
+        Result m_result = Result::ERROR_UNKNOWN; /**< Result */
+        unsigned char *m_digest = nullptr;       /**< RAW Signature created by createSignature() */
+        unsigned int m_digestSize = 0;           /**< RAW Signature size created by createSignature() */
     };
 
     /**

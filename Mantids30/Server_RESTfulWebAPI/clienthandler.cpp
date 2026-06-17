@@ -7,13 +7,12 @@
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 
-#include <json/value.h>
 #include <json/config.h>
 #include <json/json.h>
+#include <json/value.h>
 
 #include <memory>
 #include <string>
-
 
 using namespace Mantids30::Network::Servers::RESTful;
 using namespace Mantids30::Program::Logs;

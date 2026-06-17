@@ -36,7 +36,7 @@ bool HTTP::URLVars::streamTo(Memory::Streams::StreamableObject *out)
 {
     bool firstVar = true;
 
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         if (firstVar)
         {
@@ -86,7 +86,7 @@ uint32_t HTTP::URLVars::varCount(const std::string &varName)
 {
     uint32_t x = 0;
 
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         if (i.first == varName)
         {
@@ -99,7 +99,7 @@ uint32_t HTTP::URLVars::varCount(const std::string &varName)
 
 std::shared_ptr<Memory::Streams::StreamableObject> HTTP::URLVars::getValue(const std::string &varName)
 {
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         if (i.first == varName)
         {
@@ -112,7 +112,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::URLVars::getValue(const
 std::list<std::shared_ptr<Memory::Streams::StreamableObject>> HTTP::URLVars::getValues(const std::string &varName)
 {
     std::list<std::shared_ptr<Memory::Streams::StreamableObject>> r;
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         if (i.first == varName)
         {
@@ -125,7 +125,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> HTTP::URLVars::get
 std::set<std::string> HTTP::URLVars::getKeysList()
 {
     std::set<std::string> r;
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         r.insert(i.first);
     }
@@ -175,7 +175,7 @@ bool HTTP::URLVars::changeToNextParser()
     }
 }
 
-bool HTTP::URLVars::addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> & data)
+bool HTTP::URLVars::addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data)
 {
     if (!varName.empty() && m_vars.size() < m_maxVarsCount)
     {

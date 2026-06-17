@@ -361,12 +361,8 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
 void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
 {
     // CINC PROCESSOR:
-    boost::regex
-        reIncludeHTML(R"(<!--<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>-->)",
-                      boost::regex::icase);
-    boost::
-        regex reIncludeJS(R"(//<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>//)",
-                          boost::regex::icase);
+    boost::regex reIncludeHTML(R"(<!--<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>-->)", boost::regex::icase);
+    boost::regex reIncludeJS(R"(//<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>//)", boost::regex::icase);
 
     if (contentType == "application/javacript")
     {

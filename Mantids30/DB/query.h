@@ -104,7 +104,7 @@ public:
      * @param vars Optional input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &vars = {});
+    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars = {});
     /**
      * @brief Binds input variables to the prepared SQL query.
      * @param vars The map of input variables to bind.
@@ -210,7 +210,7 @@ protected:
     */
     virtual bool postBindResultVars() { return true; }
 
-    bool replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string& replaceBy);
+    bool replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string &replaceBy);
 
     std::shared_ptr<std::string> createDestroyableStringForInput(const std::string &str);
     void clearDestroyableStringsForInput();

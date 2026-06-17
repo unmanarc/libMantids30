@@ -169,7 +169,7 @@ protected:
     Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
-    void parseSubValues(const std::shared_ptr<MIME_HeaderOption> & opt, const std::string &strName);
+    void parseSubValues(const std::shared_ptr<MIME_HeaderOption> &opt, const std::string &strName);
 
     std::shared_ptr<MIME_HeaderOption> m_lastOpt;
     void parseOptionValue(std::string optionValue);

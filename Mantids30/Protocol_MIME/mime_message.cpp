@@ -15,7 +15,7 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocol::MIME;
 using namespace Mantids30;
 
-MIME_Message::MIME_Message(const std::shared_ptr<Memory::Streams::StreamableObject> & value)
+MIME_Message::MIME_Message(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
     : Memory::Streams::Parser(value, false)
 {
     m_currentSubParser = &m_subFirstBoundary;
@@ -24,7 +24,7 @@ MIME_Message::MIME_Message(const std::shared_ptr<Memory::Streams::StreamableObje
     setMultiPartBoundary(Helpers::Random::createRandomString(64));
 }
 
-std::shared_ptr<MIME_Message> MIME_Message::create(const std::shared_ptr<StreamableObject> & value)
+std::shared_ptr<MIME_Message> MIME_Message::create(const std::shared_ptr<StreamableObject> &value)
 {
     std::shared_ptr<MIME_Message> x = std::shared_ptr<MIME_Message>(new MIME_Message(value));
     x->initSubParser(&x->m_subFirstBoundary);
@@ -43,7 +43,7 @@ bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
         return false;
     }
 
-    for (const std::shared_ptr<MIME_PartMessage>& i : m_allParts)
+    for (const std::shared_ptr<MIME_PartMessage> &i : m_allParts)
     {
         out->writeString("\r\n");
 
@@ -137,7 +137,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getV
 std::set<std::string> MIME_Message::getKeysList()
 {
     std::set<std::string> r;
-    for (const auto&i : m_partsByName)
+    for (const auto &i : m_partsByName)
     {
         r.insert(i.first);
     }
@@ -296,7 +296,7 @@ bool MIME_Message::changeToNextParser()
     }
 }
 
-bool MIME_Message::addMultiPartMessage(const std::shared_ptr<MIME_PartMessage> & part)
+bool MIME_Message::addMultiPartMessage(const std::shared_ptr<MIME_PartMessage> &part)
 {
     if (m_allParts.size() >= m_maxVarsCount)
     {
@@ -382,7 +382,7 @@ bool MIME_Message::addVar(const std::string &varName, const std::shared_ptr<Memo
     return addStreamableObjectContainer(varName, data);
 }
 
-bool MIME_Message::addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<StreamableObject> & obj)
+bool MIME_Message::addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<StreamableObject> &obj)
 {
     if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", varName))
     {

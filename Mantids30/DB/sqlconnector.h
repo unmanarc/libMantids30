@@ -90,7 +90,7 @@ public:
      *       If no rows are found, step() will return false immediately.
      */
     [[nodiscard]] std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                   const std::vector<Memory::Abstract::Var *> &resultVars);
+                                                 const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectSingleRow Executes a prepared SELECT query and retrieves exactly one row of data.
@@ -102,7 +102,8 @@ public:
      *       If no rows are found, resultVars will remain in an undefined state.
      *       The method returns false if the query fails or returns more than one row.
      */
-    [[nodiscard]] bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars, const std::vector<Memory::Abstract::Var *> &resultVars);
+    [[nodiscard]] bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+                                        const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
      * @brief qSelectWithFilters Fast Prepared Query for row-returning statements with additional filters.
@@ -115,7 +116,7 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    [[nodiscard]] std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var> > &inputVars,
+    [[nodiscard]] std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                             const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);

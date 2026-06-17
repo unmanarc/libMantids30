@@ -29,7 +29,7 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
     return clientDetails;
 }
 
-bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
+bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
                               const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;
@@ -62,7 +62,8 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
         Json::Value header;
         std::string errs;
         std::vector<char> buf = content->copyToBuffer();
-        if (config->translateWebSocketTextMessagesToJSON && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
+        if (config->translateWebSocketTextMessagesToJSON
+            && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
         {
             if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
             {
@@ -125,8 +126,8 @@ const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) con
     return nullptr;
 }
 
-Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks>& content,
-                                             WebSocket::WebSocketParameters &parameters)
+Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
+                                               WebSocket::WebSocketParameters &parameters)
 {
     if (it == m_endpoints.end())
     {

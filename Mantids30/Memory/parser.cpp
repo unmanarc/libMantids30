@@ -5,7 +5,7 @@
 
 using namespace Mantids30::Memory::Streams;
 
-Parser::Parser(const std::shared_ptr<StreamableObject> & value, bool clientMode)
+Parser::Parser(const std::shared_ptr<StreamableObject> &value, bool clientMode)
 {
     this->m_clientMode = clientMode;
     this->m_streamableObject = value;
@@ -152,7 +152,8 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         {
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Failed to write data into parser %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Failed to write data into parser %s\033[0m\n", this,
+                        (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
 
                 fflush(stderr);
@@ -170,7 +171,8 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         {
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER requested from %s\n", this,
+                        (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -191,7 +193,8 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
 
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER changed to %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GOTO_NEXT_SUBPARSER changed to %s\n", this,
+                        (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -211,7 +214,8 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         {
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_INTERNAL_DYNAMICS)
             {
-                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GET_MORE_DATA requested from %s\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "[ParseResult::INTERNAL] - %p - ParseResult::GET_MORE_DATA requested from %s\n", this,
+                        (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
             // More data required... (TODO: check this)
@@ -225,7 +229,8 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         case SubParser::ParseResult::ERROR:
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this, (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
+                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this,
+                        (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }
 
@@ -285,7 +290,7 @@ void Parser::setPreStreamableObject(const std::shared_ptr<Memory::Streams::Strea
     m_preStreamableObject = newPreStreamableObject;
 }
 
-void Parser::setStreamable(const std::shared_ptr<Memory::Streams::StreamableObject> & value)
+void Parser::setStreamable(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
 {
     m_streamableObject = value;
 }

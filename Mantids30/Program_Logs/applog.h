@@ -4,7 +4,6 @@
 #include "logcolors.h"
 #include "loglevels.h"
 
-
 namespace Mantids30::Program::Logs {
 
 /**
@@ -17,7 +16,7 @@ public:
      * Class constructor.
      * @param _logMode Log mode (or combination)
      */
-    AppLog(const uint8_t & _logMode = Mode::STANDARD);
+    AppLog(const uint8_t &_logMode = Mode::STANDARD);
 
     /**
      * Log an application event with user and IP information and max out size.

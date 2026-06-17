@@ -84,7 +84,7 @@ public:
     std::thread startConnectionLoopThread(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleServerConnection(const std::shared_ptr<Sockets::Socket_Stream> & sock) = 0;
+    virtual int handleServerConnection(const std::shared_ptr<Sockets::Socket_Stream> &sock) = 0;
 
     std::atomic_bool m_stopReconnecting;
 };

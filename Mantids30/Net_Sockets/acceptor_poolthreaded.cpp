@@ -129,7 +129,7 @@ void PoolThreaded::stopper(void *data)
     ((PoolThreaded *) data)->stop();
 }
 
-void PoolThreaded::acceptorTask(const std::shared_ptr<void> & data)
+void PoolThreaded::acceptorTask(const std::shared_ptr<void> &data)
 {
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "poolthr:sckacpt");

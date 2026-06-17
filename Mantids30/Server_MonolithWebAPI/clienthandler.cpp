@@ -51,7 +51,8 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     case API::Monolith::Endpoints::ValidationResult::SUCCESS:
     {
         log(LogLevel::INFO, "monolithAPI", 2048, "Executing Web Endpoint {endpoint=%s}", endpointName.c_str());
-        log(LogLevel::DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(postParameters).c_str());
+        log(LogLevel::DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),
+            Mantids30::Helpers::jsonToString(postParameters).c_str());
 
         chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> start = chrono::high_resolution_clock::now();
         chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> finish = chrono::high_resolution_clock::now();

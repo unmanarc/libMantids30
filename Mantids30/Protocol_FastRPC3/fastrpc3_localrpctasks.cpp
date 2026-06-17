@@ -20,7 +20,7 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTaskParams)
+void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTaskParams)
 {
     bool functionFound = false;
 
@@ -58,7 +58,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                 else
                 {
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_NOTREQUIRED_ERROR);
+                    CALLBACK(callbacks->onTokenValidationFailure)
+                    (callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_NOTREQUIRED_ERROR);
                     fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
                 }
             }
@@ -77,7 +78,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
                     // report the problem...
                     // This is not an impersonator token.
                     sessionFailed = true;
-                    CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_IMPERSONATION_ERROR);
+                    CALLBACK(callbacks->onTokenValidationFailure)
+                    (callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_IMPERSONATION_ERROR);
                     fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_IMPERSONATOR_TOKEN);
                 }
             }
@@ -184,7 +186,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void>& vTas
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> & taskData)
+void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
 {
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     FastRPC3 *caller = static_cast<FastRPC3 *>(taskParams->caller);
@@ -198,7 +200,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> & taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
+void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
 {
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     RPC3CallbackDefinitions *callbacks = static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks);
@@ -249,7 +251,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void>& taskData)
     taskParams->doneSharedMutex->unlockShared();
 }
 
-void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> & taskData)
+void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
 {
     FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     json response;

@@ -5,7 +5,6 @@
 
 using namespace Mantids30::Database;
 
-
 SQLConnector_SQLite3::~SQLConnector_SQLite3()
 {
     if (m_ppDb)

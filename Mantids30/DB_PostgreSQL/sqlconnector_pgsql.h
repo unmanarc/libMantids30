@@ -61,8 +61,6 @@ private:
     int m_psqlEscapeError{0};
     std::map<std::string, std::string> m_connectionValues;
 
-
-
     uint32_t m_connectionTimeout = 10;
     std::string m_connectionOptions, m_connectionSSLMode;
 };

@@ -3,9 +3,9 @@
 #include "socket_chain_protocolbase.h"
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
+#include <cstring>
 #include <openssl/evp.h>
 #include <random>
-#include <cstring>
 
 namespace Mantids30::Network::Sockets::ChainProtocols {
 

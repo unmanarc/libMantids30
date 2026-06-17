@@ -600,7 +600,8 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                 FILE *pkeyFile = fdopen(fd, "w");
                 if (pkeyFile)
                 {
-                    if (PEM_write_PrivateKey(pkeyFile, pkey, nullptr, nullptr, 0, nullptr, nullptr)) {
+                    if (PEM_write_PrivateKey(pkeyFile, pkey, nullptr, nullptr, 0, nullptr, nullptr))
+                    {
                         log->log0(__func__, Logs::LogLevel::WARN, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
 
                         // Save public key
@@ -622,7 +623,9 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                         {
                             log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
                         }
-                    } else {
+                    }
+                    else
+                    {
                         log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
                     }
                     fclose(pkeyFile);

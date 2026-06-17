@@ -31,8 +31,6 @@ Engine::Engine()
     endpointsHandler[0] = handler;
 }
 
-
-
 API::APIReturn Engine::revokeJWT(void *context,                                        // Context pointer
                                  const API::RESTful::RequestParameters &request,       // Parameters from the RESTful request
                                  Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details

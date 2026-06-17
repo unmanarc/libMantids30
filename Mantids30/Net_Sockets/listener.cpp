@@ -9,8 +9,7 @@ using namespace Mantids30::Network::Sockets;
 using namespace Mantids30;
 using namespace std;
 
-
-void Listener::incomingConnection(void *context, const std::shared_ptr<Sockets::Socket_Stream> & socketStream)
+void Listener::incomingConnection(void *context, const std::shared_ptr<Sockets::Socket_Stream> &socketStream)
 {
     Listener *threadParams = (Listener *) (context);
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);

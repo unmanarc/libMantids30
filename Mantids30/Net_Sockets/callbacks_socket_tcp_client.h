@@ -29,6 +29,6 @@ public:
     /**
      * @brief onConnectionFailure Callback to Notify when there is an error during the TCP/TCP-IP Connection
      */
-    bool (*onConnectionFailure)(void *context,const  std::shared_ptr<Sockets::Socket_Stream> &, const std::shared_ptr<void> &config) = nullptr;
+    bool (*onConnectionFailure)(void *context, const std::shared_ptr<Sockets::Socket_Stream> &, const std::shared_ptr<void> &config) = nullptr;
 };
 } // namespace Mantids30::Network::Sockets

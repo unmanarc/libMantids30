@@ -60,7 +60,7 @@ bool UINT64::fromString(const std::string &value)
         return false;
     }
 
-    char* end = nullptr;
+    char *end = nullptr;
     unsigned long long result = strtoull(value.c_str(), &end, 10);
 
     if (end == value.c_str() || *end != '\0' || result > UINT64_MAX)

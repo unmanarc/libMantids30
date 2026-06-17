@@ -46,7 +46,7 @@ bool UINT16::fromString(const std::string &value)
         return false; // Empty string is not a valid numeric input
     }
 
-    char* end = nullptr;
+    char *end = nullptr;
     unsigned long result = strtoul(value.c_str(), &end, 10);
 
     // Check for conversion errors:

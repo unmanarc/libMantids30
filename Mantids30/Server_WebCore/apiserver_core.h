@@ -61,7 +61,7 @@ public:
              * @param sock The newly established socket connection.
              * @return True to continue processing the connection, false to cancel it.
              */
-             bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &) = nullptr;
+            bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &) = nullptr;
         };
 
         NotificationCallback onClientConnected;                   ///< Callback invoked when a new client connects.

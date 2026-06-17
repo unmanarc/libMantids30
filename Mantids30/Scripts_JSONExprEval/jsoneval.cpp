@@ -154,7 +154,7 @@ bool JSONEval::evaluate(const json &values)
     {
     case EvaluationMode::AND:
     {
-        for (const auto&i : m_atomExpressions)
+        for (const auto &i : m_atomExpressions)
         {
             if (i.first)
             {
@@ -176,7 +176,7 @@ bool JSONEval::evaluate(const json &values)
     break;
     case EvaluationMode::OR:
     {
-        for (const auto&i : m_atomExpressions)
+        for (const auto &i : m_atomExpressions)
         {
             if (i.first)
             {

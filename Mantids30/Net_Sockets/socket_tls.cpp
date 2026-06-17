@@ -17,8 +17,8 @@
 #include <openssl/stack.h>
 #include <openssl/x509_vfy.h>
 
-#include <fcntl.h>
 #include <csignal>
+#include <fcntl.h>
 #include <unistd.h>
 
 #ifdef _WIN32

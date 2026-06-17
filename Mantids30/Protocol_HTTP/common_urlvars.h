@@ -55,7 +55,7 @@ public:
      * @param varName Var Name
      * @param data Variable Data (will be destroyed during URLVars destruction)
      */
-    bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> & data) override;
+    bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data) override;
     /**
      * @brief clear all vars.
      */

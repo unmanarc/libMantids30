@@ -5,7 +5,6 @@
 #include <unistd.h>
 using namespace Mantids30::Database;
 
-
 SQLConnector_PostgreSQL::SQLConnector_PostgreSQL()
 {
     m_port = 5432;
@@ -156,7 +155,7 @@ char **SQLConnector_PostgreSQL::getConnectionKeys()
     char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for (const auto&i : m_connectionValues)
+    for (const auto &i : m_connectionValues)
     {
         values[pos++] = strdup(i.first.c_str());
     }
@@ -170,7 +169,7 @@ char **SQLConnector_PostgreSQL::getConnectionValues()
     char **values = static_cast<char **>(malloc((m_connectionValues.size() + 1) * sizeof(char *)));
 
     size_t pos = 0;
-    for (const auto&i : m_connectionValues)
+    for (const auto &i : m_connectionValues)
     {
         values[pos++] = strdup(i.second.c_str());
     }

@@ -26,10 +26,7 @@ bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
     return false; // Endpoint with given name already exists, cannot add
 }
 
-Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Sessions::Session> &session,
-                      const std::string &endpointName,
-                      const json &payload,
-                      json *payloadOut)
+Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, const json &payload, json *payloadOut)
 {
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
@@ -51,7 +48,7 @@ Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Session
     }
 }
 
-Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session>& session, const std::string &endpointName, json *reasons)
+Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, json *reasons)
 {
     std::set<std::string> scopesLeft, rolesLeft;
 

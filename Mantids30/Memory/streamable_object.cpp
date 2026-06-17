@@ -1,8 +1,8 @@
 #include "streamable_object.h"
 #include "streamable_string.h"
-#include <optional>
 #include <cstdarg>
 #include <cstdio>
+#include <optional>
 
 #ifdef _WIN32
 #include <cstdlib>

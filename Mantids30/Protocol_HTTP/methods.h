@@ -65,4 +65,4 @@ static Method stringToMethod(const std::string &str)
         return Method::UNKNOWN; // default: UNKNOWN
     }
 }
-} // namespace Mantids30::API::HTTP
+} // namespace Mantids30::Network::Protocol::HTTP

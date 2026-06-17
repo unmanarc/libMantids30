@@ -42,8 +42,14 @@ bool NetworkInterfaceConfiguration::apply()
     // Linux:
     if (m_changeIPv4Addr)
     {
-        struct ifreq ifr1_host{0};
-        struct ifreq ifr1_netmask{0};
+        struct ifreq ifr1_host
+        {
+            0
+        };
+        struct ifreq ifr1_netmask
+        {
+            0
+        };
 
         ZeroBStruct(ifr1_host);
         ZeroBStruct(ifr1_netmask);
@@ -126,7 +132,7 @@ bool NetworkInterfaceConfiguration::apply()
     if (changeIPv4Addr)
     {
         ExecutionResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
-                                                                               Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
+                                                                                Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
         if (i.error == 0)
             changeIPv4Addr = false;
         else
@@ -310,7 +316,10 @@ void NetworkInterfaceConfiguration::openTAPW32Interface(HANDLE fd, ULONG adapter
 int NetworkInterfaceConfiguration::getMTU()
 {
 #ifndef _WIN32
-    struct ifreq ifr2{0};
+    struct ifreq ifr2
+    {
+        0
+    };
     int sock2;
     if ((sock2 = socket(AF_INET, SOCK_RAW, IPPROTO_TCP)) < 0)
     {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Mantids30/Helpers/safeint.h>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <cstdlib>
 #include <string>
 
 namespace Mantids30::Memory::Streams {

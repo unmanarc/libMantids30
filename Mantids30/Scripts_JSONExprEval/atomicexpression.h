@@ -24,12 +24,12 @@ public:
         UNDEFINED
     };
 
-    AtomicExpression(const std::shared_ptr<std::vector<std::string> > &staticTexts);
+    AtomicExpression(const std::shared_ptr<std::vector<std::string>> &staticTexts);
 
     bool compile(std::string expr);
     [[nodiscard]] bool evaluate(const json &values);
 
-    void setStaticTexts(const std::shared_ptr<std::vector<std::string>> & value);
+    void setStaticTexts(const std::shared_ptr<std::vector<std::string>> &value);
 
 private:
     [[nodiscard]] bool calcNegative(bool r) const;

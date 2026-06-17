@@ -39,12 +39,12 @@ bool File::save()
 {
     std::ofstream varsfile(m_filePath, std::ofstream::out);
     if (!varsfile.is_open())
-        {
-            m_lastError = LastError::CANT_OPEN_FILE;
-            return false;
-        }
+    {
+        m_lastError = LastError::CANT_OPEN_FILE;
+        return false;
+    }
 
-        bool ok;
+    bool ok;
     for (const auto &i : m_vars)
     {
         std::string value = getLineFromVars(i, &ok);
@@ -164,7 +164,7 @@ std::multimap<std::string, std::string> File::getVarsBySource() const
 std::map<std::string, std::string> File::getVarsMap() const
 {
     std::map<std::string, std::string> r;
-    for (const auto&i : m_vars)
+    for (const auto &i : m_vars)
     {
         r[i.first] = i.second;
     }

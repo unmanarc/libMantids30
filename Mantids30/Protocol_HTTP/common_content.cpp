@@ -205,7 +205,7 @@ std::shared_ptr<Memory::Abstract::Vars> HTTP::Content::postVars()
     if (m_containerType == ContainerType::BIN || m_containerType == ContainerType::JSON)
     {
         // No vars... create an empty object.
-        std::shared_ptr<HTTP::URLVars> vars = HTTP::URLVars::create( std::make_shared<Memory::Streams::StreamableNull>() );
+        std::shared_ptr<HTTP::URLVars> vars = HTTP::URLVars::create(std::make_shared<Memory::Streams::StreamableNull>());
         return vars;
     }
 
@@ -332,7 +332,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::Content::getStreamableO
     return m_contentStreamableObject;
 }
 
-void HTTP::Content::setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject>& outDataContainer)
+void HTTP::Content::setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject> &outDataContainer)
 {
     // This stream has been setted up before...
     this->m_usingInternalOutStream = false;

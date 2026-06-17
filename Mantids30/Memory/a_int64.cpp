@@ -48,7 +48,7 @@ bool INT64::fromString(const std::string &value)
         return false;
     }
 
-    char* end = nullptr;
+    char *end = nullptr;
     long long result = strtoll(value.c_str(), &end, 10);
 
     if (end == value.c_str() || *end != '\0' || result > INT64_MAX || result < INT64_MIN)

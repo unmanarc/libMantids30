@@ -59,7 +59,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     }
 
     // Bind the parameters (in and out)
-    for (const auto&inputVar : m_inputVars)
+    for (const auto &inputVar : m_inputVars)
     {
         int idx = sqlite3_bind_parameter_index(m_stmt, inputVar.first.c_str());
         if (idx)

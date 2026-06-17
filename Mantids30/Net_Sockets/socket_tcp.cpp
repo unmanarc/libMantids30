@@ -37,7 +37,6 @@ Socket_TCP::Socket_TCP()
     m_overwriteWriteTimeout = -1;
 }
 
-
 bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
     addrinfo *res = nullptr;

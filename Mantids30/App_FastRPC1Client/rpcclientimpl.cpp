@@ -1,7 +1,7 @@
 #include "rpcclientimpl.h"
 #include "globals.h"
-#include <cstdint>
 #include <cinttypes>
+#include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
@@ -126,11 +126,7 @@ void RPCClientImpl::runRPClient()
             {
                 if (!strstr(i.c_str(), "certificate unknown"))
                 {
-                    LOG_APP->log1(__func__,
-                                  remoteAddr,
-                                  Logs::LogLevel::ERR,
-                                  ">>> TLS Error: %s",
-                                  i.c_str());
+                    LOG_APP->log1(__func__, remoteAddr, Logs::LogLevel::ERR, ">>> TLS Error: %s", i.c_str());
                 }
             }
         }
@@ -215,7 +211,8 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
                 if (!rpcError["succeed"].asBool())
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s", rpcError["errorMessage"].asCString());
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
+                                  rpcError["errorMessage"].asCString());
                 }
 
                 if (!JSON_ASBOOL(ans, "x", false))

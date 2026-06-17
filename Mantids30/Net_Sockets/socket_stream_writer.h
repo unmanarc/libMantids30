@@ -2,8 +2,8 @@
 
 #include <Mantids30/Memory/streamable_object.h>
 
-#include <limits>
 #include <cstdint>
+#include <limits>
 #include <string>
 
 namespace Mantids30::Network::Sockets {

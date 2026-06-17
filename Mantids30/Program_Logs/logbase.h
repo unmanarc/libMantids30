@@ -57,9 +57,9 @@ protected:
     [[nodiscard]] static std::string getAlignedValue(const std::string &value, size_t sz);
 
     // Thread-safe:
-    bool m_debug = false;                   ///< Debug flag
+    bool m_debug = false;                                               ///< Debug flag
     unsigned int m_logMode = static_cast<unsigned int>(Mode::STANDARD); ///< Log mode (Mode::SYSLOG,Mode::STANDARD,Mode::WINEVENTS)
-    std::mutex m_logMutex;                  ///< Mutex for the log
+    std::mutex m_logMutex;                                              ///< Mutex for the log
 
     // Modules Exclusion.
     std::mutex m_modulesOutputExclusionMutex;       ///< Mutex for the modules exclusion

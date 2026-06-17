@@ -61,7 +61,7 @@ public:
      * @param scopesLeft Set that will be populated with unsatisfied scopes (output parameter)
      * @return true if all required scopes and roles are satisfied, false otherwise
      */
-    bool validateEndpoint(const std::shared_ptr<Sessions::Session>& authSession, const std::string &endpointName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft);
+    bool validateEndpoint(const std::shared_ptr<Sessions::Session> &authSession, const std::string &endpointName, std::set<std::string> &rolesLeft, std::set<std::string> &scopesLeft);
 
 private:
     /**

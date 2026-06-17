@@ -19,7 +19,7 @@ struct ReceivedAuth
 
 struct Configuration
 {
-    void set(const Requirements & requirements, const std::set<std::string> & requiredScopes)
+    void set(const Requirements &requirements, const std::set<std::string> &requiredScopes)
     {
         requireJWTHeaderAuthentication = (requirements & Security::Requirements::JWT_HEADER_AUTH);
         requireJWTCookieAuthentication = (requirements & Security::Requirements::JWT_COOKIE_AUTH);

@@ -7,9 +7,9 @@
 #include <unistd.h>
 #endif
 
+#include <cstring>
 #include <fcntl.h>
 #include <stdexcept>
-#include <cstring>
 #include <sys/types.h>
 
 #ifdef _WIN32
@@ -317,7 +317,7 @@ std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
     std::set<int> r;
     if (poll(&m_plist[0], m_plist.size(), -1) > 0)
     {
-        for (auto & i : m_plist)
+        for (auto &i : m_plist)
         {
             if ((i.revents & POLLIN) != 0)
             {

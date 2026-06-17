@@ -6,9 +6,9 @@
 #include <Mantids30/Memory/vars.h>
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
 
+#include <cstdio>
 #include <memory>
 #include <netinet/in.h>
-#include <cstdio>
 #include <string>
 
 #include "common_content.h"
@@ -44,7 +44,7 @@ public:
      */
     struct Security
     {
-        Headers::Security::XFrameOptions XFrameOptions;       ///< The X-Frame-Options setting.
+        Headers::Security::XFrameOptions XFrameOptions; ///< The X-Frame-Options setting.
         Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
         Headers::Security::HSTS HSTS;                   ///< The HSTS (HTTP Strict Transport Security) setting.
         bool disableNoSniffContentType = false;         ///< Whether or not to disable the no-sniff content type header.
@@ -307,7 +307,7 @@ public:
          * @brief Set the container used for transmitting data.
          * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-         void setDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
+        void setDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
         {
             if (!dataStream)
             {
@@ -326,7 +326,7 @@ public:
          * @param cookieName
          * @return
          */
-        void addCookieClearSecure(const std::string &cookieName, const std::string& path) { cookies.addClearSecureCookie(cookieName, path); }
+        void addCookieClearSecure(const std::string &cookieName, const std::string &path) { cookies.addClearSecureCookie(cookieName, path); }
         /**
          * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
          * @param cookieName

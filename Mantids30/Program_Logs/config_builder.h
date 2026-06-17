@@ -14,7 +14,7 @@ public:
     static std::shared_ptr<Mantids30::Program::Logs::AppLog> createInitLog(uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
     static std::shared_ptr<Mantids30::Program::Logs::AppLog> createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
     static std::shared_ptr<Mantids30::Program::Logs::RPCLog> createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode = static_cast<uint8_t>(Mantids30::Program::Logs::Mode::STANDARD));
-    static std::shared_ptr<Mantids30::Program::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog>& appLog, const boost::property_tree::ptree &config);
+    static std::shared_ptr<Mantids30::Program::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> &appLog, const boost::property_tree::ptree &config);
 };
 
 } // namespace Mantids30::Program::Config

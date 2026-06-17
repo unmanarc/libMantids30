@@ -21,18 +21,18 @@ class Endpoint;
 struct WebSocketParameters
 {
     Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
-    DataFormat::JWT::Token emptyToken;                                                  ///< Holds a default empty token
-    DataFormat::JWT::Token *jwtToken = &emptyToken;                                     ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
-    std::shared_ptr<DataFormat::JWT> jwtValidator;                                      ///< Holds the JWT Validator
-    std::shared_ptr<DataFormat::JWT> jwtSigner;                                         ///< Holds the JWT Signer
-    std::shared_ptr<Mantids30::Sessions::Session> session;                              ///< Holds the current session (for monolith servers)
-    std::string webSocketSessionId;                                                     ///< Holds the current session id
-    const Endpoint *currentWebSocketEndpoint = nullptr;                                 ///< Holds the current web socket endpoint
+    DataFormat::JWT::Token emptyToken;                                                 ///< Holds a default empty token
+    DataFormat::JWT::Token *jwtToken = &emptyToken;                                    ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
+    std::shared_ptr<DataFormat::JWT> jwtValidator;                                     ///< Holds the JWT Validator
+    std::shared_ptr<DataFormat::JWT> jwtSigner;                                        ///< Holds the JWT Signer
+    std::shared_ptr<Mantids30::Sessions::Session> session;                             ///< Holds the current session (for monolith servers)
+    std::string webSocketSessionId;                                                    ///< Holds the current session id
+    const Endpoint *currentWebSocketEndpoint = nullptr;                                ///< Holds the current web socket endpoint
 };
 
 // Callback function types for WebSocket events
-using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> & content, const Json::Value &jsonContent, const WebSocket::WebSocketParameters &parameters,
-                                            Mantids30::Sessions::ClientDetails &authClientDetails);
+using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> &content, const Json::Value &jsonContent,
+                                            const WebSocket::WebSocketParameters &parameters, Mantids30::Sessions::ClientDetails &authClientDetails);
 
 class Endpoint
 {

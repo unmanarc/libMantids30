@@ -2,9 +2,9 @@
 
 #include "applog.h"
 #include <atomic>
+#include <cstdint>
 #include <fstream>
 #include <optional>
-#include <cstdint>
 #include <string>
 #include <thread>
 

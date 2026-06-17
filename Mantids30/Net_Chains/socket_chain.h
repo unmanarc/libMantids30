@@ -35,7 +35,7 @@ public:
      * @return true if successfully initialized
      */
     bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit = false);
-    bool addToChain(const std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> &sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
+    bool addToChain(const std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> &sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
                     bool modeServer = false, bool detached = false, bool endPMode = false);
     void waitUntilFinish();
 
@@ -65,7 +65,7 @@ public:
      * @param layer layer number [0..n-1]
      * @return pair of Socket_Stream ptr
      */
-    std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > getSocketPairLayer(size_t layer);
+    std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> getSocketPairLayer(size_t layer);
 
     ////////////////////
     // virtuals:
@@ -84,8 +84,8 @@ private:
         std::thread thr1, thr2;
 
         // Results from threads...
-        int r0[2]{0,0};
-        bool w1[2]{true,true};
+        int r0[2]{0, 0};
+        bool w1[2]{true, true};
 
         std::atomic<bool> detached{false}, finished{false};
         bool deleteFirstSocketOnExit{false}, deleteSecondSocketOnExit{false};

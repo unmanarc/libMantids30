@@ -3,7 +3,7 @@
 
 using namespace Mantids30::Network::Sockets;
 
-Socket_Chain::Socket_Chain(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> & _baseSocket, bool _deleteBaseSocketOnExit)
+Socket_Chain::Socket_Chain(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &_baseSocket, bool _deleteBaseSocketOnExit)
 {
     m_endPointReached = false;
     m_deleteBaseSocketOnExit = _deleteBaseSocketOnExit;
@@ -90,7 +90,7 @@ bool Socket_Chain::getLayerWriteResultValue(size_t layer, bool fwd)
     return static_cast<sChainVectorItem *>(m_socketLayers[layer])->w1[fwd ? 0 : 1];
 }
 
-std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> > Socket_Chain::getSocketPairLayer(size_t layer)
+std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> Socket_Chain::getSocketPairLayer(size_t layer)
 {
     if (layer >= m_socketLayers.size())
     {
@@ -111,8 +111,8 @@ bool Socket_Chain::addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainEl
                       chainElement->isEndPoint());
 }
 
-bool Socket_Chain::addToChain(const std::pair<std::shared_ptr<Socket_Stream>,std::shared_ptr<Socket_Stream>> &sockPairs,
-                              bool deleteFirstSocketOnExit, bool deleteSecondSocketOnExit, bool modeServer, bool detached, bool endPMode)
+bool Socket_Chain::addToChain(const std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> &sockPairs, bool deleteFirstSocketOnExit, bool deleteSecondSocketOnExit, bool modeServer,
+                              bool detached, bool endPMode)
 {
     if (m_endPointReached)
     {

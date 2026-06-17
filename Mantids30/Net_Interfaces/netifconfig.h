@@ -120,10 +120,10 @@ private:
     in_addr m_address = {0}, m_netmask = {0};
     std::string m_interfaceName;
     std::string m_lastError;
-    int m_MTU=0;
-    bool m_promiscMode=false, m_stateUP=true;
-    bool m_changeIPv4Addr=false, m_changeMTU=false, m_changeState=false, m_changePromiscMode=false;
-    NetIfType m_netifType=NetIfType::GENERIC_LIN;
+    int m_MTU = 0;
+    bool m_promiscMode = false, m_stateUP = true;
+    bool m_changeIPv4Addr = false, m_changeMTU = false, m_changeState = false, m_changePromiscMode = false;
+    NetIfType m_netifType = NetIfType::GENERIC_LIN;
 };
 
 } // namespace Mantids30::Network::Interfaces

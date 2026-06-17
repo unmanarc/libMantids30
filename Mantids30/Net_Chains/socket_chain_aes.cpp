@@ -35,7 +35,7 @@ void Socket_Chain_AES::setPhase1Key256(const char *pass)
 void Socket_Chain_AES::setPhase1Key(const char *pass)
 {
     unsigned int hashLen = 0;
-    EVP_Digest((const void *)pass, strlen(pass), (unsigned char *)m_phase1Key, &hashLen, EVP_sha256(), nullptr);
+    EVP_Digest((const void *) pass, strlen(pass), (unsigned char *) m_phase1Key, &hashLen, EVP_sha256(), nullptr);
 }
 
 ssize_t Socket_Chain_AES::partialRead(void *data, const size_t &datalen)

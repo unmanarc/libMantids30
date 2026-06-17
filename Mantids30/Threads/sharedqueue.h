@@ -15,10 +15,7 @@ template<class T>
 class SharedQueue
 {
 public:
-    SharedQueue()
-    {
-        m_maxItems = &m_localMaxItems;
-    }
+    SharedQueue() { m_maxItems = &m_localMaxItems; }
 
     ~SharedQueue()
     {

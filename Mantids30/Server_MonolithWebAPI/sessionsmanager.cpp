@@ -174,7 +174,7 @@ json WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserNam
     json r;
     std::map<std::string, json> sessionsMap = m_sessionClientInfo[effectiveUserName];
 
-    for (const auto&sessions : sessionsMap)
+    for (const auto &sessions : sessionsMap)
     {
         // provide truncated session information.
         r[Program::Logs::RPCLog::truncateSessionId(sessions.first)] = sessions.second;

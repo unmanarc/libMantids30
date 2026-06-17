@@ -182,7 +182,8 @@ int StartApplication(int argc, char *argv[], Application *_app)
             }
 
             char cwd[PATH_MAX];
-            if (getcwd(cwd, sizeof(cwd)) == nullptr) {
+            if (getcwd(cwd, sizeof(cwd)) == nullptr)
+            {
                 fprintf(stderr, "# ERR: Error getting CWD...\n");
                 return -11;
             }

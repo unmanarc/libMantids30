@@ -8,7 +8,7 @@
 using namespace std;
 using namespace Mantids30::Scripts::Expressions;
 
-AtomicExpression::AtomicExpression(const std::shared_ptr<std::vector<std::string>> & staticTexts)
+AtomicExpression::AtomicExpression(const std::shared_ptr<std::vector<std::string>> &staticTexts)
     : m_left(staticTexts)
     , m_right(staticTexts)
 {

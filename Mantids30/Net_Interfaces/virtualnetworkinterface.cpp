@@ -16,8 +16,8 @@
 #include <Mantids30/Memory/w32compat.h>
 #endif
 
-#include <fcntl.h>
 #include <cstring>
+#include <fcntl.h>
 #include <unistd.h>
 
 #include <Mantids30/Helpers/mem.h>

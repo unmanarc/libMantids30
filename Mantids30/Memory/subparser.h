@@ -36,7 +36,7 @@ public:
         DIRECT,           // don't wait, just parse.
         DIRECT_DELIMITER, // parse direct until multi-delimiter (// TODO:)
         MULTIDELIMITER    //,       // wait for any of those delimiters
-                                     //        ParseStrategy::FREEPARSER             // TODO
+                          //        ParseStrategy::FREEPARSER             // TODO
     };
 
     SubParser() = default;

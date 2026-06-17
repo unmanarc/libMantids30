@@ -1,7 +1,7 @@
 #include "mem.h"
 #include <cstdlib>
-#include <stdexcept>
 #include <cstring>
+#include <stdexcept>
 
 using namespace std;
 using namespace Mantids30::Helpers;

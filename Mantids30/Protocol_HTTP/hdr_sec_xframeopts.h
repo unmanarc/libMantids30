@@ -5,7 +5,6 @@
 
 namespace Mantids30::Network::Protocol::HTTP::Headers::Security {
 
-
 /**
  * @brief The XFrameOptions class provides functionality for the X-Frame-Options header.
  *
@@ -60,7 +59,7 @@ public:
      */
     bool fromString(const std::string &sValue);
 
-    std::string allowFromURL; ///< The URL to allow frames from when the value is "allow-from".
+    std::string allowFromURL;    ///< The URL to allow frames from when the value is "allow-from".
     Option value = Option::DENY; ///< The X-Frame-Options value.
 };
 

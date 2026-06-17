@@ -12,10 +12,7 @@ namespace Mantids30::Applications::FastRPC1 {
 class RPCClientApplication : public Mantids30::Program::Application
 {
 public:
-    RPCClientApplication(const std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> & masterKey)
-    {
-        Globals::m_masterKey = masterKey;
-    }
+    RPCClientApplication(const std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> &masterKey) { Globals::m_masterKey = masterKey; }
     void _shutdown() override;
     void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
     bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
@@ -53,10 +50,10 @@ protected:
     virtual void processRetrievedConfig() {};
 
     //
-    uint32_t m_appVersionMajor=0, m_appVersionMinor=0, m_appVersionSubMinor=1;
+    uint32_t m_appVersionMajor = 0, m_appVersionMinor = 0, m_appVersionSubMinor = 1;
     std::string m_versionCodeName;
     std::string m_defaultConfigDir;
-    bool m_retrieveConfig=false;
+    bool m_retrieveConfig = false;
 };
 
 } // namespace Mantids30::Applications::FastRPC1

@@ -1,10 +1,10 @@
 #pragma once
 
+#include <cstdio>
 #include <iostream>
 #include <list>
 #include <memory>
 #include <optional>
-#include <cstdio>
 #include <vector>
 
 #include "b_chunk.h"
@@ -12,7 +12,6 @@
 #include <Mantids30/Helpers/mem.h>
 
 namespace Mantids30::Memory::Containers {
-
 
 enum class StorageMethod : uint8_t
 {
@@ -22,7 +21,6 @@ enum class StorageMethod : uint8_t
     FILEMMAP,
     VOID
 };
-
 
 class B_Base : public Streams::StreamableObject
 {
@@ -126,7 +124,7 @@ public:
      * @brief freeSplitList Free a list of binary containers.
      * @param x List of binary containers to be freed.
      */
-    static void freeSplitList(const std::list<Memory::Containers::B_Base *>& x);
+    static void freeSplitList(const std::list<Memory::Containers::B_Base *> &x);
     /**
     * @brief Append this current container to a new one.
     * @param out Binary container.
@@ -392,7 +390,7 @@ protected:
     void decContainerBytesCount(const size_t &i);
 
     // Auxiliar:
-    std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, const std::vector<BinaryContainerChunk>& copyChunks);
+    std::optional<size_t> copyToStreamUsingCleanVector(std::ostream &streamOut, const std::vector<BinaryContainerChunk> &copyChunks);
     std::optional<size_t> copyToStreamableObjectUsingCleanVector(StreamableObject &bcOut, const std::vector<BinaryContainerChunk> &copyChunks);
 
     void setContainerBytes(const size_t &value);

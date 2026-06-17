@@ -109,7 +109,7 @@ void SQLConnector::detachQuery(Query *query)
     }
 }
 
-std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string,std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
+std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
                                              const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> q = createQuery();

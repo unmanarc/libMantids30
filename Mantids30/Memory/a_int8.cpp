@@ -45,7 +45,7 @@ bool INT8::fromString(const std::string &value)
         return false;
     }
 
-    char* end = nullptr;
+    char *end = nullptr;
     long result = strtol(value.c_str(), &end, 10);
 
     if (end == value.c_str() || *end != '\0' || result > INT8_MAX || result < INT8_MIN)

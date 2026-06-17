@@ -65,7 +65,7 @@ public:
     bool startListeningInBackground(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleClientConnection(const std::shared_ptr<Sockets::Socket_Stream> & stream) = 0;
+    virtual int handleClientConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream) = 0;
 
     // Parameters:
     Config parameters;
@@ -89,7 +89,7 @@ public:
        *        This allows maintaining application-specific state during callback
        * execution.
        */
-    void *listenerContext=nullptr;
+    void *listenerContext = nullptr;
 
 private:
     static void incomingConnection(void *context, const std::shared_ptr<Socket_Stream> &socketStream);

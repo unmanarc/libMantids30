@@ -87,7 +87,7 @@ public:
      */
     bool addReferecedFileVar(const std::string &varName, const std::string &filePath);
 
-    bool addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<Memory::Streams::StreamableObject> & obj);
+    bool addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<Memory::Streams::StreamableObject> &obj);
 
     bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data) override;
 
@@ -109,7 +109,7 @@ public:
             context = nullptr;
         }
 
-        void call(const std::string &partName, const std::shared_ptr<MIME_PartMessage> & partMessage) const
+        void call(const std::string &partName, const std::shared_ptr<MIME_PartMessage> &partMessage) const
         {
             if (callbackFunction != nullptr)
             {
@@ -117,7 +117,7 @@ public:
             }
         }
 
-        void (*callbackFunction)(void *context, const std::string &partName, const std::shared_ptr<MIME_PartMessage> & partMessage);
+        void (*callbackFunction)(void *context, const std::string &partName, const std::shared_ptr<MIME_PartMessage> &partMessage);
         void *context;
     };
 
@@ -221,7 +221,7 @@ protected:
     ///////////////////////////////////////
 
 private:
-    MIME_Message(const std::shared_ptr<StreamableObject> & value = nullptr);
+    MIME_Message(const std::shared_ptr<StreamableObject> &value = nullptr);
 
     enum class MIMEParsingStatus : uint8_t
     {
@@ -232,7 +232,7 @@ private:
     };
 
     bool addMultiPartMessage(const std::shared_ptr<MIME_PartMessage> &part);
-    std::string getMultiPartMessageName(const std::shared_ptr<MIME_PartMessage> & part);
+    std::string getMultiPartMessageName(const std::shared_ptr<MIME_PartMessage> &part);
 
     void renewCurrentPart();
 

@@ -68,7 +68,7 @@ public:
      * @brief setStreamableObj Set the streamable output (eg. a file?)
      * @param outDataContainer stream that will be used for the content trnasmission
      */
-    void setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject>& outDataContainer);
+    void setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject> &outDataContainer);
     /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<size_t>::max() if size not defined, or >=0 if size defined.

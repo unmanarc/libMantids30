@@ -4,8 +4,8 @@
 #else
 #include <arpa/inet.h>
 #endif
-#include <ctgmath>
 #include <cstring>
+#include <ctgmath>
 
 #if __BIG_ENDIAN__
 #define htonll(x) (x)

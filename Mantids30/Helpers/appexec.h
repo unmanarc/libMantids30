@@ -1,25 +1,26 @@
 #pragma once
 
 #ifndef _WIN32
+#include <cstdio>
 #include <poll.h>
 #include <set>
 #include <spawn.h>
-#include <cstdio>
 #endif
 
 #include <string>
 #include <vector>
 
 // Define STDOUT_FILENO/STDERR_FILENO:
-#include <unistd.h>
 #include <cstdint>
+#include <unistd.h>
 
 namespace Mantids30::Helpers {
 
 class AppExec
 {
 public:
-    enum class Status : uint8_t {
+    enum class Status : uint8_t
+    {
         SUCCESS = 0,
         PIPE_CREATION_FAILED = 1,
         HANDLE_INFORMATION_SETTING_FAILED = 2,
@@ -129,8 +130,8 @@ private:
     posix_spawnattr_t *m_attrp = nullptr;
     posix_spawn_file_actions_t m_fileActions{};
     posix_spawn_file_actions_t *m_fileActionsp = nullptr;
-    int m_piStdOut[2]{0,0};
-    int m_piStdErr[2]{0,0};
+    int m_piStdOut[2]{0, 0};
+    int m_piStdErr[2]{0, 0};
     std::vector<pollfd> m_plist;
 };
 #endif

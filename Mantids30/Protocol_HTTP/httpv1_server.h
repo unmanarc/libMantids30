@@ -90,7 +90,7 @@ public:
      * It's useful for bulk updates or initialization of static content.
      * @param value A map of paths to memory content elements.
      */
-    void setStaticContentElements(const std::map<std::string,std::shared_ptr<Memory::Containers::B_MEM>> &value);
+    void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> &value);
 
     /**
      * @brief htmlEncode Encodes a raw string into HTML-safe format.

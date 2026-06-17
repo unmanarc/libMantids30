@@ -39,7 +39,7 @@ void StreamAcceptorThread::postInitConnection()
     }
 }
 
-void StreamAcceptorThread::setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> & _clientSocket)
+void StreamAcceptorThread::setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> &_clientSocket)
 {
     m_pClientSocket = _clientSocket;
 }
@@ -54,7 +54,7 @@ uint16_t StreamAcceptorThread::getLocalPort()
     return m_pClientSocket->getLocalPort();
 }
 
-void StreamAcceptorThread::thread_streamclient(const std::shared_ptr<StreamAcceptorThread> & threadClient, void *threadedAcceptedControl)
+void StreamAcceptorThread::thread_streamclient(const std::shared_ptr<StreamAcceptorThread> &threadClient, void *threadedAcceptedControl)
 {
 #ifdef __linux__
     pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str());

@@ -39,12 +39,7 @@ std::string TOTP::generateTOTP(const std::string &base32Secret, int position, un
     }
 
     // Calculate HMAC SHA1
-    HMAC(EVP_sha1(),
-         secret.c_str(),
-         static_cast<int>(secret.length()),
-         reinterpret_cast<const unsigned char *>(counter.c_str()),
-         sizeof(timeSteps),
-         reinterpret_cast<unsigned char *>(hashSHA1),
+    HMAC(EVP_sha1(), secret.c_str(), static_cast<int>(secret.length()), reinterpret_cast<const unsigned char *>(counter.c_str()), sizeof(timeSteps), reinterpret_cast<unsigned char *>(hashSHA1),
          nullptr);
 
     // Calculate the dynamic binary code (DBC)

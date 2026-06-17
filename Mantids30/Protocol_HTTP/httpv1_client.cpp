@@ -12,7 +12,7 @@ using namespace boost::algorithm;
 using namespace Mantids30::Network::Protocol;
 using namespace Mantids30;
 
-HTTP::HTTPv1_Client::HTTPv1_Client(const std::shared_ptr<Memory::Streams::StreamableObject> & sobject)
+HTTP::HTTPv1_Client::HTTPv1_Client(const std::shared_ptr<Memory::Streams::StreamableObject> &sobject)
     : HTTPv1_Base(true, sobject)
 {
     m_currentSubParser = (Memory::Streams::SubParser *) (&serverResponse.status);

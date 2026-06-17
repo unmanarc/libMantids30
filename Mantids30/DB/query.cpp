@@ -104,7 +104,7 @@ bool Query::isNull(const size_t &column)
     return m_fieldIsNull[column];
 }
 
-bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string& replaceBy)
+bool Query::replaceFirstKey(std::string &sqlQuery, std::list<std::string> &keysIn, std::vector<std::string> &keysOutByPos, const std::string &replaceBy)
 {
     std::list<std::string> toDelete;
 

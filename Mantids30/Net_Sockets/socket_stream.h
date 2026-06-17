@@ -83,14 +83,8 @@ public:
 
     // This methods are virtual and should be implemented in sub-classes.
     // TODO: virtual redefinition?
-    bool listenOn(const uint16_t &port,
-                  const char *listenOnAddr = "*",
-                  const int32_t &recvbuffer = 0,
-                  const int32_t &backlog = 10) override;
-    bool connectFrom(const char *bindAddress,
-                     const char *remoteHost,
-                     const uint16_t &port,
-                     const uint32_t &timeout = 30) override;
+    bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override;
+    bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override;
     virtual std::shared_ptr<Socket_Stream> acceptConnection();
 
     /**
@@ -132,9 +126,7 @@ public:
      * @param receivedBytesCount if not null, this function returns the received byte count.
      * @return if it's disconnected (invalid sockfd) or it's not able to obtain at least 1 byte, then return false, otherwise true, you should check by yourself that expectedDataBytesCount == *receivedDataBytesCount
      */
-    bool readFull(void *data,
-                  const size_t &expectedDataBytesCount,
-                  size_t *receivedDataBytesCount = nullptr) override;
+    bool readFull(void *data, const size_t &expectedDataBytesCount, size_t *receivedDataBytesCount = nullptr) override;
 
     void deriveConnectionName();
 

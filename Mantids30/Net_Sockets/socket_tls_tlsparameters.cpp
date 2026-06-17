@@ -2,11 +2,11 @@
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Helpers/safeint.h>
 #include <Mantids30/Memory/streamable_file.h>
+#include <cstring>
 #include <fcntl.h>
 #include <openssl/ssl.h>
 #include <openssl/tls1.h>
 #include <stdexcept>
-#include <cstring>
 
 using namespace std;
 using namespace Mantids30::Network::Sockets;

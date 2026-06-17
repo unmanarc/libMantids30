@@ -14,10 +14,10 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
+#include <cstdarg>
 #include <json/value.h>
 #include <memory>
 #include <regex>
-#include <cstdarg>
 #include <string>
 #include <vector>
 
@@ -65,12 +65,12 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
         HTTP::Status::Code retCode = showBrowserMessage("Browser Upgrade Required",
-                                                         R"(
+                                                        R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
-                                                         HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
+                                                        HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
         return retCode;
     }
 
@@ -203,13 +203,13 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 ret = apiReturn.getHTTPResponseCode();
 
                 // Set cookies to the server (eg. refresher token cookie)...
-                for (const auto&i : apiReturn.cookiesMap)
+                for (const auto &i : apiReturn.cookiesMap)
                 {
                     serverResponse.setCookie(i.first, i.second);
                 }
 
                 // Set headers to the server response (eg. CORS)...
-                for (const auto&i : apiReturn.httpExtraHeaders)
+                for (const auto &i : apiReturn.httpExtraHeaders)
                 {
                     serverResponse.headers.add(i.first, i.second);
                 }
@@ -256,7 +256,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
         bool isDynamicContent = false;
 
         // Iterate through all registered dynamic request handlers in the map.
-        for (const auto&route : config->dynamicRequestHandlersByRoute)
+        for (const auto &route : config->dynamicRequestHandlersByRoute)
         {
             // Check if the request URI starts with the route's path, indicating a match.
             if (boost::starts_with(requestURI, route.first + "/"))

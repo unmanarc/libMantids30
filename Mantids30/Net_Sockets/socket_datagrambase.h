@@ -1,8 +1,8 @@
 #pragma once
 
 #include "socket.h"
-#include <memory>
 #include <cstring>
+#include <memory>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -52,16 +52,8 @@ public:
 
     // Socket specific functions:
     bool isConnected() override = 0;
-    bool listenOn(const uint16_t &port,
-                  const char *listenOnAddr = "*",
-                  const int32_t &recvbuffer = 0,
-                  const int32_t &backlog = 10) override
-        = 0;
-    bool connectFrom(const char *bindAddress,
-                     const char *remoteHost,
-                     const uint16_t &port,
-                     const uint32_t &timeout = 30) override
-        = 0;
+    bool listenOn(const uint16_t &port, const char *listenOnAddr = "*", const int32_t &recvbuffer = 0, const int32_t &backlog = 10) override = 0;
+    bool connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout = 30) override = 0;
     virtual bool writeBlock(const void *data, const size_t &datalen) = 0;
     virtual bool readBlock(void *data, const size_t &datalen) = 0;
 };

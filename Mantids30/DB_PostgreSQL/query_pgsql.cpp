@@ -1,9 +1,9 @@
 #include "query_pgsql.h"
 #include "sqlconnector_pgsql.h"
 #include <Mantids30/Memory/a_allvars.h>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
-#include <cstring>
 
 #include <stdexcept>
 
@@ -183,7 +183,7 @@ bool Query_PostgreSQL::postBindInputVars()
     m_paramCount = 0;
 
     std::list<std::string> keysIn;
-    for (const auto&i : m_inputVars)
+    for (const auto &i : m_inputVars)
     {
         keysIn.push_back(i.first);
     }

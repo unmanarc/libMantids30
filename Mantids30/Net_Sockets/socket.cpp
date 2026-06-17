@@ -1,12 +1,12 @@
 #include "socket.h"
 
 #include <chrono>
-#include <fcntl.h>
 #include <cinttypes>
-#include <openssl/bio.h>
 #include <csignal>
-#include <stdexcept>
 #include <cstring>
+#include <fcntl.h>
+#include <openssl/bio.h>
+#include <stdexcept>
 #include <sys/types.h>
 #include <unistd.h>
 

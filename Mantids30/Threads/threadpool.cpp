@@ -45,7 +45,7 @@ void ThreadPool::stop()
     m_insertedElementCond.notify_all();
 }
 
-bool ThreadPool::pushTask(void (*task)(const std::shared_ptr<void> &), const std::shared_ptr<void> & taskData, uint32_t timeoutMS, const float &priority, const std::string &key)
+bool ThreadPool::pushTask(void (*task)(const std::shared_ptr<void> &), const std::shared_ptr<void> &taskData, uint32_t timeoutMS, const float &priority, const std::string &key)
 {
     size_t currentQueue = getRandomQueueByKey(key, priority);
 

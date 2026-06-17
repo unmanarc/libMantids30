@@ -28,7 +28,7 @@ public:
         /**
          * @brief Function pointer.
          */
-        json (*method)(const std::shared_ptr<void> & context, const std::string &key, const json &parameters, const std::shared_ptr<void> & cntObj, const std::string &cntData);
+        json (*method)(const std::shared_ptr<void> &context, const std::string &key, const json &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
         /**
          * @brief obj object to pass
          */
@@ -239,7 +239,7 @@ public:
      * @brief setOverwriteObject Set overwrite object for functions
      * @param newOverwriteObject object.
      */
-    void setOverwriteObject(const std::shared_ptr<void> & newOverwriteObject);
+    void setOverwriteObject(const std::shared_ptr<void> &newOverwriteObject);
 
 protected:
     // TODO pasar a callbacks
@@ -249,12 +249,12 @@ protected:
     virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const json &payload);
 
 private:
-    static void executeRPCTask(const std::shared_ptr<void> & taskData);
+    static void executeRPCTask(const std::shared_ptr<void> &taskData);
     static void sendRPCAnswer(FastRPC1::ThreadParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
     int processAnswer(FastRPC1::Connection *connection);
     int processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
-                      const std::shared_ptr<void> &context, const std::string &data);
+                     const std::shared_ptr<void> &context, const std::string &data);
 
     // Stores active connections indexed by a unique key identifier.
     Mantids30::Threads::Safe::Map<std::string> m_connectionsByKeyId;

@@ -1,11 +1,11 @@
 #include "common_date.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <cstring>
 #include <iomanip>
 #include <iostream>
 #include <locale>
 #include <sstream>
-#include <cstring>
 
 using namespace Mantids30::Network::Protocol;
 
@@ -57,11 +57,14 @@ bool HTTP::Date::fromString(const std::string &fTime)
 #ifndef _WIN32
     struct tm timeinfo;
     memset(&timeinfo, 0, sizeof(tm));
-    if (strptime(fTime.c_str(), "%a, %d %b %Y %H:%M:%S %Z", &timeinfo) != nullptr) {
+    if (strptime(fTime.c_str(), "%a, %d %b %Y %H:%M:%S %Z", &timeinfo) != nullptr)
+    {
         std::time_t tt = std::mktime(&timeinfo);
         m_unixTime = tt;
         return true;
-    } else {
+    }
+    else
+    {
         m_unixTime = 0;
         return false;
     }

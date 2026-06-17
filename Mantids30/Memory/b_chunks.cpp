@@ -1,6 +1,6 @@
 #include "b_chunks.h"
-#include <optional>
 #include <cstring>
+#include <optional>
 
 using namespace Mantids30::Memory::Containers;
 

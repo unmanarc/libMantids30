@@ -170,7 +170,7 @@ public:
      * @param data data container
      * @return true if added, false otherwise.
      */
-    virtual bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> & data) = 0;
+    virtual bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data) = 0;
 
     /**
      * @brief setMaxVarsCount Set Maxium Number of variables allowed

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <string>
 #include <ctime>
+#include <string>
 
 namespace Mantids30::Network::Protocol::HTTP {
 

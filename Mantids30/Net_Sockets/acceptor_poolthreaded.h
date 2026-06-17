@@ -154,7 +154,7 @@ private:
 
     static void runner(void *data);
     static void stopper(void *data);
-    static void acceptorTask(const std::shared_ptr<void> & data);
+    static void acceptorTask(const std::shared_ptr<void> &data);
 
     void init();
 

@@ -34,13 +34,12 @@ public:
         NOTFOUND = -9999          // Endpoint not found
     };
 
-
     struct MonolithAPIEndpointFunction
     {
         /**
          * @brief Function pointer to the API endpoint.
          */
-        json (*endpoint)(void *context, const std::shared_ptr<Mantids30::Sessions::Session> & session, const json &parameters);
+        json (*endpoint)(void *context, const std::shared_ptr<Mantids30::Sessions::Session> &session, const json &parameters);
 
         /**
          * @brief Context object to pass to the function pointer.

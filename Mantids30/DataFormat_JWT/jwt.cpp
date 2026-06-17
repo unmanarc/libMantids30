@@ -130,8 +130,8 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
 
             if (mdctx)
             {
-                if (EVP_DigestSignInit(mdctx, nullptr, EVP_get_digestbynid(hashType), nullptr, pkey)
-                    == 1) {
+                if (EVP_DigestSignInit(mdctx, nullptr, EVP_get_digestbynid(hashType), nullptr, pkey) == 1)
+                {
                     EVP_DigestSignUpdate(mdctx, data.c_str(), data.length());
                     size_t signature_len = 0;
                     EVP_DigestSignFinal(mdctx, nullptr, &signature_len);
@@ -155,7 +155,9 @@ std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const s
                     {
                         r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
                     }
-                } else {
+                }
+                else
+                {
                     r->m_result = RAWSignature::Result::ERROR_CREATING_SIGNATURE;
                 }
 

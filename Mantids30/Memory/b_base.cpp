@@ -289,7 +289,7 @@ std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list
     return x;
 }*/
 
-void B_Base::freeSplitList(const std::list<Memory::Containers::B_Base *>& x)
+void B_Base::freeSplitList(const std::list<Memory::Containers::B_Base *> &x)
 {
     for (Memory::Containers::B_Base *i : x)
     {

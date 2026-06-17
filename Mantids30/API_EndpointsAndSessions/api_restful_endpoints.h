@@ -2,15 +2,15 @@
 
 #include "endpoints_options.h"
 
-#include "session.h"
 #include "security.h"
+#include "session.h"
 #include <Mantids30/DataFormat_JWT/jwt.h>
-#include <Mantids30/Protocol_HTTP/methods.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Protocol_HTTP/api_return.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_server.h>
+#include <Mantids30/Protocol_HTTP/methods.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/mutex_shared.h>
 #include <cstdint>
@@ -60,8 +60,6 @@ struct RESTfulAPIEndpointFullDefinition
 class Endpoints : public Endpoints_Options
 {
 public:
-
-
     /**
      * @enum HandleResult
      *
@@ -93,8 +91,8 @@ public:
      * @param endpointDefinition The function pointer to the endpoint definition.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements, const std::set<std::string> &requiredScopes, void *context,
-                     APIEndpointFunctionType endpointDefinition);
+    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements,
+                     const std::set<std::string> &requiredScopes, void *context, APIEndpointFunctionType endpointDefinition);
 
     /**
      * @brief Add a new resource to the Endpoints with RESTfulAPIDefinition struct.
