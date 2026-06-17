@@ -275,16 +275,16 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     // Destroy objects:
     for (int i = 0; argv[i]; i++)
     {
-        free(argv[i]);
+        free((void *)argv[i]);
     }
-    free(argv);
+    free((void *)argv);
 
     // Destroy objects:
     for (int i = 0; env[i]; i++)
     {
-        free(env[i]);
+        free((void *)env[i]);
     }
-    free(env);
+    free((void *)env);
 
     if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp)) != 0))
     {
