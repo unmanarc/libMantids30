@@ -116,7 +116,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
             {
                 // It's an API request (with resource).
                 size_t apiVersion = std::stoul(pathMatch[1].str());
-                string httpMethodMode = clientRequest.requestLine.getHTTPMethod().c_str();
+                string httpMethodMode = clientRequest.requestLine.getHTTPMethod();
                 string requestOrigin = clientRequest.getOrigin();
                 string requestXAPIKEY = clientRequest.headers.getOptionValueStringByName("x-api-key");
                 std::string endpointName = pathMatch[2].str();
