@@ -15,6 +15,10 @@ using namespace Mantids30;
 
 void HTTP::Version::parse(const std::string &version)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = Version();
+
     vector<string> versionParts;
     split(versionParts, version, is_any_of("/"), token_compress_on);
 

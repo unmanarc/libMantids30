@@ -62,10 +62,12 @@ std::string HSTS::toString() const
 
 bool HSTS::fromString(const std::string &sValue)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = HSTS();
+
     vector<string> parts;
     split(parts, sValue, is_any_of("; "), token_compress_on);
-
-    setDefaults();
 
     if (sValue.empty())
     {
@@ -74,19 +76,19 @@ bool HSTS::fromString(const std::string &sValue)
     else
     {
         isActivated = true;
-        for (size_t i = 0; i < parts.size(); i++)
+        for (const auto & part : parts)
         {
-            if (iequals(parts[i], "preload"))
+            if (iequals(part, "preload"))
             {
                 isPreloadEnabled = true;
             }
-            else if (iequals(parts[i], "includeSubDomains"))
+            else if (iequals(part, "includeSubDomains"))
             {
                 isSubdomainIncluded = true;
             }
-            else if (istarts_with(parts[i], "max-age="))
+            else if (istarts_with(part, "max-age="))
             {
-                m_maxAge = strtoul(parts[i].substr(0).c_str(), nullptr, 10);
+                m_maxAge = strtoul(part.substr(0).c_str(), nullptr, 10);
             }
         }
     }

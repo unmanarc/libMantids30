@@ -60,10 +60,12 @@ std::string Cookie::toSetCookieString(const std::string &cookieName) const
 
 void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cookieName)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = Cookie();
+
     vector<string> cookiesParams;
     split(cookiesParams, setCookieValue, is_any_of(";"), token_compress_on);
-
-    *this = Cookie();
 
     bool firstVal = true;
     for (const string &param : cookiesParams)

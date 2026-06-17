@@ -54,6 +54,10 @@ std::string HTTP::Date::toString() const
 
 bool HTTP::Date::fromString(const std::string &fTime)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = Date();
+
 #ifndef _WIN32
     struct tm timeinfo;
     memset(&timeinfo, 0, sizeof(tm));

@@ -36,10 +36,12 @@ string XSSProtection::toString() const
 
 bool XSSProtection::fromString(const string &sValue)
 {
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = XSSProtection();
+
     vector<string> parts;
     split(parts, sValue, is_any_of("; "), token_compress_on);
-
-    *this = XSSProtection();
 
     if (parts.empty())
     {
