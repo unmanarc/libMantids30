@@ -47,7 +47,7 @@ DatabaseCredentials SQLConnector::getDBCredentialData() const
 {
     DatabaseCredentials x = m_credentials;
     // Remove password ;)
-    x.userPassword = "";
+    x.userPassword.clear();
     return x;
 }
 

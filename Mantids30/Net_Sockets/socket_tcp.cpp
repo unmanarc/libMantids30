@@ -127,7 +127,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
 
     if (!connected)
     {
-        if (m_lastError == "")
+        if (m_lastError.empty())
         {
             m_lastError = std::string("Protocol Initialization Error.");
         }
