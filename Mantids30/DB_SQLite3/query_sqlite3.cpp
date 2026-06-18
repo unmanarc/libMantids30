@@ -104,7 +104,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
                 sqlite3_bind_blob64(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
 #else
                 // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
-                sqlite3_bind_blob(stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
+                sqlite3_bind_blob(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
 #endif
             }
             break;
@@ -115,7 +115,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
 #else
                 // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
                 // Also the encoding is not defined...
-                sqlite3_bind_text(stmt, idx, ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getValue(), ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getVarSize(), SQLITE_STATIC);
+                sqlite3_bind_text(m_stmt, idx, ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getValue(), ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getVarSize(), SQLITE_STATIC);
 #endif
             }
             break;
