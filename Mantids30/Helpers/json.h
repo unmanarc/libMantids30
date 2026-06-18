@@ -5,6 +5,7 @@
 
 #include <json/json.h>
 #include <list>
+#include <memory>
 #include <set>
 
 // Define a shorthand for the Json::Value type
