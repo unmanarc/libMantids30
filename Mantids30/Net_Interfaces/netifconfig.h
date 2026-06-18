@@ -3,6 +3,7 @@
 #include <string>
 
 #ifndef _WIN32
+#include <sys/socket.h>
 #include <linux/if.h>
 #include <linux/if_ether.h>
 #include <netinet/in.h>

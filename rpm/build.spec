@@ -135,7 +135,7 @@ ln -s . ppc64le-redhat-linux-gnu
 %if "%{_host}" == "s390x-ibm-linux-gnu"
 ln -s . s390x-redhat-linux-gnu
 %endif
-%cmake_install
+DESTDIR=%{buildroot} %{cmake} --install build
 
 
 %files
