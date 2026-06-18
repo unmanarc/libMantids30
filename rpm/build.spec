@@ -22,9 +22,18 @@ Group:          Development/Libraries
 %define debug_package %{nil}
 %endif
 # Build dependencies
+%if 0%{?rhel} == 7
+BuildRequires:  centos-release-scl
+BuildRequires:  devtoolset-9-gcc
+BuildRequires:  devtoolset-9-gcc-c++
+BuildRequires:  devtoolset-9-cmake
+BuildRequires:  pkgconfig
+%else
 BuildRequires:  cmake >= 3.10
 BuildRequires:  pkg-config
 BuildRequires:  gcc-c++ >= 8
+%endif
+# Common build dependencies
 BuildRequires:  jsoncpp-devel
 BuildRequires:  boost-devel
 BuildRequires:  boost-static
@@ -82,11 +91,15 @@ This package contains necessary header files and pkg-config files for %{name} de
 %autosetup -n %{name}-master
 %build
 %if 0%{?rhel} == 7
-cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ;      -DCMAKE_INSTALL_PREFIX:PATH=/usr ;      -DBUILD_SHARED_LIBS=ON ;      -DCMAKE_BUILD_TYPE=MinSizeRel ;      -DSSLRHEL7=ON
-%else
-cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ;      -DCMAKE_INSTALL_PREFIX:PATH=/usr ;      -DBUILD_SHARED_LIBS=ON ;      -DCMAKE_BUILD_TYPE=MinSizeRel
-%endif
+source /opt/rh/devtoolset-9/enable
+export CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
+export CXX=/opt/rh/devtoolset-9/root/usr/bin/g++
+cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
 make %{?_smp_mflags}
+%else
+cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
+make %{?_smp_mflags}
+%endif
 %clean
 rm -rf $RPM_BUILD_ROOT
 %install
