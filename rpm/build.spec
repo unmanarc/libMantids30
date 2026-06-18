@@ -26,7 +26,7 @@ Group:          Development/Libraries
 BuildRequires:  scl-utils-build
 BuildRequires:  devtoolset-9-gcc
 BuildRequires:  devtoolset-9-gcc-c++
-BuildRequires:  devtoolset-9-cmake
+BuildRequires:  cmake3
 BuildRequires:  pkgconfig
 %else
 BuildRequires:  cmake >= 3.10
@@ -92,7 +92,7 @@ This package contains necessary header files and pkg-config files for %{name} de
 %build
 %if 0%{?rhel} == 7
 %{?scl:scl enable devtoolset-9 - << \EOF}
-cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
+cmake3 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
 make %{?_smp_mflags}
 %{?scl:EOF}
 %else
