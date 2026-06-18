@@ -89,24 +89,36 @@ Requires:       %{name}
 This package contains necessary header files and pkg-config files for %{name} development.
 %prep
 %autosetup -n %{name}-master
+
 %build
 %if 0%{?rhel} == 7
 export PATH=/opt/rh/devtoolset-9/root/usr/bin:$PATH
 export LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:$LD_LIBRARY_PATH
 export CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
 export CXX=/opt/rh/devtoolset-9/root/usr/bin/g++
-cmake3 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+
+mkdir -p build
+cd build
+
+cmake3 .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
        -DBUILD_SHARED_LIBS=ON \
        -DCMAKE_BUILD_TYPE=MinSizeRel \
        -DSSLRHEL7=ON .
 make %{?_smp_mflags}
+
 %else
-cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
+
+mkdir -p build
+cd build
+
+cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
 make %{?_smp_mflags}
+
 %endif
 %clean
 rm -rf $RPM_BUILD_ROOT
+
 %install
 rm -rf $RPM_BUILD_ROOT
 # Symlink workarounds for certain architectures and distros
@@ -124,6 +136,8 @@ ln -s . ppc64le-redhat-linux-gnu
 ln -s . s390x-redhat-linux-gnu
 %endif
 %cmake_install
+
+
 %files
 %doc
 %{_libdir}/libMantids30_*
