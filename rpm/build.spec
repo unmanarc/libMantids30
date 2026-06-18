@@ -23,7 +23,7 @@ Group:          Development/Libraries
 %endif
 # Build dependencies
 %if 0%{?rhel} == 7
-BuildRequires:  scl-utils-build
+BuildRequires:  centos-release-scl
 BuildRequires:  devtoolset-9-gcc
 BuildRequires:  devtoolset-9-gcc-c++
 BuildRequires:  cmake3
