@@ -20,9 +20,11 @@
 - [Quick Start](#quick-start)
 - [Programming Examples](#programming-examples)
 - [Advantages](#advantages)
+- [Documentation](#documentation)
 - [Dependencies](#dependencies)
 - [Building](#building)
 - [Compatibility](#compatibility)
+- [C++ Standard](#c-standard)
 - [Installation](#installation)
 
 ---
@@ -77,6 +79,11 @@ The library follows a layered architecture pattern, allowing developers to build
   - VarsFile format for configuration
   - DataTables helper for server-side processing
 
+- **Parsing Engine**
+  - Strategy-based parsing system (delimiter, size, validator, multi-delimiter)
+  - Composable protocol layering via SubParser chaining
+  - Shared parsing core for all protocols (see [Parsing System](docs/PARSER.md))
+
 - **Logging**
   - Structured logging with multiple log levels
   - File-based log storage with rotation
@@ -102,10 +109,18 @@ For a comprehensive reference of all core classes in the `Mantids30` namespace, 
 | **High Performance** | Chunk-based memory allocation and optimized network I/O for low-latency services |
 | **Thread Safety** | Built-in thread-safe containers and synchronization primitives |
 | **Multi-Protocol Support** | HTTP, WebSocket, FastRPC, and MIME protocols out of the box |
+| **Parsing Engine** | Strategy-based parsing system with composable SubParser chaining for custom protocol development |
 | **Security Features** | JWT, TOTP, cryptographic hashing, and session management included |
 | **Cross-Platform** | Supports Linux, Windows (MSYS/MinGW), and various UNIX-like systems |
 | **CMake Build System** | Modern CMake configuration with modular library builds |
 | **Production Ready** | Used in production systems like uFastAuthD3 (Identity & Access Management) |
+
+---
+
+## Documentation
+
+- **[Parsing System](docs/PARSER.md)** - Architecture, strategies, and guide for implementing custom protocols
+- **[Core Classes Reference](docs/CLASSES.md)** - Complete reference of all core classes
 
 ---
 
@@ -160,6 +175,18 @@ This library has been tested on:
 | Ubuntu 20.04/22.04/24.04/26.04 | Tested |
 | RHEL/CentOS 7/8/9 | Tested |
 | Windows (MSYS2/MinGW64) | Supported |
+
+---
+
+## C++ Standard
+
+This library uses **C++17** as its compilation standard. This decision is intentional and strategic:
+
+- **Not older standards (C++14/C++11 or earlier):** We do not support legacy distributions that are no longer maintained, vulnerable, or without official security updates.
+- **Not newer standards (C++20/C++23 or later):** We prioritize compatibility over bleeding-edge features to ensure broad support across stable production environments.
+- **The goal:** Programs built with libMantids30 should compile and run on the widest possible range of currently supported, stable Linux distributions — the majority of the production Linux ecosystem.
+
+C++17 strikes the right balance: it is fully supported by all currently maintained Linux distributions (RHEL 7+, Ubuntu 20.04+, Fedora, Debian 12+, etc.) while providing modern language features like structured bindings, `std::optional`, `std::variant`, class template arguments deduction, and improved filesystem support.
 
 ---
 
