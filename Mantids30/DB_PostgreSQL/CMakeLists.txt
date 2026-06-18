@@ -37,7 +37,7 @@ else()
 
         set_target_properties(  ${LIB_NAME}
                                 PROPERTIES VERSION ${PROJECT_VERSION}
-                                SOVERSION 2
+                                SOVERSION ${PROJECT_VERSION_MAJOR}
                                 PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                               )
 
