@@ -6,7 +6,7 @@ set(SVERSION 3.0.0)
 set(LIBPREFIX "Mantids30")
 
 set(PROJECT_HOMEPAGE_URL "https://github.com/unmanarc/libMantids30")
-set(PROJECT_CONTACT "Aaron G. Mizrachi P. <aaron@unmanarc.com>")
+set(PROJECT_CONTACT "Aaron G. Mizrachi P. <dev@unmanarc.com>")
 ##############################################################################################################################
 
 ##############################################################################################################################
