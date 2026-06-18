@@ -36,6 +36,13 @@ project(${PROJECT_NAME} VERSION ${SVERSION} DESCRIPTION "Mini-Advanced Network T
 include(GNUInstallDirs)
 ##############################################################################################################################
 
+##############################################################################################################################
+# Clean previous Mantids30 installation directory before installing:
+install(CODE [[
+    message(STATUS "Removing previous Mantids30 installation directory: ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/Mantids30")
+    file(REMOVE_RECURSE "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}/Mantids30")
+]])
+
 #############################################################################################################################
 # Subprojects:
 ADD_SUBDIRECTORY(Mantids30)
