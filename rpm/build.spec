@@ -24,14 +24,9 @@ Group:          Development/Libraries
 # Build dependencies
 %if 0%{?rhel} == 7
 BuildRequires:  scl-utils-build
-#BuildRequires:  devtoolset-7-gcc
-#BuildRequires:  devtoolset-7-gcc-c++
-#BuildRequires:  devtoolset-7-cmake
-BuildRequires: yum
-BuildRequires: yum-utils
-BuildRequires: rpm
-BuildRequires: which
-BuildRequires: cmake3
+BuildRequires:  devtoolset-9-gcc
+BuildRequires:  devtoolset-9-gcc-c++
+BuildRequires:  devtoolset-9-cmake
 BuildRequires:  pkgconfig
 %else
 BuildRequires:  cmake >= 3.10
@@ -96,27 +91,7 @@ This package contains necessary header files and pkg-config files for %{name} de
 %autosetup -n %{name}-master
 %build
 %if 0%{?rhel} == 7
-
-echo "==== REPOS ENABLED ===="
-yum repolist all || true
-
-echo "==== SEARCH DEVTOOLSET ===="
-yum search devtoolset || true
-
-echo "==== LIST DEVTOOLSET PACKAGES ===="
-yum list available 'devtoolset*' || true
-yum list available '*devtoolset*' || true
-
-echo "==== WHAT DOES scl-utils-build PROVIDE ===="
-rpm -ql scl-utils-build || true
-rpm -q --provides scl-utils-build || true
-
-echo "==== SCL COMMAND ===="
-which scl || true
-scl --list || true
-
-
-%{?scl:scl enable devtoolset-7 - << \EOF}
+%{?scl:scl enable devtoolset-9 - << \EOF}
 cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
 make %{?_smp_mflags}
 %{?scl:EOF}
