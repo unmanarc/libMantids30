@@ -3,7 +3,7 @@
 %define build_timestamp %{lua: print(os.date("%Y%m%d"))}
 Name:           %{name}
 Version:        %{version}
-Release:        %{build_timestamp}.el%{rhel}.git%{?dist}
+Release:        %{build_timestamp}.el%{?rhel}.git%{?dist}
 Summary:        Mini-Advanced C++17 Network Toolkit for Internet Services Development
 License:        LGPLv3
 URL:            https://github.com/unmanarc/libMantids30
