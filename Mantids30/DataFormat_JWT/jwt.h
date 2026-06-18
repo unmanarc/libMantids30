@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <boost/thread/shared_mutex.hpp>
 #include <condition_variable>
 #include <ctime>
