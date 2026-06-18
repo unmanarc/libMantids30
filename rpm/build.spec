@@ -23,7 +23,7 @@ Group:          Development/Libraries
 %endif
 # Build dependencies
 %if 0%{?rhel} == 7
-BuildRequires:  centos-release-scl
+BuildRequires:  scl-utils-build
 BuildRequires:  devtoolset-9-gcc
 BuildRequires:  devtoolset-9-gcc-c++
 BuildRequires:  cmake3
@@ -91,10 +91,16 @@ This package contains necessary header files and pkg-config files for %{name} de
 %autosetup -n %{name}-master
 %build
 %if 0%{?rhel} == 7
-%{?scl:scl enable devtoolset-9 - << \EOF}
-cmake3 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel -DSSLRHEL7=ON
+export PATH=/opt/rh/devtoolset-9/root/usr/bin:$PATH
+export LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:$LD_LIBRARY_PATH
+export CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
+export CXX=/opt/rh/devtoolset-9/root/usr/bin/g++
+cmake3 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+       -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+       -DBUILD_SHARED_LIBS=ON \
+       -DCMAKE_BUILD_TYPE=MinSizeRel \
+       -DSSLRHEL7=ON .
 make %{?_smp_mflags}
-%{?scl:EOF}
 %else
 cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
 make %{?_smp_mflags}
