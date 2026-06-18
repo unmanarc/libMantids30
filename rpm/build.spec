@@ -122,7 +122,7 @@ ln -s . s390x-redhat-linux-gnu
 %files mariadb
 %{_libdir}/libMantids30_DB_MariaDB*
 %changelog
-* Mon Jun 18 2026 Aaron G. Mizrachi P. <aaron@unmanarc.com> - 3.0.0
+* Mon Jun 18 2026 Aaron G. Mizrachi P. <dev@unmanarc.com> - 3.0.0
 - Deprecate RHEL 6 support (EOL November 2024)
 - Update C++ standard from C++11 to C++17 in spec metadata
 - Simplify cmake configuration (removed cmake3 define for RHEL 6/7)
