@@ -10,6 +10,92 @@ using namespace Mantids30::Program;
 using namespace Mantids30::Network::Sockets;
 using namespace Mantids30::Network::Protocol;
 
+
+/*
+std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+{
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
+    if (itAppName == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT signing key request.");
+        return std::nullopt;
+    }
+
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
+    if (itApiKey == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT signing key request.");
+        return std::nullopt;
+    }
+
+    json response = Network::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    if (response.isNull() || !response.isString())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT signing key from API.");
+        return std::nullopt;
+    }
+
+    return response.asString();
+}
+*/
+
+
+
+// ==================== MAIN FACTORY FUNCTIONS ====================
+
+std::optional<Json::Value> Network::Protocol::APISync::getApplicationJWTConfig(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+{
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
+    if (itAppName == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT configuration request.");
+        return std::nullopt;
+    }
+
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
+    if (itApiKey == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT configuration request.");
+        return std::nullopt;
+    }
+
+    json response = Network::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
+    if (response.isNull())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT configuration from API.");
+        return std::nullopt;
+    }
+
+    return response;
+}
+
+std::optional<std::string> Network::Protocol::APISync::getApplicationJWTValidationKey(Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+{
+    const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
+    if (itAppName == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT validation key request.");
+        return std::nullopt;
+    }
+
+    const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
+    if (itApiKey == vars.end())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT validation key request.");
+        return std::nullopt;
+    }
+
+    json response = Network::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    if (response.isNull() || !response.isString())
+    {
+        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT validation key from API.");
+        return std::nullopt;
+    }
+
+    return response.asString();
+}
+
+
 json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName,
                                                const std::string &apiKey)
 {

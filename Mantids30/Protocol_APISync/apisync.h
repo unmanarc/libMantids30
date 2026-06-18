@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <cstdint>
 #include <string>
+#include <optional>
 
 namespace Mantids30::Network::Protocol::APISync {
 
@@ -28,12 +29,12 @@ struct APISyncParameters
      */
     void loadFromInfoTree(const boost::property_tree::ptree &ptr);
 
-    std::string apiSyncHost;        ///< Hostname or IP address of the API sync server.
-    uint16_t apiSyncPort = 7081;    ///< Port number for the API sync service (default: 7081).
-    bool checkTLSPeer = true;       ///< Whether to validate TLS peer certificate.
-    bool usePrivateCA = false;      ///< Whether to use a custom CA certificate.
-    bool useTLS = true;             ///< Whether to use TLS encryption.
-    std::string privateCAPath; ///< Path to the private CA certificate file (if applicable).
+    std::string apiSyncHost;     ///< Hostname or IP address of the API sync server.
+    uint16_t apiSyncPort = 7081; ///< Port number for the API sync service (default: 7081).
+    bool checkTLSPeer = true;    ///< Whether to validate TLS peer certificate.
+    bool usePrivateCA = false;   ///< Whether to use a custom CA certificate.
+    bool useTLS = true;          ///< Whether to use TLS encryption.
+    std::string privateCAPath;   ///< Path to the private CA certificate file (if applicable).
 };
 
 /**
@@ -111,5 +112,10 @@ json getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *prox
  */
 json updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
                                 const json &activities);
+
+std::optional<Json::Value> getApplicationJWTConfig(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
+                                                   const std::map<std::string, std::string> &vars);
+std::optional<std::string> getApplicationJWTValidationKey(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
+                                                          const std::map<std::string, std::string> &vars);
 
 } // namespace Mantids30::Network::Protocol::APISync
