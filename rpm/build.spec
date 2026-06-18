@@ -85,37 +85,44 @@ Summary:        C++17 Framework Library development files
 Group:          Development/Libraries
 Provides:       %{name}-devel
 Requires:       %{name}
+
+
+
+%define cmake cmake
+
+%if 0%{?rhel} == 7
+%define cmake cmake3
+%endif
+
+
 %description devel
 This package contains necessary header files and pkg-config files for %{name} development.
 %prep
 %autosetup -n %{name}-master
 
 %build
+
+mkdir -p build
+cd build
+
 %if 0%{?rhel} == 7
 export PATH=/opt/rh/devtoolset-9/root/usr/bin:$PATH
 export LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:$LD_LIBRARY_PATH
 export CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
 export CXX=/opt/rh/devtoolset-9/root/usr/bin/g++
-
-mkdir -p build
-cd build
-
-cmake3 .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+%{cmake} .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
        -DBUILD_SHARED_LIBS=ON \
        -DCMAKE_BUILD_TYPE=MinSizeRel \
        -DSSLRHEL7=ON .
-make %{?_smp_mflags}
-
 %else
-
-mkdir -p build
-cd build
-
-cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=/usr -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=MinSizeRel
+%{cmake} .. -DCMAKE_VERBOSE_MAKEFILE:BOOL´=ON \
+         -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+         -DBUILD_SHARED_LIBS=ON \
+         -DCMAKE_BUILD_TYPE=MinSizeRel
+%endif
 make %{?_smp_mflags}
 
-%endif
 %clean
 rm -rf $RPM_BUILD_ROOT
 
