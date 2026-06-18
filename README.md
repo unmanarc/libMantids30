@@ -1,133 +1,226 @@
-# libMantids30 
+# libMantids 3.0
 
-Mini-Advanced C++ Network Toolkit for Internet Services Development
-  
-Author: Aaron Mizrachi (unmanarc) <aaron@unmanarc.com>   
-Main License: LGPLv3   
-WIN32 License for Net_Interfaces: GPLv2 (tap-windows.h is GPLv2)  
+[![License: LGPLv3](https://img.shields.io/badge/License-LGPL%20v3-brightgreen.svg)](LICENSE)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/)
 
+**Mini-Advanced C++ Network Toolkit for Internet Services Development**
 
-***
+**Author:** Aaron Mizrachi (unmanarc) <dev@unmanarc.com>  
+**Main License:** LGPLv3  
+**WIN32 License for Net_Interfaces:** GPLv2 (tap-windows.h is GPLv2)  
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Core Classes Reference](#core-classes-reference)
+- [Quick Start](#quick-start)
+- [Programming Examples](#programming-examples)
+- [Advantages](#advantages)
+- [Dependencies](#dependencies)
+- [Building](#building)
+- [Compatibility](#compatibility)
+- [Installation](#installation)
+
+---
 
 ## Overview
 
-`libMantids30` is a C++11-based framework designed to enhance console and network-based projects. It offers a comprehensive set of libraries and tools for user authentication, network programming, database abstraction, data handling, and more.
+`libMantids30` is a comprehensive C++17-based framework designed for developing high-performance network services, web APIs, and backend applications. It provides a modular architecture with abstracted components for database access, network programming, memory management, session handling, authentication, and logging.
+
+The library follows a layered architecture pattern, allowing developers to build complex internet services by combining independent modules: from low-level socket handling to high-level RESTful API servers with WebSocket support.
+
+---
 
 ## Features
 
-* Program User Authentication
-* Network Programming
-  * Sockets (UDP/TCP/UNIX/TLS)
-  * Protocols (HTTP/MIME/URL/LINE2LINE)
-  * Chained Network Programming (Eg. TLS over TLS, TLS over AES-XOR)
-  * Internal Fast RPC Protocol (Web, TCP/TLS)
-* Database Abstraction Layer
-  * PostgreSQL
-  * MariaDB/MySQL
-  * SQLite3
-* Containers
-  * Ultra-Fast allocation memory containers (eg. chunked)
-  * File Mappers
-* Threading
-  * R/W Mutex
-  * Thread-Safe Objects (Map/Queue)
-  * Thread Pools
-* Scripting
-  * JSON Expressions evaluation
-* File Formats
-  * Vars File
-* Data Formats
-  * JWT
-* Servers
-  * Monolithic JSON WEB API Server
-  * RESTful WEB API Server
+- **Network Programming**
+  - Sockets (UDP/TCP/UNIX/TLS)
+  - Protocol implementations (HTTP/1.1, MIME, WebSocket, FastRPC)
+  - Chained network layers (TLS over TLS, TLS over AES-XOR, etc.)
+  - Network interface management
 
-***
-## Installing packages (HOWTO)
+- **Web Servers**
+  - HTTP/1.1 Client/Server full implementation
+  - RESTful Web API Server with full JWT Support
+  - Monolithic JSON Web API Server
+  - Session management with client details tracking
+  - WebSocket endpoints and connections
 
-- COPR (Fedora/RHEL/etc):  
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/)
+- **Database Abstraction Layer**
+  - PostgreSQL backend
+  - MariaDB/MySQL backend
+  - SQLite3 backend (with in-memory and file-backed databases)
+  - Unified query interface with parameter binding
+
+- **Memory Management**
+  - Abstract variable types (Var, String, Int32, Int64, Bool, Double, etc.)
+  - Chunk-based memory allocation
+  - Memory-mapped files support
+
+- **Threading**
+  - R/W Mutex locks
+  - Thread-safe containers (Shared Map, Map, Queue)
+  - Thread pools with semaphore-based control
+  
+- **Security & Authentication**
+  - JWT token generation, validation, and revocation
+  - Cryptographic functions (SHA Hashing, AES Encryption)
+  - TOTP (Time-based One-Time Password) support
+  - Session-based authentication
+
+- **Scripting & Data**
+  - JSON Expression Evaluation engine
+  - VarsFile format for configuration
+  - DataTables helper for server-side processing
+
+- **Logging**
+  - Structured logging with multiple log levels
+  - File-based log storage with rotation
+  - Web log
+  - Application and module-specific loggers
 
 
+---
 
-### Simple installation guide for Fedora/RHEL to develop software:
+## Core Classes Reference
 
-To activate our repo's and download/install the software:
+For a comprehensive reference of all core classes in the `Mantids30` namespace, see [Core Classes Reference](docs/CLASSES.md).
 
-In RHEL7:
+---
+
+## Advantages
+
+| Advantage | Description |
+|-----------|-------------|
+| **Modular Architecture** | Each component (DB, Network, Memory, etc.) is independent and can be used separately |
+| **Database Abstraction** | Write database-agnostic code; switch between SQLite3, PostgreSQL, and MariaDB without code changes |
+| **Type-Safe Memory** | Abstract variable system provides type safety while allowing generic handling |
+| **High Performance** | Chunk-based memory allocation and optimized network I/O for low-latency services |
+| **Thread Safety** | Built-in thread-safe containers and synchronization primitives |
+| **Multi-Protocol Support** | HTTP, WebSocket, FastRPC, and MIME protocols out of the box |
+| **Security Features** | JWT, TOTP, cryptographic hashing, and session management included |
+| **Cross-Platform** | Supports Linux, Windows (MSYS/MinGW), and various UNIX-like systems |
+| **CMake Build System** | Modern CMake configuration with modular library builds |
+| **Production Ready** | Used in production systems like uFastAuthD3 (Identity & Access Management) |
+
+---
+
+## Dependencies
+
+### Required
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+| C++ Compiler | C++17 compatible (GCC >= 9, Clang >= 10) | Compilation |
+| CMake | >= 3.10 | Build system |
+| Boost | >= 1.70 | String algorithms, filesystem |
+| OpenSSL | >= 1.1.1 | TLS, Cryptographic functions |
+| jsoncpp | >= 1.8.0 | JSON parsing and serialization |
+| pthread | - | Threading support |
+
+### Optional
+| Dependency | Purpose |
+|------------|---------|
+| SQLite3 devel libs | SQLite3 database backend |
+| MariaDB devel libs | MariaDB/MySQL database backend |
+| PostgreSQL devel libs | PostgreSQL database backend |
+
+---
+
+## Building
+
+### Quick Build
+
 ```bash
-# Install EPEL Repo + COPR
-yum -y install epel-release
-yum -y install yum-plugin-copr
-
-# Install unmanarc's copr
-yum copr enable amizrachi/unmanarc -y
-# Install the required software:
-yum -y install libMantids30-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake3
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+sudo make install
 ```
 
-In RHEL8:
+### Platform-specific Build Instructions
+
+- **[Building on RHEL-Based Distros](docs/build/BUILD-RHEL.md)**
+- **[Building on Fedora](docs/build/BUILD-FEDORA.md)**
+- **[Building on Ubuntu 20.04/22.04/24.04/26.04 LTS](docs/build/BUILD-UBUNTU.md)**
+- **[Building for Win32/64 via MSYS](docs/build/BUILD-WIN32.md)**
+
+---
+
+## Compatibility
+
+This library has been tested on:
+
+| Platform | Status |
+|----------|--------|
+| Fedora Linux 35+ | Tested |
+| Ubuntu 20.04/22.04/24.04/26.04 | Tested |
+| RHEL/CentOS 7/8/9 | Tested |
+| Windows (MSYS2/MinGW64) | Supported |
+
+---
+
+## Installation
+
+### COPR Repository (Fedora/RHEL)
+
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/amizrachi/unmanarc/package/libMantids30/)
+
+#### Fedora/RHEL 8+:
 ```bash
 # Install EPEL Repo
 dnf -y install 'dnf-command(config-manager)'
 dnf config-manager --set-enabled powertools
 dnf -y install epel-release
 
-# Install unmanarc's copr
+# Enable unmanarc's COPR repository
 dnf copr enable amizrachi/unmanarc -y
-# Install the required software:
-dnf -y install libMantids30-devel jsoncpp-devel boost-devel boost-static openssl-devel sqlite-devel mariadb-devel postgresql-devel gcc-c++ cmake
+
+# Install libMantids30 and dependencies
+dnf -y install libMantids30-devel jsoncpp-devel boost-devel boost-static \
+               openssl-devel sqlite-devel mariadb-devel postgresql-devel \
+               gcc-c++ cmake
 ```
 
+#### RHEL 7:
+```bash
+# Install EPEL Repo + COPR
+yum -y install epel-release
+yum -y install yum-plugin-copr
 
-***
-## Compatibility
+# Enable unmanarc's COPR repository
+yum copr enable amizrachi/unmanarc -y
 
-This library was tested so far in:
+# Install libMantids30 and dependencies
+yum -y install libMantids30-devel jsoncpp-devel boost-devel boost-static \
+               openssl-devel sqlite-devel mariadb-devel postgresql-devel \
+               gcc-c++ cmake3
+```
 
-* OpenSUSE Tumbleweed
-* Fedora Linux 35
-* Ubuntu 18.04/20.04/22.04
-* RHEL-like 7/8/9
-* RHEL-like 5/6, but may require special/external C++11 compilers, we don't recommend it
+---
 
-### Overall Pre-requisites:
+## Real-World Examples
 
-* C++11 Compatible Compiler (like GCC >=5)
-* pthread
-* openssl (1.1.x)
-* jsoncpp
-* boost
+Real-world projects using libMantids30:
 
-### Extras Pre-requisites:
+- **[uFastAuthD3](https://github.com/unmanarc/uFastAuthD3)** - Identity and Access Management daemon
 
-* SQLite3 devel libs
-* MariaDB devel libs
-* PostgreSQL devel libs
+---
 
-### Win32 Pre-requisites:
+## License
 
-* Using MSYS MinGW 64bit (recommended)
-* Fedora MinGW (x86_64 or i686) compiler and required libs (deprecated)
+This library is licensed under **LGPLv3**, except for:
+- `Net_Interfaces` on WIN32, which is licensed under **GPLv2** due to `tap-windows.h`
 
-***
-## Building libMantids30
+See [LICENSE](LICENSE) for details.
 
-Building instructions
+---
 
-### Instructions (RHEL Based Distros):
+## Author
 
-[Building Instructions for RHEL Based Distros](INSTALL.RHEL.md)
-
-### Instructions (Fedora):
-
-[Building Instructions for Fedora](INSTALL.Fedora.md)
-
-### Instructions (Ubuntu):
-
-[Building Instructions for Ubuntu 20.04/22.04 LTS](INSTALL.Ubuntu.md)
-
-### Instructions (Win32 - Host: Fedora):
-
-[Building Instructions for Win32/64 via MSYS](INSTALL.Win32.md)
-
+**Aaron Mizrachi** (unmanarc)
+- Email: dev@unmanarc.com
+- GitHub: [unmanarc](https://github.com/unmanarc)
