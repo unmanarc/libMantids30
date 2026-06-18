@@ -5,6 +5,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <list>
 #include <set>
+#include <sstream>
 #include <string>
 
 namespace Mantids30::Memory::Abstract {
