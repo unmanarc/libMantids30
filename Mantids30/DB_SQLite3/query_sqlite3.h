@@ -44,8 +44,8 @@ protected:
     [[nodiscard]] bool step0() override;
 
 private:
-    sqlite3_stmt *m_stmt;                 ///< Pointer to the SQLite3 statement object.
-    sqlite3 *m_databaseConnectionHandler; ///< Pointer to the SQLite3 database connection handler.
+    sqlite3_stmt *m_stmt = nullptr;                 ///< Pointer to the SQLite3 statement object.
+    sqlite3 *m_databaseConnectionHandler = nullptr; ///< Pointer to the SQLite3 database connection handler.
 };
 
 } // namespace Mantids30::Database

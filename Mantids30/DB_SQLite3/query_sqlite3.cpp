@@ -10,8 +10,6 @@ using namespace Mantids30::Database;
 
 Query_SQLite3::Query_SQLite3()
 {
-    m_stmt = nullptr;
-    m_databaseConnectionHandler = nullptr;
     m_lastSQLReturnValue = SQLITE_OK;
 }
 
@@ -34,7 +32,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
     }
 
     // Prepare the query (will lock the db while using ppDb):
-    ((SQLConnector_SQLite3 *) m_pSQLConnector)->putDatabaseConnectorIntoQuery(this);
+    (static_cast<SQLConnector_SQLite3 *>(m_pSQLConnector))->putDatabaseConnectorIntoQuery(this);
 
     if (!m_databaseConnectionHandler)
     {
@@ -159,8 +157,8 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             {
                 void *ptr = ABSTRACT_SPTR_AS(PTR, inputVar.second)->getValue();
                 // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-                size_t ptrSize = strnlen((char *) ptr, (0xFFFFFFFF / 2) - 1);
-                sqlite3_bind_text(m_stmt, idx, (char *) ptr, ptrSize, SQLITE_STATIC);
+                size_t ptrSize = strnlen(static_cast<char *>(ptr), (0xFFFFFFFF / 2) - 1);
+                sqlite3_bind_text(m_stmt, idx, static_cast<char *>(ptr), ptrSize, SQLITE_STATIC);
             }
             break;
             case Memory::Abstract::Var::Type::VOID:
