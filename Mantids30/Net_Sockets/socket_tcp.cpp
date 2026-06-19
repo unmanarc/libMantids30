@@ -28,7 +28,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
 {
     addrinfo *res = nullptr;
     m_lastError.clear();
-    if (!getAddrInfo(remoteHost, port, SOCK_STREAM, (void **) &res))
+    if (!getAddrInfo(remoteHost, port, SOCK_STREAM, reinterpret_cast<void **>(&res)))
     {
         // Bad name resolution...
         return false;
@@ -61,7 +61,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         setReadTimeout(0);
 
         sockaddr *curAddr = resiter->ai_addr;
-        struct sockaddr_in *curAddrIn = ((sockaddr_in *) curAddr);
+        struct sockaddr_in *curAddrIn = (reinterpret_cast<sockaddr_in *>(curAddr));
 
         if ((resiter->ai_addr->sa_family == AF_INET) ||            // IPv4 always have the permission to go.
             (resiter->ai_addr->sa_family == AF_INET6 && m_useIPv6) // Check if ipv6 have our permission to go.
@@ -152,7 +152,7 @@ std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
     struct sockaddr_in cli_addr{};
     clilen = sizeof(cli_addr);
 
-    if ((sdconn = accept(m_sockFD, (struct sockaddr *) &cli_addr, (socklen_t *) &clilen)) >= 0)
+    if ((sdconn = accept(m_sockFD, reinterpret_cast<struct sockaddr *>(&cli_addr), reinterpret_cast<socklen_t *>(&clilen))) >= 0)
     {
         if (m_useTCPForceKeepAlive)
         {
@@ -160,7 +160,7 @@ std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
 #ifdef _WIN32
             if (setsockopt(sdconn, SOL_SOCKET, SO_KEEPALIVE, (const char *) &flags, sizeof(flags)))
 #else
-            if (setsockopt(sdconn, SOL_SOCKET, SO_KEEPALIVE, (void *) &flags, sizeof(flags)))
+            if (setsockopt(sdconn, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<void *>(&flags), sizeof(flags)))
 #endif
             {
                 // BAD...
@@ -311,7 +311,7 @@ bool Socket_TCP::tcpConnect(const unsigned short &addrFamily, const sockaddr *ad
                 // Socket selected for write
                 socklen_t lon;
                 lon = sizeof(int);
-                if (getSocketOption(SOL_SOCKET, SO_ERROR, (void *) (&valopt), &lon) < 0)
+                if (getSocketOption(SOL_SOCKET, SO_ERROR, reinterpret_cast<void *>(&valopt), &lon) < 0)
                 {
                     m_lastError = "Error in getsockopt(SOL_SOCKET)";
                     return false;
