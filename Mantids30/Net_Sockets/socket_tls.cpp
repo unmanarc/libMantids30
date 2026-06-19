@@ -108,7 +108,7 @@ bool Socket_TLS::postConnectSubInitialization()
 
     if (!(tlsKeys.getCAPath().empty()) || tlsKeys.getUseSystemCertificates())
     {
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+        SSL_set_verify(m_sslHandler, m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT , nullptr);
     }
     else
     {
@@ -192,7 +192,7 @@ bool Socket_TLS::postAcceptSubInitialization()
 
     if (!m_tlsParentConnection->tlsKeys.getCAPath().empty() || m_tlsParentConnection->tlsKeys.getUseSystemCertificates())
     {
-        SSL_set_verify(m_sslHandler, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT | (m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : 0), nullptr);
+        SSL_set_verify(m_sslHandler, m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : (SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT) , nullptr);
     }
     else
     {
@@ -408,7 +408,7 @@ string Socket_TLS::getTLSPeerCN() const
             }
             X509_free(cert);
         }
-        return std::string(certCNText);
+        return certCNText;
     }
     else
     {
@@ -567,7 +567,7 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
                 BIO *bio = BIO_new(BIO_s_mem());
                 if (bio)
                 {
-                    BIO_dump_fp(debugFP, (const char *) data, readBytes);
+                    BIO_dump_fp(debugFP, static_cast<const char *>(data), readBytes);
                     fflush(debugFP);
                     BIO_free(bio);
                 }
@@ -575,7 +575,7 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
             else
             {
                 std::string datax;
-                datax.append((const char *) data, readBytes);
+                datax.append(static_cast<const char *>(data), readBytes);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
@@ -697,13 +697,13 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             if (debugOptions & Socket::DebugOptions::PRINT_WRITE_HEX)
             {
                 fprintf(debugFP, ">>> [TLS_WRITE] Wrote %d bytes\n", sentBytes);
-                BIO_dump_fp(debugFP, (const char *) data, sentBytes);
+                BIO_dump_fp(debugFP, static_cast<const char *>(data), sentBytes);
                 fflush(debugFP);
             }
             else
             {
                 std::string datax;
-                datax.append((const char *) data, sentBytes);
+                datax.append(static_cast<const char *>(data), sentBytes);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
