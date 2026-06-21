@@ -10,14 +10,14 @@ namespace Mantids30::Database {
 
 /// @brief RAII-based transaction manager for database operations.
 ///
-/// TransactionGuard automates the lifecycle of a database transaction using the
+/// Transaction automates the lifecycle of a database transaction using the
 /// RAII (Resource Acquisition Is Initialization) idiom. It starts a transaction
 /// upon construction, and ensures proper cleanup (rollback) upon destruction if
 /// the transaction was not explicitly finalized.
 ///
 /// @par Usage:
 /// |// Create a guard that starts a transaction automatically|
-/// |auto guard = TransactionGuard(sqlConnector);|
+/// |auto guard = Transaction(sqlConnector);|
 /// |if (!guard.isValid()) { /* handle error */ }|
 /// ||
 /// |// ... perform database operations ...|
@@ -29,9 +29,9 @@ namespace Mantids30::Database {
 ///       is automatically rolled back, preventing leaving the database in an
 ///       inconsistent state.
 ///
-/// @thread_safety Not thread-safe. Each thread should use its own TransactionGuard
+/// @thread_safety Not thread-safe. Each thread should use its own Transaction
 ///                instance with a dedicated or properly synchronized SQLConnector.
-class TransactionGuard
+class Transaction
 {
 private:
     /// @brief Reference to the underlying SQL connector used for transaction control.
@@ -44,14 +44,14 @@ private:
     bool m_finalized = false;
 
 public:
-    /// @brief Constructs a TransactionGuard and starts a new database transaction.
+    /// @brief Constructs a Transaction and starts a new database transaction.
     ///
     /// A transaction is immediately started on the provided SQLConnector. If the
     /// underlying beginTransaction() call fails, the guard is marked as invalid
     /// and subsequent operations will be no-ops.
     ///
     /// @param connector Reference to the SQL connector on which to start the transaction.
-    explicit TransactionGuard(Mantids30::Database::SQLConnector &connector);
+    explicit Transaction(Mantids30::Database::SQLConnector &connector);
 
     /// @brief Explicitly finalizes the transaction by committing or rolling it back.
     ///
@@ -59,20 +59,20 @@ public:
     /// This method may only be called once; subsequent calls return false without
     /// performing any action.
     ///
-    /// @param success True to commit the transaction, false to roll it back.
+    /// @param success True to finalize the transaction, false to roll it back.
     /// @return True if the transaction was successfully committed. Returns false if:
     ///   - The transaction is not active (never started successfully).
     ///   - The transaction was already finalized.
     ///   - A rollback was requested (always returns false in that case).
-    ///   - The commit operation failed.
-    [[nodiscard]] bool finalize(bool success);
+    ///   - The finalize operation failed.
+    [[nodiscard]] bool finalize(bool success = true);
 
     /// @brief Destructor that automatically rolls back unfinalized transactions.
     ///
     /// If the transaction is still active and has not been explicitly finalized,
     /// this destructor performs an automatic rollback to ensure the database is
     /// left in a consistent state.
-    ~TransactionGuard();
+    ~Transaction();
 
     /// @brief Checks whether the transaction was successfully started and is still active.
     ///
