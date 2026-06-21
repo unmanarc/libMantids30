@@ -1,5 +1,6 @@
 #include "transactionguard.h"
 
+using namespace Mantids30::Database;
 
 TransactionGuard::TransactionGuard(Mantids30::Database::SQLConnector &connector)
     : m_sqlConnector(connector)

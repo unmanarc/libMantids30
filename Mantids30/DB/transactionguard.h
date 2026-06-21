@@ -2,6 +2,12 @@
 
 #include "sqlconnector.h"
 
+/**
+ * @namespace Mantids30::Database
+ * @brief Namespace containing database-related classes and functionality.
+ */
+namespace Mantids30::Database {
+
 /// @brief RAII-based transaction manager for database operations.
 ///
 /// TransactionGuard automates the lifecycle of a database transaction using the
@@ -73,3 +79,4 @@ public:
     /// @return True if a transaction is active, false otherwise.
     [[nodiscard]] bool isValid() const { return m_transactionActive; }
 };
+} // namespace Mantids30::Database
