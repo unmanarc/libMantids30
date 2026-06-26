@@ -71,8 +71,6 @@ std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<M
     log->config.useThreadedQueue = config.get<bool>("Logs.UseThreadedQueue", true);
 
     // Handle rotation schedule
-    boost::property_tree::ptree rotateSchedule = config.get_child("Logs.RotateSchedule", boost::property_tree::ptree());
-
     boost::optional<std::string> minuteStr = config.get_optional<std::string>("Logs.RotateSchedule.Minute");
     if (minuteStr && *minuteStr != "*")
     {
