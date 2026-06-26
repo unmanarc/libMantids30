@@ -21,7 +21,7 @@
 namespace Mantids30::API::RESTful {
 
 // Struct to hold HTTP request parameters
-struct RequestParameters
+struct RequestContext
 {
     Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
     Json::Value emptyJSON;
@@ -35,7 +35,7 @@ struct RequestParameters
 };
 
 using APIEndpointFunctionType = APIReturn (*)(void *context,                                        // Context pointer
-                                              const RESTful::RequestParameters &request,            // Parameters from the RESTful request
+                                              const RESTful::RequestContext &request,            // Parameters from the RESTful request
                                               Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 );
 
@@ -109,13 +109,13 @@ public:
      *
      * @param httpMethodType The RESTful method httpMethodType (GET, POST, PUT, DELETE).
      * @param endpointPath The name of the resource.
-     * @param inputParameters The input parameters for the method.
+     * @param requestContext The API Request Context (Paramters, JWT, etc)
      * @param currentScopes The set of current scopes for the user.
      * @param authenticated If true, the user is authenticated.
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    [[nodiscard]] HandleResult handleEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+    [[nodiscard]] HandleResult handleEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestContext &requestContext,
                                               const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse);
 
     /**
@@ -129,7 +129,7 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+    [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestContext &inputParameters,
                                               const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut);
 
 private:
@@ -139,7 +139,7 @@ private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.
 
-    Sessions::ClientDetails extractClientDetails(const RequestParameters &inputParameters);
+    Sessions::ClientDetails extractClientDetails(const RequestContext &requestContext);
 };
 
 } // namespace Mantids30::API::RESTful

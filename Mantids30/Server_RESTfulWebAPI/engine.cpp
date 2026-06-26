@@ -32,7 +32,7 @@ Engine::Engine()
 }
 
 API::APIReturn Engine::revokeJWT(void *context,                                        // Context pointer
-                                 const API::RESTful::RequestParameters &request,       // Parameters from the RESTful request
+                                 const API::RESTful::RequestContext &request,       // Parameters from the RESTful request
                                  Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 )
 {
@@ -43,7 +43,7 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
     return {};
 }
 
-API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestParameters &request, Sessions::ClientDetails &authClientDetails)
+API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
     const std::string uri = JSON_ASSTRING(*request.inputJSON, "uri", "");
@@ -73,7 +73,7 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
     return {};
 }
 
-API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestParameters &request, Sessions::ClientDetails &authClientDetails)
+API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
     const std::string uri = JSON_ASSTRING(*request.inputJSON, "uri", "");

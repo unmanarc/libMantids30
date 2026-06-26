@@ -33,17 +33,17 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
     set<string> currentScopes;
     bool isAdmin = false;
     bool authenticated = false;
-    API::RESTful::RequestParameters inputParameters;
+    API::RESTful::RequestContext requestContext;
 
-    inputParameters.jwtSigner = this->config->jwtSigner;
-    inputParameters.jwtValidator = this->config->jwtValidator;
-    inputParameters.clientRequest = &clientRequest;
+    requestContext.jwtSigner = this->config->jwtSigner;
+    requestContext.jwtValidator = this->config->jwtValidator;
+    requestContext.clientRequest = &clientRequest;
 
     if (isSessionActive())
     {
         isAdmin = jwtToken.isAdmin();
         currentScopes = jwtToken.getAllScopes();
-        inputParameters.jwtToken = &jwtToken;
+        requestContext.jwtToken = &jwtToken;
     }
 
     if (m_endpointsHandler.find(apiVersion) == m_endpointsHandler.end())
@@ -58,7 +58,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
     securityParameters.hasVerifiedJWTAccessTokenCookie = m_isAccessTokenCookieJWTVerified;
     securityParameters.hasVerifiedJWTAuthorizationHeader = m_isAuthorizationHeaderJWTVerified;
 
-    API::RESTful::Endpoints::HandleResult result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, inputParameters, currentScopes, isAdmin, securityParameters, &apiReturn);
+    API::RESTful::Endpoints::HandleResult result = m_endpointsHandler[apiVersion]->handleEndpoint(httpMethodMode, endpointName, requestContext, currentScopes, isAdmin, securityParameters, &apiReturn);
 
     switch (result)
     {

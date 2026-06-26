@@ -45,16 +45,16 @@ bool Endpoints::addEndpoint(const HTTP::Method &httpMethodType, const std::strin
     return true;
 }
 
-Sessions::ClientDetails Endpoints::extractClientDetails(const RequestParameters &inputParameters)
+Sessions::ClientDetails Endpoints::extractClientDetails(const RequestContext &requestContext)
 {
     Mantids30::Sessions::ClientDetails clientDetails;
-    clientDetails.ipAddress = inputParameters.clientRequest->networkClientInfo.REMOTE_ADDR;
-    clientDetails.tlsCommonName = inputParameters.clientRequest->networkClientInfo.tlsCommonName;
-    clientDetails.userAgent = inputParameters.clientRequest->userAgent;
+    clientDetails.ipAddress = requestContext.clientRequest->networkClientInfo.REMOTE_ADDR;
+    clientDetails.tlsCommonName = requestContext.clientRequest->networkClientInfo.tlsCommonName;
+    clientDetails.userAgent = requestContext.clientRequest->userAgent;
     return clientDetails;
 }
 
-Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestParameters &inputParameters,
+Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestContext &requestContext,
                                                   const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse)
 {
     RESTfulAPIEndpointFullDefinition endpointFullDefinition;
@@ -147,19 +147,19 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
         }
     }
 
-    std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamerContent = inputParameters.clientRequest->getJSONStreamerContent();
+    std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamerContent = requestContext.clientRequest->getJSONStreamerContent();
 
-    inputParameters.inputJSON = &inputParameters.emptyJSON;
+    requestContext.inputJSON = &requestContext.emptyJSON;
 
     if (jsonStreamerContent != nullptr)
     {
-        inputParameters.inputJSON = jsonStreamerContent->getValue();
+        requestContext.inputJSON = jsonStreamerContent->getValue();
     }
     else
     {
-        if (inputParameters.clientRequest->requestLine.getHTTPMethod() == "GET")
+        if (requestContext.clientRequest->requestLine.getHTTPMethod() == "GET")
         {
-            if (!inputParameters.clientRequest->requestLine.getRequestGETVarsRawString().empty())
+            if (!requestContext.clientRequest->requestLine.getRequestGETVarsRawString().empty())
             {
                 // Bad parsing... (should be JSON or empty)
                 apiResponse->setError(HTTP::Status::Code::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during GET");
@@ -172,7 +172,7 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
         }
         else
         {
-            if (inputParameters.clientRequest->content.getContainerType() == HTTP::Content::ContainerType::JSON)
+            if (requestContext.clientRequest->content.getContainerType() == HTTP::Content::ContainerType::JSON)
             {
                 // Bad parsing... (should be parsed as JSON...)
                 apiResponse->setError(HTTP::Status::Code::S_400_BAD_REQUEST, "invalid_invokation", "Bad Input JSON Parsing during POST");
@@ -183,10 +183,10 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
 
     if (endpointFullDefinition.endpointDefinition != nullptr && apiResponse != nullptr)
     {
-        Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(inputParameters);
+        Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(requestContext);
 
         *apiResponse = endpointFullDefinition.endpointDefinition(endpointFullDefinition.context, // Context
-                                                                 inputParameters,                // Parameters from the RESTful request in JSON format
+                                                                 requestContext,                // Parameters from the RESTful request in JSON format
                                                                  clientDetails);
         return HandleResult::SUCCESS;
     }
@@ -199,7 +199,7 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const HTTP::Method &httpMethod
     return HandleResult::INTERNAL_ERROR;
 }
 
-Endpoints::HandleResult Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestParameters &inputParameters, const std::set<std::string> &currentScopes,
+Endpoints::HandleResult Endpoints::handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RequestContext &inputParameters, const std::set<std::string> &currentScopes,
                                                   bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut)
 {
     HTTP::Method mode;

@@ -21,7 +21,7 @@ class APIServerConfig
 {
 public:
     using ClientDetails = Sessions::ClientDetails;
-    using RequestParameters = API::RESTful::RequestParameters;
+    using RequestContext = API::RESTful::RequestContext;
     using APIReturn = API::APIReturn;
 
     APIServerConfig() = default;
