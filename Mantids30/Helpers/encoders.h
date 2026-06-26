@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mem.h"
+#include <cstdint>
 #include <memory>
 #include <string>
 
