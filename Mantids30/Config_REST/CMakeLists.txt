@@ -56,9 +56,3 @@ foreach(LIB ${Mantids30_LIBRARIES})
     include_directories("${Mantids30_${LIB}_SOURCE_DIR}/../../")
     target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
 endforeach()
-
-################################################################################
-# Boost Packages:
-find_package(Boost REQUIRED COMPONENTS system filesystem)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})
