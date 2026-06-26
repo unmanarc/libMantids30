@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Mantids30/Memory/streamable_transformer.h>
+#include <cstdint>
 
 namespace Mantids30::Memory::Streams::Decoders {
 
@@ -18,7 +19,7 @@ private:
     size_t getPlainBytesSize(const unsigned char *buf, size_t count, unsigned char *byteDetected);
     bool flushBytesAndResetFilledCounter(Memory::Streams::StreamableObject *dst);
 
-    unsigned char m_bytes[3];
+    unsigned char m_bytes[3]{0,0,0};
     uint8_t m_filled = 0;
 };
 
