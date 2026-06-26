@@ -1,7 +1,11 @@
 #include "random.h"
 
+#include <cstdio>
+#include <cstring>
 #include <openssl/rand.h>
+#include <openssl/sha.h>
 #include <stdexcept>
+#include <vector>
 
 using namespace std;
 using namespace Mantids30::Helpers;
@@ -96,4 +100,74 @@ void Random::createRandomSalt128(unsigned char *salt)
     {
         throw std::runtime_error("RAND_bytes failed.");
     }
+}
+
+std::string Random::createUUIDv4()
+{
+    // Generate 16 random bytes using OpenSSL's cryptographically secure RNG.
+    std::vector<unsigned char> buffer(16);
+
+    if (!RAND_bytes(buffer.data(), buffer.size()))
+    {
+        throw std::runtime_error("RAND_bytes failed.");
+    }
+
+    // Set version 4 (random) in byte 6: clear high 4 bits, set to 0100
+    buffer[6] = (buffer[6] & 0x0F) | 0x40;
+
+    // Set variant (RFC 4122) in byte 8: clear top 2 bits, set to 10xxxxxx
+    buffer[8] = (buffer[8] & 0x3F) | 0x80;
+
+    char uuid[37];
+    snprintf(uuid, sizeof(uuid), "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7],
+             buffer[8], buffer[9], buffer[10], buffer[11], buffer[12], buffer[13], buffer[14], buffer[15]);
+
+    return uuid;
+}
+std::string Random::createUUIDv5(const std::string &namespaceUUID, const std::string &name)
+{
+    // Parse namespace UUID string into 16 bytes (big-endian, without dashes)
+    unsigned char ns[16] = {};
+    const std::string &clean = namespaceUUID;
+    int pos = 0;
+    for (size_t i = 0; i < clean.size() && pos < 16; ++i)
+    {
+        if (clean[i] == '-')
+        {
+            continue;
+        }
+        // Build a 2-char hex string for each byte
+        std::string hexPair;
+        if (i + 1 < clean.size() && clean[i + 1] != '-')
+        {
+            hexPair = clean.substr(i, 2);
+        }
+        if (!hexPair.empty() && static_cast<int>(hexPair.size()) == 2 && pos < 16)
+        {
+            char *end = nullptr;
+            ns[pos++] = static_cast<unsigned char>(strtol(hexPair.c_str(), &end, 16));
+            ++i; // Skip next char (already consumed)
+        }
+    }
+
+    // Concatenate namespace + name and compute SHA-1
+    std::vector<unsigned char> buffer(16 + name.size());
+    std::memcpy(buffer.data(), ns, 16);
+    std::memcpy(buffer.data() + 16, name.c_str(), name.size());
+
+    unsigned char hash[SHA_DIGEST_LENGTH];
+    SHA1(buffer.data(), buffer.size(), hash);
+
+    // Set version 5 in byte 6: clear high 4 bits, set to 0101
+    hash[6] = (hash[6] & 0x0F) | 0x50;
+
+    // Set variant (RFC 4122) in byte 8: clear top 2 bits, set to 10xxxxxx
+    hash[8] = (hash[8] & 0x3F) | 0x80;
+
+    // Format as UUID string
+    char uuid[37];
+    snprintf(uuid, sizeof(uuid), "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x", hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9],
+             hash[10], hash[11], hash[12], hash[13], hash[14], hash[15]);
+
+    return uuid;
 }

@@ -32,6 +32,19 @@ public:
      * @param salt output variable.
      */
     static void createRandomSalt128(unsigned char *salt);
+    /**
+     * @brief createUUIDv4 Generate a random UUID v4 (RFC 4122) as a 36-character string
+     * @return UUID string in format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+     */
+    static std::string createUUIDv4();
+
+    /**
+     * @brief createUUIDv5 Generate a name-based UUID v5 (RFC 4122) as a 36-character string
+     * @param namespaceUUID The namespace UUID (e.g. DNS, URL, OID, X500 namespace)
+     * @param name The name to generate UUID from
+     * @return UUID string in format "xxxxxxxx-xxxx-5xxx-yxxx-xxxxxxxxxxxx"
+     */
+    static std::string createUUIDv5(const std::string &namespaceUUID, const std::string &name);
 
     /**
      * @brief safe_random_shuffle Suffle a vector
