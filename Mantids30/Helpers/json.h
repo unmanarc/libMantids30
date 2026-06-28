@@ -156,72 +156,72 @@ inline static bool ISARRAY_D(const Json::Value &j)
 
 inline static std::string ARRAY_ASSTRING(const Json::Value &j, size_t i, const std::string &def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isString())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isString())
     {
-        return j[static_cast<int>(i)].asString();
+        return j[static_cast<uint32_t>(i)].asString();
     }
     return def;
 }
 
 inline static bool ARRAY_ASBOOL(const Json::Value &j, size_t i, bool def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isBool())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isBool())
     {
-        return j[static_cast<int>(i)].asBool();
+        return j[static_cast<uint32_t>(i)].asBool();
     }
     return def;
 }
 
 inline static double ARRAY_ASDOUBLE(const Json::Value &j, size_t i, double def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isDouble())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isDouble())
     {
-        return j[static_cast<int>(i)].asDouble();
+        return j[static_cast<uint32_t>(i)].asDouble();
     }
     return def;
 }
 
 inline static float ARRAY_ASFLOAT(const Json::Value &j, size_t i, float def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isDouble())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isDouble())
     {
-        return static_cast<float>(j[static_cast<int>(i)].asFloat());
+        return static_cast<float>(j[static_cast<uint32_t>(i)].asFloat());
     }
     return def;
 }
 
 inline static int ARRAY_ASINT(const Json::Value &j, size_t i, int def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isInt())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isInt())
     {
-        return j[static_cast<int>(i)].asInt();
+        return j[static_cast<uint32_t>(i)].asInt();
     }
     return def;
 }
 
 inline static int64_t ARRAY_ASINT64(const Json::Value &j, size_t i, int64_t def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isInt64())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isInt64())
     {
-        return j[static_cast<int>(i)].asInt64();
+        return j[static_cast<uint32_t>(i)].asInt64();
     }
     return def;
 }
 
 inline static unsigned int ARRAY_ASUINT(const Json::Value &j, size_t i, unsigned int def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isUInt())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isUInt())
     {
-        return j[static_cast<int>(i)].asUInt();
+        return j[static_cast<uint32_t>(i)].asUInt();
     }
     return def;
 }
 
 inline static uint64_t ARRAY_ASUINT64(const Json::Value &j, size_t i, uint64_t def)
 {
-    if (j.isArray() && i < j.size() && j[static_cast<int>(i)].isUInt64())
+    if (j.isArray() && i < j.size() && j[static_cast<uint32_t>(i)].isUInt64())
     {
-        return j[static_cast<int>(i)].asUInt64();
+        return j[static_cast<uint32_t>(i)].asUInt64();
     }
     return def;
 }

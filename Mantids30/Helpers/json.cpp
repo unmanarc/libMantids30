@@ -39,9 +39,9 @@ std::list<std::string> JSON::toStringList(const json &value, const std::string &
     {
         for (size_t x = 0; x < value.size(); x++)
         {
-            if (value[static_cast<int>(x)].isString())
+            if (value[static_cast<uint32_t>(x)].isString())
             {
-                r.push_back(value[static_cast<int>(x)].asString());
+                r.push_back(value[static_cast<uint32_t>(x)].asString());
             }
         }
     }
@@ -49,9 +49,9 @@ std::list<std::string> JSON::toStringList(const json &value, const std::string &
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
-            if (value[sub][static_cast<int>(x)].isString())
+            if (value[sub][static_cast<uint32_t>(x)].isString())
             {
-                r.push_back(value[sub][static_cast<int>(x)].asString());
+                r.push_back(value[sub][static_cast<uint32_t>(x)].asString());
             }
         }
     }
@@ -66,9 +66,9 @@ std::set<std::string> JSON::toStringSet(const json &value, const std::string &su
     {
         for (size_t x = 0; x < value.size(); x++)
         {
-            if (value[static_cast<int>(x)].isString())
+            if (value[static_cast<uint32_t>(x)].isString())
             {
-                r.insert(value[static_cast<int>(x)].asString());
+                r.insert(value[static_cast<uint32_t>(x)].asString());
             }
         }
     }
@@ -76,9 +76,9 @@ std::set<std::string> JSON::toStringSet(const json &value, const std::string &su
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
-            if (value[sub][static_cast<int>(x)].isString())
+            if (value[sub][static_cast<uint32_t>(x)].isString())
             {
-                r.insert(value[sub][static_cast<int>(x)].asString());
+                r.insert(value[sub][static_cast<uint32_t>(x)].asString());
             }
         }
     }
@@ -94,9 +94,9 @@ std::set<uint32_t> JSON::toUInt32Set(const json &value, const std::string &sub)
     {
         for (size_t x = 0; x < value.size(); x++)
         {
-            if (value[static_cast<int>(x)].isUInt())
+            if (value[static_cast<uint32_t>(x)].isUInt())
             {
-                r.insert(value[static_cast<int>(x)].asUInt());
+                r.insert(value[static_cast<uint32_t>(x)].asUInt());
             }
         }
     }
@@ -104,9 +104,9 @@ std::set<uint32_t> JSON::toUInt32Set(const json &value, const std::string &sub)
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
-            if (value[sub][static_cast<int>(x)].isUInt())
+            if (value[sub][static_cast<uint32_t>(x)].isUInt())
             {
-                r.insert(value[sub][static_cast<int>(x)].asUInt());
+                r.insert(value[sub][static_cast<uint32_t>(x)].asUInt());
             }
         }
     }
