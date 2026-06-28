@@ -157,17 +157,17 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
             {
                 switch (executionStatus)
                 {
-                case EXEC_STATUS_SUCCESS:
+                case TaskExecutionStatus::SUCCESS:
                     (*error)["succeed"] = true;
                     (*error)["errorId"] = EXEC_SUCCESS;
                     (*error)["errorMessage"] = "Execution OK.";
                     break;
-                case EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW:
+                case TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW:
                     (*error)["succeed"] = false;
                     (*error)["errorId"] = EXEC_ERR_REMOTE_QUEUE_OVERFLOW;
                     (*error)["errorMessage"] = "Remote Execution Failed: Full Queue.";
                     break;
-                case EXEC_STATUS_ERR_METHOD_NOT_FOUND:
+                case TaskExecutionStatus::ERR_METHOD_NOT_FOUND:
                     (*error)["succeed"] = false;
                     (*error)["errorId"] = EXEC_ERR_METHOD_NOT_FOUND;
                     (*error)["errorMessage"] = "Remote Execution Failed: Method Not Found.";

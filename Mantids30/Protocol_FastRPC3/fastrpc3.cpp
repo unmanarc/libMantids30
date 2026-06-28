@@ -262,7 +262,7 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
         {
             // Can't push the task in the queue. Null answer.
             CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params.get());
-            sendRPCAnswer(params.get(), "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
+            sendRPCAnswer(params.get(), "", TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW);
             params->doneSharedMutex->unlockShared();
             //            delete params;
         }

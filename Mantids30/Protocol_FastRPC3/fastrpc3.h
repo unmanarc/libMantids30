@@ -65,12 +65,12 @@ public:
         EXEC_ERR_UNKNOWN = 99,
     };
 
-    enum eTaskExecutionStatus
+    enum TaskExecutionStatus
     {
-        EXEC_STATUS_ERR_GENERIC = 1,
-        EXEC_STATUS_SUCCESS = 2,
-        EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW = 3,
-        EXEC_STATUS_ERR_METHOD_NOT_FOUND = 4
+        ERR_GENERIC = 1,
+        SUCCESS = 2,
+        ERR_REMOTE_QUEUE_OVERFLOW = 3,
+        ERR_METHOD_NOT_FOUND = 4
     };
 
     class SessionPTR

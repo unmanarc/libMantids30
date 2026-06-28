@@ -58,7 +58,7 @@ void RPCClientImpl::runRPClient()
             {
                 // Load Key
                 std::optional<std::string> keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64(Mantids30::Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()),
-                                                                                                        (char *) masterKey->data, masterKey->length);
+                                                                                                        static_cast<char *>(masterKey->data), masterKey->length);
 
                 if (!keyPassPhrase)
                 {
@@ -66,7 +66,7 @@ void RPCClientImpl::runRPClient()
                     _exit(-37);
                 }
 
-                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(privKeyPath.c_str(), (char *) keyPassPhrase->c_str()))
+                if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(privKeyPath.c_str(), const_cast<char *>(keyPassPhrase->c_str())))
                 {
                     LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(),
                                   remotePort, privKeyPath.c_str());
@@ -274,7 +274,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     }
     else
     {
-        std::optional<std::string> tokenizedKey = Mantids30::Helpers::Crypto::AES256DecryptB64(encryptedKey, (char *) masterKey->data, masterKey->length);
+        std::optional<std::string> tokenizedKey = Mantids30::Helpers::Crypto::AES256DecryptB64(encryptedKey, static_cast<char *>(masterKey->data), masterKey->length);
 
         if (!tokenizedKey)
         {

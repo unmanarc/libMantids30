@@ -24,8 +24,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
 {
     bool functionFound = false;
 
-    TaskParameters *taskParams = (TaskParameters *) (vTaskParams.get());
-    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) taskParams->callbacks);
+    TaskParameters *taskParams = static_cast<TaskParameters *>(vTaskParams.get());
+    RPC3CallbackDefinitions *callbacks = (static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks));
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
     json fullResponse;
@@ -182,7 +182,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
 
     //
     fullResponse["payload"] = responsePayload;
-    sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ? EXEC_STATUS_SUCCESS : EXEC_STATUS_ERR_METHOD_NOT_FOUND);
+    sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ?  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) :  static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -196,7 +196,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
     data["returnURI"] = caller->config.returnURI;
     data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
 
-    sendRPCAnswer(taskParams, data.toStyledString(), EXEC_STATUS_SUCCESS);
+    sendRPCAnswer(taskParams, data.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -247,7 +247,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
     }
 
     response = loginAuthResult.toJSONResponse();
-    sendRPCAnswer(taskParams, response.toStyledString(), EXEC_STATUS_SUCCESS);
+    sendRPCAnswer(taskParams, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     taskParams->doneSharedMutex->unlockShared();
 }
 
@@ -256,6 +256,6 @@ void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
     FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     json response;
     response = params->sessionHolder->destroy();
-    sendRPCAnswer(params, response.toStyledString(), EXEC_STATUS_SUCCESS);
+    sendRPCAnswer(params, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     params->doneSharedMutex->unlockShared();
 }
