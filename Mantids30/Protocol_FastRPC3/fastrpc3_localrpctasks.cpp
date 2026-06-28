@@ -32,7 +32,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
     json responsePayload;
     fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::SUCCESS);
 
-    Helpers::JSONReader2 reader;
+    Helpers::JSON::JSONReader2 reader;
     bool sessionFailed = false;
     JWT::Token extraJWT;
 

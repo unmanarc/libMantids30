@@ -3,7 +3,6 @@
  * Provides utility functions for working with JSON data.
  */
 
-#include <functional>
 #include <json/json.h>
 #include <list>
 #include <memory>
@@ -42,14 +41,11 @@ using json = Json::Value;
 #define JSON_ARRAY_ASUINT(j, i, def) ((j).isArray() && ((i) < (j).size()) && (j)[(i)].isUInt() ? (j)[(i)].asUInt() : (def))
 #define JSON_ARRAY_ASUINT64(j, i, def) ((j).isArray() && ((i) < (j).size()) && (j)[(i)].isUInt64() ? (j)[(i)].asUInt64() : (def))
 
-static std::function<Json::Value(const char *)> parseJSON = [](const char *json)
-{
-    Json::Value r;
-    Json::Reader().parse(json, r);
-    return r;
-};
+namespace Mantids30::Helpers::JSON {
 
-namespace Mantids30::Helpers {
+inline Json::Value parseJSON(const char *json);
+
+std::map<std::string, std::string> jsonToMap(const json &jValue);
 
 /**
      * Converts a JSON value to a string.
@@ -155,4 +151,4 @@ private:
     std::string m_errors;
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Helpers::JSON

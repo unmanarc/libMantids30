@@ -18,7 +18,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
 {
     API::APIReturn apiReturn;
     //json jPayloadIn;
-    Mantids30::Helpers::JSONReader2 reader;
+    Mantids30::Helpers::JSON::JSONReader2 reader;
 
     std::map<uint32_t, API::Monolith::Endpoints *>::iterator it = m_endpointsHandlerByAPIVersion.find(apiVersion);
     if (it == m_endpointsHandlerByAPIVersion.end())
@@ -52,7 +52,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     {
         log(LogLevel::INFO, "monolithAPI", 2048, "Executing Web Endpoint {endpoint=%s}", endpointName.c_str());
         log(LogLevel::DEBUG, "monolithAPI", 8192, "Executing Web Endpoint - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),
-            Mantids30::Helpers::jsonToString(postParameters).c_str());
+            Helpers::JSON::jsonToString(postParameters).c_str());
 
         chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> start = chrono::high_resolution_clock::now();
         chrono::time_point<chrono::high_resolution_clock, chrono::duration<double>> finish = chrono::high_resolution_clock::now();
@@ -66,7 +66,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
             elapsed = finish - start;
             log(LogLevel::INFO, "monolithAPI", 2048, "Web Endpoint executed OK {endpoint=%s, elapsedMS=%f}", endpointName.c_str(), elapsed.count());
             log(LogLevel::DEBUG, "monolithAPI", 8192, "Web Endpoint executed OK - debugging parameters {endpoint=%s,params=%s}", endpointName.c_str(),
-                Mantids30::Helpers::jsonToString(*(apiReturn.responseJSON())).c_str());
+                Helpers::JSON::jsonToString(*(apiReturn.responseJSON())).c_str());
             break;
         case API::Monolith::Endpoints::StatusCode::NOTFOUND:
             log(LogLevel::ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
@@ -82,7 +82,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     case API::Monolith::Endpoints::ValidationResult::NOTAUTHORIZED:
     {
         // Endpoint unauthorized.
-        log(LogLevel::ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Mantids30::Helpers::jsonToString(reasons).c_str());
+        log(LogLevel::ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Helpers::JSON::jsonToString(reasons).c_str());
         apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
         apiReturn.setReasons(reasons);
     }

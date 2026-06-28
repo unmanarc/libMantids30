@@ -170,7 +170,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
         {
             connection->executionStatus[requestId] = executionStatus;
 
-            Mantids30::Helpers::JSONReader2 reader;
+            Helpers::JSON::JSONReader2 reader;
             bool parsingSuccessful = reader.parse(payloadBytes, connection->answers[requestId]);
             if (parsingSuccessful)
             {
@@ -226,7 +226,7 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Mantids30::Helpers::JSONReader2 reader;
+    Helpers::JSON::JSONReader2 reader;
     std::shared_ptr<FastRPC1::ThreadParameters> params = std::make_shared<FastRPC1::ThreadParameters>();
     params->requestId = requestId;
     params->methodName = methodName;

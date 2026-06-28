@@ -1,6 +1,8 @@
 #include "json.h"
 
-std::string Mantids30::Helpers::jsonToString(const json &value)
+using namespace Mantids30::Helpers;
+
+std::string JSON::jsonToString(const json &value)
 {
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -13,23 +15,23 @@ std::string Mantids30::Helpers::jsonToString(const json &value)
     return xstrValue;
 }
 
-Mantids30::Helpers::JSONReader2::JSONReader2()
+JSON::JSONReader2::JSONReader2()
 {
     Json::CharReaderBuilder builder;
     m_reader.reset(builder.newCharReader());
 }
 
-bool Mantids30::Helpers::JSONReader2::parse(const std::string &document, Json::Value &root)
+bool JSON::JSONReader2::parse(const std::string &document, Json::Value &root)
 {
     return m_reader->parse(document.c_str(), document.c_str() + document.size(), &root, &m_errors);
 }
 
-std::string Mantids30::Helpers::JSONReader2::getFormattedErrorMessages()
+std::string JSON::JSONReader2::getFormattedErrorMessages()
 {
     return m_errors;
 }
 
-std::list<std::string> Mantids30::Helpers::jsonToStringList(const json &value, const std::string &sub)
+std::list<std::string> JSON::jsonToStringList(const json &value, const std::string &sub)
 {
     std::list<std::string> r;
 
@@ -56,7 +58,7 @@ std::list<std::string> Mantids30::Helpers::jsonToStringList(const json &value, c
     return r;
 }
 
-std::set<std::string> Mantids30::Helpers::jsonToStringSet(const json &value, const std::string &sub)
+std::set<std::string> JSON::jsonToStringSet(const json &value, const std::string &sub)
 {
     std::set<std::string> r;
 
@@ -84,7 +86,7 @@ std::set<std::string> Mantids30::Helpers::jsonToStringSet(const json &value, con
     return r;
 }
 
-std::set<uint32_t> Mantids30::Helpers::jsonToUInt32Set(const json &value, const std::string &sub)
+std::set<uint32_t> JSON::jsonToUInt32Set(const json &value, const std::string &sub)
 {
     std::set<uint32_t> r;
 
@@ -112,7 +114,7 @@ std::set<uint32_t> Mantids30::Helpers::jsonToUInt32Set(const json &value, const 
     return r;
 }
 
-json Mantids30::Helpers::setToJSON(const std::set<std::string> &t)
+json JSON::setToJSON(const std::set<std::string> &t)
 {
     json x;
     int v = 0;
@@ -123,7 +125,7 @@ json Mantids30::Helpers::setToJSON(const std::set<std::string> &t)
     return x;
 }
 
-json Mantids30::Helpers::setToJSON(const std::set<uint32_t> &t)
+json JSON::setToJSON(const std::set<uint32_t> &t)
 {
     json x;
     int v = 0;
@@ -134,7 +136,7 @@ json Mantids30::Helpers::setToJSON(const std::set<uint32_t> &t)
     return x;
 }
 
-json Mantids30::Helpers::listToJSON(const std::list<std::string> &t)
+json JSON::listToJSON(const std::list<std::string> &t)
 {
     json x;
     int v = 0;
@@ -143,4 +145,24 @@ json Mantids30::Helpers::listToJSON(const std::list<std::string> &t)
         x[v++] = i;
     }
     return x;
+}
+
+std::map<std::string, std::string> JSON::jsonToMap(const json &jValue)
+{
+    std::map<std::string, std::string> r;
+    for (const std::string &memberName : jValue.getMemberNames())
+    {
+        if (jValue[memberName].isString())
+        {
+            r[memberName] = JSON_ASSTRING(jValue, memberName, "");
+        }
+    }
+    return r;
+}
+
+Json::Value JSON::parseJSON(const char *json)
+{
+    Json::Value r;
+    Json::Reader().parse(json, r);
+    return r;
 }

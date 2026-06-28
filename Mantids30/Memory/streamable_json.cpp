@@ -12,7 +12,7 @@ bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
 
     if (!m_isFormatted)
     {
-        m_strValue = Mantids30::Helpers::jsonToString(m_root);
+        m_strValue = Helpers::JSON::jsonToString(m_root);
     }
     else
     {
@@ -84,7 +84,7 @@ json *StreamableJSON::processValue()
         return nullptr;
     }
 
-    Mantids30::Helpers::JSONReader2 reader;
+    Helpers::JSON::JSONReader2 reader;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     if (!parsingSuccessful)
     {
@@ -116,7 +116,7 @@ void StreamableJSON::setValue(const json &value)
 
 bool StreamableJSON::setValue(const std::string &value)
 {
-    Mantids30::Helpers::JSONReader2 reader;
+    Helpers::JSON::JSONReader2 reader;
     m_strValue = value;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     return parsingSuccessful;

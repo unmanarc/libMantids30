@@ -153,7 +153,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
             std::string sRemoteConfigDecrypted = decryptStr(lineInFile);
 
             json jRemoteConfig;
-            Mantids30::Helpers::JSONReader2 reader;
+            Helpers::JSON::JSONReader2 reader;
             bool parsingSuccessful = reader.parse(sRemoteConfigDecrypted, jRemoteConfig);
             if (parsingSuccessful)
             {
