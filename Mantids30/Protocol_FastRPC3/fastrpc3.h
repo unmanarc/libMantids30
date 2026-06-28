@@ -31,41 +31,41 @@ public:
     //     SUBCLASS DEFINTIONS:
     ////////////////////////////////
 
-    enum eConnectionHandlerReturn
+    enum class ConnectionHandlerReturn : int8_t
     {
-        CONNECTION_SHUTDOWN_OK = 0,
-        CONNECTION_READ_TIMEOUT = -101,
-        CONNECTION_INVALID_PROTOCOL = -100,
-        CONNECTION_FAILED_READING_REQUESTID = -1,
-        CONNECTION_FAILED_READING_FLAGS = -2,
-        CONNECTION_FAILED_READING_METHOD_NAME = -3,
-        CONNECTION_FAILED_READING_PAYLOAD = -4,
-        CONNECTION_FAILED_READING_EXTRAAUTH = -5,
-        CONNECTION_FAILED_PARSING_PAYLOAD = -6,
-        CONNECTION_CONTINUE = 1
+        SHUTDOWN_OK = 0,
+        READ_TIMEOUT = -101,
+        INVALID_PROTOCOL = -100,
+        FAILED_READING_REQUESTID = -1,
+        FAILED_READING_FLAGS = -2,
+        FAILED_READING_METHOD_NAME = -3,
+        FAILED_READING_PAYLOAD = -4,
+        FAILED_READING_EXTRAAUTH = -5,
+        FAILED_PARSING_PAYLOAD = -6,
+        CONTINUE = 1
     };
 
-    enum eExecutionFlags
+    enum ExecutionFlag : uint8_t
     {
-        EXEC_FLAG_EMPTY = 0,
-        EXEC_FLAG_NORMAL = 1,
-        EXEC_FLAG_EXTRAAUTH = 2
+        EMPTY = 0,
+        NORMAL = 1,
+        EXTRAAUTH = 2
     };
 
-    enum eTaskExecutionErrors
+    enum class TaskExecutionError : uint8_t
     {
-        EXEC_SUCCESS = 0,
-        EXEC_ERR_PAYLOAD_TOO_LARGE = 1,
-        EXEC_ERR_PEER_NOT_FOUND = 2,
-        EXEC_ERR_DATA_TRANSMISSION_FAILURE = 3,
-        EXEC_ERR_TIMEOUT = 4,
-        EXEC_ERR_REMOTE_QUEUE_OVERFLOW = 5,
-        EXEC_ERR_METHOD_NOT_FOUND = 6,
-        EXEC_ERR_CONNECTION_LOST = 7,
-        EXEC_ERR_UNKNOWN = 99,
+        SUCCESS = 0,
+        ERR_PAYLOAD_TOO_LARGE = 1,
+        ERR_PEER_NOT_FOUND = 2,
+        ERR_DATA_TRANSMISSION_FAILURE = 3,
+        ERR_TIMEOUT = 4,
+        ERR_REMOTE_QUEUE_OVERFLOW = 5,
+        ERR_METHOD_NOT_FOUND = 6,
+        ERR_CONNECTION_LOST = 7,
+        ERR_UNKNOWN = 99,
     };
 
-    enum TaskExecutionStatus
+    enum class TaskExecutionStatus : uint8_t
     {
         ERR_GENERIC = 1,
         SUCCESS = 2,

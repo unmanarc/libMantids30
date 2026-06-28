@@ -42,7 +42,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
         if (error)
         {
             (*error)["succeed"] = false;
-            (*error)["errorId"] = EXEC_ERR_PAYLOAD_TOO_LARGE;
+            (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_PAYLOAD_TOO_LARGE);
             (*error)["errorMessage"] = "Payload exceed the Maximum Message Size.";
         }
         return r;
@@ -60,7 +60,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
             if (error)
             {
                 (*error)["succeed"] = false;
-                (*error)["errorId"] = EXEC_ERR_PEER_NOT_FOUND;
+                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_PEER_NOT_FOUND);
                 (*error)["errorMessage"] = "Abort after remote peer not found/connected.";
             }
             return r;
@@ -81,10 +81,10 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
         connection->pendingRequests.insert(requestId);
     }
 
-    uint8_t flags = EXEC_FLAG_NORMAL;
+    uint8_t flags = static_cast<uint8_t>(ExecutionFlag::NORMAL);
     if (!extraJWTTokenAuth.empty())
     {
-        flags |= EXEC_FLAG_EXTRAAUTH;
+        flags |= static_cast<uint8_t>(ExecutionFlag::EXTRAAUTH);
     }
 
     connection->socketMutex->lock();
@@ -101,7 +101,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
         dataTransmitOK = false;
     }
 
-    if ((flags & EXEC_FLAG_EXTRAAUTH) != 0)
+    if ((flags & static_cast<uint8_t>(ExecutionFlag::EXTRAAUTH)) != 0)
     {
         if (dataTransmitOK && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size()))
         {
@@ -117,7 +117,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
         if (error)
         {
             (*error)["succeed"] = false;
-            (*error)["errorId"] = EXEC_ERR_DATA_TRANSMISSION_FAILURE;
+            (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_DATA_TRANSMISSION_FAILURE);
             (*error)["errorMessage"] = "Connection Failed.";
         }
         return r;
@@ -140,7 +140,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
             if (error)
             {
                 (*error)["succeed"] = false;
-                (*error)["errorId"] = EXEC_ERR_TIMEOUT;
+                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_TIMEOUT);
                 (*error)["errorMessage"] = "Remote Execution Timed Out: No Answer Received.";
             }
             break;
@@ -155,21 +155,21 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
 
             if (error)
             {
-                switch (executionStatus)
+                switch (static_cast<TaskExecutionStatus>(executionStatus))
                 {
                 case TaskExecutionStatus::SUCCESS:
                     (*error)["succeed"] = true;
-                    (*error)["errorId"] = EXEC_SUCCESS;
+                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::SUCCESS);
                     (*error)["errorMessage"] = "Execution OK.";
                     break;
                 case TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW:
                     (*error)["succeed"] = false;
-                    (*error)["errorId"] = EXEC_ERR_REMOTE_QUEUE_OVERFLOW;
+                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_REMOTE_QUEUE_OVERFLOW);
                     (*error)["errorMessage"] = "Remote Execution Failed: Full Queue.";
                     break;
                 case TaskExecutionStatus::ERR_METHOD_NOT_FOUND:
                     (*error)["succeed"] = false;
-                    (*error)["errorId"] = EXEC_ERR_METHOD_NOT_FOUND;
+                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_METHOD_NOT_FOUND);
                     (*error)["errorMessage"] = "Remote Execution Failed: Method Not Found.";
                     break;
                 default:
@@ -184,7 +184,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
             if (error)
             {
                 (*error)["succeed"] = false;
-                (*error)["errorId"] = EXEC_ERR_CONNECTION_LOST;
+                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_CONNECTION_LOST);
                 (*error)["errorMessage"] = "Connection is terminated: No Answer Received.";
             }
             break;

@@ -176,35 +176,35 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
     requestId = stream->readU<uint64_t>();
     if (!requestId)
     {
-        return CONNECTION_FAILED_READING_REQUESTID;
+        return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_READING_REQUESTID);
     }
 
     flags = stream->readU<uint8_t>();
     if (flags == 0)
     {
-        return CONNECTION_FAILED_READING_FLAGS;
+        return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_READING_FLAGS);
     }
 
     // READ THE METHOD NAME.
     string methodName = stream->readStringEx<uint8_t>(&ok);
     if (!ok)
     {
-        return CONNECTION_FAILED_READING_METHOD_NAME;
+        return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_READING_METHOD_NAME);
     }
     // READ THE PAYLOAD...
     payloadBytes = stream->readBlockWAllocEx<uint32_t>(&maxAlloc);
     if (payloadBytes == nullptr)
     {
-        return CONNECTION_FAILED_READING_PAYLOAD;
+        return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_READING_PAYLOAD);
     }
 
-    if ((flags & EXEC_FLAG_EXTRAAUTH) != 0)
+    if ((flags & ExecutionFlag::EXTRAAUTH) != 0)
     {
         extraAuthToken = stream->readBlockWAllocEx<uint32_t>(&maxAlloc);
         if (!extraAuthToken)
         {
             delete[] payloadBytes;
-            return CONNECTION_FAILED_READING_EXTRAAUTH;
+            return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_READING_EXTRAAUTH);
         }
     }
 
@@ -237,7 +237,7 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
     if (!parsingSuccessful)
     {
         // Bad Incoming JSON... Disconnect
-        return CONNECTION_FAILED_PARSING_PAYLOAD;
+        return static_cast<int8_t>(ConnectionHandlerReturn::FAILED_PARSING_PAYLOAD);
     }
     else
     {
@@ -262,12 +262,12 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
         {
             // Can't push the task in the queue. Null answer.
             CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params.get());
-            sendRPCAnswer(params.get(), "", TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW);
+            sendRPCAnswer(params.get(), "", static_cast<uint8_t>(TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW));
             params->doneSharedMutex->unlockShared();
             //            delete params;
         }
     }
-    return CONNECTION_CONTINUE;
+    return static_cast<int8_t>(ConnectionHandlerReturn::CONTINUE);
 }
 
 bool FastRPC3::isUsingRemotePeerCommonNameAsConnectionId() const
@@ -335,7 +335,7 @@ int FastRPC3::handleConnection(const std::shared_ptr<Sockets::Socket_Stream> &st
 
     FastRPC3::SessionPTR session;
 
-    while (ret == CONNECTION_CONTINUE)
+    while (ret == static_cast<int8_t>(ConnectionHandlerReturn::CONTINUE))
     {
         ////////////////////////////////////////////////////////////
         // READ THE REQUEST TYPE.
@@ -355,16 +355,16 @@ int FastRPC3::handleConnection(const std::shared_ptr<Sockets::Socket_Stream> &st
             // TODO: clean up on exit and send the signal back?
             if (!readOK)
             { // <- read timeout.
-                ret = CONNECTION_READ_TIMEOUT;
+                ret = static_cast<int8_t>(ConnectionHandlerReturn::READ_TIMEOUT);
             }
             else
             {
-                ret = CONNECTION_SHUTDOWN_OK;
+                ret = static_cast<int8_t>(ConnectionHandlerReturn::SHUTDOWN_OK);
             }
             break;
         default:
             // Invalid protocol.
-            ret = CONNECTION_INVALID_PROTOCOL;
+            ret = static_cast<int8_t>(ConnectionHandlerReturn::INVALID_PROTOCOL);
             break;
         }
         //        connection->lastReceivedData = time(nullptr);
