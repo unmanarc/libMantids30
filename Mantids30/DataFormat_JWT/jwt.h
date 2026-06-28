@@ -124,7 +124,7 @@ public:
 
         [[nodiscard]] Json::Value getAllRolesAsJSON();
 
-        void addRole(const std::string &roleId);
+        void createRole(const std::string &roleId);
 
         [[nodiscard]] bool hasRole(const std::string &roleId) const;
 
