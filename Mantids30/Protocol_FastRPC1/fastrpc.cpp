@@ -23,17 +23,6 @@ void fastRPCPingerThread(FastRPC1 *obj)
 FastRPC1::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
 {
     m_threadPool = new Mantids30::Threads::Pool::ThreadPool(threadsCount, taskQueues);
-
-    m_finished = false;
-    m_overwriteContext = nullptr;
-
-    setRWTimeout();
-    setPingInterval();
-    setRemoteExecutionTimeoutInMS();
-    setMaxMessageSize();
-    setQueuePushTimeoutInMS();
-    setRemoteExecutionDisconnectedTries();
-
     m_threadPool->start();
     m_pinger = std::thread(fastRPCPingerThread, this);
 }
@@ -106,11 +95,7 @@ uint32_t FastRPC1::getPingInterval() const
 bool FastRPC1::waitPingInterval()
 {
     std::unique_lock<std::mutex> lk(m_pingMutex);
-    if (m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout)
-    {
-        return true;
-    }
-    return false;
+    return m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout;
 }
 
 json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const json &payload, bool *found)
@@ -163,7 +148,6 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
     }
 
     ////////////////////////////////////////////////////////////
-    if (true)
     {
         std::unique_lock<std::mutex> lk(connection->mtAnswers);
         if (connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
@@ -255,7 +239,7 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
         {
             // Can't push the task in the queue. Null answer.
             eventFullQueueDrop(params.get());
-            sendRPCAnswer(params.get(), "", EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW);
+            sendRPCAnswer(params.get(), "", static_cast<uint8_t>(TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW));
             params->done->unlockShared();
             //delete params;
         }
@@ -379,7 +363,7 @@ int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &s
 
 void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
 {
-    FastRPC1::ThreadParameters *params = (FastRPC1::ThreadParameters *) (taskData.get());
+    FastRPC1::ThreadParameters *params = static_cast<FastRPC1::ThreadParameters *>(taskData.get());
 
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -387,7 +371,7 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
     bool found = false;
     json r = ((FastRPC1 *) params->caller)->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
     std::string output = Json::writeString(builder, r);
-    sendRPCAnswer(params, output, found ? EXEC_STATUS_SUCCESS : EXEC_STATUS_ERR_METHOD_NOT_FOUND);
+    sendRPCAnswer(params, output, found ? static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) : static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     params->done->unlockShared();
 }
 
@@ -430,7 +414,7 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
     FastRPC1::Connection *connection;
 
     uint32_t _tries = 0;
-    while ((connection = (FastRPC1::Connection *) m_connectionsByKeyId.openElement(connectionKey)) == nullptr)
+    while ((connection = static_cast<FastRPC1::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) == nullptr)
     {
         _tries++;
         if (_tries >= m_remoteExecutionDisconnectedTries || !retryIfDisconnected)
@@ -453,7 +437,6 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
     requestId = connection->requestIdCounter++;
     connection->mtReqIdCt.unlock();
 
-    if (1)
     {
         std::unique_lock<std::mutex> lk(connection->mtAnswers);
         // Create authorization to be inserted:
@@ -530,7 +513,6 @@ json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::s
         }
     }
 
-    if (1)
     {
         std::unique_lock<std::mutex> lk(connection->mtAnswers);
         // Revoke authorization to be inserted, clean results...
@@ -559,7 +541,7 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
     bool r = false;
 
     FastRPC1::Connection *connection;
-    if ((connection = (FastRPC1::Connection *) m_connectionsByKeyId.openElement(connectionKey)) != nullptr)
+    if ((connection = static_cast<FastRPC1::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) != nullptr)
     {
         connection->mtSocket->lock();
         if (connection->stream->writeU<uint8_t>(0))

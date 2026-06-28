@@ -55,15 +55,9 @@ public:
     class Connection : public Mantids30::Threads::Safe::MapItem
     {
     public:
-        Connection()
-        {
-            stream = nullptr;
-            requestIdCounter = 1;
-            terminated = false;
-        }
         // Socket
         std::shared_ptr<Sockets::Socket_Stream> stream;
-        Threads::Sync::Mutex *mtSocket;
+        Threads::Sync::Mutex *mtSocket{nullptr};
         std::string key;
 
         // Accesible objects:
@@ -71,7 +65,7 @@ public:
         std::string data;
 
         // Request ID counter.
-        uint64_t requestIdCounter;
+        uint64_t requestIdCounter{1};
         Threads::Sync::Mutex mtReqIdCt;
 
         // Answers:
@@ -82,15 +76,15 @@ public:
         std::set<uint64_t> pendingRequests;
 
         // Finalization:
-        std::atomic<bool> terminated;
+        std::atomic<bool> terminated{false};
     };
 
-    enum eTaskExecutionStatus
+    enum class TaskExecutionStatus : uint8_t
     {
-        EXEC_STATUS_ERR_GENERIC = 1,
-        EXEC_STATUS_SUCCESS = 2,
-        EXEC_STATUS_ERR_REMOTE_QUEUE_OVERFLOW = 3,
-        EXEC_STATUS_ERR_METHOD_NOT_FOUND = 4
+        ERR_GENERIC = 1,
+        SUCCESS = 2,
+        ERR_REMOTE_QUEUE_OVERFLOW = 3,
+        ERR_METHOD_NOT_FOUND = 4
     };
 
     /**
@@ -125,7 +119,7 @@ public:
      * @brief setPingInterval Set Ping interval
      * @param _intvl ping interval in seconds
      */
-    void setPingInterval(uint32_t _intvl = 20);
+    void setPingInterval(uint32_t _intvl);
     /**
      * @brief getPingInterval Get ping interval
      * @return ping interval in seconds
@@ -165,17 +159,17 @@ public:
      * @brief setTimeout Timeout in milliseconds to desist to put the execution task into the threadpool
      * @param value milliseconds, default is 2secs (2000).
      */
-    void setQueuePushTimeoutInMS(const uint32_t &value = 2000);
+    void setQueuePushTimeoutInMS(const uint32_t &value);
     /**
      * @brief setMaxMessageSize Max JSON Size
      * @param value max bytes for reception/transmition json, default is 10M
      */
-    void setMaxMessageSize(const uint32_t &value = 10 * 1024 * 1024);
+    void setMaxMessageSize(const uint32_t &value);
     /**
      * @brief setRemoteExecutionTimeoutInMS Set the remote Execution Timeout for "runRemoteRPCMethod" function
      * @param value timeout in milliseconds, default is 5secs (5000).
      */
-    void setRemoteExecutionTimeoutInMS(const uint32_t &value = 5000);
+    void setRemoteExecutionTimeoutInMS(const uint32_t &value);
     /**
      * @brief runRemoteRPCMethod Run Remote RPC Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
@@ -209,7 +203,7 @@ public:
     // For Internal use only:
     json runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const json &payload, bool *found);
 
-    void setRemoteExecutionDisconnectedTries(const uint32_t &value = 10);
+    void setRemoteExecutionDisconnectedTries(const uint32_t &value);
 
     /**
      * @brief getReadTimeout Get R/W Timeout
@@ -228,7 +222,7 @@ public:
      *
      * @param _rwTimeout     W/R timeout in seconds (default: 40)
      */
-    void setRWTimeout(uint32_t _rwTimeout = 40);
+    void setRWTimeout(uint32_t _rwTimeout);
 
     /**
      * @brief getOverwriteObject
@@ -264,10 +258,10 @@ private:
     // maxMessageSize: Maximum allowed message size in bytes.
     // remoteExecutionTimeoutInMS: Timeout (in milliseconds) for remote execution.
     // remoteExecutionDisconnectedTries: Maximum retry attempts for remote execution when disconnected.
-    std::atomic<uint32_t> m_queuePushTimeoutInMS;
-    std::atomic<uint32_t> m_maxMessageSize;
-    std::atomic<uint32_t> m_remoteExecutionTimeoutInMS;
-    std::atomic<uint32_t> m_remoteExecutionDisconnectedTries;
+    std::atomic<uint32_t> m_queuePushTimeoutInMS{2000};
+    std::atomic<uint32_t> m_maxMessageSize{10 * 1024 * 1024};
+    std::atomic<uint32_t> m_remoteExecutionTimeoutInMS{5000};
+    std::atomic<uint32_t> m_remoteExecutionDisconnectedTries{10};
 
     // Map storing available RPC methods.
     // Key: Method name (string).
@@ -278,7 +272,7 @@ private:
     Threads::Sync::Mutex_Shared m_methodsMutex;
 
     // Thread pool for handling RPC method execution.
-    Mantids30::Threads::Pool::ThreadPool *m_threadPool;
+    Mantids30::Threads::Pool::ThreadPool *m_threadPool{nullptr};
 
     // Background thread responsible for periodic pinging to maintain connection health.
     std::thread m_pinger;
@@ -287,13 +281,13 @@ private:
     std::shared_ptr<void> m_overwriteContext;
 
     // Indicates whether the RPC system is in a finished state.
-    std::atomic<bool> m_finished;
+    std::atomic<bool> m_finished{false};
 
     // Ping-related configuration.
     // pingIntvl: Interval (in milliseconds) between ping attempts.
     // rwTimeout: Read/write timeout (in milliseconds) for network operations.
-    uint32_t m_pingIntvl;
-    uint32_t m_rwTimeout;
+    uint32_t m_pingIntvl{20};
+    uint32_t m_rwTimeout{40};
 
     // Mutex for synchronizing ping operations.
     std::mutex m_pingMutex;
