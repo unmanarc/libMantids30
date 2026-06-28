@@ -121,13 +121,6 @@ public:
     [[nodiscard]] bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
 
     /**
-     * @brief Set CORS/Options configuration for a specific endpoint or globally
-     * @param endpointName The endpoint name. If empty, sets global configuration.
-     * @param config The OptionsHandlerConfig containing CORS settings.
-     */
-    void setEndpointOptions(const std::string &endpointName, const OptionsHandlerConfig &config);
-
-    /**
      * @brief Get the OptionsHandlerConfig for a specific endpoint
      * @param endpointName The endpoint name to look up.
      * @return Pointer to the config, or nullptr if OPTIONS is not enabled.
