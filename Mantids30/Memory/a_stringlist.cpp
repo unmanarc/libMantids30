@@ -218,7 +218,7 @@ bool STRINGLIST::fromJSON(const Json::Value &value)
 
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value.clear();
-    for (const json &item : value)
+    for (const Json::Value &item : value)
     {
         if (item.isString())
         {

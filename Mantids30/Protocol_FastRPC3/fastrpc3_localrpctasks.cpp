@@ -28,8 +28,8 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
     RPC3CallbackDefinitions *callbacks = (static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks));
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
-    json fullResponse;
-    json responsePayload;
+    Json::Value fullResponse;
+    Json::Value responsePayload;
     fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::SUCCESS);
 
     Helpers::JSON::JSONReader2 reader;
@@ -109,7 +109,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
         // There is an extra authentication token and session is OK.
         if (!sessionFailed)
         {
-            json reasons;
+            Json::Value reasons;
 
             API::Monolith::Endpoints::ValidationResult i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
 
@@ -191,7 +191,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     FastRPC3 *caller = static_cast<FastRPC3 *>(taskParams->caller);
 
-    json data;
+    Json::Value data;
     data["loginURL"] = caller->config.loginURL;
     data["returnURI"] = caller->config.returnURI;
     data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
@@ -206,7 +206,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
     RPC3CallbackDefinitions *callbacks = static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks);
 
     // CREATE NEW SESSION:
-    json response;
+    Json::Value response;
     LoginAuthentication loginAuthResult;
 
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
@@ -254,7 +254,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
 void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
 {
     FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
-    json response;
+    Json::Value response;
     response = params->sessionHolder->destroy();
     sendRPCAnswer(params, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     params->doneSharedMutex->unlockShared();

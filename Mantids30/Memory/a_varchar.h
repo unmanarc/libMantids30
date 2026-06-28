@@ -52,8 +52,8 @@ public:
     [[nodiscard]] unsigned long getFillSize() const;
     [[nodiscard]] unsigned long *getFillSizePTR() { return &m_fillSize; }
 
-    json toJSON() override;
-    bool fromJSON(const json &value) override;
+    Json::Value toJSON() override;
+    bool fromJSON(const Json::Value &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;

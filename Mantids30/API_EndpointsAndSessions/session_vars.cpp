@@ -5,13 +5,13 @@
 
 using namespace Mantids30::Sessions;
 
-void Session_Vars::setSessionVariable(const std::string &varName, const json &varValue)
+void Session_Vars::setSessionVariable(const std::string &varName, const Json::Value &varValue)
 {
     Threads::Sync::Lock_RW lock(m_sessionVarsMutex);
     m_sessionVariables[varName] = varValue;
 }
 
-json Session_Vars::getSessionVariableValue(const std::string &varName)
+Json::Value Session_Vars::getSessionVariableValue(const std::string &varName)
 {
     Threads::Sync::Lock_RD lock(m_sessionVarsMutex);
     return (m_sessionVariables.find(varName) != m_sessionVariables.end() ? m_sessionVariables[varName] : Json::nullValue);

@@ -25,7 +25,7 @@ void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
 
 bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
-    json jWebLog;
+    Json::Value jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 
@@ -83,7 +83,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     // Act as a server. Send data from here.
     size_t strsize;
 
-    json jWebLog;
+    Json::Value jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 

@@ -25,7 +25,7 @@ public:
      * @brief Parameterized constructor for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn(const json &body)
+    APIReturn(const Json::Value &body)
     {
         // Initialize the body member variable with the provided json object.
         *this->body = body;
@@ -35,7 +35,7 @@ public:
      * @brief Assignment operator for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn &operator=(const json &body)
+    APIReturn &operator=(const Json::Value &body)
     {
         *this->body = body;
         return *this;
@@ -81,7 +81,7 @@ public:
         return errorString;
     }
 
-    void setReasons(const json &reasons)
+    void setReasons(const Json::Value &reasons)
     {
         if (body)
         {

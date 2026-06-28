@@ -22,14 +22,14 @@ public:
      * @param varName The name of the session variable to set.
      * @param varValue The value to set for the session variable.
      */
-    void setSessionVariable(const std::string &varName, const json &varValue);
+    void setSessionVariable(const std::string &varName, const Json::Value &varValue);
 
     /**
      * @brief Returns the value of a session variable.
      * @param varName The name of the session variable to get the value for.
      * @return The value of the session variable.
      */
-    [[nodiscard]] json getSessionVariableValue(const std::string &varName);
+    [[nodiscard]] Json::Value getSessionVariableValue(const std::string &varName);
 
     /**
      * @brief Checks whether a session variable exists.
@@ -46,7 +46,7 @@ public:
 
 private:
     // This variable will persist throughout the authenticated session
-    std::map<std::string, json> m_sessionVariables;
+    std::map<std::string, Json::Value> m_sessionVariables;
 
     // Mutex for thread safety
     Threads::Sync::Mutex_Shared m_sessionVarsMutex;

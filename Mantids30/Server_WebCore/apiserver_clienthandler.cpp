@@ -186,7 +186,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 API::APIReturn apiReturn;
 
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
-                json postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
+                Json::Value postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
 
                 if (httpMethodMode == "OPTIONS")
                 {
@@ -287,7 +287,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
     return ret;
 }
 
-void APIServer_ClientHandler::fillSessionInfo(json &jVars)
+void APIServer_ClientHandler::fillSessionInfo(Json::Value &jVars)
 {
     if (currentSessionInfo.authSession)
     {

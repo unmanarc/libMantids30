@@ -87,12 +87,12 @@ protected:
      * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    virtual void fillSessionExtraInfo(json &jVars) {}
+    virtual void fillSessionExtraInfo(Json::Value &jVars) {}
     /**
      * @brief fillSessionInfo Fill user data vars like username, domain, TLS Common Name...
      * @param jVars vars to be filled into a JSON structure
      */
-    void fillSessionInfo(json &jVars);
+    void fillSessionInfo(Json::Value &jVars);
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
@@ -104,7 +104,7 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    virtual json getSessionVariableValue(const std::string &varName) = 0;
+    virtual Json::Value getSessionVariableValue(const std::string &varName) = 0;
 
     /**
      * @brief Handles an API request and writes the response to the client.
@@ -147,7 +147,7 @@ protected:
      * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
      * @return return code for api request
      */
-    virtual json handleAPIInfo(const std::string &baseApiUrl) { return Json::nullValue; }
+    virtual Json::Value handleAPIInfo(const std::string &baseApiUrl) { return Json::nullValue; }
 
     /**
      * @brief log Log to RPC Log

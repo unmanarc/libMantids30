@@ -49,7 +49,7 @@ HTTP::Status::Code ClientHandler::handleAuthRetrieveInfoFunction()
     serverResponse.setDataStreamer(jPayloadOutStr);
     serverResponse.setContentType("application/json", true);
     jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
-    json x;
+    Json::Value x;
 
     if (isSessionActive())
     {
@@ -145,7 +145,7 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
         // TODO: exit impersonation.
         shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>(jwtToken);
 
-        json networkClientInfo = clientRequest.networkClientInfo.toJSON();
+        Json::Value networkClientInfo = clientRequest.networkClientInfo.toJSON();
         networkClientInfo["userAgent"] = clientRequest.userAgent;
         networkClientInfo["startTime"] = (uint64_t) time(nullptr);
 

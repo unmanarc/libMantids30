@@ -98,9 +98,9 @@ bool FastRPC1::waitPingInterval()
     return m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout;
 }
 
-json FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const json &payload, bool *found)
+Json::Value FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const Json::Value &payload, bool *found)
 {
-    json r;
+    Json::Value r;
     Threads::Sync::Lock_RD lock(m_methodsMutex);
     if (m_methods.find(methodName) != m_methods.end())
     {
@@ -369,7 +369,7 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
     builder.settings_["indentation"] = "";
 
     bool found = false;
-    json r = ((FastRPC1 *) params->caller)->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
+    Json::Value r = ((FastRPC1 *) params->caller)->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
     std::string output = Json::writeString(builder, r);
     sendRPCAnswer(params, output, found ? static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) : static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     params->done->unlockShared();
@@ -392,9 +392,9 @@ void FastRPC1::setMaxMessageSize(const uint32_t &value)
     m_maxMessageSize = value;
 }
 
-json FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const json &payload, json *error, bool retryIfDisconnected)
+Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected)
 {
-    json r;
+    Json::Value r;
 
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -570,6 +570,6 @@ bool FastRPC1::checkConnectionKey(const std::string &connectionKey)
 
 void FastRPC1::eventFullQueueDrop(FastRPC1::ThreadParameters *) {}
 
-void FastRPC1::eventRemotePeerDisconnected(const std::string &, const std::string &, const json &) {}
+void FastRPC1::eventRemotePeerDisconnected(const std::string &, const std::string &, const Json::Value &) {}
 
-void FastRPC1::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const json &) {}
+void FastRPC1::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const Json::Value &) {}

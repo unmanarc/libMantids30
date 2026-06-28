@@ -64,7 +64,7 @@ std::shared_ptr<Var> PTR::protectedCopy()
     return var;
 }
 
-json PTR::toJSON()
+Json::Value PTR::toJSON()
 {
     if (isNull())
     {
@@ -74,7 +74,7 @@ json PTR::toJSON()
     return toString();
 }
 
-bool PTR::fromJSON(const json &value)
+bool PTR::fromJSON(const Json::Value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, "00000000"));
 }

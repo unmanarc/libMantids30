@@ -7,7 +7,7 @@ namespace Mantids30::Helpers {
 class DataTables
 {
 public:
-    static std::string getOrderByStatement(const json &dataTablesFilters);
+    static std::string getOrderByStatement(const Json::Value &dataTablesFilters);
 };
 
 } // namespace Mantids30::Helpers

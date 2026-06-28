@@ -41,7 +41,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
         return apiReturn;
     }
 
-    json reasons;
+    Json::Value reasons;
 
     // Validate that the endpoint requirements are satisfied.
     API::Monolith::Endpoints::ValidationResult i = endpointsHandler->validateEndpointRequirements(currentSessionInfo.authSession, endpointName, &reasons);
@@ -137,9 +137,9 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     return apiReturn;
 }
 
-json ClientHandler::handleAPIInfo(const string &baseApiUrl)
+Json::Value ClientHandler::handleAPIInfo(const string &baseApiUrl)
 {
-    json x;
+    Json::Value x;
     // Retrieve software information...
     /*
     {

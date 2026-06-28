@@ -52,7 +52,7 @@ bool BINARY::fromString(const std::string &value)
     return true;
 }
 
-json BINARY::toJSON()
+Json::Value BINARY::toJSON()
 {
     Threads::Sync::Lock_RD lock(this->m_value.mutex);
 
@@ -64,7 +64,7 @@ json BINARY::toJSON()
     return Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize);
 }
 
-bool BINARY::fromJSON(const json &value)
+bool BINARY::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(this->m_value.mutex);
     return fromString(Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING_D(value, "")));

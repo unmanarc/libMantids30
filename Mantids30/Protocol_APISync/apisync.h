@@ -51,7 +51,7 @@ struct APISyncParameters
  * @param apiKey Authentication key used for authorization.
  * @return Response from the API as a JSON object.
  */
-json performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName,
+Json::Value performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const Json::Value &jsonRequest, const std::string &appName,
                                       const std::string &apiKey);
 
 /**
@@ -66,7 +66,7 @@ json performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, API
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT validation key.
  */
-json getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+Json::Value getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Retrieves the JWT signing key for an application.
@@ -93,7 +93,7 @@ json getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameter
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT configuration.
  */
-json getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+Json::Value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Updates or sets Scopes, Roles and Activities for an application.
@@ -110,8 +110,8 @@ json getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *prox
  * @param activities JSON array of activities that can be performed.
  * @return Response from the API after updating SRA settings.
  */
-json updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
-                                const json &activities);
+Json::Value updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const Json::Value &scopes, const Json::Value &roles,
+                                const Json::Value &activities);
 
 std::optional<Json::Value> getApplicationJWTConfig(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
                                                    const std::map<std::string, std::string> &vars);

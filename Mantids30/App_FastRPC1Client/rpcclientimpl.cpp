@@ -152,7 +152,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
         {
             std::string sRemoteConfigDecrypted = decryptStr(lineInFile);
 
-            json jRemoteConfig;
+            Json::Value jRemoteConfig;
             Helpers::JSON::JSONReader2 reader;
             bool parsingSuccessful = reader.parse(sRemoteConfigDecrypted, jRemoteConfig);
             if (parsingSuccessful)
@@ -172,14 +172,14 @@ bool RPCClientImpl::retrieveConfigFromC2()
     /////////////////////////////////////////////////////////////
     //***********INITIALIZE C2 COMM AND CONFIG RETRIEVE**********
     /////////////////////////////////////////////////////////////
-    json rpcError;
+    Json::Value rpcError;
 
     m_failedToRetrieveC2Config = false;
 
     LOG_APP->log0(__func__, Logs::LogLevel::INFO, "Retrieving config from remote C2.");
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
-    json jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
+    Json::Value jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
     if (rpcError["succeed"].asBool())
     {
         // Translate this config to the configuration file...
@@ -206,7 +206,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
                 m_jRetrievedConfig = jRemoteConfig;
 
-                json ans;
+                Json::Value ans;
                 ans["x"] = m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError);
 
                 if (!rpcError["succeed"].asBool())
@@ -245,7 +245,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
     return false;
 }
 
-json RPCClientImpl::getJRetrievedConfig()
+Json::Value RPCClientImpl::getJRetrievedConfig()
 {
     return m_jRetrievedConfig;
 }

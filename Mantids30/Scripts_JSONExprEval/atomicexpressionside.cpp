@@ -50,14 +50,14 @@ void AtomicExpressionSide::setRawExpression(const string &value)
     boost::trim(m_expr);
 }
 
-set<string> AtomicExpressionSide::resolveValueSet(const json &v, bool resolveRegex, bool ignoreCase)
+set<string> AtomicExpressionSide::resolveValueSet(const Json::Value &v, bool resolveRegex, bool ignoreCase)
 {
     switch (m_type)
     {
     case Type::JSONPATH:
     {
         Json::Path path(m_expr.substr(1));
-        const json &result = path.resolve(v);
+        const Json::Value &result = path.resolve(v);
         set<string> res;
 
         if (result.empty() && !result.isNull())

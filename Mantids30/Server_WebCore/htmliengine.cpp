@@ -24,7 +24,7 @@ using namespace std;
 // TODO: documentar los privilegios cargados de un usuario
 // TODO: create a TTL for start =  fileContent.begin(); and end = fileContent.end(); on loops to avoid infinite loops in cross-references...
 
-string HTMLIEngine::replaceByJVar(const json &value, const std::string &scriptVarName, bool useHTMLFrame)
+string HTMLIEngine::replaceByJVar(const Json::Value &value, const std::string &scriptVarName, bool useHTMLFrame)
 {
     Json::FastWriter writer;
     std::string str = writer.write(value);
@@ -177,7 +177,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
 std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                       bool useHTMLFrame)
 {
-    json jVars, jNull;
+    Json::Value jVars, jNull;
     jVars["softwareVersion"] = clientHandler->config->softwareVersion;
 
     // Fill the jVars with session info (common to every API Server) and extra info (specific to monolith or restful or anything else)
@@ -246,7 +246,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
     }
 }
 
-json HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
+Json::Value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
     API::APIReturn apiReturn;
 

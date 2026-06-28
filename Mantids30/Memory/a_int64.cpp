@@ -73,7 +73,7 @@ std::shared_ptr<Var> INT64::protectedCopy()
     return var;
 }
 
-json INT64::toJSON()
+Json::Value INT64::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
@@ -85,7 +85,7 @@ json INT64::toJSON()
     return m_value;
 }
 
-bool INT64::fromJSON(const json &value)
+bool INT64::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value = Helpers::JSON::ASINT64_D(value, 0);

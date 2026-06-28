@@ -38,7 +38,7 @@ public:
 
     // TODO: thread-safety: if you are accessing this object during a thread from the rpc client,
     // you should not be able to modify it, and during the initialization, both components are running.
-    json getJRetrievedConfig();
+    Json::Value getJRetrievedConfig();
 
     PSKIdKey loadPSK();
 
@@ -72,7 +72,7 @@ protected:
     std::string m_getClientConfigCmd, m_updateClientConfigLoadTimeCmd;
 
     Mantids30::Network::Protocol::FastRPC::FastRPC1 m_fastRPC;
-    json m_jRetrievedConfig;
+    Json::Value m_jRetrievedConfig;
     std::atomic<bool> m_failedToRetrieveC2Config{false};
 };
 } // namespace Mantids30::Applications::FastRPC1

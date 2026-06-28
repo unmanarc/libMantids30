@@ -389,7 +389,7 @@ std::shared_ptr<Var> IPV4::protectedCopy()
     return var;
 }
 
-json IPV4::toJSON()
+Json::Value IPV4::toJSON()
 {
     if (isNull())
     {
@@ -399,7 +399,7 @@ json IPV4::toJSON()
     return toString();
 }
 
-bool IPV4::fromJSON(const json &value)
+bool IPV4::fromJSON(const Json::Value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

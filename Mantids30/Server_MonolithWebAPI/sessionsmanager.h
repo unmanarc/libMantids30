@@ -13,7 +13,7 @@ namespace Mantids30::Network::Servers::WebMonolith {
 class WebSession : public Threads::Safe::MapItem
 {
 public:
-    WebSession(const std::shared_ptr<Mantids30::Sessions::Session> &authSession, const json &newNetworkClientInfo)
+    WebSession(const std::shared_ptr<Mantids30::Sessions::Session> &authSession, const Json::Value &newNetworkClientInfo)
     {
         this->networkClientInfo = newNetworkClientInfo;
         this->authSession = authSession;
@@ -25,11 +25,11 @@ public:
 
     std::shared_ptr<Mantids30::Sessions::Session> getAuthSession() { return authSession; }
 
-    json toJSON() { return networkClientInfo; }
+    Json::Value toJSON() { return networkClientInfo; }
 
 private:
     std::shared_ptr<Mantids30::Sessions::Session> authSession;
-    json networkClientInfo;
+    Json::Value networkClientInfo;
     //std::string sessionId;
 };
 
@@ -73,7 +73,7 @@ public:
      *                The session object will be deleted when the session is destroyed.
      * @return Session ID
      */
-    std::string createSession(const std::shared_ptr<Sessions::Session> &session, const json &sessionInfo, uint64_t *maxAge);
+    std::string createSession(const std::shared_ptr<Sessions::Session> &session, const Json::Value &sessionInfo, uint64_t *maxAge);
     /**
      * @brief destroySession destroy the session element and session ID
      * @param sessionID Session ID String
@@ -112,12 +112,12 @@ public:
      * @param effectiveUserName The username for which to retrieve session details.
      * @return A JSON object containing the user sessions, with session details as key-value pairs.
      */
-    json getUserSessionsInfo(const std::string &effectiveUserName);
+    Json::Value getUserSessionsInfo(const std::string &effectiveUserName);
 
 private:
     Threads::Safe::Map<std::string> m_sessions;
     std::mutex m_mutex;
-    std::map<std::string, std::map<std::string, json> > m_sessionClientInfo;
+    std::map<std::string, std::map<std::string, Json::Value> > m_sessionClientInfo;
 
     uint32_t m_gcWaitTime = 10;
     uint32_t m_MaxInactiveSeconds = 0;

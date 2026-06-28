@@ -54,7 +54,7 @@ bool DOUBLE::fromString(const std::string &value)
     }
 }
 
-json DOUBLE::toJSON()
+Json::Value DOUBLE::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
     if (isNull())
@@ -65,7 +65,7 @@ json DOUBLE::toJSON()
     return m_value;
 }
 
-bool DOUBLE::fromJSON(const json &value)
+bool DOUBLE::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value = Helpers::JSON::ASDOUBLE_D(value, 0);

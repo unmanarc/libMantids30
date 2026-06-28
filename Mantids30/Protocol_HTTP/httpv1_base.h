@@ -226,15 +226,15 @@ public:
                 isSecure = secure;
             }
 
-            json toJSON()
+            Json::Value toJSON()
             {
-                json sessionInfo;
+                Json::Value sessionInfo;
                 sessionInfo["remoteAddress"] = REMOTE_ADDR;
                 sessionInfo["isSecureConnection"] = isSecure;
                 sessionInfo["tls"]["commonName"] = tlsCommonName;
                 return sessionInfo;
             }
-            void fromJSON(const json &sessionInfo)
+            void fromJSON(const Json::Value &sessionInfo)
             {
                 snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", Helpers::JSON::ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
                 isSecure = Helpers::JSON::ASBOOL_D(sessionInfo["isSecureConnection"], false);

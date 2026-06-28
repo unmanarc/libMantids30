@@ -128,7 +128,7 @@ unsigned long VARCHAR::getFillSize() const
     return m_fillSize;
 }
 
-json VARCHAR::toJSON()
+Json::Value VARCHAR::toJSON()
 {
     if (isNull())
     {
@@ -138,7 +138,7 @@ json VARCHAR::toJSON()
     return toString();
 }
 
-bool VARCHAR::fromJSON(const json &value)
+bool VARCHAR::fromJSON(const Json::Value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, ""));
 }

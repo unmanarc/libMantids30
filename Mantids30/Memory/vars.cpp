@@ -4,7 +4,7 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-json Vars::toJSON()
+Json::Value Vars::toJSON()
 {
     Json::Value jsonMap;
 

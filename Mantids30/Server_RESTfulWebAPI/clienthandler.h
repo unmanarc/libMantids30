@@ -32,7 +32,7 @@ protected:
      * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    void fillSessionExtraInfo(json &jVars) override;
+    void fillSessionExtraInfo(Json::Value &jVars) override;
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
@@ -44,7 +44,7 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    json getSessionVariableValue(const std::string &varName) override;
+    Json::Value getSessionVariableValue(const std::string &varName) override;
     /**
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request

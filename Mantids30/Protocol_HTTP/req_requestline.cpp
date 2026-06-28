@@ -125,7 +125,7 @@ bool RequestLine::fromJSON(const Json::Value &json)
     return true;
 }
 
-json RequestLine::toJSON() const
+Json::Value RequestLine::toJSON() const
 {
     Json::Value json;
     json["method"] = getHTTPMethod();

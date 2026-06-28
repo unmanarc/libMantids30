@@ -51,7 +51,7 @@ void WebSessionsManager::setMaxInactiveSeconds(const uint32_t &value)
     m_MaxInactiveSeconds = value;
 }
 
-std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const json &networkClientInfo, uint64_t *maxAge)
+std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const Json::Value &networkClientInfo, uint64_t *maxAge)
 {
     std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
 
@@ -168,11 +168,11 @@ bool WebSessionsManager::validateSessionIDFormat(const std::string &sessionID)
     return std::regex_match(sessionID, pattern);
 }
 
-json WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserName)
+Json::Value WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserName)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    json r;
-    std::map<std::string, json> sessionsMap = m_sessionClientInfo[effectiveUserName];
+    Json::Value r;
+    std::map<std::string, Json::Value> sessionsMap = m_sessionClientInfo[effectiveUserName];
 
     for (const auto &sessions : sessionsMap)
     {

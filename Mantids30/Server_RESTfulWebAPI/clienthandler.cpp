@@ -53,7 +53,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
         return apiReturn;
     }
 
-    json x;
+    Json::Value x;
     API::Security::ReceivedAuth securityParameters;
     securityParameters.hasVerifiedJWTAccessTokenCookie = m_isAccessTokenCookieJWTVerified;
     securityParameters.hasVerifiedJWTAuthorizationHeader = m_isAuthorizationHeaderJWTVerified;

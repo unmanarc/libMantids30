@@ -128,7 +128,7 @@ bool WebLog::start()
 
                 for (;;)
                 {
-                    std::shared_ptr<json> logEntry = m_logQueue.pop(500);
+                    std::shared_ptr<Json::Value> logEntry = m_logQueue.pop(500);
                     if (logEntry)
                     {
                         printLogToFile(logEntry.get());
@@ -139,11 +139,11 @@ bool WebLog::start()
     return true;
 }
 
-bool WebLog::log(const json &logValues)
+bool WebLog::log(const Json::Value &logValues)
 {
     if (config.useThreadedQueue)
     {
-        return m_logQueue.push(std::make_shared<json>(logValues), config.queueMaxInsertWaitTimeInMS);
+        return m_logQueue.push(std::make_shared<Json::Value>(logValues), config.queueMaxInsertWaitTimeInMS);
     }
     else
     {
@@ -277,7 +277,7 @@ void WebLog::forceLogRotation()
     chmod(currentLogPath.c_str(), S_IRUSR | S_IWUSR);
 }
 
-void WebLog::printLogToFile(const json *value)
+void WebLog::printLogToFile(const Json::Value *value)
 {
     {
         std::unique_lock<std::mutex> lock(m_logPrintMutex);

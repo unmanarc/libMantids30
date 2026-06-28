@@ -1,15 +1,13 @@
 #pragma once
+
 /**
- * Provides utility functions for working with JSON data.
+ * Provides utility functions for working with JSON data using JSONCPP.
  */
 
 #include <json/json.h>
 #include <list>
 #include <memory>
 #include <set>
-
-// Define a shorthand for the Json::Value type
-using json = Json::Value;
 
 namespace Mantids30::Helpers::JSON {
 
@@ -228,7 +226,7 @@ inline static uint64_t ARRAY_ASUINT64(const Json::Value &j, size_t i, uint64_t d
 
 Json::Value parse(const char *json);
 
-std::map<std::string, std::string> toMap(const json &jValue);
+std::map<std::string, std::string> toMap(const Json::Value &jValue);
 
 /**
      * Converts a JSON value to a string.
@@ -237,7 +235,7 @@ std::map<std::string, std::string> toMap(const json &jValue);
      *
      * @return The JSON value as a string.
      */
-std::string toString(const json &value);
+std::string toString(const Json::Value &value);
 
 /**
      * Converts a JSON array to a list of strings.
@@ -247,7 +245,7 @@ std::string toString(const json &value);
      *
      * @return A list of strings containing the elements of the JSON array.
      */
-std::list<std::string> toStringList(const json &value, const std::string &sub = "");
+std::list<std::string> toStringList(const Json::Value &value, const std::string &sub = "");
 
 /**
      * Converts a JSON array to a set of strings.
@@ -257,7 +255,7 @@ std::list<std::string> toStringList(const json &value, const std::string &sub = 
      *
      * @return A list of strings containing the elements of the JSON array.
      */
-std::set<std::string> toStringSet(const json &value, const std::string &sub = "");
+std::set<std::string> toStringSet(const Json::Value &value, const std::string &sub = "");
 /**
      * Converts a JSON array to a set of uint32_t values.
      *
@@ -266,7 +264,7 @@ std::set<std::string> toStringSet(const json &value, const std::string &sub = ""
      *
      * @return A set of uint32_t containing the elements of the JSON array.
      */
-std::set<uint32_t> toUInt32Set(const json &value, const std::string &sub = "");
+std::set<uint32_t> toUInt32Set(const Json::Value &value, const std::string &sub = "");
 
 /**
  * Converts a list of strings to a JSON array.
@@ -275,7 +273,7 @@ std::set<uint32_t> toUInt32Set(const json &value, const std::string &sub = "");
  *
  * @return A JSON array containing the elements of the input list.
  */
-json fromList(const std::list<std::string> &t);
+Json::Value fromList(const std::list<std::string> &t);
 
 /**
      * Converts a set of unsigned 32-bit integers to a JSON array.
@@ -284,7 +282,7 @@ json fromList(const std::list<std::string> &t);
      *
      * @return A JSON array containing the elements of the input set.
      */
-json fromSet(const std::set<uint32_t> &t);
+Json::Value fromSet(const std::set<uint32_t> &t);
 
 /**
  * Converts a set of strings to a JSON array.
@@ -297,7 +295,7 @@ json fromSet(const std::set<uint32_t> &t);
  *
  * @return A JSON array containing the elements of the input set.
  */
-json fromSet(const std::set<std::string> &t);
+Json::Value fromSet(const std::set<std::string> &t);
 
 /**
  * A replacement for the deprecated Json::Reader class.
@@ -320,7 +318,7 @@ public:
      *
      * @return True if the document was parsed successfully, false otherwise.
      */
-    bool parse(const std::string &document, json &root);
+    bool parse(const std::string &document, Json::Value &root);
 
     /**
      * Gets the error messages generated during the last parsing operation.

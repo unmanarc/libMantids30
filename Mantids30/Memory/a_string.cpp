@@ -59,7 +59,7 @@ std::shared_ptr<Var> STRING::protectedCopy()
     return var;
 }
 
-json STRING::toJSON()
+Json::Value STRING::toJSON()
 {
     if (isNull())
     {
@@ -69,7 +69,7 @@ json STRING::toJSON()
     return toString();
 }
 
-bool STRING::fromJSON(const json &value)
+bool STRING::fromJSON(const Json::Value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, ""));
 }

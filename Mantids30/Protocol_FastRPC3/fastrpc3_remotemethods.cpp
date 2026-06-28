@@ -17,16 +17,16 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-json FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &jwtToken, json *error)
+Json::Value FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &jwtToken, Json::Value *error)
 {
-    json jAuthData;
+    Json::Value jAuthData;
     jAuthData["jwtToken"] = jwtToken;
     return executeTask("SESSION.LOGIN", jAuthData, error, true, true);
 }
 
-json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &payload, json *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
+Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
 {
-    json r;
+    Json::Value r;
 
     if (!passSessionCommands && boost::starts_with(methodName, "SESSION."))
     {
@@ -215,13 +215,13 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
     return r;
 }
 
-bool FastRPC3::RemoteMethods::logout(json *error)
+bool FastRPC3::RemoteMethods::logout(Json::Value *error)
 {
-    json x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
+    Json::Value x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
     return Helpers::JSON::ASBOOL_D(x, false);
 }
 
-json FastRPC3::RemoteMethods::getSSOData(json *error)
+Json::Value FastRPC3::RemoteMethods::getSSOData(Json::Value *error)
 {
     return parent->remote(connectionId).executeTask("SESSION.GETSSODATA", {}, error, true, true);
 }

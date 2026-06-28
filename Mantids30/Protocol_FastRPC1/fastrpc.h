@@ -28,7 +28,7 @@ public:
         /**
          * @brief Function pointer.
          */
-        json (*method)(const std::shared_ptr<void> &context, const std::string &key, const json &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
+        Json::Value (*method)(const std::shared_ptr<void> &context, const std::string &key, const Json::Value &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
         /**
          * @brief obj object to pass
          */
@@ -43,7 +43,7 @@ public:
         Threads::Sync::Mutex_Shared *done;
         Threads::Sync::Mutex *mtSocket;
         std::string methodName;
-        json payload;
+        Json::Value payload;
         uint64_t requestId;
 
         // Accesible objects:
@@ -69,7 +69,7 @@ public:
         Threads::Sync::Mutex mtReqIdCt;
 
         // Answers:
-        std::map<uint64_t, json> answers;
+        std::map<uint64_t, Json::Value> answers;
         std::map<uint64_t, uint8_t> executionStatus;
         std::mutex mtAnswers;
         std::condition_variable cvAnswers;
@@ -178,7 +178,7 @@ public:
      * @param error Error Return
      * @return Answer, or Json::nullValue if answer is not received or if timed out.
      */
-    json runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const json &payload, json *error, bool retryIfDisconnected = true);
+    Json::Value runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected = true);
     /**
      * @brief runRemoteClose Run Remote Close Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
@@ -201,7 +201,7 @@ public:
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    json runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const json &payload, bool *found);
+    Json::Value runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const Json::Value &payload, bool *found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value);
 
@@ -239,8 +239,8 @@ protected:
     // TODO pasar a callbacks
     virtual void eventUnexpectedAnswerReceived(FastRPC1::Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(FastRPC1::ThreadParameters *params);
-    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const json &payload);
-    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const json &payload);
+    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
+    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
 
 private:
     static void executeRPCTask(const std::shared_ptr<void> &taskData);

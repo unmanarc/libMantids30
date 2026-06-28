@@ -54,7 +54,7 @@ public:
     std::string getRequestGETVarsRawString() const;
 
     bool fromJSON(const Json::Value &json);
-    json toJSON() const;
+    Json::Value toJSON() const;
 
     std::string toString() const;
 

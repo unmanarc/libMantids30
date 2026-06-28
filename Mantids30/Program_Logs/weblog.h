@@ -74,7 +74,7 @@ public:
 
     bool start();
 
-    bool log(const json &logValues);
+    bool log(const Json::Value &logValues);
 
     void stopLogRotationOnScheduleThread();
 
@@ -84,12 +84,12 @@ public:
     void forceLogRotation();
 
 private:
-    void printLogToFile(const json *value);
+    void printLogToFile(const Json::Value *value);
     void startLogRotationOnScheduleThread();
 
     // Use Json::FastWriter to get an unformatted string
     Json::FastWriter m_fastWriter;
-    Threads::Safe::SharedQueue<json> m_logQueue;
+    Threads::Safe::SharedQueue<Json::Value> m_logQueue;
     std::thread m_rotationThread, m_queueThread;
     std::atomic<bool> m_rotationThreadRunning{false};
     std::ofstream m_logFileHandle;

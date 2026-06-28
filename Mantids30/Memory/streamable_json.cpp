@@ -72,12 +72,12 @@ size_t StreamableJSON::size()
 
 void StreamableJSON::clear()
 {
-    json x;
+    Json::Value x;
     m_root = x;
     m_strValue.clear();
 }
 
-json *StreamableJSON::processValue()
+Json::Value *StreamableJSON::processValue()
 {
     if (m_isFull)
     {
@@ -93,7 +93,7 @@ json *StreamableJSON::processValue()
     return &m_root;
 }
 
-json *StreamableJSON::getValue()
+Json::Value *StreamableJSON::getValue()
 {
     return &m_root;
 }
@@ -109,7 +109,7 @@ StreamableJSON &StreamableJSON::operator=(const Json::Value &value)
     return *this;
 }
 
-void StreamableJSON::setValue(const json &value)
+void StreamableJSON::setValue(const Json::Value &value)
 {
     m_root = value;
 }

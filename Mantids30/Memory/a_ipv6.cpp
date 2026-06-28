@@ -100,7 +100,7 @@ std::shared_ptr<Var> IPV6::protectedCopy()
     return var;
 }
 
-json IPV6::toJSON()
+Json::Value IPV6::toJSON()
 {
     if (isNull())
     {
@@ -110,7 +110,7 @@ json IPV6::toJSON()
     return toString();
 }
 
-bool IPV6::fromJSON(const json &value)
+bool IPV6::fromJSON(const Json::Value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

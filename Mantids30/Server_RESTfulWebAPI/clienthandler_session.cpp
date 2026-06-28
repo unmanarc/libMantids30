@@ -73,7 +73,7 @@ void ClientHandler::sessionCleanup()
     // Cleaned up (nothing to do)
 }
 
-void ClientHandler::fillSessionExtraInfo(json &jVars)
+void ClientHandler::fillSessionExtraInfo(Json::Value &jVars)
 {
     jVars["maxAge"] = 0;
     if (isSessionActive())
@@ -91,7 +91,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
     return false;
 }
 
-json ClientHandler::getSessionVariableValue(const string &varName)
+Json::Value ClientHandler::getSessionVariableValue(const string &varName)
 {
     if (isSessionActive())
     {

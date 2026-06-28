@@ -74,7 +74,7 @@ bool DATETIME::fromString(const std::string &value)
     return true;
 }
 
-json DATETIME::toJSON()
+Json::Value DATETIME::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
@@ -86,7 +86,7 @@ json DATETIME::toJSON()
     return (Json::UInt64) m_value;
 }
 
-bool DATETIME::fromJSON(const json &value)
+bool DATETIME::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
 

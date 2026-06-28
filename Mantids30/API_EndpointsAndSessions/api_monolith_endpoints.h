@@ -39,7 +39,7 @@ public:
         /**
          * @brief Function pointer to the API endpoint.
          */
-        json (*endpoint)(void *context, const std::shared_ptr<Mantids30::Sessions::Session> &session, const json &parameters);
+        Json::Value (*endpoint)(void *context, const std::shared_ptr<Mantids30::Sessions::Session> &session, const Json::Value &parameters);
 
         /**
          * @brief Context object to pass to the function pointer.
@@ -87,7 +87,7 @@ public:
      * @param payloadOut Pointer to store the output JSON from the endpoint
      * @return int Return code indicating success or failure
      */
-    [[nodiscard]] StatusCode invoke(const std::shared_ptr<Sessions::Session> &session, const std::string &endpointName, const json &payload, json *payloadOut);
+    [[nodiscard]] StatusCode invoke(const std::shared_ptr<Sessions::Session> &session, const std::string &endpointName, const Json::Value &payload, Json::Value *payloadOut);
 
     /**
      * @brief Validate endpoint requirements
@@ -99,7 +99,7 @@ public:
      * @param reasons Pointer to store reasons for validation failure, if any
      * @return ValidationResult Validation result code
      */
-    [[nodiscard]] ValidationResult validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, json *reasons);
+    [[nodiscard]] ValidationResult validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, Json::Value *reasons);
 
     /**
      * @brief Get endpoints requirements map

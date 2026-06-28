@@ -21,7 +21,7 @@ public:
     JSONEval(const std::string &expr, const std::shared_ptr<std::vector<std::string>> &staticTexts, bool negativeExpression);
 
     bool parseExpression(std::string expr);
-    bool evaluate(const json &values);
+    bool evaluate(const Json::Value &values);
 
     [[nodiscard]] std::string getLastCompilerError() const;
 

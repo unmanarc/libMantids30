@@ -40,7 +40,7 @@ bool BOOL::fromString(const std::string &value)
     return true;
 }
 
-json BOOL::toJSON()
+Json::Value BOOL::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
@@ -52,7 +52,7 @@ json BOOL::toJSON()
     return m_value;
 }
 
-bool BOOL::fromJSON(const json &value)
+bool BOOL::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value = Helpers::JSON::ASBOOL_D(value, false);

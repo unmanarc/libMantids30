@@ -79,7 +79,7 @@ public:
      * @param ignoreCase If true and resolveRegex is true, the regex is case-insensitive.
      * @return A set of strings representing the resolved values, or an empty set if resolveRegex is true.
      */
-    std::set<std::string> resolveValueSet(const json &v, bool resolveRegex, bool ignoreCase);
+    std::set<std::string> resolveValueSet(const Json::Value &v, bool resolveRegex, bool ignoreCase);
 
     /**
      * @brief Gets the compiled regular expression.

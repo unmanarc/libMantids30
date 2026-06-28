@@ -71,7 +71,7 @@ std::shared_ptr<Var> UINT8::protectedCopy()
     return var;
 }
 
-json UINT8::toJSON()
+Json::Value UINT8::toJSON()
 {
     Threads::Sync::Lock_RD lock(m_mutex);
 
@@ -83,7 +83,7 @@ json UINT8::toJSON()
     return m_value;
 }
 
-bool UINT8::fromJSON(const json &value)
+bool UINT8::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
     m_value = Helpers::JSON::ASUINT_D(value, 0);

@@ -17,7 +17,7 @@ public:
     virtual ~Vars() = default;
 
     // Methods to convert to and from JSON
-    json toJSON();
+    Json::Value toJSON();
     bool fromJSON(const Json::Value &json);
 
     ///////////////////////////////////////

@@ -3,7 +3,7 @@
 
 using namespace Mantids30;
 
-static std::string getColumnNameFromColumnPos(const json &dataTablesFilters, const uint32_t &pos)
+static std::string getColumnNameFromColumnPos(const Json::Value &dataTablesFilters, const uint32_t &pos)
 {
     if (Helpers::JSON::ISARRAY(dataTablesFilters, "columns"))
     {
@@ -16,7 +16,7 @@ static std::string getColumnNameFromColumnPos(const json &dataTablesFilters, con
     return "";
 }
 
-std::string Mantids30::Helpers::DataTables::getOrderByStatement(const json &dataTablesFilters)
+std::string Mantids30::Helpers::DataTables::getOrderByStatement(const Json::Value &dataTablesFilters)
 {
     std::string orderByStatement;
     // Manejo de ordenamiento (order)

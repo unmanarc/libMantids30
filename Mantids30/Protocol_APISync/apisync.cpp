@@ -28,7 +28,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
         return std::nullopt;
     }
 
-    json response = Network::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    Json::Value response = Network::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT signing key from API.");
@@ -59,7 +59,7 @@ std::optional<Json::Value> Network::Protocol::APISync::getApplicationJWTConfig(L
         return std::nullopt;
     }
 
-    json response = Network::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
+    Json::Value response = Network::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT configuration from API.");
@@ -85,7 +85,7 @@ std::optional<std::string> Network::Protocol::APISync::getApplicationJWTValidati
         return std::nullopt;
     }
 
-    json response = Network::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    Json::Value response = Network::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
         log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT validation key from API.");
@@ -96,7 +96,7 @@ std::optional<std::string> Network::Protocol::APISync::getApplicationJWTValidati
 }
 
 
-json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const json &jsonRequest, const std::string &appName,
+Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const Json::Value &jsonRequest, const std::string &appName,
                                                const std::string &apiKey)
 {
     std::shared_ptr<Socket_Stream> connection;
@@ -188,27 +188,27 @@ json APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log, APISy
     return {};
 }
 
-json APISync::updateAccessControlContext(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const json &scopes, const json &roles,
-                                         const json &activities)
+Json::Value APISync::updateAccessControlContext(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const Json::Value &scopes, const Json::Value &roles,
+                                         const Json::Value &activities)
 {
-    json request;
+    Json::Value request;
     request["scopes"] = scopes;
     request["roles"] = roles;
     request["activities"] = activities;
     return performAPISynchronizationRequest(_log, proxyParameters, "updateAccessControlContext", request, appName, apiKey);
 }
 
-json APISync::getApplicationJWTConfig(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
+Json::Value APISync::getApplicationJWTConfig(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
 {
     return performAPISynchronizationRequest(_log, proxyParameters, "getApplicationJWTConfig", Json::nullValue, appName, apiKey);
 }
 /*
-json APISync::getApplicationJWTSigningKey(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
+Json::Value APISync::getApplicationJWTSigningKey(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
 {
     return performAPISynchronizationRequest(_log, proxyParameters, "getApplicationJWTSigningKey", Json::nullValue, appName, apiKey);
 }*/
 
-json APISync::getApplicationJWTValidationKey(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
+Json::Value APISync::getApplicationJWTValidationKey(Program::Logs::AppLog *_log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey)
 {
     return performAPISynchronizationRequest(_log, proxyParameters, "getApplicationJWTValidationKey", Json::nullValue, appName, apiKey);
 }

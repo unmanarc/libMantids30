@@ -73,7 +73,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    json handleAPIInfo(const std::string &baseApiUrl) override;
+    Json::Value handleAPIInfo(const std::string &baseApiUrl) override;
 
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
@@ -86,13 +86,13 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    json getSessionVariableValue(const std::string &varName) override;
+    Json::Value getSessionVariableValue(const std::string &varName) override;
 
     /**
      * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    void fillSessionExtraInfo(json &jVars) override;
+    void fillSessionExtraInfo(Json::Value &jVars) override;
 
     bool isSessionActive() override;
     std::set<std::string> getSessionScopes() override;

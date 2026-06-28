@@ -14,7 +14,7 @@ public:
     static Protocol::HTTP::Status::Code processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
 
 private:
-    static json procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);
+    static Json::Value procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);
 
     static void procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler);
     static void procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler);
@@ -29,7 +29,7 @@ private:
                                                         bool useHTMLFrame);
     static std::string procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                     bool useHTMLFrame);
-    static std::string replaceByJVar(const json &value, const std::string &scriptVarName, bool useHTMLFrame);
+    static std::string replaceByJVar(const Json::Value &value, const std::string &scriptVarName, bool useHTMLFrame);
 
     static void iProcResource_JProcessor(std::string &input, const std::regex &re, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame);
 

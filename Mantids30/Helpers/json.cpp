@@ -2,7 +2,7 @@
 
 using namespace Mantids30::Helpers;
 
-std::string JSON::toString(const json &value)
+std::string JSON::toString(const Json::Value &value)
 {
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -31,7 +31,7 @@ std::string JSON::JSONReader2::getFormattedErrorMessages()
     return m_errors;
 }
 
-std::list<std::string> JSON::toStringList(const json &value, const std::string &sub)
+std::list<std::string> JSON::toStringList(const Json::Value &value, const std::string &sub)
 {
     std::list<std::string> r;
 
@@ -58,7 +58,7 @@ std::list<std::string> JSON::toStringList(const json &value, const std::string &
     return r;
 }
 
-std::set<std::string> JSON::toStringSet(const json &value, const std::string &sub)
+std::set<std::string> JSON::toStringSet(const Json::Value &value, const std::string &sub)
 {
     std::set<std::string> r;
 
@@ -86,7 +86,7 @@ std::set<std::string> JSON::toStringSet(const json &value, const std::string &su
     return r;
 }
 
-std::set<uint32_t> JSON::toUInt32Set(const json &value, const std::string &sub)
+std::set<uint32_t> JSON::toUInt32Set(const Json::Value &value, const std::string &sub)
 {
     std::set<uint32_t> r;
 
@@ -114,9 +114,9 @@ std::set<uint32_t> JSON::toUInt32Set(const json &value, const std::string &sub)
     return r;
 }
 
-json JSON::fromSet(const std::set<std::string> &t)
+Json::Value JSON::fromSet(const std::set<std::string> &t)
 {
-    json x;
+    Json::Value x;
     int v = 0;
     for (const std::string &i : t)
     {
@@ -125,9 +125,9 @@ json JSON::fromSet(const std::set<std::string> &t)
     return x;
 }
 
-json JSON::fromSet(const std::set<uint32_t> &t)
+Json::Value JSON::fromSet(const std::set<uint32_t> &t)
 {
-    json x;
+    Json::Value x;
     int v = 0;
     for (const uint32_t &i : t)
     {
@@ -136,9 +136,9 @@ json JSON::fromSet(const std::set<uint32_t> &t)
     return x;
 }
 
-json JSON::fromList(const std::list<std::string> &t)
+Json::Value JSON::fromList(const std::list<std::string> &t)
 {
-    json x;
+    Json::Value x;
     int v = 0;
     for (const std::string &i : t)
     {
@@ -147,7 +147,7 @@ json JSON::fromList(const std::list<std::string> &t)
     return x;
 }
 
-std::map<std::string, std::string> JSON::toMap(const json &jValue)
+std::map<std::string, std::string> JSON::toMap(const Json::Value &jValue)
 {
     std::map<std::string, std::string> r;
     for (const std::string &memberName : jValue.getMemberNames())
