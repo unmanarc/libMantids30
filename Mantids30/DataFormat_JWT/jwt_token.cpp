@@ -151,7 +151,7 @@ Json::Value JWT::Token::getAllRolesAsJSON()
     return {};
 }
 
-void JWT::Token::createRole(const std::string &roleId)
+void JWT::Token::addRole(const std::string &roleId)
 {
     if (!m_claims.isMember("roles"))
     {
