@@ -88,8 +88,8 @@ public:
       */
     bool fromJSON(const Json::Value &root)
     {
-        m_majorVersion = static_cast<uint16_t>(JSON_ASUINT(root, "major", 0));
-        m_minorVersion = static_cast<uint16_t>(JSON_ASUINT(root, "minor", 0));
+        m_majorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "major", 0));
+        m_minorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "minor", 0));
         return true;
     }
 

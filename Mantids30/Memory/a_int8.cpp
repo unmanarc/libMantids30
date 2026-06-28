@@ -84,6 +84,6 @@ json INT8::toJSON()
 bool INT8::fromJSON(const json &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-    m_value = JSON_ASINT_D(value, 0);
+    m_value = Helpers::JSON::ASINT_D(value, 0);
     return true;
 }

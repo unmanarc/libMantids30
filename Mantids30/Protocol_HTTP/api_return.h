@@ -71,7 +71,7 @@ public:
 
         if (httpResponseCode != Network::Protocol::HTTP::Status::Code::S_200_OK)
         {
-            errorString += JSON_ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
+            errorString += Helpers::JSON::ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
         }
         else
         {
@@ -136,7 +136,7 @@ public:
      */
     void fromJSON(const Json::Value &jsonValue)
     {
-        httpResponseCode = (Network::Protocol::HTTP::Status::Code) JSON_ASUINT(jsonValue, "httpResponseCode", (unsigned int) Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR);
+        httpResponseCode = (Network::Protocol::HTTP::Status::Code) Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", (unsigned int) Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR);
         if (jsonValue.isMember("body") && body)
         {
             body->setValue(jsonValue["body"]);
@@ -145,7 +145,7 @@ public:
         {
             for (const std::string &header : jsonValue["extraHeaders"].getMemberNames())
             {
-                httpExtraHeaders[header] = JSON_ASSTRING(jsonValue["extraHeaders"], header, "");
+                httpExtraHeaders[header] = Helpers::JSON::ASSTRING(jsonValue["extraHeaders"], header, "");
             }
         }
         if (jsonValue.isMember("cookies"))

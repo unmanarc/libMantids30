@@ -86,6 +86,6 @@ json UINT32::toJSON()
 bool UINT32::fromJSON(const json &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-    m_value = JSON_ASUINT_D(value, 0);
+    m_value = Helpers::JSON::ASUINT_D(value, 0);
     return true;
 }

@@ -123,8 +123,8 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 
             if (currentSessionInfo.authSession)
             {
-                string jwtDomain = JSON_ASSTRING_D(jwtToken.getClaim("domain"), "");
-                string jwtImpersonator = JSON_ASSTRING_D(jwtToken.getClaim("impersonator"), "");
+                string jwtDomain = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("domain"), "");
+                string jwtImpersonator = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("impersonator"), "");
 
                 if (impersonatorUser != jwtImpersonator)
                 {

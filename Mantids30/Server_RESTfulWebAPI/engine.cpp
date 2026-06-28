@@ -36,8 +36,8 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
                                  Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
 )
 {
-    std::string jwtSignature = Helpers::Encoders::decodeFromBase64(JSON_ASSTRING(*request.inputJSON, "signature", ""), true);
-    time_t expirationTime = JSON_ASUINT64(*request.inputJSON, "expiration", 0);
+    std::string jwtSignature = Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING(*request.inputJSON, "signature", ""), true);
+    time_t expirationTime = Helpers::JSON::ASUINT64(*request.inputJSON, "expiration", 0);
     ((Engine *) context)->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
 
     return {};
@@ -46,9 +46,9 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
 API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string uri = JSON_ASSTRING(*request.inputJSON, "uri", "");
-    const std::string webSocketSessionId = JSON_ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string topicId = JSON_ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
@@ -76,9 +76,9 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
 API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string uri = JSON_ASSTRING(*request.inputJSON, "uri", "");
-    const std::string webSocketSessionId = JSON_ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string topicId = JSON_ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())

@@ -2,7 +2,7 @@
 
 using namespace Mantids30::Helpers;
 
-std::string JSON::jsonToString(const json &value)
+std::string JSON::toString(const json &value)
 {
     Json::StreamWriterBuilder builder;
     builder.settings_["indentation"] = "";
@@ -31,7 +31,7 @@ std::string JSON::JSONReader2::getFormattedErrorMessages()
     return m_errors;
 }
 
-std::list<std::string> JSON::jsonToStringList(const json &value, const std::string &sub)
+std::list<std::string> JSON::toStringList(const json &value, const std::string &sub)
 {
     std::list<std::string> r;
 
@@ -45,7 +45,7 @@ std::list<std::string> JSON::jsonToStringList(const json &value, const std::stri
             }
         }
     }
-    else if (!sub.empty() && JSON_ISARRAY(value, sub))
+    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
@@ -58,7 +58,7 @@ std::list<std::string> JSON::jsonToStringList(const json &value, const std::stri
     return r;
 }
 
-std::set<std::string> JSON::jsonToStringSet(const json &value, const std::string &sub)
+std::set<std::string> JSON::toStringSet(const json &value, const std::string &sub)
 {
     std::set<std::string> r;
 
@@ -72,7 +72,7 @@ std::set<std::string> JSON::jsonToStringSet(const json &value, const std::string
             }
         }
     }
-    else if (!sub.empty() && JSON_ISARRAY(value, sub))
+    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
@@ -86,7 +86,7 @@ std::set<std::string> JSON::jsonToStringSet(const json &value, const std::string
     return r;
 }
 
-std::set<uint32_t> JSON::jsonToUInt32Set(const json &value, const std::string &sub)
+std::set<uint32_t> JSON::toUInt32Set(const json &value, const std::string &sub)
 {
     std::set<uint32_t> r;
 
@@ -100,7 +100,7 @@ std::set<uint32_t> JSON::jsonToUInt32Set(const json &value, const std::string &s
             }
         }
     }
-    else if (!sub.empty() && JSON_ISARRAY(value, sub))
+    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
     {
         for (size_t x = 0; x < value[sub].size(); x++)
         {
@@ -114,7 +114,7 @@ std::set<uint32_t> JSON::jsonToUInt32Set(const json &value, const std::string &s
     return r;
 }
 
-json JSON::setToJSON(const std::set<std::string> &t)
+json JSON::fromSet(const std::set<std::string> &t)
 {
     json x;
     int v = 0;
@@ -125,7 +125,7 @@ json JSON::setToJSON(const std::set<std::string> &t)
     return x;
 }
 
-json JSON::setToJSON(const std::set<uint32_t> &t)
+json JSON::fromSet(const std::set<uint32_t> &t)
 {
     json x;
     int v = 0;
@@ -136,7 +136,7 @@ json JSON::setToJSON(const std::set<uint32_t> &t)
     return x;
 }
 
-json JSON::listToJSON(const std::list<std::string> &t)
+json JSON::fromList(const std::list<std::string> &t)
 {
     json x;
     int v = 0;
@@ -147,20 +147,20 @@ json JSON::listToJSON(const std::list<std::string> &t)
     return x;
 }
 
-std::map<std::string, std::string> JSON::jsonToMap(const json &jValue)
+std::map<std::string, std::string> JSON::toMap(const json &jValue)
 {
     std::map<std::string, std::string> r;
     for (const std::string &memberName : jValue.getMemberNames())
     {
         if (jValue[memberName].isString())
         {
-            r[memberName] = JSON_ASSTRING(jValue, memberName, "");
+            r[memberName] = Helpers::JSON::ASSTRING(jValue, memberName, "");
         }
     }
     return r;
 }
 
-Json::Value JSON::parseJSON(const char *json)
+Json::Value JSON::parse(const char *json)
 {
     Json::Value r;
     Json::Reader().parse(json, r);

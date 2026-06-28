@@ -28,7 +28,7 @@ json Vars::toJSON()
             std::list<std::shared_ptr<Mantids30::Memory::Streams::StreamableObject>> values = getValues(key);
             Json::Value jsonArray;
 
-            for (std::shared_ptr<Mantids30::Memory::Streams::StreamableObject> value : values)
+            for (const std::shared_ptr<Mantids30::Memory::Streams::StreamableObject>& value : values)
             {
                 jsonArray.append(value->toString());
             }
@@ -58,7 +58,7 @@ bool Vars::fromJSON(const Json::Value &json)
             for (Json::ArrayIndex i = 0; i < value.size(); ++i)
             {
                 std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
-                bChunk->writeString(JSON_ARRAY_ASSTRING(value, i, ""));
+                bChunk->writeString(Helpers::JSON::ARRAY_ASSTRING(value, i, ""));
                 if (!addVar(key, bChunk))
                 {
                     return false;
@@ -69,7 +69,7 @@ bool Vars::fromJSON(const Json::Value &json)
         {
             // If the value is a single element, add it as a variable
             std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
-            bChunk->writeString(JSON_ASSTRING_D(value, ""));
+            bChunk->writeString(Helpers::JSON::ASSTRING_D(value, ""));
             if (!addVar(key, bChunk))
             {
                 return false;

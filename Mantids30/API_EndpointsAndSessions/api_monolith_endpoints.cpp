@@ -75,8 +75,8 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
     else
     {
         // Fills reasons with any missing roles and scopes required by the endpoint
-        (*reasons)["rolesLeft"] = Helpers::JSON::setToJSON(rolesLeft);
-        (*reasons)["scopesLeft"] = Helpers::JSON::setToJSON(scopesLeft);
+        (*reasons)["rolesLeft"] = Helpers::JSON::fromSet(rolesLeft);
+        (*reasons)["scopesLeft"] = Helpers::JSON::fromSet(scopesLeft);
 
         return ValidationResult::NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }

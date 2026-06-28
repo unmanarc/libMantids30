@@ -76,50 +76,50 @@ bool JWT::Token::decodePayload(const std::string &payload)
 
 std::string JWT::Token::getIssuer() const
 {
-    return JSON_ASSTRING(m_claims, "iss", "");
+    return Helpers::JSON::ASSTRING(m_claims, "iss", "");
 }
 
 std::string JWT::Token::getImpersonator() const
 {
-    return JSON_ASSTRING(m_claims, "impersonator", "");
+    return Helpers::JSON::ASSTRING(m_claims, "impersonator", "");
 }
 
 std::string JWT::Token::getSubject() const
 {
-    return JSON_ASSTRING(m_claims, "sub", "");
+    return Helpers::JSON::ASSTRING(m_claims, "sub", "");
 }
 
 std::string JWT::Token::getDomain() const
 {
-    return JSON_ASSTRING(m_claims, "domain", "");
+    return Helpers::JSON::ASSTRING(m_claims, "domain", "");
 }
 
 std::string JWT::Token::getAudience() const
 {
-    return JSON_ASSTRING(m_claims, "aud", "");
+    return Helpers::JSON::ASSTRING(m_claims, "aud", "");
 }
 
 time_t JWT::Token::getExpirationTime() const
 {
     // DEFULT: not expired...
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "exp", 0xFFFFFFFFFFFFFFFF));
+    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "exp", 0xFFFFFFFFFFFFFFFF));
 }
 
 time_t JWT::Token::getNotBefore() const
 {
     // DEFAULT: not restriction....
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "nbf", 0x0));
+    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "nbf", 0x0));
 }
 
 time_t JWT::Token::getIssuedAt() const
 {
     // DEFAULT: 1969...
-    return static_cast<std::time_t>(JSON_ASUINT64(m_claims, "iat", 0x0));
+    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "iat", 0x0));
 }
 
 std::string JWT::Token::getJwtId() const
 {
-    return JSON_ASSTRING(m_claims, "jti", "");
+    return Helpers::JSON::ASSTRING(m_claims, "jti", "");
 }
 
 std::set<std::string> JWT::Token::getAllRoles()
@@ -133,7 +133,7 @@ std::set<std::string> JWT::Token::getAllRoles()
         {
             for (const Json::Value &role : rolesClaims)
             {
-                roles.insert(JSON_ASSTRING_D(role, ""));
+                roles.insert(Helpers::JSON::ASSTRING_D(role, ""));
             }
         }
     }
@@ -169,7 +169,7 @@ bool JWT::Token::hasRole(const std::string &roleId) const
         {
             for (const Json::Value &role : rolesClaims)
             {
-                if (JSON_ASSTRING_D(role, "") == roleId)
+                if (Helpers::JSON::ASSTRING_D(role, "") == roleId)
                 {
                     return true;
                 }
@@ -190,7 +190,7 @@ std::set<std::string> JWT::Token::getAllScopes()
         {
             for (const Json::Value &scope : scopesClaims)
             {
-                scopes.insert(JSON_ASSTRING_D(scope, ""));
+                scopes.insert(Helpers::JSON::ASSTRING_D(scope, ""));
             }
         }
     }
@@ -227,7 +227,7 @@ bool JWT::Token::hasScope(const std::string &scopeId) const
         {
             for (const Json::Value &scope : scopesClaims)
             {
-                if (JSON_ASSTRING_D(scope, "") == scopeId)
+                if (Helpers::JSON::ASSTRING_D(scope, "") == scopeId)
                 {
                     return true;
                 }
@@ -255,7 +255,7 @@ Json::Value JWT::Token::getAllClaimsAsJSON()
 
 bool JWT::Token::isAdmin() const
 {
-    return m_claims.isMember("isAdmin") && JSON_ASBOOL_D(getClaim("isAdmin"), false);
+    return m_claims.isMember("isAdmin") && Helpers::JSON::ASBOOL_D(getClaim("isAdmin"), false);
 }
 
 Json::Value JWT::Token::getClaim(const std::string &name) const

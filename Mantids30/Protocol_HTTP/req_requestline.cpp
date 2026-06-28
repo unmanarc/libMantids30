@@ -117,8 +117,8 @@ bool RequestLine::fromJSON(const Json::Value &json)
         return false;
     }
 
-    setHTTPMethod(JSON_ASSTRING(json, "method", ""));
-    setRequestURI(JSON_ASSTRING(json, "uri", ""));
+    setHTTPMethod(Helpers::JSON::ASSTRING(json, "method", ""));
+    setRequestURI(Helpers::JSON::ASSTRING(json, "uri", ""));
     m_httpVersion.fromJSON(json["httpVersion"]);
     m_getVars->fromJSON(json["getVars"]);
 

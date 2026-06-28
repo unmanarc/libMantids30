@@ -67,7 +67,7 @@ json BINARY::toJSON()
 bool BINARY::fromJSON(const json &value)
 {
     Threads::Sync::Lock_RW lock(this->m_value.mutex);
-    return fromString(Helpers::Encoders::decodeFromBase64(JSON_ASSTRING_D(value, "")));
+    return fromString(Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING_D(value, "")));
 }
 
 std::shared_ptr<Var> BINARY::protectedCopy()

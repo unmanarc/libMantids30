@@ -12,7 +12,7 @@ bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
 
     if (!m_isFormatted)
     {
-        m_strValue = Helpers::JSON::jsonToString(m_root);
+        m_strValue = Helpers::JSON::toString(m_root);
     }
     else
     {

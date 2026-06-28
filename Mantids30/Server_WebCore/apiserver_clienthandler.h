@@ -172,7 +172,7 @@ protected:
      *   JWT token (`strToken`). The verification result is stored in `result`.
      * - If the token is valid and the `m_JWTToken` object reflects a valid state:
      *   - The `userName` is set from the token's subject.
-     *   - The `domainName` is extracted from the "domain" claim (using a macro `JSON_ASSTRING_D`
+     *   - The `domainName` is extracted from the "domain" claim (using a macro `Helpers::JSON::ASSTRING_D`
      *     to handle default values).
      *   - All claims and scopes from the token are stored in `m_userData`.
      *   - The `sessionId` and `halfSessionId` are set from the token's JWT ID.

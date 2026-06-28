@@ -236,11 +236,11 @@ public:
             }
             void fromJSON(const json &sessionInfo)
             {
-                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", JSON_ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
-                isSecure = JSON_ASBOOL_D(sessionInfo["isSecureConnection"], false);
+                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", Helpers::JSON::ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
+                isSecure = Helpers::JSON::ASBOOL_D(sessionInfo["isSecureConnection"], false);
                 if (sessionInfo.isObject() && sessionInfo["tls"].isObject())
                 {
-                    tlsCommonName = JSON_ASSTRING_D(sessionInfo["tls"]["commonName"], "");
+                    tlsCommonName = Helpers::JSON::ASSTRING_D(sessionInfo["tls"]["commonName"], "");
                 }
                 else
                 {

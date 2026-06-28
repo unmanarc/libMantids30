@@ -417,7 +417,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     bool isSignatureVerified = false;
 
     // Check that the header algorithm is supported
-    std::string incomingAlgorithm = JSON_ASSTRING(header_json, "alg", "");
+    std::string incomingAlgorithm = Helpers::JSON::ASSTRING(header_json, "alg", "");
     if (!isAlgorithmSupported(incomingAlgorithm))
     {
         return false;

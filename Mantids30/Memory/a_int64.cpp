@@ -88,6 +88,6 @@ json INT64::toJSON()
 bool INT64::fromJSON(const json &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-    m_value = JSON_ASINT64_D(value, 0);
+    m_value = Helpers::JSON::ASINT64_D(value, 0);
     return true;
 }

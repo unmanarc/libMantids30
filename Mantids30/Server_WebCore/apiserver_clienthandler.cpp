@@ -516,12 +516,12 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     }
 
     // Check if the current running app matches the JWT spec.
-    if (JSON_ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
+    if (Helpers::JSON::ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
     {
         return false;
     }
 
-    if (JSON_ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
+    if (Helpers::JSON::ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
     {
         return false;
     }

@@ -140,7 +140,7 @@ json VARCHAR::toJSON()
 
 bool VARCHAR::fromJSON(const json &value)
 {
-    return fromString(JSON_ASSTRING_D(value, ""));
+    return fromString(Helpers::JSON::ASSTRING_D(value, ""));
 }
 
 std::shared_ptr<Var> VARCHAR::protectedCopy()

@@ -293,24 +293,24 @@ void WebLog::printLogToFile(const json *value)
         case Config::COMBINED:
         {
             // Implement CLF format (Apache Combined Log Format)
-            std::string remoteHost = JSON_ASSTRING(*value, "remoteHost", "-");
-            std::string identity = JSON_ASSTRING(*value, "identity", "-");
-            std::string user = JSON_ASSTRING(*value, "user", "-");
+            std::string remoteHost = Helpers::JSON::ASSTRING(*value, "remoteHost", "-");
+            std::string identity = Helpers::JSON::ASSTRING(*value, "identity", "-");
+            std::string user = Helpers::JSON::ASSTRING(*value, "user", "-");
 
             // Assuming timestamp is in a standard format like "10/Oct/2023:13:55:36"
-            time_t timestamp = JSON_ASUINT64(*value, "timestamp", 0);
-            std::string requestLine = JSON_ASSTRING(*value, "requestLine", "-");
-            uint32_t responseStatus = JSON_ASUINT(*value, "responseStatus", 0);
+            time_t timestamp = Helpers::JSON::ASUINT64(*value, "timestamp", 0);
+            std::string requestLine = Helpers::JSON::ASSTRING(*value, "requestLine", "-");
+            uint32_t responseStatus = Helpers::JSON::ASUINT(*value, "responseStatus", 0);
             std::optional<uint64_t> bytesSent = std::nullopt;
 
             if (value->isMember("bytesSent"))
             {
-                bytesSent = JSON_ASUINT64(*value, "bytesSent", 0);
+                bytesSent = Helpers::JSON::ASUINT64(*value, "bytesSent", 0);
             }
 
             // Referer and User-Agent
-            std::string referer = JSON_ASSTRING(*value, "referer", "-");
-            std::string userAgent = JSON_ASSTRING(*value, "userAgent", "-");
+            std::string referer = Helpers::JSON::ASSTRING(*value, "referer", "-");
+            std::string userAgent = Helpers::JSON::ASSTRING(*value, "userAgent", "-");
 
             // URL encode (sanitize) string fields for log format
             referer = Helpers::Encoders::toURL(referer, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);

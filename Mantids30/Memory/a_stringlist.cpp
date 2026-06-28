@@ -222,7 +222,7 @@ bool STRINGLIST::fromJSON(const Json::Value &value)
     {
         if (item.isString())
         {
-            m_value.push_back(JSON_ASSTRING_D(item, ""));
+            m_value.push_back(Helpers::JSON::ASSTRING_D(item, ""));
         }
         else
         {

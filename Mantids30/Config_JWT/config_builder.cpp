@@ -52,7 +52,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
+            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig), "tokenType", "");
         }
         else
         {
@@ -146,7 +146,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = JSON_ASSTRING((*jwtconfig), "tokenType", "");
+            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig), "tokenType", "");
         }
         else
         {

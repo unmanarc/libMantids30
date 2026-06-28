@@ -218,7 +218,7 @@ json FastRPC3::RemoteMethods::executeTask(const string &methodName, const json &
 bool FastRPC3::RemoteMethods::logout(json *error)
 {
     json x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
-    return JSON_ASBOOL_D(x, false);
+    return Helpers::JSON::ASBOOL_D(x, false);
 }
 
 json FastRPC3::RemoteMethods::getSSOData(json *error)

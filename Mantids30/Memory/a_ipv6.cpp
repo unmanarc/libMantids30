@@ -112,5 +112,5 @@ json IPV6::toJSON()
 
 bool IPV6::fromJSON(const json &value)
 {
-    return fromString(JSON_ASSTRING_D(value, "0.0.0.0"));
+    return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

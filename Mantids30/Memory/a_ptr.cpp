@@ -76,5 +76,5 @@ json PTR::toJSON()
 
 bool PTR::fromJSON(const json &value)
 {
-    return fromString(JSON_ASSTRING_D(value, "00000000"));
+    return fromString(Helpers::JSON::ASSTRING_D(value, "00000000"));
 }

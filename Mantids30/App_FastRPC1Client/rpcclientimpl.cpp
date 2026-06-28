@@ -215,7 +215,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
                                   rpcError["errorMessage"].asCString());
                 }
 
-                if (!JSON_ASBOOL(ans, "x", false))
+                if (!Helpers::JSON::ASBOOL(ans, "x", false))
                 {
                     LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }

@@ -19,9 +19,9 @@ public:
         this->authSession = authSession;
     }
 
-    bool compareUserAgent(const std::string &userAgent) { return JSON_ASSTRING(networkClientInfo, "userAgent", "") == userAgent; }
+    bool compareUserAgent(const std::string &userAgent) { return Helpers::JSON::ASSTRING(networkClientInfo, "userAgent", "") == userAgent; }
 
-    bool compareRemoteAddress(const std::string &remoteAddress) { return JSON_ASSTRING(networkClientInfo, "remoteAddress", "") == remoteAddress; }
+    bool compareRemoteAddress(const std::string &remoteAddress) { return Helpers::JSON::ASSTRING(networkClientInfo, "remoteAddress", "") == remoteAddress; }
 
     std::shared_ptr<Mantids30::Sessions::Session> getAuthSession() { return authSession; }
 

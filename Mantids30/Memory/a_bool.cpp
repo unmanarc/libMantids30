@@ -55,7 +55,7 @@ json BOOL::toJSON()
 bool BOOL::fromJSON(const json &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-    m_value = JSON_ASBOOL_D(value, false);
+    m_value = Helpers::JSON::ASBOOL_D(value, false);
     return true;
 }
 
