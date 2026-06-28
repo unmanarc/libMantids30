@@ -120,12 +120,6 @@ public:
      */
     [[nodiscard]] bool doesAPIEndpointRequireActiveSession(const std::string &endpointName);
 
-    /**
-     * @brief Get the OptionsHandlerConfig for a specific endpoint
-     * @param endpointName The endpoint name to look up.
-     * @return Pointer to the config, or nullptr if OPTIONS is not enabled.
-     */
-    [[nodiscard]] const OptionsHandlerConfig *getEndpointOptionsConfig(const std::string &endpointName) const;
 
 private:
     /////////////////////////////////
