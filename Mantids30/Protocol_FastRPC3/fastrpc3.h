@@ -530,7 +530,7 @@ private:
     /**
      * @brief Indicates whether the RPC system is in a finished state.
      */
-    std::atomic<bool> m_isFinished;
+    std::atomic<bool> m_isFinished {false};
 
     /**
      * @brief Mutex for synchronizing ping operations.

@@ -35,28 +35,24 @@ void vrsyncRPCPingerThread(FastRPC3 *obj)
 }
 
 FastRPC3::FastRPC3(const std::shared_ptr<DataFormat::JWT> &jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
-    : m_defaultMethodsHandlers()
-    , config(jwtValidator)
+    : config(jwtValidator)
 {
     m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
     config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
-    m_isFinished = false;
     m_threadPool->start();
 
     m_pingerThread = thread(vrsyncRPCPingerThread, this);
 }
 
 FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
-    : m_defaultMethodsHandlers()
-    , config(std::make_shared<DataFormat::JWT>())
+    : config(std::make_shared<DataFormat::JWT>())
 {
     m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
     config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
-    m_isFinished = false;
     m_threadPool->start();
 
     m_pingerThread = thread(vrsyncRPCPingerThread, this);
@@ -103,16 +99,12 @@ void FastRPC3::pingAllActiveConnections()
 bool FastRPC3::waitPingInterval()
 {
     unique_lock<mutex> lk(m_pingMutex);
-    if (m_pingCondition.wait_for(lk, S(config.pingIntervalInSeconds)) == cv_status::timeout)
-    {
-        return true;
-    }
-    return false;
+    return m_pingCondition.wait_for(lk, S(config.pingIntervalInSeconds)) == cv_status::timeout;
 }
 
 int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
 {
-    RPC3CallbackDefinitions *callbacks = ((RPC3CallbackDefinitions *) connection->callbacks);
+    RPC3CallbackDefinitions *callbacks = (static_cast<RPC3CallbackDefinitions *>(connection->callbacks));
 
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId;
@@ -138,7 +130,6 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
     }
 
     ////////////////////////////////////////////////////////////
-    if (true)
     {
         unique_lock<mutex> lk(connection->answersMutex);
         if (connection->pendingRequests.find(requestId) != connection->pendingRequests.end())
