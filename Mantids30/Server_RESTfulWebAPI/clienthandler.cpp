@@ -1,5 +1,5 @@
 #include "clienthandler.h"
-#include "Mantids30/API_EndpointsAndSessions/security.h"
+#include <Mantids30/API_EndpointsAndSessions/security.h>
 
 #include <Mantids30/API_EndpointsAndSessions/api_restful_endpoints.h>
 #include <Mantids30/Helpers/encoders.h>

@@ -1,5 +1,5 @@
 #include "endpoints_options.h"
-#include "Mantids30/Protocol_HTTP/api_return.h"
+#include <Mantids30/Protocol_HTTP/api_return.h>
 
 using namespace Mantids30::API;
 

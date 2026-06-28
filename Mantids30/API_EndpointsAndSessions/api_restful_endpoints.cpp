@@ -1,9 +1,9 @@
 #include "api_restful_endpoints.h"
-#include "Mantids30/Protocol_HTTP/methods.h"
-#include "security.h"
+#include <Mantids30/Protocol_HTTP/methods.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Threads/lock_shared.h>
+#include "security.h"
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Protocol;

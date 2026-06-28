@@ -1,5 +1,5 @@
 #include "sqlconnector_sqlite3.h"
-#include "Mantids30/DB/sqlconnector.h"
+#include <Mantids30/DB/sqlconnector.h>
 #include <Mantids30/Memory/a_string.h>
 #include <unistd.h>
 
