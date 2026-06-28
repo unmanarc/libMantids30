@@ -18,7 +18,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
 {
     API::APIReturn apiReturn;
     //json jPayloadIn;
-    Mantids30::Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::JSONReader2 reader;
 
     std::map<uint32_t, API::Monolith::Endpoints *>::iterator it = m_endpointsHandlerByAPIVersion.find(apiVersion);
     if (it == m_endpointsHandlerByAPIVersion.end())

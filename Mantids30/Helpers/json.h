@@ -43,7 +43,7 @@ using json = Json::Value;
 
 namespace Mantids30::Helpers::JSON {
 
-inline Json::Value parseJSON(const char *json);
+Json::Value parseJSON(const char *json);
 
 std::map<std::string, std::string> jsonToMap(const json &jValue);
 
