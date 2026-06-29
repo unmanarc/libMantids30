@@ -81,7 +81,7 @@ char *VARCHAR::getValue()
     return m_value;
 }
 
-bool VARCHAR::setValue(char *value)
+bool VARCHAR::setValue(const char *value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
 

@@ -34,7 +34,7 @@ std::string PTR::toString()
     Threads::Sync::Lock_RD lock(m_mutex);
 
     char ovalue[256];
-    void *ptr = m_value;
+    const void *ptr = m_value;
     snprintf(ovalue, sizeof(ovalue), "%.8lX", (uintptr_t) ptr);
     return ovalue;
 }

@@ -37,7 +37,7 @@ public:
      * @param value null terminated string
      * @return true if sucessfully copied, false if it was truncated.
      */
-    bool setValue(char *value);
+    bool setValue(const char *value);
 
     [[nodiscard]] size_t getVarSize();
 
