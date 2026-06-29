@@ -157,8 +157,8 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
             {
                 void *ptr = ABSTRACT_SPTR_AS(PTR, inputVar.second)->getValue();
                 // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-                size_t ptrSize = strnlen(static_cast<char *>(ptr), (0xFFFFFFFF / 2) - 1);
-                sqlite3_bind_text(m_stmt, idx, static_cast<char *>(ptr), ptrSize, SQLITE_STATIC);
+                size_t ptrSize = strnlen(static_cast<const char *>(ptr), (0xFFFFFFFF / 2) - 1);
+                sqlite3_bind_text(m_stmt, idx, static_cast<const char *>(ptr), ptrSize, SQLITE_STATIC);
             }
             break;
             case Memory::Abstract::Var::Type::VOID:
@@ -284,7 +284,7 @@ bool Query_SQLite3::step0()
                 case Memory::Abstract::Var::Type::BIN:
                 {
                     Memory::Abstract::BINARY::ByteArray binContainer;
-                    binContainer.ptr = (char *) sqlite3_column_blob(m_stmt, columnpos);
+                    binContainer.ptr = (char *)(sqlite3_column_blob(m_stmt, columnpos));
                     // TODO: should bytes need to be 64-bit for blob64?
                     binContainer.dataSize = sqlite3_column_bytes(m_stmt, columnpos);
                     ABSTRACT_PTR_AS(BINARY, outputVar)->setValue(&binContainer);
@@ -294,43 +294,43 @@ bool Query_SQLite3::step0()
                 case Memory::Abstract::Var::Type::VARCHAR:
                 {
                     // This will copy the memory.
-                    ABSTRACT_PTR_AS(VARCHAR, outputVar)->setValue((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(VARCHAR, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::STRING:
                 {
-                    ABSTRACT_PTR_AS(STRING, outputVar)->setValue((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(STRING, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::STRINGLIST:
                 {
-                    ABSTRACT_PTR_AS(STRINGLIST, outputVar)->fromString((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(STRINGLIST, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::DATETIME:
                 {
-                    ABSTRACT_PTR_AS(DATETIME, outputVar)->fromString((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(DATETIME, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::IPV4:
                 {
-                    ABSTRACT_PTR_AS(IPV4, outputVar)->fromString((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(IPV4, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::MACADDR:
                 {
-                    ABSTRACT_PTR_AS(MACADDR, outputVar)->fromString((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(MACADDR, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::IPV6:
                 {
-                    ABSTRACT_PTR_AS(IPV6, outputVar)->fromString((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(IPV6, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::PTR:
                 {
                     // This will reference the memory, but will disappear on the next step
-                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue((char *) sqlite3_column_text(m_stmt, columnpos));
+                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue((void *)(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Memory::Abstract::Var::Type::VOID:
