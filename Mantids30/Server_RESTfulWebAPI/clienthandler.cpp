@@ -72,10 +72,10 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
         log(LogLevel::WARN, "restAPI", 2048, "API REST Endpoint Not Found {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::AUTHENTICATION_REQUIRED:
-        log(LogLevel::WARN, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "API REST Authentication Not Provided {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::INVALID_SCOPE:
-        log(LogLevel::WARN, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
+        log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "API REST Invalid Scope {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
         break;
     case API::RESTful::Endpoints::HandleResult::INTERNAL_ERROR:
         log(LogLevel::WARN, "restAPI", 2048, "API REST Internal Error {ver=%u, mode=%s, endpoint=%s}", apiVersion, httpMethodMode.c_str(), endpointName.c_str());
