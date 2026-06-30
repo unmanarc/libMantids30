@@ -111,7 +111,7 @@ private:
      * @param start Starting position to search from
      * @return Pair of (opening_end, closing_start) positions, or (-1,-1) if not found
      */
-    std::pair<int, int> findDelimiter(const std::string &str, size_t start) const;
+    [[nodiscard]] std::pair<int, int> findDelimiter(const std::string &str, size_t start) const;
 
     /**
      * @brief Trim whitespace from both ends of a string.

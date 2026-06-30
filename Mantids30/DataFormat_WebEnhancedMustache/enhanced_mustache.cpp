@@ -291,7 +291,9 @@ std::string EnhancedMustache::renderSection(const std::string &name, const std::
                                            token.content);
             Json::Value val = scopedContext.resolve(token.content);
             if (val.isNull())
+            {
                 val = m_context.resolve(token.content);
+            }
 
             if (isFalsy(val))
             {
@@ -324,7 +326,7 @@ std::string EnhancedMustache::renderSection(const std::string &name, const std::
 
         case TokenType::EXTENSION:
         {
-            ExtensionTag tag = m_parser.parseExtensionTag(token.content);
+            ExtensionTag tag = Mantids30::DataFormat::Mustache::MustacheParser::parseExtensionTag(token.content);
             std::string extResult = m_extensions.process(tag, scopedContext, depth);
 
             if (tag.type == "include" && !extResult.empty() && !tag.noRecursion)
