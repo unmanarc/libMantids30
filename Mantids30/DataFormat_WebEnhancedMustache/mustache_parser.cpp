@@ -1,6 +1,8 @@
 #include "mustache_parser.h"
 
-#include <cstring>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/predicate.hpp>
+#include <regex>
 
 namespace Mantids30::DataFormat::Mustache {
 
@@ -17,19 +19,15 @@ const std::unordered_set<std::string> &MustacheParser::getExtensionKeywords()
 
 std::string MustacheParser::trim(const std::string &s)
 {
-    size_t start = s.find_first_not_of(" \t\r\n");
-    if (start == std::string::npos)
-    {
-        return "";
-    }
-    size_t end = s.find_last_not_of(" \t\r\n");
-    return s.substr(start, end - start + 1);
+    return boost::algorithm::trim_copy(s);
 }
 
 std::pair<int, int> MustacheParser::findDelimiter(const std::string &str, size_t start) const
 {
+    auto remaining = str.substr(start);
+
     // Check for {{{{ (raw block)
-    if (start + 7 < str.size() && str.substr(start, 4) == "{{{{")
+    if (boost::algorithm::starts_with(remaining, "{{{{"))
     {
         size_t closePos = str.find("}}}}", start + 4);
         if (closePos != std::string::npos)
@@ -40,7 +38,7 @@ std::pair<int, int> MustacheParser::findDelimiter(const std::string &str, size_t
     }
 
     // Check for {{
-    if (start + 3 < str.size() && str.substr(start, 2) == "{{")
+    if (boost::algorithm::starts_with(remaining, "{{"))
     {
         size_t closePos = str.find("}}", start + 2);
         if (closePos != std::string::npos)
@@ -55,72 +53,34 @@ std::pair<int, int> MustacheParser::findDelimiter(const std::string &str, size_t
 
 bool MustacheParser::isExtensionTag(const std::string &content)
 {
-    std::string trimmed = trim(content);
-    if (trimmed.empty() || trimmed[0] != '>')
-    {
-        return false;
-    }
-
-    std::string rest = trim(trimmed.substr(1));
-    if (rest.empty())
-    {
-        return false;
-    }
-
-    // Extract the keyword (first word)
-    size_t spacePos = rest.find(' ');
-    std::string keyword = spacePos != std::string::npos ? rest.substr(0, spacePos) : rest;
-
-    // Check for ! suffix (no-recursion marker)
-    if (!keyword.empty() && keyword.back() == '!')
-    {
-        keyword = keyword.substr(0, keyword.size() - 1);
-    }
-
-    return EXTENSION_KEYWORDS.count(keyword) > 0;
+    static const std::regex re{R"(>\s*(js|get|post|sess|cookie|header|call|include|config)(\!)?)"};
+    return std::regex_search(content, re);
 }
 
 ExtensionTag MustacheParser::parseExtensionTag(const std::string &content)
 {
+    static const std::regex re{R"(>\s*(js|get|post|sess|cookie|header|call|include|config)(\!)?\s*(.*))"};
+    std::smatch m;
     ExtensionTag tag;
     tag.noRecursion = false;
 
-    std::string trimmed = trim(content);
-    if (trimmed.empty() || trimmed[0] != '>')
+    if (!std::regex_search(content, m, re))
     {
         return tag;
     }
 
-    std::string rest = trim(trimmed.substr(1));
-    if (rest.empty())
-    {
-        return tag;
-    }
+    tag.type = m[1].str();
+    tag.noRecursion = m[2].matched;
+    std::string args = boost::algorithm::trim_copy(m[3].str());
 
-    // Extract keyword
-    size_t spacePos = rest.find(' ');
-    std::string keyword = spacePos != std::string::npos ? rest.substr(0, spacePos) : rest;
-
-    // Check for ! suffix
-    if (!keyword.empty() && keyword.back() == '!')
-    {
-        tag.noRecursion = true;
-        keyword = keyword.substr(0, keyword.size() - 1);
-    }
-
-    tag.type = keyword;
-    std::string args = spacePos != std::string::npos ? trim(rest.substr(spacePos)) : "";
-
-    // Parse based on type
     if (tag.type == "include")
     {
         // Format: [wrapper:]path or just path
         size_t colonPos = args.find(':');
         if (colonPos != std::string::npos && colonPos < args.find('/'))
         {
-            // Has wrapper (e.g., div:path/file.html)
-            tag.wrapper = args.substr(0, colonPos);
-            tag.source = trim(args.substr(colonPos + 1));
+            tag.wrapper = boost::algorithm::trim_copy(args.substr(0, colonPos));
+            tag.source = boost::algorithm::trim_copy(args.substr(colonPos + 1));
         }
         else
         {
@@ -133,8 +93,8 @@ ExtensionTag MustacheParser::parseExtensionTag(const std::string &content)
         size_t assignPos = args.find(":=");
         if (assignPos != std::string::npos)
         {
-            tag.target = trim(args.substr(0, assignPos));
-            tag.source = trim(args.substr(assignPos + 2));
+            tag.target = boost::algorithm::trim_copy(args.substr(0, assignPos));
+            tag.source = boost::algorithm::trim_copy(args.substr(assignPos + 2));
         }
         else
         {
@@ -147,8 +107,8 @@ ExtensionTag MustacheParser::parseExtensionTag(const std::string &content)
         size_t assignPos = args.find(":=");
         if (assignPos != std::string::npos)
         {
-            tag.target = trim(args.substr(0, assignPos));
-            tag.source = trim(args.substr(assignPos + 2));
+            tag.target = boost::algorithm::trim_copy(args.substr(0, assignPos));
+            tag.source = boost::algorithm::trim_copy(args.substr(assignPos + 2));
         }
         else
         {

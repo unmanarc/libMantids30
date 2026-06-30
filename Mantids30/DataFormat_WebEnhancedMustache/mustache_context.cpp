@@ -1,5 +1,6 @@
 #include "mustache_context.h"
 
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <sstream>
 
@@ -10,15 +11,7 @@ namespace {
 std::vector<std::string> splitPath(const std::string &path)
 {
     std::vector<std::string> parts;
-    std::istringstream ss(path);
-    std::string part;
-    while (std::getline(ss, part, '.'))
-    {
-        if (!part.empty())
-        {
-            parts.push_back(part);
-        }
-    }
+    boost::split(parts, path, boost::is_any_of("."), boost::token_compress_on);
     return parts;
 }
 
@@ -107,7 +100,7 @@ void MustacheContext::addNetworkInfo(const Json::Value &info, int priority)
 
 void MustacheContext::addSource(int priority, const std::string &name, std::function<Json::Value(const std::string &)> resolver, std::function<bool(const std::string &)> exists)
 {
-    m_sources.push_back({priority, std::move(name), std::move(resolver), std::move(exists)});
+    m_sources.push_back({priority, name, std::move(resolver), std::move(exists)});
     // Keep sorted by priority (lowest first)
     std::sort(m_sources.begin(), m_sources.end(), [](const VarSource &a, const VarSource &b) { return a.priority < b.priority; });
 }

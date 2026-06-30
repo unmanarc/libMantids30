@@ -2,6 +2,8 @@
 
 #include <Mantids30/Helpers/encoders.h>
 
+#include <boost/algorithm/string.hpp>
+#include <regex>
 #include <sstream>
 
 namespace Mantids30::DataFormat::Mustache {
@@ -220,121 +222,38 @@ std::string MustacheExtensions::jsonToJSString(const Json::Value &value)
 
 std::string MustacheExtensions::htmlEscape(const std::string &s)
 {
-    std::string result;
-    result.reserve(s.size() * 2);
-    for (char c : s)
-    {
-        switch (c)
-        {
-        case '&':
-            result += static_cast<std::string>("&amp;");
-            break;
-        case '<':
-            result += static_cast<std::string>("&lt;");
-            break;
-        case '>':
-            result += static_cast<std::string>("&gt;");
-            break;
-        case '"':
-            result += static_cast<std::string>("&quot;");
-            break;
-        case '\'':
-            result += static_cast<std::string>("&#39;");
-            break;
-        default:
-            result += c;
-            break;
-        }
-    }
-    return result;
+    auto r = boost::replace_all_copy(s, std::string(1, '&'), std::string{"&amp;"});
+    r = boost::replace_all_copy(r, std::string(1, '<'), std::string{"&lt;"});
+    r = boost::replace_all_copy(r, std::string(1, '>'), std::string{"&gt;"});
+    r = boost::replace_all_copy(r, std::string(1, '"'), std::string{"&quot;"});
+    return boost::replace_all_copy(r, std::string(1, '\''), std::string{"&#39;"});
 }
 
 std::string MustacheExtensions::jsEscape(const std::string &s)
 {
-    std::string result;
-    result.reserve(s.size());
-    for (char c : s)
-    {
-        switch (c)
-        {
-        case '\\':
-            result += "\\\\";
-            break;
-        case '"':
-            result += "\\\"";
-            break;
-        case '\'':
-            result += "\\'";
-            break;
-        case '\n':
-            result += "\\n";
-            break;
-        case '\r':
-            result += "\\r";
-            break;
-        case '\t':
-            result += "\\t";
-            break;
-        default:
-            result += c;
-            break;
-        }
-    }
-    return result;
+    auto r = boost::replace_all_copy(s, "\\", "\\\\");
+    r = boost::replace_all_copy(r, "\"", "\\\"");
+    r = boost::replace_all_copy(r, "'", "\\'");
+    r = boost::replace_all_copy(r, "\n", "\\n");
+    r = boost::replace_all_copy(r, "\r", "\\r");
+    return boost::replace_all_copy(r, "\t", "\\t");
 }
 
 std::pair<std::string, Json::Value> MustacheExtensions::parseFunctionCall(const std::string &callStr)
 {
-    std::string funcName;
-    Json::Value params;
-    params = Json::Value::nullSingleton();
+    static const std::regex re{R"delim(^(.*?)\((.*)\)\s*$)delim"};
+    std::smatch m;
+    Json::Value params = Json::Value::nullSingleton();
 
-    size_t parenPos = callStr.find('(');
-    if (parenPos == std::string::npos)
+    if (std::regex_match(callStr, m, re) && !m[2].str().empty())
     {
-        funcName = callStr;
-        return {funcName, params};
+        std::istringstream iss(m[2].str());
+        Json::CharReaderBuilder builder;
+        std::string err;
+        Json::parseFromStream(builder, iss, &params, &err);
+        return {m[1].str(), params};
     }
-
-    funcName = callStr.substr(0, parenPos);
-
-    // Find matching closing paren
-    int depth = 0;
-    size_t endPos = parenPos + 1;
-    for (; endPos < callStr.size(); endPos++)
-    {
-        char c = callStr[endPos];
-        if (c == '(')
-        {
-            depth++;
-        }
-        else if (c == ')')
-        {
-            depth--;
-            if (depth == 0)
-            {
-                break;
-            }
-        }
-    }
-
-    if (depth == 0 && endPos < callStr.size())
-    {
-        std::string paramsStr = callStr.substr(parenPos + 1, endPos - parenPos - 1);
-        if (!paramsStr.empty())
-        {
-            Json::CharReaderBuilder builder;
-            std::string err;
-            std::istringstream iss(paramsStr);
-            Json::parseFromStream(builder, iss, &params, &err);
-        }
-        else
-        {
-            params = Json::Value::nullSingleton();
-        }
-    }
-
-    return {funcName, params};
+    return {callStr, params};
 }
 
 std::string MustacheExtensions::makeConstScript(const std::string &varName, const std::string &jsonValue)
