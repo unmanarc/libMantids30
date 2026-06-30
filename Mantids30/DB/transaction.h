@@ -65,7 +65,7 @@ public:
     ///   - The transaction was already finalized.
     ///   - A rollback was requested (always returns false in that case).
     ///   - The finalize operation failed.
-    [[nodiscard]] bool finalize(bool success = true);
+    bool finalize(bool success = true);
 
     /// @brief Destructor that automatically rolls back unfinalized transactions.
     ///

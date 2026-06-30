@@ -19,6 +19,7 @@ public:
 
     StreamableString &operator=(const std::string &str);
 
+    std::string * getDirectMemory() { return &m_value; }
     const std::string &getValue() const;
     void setValue(const std::string &newValue);
 
