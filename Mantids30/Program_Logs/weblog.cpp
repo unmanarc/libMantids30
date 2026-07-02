@@ -72,7 +72,7 @@ bool WebLog::start()
             catch (const std::filesystem::filesystem_error &e)
             {
                 // Handle error appropriately (e.g. throw exception or log to stderr)
-                config.appLog->log0("WebLog", LogLevel::ERR, "Failed to create log directory '%s': %s", config.logDirectory.c_str(), e.what());
+                config.appLog->log0("WebLog", LogLevel::ERROR, "Failed to create log directory '%s': %s", config.logDirectory.c_str(), e.what());
                 return false;
             }
         }
@@ -83,7 +83,7 @@ bool WebLog::start()
     if (!m_logFileHandle.is_open())
     {
         // Handle error appropriately (e.g. throw exception or log to stderr)
-        config.appLog->log0("WebLog", LogLevel::ERR, "Failed to open log file '%s/%s'", config.logDirectory.c_str(), config.logFile.c_str());
+        config.appLog->log0("WebLog", LogLevel::ERROR, "Failed to open log file '%s/%s'", config.logDirectory.c_str(), config.logFile.c_str());
         return false;
     }
 

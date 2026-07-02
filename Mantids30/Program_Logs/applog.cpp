@@ -110,11 +110,11 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string
         {
             syslog(LOG_CRIT, "S/%s", logLine.c_str());
         }
-        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARN)
+        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARNING)
         {
             syslog(LOG_WARNING, "S/%s", logLine.c_str());
         }
-        else if (logLevel == LogLevel::ERR)
+        else if (logLevel == LogLevel::ERROR)
         {
             syslog(LOG_ERR, "S/%s", logLine.c_str());
         }
@@ -194,7 +194,7 @@ void AppLog::log(const string &module, const string &user, const string &ip, Log
     {
         printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logLevel == LogLevel::WARN)
+    else if (logLevel == LogLevel::WARNING)
     {
         printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BLUE, "WARN");
     }
@@ -210,7 +210,7 @@ void AppLog::log(const string &module, const string &user, const string &ip, Log
     {
         printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logLevel == LogLevel::ERR)
+    else if (logLevel == LogLevel::ERROR)
     {
         printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::PURPLE, "ERR");
     }
@@ -233,7 +233,7 @@ void AppLog::log2(const string &module, const string &user, const string &ip, Lo
     {
         printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logLevel == LogLevel::WARN)
+    else if (logLevel == LogLevel::WARNING)
     {
         printStandardLog(logLevel, stdout, module, user, ip, buffer, LogColor::BLUE, "WARN");
     }
@@ -249,7 +249,7 @@ void AppLog::log2(const string &module, const string &user, const string &ip, Lo
     {
         printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logLevel == LogLevel::ERR)
+    else if (logLevel == LogLevel::ERROR)
     {
         printStandardLog(logLevel, stderr, module, user, ip, buffer, LogColor::PURPLE, "ERR");
     }
@@ -271,7 +271,7 @@ void AppLog::log1(const string &module, const string &ip, LogLevel logLevel, con
     {
         printStandardLog(logLevel, stdout, module, "", ip, buffer, LogColor::BOLD, "INFO");
     }
-    else if (logLevel == LogLevel::WARN)
+    else if (logLevel == LogLevel::WARNING)
     {
         printStandardLog(logLevel, stdout, module, "", ip, buffer, LogColor::BLUE, "WARN");
     }
@@ -287,7 +287,7 @@ void AppLog::log1(const string &module, const string &ip, LogLevel logLevel, con
     {
         printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logLevel == LogLevel::ERR)
+    else if (logLevel == LogLevel::ERROR)
     {
         printStandardLog(logLevel, stderr, module, "", ip, buffer, LogColor::PURPLE, "ERR");
     }
@@ -311,7 +311,7 @@ void AppLog::log0(const string &module, LogLevel logLevel, const char *fmtLog, .
     {
         printStandardLog(logLevel, stdout, module, "", "", buffer, LogColor::BOLD, "INFO");
     }
-    else if (logLevel == LogLevel::WARN)
+    else if (logLevel == LogLevel::WARNING)
     {
         printStandardLog(logLevel, stdout, module, "", "", buffer, LogColor::BLUE, "WARN");
     }
@@ -327,7 +327,7 @@ void AppLog::log0(const string &module, LogLevel logLevel, const char *fmtLog, .
     {
         printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::ORANGE, "SECU");
     }
-    else if (logLevel == LogLevel::ERR)
+    else if (logLevel == LogLevel::ERROR)
     {
         printStandardLog(logLevel, stderr, module, "", "", buffer, LogColor::PURPLE, "ERR");
     }

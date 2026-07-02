@@ -46,7 +46,7 @@ void RPCLog::logVA(LogLevel logLevel, const std::string &ip, const std::string &
     {
         printStandardLog(logLevel, stdout, ip, sessionId, user, domain, module, buffer.data(), LogColor::BOLD, "INFO");
     }
-    else if (logLevel == LogLevel::WARN)
+    else if (logLevel == LogLevel::WARNING)
     {
         printStandardLog(logLevel, stdout, ip, sessionId, user, domain, module, buffer.data(), LogColor::BLUE, "WARN");
     }
@@ -62,7 +62,7 @@ void RPCLog::logVA(LogLevel logLevel, const std::string &ip, const std::string &
     {
         printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::ORANGE, "SECU");
     }
-    else if (logLevel == LogLevel::ERR)
+    else if (logLevel == LogLevel::ERROR)
     {
         printStandardLog(logLevel, stderr, ip, sessionId, user, domain, module, buffer.data(), LogColor::PURPLE, "ERR");
     }
@@ -188,11 +188,11 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         {
             syslog(LOG_CRIT, "%s", logLine.c_str());
         }
-        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARN)
+        else if (logLevel == LogLevel::SECURITY_ALERT || logLevel == LogLevel::WARNING)
         {
             syslog(LOG_WARNING, "%s", logLine.c_str());
         }
-        else if (logLevel == LogLevel::ERR)
+        else if (logLevel == LogLevel::ERROR)
         {
             syslog(LOG_ERR, "%s", logLine.c_str());
         }
