@@ -25,7 +25,7 @@ void Bridge_Thread::setSocketEndpoints(const std::shared_ptr<Socket_Stream> &src
 bool Bridge_Thread::sendPing()
 {
     std::lock_guard<std::mutex> lock(mt_fwd);
-    bool r = m_dstSocket->writeU<uint16_t>((uint16_t) 0);
+    bool r = m_dstSocket->writeU<uint16_t>(0);
     return r;
 }
 
@@ -90,7 +90,7 @@ int Bridge_Thread::processPipe(Side fwd)
                 std::lock_guard<std::mutex> lock(mt_fwd);
 
                 // Write the size to be written (chunk)
-                if (!m_dstSocket->writeU<uint16_t>((uint16_t) bytesReceived))
+                if (!m_dstSocket->writeU<uint16_t>(bytesReceived))
                 {
                     return -2;
                 }
@@ -126,13 +126,13 @@ int Bridge_Thread::processPipe(Side fwd)
             }
 
             // Attempt to read from the dst
-            if (!m_dstSocket->readFull(curBlock, (uint16_t) bytesReceived))
+            if (!m_dstSocket->readFull(curBlock, bytesReceived))
             {
                 return -1;
             }
 
             // Attempt to write to the src
-            if (!src->writeFull(curBlock, (uint16_t) bytesReceived))
+            if (!src->writeFull(curBlock, bytesReceived))
             {
                 return -2;
             }

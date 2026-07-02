@@ -189,7 +189,7 @@ public:
         }
 
         // readBlockWAllocEx will handle readDeSync();
-        char *data = (char *) readBlockWAllocEx<T>(&receivedBytes);
+        const char *data = static_cast<const char *>(readBlockWAllocEx<T>(&receivedBytes));
         if (!data)
         {
             if (readOK)

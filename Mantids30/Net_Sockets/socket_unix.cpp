@@ -23,8 +23,8 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
     }
 
     // use the addr as path.
-    sockaddr_un server_address;
-    int server_len;
+    sockaddr_un server_address{};
+    int server_len = sizeof(server_address);
 
     unlink(path);
 
@@ -44,9 +44,7 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
 
     SecBACopy(server_address.sun_path, path);
 
-    server_len = sizeof(server_address);
-
-    if (::bind(m_sockFD, (struct sockaddr *) &server_address, server_len) < 0)
+    if (::bind(m_sockFD, reinterpret_cast<struct sockaddr *>(&server_address), server_len) < 0)
     {
         m_lastError = "bind() failed";
         closeSocket();
@@ -76,7 +74,7 @@ bool Socket_UNIX::connectFrom(const char *, const char *path, const uint16_t &, 
     }
 
     int len;
-    sockaddr_un address;
+    sockaddr_un address{};
 
     m_remoteServerHostname = path;
 
@@ -94,13 +92,13 @@ bool Socket_UNIX::connectFrom(const char *, const char *path, const uint16_t &, 
     // Set the timeout here.
     setReadTimeout(timeout);
 
-    if (connect(m_sockFD, (sockaddr *) &address, len) == -1)
+    if (connect(m_sockFD, reinterpret_cast<sockaddr *>(&address), len) == -1)
     {
         int valopt = 0;
         // Socket selected for write
         socklen_t lon;
         lon = sizeof(int);
-        if (getSocketOption(SOL_SOCKET, SO_ERROR, (void *) (&valopt), &lon) < 0)
+        if (getSocketOption(SOL_SOCKET, SO_ERROR, reinterpret_cast<void *>(&valopt), &lon) < 0)
         {
             m_lastError = "Error in getsockopt(SOL_SOCKET)";
             return false;

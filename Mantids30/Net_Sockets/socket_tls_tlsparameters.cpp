@@ -235,9 +235,11 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
     }
 
     if (static_cast<uint64_t>(max_psk_len) > static_cast<uint64_t>(std::numeric_limits<int>::max()))
+    {
         return 0;
+    }
 
-    strncpy((char *) psk, "", max_psk_len);
+    strncpy(reinterpret_cast<char *>(psk), "", max_psk_len);
     std::string _psk;
     // Using callback strategy if callback is defined, otherwise use the local map...
     if ((pskValues->pskCallback ? pskValues->pskCallback(pskValues->data, identity, &_psk) : pskValues->getPSKByClientID(identity, &_psk)))
@@ -245,7 +247,7 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKServer(SSL *ssl, const char *ide
         // Set the provided ID.
         pskValues->connectedClientID = identity;
         // return the proper key for the iPSK negotiation.
-        snprintf((char *) psk, max_psk_len, "%s", _psk.c_str());
+        snprintf(reinterpret_cast<char *>(psk), max_psk_len, "%s", _psk.c_str());
         return safe_cast_or<uint32_t>(strlen(reinterpret_cast<char *>(psk)), 0);
     }
     // No ID found.
@@ -265,7 +267,7 @@ unsigned int Socket_TLS::TLSKeyParameters::cbPSKClient(SSL *ssl, const char *hin
 
     PSKClientValue *pskValue = PSKStaticHdlr::getClientValue(ssl);
 
-    snprintf((char *) psk, max_psk_len, "%s", pskValue->psk.c_str());
+    snprintf(reinterpret_cast<char *>(psk), max_psk_len, "%s", pskValue->psk.c_str());
     snprintf(identity, max_identity_len, "%s", pskValue->identity.c_str());
 
     return safe_cast_or<uint32_t>(strlen(reinterpret_cast<char *>(psk)), 0);

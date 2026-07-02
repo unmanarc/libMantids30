@@ -1,8 +1,8 @@
 #include "socket_udp.h"
 #include <cstdio>
 #include <cstring>
-#include <sys/types.h>
 
+#include <memory>
 #include <stdexcept>
 
 #ifdef _WIN32
@@ -49,7 +49,7 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
     }
 
     // Set to reuse address (if released and wait)..
-    if (setsockopt(m_sockFD, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof(on)) < 0)
+    if (setsockopt(m_sockFD, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&on), sizeof(on)) < 0)
     {
         m_lastError = "setsockopt(SO_REUSEADDR) failed";
         closeSocket();
@@ -79,7 +79,7 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
     // Clean up any previously resolved addrinfo.
     freeAddrInfo();
 
-    if (!getAddrInfo(remoteHost, port, SOCK_DGRAM, (void **) &m_addressInfoResolution))
+    if (!getAddrInfo(remoteHost, port, SOCK_DGRAM, reinterpret_cast<void **>(&m_addressInfoResolution)))
     {
         // Bad name resolution...
         return false;
@@ -162,7 +162,7 @@ bool Socket_UDP::readBlock(void *, const size_t &)
 std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
 {
     std::shared_ptr<Socket_UDP::Block> datagramBlock;
-    datagramBlock.reset(new Socket_UDP::Block);
+    datagramBlock = std::make_shared<Socket_UDP::Block>();
     if (!isActive())
     {
         return datagramBlock;

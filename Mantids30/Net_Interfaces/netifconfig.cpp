@@ -200,17 +200,17 @@ NetworkInterfaceConfiguration::NetIfType NetworkInterfaceConfiguration::getNetIf
 
 #ifdef _WIN32
 
-Mantids30::Helpers::AppExec::sAppExecCmd NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
+Mantids30::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
 {
-    Mantids30::Helpers::AppExec::sAppExecCmd x;
+    Mantids30::Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getRouteExecPath();
     x.args = routecmdopts;
     return x;
 }
 
-Mantids30::Helpers::AppExec::sAppExecCmd NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
+Mantids30::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
 {
-    Mantids30::Helpers::AppExec::sAppExecCmd x;
+    Mantids30::Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getNetSHExecPath();
     x.args = netshcmdopts;
     return x;

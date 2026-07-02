@@ -122,7 +122,7 @@ char *Socket_Stream_Reader::readBlock32WAllocAndDelim(unsigned int *datalen, con
     unsigned int currentBlockSize = 65536;
     unsigned int blockNo = 0;
 
-    while (true)
+    for (;;)
     {
         int bytesRecv = read64KBlockDelim(currentBlock + currentBlockSize - 65536, delim, delimBytes, blockNo);
         if (bytesRecv == -2)

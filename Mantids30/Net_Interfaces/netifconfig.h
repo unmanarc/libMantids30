@@ -103,8 +103,8 @@ public:
     [[nodiscard]] NetIfType getNetIfType() const;
 
 #ifdef _WIN32
-    [[nodiscard]] static Mantids30::Helpers::AppExec::sAppExecCmd createRouteCMD(const std::vector<std::string> &routecmdopts);
-    [[nodiscard]] static Mantids30::Helpers::AppExec::sAppExecCmd createNetSHCMD(const std::vector<std::string> &netshcmdopts);
+    [[nodiscard]] static Mantids30::Helpers::AppExec::ExecutionArgs createRouteCMD(const std::vector<std::string> &routecmdopts);
+    [[nodiscard]] static Mantids30::Helpers::AppExec::ExecutionArgs createNetSHCMD(const std::vector<std::string> &netshcmdopts);
 #endif
 
 private:

@@ -110,7 +110,7 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
 
 bool Socket_Stream::writeFull(const void *data)
 {
-    return writeFull(data, strlen(((const char *) data)));
+    return writeFull(data, strlen((static_cast<const char *>(data))));
 }
 
 bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
@@ -256,9 +256,8 @@ bool Socket_Stream::isConnected()
         return false;
     }
 
-    struct sockaddr peer;
-    socklen_t peer_len;
-    peer_len = sizeof(peer);
+    struct sockaddr peer{};
+    socklen_t peer_len = sizeof(peer);
     if (getpeername(m_sockFD, &peer, &peer_len) == -1)
     {
         closeSocket();
