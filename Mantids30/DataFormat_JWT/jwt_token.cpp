@@ -65,13 +65,8 @@ bool JWT::Token::decodePayload(const std::string &payload)
     std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
     std::string errs;
 
-    if (!charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs))
-    {
-        // If the header cannot be parsed, return false
-        return false;
-    }
-
-    return true;
+    // If the header cannot be parsed, return false
+    return charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs);
 }
 
 std::string JWT::Token::getIssuer() const
@@ -102,19 +97,19 @@ std::string JWT::Token::getAudience() const
 time_t JWT::Token::getExpirationTime() const
 {
     // DEFULT: not expired...
-    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "exp", 0xFFFFFFFFFFFFFFFF));
+    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "exp", std::numeric_limits<time_t>::max()));
 }
 
 time_t JWT::Token::getNotBefore() const
 {
     // DEFAULT: not restriction....
-    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "nbf", 0x0));
+    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "nbf", 0x0));
 }
 
 time_t JWT::Token::getIssuedAt() const
 {
     // DEFAULT: 1969...
-    return static_cast<std::time_t>(Helpers::JSON::ASUINT64(m_claims, "iat", 0x0));
+    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "iat", 0x0));
 }
 
 std::string JWT::Token::getJwtId() const

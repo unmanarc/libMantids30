@@ -3,6 +3,7 @@
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Memory/a_allvars.h>
 #include <cstring>
+#include <limits>
 #include <memory>
 
 #include <errmsg.h>
@@ -443,7 +444,7 @@ bool Query_MariaDB::postBindInputVars()
             void *ptr = ABSTRACT_SPTR_AS(PTR, m_inputVars[m_keysByPos[pos]])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            m_bindedInputParams[pos].buffer_length = strnlen(static_cast<char *>(ptr), 0xFFFFFFFF);
+            m_bindedInputParams[pos].buffer_length = strnlen(static_cast<char *>(ptr), std::numeric_limits<uint32_t>::max());
             m_bindedInputParams[pos].buffer = static_cast<char *>(ptr);
         }
         break;

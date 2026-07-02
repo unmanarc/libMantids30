@@ -263,7 +263,7 @@ bool FileMap::openFile(const std::string &filePath, bool readOnly, bool createFi
     closeFile();
 
     // Open the file descriptor:
-    struct stat64 sbuf;
+    struct stat64 sbuf{};
     int oflags = readOnly ? O_RDONLY : (createFile ? O_RDWR | O_APPEND | O_CREAT : O_RDWR | O_APPEND);
     if ((fd = open(filePath.c_str(), oflags, 0600)) == -1)
     {

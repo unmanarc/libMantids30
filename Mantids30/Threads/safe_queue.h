@@ -17,7 +17,6 @@ public:
     Queue()
     {
         m_maxItems = &m_localMaxItems;
-        m_localMaxItems = 0xFFFFFFFF;
     }
     ~Queue()
     {
@@ -64,7 +63,7 @@ public:
 
 private:
     std::atomic<size_t> *m_maxItems;
-    std::atomic<size_t> m_localMaxItems;
+    std::atomic<size_t> m_localMaxItems{std::numeric_limits<size_t>::max()};
     std::mutex m_mQueue;
     std::condition_variable m_notEmptyCond, m_notFullCond;
     std::queue<T *> m_queue;
