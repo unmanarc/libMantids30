@@ -46,7 +46,7 @@ void RPCClientImpl::runRPClient()
 
             if (!sockRPCClient->tlsKeys.loadCAFromPEMFile(caCertPath))
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort,
+                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort,
                               caCertPath.c_str());
                 _exit(-3);
             }
@@ -62,13 +62,13 @@ void RPCClientImpl::runRPClient()
 
                 if (!keyPassPhrase)
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Invalid Passphrase.");
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Invalid Passphrase.");
                     _exit(-37);
                 }
 
                 if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(privKeyPath.c_str(), const_cast<char *>(keyPassPhrase->c_str())))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(),
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(),
                                   remotePort, privKeyPath.c_str());
                     _exit(-35);
                 }
@@ -77,14 +77,14 @@ void RPCClientImpl::runRPClient()
             {
                 if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFile(privKeyPath.c_str()))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort,
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort,
                                   privKeyPath.c_str());
                     _exit(-3);
                 }
             }
             if (!sockRPCClient->tlsKeys.loadPublicKeyFromPEMFile(pubCertPath.c_str()))
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort,
+                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort,
                               pubCertPath.c_str());
                 _exit(-3);
             }
@@ -116,17 +116,17 @@ void RPCClientImpl::runRPClient()
                 }
                 m_fastRPC.processConnection(sockRPCClient, "SERVER");
             }
-            LOG_APP->log0(__func__, Logs::LogLevel::WARN, "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str());
+            LOG_APP->log0(__func__, Logs::LogLevel::WARNING, "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str());
         }
         else
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient->getLastError().c_str());
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient->getLastError().c_str());
 
             for (const std::string &i : sockRPCClient->getTLSErrorsAndClear())
             {
                 if (!strstr(i.c_str(), "certificate unknown"))
                 {
-                    LOG_APP->log1(__func__, remoteAddr, Logs::LogLevel::ERR, ">>> TLS Error: %s", i.c_str());
+                    LOG_APP->log1(__func__, remoteAddr, Logs::LogLevel::ERROR, ">>> TLS Error: %s", i.c_str());
                 }
             }
         }
@@ -211,13 +211,13 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
                 if (!rpcError["succeed"].asBool())
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
                                   rpcError["errorMessage"].asCString());
                 }
 
                 if (!Helpers::JSON::ASBOOL(ans, "x", false))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
+                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }
 
                 LOG_APP->log0(__func__, Logs::LogLevel::INFO, "C2 configuration written to: %s", localConfigPath.c_str());
@@ -226,17 +226,17 @@ bool RPCClientImpl::retrieveConfigFromC2()
             }
             else
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
+                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
             }
         }
         else
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Remote configuration from the C2 is not reliable.");
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Remote configuration from the C2 is not reliable.");
         }
     }
     else
     {
-        LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
+        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).
@@ -260,17 +260,17 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     {
         if (!ok)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Failed to read '%s' RPC-PSK Credentials", Globals::getLC_C2PSKSharedKeyFilePath().c_str());
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Failed to read '%s' RPC-PSK Credentials", Globals::getLC_C2PSKSharedKeyFilePath().c_str());
         }
 
         r = defaultPSK();
         if (r.id.empty())
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error in RPC Client: PSK Key content/file not found");
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key content/file not found");
             exit(-330);
         }
 
-        LOG_APP->log0(__func__, Logs::LogLevel::WARN, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
+        LOG_APP->log0(__func__, Logs::LogLevel::WARNING, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
     }
     else
     {
@@ -278,7 +278,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
 
         if (!tokenizedKey)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error in RPC Client: Invalid PSK Key");
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: Invalid PSK Key");
             _exit(-336);
         }
 
@@ -286,7 +286,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
         split(keyParts, *tokenizedKey, is_any_of(":"), token_compress_on);
         if (!ok || keyParts.size() != 2)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERR, "Error in RPC Client: PSK Key not in ID:PSK format");
+            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key not in ID:PSK format");
             _exit(-331);
         }
         r.id = keyParts.at(0);
