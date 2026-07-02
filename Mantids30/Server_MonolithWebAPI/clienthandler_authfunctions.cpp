@@ -37,7 +37,7 @@ HTTP::Status::Code ClientHandler::handleAuthFunctions(const string &baseApiUrl, 
     }
     else
     {
-        log(LogLevel::WARN, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
+        log(LogLevel::WARNING, "monolithAPI", 65535, "A/404: Authentication Function Not Found.");
         return HTTP::Status::Code::S_404_NOT_FOUND;
     }
 }

@@ -66,12 +66,12 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
     }
     catch (const boost::property_tree::ptree_error &e)
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Error parsing APIProxyParameters: %s", e.what());
+        log->log0(__func__, Logs::LogLevel::ERROR, "Error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
     catch (const std::exception &e)
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "General error parsing APIProxyParameters: %s", e.what());
+        log->log0(__func__, Logs::LogLevel::ERROR, "General error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
 

@@ -24,7 +24,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     if (it == m_endpointsHandlerByAPIVersion.end())
     {
         // Key does not exist
-        log(LogLevel::ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
+        log(LogLevel::ERROR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
         apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
@@ -35,7 +35,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     // TODO: upgrade Token (2fa) y/o  token acompañante.
     if (endpointsHandler->doesAPIEndpointRequireActiveSession(endpointName) && !m_currentWebSession)
     {
-        log(LogLevel::ERR, "monolithAPI", 2048, "This endpoint requires full authentication / session {endpoint=%s}", endpointName.c_str());
+        log(LogLevel::ERROR, "monolithAPI", 2048, "This endpoint requires full authentication / session {endpoint=%s}", endpointName.c_str());
         // Endpoint not available for this null session..
         apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint Not Found");
         return apiReturn;
@@ -69,11 +69,11 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
                 Helpers::JSON::toString(*(apiReturn.responseJSON())).c_str());
             break;
         case API::Monolith::Endpoints::StatusCode::NOTFOUND:
-            log(LogLevel::ERR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
+            log(LogLevel::ERROR, "monolithAPI", 2048, "Web Endpoint not found {endpoint=%s}", endpointName.c_str());
             apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
             break;
         default:
-            log(LogLevel::ERR, "monolithAPI", 2048, "Unknown error during web endpoint execution {endpoint=%s}", endpointName.c_str());
+            log(LogLevel::ERROR, "monolithAPI", 2048, "Unknown error during web endpoint execution {endpoint=%s}", endpointName.c_str());
             apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
             break;
         }
@@ -82,7 +82,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     case API::Monolith::Endpoints::ValidationResult::NOTAUTHORIZED:
     {
         // Endpoint unauthorized.
-        log(LogLevel::ERR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Helpers::JSON::toString(reasons).c_str());
+        log(LogLevel::ERROR, "monolithAPI", 8192, "Not authorized to execute endpoint {endpoint=%s,reasons=%s}", endpointName.c_str(), Helpers::JSON::toString(reasons).c_str());
         apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_api_handling", "Endpoint unauthorized.");
         apiReturn.setReasons(reasons);
     }
@@ -90,7 +90,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
     case API::Monolith::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
     default:
     {
-        log(LogLevel::ERR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
+        log(LogLevel::ERROR, "monolithAPI", 2048, "Endpoint not found {endpoint=%s}", endpointName.c_str());
         // Endpoint not found.
         apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
     }
@@ -108,7 +108,7 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     if (it == m_endpointsHandlerByAPIVersion.end())
     {
         // Key does not exist
-        log(LogLevel::ERR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
+        log(LogLevel::ERROR, "monolithAPI", 2048, "API version %lu does not exist {endpoint=%s}", apiVersion, endpointName.c_str());
         // Endpoint not available for this null session..
         apiReturn.setError(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_api_handling", "Endpoint not found.");
         return apiReturn;
