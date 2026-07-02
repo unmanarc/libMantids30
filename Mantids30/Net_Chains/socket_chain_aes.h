@@ -17,7 +17,7 @@ namespace Mantids30::Network::Sockets::ChainProtocols {
 class Socket_Chain_AES : public Mantids30::Network::Sockets::Socket_Stream, public Socket_Chain_ProtocolBase
 {
 public:
-    Socket_Chain_AES();
+    Socket_Chain_AES() = default;
     ~Socket_Chain_AES() override = default;
 
     /**
@@ -25,7 +25,7 @@ public:
      *        should only be used before the communication starts.
      * @param value block size.
      */
-    void setAESRegenBlockSize(const size_t &value = 1024);
+    void setAESRegenBlockSize(const size_t &value);
 
     /**
      * @brief setPhase1Key Set Phase 1 (header interchange) AES Key
@@ -50,16 +50,16 @@ protected:
 private:
     // 16 bytes sent from very first IV
     // and 112 bytes from this struct... (TOT: 128 bytes)
-    struct sHandShakeHeader
+    struct HandShakeHeader
     {
-        sHandShakeHeader()
+        HandShakeHeader()
         {
             ZeroBArray(reserved);
             ZeroBArray(phase2Key);
             ZeroBArray(IVSeed);
             memcpy(magicBytes, "IHDR", 4);
         }
-        ~sHandShakeHeader()
+        ~HandShakeHeader()
         {
             ZeroBArray(reserved);
             ZeroBArray(phase2Key);
@@ -74,10 +74,10 @@ private:
         char reserved[60];
     } __attribute__((packed));
 
-    struct sSideParams
+    struct SideParams
     {
-        sSideParams() = default;
-        ~sSideParams()
+        SideParams() = default;
+        ~SideParams()
         {
             cleanAESBlock();
             ZeroBArray(handShakeIV);
@@ -146,15 +146,15 @@ private:
         char handShakeIV[16];
         char currentIV[16];
         std::mt19937_64 mt19937IV[2];
-        sHandShakeHeader handshake;
+        HandShakeHeader handshake;
         char *aesBlock = nullptr;
         size_t aesBlock_curSize = 0;
     };
 
     void genRandomBytes(char *bytes, size_t size);
     void genRandomWeakBytes(char *bytes, size_t size);
-    bool appendNewAESBlock(sSideParams *params, const char *key, const char *iv);
-    void regenIV(sSideParams *param);
+    bool appendNewAESBlock(SideParams *params, const char *key, const char *iv);
+    void regenIV(SideParams *param);
     /**
      * @brief genPlainText Get Plain Text for generating the AES Block.
      * @return plain text (you should delete it with delete[])
@@ -167,13 +167,13 @@ private:
     /**
      * @brief readParams remote read params
      */
-    sSideParams m_readParams;
+    SideParams m_readParams;
     /**
      * @brief m_writeParams local write params
      */
-    sSideParams m_writeParams;
+    SideParams m_writeParams;
 
-    size_t m_aesRegenBlockSize;
+    size_t m_aesRegenBlockSize = 1024;
     bool m_initialized = false;
     const static EVP_CIPHER *m_cipher;
 };
