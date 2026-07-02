@@ -63,7 +63,7 @@ public:
     void incTime(const uint32_t &seconds);
 
 private:
-    time_t m_unixTime; ///< The time stored in the Date object as seconds since the Unix epoch.
+    time_t m_unixTime{0}; ///< The time stored in the Date object as seconds since the Unix epoch.
 };
 
 } // namespace Mantids30::Network::Protocol::HTTP

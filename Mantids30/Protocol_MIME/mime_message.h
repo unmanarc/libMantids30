@@ -95,15 +95,15 @@ public:
     //        ------------- CALLBACKS OPTIONS -------------
     ////////////////////////////////////////////////////////////////////
 
-    struct sMIMECallback
+    struct MIMECallback
     {
-        sMIMECallback(void (*_callbackFunction)(void *, const std::string &, const std::shared_ptr<MIME_PartMessage> &), void *_context)
+        MIMECallback(void (*_callbackFunction)(void *, const std::string &, const std::shared_ptr<MIME_PartMessage> &), void *_context)
         {
             this->callbackFunction = _callbackFunction;
             this->context = _context;
         }
 
-        sMIMECallback()
+        MIMECallback()
         {
             callbackFunction = nullptr;
             context = nullptr;
@@ -125,12 +125,12 @@ public:
      * @brief setCallbackOnContentReady Set callback when content is ready (this is useful to post-process an specific part, eg. move a tmp file)
      * @param newCallbackOnContentReady object with proper callback
      */
-    void setCallbackOnContentReady(const sMIMECallback &newCallbackOnContentReady);
+    void setCallbackOnContentReady(const MIMECallback &newCallbackOnContentReady);
     /**
      * @brief setCallbackOnHeaderReady Set callback when header is ready (this is useful to redirect special content)
      * @param newCallbackOnHeaderReady object with proper callback
      */
-    void setCallbackOnHeaderReady(const sMIMECallback &newCallbackOnHeaderReady);
+    void setCallbackOnHeaderReady(const MIMECallback &newCallbackOnHeaderReady);
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- MULTIPART OPTIONS -------------
@@ -257,8 +257,8 @@ private:
     MIME_Sub_EndPBoundary m_subEndPBoundary;
 
     // Callbacks:
-    sMIMECallback m_onHeaderReady;
-    sMIMECallback m_onContentReady;
+    MIMECallback m_onHeaderReady;
+    MIMECallback m_onContentReady;
 };
 
 } // namespace Mantids30::Network::Protocol::MIME

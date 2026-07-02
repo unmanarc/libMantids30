@@ -65,7 +65,7 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameContent::parse()
     // Unmask if needed
     if (m_masked)
     {
-        unmaskData((uint8_t *) currentPayload.data(), currentPayload.size());
+        unmaskData(reinterpret_cast<uint8_t *>(currentPayload.data()), currentPayload.size());
     }
 
     std::optional<size_t> x = m_content->append(currentPayload.data(), currentPayload.size());

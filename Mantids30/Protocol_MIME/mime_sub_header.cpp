@@ -219,7 +219,7 @@ void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &o
         snprintf(_staticmsg, sizeof(_staticmsg), "_STATIC_%s_%lu", secureReplace.c_str(), pos);
 #endif
 
-        vStaticTexts.emplace_back(string(whatStaticText[1].first, whatStaticText[1].second));
+        vStaticTexts.emplace_back(whatStaticText[1].first, whatStaticText[1].second);
         boost::replace_all(sVarValues, "\"" + string(whatStaticText[1].first, whatStaticText[1].second) + "\"", _staticmsg);
     }
 

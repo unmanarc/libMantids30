@@ -369,7 +369,7 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
     builder.settings_["indentation"] = "";
 
     bool found = false;
-    Json::Value r = ((FastRPC1 *) params->caller)->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
+    Json::Value r = (static_cast<FastRPC1 *>(params->caller))->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
     std::string output = Json::writeString(builder, r);
     sendRPCAnswer(params, output, found ? static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) : static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     params->done->unlockShared();

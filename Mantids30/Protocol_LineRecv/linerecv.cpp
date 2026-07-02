@@ -7,7 +7,7 @@ LineRecv::LineRecv(const std::shared_ptr<Memory::Streams::StreamableObject> &sob
     : Memory::Streams::Parser(sobject, false)
 {
     m_initialized = initProtocol();
-    m_currentSubParser = (Memory::Streams::SubParser *) (&m_subParser);
+    m_currentSubParser = &m_subParser;
 }
 
 void LineRecv::setMaxLineSize(const uint32_t &maxLineSize)

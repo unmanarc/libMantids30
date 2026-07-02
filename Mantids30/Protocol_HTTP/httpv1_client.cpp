@@ -15,7 +15,7 @@ using namespace Mantids30;
 HTTP::HTTPv1_Client::HTTPv1_Client(const std::shared_ptr<Memory::Streams::StreamableObject> &sobject)
     : HTTPv1_Base(true, sobject)
 {
-    m_currentSubParser = (Memory::Streams::SubParser *) (&serverResponse.status);
+    m_currentSubParser = &serverResponse.status;
     clientRequest.requestLine.getHTTPVersion()->setMajor(1);
     clientRequest.requestLine.getHTTPVersion()->setMinor(0);
 

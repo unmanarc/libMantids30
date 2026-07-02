@@ -36,7 +36,7 @@ std::optional<size_t> HTTP::ContentChunkedTransformer::write(const void *buf, co
         return std::nullopt;
     }
 
-    upStreamOut->strPrintf(m_pos == 0 ? "%X\r\n" : "\r\n%X\r\n", (unsigned int) count);
+    upStreamOut->strPrintf(m_pos == 0 ? "%X\r\n" : "\r\n%X\r\n", static_cast<unsigned int>(count));
     if (!upStreamOut->writeStatus.succeed)
     {
         writeStatus += -1;

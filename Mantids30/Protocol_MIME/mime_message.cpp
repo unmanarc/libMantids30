@@ -117,7 +117,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const 
         boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
     {
-        return (((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
+        return ((std::shared_ptr<MIME_PartMessage>(i->second))->getContent()->getContentContainer());
     }
     return nullptr;
 }
@@ -129,7 +129,7 @@ std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getV
         boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
     {
-        values.push_back(((std::shared_ptr<MIME_PartMessage>) i->second)->getContent()->getContentContainer());
+        values.push_back((std::shared_ptr<MIME_PartMessage>(i->second))->getContent()->getContentContainer());
     }
     return values;
 }
@@ -173,12 +173,12 @@ void MIME_Message::renewCurrentPart()
     m_currentPart->getHeader()->setMaxSubOptionSize(m_maxHeaderSubOptionsSize);
 }
 
-void MIME_Message::setCallbackOnHeaderReady(const sMIMECallback &newCallbackOnHeaderReady)
+void MIME_Message::setCallbackOnHeaderReady(const MIMECallback &newCallbackOnHeaderReady)
 {
     m_onHeaderReady = newCallbackOnHeaderReady;
 }
 
-void MIME_Message::setCallbackOnContentReady(const sMIMECallback &newCallbackOnContentReady)
+void MIME_Message::setCallbackOnContentReady(const MIMECallback &newCallbackOnContentReady)
 {
     m_onContentReady = newCallbackOnContentReady;
 }

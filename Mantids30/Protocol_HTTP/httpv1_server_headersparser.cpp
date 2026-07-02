@@ -43,10 +43,10 @@ void HTTP::HTTPv1_Server::parseHostHeader()
 void HTTP::HTTPv1_Server::parsePort(const string &portStr)
 {
     char *endptr;
-    unsigned long port = (uint16_t) strtoul(portStr.c_str(), &endptr, 10);
+    uint16_t port = static_cast<uint16_t>(strtoul(portStr.c_str(), &endptr, 10));
     if (*endptr == '\0' && port <= 65535) // Check if conversion was successful and port is valid
     {
-        clientRequest.virtualPort = (uint16_t) port;
+        clientRequest.virtualPort = port;
     }
     else
     {

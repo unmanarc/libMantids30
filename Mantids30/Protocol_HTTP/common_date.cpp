@@ -2,11 +2,9 @@
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <cstring>
-#include <iomanip>
-#include <iostream>
-#include <locale>
+#ifdef _WIN32
 #include <sstream>
-
+#endif
 using namespace Mantids30::Network::Protocol;
 
 using namespace Mantids30;
@@ -49,7 +47,7 @@ std::string HTTP::Date::toString() const
     strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", &timeinfo);
 #endif
 
-    return std::string(buffer);
+    return buffer;
 }
 
 bool HTTP::Date::fromString(const std::string &fTime)

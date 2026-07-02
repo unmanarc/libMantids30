@@ -10,7 +10,7 @@ using namespace std;
 void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
 {
     jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-    jWebLog["timestamp"] = (Json::UInt64) time(nullptr);
+    jWebLog["timestamp"] = static_cast<Json::Int64>(time(nullptr));
     jWebLog["requestLine"] = clientRequest.requestLine.toString();
     jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
     jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
@@ -32,7 +32,7 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
     // The answer is the last thing... we move to the start or we drop the connection...
     if (connectionContinue && clientRequest.getHeaderOption("Connection") != "close")
     {
-        m_currentSubParser = (Memory::Streams::SubParser *) (&clientRequest.requestLine);
+        m_currentSubParser = &clientRequest.requestLine;
         prohibitConnectionUpgrade = true;
     }
     else

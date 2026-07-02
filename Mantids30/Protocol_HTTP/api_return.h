@@ -123,7 +123,7 @@ public:
             int i = 0;
             for (const auto &cookie : cookiesMap)
             {
-                root["cookies"][(int) i++] = cookie.second.toSetCookieString(cookie.first);
+                root["cookies"][i++] = cookie.second.toSetCookieString(cookie.first);
             }
         }
 
@@ -136,7 +136,7 @@ public:
      */
     void fromJSON(const Json::Value &jsonValue)
     {
-        httpResponseCode = (Network::Protocol::HTTP::Status::Code) Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", (unsigned int) Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR);
+        httpResponseCode = static_cast<Network::Protocol::HTTP::Status::Code>(Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", static_cast<unsigned int>(Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR)));
         if (jsonValue.isMember("body") && body)
         {
             body->setValue(jsonValue["body"]);
@@ -150,9 +150,9 @@ public:
         }
         if (jsonValue.isMember("cookies"))
         {
-            for (int i = 0; i < jsonValue["cookies"].size(); ++i)
+            for (const auto & i : jsonValue["cookies"])
             {
-                std::string cookieString = jsonValue["cookies"][i].asString();
+                std::string cookieString = i.asString();
                 Mantids30::Network::Protocol::HTTP::Headers::Cookie cookie;
                 std::string cookieName;
                 cookie.fromSetCookieString(cookieString, &cookieName);

@@ -28,11 +28,11 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
     ///////////////////////
     while (readenBytes < count)
     {
-        size_t bytesToTransmitInPlain = getPlainBytesSize(((const unsigned char *) buf) + readenBytes, count - readenBytes);
+        size_t bytesToTransmitInPlain = getPlainBytesSize((static_cast<const unsigned char *>(buf)) + readenBytes, count - readenBytes);
 
         if (bytesToTransmitInPlain > 0)
         {
-            if (dst->writeFullStream(((const unsigned char *) buf) + readenBytes, bytesToTransmitInPlain))
+            if (dst->writeFullStream((static_cast<const unsigned char *>(buf)) + readenBytes, bytesToTransmitInPlain))
             {
                 readenBytes += bytesToTransmitInPlain;
             }
@@ -40,7 +40,7 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
         else
         {
             char encodedByte[8];
-            snprintf(encodedByte, sizeof(encodedByte), "%%%02" PRIX8, *(((const unsigned char *) buf) + readenBytes));
+            snprintf(encodedByte, sizeof(encodedByte), "%%%02" PRIX8, *((static_cast<const unsigned char *>(buf)) + readenBytes));
             if (dst->writeFullStream(encodedByte, 3))
             {
                 readenBytes++;

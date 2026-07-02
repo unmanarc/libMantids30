@@ -51,7 +51,7 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
     FastRPC3::Connection *connection;
 
     uint32_t _tries = 0;
-    while ((connection = (FastRPC3::Connection *) parent->m_connectionMapById.openElement(connectionId)) == nullptr)
+    while ((connection = static_cast<FastRPC3::Connection *>(parent->m_connectionMapById.openElement(connectionId))) == nullptr)
     {
         _tries++;
         if (_tries >= parent->config.remoteExecutionDisconnectedTries || !retryIfDisconnected)
@@ -74,7 +74,6 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
     requestId = connection->requestIdCounter++;
     connection->mtReqIdCt.unlock();
 
-    if (1)
     {
         unique_lock<mutex> lk(connection->answersMutex);
         // Create authorization to be inserted:
@@ -103,7 +102,7 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
 
     if ((flags & static_cast<uint8_t>(ExecutionFlag::EXTRAAUTH)) != 0)
     {
-        if (dataTransmitOK && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth.c_str(), extraJWTTokenAuth.size()))
+        if (dataTransmitOK && connection->stream->writeStringEx<uint32_t>(extraJWTTokenAuth, extraJWTTokenAuth.size()))
         {
         }
         else
@@ -191,7 +190,6 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
         }
     }
 
-    if (1)
     {
         unique_lock<mutex> lk(connection->answersMutex);
         // Revoke authorization to be inserted, clean results...
@@ -231,7 +229,7 @@ bool FastRPC3::RemoteMethods::close()
     bool r = false;
 
     FastRPC3::Connection *connection;
-    if ((connection = (FastRPC3::Connection *) parent->m_connectionMapById.openElement(connectionId)) != nullptr)
+    if ((connection = static_cast<FastRPC3::Connection *>(parent->m_connectionMapById.openElement(connectionId))) != nullptr)
     {
         connection->socketMutex->lock();
         if (connection->stream->writeU<uint8_t>(0))

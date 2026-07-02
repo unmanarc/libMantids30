@@ -110,7 +110,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
         return sendFullHTTPResponse();
     }
 
-    enum ProtocolType
+    enum class ProtocolType : uint8_t
     {
         SIMPLE_HTTP,
         WEBSOCKETS,
