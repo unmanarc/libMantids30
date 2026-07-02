@@ -5,10 +5,8 @@
 
 using namespace Mantids30::Memory::Streams;
 
-Parser::Parser(const std::shared_ptr<StreamableObject> &value, bool clientMode)
+Parser::Parser(const std::shared_ptr<StreamableObject> &value, bool clientMode) : m_clientMode(clientMode), m_streamableObject(value)
 {
-    this->m_clientMode = clientMode;
-    this->m_streamableObject = value;
 }
 
 void Parser::parseObject(Parser::ParseResult *result)

@@ -26,6 +26,7 @@ public:
     Parser(const std::shared_ptr<Memory::Streams::StreamableObject> &value, bool clientMode);
     ~Parser() override = default;
     Parser(Parser &) = delete;
+    Parser() = delete;
 
     enum DebugOptions : uint8_t
     {
@@ -89,8 +90,7 @@ protected:
     SubParser *m_currentSubParser = nullptr;
     size_t m_maxTTL = 4096;
     bool m_initialized = false;
-    bool m_clientMode;
-    //bool m_isProtocolFinished = false;
+    bool m_clientMode = false;
 
 private:
     /**

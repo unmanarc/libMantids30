@@ -3,7 +3,6 @@
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Threads/lock_shared.h>
 
-#include <cstdlib>
 #include <ctime>
 
 #ifdef _WIN32
@@ -83,14 +82,13 @@ Json::Value DATETIME::toJSON()
         return Json::nullValue;
     }
 
-    return (Json::UInt64) m_value;
+    return static_cast<Json::UInt64>(m_value);
 }
 
 bool DATETIME::fromJSON(const Json::Value &value)
 {
     Threads::Sync::Lock_RW lock(m_mutex);
-
-    m_value = Helpers::JSON::ASUINT64_D(value, 0);
+    m_value = Helpers::JSON::ASINT64_D(value, 0);
     return true;
 }
 
@@ -121,7 +119,7 @@ string DATETIME::getPlainLclTimeStr(time_t v)
 #endif
     strftime(sTime, 63, "%F %T", &tmTime);
 
-    return std::string(sTime);
+    return sTime;
 }
 
 string DATETIME::getISOTimeStr(const time_t &v)
@@ -138,7 +136,7 @@ string DATETIME::getISOTimeStr(const time_t &v)
     strftime(sTime, 63, "%FT%TZ", &tmTime);
 
     //    std::strftime(sTime, 63, "%FT%TZ", std::gmtime(&v));
-    return std::string(sTime);
+    return sTime;
 }
 
 time_t DATETIME::fromISOTimeStr(const string &v)
@@ -172,7 +170,7 @@ time_t DATETIME::fromISOTimeStr(const string &v)
 
         tmTime.tm_year -= 1900;  // Year since 1900
         tmTime.tm_mon -= 1;      // 0-11
-        tmTime.tm_sec = (int) s; // 0-61 (0-60 in C++11)
+        tmTime.tm_sec = static_cast<int>(s); // 0-61 (0-60 in C++11)
 
         return mktime(&tmTime) - timezone;
     }

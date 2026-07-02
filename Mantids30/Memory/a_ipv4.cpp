@@ -19,7 +19,7 @@ IPV4::IPV4()
 IPV4::IPV4(const uint32_t &value, const uint8_t &cidrMask)
 {
     setVarType(Type::IPV4);
-    in_addr x;
+    in_addr x{};
     x.s_addr = value;
     setValue(x, cidrMask);
 }

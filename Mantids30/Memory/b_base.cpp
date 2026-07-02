@@ -629,7 +629,7 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
 {
     size_t currentSize = size();
 
-    char *c_needle = (char *) needle;
+    const char *c_needle = static_cast<const char *>(needle);
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(offset, needle_len))

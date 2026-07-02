@@ -64,12 +64,12 @@ std::string IPV6::_toString(const in6_addr &value)
 {
     char cIpSource[INET6_ADDRSTRLEN] = "";
     inet_ntop(AF_INET6, &value, cIpSource, INET6_ADDRSTRLEN);
-    return std::string(cIpSource);
+    return cIpSource;
 }
 
 in6_addr IPV6::_fromString(const std::string &value, bool *ok)
 {
-    in6_addr xvalue;
+    in6_addr xvalue{};
     ZeroBStruct(xvalue);
 
     if (value.empty())

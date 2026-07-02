@@ -54,7 +54,7 @@ struct WriteStatus
 
         if (x > 0)
         {
-            bytesWritten = safe_add(bytesWritten, (size_t) x);
+            bytesWritten = safe_add(bytesWritten, static_cast<size_t>(x));
         }
         else if (x == 0)
         {

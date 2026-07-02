@@ -679,7 +679,7 @@ std::optional<size_t> B_Chunks::findChar(const int &c, const size_t &roOffset, s
             if (pos)
             {
                 // report the position.
-                return (size_t) (pos - (originalChunk->data)) + retpos;
+                return static_cast<size_t>(pos - (originalChunk->data)) + retpos;
             }
 
             if (searchSpace > currentChunk.size)

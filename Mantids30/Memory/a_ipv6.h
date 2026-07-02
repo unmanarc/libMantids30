@@ -41,7 +41,7 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    in6_addr m_value;
+    in6_addr m_value{0};
     Threads::Sync::Mutex_Shared m_mutex;
 };
 

@@ -33,7 +33,7 @@ bool BINARY::setValue(ByteArray *value)
 std::string BINARY::toString()
 {
     Threads::Sync::Lock_RD lock(this->m_value.mutex);
-    std::string x(((char *) m_value.ptr), m_value.dataSize);
+    std::string x((m_value.ptr), m_value.dataSize);
     return x;
 }
 

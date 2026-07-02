@@ -171,7 +171,7 @@ uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
 std::string MACADDR::_fromHASHToString(const uint64_t &value)
 {
     unsigned char _macaddr[sizeof(uint64_t)];
-    *((uint64_t *) _macaddr) = 0;
+    *(reinterpret_cast<uint64_t *>(_macaddr)) = 0;
     _fromHASH(value, _macaddr);
     return _toString(_macaddr);
 }
