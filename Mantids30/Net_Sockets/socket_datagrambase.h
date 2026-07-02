@@ -17,19 +17,9 @@ class Socket_DatagramBase : public Socket
 public:
     struct Block
     {
-        Block()
-        {
-            data = nullptr;
-            dataLength = -1;
-        }
+        Block() = default;
         ~Block() { this->free(); }
-        void free() const
-        {
-            if (data)
-            {
-                delete[] data;
-            }
-        }
+        void free() const { delete[] data; }
         void copy(void *_data, int dlen)
         {
             if (dlen > 0 && dlen < 1024 * 1024) // MAX: 1Mb.
@@ -39,9 +29,9 @@ public:
                 memcpy(data, _data, dlen);
             }
         }
-        struct sockaddr socketAddress;
-        unsigned char *data;
-        int dataLength;
+        struct sockaddr socketAddress{0};
+        unsigned char *data = nullptr;
+        int dataLength = -1;
     };
 
     Socket_DatagramBase() = default;
@@ -58,6 +48,6 @@ public:
     virtual bool readBlock(void *data, const size_t &datalen) = 0;
 };
 
-typedef std::shared_ptr<Socket_DatagramBase> Socket_DatagramBase_SP;
+using Socket_DatagramBase_SP = std::shared_ptr<Socket_DatagramBase>;
 
 } // namespace Mantids30::Network::Sockets
