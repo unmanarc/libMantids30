@@ -1,146 +1,139 @@
 #include "streams_bufferedreader.h"
 #include <cstring>
+#include <iterator>
 
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;
 
 BufferedReader::BufferedReader(const std::shared_ptr<Sockets::Socket_Stream> &stream, const size_t &bufferSize)
-{
-    this->m_stream = stream;
-    m_buffer = malloc(bufferSize);
-    m_bufferOK = m_buffer != nullptr;
-    m_currentBufferSize = 0;
-}
+    : m_buffer(bufferSize)
+    , m_stream(stream)
+    , m_currentBufferSize(0)
+{}
 
-BufferedReader::~BufferedReader()
+BufferedReader::ReadResult BufferedReader::refillBuffer()
 {
-    if (m_buffer)
+    // Check if full, we can't add anymore
+    if (m_currentBufferSize >= m_buffer.size())
     {
-        free(m_buffer);
+        return ReadResult::READ_FULL;
     }
+
+    size_t availableSpace = m_buffer.size() - m_currentBufferSize;
+
+    // Refill from socket...
+    ssize_t readSize = m_stream->partialRead(m_buffer.data() + m_currentBufferSize, availableSpace);
+
+    // Handle errors and EOF
+    if (readSize <= 0)
+    {
+        // readSize == 0 means EOF/graceful close, < 0 means error
+        return ReadResult::READ_DISCONNECTED;
+    }
+
+    m_currentBufferSize += readSize;
+    return ReadResult::READ_OK;
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(void *data, size_t *len, int delimiter)
+BufferedReader::ReadResult BufferedReader::bufferedReadUntil(void *data, size_t *len, const char &delimiter)
 {
-    while (true)
+    // Validate input pointers
+    if (data == nullptr || len == nullptr)
     {
-        // Check in the buffer.
-        void *needle = memchr(m_buffer, delimiter, m_currentBufferSize);
+        return ReadResult::READ_INVALID_ARG;
+    }
+
+    for (;;)
+    {
+        // Search for delimiter in the current buffer
+        char *needle = static_cast<char *>(memchr(m_buffer.data(), delimiter, m_currentBufferSize));
         if (needle)
         {
-            return displaceAndCopy(data, len, (size_t) ((char *) needle - (char *) m_buffer) + 1);
+            size_t dlen = static_cast<size_t>(std::distance(m_buffer.data(), needle) + 1);
+            return displaceAndCopy(data, len, dlen);
         }
 
-        // Check if full, we can't add anymore
-        if (m_maxBufferSize == m_currentBufferSize)
+        // Refill buffer from socket
+        ReadResult result = refillBuffer();
+        if (result != ReadResult::READ_OK)
         {
-            return E_STREAMBUFFER_READ_FULL;
-        }
-
-        // Refill from socket...
-        ssize_t readSize = m_stream->partialRead((char *) m_buffer + m_currentBufferSize, m_maxBufferSize - m_currentBufferSize);
-
-        // If disconneted, report, if not, add to the buffer...
-        if (readSize < 0)
-        {
-            return E_STREAMBUFFER_READ_DISCONNECTED;
-        }
-        else
-        {
-            m_currentBufferSize += readSize;
+            return result;
         }
     }
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::bufferedReadUntil(std::string *str, int delimiter)
+BufferedReader::ReadResult BufferedReader::bufferedReadUntil(std::string &str, const char &delimiter)
 {
-    while (true)
+    for (;;)
     {
-        // Check in the buffer.
-        void *needle = memchr(m_buffer, delimiter, m_currentBufferSize);
+        // Search for delimiter in the current buffer
+        char *needle = static_cast<char *>(memchr(m_buffer.data(), delimiter, m_currentBufferSize));
         if (needle)
         {
-            return displaceAndCopy(str, (size_t) ((char *) needle - (char *) m_buffer) + 1);
+            size_t dlen = static_cast<size_t>(std::distance(m_buffer.data(), needle) + 1);
+            return displaceAndCopy(str, dlen);
         }
 
-        // Check if full, we can't add anymore
-        if (m_maxBufferSize == m_currentBufferSize)
+        // Refill buffer from socket
+        ReadResult result = refillBuffer();
+        if (result != ReadResult::READ_OK)
         {
-            return E_STREAMBUFFER_READ_FULL;
-        }
-
-        // Refill from socket...
-        ssize_t readSize = m_stream->partialRead((char *) m_buffer + m_currentBufferSize, m_maxBufferSize - m_currentBufferSize);
-
-        // If disconneted, report, if not, add to the buffer...
-        if (readSize < 0)
-        {
-            return E_STREAMBUFFER_READ_DISCONNECTED;
-        }
-        else
-        {
-            m_currentBufferSize += readSize;
+            return result;
         }
     }
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::readLineCR(std::string *str, int delimiter)
+BufferedReader::ReadResult BufferedReader::readLineCR(std::string &str)
 {
-    return bufferedReadUntil(str, delimiter);
+    return bufferedReadUntil(str, '\r');
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::readLineLF(std::string *str, int delimiter)
+BufferedReader::ReadResult BufferedReader::readLineLF(std::string &str)
 {
-    return bufferedReadUntil(str, delimiter);
-}
-
-bool BufferedReader::getBufferOK() const
-{
-    return m_bufferOK;
+    return bufferedReadUntil(str, '\n');
 }
 
 size_t BufferedReader::getBufferSize() const
 {
-    return m_maxBufferSize;
+    return m_buffer.size();
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(void *data, size_t *len, size_t dlen)
+BufferedReader::ReadResult BufferedReader::displaceAndCopy(void *data, size_t *len, const size_t &dlen)
 {
-    // check output buffer availability...
-    if (dlen > *len)
-    {
-        return E_STREAMBUFFER_READ_MAXSIZEEXCEED;
-    }
-    // Null terminate it.
-    ((char *) m_buffer)[dlen - 1] = 0;
-    // Copy to output
-    memcpy(data, m_buffer, dlen);
-    // Copy bytes
+    // Null terminate it (overwrite the delimiter position with null)
+    m_buffer[dlen - 1] = '\0';
+
+    // Copy to output (includes the null terminator, so caller gets a null-terminated string)
+    memcpy(data, m_buffer.data(), dlen);
+
+    // Return copied byte count (including null terminator)
     *len = dlen;
+
     // Reduce byte count
     m_currentBufferSize -= dlen;
-    // Displace data.
-    if (m_currentBufferSize)
+
+    // Displace remaining data to front of buffer
+    if (m_currentBufferSize > 0)
     {
-        memmove(m_buffer, (char *) m_buffer + dlen, m_currentBufferSize);
+        memmove(m_buffer.data(), m_buffer.data() + dlen, m_currentBufferSize);
     }
-    // Get out.
-    return E_STREAMBUFFER_READ_OK;
+
+    return ReadResult::READ_OK;
 }
 
-BufferedReader::eStreamBufferReadErrors BufferedReader::displaceAndCopy(std::string *str, size_t dlen)
+BufferedReader::ReadResult BufferedReader::displaceAndCopy(std::string &str, const size_t &dlen)
 {
-    // Null terminate it.
-    ((char *) m_buffer)[dlen - 1] = 0;
-    // Copy to output
-    *str = std::string((char *) m_buffer, dlen);
+    // Copy to output (dlen - 1 to exclude the delimiter character)
+    str.assign(m_buffer.data(), dlen - 1);
+
     // Reduce byte count
     m_currentBufferSize -= dlen;
-    // Displace data.
-    if (m_currentBufferSize)
+
+    // Displace remaining data to front of buffer
+    if (m_currentBufferSize > 0)
     {
-        memmove(m_buffer, (char *) m_buffer + dlen, m_currentBufferSize);
+        memmove(m_buffer.data(), m_buffer.data() + dlen, m_currentBufferSize);
     }
-    // Get out.
-    return E_STREAMBUFFER_READ_OK;
+
+    return ReadResult::READ_OK;
 }
