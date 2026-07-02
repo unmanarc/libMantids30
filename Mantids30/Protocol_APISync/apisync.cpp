@@ -48,21 +48,21 @@ std::optional<Json::Value> Network::Protocol::APISync::getApplicationJWTConfig(L
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT configuration request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APP' variable in JWT configuration request.");
         return std::nullopt;
     }
 
     const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT configuration request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APIKEY' variable in JWT configuration request.");
         return std::nullopt;
     }
 
     Json::Value response = Network::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT configuration from API.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to get JWT configuration from API.");
         return std::nullopt;
     }
 
@@ -74,21 +74,21 @@ std::optional<std::string> Network::Protocol::APISync::getApplicationJWTValidati
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT validation key request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APP' variable in JWT validation key request.");
         return std::nullopt;
     }
 
     const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT validation key request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APIKEY' variable in JWT validation key request.");
         return std::nullopt;
     }
 
     Json::Value response = Network::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT validation key from API.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to get JWT validation key from API.");
         return std::nullopt;
     }
 
@@ -122,7 +122,7 @@ Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::WARN, "Skipping TLS certificate validation.");
+            log->log0(__func__, Logs::LogLevel::WARNING, "Skipping TLS certificate validation.");
             socket->setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
         }
 
@@ -130,7 +130,7 @@ Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::WARN, "Using plain TCP connection.");
+        log->log0(__func__, Logs::LogLevel::WARNING, "Using plain TCP connection.");
         std::shared_ptr<Socket_TCP> socket = std::make_shared<Socket_TCP>();
         connection = socket;
     }
@@ -166,7 +166,7 @@ Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log
         {
             if (client.serverResponse.status.getCode() != HTTP::Status::Code::S_200_OK)
             {
-                log->log0(__func__, Logs::LogLevel::ERR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
+                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to retrieve Response. Error code: %d. = %s", static_cast<int>(client.serverResponse.status.getCode()),
                           strJSONResponse->getValue()->toStyledString().c_str());
             }
             else
@@ -177,12 +177,12 @@ Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::ERR, "Failed to parse API response. Error code: %d.", static_cast<int>(msg));
+            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to parse API response. Error code: %d.", static_cast<int>(msg));
         }
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to connect to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to connect to API server at %s:%d.", proxyParameters->apiSyncHost.c_str(), proxyParameters->apiSyncPort);
     }
 
     return {};
