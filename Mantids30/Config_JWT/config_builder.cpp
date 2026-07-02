@@ -264,7 +264,7 @@ bool JWT::validateAlgorithm(Logs::AppLog *log, const std::string &algorithmName)
 {
     if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        log->log0(__func__, Logs::LogLevel::ERROR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return false;
     }
     return true;
@@ -284,7 +284,7 @@ bool JWT::validateFilePermissions(Logs::AppLog *log, const std::string &filePath
 
     if (!Helpers::File::isSensitiveConfigPermissionInsecure(filePath, &insecureFile))
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to check permissions on %s file.", fileType.c_str());
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to check permissions on %s file.", fileType.c_str());
         return false;
     }
 
@@ -321,7 +321,7 @@ std::string JWT::loadHMACSecret(Logs::AppLog *log, const std::string &hmacFilePa
 
     if (!hmacFile.is_open())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to open HMAC secret file.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to open HMAC secret file.");
         return "";
     }
 
@@ -375,24 +375,24 @@ bool JWT::createHMACSecret(Logs::AppLog *log, const std::string &filePath)
 
             if (r)
             {
-                log->log0(__func__, Logs::LogLevel::WARN, "Created JWT HMAC Secret File: %s", filePath.c_str());
+                log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT HMAC Secret File: %s", filePath.c_str());
             }
             else
             {
-                log->log0(__func__, Logs::LogLevel::ERR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
+                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
             }
 
             fclose(pkeyFile);
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::ERR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
+            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
             close(fd);
         }
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
     }
 
     return r;
@@ -417,7 +417,7 @@ std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &private
 
     if (privateKeyFP == nullptr)
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
         return "";
     }
 
@@ -446,7 +446,7 @@ std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &private
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
     }
 
     EVP_PKEY_free(evpPrivateKey);
@@ -523,7 +523,7 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                 {
                     if (PEM_write_PrivateKey(pkeyFile, pkey, nullptr, nullptr, 0, nullptr, nullptr))
                     {
-                        log->log0(__func__, Logs::LogLevel::WARN, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
+                        log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
 
                         // Save public key
                         FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
@@ -532,39 +532,39 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                             success = PEM_write_PUBKEY(pubkeyFile, pkey) > 0;
                             if (success)
                             {
-                                log->log0(__func__, Logs::LogLevel::WARN, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
+                                log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
                             }
                             else
                             {
-                                log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
+                                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
                             }
                             fclose(pubkeyFile);
                         }
                         else
                         {
-                            log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
+                            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
                         }
                     }
                     else
                     {
-                        log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
+                        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
                     }
                     fclose(pkeyFile);
                 }
                 else
                 {
-                    log->log0(__func__, Logs::LogLevel::ERR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
+                    log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
                     close(fd);
                 }
             }
             else
             {
-                log->log0(__func__, Logs::LogLevel::ERR, "Failed to generate X.509 RSA Keys (2)");
+                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (2)");
             }
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::ERR, "Failed to generate X.509 RSA Keys (1)");
+            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (1)");
         }
     }
 
