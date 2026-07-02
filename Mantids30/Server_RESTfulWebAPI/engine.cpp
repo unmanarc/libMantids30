@@ -38,7 +38,7 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
 {
     std::string jwtSignature = Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING(*request.inputJSON, "signature", ""), true);
     time_t expirationTime = Helpers::JSON::ASUINT64(*request.inputJSON, "expiration", 0);
-    ((Engine *) context)->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
+    (static_cast<Engine *>(context))->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
 
     return {};
 }
@@ -53,20 +53,20 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return API::APIReturn(HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
+        return {HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
     }
 
     // Obtener el endpoint WebSocket
-    const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
+    const API::WebSocket::Endpoint *endpoint = (static_cast<Engine *>(context))->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
+        return {HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
     }
 
     // Intentar unirse al tema de suscripción
     if (!endpoint->joinTopicSubscription(webSocketSessionId, topicId))
     {
-        return API::APIReturn(HTTP::Status::Code::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic");
+        return {HTTP::Status::Code::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic"};
     }
 
     // Suscripción exitosa
@@ -83,20 +83,20 @@ API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::R
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return API::APIReturn(HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing");
+        return {HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
     }
 
     // Obtener el endpoint WebSocket
     const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found");
+        return {HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
     }
 
     // Intentar dejar el tema de suscripción
     if (!endpoint->leaveTopicSubscription(webSocketSessionId, topicId))
     {
-        return API::APIReturn(HTTP::Status::Code::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic");
+        return {HTTP::Status::Code::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic"};
     }
 
     // Desuscripción exitosa

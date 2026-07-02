@@ -92,7 +92,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
             // Pass to our client.
             *response = client.serverResponse;
 
-            return (HTTP::Status::Code) client.serverResponse.status.getCode();
+            return client.serverResponse.status.getCode();
         }
 
         return HTTP::Status::Code::S_502_BAD_GATEWAY;

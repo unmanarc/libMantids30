@@ -21,7 +21,7 @@ void WebSessionsManager::gc()
     std::set<std::string> i = m_sessions.getKeys();
     for (const std::string &key : i)
     {
-        WebSession *s = (WebSession *) m_sessions.openElement(key);
+        WebSession *s = static_cast<WebSession *>(m_sessions.openElement(key));
         if (s && s->getAuthSession()->isLastActivityExpired(m_MaxInactiveSeconds))
         {
             m_sessions.releaseElement(key);
@@ -37,7 +37,7 @@ void WebSessionsManager::gc()
 
 void WebSessionsManager::threadGC(void *sessManager)
 {
-    WebSessionsManager *_sessManager = (WebSessionsManager *) sessManager;
+    WebSessionsManager *_sessManager = static_cast<WebSessionsManager *>(sessManager);
     _sessManager->gc();
 }
 
@@ -96,7 +96,7 @@ bool WebSessionsManager::destroySession(const std::string &sessionID)
 {
     std::string effectiveUser;
     WebSession *sess;
-    if ((sess = (WebSession *) m_sessions.openElement(sessionID)) != nullptr)
+    if ((sess = static_cast<WebSession *>(m_sessions.openElement(sessionID))) != nullptr)
     {
         // Race condition?
         effectiveUser = sess->getAuthSession()->getUser();
@@ -130,9 +130,9 @@ bool WebSessionsManager::destroySession(const std::string &sessionID)
 WebSession *WebSessionsManager::openSession(const std::string &sessionID, uint64_t *maxAge)
 {
     WebSession *xs;
-    if ((xs = (WebSession *) m_sessions.openElement(sessionID)) != nullptr)
+    if ((xs = static_cast<WebSession *>(m_sessions.openElement(sessionID))) != nullptr)
     {
-        uint64_t lastActivity = xs->getAuthSession()->getLastActivity();
+        time_t lastActivity = xs->getAuthSession()->getLastActivity();
 
         if (xs->getAuthSession()->isLastActivityExpired(m_MaxInactiveSeconds))
         {
@@ -140,11 +140,20 @@ WebSession *WebSessionsManager::openSession(const std::string &sessionID, uint64
         }
         else
         {
-            uint64_t expirationTime = lastActivity + m_MaxInactiveSeconds;
-            uint64_t currentTime = static_cast<uint64_t>(time(nullptr));
+            time_t expirationTime = lastActivity + m_MaxInactiveSeconds;
+            time_t currentTime = time(nullptr);
 
-            // Ensure no underflow
-            *maxAge = (expirationTime > currentTime) ? (expirationTime - currentTime) : 0;
+            if (expirationTime>=lastActivity)
+            {
+                // Ensure no underflow
+                *maxAge = (expirationTime > currentTime) ? (expirationTime - currentTime) : 0;
+            }
+            else
+            {
+                // Ensure no overflow
+                *maxAge = 0;
+            }
+
         }
         return xs;
     }

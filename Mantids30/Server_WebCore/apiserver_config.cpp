@@ -82,7 +82,7 @@ void APIServerConfig::addStaticContentElement(const std::string &path, const std
     // TODO: update.... (when no http clients running)
     if (m_staticContentElements.find(path) == m_staticContentElements.end())
     {
-        char *xmem = (char *) malloc(content.size() + 1);
+        char *xmem = static_cast<char *>(malloc(content.size() + 1));
         xmem[content.size()] = 0;
         memcpy(xmem, content.c_str(), content.size());
         m_staticContentElements[path] = std::make_shared<Mantids30::Memory::Containers::B_MEM>(xmem, content.size());

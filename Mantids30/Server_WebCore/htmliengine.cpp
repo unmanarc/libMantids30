@@ -89,7 +89,7 @@ void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, 
     size_t pos = 0;
 
     // Search every J processor in one big loop and replace in place and continue... so won't be a chance to re-ingest anything...
-    while (true)
+    for (;;)
     {
         std::smatch match;
         std::string::const_iterator start_it = input.begin() + pos;

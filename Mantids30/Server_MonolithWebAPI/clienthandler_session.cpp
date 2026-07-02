@@ -120,10 +120,10 @@ Json::Value ClientHandler::getSessionVariableValue(const string &varName)
 
 void ClientHandler::fillSessionExtraInfo(Json::Value &jVars)
 {
-    jVars["maxAge"] = (Json::UInt64) 0;
+    jVars["maxAge"] = static_cast<Json::UInt64>(0);
     if (isSessionActive())
     {
-        jVars["maxAge"] = (Json::UInt64) m_sessionMaxAge;
+        jVars["maxAge"] = static_cast<Json::UInt64>(m_sessionMaxAge);
     }
 }
 

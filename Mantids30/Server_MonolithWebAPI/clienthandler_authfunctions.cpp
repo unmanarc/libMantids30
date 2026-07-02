@@ -59,13 +59,13 @@ HTTP::Status::Code ClientHandler::handleAuthRetrieveInfoFunction()
         x["impersonator"] = currentSessionInfo.authSession->getImpersonator();
         x["scopes"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
         x["roles"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
-        x["currentActivity"]["first"] = (Json::UInt64) currentSessionInfo.authSession->getFirstActivity();
-        x["currentActivity"]["last"] = (Json::UInt64) currentSessionInfo.authSession->getLastActivity();
-        x["currentActivity"]["sessionMaxAge"] = (Json::UInt64) m_sessionMaxAge;
+        x["currentActivity"]["first"] = static_cast<Json::UInt64>(currentSessionInfo.authSession->getFirstActivity());
+        x["currentActivity"]["last"] = static_cast<Json::UInt64>(currentSessionInfo.authSession->getLastActivity());
+        x["currentActivity"]["sessionMaxAge"] = static_cast<Json::UInt64>(m_sessionMaxAge);
         if (m_sessionsManager)
         {
-            x["limits"]["maxInactiveTime"] = (Json::UInt64) m_sessionsManager->getMaxInactiveSeconds();
-            x["limits"]["maxSessionsPerUser"] = (Json::UInt64) m_sessionsManager->getMaxSessionsPerUser();
+            x["limits"]["maxInactiveTime"] = static_cast<Json::UInt64>(m_sessionsManager->getMaxInactiveSeconds());
+            x["limits"]["maxSessionsPerUser"] = static_cast<Json::UInt64>(m_sessionsManager->getMaxSessionsPerUser());
             x["loggedUser"]["sessionsInfo"] = m_sessionsManager->getUserSessionsInfo(effectiveUserName);
         }
     }
@@ -147,7 +147,7 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 
         Json::Value networkClientInfo = clientRequest.networkClientInfo.toJSON();
         networkClientInfo["userAgent"] = clientRequest.userAgent;
-        networkClientInfo["startTime"] = (uint64_t) time(nullptr);
+        networkClientInfo["startTime"] = static_cast<int64_t>(time(nullptr));
 
         // TODO: migrar esto en libMantids2 a shared pointer.
         m_sessionID = m_sessionsManager->createSession(session, networkClientInfo, &m_sessionMaxAge);
