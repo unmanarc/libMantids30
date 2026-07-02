@@ -1,0 +1,255 @@
+#include "mustache_sub_tag.h"
+#include <Mantids30/Helpers/encoders.h>
+#include <boost/algorithm/string.hpp>
+#include <algorithm>
+
+namespace Mantids30::Scripts::WebEnhancedMustache {
+
+MustacheSubTag::MustacheSubTag()
+{
+    m_subParserName = "MustacheSubTag";
+    setParseStrategy(ParseStrategy::DIRECT_DELIMITER);
+    setParseDelimiter("}}");
+}
+
+void MustacheSubTag::setContext(MustacheContext *context)
+{
+    m_context = context;
+}
+
+std::string MustacheSubTag::getResolvedOutput() const
+{
+    return m_resolvedOutput;
+}
+
+std::string MustacheSubTag::getTagType() const
+{
+    return m_tagType;
+}
+
+std::string MustacheSubTag::getVarName() const
+{
+    return m_varName;
+}
+
+DataSource MustacheSubTag::getDataSource() const
+{
+    return m_dataSource;
+}
+
+// ------------------------------------------------------------------------
+
+SubParser::ParseResult MustacheSubTag::parse()
+{
+    auto *buf = getParsedBuffer();
+    if (!buf || buf->getSize() == 0)
+    {
+        return ParseResult::ERROR;
+    }
+
+    m_tagContent = buf->toString();
+
+    // Trim whitespace
+    boost::trim(m_tagContent);
+
+    if (m_tagContent.empty())
+    {
+        m_resolvedOutput = "";
+        return ParseResult::GOTO_NEXT_MAINPARSER;
+    }
+
+    parseTagContent();
+    resolveAndOutput();
+
+    return ParseResult::GOTO_NEXT_MAINPARSER;
+}
+
+void MustacheSubTag::parseTagContent()
+{
+    std::string content = m_tagContent;
+
+    // Check for raw flag: {{&name}} or {{{name}}}
+    m_isRaw = false;
+    if (content.size() > 1 && content[0] == '&')
+    {
+        m_isRaw = true;
+        content = content.substr(1);
+        boost::trim(content);
+    }
+
+    // Check for filter: {{name|filter}}
+    m_filter = "";
+    {
+        auto pipePos = content.find('|');
+        if (pipePos != std::string::npos)
+        {
+            m_filter = content.substr(pipePos + 1);
+            content = content.substr(0, pipePos);
+            boost::trim(m_filter);
+        }
+    }
+
+    boost::trim(content);
+
+    // Check for source:variable format
+    auto colonPos = content.find(':');
+    if (colonPos != std::string::npos)
+    {
+        std::string sourceName = content.substr(0, colonPos);
+        boost::trim(sourceName);
+
+        // Check if it's a known data source
+        DataSource ds = stringToDataSource(sourceName);
+        if (ds != DataSource::DEFAULT || sourceName == "default")
+        {
+            m_dataSource = ds;
+            m_varName = content.substr(colonPos + 1);
+        }
+        else
+        {
+            // Treat the whole thing as a variable name (could be a JSON path)
+            m_dataSource = DataSource::DEFAULT;
+            m_varName = content;
+        }
+    }
+    else
+    {
+        m_dataSource = DataSource::DEFAULT;
+        m_varName = content;
+    }
+
+    boost::trim(m_varName);
+
+    // Determine tag type
+    if (m_varName.empty())
+    {
+        m_tagType = "empty";
+    }
+    else
+    {
+        m_tagType = "var";
+    }
+}
+
+void MustacheSubTag::resolveAndOutput()
+{
+    if (m_tagType == "empty")
+    {
+        m_resolvedOutput = "";
+        return;
+    }
+
+    if (!m_context)
+    {
+        m_resolvedOutput = "{{" + m_tagContent + "}}";
+        return;
+    }
+
+    // Resolve the variable
+    Json::Value value;
+    if (m_dataSource == DataSource::DEFAULT)
+    {
+        value = m_context->resolveDefault(m_varName);
+    }
+    else
+    {
+        value = m_context->resolve(m_dataSource, m_varName);
+    }
+
+    // Convert to string
+    std::string result = MustacheContext::jsonToString(value);
+
+    // Apply filter
+    if (!m_filter.empty())
+    {
+        result = applyFilter(result, m_filter);
+    }
+    // Apply default HTML encoding (unless raw)
+    else if (!m_isRaw)
+    {
+        result = htmlEncode(result);
+    }
+
+    m_resolvedOutput = result;
+}
+
+std::string MustacheSubTag::htmlEncode(const std::string &input)
+{
+    std::string output;
+    output.reserve(input.size());
+
+    for (char c : input)
+    {
+        switch (c)
+        {
+            case '<':  output += "<"; break;
+            case '>':  output += ">"; break;
+            case '&':  output += "&"; break;
+            case '"':  output += """; break;
+            case '\'': output += "&#39;"; break;
+            default:   output += c; break;
+        }
+    }
+
+    return output;
+}
+
+std::string MustacheSubTag::urlEncode(const std::string &input)
+{
+    return Mantids30::Helpers::Encoders::url_encode(input);
+}
+
+std::string MustacheSubTag::applyFilter(const std::string &value, const std::string &filter) const
+{
+    std::string f = filter;
+    boost::to_lower(f);
+
+    if (f == "html" || f == "escape")
+    {
+        return htmlEncode(value);
+    }
+    else if (f == "url")
+    {
+        return urlEncode(value);
+    }
+    else if (f == "upper" || f == "uppercase")
+    {
+        boost::to_upper(value);
+        return value;
+    }
+    else if (f == "lower" || f == "lowercase")
+    {
+        boost::to_lower(value);
+        return value;
+    }
+    else if (f == "trim")
+    {
+        boost::trim(value);
+        return value;
+    }
+    else if (f == "raw" || f == "safe")
+    {
+        return value; // No encoding
+    }
+    else if (f.size() > 8 && f.substr(0, 7) == "default")
+    {
+        // default:X filter - if value is empty, use X
+        // Format: "default:X" or "default: X"
+        if (value.empty())
+        {
+            std::string def = f.substr(7);
+            boost::trim(def);
+            // Remove leading colon and space
+            if (!def.empty() && def[0] == ':')
+                def = def.substr(1);
+            boost::trim(def);
+            return def;
+        }
+        return value;
+    }
+
+    // Unknown filter, return as-is
+    return value;
+}
+
+} // namespace Mantids30::Scripts::WebEnhancedMustache
