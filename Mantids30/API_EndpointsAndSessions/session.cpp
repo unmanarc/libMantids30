@@ -36,7 +36,7 @@ bool Session::isLastActivityExpired(const uint32_t &expSeconds)
     {
         return true; // Computer time has changed?
     }
-    return (uint32_t) (curTime - m_lastActivityTimestamp) > expSeconds;
+    return (curTime - m_lastActivityTimestamp) > expSeconds;
 }
 
 time_t Session::getLastActivity()
@@ -56,31 +56,13 @@ std::string Session::getImpersonator()
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
     return m_impersonator;
 }
-/*
-void Session::setImpersonator(const std::string &newImpersonator)
-{
-    std::unique_lock<std::mutex> lock(m_authenticationMutex);
-    m_impersonator = newImpersonator;
-}*/
 
 std::string Session::getDomain()
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
     return m_domain;
 }
-/*
-void Session::setDomain(const std::string &newDomain)
-{
-    std::unique_lock<std::mutex> lock(m_authenticationMutex);
-    m_domain = newDomain;
-}
 
-void Session::setJWTAuthenticatedInfo(const JWT::Token &newJwtAuthenticatedInfo)
-{
-    std::unique_lock<std::mutex> lock(m_authenticationMutex);
-    jwtAuthenticatedInfo = newJwtAuthenticatedInfo;
-}
-*/
 JWT::Token Session::getJWTAuthenticatedInfo()
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);
@@ -93,12 +75,6 @@ void Session::setLastActivity(const time_t &value)
     m_lastActivityTimestamp = value;
 }
 
-/*void Session::setUser(const std::string &value)
-{
-    std::unique_lock<std::mutex> lock(m_authenticationMutex);
-    m_user = value;
-}
-*/
 time_t Session::getFirstActivity()
 {
     std::unique_lock<std::mutex> lock(m_authenticationMutex);

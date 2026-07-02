@@ -23,8 +23,6 @@ GlobalArguments::GlobalArguments()
     m_sDefaultDaemonOption = "daemon";
 #endif
     m_sDefaultHelpOption = "help";
-    m_inifiniteWaitAtEnd = false;
-    m_extraOptChars = 256;
 }
 
 bool GlobalArguments::addCommandLineOption(const string &optGroup, char shortOption, const string &optName, const string &description, const string &defaultValue, const Var::Type &optionType,

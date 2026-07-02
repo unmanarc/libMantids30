@@ -141,11 +141,11 @@ public:
     bool parseCommandLineOptions(int argc, char *argv[]);
 
 private:
-    int m_extraOptChars;
+    int m_extraOptChars = 256;
     std::string m_sDefaultHelpOption;
 #ifndef _WIN32
     std::string m_sDefaultDaemonOption;
-    uint16_t m_uid, m_gid;
+    uint16_t m_uid{0}, m_gid{0};
 #endif
     std::list<std::shared_ptr<CommandLineOption>> getAllCommandLineOptions();
     uint32_t getMaxOptNameSize(const std::list<std::shared_ptr<CommandLineOption> > &options);
@@ -154,7 +154,7 @@ private:
     std::shared_ptr<CommandLineOption> getProgramOption(int shortOption);
     std::shared_ptr<CommandLineOption> getProgramOption(const std::string &optName);
 
-    bool m_inifiniteWaitAtEnd;
+    bool m_inifiniteWaitAtEnd = false;
 
     std::map<std::string, std::list<std::shared_ptr<CommandLineOption>>> m_commandOptions; // group->list of command options
     // TODO: multimap

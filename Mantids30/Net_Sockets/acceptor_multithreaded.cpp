@@ -174,7 +174,6 @@ MultiThreaded::~MultiThreaded()
     }
 
     // Close all current connections...
-    if (true)
     {
         std::unique_lock<std::mutex> lock(m_mutexClients);
         // Send stopsocket on every child thread (if there are).

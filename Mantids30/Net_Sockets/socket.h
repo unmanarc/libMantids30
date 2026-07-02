@@ -39,7 +39,7 @@ public:
      * Socket Class Constructor
      * note: does not initialize the socket
      */
-    Socket();
+    Socket() = default;
     virtual ~Socket();
 
     //Keep the copy constructor and assignment operator as deleted or private to prevent duplication.
@@ -378,8 +378,8 @@ protected:
     std::string m_remoteServerHostname;
 
     // Store the last bind information as normalized structs
-    struct sockaddr_in m_lastBindIPv4;
-    struct sockaddr_in6 m_lastBindIPv6;
+    struct sockaddr_in m_lastBindIPv4{};
+    struct sockaddr_in6 m_lastBindIPv6{};
     // Keep track of whether there was a successful bind
     bool m_lastBindValid = false;
 
