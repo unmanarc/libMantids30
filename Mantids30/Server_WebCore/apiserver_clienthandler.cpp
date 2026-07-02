@@ -314,7 +314,6 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
     // WEB RESOURCE MODE:
     HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
     LocalRequestedFileInfo fileInfo;
-    uint64_t uMaxAge = 0;
 
     // if there are no web resources path, return 404 without data.
     if (config->getDocumentRootPath().empty())
