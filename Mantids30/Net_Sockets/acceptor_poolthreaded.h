@@ -39,11 +39,6 @@ public:
        * function for the processor thread.
        */
     void run();
-    /**
-       * @brief stop Call to stop the acceptor and automatically delete/destroy this
-       * class (don't call anything after this).
-       */
-    void stop();
 
     /////////////////////////////////////////////////////////////////////////
     // TUNNING:
@@ -130,9 +125,16 @@ public:
     ThreadPoolCallbacks callbacks;
 
 private:
-    struct sAcceptorTaskData
+    /**
+       * @brief stop Call to stop the acceptor and automatically delete/destroy this
+       * class (don't call anything after this).
+       */
+    void _stop();
+
+
+    struct ConnectionTaskData
     {
-        ~sAcceptorTaskData()
+        ~ConnectionTaskData()
         {
             if (clientSocket)
             {

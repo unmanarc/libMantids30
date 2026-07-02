@@ -12,7 +12,7 @@ Socket_Chain::Socket_Chain(const std::shared_ptr<Mantids30::Network::Sockets::So
 
 void Socket_Chain::waitUntilFinish()
 {
-    for (sChainVectorItem *sockItem : m_socketLayers)
+    for (ChainVectorItem *sockItem : m_socketLayers)
     {
         if (!sockItem->detached)
         {
@@ -27,7 +27,7 @@ void Socket_Chain::waitUntilFinish()
 
 void Socket_Chain::removeSocketsOnExit()
 {
-    for (sChainVectorItem *sockItem : m_socketLayers)
+    for (ChainVectorItem *sockItem : m_socketLayers)
     {
         if (sockItem->deleteFirstSocketOnExit)
         {
@@ -54,7 +54,7 @@ Socket_Chain::~Socket_Chain()
     removeSocketsOnExit();
 
     // Remove items when all threads are down.
-    for (sChainVectorItem *sockItem : m_socketLayers)
+    for (ChainVectorItem *sockItem : m_socketLayers)
     {
         delete sockItem;
     }
@@ -77,7 +77,7 @@ int Socket_Chain::getLayerReadResultValue(size_t layer, bool fwd)
         return -2;
     }
     // TODO: check this.
-    return static_cast<sChainVectorItem *>(m_socketLayers[layer])->r0[fwd ? 0 : 1];
+    return static_cast<ChainVectorItem *>(m_socketLayers[layer])->r0[fwd ? 0 : 1];
 }
 
 bool Socket_Chain::getLayerWriteResultValue(size_t layer, bool fwd)
@@ -87,7 +87,7 @@ bool Socket_Chain::getLayerWriteResultValue(size_t layer, bool fwd)
         return false;
     }
     // TODO: check this.
-    return static_cast<sChainVectorItem *>(m_socketLayers[layer])->w1[fwd ? 0 : 1];
+    return static_cast<ChainVectorItem *>(m_socketLayers[layer])->w1[fwd ? 0 : 1];
 }
 
 std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> Socket_Chain::getSocketPairLayer(size_t layer)
@@ -97,7 +97,7 @@ std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shar
         return std::make_pair(nullptr, nullptr);
     }
 
-    sChainVectorItem *sockItem = static_cast<sChainVectorItem *>(m_socketLayers[layer]);
+    ChainVectorItem *sockItem = static_cast<ChainVectorItem *>(m_socketLayers[layer]);
     return std::make_pair(sockItem->sock[0], sockItem->sock[1]);
 }
 
@@ -123,7 +123,7 @@ bool Socket_Chain::addToChain(const std::pair<std::shared_ptr<Socket_Stream>, st
         m_endPointReached = true;
     }
 
-    sChainVectorItem *item = new sChainVectorItem;
+    ChainVectorItem *item = new ChainVectorItem;
 
     // Register on chain
     item->deleteFirstSocketOnExit = deleteFirstSocketOnExit;
@@ -134,11 +134,11 @@ bool Socket_Chain::addToChain(const std::pair<std::shared_ptr<Socket_Stream>, st
     m_socketLayers.push_back(item);
 
     // Register on thread.
-    sChainTElement *chainTElem1 = new sChainTElement;
-    sChainTElement *chainTElem2 = new sChainTElement;
+    ChainThreadInfo *chainTElem1 = new ChainThreadInfo;
+    ChainThreadInfo *chainTElem2 = new ChainThreadInfo;
 
     chainTElem1->sockets[0] = item->sock[1];
-    chainTElem1->sockets[1] = m_socketLayers.size() == 1 ? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 2])->sock[0];
+    chainTElem1->sockets[1] = m_socketLayers.size() == 1 ? m_baseSocket : static_cast<ChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 2])->sock[0];
     chainTElem1->modeFWD = true;
     chainTElem1->r0 = &(item->r0[0]);
     chainTElem1->w1 = &(item->w1[0]);
@@ -185,7 +185,7 @@ bool Socket_Chain::isConnected()
     {
         return false;
     }
-    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<ChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
     return curSocket->isConnected() && m_baseSocket->isConnected();
 }
 
@@ -195,7 +195,7 @@ int Socket_Chain::shutdownSocket(int mode)
     {
         return -1;
     }
-    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<ChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
     return curSocket->shutdownSocket(mode);
 }
 
@@ -205,7 +205,7 @@ ssize_t Socket_Chain::partialRead(void *data, const size_t &datalen)
     {
         return -1;
     }
-    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<ChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
     ssize_t x = curSocket->partialRead(data, datalen);
     if (x <= 0)
     {
@@ -220,7 +220,7 @@ ssize_t Socket_Chain::partialWrite(const void *data, const size_t &datalen)
     {
         return -1;
     }
-    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<sChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> curSocket = m_socketLayers.empty() ? m_baseSocket : static_cast<ChainVectorItem *>(m_socketLayers[m_socketLayers.size() - 1])->sock[0];
     ssize_t x = curSocket->partialWrite(data, datalen);
     if (x <= 0)
     {
@@ -229,7 +229,7 @@ ssize_t Socket_Chain::partialWrite(const void *data, const size_t &datalen)
     return x;
 }
 
-void Socket_Chain::chainThread(sChainTElement *threadInfo)
+void Socket_Chain::chainThread(ChainThreadInfo *threadInfo)
 {
 #ifdef __linux__
     pthread_setname_np(pthread_self(), "Socket:ChainThr");

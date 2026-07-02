@@ -15,14 +15,14 @@
 #ifdef _WIN32
 #include <windows.h>
 
-struct sAppPIPE
+struct WinExecPIPE
 {
-    sAppPIPE()
+    WinExecPIPE()
     {
         hRead = INVALID_HANDLE_VALUE;
         hWrite = INVALID_HANDLE_VALUE;
     }
-    ~sAppPIPE()
+    ~WinExecPIPE()
     {
         if (hRead != INVALID_HANDLE_VALUE)
             CloseHandle(hRead);
@@ -57,7 +57,7 @@ struct sAppPIPE
 };
 #endif
 
-Mantids30::Helpers::AppExec::ExecutionResult Mantids30::Helpers::AppExec::blexec(const sAppExecCmd &cmd)
+Mantids30::Helpers::AppExec::ExecutionResult Mantids30::Helpers::AppExec::blexec(const ExecutionArgs &cmd)
 {
     ExecutionResult rt;
 
@@ -66,7 +66,7 @@ Mantids30::Helpers::AppExec::ExecutionResult Mantids30::Helpers::AppExec::blexec
     // Variables definition
     STARTUPINFOA procInteractParams;
     PROCESS_INFORMATION runningProcInfo;
-    sAppPIPE pipes;
+    WinExecPIPE pipes;
     std::string sCmd;
 
     rt.output.clear();
@@ -275,16 +275,16 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     // Destroy objects:
     for (int i = 0; argv[i]; i++)
     {
-        free((void *)argv[i]);
+        free(reinterpret_cast<void *>(argv[i]));
     }
-    free((void *)argv);
+    free(argv);
 
     // Destroy objects:
     for (int i = 0; env[i]; i++)
     {
-        free((void *)env[i]);
+        free(reinterpret_cast<void *>(env[i]));
     }
-    free((void *)env);
+    free(env);
 
     if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp)) != 0))
     {

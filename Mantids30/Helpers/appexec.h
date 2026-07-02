@@ -41,7 +41,7 @@ public:
         AppExec::Status status;
     };
 
-    struct sAppExecCmd
+    struct ExecutionArgs
     {
         std::string arg0;
         std::vector<std::string> args;
@@ -53,7 +53,7 @@ public:
      * @param cmd
      * @return command execution result and output
      */
-    static ExecutionResult blexec(const sAppExecCmd &cmd);
+    static ExecutionResult blexec(const ExecutionArgs &cmd);
 };
 
 #ifndef _WIN32

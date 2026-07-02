@@ -46,7 +46,7 @@ void PoolThreaded::run()
                     std::shared_ptr<Sockets::Socket_Stream> clientSocket = acceptorSocket->acceptConnection();
                     if (clientSocket)
                     {
-                        std::shared_ptr<sAcceptorTaskData> taskData = std::make_shared<sAcceptorTaskData>();
+                        std::shared_ptr<ConnectionTaskData> taskData = std::make_shared<ConnectionTaskData>();
 
                         if (this->parameters.debugOptions.enabled)
                         {
@@ -101,7 +101,7 @@ void PoolThreaded::run()
     pool->stop();
 }
 
-void PoolThreaded::stop()
+void PoolThreaded::_stop()
 {
     m_running = false;
 
@@ -121,12 +121,12 @@ void PoolThreaded::addAcceptorSocket(const std::shared_ptr<Sockets::Socket_Strea
 
 void PoolThreaded::runner(void *data)
 {
-    ((PoolThreaded *) data)->run();
+    (static_cast<PoolThreaded *>(data))->run();
 }
 
 void PoolThreaded::stopper(void *data)
 {
-    ((PoolThreaded *) data)->stop();
+    (static_cast<PoolThreaded *>(data))->stop();
 }
 
 void PoolThreaded::acceptorTask(const std::shared_ptr<void> &data)
@@ -134,7 +134,7 @@ void PoolThreaded::acceptorTask(const std::shared_ptr<void> &data)
 #ifndef _WIN32
     pthread_setname_np(pthread_self(), "poolthr:sckacpt");
 #endif
-    sAcceptorTaskData *taskData = (sAcceptorTaskData *) data.get();
+    ConnectionTaskData *taskData = static_cast<ConnectionTaskData *>(data.get());
     if (taskData->clientSocket->postAcceptSubInitialization())
     {
         // Start

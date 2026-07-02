@@ -75,7 +75,7 @@ public:
     ssize_t partialWrite(const void *data, const size_t &datalen) override;
 
 private:
-    struct sChainVectorItem
+    struct ChainVectorItem
     {
         /**
          * @brief sock connected pair sockets (sock[0]: up socket  sock[1]: down socket)
@@ -92,7 +92,7 @@ private:
         bool modeServer{false};
     };
 
-    struct sChainTElement
+    struct ChainThreadInfo
     {
         std::shared_ptr<Socket_Stream> sockets[2];
         int *r0 = nullptr;
@@ -100,14 +100,14 @@ private:
         bool modeFWD = false;
     };
 
-    static void chainThread(sChainTElement *threadInfo);
+    static void chainThread(ChainThreadInfo *threadInfo);
 
     bool m_endPointReached;
     void removeSocketsOnExit();
 
     bool m_deleteBaseSocketOnExit;
     std::shared_ptr<Socket_Stream> m_baseSocket;
-    std::vector<sChainVectorItem *> m_socketLayers;
+    std::vector<ChainVectorItem *> m_socketLayers;
 };
 
 } // namespace Mantids30::Network::Sockets
