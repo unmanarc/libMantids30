@@ -11,7 +11,7 @@ using namespace Mantids30;
 
 WebSessionsManager::WebSessionsManager()
 {
-    setGcWaitTime(1);           // 1 sec.
+    setGCWaitTime(1);           // 1 sec.
     setMaxInactiveSeconds(900); // 15 min
     setMaxSessionsPerUser(100); // 100 sessions
 }
@@ -203,12 +203,12 @@ void WebSessionsManager::setMaxSessionsPerUser(const uint32_t &value)
     m_maxSessionsPerUser = value;
 }
 
-uint32_t WebSessionsManager::getGcWaitTime() const
+uint32_t WebSessionsManager::getGCWaitTime() const
 {
     return m_gcWaitTime;
 }
 
-void WebSessionsManager::setGcWaitTime(const uint32_t &value)
+void WebSessionsManager::setGCWaitTime(const uint32_t &value)
 {
     m_gcWaitTime = value;
 }

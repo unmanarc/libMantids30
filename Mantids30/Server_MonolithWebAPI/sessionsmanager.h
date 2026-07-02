@@ -48,7 +48,7 @@ public:
      *
      * @return The GC wait time in milliseconds.
      */
-    [[nodiscard]] uint32_t getGcWaitTime() const;
+    [[nodiscard]] uint32_t getGCWaitTime() const;
     /**
      * @brief Sets the garbage collection (GC) wait time.
      *
@@ -57,7 +57,7 @@ public:
      *
      * @param waitTime The desired GC wait time in milliseconds.
      */
-    void setGcWaitTime(const uint32_t &value);
+    void setGCWaitTime(const uint32_t &value);
 
     [[nodiscard]] uint32_t getMaxInactiveSeconds() const;
     void setMaxInactiveSeconds(const uint32_t &value);
