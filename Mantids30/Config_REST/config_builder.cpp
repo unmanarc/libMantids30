@@ -135,15 +135,15 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // Setup the WEB Log:
         webServer->config.webLog = Program::Config::Logs::createWebLog(appLog, config);
 
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] %s service listeners configured", (void *) webServer, serviceName.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] %s service listeners configured", reinterpret_cast<void *>(webServer), serviceName.c_str());
 
         std::string resourcesPath = config.get<std::string>("ResourcesPath", defaultResourcePath);
         if ((options & REST_ENGINE_DISABLE_RESOURCES) == 0 || resourcesPath.empty())
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting document root path to %s", (void *) webServer, resourcesPath.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting document root path to %s", reinterpret_cast<void *>(webServer), resourcesPath.c_str());
             if (!webServer->config.setDocumentRootPath(resourcesPath))
             {
-                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::CRITICAL, "[%p] Error locating web server resources at %s", (void *) webServer, resourcesPath.c_str());
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::CRITICAL, "[%p] Error locating web server resources at %s", reinterpret_cast<void *>(webServer), resourcesPath.c_str());
                 return nullptr;
             }
         }
@@ -160,18 +160,18 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 std::string path = dirConfig.get<std::string>("Path", "");
                 if (!path.empty())
                 {
-                    appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Adding overlapped directory at %s -> %s", (void *) webServer, mountPoint.c_str(), path.c_str());
+                    appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Adding overlapped directory at %s -> %s", reinterpret_cast<void *>(webServer), mountPoint.c_str(), path.c_str());
                     webServer->config.addOverlappedDirectory(mountPoint, path);
                 }
                 else
                 {
-                    appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::WARN, "[%p] Skipped overlapped directory at %s due to missing Path", (void *) webServer, mountPoint.c_str());
+                    appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::WARN, "[%p] Skipped overlapped directory at %s due to missing Path", reinterpret_cast<void *>(webServer), mountPoint.c_str());
                 }
             }
         }
         catch (const boost::property_tree::ptree_error &)
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] No OverlappedDirectories configuration found", (void *) webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] No OverlappedDirectories configuration found", reinterpret_cast<void *>(webServer));
         }
 
         // All the API will be accessible from this Origins...
@@ -179,18 +179,18 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         if (!rawOrigins.empty())
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting permitted API origins from %s", (void *) webServer, rawOrigins.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting permitted API origins from %s", reinterpret_cast<void *>(webServer), rawOrigins.c_str());
         }
         else
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] API Origins are not set. External calls to this API will be blocked", (void *) webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] API Origins are not set. External calls to this API will be blocked", reinterpret_cast<void *>(webServer));
         }
 
         webServer->config.permittedAPIOrigins = parseCommaSeparatedString(rawOrigins);
 
         // All the API will be accessible from this Origins...
         std::string loginCallbackAPIEndpointName = config.get<std::string>("Login.CallbackEndpointName", "callback");
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting API Login callback endpoint name to /api/v1/%s", (void *) webServer, loginCallbackAPIEndpointName.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting API Login callback endpoint name to /api/v1/%s", reinterpret_cast<void *>(webServer), loginCallbackAPIEndpointName.c_str());
         webServer->config.loginCallbackAPIEndpointName = loginCallbackAPIEndpointName;
 
         // The login can be made from this origins (will receive)
@@ -199,17 +199,17 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         if (loginOrigins.empty())
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] This web server does not allow any Login Origin (Callback Disabled)", (void *) webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] This web server does not allow any Login Origin (Callback Disabled)", reinterpret_cast<void *>(webServer));
         }
         else
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting permitted login origins from %s", (void *) webServer, loginOrigins.c_str());
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting permitted login origins from %s", reinterpret_cast<void *>(webServer), loginOrigins.c_str());
         }
 
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
         // Set the login IAM location:
         std::string loginRedirectURL = config.get<std::string>("Login.RedirectURL", "/login");
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting default login redirect URL to %s", (void *) webServer, loginRedirectURL.c_str());
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Setting default login redirect URL to %s", reinterpret_cast<void *>(webServer), loginRedirectURL.c_str());
         webServer->config.defaultLoginRedirect = loginRedirectURL;
 
         if ((options & REST_ENGINE_NOCONFIG_JWT) == 0)
@@ -220,7 +220,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
             if (!webServer->config.jwtValidator)
             {
-                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::CRITICAL, "[%p] We need at least a JWT Validator.", (void *) webServer);
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::CRITICAL, "[%p] We need at least a JWT Validator.", reinterpret_cast<void *>(webServer));
                 return nullptr;
             }
         }
@@ -245,7 +245,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // Use a thread pool or multi-threading based on configuration
         bool useThreadPool = config.get<bool>("Threads.UseThreadPool", false);
 
-        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Using %s", (void *) webServer, useThreadPool ? "thread pool" : "multi-threading");
+        appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Using %s", reinterpret_cast<void *>(webServer), useThreadPool ? "thread pool" : "multi-threading");
 
         if (useThreadPool)
         {
@@ -259,7 +259,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         // WebServer Extras:
         if (config.find("Proxies") != config.not_found())
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Loading proxies...", (void *) webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Loading proxies...", reinterpret_cast<void *>(webServer));
             // Loading proxies...
 
             for (const auto &proxy : config.get_child("Proxies"))
@@ -267,7 +267,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
 
-                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::INFO, "[%p] Loading proxy to path '%s' at %s Service", (void *) webServer, param->proxyPath.c_str(), serviceName.c_str());
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::INFO, "[%p] Loading proxy to path '%s' at %s Service", reinterpret_cast<void *>(webServer), param->proxyPath.c_str(), serviceName.c_str());
 
                 if (param != nullptr)
                 {
@@ -278,7 +278,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
         if (config.find("Redirections") != config.not_found())
         {
-            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Loading redirections...", (void *) webServer);
+            appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::DEBUG, "[%p] Loading redirections...", reinterpret_cast<void *>(webServer));
             // Loading redirections...
 
             for (const auto &redirection : config.get_child("Redirections"))
@@ -286,7 +286,7 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
                 std::string path = redirection.first;
                 std::string url = redirection.second.get_value<std::string>("/");
 
-                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'", (void *) webServer, path.c_str(), url.c_str());
+                appLog->log0(__func__, ::Mantids30::Program::Logs::LogLevel::INFO, "[%p] Loading transparent redirection to path '%s' for URL '%s'", reinterpret_cast<void *>(webServer), path.c_str(), url.c_str());
 
                 webServer->config.redirections[path] = url;
             }
@@ -303,7 +303,7 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *
         return true;
     }
 
-    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
+    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
 
     std::shared_ptr<Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Sockets::Socket_TLS>(sock);
 
@@ -319,7 +319,7 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *
 
 bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
-    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
+    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), Program::Logs::LogLevel::ERR, "RESTful Service Timed Out.");
     return true;
@@ -327,7 +327,7 @@ bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *da
 
 bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
 {
-    Network::Servers::Web::APIServerCore *core = (Network::Servers::Web::APIServerCore *) data;
+    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), Program::Logs::LogLevel::DEBUG, "Client Connection Limit Per IP Reached...");
     return true;

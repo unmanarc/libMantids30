@@ -61,7 +61,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
             }
         }
 
-        if (::bind(m_sockFD, (struct sockaddr *) &m_lastBindIPv4, sizeof(m_lastBindIPv4)) < 0)
+        if (::bind(m_sockFD, reinterpret_cast<struct sockaddr *>(&m_lastBindIPv4), sizeof(m_lastBindIPv4)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
@@ -89,7 +89,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
             }
         }
 
-        if (::bind(m_sockFD, (struct sockaddr *) &m_lastBindIPv6, sizeof(m_lastBindIPv6)) < 0)
+        if (::bind(m_sockFD, reinterpret_cast<struct sockaddr *>(&m_lastBindIPv6), sizeof(m_lastBindIPv6)) < 0)
         {
             m_lastError = "bind() failed";
             close(m_sockFD);
@@ -104,8 +104,8 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
 
 bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int ai_socktype, void **res)
 {
-    addrinfo hints;
-    int rc;
+    addrinfo hints{};
+    int rc=0;
 
     ZeroBStruct(hints);
 
@@ -119,7 +119,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
 
     if (m_useIPv6)
     {
-        struct in6_addr serveraddr;
+        struct in6_addr serveraddr{};
         rc = inet_pton(AF_INET6, remoteHost, &serveraddr);
         if (rc == 1)
         {
@@ -129,7 +129,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     }
     else
     {
-        struct in_addr serveraddr;
+        struct in_addr serveraddr{};
         rc = inet_pton(AF_INET, remoteHost, &serveraddr);
         if (rc == 1)
         {
@@ -141,7 +141,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     char serverPort[8];
     snprintf(serverPort, sizeof(serverPort), "%" PRIu16, remotePort);
 
-    rc = getaddrinfo(remoteHost, serverPort, &hints, (addrinfo **) res);
+    rc = getaddrinfo(remoteHost, serverPort, &hints, reinterpret_cast<addrinfo **>(res));
 
     switch (rc)
     {
@@ -216,11 +216,6 @@ bool Socket::getUseIPv6() const
 void Socket::setUseIPv6(bool value)
 {
     m_useIPv6 = value;
-}
-
-Socket::Socket()
-{
-    //initVars();
 }
 
 Socket::~Socket()
@@ -310,7 +305,7 @@ int Socket::closeSocket()
 
     mutexClose.lock();
     // Prevent socket utilization / race condition.
-    int socktmp = (int) m_sockFD;
+    int socktmp = m_sockFD;
     m_sockFD = -1;
 #ifdef _WIN32
     int i = closesocket(socktmp);
@@ -349,7 +344,7 @@ std::string Socket::getLastBindAddress() const
 
 std::string Socket::getRemotePairStr()
 {
-    return std::string(m_remotePair);
+    return m_remotePair;
 }
 
 uint16_t Socket::getLocalPort()
@@ -359,9 +354,9 @@ uint16_t Socket::getLocalPort()
         return 0;
     }
 
-    struct sockaddr_in sin;
+    struct sockaddr_in sin{};
     socklen_t len = sizeof(sin);
-    if (getsockname(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
+    if (getsockname(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin), &len) == -1)
     {
         m_lastError = "Error resolving port";
         return 0;
@@ -382,9 +377,9 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getLocalAddressAndPo
 
     if (!m_useIPv6)
     {
-        struct sockaddr_in sin;
+        struct sockaddr_in sin{};
         socklen_t len = sizeof(sin);
-        if (getsockname(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
+        if (getsockname(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin), &len) == -1)
         {
             m_lastError = "Error resolving port";
             return addrAndPort;
@@ -394,9 +389,9 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getLocalAddressAndPo
     }
     else
     {
-        struct sockaddr_in6 sin6;
+        struct sockaddr_in6 sin6{};
         socklen_t len = sizeof(sin6);
-        if (getsockname(m_sockFD, (struct sockaddr *) &sin6, &len) == -1)
+        if (getsockname(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin6), &len) == -1)
         {
             m_lastError = "Error resolving port";
             return addrAndPort;
@@ -421,9 +416,9 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getRemoteAddressAndP
 
     if (!m_useIPv6)
     {
-        struct sockaddr_in sin;
+        struct sockaddr_in sin{};
         socklen_t len = sizeof(sin);
-        if (getpeername(m_sockFD, (struct sockaddr *) &sin, &len) == -1)
+        if (getpeername(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin), &len) == -1)
         {
             m_lastError = "Error resolving remote address";
             return addrAndPort;
@@ -433,9 +428,9 @@ Mantids30::Network::Sockets::Socket::AddressAndPort Socket::getRemoteAddressAndP
     }
     else
     {
-        struct sockaddr_in6 sin6;
+        struct sockaddr_in6 sin6{};
         socklen_t len = sizeof(sin6);
-        if (getpeername(m_sockFD, (struct sockaddr *) &sin6, &len) == -1)
+        if (getpeername(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin6), &len) == -1)
         {
             m_lastError = "Error resolving remote address";
             return addrAndPort;
@@ -492,7 +487,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
                 BIO *bio = BIO_new(BIO_s_mem());
                 if (bio)
                 {
-                    BIO_dump_fp(debugFP, (const char *) data, recvLen);
+                    BIO_dump_fp(debugFP, static_cast<const char *>(data), recvLen);
                     fflush(debugFP);
                     BIO_free(bio);
                 }
@@ -500,7 +495,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
             else
             {
                 std::string datax;
-                datax.append((const char *) data, recvLen);
+                datax.append(static_cast<const char *>(data), recvLen);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
@@ -629,7 +624,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
                 BIO *bio = BIO_new(BIO_s_mem());
                 if (bio)
                 {
-                    BIO_dump_fp(debugFP, (const char *) data, sendLen);
+                    BIO_dump_fp(debugFP, static_cast<const char *>(data), sendLen);
                     fflush(debugFP);
                     BIO_free(bio);
                 }
@@ -637,7 +632,7 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
             else
             {
                 std::string datax;
-                datax.append((const char *) data, sendLen);
+                datax.append(static_cast<const char *>(data), sendLen);
                 fprintf(debugFP, "%s", datax.c_str());
                 fflush(debugFP);
             }
@@ -792,7 +787,7 @@ int Socket::setSocketOption(int level, int optname, const void *optval, socklen_
 int Socket::setSocketOptionBool(int level, int optname, bool value)
 {
     int flag = value ? 1 : 0;
-    return setSocketOption(level, optname, (char *) &flag, sizeof(int));
+    return setSocketOption(level, optname, reinterpret_cast<char *>(&flag), sizeof(int));
 }
 
 bool Socket::setReadTimeout(unsigned int _timeout)
@@ -811,17 +806,14 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 
 #ifdef _WIN32
     DWORD tout = _timeout * 1000;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &tout, sizeof(DWORD))) == -1)
+    return ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &tout, sizeof(DWORD))) != -1);
 #else
-    struct timeval timeout;
+    struct timeval timeout{};
     timeout.tv_sec = _timeout;
     timeout.tv_usec = 0;
-    if ((setsockopt(m_sockFD, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) == -1)
+    return ((setsockopt(m_sockFD, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout))) != -1);
 #endif
-    {
-        return false;
-    }
-    return true;
+
 }
 
 bool Socket::setWriteTimeout(unsigned int _timeout)
@@ -837,17 +829,13 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
     }
 #ifdef _WIN32
     int tout = _timeout * 1000;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *) &tout, sizeof(int))) == -1)
+    return ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *) &tout, sizeof(int))) != -1);
 #else
-    struct timeval timeout;
+    struct timeval timeout{};
     timeout.tv_sec = _timeout;
     timeout.tv_usec = 0;
-    if ((setsockopt(m_sockFD, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) == -1)
+    return ((setsockopt(m_sockFD, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout))) != -1);
 #endif
-    {
-        return false;
-    }
-    return true;
 }
 
 bool Socket::isActive() const

@@ -94,7 +94,7 @@ string Encoders::encodeToBase64Obf(const unsigned char *buf, size_t count, const
 
 string Encoders::encodeToBase64Obf(const string &buf, const uint64_t &seed)
 {
-    return encodeToBase64Obf((unsigned char *) buf.c_str(), buf.size(), seed);
+    return encodeToBase64Obf(reinterpret_cast<const unsigned char *>(buf.c_str()), buf.size(), seed);
 }
 
 std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const std::string &input, bool url)
@@ -285,7 +285,7 @@ string Encoders::decodeFromBase32(const std::string &base32Value)
 
 string Encoders::encodeToBase64(const string &buf, bool url)
 {
-    return encodeToBase64((unsigned char *) buf.c_str(), buf.size(), url);
+    return encodeToBase64(reinterpret_cast<const unsigned char *>(buf.c_str()), buf.size(), url);
 }
 
 string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url)
@@ -498,7 +498,7 @@ unsigned char Encoders::hexPairToByte(const char *bytes)
 
     // Valid HEX Code:
     char hexStr[3] = {static_cast<char>(bytes[0]), static_cast<char>(bytes[1]), '\0'};
-    return (unsigned char) strtol(hexStr, nullptr, 16);
+    return static_cast<unsigned char>(strtol(hexStr, nullptr, 16));
 }
 
 bool Encoders::getIfMustBeURLEncoded(char c, const Type &urlEncodingType)

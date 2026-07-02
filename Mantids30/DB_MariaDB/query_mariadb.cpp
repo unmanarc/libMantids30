@@ -27,30 +27,30 @@ Query_MariaDB::~Query_MariaDB()
             {
                 if (m_bindedInputParams[pos].is_unsigned)
                 {
-                    unsigned long long *buffer = (unsigned long long *) m_bindedInputParams[pos].buffer;
+                    unsigned long long *buffer = static_cast<unsigned long long *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
                 else
                 {
-                    long long *buffer = (long long *) m_bindedInputParams[pos].buffer;
+                    long long *buffer = static_cast<long long *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
             }
             else if (m_bindedInputParams[pos].buffer_type == MYSQL_TYPE_DOUBLE)
             {
-                double *buffer = (double *) m_bindedInputParams[pos].buffer;
+                double *buffer = static_cast<double *>(m_bindedInputParams[pos].buffer);
                 delete buffer;
             }
             else if (m_bindedInputParams[pos].buffer_type == MYSQL_TYPE_LONG)
             {
                 if (m_bindedInputParams[pos].is_unsigned)
                 {
-                    unsigned long *buffer = (unsigned long *) m_bindedInputParams[pos].buffer;
+                    unsigned long *buffer = static_cast<unsigned long *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
                 else
                 {
-                    long *buffer = (long *) m_bindedInputParams[pos].buffer;
+                    long *buffer = static_cast<long *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
             }
@@ -58,12 +58,12 @@ Query_MariaDB::~Query_MariaDB()
             {
                 if (m_bindedInputParams[pos].is_unsigned)
                 {
-                    unsigned char *buffer = (unsigned char *) m_bindedInputParams[pos].buffer;
+                    unsigned char *buffer = static_cast<unsigned char *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
                 else
                 {
-                    char *buffer = (char *) m_bindedInputParams[pos].buffer;
+                    char *buffer = static_cast<char *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
             }
@@ -71,12 +71,12 @@ Query_MariaDB::~Query_MariaDB()
             {
                 if (m_bindedInputParams[pos].is_unsigned)
                 {
-                    unsigned short *buffer = (unsigned short *) m_bindedInputParams[pos].buffer;
+                    unsigned short *buffer = static_cast<unsigned short *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
                 else
                 {
-                    short *buffer = (short *) m_bindedInputParams[pos].buffer;
+                    short *buffer = static_cast<short *>(m_bindedInputParams[pos].buffer);
                     delete buffer;
                 }
             }
@@ -332,7 +332,7 @@ bool Query_MariaDB::postBindInputVars()
             buffer[0] = ABSTRACT_SPTR_AS(BOOL, m_inputVars[m_keysByPos[pos]])->getValue() ? 1 : 0;
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
             m_bindedInputParams[pos].is_unsigned = 1;
         }
         break;
@@ -342,7 +342,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(INT8, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
         }
         break;
         case Memory::Abstract::Var::Type::INT16:
@@ -351,7 +351,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(INT16, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_SHORT;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
         }
         break;
         case Memory::Abstract::Var::Type::INT32:
@@ -360,7 +360,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(INT32, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
         }
         break;
         case Memory::Abstract::Var::Type::INT64:
@@ -369,7 +369,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(INT64, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
         }
         break;
         case Memory::Abstract::Var::Type::UINT8:
@@ -378,7 +378,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(UINT8, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_TINY;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
             m_bindedInputParams[pos].is_unsigned = 1;
         }
         break;
@@ -388,7 +388,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(UINT16, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_SHORT;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
             m_bindedInputParams[pos].is_unsigned = 1;
         }
         break;
@@ -398,7 +398,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(UINT32, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONG;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
             m_bindedInputParams[pos].is_unsigned = 1;
         }
         break;
@@ -408,7 +408,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(UINT64, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_LONGLONG;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
             m_bindedInputParams[pos].is_unsigned = 1;
         }
         break;
@@ -418,7 +418,7 @@ bool Query_MariaDB::postBindInputVars()
             (*buffer) = ABSTRACT_SPTR_AS(DOUBLE, m_inputVars[m_keysByPos[pos]])->getValue();
 
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_DOUBLE;
-            m_bindedInputParams[pos].buffer = (char *) buffer;
+            m_bindedInputParams[pos].buffer = buffer;
         }
         break;
         case Memory::Abstract::Var::Type::BIN:
@@ -426,7 +426,7 @@ bool Query_MariaDB::postBindInputVars()
             Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[m_keysByPos[pos]])->getValue();
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_BLOB;
             m_bindedInputParams[pos].buffer_length = i->dataSize;
-            m_bindedInputParams[pos].buffer = (char *) i->ptr;
+            m_bindedInputParams[pos].buffer = i->ptr;
         }
         break;
         case Memory::Abstract::Var::Type::VARCHAR:
@@ -435,7 +435,7 @@ bool Query_MariaDB::postBindInputVars()
             m_bindedInputParams[pos].buffer_length = strnlen(ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[m_keysByPos[pos]])->getValue(),
                                                              ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[m_keysByPos[pos]])->getVarSize())
                                                      + 1;
-            m_bindedInputParams[pos].buffer = (char *) ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[m_keysByPos[pos]])->getValue();
+            m_bindedInputParams[pos].buffer = ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[m_keysByPos[pos]])->getValue();
         }
         break;
         case Memory::Abstract::Var::Type::PTR:
@@ -443,8 +443,8 @@ bool Query_MariaDB::postBindInputVars()
             void *ptr = ABSTRACT_SPTR_AS(PTR, m_inputVars[m_keysByPos[pos]])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
             m_bindedInputParams[pos].buffer_type = MYSQL_TYPE_STRING;
-            m_bindedInputParams[pos].buffer_length = strnlen((char *) ptr, 0xFFFFFFFF);
-            m_bindedInputParams[pos].buffer = (char *) ptr;
+            m_bindedInputParams[pos].buffer_length = strnlen(static_cast<char *>(ptr), 0xFFFFFFFF);
+            m_bindedInputParams[pos].buffer = static_cast<char *>(ptr);
         }
         break;
 
@@ -492,7 +492,7 @@ bool Query_MariaDB::postBindInputVars()
             if (str)
             {
                 m_bindedInputParams[pos].buffer_length = str->size();
-                m_bindedInputParams[pos].buffer = (char *) str->c_str();
+                m_bindedInputParams[pos].buffer = const_cast<char *>(str->c_str());
             }
             else
             {
@@ -516,7 +516,7 @@ int Query_MariaDB::reconnection(const ExecType &execType, bool recursion)
     while (connectionError() && !recursion)
     {
         // Reconnect here until timeout...
-        if (((SQLConnector_MariaDB *) m_pSQLConnector)->reconnect(0xFFFFABCD))
+        if ((static_cast<SQLConnector_MariaDB *>(m_pSQLConnector))->reconnect(0xFFFFABCD))
         {
             // Remove the prepared statement...
             if (m_stmt)
@@ -570,7 +570,7 @@ bool Query_MariaDB::exec0(const ExecType &execType, bool recursion)
         return false;
     }
 
-    ((SQLConnector_MariaDB *) m_pSQLConnector)->getDatabaseConnector(this);
+    (static_cast<SQLConnector_MariaDB *>(m_pSQLConnector))->getDatabaseConnector(this);
 
     if (!m_databaseConnectionHandler)
     {
