@@ -37,7 +37,7 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
 )
 {
     std::string jwtSignature = Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING(*request.inputJSON, "signature", ""), true);
-    time_t expirationTime = Helpers::JSON::ASUINT64(*request.inputJSON, "expiration", 0);
+    time_t expirationTime = Helpers::JSON::ASINT64(*request.inputJSON, "expiration", 0);
     (static_cast<Engine *>(context))->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
 
     return {};

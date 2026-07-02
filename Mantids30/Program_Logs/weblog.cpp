@@ -298,7 +298,7 @@ void WebLog::printLogToFile(const Json::Value *value)
             std::string user = Helpers::JSON::ASSTRING(*value, "user", "-");
 
             // Assuming timestamp is in a standard format like "10/Oct/2023:13:55:36"
-            time_t timestamp = Helpers::JSON::ASUINT64(*value, "timestamp", 0);
+            time_t timestamp = Helpers::JSON::ASINT64(*value, "timestamp", 0);
             std::string requestLine = Helpers::JSON::ASSTRING(*value, "requestLine", "-");
             uint32_t responseStatus = Helpers::JSON::ASUINT(*value, "responseStatus", 0);
             std::optional<uint64_t> bytesSent = std::nullopt;
