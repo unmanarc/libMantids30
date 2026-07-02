@@ -60,5 +60,5 @@ void StreamAcceptorThread::thread_streamclient(const std::shared_ptr<StreamAccep
     pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str());
 #endif
     threadClient->postInitConnection();
-    ((MultiThreaded *) threadedAcceptedControl)->finalizeThreadElement(threadClient);
+    (static_cast<MultiThreaded *>(threadedAcceptedControl))->finalizeThreadElement(threadClient);
 }

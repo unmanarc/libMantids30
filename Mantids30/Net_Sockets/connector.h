@@ -10,7 +10,7 @@ namespace Mantids30::Network::Sockets {
 class Connector
 {
 public:
-    Connector() { m_stopReconnecting = false; }
+    Connector() = default;
 
     class Config
     {
@@ -73,7 +73,7 @@ public:
         Callbacks_Socket_TLS tlsCallbacks;
         Callbacks_Socket_TCP_Client tcpCallbacks;
 
-        void *context;
+        void *context = nullptr;
     };
 
     /**
@@ -86,7 +86,7 @@ public:
     // Callbacks from thread:
     virtual int handleServerConnection(const std::shared_ptr<Sockets::Socket_Stream> &sock) = 0;
 
-    std::atomic_bool m_stopReconnecting;
+    std::atomic_bool m_stopReconnecting {false};
 };
 
 } // namespace Mantids30::Network::Sockets

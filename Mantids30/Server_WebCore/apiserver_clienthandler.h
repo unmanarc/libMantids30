@@ -19,7 +19,7 @@ namespace Mantids30::Network::Servers::Web {
 class APIServer_ClientHandler : public Protocol::HTTP::HTTPv1_Server
 {
 public:
-    APIServerConfig *config;
+    APIServerConfig *config = nullptr;
 
     APIServer_ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock);
 

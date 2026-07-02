@@ -96,13 +96,8 @@ private:
      */
     struct MapElement
     {
-        MapElement()
-        {
-            numReaders = 0;
-            item = nullptr;
-        }
-        MapItem *item;
-        std::atomic<uint32_t> numReaders;
+        MapItem *item = nullptr;
+        std::atomic<uint32_t> numReaders{0};
         std::condition_variable noReadersCondition;
     };
 
