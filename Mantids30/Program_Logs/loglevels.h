@@ -8,9 +8,9 @@ enum LogLevel : uint8_t
 {
     ALL = 0x0,
     INFO = 0x1,
-    WARN = 0x2,
+    WARNING = 0x2,
     CRITICAL = 0x3,
-    ERR = 0x4,
+    ERROR = 0x4,
     DEBUG = 0x5,
     DEBUG1 = 0x6,
     SECURITY_ALERT = 0x7
