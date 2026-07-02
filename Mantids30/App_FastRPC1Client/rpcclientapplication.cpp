@@ -54,7 +54,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArgu
     {
         std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
         sleep(1);
-        std::optional<std::string> r = Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(), (char *) masterKey->data, masterKey->length);
+        std::optional<std::string> r = Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(), static_cast<char *>(masterKey->data), masterKey->length);
 
         if (r)
         {

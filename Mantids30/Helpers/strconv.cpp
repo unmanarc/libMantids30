@@ -61,7 +61,7 @@ size_t Mantids30::Helpers::StringConversions::getSizeFromString(const std::strin
     }
     else if (unitPart == "tb" || unitPart == "t")
     {
-        multiplier = (long double) 1024 * (long double) 1024 * (long double) 1024 * (long double) 1024;
+        multiplier = static_cast<long double>(1024) * static_cast<long double>(1024) * static_cast<long double>(1024) * static_cast<long double>(1024);
     }
     else
     {

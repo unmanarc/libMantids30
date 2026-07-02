@@ -22,7 +22,6 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-#include <cstring>
 #include <unistd.h>
 
 #include <Mantids30/Helpers/mem.h>
@@ -325,7 +324,7 @@ int StartApplication(int argc, char *argv[], Application *_app)
         if (!globalArgs.isInifiniteWaitAtEnd())
         {
             // Finish up.
-            syslog(LOG_NOTICE, "terminated (%" PRId32 ") by program execution", (int32_t) r);
+            syslog(LOG_NOTICE, "terminated (%" PRId32 ") by program execution", r);
             closelog();
             return r;
         }

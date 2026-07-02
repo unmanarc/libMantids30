@@ -239,7 +239,7 @@ public:
             // Copy the data
             m_expirationSignatures = other.m_expirationSignatures;
             m_revokedTokens = other.m_revokedTokens;
-            m_stopGarbageCollector = (bool) other.m_stopGarbageCollector;
+            m_stopGarbageCollector = static_cast<bool>(other.m_stopGarbageCollector);
             m_garbageCollectorInterval = other.m_garbageCollectorInterval;
         }
 

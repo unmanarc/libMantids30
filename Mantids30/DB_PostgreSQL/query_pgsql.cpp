@@ -5,7 +5,6 @@
 #include <memory>
 #include <stdexcept>
 
-#include <stdexcept>
 
 using namespace Mantids30::Database;
 
@@ -104,7 +103,7 @@ bool Query_PostgreSQL::step0()
             case Memory::Abstract::Var::Type::BIN:
             {
                 Memory::Abstract::BINARY::ByteArray binContainer;
-                binContainer.ptr = (char *) PQgetvalue(m_results, i, columnpos);
+                binContainer.ptr = PQgetvalue(m_results, i, columnpos);
                 // TODO: should bytes need to be 64-bit for blob64?
                 binContainer.dataSize = PQgetlength(m_results, i, columnpos);
                 ABSTRACT_PTR_AS(BINARY, outputVar)->setValue(&binContainer);
@@ -292,8 +291,8 @@ bool Query_PostgreSQL::postBindInputVars()
         {
             void *ptr = ABSTRACT_SPTR_AS(PTR, m_inputVars[key])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
-            m_paramLengths[pos] = strnlen((char *) ptr, (0xFFFFFFFF / 2) - 1);
-            m_paramValues[pos] = (char *) ptr;
+            m_paramLengths[pos] = strnlen(static_cast<char *>(ptr), (0xFFFFFFFF / 2) - 1);
+            m_paramValues[pos] = static_cast<char *>(ptr);
         }
         break;
         case Memory::Abstract::Var::Type::STRING:
@@ -321,7 +320,7 @@ bool Query_PostgreSQL::postBindInputVars()
 
         if (str)
         {
-            m_paramValues[pos] = (char *) str->c_str();
+            m_paramValues[pos] = const_cast<char *>(str->c_str());
             m_paramLengths[pos] = str->size();
         }
     }
@@ -354,7 +353,7 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
         while (PQstatus(m_databaseConnectionHandler) != CONNECTION_OK && !recursion)
         {
             // Reconnect...
-            if (((SQLConnector_PostgreSQL *) m_pSQLConnector)->reconnect(0xFFFFABCD))
+            if ((static_cast<SQLConnector_PostgreSQL *>(m_pSQLConnector))->reconnect(0xFFFFABCD))
             {
                 // If reconnected... execute the query again
                 bool result2 = exec0(execType, true);

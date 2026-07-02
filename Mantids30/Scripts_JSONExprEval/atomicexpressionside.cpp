@@ -68,7 +68,7 @@ set<string> AtomicExpressionSide::resolveValueSet(const Json::Value &v, bool res
         {
             for (size_t i = 0; i < result.size(); i++)
             {
-                res.insert(result[(int) i].asString());
+                res.insert(result[static_cast<int>(i)].asString());
             }
         }
         return res;

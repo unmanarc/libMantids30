@@ -10,7 +10,7 @@ Query::~Query()
     if (m_pSQLConnector)
     {
         // Detach me from the SQL connector...
-        ((SQLConnector *) m_pSQLConnector)->detachQuery(this);
+        (static_cast<SQLConnector *>(m_pSQLConnector))->detachQuery(this);
     }
 
     m_inputVars.clear();
