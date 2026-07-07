@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Mantids30/Memory/a_var.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
 #include <list>
 #include <map>
 #include <memory>
 #include <string>
+#include <shared_mutex>
 
 #include "programvalues.h"
 
@@ -161,7 +162,7 @@ private:
 
     // Variables:
     std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> m_variables; // variable name -> variable
-    Mantids30::Threads::Sync::Mutex_Shared m_variablesMutex;
+    std::shared_mutex m_variablesMutex;
 };
 
 } // namespace Mantids30::Program::Arguments

@@ -11,7 +11,8 @@
 #include <boost/algorithm/string/replace.hpp>
 
 #include <Mantids30/Memory/a_bool.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 
 using namespace std;
 using namespace Mantids30::Program::Arguments;
@@ -286,7 +287,7 @@ void GlobalArguments::printHelp()
 
 bool GlobalArguments::addStaticVariable(const string &name, const std::shared_ptr<Var> &var)
 {
-    Threads::Sync::Lock_RW lock(m_variablesMutex);
+    std::unique_lock<std::shared_mutex> lock(m_variablesMutex);
     if (m_variables.find(name) == m_variables.end())
     {
         return false;
@@ -297,7 +298,7 @@ bool GlobalArguments::addStaticVariable(const string &name, const std::shared_pt
 
 std::shared_ptr<Var> GlobalArguments::getStaticVariable(const string &name)
 {
-    Threads::Sync::Lock_RD lock(m_variablesMutex);
+    std::shared_lock<std::shared_mutex> lock(m_variablesMutex);
     if (m_variables.find(name) == m_variables.end())
     {
         return nullptr;
