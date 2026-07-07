@@ -3,11 +3,12 @@
 #include <Mantids30/Helpers/json.h>
 
 #include <Mantids30/Net_Sockets/socket_stream.h>
-#include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
+
 #include <Mantids30/Threads/safe_map.h>
 #include <Mantids30/Threads/threadpool.h>
 #include <memory>
+#include <shared_mutex>
 
 namespace Mantids30::Network::Protocol::FastRPC {
 
@@ -39,12 +40,12 @@ public:
     {
         std::shared_ptr<Sockets::Socket_Stream> streamBack;
         uint32_t maxMessageSize;
-        void *caller;
-        Threads::Sync::Mutex_Shared *done;
-        Threads::Sync::Mutex *mtSocket;
+        void *caller=nullptr;
+        std::shared_mutex *done = nullptr;
+        std::mutex *mtSocket = nullptr;
         std::string methodName;
         Json::Value payload;
-        uint64_t requestId;
+        uint64_t requestId=0;
 
         // Accesible objects:
         std::string key;
@@ -57,7 +58,7 @@ public:
     public:
         // Socket
         std::shared_ptr<Sockets::Socket_Stream> stream;
-        Threads::Sync::Mutex *mtSocket{nullptr};
+        std::mutex *mtSocket{nullptr};
         std::string key;
 
         // Accesible objects:
@@ -66,7 +67,7 @@ public:
 
         // Request ID counter.
         uint64_t requestIdCounter{1};
-        Threads::Sync::Mutex mtReqIdCt;
+        std::mutex mtReqIdCt;
 
         // Answers:
         std::map<uint64_t, Json::Value> answers;
@@ -247,7 +248,7 @@ private:
     static void sendRPCAnswer(FastRPC1::ThreadParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
     int processAnswer(FastRPC1::Connection *connection);
-    int processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
+    int processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
                      const std::shared_ptr<void> &context, const std::string &data);
 
     // Stores active connections indexed by a unique key identifier.
@@ -269,7 +270,7 @@ private:
     std::map<std::string, FastRPC1::Method> m_methods;
 
     // Shared mutex for synchronizing access to the methods map.
-    Threads::Sync::Mutex_Shared m_methodsMutex;
+    std::shared_mutex m_methodsMutex;
 
     // Thread pool for handling RPC method execution.
     Mantids30::Threads::Pool::ThreadPool *m_threadPool{nullptr};

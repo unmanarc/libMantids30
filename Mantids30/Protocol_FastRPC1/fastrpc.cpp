@@ -1,5 +1,6 @@
 #include "fastrpc.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 #include <memory>
 #include <thread>
 
@@ -56,7 +57,7 @@ void FastRPC1::setQueuePushTimeoutInMS(const uint32_t &value)
 
 bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &method)
 {
-    Threads::Sync::Lock_RW lock(m_methodsMutex);
+    std::unique_lock<std::shared_mutex> lock(m_methodsMutex);
     if (m_methods.find(methodName) == m_methods.end())
     {
         // Put the method.
@@ -101,7 +102,7 @@ bool FastRPC1::waitPingInterval()
 Json::Value FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const Json::Value &payload, bool *found)
 {
     Json::Value r;
-    Threads::Sync::Lock_RD lock(m_methodsMutex);
+    std::shared_lock<std::shared_mutex> lock(m_methodsMutex);
     if (m_methods.find(methodName) != m_methods.end())
     {
         r = m_methods[methodName].method(m_overwriteContext ? m_overwriteContext : m_methods[methodName].context, connectionKey, payload, context, data);
@@ -180,7 +181,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
     return 1;
 }
 
-int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone, Threads::Sync::Mutex *mtSocket,
+int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
                            const std::shared_ptr<void> &context, const std::string &data)
 {
     uint32_t maxAlloc = m_maxMessageSize;
@@ -234,13 +235,13 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
     }
     else
     {
-        params->done->lockShared();
+        params->done->lock_shared();
         if (!m_threadPool->pushTask(executeRPCTask, params, m_queuePushTimeoutInMS, priority, key))
         {
             // Can't push the task in the queue. Null answer.
             eventFullQueueDrop(params.get());
             sendRPCAnswer(params.get(), "", static_cast<uint8_t>(TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW));
-            params->done->unlockShared();
+            params->done->unlock_shared();
             //delete params;
         }
     }
@@ -286,8 +287,8 @@ int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &s
 
     int ret = 1;
 
-    Threads::Sync::Mutex_Shared mtDone;
-    Threads::Sync::Mutex mtSocket;
+    std::shared_mutex mtDone;
+    std::mutex mtSocket;
 
     FastRPC1::Connection *connection = new FastRPC1::Connection;
     connection->context = context;
@@ -372,7 +373,7 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
     Json::Value r = (static_cast<FastRPC1 *>(params->caller))->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
     std::string output = Json::writeString(builder, r);
     sendRPCAnswer(params, output, found ? static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) : static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
-    params->done->unlockShared();
+    params->done->unlock_shared();
 }
 
 void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::string &answer, uint8_t executionStatus)

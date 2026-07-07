@@ -6,8 +6,8 @@
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Net_Sockets/callbacks_socket_tls_server.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
-#include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
+
 #include <Mantids30/Threads/threadpool.h>
 
 #include <Mantids30/Net_Sockets/connector.h>
@@ -103,8 +103,8 @@ public:
         FastRPC3::SessionPTR *sessionHolder = nullptr;
         std::shared_ptr<API::Monolith::Endpoints> methodsHandler;
         std::shared_ptr<DataFormat::JWT> jwtValidator = nullptr;
-        Threads::Sync::Mutex_Shared *doneSharedMutex = nullptr;
-        Threads::Sync::Mutex *socketMutex = nullptr;
+        std::shared_mutex *doneSharedMutex = nullptr;
+        std::mutex *socketMutex = nullptr;
         std::string methodName, remotePeerIPAddress, remotePeerTLSCommonName, userId, domain;
         char *extraTokenAuth = nullptr;
         Json::Value payload;
@@ -121,12 +121,12 @@ public:
 
         // Socket
         std::shared_ptr<Sockets::Socket_Stream> stream = nullptr;
-        Threads::Sync::Mutex *socketMutex = nullptr;
+        std::mutex *socketMutex = nullptr;
         std::string key;
 
         // Request ID counter.
         uint64_t requestIdCounter = 1;
-        Threads::Sync::Mutex mtReqIdCt;
+        std::mutex mtReqIdCt;
 
         // Answers:
         std::map<uint64_t, Json::Value> answers;
@@ -496,8 +496,8 @@ private:
     static void sendRPCAnswer(FastRPC3::TaskParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
     int processIncomingAnswer(FastRPC3::Connection *connection);
-    int processIncomingExecutionRequest(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone,
-                                        Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *session);
+    int processIncomingExecutionRequest(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone,
+                                        std::mutex *mtSocket, FastRPC3::SessionPTR *session);
 
     // TODO:
     /*    std::map<std::string,std::string> connectionIdToLogin;

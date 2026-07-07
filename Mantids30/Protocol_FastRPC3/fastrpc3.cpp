@@ -5,7 +5,8 @@
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <cstdint>
@@ -162,8 +163,8 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
     return 1;
 }
 
-int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Stream> &stream, const string &key, const float &priority, Threads::Sync::Mutex_Shared *mtDone,
-                                              Threads::Sync::Mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
+int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Stream> &stream, const string &key, const float &priority, std::shared_mutex *mtDone,
+                                              std::mutex *mtSocket, FastRPC3::SessionPTR *sessionHolder)
 {
     uint32_t maxAlloc = config.maxMessageSize;
     uint64_t requestId = 0;
@@ -241,7 +242,7 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
     }
     else
     {
-        params->doneSharedMutex->lockShared();
+        params->doneSharedMutex->lock_shared();
 
         void (*currentTask)(const std::shared_ptr<void> &) = LocalRPCTasks::executeLocalTask;
 
@@ -263,7 +264,7 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
             // Can't push the task in the queue. Null answer.
             CALLBACK(rpcCallbacks.onIncomingTaskDroppedQueueFull)(params.get());
             sendRPCAnswer(params.get(), "", static_cast<uint8_t>(TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW));
-            params->doneSharedMutex->unlockShared();
+            params->doneSharedMutex->unlock_shared();
             //            delete params;
         }
     }
@@ -288,8 +289,8 @@ int FastRPC3::handleConnection(const std::shared_ptr<Sockets::Socket_Stream> &st
 
     int ret = 1;
 
-    Threads::Sync::Mutex_Shared mtDone;
-    Threads::Sync::Mutex mtSocket;
+    std::shared_mutex mtDone;
+    std::mutex mtSocket;
 
     FastRPC3::Connection *connection = new FastRPC3::Connection;
     connection->callbacks = &rpcCallbacks;

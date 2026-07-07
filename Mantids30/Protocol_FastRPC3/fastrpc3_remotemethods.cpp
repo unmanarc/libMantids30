@@ -4,7 +4,8 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <cstdint>

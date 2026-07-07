@@ -5,7 +5,7 @@
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <chrono>
@@ -183,7 +183,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
     //
     fullResponse["payload"] = responsePayload;
     sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ?  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) :  static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
-    taskParams->doneSharedMutex->unlockShared();
+    taskParams->doneSharedMutex->unlock_shared();
 }
 
 void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
@@ -197,7 +197,7 @@ void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
     data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
 
     sendRPCAnswer(taskParams, data.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
-    taskParams->doneSharedMutex->unlockShared();
+    taskParams->doneSharedMutex->unlock_shared();
 }
 
 void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
@@ -248,7 +248,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
 
     response = loginAuthResult.toJSONResponse();
     sendRPCAnswer(taskParams, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
-    taskParams->doneSharedMutex->unlockShared();
+    taskParams->doneSharedMutex->unlock_shared();
 }
 
 void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
@@ -257,5 +257,5 @@ void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
     Json::Value response;
     response = params->sessionHolder->destroy();
     sendRPCAnswer(params, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
-    params->doneSharedMutex->unlockShared();
+    params->doneSharedMutex->unlock_shared();
 }
