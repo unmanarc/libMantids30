@@ -1,7 +1,8 @@
 #include "socket_multiplexed_line.h"
 #include "socket_multiplexer.h"
 #include "vars.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 #include <thread>
 
 using namespace Mantids::Network::Multiplexor;
@@ -37,7 +38,7 @@ Socket_Multiplexed_Line::~Socket_Multiplexed_Line()
 
 void Socket_Multiplexed_Line::_lshutdown()
 {
-    Threads::Sync::Lock_RD lock(rwLock_Vars);
+    std::shared_lock<std::shared_mutex> lock(rwLock_Vars);
     if (lineAttachedSocket)
         lineAttachedSocket->shutdownSocket();
 }
@@ -53,7 +54,7 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
 
     {
         // TODO: atomic this vars.
-        Threads::Sync::Lock_RW lock(rwLock_Vars);
+        std::unique_lock<std::shared_mutex> lock(rwLock_Vars);
         this->lineAttachedSocket = lineAttachedSocket;
         this->multiPlexer = multiplexedSocket;
     }
@@ -72,8 +73,8 @@ bool Socket_Multiplexed_Line::processLine(Streams::StreamSocket *lineAttachedSoc
         int len;
         if ((len = lineAttachedSocket->partialRead(data, avlen)) > 0)
         {
-            Threads::Sync::Lock_RD lock_1(rwLock_Vars);
-            Threads::Sync::Lock_RD lock_2(rwLock_LineID);
+            std::shared_lock<std::shared_mutex> lock_1(rwLock_Vars);
+            std::shared_lock<std::shared_mutex> lock_2(rwLock_LineID);
 
             if (!multiplexedSocket->multiplexedSocket_sendLineData(lineID, data, len))
             {
@@ -132,7 +133,7 @@ bool Socket_Multiplexed_Line::processBuffer()
     }
     else
     {
-        Threads::Sync::Lock_RD lock(rwLock_Vars);
+        std::shared_lock<std::shared_mutex> lock(rwLock_Vars);
         if (!lineAttachedSocket->writeBlock(datab->data, datab->len))
         {
             // TODO: if can't write maybe can't read, but anyway, close it.
@@ -163,19 +164,19 @@ bool Socket_Multiplexed_Line::addBufferElement(void *data, uint16_t len)
 
 bool Socket_Multiplexed_Line::isValidLine()
 {
-    Threads::Sync::Lock_RD lock(rwLock_LineID);
+    std::shared_lock<std::shared_mutex> lock(rwLock_LineID);
     return lineID.localLineId != NULL_LINE;
 }
 
 void Socket_Multiplexed_Line::setLineLocalID(const LineID &value)
 {
-    Threads::Sync::Lock_RW lock(rwLock_LineID);
+    std::unique_lock<std::shared_mutex> lock(rwLock_LineID);
     lineID.localLineId = value;
 }
 
 void Socket_Multiplexed_Line::setLineRemoteID(const LineID &value)
 {
-    Threads::Sync::Lock_RW lock(rwLock_LineID);
+    std::unique_lock<std::shared_mutex> lock(rwLock_LineID);
     lineID.remoteLineId = value;
 }
 
@@ -261,8 +262,8 @@ DataStructs::sDataBuffer *Socket_Multiplexed_Line::getBufferElement(bool emptyBl
 
     if (dbuf->len)
     {
-        Threads::Sync::Lock_RD lock_1(rwLock_Vars);
-        Threads::Sync::Lock_RD lock_2(rwLock_LineID);
+        std::shared_lock<std::shared_mutex> lock_1(rwLock_Vars);
+        std::shared_lock<std::shared_mutex> lock_2(rwLock_LineID);
 
         if (multiPlexer)
             ((Socket_Multiplexer *) multiPlexer)->multiplexedSocket_sendReadenBytes(lineID, dbuf->len);
@@ -290,19 +291,19 @@ void Socket_Multiplexed_Line::processLineThread(Socket_Multiplexed_Line *multipl
 
 DataStructs::sLineID Socket_Multiplexed_Line::getLineID()
 {
-    Threads::Sync::Lock_RD lock(rwLock_LineID);
+    std::shared_lock<std::shared_mutex> lock(rwLock_LineID);
     return lineID;
 }
 
 void *Socket_Multiplexed_Line::getLocalObject()
 {
-    Threads::Sync::Lock_RD lock(rwLock_LocalObject);
+    std::shared_lock<std::shared_mutex> lock(rwLock_LocalObject);
     return localObject;
 }
 
 void Socket_Multiplexed_Line::setLocalObject(void *value)
 {
-    Threads::Sync::Lock_RW lock(rwLock_LocalObject);
+    std::unique_lock<std::shared_mutex> lock(rwLock_LocalObject);
     localObject = value;
 }
 

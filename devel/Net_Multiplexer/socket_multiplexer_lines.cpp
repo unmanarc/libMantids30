@@ -1,6 +1,7 @@
 #include "socket_multiplexer_lines.h"
 #include "socket_multiplexer.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 
 using namespace Mantids::Network::Multiplexor;
 
@@ -19,7 +20,7 @@ Socket_Multiplexer_Lines::~Socket_Multiplexer_Lines() {}
 // for outgoing connection ( syn/ack equiv should set the remote number )
 std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::registerLine()
 {
-    Threads::Sync::Lock_RW lock(rwLock_MultiplexedLines);
+    std::unique_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
 
     std::shared_ptr<Socket_Multiplexed_Line> r = std::make_shared<Socket_Multiplexed_Line>();
     if (bNoNewConnections)
@@ -46,7 +47,7 @@ std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::registerLine(
 
 std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::findLine(LineID localLineId)
 {
-    Threads::Sync::Lock_RD lock(rwLock_MultiplexedLines);
+    std::shared_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
 
     std::shared_ptr<Socket_Multiplexed_Line> x;
     if (multiplexedLinesMap.find(localLineId) == multiplexedLinesMap.end())
@@ -59,7 +60,7 @@ std::shared_ptr<Socket_Multiplexed_Line> Socket_Multiplexer_Lines::findLine(Line
 
 void Socket_Multiplexer_Lines::removeLine(LineID lineId)
 {
-    Threads::Sync::Lock_RW lock(rwLock_MultiplexedLines);
+    std::unique_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
 
     if (multiplexedLinesMap.find(lineId) != multiplexedLinesMap.end())
     {
@@ -108,7 +109,7 @@ void Socket_Multiplexer_Lines::closeAndWaitForEveryLine()
     // Send close data.
     if (true)
     {
-        Threads::Sync::Lock_RD lock(rwLock_MultiplexedLines);
+        std::shared_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
         for (std::pair<LineID, std::shared_ptr<Socket_Multiplexed_Line>> cs : multiplexedLinesMap)
         {
             cs.second->_lshutdown(); // the loosy way.
@@ -133,12 +134,12 @@ void Socket_Multiplexer_Lines::setMaxMissedSearches(const uint32_t &value)
 
 void Socket_Multiplexer_Lines::unlockNewConnections()
 {
-    Threads::Sync::Lock_RW lock(rwLock_MultiplexedLines);
+    std::unique_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
     bNoNewConnections = false;
 }
 
 void Socket_Multiplexer_Lines::preventNewConnections()
 {
-    Threads::Sync::Lock_RW lock(rwLock_MultiplexedLines);
+    std::unique_lock<std::shared_mutex> lock(rwLock_MultiplexedLines);
     bNoNewConnections = true;
 }
