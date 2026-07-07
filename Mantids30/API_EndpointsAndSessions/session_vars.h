@@ -1,8 +1,9 @@
 #pragma once
 
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
 #include <map>
+#include <shared_mutex>
 #include <string>
 
 namespace Mantids30::Sessions {
@@ -49,7 +50,7 @@ private:
     std::map<std::string, Json::Value> m_sessionVariables;
 
     // Mutex for thread safety
-    Threads::Sync::Mutex_Shared m_sessionVarsMutex;
+    std::shared_mutex m_sessionVarsMutex;
 };
 
 } // namespace Mantids30::Sessions

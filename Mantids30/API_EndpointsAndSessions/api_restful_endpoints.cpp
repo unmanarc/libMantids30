@@ -2,7 +2,8 @@
 #include <Mantids30/Protocol_HTTP/methods.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 #include "security.h"
 
 using namespace Mantids30;

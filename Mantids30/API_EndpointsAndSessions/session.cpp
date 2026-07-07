@@ -1,6 +1,7 @@
 #include "session.h"
 #include <Mantids30/Helpers/random.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 
 using namespace Mantids30::Sessions;
 using namespace Mantids30::DataFormat;

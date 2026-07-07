@@ -1,6 +1,7 @@
 #include "api_monolith_endpoints.h"
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 #include <memory>
 
 using namespace Mantids30::API::Monolith;

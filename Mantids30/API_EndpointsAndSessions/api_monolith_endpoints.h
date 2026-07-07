@@ -6,7 +6,7 @@
 #include "endpoints_options.h"
 #include "endpoints_requirements_map.h"
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
 #include <memory>
 #include <string>
 
