@@ -1,13 +1,13 @@
 #pragma once
 
 #include <atomic>
-#include <boost/thread/shared_mutex.hpp>
 #include <condition_variable>
 #include <ctime>
 #include <json/json.h>
 #include <json/value.h>
 #include <queue>
 #include <set>
+#include <shared_mutex>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -175,7 +175,7 @@ public:
         Cache(const Cache &other)
         {
             // Lock the destination's mutex to prevent concurrent modifications
-            boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
+            std::unique_lock<std::shared_mutex> lockThis(m_cachedTokensMutex);
 
             // Copy data
             m_cacheMaxByteCount = other.m_cacheMaxByteCount;
@@ -191,7 +191,7 @@ public:
             if (this != &other)
             {
                 // Lock the destination's mutex to prevent concurrent modifications
-                boost::unique_lock<boost::shared_mutex> lockThis(m_cachedTokensMutex);
+                std::unique_lock<std::shared_mutex> lockThis(m_cachedTokensMutex);
 
                 // Copy data
                 m_cacheMaxByteCount = other.m_cacheMaxByteCount;
@@ -221,7 +221,7 @@ public:
         bool m_enabled = false;
         std::unordered_map<std::string, bool> m_tokenCache;
         std::queue<std::string> m_cacheQueue;
-        boost::shared_mutex m_cachedTokensMutex;
+        std::shared_mutex m_cachedTokensMutex;
     };
 
     class Revocation
@@ -234,7 +234,7 @@ public:
         Revocation(const Revocation &other)
         {
             // Lock the destination's mutex to prevent concurrent modifications
-            boost::unique_lock<boost::shared_mutex> lockThis(m_revokedTokensMutex);
+            std::unique_lock<std::shared_mutex> lockThis(m_revokedTokensMutex);
 
             // Copy the data
             m_expirationSignatures = other.m_expirationSignatures;
@@ -249,7 +249,7 @@ public:
             if (this != &other)
             {
                 // Lock the destination's mutex to prevent concurrent modifications
-                boost::unique_lock<boost::shared_mutex> lockThis(m_revokedTokensMutex);
+                std::unique_lock<std::shared_mutex> lockThis(m_revokedTokensMutex);
 
                 // Copy the data
                 m_expirationSignatures = other.m_expirationSignatures;
@@ -274,7 +274,7 @@ public:
 
         std::multimap<std::time_t, std::string> m_expirationSignatures;
         std::set<std::string> m_revokedTokens;
-        boost::shared_mutex m_revokedTokensMutex;
+        std::shared_mutex m_revokedTokensMutex;
 
         std::thread m_garbageCollectorThread;
         std::atomic_bool m_stopGarbageCollector{false};

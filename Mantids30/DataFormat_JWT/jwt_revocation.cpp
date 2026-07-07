@@ -19,14 +19,14 @@ JWT::Revocation::~Revocation()
 
 void JWT::Revocation::addToRevocationList(const std::string &signature, time_t expirationTime)
 {
-    boost::unique_lock<boost::shared_mutex> writeLock(m_revokedTokensMutex);
+    std::unique_lock<std::shared_mutex> writeLock(m_revokedTokensMutex);
     m_expirationSignatures.insert({expirationTime, signature});
     m_revokedTokens.insert(signature);
 }
 
 bool JWT::Revocation::isSignatureRevoked(const std::string &signature)
 {
-    boost::shared_lock<boost::shared_mutex> readLock(m_revokedTokensMutex);
+    std::shared_lock<std::shared_mutex> readLock(m_revokedTokensMutex);
 
     // TODO: can you modify a signature to ...
     return m_revokedTokens.find(signature) != m_revokedTokens.end();
@@ -34,7 +34,7 @@ bool JWT::Revocation::isSignatureRevoked(const std::string &signature)
 
 void JWT::Revocation::removeExpiredTokensFromRevocationList()
 {
-    boost::unique_lock<boost::shared_mutex> writeLock(m_revokedTokensMutex);
+    std::unique_lock<std::shared_mutex> writeLock(m_revokedTokensMutex);
 
     time_t now = std::time(nullptr);
     std::multimap<time_t, std::string>::iterator upperBound = m_expirationSignatures.upper_bound(now);
