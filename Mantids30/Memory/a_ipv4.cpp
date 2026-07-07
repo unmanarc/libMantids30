@@ -7,7 +7,7 @@
 #endif
 
 #include <Mantids30/Helpers/mem.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -33,19 +33,19 @@ IPV4::IPV4(const std::string &value)
 
 in_addr IPV4::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
 uint8_t IPV4::getCidrMask()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_cidrMask;
 }
 
 bool IPV4::setValue(const in_addr &value, const uint8_t &cidrMask)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_cidrMask = cidrMask;
     this->m_value.s_addr = value.s_addr;
     return true;

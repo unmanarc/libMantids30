@@ -1,5 +1,5 @@
 #include "a_ptr.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 #include <cstdint>
 
 using namespace Mantids30::Memory::Abstract;
@@ -17,13 +17,13 @@ PTR::PTR(void *value)
 
 void *PTR::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
 bool PTR::setValue(void *value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     this->m_value = value;
     return true;
@@ -31,7 +31,7 @@ bool PTR::setValue(void *value)
 
 std::string PTR::toString()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     char ovalue[256];
     const void *ptr = m_value;
@@ -41,7 +41,7 @@ std::string PTR::toString()
 
 bool PTR::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     if (value.empty())
     {
@@ -54,7 +54,7 @@ bool PTR::fromString(const std::string &value)
 
 std::shared_ptr<Var> PTR::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::shared_ptr<PTR> var = std::make_shared<PTR>();
     if (var)

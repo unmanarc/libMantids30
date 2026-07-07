@@ -1,6 +1,6 @@
 #include "a_stringlist.h"
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -17,13 +17,13 @@ STRINGLIST::STRINGLIST(const std::list<std::string> &value)
 
 std::list<std::string> STRINGLIST::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
 bool STRINGLIST::setValue(const std::list<std::string> &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_value = value;
     return true;
 }
@@ -200,7 +200,7 @@ Json::Value STRINGLIST::toJSON()
         return Json::nullValue;
     }
 
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     Json::Value j(Json::arrayValue);
     for (const std::string &item : m_value)
     {
@@ -216,7 +216,7 @@ bool STRINGLIST::fromJSON(const Json::Value &value)
         return false;
     }
 
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value.clear();
     for (const Json::Value &item : value)
     {

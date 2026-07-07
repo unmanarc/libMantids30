@@ -1,6 +1,7 @@
 #include "a_bin.h"
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <shared_mutex>
+#include <mutex>
 #include <cstring>
 #include <json/value.h>
 
@@ -19,7 +20,7 @@ BINARY::ByteArray *BINARY::getValue()
 
 bool BINARY::setValue(ByteArray *value)
 {
-    Threads::Sync::Lock_RW lock(this->m_value.mutex);
+    std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
     this->m_value.ptr = new char[value->dataSize];
     if (!this->m_value.ptr)
     {
@@ -32,14 +33,14 @@ bool BINARY::setValue(ByteArray *value)
 
 std::string BINARY::toString()
 {
-    Threads::Sync::Lock_RD lock(this->m_value.mutex);
+    std::shared_lock<std::shared_mutex> lock(this->m_value.mutex);
     std::string x((m_value.ptr), m_value.dataSize);
     return x;
 }
 
 bool BINARY::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(this->m_value.mutex);
+    std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
 
     this->m_value.ptr = new char[value.size() + 1];
     if (!this->m_value.ptr)
@@ -54,7 +55,7 @@ bool BINARY::fromString(const std::string &value)
 
 Json::Value BINARY::toJSON()
 {
-    Threads::Sync::Lock_RD lock(this->m_value.mutex);
+    std::shared_lock<std::shared_mutex> lock(this->m_value.mutex);
 
     if (isNull())
     {
@@ -66,13 +67,13 @@ Json::Value BINARY::toJSON()
 
 bool BINARY::fromJSON(const Json::Value &value)
 {
-    Threads::Sync::Lock_RW lock(this->m_value.mutex);
+    std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
     return fromString(Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING_D(value, "")));
 }
 
 std::shared_ptr<Var> BINARY::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(this->m_value.mutex);
+    std::shared_lock<std::shared_mutex> lock(this->m_value.mutex);
 
     std::shared_ptr<BINARY> var = std::make_shared<BINARY>();
     if (!var->setValue(&(this->m_value)))

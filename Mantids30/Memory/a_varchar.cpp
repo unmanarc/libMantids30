@@ -1,5 +1,5 @@
 #include "a_varchar.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 #include <cstring>
 
 using namespace Mantids30::Memory::Abstract;
@@ -40,14 +40,14 @@ VARCHAR::~VARCHAR()
 
 std::string VARCHAR::toString()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_value;
 }
 
 bool VARCHAR::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     bool r = true;
     size_t szVar = value.size();
@@ -76,14 +76,14 @@ bool VARCHAR::fromString(const std::string &value)
 
 char *VARCHAR::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_value;
 }
 
 bool VARCHAR::setValue(const char *value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     bool r = true;
 
@@ -111,14 +111,14 @@ bool VARCHAR::setValue(const char *value)
 
 size_t VARCHAR::getVarSize()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_varSize;
 }
 
 bool VARCHAR::getWasTruncated()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_wasTruncated;
 }
@@ -145,7 +145,7 @@ bool VARCHAR::fromJSON(const Json::Value &value)
 
 std::shared_ptr<Var> VARCHAR::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(this->m_mutex);
+    std::shared_lock<std::shared_mutex> lock(this->m_mutex);
     std::shared_ptr<VARCHAR> var = std::make_shared<VARCHAR>(this->m_varSize, this->m_value);
     return var;
 }

@@ -1,5 +1,5 @@
 #include "a_string.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -16,7 +16,7 @@ STRING::STRING(const std::string &value)
 
 std::string STRING::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
@@ -42,14 +42,14 @@ std::string STRING::toString()
 
 bool STRING::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_value = value;
     return true;
 }
 
 std::shared_ptr<Var> STRING::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::shared_ptr<STRING> var = std::make_shared<STRING>();
     if (var)

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "a_var.h"
-#include <Mantids30/Threads/mutex_shared.h>
+
 #include <cstdint>
+#include <shared_mutex>
 
 namespace Mantids30::Memory::Abstract {
 
@@ -33,7 +34,7 @@ protected:
 
 private:
     uint8_t m_value = 0;
-    Threads::Sync::Mutex_Shared m_mutex;
+    std::shared_mutex m_mutex;
 };
 
 } // namespace Mantids30::Memory::Abstract

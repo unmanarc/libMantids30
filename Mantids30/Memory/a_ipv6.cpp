@@ -7,7 +7,7 @@
 #endif
 
 #include <Mantids30/Helpers/mem.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -32,13 +32,13 @@ IPV6::IPV6(const std::string &value)
 
 in6_addr IPV6::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
 bool IPV6::setValue(const in6_addr &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 #ifndef _WIN32
     this->m_value.__in6_u = value.__in6_u;
 #else

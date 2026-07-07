@@ -1,5 +1,5 @@
 #include "a_map.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 #include <memory>
 
 using namespace Mantids30::Memory::Abstract;
@@ -12,7 +12,7 @@ VariableMap::~VariableMap()
 
 void VariableMap::insertOrUpdateSubmap(const std::string &variableName, const std::shared_ptr<VariableMap> &vars)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     removeVariable(variableName, false);
     m_submaps[variableName] = vars;
@@ -25,7 +25,7 @@ void VariableMap::setVariableFromString(const std::string &variableName, Var::Ty
 
 void VariableMap::insertOrUpdateVariable(const std::string &variableName, const std::shared_ptr<Var> &var)
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     removeVariable(variableName, false);
     m_variables[variableName] = var;
@@ -33,7 +33,7 @@ void VariableMap::insertOrUpdateVariable(const std::string &variableName, const 
 
 std::string VariableMap::getVariableAsString(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (m_variables.find(variableName) == m_variables.end())
     {
@@ -66,7 +66,7 @@ void VariableMap::removeVariable(const std::string &variableName, bool lock)
 
 std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (m_variables.find(variableName) == m_variables.end())
     {
@@ -77,7 +77,7 @@ std::shared_ptr<Var> VariableMap::getVariable(const std::string &variableName)
 
 std::shared_ptr<VariableMap> VariableMap::getSubmap(const std::string &variableName)
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (m_submaps.find(variableName) == m_submaps.end())
     {
@@ -88,7 +88,7 @@ std::shared_ptr<VariableMap> VariableMap::getSubmap(const std::string &variableN
 
 std::list<std::string> VariableMap::listVariableKeys()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::list<std::string> r;
     for (const auto &i : m_variables)
@@ -100,7 +100,7 @@ std::list<std::string> VariableMap::listVariableKeys()
 
 std::list<std::string> VariableMap::listSubmapKeys()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::list<std::string> r;
     for (const auto &i : m_submaps)

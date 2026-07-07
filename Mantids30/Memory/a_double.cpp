@@ -1,5 +1,5 @@
 #include "a_double.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -19,25 +19,25 @@ DOUBLE::DOUBLE(const double &value)
 
 double DOUBLE::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return m_value;
 }
 
 void DOUBLE::setValue(const double &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_value = value;
 }
 
 std::string DOUBLE::toString()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return std::to_string(m_value);
 }
 
 bool DOUBLE::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     try
     {
@@ -56,7 +56,7 @@ bool DOUBLE::fromString(const std::string &value)
 
 Json::Value DOUBLE::toJSON()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     if (isNull())
     {
         return Json::nullValue;
@@ -67,14 +67,14 @@ Json::Value DOUBLE::toJSON()
 
 bool DOUBLE::fromJSON(const Json::Value &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASDOUBLE_D(value, 0);
     return true;
 }
 
 std::shared_ptr<Var> DOUBLE::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::shared_ptr<DOUBLE> var = std::make_shared<DOUBLE>();
     if (var)

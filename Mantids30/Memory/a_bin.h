@@ -2,8 +2,9 @@
 
 #include "a_var.h"
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Threads/mutex_shared.h>
+
 #include <cstring>
+#include <shared_mutex>
 
 namespace Mantids30::Memory::Abstract {
 
@@ -51,7 +52,7 @@ public:
         }
         char *ptr;
         size_t dataSize;
-        Threads::Sync::Mutex_Shared mutex;
+        std::shared_mutex mutex;
     };
 
     BINARY();

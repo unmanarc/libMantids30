@@ -1,5 +1,5 @@
 #include "a_uint8.h"
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -16,14 +16,14 @@ UINT8::UINT8(const uint8_t &value)
 
 uint8_t UINT8::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_value;
 }
 
 bool UINT8::setValue(const uint8_t &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     this->m_value = value;
     return true;
@@ -31,14 +31,14 @@ bool UINT8::setValue(const uint8_t &value)
 
 std::string UINT8::toString()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return std::to_string(m_value);
 }
 
 bool UINT8::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     if (value.empty())
     {
@@ -61,7 +61,7 @@ bool UINT8::fromString(const std::string &value)
 
 std::shared_ptr<Var> UINT8::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::shared_ptr<UINT8> var = std::make_shared<UINT8>();
     if (var)
@@ -73,7 +73,7 @@ std::shared_ptr<Var> UINT8::protectedCopy()
 
 Json::Value UINT8::toJSON()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (isNull())
     {
@@ -85,7 +85,7 @@ Json::Value UINT8::toJSON()
 
 bool UINT8::fromJSON(const Json::Value &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASUINT_D(value, 0);
     return true;
 }

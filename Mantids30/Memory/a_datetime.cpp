@@ -1,7 +1,7 @@
 #include "a_datetime.h"
 
 #include <Mantids30/Helpers/mem.h>
-#include <Mantids30/Threads/lock_shared.h>
+#include <mutex>
 
 #include <ctime>
 
@@ -33,14 +33,14 @@ bool DATETIME::isInFuture()
 
 time_t DATETIME::getValue()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     return m_value;
 }
 
 bool DATETIME::setValue(const time_t &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     this->m_value = value;
     return true;
@@ -48,19 +48,19 @@ bool DATETIME::setValue(const time_t &value)
 
 string DATETIME::toStringLcl()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return getPlainLclTimeStr(m_value);
 }
 
 std::string DATETIME::toString()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
     return getISOTimeStr(m_value);
 }
 
 bool DATETIME::fromString(const std::string &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     if (value.empty())
     {
@@ -75,7 +75,7 @@ bool DATETIME::fromString(const std::string &value)
 
 Json::Value DATETIME::toJSON()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (isNull())
     {
@@ -87,14 +87,14 @@ Json::Value DATETIME::toJSON()
 
 bool DATETIME::fromJSON(const Json::Value &value)
 {
-    Threads::Sync::Lock_RW lock(m_mutex);
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASINT64_D(value, 0);
     return true;
 }
 
 std::shared_ptr<Var> DATETIME::protectedCopy()
 {
-    Threads::Sync::Lock_RD lock(m_mutex);
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     std::shared_ptr<DATETIME> var = std::make_shared<DATETIME>();
     if (var)

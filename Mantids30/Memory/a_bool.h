@@ -1,7 +1,8 @@
 #pragma once
 
 #include "a_var.h"
-#include <Mantids30/Threads/mutex_shared.h>
+#include <shared_mutex>
+
 
 namespace Mantids30::Memory::Abstract {
 class BOOL : public Var
@@ -31,6 +32,6 @@ protected:
 
 private:
     bool m_value = false;
-    Threads::Sync::Mutex_Shared m_mutex;
+    std::shared_mutex m_mutex;
 };
 } // namespace Mantids30::Memory::Abstract
