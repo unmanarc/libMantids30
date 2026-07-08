@@ -9,7 +9,7 @@
 #include <thread>
 
 #include <Mantids30/Helpers/json.h>
-#include <Mantids30/Threads/sharedqueue.h>
+#include <Mantids30/Threads/safe_sharedqueue.h>
 
 namespace Mantids30::Program::Logs {
 
