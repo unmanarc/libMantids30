@@ -17,21 +17,21 @@ std::optional<std::string> getApplicationJWTSigningKey(Logs::AppLog *log, Mantid
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APP' variable in JWT signing key request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APP' variable in JWT signing key request.");
         return std::nullopt;
     }
 
     const std::map<std::string, std::string>::const_iterator itApiKey = vars.find("APIKEY");
     if (itApiKey == vars.end())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Missing 'APIKEY' variable in JWT signing key request.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Missing 'APIKEY' variable in JWT signing key request.");
         return std::nullopt;
     }
 
     Json::Value response = Network::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.isNull() || !response.isString())
     {
-        log->log0(__func__, Logs::LogLevel::ERR, "Failed to get JWT signing key from API.");
+        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to get JWT signing key from API.");
         return std::nullopt;
     }
 
