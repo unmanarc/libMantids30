@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <memory>
 #include <string>
@@ -28,6 +29,7 @@ struct APIProxyParameters
 };
 
 Mantids30::Network::Protocol::HTTP::Status::Code APIProxy(const std::string &internalPath, Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *request,
-                                                          Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> &obj);
+                                                          Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> &obj,
+                                                          const Mantids30::Sessions::SessionInfo *sessionInfo);
 
 } // namespace Mantids30::Network::Servers::Web

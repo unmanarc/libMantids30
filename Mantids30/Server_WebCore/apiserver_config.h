@@ -240,12 +240,17 @@ public:
      * - `internalPath` (const std::string&): The internal path that matches the dynamic content path.
      * - `request` (HTTPv1_Base::Request*): Pointer to the HTTP request object.
      * - `response` (HTTPv1_Base::Response*): Pointer to the HTTP response object.
+     * - `obj` (const std::shared_ptr<void>&): Optional user-defined object passed to the handler.
+     * - `sessionInfo` (const Sessions::SessionInfo*): Authentication context containing user session data.
      *
      * The handler returns a value of type `Protocol::HTTP::Status::Code` representing the
      * response status code.
      */
-    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath, Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response,
-                                                                   const std::shared_ptr<void> &obj);
+    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath,
+                                                                    Protocol::HTTP::HTTPv1_Base::Request *request,
+                                                                    Protocol::HTTP::HTTPv1_Base::Response *response,
+                                                                    const std::shared_ptr<void> &obj,
+                                                                    const Sessions::SessionInfo *sessionInfo);
 
     struct DynamicRequestHandlerDef
     {

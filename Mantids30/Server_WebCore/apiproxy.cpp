@@ -13,13 +13,22 @@ using namespace Mantids30::Memory::Streams;
 
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
-
-// TODO: logs via callback?
-// TODO: how to prvent ../ (escapes)...
+using namespace Mantids30::Sessions;
 
 HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response,
-                                                              const std::shared_ptr<void> &obj)
+                                                              const std::shared_ptr<void> &obj, const Sessions::SessionInfo *sessionInfo)
 {
+    // TODO: logs via callback?
+    // TODO: how to prevent ../ (escapes)...
+
+    // Define auth header names
+    static const std::string hdrAuthUser = "X-Auth-User";
+    static const std::string hdrAuthDomain = "X-Auth-Domain";
+    static const std::string hdrAuthHalfSessionId = "X-Auth-Half-Session-Id";
+    static const std::string hdrAuthImpersonation = "X-Auth-Impersonation";
+    static const std::string hdrAuthImpersonator = "X-Auth-Impersonator";
+    static const std::vector<std::string> authHeaders = {hdrAuthUser, hdrAuthDomain, hdrAuthHalfSessionId, hdrAuthImpersonation, hdrAuthImpersonator};
+
     if (obj == nullptr)
     {
         throw std::runtime_error("Undefined API Proxy Object.");
@@ -71,6 +80,25 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
         for (const auto &header : proxyParameters->extraHeaders)
         {
             client.clientRequest.headers.replace(header.first, header.second);
+        }
+
+        // Inject authentication context headers if there's an active session,
+        // otherwise remove them to prevent header injection attacks.
+        if (sessionInfo != nullptr && sessionInfo->authSession != nullptr)
+        {
+            client.clientRequest.headers.replace(hdrAuthUser, sessionInfo->authSession->getUser());
+            client.clientRequest.headers.replace(hdrAuthDomain, sessionInfo->authSession->getDomain());
+            client.clientRequest.headers.replace(hdrAuthHalfSessionId, sessionInfo->halfSessionId);
+            client.clientRequest.headers.replace(hdrAuthImpersonation, sessionInfo->isImpersonation ? "true" : "false");
+            client.clientRequest.headers.replace(hdrAuthImpersonator, sessionInfo->authSession->getImpersonator());
+        }
+        else
+        {
+            // No active session: remove auth headers to prevent injection
+            for (const auto &hdr : authHeaders)
+            {
+                client.clientRequest.headers.remove(hdr);
+            }
         }
 
         client.clientRequest.headers.replace("Connection", "close");

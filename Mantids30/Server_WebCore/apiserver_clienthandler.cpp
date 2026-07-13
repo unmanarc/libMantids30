@@ -265,7 +265,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 std::string dynUrlWithoutBase = requestURI.substr(route.first.size());
 
                 // Invoke the corresponding handler function with the extracted path and request/response objects.
-                ret = route.second.handler(dynUrlWithoutBase, &clientRequest, &serverResponse, route.second.obj);
+                ret = route.second.handler(dynUrlWithoutBase, &clientRequest, &serverResponse, route.second.obj, &currentSessionInfo);
 
                 // Set the flag to true, indicating the request was processed as dynamic content.
                 isDynamicContent = true;
