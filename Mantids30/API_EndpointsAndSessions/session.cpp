@@ -1,6 +1,5 @@
 #include "session.h"
 #include <Mantids30/Helpers/random.h>
-#include <shared_mutex>
 #include <mutex>
 
 using namespace Mantids30::Sessions;
