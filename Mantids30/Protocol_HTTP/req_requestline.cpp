@@ -1,5 +1,6 @@
 #include "req_requestline.h"
 
+#include "Mantids30/Memory/streamable_string.h"
 #include "streamdecoder_url.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -27,34 +28,20 @@ RequestLine::RequestLine()
 bool RequestLine::streamToUpstream()
 {
     // Act as a client. Send data from here.
-    m_upStream->writeString(m_requestMethod + " " + m_requestURI);
-    if (!m_upStream->writeStatus.succeed)
-    {
-        return false;
-    }
+    std::string buffer = m_requestMethod + " " + m_requestURI;
 
     if (!m_getVars->isEmpty())
     {
-        m_upStream->writeString("?");
+        buffer += "?";
 
-        if (!m_upStream->writeStatus.succeed)
-        {
-            return false;
-        }
-
-        if (!m_getVars->streamTo(m_upStream))
-        {
-            return false;
-        }
+        Memory::Streams::StreamableString getVarsStr;
+        m_getVars->streamTo(&getVarsStr);
+        buffer += getVarsStr.getValue();
     }
 
-    m_upStream->writeString(" " + m_httpVersion.toString() + string("\r\n"));
+    buffer += " " + m_httpVersion.toString() + "\r\n";
 
-    if (!m_upStream->writeStatus.succeed)
-    {
-        return false;
-    }
-
+    m_upStream->writeString(buffer);
     return m_upStream->writeStatus.succeed;
 }
 
