@@ -128,8 +128,8 @@ bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
     // Bucle para enviar datos en fragmentos hasta que se envíe todo
     while (remaining > 0)
     {
-        // Determina el tamaño del fragmento (máximo 4096 bytes)
-        size_t chunkSize = std::min(remaining, static_cast<size_t>(4096));
+        // Determina el tamaño del fragmento
+        size_t chunkSize = std::min(remaining, mChunkSize);
 
         // Envía el fragmento actual
         ssize_t sentBytes = partialWrite(dataPtr, static_cast<uint32_t>(chunkSize));
@@ -176,12 +176,11 @@ bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, s
     }
 
     size_t curReceivedBytesCount = 0;
-    const size_t MAX_READ_BUFFER_SIZE = 4096;
 
     while (curReceivedBytesCount < expectedDataBytesCount)
     {
         // Calcular el tamaño máximo a leer en esta iteración
-        size_t bytesToRead = std::min<size_t>(MAX_READ_BUFFER_SIZE, expectedDataBytesCount - curReceivedBytesCount);
+        size_t bytesToRead = std::min<size_t>(mChunkSize, expectedDataBytesCount - curReceivedBytesCount);
 
         ssize_t partialReceivedBytesCount = partialRead(static_cast<char *>(data) + curReceivedBytesCount, static_cast<uint32_t>(bytesToRead));
 
@@ -274,4 +273,21 @@ bool Socket_Stream::listenOn(const uint16_t &, const char *, const int32_t &, co
 bool Socket_Stream::connectFrom(const char *, const char *, const uint16_t &, const uint32_t &)
 {
     return false;
+}
+
+void Socket_Stream::setChunkSize(size_t chunkSize)
+{
+    if (chunkSize == 0)
+    {
+        mChunkSize = 8192;
+    }
+    else
+    {
+        mChunkSize = chunkSize;
+    }
+}
+
+size_t Socket_Stream::getChunkSize() const
+{
+    return mChunkSize;
 }

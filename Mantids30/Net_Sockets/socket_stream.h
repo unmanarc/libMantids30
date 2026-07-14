@@ -131,9 +131,16 @@ public:
 
     void deriveConnectionName();
 
+    // Configurable chunk size for writeFull/readFull operations
+    void setChunkSize(size_t chunkSize);
+    size_t getChunkSize() const;
+
 protected:
     void writeDeSync() override;
     void readDeSync() override;
+
+private:
+    size_t mChunkSize = 8192;
 };
 
 typedef std::shared_ptr<Socket_Stream> Socket_Stream_SP;
