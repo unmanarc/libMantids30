@@ -57,11 +57,16 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
             socket->setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
         }
 
+        socket->setTcpNoDelayOption(false);
+
         connection = socket;
     }
     else
     {
         std::shared_ptr<Socket_TCP> socket = std::make_shared<Socket_TCP>();
+
+        socket->setTcpNoDelayOption(false);
+
         connection = socket;
     }
 

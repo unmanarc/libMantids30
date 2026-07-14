@@ -99,6 +99,10 @@ void APIServerCore::handleConnect(void *context, const std::shared_ptr<Sockets::
         tlsCN = tlsSock->getTLSPeerCN();
     }
 
+    // Use Nagle:
+    std::shared_ptr<Network::Sockets::Socket_TCP> tcpSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TCP>(sock);
+    tcpSock->setTcpNoDelayOption(false);
+
     // Prepare the web services handler.
     std::shared_ptr<APIServer_ClientHandler> apiWebServerClientHandler = webserver->createNewAPIServer_ClientHandler(webserver, sock);
     // Assign endpoints:
