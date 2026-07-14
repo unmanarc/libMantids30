@@ -105,23 +105,6 @@ size_t StreamableObject::strPrintf(const char *format, ...)
     return writtenBytes;
 }
 
-/*
-size_t StreamableObject::size()
-{
-  return std::numeric_limits<size_t>::max();
-}*/
-/*
-uint16_t StreamableObject::getFailedWriteState() const
-{
-    return m_failedWriteState;
-}
-
-bool StreamableObject::setFailedWriteState(const uint16_t &value)
-{
-    m_failedWriteState = value;
-    return value==0;
-}
-*/
 #ifdef _WIN32
 int StreamableObject::vasprintf(char **strp, const char *fmt, va_list ap)
 {
