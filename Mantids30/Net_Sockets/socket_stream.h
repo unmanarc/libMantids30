@@ -108,8 +108,7 @@ public:
      * @param data null terminated string
      * @return true if the string was successfully sent
      */
-    bool extracted(const void *&data);
-    virtual bool writeFull(const void *data);
+    virtual bool writeFull(const char *data);
     /**
      * Write a data block on the socket
      *

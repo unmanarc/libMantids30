@@ -108,9 +108,9 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
     return p;
 }
 
-bool Socket_Stream::writeFull(const void *data)
+bool Socket_Stream::writeFull(const char *data)
 {
-    return writeFull(data, strlen((static_cast<const char *>(data))));
+    return writeFull(data, strlen(data));
 }
 
 bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
