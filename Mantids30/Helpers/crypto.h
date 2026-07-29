@@ -85,7 +85,23 @@ public:
 
 
 
-    std::string AES256EncryptB64_v0ld(const unsigned char *input, size_t inputLen, const char *key, size_t keyLen, int ivLength, bool *ok);
+    /**
+     * @brief Encrypts binary data using AES-256-GCM encryption and base64 encoding (legacy version).
+     *
+     * This is a legacy encryption method that allows specifying a custom IV length.
+     * Uses PKCS5 PBKDF2 HMAC with SHA-256 for key derivation with 100,000 iterations.
+     * The output format consists of: [16-byte salt][16-byte GCM tag][encrypted data], base64-encoded.
+     *
+     * @param input A pointer to the input binary data to encrypt.
+     * @param inputLen The length of the input binary data in bytes.
+     * @param key A pointer to the encryption key.
+     * @param keyLen The length of the encryption key in bytes.
+     * @param ivLength The length of the initialization vector (IV) for GCM mode.
+     * @param ok An optional pointer to a bool that will be set to true on success, false on failure.
+     *
+     * @return The encrypted data as a base64-encoded string, or an empty string on failure.
+     */
+    static std::string AES256EncryptB64_v0ld(const unsigned char *input, size_t inputLen, const char *key, size_t keyLen, int ivLength, bool *ok);
 
 
     /**
