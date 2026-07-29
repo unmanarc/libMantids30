@@ -83,6 +83,11 @@ public:
      */
     static std::optional<std::string> AES256DecryptB64(const std::string &input, const std::string &key);
 
+
+
+    std::string AES256EncryptB64_v0ld(const unsigned char *input, size_t inputLen, const char *key, size_t keyLen, int ivLength, bool *ok);
+
+
     /**
      * @brief Calculates the SHA-1 hash of a string.
      *
