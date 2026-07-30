@@ -1,7 +1,6 @@
 #include "apiserver_clienthandler.h"
 #include "htmliengine.h"
 
-#include "json/config.h"
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Helpers/json.h>
@@ -293,7 +292,6 @@ void APIServer_ClientHandler::fillSessionInfo(Json::Value &jVars)
     {
         jVars["isImpersonation"] = currentSessionInfo.isImpersonation;
         jVars["impersonator"] = currentSessionInfo.authSession->getImpersonator();
-
         jVars["halfSessionID"] = currentSessionInfo.halfSessionId;
         jVars["user"] = currentSessionInfo.authSession->getUser();
         jVars["domain"] = currentSessionInfo.authSession->getDomain();

@@ -317,6 +317,11 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
 
+    // clientHandler->getSessionVariableValue(const std::string &varName) -> Json::Value
+    // clientHandler->getSessionRoles() -> std::set<std::string>
+    // clientHandler->getSessionScopes() -> std::set<std::string>
+    // clientHandler->isSessionActive() -> bool
+
     boost::match_results<string::const_iterator> whatStaticText;
     for (string::const_iterator start = fileContent.begin(), end = fileContent.end(); //
          boost::regex_search(start, end, whatStaticText, exStaticText, flags);        // FIND REGEXP

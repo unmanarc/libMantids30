@@ -1,6 +1,5 @@
 #pragma once
 
-//#include <Mantids30/Memory/streamableobject.h>
 #include <Mantids30/Memory/subparser.h>
 
 namespace Mantids30::Network::Protocol::MIME {
