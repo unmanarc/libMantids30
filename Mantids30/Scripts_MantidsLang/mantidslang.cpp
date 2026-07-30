@@ -38,9 +38,7 @@ std::string extractCommandName(const std::string &tagName)
 
 } // namespace
 
-MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source,
-                         const std::shared_ptr<Json::Value> &jsonContext,
-                         MantidsLang *parent)
+MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<Json::Value> &jsonContext, MantidsLang *parent)
     : source(source)
     , jsonContext(jsonContext)
     , parent(parent)
@@ -332,42 +330,5 @@ void MantidsLang::closeSubTag(const std::string &dataAfterClosing)
     if (!dataAfterClosing.empty())
     {
         parent->write(dataAfterClosing.c_str(), dataAfterClosing.size());
-    }
-}
-
-void MantidsLang::processTokens(size_t depth)
-{
-    const std::string indent(depth * 4, ' ');
-
-    for (auto &token : tokens)
-    {
-        if (!writeStatus.succeed)
-        {
-            return;
-        }
-
-        if (token.type == Token::Type::SUBTAG && token.subTag)
-        {
-            // SUBTAG - recursively process (testing mode):
-            output->strPrintf("%s[%p-SUBTAG: %s]\n", indent.c_str(), static_cast<void *>(this), token.tagName.c_str());
-            token.subTag->processTokens(depth + 1);
-        }
-        else
-        {
-            // DATA - write buffer to output
-            if (!token.buffer.empty())
-            {
-                /*  Keep this way for testing purposes.
-                 *  if (!output->writeFullStream(token.buffer.data(), token.buffer.size()))
-                 *  {
-                 *      writeStatus.succeed = false;
-                 *      return;
-                 *  }
-                 */
-                std::string x(token.buffer.data(), token.buffer.size());
-                boost::replace_all(x, "\n", "\\n");
-                output->strPrintf("%s[%p-DATA: %s]\n", indent.c_str(), static_cast<void *>(this), x.c_str());
-            }
-        }
     }
 }
