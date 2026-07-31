@@ -92,6 +92,9 @@ private:
 
     // This subtag already found its {{/NAME}}; it must not accept more data.
     bool closed = false;
+
+    // true for {{#tag!}} self-closing tags, false for block tags (foreach, if)
+    bool selfClosing = false;
 };
 
 } // namespace Mantids30::Scripts

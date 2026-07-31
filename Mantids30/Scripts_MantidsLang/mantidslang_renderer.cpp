@@ -217,7 +217,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
         {
             // SUBTAG - recursively process (testing mode):
             //output->strPrintf("%s[%p-SUBTAG: %s]\n", indent.c_str(), static_cast<void *>(this), token.tagName.c_str());
-            if (token.subTag->closed)
+            if (token.subTag->selfClosing)
             {
                 // Parse tagName: "action:[path]"
                 size_t bracketPos = token.tagName.find('[');

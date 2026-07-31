@@ -285,7 +285,9 @@ void MantidsLang::addSubTagToken(const std::string &tagName, bool activate)
     }
     else
     {
+        // Self-closing tag: {{#NAME!}}
         subTagToken.subTag->closed = true;
+        subTagToken.subTag->selfClosing = true;
     }
 
     tokens.push_back(std::move(subTagToken));
