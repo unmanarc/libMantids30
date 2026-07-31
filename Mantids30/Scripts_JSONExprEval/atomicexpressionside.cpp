@@ -1,15 +1,16 @@
 #include "atomicexpressionside.h"
+
 #include <boost/algorithm/string.hpp>
 #include <json/value.h>
+#include <cstdlib>
 #include <memory>
 
 using namespace Mantids30::Scripts::Expressions;
-
 using namespace std;
 
 AtomicExpressionSide::AtomicExpressionSide(const std::shared_ptr<vector<string>> &staticTexts)
+    : m_staticTexts(staticTexts)
 {
-    this->m_staticTexts = staticTexts;
 }
 
 bool AtomicExpressionSide::determineExpressionType()
@@ -26,10 +27,18 @@ bool AtomicExpressionSide::determineExpressionType()
     {
         m_type = Type::NUMERIC;
     }
-    else if (boost::starts_with(m_expr, "_STATIC_") && m_staticTexts->size() > strtoul(m_expr.substr(8).c_str(), nullptr, 10))
+    else if (boost::starts_with(m_expr, "_STATIC_") && (m_expr.size() > 8) && (m_expr.find_first_not_of("0123456789", 8) == string::npos))
     {
-        m_type = Type::STATIC_STRING;
-        m_staticIndex = strtoul(m_expr.substr(8).c_str(), nullptr, 10);
+        m_staticIndex = static_cast<uint32_t>(strtoul(m_expr.c_str() + 8, nullptr, 10));
+        if (m_staticTexts && (m_staticIndex < m_staticTexts->size()))
+        {
+            m_type = Type::STATIC_STRING;
+        }
+        else
+        {
+            m_type = Type::UNDEFINED;
+            return false;
+        }
     }
     else
     {
@@ -56,32 +65,36 @@ set<string> AtomicExpressionSide::resolveValueSet(const Json::Value &v, bool res
     {
     case Type::JSONPATH:
     {
-        Json::Path path(m_expr.substr(1));
-        const Json::Value &result = path.resolve(v);
-        set<string> res;
-
-        if (result.empty() && !result.isNull())
+        if (!m_jsonPath)
         {
-            res.insert(result.asString());
+            // Compile and cache the JSON path only once:
+            m_jsonPath = std::make_shared<Json::Path>(m_expr.substr(1));
         }
-        else
+        const Json::Value &result = m_jsonPath->resolve(v);
+        set<string> res;
+        if (result.isArray())
         {
-            for (size_t i = 0; i < result.size(); i++)
+            for (Json::ArrayIndex i = 0; i < result.size(); i++)
             {
-                res.insert(result[static_cast<int>(i)].asString());
+                res.insert(result[i].asString());
             }
+        }
+        else if (!result.isNull() && !result.isObject())
+        {
+            // Scalar value (string, number or boolean):
+            res.insert(result.asString());
         }
         return res;
     }
     case Type::STATIC_STRING:
         if (resolveRegex)
         {
-            compileRegexPattern((*m_staticTexts)[strtoul(m_expr.substr(8).c_str(), nullptr, 10)], ignoreCase);
+            compileRegexPattern((*m_staticTexts)[m_staticIndex], ignoreCase);
             return {};
         }
         else
         {
-            return {(*m_staticTexts)[strtoul(m_expr.substr(8).c_str(), nullptr, 10)]};
+            return {(*m_staticTexts)[m_staticIndex]};
         }
     case Type::NUMERIC:
         if (resolveRegex)
@@ -115,11 +128,10 @@ Mantids30::Scripts::Expressions::AtomicExpressionSide::Type AtomicExpressionSide
     return m_type;
 }
 
-set<string> AtomicExpressionSide::compileRegexPattern(const string &r, bool ignoreCase)
+void AtomicExpressionSide::compileRegexPattern(const string &r, bool ignoreCase)
 {
     if (!m_regexp)
     {
         m_regexp = std::make_shared<boost::regex>(r.c_str(), ignoreCase ? (boost::regex::extended | boost::regex::icase) : (boost::regex::extended));
     }
-    return {};
 }
