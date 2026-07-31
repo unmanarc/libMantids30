@@ -2,6 +2,8 @@
 
 #include <boost/regex.hpp>
 
+#include <json/json.h>
+
 #include <cstdint>
 #include <list>
 #include <set>
@@ -51,6 +53,8 @@ public:
         bool matched = false;
 
         std::vector<Action> actions;
+
+        Json::Value toJSON() const;
     };
 
     struct Filter

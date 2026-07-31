@@ -183,56 +183,6 @@ Action parseAction(const PTree &actionNode)
     throw std::runtime_error("Unknown resource-filter action: " + actionName);
 }
 
-void loadLegacyActions(const PTree &node, Filter &filter)
-{
-    const auto extraHeaders = node.get_child_optional("httpExtraHeaders");
-
-    if (extraHeaders)
-    {
-        Action setHeadersAction;
-        setHeadersAction.type = ActionType::REPLACE_HEADERS;
-
-        loadHeaders(extraHeaders.get(), setHeadersAction.httpHeaders);
-
-        filter.actions.push_back(std::move(setHeadersAction));
-    }
-
-    const auto processingMode = node.get_optional<std::string>("processingMode");
-
-    if (processingMode)
-    {
-        Action processAction;
-        processAction.type = ActionType::PROCESS_AS;
-        processAction.processingMode = parseProcessingMode(processingMode.get());
-
-        filter.actions.push_back(std::move(processAction));
-    }
-
-    const std::string legacyActionName = normalizeIdentifier(node.get<std::string>("action", "ACCEPT"));
-
-    Action terminalAction;
-
-    if (legacyActionName == "REDIRECT")
-    {
-        terminalAction.type = ActionType::REDIRECT;
-        terminalAction.redirectLocation = node.get<std::string>("redirectLocation", "");
-
-        terminalAction.statusCode = parseStatusCode(node, 302);
-    }
-    else if (legacyActionName == "DENY")
-    {
-        terminalAction.type = ActionType::DENY;
-        terminalAction.statusCode = parseStatusCode(node, 403);
-    }
-    else
-    {
-        terminalAction.type = ActionType::ACCEPT;
-        terminalAction.statusCode = parseStatusCode(node, 200);
-    }
-
-    filter.actions.push_back(std::move(terminalAction));
-}
-
 bool containsAll(const std::set<std::string> &values, const std::list<std::string> &requiredValues)
 {
     for (const std::string &requiredValue : requiredValues)
@@ -294,6 +244,13 @@ bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &
     return true;
 }
 
+bool isTerminalAction(ActionType type)
+{
+    return type == ActionType::REDIRECT ||
+           type == ActionType::ACCEPT ||
+           type == ActionType::DENY;
+}
+
 bool filterURIMatches(const Filter &filter, const std::string &uri)
 {
     boost::cmatch match;
@@ -332,7 +289,7 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
     {
         Filter filter;
 
-        loadStringList(filterNode.second, "uriRegex", filter.uriRegexs);
+        loadStringList(filterNode.second, "uriRegexs", filter.uriRegexs);
         loadStringList(filterNode.second, "requiredScopes", filter.requiredScopes);
         loadStringList(filterNode.second, "disallowedScopes", filter.rejectedScopes);
         loadStringList(filterNode.second, "requiredRoles", filter.requiredRoles);
@@ -347,10 +304,6 @@ bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
             {
                 filter.actions.push_back(parseAction(actionNode.second));
             }
-        }
-        else
-        {
-            loadLegacyActions(filterNode.second, filter);
         }
 
         filter.compileRegex();
@@ -393,7 +346,20 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
 
         result.matched = true;
 
-        result.actions.insert(result.actions.end(), filter.actions.begin(), filter.actions.end());
+        for (const auto &action : filter.actions)
+        {
+            result.actions.push_back(action);
+
+            if (isTerminalAction(action.type))
+            {
+                break;
+            }
+        }
+
+        if (isTerminalAction(result.actions.back().type))
+        {
+            break;
+        }
     }
 
     if (!result.matched)
@@ -406,4 +372,73 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
     }
 
     return result;
+}
+
+namespace {
+
+std::string actionTypeToString(ActionType type)
+{
+    switch (type)
+    {
+    case ActionType::ADD_HEADERS: return "ADD_HEADERS";
+    case ActionType::REPLACE_HEADERS: return "REPLACE_HEADERS";
+    case ActionType::PROCESS_AS: return "PROCESS_AS";
+    case ActionType::REDIRECT: return "REDIRECT";
+    case ActionType::ACCEPT: return "ACCEPT";
+    case ActionType::DENY: return "DENY";
+    }
+    return "UNKNOWN";
+}
+
+std::string processingModeToString(ProcessingMode mode)
+{
+    switch (mode)
+    {
+    case ProcessingMode::RAW: return "RAW";
+    case ProcessingMode::HTMLIENGINE: return "HTMLIENGINE";
+    case ProcessingMode::MANTIDSLANG: return "MANTIDSLANG";
+    }
+    return "UNKNOWN";
+}
+
+} // namespace
+
+Json::Value ResourcesFilter::FilterEvaluationResult::toJSON() const
+{
+    Json::Value root;
+
+    root["matched"] = matched;
+
+    Json::Value actionsArray(Json::arrayValue);
+    for (const auto &action : actions)
+    {
+        Json::Value actionObj;
+        actionObj["type"] = actionTypeToString(action.type);
+        actionObj["statusCode"] = static_cast<Json::Int>(action.statusCode);
+
+        if (!action.redirectLocation.empty())
+        {
+            actionObj["redirectLocation"] = action.redirectLocation;
+        }
+
+        actionObj["processingMode"] = processingModeToString(action.processingMode);
+
+        if (!action.httpHeaders.empty())
+        {
+            Json::Value headersArray(Json::arrayValue);
+            for (const auto &header : action.httpHeaders)
+            {
+                Json::Value headerObj;
+                headerObj["name"] = header.first;
+                headerObj["value"] = header.second;
+                headersArray.append(headerObj);
+            }
+            actionObj["httpHeaders"] = headersArray;
+        }
+
+        actionsArray.append(actionObj);
+    }
+    root["actions"] = actionsArray;
+
+    return root;
 }
