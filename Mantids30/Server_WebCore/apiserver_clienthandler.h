@@ -207,6 +207,7 @@ protected:
 
 private:
     std::string logUsername;
+    Protocol::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
     Protocol::HTTP::Status::Code handleRegularFileRequest();
     bool versionIsSupported(const std::string &versionStr, int minVersion);
     bool isSupportedUserAgent(const std::string &userAgent);

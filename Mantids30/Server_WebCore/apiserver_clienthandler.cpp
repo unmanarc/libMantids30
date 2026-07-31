@@ -311,6 +311,82 @@ void APIServer_ClientHandler::fillSessionInfo(Json::Value &jVars)
     jVars["userIP"] = clientRequest.networkClientInfo.REMOTE_ADDR;
     jVars["userAgent"] = clientRequest.userAgent;
 }
+
+HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode, const LocalRequestedFileInfo & fileInfo)
+{
+    HTTP::Status::Code acceptedStatus = static_cast<HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
+
+    switch (processingMode)
+    {
+    case API::Web::ResourcesFilter::ProcessingMode::HTMLIENGINE:
+    {
+        if (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
+        {
+            acceptedStatus = HTMLIEngine::processResourceFile(this, fileInfo.fullPath);
+        }
+
+        break;
+    }
+
+    case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
+    {
+        std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
+
+        (*jsonContext)["session"]["isActive"] = isSessionActive();
+
+        if (currentSessionInfo.authSession)
+        {
+            (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
+            (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
+            (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
+            (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
+            (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
+            (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
+            if (currentSessionInfo.isImpersonation)
+            {
+                (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+            }
+
+            fillSessionExtraInfo((*jsonContext)["session"]);
+        }
+
+        (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
+        (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+        (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
+
+        (*jsonContext)["script"]["fullpath"] = fileInfo.fullPath;
+        (*jsonContext)["script"]["relativePath"] = fileInfo.relativePath;
+
+        (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
+        (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+
+        std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
+            serverResponse.content.getStreamableObject(),
+            jsonContext,
+            nullptr,
+            [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
+            {
+                API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
+
+                Json::Value *jsonValue = result.responseJSON();
+
+                return jsonValue ? *jsonValue : Json::nullValue;
+            });
+
+        serverResponse.setDataStreamer(mantidsTemplateLang);
+
+        break;
+    }
+
+    case API::Web::ResourcesFilter::ProcessingMode::RAW:
+    default:
+        break;
+    }
+
+    return acceptedStatus;
+}
+
+
 HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 {
     HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
@@ -345,75 +421,6 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
         bool terminalActionExecuted = false;
 
-        auto processAcceptedResource = [&](uint16_t statusCode) -> HTTP::Status::Code
-        {
-            HTTP::Status::Code acceptedStatus = static_cast<HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
-
-            switch (processingMode)
-            {
-            case API::Web::ResourcesFilter::ProcessingMode::HTMLIENGINE:
-            {
-                if (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
-                {
-                    acceptedStatus = HTMLIEngine::processResourceFile(this, fileInfo.fullPath);
-                }
-
-                break;
-            }
-
-            case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
-            {
-                std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
-
-                (*jsonContext)["session"]["isActive"] = isSessionActive();
-
-                if (currentSessionInfo.authSession)
-                {
-                    (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
-                    (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
-                    (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
-                    (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
-                    (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
-                    (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
-                    if (currentSessionInfo.isImpersonation)
-                    {
-                        (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
-                    }
-
-                    fillSessionExtraInfo((*jsonContext)["session"]);
-                }
-
-                (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
-                (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-                (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
-                (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
-                (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
-
-                std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
-                    serverResponse.content.getStreamableObject(),
-                    jsonContext,
-                    nullptr,
-                    [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
-                    {
-                        API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
-
-                        Json::Value *jsonValue = result.responseJSON();
-
-                        return jsonValue ? *jsonValue : Json::nullValue;
-                    });
-
-                serverResponse.setDataStreamer(mantidsTemplateLang);
-
-                break;
-            }
-
-            case API::Web::ResourcesFilter::ProcessingMode::RAW:
-            default:
-                break;
-            }
-
-            return acceptedStatus;
-        };
 
         for (const API::Web::ResourcesFilter::Action &action : evaluationResult.actions)
         {
@@ -468,7 +475,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
             case API::Web::ResourcesFilter::ActionType::ACCEPT:
             {
-                ret = processAcceptedResource(action.statusCode);
+                ret = langProcessAcceptedResource(action.statusCode, processingMode, fileInfo );
 
                 terminalActionExecuted = true;
                 break;
@@ -481,9 +488,10 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
             }
         }
 
+        // Default: accept.
         if (!terminalActionExecuted)
         {
-            ret = processAcceptedResource(200);
+            ret = langProcessAcceptedResource(200, processingMode, fileInfo);
         }
     }
 
@@ -669,6 +677,7 @@ bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url) 
     }
     return true;
 }
+
 
 HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
