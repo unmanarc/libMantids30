@@ -126,6 +126,22 @@ public:
     [[nodiscard]] static std::string fromURL(const std::string &urlEncodedStr);
 
     /**
+     * @brief Escapes HTML special characters in a string.
+     *
+     * Replaces the following characters with their HTML entities:
+     * - &  -> &
+     * - <  -> <
+     * - >  -> >
+     * - "  -> "
+     * - '  -> &#x27;
+     *
+     * @param input The input string to escape.
+     *
+     * @return The HTML-escaped string.
+     */
+    [[nodiscard]] static std::string htmlEscape(const std::string &input);
+
+    /**
      * @brief Performs a hexadecimal encoding on binary data.
      *
      * @param data A pointer to the input binary data to encode.

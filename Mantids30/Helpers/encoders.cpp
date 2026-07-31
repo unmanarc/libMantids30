@@ -372,7 +372,7 @@ string Encoders::toURL(const string &str, const Type &urlEncodingType)
 string Encoders::fromURL(const string &urlEncodedStr)
 {
     std::string r;
-    if (!urlEncodedStr.size())
+    if (urlEncodedStr.empty())
     {
         return "";
     }
@@ -391,6 +391,18 @@ string Encoders::fromURL(const string &urlEncodedStr)
         }
     }
     return r;
+}
+
+string Encoders::htmlEscape(const std::string &input)
+{
+    std::string output = input;
+    // Order matters: & must be replaced first to avoid double-escaping
+    boost::replace_all(output, "&", std::string("&") + "amp;");
+    boost::replace_all(output, "<", std::string("&") + "lt;");
+    boost::replace_all(output, ">", std::string("&") + "gt;");
+    boost::replace_all(output, "\"", std::string("&") + "quot;");
+    boost::replace_all(output, "'", std::string("&") + "#x27;");
+    return output;
 }
 
 string Encoders::toHex(const unsigned char *data, size_t len)
