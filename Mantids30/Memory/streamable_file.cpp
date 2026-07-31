@@ -21,17 +21,17 @@ int StreamableFile::open(const char *path, int oflag, mode_t __mode)
     closeAll();
     int fd = ::open(path, oflag, __mode);
 
-    if ((oflag | O_RDONLY) != 0)
+    if (oflag == 0) // RDONLY...
     {
         rd_fd = fd;
         wr_fd = -1;
     }
-    if ((oflag | O_WRONLY) != 0)
+    if ((oflag & O_WRONLY) != 0)
     {
         rd_fd = -1;
         wr_fd = fd;
     }
-    if ((oflag | O_RDWR) != 0)
+    if ((oflag & O_RDWR) != 0)
     {
         rd_fd = fd;
         wr_fd = fd;

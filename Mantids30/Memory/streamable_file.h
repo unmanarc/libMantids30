@@ -38,7 +38,7 @@ public:
 
 private:
     void closeAll();
-    int rd_fd, wr_fd;
+    int rd_fd = -1, wr_fd = -1;
 };
 
 } // namespace Mantids30::Memory::Streams
