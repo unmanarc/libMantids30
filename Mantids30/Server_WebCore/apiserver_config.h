@@ -96,6 +96,9 @@ public:
      */
     std::shared_ptr<API::Web::ResourcesFilter> resourceFilter;
 
+
+    bool debugResourceFilter = false;
+
     /**
      * @brief List of allowed origins for login requests.
      *

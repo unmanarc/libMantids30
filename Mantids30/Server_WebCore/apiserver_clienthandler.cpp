@@ -420,7 +420,9 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
             evaluationResult.actions.push_back(std::move(acceptAction));
         }
 
-//        std::cout << "FilterEvaluationResult: " <<  fileInfo.relativePath << " - "  << evaluationResult.toJSON().toStyledString() << std::endl;
+        if (config->debugResourceFilter) {
+            std::cout << "FilterEvaluationResult: " <<  fileInfo.relativePath << " - "  << evaluationResult.toJSON().toStyledString() << std::endl;
+        }
 
         API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;
 

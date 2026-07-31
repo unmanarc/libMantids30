@@ -207,6 +207,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
             appLog->log0(__func__, LogLevel::DEBUG, "[%p] Setting permitted login origins from %s", reinterpret_cast<void *>(webServer), loginOrigins.c_str());
         }
 
+        webServer->config.debugResourceFilter = config.get<bool>("ResourcesFilter.Debug", false);
+
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
 
         // Set the login redirect on 404:
