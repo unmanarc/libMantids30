@@ -53,16 +53,17 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
     // Drop the MMAP container:
     std::string fileContent;
 
+    // the server response will be the default data chunk (remove the current data streamer and put a default one):
+    clientHandler->serverResponse.setDataStreamer(nullptr);
+
+    // Load the file content.
     if (boost::starts_with(sRealFullPath, "MEM:"))
     {
         // Mem-Static resource.
         fileContent = (static_cast<Mantids30::Memory::Containers::B_MEM *>(clientHandler->getResponseContentStreamableObject().get()))->toStringEx();
-        clientHandler->serverResponse.setDataStreamer(nullptr);
     }
     else
     {
-        // the server response will be the default data chunk (reset):
-        clientHandler->serverResponse.setDataStreamer(nullptr);
         // Local resource.
         std::ifstream fileStream(sRealFullPath);
         if (!fileStream.is_open())
@@ -75,12 +76,13 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
         fileStream.close();
     }
 
-    // CINC PROCESSOR:
+    // CINC PROCESSOR (process the file content):
     procResource_HTMLIEngineInclude(sRealFullPath, clientHandler->serverResponse.contentType, fileContent, clientHandler);
     procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
 
-    // Stream the generated content...
+    // Stream the generated content to the current clean data streamer...
     clientHandler->getResponseContentStreamableObject()->writeString(fileContent);
+
     return HTTP::Status::Code::S_200_OK;
 }
 
@@ -316,11 +318,6 @@ void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullP
 {
     // PRECOMPILE _STATIC_TEXT
     boost::match_flag_type flags = boost::match_default;
-
-    // clientHandler->getSessionVariableValue(const std::string &varName) -> Json::Value
-    // clientHandler->getSessionRoles() -> std::set<std::string>
-    // clientHandler->getSessionScopes() -> std::set<std::string>
-    // clientHandler->isSessionActive() -> bool
 
     boost::match_results<string::const_iterator> whatStaticText;
     for (string::const_iterator start = fileContent.begin(), end = fileContent.end(); //

@@ -51,6 +51,8 @@ set(Mantids30_LIBRARIES
     Protocol_HTTP
     Protocol_MIME
     API_EndpointsAndSessions
+    Scripts_JSONExprEval
+    Scripts_MantidsLang
     Program_Logs
 )
 
