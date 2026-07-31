@@ -38,10 +38,11 @@ std::string extractCommandName(const std::string &tagName)
 
 } // namespace
 
-MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<Json::Value> &jsonContext, MantidsLang *parent)
+MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<Json::Value> &jsonContext, MantidsLang *parent, ApiCallback_t apiCallback)
     : source(source)
     , jsonContext(jsonContext)
     , parent(parent)
+    , apiCallback(std::move(apiCallback))
 {
     // Initialize with one empty DATA token
     tokens.emplace_back();
@@ -93,7 +94,7 @@ std::optional<size_t> MantidsLang::write(const void *buf, const size_t &count)
             // recursively from the root's processTokens().
             if (parent == nullptr)
             {
-                processTokens();
+                processTokens(*jsonContext);
             }
         }
         return 0;
@@ -136,6 +137,8 @@ std::optional<size_t> MantidsLang::write(const void *buf, const size_t &count)
 
     return count;
 }
+
+bool MantidsLang::isEmpty() const { return tokens.empty(); }
 
 void MantidsLang::finalizeParsing()
 {
@@ -271,7 +274,7 @@ void MantidsLang::addSubTagToken(const std::string &tagName, bool activate)
     Token subTagToken;
     subTagToken.type = Token::Type::SUBTAG;
     subTagToken.tagName = tagName;
-    subTagToken.subTag = std::make_unique<MantidsLang>(nullptr, jsonContext, this);
+    subTagToken.subTag = std::make_unique<MantidsLang>(nullptr, jsonContext, this, apiCallback);
     subTagToken.subTag->output = output;
 
     // FIX: it is the *opening* tag (activate==true) the one that has to look for

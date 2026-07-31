@@ -14,6 +14,14 @@
 
 namespace Mantids30::Scripts {
 
+using ApiCallback_t = std::function<Json::Value(
+    const std::string &baseApiUrl,
+    const uint32_t &apiVersion,
+    const std::string &methodType,
+    const std::string &endpointName,
+    const Json::Value &postParameters)>;
+
+
 class MantidsLang : public Mantids30::Memory::Streams::StreamableObject
 {
 public:
@@ -30,7 +38,8 @@ public:
 
     MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source,
                 const std::shared_ptr<Json::Value> &jsonContext = nullptr,
-                MantidsLang *parent = nullptr);
+                MantidsLang *parent = nullptr,
+                ApiCallback_t apiCallback = nullptr);
 
     // You set the lang with the source and then stream this to an object...
     bool streamTo(Memory::Streams::StreamableObject *out) override;
@@ -38,11 +47,18 @@ public:
     // By default, don't write here:
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 
-    std::function<Json::Value(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters)> apiCallback = nullptr;
+    ApiCallback_t apiCallback;
+
+    bool isEmpty() const;
 
 private:
+
+    bool printJSON( const std::string &action , const Json::Value & value);
+    bool iterateJSON(const std::string &foreachParam, const Json::Value &currentJsonContext, const Token &token, size_t depth);
+    bool checkConditionalOnJSON(const std::string &conditional, const Json::Value &currentJsonContext, const Token &token, size_t depth);
+
     // depth is only used for the (testing) indented dump.
-    void processTokens(size_t depth = 0);
+    void processTokens(const Json::Value & currentJsonContext, size_t depth = 0);
     void parseTagsFromBuffer();
 
     // Parse-only recursion for EOF: flushes pending buffers of the open subtag chain.

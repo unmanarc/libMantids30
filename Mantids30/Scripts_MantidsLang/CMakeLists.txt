@@ -46,9 +46,10 @@ if (EXTRAPREFIX)
 endif()
 
 set(Mantids30_LIBRARIES
-#    Helpers
+    Helpers
 #    Protocol_HTTP
 #    Program_Logs
+    Scripts_JSONExprEval
     Memory
 )
 
