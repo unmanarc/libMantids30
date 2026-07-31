@@ -208,6 +208,12 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         }
 
         webServer->config.permittedLoginOrigins = parseCommaSeparatedString(loginOrigins);
+
+        // Set the login redirect on 404:
+        std::string redirectPathOn404 = config.get<std::string>("RedirectPathOn404", "");
+        appLog->log0(__func__, LogLevel::DEBUG, "[%p] Setting login redirect path on 404 to %s", reinterpret_cast<void *>(webServer), redirectPathOn404.c_str());
+        webServer->config.redirectPathOn404 = redirectPathOn404;
+
         // Set the login IAM location:
         std::string loginRedirectURL = config.get<std::string>("Login.RedirectURL", "/login");
         appLog->log0(__func__, LogLevel::DEBUG, "[%p] Setting default login redirect URL to %s", reinterpret_cast<void *>(webServer), loginRedirectURL.c_str());

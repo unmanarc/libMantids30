@@ -8,6 +8,7 @@
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
+#include <Mantids30/Scripts_MantidsLang/mantidslang.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -127,8 +128,8 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 if (endpointName == this->config->loginCallbackAPIEndpointName)
                 {
                     // This is for the callback endpoint
-                    APIServerConfig::DynamicOriginValidatorFunction defaultCallbackOriginValidator = [](const std::string &requestOrigin, const std::string &apikey,
-                                                                                                        const std::set<std::string> &permittedCallbackOrigins) -> bool
+                    APIServerConfig::DynamicOriginValidatorFunction defaultCallbackOriginValidator =
+                        [](const std::string &requestOrigin, const std::string &apikey, const std::set<std::string> &permittedCallbackOrigins) -> bool
                     { return permittedCallbackOrigins.count(requestOrigin); };
 
                     APIServerConfig::DynamicOriginValidatorFunction originValidator = this->config->dynamicLoginCallbackOriginValidator ? this->config->dynamicLoginCallbackOriginValidator
@@ -167,8 +168,12 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                             serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
                             serverResponse.setContentType("application/json", true);
 
-                            log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
-                                originValidator == defaultOriginValidator ? "default" : "dynamic", requestOrigin.c_str());
+                            log(LogLevel::SECURITY_ALERT,
+                                "restAPI",
+                                2048,
+                                "Unauthorized API Usage attempt from disallowed origin via %s validator {origin=%s}",
+                                originValidator == defaultOriginValidator ? "default" : "dynamic",
+                                requestOrigin.c_str());
 
                             apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                             ret = apiReturn.getHTTPResponseCode();
@@ -306,14 +311,11 @@ void APIServer_ClientHandler::fillSessionInfo(Json::Value &jVars)
     jVars["userIP"] = clientRequest.networkClientInfo.REMOTE_ADDR;
     jVars["userAgent"] = clientRequest.userAgent;
 }
-
 HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 {
-    // WEB RESOURCE MODE:
     HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
     LocalRequestedFileInfo fileInfo;
 
-    // if there are no web resources path, return 404 without data.
     if (config->getDocumentRootPath().empty())
     {
         return HTTP::Status::Code::S_404_NOT_FOUND;
@@ -324,55 +326,172 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
          || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ""))
         && !fileInfo.isDirectory)
     {
-        // Evaluate...
-        API::Web::ResourcesFilter::FilterEvaluationResult e;
+        API::Web::ResourcesFilter::FilterEvaluationResult evaluationResult;
 
-        // if there is any resource filter, evaluate the sRealRelativePath with the action to be taken for that file
-        // it will proccess this according to the authorization session
         if (config->resourceFilter)
         {
-            e = config->resourceFilter->evaluateURI(fileInfo.relativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
-        }
-
-        // If the element is accepted (during the filter)
-        if (e.accept)
-        {
-            // and there is not redirect's, the resoponse code will be 200 (OK)
-            if (e.redirectLocation.empty())
-            {
-                ret = HTTP::Status::Code::S_200_OK;
-            }
-            else
-            { // otherwise you will need to redirect.
-                ret = serverResponse.setRedirectLocation(e.redirectLocation);
-            }
+            evaluationResult = config->resourceFilter->evaluateURI(fileInfo.relativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
         }
         else
-        { // If not, drop a 403 (forbidden)
-            ret = HTTP::Status::Code::S_403_FORBIDDEN;
+        {
+            API::Web::ResourcesFilter::Action acceptAction;
+            acceptAction.type = API::Web::ResourcesFilter::ActionType::ACCEPT;
+            acceptAction.statusCode = 200;
+
+            evaluationResult.actions.push_back(std::move(acceptAction));
         }
 
-        //log(LogLevel::DEBUG, "fileServer", 2048, "R/ - LOCAL - %03" PRIu16 ": %s", static_cast<uint16_t>(ret), fileInfo.sRealFullPath.c_str());
-    }
-    else
-    {
-        // File not found at this point (404)
+        API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;
+
+        bool terminalActionExecuted = false;
+
+        auto processAcceptedResource = [&](uint16_t statusCode) -> HTTP::Status::Code
+        {
+            HTTP::Status::Code acceptedStatus = static_cast<HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
+
+            switch (processingMode)
+            {
+            case API::Web::ResourcesFilter::ProcessingMode::HTMLIENGINE:
+            {
+                if (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
+                {
+                    acceptedStatus = HTMLIEngine::processResourceFile(this, fileInfo.fullPath);
+                }
+
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
+            {
+                std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
+
+                (*jsonContext)["session"]["isActive"] = isSessionActive();
+
+                if (currentSessionInfo.authSession)
+                {
+                    (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
+                    (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
+                    (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
+                    (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
+                    (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
+                    (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
+                    if (currentSessionInfo.isImpersonation)
+                    {
+                        (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+                    }
+
+                    fillSessionExtraInfo((*jsonContext)["session"]);
+                }
+
+                (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
+                (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+                (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
+                (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
+                (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+
+                std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
+                    serverResponse.content.getStreamableObject(),
+                    jsonContext,
+                    nullptr,
+                    [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
+                    {
+                        API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
+
+                        Json::Value *jsonValue = result.responseJSON();
+
+                        return jsonValue ? *jsonValue : Json::nullValue;
+                    });
+
+                serverResponse.setDataStreamer(mantidsTemplateLang);
+
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ProcessingMode::RAW:
+            default:
+                break;
+            }
+
+            return acceptedStatus;
+        };
+
+        for (const API::Web::ResourcesFilter::Action &action : evaluationResult.actions)
+        {
+            switch (action.type)
+            {
+            case API::Web::ResourcesFilter::ActionType::REPLACE_HEADERS:
+            {
+                for (const auto &header : action.httpHeaders)
+                {
+                    serverResponse.headers.replace(header.first, header.second);
+                }
+
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ActionType::ADD_HEADERS:
+            {
+                for (const auto &header : action.httpHeaders)
+                {
+                    serverResponse.headers.add(header.first, header.second);
+                }
+
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ActionType::PROCESS_AS:
+            {
+                processingMode = action.processingMode;
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ActionType::REDIRECT:
+            {
+                ret = serverResponse.setRedirectLocation(action.redirectLocation);
+
+                if (action.statusCode != 0)
+                {
+                    ret = static_cast<HTTP::Status::Code>(action.statusCode);
+                }
+
+                terminalActionExecuted = true;
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ActionType::DENY:
+            {
+                ret = static_cast<HTTP::Status::Code>(action.statusCode == 0 ? 403 : action.statusCode);
+
+                terminalActionExecuted = true;
+                break;
+            }
+
+            case API::Web::ResourcesFilter::ActionType::ACCEPT:
+            {
+                ret = processAcceptedResource(action.statusCode);
+
+                terminalActionExecuted = true;
+                break;
+            }
+            }
+
+            if (terminalActionExecuted)
+            {
+                break;
+            }
+        }
+
+        if (!terminalActionExecuted)
+        {
+            ret = processAcceptedResource(200);
+        }
     }
 
     if (ret != HTTP::Status::Code::S_200_OK)
     {
-        // For NON-200 responses, will stream nothing....
         serverResponse.setDataStreamer(nullptr);
     }
 
-    // If the URL is going to process the Interactive HTML Engine,
-    // and the document content is text/html, then, process it as HTMLIEngine:
-    if (config->useHTMLIEngine && (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")) // The content type has changed during the map.
-    {
-        ret = HTMLIEngine::processResourceFile(this, fileInfo.fullPath);
-    }
-
-    // And if the file is not found and there are redirections, set the redirection:
     if (ret == HTTP::Status::Code::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
     {
         ret = serverResponse.setRedirectLocation(config->redirectPathOn404);

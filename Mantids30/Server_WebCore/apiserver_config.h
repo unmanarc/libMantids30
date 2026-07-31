@@ -145,13 +145,6 @@ public:
     bool useFormattedJSONOutput = true;
 
     /**
-     * @brief Enables or disables the HTMLI pre-processing engine.
-     *
-     * Activates the internal HTMLI engine, which preprocesses HTML content to handle includes, variables, and other custom directives.
-     */
-    bool useHTMLIEngine = true;
-
-    /**
      * @brief APIURLs path's where the API will be available
      */
     std::set<std::string> APIURLs = {"/api"};
