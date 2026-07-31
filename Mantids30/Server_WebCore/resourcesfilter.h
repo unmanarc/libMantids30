@@ -1,11 +1,13 @@
 #pragma once
 
-#include <Mantids30/Helpers/json.h>
-#include <list>
-#include <string>
-
-#define BOOST_BIND_GLOBAL_PLACEHOLDERS 1
 #include <boost/regex.hpp>
+
+#include <cstdint>
+#include <list>
+#include <set>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace Mantids30::API::Web {
 
@@ -14,59 +16,69 @@ class ResourcesFilter
 public:
     ResourcesFilter() = default;
 
-    struct FilterEvaluationResult
+    enum class ProcessingMode : uint8_t
     {
-        bool accept = true;
-        std::string redirectLocation;
+        RAW,
+        HTMLIENGINE,
+        MANTIDSLANG
     };
 
-    enum class FilterAction : uint8_t
+    enum class ActionType : uint8_t
     {
-        ACCEPT = 0,
-        DENY = 1,
-        REDIRECT = 2
+        ADD_HEADERS,
+        REPLACE_HEADERS,
+        PROCESS_AS,
+        REDIRECT,
+        ACCEPT,
+        DENY
+    };
+
+    struct Action
+    {
+        ActionType type = ActionType::ACCEPT;
+
+        std::vector<std::pair<std::string, std::string>> httpHeaders;
+
+        ProcessingMode processingMode = ProcessingMode::RAW;
+
+        std::string redirectLocation;
+
+        uint16_t statusCode = 0;
+    };
+
+    struct FilterEvaluationResult
+    {
+        bool matched = false;
+
+        std::vector<Action> actions;
     };
 
     struct Filter
     {
-        void compileRegex()
-        {
-            for (const std::string &i : sRegexs)
-            {
-                this->regexPatterns.emplace_back(i.c_str(), boost::regex::extended);
-            }
-        }
+        void compileRegex();
 
+        std::list<std::string> uriRegexs;
         std::list<boost::regex> regexPatterns;
-        std::string redirectLocation;
-        std::list<std::string> requiredScopes, rejectedScopes;
-        std::list<std::string> requiredRoles, rejectedRoles;
-        std::list<std::string> sRegexs;
-        bool requireSession = false;
-        //bool requireLogin = false;
-        bool disallowSession = false;
-        //bool disallowLogin = false;
 
-        FilterAction action = FilterAction::ACCEPT;
+        std::list<std::string> requiredScopes;
+        std::list<std::string> rejectedScopes;
+
+        std::list<std::string> requiredRoles;
+        std::list<std::string> rejectedRoles;
+
+        bool requireSession = false;
+        bool disallowSession = false;
+
+        std::vector<Action> actions;
     };
 
     bool loadFiltersFromFile(const std::string &filePath);
+
     void addFilter(const Filter &filter);
 
-    /**
-     * @brief Evaluates a given URI against a set of filters to determine the appropriate action.
-     *
-     * This function checks the URI against filters, each containing required scopes, rejected scopes,
-     * regex patterns, and a specified action. If a filter matches the user's data and the URI,
-     * the function performs the corresponding action (accept, redirect, or deny). If no filters match,
-     * the function accepts the URI by default.
-     *
-     * @param uri The URI to be evaluated.
-     * @param userData A pointer to the UserData object containing user-specific data.
-     * @return A FilterEvaluationResult object containing the evaluation results, including whether to accept
-     *         or deny the URI, and an optional redirect location.
-     */
-    FilterEvaluationResult evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive);
+    void clearFilters();
+
+    [[nodiscard]] FilterEvaluationResult evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive) const;
 
 protected:
     std::list<Filter> m_filters;

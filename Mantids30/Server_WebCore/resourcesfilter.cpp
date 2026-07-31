@@ -1,238 +1,409 @@
 #include "resourcesfilter.h"
+
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/algorithm/string/trim.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-using namespace boost;
+#include <algorithm>
+#include <limits>
+#include <stdexcept>
+
 using namespace Mantids30::API::Web;
+
+namespace {
+
+using PTree = boost::property_tree::ptree;
+using Action = ResourcesFilter::Action;
+using ActionType = ResourcesFilter::ActionType;
+using ProcessingMode = ResourcesFilter::ProcessingMode;
+using Filter = ResourcesFilter::Filter;
+
+std::string normalizeIdentifier(std::string value)
+{
+    boost::algorithm::trim(value);
+    boost::algorithm::to_upper(value);
+
+    std::replace(value.begin(), value.end(), '-', '_');
+    std::replace(value.begin(), value.end(), ' ', '_');
+
+    return value;
+}
+
+ProcessingMode parseProcessingMode(const std::string &value)
+{
+    const std::string normalized = normalizeIdentifier(value);
+
+    if (normalized == "HTMLIENGINE" || normalized == "HTMLI_ENGINE" || normalized == "HTMLI")
+    {
+        return ProcessingMode::HTMLIENGINE;
+    }
+
+    if (normalized == "MANTIDSLANG" || normalized == "MANTIDS_LANG")
+    {
+        return ProcessingMode::MANTIDSLANG;
+    }
+
+    return ProcessingMode::RAW;
+}
+
+uint16_t parseStatusCode(const PTree &node, uint16_t defaultStatusCode)
+{
+    unsigned int statusCode = node.get<unsigned int>("statusCode", node.get<unsigned int>("code", defaultStatusCode));
+
+    if (statusCode > std::numeric_limits<uint16_t>::max())
+    {
+        throw std::runtime_error("HTTP status code is out of range");
+    }
+
+    return static_cast<uint16_t>(statusCode);
+}
+
+void loadStringList(const PTree &node, const std::string &childName, std::list<std::string> &destination)
+{
+    const auto child = node.get_child_optional(childName);
+
+    if (!child)
+    {
+        return;
+    }
+
+    for (const auto &item : child.get())
+    {
+        destination.push_back(item.second.get_value<std::string>());
+    }
+}
+
+void loadHeaders(const PTree &node, std::vector<std::pair<std::string, std::string>> &headers)
+{
+    for (const auto &header : node)
+    {
+        headers.emplace_back(header.first, header.second.get_value<std::string>());
+    }
+}
+
+Action parseAction(const PTree &actionNode)
+{
+    std::string actionName = actionNode.get<std::string>("type", actionNode.get<std::string>("action", actionNode.get_value<std::string>("")));
+
+    actionName = normalizeIdentifier(actionName);
+
+    Action action;
+
+    if (actionName == "REPLACE_HEADERS")
+    {
+        action.type = ActionType::REPLACE_HEADERS;
+
+        auto headers = actionNode.get_child_optional("headers");
+
+        if (!headers)
+        {
+            headers = actionNode.get_child_optional("httpExtraHeaders");
+        }
+
+        if (headers)
+        {
+            loadHeaders(headers.get(), action.httpHeaders);
+        }
+
+        return action;
+    }
+
+    if (actionName == "ADD_HEADERS")
+    {
+        action.type = ActionType::ADD_HEADERS;
+
+        auto headers = actionNode.get_child_optional("headers");
+
+        if (!headers)
+        {
+            headers = actionNode.get_child_optional("httpExtraHeaders");
+        }
+
+        if (headers)
+        {
+            loadHeaders(headers.get(), action.httpHeaders);
+        }
+
+        return action;
+    }
+
+    if (actionName == "PROCESS_AS" || actionName == "PROCESS")
+    {
+        action.type = ActionType::PROCESS_AS;
+        action.processingMode = parseProcessingMode(actionNode.get<std::string>("mode", actionNode.get<std::string>("processingMode", "RAW")));
+
+        return action;
+    }
+
+    if (actionName == "PROCESS_AS_HTMLI" || actionName == "PROCESS_AS_HTMLIENGINE" || actionName == "PROCESS_AS_HTMLI_ENGINE")
+    {
+        action.type = ActionType::PROCESS_AS;
+        action.processingMode = ProcessingMode::HTMLIENGINE;
+        return action;
+    }
+
+    if (actionName == "PROCESS_AS_MANTIDSLANG" || actionName == "PROCESS_AS_MANTIDS_LANG")
+    {
+        action.type = ActionType::PROCESS_AS;
+        action.processingMode = ProcessingMode::MANTIDSLANG;
+        return action;
+    }
+
+    if (actionName == "PROCESS_AS_RAW")
+    {
+        action.type = ActionType::PROCESS_AS;
+        action.processingMode = ProcessingMode::RAW;
+        return action;
+    }
+
+    if (actionName == "REDIRECT")
+    {
+        action.type = ActionType::REDIRECT;
+        action.redirectLocation = actionNode.get<std::string>("location", actionNode.get<std::string>("redirectLocation", ""));
+
+        action.statusCode = parseStatusCode(actionNode, 302);
+        return action;
+    }
+
+    if (actionName == "DENY")
+    {
+        action.type = ActionType::DENY;
+        action.statusCode = parseStatusCode(actionNode, 403);
+        return action;
+    }
+
+    if (actionName == "ACCEPT" || actionName == "ALLOW")
+    {
+        action.type = ActionType::ACCEPT;
+        action.statusCode = parseStatusCode(actionNode, 200);
+        return action;
+    }
+
+    throw std::runtime_error("Unknown resource-filter action: " + actionName);
+}
+
+void loadLegacyActions(const PTree &node, Filter &filter)
+{
+    const auto extraHeaders = node.get_child_optional("httpExtraHeaders");
+
+    if (extraHeaders)
+    {
+        Action setHeadersAction;
+        setHeadersAction.type = ActionType::REPLACE_HEADERS;
+
+        loadHeaders(extraHeaders.get(), setHeadersAction.httpHeaders);
+
+        filter.actions.push_back(std::move(setHeadersAction));
+    }
+
+    const auto processingMode = node.get_optional<std::string>("processingMode");
+
+    if (processingMode)
+    {
+        Action processAction;
+        processAction.type = ActionType::PROCESS_AS;
+        processAction.processingMode = parseProcessingMode(processingMode.get());
+
+        filter.actions.push_back(std::move(processAction));
+    }
+
+    const std::string legacyActionName = normalizeIdentifier(node.get<std::string>("action", "ACCEPT"));
+
+    Action terminalAction;
+
+    if (legacyActionName == "REDIRECT")
+    {
+        terminalAction.type = ActionType::REDIRECT;
+        terminalAction.redirectLocation = node.get<std::string>("redirectLocation", "");
+
+        terminalAction.statusCode = parseStatusCode(node, 302);
+    }
+    else if (legacyActionName == "DENY")
+    {
+        terminalAction.type = ActionType::DENY;
+        terminalAction.statusCode = parseStatusCode(node, 403);
+    }
+    else
+    {
+        terminalAction.type = ActionType::ACCEPT;
+        terminalAction.statusCode = parseStatusCode(node, 200);
+    }
+
+    filter.actions.push_back(std::move(terminalAction));
+}
+
+bool containsAll(const std::set<std::string> &values, const std::list<std::string> &requiredValues)
+{
+    for (const std::string &requiredValue : requiredValues)
+    {
+        if (values.find(requiredValue) == values.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool containsNone(const std::set<std::string> &values, const std::list<std::string> &rejectedValues)
+{
+    for (const std::string &rejectedValue : rejectedValues)
+    {
+        if (values.find(rejectedValue) != values.end())
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive)
+{
+    if (!containsAll(scopes, filter.requiredScopes))
+    {
+        return false;
+    }
+
+    if (!containsNone(scopes, filter.rejectedScopes))
+    {
+        return false;
+    }
+
+    if (!containsAll(roles, filter.requiredRoles))
+    {
+        return false;
+    }
+
+    if (!containsNone(roles, filter.rejectedRoles))
+    {
+        return false;
+    }
+
+    if (filter.requireSession && !isSessionActive)
+    {
+        return false;
+    }
+
+    if (filter.disallowSession && isSessionActive)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool filterURIMatches(const Filter &filter, const std::string &uri)
+{
+    boost::cmatch match;
+
+    for (const boost::regex &pattern : filter.regexPatterns)
+    {
+        if (boost::regex_match(uri.c_str(), match, pattern))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+} // namespace
+
+void ResourcesFilter::Filter::compileRegex()
+{
+    regexPatterns.clear();
+
+    for (const std::string &regex : uriRegexs)
+    {
+        regexPatterns.emplace_back(regex.c_str(), boost::regex::extended);
+    }
+}
 
 bool ResourcesFilter::loadFiltersFromFile(const std::string &filePath)
 {
-    // Create a root ptree
-    property_tree::ptree root;
+    PTree root;
+    boost::property_tree::read_json(filePath, root);
 
-    // TODO:
-    //    try {
-    // Load the info file in this ptree
-    property_tree::read_json(filePath, root);
-    /*  }
-    catch (property_tree::info_parser_error x)
-    {
-        return false;
-    }*/
+    std::list<Filter> loadedFilters;
 
-    /* try
-    {*/
-    for (const boost::property_tree::ptree::value_type &i : root)
+    for (const auto &filterNode : root)
     {
         Filter filter;
 
-        boost::optional<const boost::property_tree::ptree &> pRegexs = i.second.get_child_optional("uriRegex");
-        if (pRegexs)
+        loadStringList(filterNode.second, "uriRegex", filter.uriRegexs);
+        loadStringList(filterNode.second, "requiredScopes", filter.requiredScopes);
+        loadStringList(filterNode.second, "disallowedScopes", filter.rejectedScopes);
+        loadStringList(filterNode.second, "requiredRoles", filter.requiredRoles);
+        loadStringList(filterNode.second, "disallowedRoles", filter.rejectedRoles);
+        filter.requireSession = filterNode.second.get<bool>("requireSession", false);
+        filter.disallowSession = filterNode.second.get<bool>("disallowSession", false);
+        const auto actions = filterNode.second.get_child_optional("actions");
+
+        if (actions)
         {
-            for (const boost::property_tree::ptree::value_type &i : pRegexs.get())
+            for (const auto &actionNode : actions.get())
             {
-                filter.sRegexs.push_back(i.second.get_value<std::string>());
+                filter.actions.push_back(parseAction(actionNode.second));
             }
         }
+        else
+        {
+            loadLegacyActions(filterNode.second, filter);
+        }
+
         filter.compileRegex();
-
-        boost::optional<const boost::property_tree::ptree &> pRequiredScopes = i.second.get_child_optional("requiredScopes");
-        if (pRequiredScopes)
-        {
-            for (const boost::property_tree::ptree::value_type &i : pRequiredScopes.get())
-            {
-                filter.requiredScopes.push_back(i.second.get_value<std::string>());
-            }
-        }
-
-        boost::optional<const boost::property_tree::ptree &> pDisallowedScopes = i.second.get_child_optional("disallowedScopes");
-        if (pDisallowedScopes)
-        {
-            for (const boost::property_tree::ptree::value_type &i : pDisallowedScopes.get())
-            {
-                filter.rejectedScopes.push_back(i.second.get_value<std::string>());
-            }
-        }
-
-        boost::optional<const boost::property_tree::ptree &> pRequiredRoles = i.second.get_child_optional("requiredRoles");
-        if (pRequiredRoles)
-        {
-            for (const boost::property_tree::ptree::value_type &i : pRequiredRoles.get())
-            {
-                filter.requiredRoles.push_back(i.second.get_value<std::string>());
-            }
-        }
-
-        boost::optional<const boost::property_tree::ptree &> pDisallowedRoles = i.second.get_child_optional("disallowedRoles");
-        if (pDisallowedRoles)
-        {
-            for (const boost::property_tree::ptree::value_type &i : pDisallowedRoles.get())
-            {
-                filter.rejectedRoles.push_back(i.second.get_value<std::string>());
-            }
-        }
-
-        // Action is mandatory:
-        std::string sAction = boost::to_upper_copy(i.second.get<std::string>("action"));
-        if (sAction == "REDIRECT")
-        {
-            filter.action = FilterAction::REDIRECT;
-        }
-        if (sAction == "DENY")
-        {
-            filter.action = FilterAction::DENY;
-        }
-        if (sAction == "ACCEPT")
-        {
-            filter.action = FilterAction::ACCEPT;
-        }
-
-        filter.redirectLocation = i.second.get_optional<std::string>("redirectLocation") ? i.second.get<std::string>("redirectLocation") : "";
-
-        //filter.requireLogin = i.second.get<bool>("requireLogin",false);
-        filter.requireSession = i.second.get<bool>("requireSession", false);
-
-        //filter.disallowLogin = i.second.get<bool>("disallowLogin",false);
-        filter.disallowSession = i.second.get<bool>("disallowSession", false);
-
-        addFilter(filter);
+        loadedFilters.push_back(std::move(filter));
     }
-    /* }
-    catch(property_tree::ptree_bad_path)
-    {
-        return false;
-    }
-    Explode and explain...
-*/
+
+    m_filters.splice(m_filters.end(), loadedFilters);
 
     return true;
 }
 
 void ResourcesFilter::addFilter(const Filter &filter)
 {
-    m_filters.push_back(filter);
+    Filter compiledFilter = filter;
+    compiledFilter.compileRegex();
+
+    m_filters.push_back(std::move(compiledFilter));
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive)
+void ResourcesFilter::clearFilters()
 {
-    FilterEvaluationResult evaluationResult;
+    m_filters.clear();
+}
+
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive) const
+{
+    FilterEvaluationResult result;
 
     for (const Filter &filter : m_filters)
     {
-        // Evaluate the filter:
-
-        // Set the match to true...
-        bool filterMatchesRequirements = true;
-
-        // Check required scopes
-        for (const std::string &requiredScope : filter.requiredScopes)
+        if (!filterRequirementsMatch(filter, scopes, roles, isSessionActive))
         {
-            if (!filterMatchesRequirements)
-            {
-                break;
-            }
-
-            if (scopes.find(requiredScope) == scopes.end())
-            {
-                filterMatchesRequirements = false;
-            }
+            continue;
         }
 
-        // Check rejected permissions
-        for (const std::string &rejectedScope : filter.rejectedScopes)
+        if (!filterURIMatches(filter, uri))
         {
-            if (!filterMatchesRequirements)
-            {
-                break;
-            }
-
-            if (scopes.find(rejectedScope) != scopes.end())
-            {
-                filterMatchesRequirements = false;
-            }
+            continue;
         }
 
-        // Check required roles
-        for (const std::string &requiredRole : filter.requiredRoles)
-        {
-            if (!filterMatchesRequirements)
-            {
-                break;
-            }
+        result.matched = true;
 
-            if (roles.find(requiredRole) == roles.end())
-            {
-                filterMatchesRequirements = false;
-            }
-        }
-
-        // Check rejected roles
-        for (const std::string &rejectedRole : filter.rejectedRoles)
-        {
-            if (!filterMatchesRequirements)
-            {
-                break;
-            }
-
-            if (roles.find(rejectedRole) != roles.end())
-            {
-                filterMatchesRequirements = false;
-            }
-        }
-
-        // Check if the user needs to have an active session
-        if (filter.requireSession && !isSessionActive)
-        {
-            filterMatchesRequirements = false;
-        }
-
-        // Check if the user needs not to have an active session
-        if (filter.disallowSession && isSessionActive)
-        {
-            filterMatchesRequirements = false;
-        }
-
-        // Check if the user needs not to be logged in
-        /*        if (filter.disallowLogin && userData->loggedIn)
-            filterMatchesRequirements = false;*/
-
-        // Check if the user needs to be logged in
-        /*        if (filter.requireLogin && !userData->loggedIn)
-            filterMatchesRequirements = false;*/
-
-        // If the filter doesn't match the requirements, continue with the next filter
-        if (!filterMatchesRequirements)
-        {
-            continue; // Rule does not match
-        }
-
-        // Check if the URI matches any of the filter's regex patterns
-        boost::cmatch what;
-        for (const boost::regex &uriRegexPattern : filter.regexPatterns)
-        {
-            if (boost::regex_match(uri.c_str(), what, uriRegexPattern))
-            {
-                switch (filter.action)
-                {
-                case FilterAction::ACCEPT:
-                    evaluationResult.accept = true;
-                    break;
-                case FilterAction::REDIRECT:
-                    evaluationResult.accept = true;
-                    evaluationResult.redirectLocation = filter.redirectLocation;
-                    break;
-                case FilterAction::DENY:
-                default:
-                    evaluationResult.accept = false;
-                    break;
-                }
-                return evaluationResult;
-            }
-        }
+        result.actions.insert(result.actions.end(), filter.actions.begin(), filter.actions.end());
     }
 
-    // If no filters match, accept the URI by default
-    evaluationResult.accept = true;
-    return evaluationResult;
+    if (!result.matched)
+    {
+        Action defaultAction;
+        defaultAction.type = ActionType::ACCEPT;
+        defaultAction.statusCode = 200;
+
+        result.actions.push_back(std::move(defaultAction));
+    }
+
+    return result;
 }
