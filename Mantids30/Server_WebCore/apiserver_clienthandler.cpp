@@ -1,5 +1,6 @@
 #include "apiserver_clienthandler.h"
 #include "htmliengine.h"
+#include "resourcesfilter.h"
 
 #include <Mantids30/Helpers/crypto.h>
 #include <Mantids30/Helpers/encoders.h>
@@ -9,6 +10,8 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Scripts_MantidsLang/mantidslang.h>
+
+#include <iostream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
@@ -416,6 +419,8 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
             evaluationResult.actions.push_back(std::move(acceptAction));
         }
+
+//        std::cout << "FilterEvaluationResult: " <<  fileInfo.relativePath << " - "  << evaluationResult.toJSON().toStyledString() << std::endl;
 
         API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;
 
