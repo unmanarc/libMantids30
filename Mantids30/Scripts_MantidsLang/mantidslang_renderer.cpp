@@ -66,6 +66,14 @@ bool MantidsLang::iterateJSON(const std::string &foreachParam, const Json::Value
     boost::trim(jsonPathStr);
     boost::trim(varName);
 
+    if (!boost::starts_with(jsonPathStr,"$"))
+    {
+        // jsonPathStr should be in format: $json.path
+        return true;
+    }
+    jsonPathStr = jsonPathStr.substr(1);
+
+
     // Resolve JSON path
     Json::Path path(jsonPathStr);
     const Json::Value &collection = path.resolve(currentJsonContext);
@@ -209,10 +217,9 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
         {
             // SUBTAG - recursively process (testing mode):
             //output->strPrintf("%s[%p-SUBTAG: %s]\n", indent.c_str(), static_cast<void *>(this), token.tagName.c_str());
-
             if (token.subTag->isEmpty())
             {
-                // Parse tagName: "action:[json.path]"
+                // Parse tagName: "action:[path]"
                 size_t bracketPos = token.tagName.find('[');
                 if (bracketPos == std::string::npos)
                 {
@@ -220,7 +227,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                     continue;
                 }
 
-                // Eg. {{#print_json[session.user]!}}
+                // Eg. {{#print_json[$session.user]!}}
                 // Then: action = print_json
                 // and parameter: session.user
                 std::string action = token.tagName.substr(0, bracketPos);
@@ -232,10 +239,19 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                 }
 
                 std::string parameter = token.tagName.substr(bracketPos + 1, endBracket - bracketPos - 1);
+                boost::trim(parameter);
 
                 if (boost::starts_with(action, "print_"))
                 {
                     // Resolve JSON path
+
+                    if (!boost::starts_with(parameter,"$"))
+                    {
+                        // Parameter should be in format: $json.path
+                        continue;
+                    }
+                    parameter = parameter.substr(1);
+
                     Json::Path path(parameter);
                     const Json::Value &value = path.resolve(*jsonContext);
                     if (!printJSON(action, value))
@@ -255,7 +271,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                     {
                         if (!file->streamTo(output))
                         {
-                            // TODO: report..
+                            return;
                         }
                     }
                     else if (action == "render")
@@ -263,7 +279,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                         MantidsLang parser(file, jsonContext, nullptr, apiCallback);
                         if (!parser.streamTo(output))
                         {
-                            // TODO: report..
+                            return;
                         }
                     }
                 }
@@ -283,7 +299,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                     */
                     if (!iterateJSON(token.tagName, currentJsonContext, token, depth))
                     {
-                        // TODO: report
+                        return;
                     }
                 }
 
@@ -299,7 +315,7 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                     //Scripts_JSONExprEval
                     if (!checkConditionalOnJSON(token.tagName, currentJsonContext, token, depth))
                     {
-                        // TODO: report
+                        return;
                     }
                 }
             }
