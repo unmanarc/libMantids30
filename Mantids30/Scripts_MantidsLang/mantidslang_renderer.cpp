@@ -262,11 +262,15 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                 else if (action == "include_raw" || action == "render")
                 {
                     std::shared_ptr<Memory::Streams::StreamableFile> file = std::make_shared<Memory::Streams::StreamableFile>();
-                    if (!file->open(parameter.c_str(), O_RDONLY, 0))
+
+                    std::string path =  defaultPath + parameter;
+
+                    if (file->open(path.c_str(), O_RDONLY, 0)==-1)
                     {
                         // TODO: report..
                         continue;
                     }
+
                     if (action == "include_raw")
                     {
                         if (!file->streamTo(output))

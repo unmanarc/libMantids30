@@ -375,7 +375,7 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
 
                 return jsonValue ? *jsonValue : Json::nullValue;
             });
-
+        mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
         serverResponse.setDataStreamer(mantidsTemplateLang);
 
         break;

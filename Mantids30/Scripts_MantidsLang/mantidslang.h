@@ -51,6 +51,8 @@ public:
 
     bool isEmpty() const;
 
+    void setDefaultPath(const std::string &newDefaultPath);
+
 private:
 
     bool printJSON( const std::string &action , const Json::Value & value);
@@ -73,6 +75,8 @@ private:
 
     //std::string tag;
     std::string expectedClosingTag;
+
+    std::string defaultPath;
 
     // INSIDE TAG STATUS:
     std::vector<Token> tokens;

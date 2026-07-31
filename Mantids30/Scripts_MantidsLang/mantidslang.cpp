@@ -338,3 +338,8 @@ void MantidsLang::closeSubTag(const std::string &dataAfterClosing)
         parent->write(dataAfterClosing.c_str(), dataAfterClosing.size());
     }
 }
+
+void MantidsLang::setDefaultPath(const std::string &newDefaultPath)
+{
+    defaultPath = newDefaultPath;
+}
