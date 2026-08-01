@@ -58,8 +58,9 @@ bool MantidsLang::streamTo(Memory::Streams::StreamableObject *out)
         return false;
     }
 
-    // Send EOF to trigger final processing
-    return writeEOF();
+    writeEOF();
+
+    return true;
 }
 
 MantidsLang::Token &MantidsLang::currentDataToken()
@@ -95,7 +96,7 @@ std::optional<size_t> MantidsLang::write(const void *buf, const size_t &count)
             if (parent == nullptr)
             {
                 processTokens(*jsonContext);
-                output->writeEOF();
+              //  output->writeEOF();
             }
         }
         return 0;
