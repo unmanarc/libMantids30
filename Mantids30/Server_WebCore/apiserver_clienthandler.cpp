@@ -369,7 +369,7 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
             });
         mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
         serverResponse.setContentDataStreamer(mantidsTemplateLang);
-        //serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS);
+        serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS); // Allow connection reusage.
         break;
     }
 
