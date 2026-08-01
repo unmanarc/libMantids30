@@ -332,7 +332,7 @@ std::shared_ptr<Memory::Streams::StreamableObject> HTTP::Content::getStreamableO
     return m_contentStreamableObject;
 }
 
-void HTTP::Content::setStreamableObj(const std::shared_ptr<Memory::Streams::StreamableObject> &outDataContainer)
+void HTTP::Content::setStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &outDataContainer)
 {
     // This stream has been setted up before...
     this->m_usingInternalOutStream = false;

@@ -151,12 +151,12 @@ Json::Value APISync::performAPISynchronizationRequest(Program::Logs::AppLog *log
         client.clientRequest.requestLine.setHTTPMethod("POST");
         client.clientRequest.requestLine.setRequestURI("/api/v1/" + functionName);
         client.clientRequest.getVarsBySource(HTTP::Source::GET)->addVar("APP", std::make_shared<Memory::Containers::B_Chunks>(appName));
-        client.clientRequest.content.setStreamableObj(strJSONRequest);
+        client.clientRequest.content.setStreamableObject(strJSONRequest);
         client.clientRequest.headers.add("Content-Type", "application/json");
 
         std::shared_ptr<Memory::Streams::StreamableJSON> strJSONResponse = std::make_shared<Memory::Streams::StreamableJSON>();
 
-        client.serverResponse.setDataStreamer(strJSONResponse);
+        client.serverResponse.setContentDataStreamer(strJSONResponse);
 
         // Make the petition...
         Mantids30::Memory::Streams::Parser::ParseResult msg;

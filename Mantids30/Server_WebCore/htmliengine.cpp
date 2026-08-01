@@ -54,7 +54,7 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
     std::string fileContent;
 
     // the server response will be the default data chunk (remove the current data streamer and put a default one):
-    clientHandler->serverResponse.setDataStreamer(nullptr);
+    clientHandler->serverResponse.setContentDataStreamer(nullptr);
 
     // Load the file content.
     if (boost::starts_with(sRealFullPath, "MEM:"))

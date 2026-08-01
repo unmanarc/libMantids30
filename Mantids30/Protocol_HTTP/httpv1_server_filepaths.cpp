@@ -125,7 +125,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 
             outFileInfo->fullPath = "MEM:" + outFileInfo->relativePath;
 
-            serverResponse.setDataStreamer(m_staticContentElements[outFileInfo->relativePath]);
+            serverResponse.setContentDataStreamer(m_staticContentElements[outFileInfo->relativePath]);
             return true;
         }
         else
@@ -219,7 +219,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
                 // File Found / Readable.
                 outFileInfo->fullPath = selectedOverlap.fileSystemRealPath;
                 outFileInfo->relativePath = selectedOverlap.getRelativePath();
-                serverResponse.setDataStreamer(fileMemoryMap);
+                serverResponse.setContentDataStreamer(fileMemoryMap);
                 detectContentTypeFromFilePath(outFileInfo->relativePath);
 
                 HTTP::Date fileModificationDate;

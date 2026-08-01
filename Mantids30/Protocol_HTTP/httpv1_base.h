@@ -307,7 +307,7 @@ public:
          * @brief Set the container used for transmitting data.
          * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-        void setDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
+        void setContentDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
         {
             if (!dataStream)
             {
@@ -319,7 +319,7 @@ public:
                 cacheControl.optionMustRevalidate = true;
                 setContentType("", false);
             }
-            content.setStreamableObj(dataStream);
+            content.setStreamableObject(dataStream);
         }
         /**
          * @brief addCookieClearSecure Set Response Secure Cookie (Secure,httpOnly,SameSite) as delete cookie
@@ -393,7 +393,7 @@ public:
             headers.replace("Location", location);
 
             // Remove previous data streamer:
-            setDataStreamer(nullptr);
+            setContentDataStreamer(nullptr);
 
             if (temporary)
             {

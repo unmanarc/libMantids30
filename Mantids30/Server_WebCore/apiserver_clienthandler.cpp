@@ -41,16 +41,6 @@ APIServer_ClientHandler::APIServer_ClientHandler(void *parent, const std::shared
     : HTTPv1_Server(sock)
 {}
 
-void APIServer_ClientHandler::log(Json::Value &jWebLog)
-{
-    if (logUsername.empty())
-    {
-        jWebLog["user"] = logUsername;
-    }
-
-    config->webLog->log(jWebLog);
-}
-
 HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
 {
     HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
@@ -143,7 +133,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                     {
                         API::APIReturn apiReturn;
                         apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                        serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                        serverResponse.setContentDataStreamer(apiReturn.getBodyDataStreamer());
                         serverResponse.setContentType("application/json", true);
 
                         log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
@@ -168,7 +158,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                         {
                             API::APIReturn apiReturn;
                             apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                            serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                            serverResponse.setContentDataStreamer(apiReturn.getBodyDataStreamer());
                             serverResponse.setContentType("application/json", true);
 
                             log(LogLevel::SECURITY_ALERT,
@@ -203,7 +193,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 {
                     apiReturn = handleAPIRequest(baseApiUrl, apiVersion, httpMethodMode, endpointName, postParameters);
                     apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
-                    serverResponse.setDataStreamer(apiReturn.getBodyDataStreamer());
+                    serverResponse.setContentDataStreamer(apiReturn.getBodyDataStreamer());
                     serverResponse.setContentType("application/json", true);
                 }
 
@@ -242,7 +232,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
                 jPayloadOutStr->setValue(handleAPIInfo(baseApiUrl));
                 ret = HTTP::Status::Code::S_200_OK;
-                serverResponse.setDataStreamer(jPayloadOutStr);
+                serverResponse.setContentDataStreamer(jPayloadOutStr);
                 serverResponse.setContentType("application/json", true);
                 isAPIURI = true;
                 break;
@@ -335,6 +325,8 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
     {
         std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
 
+
+
         (*jsonContext)["session"]["isActive"] = isSessionActive();
 
         if (currentSessionInfo.authSession)
@@ -376,8 +368,8 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
                 return jsonValue ? *jsonValue : Json::nullValue;
             });
         mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
-        serverResponse.setDataStreamer(mantidsTemplateLang);
-
+        serverResponse.setContentDataStreamer(mantidsTemplateLang);
+        //serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS);
         break;
     }
 
@@ -388,7 +380,6 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
 
     return acceptedStatus;
 }
-
 
 HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 {
@@ -504,7 +495,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
     if (ret != HTTP::Status::Code::S_200_OK)
     {
-        serverResponse.setDataStreamer(nullptr);
+        serverResponse.setContentDataStreamer(nullptr);
     }
 
     if (ret == HTTP::Status::Code::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
@@ -600,6 +591,16 @@ bool APIServer_ClientHandler::isSupportedUserAgent(const std::string &userAgent)
     return false; // No supported browser matched
 }
 
+void APIServer_ClientHandler::log(Json::Value &jWebLog)
+{
+    if (logUsername.empty())
+    {
+        jWebLog["user"] = logUsername;
+    }
+
+    config->webLog->log(jWebLog);
+}
+
 void APIServer_ClientHandler::log(LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...)
 {
     va_list args;
@@ -685,7 +686,6 @@ bool APIServer_ClientHandler::isRedirectPathSafeForAuth(const std::string &url) 
     return true;
 }
 
-
 HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
@@ -695,7 +695,7 @@ HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &u
 
     std::shared_ptr<Memory::Streams::StreamableString> htmlOutput = std::make_shared<Memory::Streams::StreamableString>();
     htmlOutput->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
-    serverResponse.setDataStreamer(htmlOutput);
+    serverResponse.setContentDataStreamer(htmlOutput);
     serverResponse.setContentType("text/html", true);
 
     return HTTP::Status::Code::S_200_OK;
@@ -704,7 +704,7 @@ HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &u
 HTTP::Status::Code APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, HTTP::Status::Code returnCode)
 {
     std::shared_ptr<Streams::StreamableString> sHTMLPayloadOut = createHTMLAlertMessage(title, message);
-    serverResponse.setDataStreamer(sHTMLPayloadOut);
+    serverResponse.setContentDataStreamer(sHTMLPayloadOut);
     serverResponse.setContentType("text/html", true);
     return returnCode;
 }
