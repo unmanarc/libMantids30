@@ -29,21 +29,9 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
     fillLogInformation(jWebLog);
     log(jWebLog);
 
-    // The answer is the last thing... we move to the start or we drop the connection...
-    if (connectionContinue && clientRequest.getHeaderOption("Connection") != "close")
-    {
-        m_currentSubParser = &clientRequest.requestLine;
-        prohibitConnectionUpgrade = true;
-    }
-    else
-    {
-        m_currentSubParser = nullptr;
-        serverResponse.headers.replace("Connection", "close");
-    }
-
     if (!serverResponse.status.streamToUpstream())
     {
-        // Bye... upstream failed.
+        // Bye... upstream failed (don't continue).
         m_currentSubParser = nullptr;
         return false;
     }
@@ -51,16 +39,30 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
     // Stream Server HTTP Headers
     if (!sendHTTPHeadersResponse())
     {
-        // Bye... upstream failed.
+        // Bye... upstream failed (don't continue).
         m_currentSubParser = nullptr;
         return false;
+    }
+
+    // The answer is the last thing... we move to the start or we drop the connection...
+    if (connectionContinue)
+    {
+        // The connection must continue, because we have not reported or it's not marked as continue:
+        m_currentSubParser = &clientRequest.requestLine;
+        // Only the first request can upgrade a channel:
+        prohibitConnectionUpgrade = true;
+    }
+    else
+    {
+        // Next parser is nullptr, means: no parsing handler for the next request.
+        m_currentSubParser = nullptr;
     }
 
     // Stream content:
     bool streamedOK = serverResponse.content.streamToUpstream();
 
     // Destroy the binary content container here:
-    serverResponse.content.setStreamableObj(nullptr);
+    serverResponse.content.setStreamableObject(nullptr);
 
     if (!streamedOK)
     {
@@ -87,36 +89,33 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     fillLogInformation(jWebLog);
     log(jWebLog);
 
-    // TODO: connection keep alive.
-    if ((strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max())
+    // Not connection continue:
+    if (!connectionContinue || clientRequest.getHeaderOption("Connection") == "close")
     {
-        // Undefined size. (eg. dynamic stream)
+        connectionContinue = false;
         serverResponse.headers.replace("Connection", "close");
+    }
+
+    // TODO: connection keep alive.
+    // Size not specified...
+    if ( (strsize = serverResponse.content.getStreamSize()) == std::numeric_limits<size_t>::max() )
+    {
         serverResponse.headers.remove("Content-Length");
         /////////////////////
         if (serverResponse.content.getTransmissionMode() == HTTP::Content::TransmissionMode::CHUNKS)
         {
+            // It's chunked...
             serverResponse.headers.replace("Transfer-Encoding", "Chunked");
+        }
+        else
+        {
+            // Not specified and not chunked? (close)
+            connectionContinue = false;
+            serverResponse.headers.replace("Connection", "close");
         }
     }
     else
     {
-        /* std::string connectionType = serverResponse.headers.getOptionValueStringByName("Connection");
-        if (boost::iequals(connectionType, "close"))
-        {
-            // On connection close, don't report the content size. (is there any reason for not reporting the size?)
-        }
-        else if (boost::iequals(connectionType, "upgrade"))
-        {
-            // conection type is defined as an upgrade, so no extra header / content length...
-        }
-        else
-        {
-            // Defined stream object size, reporting this to the client.
-            serverResponse.headers.replace("Content-Length", std::to_string(strsize));
-        }*/
-
-        //if ( strsize>0 )
         serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
@@ -132,11 +131,11 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     {
         // No futher headers will be modified...
         bool r = serverResponse.headers.streamToUpstream();
-        if (!r)
+        /*if (!r)
         {
             r = !r;
             r = !r;
-        }
+        }*/
         return r;
     }
 
