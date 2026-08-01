@@ -596,5 +596,7 @@ protected:
 
     std::mutex mutexRead, mutexWrite;
     bool m_isServer = false;
+private:
+    int _shutdown(int mode);
 };
 } // namespace Mantids30::Network::Sockets

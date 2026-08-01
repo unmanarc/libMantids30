@@ -45,13 +45,18 @@ Socket_TLS::Socket_TLS()
 
 Socket_TLS::~Socket_TLS()
 {
+    // shutdown the TLS socket:
+    _shutdown(SHUT_RDWR);
+
     if (m_sslHandler)
     {
         SSL_free(m_sslHandler);
+        m_sslHandler = nullptr;
     }
     if (m_sslContext)
     {
         SSL_CTX_free(m_sslContext);
+        m_sslContext = nullptr;
     }
 }
 
@@ -424,7 +429,9 @@ string Socket_TLS::getTLSPeerCN() const
     }
 }
 
-int Socket_TLS::iShutdown(int mode)
+
+
+int Socket_TLS::_shutdown(int mode)
 {
     if (!m_sslHandler && isServer())
     {
@@ -442,24 +449,58 @@ int Socket_TLS::iShutdown(int mode)
     }
     else
     {
-        // Messages from https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
-        switch (SSL_shutdown(m_sslHandler))
+        // Perform TLS shutdown per OpenSSL documentation:
+        // https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
+        //
+        // SSL_shutdown() returns:
+        //   0 = close_notify sent, but peer's close_notify not yet received
+        //   1 = bidirectional shutdown completed successfully
+        //  -1 = error
+        //
+        // When it returns 0, we must call SSL_shutdown() again to complete
+        // the bidirectional shutdown (receive peer's close_notify).
+
+        int ret = SSL_shutdown(m_sslHandler);
+
+        if (ret == 0)
         {
-        case 0:
-            // The shutdown is not yet finished: the close_notify was sent but the peer did not send it back yet. Call SSL_read() to do a bidirectional shutdown.
+            // close_notify was sent; perform bidirectional shutdown
+            // by calling SSL_shutdown() again to receive peer's close_notify
+            ret = SSL_shutdown(m_sslHandler);
+
+            if (ret == 1)
+            {
+                // Bidirectional shutdown completed successfully
+                m_shutdownProtocolOnWrite = true;
+                return 0;
+            }
+            // If second call also returns 0 or -1, the peer may have
+            // already closed the TCP connection. Mark as shutdown anyway
+            // to allow the TCP layer to close cleanly.
+            m_shutdownProtocolOnWrite = true;
             return -2;
-        case 1:
-            // The write shutdown was successfully completed. The close_notify alert was sent and the peer's close_notify alert was received.
-            //shutdown_proto_rd = true;
+        }
+        else if (ret == 1)
+        {
+            // The write shutdown was successfully completed in one call.
+            // The close_notify alert was sent and the peer's close_notify
+            // alert was received.
             m_shutdownProtocolOnWrite = true;
             return 0;
-            // Call the private TCP iShutdown to shutdown RD on the socket ?...
-            //return Socket_TCP::iShutdown(mode);
-        default:
-            //The shutdown was not successful.
+        }
+        else
+        {
+            // The shutdown was not successful (error).
+            // Mark as shutdown to prevent infinite retry loops.
+            m_shutdownProtocolOnWrite = true;
             return -3;
         }
     }
+}
+
+int Socket_TLS::iShutdown(int mode)
+{
+    return _shutdown(mode);
 }
 
 bool Socket_TLS::isSecure()
