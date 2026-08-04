@@ -24,8 +24,6 @@ using namespace Mantids30;
 using namespace Mantids30::Program;
 using namespace Mantids30::Program::Config;
 
-
-
 std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
     Network::Protocol::APISync::APISyncParameters apiSyncParameters;
@@ -52,7 +50,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig), "tokenType", "");
+            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig)["tokensConfiguration"], "signAlgorithm", "");
         }
         else
         {
@@ -146,7 +144,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig), "tokenType", "");
+            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig)["tokensConfiguration"], "signAlgorithm", "");
         }
         else
         {
