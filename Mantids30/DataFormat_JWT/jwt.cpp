@@ -49,7 +49,6 @@ bool JWT::isAlgorithmSupported(const std::string &algorithm)
     {
         return true;
     }
-
     if (algorithm == "HS384")
     {
         return true;
@@ -58,7 +57,6 @@ bool JWT::isAlgorithmSupported(const std::string &algorithm)
     {
         return true;
     }
-
     if (algorithm == "HS512")
     {
         return true;
