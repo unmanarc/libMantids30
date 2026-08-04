@@ -325,8 +325,6 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
     {
         std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
 
-
-
         (*jsonContext)["session"]["isActive"] = isSessionActive();
 
         if (currentSessionInfo.authSession)
@@ -337,6 +335,7 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
             (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
             (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
             (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
+
             if (currentSessionInfo.isImpersonation)
             {
                 (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
@@ -349,11 +348,17 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
         (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
         (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
 
+        (*jsonContext)["server"]["unixTime"] = time(nullptr);
+
         (*jsonContext)["script"]["fullpath"] = fileInfo.fullPath;
         (*jsonContext)["script"]["relativePath"] = fileInfo.relativePath;
 
         (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
         (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+
+        (*jsonContext)["software"]["version"] = config->softwareVersion;
+        (*jsonContext)["software"]["description"] = config->softwareDescription;
+        (*jsonContext)["software"]["name"] = config->softwareName;
 
         std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
             serverResponse.content.getStreamableObject(),
