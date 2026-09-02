@@ -14,8 +14,8 @@ using namespace Mantids30;
 
 using namespace std;
 
-bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, LocalRequestedFileInfo *outFileInfo,
-                                                       const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
+bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories,
+                                                       LocalRequestedFileInfo *outFileInfo, const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
 {
     if (!outFileInfo)
     {
@@ -56,11 +56,9 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     {
         [[nodiscard]] bool detectPathTraversal() const
         {
-            return (
-                fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                       // outside dir?
-                ||
-                memcmp(serverWebRootWithEndingSlash.c_str(), fileSystemRealPath.c_str(), serverWebRootWithEndingSlash.size()) != 0 // not matching?
-                );
+            return (fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                       // outside dir?
+                    || memcmp(serverWebRootWithEndingSlash.c_str(), fileSystemRealPath.c_str(), serverWebRootWithEndingSlash.size()) != 0 // not matching?
+            );
         }
 
         [[nodiscard]] std::string getRelativePath() const
@@ -98,7 +96,8 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
             }
 
             // Compute the full path with overlapped directory
-            RequestedOverlapInfo oInfo = {overlappedWebRootWithEndingSlash + requestURIWithDefaultFile.substr(overlappedDirectory.first.size() - 1), overlappedWebRootWithEndingSlash,
+            RequestedOverlapInfo oInfo = {overlappedWebRootWithEndingSlash + requestURIWithDefaultFile.substr(overlappedDirectory.first.size() - 1),
+                                          overlappedWebRootWithEndingSlash,
                                           overlappedDirectory.first};
             detectedPotentialOverlaps.push_back(oInfo);
         }
@@ -113,11 +112,11 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
         if (m_staticContentElements.find(requestURIWithDefaultFile) != m_staticContentElements.end())
         {
             // STATIC CONTENT:
-            serverResponse.cacheControl.optionNoCache = false;
+            serverResponse.cacheControl.optionNoCache = true;
             serverResponse.cacheControl.optionNoStore = false;
-            serverResponse.cacheControl.optionMustRevalidate = false;
-            serverResponse.cacheControl.maxAge = 3600;
-            serverResponse.cacheControl.optionImmutable = true;
+            serverResponse.cacheControl.optionMustRevalidate = true;
+            serverResponse.cacheControl.maxAge = 3600*6;
+            serverResponse.cacheControl.optionImmutable = false;
 
             outFileInfo->relativePath = requestedURI + defaultFileToAppend;
 
@@ -125,7 +124,14 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 
             outFileInfo->fullPath = "MEM:" + outFileInfo->relativePath;
 
-            serverResponse.setContentDataStreamer(m_staticContentElements[outFileInfo->relativePath]);
+            auto staticContentElement =m_staticContentElements[outFileInfo->relativePath];
+            serverResponse.setContentDataStreamer(staticContentElement.getData());
+
+            // Get ETag for in-memory static content
+            auto staticContent = m_staticContentElements[outFileInfo->relativePath];
+            serverResponse.etag.setValue(staticContentElement.getETag());
+            serverResponse.etag.setWeak(false);
+
             return true;
         }
         else
@@ -230,14 +236,24 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
 #endif
                 if (serverResponse.includeDate)
                 {
-                    serverResponse.headers.add("Last-Modified", fileModificationDate.toString());
+                    serverResponse.headers.replace("Last-Modified", fileModificationDate.toString());
                 }
 
-                serverResponse.cacheControl.optionNoCache = false;
+                serverResponse.cacheControl.optionNoCache = true;
                 serverResponse.cacheControl.optionNoStore = false;
-                serverResponse.cacheControl.optionMustRevalidate = false;
-                serverResponse.cacheControl.maxAge = 3600;
-                serverResponse.cacheControl.optionImmutable = true;
+                serverResponse.cacheControl.optionMustRevalidate = true;
+                serverResponse.cacheControl.maxAge = 3600*6;
+                serverResponse.cacheControl.optionImmutable = false;
+
+                // Generate ETag based on size and modification time (portable across platforms)
+#ifdef _WIN32
+                serverResponse.etag.setValue(std::to_string(selectedOverlap.fileStats.st_size) + "-" + std::to_string(selectedOverlap.fileStats.st_mtime));
+#else
+                serverResponse.etag.setValue(std::to_string(selectedOverlap.fileStats.st_ino) + "-" + std::to_string(selectedOverlap.fileStats.st_size) + "-"
+                                            + std::to_string(selectedOverlap.fileStats.st_mtim.tv_sec));
+#endif
+                serverResponse.etag.setWeak(false);
+
                 return true;
             }
             return false;

@@ -126,6 +126,11 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     {
         serverResponse.headers.replace("Date", currentDate.toString());
     }
+    else
+    {
+        serverResponse.headers.remove("Date");
+        serverResponse.headers.remove("Last-Modified");
+    }
 
     if (serverResponse.immutableHeaders)
     {
@@ -155,6 +160,13 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     if (!cacheOptions.empty())
     {
         serverResponse.headers.replace("Cache-Control", cacheOptions);
+    }
+
+    // ETag header
+    std::string etagStr = serverResponse.etag.toString();
+    if (!etagStr.empty())
+    {
+        serverResponse.headers.replace("ETag", etagStr);
     }
 
     if (!serverResponse.security.XFrameOptions.isNotActivated())

@@ -32,6 +32,19 @@ namespace Mantids30::Network::Protocol::HTTP {
 class HTTPv1_Server : public HTTPv1_Base
 {
 public:
+    class StaticContentElement
+    {
+    public:
+        void setData(const std::shared_ptr<Mantids30::Memory::Containers::B_MEM>& data, const time_t &lastModifiedTime);
+        std::shared_ptr<Mantids30::Memory::Containers::B_MEM> getData() { return data; }
+        std::string getETag();
+
+    private:
+        std::shared_ptr<Mantids30::Memory::Containers::B_MEM> data;
+        std::string etagHash;
+        time_t lastModifiedTime = 0;
+    };
+
     struct LocalRequestedFileInfo
     {
         // Default constructor (implicitly defaulted)
@@ -80,17 +93,17 @@ public:
      * This function allows adding a memory-based content element (e.g., a file or resource) to the server's static content map.
      * The content is associated with a specific path, which will be used to serve it when requested.
      * @param path The path under which the content will be served.
-     * @param contentElement The shared pointer to the memory content element to be served.
+     * @param contentElement The static content element to be served.
      */
-    void addStaticContent(const std::string &path, const std::shared_ptr<Mantids30::Memory::Containers::B_MEM> &contentElement);
+    void addStaticContent(const std::string &path, const StaticContentElement &contentElement);
 
     /**
      * @brief setStaticContentElements Sets the entire map of static content elements.
      * This function replaces the current static content map with the provided one.
      * It's useful for bulk updates or initialization of static content.
-     * @param value A map of paths to memory content elements.
+     * @param value A map of paths to StaticContentElement objects.
      */
-    void setStaticContentElements(const std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> &value);
+    void setStaticContentElements(const std::map<std::string, StaticContentElement> &value);
 
     /**
      * @brief htmlEncode Encodes a raw string into HTML-safe format.
@@ -275,8 +288,11 @@ private:
 
     void fillLogInformation(Json::Value &logValues);
 
+
+
     /////
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM>> m_staticContentElements;
+    /// \brief m_staticContentElements
+    std::map<std::string, StaticContentElement> m_staticContentElements;
 
     std::string m_currentFileExtension;
     std::map<std::string, std::string> m_mimeTypes;

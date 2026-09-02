@@ -26,14 +26,13 @@ using namespace Mantids30;
 HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &connectionStream)
     : HTTPv1_Base(false, connectionStream)
 {
-    // Default to a conservative cache policy for dynamic responses.
-    serverResponse.cacheControl.optionNoCache = true;
-    serverResponse.cacheControl.optionNoStore = true;
-    serverResponse.cacheControl.optionMustRevalidate = true;
+    // Modified now (unless specified)!
+    HTTP::Date fileModificationDate;
+    fileModificationDate.setUnixTime(time(nullptr));
+    serverResponse.headers.replace("Last-Modified", fileModificationDate.toString());
 
     // Start parsing from the request line
     m_currentSubParser = static_cast<Memory::Streams::SubParser *>(&clientRequest.requestLine);
-
     loadDefaultMIMETypes();
 }
 
@@ -228,6 +227,48 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
     // TODO: Streaming body support not yet implemented
     serverResponse.status.setCode(onHTTPClientContentReceived());
+
+    // Only check conditional headers on successful GET/HEAD responses (2xx)
+    if (static_cast<uint16_t>(serverResponse.status.getCode()) >= 200 && static_cast<uint16_t>(serverResponse.status.getCode()) < 300)
+    {
+        std::string httpMethod = clientRequest.requestLine.getHTTPMethod();
+        if (httpMethod == "GET" || httpMethod == "HEAD")
+        {
+            // Check If-None-Match header (ETag validation)
+            std::string ifNoneMatch = clientRequest.getHeaderOption("If-None-Match");
+            if (!ifNoneMatch.empty() && !serverResponse.etag.isEmpty())
+            {
+                Headers::ETag clientETag;
+                clientETag.fromString(ifNoneMatch);
+                if (serverResponse.etag.matches(clientETag))
+                {
+                    // 304 Not Modified - no body
+                    serverResponse.status.setCode(HTTP::Status::Code::S_304_NOT_MODIFIED);
+                    serverResponse.setContentDataStreamer(nullptr);
+                }
+            }
+            else
+            {
+                // Check If-Modified-Since header (Last-Modified validation)
+                std::string ifModifiedSince = clientRequest.getHeaderOption("If-Modified-Since");
+                if (!ifModifiedSince.empty())
+                {
+                    std::shared_ptr<MIME::MIME_HeaderOption> lastModifiedHeader = serverResponse.headers.getOptionByName("Last-Modified");
+                    if (lastModifiedHeader)
+                    {
+                        // If the Last-Modified matches or is older than If-Modified-Since, return 304
+                        std::string lastModifiedStr = lastModifiedHeader->getValue();
+                        if (lastModifiedStr == ifModifiedSince)
+                        {
+                            serverResponse.status.setCode(HTTP::Status::Code::S_304_NOT_MODIFIED);
+                            serverResponse.setContentDataStreamer(nullptr);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     bool r = sendFullHTTPResponse();
     if (!r)
     {
