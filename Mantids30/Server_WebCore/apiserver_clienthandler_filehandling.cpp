@@ -10,6 +10,7 @@
 
 #include <json/value.h>
 #include <memory>
+#include <optional>
 #include <string>
 
 using namespace Mantids30::Network;
@@ -19,7 +20,92 @@ using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30;
 using namespace std;
 
-HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode, const LocalRequestedFileInfo & fileInfo)
+void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFileInfo &fileInfo)
+{
+    auto sourceMem = std::dynamic_pointer_cast<Memory::Containers::B_Base>(serverResponse.content.getStreamableObject());
+    // Heuristic for detecting
+    if (sourceMem)
+    {
+        if (sourceMem->find("{{",2)!=std::nullopt && sourceMem->find("}}",2)!=std::nullopt)
+        {
+            // Variable script, send everytime.
+            // Default to a conservative cache policy for dynamic responses.
+            serverResponse.cacheControl.optionNoCache = true;
+            serverResponse.cacheControl.optionNoStore = true;
+            serverResponse.cacheControl.optionMustRevalidate = true;
+            serverResponse.headers.remove("Last-Modified");
+            serverResponse.etag.clear();
+        }
+        else
+        {
+            // Static Script, always the same (rely on date/inode/etc etag).
+            serverResponse.cacheControl.optionNoCache = true;
+            serverResponse.cacheControl.optionNoStore = false;
+            serverResponse.cacheControl.optionMustRevalidate = true;
+        }
+    }
+    else
+    {
+        // No object?
+        return;
+    }
+
+    std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
+
+    (*jsonContext)["session"]["isActive"] = isSessionActive();
+
+    if (currentSessionInfo.authSession)
+    {
+        (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
+        (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
+        (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
+        (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
+        (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
+        (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
+
+        if (currentSessionInfo.isImpersonation)
+        {
+            (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+        }
+
+        fillSessionExtraInfo((*jsonContext)["session"]);
+    }
+
+    (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
+    (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
+    (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
+
+    (*jsonContext)["server"]["unixTime"] = time(nullptr);
+
+    (*jsonContext)["script"]["fullpath"] = fileInfo.fullPath;
+    (*jsonContext)["script"]["relativePath"] = fileInfo.relativePath;
+
+    (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
+    (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+
+    (*jsonContext)["software"]["version"] = config->softwareVersion;
+    (*jsonContext)["software"]["description"] = config->softwareDescription;
+    (*jsonContext)["software"]["name"] = config->softwareName;
+
+    std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
+        serverResponse.content.getStreamableObject(),
+        jsonContext,
+        nullptr,
+        [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
+        {
+            API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
+
+            Json::Value *jsonValue = result.responseJSON();
+
+            return jsonValue ? *jsonValue : Json::nullValue;
+        });
+    mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
+    serverResponse.setContentDataStreamer(mantidsTemplateLang);
+    serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS); // Allow connection reusage.
+}
+
+
+HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode, const LocalRequestedFileInfo &fileInfo)
 {
     HTTP::Status::Code acceptedStatus = static_cast<HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
 
@@ -37,65 +123,7 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
 
     case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
     {
-        // Default to a conservative cache policy for dynamic responses.
-        serverResponse.cacheControl.optionNoCache = true;
-        serverResponse.cacheControl.optionNoStore = true;
-        serverResponse.cacheControl.optionMustRevalidate = true;
-        serverResponse.headers.remove("Last-Modified");
-        serverResponse.etag.clear();
-
-        std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
-
-        (*jsonContext)["session"]["isActive"] = isSessionActive();
-
-        if (currentSessionInfo.authSession)
-        {
-            (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
-            (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
-            (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
-            (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
-            (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
-            (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
-
-            if (currentSessionInfo.isImpersonation)
-            {
-                (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
-            }
-
-            fillSessionExtraInfo((*jsonContext)["session"]);
-        }
-
-        (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
-        (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-        (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
-
-        (*jsonContext)["server"]["unixTime"] = time(nullptr);
-
-        (*jsonContext)["script"]["fullpath"] = fileInfo.fullPath;
-        (*jsonContext)["script"]["relativePath"] = fileInfo.relativePath;
-
-        (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
-        (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
-
-        (*jsonContext)["software"]["version"] = config->softwareVersion;
-        (*jsonContext)["software"]["description"] = config->softwareDescription;
-        (*jsonContext)["software"]["name"] = config->softwareName;
-
-        std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
-            serverResponse.content.getStreamableObject(),
-            jsonContext,
-            nullptr,
-            [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
-            {
-                API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
-
-                Json::Value *jsonValue = result.responseJSON();
-
-                return jsonValue ? *jsonValue : Json::nullValue;
-            });
-        mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
-        serverResponse.setContentDataStreamer(mantidsTemplateLang);
-        serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS); // Allow connection reusage.
+        langProcessViaMantidsLang(fileInfo);
         break;
     }
 
@@ -137,14 +165,14 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
             evaluationResult.actions.push_back(std::move(acceptAction));
         }
 
-        if (config->debugResourceFilter) {
-            std::cout << "FilterEvaluationResult: " <<  fileInfo.relativePath << " - "  << evaluationResult.toJSON().toStyledString() << std::endl;
+        if (config->debugResourceFilter)
+        {
+            std::cout << "FilterEvaluationResult: " << fileInfo.relativePath << " - " << evaluationResult.toJSON().toStyledString() << std::endl;
         }
 
         API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;
 
         bool terminalActionExecuted = false;
-
 
         for (const API::Web::ResourcesFilter::Action &action : evaluationResult.actions)
         {
@@ -199,7 +227,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
             case API::Web::ResourcesFilter::ActionType::ACCEPT:
             {
-                ret = langProcessAcceptedResource(action.statusCode, processingMode, fileInfo );
+                ret = langProcessAcceptedResource(action.statusCode, processingMode, fileInfo);
 
                 terminalActionExecuted = true;
                 break;

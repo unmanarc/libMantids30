@@ -207,6 +207,8 @@ protected:
 
 private:
     std::string logUsername;
+    void langProcessViaMantidsLang(const LocalRequestedFileInfo & fileInfo);
+
     Protocol::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
     Protocol::HTTP::Status::Code handleRegularFileRequest();
     bool versionIsSupported(const std::string &versionStr, int minVersion);
