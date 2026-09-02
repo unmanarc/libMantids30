@@ -37,6 +37,13 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
 
     case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
     {
+        // Default to a conservative cache policy for dynamic responses.
+        serverResponse.cacheControl.optionNoCache = true;
+        serverResponse.cacheControl.optionNoStore = true;
+        serverResponse.cacheControl.optionMustRevalidate = true;
+        serverResponse.headers.remove("Last-Modified");
+        serverResponse.etag.clear();
+
         std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
 
         (*jsonContext)["session"]["isActive"] = isSessionActive();

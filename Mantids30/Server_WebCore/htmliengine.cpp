@@ -6,6 +6,7 @@
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <Mantids30/Helpers/crypto.h>
 #include <json/value.h>
 
 #include <boost/regex.hpp>
@@ -52,9 +53,10 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
 {
     // Drop the MMAP container:
     std::string fileContent;
+    bool usingHTMLiHeuristic;
 
     // the server response will be the default data chunk (remove the current data streamer and put a default one):
-    clientHandler->serverResponse.setContentDataStreamer(nullptr);
+    clientHandler->serverResponse.setContentDataStreamer(nullptr,true);
 
     // Load the file content.
     if (boost::starts_with(sRealFullPath, "MEM:"))
@@ -76,9 +78,33 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
         fileStream.close();
     }
 
+    usingHTMLiHeuristic = fileContent.find("//<%")!=std::string::npos || fileContent.find("<!--<%")!=std::string::npos;
+
     // CINC PROCESSOR (process the file content):
     procResource_HTMLIEngineInclude(sRealFullPath, clientHandler->serverResponse.contentType, fileContent, clientHandler);
     procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
+
+    if (!usingHTMLiHeuristic)
+    {
+        // leave the previous loaded etag and last-modified...
+    }
+    else
+    {
+
+        if (!fileContent.empty())
+        {
+            /* Generate ETag: SHA256 of processed content (first 16 hex chars) */
+            std::string sha256Hash = Helpers::Crypto::calcSHA256(fileContent);
+            clientHandler->serverResponse.etag.setValue(sha256Hash.substr(0, 16));
+            clientHandler->serverResponse.etag.setWeak(false);
+
+            /* Enable caching with revalidation */
+            clientHandler->serverResponse.cacheControl.optionNoStore = false;
+            clientHandler->serverResponse.cacheControl.optionNoCache = true;
+            clientHandler->serverResponse.cacheControl.optionMustRevalidate = true;
+            clientHandler->serverResponse.headers.remove("Last-Modified");
+        }
+    }
 
     // Stream the generated content to the current clean data streamer...
     clientHandler->getResponseContentStreamableObject()->writeString(fileContent);

@@ -8,7 +8,6 @@
 #include <arpa/inet.h>
 #endif
 #include <cstring>
-#include <ctgmath>
 
 using namespace Mantids30::Network::Sockets;
 
