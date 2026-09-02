@@ -69,11 +69,26 @@ public:
      */
     void addCookie(const std::string &cookieName, const std::string &cookieVal);
     /**
-     * @brief setAuthenticationBasic
+     * @brief setBasicAuthentication
      * @param user
      * @param pass
      */
     void setBasicAuthentication(const std::string &user, const std::string &pass);
+    /**
+     * @brief setIfNoneMatch Set If-None-Match ETag for conditional requests
+     * @param etagValue ETag value string (with or without quotes)
+     */
+    void setIfNoneMatch(const std::string &etagValue);
+    /**
+     * @brief setIfNoneMatch Set If-None-Match ETag for conditional requests
+     * @param etag ETag object
+     */
+    void setIfNoneMatch(const Headers::ETag &etag);
+    /**
+     * @brief getResponseETag Get ETag from server response
+     * @return ETag object from response
+     */
+    Headers::ETag getResponseETag() const;
     /**
      * @brief getServerContentType Get Server Content Type
      * @return Content Type

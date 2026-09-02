@@ -16,22 +16,22 @@ public:
     /**
      * @brief Prevents caching of the response by any cache.
      */
-    bool optionNoStore = true;
+    bool optionNoStore = false;
 
     /**
      * @brief Requires revalidation before using a cached response.
      */
-    bool optionNoCache = false;
+    bool optionNoCache = true;
 
     /**
      * @brief Forces caches to revalidate stale responses with the origin server.
      */
-    bool optionMustRevalidate = false;
+    bool optionMustRevalidate = true;
 
     /**
      * @brief Restricts caching to the client only, disallowing intermediary caches.
      */
-    bool optionPrivate = false;
+    bool optionPrivate = true;
 
     /**
      * @brief Allows the response to be cached by any cache, including shared ones.

@@ -56,6 +56,9 @@ bool HTTP::HTTPv1_Client::changeToNextParser()
         // Parse Cache-Control
         serverResponse.cacheControl.fromString(serverResponse.headers.getOptionRawStringByName("Cache-Control"));
 
+        // Parse ETag from response
+        serverResponse.etag.fromString(serverResponse.headers.getOptionRawStringByName("ETag"));
+
         // Security:
         // Parse Xframeopts...
         serverResponse.security.XFrameOptions.fromString(serverResponse.headers.getOptionRawStringByName("X-Frame-Options"));
@@ -157,6 +160,12 @@ bool HTTP::HTTPv1_Client::streamClientHeaders()
     // Put client cookies:
     m_clientCookies.putOnHeaders(&clientRequest.headers);
 
+    // Put If-None-Match header for conditional requests:
+    if (!clientRequest.ifNoneMatch.isEmpty())
+    {
+        clientRequest.headers.replace("If-None-Match", clientRequest.ifNoneMatch.toString());
+    }
+
     // Put basic authentication on headers:
     if (clientRequest.basicAuth.isEnabled)
     {
@@ -236,4 +245,14 @@ void HTTP::HTTPv1_Client::addURLVar(const std::string &varName, const std::strin
 void HTTP::HTTPv1_Client::addCookie(const std::string &cookieName, const std::string &cookieVal)
 {
     m_clientCookies.addCookieVal(cookieName, cookieVal);
+}
+
+void HTTP::HTTPv1_Client::setIfNoneMatch(const std::string &etagValue)
+{
+    clientRequest.ifNoneMatch.fromString(etagValue);
+}
+
+void HTTP::HTTPv1_Client::setIfNoneMatch(const Headers::ETag &etag)
+{
+    clientRequest.ifNoneMatch = etag;
 }

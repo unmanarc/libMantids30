@@ -13,6 +13,7 @@
 
 #include "common_content.h"
 #include "hdr_cachecontrol.h"
+#include "hdr_etag.h"
 #include "hdr_sec_hsts.h"
 #include "hdr_sec_xframeopts.h"
 #include "hdr_sec_xssprotection.h"
@@ -22,7 +23,7 @@
 #include "streamdecoder_url.h"
 
 #define HTTP_PRODUCT_VERSION_MAJOR 0
-#define HTTP_PRODUCT_VERSION_MINOR 6
+#define HTTP_PRODUCT_VERSION_MINOR 7
 
 namespace Mantids30::Network::Protocol::HTTP {
 
@@ -283,6 +284,10 @@ public:
          * @brief virtualPort Requested Virtual Port
          */
         uint16_t virtualPort = 80;
+        /**
+         * @brief ifNoneMatch ETag for conditional requests (If-None-Match header)
+         */
+        Headers::ETag ifNoneMatch;
     };
     struct Response
     {
@@ -307,16 +312,14 @@ public:
          * @brief Set the container used for transmitting data.
          * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-        void setContentDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream)
+        void setContentDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream, bool preserveHeaders = false)
         {
-            if (!dataStream)
+            if (!dataStream && !preserveHeaders)
             {
-                // Set default headers (lost previous ones):
+                // Set default original headers (lost previous ones):
                 headers.remove("Last-Modified");
+                etag.clear();
                 cacheControl = Headers::CacheControl();
-                cacheControl.optionNoCache = true;
-                cacheControl.optionNoStore = true;
-                cacheControl.optionMustRevalidate = true;
                 setContentType("", false);
             }
             content.setStreamableObject(dataStream);
@@ -430,6 +433,10 @@ public:
          */
         Headers::CacheControl cacheControl;
         /**
+         * @brief etag Entity Tag for cache validation
+         */
+        Headers::ETag etag;
+        /**
          * @brief sWWWAuthenticateRealm WWW-Authenticate Realm String (if not empty, authentication is requested to the client)
          */
         std::string sWWWAuthenticateRealm;
@@ -446,7 +453,7 @@ public:
         /**
          * @brief includeDate Include the Date header in HTTP requests or responses
          *
-         * When true, adds a 'Date' header containing the request timestamp.
+         * When true, adds a 'Date' and 'Last-Modified' header containing server timestamps.
          * Useful for server logging, cache management, and debugging.
          */
         bool includeDate = true;
