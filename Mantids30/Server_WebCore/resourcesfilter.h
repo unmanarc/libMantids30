@@ -54,7 +54,7 @@ public:
 
         std::vector<Action> actions;
 
-        Json::Value toJSON() const;
+        [[nodiscard]] Json::Value toJSON() const;
     };
 
     struct Filter
@@ -82,7 +82,7 @@ public:
 
     void clearFilters();
 
-    [[nodiscard]] FilterEvaluationResult evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive) const;
+    [[nodiscard]] FilterEvaluationResult evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin) const;
 
 protected:
     std::list<Filter> m_filters;
