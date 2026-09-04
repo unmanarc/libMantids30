@@ -132,6 +132,15 @@ bool ClientHandler::isSessionActive()
     return currentSessionInfo.authSession && !(currentSessionInfo.authSession->isSessionRevoked());
 }
 
+bool ClientHandler::isAdmin()
+{
+    if (isSessionActive())
+    {
+        return currentSessionInfo.authSession->getJWTAuthenticatedInfo().isAdmin();
+    }
+    return false;
+}
+
 set<string> ClientHandler::getSessionScopes()
 {
     if (isSessionActive())

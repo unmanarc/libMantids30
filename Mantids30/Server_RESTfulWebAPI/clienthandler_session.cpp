@@ -105,6 +105,15 @@ bool ClientHandler::isSessionActive()
     return (m_isAuthorizationHeaderJWTVerified || m_isAccessTokenCookieJWTVerified);
 }
 
+bool ClientHandler::isAdmin()
+{
+    if (isSessionActive())
+    {
+        return jwtToken.isAdmin();
+    }
+    return false;
+}
+
 set<string> ClientHandler::getSessionScopes()
 {
     if (isSessionActive())
