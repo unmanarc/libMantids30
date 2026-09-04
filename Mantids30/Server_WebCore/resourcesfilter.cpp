@@ -209,9 +209,9 @@ bool containsNone(const std::set<std::string> &values, const std::list<std::stri
     return true;
 }
 
-bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive)
+bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin)
 {
-    if (!containsAll(scopes, filter.requiredScopes))
+    if (!containsAll(scopes, filter.requiredScopes) && !isAdmin)
     {
         return false;
     }
@@ -221,7 +221,7 @@ bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &
         return false;
     }
 
-    if (!containsAll(roles, filter.requiredRoles))
+    if (!containsAll(roles, filter.requiredRoles) && !isAdmin)
     {
         return false;
     }
@@ -328,13 +328,13 @@ void ResourcesFilter::clearFilters()
     m_filters.clear();
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive) const
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin) const
 {
     FilterEvaluationResult result;
 
     for (const Filter &filter : m_filters)
     {
-        if (!filterRequirementsMatch(filter, scopes, roles, isSessionActive))
+        if (!filterRequirementsMatch(filter, scopes, roles, isSessionActive,isAdmin))
         {
             continue;
         }

@@ -154,7 +154,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
         if (config->resourceFilter)
         {
-            evaluationResult = config->resourceFilter->evaluateURI(fileInfo.relativePath, getSessionScopes(), getSessionRoles(), isSessionActive());
+            evaluationResult = config->resourceFilter->evaluateURI(fileInfo.relativePath, getSessionScopes(), getSessionRoles(), isSessionActive(),isAdmin());
         }
         else
         {
