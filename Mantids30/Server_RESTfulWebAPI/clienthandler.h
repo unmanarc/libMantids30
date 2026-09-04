@@ -58,17 +58,21 @@ protected:
      * @brief isSessionActive Check if the session is active (JWT is valid)
      * @return
      */
-    bool isSessionActive() override;
+    [[nodiscard]] bool isSessionActive() override;
     /**
      * @brief getSessionScopes If session is active (Valid JWT), returns all the session scopes
      * @return
      */
-    std::set<std::string> getSessionScopes() override;
+    [[nodiscard]] std::set<std::string> getSessionScopes() override;
     /**
      * @brief getSessionRoles If session is active (Valid JWT), returns all the session roles
      * @return
      */
-    std::set<std::string> getSessionRoles() override;
+    [[nodiscard]] std::set<std::string> getSessionRoles() override;
+
+
+    [[nodiscard]] bool isAdmin() override;
+
 
 private:
     // API Version -> Endpoints:

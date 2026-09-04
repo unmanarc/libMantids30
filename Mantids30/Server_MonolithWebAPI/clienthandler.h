@@ -94,9 +94,10 @@ protected:
      */
     void fillSessionExtraInfo(Json::Value &jVars) override;
 
-    bool isSessionActive() override;
-    std::set<std::string> getSessionScopes() override;
-    std::set<std::string> getSessionRoles() override;
+    [[nodiscard]] bool isSessionActive() override;
+    [[nodiscard]] std::set<std::string> getSessionScopes() override;
+    [[nodiscard]] std::set<std::string> getSessionRoles() override;
+    [[nodiscard]] bool isAdmin() override;
 
 private:
     void updateActivityOnImpersonatorSession();

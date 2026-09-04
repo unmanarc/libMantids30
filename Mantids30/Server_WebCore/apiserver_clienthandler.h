@@ -182,13 +182,14 @@ protected:
      * The function returns `true` if the token passes verification and the extracted data
      * is valid, otherwise `false`.
      */
-    bool verifyToken(const std::string &strToken);
-    virtual bool isSessionActive() = 0;
-    virtual std::set<std::string> getSessionScopes() = 0;
-    virtual std::set<std::string> getSessionRoles() = 0;
+    [[nodiscard]] bool verifyToken(const std::string &strToken);
+    [[nodiscard]] virtual bool isSessionActive() = 0;
+    [[nodiscard]] virtual std::set<std::string> getSessionScopes() = 0;
+    [[nodiscard]] virtual std::set<std::string> getSessionRoles() = 0;
+    [[nodiscard]] virtual bool isAdmin() = 0;
     // Function to check if the URL contains any invalid characters
-    bool isURLSafe(const std::string &url);
-    bool isRedirectPathSafeForAuth(const std::string &url) const;
+    [[nodiscard]] bool isURLSafe(const std::string &url);
+    [[nodiscard]] bool isRedirectPathSafeForAuth(const std::string &url) const;
 
     Protocol::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Protocol::HTTP::Status::Code returnCode);
     std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
