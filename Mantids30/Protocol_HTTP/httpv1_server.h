@@ -118,6 +118,33 @@ public:
     bool sendWebSocketBinaryData(const char *data, const size_t &len);
     bool sendWebSocketPing(const char *data, size_t len);
 
+    /**
+     * @brief resolveLocalFilePathFromURI2 Get the local and relative path from the URL, it also checks for transversal escape attempts and set the cache control and other things
+     * @param defaultWebRootWithEndingSlash URI
+     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
+     * @param defaultFileToAppend  Append default suffix (eg. /index.html), default is not to append.
+     * @param preventMappingExecutables Don't map the executable file as the response
+     * @return true if there is a positive resource that should be served, otherwise false.
+     */
+    bool resolveLocalFilePathFromURI2(std::string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, LocalRequestedFileInfo *info,
+                                      const std::string &defaultFileToAppend = "", const bool &preventMappingExecutables = false);
+
+    /**
+     * @brief resolveLocalFilePathFromURI0NE Only Get the local and relative path from the URL for non-existent file, it also checks for transversal escape attempts
+     * @param sServerDir URI
+     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
+     * @return true if there is a positive resource that should be served, otherwise false.
+     */
+    static bool resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
+
+    /**
+     * @brief resolveLocalFilePathFromURI0E Only Get the local and relative path from the URL for existent file, it also checks for transversal escape attempts
+     * @param sServerDir URI
+     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
+     * @return true if there is a positive resource that should be served, otherwise false.
+     */
+    static bool resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
+
 protected:
     virtual void log(Json::Value &jWebLog) {}
 
@@ -150,35 +177,6 @@ protected:
 
     void *getThis() override { return this; }
     bool changeToNextParser() override;
-
-    //ClientVars clientVars;
-
-    /**
-     * @brief resolveLocalFilePathFromURI2 Get the local and relative path from the URL, it also checks for transversal escape attempts and set the cache control and other things
-     * @param defaultWebRootWithEndingSlash URI
-     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
-     * @param defaultFileToAppend  Append default suffix (eg. /index.html), default is not to append.
-     * @param preventMappingExecutables Don't map the executable file as the response
-     * @return true if there is a positive resource that should be served, otherwise false.
-     */
-    bool resolveLocalFilePathFromURI2(std::string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories, LocalRequestedFileInfo *info,
-                                      const std::string &defaultFileToAppend = "", const bool &preventMappingExecutables = false);
-
-    /**
-     * @brief resolveLocalFilePathFromURI0NE Only Get the local and relative path from the URL for non-existent file, it also checks for transversal escape attempts
-     * @param sServerDir URI
-     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
-     * @return true if there is a positive resource that should be served, otherwise false.
-     */
-    static bool resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
-
-    /**
-     * @brief resolveLocalFilePathFromURI0E Only Get the local and relative path from the URL for existent file, it also checks for transversal escape attempts
-     * @param sServerDir URI
-     * @param info Output with the Relative and full path of the requested resource, and other file information (dir/exec/etc)
-     * @return true if there is a positive resource that should be served, otherwise false.
-     */
-    static bool resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
 
     /**
      * @brief setContentTypeByFileName Automatically set the content type depending the file extension from a preset
