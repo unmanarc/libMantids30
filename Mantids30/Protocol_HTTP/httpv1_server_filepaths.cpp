@@ -300,23 +300,16 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
     std::string sFullComputedRealPath;
     {
         char cRealPath[PATH_MAX];
-        if (realpath(sFullRequestedPath.c_str(), cRealPath) == nullptr)
+        errno = 0;
+        realpath(sFullRequestedPath.c_str(), cRealPath);
+        if (errno == ENOENT)
         {
-            return false;
-            /*if (errno == ENOENT)
-            {
-                // Non-existent file.
-                return false; // or handle the error as needed
-            }
-            else
-            {
-                // Other error occurred.
-                return false; // or handle the error as needed
-            }*/
+            // Non-Existant File.
+            sFullComputedRealPath = cRealPath;
         }
         else
         {
-            sFullComputedRealPath = cRealPath;
+            return false;
         }
     }
 
