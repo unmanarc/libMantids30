@@ -74,7 +74,7 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration *netcfg, const
         return false;
     }
 
-    struct ifreq ifr;
+    struct ifreq ifr{};
     ZeroBStruct(ifr);
 
     // Create the tun/tap interface.
@@ -89,7 +89,8 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration *netcfg, const
         snprintf(ifr.ifr_name, IFNAMSIZ, "%s%%d", m_interfaceName.c_str());
     }
 
-    if (ioctl(m_fd, TUNSETIFF, (void *) &ifr) < 0)
+    errno = 0;
+    if (ioctl(m_fd, TUNSETIFF, reinterpret_cast<void *>(&ifr)) < 0)
     {
         char cError[1024] = "Unknown Error";
 
