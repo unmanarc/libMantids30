@@ -55,6 +55,7 @@ public:
      */
     static ExecutionResult blexec(const ExecutionArgs &cmd);
 };
+// h
 
 #ifndef _WIN32
 class AppSpawn
@@ -63,98 +64,64 @@ public:
     AppSpawn();
     ~AppSpawn();
 
-    /**
-     * @brief setExec Set executable path
-     * @param path path of executable
-     * @return true if exist and it's an executable file, otherwise false.
-     */
+    AppSpawn(const AppSpawn &) = delete;
+    AppSpawn &operator=(const AppSpawn &) = delete;
+    AppSpawn(AppSpawn &&) = delete;
+    AppSpawn &operator=(AppSpawn &&) = delete;
+
     bool setExec(const std::string &path);
-
-    /**
-     * @brief addOpenFD Add Open File Descriptor on the application
-     * @param outFile file used...
-     */
     bool addOpenFDToFile(const std::string &outFile, int fd = 1);
-
-    /**
-     * @brief redirectStdErrToStdOut Add dup STDERR to STDOUT
-     */
     bool redirectStdErrToStdOut();
 
-    /**
-     * @brief addArgument Add program argument.
-     * @param arg argument text
-     */
     void addArgument(const std::string &arg);
-
-    /**
-     * @brief addEnvironment Add program environment var.
-     * @param env environment var (in form of VAR=VALUE)
-     */
     void addEnvironment(const std::string &env);
 
-    /**
-     * @brief spawnProcess Initiate the process
-     * @param pipeStdout set to pipe here the stdout from the child
-     * @param pipeStderr set to pipe here the stderr from the child
-     * @return
-     */
+    // One successful spawn per reset().
+    // stderr-to-stdout redirection takes precedence over pipeStderr.
     bool spawnProcess(bool pipeStdout = false, bool pipeStderr = false);
 
-    /**
-     * @brief waitUntilDies Wait until the process die.
-     */
+    // Drain captured output before calling this method.
     void waitUntilProcessEnds();
 
-    /**
-     * @brief pollResponse Poll response (detect from where there is data to read, stdout/stdin), remember to wait for the process after the pollResponse loop.
-     * @return list of file descriptors that have some bytes to read
-     */
+    // Returns descriptors ready for data or EOF.
+    // Empty means all captured streams have reached EOF.
     std::set<int> pollResponse();
-    /**
-     * @brief read Read from the child application file descriptor
-     * @param fd file descriptor to read (1-STDOUT,2-STDERR)
-     * @param buf buffer to put the data
-     * @param count buffer size
-     * @return On  success,  the number of bytes read is returned (zero indicates end of file), otherwise -1.
-     */
+
+    // A positive-size read returning zero closes that captured stream.
     ssize_t read(int fd, void *buf, size_t count);
 
-    // TODO: write to the process..
-
-    /**
-     * @brief hasExited True once the child has been reaped.
-     */
+    // True once the child has been reaped, or waitpid reports ECHILD.
     [[nodiscard]] bool hasExited() const;
 
-    /**
-     * @brief reset Restore the object to a fresh state so it can be reused
-     *              for a completely new spawn.  Closes any open pipes,
-     *              reaps the previous child, clears arguments, environment
-     *              variables, and re-initialises the file-actions list.
-     */
+    // Closes pipes and waits for the previous child before clearing state.
     void reset();
 
 private:
+    struct OpenFD
+    {
+        std::string path;
+        int fd;
+    };
+
     std::string m_execPath;
     std::vector<std::string> m_arguments;
     std::vector<std::string> m_environment;
+    std::vector<OpenFD> m_openFiles;
+
     pid_t m_childPid{0};
-    posix_spawn_file_actions_t m_fileActions{};
-    posix_spawn_file_actions_t *m_fileActionsp = nullptr;
     int m_piStdOut[2]{-1, -1};
     int m_piStdErr[2]{-1, -1};
     std::vector<pollfd> m_plist;
+
     bool m_pipedStdout{false};
     bool m_pipedStderr{false};
     bool m_dupStderrToStdout{false};
     bool m_spawned{false};
     bool m_childExited{false};
 
-    // Idempotent: closes any open pipe end and marks it closed.
-    void closePipes();
-    // Idempotent: reaps the child (EINTR-safe) and marks it as exited.
-    void reapChild();
+    void closePipes() noexcept;
+    void closeStream(int fd) noexcept;
+    bool reapChild() noexcept;
 };
 #endif
 
