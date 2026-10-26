@@ -7,6 +7,7 @@
 #include <unistd.h>
 #endif
 
+#include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <stdexcept>
@@ -182,7 +183,8 @@ bool Mantids30::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, i
 
 bool Mantids30::Helpers::AppSpawn::redirectStdErrToStdOut()
 {
-    return posix_spawn_file_actions_adddup2(m_fileActionsp, STDOUT_FILENO, STDERR_FILENO) == 0;
+    m_dupStderrToStdout = true;
+    return true;
 }
 
 void Mantids30::Helpers::AppSpawn::addArgument(const std::string &arg)
@@ -197,36 +199,41 @@ void Mantids30::Helpers::AppSpawn::addEnvironment(const std::string &env)
 
 bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
-    // Create the argv...
-    char **argv = static_cast<char **>(malloc((m_arguments.size() + 2) * sizeof(char *)));
-    argv[0] = static_cast<char *>(strdup(m_execPath.c_str()));
-    for (size_t i = 1; i < (m_arguments.size() + 1); i++)
+    // Build the argv... (pointers into existing string storage; posix_spawn
+    // copies what it needs synchronously, so no strdup is required).
+    std::vector<char *> argv;
+    argv.reserve(m_arguments.size() + 2);
+    argv.push_back(const_cast<char *>(m_execPath.c_str()));
+    for (const auto &arg : m_arguments)
     {
-        argv[i] = static_cast<char *>(strdup(m_arguments[i - 1].c_str()));
+        argv.push_back(const_cast<char *>(arg.c_str()));
     }
-    argv[m_arguments.size() + 1] = nullptr;
+    argv.push_back(nullptr);
 
-    // Create the env...
-    std::vector<std::string> _environment = m_environment;
-    // Pass the current environ...
+    // Build the env... (current environment with our additions first).
+    std::vector<std::string> envStrings;
+    envStrings.reserve(m_environment.size() + 16);
+    envStrings.insert(envStrings.end(), m_environment.begin(), m_environment.end());
     for (int i = 0; environ[i]; i++)
     {
-        _environment.emplace_back(environ[i]);
+        envStrings.emplace_back(environ[i]);
     }
-
-    char **env = static_cast<char **>(malloc((_environment.size() + 1) * sizeof(char *)));
-    for (size_t i = 0; i < _environment.size(); i++)
+    std::vector<char *> env;
+    env.reserve(envStrings.size() + 1);
+    for (auto &e : envStrings)
     {
-        env[i] = static_cast<char *>(strdup(_environment[i].c_str()));
+        env.push_back(e.data());
     }
-    env[_environment.size()] = nullptr;
+    env.push_back(nullptr);
 
     if (pipeStdout)
     {
         if (pipe(m_piStdOut) != 0)
         {
-            throw std::runtime_error("Unable to create pipes.");
+            closePipes();
+            return false;
         }
+        m_pipedStdout = true;
 
         // Ask the remote process to close the pipes side 0.
         posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdOut[0]);
@@ -242,8 +249,10 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
     {
         if (pipe(m_piStdErr) != 0)
         {
-            throw std::runtime_error("Unable to create pipes.");
+            closePipes();
+            return false;
         }
+        m_pipedStderr = true;
 
         // Ask the remote process to close the pipes side 0.
         posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdErr[0]);
@@ -255,66 +264,151 @@ bool Mantids30::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr
         posix_spawn_file_actions_addclose(m_fileActionsp, m_piStdErr[1]);
     }
 
-    // Execute:
-    int s = posix_spawn(&m_childPid, m_execPath.c_str(), m_fileActionsp, m_attrp, &argv[0], env);
-
-    if (pipeStdout)
+    // If redirectStdErrToStdOut was requested, dup stderr onto stdout *after*
+    // the pipe dup2 above so that stderr ends up in the stdout pipe.
+    if (m_dupStderrToStdout && m_pipedStdout)
     {
-        // close the pipe side 1 in the parent process..
-        close(m_piStdOut[1]);
+        posix_spawn_file_actions_adddup2(m_fileActionsp, STDOUT_FILENO, STDERR_FILENO);
+    }
+
+    // Execute:
+    const int s = posix_spawn(&m_childPid, m_execPath.c_str(), m_fileActionsp, nullptr, &argv[0], &env[0]);
+
+    if (s != 0)
+    {
+        // Spawn failed: release every pipe end we created.
+        closePipes();
+        m_arguments.clear();
+        m_environment.clear();
+        return false;
+    }
+
+    m_spawned = true;
+
+    if (m_pipedStdout)
+    {
+        // close the pipe side 1 in the parent process...
+        ::close(m_piStdOut[1]);
+        m_piStdOut[1] = -1;
         m_plist = {{m_piStdOut[0], POLLIN}};
     }
 
-    if (pipeStderr)
+    if (m_pipedStderr)
     {
-        // close the pipe side 1 in the parent process..
-        close(m_piStdErr[1]);
+        // close the pipe side 1 in the parent process...
+        ::close(m_piStdErr[1]);
+        m_piStdErr[1] = -1;
         m_plist.push_back({m_piStdErr[0], POLLIN});
     }
 
-    // Destroy objects:
-    for (int i = 0; argv[i]; i++)
-    {
-        free(reinterpret_cast<void *>(argv[i]));
-    }
-    free(argv);
+    // posix_spawn has copied argv/env synchronously; clear them so the
+    // object is ready for the next spawn without stale data.
+    m_arguments.clear();
+    m_environment.clear();
 
-    // Destroy objects:
-    for (int i = 0; env[i]; i++)
-    {
-        free(reinterpret_cast<void *>(env[i]));
-    }
-    free(env);
-
-    if (m_attrp != nullptr && ((s = posix_spawnattr_destroy(m_attrp)) != 0))
-    {
-        throw std::runtime_error("Unable to destroy execution attributes.");
-    }
-    if (m_fileActionsp != nullptr && ((s = posix_spawn_file_actions_destroy(m_fileActionsp))) != 0)
-    {
-        throw std::runtime_error("Unable to destroy file actions execution.");
-    }
-
-    return s == 0;
+    return true;
 }
 
-void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds() const
+void Mantids30::Helpers::AppSpawn::closePipes()
 {
-    int s, status;
-    do
+    for (auto &fd : m_piStdOut)
     {
-        s = waitpid(m_childPid, &status, WUNTRACED | WCONTINUED);
+        if (fd != -1)
+        {
+            ::close(fd);
+            fd = -1;
+        }
+    }
+    for (auto &fd : m_piStdErr)
+    {
+        if (fd != -1)
+        {
+            ::close(fd);
+            fd = -1;
+        }
+    }
+    m_pipedStdout = false;
+    m_pipedStderr = false;
+}
+
+void Mantids30::Helpers::AppSpawn::reapChild()
+{
+    if (!m_spawned || m_childExited)
+    {
+        return;
+    }
+
+    int status;
+    while (true)
+    {
+        const pid_t s = waitpid(m_childPid, &status, WUNTRACED | WCONTINUED);
+        if (s == m_childPid)
+        {
+            if (WIFEXITED(status) || WIFSIGNALED(status))
+            {
+                m_childExited = true;
+                return;
+            }
+            continue;
+        }
         if (s == -1)
         {
+            if (errno == EINTR)
+            {
+                continue;
+            }
+            // ECHILD or any other error: the child is gone (or was never
+            // our child); do not block.
+            m_childExited = true;
             return;
         }
     }
-    while (!WIFEXITED(status) && !WIFSIGNALED(status));
+}
+
+Mantids30::Helpers::AppSpawn::~AppSpawn()
+{
+    closePipes();
+    reapChild();
+    if (m_fileActionsp != nullptr)
+    {
+        posix_spawn_file_actions_destroy(m_fileActionsp);
+    }
+}
+
+void Mantids30::Helpers::AppSpawn::waitUntilProcessEnds()
+{
+    reapChild();
+}
+
+bool Mantids30::Helpers::AppSpawn::hasExited() const
+{
+    return m_childExited;
+}
+
+void Mantids30::Helpers::AppSpawn::reset()
+{
+    closePipes();
+    reapChild();
+    m_arguments.clear();
+    m_environment.clear();
+    m_childPid = 0;
+    m_spawned = false;
+    m_childExited = false;
+    m_pipedStdout = false;
+    m_pipedStderr = false;
+    m_dupStderrToStdout = false;
+    m_plist.clear();
+    m_fileActions = {};
+    posix_spawn_file_actions_init(m_fileActionsp);
 }
 
 std::set<int> Mantids30::Helpers::AppSpawn::pollResponse()
 {
     std::set<int> r;
+    if (m_plist.empty())
+    {
+        return r;
+    }
     if (poll(&m_plist[0], m_plist.size(), -1) > 0)
     {
         for (auto &i : m_plist)
@@ -339,10 +433,18 @@ ssize_t Mantids30::Helpers::AppSpawn::read(int fd, void *buf, size_t count)
 {
     if (fd == STDOUT_FILENO)
     {
+        if (!m_pipedStdout || m_piStdOut[0] == -1)
+        {
+            return -1;
+        }
         return ::read(m_piStdOut[0], buf, count);
     }
     else if (fd == STDERR_FILENO)
     {
+        if (!m_pipedStderr || m_piStdErr[0] == -1)
+        {
+            return -1;
+        }
         return ::read(m_piStdErr[0], buf, count);
     }
 

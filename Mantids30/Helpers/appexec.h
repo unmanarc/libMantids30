@@ -61,6 +61,7 @@ class AppSpawn
 {
 public:
     AppSpawn();
+    ~AppSpawn();
 
     /**
      * @brief setExec Set executable path
@@ -103,7 +104,7 @@ public:
     /**
      * @brief waitUntilDies Wait until the process die.
      */
-    void waitUntilProcessEnds() const;
+    void waitUntilProcessEnds();
 
     /**
      * @brief pollResponse Poll response (detect from where there is data to read, stdout/stdin), remember to wait for the process after the pollResponse loop.
@@ -121,18 +122,39 @@ public:
 
     // TODO: write to the process..
 
+    /**
+     * @brief hasExited True once the child has been reaped.
+     */
+    [[nodiscard]] bool hasExited() const;
+
+    /**
+     * @brief reset Restore the object to a fresh state so it can be reused
+     *              for a completely new spawn.  Closes any open pipes,
+     *              reaps the previous child, clears arguments, environment
+     *              variables, and re-initialises the file-actions list.
+     */
+    void reset();
+
 private:
     std::string m_execPath;
     std::vector<std::string> m_arguments;
     std::vector<std::string> m_environment;
     pid_t m_childPid{0};
-    posix_spawnattr_t m_attr{};
-    posix_spawnattr_t *m_attrp = nullptr;
     posix_spawn_file_actions_t m_fileActions{};
     posix_spawn_file_actions_t *m_fileActionsp = nullptr;
-    int m_piStdOut[2]{0, 0};
-    int m_piStdErr[2]{0, 0};
+    int m_piStdOut[2]{-1, -1};
+    int m_piStdErr[2]{-1, -1};
     std::vector<pollfd> m_plist;
+    bool m_pipedStdout{false};
+    bool m_pipedStderr{false};
+    bool m_dupStderrToStdout{false};
+    bool m_spawned{false};
+    bool m_childExited{false};
+
+    // Idempotent: closes any open pipe end and marks it closed.
+    void closePipes();
+    // Idempotent: reaps the child (EINTR-safe) and marks it as exited.
+    void reapChild();
 };
 #endif
 
