@@ -309,6 +309,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
         }
         else
         {
+            // File exists.
             return false;
         }
     }
@@ -316,11 +317,12 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
     // Check for transversal access hacking attempts...
     if (sFullComputedRealPath.size() < sServerDir.size() || memcmp(sServerDir.c_str(), sFullComputedRealPath.c_str(), sServerDir.size()) != 0)
     {
+        // File does not exist, but transversal path was detected.
         info->isTransversal = true;
         return false;
     }
 
-    // No transversal detected at this point.
+    // No transversal detected at this point and file does not exist. (everything ok!)
     info->fullPath = sFullComputedRealPath;
     info->relativePath = sFullComputedRealPath.c_str() + (sServerDir.size() - 1);
 
