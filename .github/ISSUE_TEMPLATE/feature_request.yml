@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest an enhancement or a new module
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What are you trying to achieve and what blocks you today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API or behavior you would like. Keep C++17 and RHEL 7 compatibility in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Network (sockets, chains, interfaces)
+        - Protocols (HTTP, MIME, WebSocket, FastRPC, LineRecv)
+        - Servers (RESTful, Monolith, WebCore)
+        - Database layer
+        - Memory and parsing engine
+        - Threads and containers
+        - Security (JWT, TOTP, crypto)
+        - Build system and packaging
+        - Documentation
+    validations:
+      required: true

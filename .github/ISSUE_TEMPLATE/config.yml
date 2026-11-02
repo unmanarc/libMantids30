@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/unmanarc/libMantids30/security/advisories/new
+    about: Report security issues privately, never in a public issue.
+  - name: Documentation
+    url: https://github.com/unmanarc/libMantids30/tree/master/docs
+    about: Read the architecture, class reference and build guides first.

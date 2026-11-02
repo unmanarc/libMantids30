@@ -2,6 +2,15 @@
 
 The parsing system is the core engine that enables all protocol implementations in libMantids30 (HTTP, MIME, WebSocket, FastRPC, LineRecv, etc.). It follows a layered, composable architecture that allows building complex protocol stacks by chaining independent parsing stages.
 
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Core Components](#core-components)
+- [Parsing Strategies](#parsing-strategies)
+- [Key Advantages](#key-advantages)
+- [Implementing a Custom Protocol](#implementing-a-custom-protocol)
+- [How Protocols Use the Parser](#how-protocols-use-the-parser)
+
 ## Architecture Overview
 
 ```
@@ -122,3 +131,11 @@ Each protocol implementation follows the same pattern:
 3. **LineRecv** (`Protocol_LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
 4. **FastRPC** (`Protocol_FastRPC1/`, `Protocol_FastRPC3/`): Uses `SIZE` strategy for length-prefixed message frames
 5. **WebSocket** (`Protocol_HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
+---
+
+## Related documentation
+
+- [Core classes reference](CLASSES.md) - `Memory::Streams::Parser`, `SubParser` and the
+  streamables used as parse targets.
+- [Documentation index](README.md)
+- [Project overview](../README.md)

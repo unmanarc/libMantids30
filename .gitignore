@@ -66,3 +66,28 @@ ltmain.sh
 *.autosave
 TODO_PORTING.txt
 .vscode/settings.json
+
+# CMake build trees
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+
+# Staged install prefixes used by local/CI builds
+stage/
+stage-*/
+
+# IDE / editor state
+.idea/
+.qtcreator/
+*.kdev4
+*.kdev4.*
+
+# Runtime artifacts
+*.log
+*.pid

@@ -1,0 +1,25 @@
+# Normalize line endings only for the files this project authors as text.
+# Do NOT use "* text=auto": it would rewrite files that currently use CRLF.
+*.md      text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.sh      text eol=lf
+*.spec    text eol=lf
+*.pc.in    text eol=lf
+.gitignore text eol=lf
+.editorconfig text eol=lf
+.gitattributes text eol=lf
+
+# Documentation and CI are not part of the shipped library sources.
+docs/**       linguist-documentation
+.github/**    linguist-documentation
+
+# Binaries
+*.png binary
+*.jpg binary
+*.gif binary
+*.so binary
+*.so.* binary
+*.a binary
+*.dll binary
+*.lib binary

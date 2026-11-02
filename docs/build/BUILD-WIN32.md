@@ -1,45 +1,57 @@
-# libMantids30 Install Guide for Win32/64 via MSYS
+# Building on Windows with MSYS2 / MinGW64
 
-Simple instructions for building this library in Win32/64 via MSYS with g++
+libMantids30 builds with the MinGW64 toolchain from [MSYS2](https://www.msys2.org/).
 
-***
+## Install the toolchain and dependencies
 
-## Installing dependencies
-
-Log into MSYS console and and  install the required mingw64 libraries and mingw64 compiler using __pacman__
-
-### Install build essentials (gcc, g++, etc) and cmake:
-
-Log into MSYS console and and  install the required mingw64 libraries and mingw64 compiler using __pacman__
-Please install all the building environment with g++/gcc/cmake (mingw64)
-
-### Install required devel libraries:
-
-*These are the required (mandatory) libraries*:
+Open an **MSYS2 MSYS** shell and update the base system:
 
 ```bash
-boost development
-openssl development
-jsoncpp development
+pacman -Syu
 ```
 
-### Install Optional devel libraries:
-
-*These are the optional libraries for database compatibility*
+Close and reopen the shell, then install the compiler, build tools and libraries:
 
 ```bash
-sqlite3 development
-postgresql development
-mariadb development
+pacman -S --needed base-devel \
+    mingw-w64-x86_64-toolchain \
+    mingw-w64-x86_64-cmake \
+    mingw-w64-x86_64-ninja \
+    mingw-w64-x86_64-pkgconf \
+    mingw-w64-x86_64-boost \
+    mingw-w64-x86_64-openssl \
+    mingw-w64-x86_64-jsoncpp
 ```
 
-## Building Static+Dynamic Libs (in /opt):
-
-You can build the application using this command:
+Optional database backends:
 
 ```bash
-cmake . -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX:PATH=/home/user/Devel/ROOT -DCMAKE_INSTALL_LIBDIR=lib -B../libMantids30-BuildWin32 -DCMAKE_C_COMPILER=/mingw64/bin/gcc.exe -DCMAKE_CXX_COMPILER=/mingw64/bin/g++.exe -G "MinGW Makefiles"
-cd ../libMantids30-BuildWin32
-mingw32-make.exe -j12 install
+pacman -S --needed mingw-w64-x86_64-sqlite3 \
+    mingw-w64-x86_64-postgresql \
+    mingw-w64-x86_64-mariadb-connector-c
 ```
-Note: please replace `/home/user/Devel/ROOT` prefix installation for your own target dir.
+
+## Build from the MINGW64 shell
+
+```bash
+cmake -S . -B ../libMantids30-BuildWin64 -G "MinGW Makefiles" \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=ON \
+      -DCMAKE_INSTALL_PREFIX=C:/osslibs \
+      -DCMAKE_C_COMPILER=C:/msys64/mingw64/bin/gcc.exe \
+      -DCMAKE_CXX_COMPILER=C:/msys64/mingw64/bin/g++.exe
+cmake --build ../libMantids30-BuildWin64 --parallel
+cmake --install ../libMantids30-BuildWin64
+```
+
+Adjust the MSYS2 installation path if it is not `C:/msys64`, and replace `C:/osslibs` with
+your preferred installation prefix.
+
+## Notes
+
+- `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` is enabled by the top level `CMakeLists.txt`, so no
+  `.def` files are required.
+- The `Net_Interfaces` component uses `tap-windows.h` and is therefore licensed under
+  **GPLv2** on WIN32. Installing a TAP adapter requires administrator privileges.
+- Static builds (`-DBUILD_SHARED_LIBS=OFF`) work but require the static variants of Boost
+  and OpenSSL, which MSYS2 ships as separate `*-static` packages.

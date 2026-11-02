@@ -1,0 +1,61 @@
+name: Bug report
+description: Report a build failure, crash or incorrect behavior
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in every section so
+        the issue can be reproduced quickly. For security issues use the private
+        channel described in SECURITY.md instead.
+
+  - type: input
+    id: version
+    attributes:
+      label: libMantids30 version
+      description: Output of `pkg-config --modversion Mantids30_Helpers` or the git commit
+      placeholder: "3.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution and toolchain
+      placeholder: "Ubuntu 24.04, gcc 13.2, CMake 3.28"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. cmake -S . -B build -DBUILD_SHARED_LIBS=ON
+        2. cmake --build build
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and logs
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Build flags (BUILD_SHARED_LIBS, SSLRHEL7), database backends, protocol involved, etc.
+    validations:
+      required: false
