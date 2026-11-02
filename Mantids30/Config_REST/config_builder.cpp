@@ -7,6 +7,7 @@
 #include <Mantids30/Net_Sockets/socket_tcp.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <cinttypes>
+#include <cstring>
 #include <memory>
 
 using namespace Mantids30;

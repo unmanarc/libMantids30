@@ -1,5 +1,6 @@
 #include "jwt.h"
 #include <openssl/obj_mac.h>
+#include <cstring>
 
 using namespace Mantids30::DataFormat;
 

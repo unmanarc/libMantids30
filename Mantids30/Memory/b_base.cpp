@@ -3,6 +3,7 @@
 
 #include <Mantids30/Helpers/safeint.h>
 
+#include <cstring>
 #include <limits>
 #include <memory>
 #include <optional>

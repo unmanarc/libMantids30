@@ -1,4 +1,5 @@
 #include "b_mem.h"
+#include <cstring>
 #include <optional>
 
 using namespace Mantids30::Memory::Containers;

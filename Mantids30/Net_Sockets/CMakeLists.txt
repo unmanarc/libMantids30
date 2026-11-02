@@ -68,10 +68,18 @@ endforeach()
 #option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 find_package(PkgConfig REQUIRED)
 if (SSLRHEL7)
-    pkg_check_modules(OPENSSL REQUIRED libssl11)
+    pkg_check_modules(OPENSSL REQUIRED libssl11 libcrypto)
 else()
-    pkg_check_modules(OPENSSL REQUIRED libssl)
+    pkg_check_modules(OPENSSL REQUIRED libssl libcrypto)
 endif()
 target_include_directories(${LIB_NAME} PUBLIC ${OPENSSL_INCLUDE_DIRS})
 target_compile_options(${LIB_NAME} PUBLIC ${OPENSSL_CFLAGS_OTHER})
-target_link_libraries(${LIB_NAME} ${OPENSSL_STATIC_LDFLAGS})
+if (BUILD_SHARED_LIBS)
+    # Shared build: link only the shared OpenSSL libraries. OPENSSL_STATIC_LDFLAGS
+    # carries the private static dependencies reported by "pkg-config --static"
+    # (-l:libjitterentropy.a, -lzstd, ...) which are not shipped by libssl-dev
+    # and are not required when linking against the shared libraries.
+    target_link_libraries(${LIB_NAME} ${OPENSSL_LIBRARIES})
+else()
+    target_link_libraries(${LIB_NAME} ${OPENSSL_STATIC_LDFLAGS})
+endif()

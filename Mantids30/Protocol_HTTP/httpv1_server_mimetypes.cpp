@@ -1,5 +1,6 @@
 #include "httpv1_server.h"
 #include <boost/algorithm/string/case_conv.hpp>
+#include <cstring>
 
 using namespace Mantids30::Network::Protocol;
 using namespace Mantids30::Network;

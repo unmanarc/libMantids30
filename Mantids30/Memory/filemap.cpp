@@ -1,5 +1,6 @@
 #include "filemap.h"
 
+#include <cstring>
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>

@@ -1,5 +1,6 @@
 #include "subparser.h"
 #include "b_ref.h"
+#include <cstring>
 #include <optional>
 
 using namespace Mantids30::Memory::Streams;

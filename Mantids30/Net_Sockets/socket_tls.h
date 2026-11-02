@@ -1,6 +1,7 @@
 #pragma once
 
 #include "socket_tcp.h"
+#include <cstring>
 #include <list>
 #include <map>
 #include <memory>
