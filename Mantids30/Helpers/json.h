@@ -624,15 +624,12 @@ boost::json::value fromSet(const std::set<std::string> &t);
  *
  * @param document The JSON document to parse.
  * @param root A reference to a boost::json::value that will contain the parsed JSON value.
+ * @param parseErrors Optional pointer to a std::string that receives the error message
+ *        when parsing fails. Kept out-of-band (thread-safe: no shared state).
  *
  * @return True if the document was parsed successfully, false otherwise.
  */
-bool parse(const std::string &document, boost::json::value &root);
-
-/**
- * Returns the error message from the last failed parse() call.
- */
-std::string lastParseError();
+bool parse(const std::string &document, boost::json::value &root, std::string *parseErrors = nullptr);
 
 /**
  * A convenience wrapper around boost::json::parse that matches the previous

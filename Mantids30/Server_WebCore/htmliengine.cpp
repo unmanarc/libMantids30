@@ -282,9 +282,9 @@ boost::json::value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, 
     boost::json::value header;
     std::string errs;
 
-    if (!Helpers::JSON::parse(functionInput, vars))
+    if (!Helpers::JSON::parse(functionInput, vars, &errs))
     {
-        clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), Helpers::JSON::lastParseError().c_str());
+        clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
     }
 
     // Regular expression to split the components (eg. //<%jfunc/loginMode:GET/v1/getLoginMode({})%>//)

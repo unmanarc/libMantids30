@@ -10,15 +10,19 @@ std::string JSON::toString(const boost::json::value &value)
     return boost::json::serialize(value);
 }
 
-bool JSON::parse(const std::string &document, boost::json::value &root)
+bool JSON::parse(const std::string &document, boost::json::value &root, std::string *parseErrors)
 {
     try
     {
         root = boost::json::parse(document);
+        if (parseErrors)
+            parseErrors->clear();
         return true;
     }
-    catch (const std::exception &)
+    catch (const std::exception &e)
     {
+        if (parseErrors)
+            *parseErrors = e.what();
         return false;
     }
 }
@@ -27,12 +31,13 @@ bool JSON::Reader::parse(const std::string &document, boost::json::value &root)
 {
     // Call the free function (namespace scope) explicitly. An unqualified
     // parse() here resolves to this member, which would recurse infinitely.
-    if (JSON::parse(document, root))
+    std::string err;
+    if (JSON::parse(document, root, &err))
     {
         m_errors.clear();
         return true;
     }
-    m_errors = "JSON parse error";
+    m_errors = err.empty() ? std::string("JSON parse error") : err;
     return false;
 }
 
