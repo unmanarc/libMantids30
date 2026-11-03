@@ -1,5 +1,5 @@
 #include "jwt.h"
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 
 using namespace Mantids30::DataFormat;
 

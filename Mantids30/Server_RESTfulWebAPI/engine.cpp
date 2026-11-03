@@ -3,7 +3,7 @@
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoint.h>
 
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <memory>
 
 #include <Mantids30/API_EndpointsAndSessions/security.h>

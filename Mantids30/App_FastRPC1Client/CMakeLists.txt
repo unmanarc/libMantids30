@@ -53,6 +53,7 @@ set(Mantids30_LIBRARIES
     Net_Sockets
     Program_Service
     Helpers
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

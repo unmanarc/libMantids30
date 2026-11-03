@@ -47,6 +47,7 @@ set(Mantids30_LIBRARIES
     Program_Logs
     Protocol_APISync
     DataFormat_JWT
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

@@ -1,6 +1,6 @@
 #pragma once
 #include "a_var.h"
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 
 #include <shared_mutex>
 

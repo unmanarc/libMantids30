@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Mantids30/API_EndpointsAndSessions/session.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/Net_Sockets/callbacks_socket_tls_server.h>

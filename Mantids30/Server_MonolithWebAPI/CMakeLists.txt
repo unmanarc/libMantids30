@@ -55,6 +55,7 @@ set(Mantids30_LIBRARIES
     API_EndpointsAndSessions
     Server_WebCore
     Program_Logs
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

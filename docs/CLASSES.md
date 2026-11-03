@@ -37,7 +37,8 @@ named `libMantids30_<Component>`. The header column below is relative to
 
 | Component | Library | Purpose |
 |-----------|---------|---------|
-| `Helpers` | `Mantids30_Helpers` | Crypto, random, files, JSON, encoders, TOTP, process helpers |
+| `Helpers` | `Mantids30_Helpers` | Crypto, random, files, encoders, TOTP, process helpers |
+| `DataFormat_JSON` | `Mantids30_DataFormat_JSON` | JSON parsing, serialization and streamables (boost::json) |
 | `Memory` | `Mantids30_Memory` | Typed variables, binary containers, streamables, parser/subparser |
 | `Threads` | `Mantids30_Threads` | Thread wrappers, thread pool, garbage collector, safe containers |
 | `DB` | `Mantids30_DB` | Database abstraction (`SQLConnector`, `Query`, `Transaction`) |
@@ -124,7 +125,7 @@ Namespace: `Mantids30::Database`
 | `StreamableObject` | `Memory/streamable_object.h` | Base streamable target (`WriteStatus` result) |
 | `StreamableString` | `Memory/streamable_string.h` | Writes into a `std::string` |
 | `StreamableFile` | `Memory/streamable_file.h` | Writes into a file |
-| `StreamableJSON` | `Memory/streamable_json.h` | Writes into a JSON value |
+| `StreamableJSON` | `DataFormat_JSON/streamable_json.h` | Writes into a JSON value |
 | `StreamableProcess` | `Memory/streamable_process.h` | Writes into a child process stdin |
 | `StreamableNull` | `Memory/streamable_null.h` | Discards data |
 | `StreamableTransformer` | `Memory/streamable_transformer.h` | Streaming transformation stage |

@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 
 namespace Mantids30::Memory::Abstract {
 

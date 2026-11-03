@@ -2,7 +2,7 @@
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/callbacks.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Helpers/random.h>
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <shared_mutex>

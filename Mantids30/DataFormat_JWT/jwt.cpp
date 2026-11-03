@@ -1,6 +1,6 @@
 #include "jwt.h"
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <openssl/hmac.h>
 #include <openssl/pem.h>
 

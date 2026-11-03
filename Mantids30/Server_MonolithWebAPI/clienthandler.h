@@ -7,7 +7,7 @@
 #include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
 #include <Mantids30/API_EndpointsAndSessions/api_options_handler.h>
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
-#include <Mantids30/Memory/streamable_json.h>
+#include <Mantids30/DataFormat_JSON/streamable_json.h>
 
 #include <Mantids30/Program_Logs/rpclog.h>
 #include <memory>

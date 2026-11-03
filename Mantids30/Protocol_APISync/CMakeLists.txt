@@ -51,6 +51,7 @@ set(Mantids30_LIBRARIES
     Server_RESTfulWebAPI
     API_EndpointsAndSessions
     DataFormat_JWT
+    DataFormat_JSON
     Helpers
 )
 

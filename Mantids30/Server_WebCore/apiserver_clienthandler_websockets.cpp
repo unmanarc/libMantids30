@@ -1,4 +1,4 @@
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include  "apiserver_clienthandler.h"
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
 #include <Mantids30/Helpers/random.h>

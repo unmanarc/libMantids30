@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include "atomicexpressionside.h"
 
 namespace Mantids30::Scripts::Expressions {

@@ -1,7 +1,7 @@
 #include "apiserver_clienthandler.h"
 
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 

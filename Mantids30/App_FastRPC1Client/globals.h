@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Program_Logs/applog.h>
 #include <boost/property_tree/ini_parser.hpp>

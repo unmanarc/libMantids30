@@ -1,7 +1,6 @@
 #include "json.h"
 
 #include <boost/json.hpp>
-#include <stdexcept>
 
 using namespace Mantids30::Helpers;
 
@@ -16,13 +15,17 @@ bool JSON::parse(const std::string &document, boost::json::value &root, std::str
     {
         root = boost::json::parse(document);
         if (parseErrors)
+        {
             parseErrors->clear();
+        }
         return true;
     }
     catch (const std::exception &e)
     {
         if (parseErrors)
+        {
             *parseErrors = e.what();
+        }
         return false;
     }
 }
@@ -58,7 +61,7 @@ std::list<std::string> JSON::toStringList(const boost::json::value &value, const
         {
             if (el.is_string())
             {
-                r.push_back(std::string(el.as_string().c_str()));
+                r.emplace_back(el.as_string());
             }
         }
     }
@@ -167,4 +170,3 @@ boost::json::value JSON::parse(const char *json)
     }
     return r;
 }
-

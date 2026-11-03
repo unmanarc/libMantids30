@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Mantids30/Memory/parser.h>
-#include <Mantids30/Memory/streamable_json.h>
+#include <Mantids30/DataFormat_JSON/streamable_json.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Memory/vars.h>
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>

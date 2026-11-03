@@ -47,6 +47,7 @@ endif()
 
 set(Mantids30_LIBRARIES
     Helpers
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

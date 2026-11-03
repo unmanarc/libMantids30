@@ -50,6 +50,7 @@ set(Mantids30_LIBRARIES
     Memory
     API_EndpointsAndSessions
     DataFormat_JWT
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common_urlvars.h"
-#include <Mantids30/Memory/streamable_json.h>
+#include <Mantids30/DataFormat_JSON/streamable_json.h>
 
 #include <Mantids30/Memory/b_base.h>
 #include <Mantids30/Memory/subparser.h>

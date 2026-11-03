@@ -51,6 +51,7 @@ set(Mantids30_LIBRARIES
 #    Program_Logs
     Scripts_JSONExprEval
     Memory
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

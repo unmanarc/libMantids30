@@ -45,6 +45,7 @@ if (EXTRAPREFIX)
 endif()
 
 set(Mantids30_LIBRARIES
+    DataFormat_JSON
     Helpers
 )
 

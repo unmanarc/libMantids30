@@ -2,7 +2,7 @@
 #include "mantidslang.h"
 
 #include <Mantids30/Helpers/encoders.h>
-#include <Mantids30/Helpers/json.h>
+#include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Memory/streamable_null.h>
 #include <Mantids30/Scripts_JSONExprEval/jsoneval.h>
 #include <boost/algorithm/string/predicate.hpp>

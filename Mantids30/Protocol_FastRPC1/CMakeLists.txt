@@ -50,6 +50,7 @@ set(Mantids30_LIBRARIES
     Threads
     Net_Sockets
     Helpers
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

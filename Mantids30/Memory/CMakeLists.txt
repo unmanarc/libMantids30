@@ -56,10 +56,6 @@ if (WINDOWS_SOCKLIB OR WIN32)
 endif()
 
 find_package(PkgConfig REQUIRED)
-find_package(Boost REQUIRED COMPONENTS json)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries(${LIB_NAME} Boost::json)
-
 set(Mantids30_LIBRARIES
     Threads
     Helpers

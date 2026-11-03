@@ -53,6 +53,7 @@ set(Mantids30_LIBRARIES
     Memory
     Threads
     Helpers
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

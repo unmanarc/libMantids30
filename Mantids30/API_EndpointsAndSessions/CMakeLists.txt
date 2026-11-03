@@ -48,6 +48,7 @@ set(Mantids30_LIBRARIES
     Threads
     Helpers
     DataFormat_JWT
+    DataFormat_JSON
     Protocol_HTTP
 )
 

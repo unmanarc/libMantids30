@@ -50,6 +50,7 @@ set(Mantids30_LIBRARIES
     Memory
     Protocol_MIME
     Helpers
+    DataFormat_JSON
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})
