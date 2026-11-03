@@ -7,11 +7,11 @@ using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network::Servers::Web;
 using namespace std;
 
-void APIServer_ClientHandler::log(boost::json::value &jWebLog)
+void APIServer_ClientHandler::log(boost::property_tree::ptree &jWebLog)
 {
     if (logUsername.empty())
     {
-        Mantids30::Helpers::JSON::setMember(jWebLog, "user", logUsername);
+        jWebLog.put("user", logUsername);
     }
 
     config->webLog->log(jWebLog);

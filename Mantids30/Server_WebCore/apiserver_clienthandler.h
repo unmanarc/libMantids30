@@ -27,7 +27,7 @@ protected:
      * @brief log Log to weblog
      * @param jWebLog weblog paramaters
      */
-    void log(boost::json::value &jWebLog) override;
+    void log(boost::property_tree::ptree &jWebLog) override;
 
     virtual Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Protocol::HTTP::Status::Code::S_404_NOT_FOUND; }
 

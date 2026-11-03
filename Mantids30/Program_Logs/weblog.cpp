@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <stdexcept>
 
 #include <Mantids30/Helpers/encoders.h>
@@ -14,6 +15,7 @@
 #include <Mantids30/Helpers/strconv.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #ifndef WIN32
 #include <sys/stat.h> // For chmod()
@@ -128,7 +130,7 @@ bool WebLog::start()
 
                 for (;;)
                 {
-                    std::shared_ptr<boost::json::value> logEntry = m_logQueue.pop(500);
+                    std::shared_ptr<boost::property_tree::ptree> logEntry = m_logQueue.pop(500);
                     if (logEntry)
                     {
                         printLogToFile(logEntry.get());
@@ -139,11 +141,11 @@ bool WebLog::start()
     return true;
 }
 
-bool WebLog::log(const boost::json::value &logValues)
+bool WebLog::log(const boost::property_tree::ptree &logValues)
 {
     if (config.useThreadedQueue)
     {
-        return m_logQueue.push(std::make_shared<boost::json::value>(logValues), config.queueMaxInsertWaitTimeInMS);
+        return m_logQueue.push(std::make_shared<boost::property_tree::ptree>(logValues), config.queueMaxInsertWaitTimeInMS);
     }
     else
     {
@@ -277,7 +279,7 @@ void WebLog::forceLogRotation()
     chmod(currentLogPath.c_str(), S_IRUSR | S_IWUSR);
 }
 
-void WebLog::printLogToFile(const boost::json::value *value)
+void WebLog::printLogToFile(const boost::property_tree::ptree *value)
 {
     {
         std::unique_lock<std::mutex> lock(m_logPrintMutex);
@@ -285,7 +287,9 @@ void WebLog::printLogToFile(const boost::json::value *value)
         {
         case Config::JSON:
         {
-            std::string unformattedJsonString = boost::json::serialize(*value);
+            std::ostringstream oss;
+            boost::property_tree::write_json(oss, *value, /*pretty=*/false);
+            std::string unformattedJsonString = oss.str();
             m_logFileHandle << unformattedJsonString;
             m_logCurrentSize += unformattedJsonString.size();
         }
@@ -293,24 +297,24 @@ void WebLog::printLogToFile(const boost::json::value *value)
         case Config::COMBINED:
         {
             // Implement CLF format (Apache Combined Log Format)
-            std::string remoteHost = Helpers::JSON::ASSTRING(*value, "remoteHost", "-");
-            std::string identity = Helpers::JSON::ASSTRING(*value, "identity", "-");
-            std::string user = Helpers::JSON::ASSTRING(*value, "user", "-");
+            std::string remoteHost = value->get<std::string>("remoteHost", "-");
+            std::string identity = value->get<std::string>("identity", "-");
+            std::string user = value->get<std::string>("user", "-");
 
             // Assuming timestamp is in a standard format like "10/Oct/2023:13:55:36"
-            time_t timestamp = Helpers::JSON::ASINT64(*value, "timestamp", 0);
-            std::string requestLine = Helpers::JSON::ASSTRING(*value, "requestLine", "-");
-            uint32_t responseStatus = Helpers::JSON::ASUINT(*value, "responseStatus", 0);
+            time_t timestamp = static_cast<time_t>(value->get<int64_t>("timestamp", 0));
+            std::string requestLine = value->get<std::string>("requestLine", "-");
+            uint32_t responseStatus = value->get<uint32_t>("responseStatus", 0);
             std::optional<uint64_t> bytesSent = std::nullopt;
 
-            if (Mantids30::Helpers::JSON::hasMember(*value, "bytesSent"))
+            if (value->get_child_optional("bytesSent"))
             {
-                bytesSent = Helpers::JSON::ASUINT64(*value, "bytesSent", 0);
+                bytesSent = value->get<uint64_t>("bytesSent");
             }
 
             // Referer and User-Agent
-            std::string referer = Helpers::JSON::ASSTRING(*value, "referer", "-");
-            std::string userAgent = Helpers::JSON::ASSTRING(*value, "userAgent", "-");
+            std::string referer = value->get<std::string>("referer", "-");
+            std::string userAgent = value->get<std::string>("userAgent", "-");
 
             // URL encode (sanitize) string fields for log format
             referer = Helpers::Encoders::toURL(referer, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);

@@ -9,6 +9,8 @@
 #include <memory>
 #include <string>
 
+#include <boost/property_tree/ptree.hpp>
+
 #ifdef _WIN32
 #define SLASHB '\\'
 #define SLASH "\\"
@@ -145,7 +147,7 @@ public:
     static bool resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
 
 protected:
-    virtual void log(boost::json::value &jWebLog) {}
+    virtual void log(boost::property_tree::ptree &jWebLog) {}
 
     /**
      * @brief verifyStaticContentExistence Check if the path exist in the static content
@@ -283,7 +285,7 @@ private:
     void parseUserAgent();
     bool setupContentHandling(size_t &contentLength);
 
-    void fillLogInformation(boost::json::value &logValues);
+    void fillLogInformation(boost::property_tree::ptree &logValues);
 
 
 

@@ -7,25 +7,25 @@ using namespace Mantids30;
 
 using namespace std;
 
-void HTTP::HTTPv1_Server::fillLogInformation(boost::json::value &jWebLog)
+void HTTP::HTTPv1_Server::fillLogInformation(boost::property_tree::ptree &jWebLog)
 {
-    Mantids30::Helpers::JSON::setMember(jWebLog, "remoteHost", std::string(clientRequest.networkClientInfo.REMOTE_ADDR));
-    Mantids30::Helpers::JSON::setMember(jWebLog, "timestamp", static_cast<int64_t>(time(nullptr)));
-    Mantids30::Helpers::JSON::setMember(jWebLog, "requestLine", clientRequest.requestLine.toString());
-    Mantids30::Helpers::JSON::setMember(jWebLog, "referer", clientRequest.getHeaderOption("Referer"));
-    Mantids30::Helpers::JSON::setMember(jWebLog, "userAgent", clientRequest.getHeaderOption("User-Agent"));
-    Mantids30::Helpers::JSON::setMember(jWebLog, "responseStatus", static_cast<uint16_t>(serverResponse.status.getCode()));
+    jWebLog.put("remoteHost", std::string(clientRequest.networkClientInfo.REMOTE_ADDR));
+    jWebLog.put("timestamp", static_cast<int64_t>(time(nullptr)));
+    jWebLog.put("requestLine", clientRequest.requestLine.toString());
+    jWebLog.put("referer", clientRequest.getHeaderOption("Referer"));
+    jWebLog.put("userAgent", clientRequest.getHeaderOption("User-Agent"));
+    jWebLog.put("responseStatus", static_cast<uint16_t>(serverResponse.status.getCode()));
 
     size_t strsize;
     if ((strsize = serverResponse.content.getStreamSize()) != std::numeric_limits<size_t>::max())
     {
-        Mantids30::Helpers::JSON::setMember(jWebLog, "bytesSent", strsize);
+        jWebLog.put("bytesSent", strsize);
     }
 }
 
 bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
-    boost::json::value jWebLog;
+    boost::property_tree::ptree jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 
@@ -85,7 +85,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     // Act as a server. Send data from here.
     size_t strsize;
 
-    boost::json::value jWebLog;
+    boost::property_tree::ptree jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 

@@ -8,8 +8,9 @@
 #include <string>
 #include <thread>
 
-#include <Mantids30/Helpers/json.h>
 #include <Mantids30/Threads/safe_sharedqueue.h>
+
+#include <boost/property_tree/ptree.hpp>
 
 namespace Mantids30::Program::Logs {
 
@@ -74,7 +75,7 @@ public:
 
     bool start();
 
-    bool log(const boost::json::value &logValues);
+    bool log(const boost::property_tree::ptree &logValues);
 
     void stopLogRotationOnScheduleThread();
 
@@ -84,11 +85,11 @@ public:
     void forceLogRotation();
 
 private:
-    void printLogToFile(const boost::json::value *value);
+    void printLogToFile(const boost::property_tree::ptree *value);
     void startLogRotationOnScheduleThread();
 
-    // Serialize to an unformatted string using boost::json
-    Threads::Safe::SharedQueue<boost::json::value> m_logQueue;
+    // Serialize to an unformatted string using boost::property_tree
+    Threads::Safe::SharedQueue<boost::property_tree::ptree> m_logQueue;
     std::thread m_rotationThread, m_queueThread;
     std::atomic<bool> m_rotationThreadRunning{false};
     std::ofstream m_logFileHandle;
