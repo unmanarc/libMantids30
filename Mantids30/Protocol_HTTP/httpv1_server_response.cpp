@@ -7,25 +7,25 @@ using namespace Mantids30;
 
 using namespace std;
 
-void HTTP::HTTPv1_Server::fillLogInformation(Json::Value &jWebLog)
+void HTTP::HTTPv1_Server::fillLogInformation(boost::json::value &jWebLog)
 {
-    jWebLog["remoteHost"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-    jWebLog["timestamp"] = static_cast<Json::Int64>(time(nullptr));
-    jWebLog["requestLine"] = clientRequest.requestLine.toString();
-    jWebLog["referer"] = clientRequest.getHeaderOption("Referer");
-    jWebLog["userAgent"] = clientRequest.getHeaderOption("User-Agent");
-    jWebLog["responseStatus"] = static_cast<uint16_t>(serverResponse.status.getCode());
+    Mantids30::Helpers::JSON::setMember(jWebLog, "remoteHost", std::string(clientRequest.networkClientInfo.REMOTE_ADDR));
+    Mantids30::Helpers::JSON::setMember(jWebLog, "timestamp", static_cast<int64_t>(time(nullptr)));
+    Mantids30::Helpers::JSON::setMember(jWebLog, "requestLine", clientRequest.requestLine.toString());
+    Mantids30::Helpers::JSON::setMember(jWebLog, "referer", clientRequest.getHeaderOption("Referer"));
+    Mantids30::Helpers::JSON::setMember(jWebLog, "userAgent", clientRequest.getHeaderOption("User-Agent"));
+    Mantids30::Helpers::JSON::setMember(jWebLog, "responseStatus", static_cast<uint16_t>(serverResponse.status.getCode()));
 
     size_t strsize;
     if ((strsize = serverResponse.content.getStreamSize()) != std::numeric_limits<size_t>::max())
     {
-        jWebLog["bytesSent"] = strsize;
+        Mantids30::Helpers::JSON::setMember(jWebLog, "bytesSent", strsize);
     }
 }
 
 bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
-    Json::Value jWebLog;
+    boost::json::value jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 
@@ -85,7 +85,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     // Act as a server. Send data from here.
     size_t strsize;
 
-    Json::Value jWebLog;
+    boost::json::value jWebLog;
     fillLogInformation(jWebLog);
     log(jWebLog);
 

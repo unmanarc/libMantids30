@@ -41,19 +41,19 @@ bool BOOL::fromString(const std::string &value)
     return true;
 }
 
-Json::Value BOOL::toJSON()
+boost::json::value BOOL::toJSON()
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
     return m_value;
 }
 
-bool BOOL::fromJSON(const Json::Value &value)
+bool BOOL::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASBOOL_D(value, false);

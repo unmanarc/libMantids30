@@ -34,15 +34,15 @@ BuildRequires:  pkg-config
 BuildRequires:  gcc-c++ >= 8
 %endif
 # Common build dependencies
-BuildRequires:  jsoncpp-devel
 BuildRequires:  boost-devel
 BuildRequires:  boost-static
+BuildRequires:  boost-json-devel
 BuildRequires:  openssl-devel
 BuildRequires:  sqlite-devel
 BuildRequires:  postgresql-devel
 BuildRequires:  mariadb-devel
 # Runtime dependencies
-Requires:       jsoncpp
+Requires:       boost-json
 Requires:       boost-regex
 Requires:       boost-thread
 Requires:       openssl

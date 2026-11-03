@@ -4,7 +4,6 @@
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Memory/streamable_string.h>
 #include <Mantids30/Protocol_HTTP/websocket_eventtype.h>
-#include <json/value.h>
 
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
@@ -28,7 +27,7 @@ protected:
      * @brief log Log to weblog
      * @param jWebLog weblog paramaters
      */
-    void log(Json::Value &jWebLog) override;
+    void log(boost::json::value &jWebLog) override;
 
     virtual Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Protocol::HTTP::Status::Code::S_404_NOT_FOUND; }
 
@@ -87,12 +86,12 @@ protected:
      * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    virtual void fillSessionExtraInfo(Json::Value &jVars) {}
+    virtual void fillSessionExtraInfo(boost::json::value &jVars) {}
     /**
      * @brief fillSessionInfo Fill user data vars like username, domain, TLS Common Name...
      * @param jVars vars to be filled into a JSON structure
      */
-    void fillSessionInfo(Json::Value &jVars);
+    void fillSessionInfo(boost::json::value &jVars);
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
@@ -104,7 +103,7 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    virtual Json::Value getSessionVariableValue(const std::string &varName) = 0;
+    virtual boost::json::value getSessionVariableValue(const std::string &varName) = 0;
 
     /**
      * @brief Handles an API request and writes the response to the client.
@@ -122,7 +121,7 @@ protected:
      * @return Retorn an object where the result of the API request will be stored.
      */
     virtual API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodType, const std::string &endpointName,
-                                            const Json::Value &postParameters)
+                                            const boost::json::value &postParameters)
         = 0;
 
     virtual API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
@@ -147,7 +146,7 @@ protected:
      * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
      * @return return code for api request
      */
-    virtual Json::Value handleAPIInfo(const std::string &baseApiUrl) { return Json::nullValue; }
+    virtual boost::json::value handleAPIInfo(const std::string &baseApiUrl) { return boost::json::value{}; }
 
     /**
      * @brief log Log to RPC Log

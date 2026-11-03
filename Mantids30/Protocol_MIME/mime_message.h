@@ -75,7 +75,7 @@ public:
     /**
      * @brief addString Add String Variable to the multipart message
      * @param varName Variable Name
-     * @param varValue Variable Value
+     * @param varValue Variable boost::json::value
      * @return true if inserted, otherwise false (eg. limits)
      */
     bool addStringVar(const std::string &varName, const std::string &varValue);

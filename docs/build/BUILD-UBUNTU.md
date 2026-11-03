@@ -9,7 +9,7 @@ Applies to Debian 12/13 and Ubuntu 20.04/22.04/24.04/26.04 LTS. Ubuntu 22.04, 24
 sudo apt update
 sudo apt install -y build-essential cmake pkg-config git \
     libboost-dev libboost-regex-dev libboost-thread-dev libboost-system-dev \
-    libssl-dev libjsoncpp-dev
+    libssl-dev libboost-json-dev
 ```
 
 Optional database backends (each module is skipped with a warning when the library is
@@ -58,7 +58,7 @@ ls /usr/local/include/Mantids30
 When copying binaries to another machine you only need:
 
 ```bash
-sudo apt install -y libjsoncpp25 libssl3 libboost-regex1.74.0
+sudo apt install -y libssl3 libboost-json1.74.0 libboost-regex1.74.0
 ```
 
 Adjust the Boost soname to the distribution version, or build statically with
@@ -70,6 +70,6 @@ Adjust the Boost soname to the distribution version, or build statically with
 |---------|-----|
 | `Could NOT find PkgConfig` | `sudo apt install pkg-config` |
 | `libcrypto` / `libssl` not found | `sudo apt install libssl-dev` |
-| `jsoncpp` not found | `sudo apt install libjsoncpp-dev` |
+| `boost-json` not found | `sudo apt install libboost-json-dev` |
 | Undefined Boost symbols | install `libboost-regex-dev libboost-thread-dev` |
 | `cmake: command not found` | `sudo apt install cmake` (>= 3.10 required) |

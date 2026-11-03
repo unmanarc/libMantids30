@@ -3,7 +3,6 @@
 #include <shared_mutex>
 #include <mutex>
 #include <cstring>
-#include <json/value.h>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -53,19 +52,19 @@ bool BINARY::fromString(const std::string &value)
     return true;
 }
 
-Json::Value BINARY::toJSON()
+boost::json::value BINARY::toJSON()
 {
     std::shared_lock<std::shared_mutex> lock(this->m_value.mutex);
 
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
-    return Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize);
+    return boost::json::value(Mantids30::Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize).c_str());
 }
 
-bool BINARY::fromJSON(const Json::Value &value)
+bool BINARY::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
     return fromString(Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING_D(value, "")));

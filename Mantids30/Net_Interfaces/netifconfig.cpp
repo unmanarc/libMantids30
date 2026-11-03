@@ -149,7 +149,7 @@ bool NetworkInterfaceConfiguration::apply()
             changeMTU = false;
         else
         {
-            lastError = "NETSH error changing MTU Value";
+            lastError = "NETSH error changing MTU boost::json::value";
             return false;
         }
     }

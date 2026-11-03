@@ -1,10 +1,14 @@
 #pragma once
 
+#include <Mantids30/Helpers/json.h>
 #include <stdint.h>
 
 namespace Mantids {
 namespace Network {
 namespace Multiplexor {
+
+// JSON value type used by the multiplexer (boost::json based).
+using json = boost::json::value;
 
 typedef uint32_t LineID;
 

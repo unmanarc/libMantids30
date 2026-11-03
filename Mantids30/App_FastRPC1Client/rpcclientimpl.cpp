@@ -152,8 +152,8 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
         {
             std::string sRemoteConfigDecrypted = decryptStr(lineInFile);
 
-            Json::Value jRemoteConfig;
-            Helpers::JSON::JSONReader2 reader;
+            boost::json::value jRemoteConfig;
+            Helpers::JSON::Reader reader;
             bool parsingSuccessful = reader.parse(sRemoteConfigDecrypted, jRemoteConfig);
             if (parsingSuccessful)
             {
@@ -172,19 +172,19 @@ bool RPCClientImpl::retrieveConfigFromC2()
     /////////////////////////////////////////////////////////////
     //***********INITIALIZE C2 COMM AND CONFIG RETRIEVE**********
     /////////////////////////////////////////////////////////////
-    Json::Value rpcError;
+    boost::json::value rpcError;
 
     m_failedToRetrieveC2Config = false;
 
     LOG_APP->log0(__func__, Logs::LogLevel::INFO, "Retrieving config from remote C2.");
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
-    Json::Value jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
-    if (rpcError["succeed"].asBool())
+    boost::json::value jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
+    if (Mantids30::Helpers::JSON::detail::safeGet(rpcError, "succeed").as_bool())
     {
         // Translate this config to the configuration file...
-        std::string sRemoteConfig = jRemoteConfig.toStyledString();
-        std::string sLocalConfig = m_jRetrievedConfig.toStyledString();
+        std::string sRemoteConfig = boost::json::serialize(jRemoteConfig);
+        std::string sLocalConfig = boost::json::serialize(m_jRetrievedConfig);
 
         if (sRemoteConfig == sLocalConfig)
         {
@@ -206,13 +206,13 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
                 m_jRetrievedConfig = jRemoteConfig;
 
-                Json::Value ans;
-                ans["x"] = m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError);
+                boost::json::value ans;
+                Mantids30::Helpers::JSON::setMember(ans, "x", m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError));
 
-                if (!rpcError["succeed"].asBool())
+                if (!Mantids30::Helpers::JSON::detail::safeGet(rpcError, "succeed").as_bool())
                 {
                     LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
-                                  rpcError["errorMessage"].asCString());
+                                  Mantids30::Helpers::JSON::detail::safeGet(rpcError, "errorMessage").as_string().c_str());
                 }
 
                 if (!Helpers::JSON::ASBOOL(ans, "x", false))
@@ -236,7 +236,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
     }
     else
     {
-        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", rpcError["errorMessage"].asCString());
+        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", Mantids30::Helpers::JSON::detail::safeGet(rpcError, "errorMessage").as_string().c_str());
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).
@@ -245,7 +245,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
     return false;
 }
 
-Json::Value RPCClientImpl::getJRetrievedConfig()
+boost::json::value RPCClientImpl::getJRetrievedConfig()
 {
     return m_jRetrievedConfig;
 }

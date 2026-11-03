@@ -15,7 +15,7 @@ public:
     ~VARCHAR() override;
 
     /**
-     * @brief operator =  Copy Value from a null terminated string (check with getWasTruncated)
+     * @brief operator =  Copy boost::json::value from a null terminated string (check with getWasTruncated)
      * @param value null terminated string.
      * @return current class.
      */
@@ -34,7 +34,7 @@ public:
      */
     [[nodiscard]] char *getValue();
     /**
-     * @brief setValue Copy Value from a null terminated string
+     * @brief setValue Copy boost::json::value from a null terminated string
      * @param value null terminated string
      * @return true if sucessfully copied, false if it was truncated.
      */
@@ -53,8 +53,8 @@ public:
     [[nodiscard]] unsigned long getFillSize() const;
     [[nodiscard]] unsigned long *getFillSizePTR() { return &m_fillSize; }
 
-    Json::Value toJSON() override;
-    bool fromJSON(const Json::Value &value) override;
+    boost::json::value toJSON() override;
+    bool fromJSON(const boost::json::value &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;

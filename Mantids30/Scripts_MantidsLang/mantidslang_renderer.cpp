@@ -1,7 +1,6 @@
 #include "Mantids30/Memory/streamable_file.h"
 #include "mantidslang.h"
 
-#include "json/value.h"
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/streamable_null.h>
@@ -15,7 +14,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Scripts;
 
-bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const Json::Value &currentJsonContext, const Token &token, size_t depth)
+bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const boost::json::value &currentJsonContext, const Token &token, size_t depth)
 {
     size_t bracketStart = conditional.find('[');
     size_t bracketEnd = conditional.rfind(']');
@@ -39,7 +38,7 @@ bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const J
     return true;
 }
 
-bool MantidsLang::iterateJSON(const std::string &foreachParam, const Json::Value &currentJsonContext, const Token &token, size_t depth)
+bool MantidsLang::iterateJSON(const std::string &foreachParam, const boost::json::value &currentJsonContext, const Token &token, size_t depth)
 {
     // Parse "[json_path as varname]"
     size_t bracketStart = foreachParam.find('[');
@@ -75,25 +74,31 @@ bool MantidsLang::iterateJSON(const std::string &foreachParam, const Json::Value
 
 
     // Resolve JSON path
-    Json::Path path(jsonPathStr);
-    const Json::Value &collection = path.resolve(currentJsonContext);
+    Mantids30::Helpers::JSON::Path path(jsonPathStr);
+    const boost::json::value *collectionPtr = path.resolve(currentJsonContext);
 
-    if (collection.isNull())
+    if (collectionPtr == nullptr || collectionPtr->is_null())
     {
         // Path not found, skip iteration
         return true;
     }
 
-    // Create a copy of the JSON context for each iteration
-    Json::Value newJsonContext;
+    const boost::json::value &collection = *collectionPtr;
 
-    if (collection.isArray())
+    // Create a copy of the JSON context for each iteration
+    boost::json::value newJsonContext;
+
+    if (collection.is_array())
     {
         // Iterate over array elements
-        for (Json::ArrayIndex idx = 0; idx < collection.size(); ++idx)
+        for (size_t idx = 0; idx < collection.as_array().size(); ++idx)
         {
             newJsonContext = currentJsonContext; // Reset context for each iteration
-            newJsonContext[varName] = collection[idx];
+            if (!newJsonContext.is_object())
+            {
+                newJsonContext = boost::json::object{};
+            }
+            newJsonContext.as_object()[varName] = collection.as_array()[idx];
 
             token.subTag->processTokens(newJsonContext, depth + 1);
             if (!writeStatus.succeed)
@@ -102,17 +107,20 @@ bool MantidsLang::iterateJSON(const std::string &foreachParam, const Json::Value
             }
         }
     }
-    else if (collection.isObject())
+    else if (collection.is_object())
     {
         // Iterate over object members (key-value pairs)
-        Json::Value iteratorObj;
-        const auto &members = collection.getMemberNames();
-        for (const auto &key : members)
+        for (const auto &kv : collection.as_object())
         {
             newJsonContext = currentJsonContext; // Reset context for each iteration
-            iteratorObj["key"] = key;
-            iteratorObj["value"] = collection[key];
-            newJsonContext[varName] = iteratorObj;
+            boost::json::value iteratorObj = boost::json::object{};
+            iteratorObj.as_object()["key"] = kv.key();
+            iteratorObj.as_object()["value"] = kv.value();
+            if (!newJsonContext.is_object())
+            {
+                newJsonContext = boost::json::object{};
+            }
+            newJsonContext.as_object()[varName] = iteratorObj;
 
             token.subTag->processTokens(newJsonContext, depth + 1);
             if (!writeStatus.succeed)
@@ -125,7 +133,7 @@ bool MantidsLang::iterateJSON(const std::string &foreachParam, const Json::Value
     return true;
 }
 
-bool MantidsLang::printJSON(const std::string &action, const Json::Value &value)
+bool MantidsLang::printJSON(const std::string &action, const boost::json::value &value)
 {
     if (action == "print_json")
     {
@@ -137,40 +145,40 @@ bool MantidsLang::printJSON(const std::string &action, const Json::Value &value)
             return false;
         }
     }
-    else if (action == "print_htmlescaped" && !value.isNull())
+    else if (action == "print_htmlescaped" && !value.is_null())
     {
         // If leaf node (string/int/float/bool) -> HTML escape the value
         // Otherwise -> HTML escape the entire JSON representation
-        if (value.isString())
+        if (value.is_string())
         {
-            std::string escaped = Helpers::Encoders::htmlEscape(value.asString());
+            std::string escaped = Helpers::Encoders::htmlEscape(Mantids30::Helpers::JSON::ASSTRING_D(value, ""));
             if (!output->writeFullStream(escaped.data(), escaped.size()))
             {
                 writeStatus.succeed = false;
                 return false;
             }
         }
-        else if (value.isInt() || value.isInt64() || value.isUInt() || value.isUInt64())
+        else if (value.is_int64() || value.is_int64() || value.is_uint64() || value.is_uint64())
         {
-            std::string numStr = value.asString();
+            std::string numStr = Mantids30::Helpers::JSON::ASSTRING_D(value, "");
             if (!output->writeFullStream(numStr.data(), numStr.size()))
             {
                 writeStatus.succeed = false;
                 return false;
             }
         }
-        else if (value.isDouble())
+        else if (value.is_double())
         {
-            std::string numStr = std::to_string(value.asDouble());
+            std::string numStr = std::to_string(Mantids30::Helpers::JSON::ASDOUBLE_D(value, 0.0));
             if (!output->writeFullStream(numStr.data(), numStr.size()))
             {
                 writeStatus.succeed = false;
                 return false;
             }
         }
-        else if (value.isBool())
+        else if (value.is_bool())
         {
-            std::string boolStr = value.asBool() ? "true" : "false";
+            std::string boolStr = Mantids30::Helpers::JSON::ASBOOL_D(value, false) ? "true" : "false";
             if (!output->writeFullStream(boolStr.data(), boolStr.size()))
             {
                 writeStatus.succeed = false;
@@ -189,10 +197,10 @@ bool MantidsLang::printJSON(const std::string &action, const Json::Value &value)
             }
         }
     }
-    else if (action == "print_raw" && !value.isNull())
+    else if (action == "print_raw" && !value.is_null())
     {
         // Output raw string representation of the value
-        std::string rawStr = value.asString();
+        std::string rawStr = Mantids30::Helpers::JSON::ASSTRING_D(value, "");
         if (!output->writeFullStream(rawStr.data(), rawStr.size()))
         {
             writeStatus.succeed = false;
@@ -202,7 +210,7 @@ bool MantidsLang::printJSON(const std::string &action, const Json::Value &value)
     return true;
 }
 
-void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t depth)
+void MantidsLang::processTokens(const boost::json::value &currentJsonContext, size_t depth)
 {
     //const std::string indent(depth * 4, ' ');
 
@@ -252,8 +260,9 @@ void MantidsLang::processTokens(const Json::Value &currentJsonContext, size_t de
                     }
                     parameter = parameter.substr(1);
 
-                    Json::Path path(parameter);
-                    const Json::Value &value = path.resolve(currentJsonContext);
+                    Mantids30::Helpers::JSON::Path path(parameter);
+                    const boost::json::value *valuePtr = path.resolve(currentJsonContext);
+                    boost::json::value value = (valuePtr != nullptr) ? *valuePtr : boost::json::value{};
                     if (!printJSON(action, value))
                     {
                         return;

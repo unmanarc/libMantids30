@@ -17,7 +17,7 @@ LineID Socket_Multiplexer::connect(const json &connectionParams, void *multiplex
 
         LineID localLineId = sock->getLineID().localLineId;
         if (localLineId != NULL_LINE && multiplexedSocket->writeU8(DataStructs::MPLX_LINE_CONNECT) && sendOnMultiplexedSocket_LineID(localLineId)
-            && multiplexedSocket->writeU32(sock->getLocalWindowSize()) && multiplexedSocket->writeString16(connectionParams.toStyledString()))
+            && multiplexedSocket->writeU32(sock->getLocalWindowSize()) && multiplexedSocket->writeString16(boost::json::serialize(connectionParams)))
         {
             mtLock_multiplexedSocket.unlock();
             return localLineId;
@@ -76,11 +76,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 
     if (readen)
     {
-        Json::CharReaderBuilder builder;
-        Json::CharReader *reader = builder.newCharReader();
-        std::string errors;
-        reader->parse(sJMessage.c_str(), sJMessage.c_str() + sJMessage.size(), &(jAcceptMsg), &errors);
-        delete reader;
+        Mantids30::Helpers::JSON::parse(sJMessage, jAcceptMsg);
 
         std::shared_ptr<Socket_Multiplexed_Line> chSock = findLine(lineId.localLineId);
 

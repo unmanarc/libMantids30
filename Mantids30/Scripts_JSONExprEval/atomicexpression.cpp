@@ -44,7 +44,7 @@ bool AtomicExpression::compile(std::string expr)
     return true;
 }
 
-bool AtomicExpression::evaluate(const Json::Value &values)
+bool AtomicExpression::evaluate(const boost::json::value &values)
 {
     // The left side always provides the values to be compared. Only the right
     // side is compiled as a regular expression when the operator is REGEX_MATCH:

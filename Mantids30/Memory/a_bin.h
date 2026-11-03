@@ -68,8 +68,8 @@ public:
     std::string toString() override;
     bool fromString(const std::string &value) override;
 
-    Json::Value toJSON() override;
-    bool fromJSON(const Json::Value &value) override;
+    boost::json::value toJSON() override;
+    bool fromJSON(const boost::json::value &value) override;
 
     void *getDirectMemory() override { return &m_value; }
 

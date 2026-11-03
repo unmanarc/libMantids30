@@ -75,10 +75,10 @@ public:
      */
     [[nodiscard]] std::string toJSON() const
     {
-        Json::Value root;
+        boost::json::object root;
         root["major"] = static_cast<int>(m_majorVersion);
         root["minor"] = static_cast<int>(m_minorVersion);
-        return root.toStyledString();
+        return boost::json::serialize(root);
     }
     /**
       * @brief Deserializes the Version object from a JSON string.
@@ -86,7 +86,7 @@ public:
       * @param jsonString The JSON string to parse and set the version numbers from.
       * @return True if parsing was successful, false otherwise.
       */
-    bool fromJSON(const Json::Value &root)
+    bool fromJSON(const boost::json::value &root)
     {
         m_majorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "major", 0));
         m_minorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "minor", 0));

@@ -109,7 +109,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
     return false;
 }
 
-Json::Value ClientHandler::getSessionVariableValue(const string &varName)
+boost::json::value ClientHandler::getSessionVariableValue(const string &varName)
 {
     if (isSessionActive())
     {
@@ -118,12 +118,12 @@ Json::Value ClientHandler::getSessionVariableValue(const string &varName)
     return {};
 }
 
-void ClientHandler::fillSessionExtraInfo(Json::Value &jVars)
+void ClientHandler::fillSessionExtraInfo(boost::json::value &jVars)
 {
-    jVars["maxAge"] = static_cast<Json::UInt64>(0);
+    Mantids30::Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(0));
     if (isSessionActive())
     {
-        jVars["maxAge"] = static_cast<Json::UInt64>(m_sessionMaxAge);
+        Mantids30::Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(m_sessionMaxAge));
     }
 }
 

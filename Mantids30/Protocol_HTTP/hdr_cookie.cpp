@@ -75,7 +75,7 @@ void Cookie::fromSetCookieString(const std::string &setCookieValue, string *cook
         if (firstVal)
         {
             firstVal = false;
-            // Get Value and
+            // Get boost::json::value and
             *cookieName = var.first;
             value = var.second;
         }

@@ -59,13 +59,13 @@ public:
     /**
      * @brief addURLVar Add URL GET Variable
      * @param varName Variable Name
-     * @param varValue Variable Value
+     * @param varValue Variable boost::json::value
      */
     void addURLVar(const std::string &varName, const std::string &varValue);
     /**
      * @brief addCookieValue Add cookie.
      * @param cookieName Cookie Name
-     * @param cookieVal Coookie Value
+     * @param cookieVal Coookie boost::json::value
      */
     void addCookie(const std::string &cookieName, const std::string &cookieVal);
     /**

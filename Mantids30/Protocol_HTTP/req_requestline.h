@@ -53,8 +53,8 @@ public:
 
     std::string getRequestGETVarsRawString() const;
 
-    bool fromJSON(const Json::Value &json);
-    Json::Value toJSON() const;
+    bool fromJSON(const boost::json::value &json);
+    boost::json::value toJSON() const;
 
     std::string toString() const;
 

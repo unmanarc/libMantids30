@@ -67,14 +67,9 @@ find_package(PkgConfig REQUIRED)
 ################################################################################
 
 ################################################################################
-# Find jsoncpp
-pkg_check_modules(JSONCPP jsoncpp)
-link_libraries(${JSONCPP_LIBRARIES})
-target_include_directories(${LIB_NAME} PUBLIC ${JSONCPP_INCLUDE_DIRS})
-target_link_libraries(${LIB_NAME} ${JSONCPP_LIBRARIES})
 
 ################################################################################
 # Boost Packages:
-find_package(Boost REQUIRED COMPONENTS regex)
+find_package(Boost REQUIRED COMPONENTS regex json)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})

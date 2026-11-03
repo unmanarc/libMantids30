@@ -137,7 +137,7 @@ int FastRPC3::processIncomingAnswer(FastRPC3::Connection *connection)
         {
             connection->executionStatus[requestId] = executionStatus;
 
-            Helpers::JSON::JSONReader2 reader;
+            Helpers::JSON::Reader reader;
             bool parsingSuccessful = reader.parse(payloadBytes, connection->answers[requestId]);
             if (parsingSuccessful)
             {
@@ -213,7 +213,7 @@ int FastRPC3::processIncomingExecutionRequest(const std::shared_ptr<Socket_Strea
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
     std::shared_ptr<FastRPC3::TaskParameters> params = std::make_shared<FastRPC3::TaskParameters>();
     params->sessionHolder = sessionHolder;
     params->methodsHandler = config.methodHandlers;

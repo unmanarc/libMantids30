@@ -1,4 +1,5 @@
-#include "htmliengine.h"
+#include <Mantids30/Helpers/json.h>
+#include  "htmliengine.h"
 #include <Mantids30/Helpers/encoders.h>
 #include <Mantids30/Memory/streamable_json.h>
 #include <Mantids30/Program_Logs/rpclog.h>
@@ -7,7 +8,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <Mantids30/Helpers/crypto.h>
-#include <json/value.h>
 
 #include <boost/regex.hpp>
 #include <fstream>
@@ -25,10 +25,9 @@ using namespace std;
 // TODO: documentar los privilegios cargados de un usuario
 // TODO: create a TTL for start =  fileContent.begin(); and end = fileContent.end(); on loops to avoid infinite loops in cross-references...
 
-string HTMLIEngine::replaceByJVar(const Json::Value &value, const std::string &scriptVarName, bool useHTMLFrame)
+string HTMLIEngine::replaceByJVar(const boost::json::value &value, const std::string &scriptVarName, bool useHTMLFrame)
 {
-    Json::FastWriter writer;
-    std::string str = writer.write(value);
+    std::string str = boost::json::serialize(value);
     str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
 
     boost::replace_all(str, "<", "\\<");
@@ -194,7 +193,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
     {
         // look in post/get
         clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
     }
     else
     {
@@ -205,29 +204,29 @@ std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scr
 std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
                                                       bool useHTMLFrame)
 {
-    Json::Value jVars, jNull;
-    jVars["softwareVersion"] = clientHandler->config->softwareVersion;
+    boost::json::value jVars, jNull;
+    Mantids30::Helpers::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
 
     // Fill the jVars with session info (common to every API Server) and extra info (specific to monolith or restful or anything else)
     clientHandler->fillSessionInfo(jVars);
     clientHandler->fillSessionExtraInfo(jVars);
 
     bool isSessionVar = clientHandler->doesSessionVariableExist(varName);
-    bool isJVar = jVars.isMember(varName);
+    bool isJVar = Mantids30::Helpers::JSON::hasMember(jVars, varName);
 
     // Report as not found.
     if (!isSessionVar && !isJVar)
     {
         // look in post/get
         clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
     }
     else
     {
         // jvar is from a set of constructed variables (remote address, user agent, etc...)
         if (isJVar)
         {
-            return replaceByJVar(jVars[varName], scriptVarName, useHTMLFrame);
+            return replaceByJVar(Mantids30::Helpers::JSON::detail::safeGet(jVars, varName), scriptVarName, useHTMLFrame);
         }
         // Session vars are set by the application or the JWT token:
         else if (isSessionVar)
@@ -235,7 +234,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
             return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName, useHTMLFrame);
         }
 
-        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
     }
 }
 
@@ -246,14 +245,14 @@ std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scri
     // Obtain using GET Vars...
     if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
     {
         // look in post/get
         clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
     }
 }
 
@@ -263,31 +262,29 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
     // Obtain using POST Vars...
     if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->exist(varName))
     {
-        return replaceByJVar(clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->getTValue<std::string>(varName), scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
     {
         // look in post/get
         clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
-        return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
     }
 }
 
-Json::Value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
+boost::json::value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
     API::APIReturn apiReturn;
 
-    Json::Value vars;
-    // Parse the JSON header using the JsonCpp library
-    Json::CharReaderBuilder reader;
-    std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
-    Json::Value header;
+    boost::json::value vars;
+    // Parse the JSON header using the boost::json library
+    boost::json::value header;
     std::string errs;
 
-    if (!charReader->parse(functionInput.c_str(), functionInput.c_str() + functionInput.length(), &vars, &errs))
+    if (!Helpers::JSON::parse(functionInput, vars))
     {
-        clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
+        clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), Helpers::JSON::lastParseError().c_str());
     }
 
     // Regular expression to split the components (eg. //<%jfunc/loginMode:GET/v1/getLoginMode({})%>//)
@@ -337,7 +334,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
         return replaceByJVar(procJAPI_Exec(sRealFullPath, clientHandler, functionName, functionInput), scriptVarName, useHTMLFrame);
     }
 
-    return replaceByJVar(Json::Value::null, scriptVarName, useHTMLFrame);
+    return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
 }
 
 void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex &exStaticText)

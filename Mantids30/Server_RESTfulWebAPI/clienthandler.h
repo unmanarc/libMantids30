@@ -32,7 +32,7 @@ protected:
      * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    void fillSessionExtraInfo(Json::Value &jVars) override;
+    void fillSessionExtraInfo(boost::json::value &jVars) override;
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name
@@ -44,13 +44,13 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    Json::Value getSessionVariableValue(const std::string &varName) override;
+    boost::json::value getSessionVariableValue(const std::string &varName) override;
     /**
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
     API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &endpointName,
-                                    const Json::Value &postParameters) override;
+                                    const boost::json::value &postParameters) override;
 
     API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) override;
 

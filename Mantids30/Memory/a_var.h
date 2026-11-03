@@ -49,8 +49,8 @@ public:
 
     [[nodiscard]] static std::shared_ptr<Var> makeAbstract(Type type, const std::string &defValue = "");
 
-    [[nodiscard]] virtual Json::Value toJSON();
-    [[nodiscard]] virtual bool fromJSON(const Json::Value &value);
+    [[nodiscard]] virtual boost::json::value toJSON();
+    [[nodiscard]] virtual bool fromJSON(const boost::json::value &value);
 
     /**
      * @brief toString Transform the Variable To a Readable string.

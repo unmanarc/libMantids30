@@ -28,7 +28,7 @@ public:
     [[nodiscard]] Type getExpressionType() const;
     [[nodiscard]] std::string getRawExpression() const;
     void setRawExpression(const std::string &value);
-    std::set<std::string> resolveValueSet(const Json::Value &v, bool resolveRegex, bool ignoreCase);
+    std::set<std::string> resolveValueSet(const boost::json::value &v, bool resolveRegex, bool ignoreCase);
     [[nodiscard]] std::shared_ptr<boost::regex> getCompiledRegex() const;
     void setCompiledRegex(const std::shared_ptr<boost::regex> &value);
 
@@ -37,7 +37,7 @@ private:
 
     std::shared_ptr<boost::regex> m_regexp;
     std::shared_ptr<std::vector<std::string>> m_staticTexts;
-    std::shared_ptr<Json::Path> m_jsonPath;
+    std::shared_ptr<Mantids30::Helpers::JSON::Path> m_jsonPath;
     uint32_t m_staticIndex{0};
     std::string m_expr;
     Type m_type = Type::UNDEFINED;

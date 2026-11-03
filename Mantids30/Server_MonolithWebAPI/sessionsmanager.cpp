@@ -51,7 +51,7 @@ void WebSessionsManager::setMaxInactiveSeconds(const uint32_t &value)
     m_MaxInactiveSeconds = value;
 }
 
-std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const Json::Value &networkClientInfo, uint64_t *maxAge)
+std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const boost::json::value &networkClientInfo, uint64_t *maxAge)
 {
     std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
 
@@ -177,16 +177,17 @@ bool WebSessionsManager::validateSessionIDFormat(const std::string &sessionID)
     return std::regex_match(sessionID, pattern);
 }
 
-Json::Value WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserName)
+boost::json::value WebSessionsManager::getUserSessionsInfo(const std::string &effectiveUserName)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    Json::Value r;
-    std::map<std::string, Json::Value> sessionsMap = m_sessionClientInfo[effectiveUserName];
+    boost::json::value r = boost::json::object{};
+    boost::json::object &robj = r.as_object();
+    std::map<std::string, boost::json::value> sessionsMap = m_sessionClientInfo[effectiveUserName];
 
     for (const auto &sessions : sessionsMap)
     {
         // provide truncated session information.
-        r[Program::Logs::RPCLog::truncateSessionId(sessions.first)] = sessions.second;
+        robj[Program::Logs::RPCLog::truncateSessionId(sessions.first)] = sessions.second;
     }
 
     return r;

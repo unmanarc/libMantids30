@@ -54,18 +54,18 @@ bool DOUBLE::fromString(const std::string &value)
     }
 }
 
-Json::Value DOUBLE::toJSON()
+boost::json::value DOUBLE::toJSON()
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
     return m_value;
 }
 
-bool DOUBLE::fromJSON(const Json::Value &value)
+bool DOUBLE::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASDOUBLE_D(value, 0);

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "json/value.h"
+#include <Mantids30/Helpers/json.h>
+
 #include <Mantids30/Memory/streamable_object.h>
 
-#include <json/json.h>
 
 #include <cstdint>
 #include <functional>
@@ -14,12 +14,12 @@
 
 namespace Mantids30::Scripts {
 
-using ApiCallback_t = std::function<Json::Value(
+using ApiCallback_t = std::function<boost::json::value(
     const std::string &baseApiUrl,
     const uint32_t &apiVersion,
     const std::string &methodType,
     const std::string &endpointName,
-    const Json::Value &postParameters)>;
+    const boost::json::value &postParameters)>;
 
 
 class MantidsLang : public Mantids30::Memory::Streams::StreamableObject
@@ -37,7 +37,7 @@ public:
     };
 
     MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source,
-                const std::shared_ptr<Json::Value> &jsonContext = nullptr,
+                const std::shared_ptr<boost::json::value> &jsonContext = nullptr,
                 MantidsLang *parent = nullptr,
                 ApiCallback_t apiCallback = nullptr);
 
@@ -55,12 +55,12 @@ public:
 
 private:
 
-    bool printJSON( const std::string &action , const Json::Value & value);
-    bool iterateJSON(const std::string &foreachParam, const Json::Value &currentJsonContext, const Token &token, size_t depth);
-    bool checkConditionalOnJSON(const std::string &conditional, const Json::Value &currentJsonContext, const Token &token, size_t depth);
+    bool printJSON( const std::string &action , const boost::json::value & value);
+    bool iterateJSON(const std::string &foreachParam, const boost::json::value &currentJsonContext, const Token &token, size_t depth);
+    bool checkConditionalOnJSON(const std::string &conditional, const boost::json::value &currentJsonContext, const Token &token, size_t depth);
 
     // depth is only used for the (testing) indented dump.
-    void processTokens(const Json::Value & currentJsonContext, size_t depth = 0);
+    void processTokens(const boost::json::value & currentJsonContext, size_t depth = 0);
     void parseTagsFromBuffer();
 
     // Parse-only recursion for EOF: flushes pending buffers of the open subtag chain.
@@ -82,7 +82,7 @@ private:
     std::vector<Token> tokens;
 
     std::shared_ptr<Memory::Streams::StreamableObject> source;
-    std::shared_ptr<Json::Value> jsonContext;
+    std::shared_ptr<boost::json::value> jsonContext;
     Memory::Streams::StreamableObject *output = nullptr;
 
     // Parent pointer for nested context tracking

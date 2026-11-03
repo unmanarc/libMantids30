@@ -26,19 +26,19 @@ size_t Endpoint::getActiveUserConnectionsCount(const std::string &userId) const
     return count;
 }
 
-bool Endpoint::sendJSONToConnectionID(const std::string &sessionId, const Json::Value &v) const
+bool Endpoint::sendJSONToConnectionID(const std::string &sessionId, const boost::json::value &v) const
 {
     WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
     if (connection)
     {
-        connection->webSocketHTTPServer->sendWebSocketText(v.toStyledString());
+        connection->webSocketHTTPServer->sendWebSocketText(boost::json::serialize(v));
         connectionsByIdMap->releaseElement(sessionId);
         return true;
     }
     return false;
 }
 
-bool Endpoint::sendJSONToUser(const std::string &userId, const Json::Value &v) const
+bool Endpoint::sendJSONToUser(const std::string &userId, const boost::json::value &v) const
 {
     std::set<std::string> keys = connectionsByIdMap->getKeys();
     for (const std::string &sessionId : keys)
@@ -48,7 +48,7 @@ bool Endpoint::sendJSONToUser(const std::string &userId, const Json::Value &v) c
         {
             if (connection->sessionInfo->authSession->getUser() == userId)
             {
-                connection->webSocketHTTPServer->sendWebSocketText(v.toStyledString());
+                connection->webSocketHTTPServer->sendWebSocketText(boost::json::serialize(v));
                 connectionsByIdMap->releaseElement(sessionId);
                 return true;
             }
@@ -61,7 +61,7 @@ bool Endpoint::sendJSONToUser(const std::string &userId, const Json::Value &v) c
     return false;
 }
 
-size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const Json::Value &v) const
+size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const boost::json::value &v) const
 {
     size_t i = 0;
     std::set<std::string> keys = connectionsByIdMap->getKeys();
@@ -74,7 +74,7 @@ size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const J
                 std::unique_lock<std::mutex> lock(connection->subscribedTopicsMutex);
                 if (connection->subscribedTopics.find(topicId) != connection->subscribedTopics.end())
                 {
-                    connection->webSocketHTTPServer->sendWebSocketText(v.toStyledString());
+                    connection->webSocketHTTPServer->sendWebSocketText(boost::json::serialize(v));
                     i++;
                 }
             }

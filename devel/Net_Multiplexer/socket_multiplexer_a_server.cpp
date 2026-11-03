@@ -36,7 +36,7 @@ bool Socket_Multiplexer::multiplexedSocket_sendLineConnectionAnswer(const DataSt
     {
         return false;
     }
-    if (!multiplexedSocket->writeString32(answerValue.toStyledString(), JSON_MAX_DATA))
+    if (!multiplexedSocket->writeString32(boost::json::serialize(answerValue), JSON_MAX_DATA))
     {
         return false;
     }
@@ -111,12 +111,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_Connect(bool autho
     {
         if (authorized)
         {
-            Json::CharReaderBuilder builder;
-            Json::CharReader *reader = builder.newCharReader();
-            std::string errors;
-
-            bool parsingSuccessful = reader->parse(connectionParamsStr.c_str(), connectionParamsStr.c_str() + connectionParamsStr.size(), &(thrParams->jConnectionParams), &errors);
-            delete reader;
+            bool parsingSuccessful = Mantids30::Helpers::JSON::parse(connectionParamsStr, thrParams->jConnectionParams);
 
             if (parsingSuccessful)
             {

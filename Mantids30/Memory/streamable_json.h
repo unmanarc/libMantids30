@@ -17,21 +17,21 @@ public:
     void clear();
 
     /**
-     * @brief processValue Proccess current string into m_root and return the internal Json::Value pointer if parsing succeed, otherwise return nullptr.
+     * @brief processValue Proccess current string into m_root and return the internal boost::json::value pointer if parsing succeed, otherwise return nullptr.
      * @return
      */
-    Json::Value *processValue();
+    boost::json::value *processValue();
     /**
-     * @brief getValue Return the pointer to the internal Json::Value.
+     * @brief getValue Return the pointer to the internal boost::json::value.
      * @return
      */
-    Json::Value *getValue();
+    boost::json::value *getValue();
 
     bool isEmpty();
 
-    StreamableJSON &operator=(const Json::Value &value);
+    StreamableJSON &operator=(const boost::json::value &value);
 
-    void setValue(const Json::Value &value);
+    void setValue(const boost::json::value &value);
     bool setValue(const std::string &value);
 
     void setMaxSize(const size_t &value);
@@ -42,7 +42,7 @@ public:
 private:
     size_t m_maxSize = std::numeric_limits<size_t>::max();
     std::string m_strValue;
-    Json::Value m_root;
+    boost::json::value m_root;
     bool m_isFormatted = true;
     bool m_isFull = false;
 };

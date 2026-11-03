@@ -50,8 +50,8 @@ public:
 
     static std::pair<in_addr, uint8_t> _fromStringWithNetmask(const std::string &value, bool *ok = nullptr);
 
-    Json::Value toJSON() override;
-    bool fromJSON(const Json::Value &value) override;
+    boost::json::value toJSON() override;
+    bool fromJSON(const boost::json::value &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;

@@ -24,8 +24,8 @@ namespace Mantids30::API::RESTful {
 struct RequestContext
 {
     Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
-    Json::Value emptyJSON;
-    Json::Value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
+    boost::json::value emptyJSON;
+    boost::json::value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
 
     DataFormat::JWT::Token emptyToken;              ///< Holds a default empty token
     DataFormat::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.

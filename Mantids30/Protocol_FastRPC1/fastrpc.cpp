@@ -99,9 +99,9 @@ bool FastRPC1::waitPingInterval()
     return m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout;
 }
 
-Json::Value FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const Json::Value &payload, bool *found)
+boost::json::value FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found)
 {
-    Json::Value r;
+    boost::json::value r;
     std::shared_lock<std::shared_mutex> lock(m_methodsMutex);
     if (m_methods.find(methodName) != m_methods.end())
     {
@@ -155,7 +155,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
         {
             connection->executionStatus[requestId] = executionStatus;
 
-            Helpers::JSON::JSONReader2 reader;
+            Helpers::JSON::Reader reader;
             bool parsingSuccessful = reader.parse(payloadBytes, connection->answers[requestId]);
             if (parsingSuccessful)
             {
@@ -211,7 +211,7 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
     std::shared_ptr<FastRPC1::ThreadParameters> params = std::make_shared<FastRPC1::ThreadParameters>();
     params->requestId = requestId;
     params->methodName = methodName;
@@ -366,12 +366,9 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
 {
     FastRPC1::ThreadParameters *params = static_cast<FastRPC1::ThreadParameters *>(taskData.get());
 
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-
     bool found = false;
-    Json::Value r = (static_cast<FastRPC1 *>(params->caller))->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
-    std::string output = Json::writeString(builder, r);
+    boost::json::value r = (static_cast<FastRPC1 *>(params->caller))->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
+    std::string output = boost::json::serialize(r);
     sendRPCAnswer(params, output, found ? static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) : static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     params->done->unlock_shared();
 }
@@ -393,21 +390,19 @@ void FastRPC1::setMaxMessageSize(const uint32_t &value)
     m_maxMessageSize = value;
 }
 
-Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected)
+boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected)
 {
-    Json::Value r;
+    boost::json::value r;
 
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-    std::string output = Json::writeString(builder, payload);
+    std::string output = boost::json::serialize(payload);
 
     if (output.size() > m_maxMessageSize)
     {
         if (error)
         {
-            (*error)["succeed"] = false;
-            (*error)["errorId"] = 1;
-            (*error)["errorMessage"] = "Payload exceed the Maximum Message Size.";
+            Helpers::JSON::setMember(*error, "succeed", false);
+            Helpers::JSON::setMember(*error, "errorId", 1);
+            Helpers::JSON::setMember(*error, "errorMessage", "Payload exceed the Maximum Message Size.");
         }
         return r;
     }
@@ -423,9 +418,9 @@ Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const
             eventRemotePeerDisconnected(connectionKey, methodName, payload);
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = 2;
-                (*error)["errorMessage"] = "Abort after remote peer not found/connected.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", 2);
+                Helpers::JSON::setMember(*error, "errorMessage", "Abort after remote peer not found/connected.");
             }
             return r;
         }
@@ -464,9 +459,9 @@ Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const
             eventRemoteExecutionTimedOut(connectionKey, methodName, payload);
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = 3;
-                (*error)["errorMessage"] = "Remote Execution Timed Out: No Answer Received.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", 3);
+                Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Timed Out: No Answer Received.");
             }
             break;
         }
@@ -481,22 +476,22 @@ Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const
                 switch (executionStatus)
                 {
                 case 2:
-                    (*error)["succeed"] = true;
-                    (*error)["errorId"] = 0;
-                    (*error)["errorMessage"] = "Execution OK.";
+                    Helpers::JSON::setMember(*error, "succeed", true);
+                    Helpers::JSON::setMember(*error, "errorId", 0);
+                    Helpers::JSON::setMember(*error, "errorMessage", "Execution OK.");
                     break;
                 case 3:
-                    (*error)["succeed"] = false;
-                    (*error)["errorId"] = 4;
-                    (*error)["errorMessage"] = "Remote Execution Failed: Full Queue.";
+                    Helpers::JSON::setMember(*error, "succeed", false);
+                    Helpers::JSON::setMember(*error, "errorId", 4);
+                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Full Queue.");
                     break;
                 case 4:
-                    (*error)["succeed"] = false;
-                    (*error)["errorId"] = 5;
-                    (*error)["errorMessage"] = "Remote Execution Failed: Method Not Found.";
+                    Helpers::JSON::setMember(*error, "succeed", false);
+                    Helpers::JSON::setMember(*error, "errorId", 5);
+                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Method Not Found.");
                     break;
                 default:
-                    (*error)["succeed"] = false;
+                    Helpers::JSON::setMember(*error, "succeed", false);
                 }
             }
             break;
@@ -506,9 +501,9 @@ Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const
         {
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = 6;
-                (*error)["errorMessage"] = "Connection is terminated: No Answer Received.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", 6);
+                Helpers::JSON::setMember(*error, "errorMessage", "Connection is terminated: No Answer Received.");
             }
             break;
         }
@@ -526,11 +521,11 @@ Json::Value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const
 
     if (error)
     {
-        if (!error->isMember("succeed"))
+        if (!Helpers::JSON::hasMember(*error, "succeed"))
         {
-            (*error)["succeed"] = false;
-            (*error)["errorId"] = 99;
-            (*error)["errorMessage"] = "Unknown Error.";
+            Helpers::JSON::setMember(*error, "succeed", false);
+            Helpers::JSON::setMember(*error, "errorId", 99);
+            Helpers::JSON::setMember(*error, "errorMessage", "Unknown Error.");
         }
     }
 
@@ -571,6 +566,6 @@ bool FastRPC1::checkConnectionKey(const std::string &connectionKey)
 
 void FastRPC1::eventFullQueueDrop(FastRPC1::ThreadParameters *) {}
 
-void FastRPC1::eventRemotePeerDisconnected(const std::string &, const std::string &, const Json::Value &) {}
+void FastRPC1::eventRemotePeerDisconnected(const std::string &, const std::string &, const boost::json::value &) {}
 
-void FastRPC1::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const Json::Value &) {}
+void FastRPC1::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const boost::json::value &) {}

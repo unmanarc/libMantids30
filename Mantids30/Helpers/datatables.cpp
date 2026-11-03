@@ -3,27 +3,28 @@
 
 using namespace Mantids30;
 
-static std::string getColumnNameFromColumnPos(const Json::Value &dataTablesFilters, const uint32_t &pos)
+static std::string getColumnNameFromColumnPos(const boost::json::value &dataTablesFilters, const uint32_t &pos)
 {
     if (Helpers::JSON::ISARRAY(dataTablesFilters, "columns"))
     {
-        if (pos >= dataTablesFilters["columns"].size())
+        const boost::json::value &columns = Helpers::JSON::detail::safeGet(dataTablesFilters, "columns");
+        if (pos >= static_cast<uint32_t>(columns.as_array().size()))
         {
             return "";
         }
-        return Helpers::JSON::ASSTRING(dataTablesFilters["columns"][pos], "data", "");
+        return Helpers::JSON::ASSTRING(columns.as_array()[pos], "data", "");
     }
     return "";
 }
 
-std::string Mantids30::Helpers::DataTables::getOrderByStatement(const Json::Value &dataTablesFilters)
+std::string Mantids30::Helpers::DataTables::getOrderByStatement(const boost::json::value &dataTablesFilters)
 {
     std::string orderByStatement;
     // Manejo de ordenamiento (order)
-    const Json::Value &orderArray = dataTablesFilters["order"];
-    if (Helpers::JSON::ISARRAY_D(orderArray) && !orderArray.empty())
+    const boost::json::value &orderArray = Helpers::JSON::detail::safeGet(dataTablesFilters, "order");
+    if (Helpers::JSON::ISARRAY_D(orderArray) && !orderArray.as_array().empty())
     {
-        const Json::Value &orderArrayElement = orderArray[0];
+        const boost::json::value &orderArrayElement = orderArray.as_array()[0];
         std::string columnName = getColumnNameFromColumnPos(dataTablesFilters, Helpers::JSON::ASUINT(orderArrayElement, "column", 0));
         std::string dir = Helpers::JSON::ASSTRING(orderArrayElement, "dir", "desc");
 

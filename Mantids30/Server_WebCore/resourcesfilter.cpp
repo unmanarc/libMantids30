@@ -403,42 +403,44 @@ std::string processingModeToString(ProcessingMode mode)
 
 } // namespace
 
-Json::Value ResourcesFilter::FilterEvaluationResult::toJSON() const
+boost::json::value ResourcesFilter::FilterEvaluationResult::toJSON() const
 {
-    Json::Value root;
+    boost::json::value root;
 
-    root["matched"] = matched;
+    Mantids30::Helpers::JSON::setMember(root, "matched", matched);
 
-    Json::Value actionsArray(Json::arrayValue);
+    boost::json::value actionsArray = boost::json::array{};
+    boost::json::array &actionsArr = actionsArray.as_array();
     for (const auto &action : actions)
     {
-        Json::Value actionObj;
-        actionObj["type"] = actionTypeToString(action.type);
-        actionObj["statusCode"] = static_cast<Json::Int>(action.statusCode);
+        boost::json::value actionObj;
+        Mantids30::Helpers::JSON::setMember(actionObj, "type", actionTypeToString(action.type));
+        Mantids30::Helpers::JSON::setMember(actionObj, "statusCode", static_cast<int>(action.statusCode));
 
         if (!action.redirectLocation.empty())
         {
-            actionObj["redirectLocation"] = action.redirectLocation;
+            Mantids30::Helpers::JSON::setMember(actionObj, "redirectLocation", action.redirectLocation);
         }
 
-        actionObj["processingMode"] = processingModeToString(action.processingMode);
+        Mantids30::Helpers::JSON::setMember(actionObj, "processingMode", processingModeToString(action.processingMode));
 
         if (!action.httpHeaders.empty())
         {
-            Json::Value headersArray(Json::arrayValue);
+            boost::json::value headersArray = boost::json::array{};
+            boost::json::array &headersArr = headersArray.as_array();
             for (const auto &header : action.httpHeaders)
             {
-                Json::Value headerObj;
-                headerObj["name"] = header.first;
-                headerObj["value"] = header.second;
-                headersArray.append(headerObj);
+                boost::json::value headerObj;
+                Mantids30::Helpers::JSON::setMember(headerObj, "name", header.first);
+                Mantids30::Helpers::JSON::setMember(headerObj, "value", header.second);
+                headersArr.push_back(headerObj);
             }
-            actionObj["httpHeaders"] = headersArray;
+            Mantids30::Helpers::JSON::setMember(actionObj, "httpHeaders", headersArray);
         }
 
-        actionsArray.append(actionObj);
+        actionsArr.push_back(actionObj);
     }
-    root["actions"] = actionsArray;
+    Mantids30::Helpers::JSON::setMember(root, "actions", actionsArray);
 
     return root;
 }

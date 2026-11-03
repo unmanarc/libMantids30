@@ -16,7 +16,8 @@ bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
     }
     else
     {
-        m_strValue = m_root.toStyledString();
+        // boost::json::serialize produces compact JSON (no trailing newline).
+        m_strValue = boost::json::serialize(m_root);
     }
 
     return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
@@ -72,19 +73,19 @@ size_t StreamableJSON::size()
 
 void StreamableJSON::clear()
 {
-    Json::Value x;
+    boost::json::value x;
     m_root = x;
     m_strValue.clear();
 }
 
-Json::Value *StreamableJSON::processValue()
+boost::json::value *StreamableJSON::processValue()
 {
     if (m_isFull)
     {
         return nullptr;
     }
 
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     if (!parsingSuccessful)
     {
@@ -93,30 +94,30 @@ Json::Value *StreamableJSON::processValue()
     return &m_root;
 }
 
-Json::Value *StreamableJSON::getValue()
+boost::json::value *StreamableJSON::getValue()
 {
     return &m_root;
 }
 
 bool StreamableJSON::isEmpty()
 {
-    return m_root.empty();
+    return m_root.is_null();
 }
 
-StreamableJSON &StreamableJSON::operator=(const Json::Value &value)
+StreamableJSON &StreamableJSON::operator=(const boost::json::value &value)
 {
     setValue(value);
     return *this;
 }
 
-void StreamableJSON::setValue(const Json::Value &value)
+void StreamableJSON::setValue(const boost::json::value &value)
 {
     m_root = value;
 }
 
 bool StreamableJSON::setValue(const std::string &value)
 {
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
     m_strValue = value;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     return parsingSuccessful;

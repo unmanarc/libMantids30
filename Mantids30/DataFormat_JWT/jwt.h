@@ -3,8 +3,7 @@
 #include <atomic>
 #include <condition_variable>
 #include <ctime>
-#include <json/json.h>
-#include <json/value.h>
+#include <Mantids30/Helpers/json.h>
 #include <queue>
 #include <set>
 #include <shared_mutex>
@@ -87,7 +86,7 @@ public:
 
         void setJwtId(const std::string &jti);
 
-        void setClaim(const std::string &name, const Json::Value &value);
+        void setClaim(const std::string &name, const boost::json::value &value);
 
         [[nodiscard]] std::string exportPayload() const;
 
@@ -114,7 +113,7 @@ public:
 
         [[nodiscard]] std::set<std::string> getAllScopes();
 
-        [[nodiscard]] Json::Value getAllScopesAsJSON();
+        [[nodiscard]] boost::json::value getAllScopesAsJSON();
 
         void addScope(const std::string &scopeId);
 
@@ -122,20 +121,20 @@ public:
 
         [[nodiscard]] std::set<std::string> getAllRoles();
 
-        [[nodiscard]] Json::Value getAllRolesAsJSON();
+        [[nodiscard]] boost::json::value getAllRolesAsJSON();
 
         void addRole(const std::string &roleId);
 
         [[nodiscard]] bool hasRole(const std::string &roleId) const;
 
-        [[nodiscard]] std::map<std::string, Json::Value> getAllClaims();
+        [[nodiscard]] std::map<std::string, boost::json::value> getAllClaims();
 
-        [[nodiscard]] Json::Value getAllClaimsAsJSON();
+        [[nodiscard]] boost::json::value getAllClaimsAsJSON();
 
         [[nodiscard]] bool isAdmin() const;
 
         // Getter function for custom claims
-        [[nodiscard]] Json::Value getClaim(const std::string &name) const;
+        [[nodiscard]] boost::json::value getClaim(const std::string &name) const;
 
         // Function to check if claim exist...
         [[nodiscard]] bool hasClaim(const std::string &name) const;
@@ -146,7 +145,7 @@ public:
         // Internal function to set the verified status...
         void setSignatureVerified(bool newVerified);
 
-        [[nodiscard]] Json::Value *getClaimsPTR();
+        [[nodiscard]] boost::json::value *getClaimsPTR();
 
         /**
          * @brief isRevoked Return true if the signature was revoked, false otherwise
@@ -161,7 +160,7 @@ public:
         void setRevoked(bool newRevoked);
 
     private:
-        Json::Value m_claims;
+        boost::json::value m_claims = boost::json::object{};
         bool m_signatureVerified = false;
         bool m_revoked = false;
     };
@@ -340,7 +339,7 @@ public:
      * @param payload JSON payload to sign
      * @return std::string JWT token
      */
-    std::string sign(const Json::Value &payload);
+    std::string sign(const boost::json::value &payload);
 
     /**
      * @brief signFromToken Sign from a constructed token

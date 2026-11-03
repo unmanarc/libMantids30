@@ -38,7 +38,7 @@ std::string extractCommandName(const std::string &tagName)
 
 } // namespace
 
-MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<Json::Value> &jsonContext, MantidsLang *parent, ApiCallback_t apiCallback)
+MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<boost::json::value> &jsonContext, MantidsLang *parent, ApiCallback_t apiCallback)
     : source(source)
     , jsonContext(jsonContext)
     , parent(parent)

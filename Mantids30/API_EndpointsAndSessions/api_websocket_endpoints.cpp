@@ -5,7 +5,6 @@
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <shared_mutex>
 #include <mutex>
-#include <json/value.h>
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Protocol;
@@ -57,16 +56,13 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
     {
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
 
-        Json::Value jsonContent;
-        Json::CharReaderBuilder reader;
-        std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
-        Json::Value header;
-        std::string errs;
+        boost::json::value jsonContent;
+        Mantids30::Helpers::JSON::Reader charReader;
         std::vector<char> buf = content->copyToBuffer();
         if (config->translateWebSocketTextMessagesToJSON
             && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
         {
-            if (!charReader->parse(buf.data(), buf.data() + buf.size(), &jsonContent, &errs))
+            if (!charReader.parse(std::string(buf.data(), buf.size()), jsonContent))
             {
                 // Failed to translate...
             }

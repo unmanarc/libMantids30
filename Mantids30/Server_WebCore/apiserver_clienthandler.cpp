@@ -10,7 +10,6 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
-#include <json/value.h>
 #include <memory>
 #include <regex>
 #include <string>
@@ -169,7 +168,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 API::APIReturn apiReturn;
 
                 std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
-                Json::Value postParameters = !jsonStreamable ? Json::nullValue : *(jsonStreamable->getValue());
+                boost::json::value postParameters = !jsonStreamable ? boost::json::value{} : *(jsonStreamable->getValue());
 
                 if (httpMethodMode == "OPTIONS")
                 {

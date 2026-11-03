@@ -36,13 +36,13 @@ public:
     /**
      * @brief setVar Set Variable (Replacing values if exist)
      * @param varName Variable Name
-     * @param varValue Variable Value
+     * @param varValue Variable boost::json::value
      */
     void setVar(const std::string &varName, const std::string &varValue);
     /**
      * @brief addVar Add Variable (multimap value, multiple vars with the same name could coexist)
      * @param varName Variable Name
-     * @param varValue Variable Value
+     * @param varValue Variable boost::json::value
      */
     void addVar(const std::string &varName, const std::string &varValue);
     /**
@@ -52,10 +52,10 @@ public:
      */
     [[nodiscard]] std::list<std::string> getVarValues(const std::string &varName);
     /**
-     * @brief getVarValue Get Variable Value
+     * @brief getVarValue Get Variable boost::json::value
      * @param varName Variable Name
      * @param found returns true if varname found, if else false
-     * @return First Variable Value
+     * @return First Variable boost::json::value
      */
     [[nodiscard]] std::string getVarValue(const std::string &varName, bool *found = nullptr);
     /**

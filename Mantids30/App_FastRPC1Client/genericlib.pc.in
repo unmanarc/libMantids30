@@ -7,6 +7,6 @@ Name: @LIB_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 
-Requires:
+Requires: boost_json >= 1.71
 Libs: -L${libdir} -l@LIB_NAME@
 Cflags: -I${includedir}

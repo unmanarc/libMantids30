@@ -193,34 +193,34 @@ std::shared_ptr<Var> STRINGLIST::protectedCopy()
     return var;
 }
 
-Json::Value STRINGLIST::toJSON()
+boost::json::value STRINGLIST::toJSON()
 {
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
     std::shared_lock<std::shared_mutex> lock(m_mutex);
-    Json::Value j(Json::arrayValue);
+    boost::json::array j;
     for (const std::string &item : m_value)
     {
-        j.append(item);
+        j.emplace_back(item);
     }
     return j;
 }
 
-bool STRINGLIST::fromJSON(const Json::Value &value)
+bool STRINGLIST::fromJSON(const boost::json::value &value)
 {
-    if (!value.isArray())
+    if (!value.is_array())
     {
         return false;
     }
 
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value.clear();
-    for (const Json::Value &item : value)
+    for (const boost::json::value &item : value.as_array())
     {
-        if (item.isString())
+        if (item.is_string())
         {
             m_value.push_back(Helpers::JSON::ASSTRING_D(item, ""));
         }

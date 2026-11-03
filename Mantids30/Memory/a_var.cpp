@@ -116,12 +116,12 @@ std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defVal
     return v;
 }
 
-Json::Value Var::toJSON()
+boost::json::value Var::toJSON()
 {
-    return Json::Value::null;
+    return boost::json::value{};
 }
 
-bool Var::fromJSON(const Json::Value &value)
+bool Var::fromJSON(const boost::json::value &value)
 {
     return true;
 }

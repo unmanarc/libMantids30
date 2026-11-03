@@ -55,7 +55,7 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential cmake pkg-config \
             libboost-dev libboost-regex-dev libboost-thread-dev libboost-system-dev \
-            libssl-dev libjsoncpp-dev
+            libssl-dev libboost-json-dev
           # Optional database backends: their modules are skipped when absent.
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             libsqlite3-dev libpq-dev libmariadb-dev || true
@@ -72,7 +72,7 @@ jobs:
           fi
           dnf install -y epel-release || true
           dnf install -y gcc-c++ make cmake pkgconf-pkg-config \
-            boost-devel openssl-devel jsoncpp-devel
+            boost-devel openssl-devel boost-json-devel
           dnf install -y sqlite-devel libpq-devel mariadb-connector-c-devel || true
 
       - name: Configure
@@ -108,7 +108,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake pkg-config \
             libboost-dev libboost-regex-dev libboost-thread-dev libboost-system-dev \
-            libssl-dev libjsoncpp-dev
+            libssl-dev libboost-json-dev
 
       - name: Configure, build and install (static)
         run: |

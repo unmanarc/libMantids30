@@ -4,9 +4,9 @@
 
 using namespace Mantids30::Memory::Abstract;
 
-Json::Value Vars::toJSON()
+boost::json::value Vars::toJSON()
 {
-    Json::Value jsonMap;
+    boost::json::object jsonMap;
 
     // Get the list of keys from the container
     std::set<std::string> keysList = getKeysList();
@@ -26,11 +26,11 @@ Json::Value Vars::toJSON()
         {
             // If there are multiple values, store them in an array
             std::list<std::shared_ptr<Mantids30::Memory::Streams::StreamableObject>> values = getValues(key);
-            Json::Value jsonArray;
+            boost::json::array jsonArray;
 
             for (const std::shared_ptr<Mantids30::Memory::Streams::StreamableObject>& value : values)
             {
-                jsonArray.append(value->toString());
+                jsonArray.emplace_back(value->toString());
             }
 
             jsonMap[key] = jsonArray;
@@ -40,22 +40,23 @@ Json::Value Vars::toJSON()
     return jsonMap;
 }
 
-bool Vars::fromJSON(const Json::Value &json)
+bool Vars::fromJSON(const boost::json::value &json)
 {
     clear();
 
-    if (!json.isObject())
+    if (!json.is_object())
     {
         return false; // Not a JSON object
     }
 
-    for (const std::string &key : json.getMemberNames())
+    for (const auto &kv : json.as_object())
     {
-        const Json::Value &value = json[key];
-        if (value.isArray())
+        const std::string &key = kv.key();
+        const boost::json::value &value = kv.value();
+        if (value.is_array())
         {
             // If the value is an array, add each element as a separate variable
-            for (Json::ArrayIndex i = 0; i < value.size(); ++i)
+            for (size_t i = 0; i < value.as_array().size(); ++i)
             {
                 std::shared_ptr<Memory::Containers::B_Chunks> bChunk = std::make_shared<Memory::Containers::B_Chunks>();
                 bChunk->writeString(Helpers::JSON::ARRAY_ASSTRING(value, i, ""));

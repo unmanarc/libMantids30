@@ -1,7 +1,7 @@
-#include "config_builder.h"
+#include <Mantids30/Helpers/json.h>
+#include  "config_builder.h"
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
-#include <json/value.h>
 
 #include <Mantids30/Protocol_APISync/apisync.h>
 #include <Mantids30/Helpers/file.h>
@@ -47,10 +47,10 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
     }
     else
     {
-        std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
+        std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig)["tokensConfiguration"], "signAlgorithm", "");
+            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::detail::safeGet(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -141,10 +141,10 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
     }
     else
     {
-        std::optional<Json::Value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
+        std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING((*jwtconfig)["tokensConfiguration"], "signAlgorithm", "");
+            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::detail::safeGet(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {

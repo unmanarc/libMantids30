@@ -7,7 +7,7 @@ Applies to Fedora 40 and newer.
 ```bash
 sudo dnf groupinstall -y "Development Tools"
 sudo dnf install -y cmake pkgconf-pkg-config git \
-    boost-devel openssl-devel jsoncpp-devel
+    boost-devel boost-json-devel openssl-devel
 ```
 
 Optional database backends:
@@ -49,7 +49,7 @@ sudo dnf install -y libMantids30-devel
 ## Runtime packages
 
 ```bash
-sudo dnf install -y jsoncpp openssl-libs boost-regex boost-thread
+sudo dnf install -y boost-json openssl-libs boost-regex boost-thread
 # optional
 sudo dnf install -y sqlite-libs libpq mariadb-connector-c
 ```

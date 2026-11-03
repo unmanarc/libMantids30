@@ -58,13 +58,13 @@ public:
     bool addCommandLineOption(const std::string &optGroup, char shortOption, const std::string &optName, const std::string &description, const std::string &defaultValue,
                               const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
     /**
-     * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced Value
+     * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced boost::json::value
      * @param optionName Option Name (Full name)
      * @return option value (true or false)
      */
     bool getCommandLineOptionBooleanValue(const std::string &optionName);
     /**
-     * @brief getCommandLineOptionValue Get Command Line Option Value (As abstract)
+     * @brief getCommandLineOptionValue Get Command Line Option boost::json::value (As abstract)
      * @param optionName Option Name (Full name)
      * @return option value (as an abstract, will match with defined optionType in addCommandLineOption)
      */

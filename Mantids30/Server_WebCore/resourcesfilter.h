@@ -1,8 +1,8 @@
 #pragma once
 
+#include <Mantids30/Helpers/json.h>
 #include <boost/regex.hpp>
 
-#include <json/json.h>
 
 #include <cstdint>
 #include <list>
@@ -54,7 +54,7 @@ public:
 
         std::vector<Action> actions;
 
-        [[nodiscard]] Json::Value toJSON() const;
+        [[nodiscard]] boost::json::value toJSON() const;
     };
 
     struct Filter

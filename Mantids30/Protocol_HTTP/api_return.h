@@ -4,7 +4,6 @@
 #include "rsp_status.h"
 #include <Mantids30/Helpers/json.h>
 #include <Mantids30/Memory/streamable_json.h>
-#include <json/value.h>
 
 namespace Mantids30::API {
 
@@ -25,7 +24,7 @@ public:
      * @brief Parameterized constructor for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn(const Json::Value &body)
+    APIReturn(const boost::json::value &body)
     {
         // Initialize the body member variable with the provided json object.
         *this->body = body;
@@ -35,7 +34,7 @@ public:
      * @brief Assignment operator for APIReturn.
      * @param body The body of the response.
      */
-    APIReturn &operator=(const Json::Value &body)
+    APIReturn &operator=(const boost::json::value &body)
     {
         *this->body = body;
         return *this;
@@ -56,8 +55,8 @@ public:
         this->httpResponseCode = httpResponseCode;
         if (body)
         {
-            (*body->getValue())["error"] = error;
-            (*body->getValue())["message"] = message;
+            Mantids30::Helpers::JSON::setMember(*body->getValue(), "error", error);
+            Mantids30::Helpers::JSON::setMember(*body->getValue(), "message", message);
         }
     }
 
@@ -81,15 +80,15 @@ public:
         return errorString;
     }
 
-    void setReasons(const Json::Value &reasons)
+    void setReasons(const boost::json::value &reasons)
     {
         if (body)
         {
-            (*body->getValue())["reasons"] = reasons;
+            Mantids30::Helpers::JSON::setMember(*body->getValue(), "reasons", reasons);
         }
     }
 
-    [[nodiscard]] Json::Value *responseJSON()
+    [[nodiscard]] boost::json::value *responseJSON()
     {
         if (!body)
         {
@@ -100,11 +99,11 @@ public:
 
     /**
      * @brief Exports all the data of this class to JSON format for use in an API server.
-     * @return A Json::Value object containing the HTTP response code and body.
+     * @return A boost::json::value object containing the HTTP response code and body.
      */
-    [[nodiscard]] Json::Value toJSON() const
+    [[nodiscard]] boost::json::value toJSON() const
     {
-        Json::Value root;
+        boost::json::object root;
         root["httpResponseCode"] = static_cast<int>(httpResponseCode);
         if (body)
         {
@@ -112,19 +111,22 @@ public:
         }
         if (!httpExtraHeaders.empty())
         {
+            boost::json::object extraHeaders;
             for (const auto &header : httpExtraHeaders)
             {
-                root["extraHeaders"][header.first] = header.second;
+                extraHeaders[header.first] = header.second;
             }
+            root["extraHeaders"] = extraHeaders;
         }
 
         if (!cookiesMap.empty())
         {
-            int i = 0;
+            boost::json::array cookies;
             for (const auto &cookie : cookiesMap)
             {
-                root["cookies"][i++] = cookie.second.toSetCookieString(cookie.first);
+                cookies.emplace_back(cookie.second.toSetCookieString(cookie.first));
             }
+            root["cookies"] = cookies;
         }
 
         return root;
@@ -132,27 +134,29 @@ public:
 
     /**
      * @brief Imports data from a JSON object into this class for use in an API server.
-     * @param jsonValue A Json::Value object containing the HTTP response code and body.
+     * @param jsonValue A boost::json::value object containing the HTTP response code and body.
      */
-    void fromJSON(const Json::Value &jsonValue)
+    void fromJSON(const boost::json::value &jsonValue)
     {
         httpResponseCode = static_cast<Network::Protocol::HTTP::Status::Code>(Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", static_cast<unsigned int>(Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR)));
-        if (jsonValue.isMember("body") && body)
+        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "body") && body)
         {
-            body->setValue(jsonValue["body"]);
+            body->setValue(Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "body"));
         }
-        if (jsonValue.isMember("extraHeaders"))
+        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "extraHeaders"))
         {
-            for (const std::string &header : jsonValue["extraHeaders"].getMemberNames())
+            const boost::json::value &extraHeaders = Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "extraHeaders");
+            for (const auto &kv : extraHeaders.as_object())
             {
-                httpExtraHeaders[header] = Helpers::JSON::ASSTRING(jsonValue["extraHeaders"], header, "");
+                httpExtraHeaders[kv.key()] = Helpers::JSON::ASSTRING(extraHeaders, kv.key(), "");
             }
         }
-        if (jsonValue.isMember("cookies"))
+        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "cookies"))
         {
-            for (const auto & i : jsonValue["cookies"])
+            const boost::json::value &cookies = Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "cookies");
+            for (const boost::json::value &i : cookies.as_array())
             {
-                std::string cookieString = i.asString();
+                std::string cookieString = Helpers::JSON::ASSTRING_D(i, "");
                 Mantids30::Network::Protocol::HTTP::Headers::Cookie cookie;
                 std::string cookieName;
                 cookie.fromSetCookieString(cookieString, &cookieName);

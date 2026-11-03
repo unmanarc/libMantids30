@@ -51,7 +51,7 @@ struct APISyncParameters
  * @param apiKey Authentication key used for authorization.
  * @return Response from the API as a JSON object.
  */
-Json::Value performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const Json::Value &jsonRequest, const std::string &appName,
+boost::json::value performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const boost::json::value &jsonRequest, const std::string &appName,
                                       const std::string &apiKey);
 
 /**
@@ -66,7 +66,7 @@ Json::Value performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *l
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT validation key.
  */
-Json::Value getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+boost::json::value getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Retrieves the JWT signing key for an application.
@@ -93,7 +93,7 @@ Json::Value getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncPa
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT configuration.
  */
-Json::Value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+boost::json::value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Updates or sets Scopes, Roles and Activities for an application.
@@ -110,10 +110,10 @@ Json::Value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameter
  * @param activities JSON array of activities that can be performed.
  * @return Response from the API after updating SRA settings.
  */
-Json::Value updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const Json::Value &scopes, const Json::Value &roles,
-                                const Json::Value &activities);
+boost::json::value updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const boost::json::value &scopes, const boost::json::value &roles,
+                                const boost::json::value &activities);
 
-std::optional<Json::Value> getApplicationJWTConfig(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
+std::optional<boost::json::value> getApplicationJWTConfig(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
                                                    const std::map<std::string, std::string> &vars);
 std::optional<std::string> getApplicationJWTValidationKey(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
                                                           const std::map<std::string, std::string> &vars);

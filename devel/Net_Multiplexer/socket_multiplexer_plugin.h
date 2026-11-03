@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Helpers/json.h>
+#include <Mantids30/Helpers/json.h>
 #include <string>
 
 namespace Mantids {

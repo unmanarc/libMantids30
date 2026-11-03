@@ -35,8 +35,8 @@ public:
     static std::string _toString(const in6_addr &value);
     static in6_addr _fromString(const std::string &value, bool *ok = nullptr);
 
-    Json::Value toJSON() override;
-    bool fromJSON(const Json::Value &value) override;
+    boost::json::value toJSON() override;
+    bool fromJSON(const boost::json::value &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;

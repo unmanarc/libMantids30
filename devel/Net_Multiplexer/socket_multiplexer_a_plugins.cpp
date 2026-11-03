@@ -13,11 +13,9 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
     if (!readen)
         return false;
 
-    Json::CharReaderBuilder builder;
-    Json::CharReader *reader = builder.newCharReader();
-    std::string errors;
+    bool parseOk = Mantids30::Helpers::JSON::parse(sMsg, jMsg);
 
-    if (reader->parse(sMsg.c_str(), sMsg.c_str() + sMsg.size(), &(jMsg), &errors) && plugins.find(pluginId) != plugins.end())
+    if (parseOk && plugins.find(pluginId) != plugins.end())
     {
         plugins[pluginId]->processJSON16(jMsg);
     }
@@ -26,7 +24,6 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
         // parse problem?
     }
 
-    delete reader;
     return true;
 }
 
@@ -96,7 +93,7 @@ bool Socket_Multiplexer::plugin_SendJson(const std::string &pluginId, const json
             mtLock_multiplexedSocket.unlock();
         return false;
     }
-    if (!multiplexedSocket->writeString16(jData.toStyledString()))
+    if (!multiplexedSocket->writeString16(boost::json::serialize(jData)))
     {
         if (lock)
             mtLock_multiplexedSocket.unlock();

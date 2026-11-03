@@ -186,8 +186,8 @@ public:
      * @brief getSocketOption Get Socket Option
      * @param level SOL_SOCKET / IPPROTO_TCP / ...
      * @param optname SO Option Name
-     * @param optval Option Value Pointer
-     * @param optlen IN/OUT option Value Memory Length
+     * @param optval Option boost::json::value Pointer
+     * @param optlen IN/OUT option boost::json::value Memory Length
      * @return zero if succeed. error -1
      */
     int getSocketOption(int level, int optname, void *optval, socklen_t *optlen);
@@ -195,8 +195,8 @@ public:
      * @brief setSocketOption Set Socket Option
      * @param level SOL_SOCKET / IPPROTO_TCP / ...
      * @param optname SO Option Name
-     * @param optval Option Value Pointer
-     * @param optlen Option Value Memory Length
+     * @param optval Option boost::json::value Pointer
+     * @param optlen Option boost::json::value Memory Length
      * @return zero if succeed. error -1
      */
     int setSocketOption(int level, int optname, const void *optval, socklen_t optlen);

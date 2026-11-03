@@ -10,63 +10,58 @@ JWT::Token::Token(const std::string &payload)
 
 void JWT::Token::setIssuer(const std::string &issuer)
 {
-    m_claims["iss"] = issuer;
+    m_claims.as_object()["iss"] = issuer;
 }
 
 void JWT::Token::setSubject(const std::string &subject)
 {
-    m_claims["sub"] = subject;
+    m_claims.as_object()["sub"] = subject;
 }
 
 void JWT::Token::setDomain(const std::string &domain)
 {
-    m_claims["domain"] = domain;
+    m_claims.as_object()["domain"] = domain;
 }
 
 void JWT::Token::setAudience(const std::string &audience)
 {
-    m_claims["aud"] = audience;
+    m_claims.as_object()["aud"] = audience;
 }
 
 void JWT::Token::setExpirationTime(std::time_t exp)
 {
-    m_claims["exp"] = static_cast<Json::Int64>(exp);
+    m_claims.as_object()["exp"] = static_cast<int64_t>(exp);
 }
 
 void JWT::Token::setNotBefore(time_t nbf)
 {
-    m_claims["nbf"] = static_cast<Json::Int64>(nbf);
+    m_claims.as_object()["nbf"] = static_cast<int64_t>(nbf);
 }
 
 void JWT::Token::setIssuedAt(time_t iat)
 {
-    m_claims["iat"] = static_cast<Json::Int64>(iat);
+    m_claims.as_object()["iat"] = static_cast<int64_t>(iat);
 }
 
 void JWT::Token::setJwtId(const std::string &jti)
 {
-    m_claims["jti"] = jti;
+    m_claims.as_object()["jti"] = jti;
 }
 
-void JWT::Token::setClaim(const std::string &name, const Json::Value &value)
+void JWT::Token::setClaim(const std::string &name, const boost::json::value &value)
 {
-    m_claims[name] = value;
+    m_claims.as_object()[name] = value;
 }
 
 std::string JWT::Token::exportPayload() const
 {
-    Json::StreamWriterBuilder writerBuilder;
-    return Json::writeString(writerBuilder, m_claims);
+    return boost::json::serialize(m_claims);
 }
 
 bool JWT::Token::decodePayload(const std::string &payload)
 {
-    Json::CharReaderBuilder reader;
-    std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
-    std::string errs;
-
-    // If the header cannot be parsed, return false
-    return charReader->parse(payload.data(), payload.data() + payload.size(), &m_claims, &errs);
+    Mantids30::Helpers::JSON::Reader reader;
+    return reader.parse(payload, m_claims);
 }
 
 std::string JWT::Token::getIssuer() const
@@ -121,12 +116,12 @@ std::set<std::string> JWT::Token::getAllRoles()
 {
     std::set<std::string> roles;
 
-    if (m_claims.isMember("roles"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "roles"))
     {
-        const Json::Value &rolesClaims = m_claims["roles"];
-        if (rolesClaims.isArray())
+        const boost::json::value &rolesClaims = Mantids30::Helpers::JSON::detail::safeGet(m_claims, "roles");
+        if (rolesClaims.is_array())
         {
-            for (const Json::Value &role : rolesClaims)
+            for (const boost::json::value &role : rolesClaims.as_array())
             {
                 roles.insert(Helpers::JSON::ASSTRING_D(role, ""));
             }
@@ -136,11 +131,11 @@ std::set<std::string> JWT::Token::getAllRoles()
     return roles;
 }
 
-Json::Value JWT::Token::getAllRolesAsJSON()
+boost::json::value JWT::Token::getAllRolesAsJSON()
 {
-    if (m_claims.isMember("roles"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "roles"))
     {
-        return m_claims["roles"];
+        return Mantids30::Helpers::JSON::detail::safeGet(m_claims, "roles");
     }
 
     return {};
@@ -148,21 +143,21 @@ Json::Value JWT::Token::getAllRolesAsJSON()
 
 void JWT::Token::addRole(const std::string &roleId)
 {
-    if (!m_claims.isMember("roles"))
+    if (!Mantids30::Helpers::JSON::hasMember(m_claims, "roles"))
     {
-        m_claims["roles"] = Json::Value(Json::arrayValue);
+        m_claims.as_object()["roles"] = boost::json::array{};
     }
-    m_claims["roles"].append(roleId);
+    m_claims.as_object()["roles"].as_array().emplace_back(roleId);
 }
 
 bool JWT::Token::hasRole(const std::string &roleId) const
 {
-    if (m_claims.isMember("roles"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "roles"))
     {
-        const Json::Value &rolesClaims = m_claims["roles"];
-        if (rolesClaims.isArray())
+        const boost::json::value &rolesClaims = Mantids30::Helpers::JSON::detail::safeGet(m_claims, "roles");
+        if (rolesClaims.is_array())
         {
-            for (const Json::Value &role : rolesClaims)
+            for (const boost::json::value &role : rolesClaims.as_array())
             {
                 if (Helpers::JSON::ASSTRING_D(role, "") == roleId)
                 {
@@ -178,12 +173,12 @@ std::set<std::string> JWT::Token::getAllScopes()
 {
     std::set<std::string> scopes;
 
-    if (m_claims.isMember("scopes"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "scopes"))
     {
-        const Json::Value &scopesClaims = m_claims["scopes"];
-        if (scopesClaims.isArray())
+        const boost::json::value &scopesClaims = Mantids30::Helpers::JSON::detail::safeGet(m_claims, "scopes");
+        if (scopesClaims.is_array())
         {
-            for (const Json::Value &scope : scopesClaims)
+            for (const boost::json::value &scope : scopesClaims.as_array())
             {
                 scopes.insert(Helpers::JSON::ASSTRING_D(scope, ""));
             }
@@ -193,11 +188,11 @@ std::set<std::string> JWT::Token::getAllScopes()
     return scopes;
 }
 
-Json::Value JWT::Token::getAllScopesAsJSON()
+boost::json::value JWT::Token::getAllScopesAsJSON()
 {
-    if (m_claims.isMember("scopes"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "scopes"))
     {
-        return m_claims["scopes"];
+        return Mantids30::Helpers::JSON::detail::safeGet(m_claims, "scopes");
     }
 
     return {};
@@ -205,22 +200,22 @@ Json::Value JWT::Token::getAllScopesAsJSON()
 
 void JWT::Token::addScope(const std::string &scopeId)
 {
-    if (!m_claims.isMember("scopes"))
+    if (!Mantids30::Helpers::JSON::hasMember(m_claims, "scopes"))
     {
-        m_claims["scopes"] = Json::Value(Json::arrayValue);
+        m_claims.as_object()["scopes"] = boost::json::array{};
     }
 
-    m_claims["scopes"].append(scopeId);
+    m_claims.as_object()["scopes"].as_array().emplace_back(scopeId);
 }
 
 bool JWT::Token::hasScope(const std::string &scopeId) const
 {
-    if (m_claims.isMember("scopes"))
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "scopes"))
     {
-        const Json::Value &scopesClaims = m_claims["scopes"];
-        if (scopesClaims.isArray())
+        const boost::json::value &scopesClaims = Mantids30::Helpers::JSON::detail::safeGet(m_claims, "scopes");
+        if (scopesClaims.is_array())
         {
-            for (const Json::Value &scope : scopesClaims)
+            for (const boost::json::value &scope : scopesClaims.as_array())
             {
                 if (Helpers::JSON::ASSTRING_D(scope, "") == scopeId)
                 {
@@ -233,46 +228,46 @@ bool JWT::Token::hasScope(const std::string &scopeId) const
     return false;
 }
 
-std::map<std::string, Json::Value> JWT::Token::getAllClaims()
+std::map<std::string, boost::json::value> JWT::Token::getAllClaims()
 {
-    std::map<std::string, Json::Value> claimsMap;
-    for (const std::string &key : m_claims.getMemberNames())
+    std::map<std::string, boost::json::value> claimsMap;
+    for (const auto &kv : m_claims.as_object())
     {
-        claimsMap[key] = m_claims[key];
+        claimsMap[kv.key()] = kv.value();
     }
     return claimsMap;
 }
 
-Json::Value JWT::Token::getAllClaimsAsJSON()
+boost::json::value JWT::Token::getAllClaimsAsJSON()
 {
     return m_claims;
 }
 
 bool JWT::Token::isAdmin() const
 {
-    return m_claims.isMember("isAdmin") && Helpers::JSON::ASBOOL_D(getClaim("isAdmin"), false);
+    return Mantids30::Helpers::JSON::hasMember(m_claims, "isAdmin") && Helpers::JSON::ASBOOL_D(getClaim("isAdmin"), false);
 }
 
-Json::Value JWT::Token::getClaim(const std::string &name) const
+boost::json::value JWT::Token::getClaim(const std::string &name) const
 {
-    return m_claims[name];
+    return Mantids30::Helpers::JSON::detail::safeGet(m_claims, name);
 }
 
 bool JWT::Token::hasClaim(const std::string &name) const
 {
-    return m_claims.isMember(name);
+    return Mantids30::Helpers::JSON::hasMember(m_claims, name);
 }
 
 bool JWT::Token::isValid() const
 {
     std::time_t currentTime = std::time(nullptr);
 
-    if (m_claims.isMember("exp") && currentTime >= getExpirationTime())
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "exp") && currentTime >= getExpirationTime())
     {
         return false;
     }
 
-    if (m_claims.isMember("nbf") && currentTime < getNotBefore())
+    if (Mantids30::Helpers::JSON::hasMember(m_claims, "nbf") && currentTime < getNotBefore())
     {
         return false;
     }
@@ -285,7 +280,7 @@ void JWT::Token::setSignatureVerified(bool newVerified)
     m_signatureVerified = newVerified;
 }
 
-Json::Value *JWT::Token::getClaimsPTR()
+boost::json::value *JWT::Token::getClaimsPTR()
 {
     return &m_claims;
 }

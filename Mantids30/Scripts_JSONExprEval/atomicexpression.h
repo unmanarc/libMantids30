@@ -26,7 +26,7 @@ public:
     AtomicExpression(const std::shared_ptr<std::vector<std::string>> &staticTexts);
 
     bool compile(std::string expr);
-    [[nodiscard]] bool evaluate(const Json::Value &values);
+    [[nodiscard]] bool evaluate(const boost::json::value &values);
     void setStaticTexts(const std::shared_ptr<std::vector<std::string>> &value);
 
 private:

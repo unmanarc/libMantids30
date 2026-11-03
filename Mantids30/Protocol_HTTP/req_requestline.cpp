@@ -97,24 +97,24 @@ std::string RequestLine::getRequestGETVarsRawString() const
     return m_requestGETVarsRawString;
 }
 
-bool RequestLine::fromJSON(const Json::Value &json)
+bool RequestLine::fromJSON(const boost::json::value &json)
 {
-    if (!json.isObject())
+    if (!json.is_object())
     {
         return false;
     }
 
     setHTTPMethod(Helpers::JSON::ASSTRING(json, "method", ""));
     setRequestURI(Helpers::JSON::ASSTRING(json, "uri", ""));
-    m_httpVersion.fromJSON(json["httpVersion"]);
-    m_getVars->fromJSON(json["getVars"]);
+    m_httpVersion.fromJSON(Mantids30::Helpers::JSON::detail::safeGet(json, "httpVersion"));
+    m_getVars->fromJSON(Mantids30::Helpers::JSON::detail::safeGet(json, "getVars"));
 
     return true;
 }
 
-Json::Value RequestLine::toJSON() const
+boost::json::value RequestLine::toJSON() const
 {
-    Json::Value json;
+    boost::json::object json;
     json["method"] = getHTTPMethod();
     json["uri"] = getURI();
     json["httpVersion"] = m_httpVersion.toJSON();

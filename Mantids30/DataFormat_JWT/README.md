@@ -32,9 +32,9 @@ JWT jwt(JWT::Algorithm::HS256);
 jwt.setSharedSecret("YourSharedSecret");
 
 // Example of json array for attributes:
-Json::Value attributes;
-attributes[0] = "read";
-attributes[1] = "write";
+boost::json::array attributes;
+attributes.push_back(boost::json::value("read"));
+attributes.push_back(boost::json::value("write"));
 
 // My JWT Token:
 JWT::Token token;

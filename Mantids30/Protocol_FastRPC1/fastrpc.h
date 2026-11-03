@@ -29,7 +29,7 @@ public:
         /**
          * @brief Function pointer.
          */
-        Json::Value (*method)(const std::shared_ptr<void> &context, const std::string &key, const Json::Value &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
+        boost::json::value (*method)(const std::shared_ptr<void> &context, const std::string &key, const boost::json::value &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
         /**
          * @brief obj object to pass
          */
@@ -44,7 +44,7 @@ public:
         std::shared_mutex *done = nullptr;
         std::mutex *mtSocket = nullptr;
         std::string methodName;
-        Json::Value payload;
+        boost::json::value payload;
         uint64_t requestId=0;
 
         // Accesible objects:
@@ -70,7 +70,7 @@ public:
         std::mutex mtReqIdCt;
 
         // Answers:
-        std::map<uint64_t, Json::Value> answers;
+        std::map<uint64_t, boost::json::value> answers;
         std::map<uint64_t, uint8_t> executionStatus;
         std::mutex mtAnswers;
         std::condition_variable cvAnswers;
@@ -177,13 +177,13 @@ public:
      * @param methodName Method Name
      * @param payload Function Payload
      * @param error Error Return
-     * @return Answer, or Json::nullValue if answer is not received or if timed out.
+     * @return Answer, or boost::json::value{} if answer is not received or if timed out.
      */
-    Json::Value runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected = true);
+    boost::json::value runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected = true);
     /**
      * @brief runRemoteClose Run Remote Close Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
-     * @return Answer, or Json::nullValue if answer is not received or if timed out.
+     * @return Answer, or boost::json::value{} if answer is not received or if timed out.
      */
     bool runRemoteClose(const std::string &connectionKey);
 
@@ -202,7 +202,7 @@ public:
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    Json::Value runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const Json::Value &payload, bool *found);
+    boost::json::value runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value);
 
@@ -240,8 +240,8 @@ protected:
     // TODO pasar a callbacks
     virtual void eventUnexpectedAnswerReceived(FastRPC1::Connection *connection, const std::string &answer);
     virtual void eventFullQueueDrop(FastRPC1::ThreadParameters *params);
-    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
-    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const Json::Value &payload);
+    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
+    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
 
 private:
     static void executeRPCTask(const std::shared_ptr<void> &taskData);
@@ -266,7 +266,7 @@ private:
 
     // Map storing available RPC methods.
     // Key: Method name (string).
-    // Value: Corresponding method object.
+    // boost::json::value: Corresponding method object.
     std::map<std::string, FastRPC1::Method> m_methods;
 
     // Shared mutex for synchronizing access to the methods map.

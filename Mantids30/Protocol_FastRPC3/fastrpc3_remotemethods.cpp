@@ -18,33 +18,31 @@ using namespace std;
 using Ms = chrono::milliseconds;
 using S = chrono::seconds;
 
-Json::Value FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &jwtToken, Json::Value *error)
+boost::json::value FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &jwtToken, boost::json::value *error)
 {
-    Json::Value jAuthData;
-    jAuthData["jwtToken"] = jwtToken;
+    boost::json::value jAuthData = boost::json::object{};
+    jAuthData.as_object()["jwtToken"] = jwtToken;
     return executeTask("SESSION.LOGIN", jAuthData, error, true, true);
 }
 
-Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
+boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
 {
-    Json::Value r;
+    boost::json::value r;
 
     if (!passSessionCommands && boost::starts_with(methodName, "SESSION."))
     {
         return r;
     }
 
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-    string output = Json::writeString(builder, payload);
+    string output = boost::json::serialize(payload);
 
     if (output.size() > parent->config.maxMessageSize)
     {
         if (error)
         {
-            (*error)["succeed"] = false;
-            (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_PAYLOAD_TOO_LARGE);
-            (*error)["errorMessage"] = "Payload exceed the Maximum Message Size.";
+            Helpers::JSON::setMember(*error, "succeed", false);
+            Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_PAYLOAD_TOO_LARGE));
+            Helpers::JSON::setMember(*error, "errorMessage", "Payload exceed the Maximum Message Size.");
         }
         return r;
     }
@@ -60,9 +58,9 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
             CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, methodName, payload);
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_PEER_NOT_FOUND);
-                (*error)["errorMessage"] = "Abort after remote peer not found/connected.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_PEER_NOT_FOUND));
+                Helpers::JSON::setMember(*error, "errorMessage", "Abort after remote peer not found/connected.");
             }
             return r;
         }
@@ -116,9 +114,9 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
     {
         if (error)
         {
-            (*error)["succeed"] = false;
-            (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_DATA_TRANSMISSION_FAILURE);
-            (*error)["errorMessage"] = "Connection Failed.";
+            Helpers::JSON::setMember(*error, "succeed", false);
+            Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_DATA_TRANSMISSION_FAILURE));
+            Helpers::JSON::setMember(*error, "errorMessage", "Connection Failed.");
         }
         return r;
     }
@@ -139,9 +137,9 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
 
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_TIMEOUT);
-                (*error)["errorMessage"] = "Remote Execution Timed Out: No Answer Received.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_TIMEOUT));
+                Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Timed Out: No Answer Received.");
             }
             break;
         }
@@ -158,22 +156,22 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
                 switch (static_cast<TaskExecutionStatus>(executionStatus))
                 {
                 case TaskExecutionStatus::SUCCESS:
-                    (*error)["succeed"] = true;
-                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::SUCCESS);
-                    (*error)["errorMessage"] = "Execution OK.";
+                    Helpers::JSON::setMember(*error, "succeed", true);
+                    Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::SUCCESS));
+                    Helpers::JSON::setMember(*error, "errorMessage", "Execution OK.");
                     break;
                 case TaskExecutionStatus::ERR_REMOTE_QUEUE_OVERFLOW:
-                    (*error)["succeed"] = false;
-                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_REMOTE_QUEUE_OVERFLOW);
-                    (*error)["errorMessage"] = "Remote Execution Failed: Full Queue.";
+                    Helpers::JSON::setMember(*error, "succeed", false);
+                    Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_REMOTE_QUEUE_OVERFLOW));
+                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Full Queue.");
                     break;
                 case TaskExecutionStatus::ERR_METHOD_NOT_FOUND:
-                    (*error)["succeed"] = false;
-                    (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_METHOD_NOT_FOUND);
-                    (*error)["errorMessage"] = "Remote Execution Failed: Method Not Found.";
+                    Helpers::JSON::setMember(*error, "succeed", false);
+                    Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_METHOD_NOT_FOUND));
+                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Method Not Found.");
                     break;
                 default:
-                    (*error)["succeed"] = false;
+                    Helpers::JSON::setMember(*error, "succeed", false);
                 }
             }
             break;
@@ -183,9 +181,9 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
         {
             if (error)
             {
-                (*error)["succeed"] = false;
-                (*error)["errorId"] = static_cast<uint8_t>(TaskExecutionError::ERR_CONNECTION_LOST);
-                (*error)["errorMessage"] = "Connection is terminated: No Answer Received.";
+                Helpers::JSON::setMember(*error, "succeed", false);
+                Helpers::JSON::setMember(*error, "errorId", static_cast<uint8_t>(TaskExecutionError::ERR_CONNECTION_LOST));
+                Helpers::JSON::setMember(*error, "errorMessage", "Connection is terminated: No Answer Received.");
             }
             break;
         }
@@ -203,24 +201,24 @@ Json::Value FastRPC3::RemoteMethods::executeTask(const string &methodName, const
 
     if (error)
     {
-        if (!error->isMember("succeed"))
+        if (!Helpers::JSON::hasMember(*error, "succeed"))
         {
-            (*error)["succeed"] = false;
-            (*error)["errorId"] = 99;
-            (*error)["errorMessage"] = "Unknown Error.";
+            Helpers::JSON::setMember(*error, "succeed", false);
+            Helpers::JSON::setMember(*error, "errorId", 99);
+            Helpers::JSON::setMember(*error, "errorMessage", "Unknown Error.");
         }
     }
 
     return r;
 }
 
-bool FastRPC3::RemoteMethods::logout(Json::Value *error)
+bool FastRPC3::RemoteMethods::logout(boost::json::value *error)
 {
-    Json::Value x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
+    boost::json::value x = parent->remote(connectionId).executeTask("SESSION.LOGOUT", {}, error, true, true);
     return Helpers::JSON::ASBOOL_D(x, false);
 }
 
-Json::Value FastRPC3::RemoteMethods::getSSOData(Json::Value *error)
+boost::json::value FastRPC3::RemoteMethods::getSSOData(boost::json::value *error)
 {
     return parent->remote(connectionId).executeTask("SESSION.GETSSODATA", {}, error, true, true);
 }

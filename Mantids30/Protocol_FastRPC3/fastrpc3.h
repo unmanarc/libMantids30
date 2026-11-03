@@ -107,7 +107,7 @@ public:
         std::mutex *socketMutex = nullptr;
         std::string methodName, remotePeerIPAddress, remotePeerTLSCommonName, userId, domain;
         char *extraTokenAuth = nullptr;
-        Json::Value payload;
+        boost::json::value payload;
         uint64_t requestId = 0;
         void *callbacks = nullptr;
     };
@@ -129,7 +129,7 @@ public:
         std::mutex mtReqIdCt;
 
         // Answers:
-        std::map<uint64_t, Json::Value> answers;
+        std::map<uint64_t, boost::json::value> answers;
         std::mutex answersMutex;
         std::condition_variable answersCondition;
 
@@ -156,19 +156,19 @@ public:
 
         void (*onMethodExecutionAuthorizerMissing)(void *context, TaskParameters *parameters) = nullptr;
         void (*onMethodExecutionSessionMissing)(void *context, TaskParameters *parameters) = nullptr;
-        void (*onMethodExecutionStart)(void *context, TaskParameters *parameters, const Json::Value &payloadIn) = nullptr;
-        void (*onMethodExecutionNotAuthorized)(void *context, TaskParameters *parameters, const Json::Value &reasons) = nullptr;
+        void (*onMethodExecutionStart)(void *context, TaskParameters *parameters, const boost::json::value &payloadIn) = nullptr;
+        void (*onMethodExecutionNotAuthorized)(void *context, TaskParameters *parameters, const boost::json::value &reasons) = nullptr;
         void (*onMethodExecutionNotFound)(void *context, TaskParameters *parameters) = nullptr;
-        void (*onMethodExecutionSuccess)(void *context, TaskParameters *parameters, const double &elapsedMS, const Json::Value &payloadOut) = nullptr;
+        void (*onMethodExecutionSuccess)(void *context, TaskParameters *parameters, const double &elapsedMS, const boost::json::value &payloadOut) = nullptr;
         void (*onMethodExecutionUnknownError)(void *context, TaskParameters *parameters) = nullptr;
         void (*onImpersonationFailure)(void *context, TaskParameters *parameters, const std::string &userCaller, const std::string &userCalled, const std::string &domain, const uint32_t &authSlotId)
             = nullptr;
         void (*onTokenValidationSuccess)(void *context, TaskParameters *parameters, const std::string &jwtToken) = nullptr;
         void (*onTokenValidationFailure)(void *context, TaskParameters *parameters, const std::string &jwtToken, TokenValidationStatus err) = nullptr;
         void (*onProtocolUnexpectedResponse)(FastRPC3::Connection *connection, const std::string &answer) = nullptr;
-        void (*onOutgoingTaskFailureDisconnectedPeer)(const std::string &connectionId, const std::string &methodName, const Json::Value &payload) = nullptr;
+        void (*onOutgoingTaskFailureDisconnectedPeer)(const std::string &connectionId, const std::string &methodName, const boost::json::value &payload) = nullptr;
         void (*onIncomingTaskDroppedQueueFull)(FastRPC3::TaskParameters *params) = nullptr;
-        void (*onOutgoingTaskFailureTimeout)(const std::string &connectionId, const std::string &methodName, const Json::Value &payload) = nullptr;
+        void (*onOutgoingTaskFailureTimeout)(const std::string &connectionId, const std::string &methodName, const boost::json::value &payload) = nullptr;
 
         void *context = nullptr;
         // Mantids30::Sessions::getReasonText(authReason) < - to obtain the auth reason.
@@ -268,13 +268,13 @@ public:
          * The authentication process is completed successfully if the provided token is valid and accepted by the server.
          *
          * @param jwtToken A string containing the JSON Web Token (JWT) for authentication.
-         * @param error A pointer to a Json::Value object that will store the result of the operation. If `error["success"]` is true,
+         * @param error A pointer to a boost::json::value object that will store the result of the operation. If `Mantids30::Helpers::JSON::detail::safeGet(error, "success")` is true,
          *              the operation completed successfully. Otherwise, additional details about the error may be provided
          *              in the `error` object.
          *
-         * @return Json::Value Returns a JSON object containing the login response or authentication data if successful.
+         * @return boost::json::value Returns a JSON object containing the login response or authentication data if successful.
          */
-        Json::Value loginViaJWTToken(const std::string &jwtToken, Json::Value *error = nullptr);
+        boost::json::value loginViaJWTToken(const std::string &jwtToken, boost::json::value *error = nullptr);
 
         /**
          * @brief logout Logs out the current user session.
@@ -282,13 +282,13 @@ public:
          * This function terminates the current authenticated session. If the logout is successful,
          * all associated session data will be cleared on both the client and server side.
          *
-         * @param error A pointer to a json object that will store the result of the operation. If `error["success"]` is true,
+         * @param error A pointer to a json object that will store the result of the operation. If `Mantids30::Helpers::JSON::detail::safeGet(error, "success")` is true,
          *              the operation completed successfully. Otherwise, additional details about the error may be provided
          *              in the `error` object.
          *
          * @return bool Returns true if the logout was successful; otherwise, returns false.
          */
-        bool logout(Json::Value *error = nullptr);
+        bool logout(boost::json::value *error = nullptr);
 
         /**
          * @brief getSSOData Retrieves Single Sign-On (SSO) data parameters.
@@ -297,13 +297,13 @@ public:
          * authenticating or maintaining a session with the remote peer. The exact content of the returned data depends
          * on the specific SSO implementation being used.
          *
-         * @param error A pointer to a Json::Value object that will store the result of the operation. If `error["success"]` is true,
+         * @param error A pointer to a boost::json::value object that will store the result of the operation. If `Mantids30::Helpers::JSON::detail::safeGet(error, "success")` is true,
          *              the operation completed successfully. Otherwise, additional details about the error may be provided
          *              in the `error` object.
          *
-         * @return Json::Value Returns a JSON object containing SSO parameters if the request was successful.
+         * @return boost::json::value Returns a JSON object containing SSO parameters if the request was successful.
          */
-        Json::Value getSSOData(Json::Value *error = nullptr);
+        boost::json::value getSSOData(boost::json::value *error = nullptr);
 
         /**
          * @brief Executes a remote task or method on a specified connection.
@@ -319,15 +319,15 @@ public:
          * @param passSessionCommands (Optional) Determines whether session commands should be passed along with the request. Default: false.
          * @param extraJWTTokenAuth (Optional) Additional authentication token for enhanced security during the remote method execution.
          *
-         * @return A JSON object containing the answer from the remote method, or Json::nullValue if no answer is received, there's a timeout, or an error occurs.
+         * @return A JSON object containing the answer from the remote method, or boost::json::value{} if no answer is received, there's a timeout, or an error occurs.
          *
-         * @note This function is thread-safe and can handle multiple connections simultaneously. It may return Json::nullValue due to network issues, timeouts, or other errors.
+         * @note This function is thread-safe and can handle multiple connections simultaneously. It may return boost::json::value{} due to network issues, timeouts, or other errors.
          */
-        Json::Value executeTask(const std::string &methodName, const Json::Value &payload, Json::Value *error, bool retryIfDisconnected = true, bool passSessionCommands = false, const std::string &extraJWTTokenAuth = "");
+        boost::json::value executeTask(const std::string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected = true, bool passSessionCommands = false, const std::string &extraJWTTokenAuth = "");
         /**
          * @brief runRemoteClose Run Remote Close Method
          * @param connectionId Connection ID (this class can thread-safe handle multiple connections at time)
-         * @return Answer, or Json::nullValue if answer is not received or if timed out.
+         * @return Answer, or boost::json::value{} if answer is not received or if timed out.
          */
         bool close();
 
@@ -444,27 +444,27 @@ public:
 
         Result result = Result::INTERNAL_ERROR;
 
-        [[nodiscard]] Json::Value toJSONResponse() const
+        [[nodiscard]] boost::json::value toJSONResponse() const
         {
-            Json::Value response;
-            response["val"] = static_cast<uint8_t>(result);
+            boost::json::value response;
+            Mantids30::Helpers::JSON::setMember(response, "val", static_cast<uint8_t>(result));
 
             switch (result)
             {
             case Result::INTERNAL_ERROR:
-                response["txt"] = "An internal error occurred. Please try again later.";
+                Mantids30::Helpers::JSON::setMember(response, "txt", "An internal error occurred. Please try again later.");
                 break;
             case Result::SESSION_DUPLICATE:
-                response["txt"] = "A duplicate session was detected. Ensure only one active session exists for each token.";
+                Mantids30::Helpers::JSON::setMember(response, "txt", "A duplicate session was detected. Ensure only one active session exists for each token.");
                 break;
             case Result::TOKEN_VALIDATED:
-                response["txt"] = "The JWT token has been successfully validated.";
+                Mantids30::Helpers::JSON::setMember(response, "txt", "The JWT token has been successfully validated.");
                 break;
             case Result::TOKEN_FAILED:
-                response["txt"] = "JWT token validation failed. Please check the token configuration and try again.";
+                Mantids30::Helpers::JSON::setMember(response, "txt", "JWT token validation failed. Please check the token configuration and try again.");
                 break;
             default:
-                response["txt"] = "An unknown reason caused the issue. Please contact support.";
+                Mantids30::Helpers::JSON::setMember(response, "txt", "An unknown reason caused the issue. Please contact support.");
                 break;
             }
 

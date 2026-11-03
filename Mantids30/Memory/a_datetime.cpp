@@ -73,19 +73,19 @@ bool DATETIME::fromString(const std::string &value)
     return true;
 }
 
-Json::Value DATETIME::toJSON()
+boost::json::value DATETIME::toJSON()
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
-    return static_cast<Json::UInt64>(m_value);
+    return static_cast<uint64_t>(m_value);
 }
 
-bool DATETIME::fromJSON(const Json::Value &value)
+bool DATETIME::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASINT64_D(value, 0);

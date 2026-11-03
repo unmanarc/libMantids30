@@ -17,8 +17,8 @@ public:
     virtual ~Vars() = default;
 
     // Methods to convert to and from JSON
-    Json::Value toJSON();
-    bool fromJSON(const Json::Value &json);
+    boost::json::value toJSON();
+    bool fromJSON(const boost::json::value &json);
 
     ///////////////////////////////////////
     // Generic conversion.

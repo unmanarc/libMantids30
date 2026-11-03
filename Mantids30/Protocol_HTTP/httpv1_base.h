@@ -212,9 +212,9 @@ public:
          */
         std::string getURI() const { return requestLine.getURI(); }
         /**
-         * @brief getHeaderOption Get Client Header Option Value By Option Name.
+         * @brief getHeaderOption Get Client Header Option boost::json::value By Option Name.
          * @param optionName Option Name
-         * @return Option Value
+         * @return Option boost::json::value
          */
         std::string getHeaderOption(const std::string &optionName) const { return headers.getOptionRawStringByName(optionName); }
 
@@ -227,21 +227,26 @@ public:
                 isSecure = secure;
             }
 
-            Json::Value toJSON()
+            boost::json::value toJSON()
             {
-                Json::Value sessionInfo;
-                sessionInfo["remoteAddress"] = REMOTE_ADDR;
+                boost::json::object tlsObj;
+                tlsObj["commonName"] = tlsCommonName;
+                boost::json::object sessionInfo;
+                sessionInfo["remoteAddress"] = std::string(REMOTE_ADDR);
                 sessionInfo["isSecureConnection"] = isSecure;
-                sessionInfo["tls"]["commonName"] = tlsCommonName;
+                sessionInfo["tls"] = tlsObj;
                 return sessionInfo;
             }
-            void fromJSON(const Json::Value &sessionInfo)
+            void fromJSON(const boost::json::value &sessionInfo)
             {
-                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", Helpers::JSON::ASSTRING_D(sessionInfo["remoteAddress"], "").c_str());
-                isSecure = Helpers::JSON::ASBOOL_D(sessionInfo["isSecureConnection"], false);
-                if (sessionInfo.isObject() && sessionInfo["tls"].isObject())
+                const boost::json::value &remoteAddress = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "remoteAddress");
+                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", Helpers::JSON::ASSTRING_D(remoteAddress, "").c_str());
+                const boost::json::value &isSecureConnection = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "isSecureConnection");
+                isSecure = Helpers::JSON::ASBOOL_D(isSecureConnection, false);
+                const boost::json::value &tls = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "tls");
+                if (sessionInfo.is_object() && tls.is_object())
                 {
-                    tlsCommonName = Helpers::JSON::ASSTRING_D(sessionInfo["tls"]["commonName"], "");
+                    tlsCommonName = Helpers::JSON::ASSTRING_D(Mantids30::Helpers::JSON::detail::safeGet(tls, "commonName"), "");
                 }
                 else
                 {

@@ -35,9 +35,9 @@ struct ClientDetails
      */
     std::string userAgent;
 
-    [[nodiscard]] Json::Value toJSON() const
+    [[nodiscard]] boost::json::value toJSON() const
     {
-        Json::Value json;
+        boost::json::object json;
         json["ip"] = ipAddress;
         json["userAgent"] = userAgent;
         json["tlsCommonName"] = tlsCommonName;

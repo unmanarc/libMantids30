@@ -148,7 +148,7 @@ bool JSONEval::parseExpression(std::string expr)
     return true;
 }
 
-bool JSONEval::evaluate(const Json::Value &values)
+bool JSONEval::evaluate(const boost::json::value &values)
 {
     if (!m_isCompiled)
     {

@@ -1,7 +1,6 @@
 #include "atomicexpressionside.h"
 
 #include <boost/algorithm/string.hpp>
-#include <json/value.h>
 #include <cstdlib>
 #include <memory>
 
@@ -59,7 +58,7 @@ void AtomicExpressionSide::setRawExpression(const string &value)
     boost::trim(m_expr);
 }
 
-set<string> AtomicExpressionSide::resolveValueSet(const Json::Value &v, bool resolveRegex, bool ignoreCase)
+set<string> AtomicExpressionSide::resolveValueSet(const boost::json::value &v, bool resolveRegex, bool ignoreCase)
 {
     switch (m_type)
     {
@@ -68,21 +67,24 @@ set<string> AtomicExpressionSide::resolveValueSet(const Json::Value &v, bool res
         if (!m_jsonPath)
         {
             // Compile and cache the JSON path only once:
-            m_jsonPath = std::make_shared<Json::Path>(m_expr.substr(1));
+            m_jsonPath = std::make_shared<Mantids30::Helpers::JSON::Path>(m_expr.substr(1));
         }
-        const Json::Value &result = m_jsonPath->resolve(v);
+        const boost::json::value *result = m_jsonPath->resolve(v);
         set<string> res;
-        if (result.isArray())
+        if (result != nullptr)
         {
-            for (Json::ArrayIndex i = 0; i < result.size(); i++)
+            if (result->is_array())
             {
-                res.insert(result[i].asString());
+                for (const boost::json::value &el : result->as_array())
+                {
+                    res.insert(Mantids30::Helpers::JSON::ASSTRING_D(el, ""));
+                }
             }
-        }
-        else if (!result.isNull() && !result.isObject())
-        {
-            // Scalar value (string, number or boolean):
-            res.insert(result.asString());
+            else if (!result->is_null() && !result->is_object())
+            {
+                // Scalar value (string, number or boolean):
+                res.insert(Mantids30::Helpers::JSON::ASSTRING_D(*result, ""));
+            }
         }
         return res;
     }

@@ -186,17 +186,17 @@ std::shared_ptr<Var> MACADDR::protectedCopy()
     return var;
 }
 
-Json::Value MACADDR::toJSON()
+boost::json::value MACADDR::toJSON()
 {
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
-    return toString();
+    return boost::json::value(toString());
 }
 
-bool MACADDR::fromJSON(const Json::Value &value)
+bool MACADDR::fromJSON(const boost::json::value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

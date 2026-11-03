@@ -6,7 +6,6 @@
 #include "websocket_frameheader.h"
 
 #include <atomic>
-#include <json/value.h>
 #include <memory>
 #include <string>
 
@@ -146,7 +145,7 @@ public:
     static bool resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info);
 
 protected:
-    virtual void log(Json::Value &jWebLog) {}
+    virtual void log(boost::json::value &jWebLog) {}
 
     /**
      * @brief verifyStaticContentExistence Check if the path exist in the static content
@@ -284,7 +283,7 @@ private:
     void parseUserAgent();
     bool setupContentHandling(size_t &contentLength);
 
-    void fillLogInformation(Json::Value &logValues);
+    void fillLogInformation(boost::json::value &logValues);
 
 
 

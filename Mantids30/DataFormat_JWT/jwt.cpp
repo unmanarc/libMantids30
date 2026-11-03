@@ -8,33 +8,32 @@ using namespace Mantids30::DataFormat;
 
 std::string JWT::createHeader()
 {
-    Json::Value header;
-    header["typ"] = "JWT";
+    boost::json::value header = boost::json::object{};
+    header.as_object()["typ"] = "JWT";
 
     switch (m_algorithm)
     {
     case Algorithm::HS256:
-        header["alg"] = "HS256";
+        header.as_object()["alg"] = "HS256";
         break;
     case Algorithm::HS384:
-        header["alg"] = "HS384";
+        header.as_object()["alg"] = "HS384";
         break;
     case Algorithm::HS512:
-        header["alg"] = "HS512";
+        header.as_object()["alg"] = "HS512";
         break;
     case Algorithm::RS256:
-        header["alg"] = "RS256";
+        header.as_object()["alg"] = "RS256";
         break;
     case Algorithm::RS384:
-        header["alg"] = "RS384";
+        header.as_object()["alg"] = "RS384";
         break;
     case Algorithm::RS512:
-        header["alg"] = "RS512";
+        header.as_object()["alg"] = "RS512";
         break;
     }
 
-    Json::StreamWriterBuilder writer;
-    std::string header_str = Json::writeString(writer, header);
+    std::string header_str = boost::json::serialize(header);
 
     return Helpers::Encoders::encodeToBase64(header_str, true);
 }
@@ -316,10 +315,9 @@ void JWT::setSharedSecret(const std::string &newSharedSecret)
     m_cache.clear();
 }
 
-std::string JWT::sign(const Json::Value &payload)
+std::string JWT::sign(const boost::json::value &payload)
 {
-    Json::StreamWriterBuilder writer;
-    std::string payload_str = Json::writeString(writer, payload);
+    std::string payload_str = boost::json::serialize(payload);
     std::string header_str = createHeader();
     std::string signature;
 
@@ -400,13 +398,10 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
         return tokenPayloadOutput->isValid();
     }
 
-    // Parse the JSON header using the JsonCpp library
-    Json::CharReaderBuilder reader;
-    std::unique_ptr<Json::CharReader> charReader(reader.newCharReader()); // create a unique_ptr to manage the JsonCpp char reader
-    Json::Value header_json;
-    std::string errs;
-
-    if (!charReader->parse(header_str.data(), header_str.data() + header_str.size(), &header_json, &errs))
+    // Parse the JSON header using the Boost.JSON library
+    boost::json::value header_json;
+    Mantids30::Helpers::JSON::Reader charReader;
+    if (!charReader.parse(header_str, header_json))
     {
         // If the header cannot be parsed, return false
         return false;

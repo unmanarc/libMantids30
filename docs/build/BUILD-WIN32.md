@@ -20,7 +20,7 @@ pacman -S --needed base-devel \
     mingw-w64-x86_64-pkgconf \
     mingw-w64-x86_64-boost \
     mingw-w64-x86_64-openssl \
-    mingw-w64-x86_64-jsoncpp
+    mingw-w64-x86_64-boost
 ```
 
 Optional database backends:

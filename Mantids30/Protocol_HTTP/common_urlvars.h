@@ -29,7 +29,7 @@ public:
      */
     uint32_t varCount(const std::string &varName) override;
     /**
-     * @brief getValue Get Value of specific variable
+     * @brief getValue Get boost::json::value of specific variable
      * @param varName Variable Name
      * @return binary container with the variable
      */

@@ -71,19 +71,19 @@ std::shared_ptr<Var> UINT8::protectedCopy()
     return var;
 }
 
-Json::Value UINT8::toJSON()
+boost::json::value UINT8::toJSON()
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
 
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
     return m_value;
 }
 
-bool UINT8::fromJSON(const Json::Value &value)
+bool UINT8::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = Helpers::JSON::ASUINT_D(value, 0);

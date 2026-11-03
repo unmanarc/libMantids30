@@ -14,11 +14,11 @@ ClientHandler::ClientHandler(void *parent, const std::shared_ptr<StreamableObjec
 {}
 
 API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName,
-                                               const Json::Value &postParameters)
+                                               const boost::json::value &postParameters)
 {
     API::APIReturn apiReturn;
     //json jPayloadIn;
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
 
     std::map<uint32_t, API::Monolith::Endpoints *>::iterator it = m_endpointsHandlerByAPIVersion.find(apiVersion);
     if (it == m_endpointsHandlerByAPIVersion.end())
@@ -41,7 +41,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const std::string &baseApiUrl, co
         return apiReturn;
     }
 
-    Json::Value reasons;
+    boost::json::value reasons;
 
     // Validate that the endpoint requirements are satisfied.
     API::Monolith::Endpoints::ValidationResult i = endpointsHandler->validateEndpointRequirements(currentSessionInfo.authSession, endpointName, &reasons);
@@ -137,9 +137,9 @@ API::APIReturn ClientHandler::handleOptionsRequest(const std::string &baseApiUrl
     return apiReturn;
 }
 
-Json::Value ClientHandler::handleAPIInfo(const string &baseApiUrl)
+boost::json::value ClientHandler::handleAPIInfo(const string &baseApiUrl)
 {
-    Json::Value x;
+    boost::json::value x;
     // Retrieve software information...
     /*
     {
@@ -154,11 +154,11 @@ Json::Value ClientHandler::handleAPIInfo(const string &baseApiUrl)
     const char *buildDate = __DATE__; // Macro estándar para fecha de compilación
     const char *buildTime = __TIME__; // Macro estándar para hora de compilación
 
-    x["version"] = config->softwareVersion;
-    x["softwareName"] = config->softwareName;
-    x["description"] = config->softwareDescription;
-    x["endpoint"] = baseApiUrl;
-    x["buildDate"] = string(buildDate) + " " + buildTime;
+    Mantids30::Helpers::JSON::setMember(x, "version", config->softwareVersion);
+    Mantids30::Helpers::JSON::setMember(x, "softwareName", config->softwareName);
+    Mantids30::Helpers::JSON::setMember(x, "description", config->softwareDescription);
+    Mantids30::Helpers::JSON::setMember(x, "endpoint", baseApiUrl);
+    Mantids30::Helpers::JSON::setMember(x, "buildDate", string(buildDate) + " " + buildTime);
 
     return x;
 }

@@ -264,7 +264,7 @@ public:
      * - **Key (`std::string`)**: Represents the URL path segment. When an HTTP request's path
      *   matches one of the keys in the map, the corresponding handler function is invoked.
      *
-     * - **Value (`DynamicRequestHandler`)**: A function pointer that points to the handler
+     * - **boost::json::value (`DynamicRequestHandler`)**: A function pointer that points to the handler
      *   function responsible for processing the request and writing the response. The function
      *   must match the `DynamicRequestHandler` signature:
      *   - `const std::string& internalPath`: The internal path within the server that matches

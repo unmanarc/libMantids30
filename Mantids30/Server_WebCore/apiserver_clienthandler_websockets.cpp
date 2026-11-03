@@ -1,7 +1,7 @@
-#include "apiserver_clienthandler.h"
+#include <Mantids30/Helpers/json.h>
+#include  "apiserver_clienthandler.h"
 #include <Mantids30/API_EndpointsAndSessions/api_websocket_connection.h>
 #include <Mantids30/Helpers/random.h>
-#include <json/value.h>
 
 using namespace Mantids30::Program::Logs;
 using namespace Mantids30::Network;
@@ -76,12 +76,12 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
 
     if (config->webSockets.sendWebSocketSessionIDAtConnection)
     {
-        Json::Value jSessionId;
+        boost::json::value jSessionId;
 
-        jSessionId["type"] = "session_id";
-        jSessionId["sessionId"] = m_webSocketSessionId;
+        Mantids30::Helpers::JSON::setMember(jSessionId, "type", "session_id");
+        Mantids30::Helpers::JSON::setMember(jSessionId, "sessionId", m_webSocketSessionId);
 
-        sendWebSocketText(jSessionId.toStyledString());
+        sendWebSocketText(boost::json::serialize(jSessionId));
     }
 
     handleWebSocketEvent(Network::Protocol::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);

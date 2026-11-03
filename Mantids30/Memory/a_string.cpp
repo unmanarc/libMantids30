@@ -59,17 +59,17 @@ std::shared_ptr<Var> STRING::protectedCopy()
     return var;
 }
 
-Json::Value STRING::toJSON()
+boost::json::value STRING::toJSON()
 {
     if (isNull())
     {
-        return Json::nullValue;
+        return boost::json::value{};
     }
 
-    return toString();
+    return boost::json::value(toString());
 }
 
-bool STRING::fromJSON(const Json::Value &value)
+bool STRING::fromJSON(const boost::json::value &value)
 {
     return fromString(Helpers::JSON::ASSTRING_D(value, ""));
 }

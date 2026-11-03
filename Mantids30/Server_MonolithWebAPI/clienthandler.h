@@ -59,7 +59,7 @@ protected:
      * @return Returns an appropriate API return code indicating success or the type of error encountered.
      */
     API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodMode, const std::string &endpointName,
-                                    const Json::Value &postParameters) override;
+                                    const boost::json::value &postParameters) override;
 
     API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) override;
 
@@ -73,7 +73,7 @@ protected:
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    Json::Value handleAPIInfo(const std::string &baseApiUrl) override;
+    boost::json::value handleAPIInfo(const std::string &baseApiUrl) override;
 
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
@@ -86,13 +86,13 @@ protected:
      * @param varName variable name
      * @return return the session variable
      */
-    Json::Value getSessionVariableValue(const std::string &varName) override;
+    boost::json::value getSessionVariableValue(const std::string &varName) override;
 
     /**
      * @brief fillSessionExtraInfo Fill vars like session max age and other related data to the session...
      * @param jVars vars to be filled
      */
-    void fillSessionExtraInfo(Json::Value &jVars) override;
+    void fillSessionExtraInfo(boost::json::value &jVars) override;
 
     [[nodiscard]] bool isSessionActive() override;
     [[nodiscard]] std::set<std::string> getSessionScopes() override;

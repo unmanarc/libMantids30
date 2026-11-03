@@ -27,7 +27,7 @@ bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
     return false; // Endpoint with given name already exists, cannot add
 }
 
-Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, const Json::Value &payload, Json::Value *payloadOut)
+Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, const boost::json::value &payload, boost::json::value *payloadOut)
 {
     // Checks if endpoint with given name exists in endpoints map
     if (m_endpoints.find(endpointName) == m_endpoints.end())
@@ -49,7 +49,7 @@ Endpoints::StatusCode Endpoints::invoke(const std::shared_ptr<Mantids30::Session
     }
 }
 
-Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, Json::Value *reasons)
+Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::shared_ptr<Mantids30::Sessions::Session> &session, const std::string &endpointName, boost::json::value *reasons)
 {
     std::set<std::string> scopesLeft, rolesLeft;
 
@@ -76,8 +76,8 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
     else
     {
         // Fills reasons with any missing roles and scopes required by the endpoint
-        (*reasons)["rolesLeft"] = Helpers::JSON::fromSet(rolesLeft);
-        (*reasons)["scopesLeft"] = Helpers::JSON::fromSet(scopesLeft);
+        Mantids30::Helpers::JSON::setMember(*reasons, "rolesLeft", Helpers::JSON::fromSet(rolesLeft));
+        Mantids30::Helpers::JSON::setMember(*reasons, "scopesLeft", Helpers::JSON::fromSet(scopesLeft));
 
         return ValidationResult::NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }

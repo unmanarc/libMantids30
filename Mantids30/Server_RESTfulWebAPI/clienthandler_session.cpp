@@ -73,12 +73,12 @@ void ClientHandler::sessionCleanup()
     // Cleaned up (nothing to do)
 }
 
-void ClientHandler::fillSessionExtraInfo(Json::Value &jVars)
+void ClientHandler::fillSessionExtraInfo(boost::json::value &jVars)
 {
-    jVars["maxAge"] = 0;
+    Mantids30::Helpers::JSON::setMember(jVars, "maxAge", 0);
     if (isSessionActive())
     {
-        jVars["maxAge"] = jwtToken.getExpirationTime() - time(nullptr);
+        Mantids30::Helpers::JSON::setMember(jVars, "maxAge", jwtToken.getExpirationTime() - time(nullptr));
     }
 }
 
@@ -91,7 +91,7 @@ bool ClientHandler::doesSessionVariableExist(const string &varName)
     return false;
 }
 
-Json::Value ClientHandler::getSessionVariableValue(const string &varName)
+boost::json::value ClientHandler::getSessionVariableValue(const string &varName)
 {
     if (isSessionActive())
     {

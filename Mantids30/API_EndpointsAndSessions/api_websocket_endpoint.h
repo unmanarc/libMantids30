@@ -31,7 +31,7 @@ struct WebSocketParameters
 };
 
 // Callback function types for WebSocket events
-using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> &content, const Json::Value &jsonContent,
+using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> &content, const boost::json::value &jsonContent,
                                             const WebSocket::WebSocketParameters &parameters, Mantids30::Sessions::ClientDetails &authClientDetails);
 
 class Endpoint
@@ -57,9 +57,9 @@ public:
 
     // Public Methods:
     [[nodiscard]] size_t getActiveUserConnectionsCount(const std::string &userId) const;
-    [[nodiscard]] bool sendJSONToConnectionID(const std::string &sessionId, const Json::Value &v) const;
-    [[nodiscard]] bool sendJSONToUser(const std::string &userId, const Json::Value &v) const;
-    [[nodiscard]] size_t sendJSONToSubscriptionTopic(const std::string &topicId, const Json::Value &v) const;
+    [[nodiscard]] bool sendJSONToConnectionID(const std::string &sessionId, const boost::json::value &v) const;
+    [[nodiscard]] bool sendJSONToUser(const std::string &userId, const boost::json::value &v) const;
+    [[nodiscard]] size_t sendJSONToSubscriptionTopic(const std::string &topicId, const boost::json::value &v) const;
 
     // User Functions:
     [[nodiscard]] bool joinTopicSubscription(const std::string &sessionId, const std::string &topicId) const;

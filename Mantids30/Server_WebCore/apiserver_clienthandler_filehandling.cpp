@@ -8,7 +8,6 @@
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <Mantids30/Scripts_MantidsLang/mantidslang.h>
 
-#include <json/value.h>
 #include <memory>
 #include <optional>
 #include <string>
@@ -50,54 +49,74 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
         return;
     }
 
-    std::shared_ptr<Json::Value> jsonContext = std::make_shared<Json::Value>();
+    std::shared_ptr<boost::json::value> jsonContext = std::make_shared<boost::json::value>();
 
-    (*jsonContext)["session"]["isActive"] = isSessionActive();
+    boost::json::value *ctx = jsonContext.get();
+    if (!ctx->is_object())
+    {
+        *ctx = boost::json::object{};
+    }
+    boost::json::object &root = ctx->as_object();
+
+    boost::json::object session;
+    session["isActive"] = isSessionActive();
+    root["session"] = session;
 
     if (currentSessionInfo.authSession)
     {
-        (*jsonContext)["session"]["user"] = currentSessionInfo.authSession->getUser();
-        (*jsonContext)["session"]["domain"] = currentSessionInfo.authSession->getDomain();
-        (*jsonContext)["session"]["roles"] = Helpers::JSON::fromSet(getSessionRoles());
-        (*jsonContext)["session"]["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
-        (*jsonContext)["session"]["isImpersonation"] = currentSessionInfo.isImpersonation;
-        (*jsonContext)["session"]["halfID"] = currentSessionInfo.halfSessionId;
+        boost::json::object &s = ctx->as_object()["session"].as_object();
+        s["user"] = currentSessionInfo.authSession->getUser();
+        s["domain"] = currentSessionInfo.authSession->getDomain();
+        s["roles"] = Helpers::JSON::fromSet(getSessionRoles());
+        s["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
+        s["isImpersonation"] = currentSessionInfo.isImpersonation;
+        s["halfID"] = currentSessionInfo.halfSessionId;
 
         if (currentSessionInfo.isImpersonation)
         {
-            (*jsonContext)["session"]["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+            s["impersonator"] = currentSessionInfo.authSession->getImpersonator();
         }
 
-        fillSessionExtraInfo((*jsonContext)["session"]);
+        fillSessionExtraInfo(ctx->as_object()["session"]);
     }
 
-    (*jsonContext)["client"]["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
-    (*jsonContext)["client"]["ip"] = clientRequest.networkClientInfo.REMOTE_ADDR;
-    (*jsonContext)["client"]["userAgent"] = clientRequest.userAgent;
+    boost::json::object client;
+    client["tlsCN"] = clientRequest.networkClientInfo.tlsCommonName;
+    client["ip"] = std::string(clientRequest.networkClientInfo.REMOTE_ADDR);
+    client["userAgent"] = clientRequest.userAgent;
+    root["client"] = client;
 
-    (*jsonContext)["server"]["unixTime"] = time(nullptr);
+    boost::json::object server;
+    server["unixTime"] = time(nullptr);
+    root["server"] = server;
 
-    (*jsonContext)["script"]["fullpath"] = fileInfo.fullPath;
-    (*jsonContext)["script"]["relativePath"] = fileInfo.relativePath;
+    boost::json::object script;
+    script["fullpath"] = fileInfo.fullPath;
+    script["relativePath"] = fileInfo.relativePath;
+    root["script"] = script;
 
-    (*jsonContext)["request"]["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
-    (*jsonContext)["request"]["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+    boost::json::object request;
+    request["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
+    request["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+    root["request"] = request;
 
-    (*jsonContext)["software"]["version"] = config->softwareVersion;
-    (*jsonContext)["software"]["description"] = config->softwareDescription;
-    (*jsonContext)["software"]["name"] = config->softwareName;
+    boost::json::object software;
+    software["version"] = config->softwareVersion;
+    software["description"] = config->softwareDescription;
+    software["name"] = config->softwareName;
+    root["software"] = software;
 
     std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
         serverResponse.content.getStreamableObject(),
         jsonContext,
         nullptr,
-        [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const Json::Value &postParameters) -> Json::Value
+        [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const boost::json::value &postParameters) -> boost::json::value
         {
             API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
 
-            Json::Value *jsonValue = result.responseJSON();
+            boost::json::value *jsonValue = result.responseJSON();
 
-            return jsonValue ? *jsonValue : Json::nullValue;
+            return jsonValue ? *jsonValue : boost::json::value{};
         });
     mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
     serverResponse.setContentDataStreamer(mantidsTemplateLang);
@@ -167,7 +186,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 
         if (config->debugResourceFilter)
         {
-            std::cout << "FilterEvaluationResult: " << fileInfo.relativePath << " - " << evaluationResult.toJSON().toStyledString() << std::endl;
+            std::cout << "FilterEvaluationResult: " << fileInfo.relativePath << " - " << boost::json::serialize(evaluationResult.toJSON()) << std::endl;
         }
 
         API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;

@@ -1,84 +1,78 @@
 #include "json.h"
 
+#include <boost/json.hpp>
+#include <stdexcept>
+
 using namespace Mantids30::Helpers;
 
-std::string JSON::toString(const Json::Value &value)
+std::string JSON::toString(const boost::json::value &value)
 {
-    Json::StreamWriterBuilder builder;
-    builder.settings_["indentation"] = "";
-    std::string xstrValue = Json::writeString(builder, value);
+    return boost::json::serialize(value);
+}
 
-    if (!xstrValue.empty() && xstrValue[xstrValue.length() - 1] == '\n')
+bool JSON::parse(const std::string &document, boost::json::value &root)
+{
+    try
     {
-        xstrValue.erase(xstrValue.length() - 1);
+        root = boost::json::parse(document);
+        return true;
     }
-    return xstrValue;
+    catch (const std::exception &)
+    {
+        return false;
+    }
 }
 
-JSON::JSONReader2::JSONReader2()
+bool JSON::Reader::parse(const std::string &document, boost::json::value &root)
 {
-    Json::CharReaderBuilder builder;
-    m_reader.reset(builder.newCharReader());
+    // Call the free function (namespace scope) explicitly. An unqualified
+    // parse() here resolves to this member, which would recurse infinitely.
+    if (JSON::parse(document, root))
+    {
+        m_errors.clear();
+        return true;
+    }
+    m_errors = "JSON parse error";
+    return false;
 }
 
-bool JSON::JSONReader2::parse(const std::string &document, Json::Value &root)
-{
-    return m_reader->parse(document.c_str(), document.c_str() + document.size(), &root, &m_errors);
-}
-
-std::string JSON::JSONReader2::getFormattedErrorMessages()
+std::string JSON::Reader::getFormattedErrorMessages()
 {
     return m_errors;
 }
 
-std::list<std::string> JSON::toStringList(const Json::Value &value, const std::string &sub)
+std::list<std::string> JSON::toStringList(const boost::json::value &value, const std::string &sub)
 {
     std::list<std::string> r;
 
-    if (sub.empty() && value.isArray())
+    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+
+    if (arr.is_array())
     {
-        for (size_t x = 0; x < value.size(); x++)
+        for (const boost::json::value &el : arr.as_array())
         {
-            if (value[static_cast<uint32_t>(x)].isString())
+            if (el.is_string())
             {
-                r.push_back(value[static_cast<uint32_t>(x)].asString());
-            }
-        }
-    }
-    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
-    {
-        for (size_t x = 0; x < value[sub].size(); x++)
-        {
-            if (value[sub][static_cast<uint32_t>(x)].isString())
-            {
-                r.push_back(value[sub][static_cast<uint32_t>(x)].asString());
+                r.push_back(std::string(el.as_string().c_str()));
             }
         }
     }
     return r;
 }
 
-std::set<std::string> JSON::toStringSet(const Json::Value &value, const std::string &sub)
+std::set<std::string> JSON::toStringSet(const boost::json::value &value, const std::string &sub)
 {
     std::set<std::string> r;
 
-    if (sub.empty() && value.isArray())
+    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+
+    if (arr.is_array())
     {
-        for (size_t x = 0; x < value.size(); x++)
+        for (const boost::json::value &el : arr.as_array())
         {
-            if (value[static_cast<uint32_t>(x)].isString())
+            if (el.is_string())
             {
-                r.insert(value[static_cast<uint32_t>(x)].asString());
-            }
-        }
-    }
-    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
-    {
-        for (size_t x = 0; x < value[sub].size(); x++)
-        {
-            if (value[sub][static_cast<uint32_t>(x)].isString())
-            {
-                r.insert(value[sub][static_cast<uint32_t>(x)].asString());
+                r.insert(std::string(el.as_string().c_str()));
             }
         }
     }
@@ -86,27 +80,19 @@ std::set<std::string> JSON::toStringSet(const Json::Value &value, const std::str
     return r;
 }
 
-std::set<uint32_t> JSON::toUInt32Set(const Json::Value &value, const std::string &sub)
+std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, const std::string &sub)
 {
     std::set<uint32_t> r;
 
-    if (sub.empty() && value.isArray())
+    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+
+    if (arr.is_array())
     {
-        for (size_t x = 0; x < value.size(); x++)
+        for (const boost::json::value &el : arr.as_array())
         {
-            if (value[static_cast<uint32_t>(x)].isUInt())
+            if (el.is_number())
             {
-                r.insert(value[static_cast<uint32_t>(x)].asUInt());
-            }
-        }
-    }
-    else if (!sub.empty() && Helpers::JSON::ISARRAY(value, sub))
-    {
-        for (size_t x = 0; x < value[sub].size(); x++)
-        {
-            if (value[sub][static_cast<uint32_t>(x)].isUInt())
-            {
-                r.insert(value[sub][static_cast<uint32_t>(x)].asUInt());
+                r.insert(static_cast<uint32_t>(detail::asUInt64Safe(el)));
             }
         }
     }
@@ -114,55 +100,66 @@ std::set<uint32_t> JSON::toUInt32Set(const Json::Value &value, const std::string
     return r;
 }
 
-Json::Value JSON::fromSet(const std::set<std::string> &t)
+boost::json::value JSON::fromSet(const std::set<std::string> &t)
 {
-    Json::Value x;
-    int v = 0;
+    boost::json::array x;
     for (const std::string &i : t)
     {
-        x[v++] = i;
+        x.emplace_back(i);
     }
     return x;
 }
 
-Json::Value JSON::fromSet(const std::set<uint32_t> &t)
+boost::json::value JSON::fromSet(const std::set<uint32_t> &t)
 {
-    Json::Value x;
-    int v = 0;
+    boost::json::array x;
     for (const uint32_t &i : t)
     {
-        x[v++] = i;
+        x.emplace_back(i);
     }
     return x;
 }
 
-Json::Value JSON::fromList(const std::list<std::string> &t)
+boost::json::value JSON::fromList(const std::list<std::string> &t)
 {
-    Json::Value x;
-    int v = 0;
+    boost::json::array x;
     for (const std::string &i : t)
     {
-        x[v++] = i;
+        x.emplace_back(i);
     }
     return x;
 }
 
-std::map<std::string, std::string> JSON::toMap(const Json::Value &jValue)
+std::map<std::string, std::string> JSON::toMap(const boost::json::value &jValue)
 {
     std::map<std::string, std::string> r;
-    for (const std::string &memberName : jValue.getMemberNames())
+    if (jValue.is_object())
     {
-        if (jValue[memberName].isString())
+        for (const auto &kv : jValue.as_object())
         {
-            r[memberName] = Helpers::JSON::ASSTRING(jValue, memberName, "");
+            if (kv.value().is_string())
+            {
+                r[kv.key()] = std::string(kv.value().as_string().c_str());
+            }
         }
     }
     return r;
 }
 
-Json::Value JSON::parse(const char *json)
+boost::json::value JSON::parse(const char *json)
 {
-    Json::Value r;
-    Json::Reader().parse(json, r);
+    boost::json::value r;
+    if (json != nullptr)
+    {
+        try
+        {
+            r = boost::json::parse(json);
+        }
+        catch (const std::exception &)
+        {
+            r = boost::json::value{};
+        }
+    }
     return r;
 }
+

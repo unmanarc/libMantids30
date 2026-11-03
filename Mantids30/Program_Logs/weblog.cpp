@@ -128,7 +128,7 @@ bool WebLog::start()
 
                 for (;;)
                 {
-                    std::shared_ptr<Json::Value> logEntry = m_logQueue.pop(500);
+                    std::shared_ptr<boost::json::value> logEntry = m_logQueue.pop(500);
                     if (logEntry)
                     {
                         printLogToFile(logEntry.get());
@@ -139,11 +139,11 @@ bool WebLog::start()
     return true;
 }
 
-bool WebLog::log(const Json::Value &logValues)
+bool WebLog::log(const boost::json::value &logValues)
 {
     if (config.useThreadedQueue)
     {
-        return m_logQueue.push(std::make_shared<Json::Value>(logValues), config.queueMaxInsertWaitTimeInMS);
+        return m_logQueue.push(std::make_shared<boost::json::value>(logValues), config.queueMaxInsertWaitTimeInMS);
     }
     else
     {
@@ -277,7 +277,7 @@ void WebLog::forceLogRotation()
     chmod(currentLogPath.c_str(), S_IRUSR | S_IWUSR);
 }
 
-void WebLog::printLogToFile(const Json::Value *value)
+void WebLog::printLogToFile(const boost::json::value *value)
 {
     {
         std::unique_lock<std::mutex> lock(m_logPrintMutex);
@@ -285,7 +285,7 @@ void WebLog::printLogToFile(const Json::Value *value)
         {
         case Config::JSON:
         {
-            std::string unformattedJsonString = m_fastWriter.write(*value);
+            std::string unformattedJsonString = boost::json::serialize(*value);
             m_logFileHandle << unformattedJsonString;
             m_logCurrentSize += unformattedJsonString.size();
         }
@@ -303,7 +303,7 @@ void WebLog::printLogToFile(const Json::Value *value)
             uint32_t responseStatus = Helpers::JSON::ASUINT(*value, "responseStatus", 0);
             std::optional<uint64_t> bytesSent = std::nullopt;
 
-            if (value->isMember("bytesSent"))
+            if (Mantids30::Helpers::JSON::hasMember(*value, "bytesSent"))
             {
                 bytesSent = Helpers::JSON::ASUINT64(*value, "bytesSent", 0);
             }

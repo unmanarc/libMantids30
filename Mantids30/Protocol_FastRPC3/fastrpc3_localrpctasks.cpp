@@ -28,11 +28,11 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
     RPC3CallbackDefinitions *callbacks = (static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks));
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
-    Json::Value fullResponse;
-    Json::Value responsePayload;
-    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::SUCCESS);
+    boost::json::value fullResponse = boost::json::object{};
+    boost::json::value responsePayload;
+    fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::SUCCESS);
 
-    Helpers::JSON::JSONReader2 reader;
+    Helpers::JSON::Reader reader;
     bool sessionFailed = false;
     JWT::Token extraJWT;
 
@@ -60,7 +60,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                     sessionFailed = true;
                     CALLBACK(callbacks->onTokenValidationFailure)
                     (callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_NOTREQUIRED_ERROR);
-                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
+                    fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
                 }
             }
             else
@@ -80,7 +80,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                     sessionFailed = true;
                     CALLBACK(callbacks->onTokenValidationFailure)
                     (callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_IMPERSONATION_ERROR);
-                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_IMPERSONATOR_TOKEN);
+                    fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_IMPERSONATOR_TOKEN);
                 }
             }
         }
@@ -88,7 +88,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
         {
             sessionFailed = true;
             CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::EXTRATOKEN_SIGNATURE_ERROR);
-            fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
+            fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
         }
     }
 
@@ -98,7 +98,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
         sessionFailed = true;
         session = nullptr;
         CALLBACK(callbacks->onTokenValidationFailure)(callbacks->context, taskParams, taskParams->extraTokenAuth, RPC3CallbackDefinitions::TokenValidationStatus::SESSION_REVOKED_ERROR);
-        fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
+        fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INVALID_TOKEN);
     }
 
     if (!taskParams->methodsHandler->doesAPIEndpointRequireActiveSession(taskParams->methodName)             // method does not require session.
@@ -109,7 +109,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
         // There is an extra authentication token and session is OK.
         if (!sessionFailed)
         {
-            Json::Value reasons;
+            boost::json::value reasons;
 
             API::Monolith::Endpoints::ValidationResult i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
 
@@ -139,16 +139,16 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                     CALLBACK(callbacks->onMethodExecutionSuccess)(callbacks->context, taskParams, elapsed.count(), responsePayload);
 
                     functionFound = true;
-                    fullResponse["statusCode"] = 200;
+                    fullResponse.as_object()["statusCode"] = 200;
                     break;
                 case API::Monolith::Endpoints::StatusCode::NOTFOUND:
 
                     CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
-                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
+                    fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
                     break;
                 default:
                     CALLBACK(callbacks->onMethodExecutionUnknownError)(callbacks->context, taskParams);
-                    fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INTERNAL_ERROR);
+                    fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::INTERNAL_ERROR);
                     break;
                 }
             }
@@ -157,15 +157,15 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
             {
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
-                fullResponse["auth"]["reasons"] = reasons;
-                fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::NOT_AUTHORIZED);
+                { boost::json::object authObj; authObj["reasons"] = reasons; fullResponse.as_object()["auth"] = authObj; }
+                fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::NOT_AUTHORIZED);
             }
             break;
             case API::Monolith::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
-                fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
+                fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
             }
             break;
             }
@@ -174,15 +174,12 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
     else
     {
         CALLBACK(callbacks->onMethodExecutionSessionMissing)(callbacks->context, taskParams);
-        fullResponse["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::REQUIRED_SESSION_NOT_FOUND);
+        fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::REQUIRED_SESSION_NOT_FOUND);
     }
 
-    //Json::StreamWriterBuilder builder;
-    //builder.settings_["indentation"] = "";
-
     //
-    fullResponse["payload"] = responsePayload;
-    sendRPCAnswer(taskParams, fullResponse.toStyledString(), functionFound ?  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) :  static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
+    fullResponse.as_object()["payload"] = responsePayload;
+    sendRPCAnswer(taskParams, boost::json::serialize(fullResponse), functionFound ?  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS) :  static_cast<uint8_t>(TaskExecutionStatus::ERR_METHOD_NOT_FOUND));
     taskParams->doneSharedMutex->unlock_shared();
 }
 
@@ -191,12 +188,12 @@ void FastRPC3::LocalRPCTasks::getSSOData(const std::shared_ptr<void> &taskData)
     FastRPC3::TaskParameters *taskParams = static_cast<FastRPC3::TaskParameters *>(taskData.get());
     FastRPC3 *caller = static_cast<FastRPC3 *>(taskParams->caller);
 
-    Json::Value data;
-    data["loginURL"] = caller->config.loginURL;
-    data["returnURI"] = caller->config.returnURI;
-    data["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
+    boost::json::value data = boost::json::object{};
+    data.as_object()["loginURL"] = caller->config.loginURL;
+    data.as_object()["returnURI"] = caller->config.returnURI;
+    data.as_object()["ignoreSSLCertForSSO"] = caller->config.ignoreSSLCertForSSO;
 
-    sendRPCAnswer(taskParams, data.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
+    sendRPCAnswer(taskParams, boost::json::serialize(data),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     taskParams->doneSharedMutex->unlock_shared();
 }
 
@@ -206,7 +203,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
     RPC3CallbackDefinitions *callbacks = static_cast<RPC3CallbackDefinitions *>(taskParams->callbacks);
 
     // CREATE NEW SESSION:
-    Json::Value response;
+    boost::json::value response;
     LoginAuthentication loginAuthResult;
 
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
@@ -247,15 +244,15 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
     }
 
     response = loginAuthResult.toJSONResponse();
-    sendRPCAnswer(taskParams, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
+    sendRPCAnswer(taskParams, boost::json::serialize(response),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     taskParams->doneSharedMutex->unlock_shared();
 }
 
 void FastRPC3::LocalRPCTasks::logout(const std::shared_ptr<void> &taskData)
 {
     FastRPC3::TaskParameters *params = static_cast<FastRPC3::TaskParameters *>(taskData.get());
-    Json::Value response;
+    boost::json::value response;
     response = params->sessionHolder->destroy();
-    sendRPCAnswer(params, response.toStyledString(),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
+    sendRPCAnswer(params, boost::json::serialize(response),  static_cast<uint8_t>(TaskExecutionStatus::SUCCESS));
     params->doneSharedMutex->unlock_shared();
 }

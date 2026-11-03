@@ -82,10 +82,10 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 |------------|---------|-------|
 | C++ compiler | GCC >= 9 / Clang >= 10 | RHEL 7 uses `devtoolset-9` |
 | CMake | >= 3.10 | `cmake3` on RHEL 7 |
-| pkg-config | any | used to locate OpenSSL and jsoncpp |
-| Boost | >= 1.66 (1.70+ recommended) | `regex` and `thread` components |
+| pkg-config | any | used to locate OpenSSL |
+| Boost | >= 1.71 | `regex`, `thread` and `json` components |
 | OpenSSL | >= 1.1.1 | `libssl`, `libcrypto` (`libssl11` with `-DSSLRHEL7=ON`) |
-| jsoncpp | >= 1.8.0 | JSON parsing and serialization |
+| Boost.Json | >= 1.71 | JSON parsing and serialization |
 
 ### Optional (database backends)
 
@@ -172,30 +172,30 @@ Include headers using the installed prefix:
 ```cmake
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(MANTIDS_HTTP REQUIRED Mantids30_Protocol_HTTP)
-pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 find_package(OpenSSL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS regex thread)
+find_package(Boost REQUIRED COMPONENTS json regex thread)
 
 add_executable(my_service main.cpp)
 target_include_directories(my_service PRIVATE
-    ${MANTIDS_HTTP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+    ${MANTIDS_HTTP_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(my_service PRIVATE
-    ${MANTIDS_HTTP_LIBRARIES} ${JSONCPP_LIBRARIES}
-    Boost::regex Boost::thread
+    ${MANTIDS_HTTP_LIBRARIES}
+    Boost::json Boost::regex Boost::thread
     OpenSSL::SSL OpenSSL::Crypto
     pthread)
 ```
 
-> The generated `.pc` files declare no `Requires:` entries. Link every
-> `Mantids30_*` component you use, plus jsoncpp, OpenSSL and Boost explicitly.
+> The generated `.pc` files declare a `Requires: boost_json >= 1.71` entry for the
+> components that use JSON. Link every `Mantids30_*` component you use, plus
+> OpenSSL and Boost explicitly.
 
 ### With a plain Makefile
 
 ```bash
 pkg-config --cflags --libs Mantids30_Protocol_HTTP Mantids30_Net_Sockets \
                            Mantids30_Helpers Mantids30_Threads Mantids30_Memory \
-                           jsoncpp libssl libcrypto
+                           boost_json libssl libcrypto
 ```
 
 Add `-lboost_regex -lboost_thread -lpthread` if Boost's own `pkg-config` files are not

@@ -6,7 +6,7 @@ int safeStaticCast(unsigned long value)
 {
     if (value > static_cast<unsigned long>(std::numeric_limits<int>::max()))
     {
-        throw std::out_of_range("Value out of range for int.");
+        throw std::out_of_range("boost::json::value out of range for int.");
     }
     return static_cast<int>(value);
 }

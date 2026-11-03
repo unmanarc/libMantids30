@@ -14,7 +14,7 @@ sudo dnf config-manager --set-enabled crb
 
 sudo dnf install -y epel-release
 sudo dnf install -y gcc-c++ make cmake pkgconf-pkg-config git \
-    boost-devel openssl-devel jsoncpp-devel
+    boost-devel boost-json-devel openssl-devel
 ```
 
 Optional database backends:
@@ -53,7 +53,7 @@ RHEL 7 ships GCC 4.8 and OpenSSL 1.0.2, both too old. Use `devtoolset-9` and EPE
 ```bash
 sudo yum install -y epel-release centos-release-scl
 sudo yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ cmake3 make git \
-    boost-devel openssl11-devel jsoncpp-devel
+    boost-devel boost-json-devel openssl11-devel
 
 # Enable the C++17 capable toolchain in the current shell
 scl enable devtoolset-9 bash
@@ -77,7 +77,7 @@ too old for the JWT and TLS code.
 ## Runtime packages
 
 ```bash
-sudo dnf install -y jsoncpp openssl boost-regex boost-thread
+sudo dnf install -y boost-json openssl boost-regex boost-thread
 # optional
 sudo dnf install -y sqlite-libs libpq mariadb-connector-c
 ```
@@ -89,7 +89,7 @@ On RHEL 7 use `yum` and add `openssl11-libs` when the library was built with
 
 | Symptom | Fix |
 |---------|-----|
-| `jsoncpp` not found | enable EPEL: `dnf install -y epel-release` |
+| `boost-json` not found | install `boost-json-devel` (RHEL 8+ / Fedora) or use EPEL |
 | `libcrypto` not found on RHEL 7 | install `openssl11-devel` and configure with `-DSSLRHEL7=ON` |
 | `pkg-config` not found | install `pkgconf-pkg-config` (RHEL 8+) |
 | `cmake: command not found` on RHEL 7 | use `cmake3` from EPEL |

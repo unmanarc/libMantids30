@@ -44,8 +44,8 @@ public:
     static uint64_t _fromStringToHASH(const std::string &value, bool *ok = nullptr);
     static std::string _fromHASHToString(const uint64_t &value);
 
-    Json::Value toJSON() override;
-    bool fromJSON(const Json::Value &value) override;
+    boost::json::value toJSON() override;
+    bool fromJSON(const boost::json::value &value) override;
 
 protected:
     std::shared_ptr<Var> protectedCopy() override;

@@ -49,24 +49,31 @@ HTTP::Status::Code ClientHandler::handleAuthRetrieveInfoFunction()
     serverResponse.setContentDataStreamer(jPayloadOutStr);
     serverResponse.setContentType("application/json", true);
     jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
-    Json::Value x;
+    boost::json::value x = boost::json::object{};
+    boost::json::object &xobj = x.as_object();
 
     if (isSessionActive())
     {
         string effectiveUserName = currentSessionInfo.authSession->getUser();
-        x["loggedUser"]["username"] = effectiveUserName;
-        x["isImpersonation"] = currentSessionInfo.isImpersonation;
-        x["impersonator"] = currentSessionInfo.authSession->getImpersonator();
-        x["scopes"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
-        x["roles"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
-        x["currentActivity"]["first"] = static_cast<Json::UInt64>(currentSessionInfo.authSession->getFirstActivity());
-        x["currentActivity"]["last"] = static_cast<Json::UInt64>(currentSessionInfo.authSession->getLastActivity());
-        x["currentActivity"]["sessionMaxAge"] = static_cast<Json::UInt64>(m_sessionMaxAge);
+        boost::json::object loggedUser;
+        loggedUser["username"] = effectiveUserName;
+        xobj["loggedUser"] = loggedUser;
+        xobj["isImpersonation"] = currentSessionInfo.isImpersonation;
+        xobj["impersonator"] = currentSessionInfo.authSession->getImpersonator();
+        xobj["scopes"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllScopesAsJSON();
+        xobj["roles"] = currentSessionInfo.authSession->getJWTAuthenticatedInfo().getAllRolesAsJSON();
+        boost::json::object currentActivity;
+        currentActivity["first"] = static_cast<uint64_t>(currentSessionInfo.authSession->getFirstActivity());
+        currentActivity["last"] = static_cast<uint64_t>(currentSessionInfo.authSession->getLastActivity());
+        currentActivity["sessionMaxAge"] = static_cast<uint64_t>(m_sessionMaxAge);
+        xobj["currentActivity"] = currentActivity;
         if (m_sessionsManager)
         {
-            x["limits"]["maxInactiveTime"] = static_cast<Json::UInt64>(m_sessionsManager->getMaxInactiveSeconds());
-            x["limits"]["maxSessionsPerUser"] = static_cast<Json::UInt64>(m_sessionsManager->getMaxSessionsPerUser());
-            x["loggedUser"]["sessionsInfo"] = m_sessionsManager->getUserSessionsInfo(effectiveUserName);
+            boost::json::object limits;
+            limits["maxInactiveTime"] = static_cast<uint64_t>(m_sessionsManager->getMaxInactiveSeconds());
+            limits["maxSessionsPerUser"] = static_cast<uint64_t>(m_sessionsManager->getMaxSessionsPerUser());
+            xobj["limits"] = limits;
+            xobj["loggedUser"].as_object()["sessionsInfo"] = m_sessionsManager->getUserSessionsInfo(effectiveUserName);
         }
     }
 
@@ -145,9 +152,9 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
         // TODO: exit impersonation.
         shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>(jwtToken);
 
-        Json::Value networkClientInfo = clientRequest.networkClientInfo.toJSON();
-        networkClientInfo["userAgent"] = clientRequest.userAgent;
-        networkClientInfo["startTime"] = static_cast<int64_t>(time(nullptr));
+        boost::json::value networkClientInfo = clientRequest.networkClientInfo.toJSON();
+        Helpers::JSON::setMember(networkClientInfo, "userAgent", clientRequest.userAgent);
+        Helpers::JSON::setMember(networkClientInfo, "startTime", static_cast<int64_t>(time(nullptr)));
 
         // TODO: migrar esto en libMantids2 a shared pointer.
         m_sessionID = m_sessionsManager->createSession(session, networkClientInfo, &m_sessionMaxAge);

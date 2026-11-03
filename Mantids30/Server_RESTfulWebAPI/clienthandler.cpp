@@ -7,9 +7,6 @@
 #include <Mantids30/Protocol_HTTP/rsp_cookies.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 
-#include <json/config.h>
-#include <json/json.h>
-#include <json/value.h>
 
 #include <memory>
 #include <string>
@@ -27,7 +24,7 @@ ClientHandler::ClientHandler(void *parent, const std::shared_ptr<Memory::Streams
     : Servers::Web::APIServer_ClientHandler(parent, sock)
 {}
 
-API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const uint32_t &apiVersion, const string &httpMethodMode, const string &endpointName, const Json::Value &postParameters)
+API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const uint32_t &apiVersion, const string &httpMethodMode, const string &endpointName, const boost::json::value &postParameters)
 {
     API::APIReturn apiReturn;
     set<string> currentScopes;
@@ -53,7 +50,7 @@ API::APIReturn ClientHandler::handleAPIRequest(const string &baseApiUrl, const u
         return apiReturn;
     }
 
-    Json::Value x;
+    boost::json::value x;
     API::Security::ReceivedAuth securityParameters;
     securityParameters.hasVerifiedJWTAccessTokenCookie = m_isAccessTokenCookieJWTVerified;
     securityParameters.hasVerifiedJWTAuthorizationHeader = m_isAuthorizationHeaderJWTVerified;
