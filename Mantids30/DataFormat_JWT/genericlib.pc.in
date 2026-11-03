@@ -7,6 +7,7 @@ Name: @LIB_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 
-Requires: boost_json >= 1.71
+Requires:
 Libs: -L${libdir} -l@LIB_NAME@
+Libs.private: -lboost_json -lcrypto
 Cflags: -I${includedir}
