@@ -44,3 +44,14 @@ if (EXTRAPREFIX)
     target_include_directories(${LIB_NAME} PUBLIC ${EXTRAPREFIX}/include)
     target_link_libraries(${LIB_NAME} "-L${EXTRAPREFIX}/lib")
 endif()
+
+
+
+set(Mantids30_LIBRARIES
+    Helpers
+)
+
+foreach(LIB ${Mantids30_LIBRARIES})
+    include_directories("${Mantids30_${LIB}_SOURCE_DIR}/../../")
+    target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+endforeach()

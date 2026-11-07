@@ -68,11 +68,11 @@ endif()
 target_include_directories(${LIB_NAME} PUBLIC ${OPENSSL_INCLUDE_DIRS})
 target_compile_options(${LIB_NAME} PUBLIC ${OPENSSL_CFLAGS_OTHER})
 if (BUILD_SHARED_LIBS)
-    # Shared build: link only the shared OpenSSL libraries. OPENSSL_STATIC_LDFLAGS
+    # Shared build: link only the shared OpenSSL libraries. OPENSSL_LDFLAGS
     # carries the private static dependencies reported by "pkg-config --static"
     # (-l:libjitterentropy.a, -lzstd, ...) which are not shipped by libssl-dev
     # and are not required when linking against the shared libraries.
     target_link_libraries(${LIB_NAME} ${OPENSSL_LIBRARIES})
 else()
-    target_link_libraries(${LIB_NAME} ${OPENSSL_STATIC_LDFLAGS})
+    target_link_libraries(${LIB_NAME} ${OPENSSL_LDFLAGS})
 endif()
