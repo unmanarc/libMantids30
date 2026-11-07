@@ -6,16 +6,15 @@
 
 #include <boost/json.hpp>
 #include <cstdint>
-#include <string>
+#include <string_view>
 
 
 
-namespace Mantids30::Helpers::JSON::detail {
+namespace Mantids30::Helpers::JSON {
 
 // Returns the member value of an object, or a null value if the object does
 // not contain the key (mirrors jsoncpp's non-throwing operator[] behavior).
-inline const boost::json::value &safeGet(const boost::json::value &obj, const std::string &key)
-{
+inline const boost::json::value &MEMBER_OR_NULL(const boost::json::value &obj, std::string_view key){
     if (obj.is_object())
     {
         if (auto it = obj.as_object().find(key); it != obj.as_object().end())
@@ -27,7 +26,7 @@ inline const boost::json::value &safeGet(const boost::json::value &obj, const st
     return nullValue;
 }
 
-inline int64_t asInt64Safe(const boost::json::value &v)
+inline int64_t ASINT64_OR_ZERO(const boost::json::value &v)
 {
     if (v.is_int64())
     {
@@ -40,7 +39,7 @@ inline int64_t asInt64Safe(const boost::json::value &v)
     return 0;
 }
 
-inline uint64_t asUInt64Safe(const boost::json::value &v)
+inline uint64_t ASUINT64_OR_ZERO(const boost::json::value &v)
 {
     if (v.is_uint64())
     {
@@ -53,7 +52,7 @@ inline uint64_t asUInt64Safe(const boost::json::value &v)
     return 0;
 }
 
-inline double asDoubleSafe(const boost::json::value &v)
+inline double ASDOUBLE_OR_ZERO(const boost::json::value &v)
 {
     if (v.is_double())
     {

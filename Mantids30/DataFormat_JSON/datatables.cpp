@@ -1,40 +1,41 @@
 #include "datatables.h"
+#include "json_detail.h"
 #include <regex>
 
 using namespace Mantids30;
 
-static std::string getColumnNameFromColumnPos(const boost::json::value &dataTablesFilters, const uint32_t &pos)
+static std::string_view getColumnNameFromColumnPos(const boost::json::value &dataTablesFilters, const uint32_t &pos)
 {
-    if (Helpers::JSON::ISARRAY(dataTablesFilters, "columns"))
+    const boost::json::array &columns = Helpers::JSON::ASARRAY_OR_EMPTY(dataTablesFilters, "columns");
+
+    if (pos >= columns.size())
     {
-        const boost::json::value &columns = Helpers::JSON::detail::safeGet(dataTablesFilters, "columns");
-        if (pos >= static_cast<uint32_t>(columns.as_array().size()))
-        {
-            return "";
-        }
-        return Helpers::JSON::ASSTRING(columns.as_array()[pos], "data", "");
+        return "";
     }
-    return "";
+
+    return Helpers::JSON::ASSTRING_D(Helpers::JSON::MEMBER_OR_NULL(columns[pos], "data"), "");
 }
 
-std::string Mantids30::Helpers::DataTables::getOrderByStatement(const boost::json::value &dataTablesFilters)
+std::string Helpers::DataTables::getOrderByStatement(const boost::json::value &dataTablesFilters)
 {
     std::string orderByStatement;
-    // Manejo de ordenamiento (order)
-    const boost::json::value &orderArray = Helpers::JSON::detail::safeGet(dataTablesFilters, "order");
-    if (Helpers::JSON::ISARRAY_D(orderArray) && !orderArray.as_array().empty())
-    {
-        const boost::json::value &orderArrayElement = orderArray.as_array()[0];
-        std::string columnName = getColumnNameFromColumnPos(dataTablesFilters, Helpers::JSON::ASUINT(orderArrayElement, "column", 0));
-        std::string dir = Helpers::JSON::ASSTRING(orderArrayElement, "dir", "desc");
 
-        // Validar que el nombre del campo sea seguro (solo letras, números y guiones bajos)
+    const boost::json::array &orderArray = Helpers::JSON::ASARRAY_OR_EMPTY(dataTablesFilters, "order");
+
+    if (!orderArray.empty())
+    {
+        const boost::json::value &orderElement = orderArray[0];
+
+        const std::string_view columnName = getColumnNameFromColumnPos(dataTablesFilters, Helpers::JSON::ASUINT(orderElement, "column", 0));
+        const std::string_view dir = Helpers::JSON::ASSTRING(orderElement, "dir", "desc");
+
         static const std::regex fieldRegex("^[a-zA-Z0-9_]+$");
-        if (std::regex_match(columnName, fieldRegex))
+
+        if (std::regex_match(columnName.begin(), columnName.end(), fieldRegex))
         {
-            orderByStatement = "`" + columnName + "` ";
-            orderByStatement += (dir == "desc") ? "DESC" : "ASC";
+            orderByStatement = "`" + std::string(columnName) + "` " + (dir == "desc" ? "DESC" : "ASC");
         }
     }
+
     return orderByStatement;
 }

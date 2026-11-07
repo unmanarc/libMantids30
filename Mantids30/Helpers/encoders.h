@@ -30,7 +30,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    [[nodiscard]] static std::string decodeFromBase64Obf(std::string const &sB64Buf, const uint64_t &seed = 0xAA12017BEA385A7B);
+    [[nodiscard]] static std::string decodeFromBase64Obf(std::string_view sB64Buf, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Performs an obfuscated base64 encoding on binary data.
@@ -51,7 +51,7 @@ public:
      *
      * @return The obfuscated base64-encoded string.
      */
-    [[nodiscard]] static std::string encodeToBase64Obf(const std::string &buf, const uint64_t &seed = 0xAA12017BEA385A7B);
+    [[nodiscard]] static std::string encodeToBase64Obf(std::string_view buf, const uint64_t &seed = 0xAA12017BEA385A7B);
 
     /**
      * @brief Decodes a base64-encoded string to binary data.
@@ -65,7 +65,7 @@ public:
      * @return A shared pointer to a BinaryDataContainer object containing the decoded binary data. If decoding fails,
      *         an empty shared pointer is returned.
      */
-    [[nodiscard]] static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string const &input, bool url = false);
+    [[nodiscard]] static std::shared_ptr<Mem::BinaryDataContainer> decodeFromBase64ToBin(std::string_view input, bool url = false);
 
     /**
      * @brief Decodes a base64-encoded string.
@@ -78,7 +78,7 @@ public:
      *
      * @return The decoded string. If decoding fails, an empty string is returned.
      */
-    [[nodiscard]] static std::string decodeFromBase64(std::string const &input, bool url = false);
+    [[nodiscard]] static std::string decodeFromBase64(std::string_view input, bool url = false);
 
     /**
      * @brief Decodes a base32-encoded string.
@@ -87,7 +87,7 @@ public:
      *
      * @return The decoded string.
      */
-    [[nodiscard]] static std::string decodeFromBase32(const std::string &base32Value);
+    [[nodiscard]] static std::string decodeFromBase32(std::string_view base32Value);
     /**
      * @brief Performs a base64 encoding on a string.
      *
@@ -95,7 +95,7 @@ public:
      *
      * @return The base64-encoded string.
      */
-    [[nodiscard]] static std::string encodeToBase64(const std::string &buf, bool url = false);
+    [[nodiscard]] static std::string encodeToBase64(std::string_view buf, bool url = false);
     /**
      * @brief Performs a base64 encoding on binary data.
      *
@@ -114,7 +114,7 @@ public:
      *
      * @return The encoded URL string.
      */
-    [[nodiscard]] static std::string toURL(const std::string &str, const Type &urlEncodingType = Type::STRICT_ENCODING);
+    [[nodiscard]] static std::string toURL(std::string_view str, const Type &urlEncodingType = Type::STRICT_ENCODING);
 
     /**
      * @brief Decodes a string that has been encoded for use in a URL.
@@ -123,7 +123,7 @@ public:
      *
      * @return The decoded string.
      */
-    [[nodiscard]] static std::string fromURL(const std::string &urlEncodedStr);
+    [[nodiscard]] static std::string fromURL(std::string_view urlEncodedStr);
 
     /**
      * @brief Escapes HTML special characters in a string.
@@ -139,7 +139,7 @@ public:
      *
      * @return The HTML-escaped string.
      */
-    [[nodiscard]] static std::string htmlEscape(const std::string &input);
+    [[nodiscard]] static std::string htmlEscape(std::string_view input);
 
     /**
      * @brief Performs a hexadecimal encoding on binary data.
@@ -183,7 +183,7 @@ public:
      * @param data A pointer to the buffer to store the decoded binary data in.
      * @param maxlen The maximum length of the buffer.
      */
-    static void fromHex(const std::string &hexValue, unsigned char *data, size_t maxlen);
+    static void fromHex(std::string_view hexValue, unsigned char *data, size_t maxlen);
 
     /**
      * @brief Converts a 4-bit nibble to an ASCII hexadecimal character.
@@ -208,7 +208,8 @@ public:
      *
      * @return The byte value corresponding to the hexadecimal character.
      */
-    [[nodiscard]] static inline char hexToValue(const char & v);
+    [[nodiscard]] static constexpr char hexToValue(char v) noexcept;
+
 
     /**
      * @brief Converts a pair of hexadecimal characters to an unsigned byte.
@@ -250,7 +251,7 @@ private:
      *
      * @return The size of the expanded URL-encoded string.
      */
-    static size_t calcURLEncodingExpandedStringSize(const std::string &str, const Type &urlEncodingType);
+    static size_t calcURLEncodingExpandedStringSize(std::string_view str, const Type &urlEncodingType);
 
     /**
      * @brief The set of characters used in base64 encoding.

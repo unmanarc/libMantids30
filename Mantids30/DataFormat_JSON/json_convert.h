@@ -10,6 +10,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 
 namespace Mantids30::Helpers::JSON {
 
@@ -34,7 +35,7 @@ std::string toString(const boost::json::value &value);
  *
  * @return A list of strings containing the elements of the JSON array.
  */
-std::list<std::string> toStringList(const boost::json::value &value, const std::string &sub = "");
+std::list<std::string> toStringList(const boost::json::value &value, std::string_view sub = "");
 
 /**
  * Converts a JSON array to a set of strings.
@@ -44,7 +45,7 @@ std::list<std::string> toStringList(const boost::json::value &value, const std::
  *
  * @return A set of strings containing the elements of the JSON array.
  */
-std::set<std::string> toStringSet(const boost::json::value &value, const std::string &sub = "");
+std::set<std::string> toStringSet(const boost::json::value &value, std::string_view sub = "");
 
 /**
  * Converts a JSON array to a set of uint32_t values.
@@ -54,7 +55,7 @@ std::set<std::string> toStringSet(const boost::json::value &value, const std::st
  *
  * @return A set of uint32_t containing the elements of the JSON array.
  */
-std::set<uint32_t> toUInt32Set(const boost::json::value &value, const std::string &sub = "");
+std::set<uint32_t> toUInt32Set(const boost::json::value &value, std::string_view sub = "");
 
 /**
  * Converts a list of strings to a JSON array.
@@ -93,7 +94,7 @@ boost::json::value fromSet(const std::set<std::string> &t);
  *
  * @return True if the document was parsed successfully, false otherwise.
  */
-bool parse(const std::string &document, boost::json::value &root, std::string *parseErrors = nullptr);
+bool parse(std::string_view document, boost::json::value &root, std::string *parseErrors = nullptr);
 
 /**
  * A convenience wrapper around boost::json::parse that matches the previous
@@ -112,7 +113,7 @@ public:
      *
      * @return True if the document was parsed successfully, false otherwise.
      */
-    bool parse(const std::string &document, boost::json::value &root);
+    bool parse(std::string_view document, boost::json::value &root);
 
     /**
      * Gets the error messages generated during the last parsing operation.

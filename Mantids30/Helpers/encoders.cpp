@@ -14,7 +14,7 @@ using namespace Mantids30::Helpers;
 
 const std::string Encoders::m_b64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-string Encoders::decodeFromBase64Obf(const string &sB64Buf, const uint64_t &seed)
+string Encoders::decodeFromBase64Obf(std::string_view sB64Buf, const uint64_t &seed)
 {
     unsigned char cont4[4], cont3[3];
     std::string decodedString;
@@ -92,12 +92,12 @@ string Encoders::encodeToBase64Obf(const unsigned char *buf, size_t count, const
     return r;
 }
 
-string Encoders::encodeToBase64Obf(const string &buf, const uint64_t &seed)
+string Encoders::encodeToBase64Obf(std::string_view buf, const uint64_t &seed)
 {
-    return encodeToBase64Obf(reinterpret_cast<const unsigned char *>(buf.c_str()), buf.size(), seed);
+    return encodeToBase64Obf(reinterpret_cast<const unsigned char *>(buf.data()), buf.size(), seed);
 }
 
-std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const std::string &input, bool url)
+std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(string_view input, bool url)
 {
     // Allocate a BinaryDataContainer object to store the decoded data
     std::shared_ptr<Mem::BinaryDataContainer> r = std::make_shared<Mem::BinaryDataContainer>(input.length() + 2);
@@ -107,7 +107,10 @@ std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const 
         return r;
     }
 
-    const std::string *inputx = &input;
+    // Make a mutable copy: base64 decoding (and the URL->std conversion below) needs a
+    // std::string to point into. A single copy, same as the previous by-value signature.
+    std::string inputCopy(input);
+    const std::string *inputx = &inputCopy;
     std::string inputurl;
 
     if (url) // Check if url is not null
@@ -135,7 +138,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const 
     }
     ////////////////////
     // Create a memory BIO object with the base64-encoded data
-    BIO *bio = BIO_new_mem_buf(inputx->data(), safe_cast_or(inputx->size(),0));
+    BIO *bio = BIO_new_mem_buf(inputx->data(), safe_cast_or(inputx->size(), 0));
     if (bio != nullptr)
     {
         // Create a BIO object for base64 decoding
@@ -149,7 +152,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const 
             BIO_set_flags(bio_base64, BIO_FLAGS_BASE64_NO_NL);
 
             // Read the base64-encoded data and decode it
-            int decoded_size = BIO_read(bio, r->data, safe_cast_or(inputx->size(),0));
+            int decoded_size = BIO_read(bio, r->data, safe_cast_or(inputx->size(), 0));
             if (decoded_size >= 0)
             {
                 // Update the length of the BinaryDataContainer object to reflect the actual decoded size
@@ -167,78 +170,96 @@ std::shared_ptr<Mem::BinaryDataContainer> Encoders::decodeFromBase64ToBin(const 
     return r;
 }
 
-string Encoders::decodeFromBase64(const string &input, bool url)
+std::string Encoders::decodeFromBase64(std::string_view input, bool url)
 {
-    const std::string *inputx = &input;
     std::string inputurl;
-    std::string result;
 
-    if (url) // Check if url is not null
+    if (url) // Convert Base64URL to standard Base64
     {
-        inputurl = input;   // Copy input to inputurl (we will be using inputurl instead of the input)
-        inputx = &inputurl; // Use inputurl instead of inputurl
+        inputurl.assign(input); // Create a mutable copy of the input
 
-        // Check the length of the input URL
-        switch (inputurl.length() % 4)
+        // Check the length of the input URL and add padding if necessary
+        switch (inputurl.size() % 4)
         {
-        case 0: // If it's evenly divisible by 4, do nothing
+        case 0: // If evenly divisible by 4, do nothing
             break;
-        case 2: // If it's 2 mod 4, pad with ==
+        case 2: // If 2 mod 4, pad with ==
             inputurl += "==";
             break;
-        case 3: // If it's 3 mod 4, pad with =
+        case 3: // If 3 mod 4, pad with =
             inputurl += "=";
             break;
-        default: // If it's any other value, return an empty string
-            return "";
+        default: // Invalid Base64URL length
+            return {};
         }
 
-        boost::replace_all(inputurl, "_", "/"); // Replace all _ with /
-        boost::replace_all(inputurl, "-", "+"); // Replace all - with +
-    }
-
-    // Create a memory BIO object with the base64-encoded data
-    BIO *bio = BIO_new_mem_buf(inputx->data(), safe_cast_or(inputx->size(),0));
-    if (bio != nullptr)
-    {
-        // Create a BIO object for base64 decoding
-        BIO *bio_base64 = BIO_new(BIO_f_base64());
-        if (bio_base64 != nullptr)
+        // Replace URL-safe Base64 characters with standard Base64 characters
+        for (char &c : inputurl)
         {
-            // Link the BIO objects, so that the input to the decoding BIO object comes from the memory BIO object
-            bio = BIO_push(bio_base64, bio);
-
-            // Set the BIO_FLAGS_BASE64_NO_NL flag so that no newline characters are expected in the input
-            BIO_set_flags(bio_base64, BIO_FLAGS_BASE64_NO_NL);
-
-            // Allocate a buffer to store the decoded data (will store more than needed)
-            // TODO: reduce to this:  (inputurl.length()*3)/4-padding;
-            char *buffer = new char[inputx->size()];
-            if (buffer != nullptr)
+            if (c == '_')
             {
-                // Read the base64-encoded data and decode it
-                int decoded_size = BIO_read(bio, buffer, safe_cast_or(inputx->size(),0));
-                if (decoded_size >= 0)
-                {
-                    // Create a string from the decoded data
-                    result.assign(buffer, decoded_size);
-                }
-
-                delete[] buffer;
+                c = '/';
             }
-
-            // Free the BIO objects and the buffer
-            //BIO_free(bio_base64);  // free bio_base64 separately since it's not freed by BIO_free
+            else if (c == '-')
+            {
+                c = '+';
+            }
         }
 
-        BIO_free_all(bio);
+        input = inputurl; // Point the string_view to the converted input
     }
+
+    // Check for empty input and OpenSSL's integer size limit
+    if (input.empty() || input.size() > INT_MAX)
+    {
+        return {};
+    }
+
+    // Create a memory BIO object using the input data (no copy required)
+    BIO *bio = BIO_new_mem_buf(input.data(), static_cast<int>(input.size()));
+    if (bio == nullptr)
+    {
+        return {};
+    }
+
+    // Create a BIO object for Base64 decoding
+    BIO *bio_base64 = BIO_new(BIO_f_base64());
+    if (bio_base64 == nullptr)
+    {
+        BIO_free(bio);
+        return {};
+    }
+
+    // Link the BIO objects so that the Base64 decoder reads from the memory BIO
+    bio = BIO_push(bio_base64, bio);
+
+    // Set the BIO_FLAGS_BASE64_NO_NL flag so that no newline characters are expected
+    BIO_set_flags(bio_base64, BIO_FLAGS_BASE64_NO_NL);
+
+    // Allocate enough space to store the maximum possible decoded data
+    std::string result;
+    result.resize((input.size() / 4) * 3);
+
+    // Read and decode the Base64-encoded data
+    int decoded_size = BIO_read(bio, result.data(), static_cast<int>(result.size()));
+
+    // Free the entire BIO chain
+    BIO_free_all(bio);
+
+    // Return an empty string if decoding failed or produced no data
+    if (decoded_size <= 0)
+    {
+        return {};
+    }
+
+    // Resize the result to the actual number of decoded bytes
+    result.resize(static_cast<size_t>(decoded_size));
 
     // Return the decoded data as a string
     return result;
 }
 
-string Encoders::decodeFromBase32(const std::string &base32Value)
+string Encoders::decodeFromBase32(std::string_view base32Value)
 {
     std::string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     std::string binarySecret;
@@ -283,9 +304,9 @@ string Encoders::decodeFromBase32(const std::string &base32Value)
     return binarySecret;
 }
 
-string Encoders::encodeToBase64(const string &buf, bool url)
+string Encoders::encodeToBase64(std::string_view buf, bool url)
 {
-    return encodeToBase64(reinterpret_cast<const unsigned char *>(buf.c_str()), buf.size(), url);
+    return encodeToBase64(reinterpret_cast<const unsigned char *>(buf.data()), buf.size(), url);
 }
 
 string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url)
@@ -308,7 +329,7 @@ string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url
             BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
 
             // Write the data to the base64 encoding BIO object
-            int ret = BIO_write(bio, buf, safe_cast_or(count,0));
+            int ret = BIO_write(bio, buf, safe_cast_or(count, 0));
             if (ret > 0)
             {
                 // Flush any internal buffer used by the base64 encoding BIO object
@@ -342,7 +363,7 @@ string Encoders::encodeToBase64(const unsigned char *buf, size_t count, bool url
     return result;
 }
 
-string Encoders::toURL(const string &str, const Type &urlEncodingType)
+string Encoders::toURL(std::string_view str, const Type &urlEncodingType)
 {
     if (str.empty())
     {
@@ -369,7 +390,7 @@ string Encoders::toURL(const string &str, const Type &urlEncodingType)
     return out;
 }
 
-string Encoders::fromURL(const string &urlEncodedStr)
+string Encoders::fromURL(std::string_view urlEncodedStr)
 {
     std::string r;
     if (urlEncodedStr.empty())
@@ -393,9 +414,9 @@ string Encoders::fromURL(const string &urlEncodedStr)
     return r;
 }
 
-string Encoders::htmlEscape(const std::string &input)
+string Encoders::htmlEscape(std::string_view input)
 {
-    std::string output = input;
+    std::string output(input);
     // Order matters: & must be replaced first to avoid double-escaping
     boost::replace_all(output, "&", std::string("&") + "amp;");
     boost::replace_all(output, "<", std::string("&") + "lt;");
@@ -444,7 +465,7 @@ void Encoders::replaceHexCodes(std::string &content)
     }
 }
 
-void Encoders::fromHex(const string &hexValue, unsigned char *data, size_t maxlen)
+void Encoders::fromHex(std::string_view hexValue, unsigned char *data, size_t maxlen)
 {
     if ((hexValue.size() / 2) < maxlen)
     {
@@ -483,21 +504,16 @@ char Encoders::toHexFrom4bitChar(char nibble, const char &position)
     }
 }
 
-char Encoders::hexToValue(const char &v)
+constexpr char Encoders::hexToValue(char v) noexcept
 {
     if (v >= '0' && v <= '9')
     {
         return v - '0';
     }
-    if (v >= 'A' && v <= 'F')
-    {
-        return v - 'A' + 10;
-    }
-    if (v >= 'a' && v <= 'f')
-    {
-        return v - 'a' + 10;
-    }
-    return 0;
+
+    v |= 0x20; // Convert uppercase ASCII letters to lowercase
+
+    return (v >= 'a' && v <= 'f') ? v - 'a' + 10 : 0;
 }
 
 unsigned char Encoders::hexPairToByte(const char *bytes)
@@ -539,7 +555,7 @@ bool Encoders::getIfMustBeURLEncoded(char c, const Type &urlEncodingType)
     return true;
 }
 
-size_t Encoders::calcURLEncodingExpandedStringSize(const string &str, const Type &urlEncodingType)
+size_t Encoders::calcURLEncodingExpandedStringSize(std::string_view str, const Type &urlEncodingType)
 {
     size_t x = 0;
     for (char i : str)

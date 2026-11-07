@@ -28,8 +28,8 @@ namespace Mantids30::Helpers::JSON {
 class Path
 {
 public:
-    explicit Path(std::string expr)
-        : m_expr(std::move(expr))
+    explicit Path(std::string_view expr)
+        : m_expr(expr)
     {}
 
     [[nodiscard]] const boost::json::value *resolve(const boost::json::value &root) const noexcept

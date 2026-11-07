@@ -42,7 +42,7 @@ public:
 private:
     size_t m_maxSize = std::numeric_limits<size_t>::max();
     std::string m_strValue;
-    boost::json::value m_root;
+    boost::json::value m_root{boost::json::object{}};
     bool m_isFormatted = true;
     bool m_isFull = false;
 };

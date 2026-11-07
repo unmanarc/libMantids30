@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace Mantids30::Helpers {
 
@@ -39,7 +40,7 @@ public:
      *
      * @return The encrypted string as a base64-encoded string.
      */
-    static std::optional<std::string> AES256EncryptB64(const std::string &input, const char *key, const size_t &keyLen);
+    static std::optional<std::string> AES256EncryptB64(std::string_view input, const char *key, const size_t &keyLen);
 
     /**
      * @brief Encrypts a string using AES-256 encryption and base64 encoding.
@@ -49,7 +50,7 @@ public:
      *
      * @return The encrypted string as a base64-encoded string.
      */
-    static std::optional<std::string> AES256EncryptB64(const std::string &input, const std::string &key);
+    static std::optional<std::string> AES256EncryptB64(std::string_view input, const std::string &key);
 
     /**
      * @brief Decrypts a base64-encoded string to binary data using AES-256 encryption.
@@ -60,7 +61,7 @@ public:
      *
      * @return A shared pointer to a BinaryDataContainer object containing the decrypted binary data.
      */
-    static std::shared_ptr<Mem::BinaryDataContainer> AES256DecryptB64ToBin(const std::string &input, const char *key, const size_t &keyLen);
+    static std::shared_ptr<Mem::BinaryDataContainer> AES256DecryptB64ToBin(std::string_view input, const char *key, const size_t &keyLen);
 
     /**
      * @brief Decrypts a base64-encoded string using AES-256 encryption.
@@ -71,7 +72,7 @@ public:
      *
      * @return The decrypted string.
      */
-    static std::optional<std::string> AES256DecryptB64(const std::string &input, const char *key, const size_t &keyLen);
+    static std::optional<std::string> AES256DecryptB64(std::string_view input, const char *key, const size_t &keyLen);
 
     /**
      * @brief Decrypts a base64-encoded string using AES-256 encryption.
@@ -81,7 +82,7 @@ public:
      *
      * @return The decrypted string.
      */
-    static std::optional<std::string> AES256DecryptB64(const std::string &input, const std::string &key);
+    static std::optional<std::string> AES256DecryptB64(std::string_view input, const std::string &key);
 
 
 
@@ -111,7 +112,7 @@ public:
      *
      * @return The SHA-1 hash of the string.
      */
-    static std::string calcSHA1(const std::string &password);
+    static std::string calcSHA1(std::string_view password);
 
     /**
      * @brief Calculates the SHA-256 hash of a string.
@@ -120,7 +121,7 @@ public:
      *
      * @return The SHA-256 hash of the string.
      */
-    static std::string calcSHA256(const std::string &password);
+    static std::string calcSHA256(std::string_view password);
 
     /**
      * @brief Calculates the SHA-512 hash of a string.
@@ -129,7 +130,7 @@ public:
      *
      * @return The SHA-512 hash of the string.
      */
-    static std::string calcSHA512(const std::string &password);
+    static std::string calcSHA512(std::string_view password);
 
     /**
      * @brief Calculates the salted SHA-256 hash of a string.
@@ -139,7 +140,7 @@ public:
      *
      * @return The salted SHA-256 hash of the string.
      */
-    static std::string calcSSHA256(const std::string &password, const unsigned char *ssalt);
+    static std::string calcSSHA256(std::string_view password, const unsigned char *ssalt);
 
     /**
      * @brief Calculates the salted SHA-512 hash of a string.
@@ -149,7 +150,7 @@ public:
      *
      * @return The salted SHA-512 hash of the string.
      */
-    static std::string calcSSHA512(const std::string &password, const unsigned char *ssalt);
+    static std::string calcSSHA512(std::string_view password, const unsigned char *ssalt);
 };
 
 } // namespace Mantids30::Helpers

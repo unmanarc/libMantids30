@@ -3,8 +3,9 @@
 #include "safeint.h"
 #include <boost/algorithm/string/case_conv.hpp>
 #include <boost/algorithm/string/trim.hpp>
+using namespace Mantids30;
 
-size_t Mantids30::Helpers::StringConversions::getSizeFromString(const std::string &szString)
+size_t Helpers::StringConversions::getSizeFromString(const std::string &szString)
 {
     // Convert to lowercase for case-insensitive comparison
     std::string sizeStr = boost::to_lower_copy(szString);

@@ -9,15 +9,19 @@ std::string JSON::toString(const boost::json::value &value)
     return boost::json::serialize(value);
 }
 
-bool JSON::parse(const std::string &document, boost::json::value &root, std::string *parseErrors)
+bool JSON::parse(std::string_view document, boost::json::value &root, std::string *parseErrors)
 {
     try
     {
-        root = boost::json::parse(document);
+        boost::json::parser parser;
+        parser.write_some(document);
+        root = parser.release();
+
         if (parseErrors)
         {
             parseErrors->clear();
         }
+
         return true;
     }
     catch (const std::exception &e)
@@ -26,11 +30,12 @@ bool JSON::parse(const std::string &document, boost::json::value &root, std::str
         {
             *parseErrors = e.what();
         }
+
         return false;
     }
 }
 
-bool JSON::Reader::parse(const std::string &document, boost::json::value &root)
+bool JSON::Reader::parse(std::string_view document, boost::json::value &root)
 {
     // Call the free function (namespace scope) explicitly. An unqualified
     // parse() here resolves to this member, which would recurse infinitely.
@@ -49,11 +54,11 @@ std::string JSON::Reader::getFormattedErrorMessages()
     return m_errors;
 }
 
-std::list<std::string> JSON::toStringList(const boost::json::value &value, const std::string &sub)
+std::list<std::string> JSON::toStringList(const boost::json::value &value, std::string_view sub)
 {
     std::list<std::string> r;
 
-    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+    const boost::json::value &arr = sub.empty() ? value : MEMBER_OR_NULL(value, sub);
 
     if (arr.is_array())
     {
@@ -68,11 +73,11 @@ std::list<std::string> JSON::toStringList(const boost::json::value &value, const
     return r;
 }
 
-std::set<std::string> JSON::toStringSet(const boost::json::value &value, const std::string &sub)
+std::set<std::string> JSON::toStringSet(const boost::json::value &value, std::string_view sub)
 {
     std::set<std::string> r;
 
-    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+    const boost::json::value &arr = sub.empty() ? value : MEMBER_OR_NULL(value, sub);
 
     if (arr.is_array())
     {
@@ -88,11 +93,11 @@ std::set<std::string> JSON::toStringSet(const boost::json::value &value, const s
     return r;
 }
 
-std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, const std::string &sub)
+std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, std::string_view sub)
 {
     std::set<uint32_t> r;
 
-    const boost::json::value &arr = sub.empty() ? value : detail::safeGet(value, sub);
+    const boost::json::value &arr = sub.empty() ? value : MEMBER_OR_NULL(value, sub);
 
     if (arr.is_array())
     {
@@ -100,7 +105,7 @@ std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, const std:
         {
             if (el.is_number())
             {
-                r.insert(static_cast<uint32_t>(detail::asUInt64Safe(el)));
+                r.insert(static_cast<uint32_t>(ASUINT64_OR_ZERO(el)));
             }
         }
     }

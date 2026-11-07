@@ -20,31 +20,20 @@ namespace Mantids30::Helpers {
 #define GB_MULT (MB_MULT * 1024)
 #define TB_MULT (GB_MULT * 1024)
 
-//#define ZeroBArray(x) memset((x),0,sizeof((x)));
-//#define ZeroBStruct(x) memset(&(x),0,sizeof(x));
 
 #ifdef HAVE_EXPLICIT_BZERO
-#define ZeroBArray(x) explicit_bzero((x), sizeof((x)))
-#define ZeroBStruct(x) explicit_bzero(&(x), sizeof(x))
 #define SecBACopy(dst, src) \
     explicit_bzero(&dst, sizeof(dst)); \
     strncpy(dst, src, sizeof(dst) - 1)
 #elif _WIN32
-#define ZeroBArray(x) SecureZeroMemory((x), sizeof((x)))
-#define ZeroBStruct(x) SecureZeroMemory(&(x), sizeof(x))
 #define SecBACopy(dst, src) \
     SecureZeroMemory(&dst, sizeof(dst)); \
     strncpy(dst, src, sizeof(dst) - 1)
 #else
-#define ZeroBArray(x) memset((x), 0, sizeof((x)))
-#define ZeroBStruct(x) memset(&(x), 0, sizeof(x))
 #define SecBACopy(dst, src) \
     memset(&dst, 0, sizeof(dst)); \
     strncpy(dst, src, sizeof(dst) - 1)
 #endif
-
-#define ZeroBArrayNS(x) memset((x), 0, sizeof((x)))
-#define ZeroBStructNS(x) memset(&(x), 0, sizeof(x))
 
 class Mem
 {
