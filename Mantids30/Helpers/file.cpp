@@ -1,4 +1,5 @@
 #include "file.h"
+#include "defines.h"
 
 #include <fstream>
 #include <iostream>
@@ -12,12 +13,11 @@
 #include <sys/stat.h>
 #endif
 
-std::string Mantids30::Helpers::File::loadFileIntoString(const std::string &filePath, bool *ok)
+using namespace Mantids30;
+
+std::string Helpers::File::loadFileIntoString(const std::string &filePath, bool *ok)
 {
-    if (ok)
-    {
-        *ok = false;
-    }
+    SET_OK_BOOLEAN(ok, false);
 
     std::ifstream infile(filePath);
     if (!infile.is_open())
@@ -27,16 +27,13 @@ std::string Mantids30::Helpers::File::loadFileIntoString(const std::string &file
 
     std::string fileContent = std::string((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
 
-    if (ok)
-    {
-        *ok = true;
-    }
+    SET_OK_BOOLEAN(ok, true);
 
     infile.close();
     return fileContent;
 }
 
-bool Mantids30::Helpers::File::writeStringToFile(const std::string &filePath, const std::string &content)
+bool Helpers::File::writeStringToFile(const std::string &filePath, const std::string &content)
 {
     std::ofstream outfile;
     outfile.open(filePath, std::ios_base::out);
@@ -49,7 +46,7 @@ bool Mantids30::Helpers::File::writeStringToFile(const std::string &filePath, co
     return false;
 }
 
-bool Mantids30::Helpers::File::isSensitiveConfigPermissionInsecure(const std::string &configFilePath, bool *isInsecure)
+bool Helpers::File::isSensitiveConfigPermissionInsecure(const std::string &configFilePath, bool *isInsecure)
 {
     *isInsecure = false;
 
@@ -71,7 +68,7 @@ bool Mantids30::Helpers::File::isSensitiveConfigPermissionInsecure(const std::st
 #endif
 }
 
-bool Mantids30::Helpers::File::fixSensitiveConfigPermission(const std::string &configFilePath)
+bool Helpers::File::fixSensitiveConfigPermission(const std::string &configFilePath)
 {
 #ifndef _WIN32
     // Change the value to 0600

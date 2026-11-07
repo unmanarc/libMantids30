@@ -1,6 +1,7 @@
 #include "crypto.h"
 #include "encoders.h"
 #include "random.h"
+#include "defines.h"
 
 #include <cstring>
 #include <openssl/aes.h>
@@ -74,21 +75,21 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
     return out;
 }
 
-std::optional<std::string> Crypto::AES256EncryptB64(const std::string &input, const char *key, const size_t &keyLen)
+std::optional<std::string> Crypto::AES256EncryptB64(std::string_view input, const char *key, const size_t &keyLen)
 {
-    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.c_str()), input.length(), key, keyLen);
+    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.data()), input.size(), key, keyLen);
 }
 
-std::optional<std::string> Crypto::AES256EncryptB64(const std::string &input, const std::string &key)
+std::optional<std::string> Crypto::AES256EncryptB64(std::string_view input, const std::string &key)
 {
-    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.c_str()), input.length(), key.c_str(), key.length());
+    return AES256EncryptB64(reinterpret_cast<const unsigned char *>(input.data()), input.size(), key.c_str(), key.length());
 }
 
-std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const std::string &input, const char *key, const size_t &keyLen)
+std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(std::string_view input, const char *key, const size_t &keyLen)
 {
     bool ok;
 
-    std::shared_ptr<Mem::BinaryDataContainer> r = std::make_shared<Mem::BinaryDataContainer>(input.length());
+    std::shared_ptr<Mem::BinaryDataContainer> r = std::make_shared<Mem::BinaryDataContainer>(input.size());
 
     if (!r->data)
     {
@@ -155,7 +156,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(const st
     return nullptr;
 }
 
-std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, const char *key, const size_t &keyLen)
+std::optional<std::string> Crypto::AES256DecryptB64(std::string_view input, const char *key, const size_t &keyLen)
 {
     if (std::shared_ptr<Mem::BinaryDataContainer> i = AES256DecryptB64ToBin(input, key, keyLen))
     {
@@ -163,7 +164,7 @@ std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, co
     }
     return std::nullopt;
 }
-std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, const std::string &key)
+std::optional<std::string> Crypto::AES256DecryptB64(std::string_view input, const std::string &key)
 {
     if (std::shared_ptr<Mem::BinaryDataContainer> i = AES256DecryptB64ToBin(input, key.c_str(), key.length()))
     {
@@ -175,10 +176,7 @@ std::optional<std::string> Crypto::AES256DecryptB64(const std::string &input, co
 std::string Crypto::AES256EncryptB64_v0ld(const unsigned char *input, size_t inputLen, const char *key, size_t keyLen, int ivLength, bool *ok)
 {
     std::string out;
-    if (ok)
-    {
-        *ok = false;
-    }
+    SET_OK_BOOLEAN(ok, false);
 
     // Create the random salt (128bit) and derived Key (256bit)...
     uint8_t salt[128 / 8], derivedKey[256 / 8];
@@ -218,10 +216,7 @@ std::string Crypto::AES256EncryptB64_v0ld(const unsigned char *input, size_t inp
                         {
                             memcpy(cipherOutText + 16, gcmTag, 16);
                             out = Helpers::Encoders::encodeToBase64(cipherOutText, cipherOutLength);
-                            if (ok)
-                            {
-                                *ok = true;
-                            }
+                            SET_OK_BOOLEAN(ok, true);
                         }
                     }
                 }
@@ -233,62 +228,62 @@ std::string Crypto::AES256EncryptB64_v0ld(const unsigned char *input, size_t inp
     return out;
 }
 
-std::string Crypto::calcSHA1(const std::string &password)
+std::string Crypto::calcSHA1(std::string_view password)
 {
     unsigned char buffer[EVP_MAX_MD_SIZE + 1];
     unsigned int digestLen = 0;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha1(), nullptr);
-    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.c_str()), password.length());
+    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.data()), password.size());
     EVP_DigestFinal_ex(ctx, buffer, &digestLen);
     EVP_MD_CTX_free(ctx);
     return Encoders::toHex(buffer, digestLen);
 }
 
-std::string Crypto::calcSHA256(const std::string &password)
+std::string Crypto::calcSHA256(std::string_view password)
 {
     unsigned char buffer[EVP_MAX_MD_SIZE + 1];
     unsigned int digestLen = 0;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
-    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.c_str()), password.length());
+    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.data()), password.size());
     EVP_DigestFinal_ex(ctx, buffer, &digestLen);
     EVP_MD_CTX_free(ctx);
     return Encoders::toHex(buffer, digestLen);
 }
 
-std::string Crypto::calcSHA512(const std::string &password)
+std::string Crypto::calcSHA512(std::string_view password)
 {
     unsigned char buffer[EVP_MAX_MD_SIZE + 1];
     unsigned int digestLen = 0;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha512(), nullptr);
-    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.c_str()), password.length());
+    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.data()), password.size());
     EVP_DigestFinal_ex(ctx, buffer, &digestLen);
     EVP_MD_CTX_free(ctx);
     return Encoders::toHex(buffer, digestLen);
 }
 
-std::string Crypto::calcSSHA256(const std::string &password, const unsigned char *ssalt)
+std::string Crypto::calcSSHA256(std::string_view password, const unsigned char *ssalt)
 {
     unsigned char buffer[EVP_MAX_MD_SIZE + 1];
     unsigned int digestLen = 0;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
-    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.c_str()), password.length());
+    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.data()), password.size());
     EVP_DigestUpdate(ctx, ssalt, 4);
     EVP_DigestFinal_ex(ctx, buffer, &digestLen);
     EVP_MD_CTX_free(ctx);
     return Encoders::toHex(buffer, digestLen);
 }
 
-std::string Crypto::calcSSHA512(const std::string &password, const unsigned char *ssalt)
+std::string Crypto::calcSSHA512(std::string_view password, const unsigned char *ssalt)
 {
     unsigned char buffer[EVP_MAX_MD_SIZE + 1];
     unsigned int digestLen = 0;
     EVP_MD_CTX *ctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(ctx, EVP_sha512(), nullptr);
-    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.c_str()), password.length());
+    EVP_DigestUpdate(ctx, reinterpret_cast<const unsigned char *>(password.data()), password.size());
     EVP_DigestUpdate(ctx, ssalt, 4);
     EVP_DigestFinal_ex(ctx, buffer, &digestLen);
     EVP_MD_CTX_free(ctx);

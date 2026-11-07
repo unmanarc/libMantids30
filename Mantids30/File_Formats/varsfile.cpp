@@ -1,4 +1,5 @@
 #include "varsfile.h"
+#include <Mantids30/Helpers/defines.h>
 #include <fstream>
 #include <sstream>
 
@@ -88,17 +89,11 @@ std::string File::getVarValue(const std::string &varName, bool *found)
 
     if (i == m_vars.end())
     {
-        if (found)
-        {
-            *found = false;
-        }
+        SET_OK_BOOLEAN(found, false);
         return "";
     }
 
-    if (found)
-    {
-        *found = true;
-    }
+    SET_OK_BOOLEAN(found, true);
     return i->second;
 }
 
@@ -109,28 +104,19 @@ std::pair<std::string, std::string> File::getLineVars(const std::string &line, b
 
     if (!std::getline(sStrValues, varName, ':'))
     {
-        if (ok)
-        {
-            *ok = false;
-        }
+        SET_OK_BOOLEAN(ok, false);
         return std::make_pair("", "");
     }
 
     if (line.size() <= varName.size())
     {
-        if (ok)
-        {
-            *ok = false;
-        }
+        SET_OK_BOOLEAN(ok, false);
         return std::make_pair("", "");
     }
 
     varValue = line.substr(0, varName.size() + 1);
 
-    if (ok)
-    {
-        *ok = true;
-    }
+    SET_OK_BOOLEAN(ok, true);
     return std::make_pair(varName, varValue);
 }
 
@@ -138,16 +124,10 @@ std::string File::getLineFromVars(const std::pair<std::string, std::string> &var
 {
     if (vars.first.find(':') != std::string::npos)
     {
-        if (ok)
-        {
-            *ok = false;
-        }
+        SET_OK_BOOLEAN(ok, false);
         return "";
     }
-    if (ok)
-    {
-        *ok = true;
-    }
+    SET_OK_BOOLEAN(ok, true);
     return vars.first + ":" + vars.second;
 }
 
