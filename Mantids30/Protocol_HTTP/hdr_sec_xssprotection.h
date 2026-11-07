@@ -37,7 +37,7 @@ public:
      * @param sValue The X-XSS-Protection header string to parse.
      * @return true if the parsing was successful, false otherwise.
      */
-    bool fromString(const std::string &sValue);
+    bool fromString(std::string_view sValue);
 
     bool isActivated = true;        ///< Whether the X-XSS-Protection header is activated.
     bool enableBlockingMode = true; ///< Whether blocking is enabled for the X-XSS-Protection header.

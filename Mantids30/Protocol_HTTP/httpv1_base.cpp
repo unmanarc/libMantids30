@@ -27,7 +27,7 @@ bool HTTP::HTTPv1_Base::initProtocol()
 
 void HTTP::HTTPv1_Base::endProtocol() {}
 
-void HTTP::HTTPv1_Base::setInternalProductVersion(const std::string &prodName, const std::string &extraInfo, const uint32_t &versionMajor, const uint32_t &versionMinor)
+void HTTP::HTTPv1_Base::setInternalProductVersion(std::string_view prodName, std::string_view extraInfo, const uint32_t &versionMajor, const uint32_t &versionMinor)
 {
-    serverResponse.headers.replace("Server", prodName + "/" + std::to_string(versionMajor) + "." + std::to_string(versionMinor) + (!extraInfo.empty() ? (" " + extraInfo) : ""));
+    serverResponse.headers.replace("Server", std::string(prodName) + "/" + std::to_string(versionMajor) + "." + std::to_string(versionMinor) + (!extraInfo.empty() ? (" " + std::string(extraInfo)) : ""));
 }

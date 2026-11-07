@@ -9,6 +9,7 @@
 #include <Mantids30/Threads/threadpool.h>
 #include <memory>
 #include <shared_mutex>
+#include <string_view>
 
 namespace Mantids30::Network::Protocol::FastRPC {
 
@@ -179,7 +180,7 @@ public:
      * @param error Error Return
      * @return Answer, or boost::json::value{} if answer is not received or if timed out.
      */
-    boost::json::value runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected = true);
+    boost::json::value runRemoteRPCMethod(const std::string &connectionKey, std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected = true);
     /**
      * @brief runRemoteClose Run Remote Close Method
      * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
@@ -198,11 +199,11 @@ public:
      * @param connectionKey connection key
      * @return true if exist, otherwise false.
      */
-    bool checkConnectionKey(const std::string &connectionKey);
+    bool checkConnectionKey(std::string_view connectionKey);
 
     //////////////////////////////////////////////////////////
     // For Internal use only:
-    boost::json::value runLocalRPCMethod(const std::string &methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found);
+    boost::json::value runLocalRPCMethod(std::string_view methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found);
 
     void setRemoteExecutionDisconnectedTries(const uint32_t &value);
 

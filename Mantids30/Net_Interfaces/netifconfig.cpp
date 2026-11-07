@@ -28,9 +28,7 @@ using namespace Mantids30::Network::Interfaces;
 
 NetworkInterfaceConfiguration::NetworkInterfaceConfiguration()
 {
-#ifndef _WIN32
-    ZeroBStruct(m_ifr);
-#else
+#ifdef _WIN32
     adapterIndex = ((DWORD) -1);
     m_fd = INVALID_HANDLE_VALUE;
 #endif
@@ -42,20 +40,9 @@ bool NetworkInterfaceConfiguration::apply()
     // Linux:
     if (m_changeIPv4Addr)
     {
-        struct ifreq ifr1_host
-        {
-            0
-        };
-        struct ifreq ifr1_netmask
-        {
-            0
-        };
-
-        ZeroBStruct(ifr1_host);
-        ZeroBStruct(ifr1_netmask);
-
-        sockaddr_in addr{0};
-        ZeroBStruct(addr);
+        struct ifreq ifr1_host{};
+        struct ifreq ifr1_netmask{};
+        sockaddr_in addr{};
 
         ifr1_host = m_ifr;
         ifr1_netmask = m_ifr;
@@ -131,7 +118,7 @@ bool NetworkInterfaceConfiguration::apply()
 #else
     if (changeIPv4Addr)
     {
-        ExecutionResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
+        ExecutionResult i = Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
                                                                                 Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
         if (i.error == 0)
             changeIPv4Addr = false;
@@ -144,7 +131,7 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeMTU)
     {
-        ExecutionResult i = Mantids30::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
+        ExecutionResult i = Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
         if (i.error == 0)
             changeMTU = false;
         else
@@ -200,17 +187,17 @@ NetworkInterfaceConfiguration::NetIfType NetworkInterfaceConfiguration::getNetIf
 
 #ifdef _WIN32
 
-Mantids30::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
+Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
 {
-    Mantids30::Helpers::AppExec::ExecutionArgs x;
+    Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getRouteExecPath();
     x.args = routecmdopts;
     return x;
 }
 
-Mantids30::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
+Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
 {
-    Mantids30::Helpers::AppExec::ExecutionArgs x;
+    Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getNetSHExecPath();
     x.args = netshcmdopts;
     return x;
@@ -362,8 +349,7 @@ int NetworkInterfaceConfiguration::getMTU()
 
 ethhdr NetworkInterfaceConfiguration::getEthernetAddress()
 {
-    ethhdr etherHdrData{0};
-    ZeroBStruct(etherHdrData);
+    ethhdr etherHdrData{};
 
 #ifndef _WIN32
     etherHdrData.h_proto = htons(ETH_P_IP);

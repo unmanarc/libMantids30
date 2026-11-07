@@ -109,7 +109,7 @@ public:
 
 private:
 #ifndef _WIN32
-    struct ifreq m_ifr = {0};
+    struct ifreq m_ifr = {};
     int m_fd = -1;
 #else
     ULONG m_adapterIndex;

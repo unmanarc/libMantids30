@@ -1,7 +1,5 @@
 #include "api_monolith_endpoints.h"
 #include <Mantids30/DataFormat_JSON/json.h>
-#include <shared_mutex>
-#include <mutex>
 #include <memory>
 
 using namespace Mantids30::API::Monolith;
@@ -76,8 +74,8 @@ Endpoints::ValidationResult Endpoints::validateEndpointRequirements(const std::s
     else
     {
         // Fills reasons with any missing roles and scopes required by the endpoint
-        Mantids30::Helpers::JSON::setMember(*reasons, "rolesLeft", Helpers::JSON::fromSet(rolesLeft));
-        Mantids30::Helpers::JSON::setMember(*reasons, "scopesLeft", Helpers::JSON::fromSet(scopesLeft));
+        Helpers::JSON::setMember(*reasons, "rolesLeft", Helpers::JSON::fromSet(rolesLeft));
+        Helpers::JSON::setMember(*reasons, "scopesLeft", Helpers::JSON::fromSet(scopesLeft));
 
         return ValidationResult::NOTAUTHORIZED; // Requirements not met, return unauthorized code
     }

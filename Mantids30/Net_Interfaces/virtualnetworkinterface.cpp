@@ -75,7 +75,6 @@ bool VirtualNetworkInterface::start(NetworkInterfaceConfiguration *netcfg, const
     }
 
     struct ifreq ifr{};
-    ZeroBStruct(ifr);
 
     // Create the tun/tap interface.
     ifr.ifr_flags = IFF_TAP | IFF_NO_PI;

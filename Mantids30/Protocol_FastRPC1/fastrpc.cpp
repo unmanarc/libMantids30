@@ -1,4 +1,5 @@
 #include "fastrpc.h"
+#include <Mantids30/Helpers/defines.h>
 #include <shared_mutex>
 #include <mutex>
 #include <memory>
@@ -99,24 +100,19 @@ bool FastRPC1::waitPingInterval()
     return m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout;
 }
 
-boost::json::value FastRPC1::runLocalRPCMethod(const std::string &methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found)
+boost::json::value FastRPC1::runLocalRPCMethod(std::string_view methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found)
 {
     boost::json::value r;
     std::shared_lock<std::shared_mutex> lock(m_methodsMutex);
-    if (m_methods.find(methodName) != m_methods.end())
+    const std::string mName{methodName};
+    if (m_methods.find(mName) != m_methods.end())
     {
-        r = m_methods[methodName].method(m_overwriteContext ? m_overwriteContext : m_methods[methodName].context, connectionKey, payload, context, data);
-        if (found)
-        {
-            *found = true;
-        }
+        r = m_methods[mName].method(m_overwriteContext ? m_overwriteContext : m_methods[mName].context, connectionKey, payload, context, data);
+        SET_OK_BOOLEAN(found, true);
     }
     else
     {
-        if (found)
-        {
-            *found = false;
-        }
+        SET_OK_BOOLEAN(found, false);
     }
     return r;
 }
@@ -390,9 +386,10 @@ void FastRPC1::setMaxMessageSize(const uint32_t &value)
     m_maxMessageSize = value;
 }
 
-boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected)
+boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected)
 {
     boost::json::value r;
+    const std::string mMethodName{methodName};
 
     std::string output = boost::json::serialize(payload);
 
@@ -415,7 +412,7 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
         _tries++;
         if (_tries >= m_remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            eventRemotePeerDisconnected(connectionKey, methodName, payload);
+            eventRemotePeerDisconnected(connectionKey, mMethodName, payload);
             if (error)
             {
                 Helpers::JSON::setMember(*error, "succeed", false);
@@ -441,7 +438,7 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
 
     connection->mtSocket->lock();
     if (connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
-        connection->stream->writeU<uint64_t>(requestId) && connection->stream->writeStringEx<uint8_t>(methodName) && connection->stream->writeStringEx<uint32_t>(output, m_maxMessageSize))
+        connection->stream->writeU<uint64_t>(requestId) && connection->stream->writeStringEx<uint8_t>(mMethodName) && connection->stream->writeStringEx<uint32_t>(output, m_maxMessageSize))
     {
     }
     connection->mtSocket->unlock();
@@ -456,7 +453,7 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
         if (connection->cvAnswers.wait_for(lk, Ms(m_remoteExecutionTimeoutInMS)) == std::cv_status::timeout)
         {
             // break by timeout. (no answer)
-            eventRemoteExecutionTimedOut(connectionKey, methodName, payload);
+            eventRemoteExecutionTimedOut(connectionKey, mMethodName, payload);
             if (error)
             {
                 Helpers::JSON::setMember(*error, "succeed", false);
@@ -521,7 +518,7 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
 
     if (error)
     {
-        if (!Helpers::JSON::hasMember(*error, "succeed"))
+        if (!Helpers::JSON::HAS_MEMBER(*error, "succeed"))
         {
             Helpers::JSON::setMember(*error, "succeed", false);
             Helpers::JSON::setMember(*error, "errorId", 99);
@@ -559,9 +556,9 @@ std::set<std::string> FastRPC1::getConnectionKeys()
     return m_connectionsByKeyId.getKeys();
 }
 
-bool FastRPC1::checkConnectionKey(const std::string &connectionKey)
+bool FastRPC1::checkConnectionKey(std::string_view connectionKey)
 {
-    return m_connectionsByKeyId.isMember(connectionKey);
+    return m_connectionsByKeyId.isMember(std::string(connectionKey));
 }
 
 void FastRPC1::eventFullQueueDrop(FastRPC1::ThreadParameters *) {}

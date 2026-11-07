@@ -60,7 +60,7 @@ std::string HSTS::toString() const
     return "";
 }
 
-bool HSTS::fromString(const std::string &sValue)
+bool HSTS::fromString(std::string_view sValue)
 {
     // Reset the current object to a clean state
     // This ensures that if parsing fails, the object doesn't hold stale data.

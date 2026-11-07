@@ -38,7 +38,7 @@ std::string JWT::createHeader()
     return Helpers::Encoders::encodeToBase64(header_str, true);
 }
 
-bool JWT::isAlgorithmSupported(const std::string &algorithm)
+bool JWT::isAlgorithmSupported(std::string_view algorithm)
 {
     if (algorithm == "HS256")
     {
@@ -269,7 +269,7 @@ void JWT::setPrivateSecret(const std::string &newPrivateSecret)
     m_privateSecret = newPrivateSecret;
 }
 
-bool JWT::isHMACAlgorithm(const std::string &algorithm)
+bool JWT::isHMACAlgorithm(std::string_view algorithm)
 {
     if (algorithm == "HS256")
     {
@@ -286,7 +286,7 @@ bool JWT::isHMACAlgorithm(const std::string &algorithm)
     return false;
 }
 
-bool JWT::isRSAAlgorithm(const std::string &algorithm)
+bool JWT::isRSAAlgorithm(std::string_view algorithm)
 {
     if (algorithm == "RS256")
     {
@@ -343,7 +343,7 @@ std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
     return sign(*(token.getClaimsPTR()));
 }
 
-bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOutput)
+bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutput)
 {
     JWT::Token dummyToken;
     if (!tokenPayloadOutput)
@@ -362,9 +362,9 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     }
 
     // Extract the base64-encoded header, payload, and signature substrings from the token
-    std::string header_b64 = fullSignedToken.substr(0, pos_header);
-    std::string payload_b64 = fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1);
-    std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
+    std::string header_b64(fullSignedToken.substr(0, pos_header));
+    std::string payload_b64(fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1));
+    std::string signature_b64(fullSignedToken.substr(pos_payload + 1));
 
     // Decode the base64-encoded header, payload, and signature strings
     std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
@@ -400,7 +400,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
 
     // Parse the JSON header using the Boost.JSON library
     boost::json::value header_json;
-    Mantids30::Helpers::JSON::Reader charReader;
+    Helpers::JSON::Reader charReader;
     if (!charReader.parse(header_str, header_json))
     {
         // If the header cannot be parsed, return false
@@ -410,7 +410,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     bool isSignatureVerified = false;
 
     // Check that the header algorithm is supported
-    std::string incomingAlgorithm = Helpers::JSON::ASSTRING(header_json, "alg", "");
+    std::string_view incomingAlgorithm = Helpers::JSON::ASSTRING(header_json, "alg", "");
     if (!isAlgorithmSupported(incomingAlgorithm))
     {
         return false;
@@ -452,7 +452,7 @@ bool JWT::verify(const std::string &fullSignedToken, JWT::Token *tokenPayloadOut
     return tokenPayloadOutput->isValid();
 }
 
-bool JWT::decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayloadOutput)
+bool JWT::decodeNoVerify(std::string_view fullSignedToken, Token *tokenPayloadOutput)
 {
     // Find the positions of the '.' characters that separate the header, payload, and signature
     size_t pos_header = fullSignedToken.find('.');
@@ -465,8 +465,8 @@ bool JWT::decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayload
     }
 
     // Extract the base64-encoded header, payload, and signature substrings from the token
-    std::string header_b64 = fullSignedToken.substr(0, pos_header);
-    std::string payload_b64 = fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1);
+    std::string header_b64(fullSignedToken.substr(0, pos_header));
+    std::string payload_b64(fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1));
     //std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
 
     // Decode the base64-encoded header, payload, and signature strings
@@ -477,7 +477,7 @@ bool JWT::decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayload
     return tokenPayloadOutput->decodePayload(payload_str);
 }
 
-JWT::Token JWT::verifyAndDecodeTokenPayload(const std::string &fullSignedToken)
+JWT::Token JWT::verifyAndDecodeTokenPayload(std::string_view fullSignedToken)
 {
     JWT::Token r, empty;
     if (verify(fullSignedToken, &r))

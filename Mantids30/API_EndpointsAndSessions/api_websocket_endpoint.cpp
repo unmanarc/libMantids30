@@ -7,7 +7,7 @@ Endpoint::Endpoint()
     : connectionsByIdMap(std::make_shared<Threads::Safe::Map<std::string>>())
 {}
 
-size_t Endpoint::getActiveUserConnectionsCount(const std::string &userId) const
+size_t Endpoint::getActiveUserConnectionsCount(std::string_view userId) const
 {
     size_t count = 0;
     std::set<std::string> keys = connectionsByIdMap->getKeys();
@@ -26,19 +26,19 @@ size_t Endpoint::getActiveUserConnectionsCount(const std::string &userId) const
     return count;
 }
 
-bool Endpoint::sendJSONToConnectionID(const std::string &sessionId, const boost::json::value &v) const
+bool Endpoint::sendJSONToConnectionID(std::string_view sessionId, const boost::json::value &v) const
 {
-    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
+    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement((std::string)sessionId));
     if (connection)
     {
         connection->webSocketHTTPServer->sendWebSocketText(boost::json::serialize(v));
-        connectionsByIdMap->releaseElement(sessionId);
+        connectionsByIdMap->releaseElement((std::string)sessionId);
         return true;
     }
     return false;
 }
 
-bool Endpoint::sendJSONToUser(const std::string &userId, const boost::json::value &v) const
+bool Endpoint::sendJSONToUser(std::string_view userId, const boost::json::value &v) const
 {
     std::set<std::string> keys = connectionsByIdMap->getKeys();
     for (const std::string &sessionId : keys)
@@ -61,7 +61,7 @@ bool Endpoint::sendJSONToUser(const std::string &userId, const boost::json::valu
     return false;
 }
 
-size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const boost::json::value &v) const
+size_t Endpoint::sendJSONToSubscriptionTopic(std::string_view topicId, const boost::json::value &v) const
 {
     size_t i = 0;
     std::set<std::string> keys = connectionsByIdMap->getKeys();
@@ -72,7 +72,7 @@ size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const b
         {
             {
                 std::unique_lock<std::mutex> lock(connection->subscribedTopicsMutex);
-                if (connection->subscribedTopics.find(topicId) != connection->subscribedTopics.end())
+                if (connection->subscribedTopics.find((std::string)topicId) != connection->subscribedTopics.end())
                 {
                     connection->webSocketHTTPServer->sendWebSocketText(boost::json::serialize(v));
                     i++;
@@ -84,9 +84,9 @@ size_t Endpoint::sendJSONToSubscriptionTopic(const std::string &topicId, const b
     return i;
 }
 
-bool Endpoint::joinTopicSubscription(const std::string &sessionId, const std::string &topicId) const
+bool Endpoint::joinTopicSubscription(std::string_view sessionId, std::string_view topicId) const
 {
-    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
+    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement((std::string)sessionId));
     if (connection)
     {
         bool r = true;
@@ -94,29 +94,29 @@ bool Endpoint::joinTopicSubscription(const std::string &sessionId, const std::st
             std::unique_lock<std::mutex> lock(connection->subscribedTopicsMutex);
             if (connection->subscribedTopics.size() < (*config)->maxSubscriptionTopicsPerConnection)
             {
-                connection->subscribedTopics.insert(topicId);
+                connection->subscribedTopics.insert((std::string)topicId);
             }
             else
             {
                 r = false;
             }
         }
-        connectionsByIdMap->releaseElement(sessionId);
+        connectionsByIdMap->releaseElement((std::string)sessionId);
         return r;
     }
     return false;
 }
 
-bool Endpoint::leaveTopicSubscription(const std::string &sessionId, const std::string &topicId) const
+bool Endpoint::leaveTopicSubscription(std::string_view sessionId, std::string_view topicId) const
 {
-    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement(sessionId));
+    WebSocketConnection *connection = static_cast<WebSocketConnection *>(connectionsByIdMap->openElement((std::string)sessionId));
     if (connection)
     {
         {
             std::unique_lock<std::mutex> lock(connection->subscribedTopicsMutex);
-            connection->subscribedTopics.erase(topicId);
+            connection->subscribedTopics.erase((std::string)topicId);
         }
-        connectionsByIdMap->releaseElement(sessionId);
+        connectionsByIdMap->releaseElement((std::string)sessionId);
         return true;
     }
     return false;

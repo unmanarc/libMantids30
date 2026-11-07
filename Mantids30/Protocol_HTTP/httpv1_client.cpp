@@ -228,7 +228,7 @@ HTTP::HTTPv1_Client::PostURLRequest HTTP::HTTPv1_Client::prepareRequestAsPostURL
 
 std::string HTTP::HTTPv1_Client::getResponseHeader(const std::string &headerName)
 {
-    return serverResponse.headers.getOptionValueStringByName(headerName);
+    return std::string(serverResponse.headers.getOptionValueStringByName(headerName));
 }
 
 void HTTP::HTTPv1_Client::setReferer(const std::string &refererURL)

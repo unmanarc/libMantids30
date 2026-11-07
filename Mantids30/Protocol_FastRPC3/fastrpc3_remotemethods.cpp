@@ -25,9 +25,10 @@ boost::json::value FastRPC3::RemoteMethods::loginViaJWTToken(const std::string &
     return executeTask("SESSION.LOGIN", jAuthData, error, true, true);
 }
 
-boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
+boost::json::value FastRPC3::RemoteMethods::executeTask(std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected, bool passSessionCommands, const string &extraJWTTokenAuth)
 {
     boost::json::value r;
+    const std::string mMethodName{methodName};
 
     if (!passSessionCommands && boost::starts_with(methodName, "SESSION."))
     {
@@ -55,7 +56,7 @@ boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName
         _tries++;
         if (_tries >= parent->config.remoteExecutionDisconnectedTries || !retryIfDisconnected)
         {
-            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, methodName, payload);
+            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureDisconnectedPeer)(connectionId, mMethodName, payload);
             if (error)
             {
                 Helpers::JSON::setMember(*error, "succeed", false);
@@ -90,7 +91,7 @@ boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName
     bool dataTransmitOK = true;
 
     if (connection->stream->writeU<uint8_t>('Q') && // QUERY FOR ANSWER
-        connection->stream->writeU<uint64_t>(requestId) && connection->stream->writeU<uint8_t>(flags) && connection->stream->writeStringEx<uint8_t>(methodName)
+        connection->stream->writeU<uint64_t>(requestId) && connection->stream->writeU<uint8_t>(flags) && connection->stream->writeStringEx<uint8_t>(mMethodName)
         && connection->stream->writeStringEx<uint32_t>(output, parent->config.maxMessageSize))
     {
     }
@@ -133,7 +134,7 @@ boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName
         if (connection->answersCondition.wait_for(lk, Ms(parent->config.remoteExecutionTimeoutInMS)) == cv_status::timeout)
         {
             // break by timeout. (no answer)
-            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureTimeout)(connectionId, methodName, payload);
+            CALLBACK(parent->rpcCallbacks.onOutgoingTaskFailureTimeout)(connectionId, mMethodName, payload);
 
             if (error)
             {
@@ -201,7 +202,7 @@ boost::json::value FastRPC3::RemoteMethods::executeTask(const string &methodName
 
     if (error)
     {
-        if (!Helpers::JSON::hasMember(*error, "succeed"))
+        if (!Helpers::JSON::HAS_MEMBER(*error, "succeed"))
         {
             Helpers::JSON::setMember(*error, "succeed", false);
             Helpers::JSON::setMember(*error, "errorId", 99);

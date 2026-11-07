@@ -1,6 +1,7 @@
 #include "socket_stream_reader.h"
 
 #include <Mantids30/Memory/endian2.h>
+#include <Mantids30/Helpers/defines.h>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -18,15 +19,12 @@ Socket_Stream_Reader::~Socket_Stream_Reader() = default;
 unsigned char Socket_Stream_Reader::readU8(bool *readOK)
 {
     unsigned char rsp[1] = {0};
-    if (readOK)
-    {
-        *readOK = true;
-    }
+    SET_OK_BOOLEAN(readOK, true);
     // Receive 1 byte, if fails, readOK is setted as false.
     size_t r;
-    if ((!readFull(&rsp, 1, &r) || r != 1) && readOK)
+    if ((!readFull(&rsp, 1, &r) || r != 1))
     {
-        *readOK = false;
+        SET_OK_BOOLEAN(readOK, false);
     }
     return rsp[0];
 }
@@ -34,15 +32,12 @@ unsigned char Socket_Stream_Reader::readU8(bool *readOK)
 uint16_t Socket_Stream_Reader::readU16(bool *readOK)
 {
     uint16_t ret = 0;
-    if (readOK)
-    {
-        *readOK = true;
-    }
+    SET_OK_BOOLEAN(readOK, true);
     // Receive 2 bytes (unsigned short), if fails, readOK is setted as false.
     size_t r;
-    if ((!readFull(&ret, sizeof(uint16_t), &r) || r != sizeof(uint16_t)) && readOK)
+    if ((!readFull(&ret, sizeof(uint16_t), &r) || r != sizeof(uint16_t)))
     {
-        *readOK = false;
+        SET_OK_BOOLEAN(readOK, false);
     }
     ret = ntohs(ret); // Reconvert into host based integer.
     return ret;
@@ -51,16 +46,13 @@ uint16_t Socket_Stream_Reader::readU16(bool *readOK)
 uint32_t Socket_Stream_Reader::readU32(bool *readOK)
 {
     uint32_t ret = 0;
-    if (readOK)
-    {
-        *readOK = true;
-    }
+    SET_OK_BOOLEAN(readOK, true);
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
     size_t r;
-    if ((!readFull(&ret, sizeof(uint32_t), &r) || r != sizeof(uint32_t)) && readOK)
+    if ((!readFull(&ret, sizeof(uint32_t), &r) || r != sizeof(uint32_t)))
     {
-        *readOK = false;
+        SET_OK_BOOLEAN(readOK, false);
     }
     ret = ntohl(ret); // Reconvert into host based integer.
     return ret;
@@ -69,16 +61,13 @@ uint32_t Socket_Stream_Reader::readU32(bool *readOK)
 uint64_t Socket_Stream_Reader::readU64(bool *readOK)
 {
     uint64_t ret = 0;
-    if (readOK)
-    {
-        *readOK = true;
-    }
+    SET_OK_BOOLEAN(readOK, true);
     // Receive 4 bytes (unsigned int), if fails, readOK is setted as false.
 
     size_t r;
-    if ((!readFull(&ret, sizeof(uint64_t), &r) || r != sizeof(uint64_t)) && readOK)
+    if ((!readFull(&ret, sizeof(uint64_t), &r) || r != sizeof(uint64_t)))
     {
-        *readOK = false;
+        SET_OK_BOOLEAN(readOK, false);
     }
 
     ret = ntohll(ret); // Reconvert into host based integer.

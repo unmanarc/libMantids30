@@ -4,6 +4,7 @@
 #include <Mantids30/Net_Sockets/socket_tls.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <Mantids30/Protocol_HTTP/httpv1_client.h>
+#include <string>
 
 using namespace Mantids30;
 using namespace Mantids30::Program;
@@ -92,7 +93,7 @@ std::optional<std::string> Network::Protocol::APISync::getApplicationJWTValidati
         return std::nullopt;
     }
 
-    return Mantids30::Helpers::JSON::ASSTRING_D(response, "");
+    return std::string(Helpers::JSON::ASSTRING_D(response, ""));
 }
 
 

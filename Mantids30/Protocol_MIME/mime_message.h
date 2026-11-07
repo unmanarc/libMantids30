@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string_view>
 
 #include <Mantids30/Memory/parser.h>
 #include <Mantids30/Memory/vars.h>
@@ -61,13 +62,13 @@ public:
      * @param varName Variable Name
      * @return list of part message that match the given name
      */
-    std::list<std::shared_ptr<MIME_PartMessage>> getMultiPartMessagesByName(const std::string &varName);
+    std::list<std::shared_ptr<MIME_PartMessage>> getMultiPartMessagesByName(std::string_view varName);
     /**
      * @brief getFirstMessageByName Get the first message by name
      * @param varName Variable name
      * @return The first part message for a given variable name
      */
-    std::shared_ptr<MIME_PartMessage> getFirstMessageByName(const std::string &varName);
+    std::shared_ptr<MIME_PartMessage> getFirstMessageByName(std::string_view varName);
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- VARIABLE SET FUNCTIONS -------------

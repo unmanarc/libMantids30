@@ -4,6 +4,7 @@
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
 #include <shared_mutex>
 #include <mutex>
+#include "Mantids30/DataFormat_JSON/json_convert.h"
 #include "security.h"
 
 using namespace Mantids30;

@@ -30,6 +30,9 @@ public:
         *this->body = body;
     }
 
+    APIReturn(const boost::json::array &body) : APIReturn(boost::json::value(body)) {}
+    APIReturn(const boost::json::object &body) : APIReturn(boost::json::value(body)) {}
+
     /**
      * @brief Assignment operator for APIReturn.
      * @param body The body of the response.
@@ -101,7 +104,7 @@ public:
      * @brief Exports all the data of this class to JSON format for use in an API server.
      * @return A boost::json::value object containing the HTTP response code and body.
      */
-    [[nodiscard]] boost::json::value toJSON() const
+    [[nodiscard]] boost::json::object toJSON() const
     {
         boost::json::object root;
         root["httpResponseCode"] = static_cast<int>(httpResponseCode);
@@ -139,24 +142,24 @@ public:
     void fromJSON(const boost::json::value &jsonValue)
     {
         httpResponseCode = static_cast<Network::Protocol::HTTP::Status::Code>(Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", static_cast<unsigned int>(Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR)));
-        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "body") && body)
+        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "body") && body)
         {
-            body->setValue(Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "body"));
+            body->setValue(Mantids30::Helpers::JSON::MEMBER_OR_NULL(jsonValue, "body"));
         }
-        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "extraHeaders"))
+        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "extraHeaders"))
         {
-            const boost::json::value &extraHeaders = Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "extraHeaders");
+            const boost::json::value &extraHeaders = Mantids30::Helpers::JSON::MEMBER_OR_NULL(jsonValue, "extraHeaders");
             for (const auto &kv : extraHeaders.as_object())
             {
                 httpExtraHeaders[kv.key()] = Helpers::JSON::ASSTRING(extraHeaders, kv.key(), "");
             }
         }
-        if (Mantids30::Helpers::JSON::hasMember(jsonValue, "cookies"))
+        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "cookies"))
         {
-            const boost::json::value &cookies = Mantids30::Helpers::JSON::detail::safeGet(jsonValue, "cookies");
-            for (const boost::json::value &i : cookies.as_array())
+            const boost::json::array &cookies = Mantids30::Helpers::JSON::ASARRAY_OR_EMPTY(jsonValue, "cookies");
+            for (const boost::json::value &i : cookies)
             {
-                std::string cookieString = Helpers::JSON::ASSTRING_D(i, "");
+                std::string cookieString(Helpers::JSON::ASSTRING_D(i, ""));
                 Mantids30::Network::Protocol::HTTP::Headers::Cookie cookie;
                 std::string cookieName;
                 cookie.fromSetCookieString(cookieString, &cookieName);

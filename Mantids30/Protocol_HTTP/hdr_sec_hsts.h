@@ -45,7 +45,7 @@ public:
      * @param sValue The HSTS policy string to parse.
      * @return true if the parsing was successful, false otherwise.
      */
-    bool fromString(const std::string &sValue);
+    bool fromString(std::string_view sValue);
 
     bool isActivated = false;         ///< Whether the HSTS policy is activated.
     bool isPreloadEnabled = false;    ///< Whether to use the preload option.

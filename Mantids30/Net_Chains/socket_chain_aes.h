@@ -54,24 +54,19 @@ private:
     {
         HandShakeHeader()
         {
-            ZeroBArray(reserved);
-            ZeroBArray(phase2Key);
-            ZeroBArray(IVSeed);
             memcpy(magicBytes, "IHDR", 4);
         }
         ~HandShakeHeader()
         {
-            ZeroBArray(reserved);
-            ZeroBArray(phase2Key);
-            ZeroBArray(IVSeed);
-            ZeroBArray(magicBytes);
+            explicit_bzero(IVSeed, sizeof(IVSeed));
+            explicit_bzero(phase2Key, sizeof(phase2Key));
         }
 
         // TOT: 112 bytes initial header.
-        char magicBytes[4];
-        char IVSeed[16];
-        char phase2Key[32];
-        char reserved[60];
+        char magicBytes[4]{};
+        char IVSeed[16]{};
+        char phase2Key[32]{};
+        char reserved[60]{};
     } __attribute__((packed));
 
     struct SideParams
@@ -79,8 +74,9 @@ private:
         SideParams() = default;
         ~SideParams()
         {
+            explicit_bzero(handShakeIV, sizeof(handShakeIV));
+            explicit_bzero(currentIV, sizeof(currentIV));
             cleanAESBlock();
-            ZeroBArray(handShakeIV);
         }
         void cleanAESBlock(char *nAesBlock = nullptr, size_t nAesBlock_curSize = 0)
         {
@@ -143,9 +139,9 @@ private:
             }
             return true;
         }
-        char handShakeIV[16];
-        char currentIV[16];
-        std::mt19937_64 mt19937IV[2];
+        char handShakeIV[16]{};
+        char currentIV[16]{};
+        std::mt19937_64 mt19937IV[2]{};
         HandShakeHeader handshake;
         char *aesBlock = nullptr;
         size_t aesBlock_curSize = 0;

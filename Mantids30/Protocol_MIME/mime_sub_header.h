@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 
 /*
  * TODO: Security: check if other servers can handle the MIME properly...
@@ -27,19 +28,21 @@ public:
         m_maxSubOptionsCount = 16;
     }
 
-    std::string getSubVar(const std::string &subVarName)
+    std::string getSubVar(std::string_view subVarName)
     {
-        if (m_subVar.find(subVarName) == m_subVar.end())
+        const std::string name{subVarName};
+        if (m_subVar.find(name) == m_subVar.end())
         {
             return "";
         }
-        return m_subVar.find(subVarName)->second;
+        return m_subVar.find(name)->second;
     }
 
-    std::list<std::string> getSubVars(const std::string &subVarName)
+    std::list<std::string> getSubVars(std::string_view subVarName)
     {
         std::list<std::string> r;
-        auto ret = m_subVar.equal_range(subVarName);
+        const std::string name{subVarName};
+        auto ret = m_subVar.equal_range(name);
         for (std::multimap<std::string, std::string>::iterator it = ret.first; it != ret.second; ++it)
         {
             r.push_back(it->second);
@@ -94,12 +97,12 @@ public:
      * @param optionName
      * @return
      */
-    bool exist(const std::string &optionName) const;
+    bool exist(std::string_view optionName) const;
     /**
      * @brief remove Remove option from MIME Structure.
      * @param optionName option Name.
      */
-    void remove(const std::string &optionName);
+    void remove(std::string_view optionName);
     /**
      * @brief replace Remove the option (if exist), and add you own.
      * @param optionName option Name.
@@ -123,25 +126,25 @@ public:
      * @param varName value name.
      * @return list of HeaderOption's
      */
-    std::list<std::shared_ptr<MIME_HeaderOption>> getOptionsByName(const std::string &varName) const;
+    std::list<std::shared_ptr<MIME_HeaderOption>> getOptionsByName(std::string_view varName) const;
     /**
      * @brief getOptionByName Get the first value
      * @param varName
      * @return nullptr if not exist.
      */
-    std::shared_ptr<MIME_HeaderOption> getOptionByName(const std::string &varName) const;
+    std::shared_ptr<MIME_HeaderOption> getOptionByName(std::string_view varName) const;
     /**
      * @brief getOptionRawStringByName Get Option STD String By Name (raw, as came from the input)
      * @param varName variable name.
      * @return "" if nothing found, or the original option value.
      */
-    std::string getOptionRawStringByName(const std::string &varName) const;
+    std::string getOptionRawStringByName(std::string_view varName) const;
     /**
      * @brief getOptionValueStringByName
      * @param varName
      * @return
      */
-    std::string getOptionValueStringByName(const std::string &varName) const;
+    std::string getOptionValueStringByName(std::string_view varName) const;
 
     /**
      * @brief getOptionAsUINT64
@@ -149,7 +152,7 @@ public:
      * @param optExist
      * @return
      */
-    uint64_t getOptionAsUINT64(const std::string &varName, uint16_t base = 10, bool *optExist = nullptr) const;
+    uint64_t getOptionAsUINT64(std::string_view varName, uint16_t base = 10, bool *optExist = nullptr) const;
     //////////////////////////////////////////////////
 
     bool addHeaderOption(const std::shared_ptr<MIME_HeaderOption> &opt);

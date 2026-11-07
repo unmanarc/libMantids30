@@ -179,7 +179,7 @@ bool Socket_Chain_AES::postAcceptSubInitialization()
     m_readParams.mt19937IV[1].seed(*(reinterpret_cast<uint64_t *>(p2)));
 
     // clean the mem...
-    ZeroBStruct(vFirstLoad);
+    explicit_bzero(vFirstLoad,sizeof(vFirstLoad));
 
     m_initialized = true;
     return true;

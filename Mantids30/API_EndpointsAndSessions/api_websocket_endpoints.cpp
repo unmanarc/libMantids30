@@ -3,8 +3,6 @@
 
 #include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Protocol_HTTP/rsp_status.h>
-#include <shared_mutex>
-#include <mutex>
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Protocol;
@@ -57,7 +55,7 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
         Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
 
         boost::json::value jsonContent;
-        Mantids30::Helpers::JSON::Reader charReader;
+        Helpers::JSON::Reader charReader;
         std::vector<char> buf = content->copyToBuffer();
         if (config->translateWebSocketTextMessagesToJSON
             && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
@@ -113,14 +111,10 @@ Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath
     return HandleResult::SUCCESS;
 }
 
-const Endpoint *Endpoints::getWebSocketEndpointByURI(const std::string &uri) const
+const Endpoint* Endpoints::getWebSocketEndpointByURI(std::string_view uri) const
 {
-    std::map<std::string, WebSocket::Endpoint>::const_iterator it = m_endpoints.find(uri);
-    if (it != m_endpoints.end())
-    {
-        return &(it->second);
-    }
-    return nullptr;
+    auto it = m_endpoints.find(uri);
+    return it != m_endpoints.end() ? &it->second : nullptr;
 }
 
 Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,

@@ -42,7 +42,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
 
     if (!m_useIPv6)
     {
-        ZeroBStruct(m_lastBindIPv4);
+        m_lastBindIPv4 = sockaddr_in{};
 
         m_lastBindIPv4.sin_family = AF_INET;
         m_lastBindIPv4.sin_port = htons(port);
@@ -71,7 +71,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
     }
     else
     {
-        ZeroBStruct(m_lastBindIPv6);
+        m_lastBindIPv6 = sockaddr_in6{};
 
         m_lastBindIPv6.sin6_family = AF_INET6;
         m_lastBindIPv6.sin6_port = htons(port);
@@ -106,8 +106,6 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
 {
     addrinfo hints{};
     int rc=0;
-
-    ZeroBStruct(hints);
 
 #ifdef _WIN32
     hints.ai_flags = 0;

@@ -428,7 +428,7 @@ set<string> FastRPC3::listActiveConnectionIds()
     return m_connectionMapById.getKeys();
 }
 
-bool FastRPC3::doesConnectionExist(const string &connectionId)
+bool FastRPC3::doesConnectionExist(std::string_view connectionId)
 {
-    return m_connectionMapById.isMember(connectionId);
+    return m_connectionMapById.isMember(std::string(connectionId));
 }

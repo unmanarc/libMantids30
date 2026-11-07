@@ -208,7 +208,7 @@ void FastRPC3::LocalRPCTasks::login(const std::shared_ptr<void> &taskData)
 
     std::shared_ptr<Sessions::Session> session = taskParams->sessionHolder->getSharedPointer();
 
-    std::string sJWTToken = Helpers::JSON::ASSTRING(taskParams->payload, "jwtToken", "");
+    std::string_view sJWTToken = Helpers::JSON::ASSTRING(taskParams->payload, "jwtToken", "");
 
     if (session)
     {

@@ -499,7 +499,7 @@ bool Socket_TLS::TLSKeyParameters::loadCAFromPEMMemory(const char *caCrtPEMData,
     fsDirectoryPath = "/tmp";
 #endif
 
-    m_TLSCertificateAuthorityPath = fsDirectoryPath + std::string(FS_DIRSLASH) + "ca_" + (suffix ? std::string(suffix) : Mantids30::Helpers::Random::createRandomHexString(8)) + ".crt";
+    m_TLSCertificateAuthorityPath = fsDirectoryPath + std::string(FS_DIRSLASH) + "ca_" + (suffix ? std::string(suffix) : Helpers::Random::createRandomHexString(8)) + ".crt";
 
     Memory::Streams::StreamableFile sFile;
     if (sFile.open(m_TLSCertificateAuthorityPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0600) == -1)

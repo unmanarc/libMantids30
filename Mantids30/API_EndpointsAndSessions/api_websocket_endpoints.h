@@ -86,12 +86,12 @@ public:
      * @param uri
      * @return
      */
-    [[nodiscard]] const WebSocket::Endpoint *getWebSocketEndpointByURI(const std::string &uri) const;
+    [[nodiscard]] const WebSocket::Endpoint *getWebSocketEndpointByURI(std::string_view uri) const;
 
 private:
     Config *config = nullptr;
 
-    std::map<std::string, WebSocket::Endpoint> m_endpoints; ///< Map of WebSocket endpoints by URI path.
+    std::map<std::string, WebSocket::Endpoint, std::less<>> m_endpoints; ///< Map of WebSocket endpoints by URI path.
     std::map<std::string, WebSocket::Endpoint>::iterator it;
 
     Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);

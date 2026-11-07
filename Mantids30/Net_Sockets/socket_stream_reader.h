@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 
+#include <Mantids30/Helpers/defines.h>
+
 namespace Mantids30::Network::Sockets {
 
 class Socket_Stream_Reader
@@ -183,19 +185,13 @@ public:
             throw std::runtime_error("Potential HOF. Aborting execution");
         }
 
-        if (readOK)
-        {
-            *readOK = true;
-        }
+        SET_OK_BOOLEAN(readOK, true);
 
         // readBlockWAllocEx will handle readDeSync();
         const char *data = static_cast<const char *>(readBlockWAllocEx<T>(&receivedBytes));
         if (!data)
         {
-            if (readOK)
-            {
-                *readOK = false;
-            }
+            SET_OK_BOOLEAN(readOK, false);
             return "";
         }
 

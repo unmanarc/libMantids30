@@ -122,8 +122,10 @@ public:
 
                 Memory::Streams::StreamableString urlData;
                 urlData.setValue(requestLine.getRequestGETVarsRawString());
+
                 Memory::Streams::Decoders::URL urlDecoder;
                 urlDecoder.transform(&urlData, jsonParameters.get());
+
                 jsonParameters->writeEOF();
 
                 if (jsonParameters->writeStatus.succeed)
@@ -227,7 +229,7 @@ public:
                 isSecure = secure;
             }
 
-            boost::json::value toJSON()
+            boost::json::object toJSON()
             {
                 boost::json::object tlsObj;
                 tlsObj["commonName"] = tlsCommonName;
@@ -239,14 +241,14 @@ public:
             }
             void fromJSON(const boost::json::value &sessionInfo)
             {
-                const boost::json::value &remoteAddress = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "remoteAddress");
-                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", Helpers::JSON::ASSTRING_D(remoteAddress, "").c_str());
-                const boost::json::value &isSecureConnection = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "isSecureConnection");
+                const boost::json::value &remoteAddress = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "remoteAddress");
+                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", std::string(Helpers::JSON::ASSTRING_D(remoteAddress, "")).c_str());
+                const boost::json::value &isSecureConnection = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "isSecureConnection");
                 isSecure = Helpers::JSON::ASBOOL_D(isSecureConnection, false);
-                const boost::json::value &tls = Mantids30::Helpers::JSON::detail::safeGet(sessionInfo, "tls");
+                const boost::json::value &tls = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "tls");
                 if (sessionInfo.is_object() && tls.is_object())
                 {
-                    tlsCommonName = Helpers::JSON::ASSTRING_D(Mantids30::Helpers::JSON::detail::safeGet(tls, "commonName"), "");
+                    tlsCommonName = Helpers::JSON::ASSTRING(tls, "commonName", "");
                 }
                 else
                 {
@@ -478,7 +480,7 @@ protected:
     bool changeToNextParser() override = 0;
 
 private:
-    void setInternalProductVersion(const std::string &prodName, const std::string &extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR,
+    void setInternalProductVersion(std::string_view prodName, std::string_view extraInfo, const uint32_t &versionMajor = HTTP_PRODUCT_VERSION_MAJOR,
                                    const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 

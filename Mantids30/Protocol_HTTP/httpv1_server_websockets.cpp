@@ -66,13 +66,13 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
         // Here you should validate if the requested protocol is supported
         // For now, we'll echo back the first protocol if multiple are requested
         size_t commaPos = requestedProtocol.find(',');
-        if (commaPos != string::npos)
+        if (commaPos != std::string_view::npos)
         {
             // Multiple protocols requested, select first one
-            string selectedProtocol = requestedProtocol.substr(0, commaPos);
+            std::string selectedProtocol = requestedProtocol.substr(0, commaPos);
             // Trim whitespace if any
             size_t start = selectedProtocol.find_first_not_of(" \t");
-            if (start != string::npos)
+            if (start != std::string::npos)
             {
                 selectedProtocol = selectedProtocol.substr(start);
             }

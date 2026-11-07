@@ -46,15 +46,15 @@ void MIME_Sub_Header::clear()
     m_headers.clear();
 }
 
-bool MIME_Sub_Header::exist(const std::string &optionName) const
+bool MIME_Sub_Header::exist(std::string_view optionName) const
 {
     return getOptionByName(optionName) != nullptr;
 }
 
-void MIME_Sub_Header::remove(const std::string &optionName)
+void MIME_Sub_Header::remove(std::string_view optionName)
 {
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator> range = m_headers.equal_range(
-        boost::to_upper_copy(optionName));
+    const std::string upperName = boost::to_upper_copy(std::string(optionName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator> range = m_headers.equal_range(upperName);
 
     for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::iterator it = range.first; it != range.second;)
     {
@@ -113,11 +113,12 @@ bool MIME_Sub_Header::addHeaderOption(const std::shared_ptr<MIME_HeaderOption> &
     return true;
 }
 
-std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(const std::string &varName) const
+std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(std::string_view varName) const
 {
     std::list<std::shared_ptr<MIME_HeaderOption>> values;
+    const std::string upperName = boost::to_upper_copy(std::string(varName));
     std::pair<std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator, std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator> range
-        = m_headers.equal_range(boost::to_upper_copy(varName));
+        = m_headers.equal_range(upperName);
     for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::const_iterator i = range.first; i != range.second; ++i)
     {
         values.push_back(i->second);
@@ -125,28 +126,29 @@ std::list<std::shared_ptr<MIME_HeaderOption>> MIME_Sub_Header::getOptionsByName(
     return values;
 }
 
-std::shared_ptr<MIME_HeaderOption> MIME_Sub_Header::getOptionByName(const std::string &varName) const
+std::shared_ptr<MIME_HeaderOption> MIME_Sub_Header::getOptionByName(std::string_view varName) const
 {
-    if (m_headers.find(boost::to_upper_copy(varName)) == m_headers.end())
+    const std::string upperName = boost::to_upper_copy(std::string(varName));
+    if (m_headers.find(upperName) == m_headers.end())
     {
         return nullptr;
     }
-    return m_headers.find(boost::to_upper_copy(varName))->second;
+    return m_headers.find(upperName)->second;
 }
 
-std::string MIME_Sub_Header::getOptionRawStringByName(const std::string &varName) const
+std::string MIME_Sub_Header::getOptionRawStringByName(std::string_view varName) const
 {
     std::shared_ptr<MIME_HeaderOption> opt = getOptionByName(varName);
     return opt ? opt->getOrigValue() : "";
 }
 
-std::string MIME_Sub_Header::getOptionValueStringByName(const std::string &varName) const
+string MIME_Sub_Header::getOptionValueStringByName(std::string_view varName) const
 {
     std::shared_ptr<MIME_HeaderOption> opt = getOptionByName(varName);
     return opt ? opt->getValue() : "";
 }
 
-uint64_t MIME_Sub_Header::getOptionAsUINT64(const std::string &varName, uint16_t base, bool *optExist) const
+uint64_t MIME_Sub_Header::getOptionAsUINT64(std::string_view varName, uint16_t base, bool *optExist) const
 {
     uint64_t r = 0;
     bool lOptExist;
@@ -198,7 +200,7 @@ void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &o
     std::vector<std::string> vStaticTexts;
     std::string sVarValues = strName;
     // TODO: find a way to do this easier...
-    std::string secureReplace = Mantids30::Helpers::Random::createRandomString(16);
+    std::string secureReplace = Helpers::Random::createRandomString(16);
     opt->setOrigValue(sVarValues);
 
     boost::trim(sVarValues);

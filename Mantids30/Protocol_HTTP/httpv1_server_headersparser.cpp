@@ -29,7 +29,7 @@ void HTTP::HTTPv1_Server::parseHostHeader()
 
     // Split host:port
     size_t colonPos = hostValue.find(':');
-    if (colonPos == string::npos)
+    if (colonPos == std::string_view::npos)
     {
         clientRequest.virtualHost = hostValue;
     }
@@ -40,17 +40,18 @@ void HTTP::HTTPv1_Server::parseHostHeader()
     }
 }
 
-void HTTP::HTTPv1_Server::parsePort(const string &portStr)
+void HTTP::HTTPv1_Server::parsePort(std::string_view portStr)
 {
-    char *endptr;
-    uint16_t port = static_cast<uint16_t>(strtoul(portStr.c_str(), &endptr, 10));
-    if (*endptr == '\0' && port <= 65535) // Check if conversion was successful and port is valid
+    uint32_t port = 0;
+
+    auto [ptr, ec] = std::from_chars(portStr.data(), portStr.data() + portStr.size(), port, 10);
+
+    if (ec == std::errc{} && ptr == portStr.data() + portStr.size() && port <= 65535)
     {
-        clientRequest.virtualPort = port;
+        clientRequest.virtualPort = static_cast<uint16_t>(port);
     }
     else
     {
-        // Invalid port number, set to default or handle error appropriately
         clientRequest.virtualPort = 80;
     }
 }
@@ -71,7 +72,7 @@ void HTTP::HTTPv1_Server::parseAuthenticationHeaders()
     }
 }
 
-bool HTTP::HTTPv1_Server::parseBasicAuth(const string &authHeader)
+bool HTTP::HTTPv1_Server::parseBasicAuth(std::string_view authHeader)
 {
     // Expected format: "Basic <base64-encoded-credentials>"
     const string BASIC_PREFIX = "Basic ";
@@ -80,7 +81,7 @@ bool HTTP::HTTPv1_Server::parseBasicAuth(const string &authHeader)
         return false;
     }
 
-    const string encodedCredentials = authHeader.substr(BASIC_PREFIX.length());
+    const string encodedCredentials(authHeader.substr(BASIC_PREFIX.length()));
     const string decodedCredentials = Helpers::Encoders::decodeFromBase64(encodedCredentials);
 
     size_t colonPos = decodedCredentials.find(':');

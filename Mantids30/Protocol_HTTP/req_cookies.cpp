@@ -36,10 +36,11 @@ std::string Cookies_ClientSide::toString() const
     return boost::algorithm::join(parts, "; ");
 }
 
-void Cookies_ClientSide::parseFromHeaders(const std::string &cookies_str)
+void Cookies_ClientSide::parseFromHeaders(std::string_view cookies_str)
 {
+    std::string localCookiesStr(cookies_str);
     vector<string> cookies;
-    split(cookies, cookies_str, is_any_of(";"), token_compress_on);
+    split(cookies, localCookiesStr, is_any_of(";"), token_compress_on);
     for (const string &cookie : cookies)
     {
         parseCookie(cookie);
@@ -73,11 +74,12 @@ void Cookies_ClientSide::addCookieVal(const string &cookieName, const string &co
     m_cookiesMap[cookieName] = cookieValue;
 }
 
-std::string Cookies_ClientSide::getCookieByName(const std::string &cookieName)
+std::string Cookies_ClientSide::getCookieByName(std::string_view cookieName)
 {
-    if (m_cookiesMap.find(cookieName) == m_cookiesMap.end())
+    const std::string name{cookieName};
+    if (m_cookiesMap.find(name) == m_cookiesMap.end())
     {
         return "";
     }
-    return m_cookiesMap[cookieName];
+    return m_cookiesMap[name];
 }

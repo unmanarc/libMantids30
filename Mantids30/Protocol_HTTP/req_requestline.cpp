@@ -106,13 +106,13 @@ bool RequestLine::fromJSON(const boost::json::value &json)
 
     setHTTPMethod(Helpers::JSON::ASSTRING(json, "method", ""));
     setRequestURI(Helpers::JSON::ASSTRING(json, "uri", ""));
-    m_httpVersion.fromJSON(Mantids30::Helpers::JSON::detail::safeGet(json, "httpVersion"));
-    m_getVars->fromJSON(Mantids30::Helpers::JSON::detail::safeGet(json, "getVars"));
+    m_httpVersion.fromJSON(Helpers::JSON::MEMBER_OR_NULL(json, "httpVersion"));
+    m_getVars->fromJSON(Helpers::JSON::MEMBER_OR_NULL(json, "getVars"));
 
     return true;
 }
 
-boost::json::value RequestLine::toJSON() const
+boost::json::object RequestLine::toJSON() const
 {
     boost::json::object json;
     json["method"] = getHTTPMethod();
@@ -149,7 +149,7 @@ std::string RequestLine::getHTTPMethod() const
     return m_requestMethod;
 }
 
-void RequestLine::setHTTPMethod(const std::string &value)
+void RequestLine::setHTTPMethod(string_view value)
 {
     m_requestMethod = value;
 }
@@ -159,7 +159,7 @@ std::string RequestLine::getURI() const
     return m_requestURI;
 }
 
-void RequestLine::setRequestURI(const std::string &value)
+void RequestLine::setRequestURI(std::string_view value)
 {
     m_requestURI = value;
 }

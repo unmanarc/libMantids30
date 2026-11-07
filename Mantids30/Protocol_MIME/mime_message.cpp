@@ -326,11 +326,11 @@ std::string MIME_Message::getMultiPartMessageName(const std::shared_ptr<MIME_Par
     return "";
 }
 
-std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesByName(const std::string &varName)
+std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesByName(std::string_view varName)
 {
     std::list<std::shared_ptr<MIME_PartMessage>> values;
-    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
-        boost::to_upper_copy(varName));
+    const std::string upperName = boost::to_upper_copy(std::string(varName));
+    std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(upperName);
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
     {
         values.push_back(i->second);
@@ -338,13 +338,14 @@ std::list<std::shared_ptr<MIME_PartMessage>> MIME_Message::getMultiPartMessagesB
     return values;
 }
 
-std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(const std::string &varName)
+std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(std::string_view varName)
 {
-    if (m_partsByName.find(boost::to_upper_copy(varName)) == m_partsByName.end())
+    const std::string upperName = boost::to_upper_copy(std::string(varName));
+    if (m_partsByName.find(upperName) == m_partsByName.end())
     {
         return nullptr;
     }
-    return m_partsByName.find(boost::to_upper_copy(varName))->second;
+    return m_partsByName.find(upperName)->second;
 }
 
 bool MIME_Message::addStringVar(const std::string &key, const std::string &value)

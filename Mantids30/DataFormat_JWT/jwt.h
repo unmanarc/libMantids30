@@ -86,22 +86,32 @@ public:
 
         void setJwtId(const std::string &jti);
 
-        void setClaim(const std::string &name, const boost::json::value &value);
+        void setClaim(std::string_view name, std::string_view value)
+        {
+            setClaim( name, boost::json::value{value} );
+        }
+
+        void setClaim(std::string_view name, const char * value)
+        {
+            setClaim( name, boost::json::value{value} );
+        }
+
+        void setClaim(std::string_view name, const boost::json::value &value);
 
         [[nodiscard]] std::string exportPayload() const;
 
         bool decodePayload(const std::string &payload);
 
         // Getter functions for standard claims
-        [[nodiscard]] std::string getIssuer() const;
+        [[nodiscard]] std::string_view getIssuer() const;
 
-        [[nodiscard]] std::string getImpersonator() const;
+        [[nodiscard]] std::string_view getImpersonator() const;
 
-        [[nodiscard]] std::string getSubject() const;
+        [[nodiscard]] std::string_view getSubject() const;
 
-        [[nodiscard]] std::string getDomain() const;
+        [[nodiscard]] std::string_view getDomain() const;
 
-        [[nodiscard]] std::string getAudience() const;
+        [[nodiscard]] std::string_view getAudience() const;
 
         [[nodiscard]] std::time_t getExpirationTime() const;
 
@@ -109,23 +119,23 @@ public:
 
         [[nodiscard]] std::time_t getIssuedAt() const;
 
-        [[nodiscard]] std::string getJwtId() const;
+        [[nodiscard]] std::string_view getJwtId() const;
 
         [[nodiscard]] std::set<std::string> getAllScopes();
 
         [[nodiscard]] boost::json::value getAllScopesAsJSON();
 
-        void addScope(const std::string &scopeId);
+        void addScope(std::string_view scopeId);
 
-        [[nodiscard]] bool hasScope(const std::string &scopeId) const;
+        [[nodiscard]] bool hasScope(std::string_view scopeId) const;
 
         [[nodiscard]] std::set<std::string> getAllRoles();
 
         [[nodiscard]] boost::json::value getAllRolesAsJSON();
 
-        void addRole(const std::string &roleId);
+        void addRole(std::string_view roleId);
 
-        [[nodiscard]] bool hasRole(const std::string &roleId) const;
+        [[nodiscard]] bool hasRole(std::string_view roleId) const;
 
         [[nodiscard]] std::map<std::string, boost::json::value> getAllClaims();
 
@@ -134,10 +144,10 @@ public:
         [[nodiscard]] bool isAdmin() const;
 
         // Getter function for custom claims
-        [[nodiscard]] boost::json::value getClaim(const std::string &name) const;
+        [[nodiscard]] boost::json::value getClaim(std::string_view name) const;
 
         // Function to check if claim exist...
-        [[nodiscard]] bool hasClaim(const std::string &name) const;
+        [[nodiscard]] bool hasClaim(std::string_view name) const;
 
         // Function to validate if the token is still valid and verified...
         [[nodiscard]] bool isValid() const;
@@ -331,7 +341,7 @@ public:
      * @return true if algorithm is supported
      * @return false if algorithm is not supported
      */
-    static bool isAlgorithmSupported(const std::string &algorithm);
+    static bool isAlgorithmSupported(std::string_view algorithm);
 
     /**
      * @brief Create a JWT token from a JSON payload
@@ -357,7 +367,7 @@ public:
      * @return true if signature is valid
      * @return false if signature is invalid
      */
-    bool verify(const std::string &fullSignedToken, Token *tokenPayloadOutput = nullptr);
+    bool verify(std::string_view fullSignedToken, Token *tokenPayloadOutput = nullptr);
 
     /**
      * @brief Decode the string into a JWT token without verifying it.
@@ -367,14 +377,14 @@ public:
      * @return true if signature is valid
      * @return false if signature is invalid
      */
-    static bool decodeNoVerify(const std::string &fullSignedToken, Token *tokenPayloadOutput);
+    static bool decodeNoVerify(std::string_view fullSignedToken, Token *tokenPayloadOutput);
 
     /**
      * @brief verifyAndDecodeTokenPayload Return an object with the verified token (or empty token if not verified)
      * @param fullSignedToken
      * @return verified token (or empty object)
      */
-    Token verifyAndDecodeTokenPayload(const std::string &fullSignedToken);
+    Token verifyAndDecodeTokenPayload(const std::string_view fullSignedToken);
 
     /**
      * @brief Set the shared secret for HMAC algorithms
@@ -425,7 +435,7 @@ public:
      */
     std::time_t defaultMaxTimeBeforeInSeconds() const;
 
-    bool (*verificationCallback)(const std::string &fullSignedToken) = nullptr;
+    bool (*verificationCallback)(std::string_view fullSignedToken) = nullptr;
     Cache m_cache;
     Revocation m_revocation;
 
@@ -437,7 +447,7 @@ private:
      * @return true if algorithm is an HMAC algorithm
      * @return false if algorithm is not an HMAC algorithm
      */
-    bool isHMACAlgorithm(const std::string &algorithm);
+    bool isHMACAlgorithm(std::string_view algorithm);
 
     /**
      * @brief Check if a given algorithm is an RSA algorithm
@@ -446,7 +456,7 @@ private:
      * @return true if algorithm is an RSA algorithm
      * @return false if algorithm is not an RSA algorithm
      */
-    bool isRSAAlgorithm(const std::string &algorithm);
+    bool isRSAAlgorithm(std::string_view algorithm);
     /**
      * @brief Creates a header string.
      *

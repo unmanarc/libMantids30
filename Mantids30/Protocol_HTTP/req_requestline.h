@@ -42,10 +42,10 @@ public:
      * @return request method string.
      */
     std::string getHTTPMethod() const;
-    void setHTTPMethod(const std::string &value);
+    void setHTTPMethod(std::string_view value);
 
     std::string getURI() const;
-    void setRequestURI(const std::string &value);
+    void setRequestURI(std::string_view value);
 
     //////////////////////////////////////////////////
     // Security:
@@ -54,7 +54,7 @@ public:
     std::string getRequestGETVarsRawString() const;
 
     bool fromJSON(const boost::json::value &json);
-    boost::json::value toJSON() const;
+    boost::json::object toJSON() const;
 
     std::string toString() const;
 

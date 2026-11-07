@@ -56,14 +56,14 @@ public:
     WebSocketEventFunctionType sessionEndHandler = nullptr;
 
     // Public Methods:
-    [[nodiscard]] size_t getActiveUserConnectionsCount(const std::string &userId) const;
-    [[nodiscard]] bool sendJSONToConnectionID(const std::string &sessionId, const boost::json::value &v) const;
-    [[nodiscard]] bool sendJSONToUser(const std::string &userId, const boost::json::value &v) const;
-    [[nodiscard]] size_t sendJSONToSubscriptionTopic(const std::string &topicId, const boost::json::value &v) const;
+    [[nodiscard]] size_t getActiveUserConnectionsCount(std::string_view userId) const;
+    [[nodiscard]] bool sendJSONToConnectionID(std::string_view sessionId, const boost::json::value &v) const;
+    [[nodiscard]] bool sendJSONToUser(std::string_view userId, const boost::json::value &v) const;
+    [[nodiscard]] size_t sendJSONToSubscriptionTopic( std::string_view topicId, const boost::json::value &v) const;
 
     // User Functions:
-    [[nodiscard]] bool joinTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
-    [[nodiscard]] bool leaveTopicSubscription(const std::string &sessionId, const std::string &topicId) const;
+    [[nodiscard]] bool joinTopicSubscription( std::string_view sessionId,  std::string_view topicId) const;
+    [[nodiscard]] bool leaveTopicSubscription( std::string_view sessionId,  std::string_view topicId) const;
 
 private:
     // Private Members:

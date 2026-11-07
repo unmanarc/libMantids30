@@ -34,7 +34,7 @@ string XSSProtection::toString() const
     }
 }
 
-bool XSSProtection::fromString(const string &sValue)
+bool XSSProtection::fromString(std::string_view sValue)
 {
     // Reset the current object to a clean state
     // This ensures that if parsing fails, the object doesn't hold stale data.

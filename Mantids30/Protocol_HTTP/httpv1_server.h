@@ -278,10 +278,10 @@ private:
     // Headers:
     void parseAllClientHeaders();
     void parseHostHeader();
-    void parsePort(const std::string &portStr);
+    void parsePort(std::string_view portStr);
     bool validateHTTPv11Requirements();
     void parseAuthenticationHeaders();
-    bool parseBasicAuth(const std::string &authHeader);
+    bool parseBasicAuth(std::string_view authHeader);
     void parseUserAgent();
     bool setupContentHandling(size_t &contentLength);
 

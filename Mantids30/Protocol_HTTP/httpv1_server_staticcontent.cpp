@@ -24,7 +24,7 @@ void HTTP::HTTPv1_Server::StaticContentElement::setData(const std::shared_ptr<Ma
             std::string hashInput = *contentStr + std::to_string(lastModifiedTime);
 
             // Calculate SHA256 hash
-            std::string sha256Hash = Mantids30::Helpers::Crypto::calcSHA256(hashInput);
+            std::string sha256Hash = Helpers::Crypto::calcSHA256(hashInput);
 
             // Use first 16 hex characters (8 bytes) of the SHA256 hash for the ETAG
             // SHA256 returns a hex string, so take first 16 chars

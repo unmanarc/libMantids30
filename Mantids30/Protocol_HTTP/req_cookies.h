@@ -2,6 +2,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 
 #include <Mantids30/Protocol_MIME/mime_sub_header.h>
 
@@ -17,10 +18,10 @@ public:
      * @brief parseFromHeaders Parse cookies from string
      * @param cookies_str string to parse
      */
-    void parseFromHeaders(const std::string &cookies_str);
+    void parseFromHeaders(std::string_view cookies_str);
     ///////////////////////////
 
-    std::string getCookieByName(const std::string &cookieName);
+    std::string getCookieByName(std::string_view cookieName);
     void addCookieVal(const std::string &cookieName, const std::string &cookieValue);
 
     // TODO: add from server cookies (for client use)

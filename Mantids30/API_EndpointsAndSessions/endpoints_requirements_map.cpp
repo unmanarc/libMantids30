@@ -49,36 +49,39 @@ bool EndpointsRequirements_Map::validateEndpoint(const std::shared_ptr<Sessions:
         return false;
     }
 
-    bool isAdmin = session->getJWTAuthenticatedInfo().isAdmin();
-    std::set<std::string> authedRoles = session->getJWTAuthenticatedInfo().getAllRoles();
+    const auto &authInfo = session->getJWTAuthenticatedInfo();
 
-    if (isAdmin)
+    if (authInfo.isAdmin())
     {
         rolesLeft.clear();
         scopesLeft.clear();
         return true;
     }
 
-    std::set<std::string> requiredRoles = getEndpointRequiredRoles(endpointName);
-    std::set<std::string> requiredScopes = getEndpointRequiredScopes(endpointName);
+    rolesLeft = getEndpointRequiredRoles(endpointName);
+    scopesLeft = getEndpointRequiredScopes(endpointName);
 
-    // start with all required scopes/slotIds...
-    rolesLeft = rolesLeft;
-    scopesLeft = requiredScopes;
-
-    for (const std::string &scope : requiredScopes)
+    for (auto it = rolesLeft.begin(); it != rolesLeft.end();)
     {
-        if (session && session->getJWTAuthenticatedInfo().hasScope(scope))
+        if (authInfo.hasRole(*it))
         {
-            scopesLeft.erase(scope);
+            it = rolesLeft.erase(it);
+        }
+        else
+        {
+            ++it;
         }
     }
 
-    for (const std::string &role : requiredRoles)
+    for (auto it = scopesLeft.begin(); it != scopesLeft.end();)
     {
-        if (session && session->getJWTAuthenticatedInfo().hasRole(role))
+        if (authInfo.hasScope(*it))
         {
-            scopesLeft.erase(role);
+            it = scopesLeft.erase(it);
+        }
+        else
+        {
+            ++it;
         }
     }
 
