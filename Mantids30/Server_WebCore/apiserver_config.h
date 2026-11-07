@@ -41,7 +41,7 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, const std::string &apikey, DataFormat::JWT::Token *accessToken);
+    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, std::string_view apikey, DataFormat::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.

@@ -51,9 +51,9 @@ void WebSessionsManager::setMaxInactiveSeconds(const uint32_t &value)
     m_MaxInactiveSeconds = value;
 }
 
-std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const boost::json::value &networkClientInfo, uint64_t *maxAge)
+std::string WebSessionsManager::createSession(const std::shared_ptr<Mantids30::Sessions::Session> &session, const boost::json::object &networkClientInfo, uint64_t *maxAge)
 {
-    std::string sessionId = Mantids30::Helpers::Random::createRandomString(12) + ":" + Mantids30::Helpers::Random::createRandomString(12);
+    std::string sessionId = Helpers::Random::createRandomString(12) + ":" + Helpers::Random::createRandomString(12);
 
     *maxAge = 0;
     std::string effectiveUser = session->getUser();

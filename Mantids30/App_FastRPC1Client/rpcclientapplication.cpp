@@ -52,7 +52,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArgu
 {
     if (!globalArguments->getCommandLineOptionValue("encode")->toString().empty())
     {
-        std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+        std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
         sleep(1);
         std::optional<std::string> r = Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(), static_cast<char *>(masterKey->data), masterKey->length);
 
@@ -149,7 +149,7 @@ bool RPCClientApplication::_config(int argc, char *argv[], Arguments::GlobalArgu
 
 int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArguments *globalArguments)
 {
-    std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+    std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
 
     bool cont = true;
 
@@ -191,7 +191,7 @@ int RPCClientApplication::_start(int argc, char *argv[], Arguments::GlobalArgume
             {
                 bool ok = false;
                 // Load Key
-                keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64(Mantids30::Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()), (char *) masterKey->data,
+                keyPassPhrase = Helpers::Crypto::AES256DecryptB64(Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()), (char *) masterKey->data,
                                                                              masterKey->length);
                 if (!keyPassPhrase)
                 {

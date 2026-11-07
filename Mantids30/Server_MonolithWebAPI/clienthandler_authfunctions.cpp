@@ -130,8 +130,8 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
 
             if (currentSessionInfo.authSession)
             {
-                string jwtDomain = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("domain"), "");
-                string jwtImpersonator = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("impersonator"), "");
+                string_view jwtDomain = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("domain"), "");
+                string_view jwtImpersonator = Helpers::JSON::ASSTRING_D(jwtToken.getClaim("impersonator"), "");
 
                 if (impersonatorUser != jwtImpersonator)
                 {
@@ -152,9 +152,10 @@ HTTP::Status::Code ClientHandler::handleAuthLoginFunction()
         // TODO: exit impersonation.
         shared_ptr<Sessions::Session> session = make_shared<Sessions::Session>(jwtToken);
 
-        boost::json::value networkClientInfo = clientRequest.networkClientInfo.toJSON();
-        Helpers::JSON::setMember(networkClientInfo, "userAgent", clientRequest.userAgent);
-        Helpers::JSON::setMember(networkClientInfo, "startTime", static_cast<int64_t>(time(nullptr)));
+        boost::json::object networkClientInfo = clientRequest.networkClientInfo.toJSON();
+        networkClientInfo["userAgent"] = clientRequest.userAgent;
+        networkClientInfo["startTime"] = static_cast<int64_t>(time(nullptr));
+
 
         // TODO: migrar esto en libMantids2 a shared pointer.
         m_sessionID = m_sessionsManager->createSession(session, networkClientInfo, &m_sessionMaxAge);

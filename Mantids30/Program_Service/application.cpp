@@ -369,8 +369,6 @@ static int get_lock()
         return 0;
     }
 
-    ZeroBStruct(lplock);
-
     lplock.l_type = F_WRLCK;
     lplock.l_pid = getpid();
 
@@ -551,9 +549,7 @@ void catch_sigterm()
     //    signal(SIGTERM, exitHandler);
     //    signal(SIGABRT, exitHandler);
 #else
-    static struct sigaction _sigact;
-
-    ZeroBStruct(_sigact);
+    static struct sigaction _sigact{};
 
     _sigact.sa_sigaction = exitRoutine;
     _sigact.sa_flags = SA_SIGINFO;

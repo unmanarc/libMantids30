@@ -1,5 +1,6 @@
 #include <Mantids30/DataFormat_JSON/json.h>
 #include  "config_builder.h"
+#include "Mantids30/DataFormat_JSON/json_detail.h"
 
 #include <Mantids30/DataFormat_JWT/jwt.h>
 
@@ -50,7 +51,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::detail::safeGet(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Helpers::JSON::ASSTRING( Helpers::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -144,7 +145,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::detail::safeGet(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {

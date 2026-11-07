@@ -205,14 +205,14 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
                                                       bool useHTMLFrame)
 {
     boost::json::value jVars, jNull;
-    Mantids30::Helpers::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
+    Helpers::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
 
     // Fill the jVars with session info (common to every API Server) and extra info (specific to monolith or restful or anything else)
     clientHandler->fillSessionInfo(jVars);
     clientHandler->fillSessionExtraInfo(jVars);
 
     bool isSessionVar = clientHandler->doesSessionVariableExist(varName);
-    bool isJVar = Mantids30::Helpers::JSON::hasMember(jVars, varName);
+    bool isJVar = Helpers::JSON::HAS_MEMBER(jVars, varName);
 
     // Report as not found.
     if (!isSessionVar && !isJVar)
@@ -226,7 +226,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
         // jvar is from a set of constructed variables (remote address, user agent, etc...)
         if (isJVar)
         {
-            return replaceByJVar(Mantids30::Helpers::JSON::detail::safeGet(jVars, varName), scriptVarName, useHTMLFrame);
+            return replaceByJVar(Helpers::JSON::MEMBER_OR_NULL(jVars, varName), scriptVarName, useHTMLFrame);
         }
         // Session vars are set by the application or the JWT token:
         else if (isSessionVar)

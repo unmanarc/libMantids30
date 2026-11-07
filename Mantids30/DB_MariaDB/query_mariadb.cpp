@@ -116,8 +116,6 @@ bool Query_MariaDB::step0()
         unsigned char cRetBoolean = 0;
         MYSQL_BIND result = {};
         my_bool bIsNull;
-
-        ZeroBStruct(result);
         result.is_null = &bIsNull;
 
         switch (outputVar->getVarType())
@@ -313,12 +311,10 @@ bool Query_MariaDB::postBindInputVars()
     }
 
     // Create the bind struct...
-    m_bindedInputParams = new MYSQL_BIND[m_keysByPos.size()];
+    m_bindedInputParams = new MYSQL_BIND[m_keysByPos.size()]{};
 
     for (size_t pos = 0; pos < m_keysByPos.size(); pos++)
     {
-        ZeroBStruct(m_bindedInputParams[pos]);
-
         m_bindedInputParams[pos].is_unsigned = 0;
         m_bindedInputParams[pos].length = nullptr;
 

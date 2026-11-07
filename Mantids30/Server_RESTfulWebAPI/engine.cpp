@@ -46,9 +46,9 @@ API::APIReturn Engine::revokeJWT(void *context,                                 
 API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
-    const std::string webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string_view uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string_view webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string_view topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
@@ -76,9 +76,9 @@ API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::Reque
 API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
-    const std::string webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string_view uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string_view webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string_view topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())

@@ -246,9 +246,7 @@ bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &
 
 bool isTerminalAction(ActionType type)
 {
-    return type == ActionType::REDIRECT ||
-           type == ActionType::ACCEPT ||
-           type == ActionType::DENY;
+    return type == ActionType::REDIRECT || type == ActionType::ACCEPT || type == ActionType::DENY;
 }
 
 bool filterURIMatches(const Filter &filter, const std::string &uri)
@@ -328,13 +326,14 @@ void ResourcesFilter::clearFilters()
     m_filters.clear();
 }
 
-ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin) const
+ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::string &uri, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive,
+                                                                     bool isAdmin) const
 {
     FilterEvaluationResult result;
 
     for (const Filter &filter : m_filters)
     {
-        if (!filterRequirementsMatch(filter, scopes, roles, isSessionActive,isAdmin))
+        if (!filterRequirementsMatch(filter, scopes, roles, isSessionActive, isAdmin))
         {
             continue;
         }
@@ -380,12 +379,18 @@ std::string actionTypeToString(ActionType type)
 {
     switch (type)
     {
-    case ActionType::ADD_HEADERS: return "ADD_HEADERS";
-    case ActionType::REPLACE_HEADERS: return "REPLACE_HEADERS";
-    case ActionType::PROCESS_AS: return "PROCESS_AS";
-    case ActionType::REDIRECT: return "REDIRECT";
-    case ActionType::ACCEPT: return "ACCEPT";
-    case ActionType::DENY: return "DENY";
+    case ActionType::ADD_HEADERS:
+        return "ADD_HEADERS";
+    case ActionType::REPLACE_HEADERS:
+        return "REPLACE_HEADERS";
+    case ActionType::PROCESS_AS:
+        return "PROCESS_AS";
+    case ActionType::REDIRECT:
+        return "REDIRECT";
+    case ActionType::ACCEPT:
+        return "ACCEPT";
+    case ActionType::DENY:
+        return "DENY";
     }
     return "UNKNOWN";
 }
@@ -394,53 +399,58 @@ std::string processingModeToString(ProcessingMode mode)
 {
     switch (mode)
     {
-    case ProcessingMode::RAW: return "RAW";
-    case ProcessingMode::HTMLIENGINE: return "HTMLIENGINE";
-    case ProcessingMode::MANTIDSLANG: return "MANTIDSLANG";
+    case ProcessingMode::RAW:
+        return "RAW";
+    case ProcessingMode::HTMLIENGINE:
+        return "HTMLIENGINE";
+    case ProcessingMode::MANTIDSLANG:
+        return "MANTIDSLANG";
     }
     return "UNKNOWN";
 }
 
 } // namespace
 
-boost::json::value ResourcesFilter::FilterEvaluationResult::toJSON() const
+boost::json::object ResourcesFilter::FilterEvaluationResult::toJSON() const
 {
-    boost::json::value root;
+    boost::json::array actionsArray;
+    actionsArray.reserve(actions.size());
 
-    Mantids30::Helpers::JSON::setMember(root, "matched", matched);
-
-    boost::json::value actionsArray = boost::json::array{};
-    boost::json::array &actionsArr = actionsArray.as_array();
-    for (const auto &action : actions)
+    for (const auto& action : actions)
     {
-        boost::json::value actionObj;
-        Mantids30::Helpers::JSON::setMember(actionObj, "type", actionTypeToString(action.type));
-        Mantids30::Helpers::JSON::setMember(actionObj, "statusCode", static_cast<int>(action.statusCode));
+        boost::json::object actionObj{
+            {"type", actionTypeToString(action.type)},
+            {"statusCode", static_cast<int>(action.statusCode)},
+            {"processingMode", processingModeToString(action.processingMode)}
+        };
 
         if (!action.redirectLocation.empty())
         {
-            Mantids30::Helpers::JSON::setMember(actionObj, "redirectLocation", action.redirectLocation);
+            actionObj["redirectLocation"] = action.redirectLocation;
         }
-
-        Mantids30::Helpers::JSON::setMember(actionObj, "processingMode", processingModeToString(action.processingMode));
 
         if (!action.httpHeaders.empty())
         {
-            boost::json::value headersArray = boost::json::array{};
-            boost::json::array &headersArr = headersArray.as_array();
-            for (const auto &header : action.httpHeaders)
+            boost::json::array headersArray;
+            headersArray.reserve(action.httpHeaders.size());
+
+            for (const auto& [name, value] : action.httpHeaders)
             {
-                boost::json::value headerObj;
-                Mantids30::Helpers::JSON::setMember(headerObj, "name", header.first);
-                Mantids30::Helpers::JSON::setMember(headerObj, "value", header.second);
-                headersArr.push_back(headerObj);
+                headersArray.emplace_back(boost::json::object
+                {
+                    {"name", name},
+                    {"value", value}
+                });
             }
-            Mantids30::Helpers::JSON::setMember(actionObj, "httpHeaders", headersArray);
+
+            actionObj["httpHeaders"] = std::move(headersArray);
         }
 
-        actionsArr.push_back(actionObj);
+        actionsArray.emplace_back(std::move(actionObj));
     }
-    Mantids30::Helpers::JSON::setMember(root, "actions", actionsArray);
 
-    return root;
+    return {
+        {"matched", matched},
+        {"actions", std::move(actionsArray)}
+    };
 }

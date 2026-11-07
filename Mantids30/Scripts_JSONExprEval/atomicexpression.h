@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <Mantids30/DataFormat_JSON/json.h>
 #include "atomicexpressionside.h"
@@ -25,7 +26,7 @@ public:
 
     AtomicExpression(const std::shared_ptr<std::vector<std::string>> &staticTexts);
 
-    bool compile(std::string expr);
+    bool compile(std::string_view expr);
     [[nodiscard]] bool evaluate(const boost::json::value &values);
     void setStaticTexts(const std::shared_ptr<std::vector<std::string>> &value);
 

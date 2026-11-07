@@ -7,6 +7,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "databasecredentials.h"
 #include "query.h"
@@ -75,9 +76,9 @@ public:
      *         if the query was created, but can not be executed, the boolean is false, but the query is a valid pointer.
      *         NOTE: when the query is a valid pointer, you should delete/destroy the query.
      */
-    std::shared_ptr<Query> qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    std::shared_ptr<Query> qExecute(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
-    bool qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
+    bool qExecuteEx(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars = {});
 
     /**
      * @brief qSelect Fast Prepared Query for row-returning statements. (select)
@@ -89,7 +90,7 @@ public:
      *       Each call to step() will populate resultVars with the current row's data.
      *       If no rows are found, step() will return false immediately.
      */
-    [[nodiscard]] std::shared_ptr<Query> qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    [[nodiscard]] std::shared_ptr<Query> qSelect(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                  const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
@@ -102,7 +103,7 @@ public:
      *       If no rows are found, resultVars will remain in an undefined state.
      *       The method returns false if the query fails or returns more than one row.
      */
-    [[nodiscard]] bool qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    [[nodiscard]] bool qSelectSingleRow(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                         const std::vector<Memory::Abstract::Var *> &resultVars);
 
     /**
@@ -116,7 +117,7 @@ public:
      * @param offset OFFSET value to start returning records from.
      * @return shared pointer to QueryInstance if successful, nullptr otherwise.
      */
-    [[nodiscard]] std::shared_ptr<Query> qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+    [[nodiscard]] std::shared_ptr<Query> qSelectWithFilters(std::string_view preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                             const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset);
 
     bool reconnect(unsigned int magic);

@@ -15,19 +15,20 @@ AtomicExpression::AtomicExpression(const std::shared_ptr<std::vector<std::string
     setStaticTexts(staticTexts);
 }
 
-bool AtomicExpression::compile(std::string expr)
+bool AtomicExpression::compile(std::string_view expr)
 {
-    if (boost::starts_with(expr, "!"))
+    std::string localExpr(expr);
+    if (boost::starts_with(localExpr, "!"))
     {
         m_negativeExpression = true;
-        expr = expr.substr(1);
+        localExpr = localExpr.substr(1);
     }
-    if (boost::starts_with(expr, "i"))
+    if (boost::starts_with(localExpr, "i"))
     {
         m_ignoreCase = true;
-        expr = expr.substr(1);
+        localExpr = localExpr.substr(1);
     }
-    this->m_expr = expr;
+    this->m_expr = localExpr;
 
     if (!subtractExpressions(R"(^IS_EQUAL\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::ISEQUAL)
         && !subtractExpressions(R"(^REGEX_MATCH\((?<LEFT_EXPR>[^,]+),(?<RIGHT_EXPR>[^\)]+)\)$)", Operator::REGEXMATCH)
@@ -111,7 +112,7 @@ bool AtomicExpression::evaluate(const boost::json::value &values)
     case Operator::CONTAINS:
         for (const std::string &lvalue : lvalues)
         {
-            for (const std::string &rvalue : rvalues)
+            for (const std::string & rvalue : rvalues)
             {
                 if (!m_ignoreCase && boost::contains(lvalue, rvalue))
                 {

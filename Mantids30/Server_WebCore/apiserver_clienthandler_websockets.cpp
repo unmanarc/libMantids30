@@ -62,7 +62,7 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
         return;
     }
 
-    m_webSocketSessionId = Mantids30::Helpers::Random::createRandomString(16);
+    m_webSocketSessionId = Helpers::Random::createRandomString(16);
 
     API::WebSocket::WebSocketConnection *connection = new API::WebSocket::WebSocketConnection;
     connection->webSocketHTTPServer = this;
@@ -78,8 +78,8 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
     {
         boost::json::value jSessionId;
 
-        Mantids30::Helpers::JSON::setMember(jSessionId, "type", "session_id");
-        Mantids30::Helpers::JSON::setMember(jSessionId, "sessionId", m_webSocketSessionId);
+        Helpers::JSON::setMember(jSessionId, "type", "session_id");
+        Helpers::JSON::setMember(jSessionId, "sessionId", m_webSocketSessionId);
 
         sendWebSocketText(boost::json::serialize(jSessionId));
     }

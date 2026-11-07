@@ -10,7 +10,7 @@ class RPCLog : public LogBase
 {
 public:
     RPCLog(const uint8_t &_logMode = static_cast<uint8_t>(Mode::STANDARD));
-    static std::string truncateSessionId(std::string sSessionId);
+    static std::string truncateSessionId(std::string_view sSessionId);
 
     void logVA(LogLevel logLevel, const std::string &ip, const std::string &sessionId, const std::string &user, const std::string &domain, const std::string &module, const uint32_t &outSize,
                const char *fmtLog, va_list args);

@@ -54,7 +54,7 @@ public:
 
         std::vector<Action> actions;
 
-        [[nodiscard]] boost::json::value toJSON() const;
+        [[nodiscard]] boost::json::object toJSON() const;
     };
 
     struct Filter

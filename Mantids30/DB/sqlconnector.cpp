@@ -109,7 +109,7 @@ void SQLConnector::detachQuery(Query *query)
     }
 }
 
-std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
+std::shared_ptr<Query> SQLConnector::qSelect(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
                                              const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> q = createQuery();
@@ -119,7 +119,7 @@ std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, c
         return q;
     }
 
-    if (q->setPreparedSQLQuery(preparedQuery, inputVars))
+    if (q->setPreparedSQLQuery(std::string(preparedQuery), inputVars))
     {
         if (q->bindResultVars(resultVars))
         {
@@ -139,26 +139,27 @@ std::shared_ptr<Query> SQLConnector::qSelect(const std::string &preparedQuery, c
     return q;
 }
 
-std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string_view preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                                         const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset)
 {
-    boost::algorithm::trim(preparedQuery);
+    std::string localQuery(preparedQuery);
+    boost::algorithm::trim(localQuery);
 
     // Remove trailing semicolon if present
-    if (!preparedQuery.empty() && preparedQuery.back() == ';')
+    if (!localQuery.empty() && localQuery.back() == ';')
     {
-        preparedQuery.pop_back();
+        localQuery.pop_back();
     }
 
     // Check if WHERE clause exists in the preparedQuery using boost::algorithm
-    if (!boost::algorithm::icontains(preparedQuery, "WHERE"))
+    if (!boost::algorithm::icontains(localQuery, "WHERE"))
     {
-        preparedQuery += " WHERE 1=1";
+        localQuery += " WHERE 1=1";
     }
 
     // First phase: get the count of records without filters and limits
-    std::string unfilteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
-    std::string filteredTotalCountQuery = "SELECT COUNT(*) FROM (" + preparedQuery + ") AS subquery";
+    std::string unfilteredTotalCountQuery = "SELECT COUNT(*) FROM (" + localQuery + ") AS subquery";
+    std::string filteredTotalCountQuery = "SELECT COUNT(*) FROM (" + localQuery + ") AS subquery";
 
     if (!whereFilters.empty())
     {
@@ -196,7 +197,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string preparedQuer
     }
 
     // Second phase: build the full query with filters and limits
-    std::string fullQuery = preparedQuery;
+    std::string fullQuery = localQuery;
     if (!whereFilters.empty())
     {
         boost::ireplace_last(fullQuery, "WHERE ", "WHERE (" + whereFilters + ") AND ");
@@ -228,7 +229,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string preparedQuer
     return result;
 }
 
-std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
+std::shared_ptr<Query> SQLConnector::qExecute(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
 {
     std::shared_ptr<Query> q = createQuery();
 
@@ -237,7 +238,7 @@ std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, 
         return q;
     }
 
-    if (q->setPreparedSQLQuery(preparedQuery, inputVars))
+    if (q->setPreparedSQLQuery(std::string(preparedQuery), inputVars))
     {
         q->error = q->exec(Query::ExecType::INSERT) ? Query::Query::Result::SUCCESS : Query::Query::Result::RESULTS_FAILED;
         return q;
@@ -250,7 +251,7 @@ std::shared_ptr<Query> SQLConnector::qExecute(const std::string &preparedQuery, 
     return q;
 }
 
-bool SQLConnector::qExecuteEx(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
+bool SQLConnector::qExecuteEx(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
 {
     std::shared_ptr<Query> i = qExecute(preparedQuery, inputVars);
 
@@ -269,7 +270,7 @@ bool SQLConnector::qExecuteEx(const std::string &preparedQuery, const std::map<s
     return true;
 }
 
-bool SQLConnector::qSelectSingleRow(const std::string &preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
+bool SQLConnector::qSelectSingleRow(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
                                     const std::vector<Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> i = qSelect(preparedQuery, inputVars, resultVars);

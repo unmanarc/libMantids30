@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -24,7 +25,7 @@ public:
     JSONEval(const std::string &expr);
     JSONEval(const std::string &expr, const std::shared_ptr<std::vector<std::string>> &staticTexts, bool negativeExpression);
 
-    bool parseExpression(std::string expr);
+    bool parseExpression(std::string_view expr);
     bool evaluate(const boost::json::value &values);
     [[nodiscard]] std::string getLastCompilerError() const;
     [[nodiscard]] bool isCompiled() const;

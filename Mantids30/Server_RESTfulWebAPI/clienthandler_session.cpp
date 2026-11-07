@@ -75,10 +75,10 @@ void ClientHandler::sessionCleanup()
 
 void ClientHandler::fillSessionExtraInfo(boost::json::value &jVars)
 {
-    Mantids30::Helpers::JSON::setMember(jVars, "maxAge", 0);
+    Helpers::JSON::setMember(jVars, "maxAge", 0);
     if (isSessionActive())
     {
-        Mantids30::Helpers::JSON::setMember(jVars, "maxAge", jwtToken.getExpirationTime() - time(nullptr));
+        Helpers::JSON::setMember(jVars, "maxAge", jwtToken.getExpirationTime() - time(nullptr));
     }
 }
 

@@ -132,7 +132,7 @@ ThreadPool::TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
     }
     std::uniform_int_distribution<size_t> dis;
     m_randomMutex.lock();
-    Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
+    Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
     m_randomMutex.unlock();
 
     // Iterate full Vector...
@@ -168,7 +168,7 @@ size_t ThreadPool::getRandomQueueByKey(const std::string &key, const float &prio
     {
         fullVector.push_back(i);
     }
-    Mantids30::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
+    Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
 
     // Copy the first n-elements (based on priority)
     for (size_t i = 0; i < elements; i++)

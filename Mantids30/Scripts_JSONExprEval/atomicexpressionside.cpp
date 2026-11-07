@@ -67,7 +67,7 @@ set<string> AtomicExpressionSide::resolveValueSet(const boost::json::value &v, b
         if (!m_jsonPath)
         {
             // Compile and cache the JSON path only once:
-            m_jsonPath = std::make_shared<Mantids30::Helpers::JSON::Path>(m_expr.substr(1));
+            m_jsonPath = std::make_shared<Helpers::JSON::Path>(m_expr.substr(1));
         }
         const boost::json::value *result = m_jsonPath->resolve(v);
         set<string> res;
@@ -77,13 +77,13 @@ set<string> AtomicExpressionSide::resolveValueSet(const boost::json::value &v, b
             {
                 for (const boost::json::value &el : result->as_array())
                 {
-                    res.insert(Mantids30::Helpers::JSON::ASSTRING_D(el, ""));
+                    res.insert(string(Helpers::JSON::ASSTRING_D(el, "")));
                 }
             }
             else if (!result->is_null() && !result->is_object())
             {
                 // Scalar value (string, number or boolean):
-                res.insert(Mantids30::Helpers::JSON::ASSTRING_D(*result, ""));
+                res.insert(string(Helpers::JSON::ASSTRING_D(*result, "")));
             }
         }
         return res;

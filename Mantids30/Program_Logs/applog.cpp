@@ -25,8 +25,12 @@ AppLog::AppLog(const uint8_t &_logMode)
     : LogBase(_logMode)
 {}
 
-void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string user, string ip, const char *buffer, LogColor color, const char *logLevelText)
+void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string_view _module, string_view _user, string_view _ip, const char *buffer, LogColor color, const char *logLevelText)
 {
+    string module(_module);
+    string user(_user);
+    string ip(_ip);
+
     {
         std::unique_lock<std::mutex> lock(m_modulesOutputExclusionMutex);
         if (m_modulesOutputExclusion.find(module) != m_modulesOutputExclusion.end())
@@ -176,7 +180,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string module, string
     }
 }
 
-void AppLog::log(const string &module, const string &user, const string &ip, LogLevel logLevel, const uint32_t &outSize, const char *fmtLog, ...)
+void AppLog::log(std::string_view module, std::string_view user, std::string_view ip, LogLevel logLevel, const uint32_t &outSize, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char *buffer = new char[outSize];
@@ -219,7 +223,7 @@ void AppLog::log(const string &module, const string &user, const string &ip, Log
     delete[] buffer;
 }
 
-void AppLog::log2(const string &module, const string &user, const string &ip, LogLevel logLevel, const char *fmtLog, ...)
+void AppLog::log2(std::string_view module, std::string_view user, std::string_view ip, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];
@@ -257,7 +261,7 @@ void AppLog::log2(const string &module, const string &user, const string &ip, Lo
     va_end(args);
 }
 
-void AppLog::log1(const string &module, const string &ip, LogLevel logLevel, const char *fmtLog, ...)
+void AppLog::log1(std::string_view module, std::string_view ip, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];
@@ -295,7 +299,7 @@ void AppLog::log1(const string &module, const string &ip, LogLevel logLevel, con
     va_end(args);
 }
 
-void AppLog::log0(const string &module, LogLevel logLevel, const char *fmtLog, ...)
+void AppLog::log0(std::string_view module, LogLevel logLevel, const char *fmtLog, ...)
 {
     std::unique_lock<std::mutex> lock(m_logMutex);
     char buffer[8192];

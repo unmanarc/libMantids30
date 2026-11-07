@@ -154,11 +154,11 @@ boost::json::value ClientHandler::handleAPIInfo(const string &baseApiUrl)
     const char *buildDate = __DATE__; // Macro estándar para fecha de compilación
     const char *buildTime = __TIME__; // Macro estándar para hora de compilación
 
-    Mantids30::Helpers::JSON::setMember(x, "version", config->softwareVersion);
-    Mantids30::Helpers::JSON::setMember(x, "softwareName", config->softwareName);
-    Mantids30::Helpers::JSON::setMember(x, "description", config->softwareDescription);
-    Mantids30::Helpers::JSON::setMember(x, "endpoint", baseApiUrl);
-    Mantids30::Helpers::JSON::setMember(x, "buildDate", string(buildDate) + " " + buildTime);
+    Helpers::JSON::setMember(x, "version", config->softwareVersion);
+    Helpers::JSON::setMember(x, "softwareName", config->softwareName);
+    Helpers::JSON::setMember(x, "description", config->softwareDescription);
+    Helpers::JSON::setMember(x, "endpoint", baseApiUrl);
+    Helpers::JSON::setMember(x, "buildDate", string(buildDate) + " " + buildTime);
 
     return x;
 }

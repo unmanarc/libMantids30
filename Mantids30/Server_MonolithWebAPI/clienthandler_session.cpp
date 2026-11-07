@@ -120,10 +120,10 @@ boost::json::value ClientHandler::getSessionVariableValue(const string &varName)
 
 void ClientHandler::fillSessionExtraInfo(boost::json::value &jVars)
 {
-    Mantids30::Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(0));
+    Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(0));
     if (isSessionActive())
     {
-        Mantids30::Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(m_sessionMaxAge));
+        Helpers::JSON::setMember(jVars, "maxAge", static_cast<uint64_t>(m_sessionMaxAge));
     }
 }
 

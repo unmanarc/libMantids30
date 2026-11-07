@@ -28,7 +28,7 @@ public:
      * @param fmtLog Log details in format string
      * @param ... Arguments to format string
      */
-    void log(const std::string &module, const std::string &user, const std::string &ip, LogLevel logLevel, const uint32_t &outSize, const char *fmtLog, ...);
+    void log(std::string_view module, std::string_view user, std::string_view ip, LogLevel logLevel, const uint32_t &outSize, const char *fmtLog, ...);
     /**
      * Log an application event with user and IP information.
      * @param module Internal application module
@@ -38,7 +38,7 @@ public:
      * @param fmtLog Log details in format string
      * @param ... Arguments to format string
      */
-    void log2(const std::string &module, const std::string &user, const std::string &ip, LogLevel logLevel, const char *fmtLog, ...);
+    void log2(std::string_view module, std::string_view user, std::string_view ip, LogLevel logLevel, const char *fmtLog, ...);
     /**
      * Log an application event with IP information.
      * @param module Internal application module
@@ -47,7 +47,7 @@ public:
      * @param fmtLog Log details in format string
      * @param ... Arguments to format string
      */
-    void log1(const std::string &module, const std::string &ip, LogLevel logLevel, const char *fmtLog, ...);
+    void log1(std::string_view module, std::string_view ip, LogLevel logLevel, const char *fmtLog, ...);
     /**
      * Log a simple application event.
      * @param module Internal application module
@@ -55,7 +55,7 @@ public:
      * @param fmtLog Log details in format string
      * @param ... Arguments to format string
      */
-    void log0(const std::string &module, LogLevel logLevel, const char *fmtLog, ...);
+    void log0(std::string_view module, LogLevel logLevel, const char *fmtLog, ...);
 
     /////////////////////////////////////////////////////////
     // This is not thread safe: can't be changed during program execution
@@ -65,7 +65,7 @@ public:
 
 private:
     // Print functions:
-    void printStandardLog(LogLevel logLevel, FILE *fp, std::string module, std::string user, std::string ip, const char *buffer, LogColor color, const char *logLevelText);
+    void printStandardLog(LogLevel logLevel, FILE *fp, std::string_view module, std::string_view user, std::string_view ip, const char *buffer, LogColor color, const char *logLevelText);
 
     ////////////////////////////////////////////////////////////////
 };

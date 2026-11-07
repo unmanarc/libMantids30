@@ -51,13 +51,13 @@ void RPCClientImpl::runRPClient()
                 _exit(-3);
             }
 
-            std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+            std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
 
             // Check if using passphrase
             if (!Globals::getLC_TLSPhraseFileForPrivateKey().empty())
             {
                 // Load Key
-                std::optional<std::string> keyPassPhrase = Mantids30::Helpers::Crypto::AES256DecryptB64(Mantids30::Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()),
+                std::optional<std::string> keyPassPhrase = Helpers::Crypto::AES256DecryptB64(Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()),
                                                                                                         static_cast<char *>(masterKey->data), masterKey->length);
 
                 if (!keyPassPhrase)
@@ -180,7 +180,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
     boost::json::value jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
-    if (Mantids30::Helpers::JSON::detail::safeGet(rpcError, "succeed").as_bool())
+    if (Helpers::JSON::ASBOOL(rpcError, "succeed", false))
     {
         // Translate this config to the configuration file...
         std::string sRemoteConfig = boost::json::serialize(jRemoteConfig);
@@ -207,12 +207,12 @@ bool RPCClientImpl::retrieveConfigFromC2()
                 m_jRetrievedConfig = jRemoteConfig;
 
                 boost::json::value ans;
-                Mantids30::Helpers::JSON::setMember(ans, "x", m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError));
+                Helpers::JSON::setMember(ans, "x", m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError));
 
-                if (!Mantids30::Helpers::JSON::detail::safeGet(rpcError, "succeed").as_bool())
+                if (!Helpers::JSON::ASBOOL(rpcError, "succeed", false))
                 {
                     LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
-                                  Mantids30::Helpers::JSON::detail::safeGet(rpcError, "errorMessage").as_string().c_str());
+                                  std::string(Helpers::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
                 }
 
                 if (!Helpers::JSON::ASBOOL(ans, "x", false))
@@ -236,7 +236,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
     }
     else
     {
-        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", Mantids30::Helpers::JSON::detail::safeGet(rpcError, "errorMessage").as_string().c_str());
+        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", std::string(Helpers::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).
@@ -254,8 +254,8 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
 {
     bool ok = false;
     PSKIdKey r;
-    std::string encryptedKey = Mantids30::Helpers::File::loadFileIntoString(Globals::getLC_C2PSKSharedKeyFilePath(), &ok);
-    std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+    std::string encryptedKey = Helpers::File::loadFileIntoString(Globals::getLC_C2PSKSharedKeyFilePath(), &ok);
+    std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
     if (!ok || encryptedKey.empty())
     {
         if (!ok)
@@ -274,7 +274,7 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
     }
     else
     {
-        std::optional<std::string> tokenizedKey = Mantids30::Helpers::Crypto::AES256DecryptB64(encryptedKey, static_cast<char *>(masterKey->data), masterKey->length);
+        std::optional<std::string> tokenizedKey = Helpers::Crypto::AES256DecryptB64(encryptedKey, static_cast<char *>(masterKey->data), masterKey->length);
 
         if (!tokenizedKey)
         {

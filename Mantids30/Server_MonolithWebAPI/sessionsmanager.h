@@ -13,7 +13,7 @@ namespace Mantids30::Network::Servers::WebMonolith {
 class WebSession : public Threads::Safe::MapItem
 {
 public:
-    WebSession(const std::shared_ptr<Mantids30::Sessions::Session> &authSession, const boost::json::value &newNetworkClientInfo)
+    WebSession(const std::shared_ptr<Mantids30::Sessions::Session> &authSession, const boost::json::object &newNetworkClientInfo)
     {
         this->networkClientInfo = newNetworkClientInfo;
         this->authSession = authSession;
@@ -25,11 +25,11 @@ public:
 
     std::shared_ptr<Mantids30::Sessions::Session> getAuthSession() { return authSession; }
 
-    boost::json::value toJSON() { return networkClientInfo; }
+    boost::json::object toJSON() { return networkClientInfo; }
 
 private:
     std::shared_ptr<Mantids30::Sessions::Session> authSession;
-    boost::json::value networkClientInfo;
+    boost::json::object networkClientInfo;
     //std::string sessionId;
 };
 
@@ -73,7 +73,7 @@ public:
      *                The session object will be deleted when the session is destroyed.
      * @return Session ID
      */
-    std::string createSession(const std::shared_ptr<Sessions::Session> &session, const boost::json::value &sessionInfo, uint64_t *maxAge);
+    std::string createSession(const std::shared_ptr<Sessions::Session> &session, const boost::json::object &sessionInfo, uint64_t *maxAge);
     /**
      * @brief destroySession destroy the session element and session ID
      * @param sessionID Session ID String

@@ -254,11 +254,9 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         fflush(stdout);
     }
 }
-std::string RPCLog::truncateSessionId(std::string sSessionId)
+
+
+std::string RPCLog::truncateSessionId(std::string_view sSessionId)
 {
-    if (sSessionId.size() > 12)
-    {
-        sSessionId.erase(12, std::string::npos);
-    }
-    return sSessionId;
+    return std::string(sSessionId.substr(0, 12));
 }

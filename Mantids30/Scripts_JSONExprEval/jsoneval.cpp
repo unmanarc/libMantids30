@@ -23,8 +23,9 @@ JSONEval::JSONEval(const string &expr, const std::shared_ptr<std::vector<string>
     m_isCompiled = parseExpression(expr);
 }
 
-bool JSONEval::parseExpression(std::string expr)
+bool JSONEval::parseExpression(std::string_view exprIn)
 {
+    std::string expr(exprIn);
     // Reset any previous compilation state:
     m_isCompiled = false;
     m_lastError.clear();
