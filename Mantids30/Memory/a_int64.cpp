@@ -38,26 +38,21 @@ std::string INT64::toString()
     return std::to_string(m_value);
 }
 
-bool INT64::fromString(const std::string &value)
+bool INT64::fromString(std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    if (value.empty())
+    int64_t result = 0;
+
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 10);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
-        this->m_value = 0;
+        m_value = 0;
         return false;
     }
 
-    char *end = nullptr;
-    long long result = strtoll(value.c_str(), &end, 10);
-
-    if (end == value.c_str() || *end != '\0' || result > INT64_MAX || result < INT64_MIN)
-    {
-        this->m_value = 0;
-        return false;
-    }
-
-    this->m_value = static_cast<int64_t>(result);
+    m_value = result;
     return true;
 }
 

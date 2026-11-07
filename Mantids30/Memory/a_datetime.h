@@ -27,7 +27,7 @@ public:
 
     std::string toStringLcl();
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;
@@ -38,7 +38,7 @@ protected:
 private:
     std::string getPlainLclTimeStr(time_t v);
     std::string getISOTimeStr(const time_t &v);
-    time_t fromISOTimeStr(const std::string &v);
+    time_t fromISOTimeStr(const std::string_view v);
 
     time_t m_value = 0;
     std::shared_mutex m_mutex;

@@ -36,30 +36,21 @@ std::string UINT16::toString()
     return std::to_string(m_value);
 }
 
-bool UINT16::fromString(const std::string &value)
+bool UINT16::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    if (value.empty())
-    {
-        this->m_value = 0;
-        return false; // Empty string is not a valid numeric input
-    }
+    uint16_t result = 0;
 
-    char *end = nullptr;
-    unsigned long result = strtoul(value.c_str(), &end, 10);
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 10);
 
-    // Check for conversion errors:
-    // - end == value.c_str(): no digits were found
-    // - *end != '\0': trailing non-numeric characters
-    // - result > UINT16_MAX: overflow (though strtoul doesn't clamp)
-    if (end == value.c_str() || *end != '\0' || result > UINT16_MAX)
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
-        this->m_value = 0;
+        m_value = 0;
         return false;
     }
 
-    this->m_value = static_cast<uint16_t>(result);
+    m_value = result;
     return true;
 }
 

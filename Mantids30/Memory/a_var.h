@@ -62,7 +62,7 @@ public:
      * @param value readable string
      * @return true if accepted.
      */
-    virtual bool fromString(const std::string &value);
+    virtual bool fromString(const std::string_view value);
 
     // VAR TYPE:
     [[nodiscard]] Type getVarType() const;

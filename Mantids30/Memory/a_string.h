@@ -11,9 +11,16 @@ class STRING : public Var
 public:
     STRING();
     STRING(const std::string &value);
+    STRING(std::string_view value);
+    STRING(const char *value);
     STRING &operator=(const std::string &value)
     {
         setValue(value);
+        return *this;
+    }
+    STRING &operator=(std::string_view value)
+    {
+        setValue(std::string(value));
         return *this;
     }
     std::string getValue();
@@ -23,7 +30,7 @@ public:
     void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;

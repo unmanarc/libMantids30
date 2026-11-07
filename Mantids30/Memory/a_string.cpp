@@ -1,5 +1,6 @@
 #include "a_string.h"
 #include <mutex>
+#include <string>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -9,6 +10,18 @@ STRING::STRING()
 }
 
 STRING::STRING(const std::string &value)
+{
+    setVarType(Type::STRING);
+    this->m_value = value;
+}
+
+STRING::STRING(std::string_view value)
+{
+    setVarType(Type::STRING);
+    this->m_value = value;
+}
+
+STRING::STRING(const char *value)
 {
     setVarType(Type::STRING);
     this->m_value = value;
@@ -40,7 +53,7 @@ std::string STRING::toString()
     return getValue();
 }
 
-bool STRING::fromString(const std::string &value)
+bool STRING::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_value = value;
@@ -66,7 +79,7 @@ boost::json::value STRING::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(toString());
+    return boost::json::string{toString()};
 }
 
 bool STRING::fromJSON(const boost::json::value &value)

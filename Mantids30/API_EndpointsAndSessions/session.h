@@ -35,7 +35,7 @@ struct ClientDetails
      */
     std::string userAgent;
 
-    [[nodiscard]] boost::json::value toJSON() const
+    [[nodiscard]] boost::json::object toJSON() const
     {
         boost::json::object json;
         json["ip"] = ipAddress;

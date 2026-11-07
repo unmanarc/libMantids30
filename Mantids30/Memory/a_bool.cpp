@@ -34,7 +34,7 @@ std::string BOOL::toString()
     return m_value ? "true" : "false";
 }
 
-bool BOOL::fromString(const std::string &value)
+bool BOOL::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     this->m_value = value == "true" || value == "TRUE" || value == "1" || value == "t" || value == "T";

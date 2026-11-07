@@ -34,7 +34,7 @@ public:
     void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
     bool matchRange(const char *value);
     bool matchRange(const in_addr &value);
@@ -46,9 +46,9 @@ public:
     static in_addr _fromCIDRMask(const uint8_t &value, bool *ok = nullptr);
     static std::string _toString(const in_addr &value, const uint8_t &cidrMask = 32);
     static std::string _toString(const uint32_t &value, const uint8_t &cidrMask = 32);
-    static in_addr _fromString(const std::string &value, bool *ok = nullptr);
+    static in_addr _fromString(const std::string_view value, bool *ok = nullptr);
 
-    static std::pair<in_addr, uint8_t> _fromStringWithNetmask(const std::string &value, bool *ok = nullptr);
+    static std::pair<in_addr, uint8_t> _fromStringWithNetmask(const std::string_view value, bool *ok = nullptr);
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;

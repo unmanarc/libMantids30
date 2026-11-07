@@ -144,7 +144,7 @@ public:
      * @param buf data to be streamed.
      * @return true if succeed (all bytes written)
      */
-    bool writeString(const std::string &buf);
+    bool writeString(std::string_view buf);
 
     size_t strPrintf(const char *format, ...);
 

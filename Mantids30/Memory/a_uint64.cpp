@@ -50,26 +50,21 @@ std::string UINT64::toString()
     return std::to_string(m_value);
 }
 
-bool UINT64::fromString(const std::string &value)
+bool UINT64::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    if (value.empty())
+    uint64_t result = 0;
+
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 10);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
-        this->m_value = 0;
+        m_value = 0;
         return false;
     }
 
-    char *end = nullptr;
-    unsigned long long result = strtoull(value.c_str(), &end, 10);
-
-    if (end == value.c_str() || *end != '\0' || result > UINT64_MAX)
-    {
-        this->m_value = 0;
-        return false;
-    }
-
-    this->m_value = static_cast<uint64_t>(result);
+    m_value = result;
     return true;
 }
 

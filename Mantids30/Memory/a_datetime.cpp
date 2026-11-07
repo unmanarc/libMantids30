@@ -58,7 +58,7 @@ std::string DATETIME::toString()
     return getISOTimeStr(m_value);
 }
 
-bool DATETIME::fromString(const std::string &value)
+bool DATETIME::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
@@ -139,40 +139,63 @@ string DATETIME::getISOTimeStr(const time_t &v)
     return sTime;
 }
 
-time_t DATETIME::fromISOTimeStr(const string &v)
+time_t DATETIME::fromISOTimeStr(const std::string_view v)
 {
-    // Thanks to: https://stackoverflow.com/questions/26895428/how-do-i-parse-an-iso-8601-date-with-optional-milliseconds-to-a-struct-tm-in-c
-    tm tmTime{};
-    ZeroBStruct(tmTime);
+    const std::string s(v);
+    tm t{};
+    int year, month, day, hour, minute;
+    float seconds;
+    int consumed = 0;
 
-    if (v.find(' ') != std::string::npos)
+    if (sscanf(s.c_str(), "%d-%d-%d%*1[T ]%d:%d:%f%n", &year, &month, &day, &hour, &minute, &seconds, &consumed) != 6)
     {
-        if (sscanf(v.c_str(), "%d-%d-%d %d:%d:%d", &(tmTime.tm_year), &(tmTime.tm_mon), &(tmTime.tm_mday), &(tmTime.tm_hour), &(tmTime.tm_min), &(tmTime.tm_sec)) >= 6)
-        {
-        }
-
-        tmTime.tm_year -= 1900; // Year since 1900
-        tmTime.tm_mon -= 1;     // 0-11
-        return mktime(&tmTime) - timezone;
+        return 0;
     }
-    else if (v.find('T') != std::string::npos)
+
+    if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59 || !std::isfinite(seconds) || seconds < 0 || seconds >= 60)
     {
-        float s;
-        int tzh = 0, tzm = 0;
-        if (sscanf(v.c_str(), "%d-%d-%dT%d:%d:%f%d:%dZ", &(tmTime.tm_year), &(tmTime.tm_mon), &(tmTime.tm_mday), &(tmTime.tm_hour), &(tmTime.tm_min), &s, &tzh, &tzm) > 6)
+        return 0;
+    }
+
+    int offset = 0;
+
+    if (consumed < s.size())
+    {
+        if (s[consumed] == 'Z')
         {
-            // Fix the sign on minutes:
-            if (tzh < 0)
+            if (consumed + 1 != s.size())
             {
-                tzm *= -1;
+                return 0;
             }
         }
+        else
+        {
+            char sign;
+            int h, m, n = 0;
 
-        tmTime.tm_year -= 1900;  // Year since 1900
-        tmTime.tm_mon -= 1;      // 0-11
-        tmTime.tm_sec = static_cast<int>(s); // 0-61 (0-60 in C++11)
+            if (sscanf(s.c_str() + consumed, "%c%2d:%2d%n", &sign, &h, &m, &n) != 3 || (sign != '+' && sign != '-') || h > 23 || m > 59 || consumed + n != s.size())
+            {
+                return 0;
+            }
 
-        return mktime(&tmTime) - timezone;
+            offset = (sign == '+' ? 1 : -1) * (h * 3600 + m * 60);
+        }
     }
-    return 0;
+
+    t.tm_year = year - 1900;
+    t.tm_mon = month - 1;
+    t.tm_mday = day;
+    t.tm_hour = hour;
+    t.tm_min = minute;
+    t.tm_sec = static_cast<int>(seconds);
+
+    const time_t result = timegm(&t);
+
+    // Reject invalid dates normalized by timegm(), e.g. February 31.
+    if (t.tm_year != year - 1900 || t.tm_mon != month - 1 || t.tm_mday != day)
+    {
+        return 0;
+    }
+
+    return result - offset;
 }

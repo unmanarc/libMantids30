@@ -35,26 +35,21 @@ std::string INT8::toString()
     return std::to_string(m_value);
 }
 
-bool INT8::fromString(const std::string &value)
+bool INT8::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    if (value.empty())
+    int8_t result = 0;
+
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 10);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
-        this->m_value = 0;
+        m_value = 0;
         return false;
     }
 
-    char *end = nullptr;
-    long result = strtol(value.c_str(), &end, 10);
-
-    if (end == value.c_str() || *end != '\0' || result > INT8_MAX || result < INT8_MIN)
-    {
-        this->m_value = 0;
-        return false;
-    }
-
-    this->m_value = static_cast<int8_t>(result);
+    m_value = result;
     return true;
 }
 std::shared_ptr<Var> INT8::protectedCopy()

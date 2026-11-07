@@ -131,7 +131,7 @@ std::string Var::toString()
     return "";
 }
 
-bool Var::fromString(const std::string &)
+bool Var::fromString(const std::string_view)
 {
     return true;
 }

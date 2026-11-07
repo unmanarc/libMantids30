@@ -30,10 +30,10 @@ public:
     void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
     static std::string _toString(const in6_addr &value);
-    static in6_addr _fromString(const std::string &value, bool *ok = nullptr);
+    static in6_addr _fromString(const std::string_view value, bool *ok = nullptr);
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;

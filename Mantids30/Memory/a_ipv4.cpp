@@ -7,6 +7,7 @@
 #endif
 
 #include <Mantids30/Helpers/mem.h>
+#include <Mantids30/Helpers/defines.h>
 #include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
@@ -56,7 +57,7 @@ std::string IPV4::toString()
     return _toString(getValue());
 }
 
-bool IPV4::fromString(const std::string &value)
+bool IPV4::fromString(const std::string_view value)
 {
     bool r = false;
     std::pair<in_addr, uint8_t> v = _fromStringWithNetmask(value, &r);
@@ -279,21 +280,11 @@ uint8_t IPV4::_toCIDRMask(const in_addr &value)
 
 in_addr IPV4::_fromCIDRMask(const uint8_t &value, bool *ok)
 {
-    if (ok)
-    {
-        if (value > 32)
-        {
-            *ok = false;
-        }
-        else
-        {
-            *ok = true;
-        }
-    }
+    SET_OK_BOOLEAN(ok, value <= 32);
 
     if (value <= 32)
     {
-        in_addr baseNetmask;
+        in_addr baseNetmask{};
         baseNetmask.s_addr = (u64pow(2, value) - 1);
         return baseNetmask;
     }
@@ -309,73 +300,78 @@ std::string IPV4::_toString(const in_addr &value, const uint8_t &cidrMask)
 
 std::string IPV4::_toString(const uint32_t &value, const uint8_t &cidrMask)
 {
-    in_addr x;
+    in_addr x{};
     x.s_addr = value;
     return _toString(x, cidrMask);
 }
 
-in_addr IPV4::_fromString(const std::string &value, bool *ok)
+in_addr IPV4::_fromString(std::string_view value, bool *ok)
 {
-    in_addr xvalue;
-    ZeroBStruct(xvalue);
+    in_addr xvalue{};
 
     if (value.empty())
     {
-        if (ok)
-        {
-            *ok = true;
-        }
+        SET_OK_BOOLEAN(ok, true);
+
         return xvalue;
     }
 
-    bool r = inet_pton(AF_INET, value.c_str(), &xvalue) == 1;
-    if (ok)
+    bool r = false;
+
+    if (value.size() <= INET_ADDRSTRLEN - 1)
     {
-        *ok = r;
+        char buffer[INET_ADDRSTRLEN];
+
+        memcpy(buffer, value.data(), value.size());
+        buffer[value.size()] = '\0';
+
+        r = inet_pton(AF_INET, buffer, &xvalue) == 1;
     }
+
+    SET_OK_BOOLEAN(ok, r);
 
     return xvalue;
 }
-
-std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(const std::string &value, bool *ok)
+std::pair<in_addr, uint8_t> IPV4::_fromStringWithNetmask(std::string_view value, bool *ok)
 {
-    std::pair<in_addr, uint8_t> r;
+    std::pair<in_addr, uint8_t> r{{}, 0};
 
-    r.first.s_addr = 0;
-    r.second = 0;
+    // Find the CIDR separator
+    const size_t pos = value.find('/');
 
-    if (value.find_first_of('/') == std::string::npos)
+    // No netmask specified: use /32
+    if (pos == std::string_view::npos)
     {
-        r.second = 32;
         r.first = _fromString(value, ok);
+        r.second = 32;
+        return r;
     }
-    else
+
+    // Extract the netmask without copying the string
+    const std::string_view netmask = value.substr(pos + 1);
+
+    // Validate the netmask length
+    if (netmask.empty() || netmask.size() > 2)
     {
-        std::string detectedNetmask = value.substr(value.find_first_of('/') + 1);
-        if (detectedNetmask.size() != 1 && detectedNetmask.size() != 2)
-        {
-            if (ok)
-            {
-                *ok = false;
-            }
-        }
-        else
-        {
-            r.second = std::strtoul(detectedNetmask.c_str(), nullptr, 10);
-            if (r.second > 32)
-            {
-                if (ok)
-                {
-                    *ok = false;
-                }
-                r.second = 0;
-            }
-            else
-            {
-                r.first = _fromString(value.substr(0, value.find_first_of('/')), ok);
-            }
-        }
+        SET_OK_BOOLEAN(ok, false);
+        return r;
     }
+
+    // Convert the netmask to an integer
+    unsigned int prefix = 0;
+    const auto [ptr, ec] = std::from_chars(netmask.data(), netmask.data() + netmask.size(), prefix);
+
+    // Validate the conversion and CIDR prefix range
+    if (ec != std::errc{} || ptr != netmask.data() + netmask.size() || prefix > 32)
+    {
+        SET_OK_BOOLEAN(ok, false);
+        return r;
+    }
+
+    // Parse the IPv4 address and store the validated prefix
+    r.first = _fromString(value.substr(0, pos), ok);
+    r.second = static_cast<uint8_t>(prefix);
+
     return r;
 }
 
@@ -396,7 +392,7 @@ boost::json::value IPV4::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(toString());
+    return boost::json::string(toString());
 }
 
 bool IPV4::fromJSON(const boost::json::value &value)

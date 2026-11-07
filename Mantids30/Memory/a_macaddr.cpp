@@ -1,4 +1,5 @@
 #include "a_macaddr.h"
+#include <string_view>
 
 #ifdef _WIN32
 #include "w32compat.h"
@@ -8,6 +9,7 @@
 
 #include <Mantids30/Helpers/mem.h>
 #include <Mantids30/Helpers/safeint.h>
+#include <Mantids30/Helpers/defines.h>
 #include <cstring>
 #include <mutex>
 
@@ -54,7 +56,7 @@ std::string MACADDR::toString()
     return _toString(getValue());
 }
 
-bool MACADDR::fromString(const std::string &value)
+bool MACADDR::fromString(std::string_view value)
 {
     unsigned char _macaddr[ETH_ALEN];
     bool r = _fromString(value, _macaddr);
@@ -62,27 +64,48 @@ bool MACADDR::fromString(const std::string &value)
     return r;
 }
 
-bool MACADDR::_fromString(const std::string &src, unsigned char *dst)
+bool MACADDR::_fromString(std::string_view src, unsigned char *dst)
 {
-    bool r = false;
-
     memset(dst, 0, sizeof(m_macaddr));
-    unsigned int a, b, c, d, e, f;
-    if (sscanf(src.c_str(), "%02X:%02X:%02X:%02X:%02X:%02X", &a, &b, &c, &d, &e, &f) == 6 || sscanf(src.c_str(), "%02x:%02x:%02x:%02x:%02x:%02x", &a, &b, &c, &d, &e, &f) == 6
-        || sscanf(src.c_str(), "%02X-%02X-%02X-%02X-%02X-%02X", &a, &b, &c, &d, &e, &f) == 6 || sscanf(src.c_str(), "%02x-%02x-%02x-%02x-%02x-%02x", &a, &b, &c, &d, &e, &f) == 6)
+
+    if (src.size() != 17)
     {
-        dst[0] = safe_cast_or<unsigned char>(a, 0);
-        dst[1] = safe_cast_or<unsigned char>(b, 0);
-        dst[2] = safe_cast_or<unsigned char>(c, 0);
-        dst[3] = safe_cast_or<unsigned char>(d, 0);
-        dst[4] = safe_cast_or<unsigned char>(e, 0);
-        dst[5] = safe_cast_or<unsigned char>(f, 0);
-        r = true;
+        return false;
     }
 
-    return r;
-}
+    const char sep = src[2];
 
+    if (sep != ':' && sep != '-')
+    {
+        return false;
+    }
+
+    unsigned char parsed[6];
+
+    for (size_t i = 0; i < 6; ++i)
+    {
+        const size_t pos = i * 3;
+
+        if (i > 0 && src[pos - 1] != sep)
+        {
+            return false;
+        }
+
+        unsigned int value = 0;
+
+        auto [ptr, ec] = std::from_chars(src.data() + pos, src.data() + pos + 2, value, 16);
+
+        if (ec != std::errc{} || ptr != src.data() + pos + 2)
+        {
+            return false;
+        }
+
+        parsed[i] = static_cast<unsigned char>(value);
+    }
+
+    memcpy(dst, parsed, sizeof(parsed));
+    return true;
+}
 /**
  * Converts a 64-bit hash value to a 6-byte MAC address in network byte order (big-endian).
  * The highest 6 bytes of the 64-bit value are used, with the most significant byte first.
@@ -156,15 +179,12 @@ std::string MACADDR::_toString(const unsigned char *value)
     return {addr};
 }
 
-uint64_t MACADDR::_fromStringToHASH(const std::string &value, bool *ok)
+uint64_t MACADDR::_fromStringToHASH(const std::string_view value, bool *ok)
 {
     unsigned char _macaddr[sizeof(uint64_t)];
     memset(_macaddr, 0, sizeof(_macaddr));
     bool okv = _fromString(value, _macaddr);
-    if (ok)
-    {
-        *ok = okv;
-    }
+    SET_OK_BOOLEAN(ok, okv);
     return _toHash(_macaddr);
 }
 
@@ -193,7 +213,7 @@ boost::json::value MACADDR::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(toString());
+    return boost::json::string(toString());
 }
 
 bool MACADDR::fromJSON(const boost::json::value &value)

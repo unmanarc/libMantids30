@@ -34,14 +34,14 @@ public:
     void *getDirectMemory() override { return &m_macaddr; }
 
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
-    static bool _fromString(const std::string &src, unsigned char *dst);
+    static bool _fromString(const std::string_view src, unsigned char *dst);
     static void _fromHASH(const uint64_t &src, unsigned char *dst);
 
     static std::string _toString(const unsigned char *value);
     static uint64_t _toHash(const unsigned char *value);
-    static uint64_t _fromStringToHASH(const std::string &value, bool *ok = nullptr);
+    static uint64_t _fromStringToHASH(const std::string_view value, bool *ok = nullptr);
     static std::string _fromHASHToString(const uint64_t &value);
 
     boost::json::value toJSON() override;

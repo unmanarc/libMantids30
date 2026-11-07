@@ -166,7 +166,7 @@ std::string FileMap::getCurrentFileName() const
 
 bool FileMap::mmapDisplace(const size_t &offsetBytes)
 {
-    Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
+    Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
     return mmapTruncate(fileOpenSize - offsetBytes);
 }
 
@@ -202,8 +202,8 @@ std::optional<size_t> FileMap::mmapPrepend(const void *buf, const size_t &count)
         return std::nullopt;
     }
 
-    Mantids30::Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
-    Mantids30::Helpers::Mem::memcpy64(mmapAddr, buf, count);
+    Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
+    Helpers::Mem::memcpy64(mmapAddr, buf, count);
 
     return count;
 }

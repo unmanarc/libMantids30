@@ -574,7 +574,7 @@ bool B_Chunks::compare2(const void *buf, const size_t &len, bool caseSensitive, 
         {
             size_t currentChunkSize = std::min(dataToCompare, currentChunk.size);
 
-            if (Mantids30::Helpers::Mem::memicmp2(currentChunk.data, buf, currentChunkSize, caseSensitive))
+            if (Helpers::Mem::memicmp2(currentChunk.data, buf, currentChunkSize, caseSensitive))
             {
                 return false; // does not match!
             }

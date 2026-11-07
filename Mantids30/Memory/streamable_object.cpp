@@ -66,9 +66,9 @@ bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
     return true;
 }
 
-bool StreamableObject::writeString(const std::string &buf)
+bool StreamableObject::writeString(std::string_view buf)
 {
-    return writeFullStream(buf.c_str(), buf.size());
+    return writeFullStream(buf.data(), buf.size());
 }
 
 size_t StreamableObject::strPrintf(const char *format, ...)

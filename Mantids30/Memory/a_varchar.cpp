@@ -1,6 +1,6 @@
 #include "a_varchar.h"
-#include <mutex>
 #include <cstring>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -45,33 +45,19 @@ std::string VARCHAR::toString()
     return m_value;
 }
 
-bool VARCHAR::fromString(const std::string &value)
+bool VARCHAR::fromString(std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    bool r = true;
-    size_t szVar = value.size();
+    // Calculate the number of bytes to copy and detect truncation
+    const size_t size = std::min(value.size(), m_varSize);
+    m_wasTruncated = value.size() > m_varSize;
 
-    m_wasTruncated = false;
+    // Copy the string and append the null terminator
+    std::memmove(m_value, value.data(), size);
+    m_value[size] = '\0';
 
-    if (szVar > m_varSize)
-    {
-        szVar = m_varSize;
-        r = false;
-        m_wasTruncated = true;
-    }
-
-    if (szVar > 0)
-    {
-        this->m_value[szVar] = 0;
-        memcpy(this->m_value, value.c_str(), szVar);
-    }
-    else
-    {
-        this->m_value[0] = 0;
-    }
-
-    return r;
+    return !m_wasTruncated;
 }
 
 char *VARCHAR::getValue()
@@ -135,7 +121,7 @@ boost::json::value VARCHAR::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(toString());
+    return boost::json::string(toString());
 }
 
 bool VARCHAR::fromJSON(const boost::json::value &value)

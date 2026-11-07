@@ -1,6 +1,7 @@
 #include "a_ptr.h"
-#include <mutex>
+#include <boost/algorithm/string/predicate.hpp>
 #include <cstdint>
+#include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -39,19 +40,35 @@ std::string PTR::toString()
     return ovalue;
 }
 
-bool PTR::fromString(const std::string &value)
+bool PTR::fromString(std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
     if (value.empty())
     {
-        this->m_value = nullptr;
+        m_value = nullptr;
         return true;
     }
-    this->m_value = (void *) (strtol(value.c_str(), nullptr, 16));
+
+    // Accept optional 0x / 0X prefix.
+    if (boost::starts_with(value, "0x") || boost::starts_with(value, "0X"))
+    {
+        value.remove_prefix(2);
+    }
+
+    uintptr_t result = 0;
+
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 16);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
+    {
+        m_value = nullptr;
+        return false;
+    }
+
+    m_value = reinterpret_cast<void *>(result);
     return true;
 }
-
 std::shared_ptr<Var> PTR::protectedCopy()
 {
     std::shared_lock<std::shared_mutex> lock(m_mutex);
@@ -71,7 +88,7 @@ boost::json::value PTR::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(toString());
+    return boost::json::string{toString()};
 }
 
 bool PTR::fromJSON(const boost::json::value &value)

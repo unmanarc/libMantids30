@@ -7,20 +7,19 @@
 #endif
 
 #include <Mantids30/Helpers/mem.h>
+#include <Mantids30/Helpers/defines.h>
 #include <mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
 IPV6::IPV6()
 {
-    ZeroBStruct(m_value);
     setVarType(Type::IPV6);
 }
 
 IPV6::IPV6(const in6_addr &value)
 {
     setVarType(Type::IPV6);
-    ZeroBStruct(this->m_value);
     setValue(value);
 }
 
@@ -52,7 +51,7 @@ std::string IPV6::toString()
     return _toString(getValue());
 }
 
-bool IPV6::fromString(const std::string &value)
+bool IPV6::fromString(const std::string_view value)
 {
     bool r;
     in6_addr ipaddr = _fromString(value, &r);
@@ -67,28 +66,34 @@ std::string IPV6::_toString(const in6_addr &value)
     return cIpSource;
 }
 
-in6_addr IPV6::_fromString(const std::string &value, bool *ok)
+in6_addr IPV6::_fromString(std::string_view value, bool* ok)
 {
     in6_addr xvalue{};
-    ZeroBStruct(xvalue);
 
     if (value.empty())
     {
-        if (ok)
-        {
-            *ok = true;
-        }
+        SET_OK_BOOLEAN(ok, true);
+
         return xvalue;
     }
 
-    bool r = inet_pton(AF_INET6, value.c_str(), &xvalue) == 1;
-    if (ok)
+    bool r = false;
+
+    if (value.size() <= INET6_ADDRSTRLEN - 1)
     {
-        *ok = r;
+        char buffer[INET6_ADDRSTRLEN];
+
+        memcpy(buffer, value.data(), value.size());
+        buffer[value.size()] = '\0';
+
+        r = inet_pton(AF_INET6, buffer, &xvalue) == 1;
     }
+
+    SET_OK_BOOLEAN(ok, r);
 
     return xvalue;
 }
+
 
 std::shared_ptr<Var> IPV6::protectedCopy()
 {

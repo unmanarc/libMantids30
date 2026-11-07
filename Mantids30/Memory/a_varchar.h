@@ -26,7 +26,7 @@ public:
     }
 
     [[nodiscard]] std::string toString() override;
-    [[nodiscard]] bool fromString(const std::string &value) override;
+    [[nodiscard]] bool fromString(const std::string_view value) override;
 
     /**
      * @brief getValue Get the null terminated string (can be reused)
@@ -60,10 +60,10 @@ protected:
     std::shared_ptr<Var> protectedCopy() override;
 
 private:
-    bool m_wasTruncated;
-    char *m_value;
-    size_t m_varSize;
-    unsigned long m_fillSize;
+    bool m_wasTruncated = false;
+    char *m_value = nullptr;
+    size_t m_varSize = 0;
+    unsigned long m_fillSize = 0;
     std::shared_mutex m_mutex;
 };
 

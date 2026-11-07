@@ -1,6 +1,7 @@
 #include "a_stringlist.h"
 #include <Mantids30/DataFormat_JSON/json.h>
 #include <mutex>
+#include <string>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -78,7 +79,7 @@ std::string STRINGLIST::toString()
     return result;
 }
 
-bool STRINGLIST::fromString(const std::string &inputStringList)
+bool STRINGLIST::fromString(std::string_view inputStringList)
 {
     std::list<std::string> finalValues;
     std::string::size_type currentPosition = 0, startOfCurrentField = 0;
@@ -222,7 +223,7 @@ bool STRINGLIST::fromJSON(const boost::json::value &value)
     {
         if (item.is_string())
         {
-            m_value.push_back(Helpers::JSON::ASSTRING_D(item, ""));
+            m_value.emplace_back(Helpers::JSON::ASSTRING_D(item, ""));
         }
         else
         {

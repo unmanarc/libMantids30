@@ -1,8 +1,8 @@
 #include "a_bin.h"
 #include <Mantids30/Helpers/encoders.h>
-#include <shared_mutex>
-#include <mutex>
 #include <cstring>
+#include <mutex>
+#include <shared_mutex>
 
 using namespace Mantids30::Memory::Abstract;
 
@@ -37,18 +37,22 @@ std::string BINARY::toString()
     return x;
 }
 
-bool BINARY::fromString(const std::string &value)
+bool BINARY::fromString(std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
 
-    this->m_value.ptr = new char[value.size() + 1];
-    if (!this->m_value.ptr)
+    char *ptr = new (std::nothrow) char[value.size() + 1];
+    if (!ptr)
     {
         return false;
     }
 
-    this->m_value.ptr[value.size()] = 0;
-    memcpy(this->m_value.ptr, value.c_str(), value.size());
+    memcpy(ptr, value.data(), value.size());
+    ptr[value.size()] = '\0';
+
+    delete[] this->m_value.ptr;
+    this->m_value.ptr = ptr;
+
     return true;
 }
 
@@ -61,13 +65,13 @@ boost::json::value BINARY::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(Mantids30::Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize).c_str());
+    return boost::json::value(Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize).c_str());
 }
 
 bool BINARY::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
-    return fromString(Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING_D(value, "")));
+    return fromString(Helpers::Encoders::decodeFromBase64( Helpers::JSON::ASSTRING_D(value, "") ));
 }
 
 std::shared_ptr<Var> BINARY::protectedCopy()

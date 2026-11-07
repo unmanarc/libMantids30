@@ -35,23 +35,21 @@ std::string DOUBLE::toString()
     return std::to_string(m_value);
 }
 
-bool DOUBLE::fromString(const std::string &value)
+bool DOUBLE::fromString(std::string_view value)
 {
-    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    double parsed;
 
-    try
-    {
-        this->m_value = std::stod(value);
-        return true;
-    }
-    catch (std::invalid_argument *)
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), parsed);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
         return false;
     }
-    catch (std::out_of_range *)
-    {
-        return false;
-    }
+
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+    m_value = parsed;
+
+    return true;
 }
 
 boost::json::value DOUBLE::toJSON()

@@ -66,7 +66,7 @@ public:
     bool setValue(ByteArray *value);
 
     std::string toString() override;
-    bool fromString(const std::string &value) override;
+    bool fromString(const std::string_view value) override;
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;

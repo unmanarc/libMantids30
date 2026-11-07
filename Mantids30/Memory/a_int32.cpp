@@ -36,26 +36,21 @@ std::string INT32::toString()
     return std::to_string(m_value);
 }
 
-bool INT32::fromString(const std::string &value)
+bool INT32::fromString(const std::string_view value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
 
-    if (value.empty())
+    int32_t result = 0;
+
+    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), result, 10);
+
+    if (ec != std::errc{} || ptr != value.data() + value.size())
     {
-        this->m_value = 0;
+        m_value = 0;
         return false;
     }
 
-    char *end = nullptr;
-    long result = strtol(value.c_str(), &end, 10);
-
-    if (end == value.c_str() || *end != '\0' || result > INT32_MAX || result < INT32_MIN)
-    {
-        this->m_value = 0;
-        return false;
-    }
-
-    this->m_value = static_cast<int32_t>(result);
+    m_value = result;
     return true;
 }
 

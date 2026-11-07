@@ -23,7 +23,7 @@ public:
     void *getDirectMemory() override { return &m_value; }
 
     std::string toString() override;
-    bool fromString(const std::string &inputStringList) override;
+    bool fromString(std::string_view inputStringList) override;
 
     boost::json::value toJSON() override;
     bool fromJSON(const boost::json::value &value) override;

@@ -301,5 +301,5 @@ bool B_MEM::compare2(const void *buf, const size_t &len, bool caseSensitive, con
     /////////////////////////////
 
     const char *memoryToBeCompared = linearMem + offset;
-    return !Mantids30::Helpers::Mem::memicmp2(memoryToBeCompared, buf, len, caseSensitive);
+    return !Helpers::Mem::memicmp2(memoryToBeCompared, buf, len, caseSensitive);
 }
