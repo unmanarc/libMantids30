@@ -4,6 +4,8 @@
 #include <openssl/hmac.h>
 #include <openssl/pem.h>
 
+#include <memory>
+
 using namespace Mantids30::DataFormat;
 
 std::string JWT::createHeader()
@@ -88,8 +90,7 @@ std::shared_ptr<JWT::RAWSignature> JWT::createSignature(const std::string &data)
 
 std::shared_ptr<JWT::RAWSignature> JWT::createHMACSignature(int hashType, const std::string &data)
 {
-    std::shared_ptr<JWT::RAWSignature> r;
-    r.reset(new JWT::RAWSignature);
+    std::shared_ptr<JWT::RAWSignature> r = std::make_shared<JWT::RAWSignature>();
 
     r->m_digestSize = EVP_MAX_MD_SIZE + 1;
     r->m_digest = new unsigned char[r->m_digestSize];
@@ -106,8 +107,7 @@ std::shared_ptr<JWT::RAWSignature> JWT::createHMACSignature(int hashType, const 
 
 std::shared_ptr<JWT::RAWSignature> JWT::createRSASignature(int hashType, const std::string &data)
 {
-    std::shared_ptr<JWT::RAWSignature> r;
-    r.reset(new JWT::RAWSignature);
+    std::shared_ptr<JWT::RAWSignature> r = std::make_shared<JWT::RAWSignature>();
 
     r->m_result = RAWSignature::Result::SUCCESS;
     EVP_PKEY *pkey = nullptr;
@@ -343,8 +343,75 @@ std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
     return sign(*(token.getClaimsPTR()));
 }
 
-bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutput)
+std::string JWT::verifyErrorToString(VerifyError errors)
 {
+    const auto v = static_cast<uint16_t>(errors);
+
+    // Single flag (or NONE) -> its name.
+    if ((v & (v - 1)) == 0)
+    {
+        switch (errors)
+        {
+            case VerifyError::NONE:                return "none";
+            case VerifyError::MALFORMED:           return "malformed token";
+            case VerifyError::BASE64_INVALID:      return "invalid base64";
+            case VerifyError::HEADER_JSON_INVALID: return "header is not valid JSON";
+            case VerifyError::ALG_NOT_SUPPORTED:   return "unsupported algorithm";
+            case VerifyError::SIGNATURE_MISMATCH:  return "signature mismatch";
+            case VerifyError::REVOKED:             return "token revoked";
+            case VerifyError::EXPIRED:             return "token expired";
+            case VerifyError::NOT_YET_VALID:       return "token not yet valid";
+            case VerifyError::CALLBACK_REJECTED:   return "remote verification rejected token";
+            case VerifyError::UNKNOWN:             return "unknown verification error";
+        }
+        return "unknown verification error";
+    }
+
+    // Multiple flags -> comma-joined.
+    std::string combined;
+    const struct
+    {
+        uint16_t mask;
+        const char *name;
+    } table[] = {
+        { 1u << 0, "malformed" }, { 1u << 1, "invalid base64" }, { 1u << 2, "bad header json" },
+        { 1u << 3, "unsupported algorithm" }, { 1u << 4, "signature mismatch" },
+        { 1u << 5, "revoked" }, { 1u << 6, "expired" }, { 1u << 7, "not yet valid" },
+        { 1u << 8, "callback rejected" }
+    };
+    for (const auto &entry : table)
+    {
+        if (v & entry.mask)
+        {
+            if (!combined.empty())
+            {
+                combined += ", ";
+            }
+            combined += entry.name;
+        }
+    }
+    if (combined.empty())
+    {
+        return "unknown verification error";
+    }
+    return combined;
+}
+
+bool JWT::verify(std::string_view fullSignedToken, Token *tokenPayloadOutput, VerifyError *errors)
+{
+    if (errors)
+    {
+        *errors = VerifyError::NONE;
+    }
+    const auto report = [&](VerifyError e) -> bool
+    {
+        if (errors)
+        {
+            *errors |= e;
+        }
+        return false;
+    };
+
     JWT::Token dummyToken;
     if (!tokenPayloadOutput)
     {
@@ -358,7 +425,7 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     // If any of the '.' characters are not found or are in the wrong order, return false
     if (pos_header == std::string::npos || pos_payload == std::string::npos || pos_header >= pos_payload)
     {
-        return false;
+        return report(VerifyError::MALFORMED);
     }
 
     // Extract the base64-encoded header, payload, and signature substrings from the token
@@ -370,6 +437,12 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
     std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
     std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
+
+    // If any part decoded to an empty string, the token is not usable.
+    if (header_str.empty() || payload_str.empty() || signature_str.empty())
+    {
+        return report(VerifyError::BASE64_INVALID);
+    }
 
     // If we have a backchannel to check the token itself, check trough backchannel.
     if (verificationCallback)
@@ -384,7 +457,7 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
         else
         {
             // Failed to validate remotely, don't continue locally.
-            return false;
+            return report(VerifyError::CALLBACK_REJECTED);
         }
     }
 
@@ -404,7 +477,7 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     if (!charReader.parse(header_str, header_json))
     {
         // If the header cannot be parsed, return false
-        return false;
+        return report(VerifyError::HEADER_JSON_INVALID);
     }
 
     bool isSignatureVerified = false;
@@ -413,7 +486,7 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     std::string_view incomingAlgorithm = Helpers::JSON::ASSTRING(header_json, "alg", "");
     if (!isAlgorithmSupported(incomingAlgorithm))
     {
-        return false;
+        return report(VerifyError::ALG_NOT_SUPPORTED);
     }
 
     if (isHMACAlgorithm(incomingAlgorithm))
@@ -422,7 +495,7 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
         std::shared_ptr<RAWSignature> computed_signature = createSignature(header_b64 + '.' + payload_b64);
         if (computed_signature->m_result != RAWSignature::Result::SUCCESS)
         {
-            return false;
+            return report(VerifyError::SIGNATURE_MISMATCH);
         }
 
         isSignatureVerified = false;
@@ -435,8 +508,6 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     else if (isRSAAlgorithm(incomingAlgorithm))
     {
         // Create the signature using the header and payload, and compare with the decoded signature
-
-        // TODO: return specific problems...
         isSignatureVerified = validateRSASignature(getHashTypeNumber(), header_b64 + '.' + payload_b64, signature_str.data(), signature_str.size()) == 0;
     }
 
@@ -448,7 +519,31 @@ bool JWT::verify(std::string_view fullSignedToken, JWT::Token *tokenPayloadOutpu
     tokenPayloadOutput->setSignatureVerified(isSignatureVerified);
     tokenPayloadOutput->setRevoked(m_revocation.isSignatureRevoked(signature_str));
 
-    // TODO: indicate the error (invalid signature, revoked signature, etc)
+    if (!isSignatureVerified)
+    {
+        if (errors)
+        {
+            *errors |= VerifyError::SIGNATURE_MISMATCH;
+        }
+    }
+
+    // Report the claim-level failures (exp / nbf / revoked) so every cause is visible.
+    if (errors)
+    {
+        if (tokenPayloadOutput->isRevoked())
+        {
+            *errors |= VerifyError::REVOKED;
+        }
+        const std::time_t now = std::time(nullptr);
+        if (tokenPayloadOutput->hasClaim("exp") && now >= tokenPayloadOutput->getExpirationTime())
+        {
+            *errors |= VerifyError::EXPIRED;
+        }
+        if (tokenPayloadOutput->hasClaim("nbf") && now < tokenPayloadOutput->getNotBefore())
+        {
+            *errors |= VerifyError::NOT_YET_VALID;
+        }
+    }
     return tokenPayloadOutput->isValid();
 }
 
@@ -465,12 +560,12 @@ bool JWT::decodeNoVerify(std::string_view fullSignedToken, Token *tokenPayloadOu
     }
 
     // Extract the base64-encoded header, payload, and signature substrings from the token
-    std::string header_b64(fullSignedToken.substr(0, pos_header));
+//    std::string header_b64(fullSignedToken.substr(0, pos_header));
     std::string payload_b64(fullSignedToken.substr(pos_header + 1, pos_payload - pos_header - 1));
     //std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
 
     // Decode the base64-encoded header, payload, and signature strings
-    std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
+    //std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
     std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
     //std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
 

@@ -360,14 +360,65 @@ public:
     std::string signFromToken(Token &token, bool updateDefaultTimeValues = true);
 
     /**
+     * @brief Bitmask enumeration for possible failure reasons reported by verify()
+     *
+     * This is a bitmask: a single flag per reason. Multiple flags can be combined
+     * with '|' (for example EXPIRED | REVOKED) so that every failing condition is
+     * reported at once, mirroring what Token::isValid() checks.
+     */
+    enum class VerifyError : uint16_t
+    {
+        NONE                = 0,      /**< No error, verification succeeded */
+        MALFORMED           = 1u << 0, /**< Missing or misordered '.' separators */
+        BASE64_INVALID      = 1u << 1, /**< A part decoded to an empty string */
+        HEADER_JSON_INVALID = 1u << 2, /**< Header is not valid JSON */
+        ALG_NOT_SUPPORTED   = 1u << 3, /**< 'alg' is missing or unsupported */
+        SIGNATURE_MISMATCH  = 1u << 4, /**< HMAC/RSA signature did not verify */
+        REVOKED             = 1u << 5, /**< Signature is on the revocation list */
+        EXPIRED             = 1u << 6, /**< 'exp' claim is in the past */
+        NOT_YET_VALID       = 1u << 7, /**< 'nbf' claim is in the future */
+        CALLBACK_REJECTED   = 1u << 8, /**< verificationCallback returned false */
+        UNKNOWN             = 1u << 15 /**< Generic / unexpected failure */
+    };
+
+    /**
+     * @brief Combine two VerifyError bitmasks.
+     */
+    [[nodiscard]] friend VerifyError operator|(VerifyError lhs, VerifyError rhs)
+    {
+        return static_cast<VerifyError>(static_cast<uint16_t>(lhs) | static_cast<uint16_t>(rhs));
+    }
+
+    /**
+     * @brief Accumulate a VerifyError bitmask (in place).
+     */
+    friend VerifyError &operator|=(VerifyError &lhs, VerifyError rhs)
+    {
+        lhs = lhs | rhs;
+        return lhs;
+    }
+
+    /**
      * @brief Verify the signature of a JWT token
      *
      * @param fullSignedToken JWT token String to verify
      * @param tokenPayloadOutput Optional parameter where the token will be decoded to
+     * @param errors Optional pointer to a VerifyError that receives the failure
+     *               reasons (bitmask, NONE on success). If nullptr, no error is
+     *               reported (fully backward compatible with the 1/2-arg form).
      * @return true if signature is valid
      * @return false if signature is invalid
      */
-    bool verify(std::string_view fullSignedToken, Token *tokenPayloadOutput = nullptr);
+    bool verify(std::string_view fullSignedToken, Token *tokenPayloadOutput = nullptr, VerifyError *errors = nullptr);
+
+    /**
+     * @brief Converts a VerifyError (single flag or bitmask) to a readable string.
+     *
+     * @param errors The error flag(s) to convert.
+     * @return std::string A human-readable description. A single flag yields its
+     *         name; multiple flags are comma-joined.
+     */
+    static std::string verifyErrorToString(VerifyError errors);
 
     /**
      * @brief Decode the string into a JWT token without verifying it.

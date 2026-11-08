@@ -108,10 +108,12 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     }
 
     // Attempt to verify the provided token using the JWT validator.
-    bool x = this->config->jwtValidator->verify(strToken, &jwtToken);
+    DataFormat::JWT::VerifyError verr = DataFormat::JWT::VerifyError::NONE;
+    bool x = this->config->jwtValidator->verify(strToken, &jwtToken, &verr);
 
     if (!x)
     {
+        log(Logs::LogLevel::SECURITY_ALERT, "restAPI", 512, "JWT token rejected: %s", DataFormat::JWT::verifyErrorToString(verr).c_str());
         return false;
     }
 
