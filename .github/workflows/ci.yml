@@ -71,7 +71,15 @@ jobs:
           fi
           dnf install -y epel-release || true
           dnf install -y gcc-c++ make cmake pkgconf-pkg-config \
-            boost-devel openssl-devel boost-json-devel
+            openssl-devel
+          # Boost.JSON headers:
+          #   RHEL 8: base boost is 1.66 (no JSON); EPEL provides boost 1.78.
+          #   RHEL 9/10: AppStream boost-devel ships JSON.
+          if [ "${{ matrix.name }}" = "AlmaLinux 8 (RHEL 8)" ]; then
+            dnf install -y boost1.78-devel
+          else
+            dnf install -y boost-devel
+          fi
           dnf install -y sqlite-devel libpq-devel mariadb-connector-c-devel || true
 
       - name: Configure

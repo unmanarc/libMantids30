@@ -11,6 +11,9 @@ Source0:        https://github.com/unmanarc/libMantids30/archive/master.tar.gz#/
 Group:          Development/Libraries
 # --- DEPRECATE RHEL6: Minimum supported is RHEL 7 ---
 # RHEL 6 support has been removed (EOL November 2024)
+# NOTE: RHEL 7 is deprecated (EOL November 2024). The RHEL 7 build path
+# (scl-utils, devtoolset-9, openssl11, SSLRHEL7) is kept for in-tree builds
+# only; new packages are produced for RHEL 8+ and Fedora.
 # Debug packages are automatically handled on RHEL 8+ and Fedora 33+
 %if 0%{?rhel} == 7
 %define debug_package %{nil}
@@ -34,15 +37,29 @@ BuildRequires:  pkg-config
 BuildRequires:  gcc-c++ >= 8
 %endif
 # Common build dependencies
+# Boost.JSON headers:
+#   RHEL 8: base boost-devel is 1.66 (no JSON); use EPEL's boost1.78-devel.
+#   RHEL 9/10: AppStream boost-devel ships JSON.
+#   Fedora: boost-devel + boost-json-devel.
 BuildRequires:  boost-devel
 BuildRequires:  boost-static
+%if 0%{?rhel} == 8
+BuildRequires:  boost1.78-devel
+%endif
+%if 0%{?fedora}
 BuildRequires:  boost-json-devel
+%endif
 BuildRequires:  openssl-devel
 BuildRequires:  sqlite-devel
 BuildRequires:  postgresql-devel
 BuildRequires:  mariadb-devel
 # Runtime dependencies
+# libboost_json.so ships with the boost runtime on RHEL 9/10, with the
+# boost1.78 runtime on RHEL 8, and in the boost-json subpackage on Fedora.
+Requires:       boost
+%if 0%{?fedora}
 Requires:       boost-json
+%endif
 Requires:       boost-regex
 Requires:       boost-thread
 Requires:       openssl
@@ -142,6 +159,10 @@ DESTDIR=%{buildroot} %{cmake} --install build
 %files mariadb
 %{_libdir}/libMantids30_DB_MariaDB*
 %changelog
+* Mon Nov 9 2026 Aaron G. Mizrachi P. <dev@unmanarc.com> - 3.0.0
+- Fix Boost.JSON package names: boost1.78-devel (EPEL) on RHEL 8, boost-devel
+  on RHEL 9/10, boost-json-devel on Fedora
+- Deprecate RHEL 7 (EOL November 2024); RHEL 7 build path kept for in-tree builds
 * Thu Jun 18 2026 Aaron G. Mizrachi P. <dev@unmanarc.com> - 3.0.0
 - Deprecate RHEL 6 support (EOL November 2024)
 - Update C++ standard from C++11 to C++17 in spec metadata

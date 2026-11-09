@@ -19,7 +19,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 | Language standard | C++17 |
 | Build system | CMake >= 3.10 |
 | License | LGPLv3 (`Net_Interfaces` on WIN32 is GPLv2) |
-| Platforms | Linux (RHEL/Alma/Rocky 7-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora), Windows (MSYS2/MinGW64) |
+| Platforms | Linux (RHEL/Alma/Rocky 8-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora), Windows (MSYS2/MinGW64) |
 
 ---
 
@@ -67,7 +67,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 | Ubuntu 24.04 / 26.04 LTS | CI-tested |
 | Debian 12 / 13 | CI-tested |
 | RHEL / AlmaLinux / Rocky Linux 8, 9, 10 | CI-tested |
-| RHEL / CentOS 7 (`devtoolset-9`, `cmake3`, `openssl11`) | Documented, manual build |
+| RHEL / CentOS 7 (`devtoolset-9`, `cmake3`, `openssl11`) | Deprecated (EOL November 2024), manual build only |
 | Fedora 40+ | Packages in COPR |
 | Windows 10/11 (MSYS2 / MinGW64) | Supported, documented |
 
@@ -79,12 +79,11 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 
 | Dependency | Minimum | Notes |
 |------------|---------|-------|
-| C++ compiler | GCC >= 9 / Clang >= 10 | RHEL 7 uses `devtoolset-9` |
-| CMake | >= 3.10 | `cmake3` on RHEL 7 |
+| C++ compiler | GCC >= 9 / Clang >= 10 | |
+| CMake | >= 3.10 | |
 | pkg-config | any | used to locate OpenSSL |
-| Boost | >= 1.71 | `regex`, `thread` and `json` components |
+| Boost | >= 1.71 | `regex`, `thread` and `json` components; RHEL 8 uses EPEL `boost1.78-devel`, RHEL 9/10 `boost-devel` |
 | OpenSSL | >= 1.1.1 | `libssl`, `libcrypto` (`libssl11` with `-DSSLRHEL7=ON`) |
-| Boost.Json | >= 1.71 | JSON parsing and serialization |
 
 ### Optional (database backends)
 
@@ -213,7 +212,7 @@ sudo dnf copr enable amizrachi/unmanarc -y
 sudo dnf install -y libMantids30-devel
 ```
 
-RHEL 7:
+RHEL 7 (deprecated, EOL November 2024):
 
 ```bash
 sudo yum install -y epel-release yum-plugin-copr

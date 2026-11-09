@@ -1,7 +1,11 @@
 # Building on RHEL, AlmaLinux and Rocky Linux
 
-Applies to RHEL/AlmaLinux/Rocky Linux 7, 8, 9 and 10. Versions 8, 9 and 10 are exercised
-by CI; RHEL 7 requires the SCL toolchain and is built manually.
+Applies to RHEL/AlmaLinux/Rocky Linux 8, 9 and 10. Versions 8, 9 and 10 are exercised
+by CI; RHEL 7 is deprecated (EOL November 2024) and remains buildable via the manual
+path below for in-tree builds only.
+
+> **RHEL 7 is deprecated.** It ships no new packages; the `SSLRHEL7` / devtoolset-9
+> path is kept for existing in-tree builds only.
 
 ## RHEL / AlmaLinux / Rocky 8, 9, 10
 
@@ -14,7 +18,15 @@ sudo dnf config-manager --set-enabled crb
 
 sudo dnf install -y epel-release
 sudo dnf install -y gcc-c++ make cmake pkgconf-pkg-config git \
-    boost-devel boost-json-devel openssl-devel
+    openssl-devel
+# Boost.JSON headers:
+#   RHEL 8: base boost-devel is 1.66 (no JSON); EPEL provides boost 1.78.
+#   RHEL 9 and 10: AppStream boost-devel ships JSON.
+if [ "$(rpm --eval '%{rhel}')" = "8" ]; then
+    sudo dnf install -y boost1.78-devel
+else
+    sudo dnf install -y boost-devel
+fi
 ```
 
 Optional database backends:
@@ -45,7 +57,10 @@ cmake --build build-static --parallel "$(nproc)"
 sudo cmake --install build-static
 ```
 
-## RHEL / CentOS 7 (manual build)
+## RHEL / CentOS 7 (deprecated, manual build)
+
+> **RHEL 7 is deprecated (EOL November 2024).** No new packages are built for it;
+> this path is kept for existing in-tree builds only.
 
 RHEL 7 ships GCC 4.8 and OpenSSL 1.0.2, both too old. Use `devtoolset-9` and EPEL's
 `openssl11`, which is what the `SSLRHEL7` CMake option expects.
@@ -53,7 +68,7 @@ RHEL 7 ships GCC 4.8 and OpenSSL 1.0.2, both too old. Use `devtoolset-9` and EPE
 ```bash
 sudo yum install -y epel-release centos-release-scl
 sudo yum install -y devtoolset-9-gcc devtoolset-9-gcc-c++ cmake3 make git \
-    boost-devel boost-json-devel openssl11-devel
+    boost-devel openssl11-devel
 
 # Enable the C++17 capable toolchain in the current shell
 scl enable devtoolset-9 bash
@@ -77,7 +92,9 @@ too old for the JWT and TLS code.
 ## Runtime packages
 
 ```bash
-sudo dnf install -y boost-json openssl boost-regex boost-thread
+# libboost_json.so ships with the boost runtime on RHEL 8/9/10;
+# on Fedora it is the separate boost-json subpackage.
+sudo dnf install -y boost openssl boost-regex boost-thread
 # optional
 sudo dnf install -y sqlite-libs libpq mariadb-connector-c
 ```
@@ -89,7 +106,7 @@ On RHEL 7 use `yum` and add `openssl11-libs` when the library was built with
 
 | Symptom | Fix |
 |---------|-----|
-| `boost-json` not found | install `boost-json-devel` (RHEL 8+ / Fedora) or use EPEL |
+| `boost-json` not found | install `boost1.78-devel` (EPEL) on RHEL 8, or `boost-devel` on RHEL 9/10 |
 | `libcrypto` not found on RHEL 7 | install `openssl11-devel` and configure with `-DSSLRHEL7=ON` |
 | `pkg-config` not found | install `pkgconf-pkg-config` (RHEL 8+) |
 | `cmake: command not found` on RHEL 7 | use `cmake3` from EPEL |
