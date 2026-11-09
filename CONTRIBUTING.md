@@ -13,7 +13,7 @@ the project, the coding conventions and the pull request process.
 ## Development environment
 
 The supported toolchain is C++17 with CMake >= 3.10. All maintained distributions must keep
-working: RHEL/Alma/Rocky 7-10, Ubuntu 20.04-26.04, Debian 12/13, Fedora and MSYS2/MinGW64.
+working: RHEL/Alma/Rocky 7-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora and MSYS2/MinGW64.
 
 Minimal local build:
 
@@ -61,7 +61,7 @@ affected module as scope when it makes sense.
 1. Fork the repository and create a topic branch from `master`.
 2. Add or update documentation when behavior changes.
 3. Fill in the pull request template and link the related issues.
-4. Make sure CI is green (Ubuntu 22.04/24.04/26.04, Debian 12/13, AlmaLinux 8/9/10).
+4. Make sure CI is green (Ubuntu 24.04/26.04, Debian 12/13, AlmaLinux 8/9/10).
 
 Pull requests that break the supported platform matrix or the C++17 baseline will not be
 merged.

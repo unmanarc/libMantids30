@@ -13,7 +13,7 @@
 
 ## Checklist
 
-- [ ] The change keeps C++17 compatibility and builds on RHEL 7-10 and Ubuntu 20.04-26.04
+- [ ] The change keeps C++17 compatibility and builds on RHEL 7-10 and Ubuntu 24.04/26.04
 - [ ] Both `BUILD_SHARED_LIBS=ON` and `BUILD_SHARED_LIBS=OFF` were built locally
 - [ ] New public headers include install rules
 - [ ] Documentation under `docs/` was updated when behavior changed

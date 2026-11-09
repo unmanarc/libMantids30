@@ -1,7 +1,7 @@
 # Building on Debian and Ubuntu
 
-Applies to Debian 12/13 and Ubuntu 20.04/22.04/24.04/26.04 LTS. Ubuntu 22.04, 24.04,
-26.04 and Debian 12/13 are exercised by CI.
+Applies to Debian 12/13 and Ubuntu 24.04/26.04 LTS. Ubuntu 24.04, 26.04
+and Debian 12/13 are exercised by CI.
 
 ## Install dependencies
 

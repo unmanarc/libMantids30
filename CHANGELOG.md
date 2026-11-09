@@ -12,7 +12,7 @@ The current development series is `3.0.0`, defined by `SVERSION` in
 
 ### Added
 
-- GitHub Actions CI covering Ubuntu 22.04/24.04/26.04, Debian 12/13 and
+- GitHub Actions CI covering Ubuntu 24.04/26.04, Debian 12/13 and
   AlmaLinux 8/9/10, building both shared and static libraries.
 - Issue templates, pull request template and Dependabot configuration for
   GitHub Actions.
