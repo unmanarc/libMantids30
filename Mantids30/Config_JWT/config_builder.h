@@ -124,7 +124,7 @@ private:
      * @param createFunc Function to call for file creation
      * @return File stream if successful
      */
-    static std::ifstream openFileWithCreation(const std::string &filePath, bool createIfNotPresent, std::function<bool()> createFunc);
+    static std::ifstream openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc);
 };
 
 } // namespace Mantids30::Program::Config

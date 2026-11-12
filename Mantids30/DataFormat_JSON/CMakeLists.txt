@@ -24,7 +24,7 @@ set_target_properties(  ${LIB_NAME}
 
 configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
-target_include_directories(${LIB_NAME} PRIVATE . ${Mantids30_Memory_SOURCE_DIR}/../..)
+target_include_directories(${LIB_NAME} PRIVATE . ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
 install(
         TARGETS ${LIB_NAME}

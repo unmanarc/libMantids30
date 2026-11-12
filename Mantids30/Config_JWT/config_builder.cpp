@@ -299,7 +299,7 @@ bool JWT::validateFilePermissions(Logs::AppLog *log, const std::string &filePath
     return true;
 }
 
-std::ifstream JWT::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, std::function<bool()> createFunc)
+std::ifstream JWT::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc)
 {
     std::ifstream file(filePath.c_str());
 
