@@ -1,8 +1,8 @@
-#include "api_monolith_endpoints.h"
+#include "api_endpoints.h"
 #include <Mantids30/DataFormat_JSON/json.h>
 #include <memory>
 
-using namespace Mantids30::API::Monolith;
+using namespace Mantids30::API;
 
 bool Endpoints::addEndpoint(const EndpointDefinition &endpointDefinition)
 {

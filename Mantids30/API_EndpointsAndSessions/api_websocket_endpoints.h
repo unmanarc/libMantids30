@@ -44,7 +44,7 @@ public:
     {
         bool haveJWTAuthHeader = false;
         bool haveJWTAuthCookie = false;
-        // Only for monolith:
+        // Session-based auth:
         bool haveSession = false;
     };
 

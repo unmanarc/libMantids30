@@ -4,7 +4,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::API::Monolith {
+namespace Mantids30::API {
 
 /**
  * @brief EndpointsRequirements_Map manages and validates access requirements for API endpoints
@@ -93,4 +93,4 @@ private:
     std::multimap<std::string, std::string> m_endpointRequiredRoles;
 };
 
-} // namespace Mantids30::API::Monolith
+} // namespace Mantids30::API

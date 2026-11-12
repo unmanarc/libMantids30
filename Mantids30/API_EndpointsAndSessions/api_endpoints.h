@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::API::Monolith {
+namespace Mantids30::API {
 
 class Endpoints : public Endpoints_Options
 {
@@ -34,7 +34,7 @@ public:
         NOTFOUND = -9999          // Endpoint not found
     };
 
-    struct MonolithAPIEndpointFunction
+    struct APIEndpointFunction
     {
         /**
          * @brief Function pointer to the API endpoint.
@@ -58,7 +58,7 @@ public:
 
     struct EndpointDefinition
     {
-        MonolithAPIEndpointFunction endpointFunction; // API endpoint definition
+        APIEndpointFunction endpointFunction; // API endpoint definition
         std::string endpointName;                     // Name of the endpoint
         std::set<std::string> reqScopes;              // Required scopes for the endpoint
         std::set<std::string> reqRoles;               // Required roles for the endpoint
@@ -126,7 +126,7 @@ private:
     // Endpoints:
 
     // endpoint name -> endpoint.
-    std::map<std::string, MonolithAPIEndpointFunction> m_endpoints;
+    std::map<std::string, APIEndpointFunction> m_endpoints;
 
     // endpoint name -> bool (RequireActiveSession).
     std::map<std::string, bool> m_endpointRequireActiveSession;
@@ -138,4 +138,4 @@ private:
     EndpointsRequirements_Map m_endpointsScopes;
 };
 
-} // namespace Mantids30::API::Monolith
+} // namespace Mantids30::API

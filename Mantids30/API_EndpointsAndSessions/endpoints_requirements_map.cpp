@@ -2,7 +2,7 @@
 #include <memory>
 #include <string>
 
-using namespace Mantids30::API::Monolith;
+using namespace Mantids30::API;
 
 void EndpointsRequirements_Map::addEndpointRequiredScopes(const std::string &endpointName, const std::set<std::string> &applicationScopes)
 {
