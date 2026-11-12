@@ -3,6 +3,7 @@
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/Protocol_HTTP/httpv1_base.h>
 #include <memory>
+#include <set>
 #include <string>
 
 namespace Mantids30::Network::Servers::Web {

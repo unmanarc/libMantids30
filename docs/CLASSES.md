@@ -55,7 +55,6 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Protocol_APISync` | `Mantids30_Protocol_APISync` | Synchronous API protocol parameters |
 | `Server_WebCore` | `Mantids30_Server_WebCore` | Core web server, proxy and resource filtering |
 | `Server_RESTfulWebAPI` | `Mantids30_Server_RESTfulWebAPI` | RESTful JSON API server |
-| `Server_MonolithWebAPI` | `Mantids30_Server_MonolithWebAPI` | Monolithic JSON API server |
 | `API_EndpointsAndSessions` | `Mantids30_API_EndpointsAndSessions` | Sessions, endpoints and WebSocket endpoints |
 | `DataFormat_JWT` | `Mantids30_DataFormat_JWT` | JWT creation, validation and revocation |
 | `Scripts_JSONExprEval` | `Mantids30_Scripts_JSONExprEval` | JSON expression evaluator |
@@ -257,10 +256,6 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `ResourcesFilter` | `Mantids30::API::Web` | `Server_WebCore/resourcesfilter.h` | Resource authorization filter |
 | `Engine` | `Mantids30::Network::Servers::RESTful` | `Server_RESTfulWebAPI/engine.h` | RESTful API server engine |
 | `ClientHandler` | `Mantids30::Network::Servers::RESTful` | `Server_RESTfulWebAPI/clienthandler.h` | RESTful client/session handler |
-| `Engine` | `Mantids30::Network::Servers::WebMonolith` | `Server_MonolithWebAPI/engine.h` | Monolithic API server engine |
-| `ClientHandler` | `Mantids30::Network::Servers::WebMonolith` | `Server_MonolithWebAPI/clienthandler.h` | Monolith client/session handler |
-| `WebSessionsManager`, `WebSession` | `Mantids30::Network::Servers::WebMonolith` | `Server_MonolithWebAPI/sessionsmanager.h` | Session store |
-| `ResourcesFilter` | `Mantids30::API::Monolith` | `Server_MonolithWebAPI/monolithresourcefilter.h` | Monolith resource filter |
 
 ## Sessions and API
 
@@ -271,8 +266,8 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `ClientDetails` | `Mantids30::Sessions` | `API_EndpointsAndSessions/session.h` | Remote client information |
 | `Session_Vars` | `Mantids30::Sessions` | `API_EndpointsAndSessions/session_vars.h` | Session variable storage |
 | `RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::API::RESTful` | `API_EndpointsAndSessions/api_restful_endpoints.h` | RESTful endpoint registry |
-| `Monolith::Endpoints` | `Mantids30::API::Monolith` | `API_EndpointsAndSessions/api_monolith_endpoints.h` | Monolith endpoint registry |
-| `Monolith::EndpointsRequirements_Map` | `Mantids30::API::Monolith` | `API_EndpointsAndSessions/endpoints_requirements_map.h` | Endpoint requirements mapping |
+| `API::Endpoints` | `Mantids30::API` | `API_EndpointsAndSessions/api_endpoints.h` | Generic endpoint registry (methods handler) |
+| `EndpointsRequirements_Map` | `Mantids30::API` | `API_EndpointsAndSessions/endpoints_requirements_map.h` | Endpoint requirements mapping |
 | `OptionsHandlerConfig` | `Mantids30::API` | `API_EndpointsAndSessions/api_options_handler.h` | HTTP OPTIONS handling |
 | `Endpoints_Options` | `Mantids30::API` | `API_EndpointsAndSessions/endpoints_options.h` | Endpoint options |
 | `WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::API::WebSocket` / `Network::Servers::Web` | `API_EndpointsAndSessions/api_websocket_*.h` | WebSocket endpoints and connections |

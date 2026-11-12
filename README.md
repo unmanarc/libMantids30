@@ -9,8 +9,7 @@
 
 `libMantids30` is a C++17 framework for building network services, REST/JSON APIs and
 backend daemons. It ships modular libraries that can be used independently: sockets and
-chained transports, HTTP/1.1, WebSocket, MIME and FastRPC protocol engines, RESTful and
-monolithic web API servers, database abstraction (SQLite3 / MariaDB / PostgreSQL), a typed
+chained transports, HTTP/1.1, WebSocket, MIME and FastRPC protocol engines, RESTful web API server, database abstraction (SQLite3 / MariaDB / PostgreSQL), a typed
 memory model, thread-safe containers, JWT/TOTP security helpers and structured logging.
 
 | Property | Value |
@@ -45,8 +44,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
   multi-threaded), chained protocols (TLS over TLS, AES, XOR) and interface management.
 - **Protocol engines** - HTTP/1.1 client and server, WebSocket, MIME, FastRPC1/3,
   LineRecv and APISync, all built on the shared parsing engine.
-- **Web API servers** - RESTful and monolithic JSON API servers with JWT
-  authentication, sessions, endpoint requirement maps and WebSocket endpoints.
+- **Web API server** - RESTful JSON API server with JWT authentication, sessions, endpoint requirement maps and WebSocket endpoints.
 - **Database abstraction** - unified `SQLConnector` / `Query` / `Transaction` API with
   SQLite3, MariaDB and PostgreSQL backends (each backend is optional at build time).
 - **Memory model** - typed abstract variables (`STRING`, `INT64`, `IPV4`, ...),

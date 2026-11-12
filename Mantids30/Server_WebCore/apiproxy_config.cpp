@@ -1,11 +1,16 @@
 #include "apiproxy_config.h"
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
 
 using namespace Mantids30::Network::Servers::Web;
 using namespace Mantids30::Program;
 using namespace Mantids30::Program::Config;
+
 /*
 Config example:
 
@@ -29,7 +34,6 @@ ExtraHeaders
 TransformCookiePath false   ; When true, prepends the proxy internalPath to cookie Path attributes in responses
 
 PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
-
 */
 std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
                                                                          const std::map<std::string, std::string> &vars)
@@ -51,7 +55,6 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
         params->transformCookiePath = config.get<bool>("TransformCookiePath", false);
-
         log->log0(__func__, Logs::LogLevel::DEBUG,
                   "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, "
                   "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",

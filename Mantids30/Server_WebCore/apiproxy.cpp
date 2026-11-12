@@ -124,7 +124,6 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
 
             // Pass to our client.
             *response = client.serverResponse;
-
             return client.serverResponse.status.getCode();
         }
 

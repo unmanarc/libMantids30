@@ -207,7 +207,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
     boost::json::value jVars, jNull;
     Helpers::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
 
-    // Fill the jVars with session info (common to every API Server) and extra info (specific to monolith or restful or anything else)
+    // Fill the jVars with session info (common to every API Server) and extra info (specific to the API server implementation)
     clientHandler->fillSessionInfo(jVars);
     clientHandler->fillSessionExtraInfo(jVars);
 
