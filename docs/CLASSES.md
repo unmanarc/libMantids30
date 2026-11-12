@@ -263,8 +263,6 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `ClientDetails` | `Mantids30::Sessions` | `API_EndpointsAndSessions/session.h` | Remote client information |
 | `Session_Vars` | `Mantids30::Sessions` | `API_EndpointsAndSessions/session_vars.h` | Session variable storage |
 | `RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::API::RESTful` | `API_EndpointsAndSessions/api_restful_endpoints.h` | RESTful endpoint registry |
-| `API::Endpoints` | `Mantids30::API` | `API_EndpointsAndSessions/api_endpoints.h` | Generic endpoint registry (methods handler) |
-| `EndpointsRequirements_Map` | `Mantids30::API` | `API_EndpointsAndSessions/endpoints_requirements_map.h` | Endpoint requirements mapping |
 | `OptionsHandlerConfig` | `Mantids30::API` | `API_EndpointsAndSessions/api_options_handler.h` | HTTP OPTIONS handling |
 | `Endpoints_Options` | `Mantids30::API` | `API_EndpointsAndSessions/endpoints_options.h` | Endpoint options |
 | `WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::API::WebSocket` / `Network::Servers::Web` | `API_EndpointsAndSessions/api_websocket_*.h` | WebSocket endpoints and connections |
