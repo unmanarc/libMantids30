@@ -42,7 +42,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 
 - **Network programming** - TCP/UDP/UNIX/TLS sockets, acceptors (thread, pool,
   multi-threaded), chained protocols (TLS over TLS, AES, XOR) and interface management.
-- **Protocol engines** - HTTP/1.1 client and server, WebSocket, MIME, FastRPC1/3,
+- **Protocol engines** - HTTP/1.1 client and server, WebSocket, MIME, FastRPC1,
   LineRecv and APISync, all built on the shared parsing engine.
 - **Web API server** - RESTful JSON API server with JWT authentication, sessions, endpoint requirement maps and WebSocket endpoints.
 - **Database abstraction** - unified `SQLConnector` / `Query` / `Transaction` API with
@@ -52,8 +52,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 - **Threading** - `Threaded`, `ThreadPool`, `GarbageCollector` and thread-safe
   `Safe::Map` / `Safe::Queue` containers.
 - **Security** - JWT tokens with revocation cache, TOTP, SHA/HMAC helpers and AES.
-- **Scripting and data** - JSON expression evaluator, MantidsLang, VarsFile
-  configuration format and DataTables helper.
+- **Scripting and data** - JSON expression evaluator, MantidsLang and DataTables helper.
 - **Logging** - `AppLog`, `WebLog` and `RPCLog` with levels and file rotation.
 
 ---

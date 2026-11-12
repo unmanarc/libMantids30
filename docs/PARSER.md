@@ -129,7 +129,7 @@ Each protocol implementation follows the same pattern:
 1. **HTTP** (`Protocol_HTTP/`): Uses chained SubParsers for request line → headers → body (with chunked encoding support via `common_content_chunked_subparser`)
 2. **MIME** (`Protocol_MIME/`): Uses `MULTIDELIMITER` strategy to parse multipart boundaries
 3. **LineRecv** (`Protocol_LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
-4. **FastRPC** (`Protocol_FastRPC1/`, `Protocol_FastRPC3/`): Uses `SIZE` strategy for length-prefixed message frames
+4. **FastRPC** (`Protocol_FastRPC1/`): Uses `SIZE` strategy for length-prefixed message frames
 5. **WebSocket** (`Protocol_HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
 ---
 

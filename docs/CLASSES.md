@@ -30,7 +30,6 @@ named `libMantids30_<Component>`. The header column below is relative to
 - [Security and data formats](#security-and-data-formats)
 - [Scripting](#scripting)
 - [Program lifecycle, logs and config](#program-lifecycle-logs-and-config)
-- [File formats](#file-formats)
 - [Helpers](#helpers)
 
 ## Library map
@@ -50,7 +49,7 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Net_Interfaces` | `Mantids30_Net_Interfaces` | Interface discovery and TAP configuration |
 | `Protocol_HTTP` | `Mantids30_Protocol_HTTP` | HTTP/1.1 client/server and WebSocket framing |
 | `Protocol_MIME` | `Mantids30_Protocol_MIME` | MIME multipart parsing |
-| `Protocol_FastRPC1` / `Protocol_FastRPC3` | `Mantids30_Protocol_FastRPC1` / `..._FastRPC3` | RPC protocol servers |
+| `Protocol_FastRPC1` | `Mantids30_Protocol_FastRPC1` | RPC protocol server |
 | `Protocol_LineRecv` | `Mantids30_Protocol_LineRecv` | Line oriented protocol |
 | `Protocol_APISync` | `Mantids30_Protocol_APISync` | Synchronous API protocol parameters |
 | `Server_WebCore` | `Mantids30_Server_WebCore` | Core web server, proxy and resource filtering |
@@ -62,7 +61,6 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Program_Logs` | `Mantids30_Program_Logs` | Application, web and RPC logs |
 | `Program_Service` | `Mantids30_Program_Service` | Application lifecycle, arguments and config loader |
 | `Config_JWT` / `Config_Logs` / `Config_REST` | `Mantids30_Config_*` | Configuration builders |
-| `File_Formats` | `Mantids30_File_Formats` | VarsFile configuration format |
 | `App_FastRPC1Client` | `Mantids30_App_FastRPC1Client` | FastRPC1 client application framework |
 
 ## Database
@@ -240,7 +238,6 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `MIME::MIME_PartMessage` | `Protocol_MIME/mime_partmessage.h` | MIME part |
 | `MIME::MIME_Sub_Content`, `MIME_Sub_FirstBoundary`, `MIME_Sub_EndPBoundary`, `MIME_Sub_Header`, `MIME_HeaderOption` | `Protocol_MIME/mime_sub_*.h` | MIME sub-parsers |
 | `FastRPC::FastRPC1` | `Protocol_FastRPC1/fastrpc.h` | FastRPC1 server |
-| `FastRPC::FastRPC3` | `Protocol_FastRPC3/fastrpc3.h` | FastRPC3 server with JWT authentication |
 | `Line2Line::LineRecv` / `LineRecv_SubParser` | `Protocol_LineRecv/linerecv*.h` | Line oriented protocol |
 | `APISync::APISyncParameters` | `Protocol_APISync/apisync.h` | APISync protocol parameters |
 
@@ -300,12 +297,6 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `ProgramValues`, `Author` | `Mantids30::Program::Values` | `Program_Service/programvalues.h` | Program metadata |
 | `AppLog`, `LogBase`, `WebLog`, `RPCLog` | `Mantids30::Program::Logs` | `Program_Logs/*.h` | Logging backends with rotation |
 | `Config::Logs`, `Config::RESTful_Engine`, `Config::APIProxyConfig` | `Mantids30::Program::Config` | `Config_Logs/`, `Config_REST/`, `Server_WebCore/apiproxy_config.h` | Configuration builders |
-
-## File formats
-
-| Class | Namespace | Header | Description |
-|-------|-----------|--------|-------------|
-| `Vars::File` | `Mantids30::File_Formats::Vars` | `File_Formats/varsfile.h` | VarsFile configuration format |
 
 ## Helpers
 
