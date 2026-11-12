@@ -1,5 +1,5 @@
 #include "fastrpc3.h"
-#include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_endpoints.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/DataFormat_JSON/json.h>
 #include <Mantids30/Helpers/random.h>
@@ -38,7 +38,7 @@ void vrsyncRPCPingerThread(FastRPC3 *obj)
 FastRPC3::FastRPC3(const std::shared_ptr<DataFormat::JWT> &jwtValidator, uint32_t threadsCount, uint32_t taskQueues)
     : config(jwtValidator)
 {
-    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
+    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Endpoints>();
     config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);
@@ -50,7 +50,7 @@ FastRPC3::FastRPC3(const std::shared_ptr<DataFormat::JWT> &jwtValidator, uint32_
 FastRPC3::FastRPC3(uint32_t threadsCount, uint32_t taskQueues)
     : config(std::make_shared<DataFormat::JWT>())
 {
-    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Monolith::Endpoints>();
+    m_defaultMethodsHandlers = std::make_shared<Mantids30::API::Endpoints>();
     config.setDefaultHandlers(m_defaultMethodsHandlers);
 
     m_threadPool = new Threads::Pool::ThreadPool(threadsCount, taskQueues);

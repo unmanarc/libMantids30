@@ -3,7 +3,7 @@
 #include <Mantids30/API_EndpointsAndSessions/session.h>
 #include <Mantids30/DataFormat_JSON/json.h>
 
-#include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_endpoints.h>
 #include <Mantids30/Net_Sockets/callbacks_socket_tls_server.h>
 #include <Mantids30/Net_Sockets/socket_stream.h>
 
@@ -102,7 +102,7 @@ public:
         uint32_t maxMessageSize = 0;
         void *caller = nullptr;
         FastRPC3::SessionPTR *sessionHolder = nullptr;
-        std::shared_ptr<API::Monolith::Endpoints> methodsHandler;
+        std::shared_ptr<API::Endpoints> methodsHandler;
         std::shared_ptr<DataFormat::JWT> jwtValidator = nullptr;
         std::shared_mutex *doneSharedMutex = nullptr;
         std::mutex *socketMutex = nullptr;
@@ -218,7 +218,7 @@ public:
         /**
          * @brief methodHandlers current Methods Manager
          */
-        std::shared_ptr<API::Monolith::Endpoints> methodHandlers;
+        std::shared_ptr<API::Endpoints> methodHandlers;
         /**
          * @brief jwtValidator JWT Validator.
          */
@@ -244,14 +244,14 @@ public:
          */
         bool ignoreSSLCertForSSO = false;
 
-        void setDefaultHandlers(const std::shared_ptr<API::Monolith::Endpoints> &x)
+        void setDefaultHandlers(const std::shared_ptr<API::Endpoints> &x)
         {
             methodHandlers = x;
             defaultMethodsHandlers = x;
         }
 
     private:
-        std::shared_ptr<API::Monolith::Endpoints> defaultMethodsHandlers;
+        std::shared_ptr<API::Endpoints> defaultMethodsHandlers;
     };
 
     class RemoteMethods
@@ -544,7 +544,7 @@ private:
     /**
      * @brief Handler for default RPC methods.
      */
-    std::shared_ptr<Mantids30::API::Monolith::Endpoints> m_defaultMethodsHandlers = nullptr;
+    std::shared_ptr<Mantids30::API::Endpoints> m_defaultMethodsHandlers = nullptr;
 
     /**
      * @brief Flag indicating whether the remote peer's common name is used as the connection ID.

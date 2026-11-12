@@ -1,5 +1,5 @@
 #include "fastrpc3.h"
-#include <Mantids30/API_EndpointsAndSessions/api_monolith_endpoints.h>
+#include <Mantids30/API_EndpointsAndSessions/api_endpoints.h>
 #include <Mantids30/DataFormat_JWT/jwt.h>
 #include <Mantids30/Helpers/callbacks.h>
 #include <Mantids30/DataFormat_JSON/json.h>
@@ -111,11 +111,11 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
         {
             boost::json::value reasons;
 
-            API::Monolith::Endpoints::ValidationResult i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
+            API::Endpoints::ValidationResult i = taskParams->methodsHandler->validateEndpointRequirements(session, taskParams->methodName, &reasons);
 
             switch (i)
             {
-            case API::Monolith::Endpoints::ValidationResult::SUCCESS:
+            case API::Endpoints::ValidationResult::SUCCESS:
             {
                 if (session)
                 {
@@ -131,7 +131,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
 
                 switch (taskParams->methodsHandler->invoke(session, taskParams->methodName, taskParams->payload, &responsePayload))
                 {
-                case API::Monolith::Endpoints::StatusCode::SUCCESS:
+                case API::Endpoints::StatusCode::SUCCESS:
 
                     finish = chrono::high_resolution_clock::now();
                     elapsed = finish - start;
@@ -141,7 +141,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                     functionFound = true;
                     fullResponse.as_object()["statusCode"] = 200;
                     break;
-                case API::Monolith::Endpoints::StatusCode::NOTFOUND:
+                case API::Endpoints::StatusCode::NOTFOUND:
 
                     CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
                     fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::METHOD_NOT_IMPLEMENTED);
@@ -153,7 +153,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                 }
             }
             break;
-            case API::Monolith::Endpoints::ValidationResult::NOTAUTHORIZED:
+            case API::Endpoints::ValidationResult::NOTAUTHORIZED:
             {
                 // not authorized.
                 CALLBACK(callbacks->onMethodExecutionNotAuthorized)(callbacks->context, taskParams, reasons);
@@ -161,7 +161,7 @@ void FastRPC3::LocalRPCTasks::executeLocalTask(const std::shared_ptr<void> &vTas
                 fullResponse.as_object()["statusCode"] = static_cast<uint16_t>(LocalTaskExecutionResult::NOT_AUTHORIZED);
             }
             break;
-            case API::Monolith::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
+            case API::Endpoints::ValidationResult::ENDPOINTNOTFOUND:
             default:
             {
                 CALLBACK(callbacks->onMethodExecutionNotFound)(callbacks->context, taskParams);
