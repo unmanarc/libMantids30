@@ -45,7 +45,7 @@ endif()
 
 set(Mantids30_LIBRARIES
     Program_Logs
-    Server_RESTfulWebAPI
+    Server_RESTfulWebServer
     DataFormat_JWT
     Protocol_APISync
     Config_Logs

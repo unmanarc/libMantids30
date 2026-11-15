@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Mantids30/API/EndpointsAndSessions/api_restful_endpoints.h>
-#include <Mantids30/API/EndpointsAndSessions/api_websocket_endpoints.h>
-#include <Mantids30/API/EndpointsAndSessions/session.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_restful_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_websocket_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/session.h>
 #include <Mantids30/DataFormats/JWT/jwt.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <Mantids30/Runtime/Logs/rpclog.h>

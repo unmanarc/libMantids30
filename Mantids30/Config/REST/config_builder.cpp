@@ -2,7 +2,7 @@
 
 #include <Mantids30/Config/Logs/config_builder.h>
 #include <Mantids30/Config/JWT/config_builder.h>
-#include <Mantids30/Servers/WebCore/apiproxy_config.h>
+#include <Mantids30/Servers/RESTfulWebServer/apiproxy_config.h>
 
 #include <Mantids30/Network/Sockets/socket_tcp.h>
 #include <Mantids30/Network/Sockets/socket_tls.h>

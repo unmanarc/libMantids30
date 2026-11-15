@@ -1,11 +1,11 @@
 #pragma once
 
 #include "apiserver_config.h"
-#include <Mantids30/API/EndpointsAndSessions/session.h>
+#include <Mantids30/Servers/RESTfulWebServer/session.h>
 #include <Mantids30/Core/Memory/streamable_string.h>
 #include <Mantids30/Protocols/HTTP/websocket_eventtype.h>
 
-#include <Mantids30/API/EndpointsAndSessions/api_websocket_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_websocket_endpoints.h>
 #include <Mantids30/DataFormats/JWT/jwt.h>
 #include <Mantids30/DataFormats/JSON/streamable_json.h>
 #include <Mantids30/Protocols/HTTP/api_return.h>

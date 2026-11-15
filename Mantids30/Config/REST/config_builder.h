@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Servers/RESTfulWebAPI/engine.h>
+#include <Mantids30/Servers/RESTfulWebServer/engine.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <Mantids30/Runtime/Logs/rpclog.h>
 #include <boost/property_tree/ptree.hpp>

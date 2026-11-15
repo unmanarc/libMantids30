@@ -1,6 +1,6 @@
 #include <Mantids30/DataFormats/JSON/json.h>
 #include  "apiserver_clienthandler.h"
-#include <Mantids30/API/EndpointsAndSessions/api_websocket_connection.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_websocket_connection.h>
 #include <Mantids30/Core/Helpers/random.h>
 
 using namespace Mantids30::Program::Logs;

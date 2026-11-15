@@ -2,7 +2,7 @@
 
 #include "apiserver_clienthandler.h"
 #include "apiserver_config.h"
-#include <Mantids30/API/EndpointsAndSessions/api_websocket_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_websocket_endpoints.h>
 #include <Mantids30/Core/Memory/b_mem.h>
 #include <Mantids30/Network/Sockets/acceptor_multithreaded.h>
 #include <Mantids30/Network/Sockets/acceptor_poolthreaded.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/API/EndpointsAndSessions/session.h>
+#include <Mantids30/Servers/RESTfulWebServer/session.h>
 #include <Mantids30/Protocols/HTTP/httpv1_base.h>
 #include <memory>
 #include <set>

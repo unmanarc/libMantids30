@@ -1,10 +1,10 @@
 #pragma once
 
 #include "engine.h"
-#include <Mantids30/API/EndpointsAndSessions/api_restful_endpoints.h>
-#include <Mantids30/API/EndpointsAndSessions/api_websocket_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_restful_endpoints.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_websocket_endpoints.h>
 #include <Mantids30/DataFormats/JWT/jwt.h>
-#include <Mantids30/Servers/WebCore/apiserver_clienthandler.h>
+#include <Mantids30/Servers/RESTfulWebServer/apiserver_clienthandler.h>
 #include <cstdint>
 #include <memory>
 
