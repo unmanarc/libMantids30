@@ -5,7 +5,7 @@ get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
 SET(RLIB_NAME ${LIB_NAME})
-SET(LIB_NAME ${LIBPREFIX}_Config_REST)
+SET(LIB_NAME ${LIBPREFIX}_ConfigBuilder_REST)
 
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for REST Configuration Builder")
@@ -48,8 +48,8 @@ set(Mantids30_LIBRARIES
     Server_RESTfulWebServer
     DataFormat_JWT
     Protocol_APISync
-    Config_Logs
-    Config_JWT
+    ConfigBuilder_Logs
+    ConfigBuilder_JWT
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

@@ -1,7 +1,7 @@
 #include "config_builder.h"
 
-#include <Mantids30/Config/Logs/config_builder.h>
-#include <Mantids30/Config/JWT/config_builder.h>
+#include <Mantids30/ConfigBuilder/Logs/config_builder.h>
+#include <Mantids30/ConfigBuilder/JWT/config_builder.h>
 #include <Mantids30/Servers/RESTfulWebServer/apiproxy_config.h>
 
 #include <Mantids30/Network/Sockets/socket_tcp.h>
@@ -12,8 +12,7 @@
 
 using namespace Mantids30;
 using namespace Mantids30::Network;
-using namespace Mantids30::Program;
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 
 std::set<std::string> parseCommaSeparatedString(const std::string &input)
 {
@@ -30,23 +29,23 @@ std::set<std::string> parseCommaSeparatedString(const std::string &input)
     return result;
 }
 
-static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListenerSocket(const boost::property_tree::ptree &listenerConfig, Mantids30::Program::Logs::AppLog *appLog,
+static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListenerSocket(const boost::property_tree::ptree &listenerConfig, Mantids30::Runtime::Logs::AppLog *appLog,
                                                                                         const std::string &listenerName, uint64_t options)
 {
     using namespace Mantids30::Network;
-    using namespace Mantids30::Program::Logs;
+    using namespace Mantids30::Runtime::Logs;
 
-    std::shared_ptr<Sockets::Socket_Stream> sock;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> sock;
     std::string protocol = listenerConfig.get<std::string>("Protocol", "TCP");
 
     bool isTLS = (protocol == "TLS");
 
-    if (!isTLS && (options & Mantids30::Program::Config::REST_ENGINE_MANDATORY_SSL))
+    if (!isTLS && (options & Mantids30::ConfigBuilder::REST::REST_ENGINE_MANDATORY_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is required/mandatory for this service.");
         return nullptr;
     }
-    if (isTLS && (options & Mantids30::Program::Config::REST_ENGINE_NO_SSL))
+    if (isTLS && (options & Mantids30::ConfigBuilder::REST::REST_ENGINE_NO_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is not available on this service.");
         return nullptr;
@@ -54,7 +53,7 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 
     if (isTLS)
     {
-        std::shared_ptr<Sockets::Socket_TLS> tlsSocket = std::make_shared<Sockets::Socket_TLS>();
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> tlsSocket = std::make_shared<Mantids30::Network::Sockets::Socket_TLS>();
         tlsSocket->tlsKeys.setSecurityLevel(-1);
 
         if (!tlsSocket->tlsKeys.loadPublicKeyFromPEMFile(listenerConfig.get<std::string>("TLS.CertFile", "snakeoil.crt").c_str()))
@@ -71,21 +70,21 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
     }
     else
     {
-        sock = std::make_shared<Sockets::Socket_TCP>();
+        sock = std::make_shared<Mantids30::Network::Sockets::Socket_TCP>();
     }
 
     sock->setUseIPv6(listenerConfig.get<bool>("UseIPv6", false));
     return sock;
 }
 
-Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTful_Engine::createRESTfulEngine(const boost::property_tree::ptree &config,
-                                                                                                               const std::shared_ptr<Mantids30::Program::Logs::AppLog> &appLog,
-                                                                                                               const std::shared_ptr<Mantids30::Program::Logs::RPCLog> &rpcLog,
+Mantids30::Servers::RESTfulWebServer::Engine *Mantids30::ConfigBuilder::REST::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
+                                                                                                               const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog,
+                                                                                                               const std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> &rpcLog,
                                                                                                                const std::string &serviceName, const std::string &defaultResourcePath, uint64_t options,
                                                                                                                const std::map<std::string, std::string> &vars)
 {
-    using namespace Mantids30::Program;
-    std::list<std::shared_ptr<Sockets::Socket_Stream>> listenerSockets;
+    using namespace Mantids30;
+    std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> listenerSockets;
 
     // Parse all Listener_* blocks
     for (const auto &kv : config)
@@ -129,13 +128,13 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
     // Create and configure the web server instance
     {
-        Network::Servers::RESTful::Engine *webServer = new Network::Servers::RESTful::Engine();
+        Mantids30::Servers::RESTfulWebServer::Engine *webServer = new Mantids30::Servers::RESTfulWebServer::Engine();
         // Setup the App Log
         webServer->config.appLog = appLog;
         // Setup the RPC Log:
         webServer->config.rpcLog = rpcLog;
         // Setup the WEB Log:
-        webServer->config.webLog = Program::Config::Logs::createWebLog(appLog, config);
+        webServer->config.webLog = Mantids30::ConfigBuilder::Logs::Builder::createWebLog(appLog, config);
 
         appLog->log0(__func__, LogLevel::DEBUG, "[%p] %s service listeners configured", reinterpret_cast<void *>(webServer), serviceName.c_str());
 
@@ -225,8 +224,8 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
         if ((options & REST_ENGINE_NOCONFIG_JWT) == 0)
         {
             // JWT
-            webServer->config.jwtSigner = Program::Config::JWT::createJWTSigner(appLog.get(), config, "JWT", vars);
-            webServer->config.jwtValidator = Program::Config::JWT::createJWTValidator(appLog.get(), config, "JWT", vars);
+            webServer->config.jwtSigner = Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(appLog.get(), config, "JWT", vars);
+            webServer->config.jwtValidator = Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(appLog.get(), config, "JWT", vars);
 
             if (!webServer->config.jwtValidator)
             {
@@ -274,14 +273,14 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
 
             for (const auto &proxy : config.get_child("Proxies"))
             {
-                std::shared_ptr<Network::Servers::Web::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
+                std::shared_ptr<Mantids30::Servers::RESTfulWebServer::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
 
                 appLog->log0(__func__, LogLevel::INFO, "[%p] Loading proxy to path '%s' at %s Service", reinterpret_cast<void *>(webServer), param->proxyPath.c_str(), serviceName.c_str());
 
                 if (param != nullptr)
                 {
-                    webServer->config.dynamicRequestHandlersByRoute[param->proxyPath] = {&Network::Servers::Web::APIProxy, param};
+                    webServer->config.dynamicRequestHandlersByRoute[param->proxyPath] = {&Mantids30::Servers::RESTfulWebServer::APIProxy, param};
                 }
             }
         }
@@ -306,16 +305,16 @@ Mantids30::Network::Servers::RESTful::Engine *Mantids30::Program::Config::RESTfu
     }
 }
 
-bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::REST::Builder::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     if (!sock->isSecure())
     {
         return true;
     }
 
-    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
+    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
 
-    std::shared_ptr<Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Sockets::Socket_TLS>(sock);
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TLS>(sock);
 
     for (const std::string &i : secSocket->getTLSErrorsAndClear())
     {
@@ -327,17 +326,17 @@ bool Program::Config::RESTful_Engine::handleProtocolInitializationFailure(void *
     return true;
 }
 
-bool Program::Config::RESTful_Engine::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::REST::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
-    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
+    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), LogLevel::ERROR, "RESTful Service Timed Out.");
     return true;
 }
 
-bool Program::Config::RESTful_Engine::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::REST::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
-    Network::Servers::Web::APIServerCore *core = static_cast<Network::Servers::Web::APIServerCore *>(data);
+    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), LogLevel::DEBUG, "Client Connection Limit Per IP Reached...");
     return true;

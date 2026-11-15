@@ -3,7 +3,7 @@
 #include <memory>
 #include <stdexcept>
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
 
 Query::~Query()
 {
@@ -24,14 +24,14 @@ Query::~Query()
     }
 }
 
-bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)
+bool Query::setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &vars)
 {
     m_query = value;
 
     return bindInputVars(vars);
 }
 
-bool Query::bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars)
+bool Query::bindInputVars(const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &vars)
 {
     if (vars.empty())
     {
@@ -46,7 +46,7 @@ bool Query::bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Ab
     return postBindInputVars();
 }
 
-bool Query::bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *> &vars)
+bool Query::bindResultVars(const std::vector<Mantids30::Core::Memory::Abstract::Var *> &vars)
 {
     if (vars.empty())
     {
@@ -84,7 +84,7 @@ bool Query::exec(const ExecType &execType)
 
 bool Query::step()
 {
-    for (Mantids30::Memory::Abstract::Var *var : m_resultVars)
+    for (Mantids30::Core::Memory::Abstract::Var *var : m_resultVars)
     {
         // Reset null status.
         var->setIsNull(false);

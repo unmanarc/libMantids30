@@ -22,12 +22,11 @@
 #include <optional>
 
 using namespace Mantids30;
-using namespace Mantids30::Program;
-using namespace Mantids30::Program::Config;
+using namespace Mantids30::ConfigBuilder::JWT;
 
-std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
+std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
-    Network::Protocol::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Protocols::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -51,7 +50,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING( Helpers::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Mantids30::DataFormats::JSON::ASSTRING( Mantids30::DataFormats::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -65,7 +64,7 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
         return nullptr;
     }
 
-    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -112,16 +111,16 @@ std::shared_ptr<DataFormat::JWT> JWT::createJWTSigner(Logs::AppLog *log, const b
             return nullptr;
         }
 
-        std::shared_ptr<DataFormat::JWT> jwtSigner = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtSigner = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
         jwtSigner->setPrivateSecret(privateKey);
         return jwtSigner;
     }
 }
 
-std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValidator(Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                            const std::map<std::string, std::string> &vars)
 {
-    Network::Protocol::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Protocols::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -145,7 +144,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Helpers::JSON::ASSTRING(Helpers::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Mantids30::DataFormats::JSON::ASSTRING(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -159,7 +158,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         return nullptr;
     }
 
-    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -218,13 +217,13 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
             return nullptr;
         }
 
-        std::shared_ptr<DataFormat::JWT> jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(publicKey);
         return jwtValidator;
     }
 }
 
-std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValidator(Logs::AppLog *log, const std::string &algorithm, const std::string &key)
+std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
 {
     // Validate algorithm
     if (!validateAlgorithm(log, algorithm))
@@ -232,7 +231,7 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         return nullptr;
     }
 
-    DataFormat::JWT::AlgorithmDetails algorithmDetails(algorithm.c_str());
+    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithm.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -246,30 +245,30 @@ std::shared_ptr<DataFormat::JWT> Mantids30::Program::Config::JWT::createJWTValid
         // RSA-based validation
         if (key.empty())
         {
-            log->log0(__func__, Logs::LogLevel::CRITICAL, "No JWT Public Validation Key Configured.");
+            log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "No JWT Public Validation Key Configured.");
             return nullptr;
         }
 
-        std::shared_ptr<DataFormat::JWT> jwtValidator = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(key);
-        log->log0(__func__, Logs::LogLevel::INFO, "JWT Public Validation Key Loaded.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT Public Validation Key Loaded.");
         return jwtValidator;
     }
 }
 
 // ==================== HELPER FUNCTIONS ====================
 
-bool JWT::validateAlgorithm(Logs::AppLog *log, const std::string &algorithmName)
+bool Mantids30::ConfigBuilder::JWT::Builder::validateAlgorithm(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithmName)
 {
-    if (!DataFormat::JWT::isAlgorithmSupported(algorithmName))
+    if (!Mantids30::DataFormats::JWT::JWT::isAlgorithmSupported(algorithmName))
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return false;
     }
     return true;
 }
 
-void JWT::removeTrailingNewline(std::string &str)
+void Mantids30::ConfigBuilder::JWT::Builder::removeTrailingNewline(std::string &str)
 {
     if (!str.empty() && str.back() == '\n')
     {
@@ -277,19 +276,19 @@ void JWT::removeTrailingNewline(std::string &str)
     }
 }
 
-bool JWT::validateFilePermissions(Logs::AppLog *log, const std::string &filePath, const std::string &fileType)
+bool Mantids30::ConfigBuilder::JWT::Builder::validateFilePermissions(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath, const std::string &fileType)
 {
     bool insecureFile;
 
-    if (!Helpers::File::isSensitiveConfigPermissionInsecure(filePath, &insecureFile))
+    if (!Mantids30::Core::Helpers::File::isSensitiveConfigPermissionInsecure(filePath, &insecureFile))
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to check permissions on %s file.", fileType.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to check permissions on %s file.", fileType.c_str());
         return false;
     }
 
     if (insecureFile)
     {
-        log->log0(__func__, Logs::LogLevel::SECURITY_ALERT,
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::SECURITY_ALERT,
                   "Insecure %s file permissions detected. For security reasons, "
                   "it is crucial to change this key immediately and reboot the service.",
                   fileType.c_str());
@@ -299,7 +298,7 @@ bool JWT::validateFilePermissions(Logs::AppLog *log, const std::string &filePath
     return true;
 }
 
-std::ifstream JWT::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc)
+std::ifstream Mantids30::ConfigBuilder::JWT::Builder::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc)
 {
     std::ifstream file(filePath.c_str());
 
@@ -313,14 +312,14 @@ std::ifstream JWT::openFileWithCreation(const std::string &filePath, bool create
 
 // ==================== HMAC FUNCTIONS ====================
 
-std::string JWT::loadHMACSecret(Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent)
+std::string Mantids30::ConfigBuilder::JWT::Builder::loadHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent)
 {
     // Open file with optional creation
     std::ifstream hmacFile = openFileWithCreation(hmacFilePath, createIfNotPresent, [&]() { return createHMACSecret(log, hmacFilePath); });
 
     if (!hmacFile.is_open())
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to open HMAC secret file.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to open HMAC secret file.");
         return "";
     }
 
@@ -337,30 +336,30 @@ std::string JWT::loadHMACSecret(Logs::AppLog *log, const std::string &hmacFilePa
 
     if (hmacSecret.empty())
     {
-        log->log0(__func__, Logs::LogLevel::DEBUG, "Empty JWT HMAC Key.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Empty JWT HMAC Key.");
         return "";
     }
 
     return hmacSecret;
 }
 
-std::shared_ptr<DataFormat::JWT> JWT::createHMACJWT(Logs::AppLog *log, const DataFormat::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
+std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormats::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
 {
     if (hmacSecret.empty())
     {
         return nullptr;
     }
 
-    std::shared_ptr<DataFormat::JWT> jwt = std::make_shared<DataFormat::JWT>(algorithmDetails.algorithm);
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwt = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
     jwt->setSharedSecret(hmacSecret);
 
-    DataFormat::JWT::AlgorithmDetails adt = DataFormat::JWT::AlgorithmDetails(algorithmDetails.algorithm);
-    log->log0(__func__, Logs::LogLevel::INFO, "JWT HMAC %s key successfully loaded with algorithm: '%s'.", purpose.c_str(), adt.algorithmStr);
+    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails adt = Mantids30::DataFormats::JWT::JWT::AlgorithmDetails(algorithmDetails.algorithm);
+    log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT HMAC %s key successfully loaded with algorithm: '%s'.", purpose.c_str(), adt.algorithmStr);
 
     return jwt;
 }
 
-bool JWT::createHMACSecret(Logs::AppLog *log, const std::string &filePath)
+bool Mantids30::ConfigBuilder::JWT::Builder::createHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
@@ -369,29 +368,29 @@ bool JWT::createHMACSecret(Logs::AppLog *log, const std::string &filePath)
         FILE *pkeyFile = fdopen(fd, "w");
         if (pkeyFile)
         {
-            std::string rndstr = Helpers::Random::createRandomString(32);
+            std::string rndstr = Mantids30::Core::Helpers::Random::createRandomString(32);
             r = fwrite(rndstr.c_str(), 32, 1, pkeyFile) == 1;
 
             if (r)
             {
-                log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT HMAC Secret File: %s", filePath.c_str());
+                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::WARNING, "Created JWT HMAC Secret File: %s", filePath.c_str());
             }
             else
             {
-                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
+                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (3): %s", filePath.c_str());
             }
 
             fclose(pkeyFile);
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
+            log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (2): %s", filePath.c_str());
             close(fd);
         }
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to create JWT HMAC Secret File (1): %s", filePath.c_str());
     }
 
     return r;
@@ -399,11 +398,11 @@ bool JWT::createHMACSecret(Logs::AppLog *log, const std::string &filePath)
 
 // ==================== RSA FUNCTIONS ====================
 
-std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
+std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPrivateKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
 {
     if (privateKeyFilePath.empty())
     {
-        log->log0(__func__, Logs::LogLevel::INFO, "No JWT RSA Signing Key Configured.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "No JWT RSA Signing Key Configured.");
         return "";
     }
 
@@ -416,7 +415,7 @@ std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &private
 
     if (privateKeyFP == nullptr)
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to read the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
         return "";
     }
 
@@ -441,11 +440,11 @@ std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &private
         fileContent.assign(privateKeyStr, privateKeyLen);
 
         BIO_free(privateKeyBio);
-        log->log0(__func__, Logs::LogLevel::INFO, "JWT RSA Signing Key Loaded.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT RSA Signing Key Loaded.");
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to load the JWT Private Key from file '%s'.", privateKeyFilePath.c_str());
     }
 
     EVP_PKEY_free(evpPrivateKey);
@@ -454,11 +453,11 @@ std::string JWT::loadRSAPrivateKey(Logs::AppLog *log, const std::string &private
     return fileContent;
 }
 
-std::string JWT::loadRSAPublicKey(Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
+std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPublicKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
 {
     if (publicKeyFilePath.empty())
     {
-        log->log0(__func__, Logs::LogLevel::CRITICAL, "No JWT RSA Validation Key Configured.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "No JWT RSA Validation Key Configured.");
         return "";
     }
 
@@ -471,7 +470,7 @@ std::string JWT::loadRSAPublicKey(Logs::AppLog *log, const std::string &publicKe
 
     if (publicKeyFP == nullptr)
     {
-        log->log0(__func__, Logs::LogLevel::CRITICAL, "Failed to read the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Failed to read the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
         return "";
     }
 
@@ -489,11 +488,11 @@ std::string JWT::loadRSAPublicKey(Logs::AppLog *log, const std::string &publicKe
         fileContent.assign(publicKeyStr, publicKeyLen);
 
         BIO_free(publicKeyBio);
-        log->log0(__func__, Logs::LogLevel::INFO, "JWT RSA Validation Key Loaded.");
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT RSA Validation Key Loaded.");
     }
     else
     {
-        log->log0(__func__, Logs::LogLevel::CRITICAL, "Failed to load the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Failed to load the JWT Public Key from file '%s'.", publicKeyFilePath.c_str());
     }
 
     EVP_PKEY_free(evpPublicKey);
@@ -502,7 +501,7 @@ std::string JWT::loadRSAPublicKey(Logs::AppLog *log, const std::string &publicKe
     return fileContent;
 }
 
-bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool Mantids30::ConfigBuilder::JWT::Builder::createRSASecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = nullptr;
     EVP_PKEY_CTX *ctx = nullptr;
@@ -522,7 +521,7 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                 {
                     if (PEM_write_PrivateKey(pkeyFile, pkey, nullptr, nullptr, 0, nullptr, nullptr))
                     {
-                        log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
+                        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::WARNING, "Created JWT X.509 RSA Private Key: %s", keyPath.c_str());
 
                         // Save public key
                         FILE *pubkeyFile = fopen(crtPath.c_str(), "wb");
@@ -531,39 +530,39 @@ bool JWT::createRSASecret(Logs::AppLog *log, const std::string &keyPath, const s
                             success = PEM_write_PUBKEY(pubkeyFile, pkey) > 0;
                             if (success)
                             {
-                                log->log0(__func__, Logs::LogLevel::WARNING, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
+                                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::WARNING, "Created JWT X.509 RSA Public Key: %s", crtPath.c_str());
                             }
                             else
                             {
-                                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
+                                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (2): %s", crtPath.c_str());
                             }
                             fclose(pubkeyFile);
                         }
                         else
                         {
-                            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
+                            log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to write X.509 RSA Public Key (1): %s", crtPath.c_str());
                         }
                     }
                     else
                     {
-                        log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
+                        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (2): %s", keyPath.c_str());
                     }
                     fclose(pkeyFile);
                 }
                 else
                 {
-                    log->log0(__func__, Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
+                    log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to write X.509 RSA Private Key (1): %s", keyPath.c_str());
                     close(fd);
                 }
             }
             else
             {
-                log->log0(__func__, Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (2)");
+                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (2)");
             }
         }
         else
         {
-            log->log0(__func__, Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (1)");
+            log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to generate X.509 RSA Keys (1)");
         }
     }
 

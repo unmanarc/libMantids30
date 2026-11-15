@@ -2,15 +2,15 @@
 
 #include <memory>
 
-using namespace Mantids30::Program;
-std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
+using namespace Mantids30;
+std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs::Builder::createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
-        logMode |= static_cast<uint8_t>(Program::Logs::Mode::SYSLOG);
+        logMode |= static_cast<uint8_t>(Mantids30::Runtime::Logs::Mode::SYSLOG);
     }
 
-    std::shared_ptr<Program::Logs::AppLog> log = std::make_shared<Program::Logs::AppLog>(logMode);
+    std::shared_ptr<Mantids30::Runtime::Logs::AppLog> log = std::make_shared<Mantids30::Runtime::Logs::AppLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
     log->enableDateLogging = ptr.get<bool>("Logs.ShowDate", true);
     log->enableColorLogging = ptr.get<bool>("Logs.ShowColors", true);
@@ -22,14 +22,14 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createAppLog(const boost::property_t
     return log;
 }
 
-std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
+std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> Mantids30::ConfigBuilder::Logs::Builder::createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
-        logMode |= static_cast<uint8_t>(Program::Logs::Mode::SYSLOG);
+        logMode |= static_cast<uint8_t>(Mantids30::Runtime::Logs::Mode::SYSLOG);
     }
 
-    std::shared_ptr<Program::Logs::RPCLog> log = std::make_shared<Program::Logs::RPCLog>(logMode);
+    std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> log = std::make_shared<Mantids30::Runtime::Logs::RPCLog>(logMode);
     log->setDebug(ptr.get<bool>("Logs.Debug", false));
     log->enableColorLogging = ptr.get<bool>("Logs.ShowColors", true);
     log->enableDateLogging = ptr.get<bool>("Logs.ShowDate", true);
@@ -43,9 +43,9 @@ std::shared_ptr<Logs::RPCLog> Config::Logs::createRPCLog(const boost::property_t
     return log;
 }
 
-std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(uint8_t logMode)
+std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs::Builder::createInitLog(uint8_t logMode)
 {
-    std::shared_ptr<Program::Logs::AppLog> initLog = std::make_shared<Program::Logs::AppLog>(logMode);
+    std::shared_ptr<Mantids30::Runtime::Logs::AppLog> initLog = std::make_shared<Mantids30::Runtime::Logs::AppLog>(logMode);
     initLog->enableAttributeNameLogging = false;
     initLog->enableDateLogging = true;
     initLog->enableEmptyFieldLogging = true;
@@ -55,9 +55,9 @@ std::shared_ptr<Logs::AppLog> Config::Logs::createInitLog(uint8_t logMode)
     return initLog;
 }
 
-std::shared_ptr<Logs::WebLog> Config::Logs::createWebLog(const std::shared_ptr<Mantids30::Program::Logs::AppLog> &appLog, const boost::property_tree::ptree &config)
+std::shared_ptr<Mantids30::Runtime::Logs::WebLog> Mantids30::ConfigBuilder::Logs::Builder::createWebLog(const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog, const boost::property_tree::ptree &config)
 {
-    std::shared_ptr<Program::Logs::WebLog> log = std::make_shared<Program::Logs::WebLog>();
+    std::shared_ptr<Mantids30::Runtime::Logs::WebLog> log = std::make_shared<Mantids30::Runtime::Logs::WebLog>();
     log->config.appLog = appLog;
     log->config.logDirectory = config.get<std::string>("Logs.Dir", "/var/log");
     log->config.logFile = config.get<std::string>("Logs.File", "web.log");

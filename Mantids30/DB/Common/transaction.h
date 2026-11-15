@@ -3,10 +3,10 @@
 #include "sqlconnector.h"
 
 /**
- * @namespace Mantids30::Database
+ * @namespace Mantids30::DB::Common
  * @brief Namespace containing database-related classes and functionality.
  */
-namespace Mantids30::Database {
+namespace Mantids30::DB::Common {
 
 /// @brief RAII-based transaction manager for database operations.
 ///
@@ -35,7 +35,7 @@ class Transaction
 {
 private:
     /// @brief Reference to the underlying SQL connector used for transaction control.
-    Mantids30::Database::SQLConnector &m_sqlConnector;
+    Mantids30::DB::Common::SQLConnector &m_sqlConnector;
 
     /// @brief Indicates whether a transaction was successfully started.
     bool m_transactionActive = false;
@@ -51,7 +51,7 @@ public:
     /// and subsequent operations will be no-ops.
     ///
     /// @param connector Reference to the SQL connector on which to start the transaction.
-    explicit Transaction(Mantids30::Database::SQLConnector &connector);
+    explicit Transaction(Mantids30::DB::Common::SQLConnector &connector);
 
     /// @brief Explicitly finalizes the transaction by committing or rolling it back.
     ///
@@ -79,4 +79,4 @@ public:
     /// @return True if a transaction is active, false otherwise.
     [[nodiscard]] bool isValid() const { return m_transactionActive; }
 };
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::Common

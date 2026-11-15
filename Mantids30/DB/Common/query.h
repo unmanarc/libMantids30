@@ -9,10 +9,10 @@
 #include <vector>
 
 /**
- * @namespace Mantids30::Database
+ * @namespace Mantids30::DB::Common
  * @brief Namespace containing database-related classes and functionality.
  */
-namespace Mantids30::Database {
+namespace Mantids30::DB::Common {
 
 /**
  * @class Query
@@ -104,19 +104,19 @@ public:
      * @param vars Optional input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars = {});
+    bool setPreparedSQLQuery(const std::string &value, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &vars = {});
     /**
      * @brief Binds input variables to the prepared SQL query.
      * @param vars The map of input variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool bindInputVars(const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &vars);
+    bool bindInputVars(const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &vars);
     /**
      * @brief Binds result variables to the prepared SQL query.
      * @param vars The vector of result variables to bind.
      * @return True if successful, false otherwise.
      */
-    bool bindResultVars(const std::vector<Mantids30::Memory::Abstract::Var *> &vars);
+    bool bindResultVars(const std::vector<Mantids30::Core::Memory::Abstract::Var *> &vars);
 
     // TODO:
     // bool enqueue( void (*_callback)(std::shared_ptr<Query>) = nullptr );
@@ -221,7 +221,7 @@ protected:
     // Query:
     bool m_bindInputVars = false;
     bool m_bindResultVars = false;
-    std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> m_inputVars;
+    std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> m_inputVars;
     std::string m_query;
 
     // Internals:
@@ -234,7 +234,7 @@ protected:
 
     // Results:
     std::vector<bool> m_fieldIsNull;
-    std::vector<Memory::Abstract::Var *> m_resultVars;
+    std::vector<Mantids30::Core::Memory::Abstract::Var *> m_resultVars;
     unsigned long long m_lastInsertRowID = 0;
     uint64_t m_numRecords = 0;
     uint64_t m_affectedRecords = 0;
@@ -257,4 +257,4 @@ private:
     friend class SQLConnector;
 };
 
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::Common

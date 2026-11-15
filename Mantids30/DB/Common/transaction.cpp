@@ -1,8 +1,8 @@
 #include "transaction.h"
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
 
-Transaction::Transaction(Mantids30::Database::SQLConnector &connector)
+Transaction::Transaction(Mantids30::DB::Common::SQLConnector &connector)
     : m_sqlConnector(connector)
     , m_transactionActive(connector.beginTransaction())
 {}

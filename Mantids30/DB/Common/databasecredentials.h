@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::Common {
 
 /**
 * \brief Represents user credentials for database authentication.
@@ -13,4 +13,4 @@ struct DatabaseCredentials
     std::string userPassword; ///< The password associated with the username for database access.
 };
 
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::Common

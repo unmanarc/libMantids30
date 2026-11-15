@@ -7,7 +7,7 @@
 #include <memory>
 #include <unistd.h>
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
 
 SQLConnector::~SQLConnector()
 {
@@ -109,8 +109,8 @@ void SQLConnector::detachQuery(Query *query)
     }
 }
 
-std::shared_ptr<Query> SQLConnector::qSelect(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> &inputVars,
-                                             const std::vector<Mantids30::Memory::Abstract::Var *> &resultVars)
+std::shared_ptr<Query> SQLConnector::qSelect(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &inputVars,
+                                             const std::vector<Mantids30::Core::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> q = createQuery();
 
@@ -139,8 +139,8 @@ std::shared_ptr<Query> SQLConnector::qSelect(std::string_view preparedQuery, con
     return q;
 }
 
-std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string_view preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                                        const std::vector<Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset)
+std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string_view preparedQuery, const std::string &whereFilters, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &inputVars,
+                                                        const std::vector<Mantids30::Core::Memory::Abstract::Var *> &resultVars, const std::string &orderby, const uint64_t &limit, const uint64_t &offset)
 {
     std::string localQuery(preparedQuery);
     boost::algorithm::trim(localQuery);
@@ -166,7 +166,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string_view prepare
         boost::ireplace_last(filteredTotalCountQuery, "WHERE ", "WHERE (" + whereFilters + ") AND ");
     }
 
-    Memory::Abstract::INT64 unfilteredTotalCount, filteredTotalCount;
+    Mantids30::Core::Memory::Abstract::INT64 unfilteredTotalCount, filteredTotalCount;
     {
         std::shared_ptr<Query> countResultQuery = qSelect(unfilteredTotalCountQuery, inputVars, {&unfilteredTotalCount});
 
@@ -229,7 +229,7 @@ std::shared_ptr<Query> SQLConnector::qSelectWithFilters(std::string_view prepare
     return result;
 }
 
-std::shared_ptr<Query> SQLConnector::qExecute(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
+std::shared_ptr<Query> SQLConnector::qExecute(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &inputVars)
 {
     std::shared_ptr<Query> q = createQuery();
 
@@ -251,7 +251,7 @@ std::shared_ptr<Query> SQLConnector::qExecute(std::string_view preparedQuery, co
     return q;
 }
 
-bool SQLConnector::qExecuteEx(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars)
+bool SQLConnector::qExecuteEx(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &inputVars)
 {
     std::shared_ptr<Query> i = qExecute(preparedQuery, inputVars);
 
@@ -270,8 +270,8 @@ bool SQLConnector::qExecuteEx(std::string_view preparedQuery, const std::map<std
     return true;
 }
 
-bool SQLConnector::qSelectSingleRow(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Memory::Abstract::Var>> &inputVars,
-                                    const std::vector<Memory::Abstract::Var *> &resultVars)
+bool SQLConnector::qSelectSingleRow(std::string_view preparedQuery, const std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> &inputVars,
+                                    const std::vector<Mantids30::Core::Memory::Abstract::Var *> &resultVars)
 {
     std::shared_ptr<Query> i = qSelect(preparedQuery, inputVars, resultVars);
     return i && i->isSuccessful() && i->step();
@@ -308,7 +308,7 @@ void SQLConnector::setThrowCPPErrorOnQueryFailure(bool newThrowCPPErrorOnQueryFa
     m_throwCPPErrorOnQueryFailure = newThrowCPPErrorOnQueryFailure;
 }
 
-bool Mantids30::Database::SQLConnector::connect(const std::string &host, const uint16_t &port, const Mantids30::Database::DatabaseCredentials &credentials, const std::string &dbName)
+bool Mantids30::DB::Common::SQLConnector::connect(const std::string &host, const uint16_t &port, const Mantids30::DB::Common::DatabaseCredentials &credentials, const std::string &dbName)
 {
     this->m_host = host;
     this->m_port = port;
