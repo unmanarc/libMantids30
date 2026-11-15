@@ -84,10 +84,10 @@ The `SubParser` class supports multiple parsing strategies via `ParseStrategy` e
 To implement a new protocol, inherit from `Parser` and override three virtual methods:
 
 ```cpp
-class MyProtocol : public Mantids30::Memory::Streams::Parser
+class MyProtocol : public Mantids30::Core::Memory::Streams::Parser
 {
 public:
-    MyProtocol(bool clientMode, std::shared_ptr<Memory::Streams::StreamableObject> socket)
+    MyProtocol(bool clientMode, std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> socket)
         : Parser(socket, clientMode) {}
 
 protected:
@@ -117,8 +117,8 @@ protected:
     }
 
 private:
-    Memory::Streams::SubParser m_headerParser;
-    Memory::Streams::SubParser m_bodyParser;
+    Mantids30::Core::Memory::Streams::SubParser m_headerParser;
+    Mantids30::Core::Memory::Streams::SubParser m_bodyParser;
 };
 ```
 
@@ -135,7 +135,7 @@ Each protocol implementation follows the same pattern:
 
 ## Related documentation
 
-- [Core classes reference](CLASSES.md) - `Memory::Streams::Parser`, `SubParser` and the
+- [Core classes reference](CLASSES.md) - `Mantids30::Core::Memory::Streams::Parser`, `SubParser` and the
   streamables used as parse targets.
 - [Documentation index](README.md)
 - [Project overview](../README.md)

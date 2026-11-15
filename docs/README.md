@@ -3,6 +3,7 @@
 | Document | Content |
 |----------|---------|
 | [PARSER.md](PARSER.md) | Parsing engine: `Parser`, `SubParser`, strategies and custom protocols |
+| [NAMESPACES.md](NAMESPACES.md) | Namespace layout and usage examples |
 | [CLASSES.md](CLASSES.md) | Module, namespace and class reference plus installed header layout |
 | [build/BUILD-UBUNTU.md](build/BUILD-UBUNTU.md) | Debian 12/13 and Ubuntu 24.04/26.04 LTS |
 | [build/BUILD-RHEL.md](build/BUILD-RHEL.md) | RHEL / AlmaLinux / Rocky Linux 7-10 |

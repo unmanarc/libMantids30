@@ -35,10 +35,10 @@ Include:
 The following areas are considered security relevant:
 
 - TLS handling in `Network/Sockets`, `Network/Chains` and the HTTP server.
-- JWT generation, validation and revocation in `DataFormats/JWT` and `Config/JWT`.
+- JWT generation, validation and revocation in `DataFormats/JWT` and `ConfigBuilder/JWT`.
 - Session and authentication handling in `Servers/RESTfulWebServer` and the web servers.
 - Parsing code reachable from untrusted network input.
-- Cryptographic helpers (`Helpers::Crypto`, `Helpers::OTP`, `Helpers::Random`).
+- Cryptographic helpers (`Mantids30::Core::Helpers::Crypto`, `Mantids30::Core::Helpers::OTP`, `Mantids30::Core::Helpers::Random`).
 
 Issues that require an already compromised host, or that only affect unsupported
 distributions, are out of scope but still welcome as regular bug reports.

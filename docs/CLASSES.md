@@ -40,7 +40,7 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `DataFormats/JSON` | `Mantids30_DataFormat_JSON` | JSON parsing, serialization and streamables (boost::json) |
 | `Core/Memory` | `Mantids30_Memory` | Typed variables, binary containers, streamables, parser/subparser |
 | `Core/Threads` | `Mantids30_Threads` | Thread wrappers, thread pool, garbage collector, safe containers |
-| `DB/DB` | `Mantids30_DB` | Database abstraction (`SQLConnector`, `Query`, `Transaction`) |
+| `DB/Common` | `Mantids30_DB` | Database abstraction (`SQLConnector`, `Query`, `Transaction`) |
 | `DB/SQLite3` | `Mantids30_DB_SQLite3` | SQLite3 backend (optional) |
 | `DB/MariaDB` | `Mantids30_DB_MariaDB` | MariaDB/MySQL backend (optional) |
 | `DB/PostgreSQL` | `Mantids30_DB_PostgreSQL` | PostgreSQL backend (optional) |
@@ -58,19 +58,21 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Scripting/MantidsLang` | `Mantids30_Scripts_MantidsLang` | MantidsLang interpreter |
 | `Runtime/Logs` | `Mantids30_Program_Logs` | Application, web and RPC logs |
 | `Runtime/Service` | `Mantids30_Program_Service` | Application lifecycle, arguments and config loader |
-| `Config/JWT` / `Config/Logs` / `Config/REST` | `Mantids30_Config_*` | Configuration builders |
+| `ConfigBuilder/JWT` / `ConfigBuilder/Logs` / `ConfigBuilder/REST` | `Mantids30_ConfigBuilder_*` | Configuration builders |
 | `Applications/FastRPC1Client` | `Mantids30_App_FastRPC1Client` | FastRPC1 client application framework |
 
 ## Database
 
-Namespace: `Mantids30::Database`
+Common interfaces use `Mantids30::DB::Common`. Backends use
+`Mantids30::DB::SQLite3`, `Mantids30::DB::MariaDB` and `Mantids30::DB::PostgreSQL`,
+matching their header directories.
 
 | Class | Header | Description |
 |-------|--------|-------------|
-| `SQLConnector` | `DB/DB/sqlconnector.h` | Base connector: connect, disconnect, query creation |
-| `Query` | `DB/DB/query.h` | Prepared statement execution and result access |
-| `Transaction` | `DB/DB/transaction.h` | Transaction scope management |
-| `DatabaseCredentials` | `DB/DB/databasecredentials.h` | Host, port, user, password, database |
+| `SQLConnector` | `DB/Common/sqlconnector.h` | Base connector: connect, disconnect, query creation |
+| `Query` | `DB/Common/query.h` | Prepared statement execution and result access |
+| `Transaction` | `DB/Common/transaction.h` | Transaction scope management |
+| `DatabaseCredentials` | `DB/Common/databasecredentials.h` | Host, port, user, password, database |
 | `SQLConnector_SQLite3` | `DB/SQLite3/sqlconnector_sqlite3.h` | SQLite3 connector (file or in-memory) |
 | `Query_SQLite3` | `DB/SQLite3/query_sqlite3.h` | SQLite3 query handler |
 | `SQLConnector_MariaDB` | `DB/MariaDB/sqlconnector_mariadb.h` | MariaDB/MySQL connector |
@@ -80,7 +82,7 @@ Namespace: `Mantids30::Database`
 
 ## Memory
 
-### Abstract variables - `Mantids30::Memory::Abstract`
+### Abstract variables - `Mantids30::Core::Memory::Abstract`
 
 | Class | Header | Description |
 |-------|--------|-------------|
@@ -101,7 +103,7 @@ Namespace: `Mantids30::Database`
 
 `Core/Memory/a_allvars.h` includes every abstract type.
 
-### Containers - `Mantids30::Memory::Containers`
+### Containers - `Mantids30::Core::Memory::Containers`
 
 | Class | Header | Description |
 |-------|--------|-------------|
@@ -113,14 +115,14 @@ Namespace: `Mantids30::Database`
 | `B_Ref` | `Core/Memory/b_ref.h` | Referenced (non-owning) container |
 | `FileMap` | `Core/Memory/filemap.h` | Memory mapped file helper |
 
-### Streams - `Mantids30::Memory::Streams`
+### Streams - `Mantids30::Core::Memory::Streams`
 
 | Class | Header | Description |
 |-------|--------|-------------|
 | `StreamableObject` | `Core/Memory/streamable_object.h` | Base streamable target (`WriteStatus` result) |
 | `StreamableString` | `Core/Memory/streamable_string.h` | Writes into a `std::string` |
 | `StreamableFile` | `Core/Memory/streamable_file.h` | Writes into a file |
-| `StreamableJSON` | `DataFormats/JSON/streamable_json.h` | Writes into a JSON value |
+| `Mantids30::DataFormats::JSON::StreamableJSON` | `DataFormats/JSON/streamable_json.h` | Writes into a JSON value |
 | `StreamableProcess` | `Core/Memory/streamable_process.h` | Writes into a child process stdin |
 | `StreamableNull` | `Core/Memory/streamable_null.h` | Discards data |
 | `StreamableTransformer` | `Core/Memory/streamable_transformer.h` | Streaming transformation stage |
@@ -131,17 +133,17 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 
 ## Threads
 
-Namespaces: `Mantids30::Threads`, `Mantids30::Threads::Safe`, `Mantids30::Threads::Pool`
+Namespaces: `Mantids30::Core::Threads`, `Mantids30::Core::Threads::Safe`, `Mantids30::Core::Threads::Pool`
 
 | Class | Header | Description |
 |-------|--------|-------------|
 | `Threaded` | `Core/Threads/threaded.h` | Thread wrapper with start/stop lifecycle |
 | `GarbageCollector` | `Core/Threads/garbagecollector.h` | Deferred deletion helper |
 | `ThreadPool` | `Core/Threads/threadpool.h` | Fixed size worker pool |
-| `Safe::Map` | `Core/Threads/safe_map.h` | Mutex protected map |
-| `Safe::MapItem` | `Core/Threads/safe_mapitem.h` | Value wrapper used by `Safe::Map` |
-| `Safe::Queue` | `Core/Threads/safe_queue.h` | Mutex protected queue |
-| `Safe::SharedQueue` | `Core/Threads/safe_sharedqueue.h` | Shared pointer queue |
+| `Mantids30::Core::Threads::Safe::Map` | `Core/Threads/safe_map.h` | Mutex protected map |
+| `Mantids30::Core::Threads::Safe::MapItem` | `Core/Threads/safe_mapitem.h` | Value wrapper used by `Mantids30::Core::Threads::Safe::Map` |
+| `Mantids30::Core::Threads::Safe::Queue` | `Core/Threads/safe_queue.h` | Mutex protected queue |
+| `Mantids30::Core::Threads::Safe::SharedQueue` | `Core/Threads/safe_sharedqueue.h` | Shared pointer queue |
 
 ## Network - sockets
 
@@ -183,7 +185,7 @@ Namespace: `Mantids30::Network::Sockets`
 
 ## Network - chains
 
-Namespace: `Mantids30::Network::Sockets::ChainProtocols`
+Namespace: `Mantids30::Network::Chains`
 
 | Class | Header | Description |
 |-------|--------|-------------|
@@ -207,7 +209,7 @@ Namespace: `Mantids30::Network::Interfaces`
 
 ### HTTP/1.1 and WebSocket
 
-Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
+Namespace: `Mantids30::Protocols::HTTP` (and sub-namespaces)
 
 | Class | Header | Description |
 |-------|--------|-------------|
@@ -220,83 +222,85 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `URLVars` / `URLVarContent` | `Protocols/HTTP/common_urlvars.h`, `common_urlvar_subparser.h` | URL encoded variables |
 | `Version` | `Protocols/HTTP/common_version.h` | HTTP version value |
 | `Status` | `Protocols/HTTP/rsp_status.h` | Response status codes |
-| `Headers::CacheControl`, `Headers::Cookie`, `Headers::ETag` | `Protocols/HTTP/hdr_*.h` | Standard headers |
-| `Headers::Security::HSTS`, `XFrameOptions`, `XSSProtection` | `Protocols/HTTP/hdr_sec_*.h` | Security headers |
-| `Request::RequestLine`, `Request::Cookies_ClientSide` | `Protocols/HTTP/req_*.h` | Request line and cookies |
-| `Response::Cookies_ServerSide` | `Protocols/HTTP/rsp_cookies.h` | Response cookies |
-| `WebSocket::FrameHeader`, `WebSocket::FrameContent` | `Protocols/HTTP/websocket_frame*.h` | WebSocket framing |
-| `Memory::Streams::Decoders::URL` / `Encoders::URL` | `Protocols/HTTP/streamdecoder_url.h`, `streamencoder_url.h` | URL encode/decode stream stages |
-| `API::APIReturn` | `Protocols/HTTP/api_return.h` | Standard API result envelope |
+| `Mantids30::Protocols::HTTP::Headers::CacheControl`, `Mantids30::Protocols::HTTP::Headers::Cookie`, `Mantids30::Protocols::HTTP::Headers::ETag` | `Protocols/HTTP/hdr_*.h` | Standard headers |
+| `Mantids30::Protocols::HTTP::Headers::Security::HSTS`, `XFrameOptions`, `XSSProtection` | `Protocols/HTTP/hdr_sec_*.h` | Security headers |
+| `Mantids30::Protocols::HTTP::Request::RequestLine`, `Mantids30::Protocols::HTTP::Request::Cookies_ClientSide` | `Protocols/HTTP/req_*.h` | Request line and cookies |
+| `Mantids30::Protocols::HTTP::Response::Cookies_ServerSide` | `Protocols/HTTP/rsp_cookies.h` | Response cookies |
+| `Mantids30::Protocols::HTTP::WebSocket::FrameHeader`, `Mantids30::Protocols::HTTP::WebSocket::FrameContent` | `Protocols/HTTP/websocket_frame*.h` | WebSocket framing |
+| `Mantids30::Protocols::HTTP::Decoders::URL` / `Mantids30::Protocols::HTTP::Encoders::URL` | `Protocols/HTTP/streamdecoder_url.h`, `streamencoder_url.h` | URL encode/decode stream stages |
+| `Mantids30::Protocols::HTTP::APIReturn` | `Protocols/HTTP/api_return.h` | Standard API result envelope |
 
 ### MIME, FastRPC, LineRecv and APISync
 
 | Class | Header | Description |
 |-------|--------|-------------|
-| `MIME::MIME_Message` | `Protocols/MIME/mime_message.h` | Complete MIME message |
-| `MIME::MIME_PartMessage` | `Protocols/MIME/mime_partmessage.h` | MIME part |
-| `MIME::MIME_Sub_Content`, `MIME_Sub_FirstBoundary`, `MIME_Sub_EndPBoundary`, `MIME_Sub_Header`, `MIME_HeaderOption` | `Protocols/MIME/mime_sub_*.h` | MIME sub-parsers |
-| `FastRPC::FastRPC1` | `Protocols/FastRPC1/fastrpc.h` | FastRPC1 server |
-| `Line2Line::LineRecv` / `LineRecv_SubParser` | `Protocols/LineRecv/linerecv*.h` | Line oriented protocol |
-| `APISync::APISyncParameters` | `Protocols/APISync/apisync.h` | APISync protocol parameters |
+| `Mantids30::Protocols::MIME::MIME_Message` | `Protocols/MIME/mime_message.h` | Complete MIME message |
+| `Mantids30::Protocols::MIME::MIME_PartMessage` | `Protocols/MIME/mime_partmessage.h` | MIME part |
+| `Mantids30::Protocols::MIME::MIME_Sub_Content`, `MIME_Sub_FirstBoundary`, `MIME_Sub_EndPBoundary`, `MIME_Sub_Header`, `MIME_HeaderOption` | `Protocols/MIME/mime_sub_*.h` | MIME sub-parsers |
+| `Mantids30::Protocols::FastRPC1::FastRPC1` | `Protocols/FastRPC1/fastrpc.h` | FastRPC1 server |
+| `Mantids30::Protocols::LineRecv::LineRecv` / `LineRecv_SubParser` | `Protocols/LineRecv/linerecv*.h` | Line oriented protocol |
+| `Mantids30::Protocols::APISync::APISyncParameters` | `Protocols/APISync/apisync.h` | APISync protocol parameters |
 
 ## Web servers
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `APIServerCore` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_core.h` | Core HTTP server with protocol handlers |
-| `APIServer_ClientHandler` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_clienthandler.h` | Per-connection HTTP handling |
-| `APIServerConfig` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_config.h` | Listener/TLS configuration |
-| `HTMLIEngine` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/htmliengine.h` | HTML include engine |
-| `APIProxyParameters` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiproxy.h` | Reverse proxy parameters |
-| `ResourcesFilter` | `Mantids30::API::Web` | `Servers/RESTfulWebServer/resourcesfilter.h` | Resource authorization filter |
-| `Engine` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebServer/engine.h` | RESTful API server engine |
-| `ClientHandler` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebServer/clienthandler.h` | RESTful client/session handler |
+| `APIServerCore` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/apiserver_core.h` | Core HTTP server with protocol handlers |
+| `APIServer_ClientHandler` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/apiserver_clienthandler.h` | Per-connection HTTP handling |
+| `APIServerConfig` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/apiserver_config.h` | Listener/TLS configuration |
+| `HTMLIEngine` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/htmliengine.h` | HTML include engine |
+| `APIProxyParameters` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/apiproxy.h` | Reverse proxy parameters |
+| `ResourcesFilter` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/resourcesfilter.h` | Resource authorization filter |
+| `Engine` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/engine.h` | RESTful API server engine |
+| `ClientHandler` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/clienthandler.h` | RESTful client/session handler |
 
 ## Sessions and API
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `Session` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | HTTP session with client details |
-| `SessionInfo` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | Session metadata |
-| `ClientDetails` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | Remote client information |
-| `Session_Vars` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session_vars.h` | Session variable storage |
-| `RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::API::RESTful` | `Servers/RESTfulWebServer/api_restful_endpoints.h` | RESTful endpoint registry |
-| `OptionsHandlerConfig` | `Mantids30::API` | `Servers/RESTfulWebServer/api_options_handler.h` | HTTP OPTIONS handling |
-| `Endpoints_Options` | `Mantids30::API` | `Servers/RESTfulWebServer/endpoints_options.h` | Endpoint options |
-| `WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::API::WebSocket` / `Network::Servers::Web` | `Servers/RESTfulWebServer/api_websocket_*.h` | WebSocket endpoints and connections |
-| `Security::ReceivedAuth`, `Security::Configuration` | `Mantids30::API::Security` | `Servers/RESTfulWebServer/security.h` | Authorization chain configuration |
+| `Session` | `Mantids30::Servers::RESTfulWebServer::Sessions` | `Servers/RESTfulWebServer/session.h` | HTTP session with client details |
+| `SessionInfo` | `Mantids30::Servers::RESTfulWebServer::Sessions` | `Servers/RESTfulWebServer/session.h` | Session metadata |
+| `ClientDetails` | `Mantids30::Servers::RESTfulWebServer::Sessions` | `Servers/RESTfulWebServer/session.h` | Remote client information |
+| `Session_Vars` | `Mantids30::Servers::RESTfulWebServer::Sessions` | `Servers/RESTfulWebServer/session_vars.h` | Session variable storage |
+| `Mantids30::Servers::RESTfulWebServer::RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::Servers::RESTfulWebServer::RESTful` | `Servers/RESTfulWebServer/api_restful_endpoints.h` | RESTful endpoint registry |
+| `OptionsHandlerConfig` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/api_options_handler.h` | HTTP OPTIONS handling |
+| `Endpoints_Options` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/endpoints_options.h` | Endpoint options |
+| `Mantids30::Servers::RESTfulWebServer::WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::Servers::RESTfulWebServer::WebSocket` | `Servers/RESTfulWebServer/api_websocket_*.h` | WebSocket endpoints and connections |
+| `Mantids30::Servers::RESTfulWebServer::Security::ReceivedAuth`, `Mantids30::Servers::RESTfulWebServer::Security::Configuration` | `Mantids30::Servers::RESTfulWebServer::Security` | `Servers/RESTfulWebServer/security.h` | Authorization chain configuration |
 
 ## Security and data formats
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `JWT` | `Mantids30::DataFormat` | `DataFormats/JWT/jwt.h` | Token creation, validation and revocation |
-| `JWT::Token` | `Mantids30::DataFormat` | `DataFormats/JWT/jwt.h` | Decoded token claims |
-| `JWT::Cache` | `Mantids30::DataFormat` | `DataFormats/JWT/jwt.h` | Revocation cache |
-| `Config::JWT` | `Mantids30::Program::Config` | `Config/JWT/config_builder.h` | JWT configuration builder |
+| `JWT` | `Mantids30::DataFormats::JWT` | `DataFormats/JWT/jwt.h` | Token creation, validation and revocation |
+| `JWT::Token` | `Mantids30::DataFormats::JWT` | `DataFormats/JWT/jwt.h` | Decoded token claims |
+| `JWT::Cache` | `Mantids30::DataFormats::JWT` | `DataFormats/JWT/jwt.h` | Revocation cache |
+| `Builder` | `Mantids30::ConfigBuilder::JWT` | `ConfigBuilder/JWT/config_builder.h` | JWT configuration builder |
 
 ## Scripting
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `JSONEval` | `Mantids30::Scripts::Expressions` | `Scripting/JSONExprEval/jsoneval.h` | JSON expression evaluator |
-| `AtomicExpression`, `AtomicExpressionSide` | `Mantids30::Scripts::Expressions` | `Scripting/JSONExprEval/atomicexpression*.h` | Expression operands |
-| `MantidsLang` | `Mantids30::Scripts` | `Scripting/MantidsLang/mantidslang.h` | MantidsLang interpreter (streamable) |
+| `JSONEval` | `Mantids30::Scripting::JSONExprEval` | `Scripting/JSONExprEval/jsoneval.h` | JSON expression evaluator |
+| `AtomicExpression`, `AtomicExpressionSide` | `Mantids30::Scripting::JSONExprEval` | `Scripting/JSONExprEval/atomicexpression*.h` | Expression operands |
+| `MantidsLang` | `Mantids30::Scripting::MantidsLang` | `Scripting/MantidsLang/mantidslang.h` | MantidsLang interpreter (streamable) |
 
 ## Program lifecycle, logs and config
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `Application` | `Mantids30::Program` | `Runtime/Service/application.h` | Application lifecycle, daemonization, signals |
-| `CommandLineOption`, `GlobalArguments` | `Mantids30::Program::Arguments` | `Runtime/Service/globalarguments.h` | Command line parsing |
-| `Loader` | `Mantids30::Program::Config` | `Runtime/Service/program_config.h` | Configuration file loader |
-| `ProgramValues`, `Author` | `Mantids30::Program::Values` | `Runtime/Service/programvalues.h` | Program metadata |
-| `AppLog`, `LogBase`, `WebLog`, `RPCLog` | `Mantids30::Program::Logs` | `Runtime/Logs/*.h` | Logging backends with rotation |
-| `Config::Logs`, `Config::RESTful_Engine`, `Config::APIProxyConfig` | `Mantids30::Program::Config` | `Config/Logs/`, `Config/REST/`, `Servers/RESTfulWebServer/apiproxy_config.h` | Configuration builders |
+| `Application` | `Mantids30::Runtime::Service` | `Runtime/Service/application.h` | Application lifecycle, daemonization, signals |
+| `CommandLineOption`, `GlobalArguments` | `Mantids30::Runtime::Service::Arguments` | `Runtime/Service/globalarguments.h` | Command line parsing |
+| `Loader` | `Mantids30::Runtime::Service::Config` | `Runtime/Service/program_config.h` | Configuration file loader |
+| `ProgramValues`, `Author` | `Mantids30::Runtime::Service::Values` | `Runtime/Service/programvalues.h` | Program metadata |
+| `AppLog`, `LogBase`, `WebLog`, `RPCLog` | `Mantids30::Runtime::Logs` | `Runtime/Logs/*.h` | Logging backends with rotation |
+| `Builder` | `Mantids30::ConfigBuilder::Logs` | `ConfigBuilder/Logs/config_builder.h` | Logging configuration builder |
+| `Builder` | `Mantids30::ConfigBuilder::REST` | `ConfigBuilder/REST/config_builder.h` | REST server configuration builder |
+| `APIProxyConfig` | `Mantids30::Servers::RESTfulWebServer` | `Servers/RESTfulWebServer/apiproxy_config.h` | Proxy configuration builder |
 
 ## Helpers
 
-Namespace: `Mantids30::Helpers` (unless stated otherwise)
+Namespace: `Mantids30::Core::Helpers` (unless stated otherwise)
 
 | Class / API | Header | Description |
 |-------------|--------|-------------|
@@ -305,9 +309,9 @@ Namespace: `Mantids30::Helpers` (unless stated otherwise)
 | `File` | `Core/Helpers/file.h` | File read/write utilities |
 | `Encoders` | `Core/Helpers/encoders.h` | Base64, hex and URL encoding |
 | `StringConversions` | `Core/Helpers/strconv.h` | String/number conversions |
-| `JSONReader2` | `Core/Helpers/json.h` | JSON reader (`Mantids30::Helpers::JSON`) |
-| `TOTP` | `Core/Helpers/totp.h` | Time based one-time passwords (`Mantids30::Helpers::OTP`) |
-| `DataTables` | `Core/Helpers/datatables.h` | DataTables server-side helper |
+| `JSONReader2` | `Core/Helpers/json.h` | JSON reader (`Mantids30::DataFormats::JSON`) |
+| `TOTP` | `Core/Helpers/totp.h` | Time based one-time passwords (`Mantids30::Core::Helpers::OTP`) |
+| `Mantids30::DataFormats::JSON::DataTables` | `DataFormats/JSON/datatables.h` | DataTables server-side helper |
 | `Mem` | `Core/Helpers/mem.h` | Memory helpers (zeroing, comparison) |
 | `OS` | `Core/Helpers/os.h` | OS and environment helpers |
 | `AppExec`, `AppSpawn` | `Core/Helpers/appexec.h` | Process execution and spawning |

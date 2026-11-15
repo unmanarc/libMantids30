@@ -50,7 +50,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 - **Memory model** - typed abstract variables (`STRING`, `INT64`, `IPV4`, ...),
   chunk-based buffers (`B_Chunks`, `B_MEM`, `B_MMAP`, `B_Ref`) and streamables.
 - **Threading** - `Threaded`, `ThreadPool`, `GarbageCollector` and thread-safe
-  `Safe::Map` / `Safe::Queue` containers.
+  `Mantids30::Core::Threads::Safe::Map` / `Mantids30::Core::Threads::Safe::Queue` containers.
 - **Security** - JWT tokens with revocation cache, TOTP, SHA/HMAC helpers and AES.
 - **Scripting and data** - JSON expression evaluator, MantidsLang and DataTables helper.
 - **Logging** - `AppLog`, `WebLog` and `RPCLog` with levels and file rotation.
@@ -154,13 +154,15 @@ Distribution specific instructions:
 
 Each component is a standalone library (`Mantids30_Helpers`, `Mantids30_Memory`,
 `Mantids30_Net_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_RESTfulWebServer`, ...).
-Source directories follow the same `Mantids30/<Group>/<Module>` layout. Groups are
-`Core`, `Config`, `DB`, `Network`, `Protocols`, `DataFormats`, `Runtime`,
+Public namespaces and source directories follow the same `Mantids30/<Group>/<Module>` layout. Groups are
+`Core`, `ConfigBuilder`, `DB`, `Network`, `Protocols`, `DataFormats`, `Runtime`,
 `Applications`, `Servers` and `Scripting`; see the
 [library map](docs/CLASSES.md#library-map) for every module.
 
-Update existing includes to the grouped paths, for example `Mantids30/Config/JWT/config_builder.h`,
-`Mantids30/DB/DB/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
+See the [namespace guide](docs/NAMESPACES.md) for the public API layout and usage examples.
+
+Include headers using their grouped paths, for example `Mantids30/ConfigBuilder/JWT/config_builder.h`,
+`Mantids30/DB/Common/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
 
 The RESTful web server, proxy, endpoints, sessions and WebSockets are provided by
 `Mantids30_Server_RESTfulWebServer`. Its public headers are installed under
