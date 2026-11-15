@@ -52,9 +52,7 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Protocols/FastRPC1` | `Mantids30_Protocol_FastRPC1` | RPC protocol server |
 | `Protocols/LineRecv` | `Mantids30_Protocol_LineRecv` | Line oriented protocol |
 | `Protocols/APISync` | `Mantids30_Protocol_APISync` | Synchronous API protocol parameters |
-| `Servers/WebCore` | `Mantids30_Server_WebCore` | Core web server, proxy and resource filtering |
-| `Servers/RESTfulWebAPI` | `Mantids30_Server_RESTfulWebAPI` | RESTful JSON API server |
-| `API/EndpointsAndSessions` | `Mantids30_API_EndpointsAndSessions` | Sessions, endpoints and WebSocket endpoints |
+| `Servers/RESTfulWebServer` | `Mantids30_Server_RESTfulWebServer` | RESTful web server, proxy, sessions, endpoints and WebSockets |
 | `DataFormats/JWT` | `Mantids30_DataFormat_JWT` | JWT creation, validation and revocation |
 | `Scripting/JSONExprEval` | `Mantids30_Scripts_JSONExprEval` | JSON expression evaluator |
 | `Scripting/MantidsLang` | `Mantids30_Scripts_MantidsLang` | MantidsLang interpreter |
@@ -245,28 +243,28 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `APIServerCore` | `Mantids30::Network::Servers::Web` | `Servers/WebCore/apiserver_core.h` | Core HTTP server with protocol handlers |
-| `APIServer_ClientHandler` | `Mantids30::Network::Servers::Web` | `Servers/WebCore/apiserver_clienthandler.h` | Per-connection HTTP handling |
-| `APIServerConfig` | `Mantids30::Network::Servers::Web` | `Servers/WebCore/apiserver_config.h` | Listener/TLS configuration |
-| `HTMLIEngine` | `Mantids30::Network::Servers::Web` | `Servers/WebCore/htmliengine.h` | HTML include engine |
-| `APIProxyParameters` | `Mantids30::Network::Servers::Web` | `Servers/WebCore/apiproxy.h` | Reverse proxy parameters |
-| `ResourcesFilter` | `Mantids30::API::Web` | `Servers/WebCore/resourcesfilter.h` | Resource authorization filter |
-| `Engine` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebAPI/engine.h` | RESTful API server engine |
-| `ClientHandler` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebAPI/clienthandler.h` | RESTful client/session handler |
+| `APIServerCore` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_core.h` | Core HTTP server with protocol handlers |
+| `APIServer_ClientHandler` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_clienthandler.h` | Per-connection HTTP handling |
+| `APIServerConfig` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiserver_config.h` | Listener/TLS configuration |
+| `HTMLIEngine` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/htmliengine.h` | HTML include engine |
+| `APIProxyParameters` | `Mantids30::Network::Servers::Web` | `Servers/RESTfulWebServer/apiproxy.h` | Reverse proxy parameters |
+| `ResourcesFilter` | `Mantids30::API::Web` | `Servers/RESTfulWebServer/resourcesfilter.h` | Resource authorization filter |
+| `Engine` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebServer/engine.h` | RESTful API server engine |
+| `ClientHandler` | `Mantids30::Network::Servers::RESTful` | `Servers/RESTfulWebServer/clienthandler.h` | RESTful client/session handler |
 
 ## Sessions and API
 
 | Class | Namespace | Header | Description |
 |-------|-----------|--------|-------------|
-| `Session` | `Mantids30::Sessions` | `API/EndpointsAndSessions/session.h` | HTTP session with client details |
-| `SessionInfo` | `Mantids30::Sessions` | `API/EndpointsAndSessions/session.h` | Session metadata |
-| `ClientDetails` | `Mantids30::Sessions` | `API/EndpointsAndSessions/session.h` | Remote client information |
-| `Session_Vars` | `Mantids30::Sessions` | `API/EndpointsAndSessions/session_vars.h` | Session variable storage |
-| `RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::API::RESTful` | `API/EndpointsAndSessions/api_restful_endpoints.h` | RESTful endpoint registry |
-| `OptionsHandlerConfig` | `Mantids30::API` | `API/EndpointsAndSessions/api_options_handler.h` | HTTP OPTIONS handling |
-| `Endpoints_Options` | `Mantids30::API` | `API/EndpointsAndSessions/endpoints_options.h` | Endpoint options |
-| `WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::API::WebSocket` / `Network::Servers::Web` | `API/EndpointsAndSessions/api_websocket_*.h` | WebSocket endpoints and connections |
-| `Security::ReceivedAuth`, `Security::Configuration` | `Mantids30::API::Security` | `API/EndpointsAndSessions/security.h` | Authorization chain configuration |
+| `Session` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | HTTP session with client details |
+| `SessionInfo` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | Session metadata |
+| `ClientDetails` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session.h` | Remote client information |
+| `Session_Vars` | `Mantids30::Sessions` | `Servers/RESTfulWebServer/session_vars.h` | Session variable storage |
+| `RESTful::Endpoints`, `RESTfulAPIEndpointFullDefinition`, `RequestContext` | `Mantids30::API::RESTful` | `Servers/RESTfulWebServer/api_restful_endpoints.h` | RESTful endpoint registry |
+| `OptionsHandlerConfig` | `Mantids30::API` | `Servers/RESTfulWebServer/api_options_handler.h` | HTTP OPTIONS handling |
+| `Endpoints_Options` | `Mantids30::API` | `Servers/RESTfulWebServer/endpoints_options.h` | Endpoint options |
+| `WebSocket::Config`, `WebSocketConnection`, `Endpoint`, `Endpoints` | `Mantids30::API::WebSocket` / `Network::Servers::Web` | `Servers/RESTfulWebServer/api_websocket_*.h` | WebSocket endpoints and connections |
+| `Security::ReceivedAuth`, `Security::Configuration` | `Mantids30::API::Security` | `Servers/RESTfulWebServer/security.h` | Authorization chain configuration |
 
 ## Security and data formats
 
@@ -294,7 +292,7 @@ Namespace: `Mantids30::Network::Protocol::HTTP` (and sub-namespaces)
 | `Loader` | `Mantids30::Program::Config` | `Runtime/Service/program_config.h` | Configuration file loader |
 | `ProgramValues`, `Author` | `Mantids30::Program::Values` | `Runtime/Service/programvalues.h` | Program metadata |
 | `AppLog`, `LogBase`, `WebLog`, `RPCLog` | `Mantids30::Program::Logs` | `Runtime/Logs/*.h` | Logging backends with rotation |
-| `Config::Logs`, `Config::RESTful_Engine`, `Config::APIProxyConfig` | `Mantids30::Program::Config` | `Config/Logs/`, `Config/REST/`, `Servers/WebCore/apiproxy_config.h` | Configuration builders |
+| `Config::Logs`, `Config::RESTful_Engine`, `Config::APIProxyConfig` | `Mantids30::Program::Config` | `Config/Logs/`, `Config/REST/`, `Servers/RESTfulWebServer/apiproxy_config.h` | Configuration builders |
 
 ## Helpers
 

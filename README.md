@@ -153,15 +153,32 @@ Distribution specific instructions:
 ```
 
 Each component is a standalone library (`Mantids30_Helpers`, `Mantids30_Memory`,
-`Mantids30_Net_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_RESTfulWebAPI`, ...).
+`Mantids30_Net_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_RESTfulWebServer`, ...).
 Source directories follow the same `Mantids30/<Group>/<Module>` layout. Groups are
 `Core`, `Config`, `DB`, `Network`, `Protocols`, `DataFormats`, `Runtime`,
-`Applications`, `API`, `Servers` and `Scripting`; see the
+`Applications`, `Servers` and `Scripting`; see the
 [library map](docs/CLASSES.md#library-map) for every module.
 
-Library and pkg-config names remain unchanged. Update existing includes to the
-grouped paths, for example `Mantids30/Config/JWT/config_builder.h`,
+Update existing includes to the grouped paths, for example `Mantids30/Config/JWT/config_builder.h`,
 `Mantids30/DB/DB/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
+
+The RESTful web server, proxy, endpoints, sessions and WebSockets are provided by
+`Mantids30_Server_RESTfulWebServer`. Its public headers are installed under
+`Mantids30/Servers/RESTfulWebServer/`:
+
+```cpp
+#include <Mantids30/Servers/RESTfulWebServer/engine.h>
+#include <Mantids30/Servers/RESTfulWebServer/api_restful_endpoints.h>
+```
+
+Link an application to the installed library using pkg-config:
+
+```cmake
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(MANTIDS30_REST REQUIRED IMPORTED_TARGET Mantids30_Server_RESTfulWebServer)
+target_link_libraries(myapp PRIVATE PkgConfig::MANTIDS30_REST)
+```
+
 Include headers using the installed prefix:
 
 ```cpp

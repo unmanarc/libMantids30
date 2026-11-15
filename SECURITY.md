@@ -36,7 +36,7 @@ The following areas are considered security relevant:
 
 - TLS handling in `Network/Sockets`, `Network/Chains` and the HTTP server.
 - JWT generation, validation and revocation in `DataFormats/JWT` and `Config/JWT`.
-- Session and authentication handling in `API/EndpointsAndSessions` and the web servers.
+- Session and authentication handling in `Servers/RESTfulWebServer` and the web servers.
 - Parsing code reachable from untrusted network input.
 - Cryptographic helpers (`Helpers::Crypto`, `Helpers::OTP`, `Helpers::Random`).
 
