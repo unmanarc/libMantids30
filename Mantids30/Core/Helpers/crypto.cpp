@@ -12,7 +12,7 @@
 
 #include "safeint.h"
 
-using namespace Mantids30::Helpers;
+using namespace Mantids30::Core::Helpers;
 
 std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, const size_t &inputLen, const char *key, const size_t &keyLen)
 {
@@ -22,7 +22,7 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
     // Create the random salt (128bit) and derived Key (256bit)...
     uint8_t salt[128 / 8], derivedKey[256 / 8];
 
-    Helpers::Random::createRandomSalt128(salt);
+    Mantids30::Core::Helpers::Random::createRandomSalt128(salt);
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     int err;
@@ -56,7 +56,7 @@ std::optional<std::string> Crypto::AES256EncryptB64(const unsigned char *input, 
                         if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, gcmTag))
                         {
                             memcpy(cipherOutText + 16, gcmTag, 16);
-                            out = Helpers::Encoders::encodeToBase64(cipherOutText, cipherOutLength);
+                            out = Mantids30::Core::Helpers::Encoders::encodeToBase64(cipherOutText, cipherOutLength);
                             ok = true;
                         }
                     }
@@ -96,7 +96,7 @@ std::shared_ptr<Mem::BinaryDataContainer> Crypto::AES256DecryptB64ToBin(std::str
         return r;
     }
 
-    std::shared_ptr<Mem::BinaryDataContainer> dec = Helpers::Encoders::decodeFromBase64ToBin(input);
+    std::shared_ptr<Mem::BinaryDataContainer> dec = Mantids30::Core::Helpers::Encoders::decodeFromBase64ToBin(input);
 
     if (dec->data && dec->cur >= 32)
     {
@@ -181,7 +181,7 @@ std::string Crypto::AES256EncryptB64_v0ld(const unsigned char *input, size_t inp
     // Create the random salt (128bit) and derived Key (256bit)...
     uint8_t salt[128 / 8], derivedKey[256 / 8];
 
-    Helpers::Random::createRandomSalt128(salt);
+    Mantids30::Core::Helpers::Random::createRandomSalt128(salt);
 
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     int err;
@@ -215,7 +215,7 @@ std::string Crypto::AES256EncryptB64_v0ld(const unsigned char *input, size_t inp
                         if (EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_GCM_GET_TAG, 16, gcmTag))
                         {
                             memcpy(cipherOutText + 16, gcmTag, 16);
-                            out = Helpers::Encoders::encodeToBase64(cipherOutText, cipherOutLength);
+                            out = Mantids30::Core::Helpers::Encoders::encodeToBase64(cipherOutText, cipherOutLength);
                             SET_OK_BOOLEAN(ok, true);
                         }
                     }

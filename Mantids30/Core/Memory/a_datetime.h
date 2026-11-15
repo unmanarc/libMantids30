@@ -5,7 +5,7 @@
 #include <ctime>
 #include <shared_mutex>
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class DATETIME : public Var
 {
@@ -43,4 +43,4 @@ private:
     time_t m_value = 0;
     std::shared_mutex m_mutex;
 };
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

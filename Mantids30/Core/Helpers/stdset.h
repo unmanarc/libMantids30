@@ -2,7 +2,7 @@
 
 #include <set>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Determines whether a given element is present in a given set.
@@ -19,4 +19,4 @@ bool contains(const std::set<T> &haystack, const T &needle)
     return find(haystack.begin(), haystack.end(), needle) != haystack.end();
 }
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

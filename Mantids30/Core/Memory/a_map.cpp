@@ -2,7 +2,7 @@
 #include <mutex>
 #include <memory>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 VariableMap::~VariableMap()
 {

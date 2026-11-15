@@ -1,7 +1,7 @@
 #include "threaded.h"
 #include <memory>
 
-using namespace Mantids30::Threads;
+using namespace Mantids30::Core::Threads;
 
 Threaded::Threaded() : m_isRunning(false), m_threadRunner(nullptr),m_contextRunner(nullptr), m_threadStopper(nullptr), m_contextStopper(nullptr)
 {

@@ -12,7 +12,7 @@
 #include "streamable_object.h"
 #include <Mantids30/Core/Helpers/mem.h>
 
-namespace Mantids30::Memory::Containers {
+namespace Mantids30::Core::Memory::Containers {
 
 enum class StorageMethod : uint8_t
 {
@@ -23,7 +23,7 @@ enum class StorageMethod : uint8_t
     VOID
 };
 
-class B_Base : public Streams::StreamableObject
+class B_Base : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     B_Base();
@@ -125,7 +125,7 @@ public:
      * @brief freeSplitList Free a list of binary containers.
      * @param x List of binary containers to be freed.
      */
-    static void freeSplitList(const std::list<Memory::Containers::B_Base *> &x);
+    static void freeSplitList(const std::list<Mantids30::Core::Memory::Containers::B_Base *> &x);
     /**
     * @brief Append this current container to a new one.
     * @param out Binary container.
@@ -283,7 +283,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Streamable
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
     std::optional<size_t> write(const void *buf, const size_t &count) override;
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // FS options:
@@ -433,4 +433,4 @@ private:
     bool clear0();
 };
 
-} // namespace Mantids30::Memory::Containers
+} // namespace Mantids30::Core::Memory::Containers

@@ -1,14 +1,14 @@
 #pragma once
 
-#include <Mantids30/DB/DB/query.h>
+#include <Mantids30/DB/Common/query.h>
 #include <mysql.h>
 #include <vector>
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::MariaDB {
 /**
  * @brief The Query_MariaDB class provides an implementation of the abstract class Query for MariaDB database.
  */
-class Query_MariaDB : public Query
+class Query_MariaDB : public Mantids30::DB::Common::Query
 {
 public:
     /**
@@ -92,4 +92,4 @@ private:
     bool m_fetchLastInsertRowID = true;                /**< Whether or not to fetch the last inserted row ID. */
     std::vector<std::string> m_keysByPos;              /**< Vector of keys for the result set. */
 };
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::MariaDB

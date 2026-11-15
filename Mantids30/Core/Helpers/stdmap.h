@@ -2,7 +2,7 @@
 
 #include <map>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Determines whether a given key is present in a given map.
@@ -20,4 +20,4 @@ bool contains(const std::map<T, Y> &haystack, const T &needle)
     return find(haystack.begin(), haystack.end(), needle) != haystack.end();
 }
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

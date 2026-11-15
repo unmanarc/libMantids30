@@ -3,7 +3,7 @@
 #include "subparser.h"
 #include <memory>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 /**
  * @brief The ProtocolParser_Base class
@@ -20,10 +20,10 @@ namespace Mantids30::Memory::Streams {
  *
  *
  */
-class Parser : public Memory::Streams::StreamableObject
+class Parser : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
-    Parser(const std::shared_ptr<Memory::Streams::StreamableObject> &value, bool clientMode);
+    Parser(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &value, bool clientMode);
     ~Parser() override = default;
     Parser(Parser &) = delete;
     Parser() = delete;
@@ -60,7 +60,7 @@ public:
     void setMaxTTL(const size_t &value);
 
     void setStreamable(const std::shared_ptr<StreamableObject> &value);
-    void setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject);
+    void setPreStreamableObject(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &newPreStreamableObject);
 
     void setParsingDebugOptions(DebugOptions newParsingDebugOptions) { parsingDebugOptions = newParsingDebugOptions; }
 
@@ -82,8 +82,8 @@ protected:
      */
     virtual bool changeToNextParser() = 0;
 
-    std::shared_ptr<Memory::Streams::StreamableObject> m_streamableObject;
-    std::shared_ptr<Memory::Streams::StreamableObject> m_preStreamableObject;
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_streamableObject;
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_preStreamableObject;
 
     void initSubParser(SubParser *subparser);
 
@@ -106,4 +106,4 @@ private:
     Parser::DebugOptions parsingDebugOptions = DebugOptions::NONE;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

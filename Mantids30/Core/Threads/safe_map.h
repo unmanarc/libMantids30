@@ -11,7 +11,7 @@
 
 #include "safe_mapitem.h"
 
-namespace Mantids30::Threads::Safe {
+namespace Mantids30::Core::Threads::Safe {
 
 /**
  * @brief The Map class provides a thread-safe map data structure.
@@ -212,4 +212,4 @@ void Map<T>::waitForEmptyMap()
     m_noItemsOnMapCondition.wait(lock, [this] { return m_keyValueMap.empty(); });
 }
 
-} // namespace Mantids30::Threads::Safe
+} // namespace Mantids30::Core::Threads::Safe

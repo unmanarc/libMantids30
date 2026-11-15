@@ -6,12 +6,12 @@
 
 #include <Mantids30/DataFormats/JSON/json.h>
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
-#define ABSTRACT_PTR_AS(x, y) (static_cast<Mantids30::Memory::Abstract::x *>(y))
-#define ABSTRACT_SPTR_AS(x, y) (std::dynamic_pointer_cast<Mantids30::Memory::Abstract::x>(y))
-#define MAKE_VAR(x, y) std::make_shared<Mantids30::Memory::Abstract::x>(y)
-#define MAKE_NULL_VAR std::make_shared<Mantids30::Memory::Abstract::Var>()
+#define ABSTRACT_PTR_AS(x, y) (static_cast<Mantids30::Core::Memory::Abstract::x *>(y))
+#define ABSTRACT_SPTR_AS(x, y) (std::dynamic_pointer_cast<Mantids30::Core::Memory::Abstract::x>(y))
+#define MAKE_VAR(x, y) std::make_shared<Mantids30::Core::Memory::Abstract::x>(y)
+#define MAKE_NULL_VAR std::make_shared<Mantids30::Core::Memory::Abstract::Var>()
 
 class Var
 {
@@ -79,4 +79,4 @@ private:
     Type m_varType;
 };
 
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

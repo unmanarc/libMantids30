@@ -10,7 +10,7 @@
 #include <Mantids30/Core/Helpers/defines.h>
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 IPV4::IPV4()
 {
@@ -397,5 +397,5 @@ boost::json::value IPV4::toJSON()
 
 bool IPV4::fromJSON(const boost::json::value &value)
 {
-    return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
+    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

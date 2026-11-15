@@ -10,7 +10,7 @@
 #include <shared_mutex>
 
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class IPV6 : public Var
 {
@@ -46,4 +46,4 @@ private:
     std::shared_mutex m_mutex;
 };
 
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

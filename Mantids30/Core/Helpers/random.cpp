@@ -8,7 +8,7 @@
 #include <vector>
 
 using namespace std;
-using namespace Mantids30::Helpers;
+using namespace Mantids30::Core::Helpers;
 
 std::string Random::createRandomString(size_t length)
 {

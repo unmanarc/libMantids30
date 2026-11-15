@@ -15,7 +15,7 @@
 
 using namespace Mantids30;
 
-std::string Helpers::File::loadFileIntoString(const std::string &filePath, bool *ok)
+std::string Mantids30::Core::Helpers::File::loadFileIntoString(const std::string &filePath, bool *ok)
 {
     SET_OK_BOOLEAN(ok, false);
 
@@ -33,7 +33,7 @@ std::string Helpers::File::loadFileIntoString(const std::string &filePath, bool 
     return fileContent;
 }
 
-bool Helpers::File::writeStringToFile(const std::string &filePath, const std::string &content)
+bool Mantids30::Core::Helpers::File::writeStringToFile(const std::string &filePath, const std::string &content)
 {
     std::ofstream outfile;
     outfile.open(filePath, std::ios_base::out);
@@ -46,7 +46,7 @@ bool Helpers::File::writeStringToFile(const std::string &filePath, const std::st
     return false;
 }
 
-bool Helpers::File::isSensitiveConfigPermissionInsecure(const std::string &configFilePath, bool *isInsecure)
+bool Mantids30::Core::Helpers::File::isSensitiveConfigPermissionInsecure(const std::string &configFilePath, bool *isInsecure)
 {
     *isInsecure = false;
 
@@ -68,7 +68,7 @@ bool Helpers::File::isSensitiveConfigPermissionInsecure(const std::string &confi
 #endif
 }
 
-bool Helpers::File::fixSensitiveConfigPermission(const std::string &configFilePath)
+bool Mantids30::Core::Helpers::File::fixSensitiveConfigPermission(const std::string &configFilePath)
 {
 #ifndef _WIN32
     // Change the value to 0600

@@ -3,7 +3,7 @@
 #include <list>
 #include <string>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Determines whether a given element is present in a given list.
@@ -31,4 +31,4 @@ std::string listToString(const std::list<std::string> &a)
     return result;
 }
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

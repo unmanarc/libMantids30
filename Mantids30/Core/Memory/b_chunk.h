@@ -3,7 +3,7 @@
 #include <Mantids30/Core/Helpers/mem.h>
 #include <cstring>
 
-namespace Mantids30::Memory::Containers {
+namespace Mantids30::Core::Memory::Containers {
 
 struct BinaryContainerChunk
 {
@@ -134,4 +134,4 @@ struct BinaryContainerChunk
     size_t size;
     size_t offset;
 };
-} // namespace Mantids30::Memory::Containers
+} // namespace Mantids30::Core::Memory::Containers

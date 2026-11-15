@@ -25,7 +25,7 @@
 
 #include <Mantids30/Core/Helpers/mem.h>
 
-using namespace Mantids30::Memory::Containers;
+using namespace Mantids30::Core::Memory::Containers;
 
 /**
  * @brief emptyMap Virtual Memory Space used for empty file maps..
@@ -166,7 +166,7 @@ std::string FileMap::getCurrentFileName() const
 
 bool FileMap::mmapDisplace(const size_t &offsetBytes)
 {
-    Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
+    Mantids30::Core::Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
     return mmapTruncate(fileOpenSize - offsetBytes);
 }
 
@@ -202,8 +202,8 @@ std::optional<size_t> FileMap::mmapPrepend(const void *buf, const size_t &count)
         return std::nullopt;
     }
 
-    Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
-    Helpers::Mem::memcpy64(mmapAddr, buf, count);
+    Mantids30::Core::Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
+    Mantids30::Core::Helpers::Mem::memcpy64(mmapAddr, buf, count);
 
     return count;
 }

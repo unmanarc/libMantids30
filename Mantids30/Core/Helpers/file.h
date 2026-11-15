@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Provides utility functions for working with files.
@@ -48,4 +48,4 @@ public:
     static bool fixSensitiveConfigPermission(const std::string &configFilePath);
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

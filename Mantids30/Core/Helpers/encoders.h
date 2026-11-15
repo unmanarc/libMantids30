@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * @brief A class that provides functions for encoding and decoding data in various formats.
@@ -259,4 +259,4 @@ private:
     static const std::string m_b64Chars;
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

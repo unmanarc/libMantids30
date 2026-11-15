@@ -1,11 +1,12 @@
 #include "sqlconnector_mariadb.h"
-#include <Mantids30/DB/DB/sqlconnector.h>
+#include <Mantids30/DB/Common/sqlconnector.h>
 
 #include <Mantids30/Core/Memory/a_string.h>
 #include <memory>
 #include <unistd.h>
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
+using namespace Mantids30::DB::MariaDB;
 
 SQLConnector_MariaDB::SQLConnector_MariaDB()
 {
@@ -27,7 +28,7 @@ bool SQLConnector_MariaDB::isOpen()
     {
         return false;
     }
-    std::shared_ptr<Query> i = qSelect("SELECT 1;", {}, {});
+    std::shared_ptr<Mantids30::DB::Common::Query> i = qSelect("SELECT 1;", {}, {});
     if (i && i->isSuccessful())
     {
         return i->step();
@@ -57,8 +58,8 @@ std::string SQLConnector_MariaDB::getEscaped(const std::string &v)
 bool SQLConnector_MariaDB::dbTableExist(const std::string &table)
 {
     // Select Query:
-    std::shared_ptr<Query> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
-                                       {{":schema", std::make_shared<Memory::Abstract::STRING>(m_dbName)}, {":table", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
+    std::shared_ptr<Mantids30::DB::Common::Query> i = qSelect("SELECT * FROM information_schema.tables WHERE table_schema=:schema AND table_name=:table LIMIT 1;",
+                                       {{":schema", std::make_shared<Mantids30::Core::Memory::Abstract::STRING>(m_dbName)}, {":table", std::make_shared<Mantids30::Core::Memory::Abstract::STRING>(table)}}, {});
 
     if (i && i->isSuccessful())
     {

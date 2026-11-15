@@ -3,7 +3,7 @@
 #include <openssl/bio.h>
 #include <optional>
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
 
 Parser::Parser(const std::shared_ptr<StreamableObject> &value, bool clientMode) : m_clientMode(clientMode), m_streamableObject(value)
 {
@@ -283,12 +283,12 @@ void Parser::setMaxTTL(const size_t &value)
     m_maxTTL = value;
 }
 
-void Parser::setPreStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &newPreStreamableObject)
+void Parser::setPreStreamableObject(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &newPreStreamableObject)
 {
     m_preStreamableObject = newPreStreamableObject;
 }
 
-void Parser::setStreamable(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
+void Parser::setStreamable(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &value)
 {
     m_streamableObject = value;
 }

@@ -1,7 +1,7 @@
 #include "a_uint8.h"
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 UINT8::UINT8()
 {
@@ -81,6 +81,6 @@ boost::json::value UINT8::toJSON()
 bool UINT8::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Helpers::JSON::ASUINT_D(value, 0);
+    m_value = Mantids30::DataFormats::JSON::ASUINT_D(value, 0);
     return true;
 }

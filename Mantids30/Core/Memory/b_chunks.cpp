@@ -2,7 +2,7 @@
 #include <cstring>
 #include <optional>
 
-using namespace Mantids30::Memory::Containers;
+using namespace Mantids30::Core::Memory::Containers;
 
 B_Chunks::B_Chunks()
 {
@@ -574,7 +574,7 @@ bool B_Chunks::compare2(const void *buf, const size_t &len, bool caseSensitive, 
         {
             size_t currentChunkSize = std::min(dataToCompare, currentChunk.size);
 
-            if (Helpers::Mem::memicmp2(currentChunk.data, buf, currentChunkSize, caseSensitive))
+            if (Mantids30::Core::Helpers::Mem::memicmp2(currentChunk.data, buf, currentChunkSize, caseSensitive))
             {
                 return false; // does not match!
             }

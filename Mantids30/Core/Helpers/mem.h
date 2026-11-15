@@ -8,7 +8,7 @@
 #include <cstring>
 #endif
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 #define MAX_SIZE_T std::numeric_limits<std::size_t>::max()
 
@@ -104,4 +104,4 @@ private:
     static unsigned char m_cmpMatrix[];
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

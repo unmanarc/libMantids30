@@ -1,16 +1,16 @@
 #pragma once
 
-#include <Mantids30/DB/DB/query.h>
+#include <Mantids30/DB/Common/query.h>
 #include <sqlite3.h>
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::SQLite3 {
 /**
  * @brief The Query_SQLite3 class
  *
  * This class represents a query object for SQLite3 databases. It extends the base Query class and adds
  * SQLite3 specific functions.
  */
-class Query_SQLite3 : public Query
+class Query_SQLite3 : public Mantids30::DB::Common::Query
 {
 public:
     Query_SQLite3();
@@ -48,4 +48,4 @@ private:
     sqlite3 *m_databaseConnectionHandler = nullptr; ///< Pointer to the SQLite3 database connection handler.
 };
 
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::SQLite3

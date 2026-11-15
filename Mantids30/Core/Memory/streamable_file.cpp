@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <optional>
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
 
 StreamableFile::StreamableFile(int _rd_fd, int _wr_fd)
 {
@@ -40,7 +40,7 @@ int StreamableFile::open(const char *path, int oflag, mode_t __mode)
     return fd;
 }
 
-bool StreamableFile::streamTo(Memory::Streams::StreamableObject *out)
+bool StreamableFile::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
     // Restart the read from zero (for multiple streamTo)...
     lseek(rd_fd, 0, SEEK_SET);

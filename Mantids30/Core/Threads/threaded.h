@@ -4,7 +4,7 @@
 #include <memory>
 #include <thread>
 
-namespace Mantids30::Threads {
+namespace Mantids30::Core::Threads {
 
 /**
  * The Threaded class provides a wrapper for creating and managing threads.
@@ -73,4 +73,4 @@ private:
     std::thread m_threadObj;                   // The thread object.
 };
 
-} // namespace Mantids30::Threads
+} // namespace Mantids30::Core::Threads

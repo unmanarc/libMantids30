@@ -2,7 +2,7 @@
 
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 INT64::INT64()
 {
@@ -83,6 +83,6 @@ boost::json::value INT64::toJSON()
 bool INT64::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Helpers::JSON::ASINT64_D(value, 0);
+    m_value = Mantids30::DataFormats::JSON::ASINT64_D(value, 0);
     return true;
 }

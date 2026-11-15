@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30::Helpers::OTP {
+namespace Mantids30::Core::Helpers::OTP {
 
 /**
  * @class TOTP
@@ -41,4 +41,4 @@ public:
     static bool verifyToken(const std::string &base32Secret, const std::string &tokenInput, int aperture = 1, unsigned int interval = 30, unsigned int digits = 6);
 };
 
-} // namespace Mantids30::Helpers::OTP
+} // namespace Mantids30::Core::Helpers::OTP

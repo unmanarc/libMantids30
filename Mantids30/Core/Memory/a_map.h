@@ -8,7 +8,7 @@
 #include <shared_mutex>
 
 // TODO: limits...
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class VariableMap
 {
@@ -29,7 +29,7 @@ public:
      * @param variableType The type of the variable as defined in Var::Type.
      * @param valueString The string representation of the variable's value.
      */
-    void setVariableFromString(const std::string &variableName, Mantids30::Memory::Abstract::Var::Type variableType, const std::string &valueString);
+    void setVariableFromString(const std::string &variableName, Mantids30::Core::Memory::Abstract::Var::Type variableType, const std::string &valueString);
 
     /**
      * @brief Insert or update a variable in the map.
@@ -57,7 +57,7 @@ public:
      * @param variableName The name of the variable.
      * @return A shared pointer to the variable if found, otherwise nullptr.
      */
-    std::shared_ptr<Mantids30::Memory::Abstract::Var> getVariable(const std::string &variableName);
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Var> getVariable(const std::string &variableName);
 
     /**
      * @brief Retrieve a submap from the map.
@@ -79,10 +79,10 @@ public:
     std::list<std::string> listSubmapKeys();
 
 private:
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> m_variables;
+    std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> m_variables;
     std::map<std::string, std::shared_ptr<VariableMap>> m_submaps;
 
     std::shared_mutex m_mutex;
 };
 
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

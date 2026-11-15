@@ -3,9 +3,9 @@
 #include "streamable_object.h"
 #include <unistd.h>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
-class StreamableNull : public Memory::Streams::StreamableObject
+class StreamableNull : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     StreamableNull() = default;
@@ -16,4 +16,4 @@ private:
     size_t bytes = 0;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

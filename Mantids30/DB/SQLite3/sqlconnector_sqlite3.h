@@ -1,12 +1,12 @@
 #pragma once
 
 #include "query_sqlite3.h"
-#include <Mantids30/DB/DB/sqlconnector.h>
+#include <Mantids30/DB/Common/sqlconnector.h>
 #include <sqlite3.h>
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::SQLite3 {
 
-class SQLConnector_SQLite3 : public SQLConnector
+class SQLConnector_SQLite3 : public Mantids30::DB::Common::SQLConnector
 {
 public:
     enum class PragmaSyncMode : uint8_t
@@ -74,7 +74,7 @@ public:
     bool commitTransaction() override;
 
 protected:
-    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_SQLite3>(); }
+    std::shared_ptr<Mantids30::DB::Common::Query> createQuery0() override { return std::make_shared<Query_SQLite3>(); }
     bool connect0() override;
     bool attach0(const std::string &dbFilePath, const std::string &schemeName) override;
     bool detach0(const std::string &schemeName) override;
@@ -83,4 +83,4 @@ private:
     int m_rc = 0;
     sqlite3 *m_ppDb = nullptr;
 };
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::SQLite3

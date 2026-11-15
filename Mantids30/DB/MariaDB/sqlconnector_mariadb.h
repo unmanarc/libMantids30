@@ -1,11 +1,11 @@
 #pragma once
 
 #include "query_mariadb.h"
-#include <Mantids30/DB/DB/sqlconnector.h>
+#include <Mantids30/DB/Common/sqlconnector.h>
 #include <memory>
 #include <mysql.h>
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::MariaDB {
 
 /**
  * @brief The SQLConnector_MariaDB class provides an implementation of the SQLConnector interface for the MariaDB database.
@@ -14,7 +14,7 @@ namespace Mantids30::Database {
  *
  * To use the SQLConnector_MariaDB class, create an instance of the class, call the connect() method to establish a connection to the database, and then call the various methods to execute queries and manipulate data.
  */
-class SQLConnector_MariaDB : public SQLConnector
+class SQLConnector_MariaDB : public Mantids30::DB::Common::SQLConnector
 {
 public:
     SQLConnector_MariaDB();
@@ -57,7 +57,7 @@ protected:
      * @brief createQuery0 Creates a new instance of the Query_MariaDB class.
      * @return A new instance of the Query_MariaDB class.
      */
-    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_MariaDB>(); };
+    std::shared_ptr<Mantids30::DB::Common::Query> createQuery0() override { return std::make_shared<Query_MariaDB>(); };
 
     /**
      * @brief connect0 Establishes a connection to the MariaDB database.
@@ -69,4 +69,4 @@ private:
     MYSQL *m_databaseConnectionHandler = nullptr; // Handler for the MariaDB database connection.
 };
 
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::MariaDB

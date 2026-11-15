@@ -7,7 +7,7 @@
 #include <windows.h>
 #endif
 
-namespace Mantids30::Memory::Containers {
+namespace Mantids30::Core::Memory::Containers {
 
 class FileMap
 {
@@ -100,4 +100,4 @@ private:
 #endif
 };
 
-} // namespace Mantids30::Memory::Containers
+} // namespace Mantids30::Core::Memory::Containers

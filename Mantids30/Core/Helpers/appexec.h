@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <unistd.h>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * @brief Provides blocking command execution with output capture.
@@ -319,4 +319,4 @@ private:
 };
 #endif
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

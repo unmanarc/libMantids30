@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <shared_mutex>
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class INT16 : public Var
 {
@@ -36,4 +36,4 @@ private:
     int16_t m_value = 0;
     std::shared_mutex m_mutex;
 };
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

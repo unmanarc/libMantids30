@@ -3,7 +3,8 @@
 #include <cstring>
 #include <string>
 #include <unistd.h>
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
+using namespace Mantids30::DB::PostgreSQL;
 
 SQLConnector_PostgreSQL::SQLConnector_PostgreSQL()
 {
@@ -24,7 +25,7 @@ bool SQLConnector_PostgreSQL::isOpen()
     {
         return false;
     }
-    std::shared_ptr<Query> i = qSelect("SELECT 1;", {}, {});
+    std::shared_ptr<Mantids30::DB::Common::Query> i = qSelect("SELECT 1;", {}, {});
     if (i && i->isSuccessful())
     {
         return i->step();
@@ -51,7 +52,7 @@ bool SQLConnector_PostgreSQL::dbTableExist(const std::string &table)
     }
 
     // Select Query:
-    std::shared_ptr<Query> i = qSelect("SELECT to_regclass(:table);", {{":table", std::make_shared<Memory::Abstract::STRING>(realTableName)}}, {});
+    std::shared_ptr<Mantids30::DB::Common::Query> i = qSelect("SELECT to_regclass(:table);", {{":table", std::make_shared<Mantids30::Core::Memory::Abstract::STRING>(realTableName)}}, {});
 
     if (i && i->isSuccessful())
     {

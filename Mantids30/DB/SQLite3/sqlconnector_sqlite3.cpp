@@ -1,9 +1,10 @@
 #include "sqlconnector_sqlite3.h"
-#include <Mantids30/DB/DB/sqlconnector.h>
+#include <Mantids30/DB/Common/sqlconnector.h>
 #include <Mantids30/Core/Memory/a_string.h>
 #include <unistd.h>
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
+using namespace Mantids30::DB::SQLite3;
 
 SQLConnector_SQLite3::~SQLConnector_SQLite3()
 {
@@ -26,7 +27,7 @@ bool SQLConnector_SQLite3::isOpen()
 bool SQLConnector_SQLite3::dbTableExist(const std::string &table)
 {
     // Select Query:
-    std::shared_ptr<Query> i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Memory::Abstract::STRING>(table)}}, {});
+    std::shared_ptr<Mantids30::DB::Common::Query> i = qSelect("select sql from sqlite_master where tbl_name=:tbl;", {{":tbl", std::make_shared<Mantids30::Core::Memory::Abstract::STRING>(table)}}, {});
 
     if (i && i->isSuccessful())
     {

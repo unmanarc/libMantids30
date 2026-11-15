@@ -49,24 +49,24 @@ struct WinExecPIPE
 
         return r;
     }
-    Helpers::AppExec::Status init()
+    Mantids30::Core::Helpers::AppExec::Status init()
     {
         SECURITY_ATTRIBUTES secAttribs = createInheritedSecAttribs();
 
         if (!CreatePipe(&hRead, &hWrite, &secAttribs, 0))
-            return Helpers::AppExec::Status::PIPE_CREATION_FAILED;
+            return Mantids30::Core::Helpers::AppExec::Status::PIPE_CREATION_FAILED;
 
         if (!SetHandleInformation(hRead, HANDLE_FLAG_INHERIT, 0))
-            return Helpers::AppExec::Status::HANDLE_INFORMATION_SETTING_FAILED;
+            return Mantids30::Core::Helpers::AppExec::Status::HANDLE_INFORMATION_SETTING_FAILED;
 
-        return Helpers::AppExec::Status::SUCCESS;
+        return Mantids30::Core::Helpers::AppExec::Status::SUCCESS;
     }
 
     HANDLE hRead, hWrite;
 };
 #endif
 
-Helpers::AppExec::ExecutionResult Helpers::AppExec::blexec(const ExecutionArgs &cmd)
+Mantids30::Core::Helpers::AppExec::ExecutionResult Mantids30::Core::Helpers::AppExec::blexec(const ExecutionArgs &cmd)
 {
     ExecutionResult rt;
 
@@ -166,9 +166,9 @@ Helpers::AppExec::ExecutionResult Helpers::AppExec::blexec(const ExecutionArgs &
 
 #ifndef _WIN32
 
-Helpers::AppSpawn::AppSpawn() = default;
+Mantids30::Core::Helpers::AppSpawn::AppSpawn() = default;
 
-Helpers::AppSpawn::~AppSpawn()
+Mantids30::Core::Helpers::AppSpawn::~AppSpawn()
 {
     // Closing captured streams can cause SIGPIPE/EPIPE in the child.
     // Destruction waits for the child; it does not terminate it.
@@ -176,7 +176,7 @@ Helpers::AppSpawn::~AppSpawn()
     reapChild();
 }
 
-bool Helpers::AppSpawn::setExec(const std::string &path)
+bool Mantids30::Core::Helpers::AppSpawn::setExec(const std::string &path)
 {
     if (m_spawned)
     {
@@ -213,7 +213,7 @@ bool Helpers::AppSpawn::setExec(const std::string &path)
     return true;
 }
 
-bool Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
+bool Mantids30::Core::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
 {
     if (m_spawned)
     {
@@ -231,7 +231,7 @@ bool Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
     return true;
 }
 
-bool Helpers::AppSpawn::redirectStdErrToStdOut()
+bool Mantids30::Core::Helpers::AppSpawn::redirectStdErrToStdOut()
 {
     if (m_spawned)
     {
@@ -243,7 +243,7 @@ bool Helpers::AppSpawn::redirectStdErrToStdOut()
     return true;
 }
 
-void Helpers::AppSpawn::addArgument(const std::string &arg)
+void Mantids30::Core::Helpers::AppSpawn::addArgument(const std::string &arg)
 {
     if (m_spawned)
     {
@@ -258,7 +258,7 @@ void Helpers::AppSpawn::addArgument(const std::string &arg)
     m_arguments.push_back(arg);
 }
 
-void Helpers::AppSpawn::addEnvironment(const std::string &env)
+void Mantids30::Core::Helpers::AppSpawn::addEnvironment(const std::string &env)
 {
     if (m_spawned)
     {
@@ -274,7 +274,7 @@ void Helpers::AppSpawn::addEnvironment(const std::string &env)
     m_environment.push_back(env);
 }
 
-bool Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
+bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
 {
     if (m_spawned)
     {
@@ -518,7 +518,7 @@ bool Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
     return true;
 }
 
-void Helpers::AppSpawn::closeStream(int fd) noexcept
+void Mantids30::Core::Helpers::AppSpawn::closeStream(int fd) noexcept
 {
     int *ends = nullptr;
 
@@ -561,7 +561,7 @@ void Helpers::AppSpawn::closeStream(int fd) noexcept
     }
 }
 
-void Helpers::AppSpawn::closePipes() noexcept
+void Mantids30::Core::Helpers::AppSpawn::closePipes() noexcept
 {
     const int savedErrno = errno;
     closeStream(STDOUT_FILENO);
@@ -570,7 +570,7 @@ void Helpers::AppSpawn::closePipes() noexcept
     errno = savedErrno;
 }
 
-bool Helpers::AppSpawn::reapChild() noexcept
+bool Mantids30::Core::Helpers::AppSpawn::reapChild() noexcept
 {
     if (!m_spawned || m_childExited)
     {
@@ -596,7 +596,7 @@ bool Helpers::AppSpawn::reapChild() noexcept
     return false;
 }
 
-void Helpers::AppSpawn::waitUntilProcessEnds()
+void Mantids30::Core::Helpers::AppSpawn::waitUntilProcessEnds()
 {
     if (!reapChild())
     {
@@ -604,12 +604,12 @@ void Helpers::AppSpawn::waitUntilProcessEnds()
     }
 }
 
-bool Helpers::AppSpawn::hasExited() const
+bool Mantids30::Core::Helpers::AppSpawn::hasExited() const
 {
     return m_childExited;
 }
 
-void Helpers::AppSpawn::reset()
+void Mantids30::Core::Helpers::AppSpawn::reset()
 {
     closePipes();
     waitUntilProcessEnds();
@@ -625,7 +625,7 @@ void Helpers::AppSpawn::reset()
     m_dupStderrToStdout = false;
 }
 
-std::set<int> Helpers::AppSpawn::pollResponse()
+std::set<int> Mantids30::Core::Helpers::AppSpawn::pollResponse()
 {
     std::set<int> ready;
 
@@ -676,7 +676,7 @@ std::set<int> Helpers::AppSpawn::pollResponse()
     return ready;
 }
 
-ssize_t Helpers::AppSpawn::read(int fd, void *buf, size_t count)
+ssize_t Mantids30::Core::Helpers::AppSpawn::read(int fd, void *buf, size_t count)
 {
     int pipeFD = -1;
 

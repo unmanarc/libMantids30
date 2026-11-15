@@ -6,7 +6,7 @@
 #include <cstring>
 #include <shared_mutex>
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class BINARY : public Var
 {
@@ -79,4 +79,4 @@ protected:
 private:
     ByteArray m_value;
 };
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

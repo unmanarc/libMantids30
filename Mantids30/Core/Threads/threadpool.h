@@ -9,7 +9,7 @@
 #include <string>
 #include <thread>
 
-namespace Mantids30::Threads::Pool {
+namespace Mantids30::Core::Threads::Pool {
 
 // TODO: statistics
 /**
@@ -114,6 +114,6 @@ private:
     std::minstd_rand0 m_lRand;
 };
 
-} // namespace Mantids30::Threads::Pool
+} // namespace Mantids30::Core::Threads::Pool
 
 // TODO: Failed task what to do?, using

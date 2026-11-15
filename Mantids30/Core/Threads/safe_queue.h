@@ -5,7 +5,7 @@
 #include <mutex>
 #include <queue>
 
-namespace Mantids30::Threads::Safe {
+namespace Mantids30::Core::Threads::Safe {
 
 /**
  * @brief The Thread Safe Queue class
@@ -137,4 +137,4 @@ size_t Queue<T>::size()
     return m_queue.size();
 }
 
-} // namespace Mantids30::Threads::Safe
+} // namespace Mantids30::Core::Threads::Safe

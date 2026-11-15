@@ -4,7 +4,7 @@
 #include <shared_mutex>
 
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 class BOOL : public Var
 {
 public:
@@ -34,4 +34,4 @@ private:
     bool m_value = false;
     std::shared_mutex m_mutex;
 };
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

@@ -8,12 +8,12 @@
 //#include <cmath>
 //#include <vector>
 
-using namespace Mantids30::Helpers::OTP;
+using namespace Mantids30::Core::Helpers::OTP;
 
 std::string TOTP::generateTOTP(const std::string &base32Secret, int position, unsigned int interval, unsigned int digits)
 {
     // Decode the base32 secret
-    std::string secret = Helpers::Encoders::decodeFromBase32(base32Secret);
+    std::string secret = Mantids30::Core::Helpers::Encoders::decodeFromBase32(base32Secret);
 
     char hashSHA1[20];      // Array to hold SHA1 hash result
     long dynamicBinaryCode; // Dynamic Binary Code (DBC)

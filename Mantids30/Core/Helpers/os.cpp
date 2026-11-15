@@ -18,7 +18,7 @@ using namespace boost::algorithm;
 
 #endif
 
-using namespace Mantids30::Helpers;
+using namespace Mantids30::Core::Helpers;
 
 OS::LocalSysInfo OS::getLocalSystemInfo()
 {

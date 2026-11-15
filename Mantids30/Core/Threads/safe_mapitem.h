@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-namespace Mantids30::Threads::Safe {
+namespace Mantids30::Core::Threads::Safe {
 
 class MapItem
 {
@@ -25,4 +25,4 @@ protected:
     std::atomic<bool> m_mapFinished{false};
 };
 
-} // namespace Mantids30::Threads::Safe
+} // namespace Mantids30::Core::Threads::Safe

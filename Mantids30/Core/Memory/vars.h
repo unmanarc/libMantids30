@@ -8,7 +8,7 @@
 #include <sstream>
 #include <string>
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class Vars
 {
@@ -30,7 +30,7 @@ public:
     template<typename T>
     T getTValue(const std::string &varName)
     {
-        std::shared_ptr<Memory::Streams::StreamableObject> value = getValue(varName);
+        std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -50,7 +50,7 @@ public:
     template<typename T>
     T getTValue(const std::string &varName, const T &defaultValue)
     {
-        std::shared_ptr<Memory::Streams::StreamableObject> value = getValue(varName);
+        std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> value = getValue(varName);
         if (value)
         {
             std::istringstream iss(value->toString());
@@ -76,9 +76,9 @@ public:
     std::list<T> getTValues(const std::string &varName)
     {
         std::list<T> resultList;
-        std::list<std::shared_ptr<Memory::Streams::StreamableObject>> contList = getValues(varName);
+        std::list<std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject>> contList = getValues(varName);
 
-        for (const std::shared_ptr<Memory::Streams::StreamableObject> &value : contList)
+        for (const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &value : contList)
         {
             std::istringstream iss(value->toString());
             T valueResult;
@@ -121,13 +121,13 @@ public:
      * @param varName variable name
      * @return first memory container abstract
      */
-    [[nodiscard]] virtual std::shared_ptr<Memory::Streams::StreamableObject> getValue(const std::string &varName) = 0;
+    [[nodiscard]] virtual std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> getValue(const std::string &varName) = 0;
     /**
      * @brief getValues Get all the memory containers associated with a variable name
      * @param varName variable name
      * @return list of memory containers abstracts
      */
-    [[nodiscard]] virtual std::list<std::shared_ptr<Memory::Streams::StreamableObject>> getValues(const std::string &varName) = 0;
+    [[nodiscard]] virtual std::list<std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject>> getValues(const std::string &varName) = 0;
     /**
      * @brief getKeysList Get a set of all the registered variable names
      * @return set of all registered variable names
@@ -171,7 +171,7 @@ public:
      * @param data data container
      * @return true if added, false otherwise.
      */
-    virtual bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data) = 0;
+    virtual bool addVar(const std::string &varName, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &data) = 0;
 
     /**
      * @brief setMaxVarsCount Set Maxium Number of variables allowed
@@ -193,4 +193,4 @@ protected:
     size_t m_maxVarsCount = 512;               // Maximum number of variables allowed
 };
 
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

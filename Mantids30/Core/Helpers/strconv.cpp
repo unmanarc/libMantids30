@@ -5,7 +5,7 @@
 #include <boost/algorithm/string/trim.hpp>
 using namespace Mantids30;
 
-size_t Helpers::StringConversions::getSizeFromString(const std::string &szString)
+size_t Mantids30::Core::Helpers::StringConversions::getSizeFromString(const std::string &szString)
 {
     // Convert to lowercase for case-insensitive comparison
     std::string sizeStr = boost::to_lower_copy(szString);

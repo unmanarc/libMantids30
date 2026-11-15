@@ -4,17 +4,17 @@
 #ifndef _WIN32
 #include <cstring>
 
-Mantids30::Memory::Streams::StreamableProcess::StreamableProcess(Helpers::AppSpawn *spawner)
+Mantids30::Core::Memory::Streams::StreamableProcess::StreamableProcess(Mantids30::Core::Helpers::AppSpawn *spawner)
 {
     this->m_spawner = spawner;
 }
 
-Mantids30::Memory::Streams::StreamableProcess::~StreamableProcess()
+Mantids30::Core::Memory::Streams::StreamableProcess::~StreamableProcess()
 {
     delete this->m_spawner;
 }
 
-bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject *out)
+bool Mantids30::Core::Memory::Streams::StreamableProcess::streamTo(StreamableObject *out)
 {
     for (;;)
     {
@@ -73,7 +73,7 @@ bool Mantids30::Memory::Streams::StreamableProcess::streamTo(StreamableObject *o
     return true;
 }
 
-std::optional<size_t> Mantids30::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count)
+std::optional<size_t> Mantids30::Core::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count)
 {
     // TODO: how to write into the process??
     writeStatus += -1;

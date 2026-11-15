@@ -1,7 +1,7 @@
 #pragma once
 
 #include "query_pgsql.h"
-#include <Mantids30/DB/DB/sqlconnector.h>
+#include <Mantids30/DB/Common/sqlconnector.h>
 
 //#if __has_include(<libpq-fe.h>)
 #include <libpq-fe.h>
@@ -9,9 +9,9 @@
 //# include <postgresql/libpq-fe.h>
 //#endif
 
-namespace Mantids30::Database {
+namespace Mantids30::DB::PostgreSQL {
 
-class SQLConnector_PostgreSQL : public SQLConnector
+class SQLConnector_PostgreSQL : public Mantids30::DB::Common::SQLConnector
 {
 public:
     SQLConnector_PostgreSQL();
@@ -46,7 +46,7 @@ public:
     void psqlSetConnectionSSLMode(const std::string &value);
 
 protected:
-    std::shared_ptr<Query> createQuery0() override { return std::make_shared<Query_PostgreSQL>(); };
+    std::shared_ptr<Mantids30::DB::Common::Query> createQuery0() override { return std::make_shared<Query_PostgreSQL>(); };
     bool connect0() override;
 
 private:
@@ -64,4 +64,4 @@ private:
     uint32_t m_connectionTimeout = 10;
     std::string m_connectionOptions, m_connectionSSLMode;
 };
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::PostgreSQL

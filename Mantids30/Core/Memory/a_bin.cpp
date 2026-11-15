@@ -4,7 +4,7 @@
 #include <mutex>
 #include <shared_mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 BINARY::BINARY()
 {
@@ -65,13 +65,13 @@ boost::json::value BINARY::toJSON()
         return boost::json::value{};
     }
 
-    return boost::json::value(Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize).c_str());
+    return boost::json::value(Mantids30::Core::Helpers::Encoders::encodeToBase64(m_value.ptr, m_value.dataSize).c_str());
 }
 
 bool BINARY::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
-    return fromString(Helpers::Encoders::decodeFromBase64( Helpers::JSON::ASSTRING_D(value, "") ));
+    return fromString(Mantids30::Core::Helpers::Encoders::decodeFromBase64( Mantids30::DataFormats::JSON::ASSTRING_D(value, "") ));
 }
 
 std::shared_ptr<Var> BINARY::protectedCopy()

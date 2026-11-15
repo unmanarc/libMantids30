@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Provides utility functions for working with string conversions.
@@ -13,4 +13,4 @@ public:
     static size_t getSizeFromString(const std::string &szString);
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

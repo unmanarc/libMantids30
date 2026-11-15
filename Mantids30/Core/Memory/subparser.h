@@ -14,7 +14,7 @@
     fflush(a);
 #endif
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 class SubParser
 {
@@ -108,7 +108,7 @@ protected:
      * @param bc container with the data to be analyzed.
      * @return bytes matching the policy.
      */
-    virtual size_t ParseValidator(Mantids30::Memory::Containers::B_Base &);
+    virtual size_t ParseValidator(Mantids30::Core::Memory::Containers::B_Base &);
     /**
      * @brief Set Parse Mode
      * @param value parse mode (delimiter, size, or validator)
@@ -128,7 +128,7 @@ protected:
      * @brief Get Parsed Data Pointer
      * @return parsed data pointer.
      */
-    Mantids30::Memory::Containers::B_Base *getParsedBuffer();
+    Mantids30::Core::Memory::Containers::B_Base *getParsedBuffer();
     /**
      * @brief Set Parse Data Target Size in bytes
      * @param value Target Size in bytes
@@ -144,7 +144,7 @@ protected:
     bool m_clientMode = true;
     bool m_streamEnded = false;
     std::string m_subParserName;
-    Memory::Streams::StreamableObject *m_upStream = nullptr;
+    Mantids30::Core::Memory::Streams::StreamableObject *m_upStream = nullptr;
 
 private:
     std::optional<size_t> parseByMultiDelimiter(const void *buf, size_t count);
@@ -156,12 +156,12 @@ private:
     std::optional<size_t> parseDirectDelimiter(const void *buf, size_t count);
 
     size_t getLastBytesInCommon(const std::string &boundary);
-    Mantids30::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
+    Mantids30::Core::Memory::Containers::B_Ref referenceLastBytes(const size_t &bytes);
 
     std::optional<size_t> appendToUnparsedBuffer(const void *buf, size_t count);
 
-    Mantids30::Memory::Containers::B_Ref m_parsedBuffer;
-    Mantids30::Memory::Containers::B_Chunks m_unparsedBuffer;
+    Mantids30::Core::Memory::Containers::B_Ref m_parsedBuffer;
+    Mantids30::Core::Memory::Containers::B_Chunks m_unparsedBuffer;
 
     std::string m_parseDelimiter = "\r\n";
     std::string m_delimiterFound;
@@ -172,4 +172,4 @@ private:
     ParseResult m_parseStatus = ParseResult::GET_MORE_DATA;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

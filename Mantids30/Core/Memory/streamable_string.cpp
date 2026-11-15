@@ -2,9 +2,9 @@
 #include <cstring>
 #include <optional>
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
 
-bool StreamableString::streamTo(Memory::Streams::StreamableObject *out)
+bool StreamableString::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
     return out->writeFullStream(m_value.c_str(), m_value.size());
 }

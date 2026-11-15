@@ -5,7 +5,7 @@
 
 #include "streamable_object.h"
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 /**
  * StreamableTransformer base class
@@ -16,16 +16,16 @@ class StreamableTransformer : private StreamableObject
 public:
     StreamableTransformer() = default;
     ~StreamableTransformer() override = default;
-    void transform(Memory::Streams::StreamableObject *in, Memory::Streams::StreamableObject *out);
+    void transform(Mantids30::Core::Memory::Streams::StreamableObject *in, Mantids30::Core::Memory::Streams::StreamableObject *out);
 
 protected:
-    virtual size_t writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) = 0;
-    virtual size_t writeTransformerEOF(Memory::Streams::StreamableObject *dst) { return 0; }
+    virtual size_t writeTo(Mantids30::Core::Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count) = 0;
+    virtual size_t writeTransformerEOF(Mantids30::Core::Memory::Streams::StreamableObject *dst) { return 0; }
 
 private:
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 
-    Memory::Streams::StreamableObject *destObj = nullptr;
+    Mantids30::Core::Memory::Streams::StreamableObject *destObj = nullptr;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

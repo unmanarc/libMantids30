@@ -3,17 +3,17 @@
 #include "streamable_object.h"
 #include <string>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 /**
  * @brief The StreamableString class (NOTE: not thread-safe for R/W)
  */
-class StreamableString : public Memory::Streams::StreamableObject
+class StreamableString : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     StreamableString() = default;
 
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 
@@ -27,4 +27,4 @@ private:
     std::string m_value;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

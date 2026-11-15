@@ -3,7 +3,7 @@
 
 #include <stdexcept> // std::invalid_argument
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 DOUBLE::DOUBLE()
 {
@@ -66,7 +66,7 @@ boost::json::value DOUBLE::toJSON()
 bool DOUBLE::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Helpers::JSON::ASDOUBLE_D(value, 0);
+    m_value = Mantids30::DataFormats::JSON::ASDOUBLE_D(value, 0);
     return true;
 }
 

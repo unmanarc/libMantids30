@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 struct WriteStatus
 {
@@ -132,7 +132,7 @@ public:
      * @param out
      * @return true if streamed, false otherwise
      */
-    virtual bool streamTo(Memory::Streams::StreamableObject *out) { return true; }
+    virtual bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) { return true; }
 
     bool writeFullStreamWithEOF(const void *buf, const size_t &count);
     bool writeFullStream(const void *buf, const size_t &count);
@@ -157,4 +157,4 @@ private:
 #endif
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

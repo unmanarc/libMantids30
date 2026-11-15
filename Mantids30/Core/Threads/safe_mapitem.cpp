@@ -1,6 +1,6 @@
 #include "safe_mapitem.h"
 
-using namespace Mantids30::Threads::Safe;
+using namespace Mantids30::Core::Threads::Safe;
 
 void MapItem::stopReaders()
 {

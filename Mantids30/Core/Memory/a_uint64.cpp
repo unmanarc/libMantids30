@@ -1,7 +1,7 @@
 #include "a_uint64.h"
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 UINT64::UINT64()
 {
@@ -95,6 +95,6 @@ boost::json::value UINT64::toJSON()
 bool UINT64::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Helpers::JSON::ASUINT64_D(value, 0);
+    m_value = Mantids30::DataFormats::JSON::ASUINT64_D(value, 0);
     return true;
 }

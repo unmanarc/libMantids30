@@ -3,12 +3,12 @@
 #include "streamable_object.h"
 #include <unistd.h>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::Core::Memory::Streams {
 
 /**
  * @brief The StreamableFile class (NOTE: not thread-safe for R/W)
  */
-class StreamableFile : public Memory::Streams::StreamableObject
+class StreamableFile : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     StreamableFile(int _rd_fd = STDIN_FILENO, int _wr_fd = STDOUT_FILENO);
@@ -27,7 +27,7 @@ public:
      * @param out output
      * @return true if streamed ok
      */
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
     /**
      * @brief write Write/Append into the file
      * @param buf buffer to be written
@@ -41,4 +41,4 @@ private:
     int rd_fd = -1, wr_fd = -1;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::Core::Memory::Streams

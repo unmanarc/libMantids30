@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 PTR::PTR()
 {
@@ -93,5 +93,5 @@ boost::json::value PTR::toJSON()
 
 bool PTR::fromJSON(const boost::json::value &value)
 {
-    return fromString(Helpers::JSON::ASSTRING_D(value, "00000000"));
+    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "00000000"));
 }

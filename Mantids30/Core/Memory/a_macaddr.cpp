@@ -13,7 +13,7 @@
 #include <cstring>
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 MACADDR::MACADDR()
 {
@@ -218,5 +218,5 @@ boost::json::value MACADDR::toJSON()
 
 bool MACADDR::fromJSON(const boost::json::value &value)
 {
-    return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
+    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

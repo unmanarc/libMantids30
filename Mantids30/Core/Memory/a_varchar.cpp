@@ -2,7 +2,7 @@
 #include <cstring>
 #include <mutex>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 VARCHAR::VARCHAR(const size_t &varSize)
 {
@@ -126,7 +126,7 @@ boost::json::value VARCHAR::toJSON()
 
 bool VARCHAR::fromJSON(const boost::json::value &value)
 {
-    return fromString(Helpers::JSON::ASSTRING_D(value, ""));
+    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, ""));
 }
 
 std::shared_ptr<Var> VARCHAR::protectedCopy()

@@ -6,7 +6,8 @@
 
 #include <stdexcept>
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
+using namespace Mantids30::DB::SQLite3;
 
 Query_SQLite3::Query_SQLite3()
 {
@@ -64,40 +65,40 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
         {
             switch (inputVar.second->getVarType())
             {
-            case Memory::Abstract::Var::Type::BOOL:
+            case Mantids30::Core::Memory::Abstract::Var::Type::BOOL:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(BOOL, inputVar.second)->getValue() ? 1 : 0);
                 break;
-            case Memory::Abstract::Var::Type::INT8:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT8:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT8, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::INT16:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT16:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT16, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::INT32:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT32:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT32, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::INT64:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT64:
                 sqlite3_bind_int64(m_stmt, idx, ABSTRACT_SPTR_AS(INT64, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::UINT8:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT8:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(UINT8, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::UINT16:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT16:
                 sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(UINT16, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::UINT32:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT32:
                 sqlite3_bind_int64(m_stmt, idx, ABSTRACT_SPTR_AS(UINT32, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::UINT64:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT64:
                 // Not implemented.
                 throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
                 break;
-            case Memory::Abstract::Var::Type::DOUBLE:
+            case Mantids30::Core::Memory::Abstract::Var::Type::DOUBLE:
                 sqlite3_bind_double(m_stmt, idx, ABSTRACT_SPTR_AS(DOUBLE, inputVar.second)->getValue());
                 break;
-            case Memory::Abstract::Var::Type::BIN:
+            case Mantids30::Core::Memory::Abstract::Var::Type::BIN:
             {
-                Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, inputVar.second)->getValue();
+                Mantids30::Core::Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, inputVar.second)->getValue();
 #if SQLITE_VERSION_NUMBER >= 3008007L
                 sqlite3_bind_blob64(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
 #else
@@ -106,7 +107,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
 #endif
             }
             break;
-            case Memory::Abstract::Var::Type::VARCHAR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VARCHAR:
             {
 #if SQLITE_VERSION_NUMBER >= 3008007L
                 sqlite3_bind_text64(m_stmt, idx, ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getValue(), ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getVarSize(), SQLITE_STATIC, SQLITE_UTF8);
@@ -117,43 +118,43 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
 #endif
             }
             break;
-            case Memory::Abstract::Var::Type::DATETIME:
+            case Mantids30::Core::Memory::Abstract::Var::Type::DATETIME:
             {
                 std::string i = ABSTRACT_SPTR_AS(DATETIME, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::STRING:
+            case Mantids30::Core::Memory::Abstract::Var::Type::STRING:
             {
                 std::string i = ABSTRACT_SPTR_AS(STRING, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::STRINGLIST:
+            case Mantids30::Core::Memory::Abstract::Var::Type::STRINGLIST:
             {
                 std::string i = ABSTRACT_SPTR_AS(STRINGLIST, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::IPV4:
+            case Mantids30::Core::Memory::Abstract::Var::Type::IPV4:
             {
                 std::string i = ABSTRACT_SPTR_AS(IPV4, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::MACADDR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::MACADDR:
             {
                 std::string i = ABSTRACT_SPTR_AS(MACADDR, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::IPV6:
+            case Mantids30::Core::Memory::Abstract::Var::Type::IPV6:
             {
                 std::string i = ABSTRACT_SPTR_AS(IPV6, inputVar.second)->toString();
                 sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
             }
             break;
-            case Memory::Abstract::Var::Type::PTR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
             {
                 void *ptr = ABSTRACT_SPTR_AS(PTR, inputVar.second)->getValue();
                 // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
@@ -161,7 +162,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
                 sqlite3_bind_text(m_stmt, idx, static_cast<const char *>(ptr), ptrSize, SQLITE_STATIC);
             }
             break;
-            case Memory::Abstract::Var::Type::VOID:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
                 sqlite3_bind_null(m_stmt, idx);
                 break;
             }
@@ -237,7 +238,7 @@ bool Query_SQLite3::step0()
         m_numRecords++; // Will only be available at the end (full fetch)...
 
         int columnpos = 0;
-        for (Memory::Abstract::Var *outputVar : m_resultVars)
+        for (Mantids30::Core::Memory::Abstract::Var *outputVar : m_resultVars)
         {
             bool isNull = sqlite3_column_type(m_stmt, columnpos) == SQLITE_NULL;
             m_fieldIsNull.push_back(isNull);
@@ -250,40 +251,40 @@ bool Query_SQLite3::step0()
             {
                 switch (outputVar->getVarType())
                 {
-                case Memory::Abstract::Var::Type::BOOL:
+                case Mantids30::Core::Memory::Abstract::Var::Type::BOOL:
                     ABSTRACT_PTR_AS(BOOL, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos) != 0);
                     break;
-                case Memory::Abstract::Var::Type::INT8:
+                case Mantids30::Core::Memory::Abstract::Var::Type::INT8:
                     ABSTRACT_PTR_AS(INT8, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::INT16:
+                case Mantids30::Core::Memory::Abstract::Var::Type::INT16:
                     ABSTRACT_PTR_AS(INT16, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::INT32:
+                case Mantids30::Core::Memory::Abstract::Var::Type::INT32:
                     ABSTRACT_PTR_AS(INT32, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::INT64:
+                case Mantids30::Core::Memory::Abstract::Var::Type::INT64:
                     ABSTRACT_PTR_AS(INT64, outputVar)->setValue(sqlite3_column_int64(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::UINT8:
+                case Mantids30::Core::Memory::Abstract::Var::Type::UINT8:
                     ABSTRACT_PTR_AS(UINT8, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::UINT16:
+                case Mantids30::Core::Memory::Abstract::Var::Type::UINT16:
                     ABSTRACT_PTR_AS(UINT16, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::UINT32:
+                case Mantids30::Core::Memory::Abstract::Var::Type::UINT32:
                     ABSTRACT_PTR_AS(UINT32, outputVar)->setValue(sqlite3_column_int64(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::UINT64:
+                case Mantids30::Core::Memory::Abstract::Var::Type::UINT64:
                     // Not implemented.
                     throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
                     break;
-                case Memory::Abstract::Var::Type::DOUBLE:
+                case Mantids30::Core::Memory::Abstract::Var::Type::DOUBLE:
                     ABSTRACT_PTR_AS(DOUBLE, outputVar)->setValue(sqlite3_column_double(m_stmt, columnpos));
                     break;
-                case Memory::Abstract::Var::Type::BIN:
+                case Mantids30::Core::Memory::Abstract::Var::Type::BIN:
                 {
-                    Memory::Abstract::BINARY::ByteArray binContainer;
+                    Mantids30::Core::Memory::Abstract::BINARY::ByteArray binContainer;
                     binContainer.ptr = (char *)(sqlite3_column_blob(m_stmt, columnpos));
                     // TODO: should bytes need to be 64-bit for blob64?
                     binContainer.dataSize = sqlite3_column_bytes(m_stmt, columnpos);
@@ -291,49 +292,49 @@ bool Query_SQLite3::step0()
                     binContainer.ptr = nullptr; // don't destroy the data.
                 }
                 break;
-                case Memory::Abstract::Var::Type::VARCHAR:
+                case Mantids30::Core::Memory::Abstract::Var::Type::VARCHAR:
                 {
                     // This will copy the memory.
                     ABSTRACT_PTR_AS(VARCHAR, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::STRING:
+                case Mantids30::Core::Memory::Abstract::Var::Type::STRING:
                 {
                     ABSTRACT_PTR_AS(STRING, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::STRINGLIST:
+                case Mantids30::Core::Memory::Abstract::Var::Type::STRINGLIST:
                 {
                     ABSTRACT_PTR_AS(STRINGLIST, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::DATETIME:
+                case Mantids30::Core::Memory::Abstract::Var::Type::DATETIME:
                 {
                     ABSTRACT_PTR_AS(DATETIME, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::IPV4:
+                case Mantids30::Core::Memory::Abstract::Var::Type::IPV4:
                 {
                     ABSTRACT_PTR_AS(IPV4, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::MACADDR:
+                case Mantids30::Core::Memory::Abstract::Var::Type::MACADDR:
                 {
                     ABSTRACT_PTR_AS(MACADDR, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::IPV6:
+                case Mantids30::Core::Memory::Abstract::Var::Type::IPV6:
                 {
                     ABSTRACT_PTR_AS(IPV6, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::PTR:
+                case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
                 {
                     // This will reference the memory, but will disappear on the next step
                     ABSTRACT_PTR_AS(PTR, outputVar)->setValue((void *)(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Memory::Abstract::Var::Type::VOID:
+                case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
                     // Don't copy the value (not needed).
                     outputVar->setIsNull(true);
                     break;

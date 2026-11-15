@@ -1,6 +1,6 @@
 #include "b_ref.h"
 
-using namespace Mantids30::Memory::Containers;
+using namespace Mantids30::Core::Memory::Containers;
 
 B_Ref::B_Ref(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 {

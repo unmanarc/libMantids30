@@ -2,7 +2,7 @@
 
 #include <Mantids30/Core/Helpers/random.h>
 
-using namespace Mantids30::Threads::Pool;
+using namespace Mantids30::Core::Threads::Pool;
 
 ThreadPool::ThreadPool(uint32_t threadsCount, uint32_t taskQueues)
 {
@@ -132,7 +132,7 @@ ThreadPool::TasksQueue *ThreadPool::getRandomTaskQueueWithElements()
     }
     std::uniform_int_distribution<size_t> dis;
     m_randomMutex.lock();
-    Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
+    Mantids30::Core::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), static_cast<size_t>(dis(m_lRand)));
     m_randomMutex.unlock();
 
     // Iterate full Vector...
@@ -168,7 +168,7 @@ size_t ThreadPool::getRandomQueueByKey(const std::string &key, const float &prio
     {
         fullVector.push_back(i);
     }
-    Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
+    Mantids30::Core::Helpers::Random::safe_random_shuffle(fullVector.begin(), fullVector.end(), m_hashFunction(key));
 
     // Copy the first n-elements (based on priority)
     for (size_t i = 0; i < elements; i++)

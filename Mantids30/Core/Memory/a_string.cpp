@@ -2,7 +2,7 @@
 #include <mutex>
 #include <string>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 STRING::STRING()
 {
@@ -84,5 +84,5 @@ boost::json::value STRING::toJSON()
 
 bool STRING::fromJSON(const boost::json::value &value)
 {
-    return fromString(Helpers::JSON::ASSTRING_D(value, ""));
+    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, ""));
 }

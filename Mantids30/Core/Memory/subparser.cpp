@@ -3,9 +3,9 @@
 #include <cstring>
 #include <optional>
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
 
-void SubParser::initElemParser(Memory::Streams::StreamableObject *upStreamObj, bool clientMode)
+void SubParser::initElemParser(Mantids30::Core::Memory::Streams::StreamableObject *upStreamObj, bool clientMode)
 {
     this->m_upStream = upStreamObj;
     this->m_clientMode = clientMode;
@@ -76,7 +76,7 @@ std::optional<size_t> SubParser::writeIntoSubParser(const void *buf, size_t coun
     return std::nullopt;
 }
 
-size_t SubParser::ParseValidator(Mantids30::Memory::Containers::B_Base &)
+size_t SubParser::ParseValidator(Mantids30::Core::Memory::Containers::B_Base &)
 {
     return std::numeric_limits<size_t>::max();
 }
@@ -96,7 +96,7 @@ void SubParser::setParseDelimiter(const std::string &value)
     m_parseDelimiter = value;
 }
 
-Mantids30::Memory::Containers::B_Base *SubParser::getParsedBuffer()
+Mantids30::Core::Memory::Containers::B_Base *SubParser::getParsedBuffer()
 {
     return &m_parsedBuffer;
 }
@@ -458,7 +458,7 @@ size_t SubParser::getLastBytesInCommon(const std::string &boundary)
     size_t maxBoundary = std::min(m_unparsedBuffer.size(), boundary.size() - 1);
     for (size_t v = maxBoundary; v != 0; v--)
     {
-        Mantids30::Memory::Containers::B_Ref ref = referenceLastBytes(v);
+        Mantids30::Core::Memory::Containers::B_Ref ref = referenceLastBytes(v);
         char *toCmp = (static_cast<char *>(malloc(ref.size())));
         ref.copyOut(toCmp, ref.size());
         if (!memcmp(toCmp, boundary.c_str(), ref.size()))
@@ -471,9 +471,9 @@ size_t SubParser::getLastBytesInCommon(const std::string &boundary)
     return 0;
 }
 
-Mantids30::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t &bytes)
+Mantids30::Core::Memory::Containers::B_Ref SubParser::referenceLastBytes(const size_t &bytes)
 {
-    Mantids30::Memory::Containers::B_Ref r;
+    Mantids30::Core::Memory::Containers::B_Ref r;
     r.reference(&m_unparsedBuffer, m_unparsedBuffer.size() - bytes);
     return r;
 }

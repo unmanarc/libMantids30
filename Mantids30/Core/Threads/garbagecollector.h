@@ -5,7 +5,7 @@
 #include <condition_variable>
 #include <mutex>
 
-namespace Mantids30::Threads {
+namespace Mantids30::Core::Threads {
 
 /**
  * @brief The GarbageCollector class provides a simple garbage collector base class for managing memory in a program.
@@ -73,4 +73,4 @@ private:
     std::atomic<uint32_t> m_gcIntervalMs{}; ///< The interval between each garbage collection in milliseconds.
 };
 
-} // namespace Mantids30::Threads
+} // namespace Mantids30::Core::Threads

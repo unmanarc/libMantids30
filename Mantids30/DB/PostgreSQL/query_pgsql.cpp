@@ -6,7 +6,8 @@
 #include <stdexcept>
 
 
-using namespace Mantids30::Database;
+using namespace Mantids30::DB::Common;
+using namespace Mantids30::DB::PostgreSQL;
 
 Query_PostgreSQL::Query_PostgreSQL()
 {
@@ -57,7 +58,7 @@ bool Query_PostgreSQL::step0()
     }
 
     int columnpos = 0;
-    for (Memory::Abstract::Var *outputVar : m_resultVars)
+    for (Mantids30::Core::Memory::Abstract::Var *outputVar : m_resultVars)
     {
         bool isNull = PQgetisnull(m_results, i, columnpos);
         m_fieldIsNull.push_back(isNull);
@@ -70,39 +71,39 @@ bool Query_PostgreSQL::step0()
         {
             switch (outputVar->getVarType())
             {
-            case Memory::Abstract::Var::Type::BOOL:
+            case Mantids30::Core::Memory::Abstract::Var::Type::BOOL:
                 ABSTRACT_PTR_AS(BOOL, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::INT8:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT8:
                 ABSTRACT_PTR_AS(INT8, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::INT16:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT16:
                 ABSTRACT_PTR_AS(INT16, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::INT32:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT32:
                 ABSTRACT_PTR_AS(INT32, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::INT64:
+            case Mantids30::Core::Memory::Abstract::Var::Type::INT64:
                 ABSTRACT_PTR_AS(INT64, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::UINT8:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT8:
                 ABSTRACT_PTR_AS(UINT8, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::UINT16:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT16:
                 ABSTRACT_PTR_AS(UINT16, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::UINT32:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT32:
                 ABSTRACT_PTR_AS(UINT32, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::UINT64:
+            case Mantids30::Core::Memory::Abstract::Var::Type::UINT64:
                 ABSTRACT_PTR_AS(UINT64, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::DOUBLE:
+            case Mantids30::Core::Memory::Abstract::Var::Type::DOUBLE:
                 ABSTRACT_PTR_AS(DOUBLE, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
                 break;
-            case Memory::Abstract::Var::Type::BIN:
+            case Mantids30::Core::Memory::Abstract::Var::Type::BIN:
             {
-                Memory::Abstract::BINARY::ByteArray binContainer;
+                Mantids30::Core::Memory::Abstract::BINARY::ByteArray binContainer;
                 binContainer.ptr = PQgetvalue(m_results, i, columnpos);
                 // TODO: should bytes need to be 64-bit for blob64?
                 binContainer.dataSize = PQgetlength(m_results, i, columnpos);
@@ -110,49 +111,49 @@ bool Query_PostgreSQL::step0()
                 binContainer.ptr = nullptr; // don't destroy the data.
             }
             break;
-            case Memory::Abstract::Var::Type::VARCHAR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VARCHAR:
             {
                 // This will copy the memory.
                 ABSTRACT_PTR_AS(VARCHAR, outputVar)->setValue(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::STRING:
+            case Mantids30::Core::Memory::Abstract::Var::Type::STRING:
             {
                 ABSTRACT_PTR_AS(STRING, outputVar)->setValue(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::STRINGLIST:
+            case Mantids30::Core::Memory::Abstract::Var::Type::STRINGLIST:
             {
                 ABSTRACT_PTR_AS(STRINGLIST, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::DATETIME:
+            case Mantids30::Core::Memory::Abstract::Var::Type::DATETIME:
             {
                 ABSTRACT_PTR_AS(DATETIME, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::IPV4:
+            case Mantids30::Core::Memory::Abstract::Var::Type::IPV4:
             {
                 ABSTRACT_PTR_AS(IPV4, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::MACADDR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::MACADDR:
             {
                 ABSTRACT_PTR_AS(MACADDR, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::IPV6:
+            case Mantids30::Core::Memory::Abstract::Var::Type::IPV6:
             {
                 ABSTRACT_PTR_AS(IPV6, outputVar)->fromString(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::PTR:
+            case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
             {
                 // This will reference the memory, but will disappear on the next step
                 ABSTRACT_PTR_AS(PTR, outputVar)->setValue(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Memory::Abstract::Var::Type::VOID:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
                 // Don't copy the value (not needed).
                 outputVar->setIsNull(true);
                 break;
@@ -218,76 +219,76 @@ bool Query_PostgreSQL::postBindInputVars()
         */
         switch (m_inputVars[key]->getVarType())
         {
-        case Memory::Abstract::Var::Type::BOOL:
+        case Mantids30::Core::Memory::Abstract::Var::Type::BOOL:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(BOOL, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::INT8:
+        case Mantids30::Core::Memory::Abstract::Var::Type::INT8:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(INT8, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::INT16:
+        case Mantids30::Core::Memory::Abstract::Var::Type::INT16:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(INT16, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::INT32:
+        case Mantids30::Core::Memory::Abstract::Var::Type::INT32:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(INT32, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::INT64:
+        case Mantids30::Core::Memory::Abstract::Var::Type::INT64:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(INT64, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::UINT8:
+        case Mantids30::Core::Memory::Abstract::Var::Type::UINT8:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(UINT8, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::UINT16:
+        case Mantids30::Core::Memory::Abstract::Var::Type::UINT16:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(UINT16, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::UINT32:
+        case Mantids30::Core::Memory::Abstract::Var::Type::UINT32:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(UINT32, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::UINT64:
+        case Mantids30::Core::Memory::Abstract::Var::Type::UINT64:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(UINT64, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::DATETIME:
+        case Mantids30::Core::Memory::Abstract::Var::Type::DATETIME:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(DATETIME, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::DOUBLE:
+        case Mantids30::Core::Memory::Abstract::Var::Type::DOUBLE:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(DOUBLE, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::BIN:
+        case Mantids30::Core::Memory::Abstract::Var::Type::BIN:
         {
-            const Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
+            const Mantids30::Core::Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, m_inputVars[key])->getValue();
             m_paramValues[pos] = i->ptr;
             m_paramLengths[pos] = i->dataSize;
             m_paramFormats[pos] = 1;
         }
         break;
-        case Memory::Abstract::Var::Type::VARCHAR:
+        case Mantids30::Core::Memory::Abstract::Var::Type::VARCHAR:
         {
             m_paramValues[pos] = ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[key])->getValue();
             m_paramLengths[pos] = strnlen(ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[key])->getValue(), ABSTRACT_SPTR_AS(VARCHAR, m_inputVars[key])->getVarSize());
         }
         break;
-        case Memory::Abstract::Var::Type::PTR:
+        case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
         {
             void *ptr = ABSTRACT_SPTR_AS(PTR, m_inputVars[key])->getValue();
             // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
@@ -295,24 +296,24 @@ bool Query_PostgreSQL::postBindInputVars()
             m_paramValues[pos] = static_cast<char *>(ptr);
         }
         break;
-        case Memory::Abstract::Var::Type::STRING:
+        case Mantids30::Core::Memory::Abstract::Var::Type::STRING:
         {
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(STRING, m_inputVars[key])->toString());
         }
         break;
-        case Memory::Abstract::Var::Type::STRINGLIST:
+        case Mantids30::Core::Memory::Abstract::Var::Type::STRINGLIST:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(STRINGLIST, m_inputVars[key])->toString());
             break;
-        case Memory::Abstract::Var::Type::IPV4:
+        case Mantids30::Core::Memory::Abstract::Var::Type::IPV4:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(IPV4, m_inputVars[key])->toString());
             break;
-        case Memory::Abstract::Var::Type::MACADDR:
+        case Mantids30::Core::Memory::Abstract::Var::Type::MACADDR:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(MACADDR, m_inputVars[key])->toString());
             break;
-        case Memory::Abstract::Var::Type::IPV6:
+        case Mantids30::Core::Memory::Abstract::Var::Type::IPV6:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(IPV6, m_inputVars[key])->toString());
             break;
-        case Memory::Abstract::Var::Type::VOID:
+        case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
             m_paramValues[pos] = nullptr;
             m_paramLengths[pos] = 0;
             break;

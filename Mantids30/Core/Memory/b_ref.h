@@ -2,7 +2,7 @@
 
 #include "b_base.h"
 
-namespace Mantids30::Memory::Containers {
+namespace Mantids30::Core::Memory::Containers {
 
 class B_Ref : public B_Base
 {
@@ -105,4 +105,4 @@ private:
     size_t referencedMaxBytes;
 };
 
-} // namespace Mantids30::Memory::Containers
+} // namespace Mantids30::Core::Memory::Containers

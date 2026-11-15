@@ -1,6 +1,6 @@
 #include "garbagecollector.h"
 
-using namespace Mantids30::Threads;
+using namespace Mantids30::Core::Threads;
 
 using Ms = std::chrono::milliseconds;
 

@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * @brief A class that provides cryptographic functions for encrypting and hashing data.
@@ -153,4 +153,4 @@ public:
     static std::string calcSSHA512(std::string_view password, const unsigned char *ssalt);
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Helpers {
+namespace Mantids30::Core::Helpers {
 
 /**
  * Provides functions for working with the operating system.
@@ -45,4 +45,4 @@ public:
     [[nodiscard]] static LocalSysInfo getLocalSystemInfo();
 };
 
-} // namespace Mantids30::Helpers
+} // namespace Mantids30::Core::Helpers

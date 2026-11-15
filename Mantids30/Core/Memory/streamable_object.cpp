@@ -8,7 +8,7 @@
 #include <cstdlib>
 #endif
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
 
 std::string StreamableObject::toString()
 {

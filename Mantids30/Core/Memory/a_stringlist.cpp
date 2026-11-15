@@ -3,7 +3,7 @@
 #include <mutex>
 #include <string>
 
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Core::Memory::Abstract;
 
 STRINGLIST::STRINGLIST()
 {
@@ -223,7 +223,7 @@ bool STRINGLIST::fromJSON(const boost::json::value &value)
     {
         if (item.is_string())
         {
-            m_value.emplace_back(Helpers::JSON::ASSTRING_D(item, ""));
+            m_value.emplace_back(Mantids30::DataFormats::JSON::ASSTRING_D(item, ""));
         }
         else
         {

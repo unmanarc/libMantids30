@@ -12,7 +12,7 @@
 
 #define ETH_ALEN 6
 
-namespace Mantids30::Memory::Abstract {
+namespace Mantids30::Core::Memory::Abstract {
 
 class MACADDR : public Var
 {
@@ -55,4 +55,4 @@ private:
     std::shared_mutex m_mutex;
 };
 
-} // namespace Mantids30::Memory::Abstract
+} // namespace Mantids30::Core::Memory::Abstract

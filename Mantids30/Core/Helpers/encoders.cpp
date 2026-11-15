@@ -10,7 +10,7 @@
 #include <random>
 
 using namespace std;
-using namespace Mantids30::Helpers;
+using namespace Mantids30::Core::Helpers;
 
 const std::string Encoders::m_b64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 

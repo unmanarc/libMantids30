@@ -1,18 +1,18 @@
 #pragma once
 
-#include <Mantids30/DB/DB/query.h>
+#include <Mantids30/DB/Common/query.h>
 
 //#if __has_include(<libpq-fe.h>)
 #include <libpq-fe.h>
 //#elif __has_include(<postgresql/libpq-fe.h>)
 //# include <postgresql/libpq-fe.h>
 //#endif
-namespace Mantids30::Database {
+namespace Mantids30::DB::PostgreSQL {
 
 /**
  * @brief The Query_PostgreSQL class provides an interface for executing queries on PostgreSQL databases.
  */
-class Query_PostgreSQL : public Query
+class Query_PostgreSQL : public Mantids30::DB::Common::Query
 {
 public:
     /**
@@ -80,4 +80,4 @@ private:
     int m_currentRow;                    ///< Current row in the query result.
 };
 
-} // namespace Mantids30::Database
+} // namespace Mantids30::DB::PostgreSQL

@@ -9,7 +9,7 @@
 #include <optional>
 #include <stdexcept>
 
-using namespace Mantids30::Memory::Containers;
+using namespace Mantids30::Core::Memory::Containers;
 
 B_Base::B_Base()
 {
@@ -206,16 +206,16 @@ int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> &nee
 
 // TODO: pass this to shared_ptr
 /*
-std::list<Memory::Containers::B_Base *> B_Base::referencedSplit(const std::list<std::string> &needles,const size_t &maxSearchSize, const size_t &maxNeedles)
+std::list<Mantids30::Core::Memory::Containers::B_Base *> B_Base::referencedSplit(const std::list<std::string> &needles,const size_t &maxSearchSize, const size_t &maxNeedles)
 {
     std::list<std::string> skipBegWith;
     return referencedSplit2(needles,skipBegWith,maxSearchSize,maxNeedles);
 }
 
-std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list<std::string> &needles, const std::list<std::string> &skipBegWith, const size_t &maxSearchSize, const size_t &roMaxNeedles)
+std::list<Mantids30::Core::Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list<std::string> &needles, const std::list<std::string> &skipBegWith, const size_t &maxSearchSize, const size_t &roMaxNeedles)
 {
     size_t maxNeedles = roMaxNeedles;
-    std::list<Memory::Containers::B_Base *> x;
+    std::list<Mantids30::Core::Memory::Containers::B_Base *> x;
 
     size_t currentOffset = 0;
 
@@ -290,9 +290,9 @@ std::list<Memory::Containers::B_Base *> B_Base::referencedSplit2(const std::list
     return x;
 }*/
 
-void B_Base::freeSplitList(const std::list<Memory::Containers::B_Base *> &x)
+void B_Base::freeSplitList(const std::list<Mantids30::Core::Memory::Containers::B_Base *> &x)
 {
-    for (Memory::Containers::B_Base *i : x)
+    for (Mantids30::Core::Memory::Containers::B_Base *i : x)
     {
         delete i;
     }
@@ -807,7 +807,7 @@ void B_Base::reduceMaxSizeBy(const size_t &value)
     setMaxSize(getMaxSize() - value);
 }
 
-bool B_Base::streamTo(Memory::Streams::StreamableObject *out)
+bool B_Base::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
     std::optional<size_t> x = appendTo(*out);
     return x != std::nullopt && out->writeStatus.succeed;
@@ -828,7 +828,7 @@ std::optional<size_t> B_Base::write(const void *buf, const size_t &count)
     return bytesAppended;
 }
 
-std::shared_ptr<Mantids30::Memory::Containers::B_Base> B_Base::copyToFS(const std::string &fileName, bool deleteFileOnDestruction)
+std::shared_ptr<Mantids30::Core::Memory::Containers::B_Base> B_Base::copyToFS(const std::string &fileName, bool deleteFileOnDestruction)
 {
     std::shared_ptr<B_MMAP> mmapbc = std::make_shared<B_MMAP>();
     mmapbc->setFsBaseFileName(m_fsBaseFileName);
