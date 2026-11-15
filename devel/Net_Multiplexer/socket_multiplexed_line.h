@@ -119,8 +119,8 @@ private:
 
     std::queue<DataStructs::sDataBuffer *> dataBuffer;
 
-    Threads::Sync::Mutex_Shared rwLock_LocalObject, rwLock_Vars, rwLock_LineID;
-    Threads::Sync::Mutex mtLock_BufferHeap, mtLock_RemoteProccesedBytes, mtLock_ProcessLineFinished;
+    Mantids30::Core::Threads::Sync::Mutex_Shared rwLock_LocalObject, rwLock_Vars, rwLock_LineID;
+    Mantids30::Core::Threads::Sync::Mutex mtLock_BufferHeap, mtLock_RemoteProccesedBytes, mtLock_ProcessLineFinished;
     std::condition_variable psigRemoteProccesedBytesNotFull, psigBufferNotFull, psigBufferNotEmpty, psigProcessLineFinished;
 };
 

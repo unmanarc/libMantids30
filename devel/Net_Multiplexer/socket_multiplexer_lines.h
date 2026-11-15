@@ -37,8 +37,8 @@ private:
     std::map<LineID, std::shared_ptr<Socket_Multiplexed_Line>> multiplexedLinesMap;
 
     // Mutex Locks
-    Threads::Sync::Mutex_Shared rwLock_MultiplexedLines;
-    Threads::Sync::Mutex mtLock_OnEmptyLines;
+    Mantids30::Core::Threads::Sync::Mutex_Shared rwLock_MultiplexedLines;
+    Mantids30::Core::Threads::Sync::Mutex mtLock_OnEmptyLines;
 
     // Random distribution
     std::mt19937_64 gen;
