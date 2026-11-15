@@ -21,8 +21,6 @@ set_target_properties(  ${LIB_NAME}
                         PUBLIC_HEADER "${EDV_INCLUDE_FILES}"
                       )
 
-configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
-
 target_include_directories(${LIB_NAME} PRIVATE .)
 
 install(
@@ -47,19 +45,22 @@ set(Mantids30_LIBRARIES
     Memory
     Threads
     Net_Sockets
-    Server_WebCore
-    Server_RESTfulWebAPI
-    API_EndpointsAndSessions
+    Protocol_HTTP
+    Program_Logs
     DataFormat_JWT
     DataFormat_JSON
     Helpers
 )
 
+set(PC_REQUIRES "")
 foreach(LIB ${Mantids30_LIBRARIES})
     include_directories("${Mantids30_${LIB}_SOURCE_DIR}/../../../")
     target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
+    string(APPEND PC_REQUIRES " ${LIBPREFIX}_${LIB}")
 endforeach()
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/genericlib.pc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${LIB_NAME}.pc" @ONLY)
 
 find_package(PkgConfig REQUIRED)
 find_package(Boost REQUIRED COMPONENTS json)

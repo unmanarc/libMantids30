@@ -7,6 +7,7 @@ Name: @LIB_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
 
-Requires:
+Requires: @PC_REQUIRES@
 Libs: -L${libdir} -l@LIB_NAME@
+Libs.private: -lboost_json
 Cflags: -I${includedir}
