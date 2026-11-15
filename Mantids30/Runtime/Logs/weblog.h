@@ -1,0 +1,102 @@
+#pragma once
+
+#include "applog.h"
+#include <atomic>
+#include <cstdint>
+#include <fstream>
+#include <optional>
+#include <string>
+#include <thread>
+
+#include <Mantids30/Core/Threads/safe_sharedqueue.h>
+
+#include <boost/property_tree/ptree.hpp>
+
+namespace Mantids30::Program::Logs {
+
+class WebLog
+{
+public:
+    class Config
+    {
+    public:
+        struct RotateSchedule
+        {
+            std::optional<uint32_t> minute;
+            std::optional<uint32_t> hour;
+            std::optional<uint32_t> dayOfWeek;
+            std::optional<uint32_t> dayOfMonth;
+            std::optional<uint32_t> month;
+        };
+
+        enum LogFormat
+        {
+            JSON,
+            COMBINED
+        };
+
+        RotateSchedule rotationSchedule;
+
+        void setMaxFileSize(const std::string &maxFileSize);
+        [[nodiscard]] size_t getMaxFileSize() const;
+
+        void setLogFormat(const std::string &logFormat);
+        [[nodiscard]] LogFormat getLogFormat() const;
+
+        // Log Path:
+        std::string logDirectory = "/var/log";
+        std::string logFile = "web.log";
+        bool createDir = false;
+
+        // Rotation:
+        unsigned int maxBackups = 5;
+
+        bool rotateCheckOnStartup = true;
+        bool rotateOnSize = true;
+        bool rotateOnSchedule = true;
+
+        // Memory Buffering.
+        uint32_t queueMaxItems = 10000;
+        uint32_t queueMaxInsertWaitTimeInMS = 100;
+        bool useThreadedQueue = true;
+
+        std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog;
+
+    private:
+        LogFormat m_logFormat = JSON;
+        size_t m_maxFileSize = 0;
+
+        friend class WebLog;
+    };
+
+    WebLog() = default;
+
+    Config config;
+
+    bool start();
+
+    bool log(const boost::property_tree::ptree &logValues);
+
+    void stopLogRotationOnScheduleThread();
+
+    void checkAndExecuteTimeLogRotation();
+    void checkAndExecuteSizeLogRotation();
+
+    void forceLogRotation();
+
+private:
+    void printLogToFile(const boost::property_tree::ptree *value);
+    void startLogRotationOnScheduleThread();
+
+    // Serialize to an unformatted string using boost::property_tree
+    Threads::Safe::SharedQueue<boost::property_tree::ptree> m_logQueue;
+    std::thread m_rotationThread, m_queueThread;
+    std::atomic<bool> m_rotationThreadRunning{false};
+    std::ofstream m_logFileHandle;
+    size_t m_logCurrentSize = 0;
+
+    //    std::unique_lock<std::mutex> lock(m_mQueue);
+    std::mutex m_logPrintMutex;
+};
+
+} // namespace Mantids30::Program::Logs

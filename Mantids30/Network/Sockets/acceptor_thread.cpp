@@ -1,0 +1,64 @@
+#include "acceptor_thread.h"
+#include <memory>
+#include <string>
+
+#ifndef _WIN32
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#else
+#include <ws2tcpip.h>
+#endif
+
+#include "acceptor_multithreaded.h"
+#include <Mantids30/Core/Helpers/mem.h>
+
+using namespace Mantids30::Network::Sockets::Acceptors;
+
+void StreamAcceptorThread::stopSocket()
+{
+    m_pClientSocket->shutdownSocket();
+}
+
+void StreamAcceptorThread::postInitConnection()
+{
+    // Accept (internal protocol)
+    if (m_pClientSocket->postAcceptSubInitialization())
+    {
+        // Start
+        if (callbacks.onClientConnected)
+        {
+            this->callbacks.onClientConnected(callbacks.contextOnConnect, m_pClientSocket);
+        }
+    }
+    else
+    {
+        if (callbacks.onProtocolInitializationFailure)
+        {
+            this->callbacks.onProtocolInitializationFailure(callbacks.contextOnInitFail, m_pClientSocket);
+        }
+    }
+}
+
+void StreamAcceptorThread::setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> &_clientSocket)
+{
+    m_pClientSocket = _clientSocket;
+}
+
+std::string StreamAcceptorThread::getRemotePair() const
+{
+    return m_pClientSocket->getRemotePairStr();
+}
+
+uint16_t StreamAcceptorThread::getLocalPort()
+{
+    return m_pClientSocket->getLocalPort();
+}
+
+void StreamAcceptorThread::thread_streamclient(const std::shared_ptr<StreamAcceptorThread> &threadClient, void *threadedAcceptedControl)
+{
+#ifdef __linux__
+    pthread_setname_np(pthread_self(), ("Sock:Cl:" + std::to_string(threadClient->getLocalPort())).c_str());
+#endif
+    threadClient->postInitConnection();
+    (static_cast<MultiThreaded *>(threadedAcceptedControl))->finalizeThreadElement(threadClient);
+}

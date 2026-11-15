@@ -1,0 +1,113 @@
+#pragma once
+
+#include "socket_chain_protocolbase.h"
+#include <Mantids30/Network/Sockets/socket_stream.h>
+
+#include <atomic>
+#include <memory>
+#include <thread>
+#include <utility>
+#include <vector>
+
+/*
+  Example:
+
+  read() <--------*                           2-                           2-                           2-
+                   \                        THREAD                       THREAD                       THREAD
+                    \ pair(sock[0],sock[1]) <----> pair(sock[0],sock[1]) <----> pair(sock[0],sock[1]) <----> baseSocket (O/S Network)
+                    /
+                   /
+ write() -------->*
+
+*/
+
+namespace Mantids30::Network::Sockets {
+
+class Socket_Chain : public Socket_Stream
+{
+public:
+    Socket_Chain(const std::shared_ptr<Socket_Stream> &_baseSocket, bool _deleteBaseSocketOnExit = true);
+    ~Socket_Chain() override;
+
+    /**
+     * @brief addToChain Add the chain element to the socket chains...
+     * @param chainElement chain element (should be deleted later)
+     * @return true if successfully initialized
+     */
+    bool addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit = false);
+    bool addToChain(const std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> &sockPairs, bool deleteFirstSocketOnExit = false, bool deleteSecondSocketOnExit = true,
+                    bool modeServer = false, bool detached = false, bool endPMode = false);
+    void waitUntilFinish();
+
+    ////////////////////
+    // errors:
+    /**
+     * @brief getLayers Get number of layers
+     * @return number of layers.
+     */
+    size_t getLayers();
+    /**
+     * @brief getLayerReadResultValue Read thread last read error. (don't use before waitUntilFinish)
+     * @param layer Layer number [0..n-1]
+     * @param fwd true: sock[1]->baseSocket, false: baseSocket->sock[1]
+     * @return socket last read error. (0 shutdown, -1 error, -2 layer does not exist)
+     */
+    int getLayerReadResultValue(size_t layer, bool fwd);
+    /**
+     * @brief getLayerWriteResultValue Read thread last write error. (don't use before waitUntilFinish)
+     * @param layer Layer number [0..n-1]
+     * @param fwd true: sock[1]->baseSocket, false: baseSocket->sock[1]
+     * @return socket last write error. (false: was not able to write on next socket, true: was able to write on next socket)
+     */
+    bool getLayerWriteResultValue(size_t layer, bool fwd);
+    /**
+     * @brief getSocketPairLayer Get Sockets Pair from layer (don't use with )
+     * @param layer layer number [0..n-1]
+     * @return pair of Socket_Stream ptr
+     */
+    std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> getSocketPairLayer(size_t layer);
+
+    ////////////////////
+    // virtuals:
+    bool isConnected() override;
+    int shutdownSocket(int mode = SHUT_WR) override;
+    ssize_t partialRead(void *data, const size_t &datalen) override;
+    ssize_t partialWrite(const void *data, const size_t &datalen) override;
+
+private:
+    struct ChainVectorItem
+    {
+        /**
+         * @brief sock connected pair sockets (sock[0]: up socket  sock[1]: down socket)
+         */
+        std::shared_ptr<Socket_Stream> sock[2];
+        std::thread thr1, thr2;
+
+        // Results from threads...
+        int r0[2]{0, 0};
+        bool w1[2]{true, true};
+
+        std::atomic<bool> detached{false}, finished{false};
+        bool deleteFirstSocketOnExit{false}, deleteSecondSocketOnExit{false};
+        bool modeServer{false};
+    };
+
+    struct ChainThreadInfo
+    {
+        std::shared_ptr<Socket_Stream> sockets[2];
+        int *r0 = nullptr;
+        bool *w1 = nullptr;
+        bool modeFWD = false;
+    };
+
+    static void chainThread(ChainThreadInfo *threadInfo);
+
+    bool m_endPointReached;
+    void removeSocketsOnExit();
+
+    bool m_deleteBaseSocketOnExit;
+    std::shared_ptr<Socket_Stream> m_baseSocket;
+    std::vector<ChainVectorItem *> m_socketLayers;
+};
+
+} // namespace Mantids30::Network::Sockets

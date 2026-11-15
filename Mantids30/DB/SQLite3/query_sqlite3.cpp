@@ -1,0 +1,357 @@
+#include "query_sqlite3.h"
+#include "sqlconnector_sqlite3.h"
+#include <Mantids30/Core/Memory/a_allvars.h>
+#include <boost/algorithm/string/predicate.hpp>
+#include <cstring>
+
+#include <stdexcept>
+
+using namespace Mantids30::Database;
+
+Query_SQLite3::Query_SQLite3()
+{
+    m_lastSQLReturnValue = SQLITE_OK;
+}
+
+Query_SQLite3::~Query_SQLite3()
+{
+    if (m_stmt)
+    {
+        sqlite3_reset(m_stmt);
+        sqlite3_clear_bindings(m_stmt);
+        sqlite3_finalize(m_stmt);
+    }
+}
+
+bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
+{
+    if (m_stmt)
+    {
+        throw std::runtime_error("Re-using queries is not supported.");
+        return false;
+    }
+
+    // Prepare the query (will lock the db while using ppDb):
+    (static_cast<SQLConnector_SQLite3 *>(m_pSQLConnector))->putDatabaseConnectorIntoQuery(this);
+
+    if (!m_databaseConnectionHandler)
+    {
+        return false;
+    }
+
+    const char *tail;
+    m_lastSQLReturnValue = sqlite3_prepare_v2(m_databaseConnectionHandler, m_query.c_str(), m_query.length(), &m_stmt, &tail);
+    if (m_lastSQLReturnValue != SQLITE_OK)
+    {
+        m_lastSQLError = std::string(sqlite3_errmsg(m_databaseConnectionHandler));
+
+        if (m_throwCPPErrorOnQueryFailure)
+        {
+            printf("--------------------------------\n");
+            printf("SQL Query:\n");
+            printf("%s\n", m_query.c_str());
+            fflush(stdout);
+            throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
+        }
+        return false;
+    }
+
+    // Bind the parameters (in and out)
+    for (const auto &inputVar : m_inputVars)
+    {
+        int idx = sqlite3_bind_parameter_index(m_stmt, inputVar.first.c_str());
+        if (idx)
+        {
+            switch (inputVar.second->getVarType())
+            {
+            case Memory::Abstract::Var::Type::BOOL:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(BOOL, inputVar.second)->getValue() ? 1 : 0);
+                break;
+            case Memory::Abstract::Var::Type::INT8:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT8, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::INT16:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT16, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::INT32:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(INT32, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::INT64:
+                sqlite3_bind_int64(m_stmt, idx, ABSTRACT_SPTR_AS(INT64, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::UINT8:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(UINT8, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::UINT16:
+                sqlite3_bind_int(m_stmt, idx, ABSTRACT_SPTR_AS(UINT16, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::UINT32:
+                sqlite3_bind_int64(m_stmt, idx, ABSTRACT_SPTR_AS(UINT32, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::UINT64:
+                // Not implemented.
+                throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
+                break;
+            case Memory::Abstract::Var::Type::DOUBLE:
+                sqlite3_bind_double(m_stmt, idx, ABSTRACT_SPTR_AS(DOUBLE, inputVar.second)->getValue());
+                break;
+            case Memory::Abstract::Var::Type::BIN:
+            {
+                Memory::Abstract::BINARY::ByteArray *i = ABSTRACT_SPTR_AS(BINARY, inputVar.second)->getValue();
+#if SQLITE_VERSION_NUMBER >= 3008007L
+                sqlite3_bind_blob64(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
+#else
+                // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
+                sqlite3_bind_blob(m_stmt, idx, i->ptr, i->dataSize, SQLITE_STATIC);
+#endif
+            }
+            break;
+            case Memory::Abstract::Var::Type::VARCHAR:
+            {
+#if SQLITE_VERSION_NUMBER >= 3008007L
+                sqlite3_bind_text64(m_stmt, idx, ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getValue(), ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getVarSize(), SQLITE_STATIC, SQLITE_UTF8);
+#else
+                // Only support 2GB data on older sqlite3 versions... (http://www.sqlite.org/releaselog/3_8_7.html) - WARNING: the compatibility should be enforced in source side, not using containers with >2gb capacity...
+                // Also the encoding is not defined...
+                sqlite3_bind_text(m_stmt, idx, ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getValue(), ABSTRACT_SPTR_AS(VARCHAR, inputVar.second)->getVarSize(), SQLITE_STATIC);
+#endif
+            }
+            break;
+            case Memory::Abstract::Var::Type::DATETIME:
+            {
+                std::string i = ABSTRACT_SPTR_AS(DATETIME, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::STRING:
+            {
+                std::string i = ABSTRACT_SPTR_AS(STRING, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::STRINGLIST:
+            {
+                std::string i = ABSTRACT_SPTR_AS(STRINGLIST, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::IPV4:
+            {
+                std::string i = ABSTRACT_SPTR_AS(IPV4, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::MACADDR:
+            {
+                std::string i = ABSTRACT_SPTR_AS(MACADDR, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::IPV6:
+            {
+                std::string i = ABSTRACT_SPTR_AS(IPV6, inputVar.second)->toString();
+                sqlite3_bind_text(m_stmt, idx, i.c_str(), i.size(), SQLITE_TRANSIENT);
+            }
+            break;
+            case Memory::Abstract::Var::Type::PTR:
+            {
+                void *ptr = ABSTRACT_SPTR_AS(PTR, inputVar.second)->getValue();
+                // Threat PTR as char * (be careful, we should receive strlen compatible string, without null termination will result in an undefined behaviour)
+                size_t ptrSize = strnlen(static_cast<const char *>(ptr), (0xFFFFFFFF / 2) - 1);
+                sqlite3_bind_text(m_stmt, idx, static_cast<const char *>(ptr), ptrSize, SQLITE_STATIC);
+            }
+            break;
+            case Memory::Abstract::Var::Type::VOID:
+                sqlite3_bind_null(m_stmt, idx);
+                break;
+            }
+            /*            lastSQLError = "Binding parameter for index not found";
+            return false;*/
+        }
+    }
+
+    m_numRecords = 0;
+    m_affectedRecords = 0;
+
+    // if insert, only do one step.
+    if (execType == ExecType::INSERT)
+    {
+        // execute...
+        m_lastSQLReturnValue = sqlite3_step(m_stmt);
+
+        // Get number of changes:
+        m_affectedRecords = sqlite3_changes(m_databaseConnectionHandler);
+
+        if (m_fetchLastInsertRowID)
+        {
+            m_lastInsertRowID = sqlite3_last_insert_rowid(m_databaseConnectionHandler);
+        }
+
+        if (!sqlite3IsDone())
+        {
+            m_lastSQLError = sqlite3_errmsg(m_databaseConnectionHandler);
+
+            if (boost::algorithm::icontains(m_lastSQLError, "UNIQUE constraint failed"))
+            {
+                // This error sometimes is not an DB error :)
+                if (m_throwCPPErrorOnUniqueFailure)
+                {
+                    printf("--------------------------------\n");
+                    printf("SQL Query:\n");
+                    printf("%s\n", m_query.c_str());
+                    fflush(stdout);
+                    throw std::runtime_error("Error preparing the query: " + m_lastSQLError);
+                }
+            }
+            else if (m_throwCPPErrorOnQueryFailure)
+            {
+                printf("--------------------------------\n");
+                printf("SQL Query:\n");
+                printf("%s\n", m_query.c_str());
+                fflush(stdout);
+
+                throw std::runtime_error("Error during insert query: " + m_lastSQLError);
+            }
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else
+    {
+        // Execution should be done on step0.
+        // TODO: retrieve number of retrieved records in numRecords.
+    }
+
+    return true;
+}
+
+bool Query_SQLite3::step0()
+{
+    m_lastSQLReturnValue = sqlite3_step(m_stmt);
+
+    if (m_lastSQLReturnValue == SQLITE_ROW)
+    {
+        m_numRecords++; // Will only be available at the end (full fetch)...
+
+        int columnpos = 0;
+        for (Memory::Abstract::Var *outputVar : m_resultVars)
+        {
+            bool isNull = sqlite3_column_type(m_stmt, columnpos) == SQLITE_NULL;
+            m_fieldIsNull.push_back(isNull);
+
+            if (isNull)
+            {
+                outputVar->setIsNull(true);
+            }
+            else
+            {
+                switch (outputVar->getVarType())
+                {
+                case Memory::Abstract::Var::Type::BOOL:
+                    ABSTRACT_PTR_AS(BOOL, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos) != 0);
+                    break;
+                case Memory::Abstract::Var::Type::INT8:
+                    ABSTRACT_PTR_AS(INT8, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::INT16:
+                    ABSTRACT_PTR_AS(INT16, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::INT32:
+                    ABSTRACT_PTR_AS(INT32, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::INT64:
+                    ABSTRACT_PTR_AS(INT64, outputVar)->setValue(sqlite3_column_int64(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::UINT8:
+                    ABSTRACT_PTR_AS(UINT8, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::UINT16:
+                    ABSTRACT_PTR_AS(UINT16, outputVar)->setValue(sqlite3_column_int(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::UINT32:
+                    ABSTRACT_PTR_AS(UINT32, outputVar)->setValue(sqlite3_column_int64(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::UINT64:
+                    // Not implemented.
+                    throw std::runtime_error("UINT64 is not supported by SQLite3 and can lead to precision errors, check your implementation");
+                    break;
+                case Memory::Abstract::Var::Type::DOUBLE:
+                    ABSTRACT_PTR_AS(DOUBLE, outputVar)->setValue(sqlite3_column_double(m_stmt, columnpos));
+                    break;
+                case Memory::Abstract::Var::Type::BIN:
+                {
+                    Memory::Abstract::BINARY::ByteArray binContainer;
+                    binContainer.ptr = (char *)(sqlite3_column_blob(m_stmt, columnpos));
+                    // TODO: should bytes need to be 64-bit for blob64?
+                    binContainer.dataSize = sqlite3_column_bytes(m_stmt, columnpos);
+                    ABSTRACT_PTR_AS(BINARY, outputVar)->setValue(&binContainer);
+                    binContainer.ptr = nullptr; // don't destroy the data.
+                }
+                break;
+                case Memory::Abstract::Var::Type::VARCHAR:
+                {
+                    // This will copy the memory.
+                    ABSTRACT_PTR_AS(VARCHAR, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::STRING:
+                {
+                    ABSTRACT_PTR_AS(STRING, outputVar)->setValue(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::STRINGLIST:
+                {
+                    ABSTRACT_PTR_AS(STRINGLIST, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::DATETIME:
+                {
+                    ABSTRACT_PTR_AS(DATETIME, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::IPV4:
+                {
+                    ABSTRACT_PTR_AS(IPV4, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::MACADDR:
+                {
+                    ABSTRACT_PTR_AS(MACADDR, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::IPV6:
+                {
+                    ABSTRACT_PTR_AS(IPV6, outputVar)->fromString(reinterpret_cast<const char *>(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::PTR:
+                {
+                    // This will reference the memory, but will disappear on the next step
+                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue((void *)(sqlite3_column_text(m_stmt, columnpos)));
+                }
+                break;
+                case Memory::Abstract::Var::Type::VOID:
+                    // Don't copy the value (not needed).
+                    outputVar->setIsNull(true);
+                    break;
+                }
+            }
+            columnpos++;
+        }
+    }
+
+    return m_lastSQLReturnValue == SQLITE_ROW;
+}
+
+void Query_SQLite3::setDatabaseConnectionHandler(sqlite3 *newPpDb)
+{
+    m_databaseConnectionHandler = newPpDb;
+}
+
+bool Query_SQLite3::sqlite3IsDone() const
+{
+    return m_lastSQLReturnValue == SQLITE_DONE;
+}

@@ -1,0 +1,104 @@
+#pragma once
+
+#include <Mantids30/DataFormats/JSON/json.h>
+
+#include <Mantids30/Core/Memory/streamable_object.h>
+
+
+#include <cstdint>
+#include <functional>
+#include <memory> // std::unique_ptr / std::shared_ptr were used without including this
+#include <optional>
+#include <string>
+#include <vector>
+
+namespace Mantids30::Scripts {
+
+using ApiCallback_t = std::function<boost::json::value(
+    const std::string &baseApiUrl,
+    const uint32_t &apiVersion,
+    const std::string &methodType,
+    const std::string &endpointName,
+    const boost::json::value &postParameters)>;
+
+
+class MantidsLang : public Mantids30::Memory::Streams::StreamableObject
+{
+public:
+    struct Token
+    {
+        enum class Type : uint8_t {
+            DATA,
+            SUBTAG
+        } type = Type::DATA;
+        std::unique_ptr<MantidsLang> subTag = nullptr;
+        std::string tagName;
+        std::vector<char> buffer;
+    };
+
+    MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source,
+                const std::shared_ptr<boost::json::value> &jsonContext = nullptr,
+                MantidsLang *parent = nullptr,
+                ApiCallback_t apiCallback = nullptr);
+
+    // You set the lang with the source and then stream this to an object...
+    bool streamTo(Memory::Streams::StreamableObject *out) override;
+
+    // By default, don't write here:
+    std::optional<size_t> write(const void *buf, const size_t &count) override;
+
+    ApiCallback_t apiCallback;
+
+    bool isEmpty() const;
+
+    void setDefaultPath(const std::string &newDefaultPath);
+
+private:
+
+    bool printJSON( const std::string &action , const boost::json::value & value);
+    bool iterateJSON(const std::string &foreachParam, const boost::json::value &currentJsonContext, const Token &token, size_t depth);
+    bool checkConditionalOnJSON(const std::string &conditional, const boost::json::value &currentJsonContext, const Token &token, size_t depth);
+
+    // depth is only used for the (testing) indented dump.
+    void processTokens(const boost::json::value & currentJsonContext, size_t depth = 0);
+    void parseTagsFromBuffer();
+
+    // Parse-only recursion for EOF: flushes pending buffers of the open subtag chain.
+    void finalizeParsing();
+
+    void addSubTagToken(const std::string &tagName, bool activate);
+    void createSubTag(const std::string &tagName);
+    void closeSubTag(const std::string &dataAfterClosing);
+
+    // Guarantees that tokens.back() is a writable DATA token.
+    Token &currentDataToken();
+
+    //std::string tag;
+    std::string expectedClosingTag;
+
+    std::string defaultPath;
+
+    // INSIDE TAG STATUS:
+    std::vector<Token> tokens;
+
+    std::shared_ptr<Memory::Streams::StreamableObject> source;
+    std::shared_ptr<boost::json::value> jsonContext;
+    Memory::Streams::StreamableObject *output = nullptr;
+
+    // Parent pointer for nested context tracking
+    MantidsLang *parent = nullptr;
+
+    // Current active subtag (when inside a subtag, writes go here)
+    MantidsLang *activeSubTag = nullptr;
+
+    // EOF state
+    bool eofReached = false;
+
+    // This subtag already found its {{/NAME}}; it must not accept more data.
+    bool closed = false;
+
+    // true for {{#tag!}} self-closing tags, false for block tags (foreach, if)
+    bool selfClosing = false;
+};
+
+} // namespace Mantids30::Scripts

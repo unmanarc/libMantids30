@@ -1,0 +1,40 @@
+#pragma once
+
+#include <map>
+#include <string>
+#include <string_view>
+
+#include <Mantids30/Protocols/MIME/mime_sub_header.h>
+
+namespace Mantids30::Network::Protocol::HTTP::Request {
+
+class Cookies_ClientSide
+{
+public:
+    Cookies_ClientSide();
+
+    void putOnHeaders(MIME::MIME_Sub_Header *headers) const;
+    /**
+     * @brief parseFromHeaders Parse cookies from string
+     * @param cookies_str string to parse
+     */
+    void parseFromHeaders(std::string_view cookies_str);
+    ///////////////////////////
+
+    std::string getCookieByName(std::string_view cookieName);
+    void addCookieVal(const std::string &cookieName, const std::string &cookieValue);
+
+    // TODO: add from server cookies (for client use)
+
+private:
+    /**
+     * @brief toString Convert the cookie to string to send on headers.
+     * @return string with cookies.
+     */
+    [[nodiscard]] std::string toString() const;
+
+    void parseCookie(std::string cookie);
+    std::map<std::string, std::string> m_cookiesMap;
+};
+
+} // namespace Mantids30::Network::Protocol::HTTP::Request

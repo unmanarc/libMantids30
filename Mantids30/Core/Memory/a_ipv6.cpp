@@ -1,0 +1,121 @@
+#include "a_ipv6.h"
+
+#ifdef _WIN32
+#include "w32compat.h"
+#else
+#include <arpa/inet.h>
+#endif
+
+#include <Mantids30/Core/Helpers/mem.h>
+#include <Mantids30/Core/Helpers/defines.h>
+#include <mutex>
+
+using namespace Mantids30::Memory::Abstract;
+
+IPV6::IPV6()
+{
+    setVarType(Type::IPV6);
+}
+
+IPV6::IPV6(const in6_addr &value)
+{
+    setVarType(Type::IPV6);
+    setValue(value);
+}
+
+IPV6::IPV6(const std::string &value)
+{
+    setVarType(Type::IPV6);
+    setValue(_fromString(value));
+}
+
+in6_addr IPV6::getValue()
+{
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    return m_value;
+}
+
+bool IPV6::setValue(const in6_addr &value)
+{
+    std::unique_lock<std::shared_mutex> lock(m_mutex);
+#ifndef _WIN32
+    this->m_value.__in6_u = value.__in6_u;
+#else
+    this->value.u = value.u;
+#endif
+    return true;
+}
+
+std::string IPV6::toString()
+{
+    return _toString(getValue());
+}
+
+bool IPV6::fromString(const std::string_view value)
+{
+    bool r;
+    in6_addr ipaddr = _fromString(value, &r);
+    setValue(ipaddr);
+    return r;
+}
+
+std::string IPV6::_toString(const in6_addr &value)
+{
+    char cIpSource[INET6_ADDRSTRLEN] = "";
+    inet_ntop(AF_INET6, &value, cIpSource, INET6_ADDRSTRLEN);
+    return cIpSource;
+}
+
+in6_addr IPV6::_fromString(std::string_view value, bool* ok)
+{
+    in6_addr xvalue{};
+
+    if (value.empty())
+    {
+        SET_OK_BOOLEAN(ok, true);
+
+        return xvalue;
+    }
+
+    bool r = false;
+
+    if (value.size() <= INET6_ADDRSTRLEN - 1)
+    {
+        char buffer[INET6_ADDRSTRLEN];
+
+        memcpy(buffer, value.data(), value.size());
+        buffer[value.size()] = '\0';
+
+        r = inet_pton(AF_INET6, buffer, &xvalue) == 1;
+    }
+
+    SET_OK_BOOLEAN(ok, r);
+
+    return xvalue;
+}
+
+
+std::shared_ptr<Var> IPV6::protectedCopy()
+{
+    std::shared_ptr<IPV6> var = std::make_shared<IPV6>();
+    if (var)
+    {
+        *var = getValue();
+    }
+    return var;
+}
+
+boost::json::value IPV6::toJSON()
+{
+    if (isNull())
+    {
+        return boost::json::value{};
+    }
+
+    return boost::json::value(toString());
+}
+
+bool IPV6::fromJSON(const boost::json::value &value)
+{
+    return fromString(Helpers::JSON::ASSTRING_D(value, "0.0.0.0"));
+}

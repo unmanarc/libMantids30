@@ -1,0 +1,138 @@
+#include "api_websocket_endpoints.h"
+#include <Mantids30/Protocols/HTTP/websocket_eventtype.h>
+
+#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/Protocols/HTTP/rsp_status.h>
+
+using namespace Mantids30;
+using namespace Mantids30::Network::Protocol;
+using namespace API::WebSocket;
+
+bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocket::Endpoint &endpointDefinition)
+{
+    m_endpoints[endpointPath] = endpointDefinition;
+    m_endpoints[endpointPath].config = &(config);
+    return true;
+}
+
+Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameters &parameters)
+{
+    Mantids30::Sessions::ClientDetails clientDetails;
+    if (parameters.clientRequest)
+    {
+        clientDetails.ipAddress = parameters.clientRequest->networkClientInfo.REMOTE_ADDR;
+        clientDetails.tlsCommonName = parameters.clientRequest->networkClientInfo.tlsCommonName;
+        clientDetails.userAgent = parameters.clientRequest->userAgent;
+    }
+    return clientDetails;
+}
+
+bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
+                              const WebSocketParameters &parameters)
+{
+    WebSocketEventFunctionType handler = nullptr;
+
+    switch (eventType)
+    {
+    case Network::Protocol::WebSocket::EventType::SESSION_START:
+        handler = endpointDef.sessionStartHandler;
+        break;
+    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT:
+        handler = endpointDef.textMessageReceivedHandler;
+        break;
+    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_BINARY:
+        handler = endpointDef.binaryMessageReceivedHandler;
+        break;
+    case Network::Protocol::WebSocket::EventType::SESSION_END:
+        handler = endpointDef.sessionEndHandler;
+        break;
+    default:
+        return false; // Empty return for invalid event type (do nothing)
+    }
+
+    if (handler != nullptr)
+    {
+        Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
+
+        boost::json::value jsonContent;
+        Helpers::JSON::Reader charReader;
+        std::vector<char> buf = content->copyToBuffer();
+        if (config->translateWebSocketTextMessagesToJSON
+            && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
+        {
+            if (!charReader.parse(std::string(buf.data(), buf.size()), jsonContent))
+            {
+                // Failed to translate...
+            }
+        }
+
+        handler(endpointDef.context, content, jsonContent, parameters, clientDetails);
+    }
+    return true;
+}
+
+Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath, const std::set<std::string> &currentScopes, bool isAdmin, const SecurityParameters &securityParameters)
+{
+    it = m_endpoints.find(endpointPath);
+    if (it == m_endpoints.end())
+    {
+        return HandleResult::ENDPOINT_NOT_FOUND;
+    }
+
+    const WebSocket::Endpoint &endpointDef = it->second;
+
+    // Security checks
+    if (endpointDef.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
+    {
+        return HandleResult::AUTHENTICATION_REQUIRED;
+    }
+
+    if (endpointDef.security.requireJWTCookieAuthentication && !securityParameters.haveJWTAuthCookie)
+    {
+        return HandleResult::AUTHENTICATION_REQUIRED;
+    }
+
+    if (endpointDef.security.requireSession && !securityParameters.haveSession)
+    {
+        return HandleResult::AUTHENTICATION_REQUIRED;
+    }
+
+    if (!isAdmin)
+    {
+        for (const std::string &scope : endpointDef.security.requiredScopes)
+        {
+            if (currentScopes.find(scope) == currentScopes.end())
+            {
+                return HandleResult::INVALID_SCOPE;
+            }
+        }
+    }
+
+    return HandleResult::SUCCESS;
+}
+
+const Endpoint* Endpoints::getWebSocketEndpointByURI(std::string_view uri) const
+{
+    auto it = m_endpoints.find(uri);
+    return it != m_endpoints.end() ? &it->second : nullptr;
+}
+
+Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
+                                               WebSocket::WebSocketParameters &parameters)
+{
+    if (it == m_endpoints.end())
+    {
+        return HandleResult::ENDPOINT_NOT_FOUND;
+    }
+
+    const WebSocket::Endpoint &endpointDef = it->second;
+
+    if (invokeHandler(endpointDef, eventType, content, parameters))
+    {
+        return HandleResult::SUCCESS;
+    }
+    else
+    {
+        return HandleResult::INVALID_EVENT_TYPE;
+    }
+}

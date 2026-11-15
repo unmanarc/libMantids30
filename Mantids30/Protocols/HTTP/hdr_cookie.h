@@ -1,0 +1,112 @@
+#pragma once
+
+#include "common_date.h"
+#include <Mantids30/DataFormats/JSON/json.h>
+#include <optional>
+#include <string>
+
+namespace Mantids30::Network::Protocol::HTTP::Headers {
+
+class Cookie
+{
+public:
+    /**
+     * @brief The SameSitePolicy enum
+     */
+    enum class SameSitePolicy : uint8_t
+    {
+        NONE = 0,
+        LAX = 1,
+        STRICT = 2
+    };
+
+    /**
+     * @brief Cookie Constructor
+     */
+    Cookie() = default;
+
+    /**
+     * @brief toSetCookieString Get the Cookie: string for the HTTP Header (without the Cookie:).
+     * @param cookieName Name of the cookie
+     * @return string value for the http header.
+     */
+    [[nodiscard]] std::string toSetCookieString(const std::string &cookieName) const;
+    /**
+     * @brief fromSetCookieString Parse cookie from the HTTP Cookie: string  (after the Cookie:)
+     * @param setCookieValue cookie value
+     * @param cookieName cookie name output, if value not found, the cookie Name is not filled.
+     */
+    void fromSetCookieString(const std::string &setCookieValue, std::string *cookieName);
+
+    ///////////////////////////////////////////////////////////////////////////////
+    /**
+     * @brief getExpiration Get Expiration
+     * @return Unix Time for the Expiration, nullopt if it's a session cookie, and 0 if it's marked to be removed.
+     */
+    [[nodiscard]] std::optional<time_t> getExpiration() const;
+    /**
+     * @brief setAsSessionCookie Set the cookie as a session cookie
+     */
+    void setAsSessionCookie();
+    /**
+     * @brief setExpiration Set Expiration to UNIX date
+     * @param exp unix date
+     */
+    void setExpiration(const time_t &exp);
+    /**
+     * @brief setExpirationFromNow Set Expiration in seconds from now
+     * @param seconds seconds from now
+     */
+    void setExpirationFromNow(const uint32_t &seconds);
+
+    /**
+     * @brief deleteCookie Mark the cookie for deletion by setting max-age to 0
+     */
+    void deleteCookie();
+
+    // Default: the cookie will be secure. If you want to downgrade, do it manually.
+    /**
+     * @brief The cookie's value.
+     */
+    std::string value;
+
+    /**
+     * @brief The expiration date of the cookie.
+     */
+    std::optional<HTTP::Date> expires = std::nullopt; // < default don't expire the cookie (session cookie).
+
+    /**
+     * @brief The maximum age (in seconds) of the cookie.
+     */
+    std::optional<uint32_t> maxAge = std::nullopt; // < default don't expire the cookie (session cookie).
+
+    /**
+     * @brief The domain associated with the cookie.
+     */
+    std::string domain;
+
+    /**
+     * @brief The path associated with the cookie.
+     */
+    std::string path;
+
+    /**
+     * @brief Indicates if the cookie is transmitted only over secure protocols.
+     */
+    bool secure = true;
+
+    /**
+     * @brief Indicates if the cookie is accessible only through HTTP (not via JavaScript).
+     */
+    bool httpOnly = true;
+
+    /**
+     * @brief The SameSite policy of the cookie.
+     */
+    SameSitePolicy sameSitePolicy = SameSitePolicy::STRICT;
+
+private:
+    std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
+};
+
+} // namespace Mantids30::Network::Protocol::HTTP::Headers

@@ -1,0 +1,39 @@
+#pragma once
+
+#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/Protocols/HTTP/httpv1_base.h>
+#include <regex>
+
+#include "apiserver_clienthandler.h"
+
+namespace Mantids30::Network::Servers::Web {
+
+class HTMLIEngine
+{
+public:
+    static Protocol::HTTP::Status::Code processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
+
+private:
+    static boost::json::value procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);
+
+    static void procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler);
+    static void procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler);
+
+    static std::string procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIServer_ClientHandler *clientHandler,
+                                                     bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                       bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                        bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                        bool useHTMLFrame);
+    static std::string procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                    bool useHTMLFrame);
+    static std::string replaceByJVar(const boost::json::value &value, const std::string &scriptVarName, bool useHTMLFrame);
+
+    static void iProcResource_JProcessor(std::string &input, const std::regex &re, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame);
+
+    static void iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex &exStaticText);
+};
+
+} // namespace Mantids30::Network::Servers::Web
