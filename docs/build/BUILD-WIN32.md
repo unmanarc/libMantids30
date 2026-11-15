@@ -51,7 +51,7 @@ your preferred installation prefix.
 
 - `CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS` is enabled by the top level `CMakeLists.txt`, so no
   `.def` files are required.
-- The `Net_Interfaces` component uses `tap-windows.h` and is therefore licensed under
+- The `Network/Interfaces` component uses `tap-windows.h` and is therefore licensed under
   **GPLv2** on WIN32. Installing a TAP adapter requires administrator privileges.
 - Static builds (`-DBUILD_SHARED_LIBS=OFF`) work but require the static variants of Boost
   and OpenSSL, which MSYS2 ships as separate `*-static` packages.

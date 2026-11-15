@@ -20,7 +20,7 @@ Use one of the following private channels:
 Include:
 
 - Affected version or commit.
-- Affected module (for example `Protocol_HTTP`, `DataFormat_JWT`, `DB_*`).
+- Affected module (for example `Protocols/HTTP`, `DataFormats/JWT`, `DB_*`).
 - A description of the impact and, when possible, a minimal reproducer.
 - Your preferred attribution, if any.
 
@@ -34,9 +34,9 @@ Include:
 
 The following areas are considered security relevant:
 
-- TLS handling in `Net_Sockets`, `Net_Chains` and the HTTP server.
-- JWT generation, validation and revocation in `DataFormat_JWT` and `Config_JWT`.
-- Session and authentication handling in `API_EndpointsAndSessions` and the web servers.
+- TLS handling in `Network/Sockets`, `Network/Chains` and the HTTP server.
+- JWT generation, validation and revocation in `DataFormats/JWT` and `Config/JWT`.
+- Session and authentication handling in `API/EndpointsAndSessions` and the web servers.
 - Parsing code reachable from untrusted network input.
 - Cryptographic helpers (`Helpers::Crypto`, `Helpers::OTP`, `Helpers::Random`).
 

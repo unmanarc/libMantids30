@@ -96,8 +96,8 @@ jobs:
         run: |
           set -eux
           cmake --install build-shared
-          test -f stage/include/Mantids30/Helpers/random.h
-          test -f stage/include/Mantids30/Protocol_HTTP/httpv1_server.h
+          test -f stage/include/Mantids30/Core/Helpers/random.h
+          test -f stage/include/Mantids30/Protocols/HTTP/httpv1_server.h
           export PKG_CONFIG_PATH="$PWD/stage/share/pkgconfig"
           pkg-config --exists Mantids30_Helpers
           pkg-config --exists Mantids30_Protocol_HTTP

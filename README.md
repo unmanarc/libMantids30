@@ -17,7 +17,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 | Version | 3.0.0 |
 | Language standard | C++17 |
 | Build system | CMake >= 3.10 |
-| License | LGPLv3 (`Net_Interfaces` on WIN32 is GPLv2) |
+| License | LGPLv3 (`Network/Interfaces` on WIN32 is GPLv2) |
 | Platforms | Linux (RHEL/Alma/Rocky 8-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora), Windows (MSYS2/MinGW64) |
 
 ---
@@ -146,7 +146,7 @@ Distribution specific instructions:
 ### Installed layout
 
 ```
-<prefix>/include/Mantids30/<Component>/...        public headers
+<prefix>/include/Mantids30/<Group>/<Module>/...   public headers
 <prefix>/lib/libMantids30_<Component>.so.3.0.0    shared libraries
 <prefix>/lib/libMantids30_<Component>.a           static libraries
 <prefix>/share/pkgconfig/Mantids30_<Component>.pc pkg-config metadata
@@ -154,12 +154,20 @@ Distribution specific instructions:
 
 Each component is a standalone library (`Mantids30_Helpers`, `Mantids30_Memory`,
 `Mantids30_Net_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_RESTfulWebAPI`, ...).
+Source directories follow the same `Mantids30/<Group>/<Module>` layout. Groups are
+`Core`, `Config`, `DB`, `Network`, `Protocols`, `DataFormats`, `Runtime`,
+`Applications`, `API`, `Servers` and `Scripting`; see the
+[library map](docs/CLASSES.md#library-map) for every module.
+
+Library and pkg-config names remain unchanged. Update existing includes to the
+grouped paths, for example `Mantids30/Config/JWT/config_builder.h`,
+`Mantids30/DB/DB/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
 Include headers using the installed prefix:
 
 ```cpp
-#include <Mantids30/Protocol_HTTP/httpv1_server.h>
-#include <Mantids30/Net_Sockets/socket_tcp.h>
-#include <Mantids30/Helpers/random.h>
+#include <Mantids30/Protocols/HTTP/httpv1_server.h>
+#include <Mantids30/Network/Sockets/socket_tcp.h>
+#include <Mantids30/Core/Helpers/random.h>
 ```
 
 ### With CMake and pkg-config
@@ -251,7 +259,7 @@ Please report vulnerabilities privately as described in [SECURITY.md](SECURITY.m
 
 ## License
 
-LGPLv3 - see [LICENSE](LICENSE). The `Net_Interfaces` module is GPLv2 on WIN32 because it
+LGPLv3 - see [LICENSE](LICENSE). The `Network/Interfaces` module is GPLv2 on WIN32 because it
 links `tap-windows.h`.
 
 ---

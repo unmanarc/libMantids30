@@ -48,9 +48,9 @@ The parsing system is the core engine that enables all protocol implementations 
 
 | Component | File | Role |
 |-----------|------|------|
-| **StreamableObject** | `Memory/streamable_object.h` | Base abstract I/O interface. Defines `write()`, `streamTo()`, and `writeStatus` for unified data streaming |
-| **SubParser** | `Memory/subparser.h` | Atomic parsing engine. Handles buffer management, strategy selection, and data extraction |
-| **Parser** | `Memory/parser.h` | High-level protocol orchestrator. Manages SubParser chaining, protocol lifecycle, and TTL protection |
+| **StreamableObject** | `Core/Memory/streamable_object.h` | Base abstract I/O interface. Defines `write()`, `streamTo()`, and `writeStatus` for unified data streaming |
+| **SubParser** | `Core/Memory/subparser.h` | Atomic parsing engine. Handles buffer management, strategy selection, and data extraction |
+| **Parser** | `Core/Memory/parser.h` | High-level protocol orchestrator. Manages SubParser chaining, protocol lifecycle, and TTL protection |
 
 ## Parsing Strategies
 
@@ -126,11 +126,11 @@ private:
 
 Each protocol implementation follows the same pattern:
 
-1. **HTTP** (`Protocol_HTTP/`): Uses chained SubParsers for request line → headers → body (with chunked encoding support via `common_content_chunked_subparser`)
-2. **MIME** (`Protocol_MIME/`): Uses `MULTIDELIMITER` strategy to parse multipart boundaries
-3. **LineRecv** (`Protocol_LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
-4. **FastRPC** (`Protocol_FastRPC1/`): Uses `SIZE` strategy for length-prefixed message frames
-5. **WebSocket** (`Protocol_HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
+1. **HTTP** (`Protocols/HTTP/`): Uses chained SubParsers for request line → headers → body (with chunked encoding support via `common_content_chunked_subparser`)
+2. **MIME** (`Protocols/MIME/`): Uses `MULTIDELIMITER` strategy to parse multipart boundaries
+3. **LineRecv** (`Protocols/LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
+4. **FastRPC** (`Protocols/FastRPC1/`): Uses `SIZE` strategy for length-prefixed message frames
+5. **WebSocket** (`Protocols/HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
 ---
 
 ## Related documentation

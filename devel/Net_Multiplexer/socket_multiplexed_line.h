@@ -4,18 +4,18 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <Mantids30/DataFormat_JSON/json.h>
+#include <Mantids30/DataFormats/JSON/json.h>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
 
-#include <Mantids30/Threads/mutex.h>
-#include <Mantids30/Threads/mutex_shared.h>
+#include <Mantids30/Core/Threads/mutex.h>
+#include <Mantids30/Core/Threads/mutex_shared.h>
 
 #include "socket_multiplexer_a_struct_databuffer.h"
 #include "socket_multiplexer_a_struct_lineid.h"
 
-#include <Mantids30/Net_Sockets/streamsocket.h>
+#include <Mantids30/Network/Sockets/streamsocket.h>
 
 namespace Mantids {
 namespace Network {

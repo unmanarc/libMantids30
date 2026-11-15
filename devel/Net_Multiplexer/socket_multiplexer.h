@@ -8,7 +8,7 @@
 #include "socket_multiplexer_lines.h"
 #include "socket_multiplexer_plugin.h"
 
-#include <Mantids30/Net_Sockets/streamsocket.h>
+#include <Mantids30/Network/Sockets/streamsocket.h>
 
 namespace Mantids {
 namespace Network {
