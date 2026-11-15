@@ -2,7 +2,7 @@
 #include <Mantids30/Core/Memory/subparser.h>
 #include <memory>
 
-using namespace Mantids30::Network::Protocol::MIME;
+using namespace Mantids30::Protocols::MIME;
 using namespace Mantids30;
 
 #ifdef _WIN32
@@ -19,8 +19,8 @@ MIME_Sub_Content::MIME_Sub_Content()
     setFsTmpFolder("/tmp");
 #endif
 
-    replaceContentContainer(std::make_shared<Memory::Containers::B_Chunks>());
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DIRECT_DELIMITER);
+    replaceContentContainer(std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>());
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::DIRECT_DELIMITER);
     setBoundary("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
     m_subParserName = "MIME_Sub_Content";
 }
@@ -69,7 +69,7 @@ void MIME_Sub_Content::setFsTmpFolder(const std::string &value)
     m_fsTmpFolder = value;
 }
 
-Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
     getParsedBuffer()->appendTo(*m_contentContainer);
@@ -80,13 +80,13 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
         printf("%p MIME_Sub_Content: Delimiter %s received.\n", this, boundary.c_str());
         fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("%p MIME_Sub_Content: requesting more data.\n", this);
     fflush(stdout);
 #endif
-    return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
 std::string MIME_Sub_Content::getBoundary() const
@@ -101,12 +101,12 @@ void MIME_Sub_Content::setBoundary(const std::string &value)
     setParseDataTargetSize(m_maxContentSize + m_boundary.size() + 4);
 }
 
-std::shared_ptr<Memory::Streams::StreamableObject> MIME_Sub_Content::getContentContainer() const
+std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> MIME_Sub_Content::getContentContainer() const
 {
     return m_contentContainer;
 }
 
-void MIME_Sub_Content::replaceContentContainer(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
+void MIME_Sub_Content::replaceContentContainer(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &value)
 {
     m_contentContainer = value;
 }

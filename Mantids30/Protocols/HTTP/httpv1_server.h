@@ -28,7 +28,7 @@
 #define INET6_ADDRSTRLEN 46
 #endif
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
 class HTTPv1_Server : public HTTPv1_Base
 {
@@ -36,12 +36,12 @@ public:
     class StaticContentElement
     {
     public:
-        void setData(const std::shared_ptr<Mantids30::Memory::Containers::B_MEM>& data, const time_t &lastModifiedTime);
-        std::shared_ptr<Mantids30::Memory::Containers::B_MEM> getData() { return data; }
+        void setData(const std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM>& data, const time_t &lastModifiedTime);
+        std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM> getData() { return data; }
         std::string getETag();
 
     private:
-        std::shared_ptr<Mantids30::Memory::Containers::B_MEM> data;
+        std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM> data;
         std::string etagHash;
         time_t lastModifiedTime = 0;
     };
@@ -64,7 +64,7 @@ public:
         bool exists = false;
     };
 
-    HTTPv1_Server(const std::shared_ptr<Memory::Streams::StreamableObject> &connectionStream);
+    HTTPv1_Server(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &connectionStream);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // RESPONSE:
@@ -79,13 +79,13 @@ public:
      * @brief getResponseContentStreamableObject Get the response data streamer
      * @return
      */
-    std::shared_ptr<Memory::Streams::StreamableObject> getResponseContentStreamableObject();
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> getResponseContentStreamableObject();
 
     /**
      * @brief copyStreamToInternalResponseContent Stream Response to data streamer container (may copy bytes into a container, don't use for massive data transfers)
      * @return Status of the Operation
      */
-    bool copyStreamToInternalResponseContent(const std::shared_ptr<Memory::Streams::StreamableObject> &source);
+    bool copyStreamToInternalResponseContent(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &source);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // OTHER FUNCTIONS:
@@ -174,7 +174,7 @@ protected:
     *                             is available (GET/Options/Post Data).
     * @return HTTP Status Code (will be delivered in the HTTP Response Header)
     */
-    virtual Mantids30::Network::Protocol::HTTP::Status::Code onHTTPClientContentReceived() { return HTTP::Status::Code::S_200_OK; }
+    virtual Mantids30::Protocols::HTTP::Status::Code onHTTPClientContentReceived() { return Mantids30::Protocols::HTTP::Status::Code::S_200_OK; }
 
     void *getThis() override { return this; }
     bool changeToNextParser() override;
@@ -206,7 +206,7 @@ protected:
     {
         // Here you can validate the headers, cookies, check the path
         // and/or send response indicating that the connection is not continuing.
-        serverResponse.status.setCode(HTTP::Status::Code::S_404_NOT_FOUND);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND);
         return false;
     }
     /**
@@ -242,9 +242,9 @@ protected:
 
     struct WebSocketFrame
     {
-        WebSocket::FrameHeader::OpCode frameType = WebSocket::FrameHeader::OPCODE_CONTINUATION;
-        WebSocket::FrameHeader header;
-        WebSocket::FrameContent content;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OpCode frameType = Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_CONTINUATION;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader header;
+        Mantids30::Protocols::HTTP::WebSocket::FrameContent content;
         std::atomic<time_t> lastPongReceived;
     };
 
@@ -273,7 +273,7 @@ private:
     // WebSocket:
     bool isWebSocketConnectionRequest();
     bool setupAndSendWebSocketHeaderResponse();
-    bool sendWebSocketData(const char *data, const size_t &len, WebSocket::FrameHeader::OpCode mode);
+    bool sendWebSocketData(const char *data, const size_t &len, Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OpCode mode);
 
     // Headers:
     void parseAllClientHeaders();
@@ -300,4 +300,4 @@ private:
     bool connectionContinue = true, prohibitConnectionUpgrade = false;
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

@@ -5,19 +5,19 @@
 #include <Mantids30/Protocols/HTTP/rsp_status.h>
 
 using namespace Mantids30;
-using namespace Mantids30::Network::Protocol;
-using namespace API::WebSocket;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Servers::RESTfulWebServer::WebSocket;
 
-bool Endpoints::addEndpoint(const std::string &endpointPath, const WebSocket::Endpoint &endpointDefinition)
+bool Endpoints::addEndpoint(const std::string &endpointPath, const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDefinition)
 {
     m_endpoints[endpointPath] = endpointDefinition;
     m_endpoints[endpointPath].config = &(config);
     return true;
 }
 
-Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameters &parameters)
+Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameters &parameters)
 {
-    Mantids30::Sessions::ClientDetails clientDetails;
+    Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails clientDetails;
     if (parameters.clientRequest)
     {
         clientDetails.ipAddress = parameters.clientRequest->networkClientInfo.REMOTE_ADDR;
@@ -27,23 +27,23 @@ Sessions::ClientDetails Endpoints::extractClientDetails(const WebSocketParameter
     return clientDetails;
 }
 
-bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
+bool Endpoints::invokeHandler(const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDef, const Mantids30::Protocols::HTTP::WebSocket::EventType &eventType, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &content,
                               const WebSocketParameters &parameters)
 {
     WebSocketEventFunctionType handler = nullptr;
 
     switch (eventType)
     {
-    case Network::Protocol::WebSocket::EventType::SESSION_START:
+    case Mantids30::Protocols::HTTP::WebSocket::EventType::SESSION_START:
         handler = endpointDef.sessionStartHandler;
         break;
-    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT:
+    case Mantids30::Protocols::HTTP::WebSocket::EventType::RECEIVED_MESSAGE_TEXT:
         handler = endpointDef.textMessageReceivedHandler;
         break;
-    case Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_BINARY:
+    case Mantids30::Protocols::HTTP::WebSocket::EventType::RECEIVED_MESSAGE_BINARY:
         handler = endpointDef.binaryMessageReceivedHandler;
         break;
-    case Network::Protocol::WebSocket::EventType::SESSION_END:
+    case Mantids30::Protocols::HTTP::WebSocket::EventType::SESSION_END:
         handler = endpointDef.sessionEndHandler;
         break;
     default:
@@ -52,13 +52,13 @@ bool Endpoints::invokeHandler(const WebSocket::Endpoint &endpointDef, const Netw
 
     if (handler != nullptr)
     {
-        Mantids30::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
+        Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails clientDetails = extractClientDetails(parameters);
 
         boost::json::value jsonContent;
-        Helpers::JSON::Reader charReader;
+        Mantids30::DataFormats::JSON::Reader charReader;
         std::vector<char> buf = content->copyToBuffer();
         if (config->translateWebSocketTextMessagesToJSON
-            && (eventType == Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Network::Protocol::WebSocket::EventType::SESSION_END))
+            && (eventType == Mantids30::Protocols::HTTP::WebSocket::EventType::RECEIVED_MESSAGE_TEXT || eventType == Mantids30::Protocols::HTTP::WebSocket::EventType::SESSION_END))
         {
             if (!charReader.parse(std::string(buf.data(), buf.size()), jsonContent))
             {
@@ -79,7 +79,7 @@ Endpoints::HandleResult Endpoints::checkEndpoint(const std::string &endpointPath
         return HandleResult::ENDPOINT_NOT_FOUND;
     }
 
-    const WebSocket::Endpoint &endpointDef = it->second;
+    const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDef = it->second;
 
     // Security checks
     if (endpointDef.security.requireJWTHeaderAuthentication && !securityParameters.haveJWTAuthHeader)
@@ -117,15 +117,15 @@ const Endpoint* Endpoints::getWebSocketEndpointByURI(std::string_view uri) const
     return it != m_endpoints.end() ? &it->second : nullptr;
 }
 
-Endpoints::HandleResult Endpoints::handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
-                                               WebSocket::WebSocketParameters &parameters)
+Endpoints::HandleResult Endpoints::handleEvent(const Mantids30::Protocols::HTTP::WebSocket::EventType &eventType, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &content,
+                                               Mantids30::Servers::RESTfulWebServer::WebSocket::WebSocketParameters &parameters)
 {
     if (it == m_endpoints.end())
     {
         return HandleResult::ENDPOINT_NOT_FOUND;
     }
 
-    const WebSocket::Endpoint &endpointDef = it->second;
+    const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDef = it->second;
 
     if (invokeHandler(endpointDef, eventType, content, parameters))
     {

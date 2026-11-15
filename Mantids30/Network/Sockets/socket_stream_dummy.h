@@ -64,14 +64,14 @@ public:
      *
      * @return A pointer to the sender B_Chunks object.
      */
-    Memory::Containers::B_Chunks *getSender();
+    Mantids30::Core::Memory::Containers::B_Chunks *getSender();
 
     /**
      * @brief Get the receiver buffer chunk container.
      *
      * @return A pointer to the receiver B_Chunks object.
      */
-    Memory::Containers::B_Chunks *getReceiver();
+    Mantids30::Core::Memory::Containers::B_Chunks *getReceiver();
 
     /**
      * @brief Read a data block from the chunk container.
@@ -102,8 +102,8 @@ public:
 
 private:
     std::string peerName;                  /**< Peer name associated with the socket. */
-    Memory::Containers::B_Chunks sender;   /**< Sender buffer chunk container. */
-    Memory::Containers::B_Chunks receiver; /**< Receiver buffer chunk container. */
+    Mantids30::Core::Memory::Containers::B_Chunks sender;   /**< Sender buffer chunk container. */
+    Mantids30::Core::Memory::Containers::B_Chunks receiver; /**< Receiver buffer chunk container. */
     bool shuttedDownRD = false;            /**< Flag indicating if the read side has been shutdown. */
     bool shuttedDownWR = false;            /**< Flag indicating if the write side has been shutdown. */
 };

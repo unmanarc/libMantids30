@@ -172,14 +172,14 @@ public:
 private:
     static void thread_streamaccept(const std::shared_ptr<MultiThreaded> &tc, size_t socketIndex);
 
-    bool processClient(const std::shared_ptr<Sockets::Socket_Stream> &clientSocket, const std::shared_ptr<StreamAcceptorThread> &clientThread);
+    bool processClient(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &clientSocket, const std::shared_ptr<StreamAcceptorThread> &clientThread);
 
     uint32_t incrementIPUsage(const std::string &ipAddr);
     void decrementIPUsage(const std::string &ipAddr);
 
     bool m_initialized = false;
     bool m_finalized = false;
-    std::vector<std::shared_ptr<Sockets::Socket_Stream>> m_acceptorSocketList;
+    std::vector<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> m_acceptorSocketList;
     std::list<std::shared_ptr<StreamAcceptorThread>> m_threadList;
     std::map<std::string, uint32_t> m_connectionsPerIP;
 

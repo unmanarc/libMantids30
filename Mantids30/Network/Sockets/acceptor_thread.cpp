@@ -39,7 +39,7 @@ void StreamAcceptorThread::postInitConnection()
     }
 }
 
-void StreamAcceptorThread::setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> &_clientSocket)
+void StreamAcceptorThread::setClientSocket(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &_clientSocket)
 {
     m_pClientSocket = _clientSocket;
 }

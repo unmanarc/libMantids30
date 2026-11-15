@@ -19,7 +19,7 @@ namespace Mantids30::Network::Sockets::Acceptors {
 /**
  * @brief The PoolThreaded class
  */
-class PoolThreaded : public Mantids30::Threads::Threaded
+class PoolThreaded : public Mantids30::Core::Threads::Threaded
 {
 public:
     /**
@@ -115,7 +115,7 @@ public:
        * Multiple acceptor sockets can be added, each will be polled in the run loop.
        * @param value acceptor socket
        */
-    void addAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &value);
+    void addAcceptorSocket(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &value);
     /**
        * @brief getAcceptorSocketCount Get the number of acceptor sockets currently registered.
        * @return number of acceptor sockets
@@ -150,7 +150,7 @@ private:
 
         std::string key;
 
-        std::shared_ptr<Sockets::Socket_Stream> clientSocket;
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> clientSocket;
         char pad;
     };
 
@@ -160,7 +160,7 @@ private:
 
     void init();
 
-    std::vector<std::shared_ptr<Sockets::Socket_Stream>> m_acceptorSocketList;
+    std::vector<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> m_acceptorSocketList;
     std::vector<std::thread> m_acceptorThreads;
     std::atomic<bool> m_running{false};
     std::mutex m_runMutex;

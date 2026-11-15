@@ -1,13 +1,13 @@
 #include "httpv1_server.h"
 #include <boost/algorithm/string/predicate.hpp>
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
 using namespace std;
 
-void HTTP::HTTPv1_Server::fillLogInformation(boost::property_tree::ptree &jWebLog)
+void Mantids30::Protocols::HTTP::HTTPv1_Server::fillLogInformation(boost::property_tree::ptree &jWebLog)
 {
     jWebLog.put("remoteHost", std::string(clientRequest.networkClientInfo.REMOTE_ADDR));
     jWebLog.put("timestamp", static_cast<int64_t>(time(nullptr)));
@@ -23,7 +23,7 @@ void HTTP::HTTPv1_Server::fillLogInformation(boost::property_tree::ptree &jWebLo
     }
 }
 
-bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendFullHTTPResponse()
 {
     boost::property_tree::ptree jWebLog;
     fillLogInformation(jWebLog);
@@ -80,7 +80,7 @@ bool HTTP::HTTPv1_Server::sendFullHTTPResponse()
     return streamedOK;
 }
 
-bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
 {
     // Act as a server. Send data from here.
     size_t strsize;
@@ -102,7 +102,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     {
         serverResponse.headers.remove("Content-Length");
         /////////////////////
-        if (serverResponse.content.getTransmissionMode() == HTTP::Content::TransmissionMode::CHUNKS)
+        if (serverResponse.content.getTransmissionMode() == Mantids30::Protocols::HTTP::Content::TransmissionMode::CHUNKS)
         {
             // It's chunked...
             serverResponse.headers.replace("Transfer-Encoding", "Chunked");
@@ -119,7 +119,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
         serverResponse.headers.replace("Content-Length", std::to_string(strsize));
     }
 
-    HTTP::Date currentDate;
+    Mantids30::Protocols::HTTP::Date currentDate;
     currentDate.setCurrentTime();
 
     if (serverResponse.includeDate)
@@ -193,7 +193,7 @@ bool HTTP::HTTPv1_Server::sendHTTPHeadersResponse()
     return serverResponse.headers.streamToUpstream();
 }
 
-bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(const std::shared_ptr<Memory::Streams::StreamableObject> &source)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &source)
 {
     if (!serverResponse.content.getStreamableObject())
     {
@@ -204,7 +204,7 @@ bool HTTP::HTTPv1_Server::copyStreamToInternalResponseContent(const std::shared_
     return true;
 }
 
-std::shared_ptr<Memory::Streams::StreamableObject> HTTP::HTTPv1_Server::getResponseContentStreamableObject()
+std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> Mantids30::Protocols::HTTP::HTTPv1_Server::getResponseContentStreamableObject()
 {
     return serverResponse.content.getStreamableObject();
 }

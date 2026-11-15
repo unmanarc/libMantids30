@@ -1,15 +1,15 @@
 #include "clienthandler.h"
 
-using namespace Mantids30::Network::Servers::RESTful;
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Servers::RESTfulWebServer;
+using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::DataFormat;
-using namespace Mantids30::Memory;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::DataFormats::JWT;
+using namespace Mantids30::Core::Memory;
 using namespace Mantids30;
 using namespace std;
 
-Network::Protocol::HTTP::Status::Code ClientHandler::sessionStart()
+Mantids30::Protocols::HTTP::Status::Code ClientHandler::sessionStart()
 {
     // Check for the authorization bearer token...
     string headerBearerToken = clientRequest.getAuthorizationBearer();
@@ -59,13 +59,13 @@ Network::Protocol::HTTP::Status::Code ClientHandler::sessionStart()
         // If verification is successful and the token is valid, populate user data.
         // Extract and store user-related information from the token.
         // Create a temporary session for the REST request...
-        currentSessionInfo.authSession = make_shared<Mantids30::Sessions::Session>(jwtToken);
+        currentSessionInfo.authSession = make_shared<Mantids30::Servers::RESTfulWebServer::Sessions::Session>(jwtToken);
         currentSessionInfo.halfSessionId = jwtToken.getJwtId();
         currentSessionInfo.sessionId = jwtToken.getJwtId();
         currentSessionInfo.isImpersonation = !(currentSessionInfo.authSession->getImpersonator().empty());
     }
 
-    return HTTP::Status::Code::S_200_OK;
+    return Mantids30::Protocols::HTTP::Status::Code::S_200_OK;
 }
 
 void ClientHandler::sessionCleanup()
@@ -75,10 +75,10 @@ void ClientHandler::sessionCleanup()
 
 void ClientHandler::fillSessionExtraInfo(boost::json::value &jVars)
 {
-    Helpers::JSON::setMember(jVars, "maxAge", 0);
+    Mantids30::DataFormats::JSON::setMember(jVars, "maxAge", 0);
     if (isSessionActive())
     {
-        Helpers::JSON::setMember(jVars, "maxAge", jwtToken.getExpirationTime() - time(nullptr));
+        Mantids30::DataFormats::JSON::setMember(jVars, "maxAge", jwtToken.getExpirationTime() - time(nullptr));
     }
 }
 

@@ -3,9 +3,9 @@
 #include <Mantids30/Core/Memory/subparser.h>
 #include <string>
 
-namespace Mantids30::Network::Protocol::MIME {
+namespace Mantids30::Protocols::MIME {
 
-class MIME_Sub_FirstBoundary : public Memory::Streams::SubParser
+class MIME_Sub_FirstBoundary : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     MIME_Sub_FirstBoundary();
@@ -14,10 +14,10 @@ public:
     void setBoundary(const std::string &value);
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     std::string m_boundary;
 };
 
-} // namespace Mantids30::Network::Protocol::MIME
+} // namespace Mantids30::Protocols::MIME

@@ -1,9 +1,10 @@
 #include "api_options_handler.h"
 #include <boost/algorithm/string/join.hpp>
 
-using namespace Mantids30::API;
+using namespace Mantids30::Protocols::HTTP;
+using namespace Mantids30::Servers::RESTfulWebServer;
 
-void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &apiReturn, const std::string &requestOrigin) const
+void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(Mantids30::Protocols::HTTP::APIReturn &apiReturn, const std::string &requestOrigin) const
 {
     // Set Access-Control-Allow-Origin
     if (!requestOrigin.empty() && allowsOrigin(requestOrigin))
@@ -66,7 +67,7 @@ void OptionsHandlerConfig::configureAPIReturnOptionsHeaders(APIReturn &apiReturn
     }
 }
 
-OptionsHandlerConfig &Mantids30::API::OptionsHandlerConfig::insertAllowedOrigin(const std::string &allowedOrigin)
+OptionsHandlerConfig &Mantids30::Servers::RESTfulWebServer::OptionsHandlerConfig::insertAllowedOrigin(const std::string &allowedOrigin)
 {
     allowedOrigins.insert(allowedOrigin);
     return *this;

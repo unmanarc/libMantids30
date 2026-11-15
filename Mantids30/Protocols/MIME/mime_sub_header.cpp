@@ -9,13 +9,13 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol::MIME;
+using namespace Mantids30::Protocols::MIME;
 using namespace Mantids30;
 using namespace std;
 
 MIME_Sub_Header::MIME_Sub_Header()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setMaxOptionSize(16 * KB_MULT); // 16K per option
     m_subParserName = "MIME_Sub_Header";
@@ -23,7 +23,7 @@ MIME_Sub_Header::MIME_Sub_Header()
 
 bool MIME_Sub_Header::streamToUpstream()
 {
-    Memory::Streams::WriteStatus cur;
+    Mantids30::Core::Memory::Streams::WriteStatus cur;
 
     // Write out the header option values...
     for (std::multimap<std::string, std::shared_ptr<MIME_HeaderOption>>::reference &i : m_headers)
@@ -175,7 +175,7 @@ void MIME_Sub_Header::setMaxOptions(const size_t &value)
     m_maxOptions = value;
 }
 
-Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
 {
     if (!getParsedBuffer()->size())
     {
@@ -183,14 +183,14 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
         printf("Parsing MIME header lines (END).\n");
         fflush(stdout);
 #endif
-        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("Parsing MIME header (line).\n");
     fflush(stdout);
 #endif
     parseOptionValue(getParsedBuffer()->toStringEx());
-    return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
 
@@ -200,7 +200,7 @@ void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &o
     std::vector<std::string> vStaticTexts;
     std::string sVarValues = strName;
     // TODO: find a way to do this easier...
-    std::string secureReplace = Helpers::Random::createRandomString(16);
+    std::string secureReplace = Mantids30::Core::Helpers::Random::createRandomString(16);
     opt->setOrigValue(sVarValues);
 
     boost::trim(sVarValues);

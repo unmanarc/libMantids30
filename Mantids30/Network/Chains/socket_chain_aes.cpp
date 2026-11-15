@@ -11,7 +11,7 @@
 
 #include <Mantids30/Core/Helpers/mem.h>
 
-using namespace Mantids30::Network::Sockets::ChainProtocols;
+using namespace Mantids30::Network::Chains;
 
 using namespace std;
 

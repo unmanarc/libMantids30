@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 inline static void ARRAY_APPEND(boost::json::array &v, const boost::json::value &e)
 {
@@ -149,4 +149,4 @@ inline static uint64_t ARRAY_ASUINT64(const boost::json::value &j, size_t i, uin
     return def;
 }
 
-} // namespace Mantids30::Helpers::JSON
+} // namespace Mantids30::DataFormats::JSON

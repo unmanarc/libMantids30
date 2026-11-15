@@ -7,10 +7,10 @@
 #include <Mantids30/Core/Memory/b_chunks.h>
 #include <Mantids30/Core/Memory/b_mem.h>
 
-using namespace Mantids30::Memory::Streams;
-using namespace Mantids30::Memory::Streams::Encoders;
+using namespace Mantids30::Core::Memory::Streams;
+using namespace Mantids30::Protocols::HTTP::Encoders;
 
-size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
+size_t URL::writeTo(Mantids30::Core::Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
 {
     size_t readenBytes = 0;
 
@@ -76,11 +76,11 @@ inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
 
 std::string URL::encodeURLStr(const std::string &url)
 {
-    Mantids30::Memory::Containers::B_MEM uriDecoded(url.c_str(), url.size());
-    Memory::Containers::B_Chunks uriEncoded;
+    Mantids30::Core::Memory::Containers::B_MEM uriDecoded(url.c_str(), url.size());
+    Mantids30::Core::Memory::Containers::B_Chunks uriEncoded;
 
     // Encode URI...
-    Memory::Streams::Encoders::URL uriEncoder;
+    Mantids30::Protocols::HTTP::Encoders::URL uriEncoder;
 
     uriEncoder.transform(&uriDecoded, &uriEncoded);
 

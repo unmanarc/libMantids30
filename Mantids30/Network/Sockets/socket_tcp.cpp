@@ -137,7 +137,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
     return true;
 }
 
-std::shared_ptr<Sockets::Socket_Stream> Socket_TCP::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TCP::acceptConnection()
 {
     int sdconn;
 

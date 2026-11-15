@@ -4,22 +4,22 @@
 #include <memory>
 #include <optional>
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 
 using namespace Mantids30;
 
-HTTP::URLVarContent::URLVarContent()
+Mantids30::Protocols::HTTP::URLVarContent::URLVarContent()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::MULTIDELIMITER);
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::MULTIDELIMITER);
     setParseMultiDelimiter({"=", "&"});
     setMaxObjectSize(4096);
-    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
+    m_pData = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     m_subParserName = "URLVarContent";
 }
 
-HTTP::URLVarContent::~URLVarContent() = default;
+Mantids30::Protocols::HTTP::URLVarContent::~URLVarContent() = default;
 
-void HTTP::URLVarContent::setVarType(bool varName)
+void Mantids30::Protocols::HTTP::URLVarContent::setVarType(bool varName)
 {
     if (varName)
     {
@@ -31,34 +31,34 @@ void HTTP::URLVarContent::setVarType(bool varName)
     }
 }
 
-void HTTP::URLVarContent::setMaxObjectSize(const size_t &size)
+void Mantids30::Protocols::HTTP::URLVarContent::setMaxObjectSize(const size_t &size)
 {
     setParseDataTargetSize(size);
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getContentAndFlush()
+std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> Mantids30::Protocols::HTTP::URLVarContent::getContentAndFlush()
 {
-    std::shared_ptr<Memory::Containers::B_Chunks> r = m_pData;
-    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> r = m_pData;
+    m_pData = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     return r;
 }
 
-std::string HTTP::URLVarContent::getContentAsStringAndFlush()
+std::string Mantids30::Protocols::HTTP::URLVarContent::getContentAsStringAndFlush()
 {
     std::optional<std::string> r = m_pData->toString();
-    m_pData = std::make_shared<Memory::Containers::B_Chunks>();
+    m_pData = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     return r ? *r : "";
 }
 
-Memory::Streams::SubParser::ParseResult HTTP::URLVarContent::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocols::HTTP::URLVarContent::parse()
 {
     m_pData->clear();
     if (!getParsedBuffer()->size())
     {
-        return Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
     }
 
-    Memory::Streams::Decoders::URL urlDecoder;
+    Mantids30::Protocols::HTTP::Decoders::URL urlDecoder;
     urlDecoder.transform(getParsedBuffer(), // Parsed Buffer.
                          m_pData.get()      // pData.
     );
@@ -67,13 +67,13 @@ Memory::Streams::SubParser::ParseResult HTTP::URLVarContent::parse()
     {
         // Error parsing the URLVar...
         m_pData->clear();
-        return Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
-    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
-std::shared_ptr<Memory::Containers::B_Chunks> HTTP::URLVarContent::getCurrentContentData()
+std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> Mantids30::Protocols::HTTP::URLVarContent::getCurrentContentData()
 {
     return m_pData;
 }

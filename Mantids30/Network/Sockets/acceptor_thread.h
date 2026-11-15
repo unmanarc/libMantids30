@@ -35,7 +35,7 @@ public:
     /**
      * Set socket
      */
-    void setClientSocket(const std::shared_ptr<Sockets::Socket_Stream> &_clientSocket);
+    void setClientSocket(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &_clientSocket);
 
     /**
      * @brief getRemotePair Get Remote Host Address
@@ -48,7 +48,7 @@ public:
     static void thread_streamclient(const std::shared_ptr<StreamAcceptorThread> &threadClient, void *threadedAcceptedControl);
 
 private:
-    std::shared_ptr<Sockets::Socket_Stream> m_pClientSocket;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> m_pClientSocket;
 };
 
 } // namespace Mantids30::Network::Sockets::Acceptors

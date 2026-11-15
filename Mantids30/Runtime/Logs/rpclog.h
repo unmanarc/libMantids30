@@ -4,7 +4,7 @@
 #include "logcolors.h"
 #include "loglevels.h"
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 class RPCLog : public LogBase
 {
@@ -31,4 +31,4 @@ private:
                           const char *logLevelText);
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

@@ -55,13 +55,13 @@ public:
      * @param s peer established socket.
      * @return true if peer setted successfully.
      */
-    bool setPeer(Side i, const std::shared_ptr<Sockets::Socket_Stream> &s);
+    bool setPeer(Side i, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s);
     /**
      * @brief GetPeer Get the Pipe Peers
      * @param i peer number (0 or 1)
      * @return Stream Socket Peer.
      */
-    [[nodiscard]] std::shared_ptr<Sockets::Socket_Stream> getPeer(Side i);
+    [[nodiscard]] std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> getPeer(Side i);
     /**
      * @brief setAutoDelete Auto Delete the pipe object when finish threaded job.
      * @param value true for autodelete (default), false for not.
@@ -141,7 +141,7 @@ private:
 
     Bridge_Thread *m_bridgeThreadPrc = nullptr;
 
-    std::shared_ptr<Sockets::Socket_Stream> m_peers[2] = {nullptr, nullptr};
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> m_peers[2] = {nullptr, nullptr};
     TransmissionMode m_transmitionMode = TransmissionMode::STREAM;
 
     std::atomic<size_t> m_sentBytes{0}, m_recvBytes{0};

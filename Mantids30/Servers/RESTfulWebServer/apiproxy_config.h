@@ -8,18 +8,18 @@
 
 #include "apiproxy.h"
 
-namespace Mantids30::Program::Config {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 class APIProxyConfig
 {
 public:
     APIProxyConfig() = default;
-    static std::shared_ptr<Network::Servers::Web::APIProxyParameters> createAPIProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
+    static std::shared_ptr<Mantids30::Servers::RESTfulWebServer::APIProxyParameters> createAPIProxyParams(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &config,
                                                                                            const std::map<std::string, std::string> &vars = {});
 
 private:
-    static void parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders,
+    static void parseExtraHeaders(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders,
                                   const std::map<std::string, std::string> &vars);
 };
 
-} // namespace Mantids30::Program::Config
+} // namespace Mantids30::Servers::RESTfulWebServer

@@ -9,12 +9,12 @@
 // TODO: reuse the connection?...
 // TODO: header: :scheme:https (begins with :)
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
 {
 public:
-    HTTPv1_Client(const std::shared_ptr<Memory::Streams::StreamableObject> &sobject);
+    HTTPv1_Client(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &sobject);
     /**
      * @brief setClientRequest Set client request
      * @param hostName host name
@@ -24,8 +24,8 @@ public:
 
     struct PostMIMERequest
     {
-        std::shared_ptr<Protocol::MIME::MIME_Message> postVars;
-        std::shared_ptr<HTTP::URLVars> urlVars;
+        std::shared_ptr<Mantids30::Protocols::MIME::MIME_Message> postVars;
+        std::shared_ptr<Mantids30::Protocols::HTTP::URLVars> urlVars;
     };
     /**
      * @brief prepareRequestAsPostMIME Prepare a POST MIME Request (by default we use GET)
@@ -36,8 +36,8 @@ public:
 
     struct PostURLRequest
     {
-        std::shared_ptr<HTTP::URLVars> postVars;
-        std::shared_ptr<HTTP::URLVars> urlVars;
+        std::shared_ptr<Mantids30::Protocols::HTTP::URLVars> postVars;
+        std::shared_ptr<Mantids30::Protocols::HTTP::URLVars> urlVars;
     };
     /**
      * @brief prepareRequestAsPostURL Prepare a POST URL Request (by default we use GET)
@@ -83,12 +83,12 @@ public:
      * @brief setIfNoneMatch Set If-None-Match ETag for conditional requests
      * @param etag ETag object
      */
-    void setIfNoneMatch(const Headers::ETag &etag);
+    void setIfNoneMatch(const Mantids30::Protocols::HTTP::Headers::ETag &etag);
     /**
      * @brief getResponseETag Get ETag from server response
      * @return ETag object from response
      */
-    Headers::ETag getResponseETag() const;
+    Mantids30::Protocols::HTTP::Headers::ETag getResponseETag() const;
     /**
      * @brief getServerContentType Get Server Content Type
      * @return Content Type
@@ -120,13 +120,13 @@ protected:
 
 private:
     void parseHeaders2ServerCookies();
-    Memory::Streams::SubParser *parseHeaders2TransmissionMode();
+    Mantids30::Core::Memory::Streams::SubParser *parseHeaders2TransmissionMode();
 
     bool streamClientHeaders();
 
-    HTTP::Request::Cookies_ClientSide m_clientCookies;
+    Mantids30::Protocols::HTTP::Request::Cookies_ClientSide m_clientCookies;
 
     std::string m_serverContentType;
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

@@ -11,15 +11,15 @@
 #include "mime_sub_endpboundary.h"
 #include "mime_sub_firstboundary.h"
 
-namespace Mantids30::Network::Protocol::MIME {
+namespace Mantids30::Protocols::MIME {
 
-class MIME_Message : public Memory::Abstract::Vars, public Memory::Streams::Parser
+class MIME_Message : public Mantids30::Core::Memory::Abstract::Vars, public Mantids30::Core::Memory::Streams::Parser
 {
 public:
     static std::shared_ptr<MIME_Message> create(const std::shared_ptr<StreamableObject> &value = nullptr);
     ~MIME_Message() override = default;
 
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
     // virtuals:
 
@@ -88,9 +88,9 @@ public:
      */
     bool addReferecedFileVar(const std::string &varName, const std::string &filePath);
 
-    bool addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<Memory::Streams::StreamableObject> &obj);
+    bool addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &obj);
 
-    bool addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data) override;
+    bool addVar(const std::string &varName, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &data) override;
 
     ////////////////////////////////////////////////////////////////////
     //        ------------- CALLBACKS OPTIONS -------------
@@ -262,4 +262,4 @@ private:
     MIMECallback m_onContentReady;
 };
 
-} // namespace Mantids30::Network::Protocol::MIME
+} // namespace Mantids30::Protocols::MIME

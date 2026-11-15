@@ -15,19 +15,19 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 class APIServerConfig
 {
 public:
-    using ClientDetails = Sessions::ClientDetails;
-    using RequestContext = API::RESTful::RequestContext;
-    using APIReturn = API::APIReturn;
+    using ClientDetails = Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails;
+    using RequestContext = Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext;
+    using Mantids30::Protocols::HTTP::APIReturn = Mantids30::Protocols::HTTP::APIReturn;
 
     APIServerConfig() = default;
     ~APIServerConfig();
 
-    using DynamicInitialChecks = Protocol::HTTP::Status::Code (*)(Protocol::HTTP::HTTPv1_Base::Request *request, Protocol::HTTP::HTTPv1_Base::Response *response);
+    using DynamicInitialChecks = Mantids30::Protocols::HTTP::Status::Code (*)(Mantids30::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Protocols::HTTP::HTTPv1_Base::Response *response);
     DynamicInitialChecks dynamicInitialChecks = nullptr;
 
     /**
@@ -41,7 +41,7 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, std::string_view apikey, DataFormat::JWT::Token *accessToken);
+    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, std::string_view apikey, Mantids30::DataFormats::JWT::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.
@@ -74,12 +74,12 @@ public:
     DynamicOriginValidatorFunction dynamicLoginCallbackOriginValidator = nullptr;
 
     // JWT Validator and signer...
-    std::shared_ptr<DataFormat::JWT> jwtValidator;
-    std::shared_ptr<DataFormat::JWT> jwtSigner;
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator;
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtSigner;
 
-    std::shared_ptr<Program::Logs::AppLog> appLog = nullptr;
-    std::shared_ptr<Program::Logs::RPCLog> rpcLog = nullptr;
-    std::shared_ptr<Program::Logs::WebLog> webLog = nullptr;
+    std::shared_ptr<Mantids30::Runtime::Logs::AppLog> appLog = nullptr;
+    std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> rpcLog = nullptr;
+    std::shared_ptr<Mantids30::Runtime::Logs::WebLog> webLog = nullptr;
 
     /**
      * @brief redirections HTTP 307 Redirections (Temporary Redirect), by example, you can use some path for URL shortening here.
@@ -94,7 +94,7 @@ public:
      * over which resources can be accessed during a session.
      *
      */
-    std::shared_ptr<API::Web::ResourcesFilter> resourceFilter;
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::ResourcesFilter> resourceFilter;
 
 
     bool debugResourceFilter = false;
@@ -113,7 +113,7 @@ public:
      */
     std::string loginCallbackAPIEndpointName = "callback";
 
-    API::WebSocket::Config webSockets;
+    Mantids30::Servers::RESTfulWebServer::WebSocket::Config webSockets;
 
     /**
      * @brief useJSTokenCookie for RESTful server, JS Token cookie means that the JS will receive the JWT token that can be used for Header authentication via Cookie
@@ -237,16 +237,16 @@ public:
      * - `request` (HTTPv1_Base::Request*): Pointer to the HTTP request object.
      * - `response` (HTTPv1_Base::Response*): Pointer to the HTTP response object.
      * - `obj` (const std::shared_ptr<void>&): Optional user-defined object passed to the handler.
-     * - `sessionInfo` (const Sessions::SessionInfo*): Authentication context containing user session data.
+     * - `sessionInfo` (const Mantids30::Servers::RESTfulWebServer::Sessions::SessionInfo*): Authentication context containing user session data.
      *
-     * The handler returns a value of type `Protocol::HTTP::Status::Code` representing the
+     * The handler returns a value of type `Mantids30::Protocols::HTTP::Status::Code` representing the
      * response status code.
      */
-    using DynamicRequestHandler = Protocol::HTTP::Status::Code (*)(const std::string &internalPath,
-                                                                    Protocol::HTTP::HTTPv1_Base::Request *request,
-                                                                    Protocol::HTTP::HTTPv1_Base::Response *response,
+    using DynamicRequestHandler = Mantids30::Protocols::HTTP::Status::Code (*)(const std::string &internalPath,
+                                                                    Mantids30::Protocols::HTTP::HTTPv1_Base::Request *request,
+                                                                    Mantids30::Protocols::HTTP::HTTPv1_Base::Response *response,
                                                                     const std::shared_ptr<void> &obj,
-                                                                    const Sessions::SessionInfo *sessionInfo);
+                                                                    const Mantids30::Servers::RESTfulWebServer::Sessions::SessionInfo *sessionInfo);
 
     struct DynamicRequestHandlerDef
     {
@@ -273,7 +273,7 @@ public:
      *     information about the client request.
      *   - `HTTPv1_Base::Response* response`: Pointer to the HTTP response object, used to
      *     generate the response to the client.
-     *   - **Return**: A `Protocol::HTTP::Status::Codes` representing the status of the
+     *   - **Return**: A `Mantids30::Protocols::HTTP::Status::Codes` representing the status of the
      *     response, such as success or error codes.
      *
      * This map enables efficient routing by allowing the server to quickly look up and execute
@@ -312,7 +312,7 @@ public:
      * @brief getStaticContentElements Get static content element...
      * @return
      */
-    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> getStaticContentElements();
+    std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM>> getStaticContentElements();
 
     /**
      * @brief Adds an overlapped directory mapping for internal paths to filesystem paths.
@@ -359,9 +359,9 @@ private:
      */
     std::list<std::pair<std::string, std::string>> m_overlappedDirectories;
 
-    std::map<std::string, std::shared_ptr<Memory::Containers::B_MEM>> m_staticContentElements;
+    std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM>> m_staticContentElements;
     std::mutex m_internalContentMutex;
     std::list<char *> m_memToBeFreed;
 };
 
-} // namespace Mantids30::Network::Servers::Web
+} // namespace Mantids30::Servers::RESTfulWebServer

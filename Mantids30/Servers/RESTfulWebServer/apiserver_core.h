@@ -12,7 +12,7 @@
 #include <list>
 #include <memory>
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 class APIServerCore
 {
@@ -37,7 +37,7 @@ public:
              *
              * @param callbackFunction The callback function to be invoked.
              */
-            NotificationCallback(bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &)) { this->callbackFunction = callbackFunction; }
+            NotificationCallback(bool (*callbackFunction)(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &)) { this->callbackFunction = callbackFunction; }
 
             /**
              * @brief call Invokes the callback function with the provided context and socket.
@@ -46,7 +46,7 @@ public:
              * @param sock The socket connection to be processed.
              * @return True if the callback returns true, false otherwise.
              */
-            bool call(void *context, const std::shared_ptr<Sockets::Socket_Stream> &sock) const
+            bool call(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock) const
             {
                 if (!callbackFunction)
                 {
@@ -61,7 +61,7 @@ public:
              * @param sock The newly established socket connection.
              * @return True to continue processing the connection, false to cancel it.
              */
-            bool (*callbackFunction)(void *, const std::shared_ptr<Sockets::Socket_Stream> &) = nullptr;
+            bool (*callbackFunction)(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &) = nullptr;
         };
 
         NotificationCallback onClientConnected;                   ///< Callback invoked when a new client connects.
@@ -72,7 +72,7 @@ public:
 
     APIServerCore();
 
-    void handleVirtualConnection(const std::shared_ptr<Network::Sockets::Socket_Stream_Dummy> &virtualConnection);
+    void handleVirtualConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Dummy> &virtualConnection);
 
     /**
      * @brief setAcceptMultiThreaded Configures the server to start in multi-threaded mode where the number of threads grows as connections are received.
@@ -81,7 +81,7 @@ public:
      *
      * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
      */
-    void setAcceptMultiThreaded(const std::list<std::shared_ptr<Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
+    void setAcceptMultiThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief setAcceptPoolThreaded Configures the server to start in pool-threaded mode with a fixed number of pre-started threads.
@@ -90,7 +90,7 @@ public:
      *
      * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
      */
-    void setAcceptPoolThreaded(const std::list<std::shared_ptr<Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
+    void setAcceptPoolThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
 
     /**
      * @brief startInBackground Starts the server in the background.
@@ -103,15 +103,15 @@ public:
     Callbacks callbacks;    ///< The callbacks object used by the web server.
     APIServerConfig config; ///< The api server configuration parameters
 
-    [[nodiscard]] std::list<std::shared_ptr<Sockets::Socket_Stream>> getListenerSockets() const;
+    [[nodiscard]] std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> getListenerSockets() const;
     /**
      * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
      * @param newWebsocketEndpoints
      */
-    void setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints);
+    void setWebsocketEndpoints(const std::shared_ptr<Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoints> &newWebsocketEndpoints);
 
 protected:
-    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Sockets::Socket_Stream> &s) { return nullptr; }
+    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s) { return nullptr; }
 
     /**
      * @brief checkEngineStatus Check if the engine is properly configured to be started or not.
@@ -123,7 +123,7 @@ protected:
     /**
      * @brief m_websocketEndpoints WebSocket endpoints shared pointer
      */
-    std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoints> m_websocketEndpoints;
 
 private:
     enum class AcceptorType : uint8_t
@@ -134,28 +134,28 @@ private:
     };
 
     AcceptorType m_acceptorType = AcceptorType::NONE;
-    std::list<std::shared_ptr<Sockets::Socket_Stream>> m_listenerSockets;
+    std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> m_listenerSockets;
 
-    std::shared_ptr<Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
-    std::shared_ptr<Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
+    std::shared_ptr<Mantids30::Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
+    std::shared_ptr<Mantids30::Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
 
     /**
      * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static void handleConnect(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
+    static void handleConnect(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
     /**
      * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
      */
-    static void handleInitFailed(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
+    static void handleInitFailed(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
     /**
      * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
      */
-    static void handleTimeOut(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
+    static void handleTimeOut(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
 
     /**
      * @brief _onConnectionLimit
      */
-    static void handleConnectionLimit(void *, const std::shared_ptr<Sockets::Socket_Stream> &);
+    static void handleConnectionLimit(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
 };
 
-} // namespace Mantids30::Network::Servers::Web
+} // namespace Mantids30::Servers::RESTfulWebServer

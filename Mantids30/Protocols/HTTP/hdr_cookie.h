@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP::Headers {
+namespace Mantids30::Protocols::HTTP::Headers {
 
 class Cookie
 {
@@ -73,7 +73,7 @@ public:
     /**
      * @brief The expiration date of the cookie.
      */
-    std::optional<HTTP::Date> expires = std::nullopt; // < default don't expire the cookie (session cookie).
+    std::optional<Mantids30::Protocols::HTTP::Date> expires = std::nullopt; // < default don't expire the cookie (session cookie).
 
     /**
      * @brief The maximum age (in seconds) of the cookie.
@@ -109,4 +109,4 @@ private:
     std::pair<std::string, std::string> getVarNameAndValue(const std::string &var);
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP::Headers
+} // namespace Mantids30::Protocols::HTTP::Headers

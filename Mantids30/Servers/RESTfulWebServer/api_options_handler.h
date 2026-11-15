@@ -5,10 +5,8 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::API {
+namespace Mantids30::Servers::RESTfulWebServer {
 
-// Forward declaration
-class APIReturn;
 
 /**
  * @brief Configuration for OPTIONS/CORS endpoint handling
@@ -29,7 +27,7 @@ struct OptionsHandlerConfig
     /// Default constructor
     OptionsHandlerConfig() = default;
 
-    void configureAPIReturnOptionsHeaders(APIReturn &apiReturn, const std::string &requestOrigin) const;
+    void configureAPIReturnOptionsHeaders(Mantids30::Protocols::HTTP::APIReturn &apiReturn, const std::string &requestOrigin) const;
 
     OptionsHandlerConfig &insertAllowedOrigin(const std::string &allowedOrigin);
 
@@ -89,4 +87,4 @@ struct OptionsHandlerConfig
     [[nodiscard]] std::string getExposeHeadersHeader() const;
 };
 
-} // namespace Mantids30::API
+} // namespace Mantids30::Servers::RESTfulWebServer

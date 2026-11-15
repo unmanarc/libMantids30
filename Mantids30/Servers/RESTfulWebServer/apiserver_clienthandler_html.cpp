@@ -6,38 +6,38 @@
 #include <string>
 
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 using namespace std;
 
-HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &url)
+Mantids30::Protocols::HTTP::Status::Code APIServer_ClientHandler::redirectUsingJS(const std::string &url)
 {
     if (url == "#retokenize")
     {
-        return HTTP::Status::Code::S_200_OK;
+        return Mantids30::Protocols::HTTP::Status::Code::S_200_OK;
     }
 
-    std::shared_ptr<Memory::Streams::StreamableString> htmlOutput = std::make_shared<Memory::Streams::StreamableString>();
-    htmlOutput->writeString("<script>window.location.href = atob('" + Helpers::Encoders::encodeToBase64(url) + "');</script>");
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> htmlOutput = std::make_shared<Mantids30::Core::Memory::Streams::StreamableString>();
+    htmlOutput->writeString("<script>window.location.href = atob('" + Mantids30::Core::Helpers::Encoders::encodeToBase64(url) + "');</script>");
     serverResponse.setContentDataStreamer(htmlOutput);
     serverResponse.setContentType("text/html", true);
 
-    return HTTP::Status::Code::S_200_OK;
+    return Mantids30::Protocols::HTTP::Status::Code::S_200_OK;
 }
 
-HTTP::Status::Code APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, HTTP::Status::Code returnCode)
+Mantids30::Protocols::HTTP::Status::Code APIServer_ClientHandler::showBrowserMessage(const std::string &title, const std::string &message, Mantids30::Protocols::HTTP::Status::Code returnCode)
 {
-    std::shared_ptr<Streams::StreamableString> sHTMLPayloadOut = createHTMLAlertMessage(title, message);
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> sHTMLPayloadOut = createHTMLAlertMessage(title, message);
     serverResponse.setContentDataStreamer(sHTMLPayloadOut);
     serverResponse.setContentType("text/html", true);
     return returnCode;
 }
 
-std::shared_ptr<Streams::StreamableString> APIServer_ClientHandler::createHTMLAlertMessage(const std::string &title, const std::string &message)
+std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> APIServer_ClientHandler::createHTMLAlertMessage(const std::string &title, const std::string &message)
 {
-    std::shared_ptr<Memory::Streams::StreamableString> sPayloadOut = std::make_shared<Memory::Streams::StreamableString>();
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> sPayloadOut = std::make_shared<Mantids30::Core::Memory::Streams::StreamableString>();
     sPayloadOut->writeString(R"(
         <!DOCTYPE html>
         <html lang="en">

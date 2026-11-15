@@ -25,7 +25,7 @@
 #define HTTP_PRODUCT_VERSION_MAJOR 0
 #define HTTP_PRODUCT_VERSION_MINOR 7
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
 enum class Source : uint8_t
 {
@@ -33,7 +33,7 @@ enum class Source : uint8_t
     GET
 };
 
-class HTTPv1_Base : public Mantids30::Memory::Streams::Parser
+class HTTPv1_Base : public Mantids30::Core::Memory::Streams::Parser
 {
 public:
     /**
@@ -45,9 +45,9 @@ public:
      */
     struct Security
     {
-        Headers::Security::XFrameOptions XFrameOptions; ///< The X-Frame-Options setting.
-        Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
-        Headers::Security::HSTS HSTS;                   ///< The HSTS (HTTP Strict Transport Security) setting.
+        Mantids30::Protocols::HTTP::Headers::Security::XFrameOptions XFrameOptions; ///< The X-Frame-Options setting.
+        Mantids30::Protocols::HTTP::Headers::Security::XSSProtection XSSProtection; ///< The XSS protection setting.
+        Mantids30::Protocols::HTTP::Headers::Security::HSTS HSTS;                   ///< The HSTS (HTTP Strict Transport Security) setting.
         bool disableNoSniffContentType = false;         ///< Whether or not to disable the no-sniff content type header.
     };
 
@@ -87,7 +87,7 @@ public:
          * @param source
          * @return
          */
-        std::shared_ptr<Memory::Abstract::Vars> getVarsBySource(const Source &source)
+        std::shared_ptr<Mantids30::Core::Memory::Abstract::Vars> getVarsBySource(const Source &source)
         {
             switch (source)
             {
@@ -98,13 +98,13 @@ public:
             }
             return nullptr;
         }
-        std::shared_ptr<MIME::MIME_HeaderOption> getCookies() const
+        std::shared_ptr<Mantids30::Protocols::MIME::MIME_HeaderOption> getCookies() const
         {
-            std::shared_ptr<MIME::MIME_HeaderOption> i = headers.getOptionByName("Cookie");
+            std::shared_ptr<Mantids30::Protocols::MIME::MIME_HeaderOption> i = headers.getOptionByName("Cookie");
             if (!i)
             {
                 // Return empty object when no data is available.
-                return std::make_shared<MIME::MIME_HeaderOption>();
+                return std::make_shared<Mantids30::Protocols::MIME::MIME_HeaderOption>();
             }
             return i;
         }
@@ -113,17 +113,17 @@ public:
          * @brief getJSONContent Get the JSON Content if any...
          * @return object to the unparsed json streamer if JSON was requested (or set as request)
          */
-        std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONStreamerContent()
+        std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> getJSONStreamerContent()
         {
             if (requestLine.getHTTPMethod() == "GET")
             {
                 // Get method uses the URL parameters (as a big json)
-                std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonParameters = std::make_shared<Mantids30::Memory::Streams::StreamableJSON>();
+                std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> jsonParameters = std::make_shared<Mantids30::DataFormats::JSON::StreamableJSON>();
 
-                Memory::Streams::StreamableString urlData;
+                Mantids30::Core::Memory::Streams::StreamableString urlData;
                 urlData.setValue(requestLine.getRequestGETVarsRawString());
 
-                Memory::Streams::Decoders::URL urlDecoder;
+                Mantids30::Protocols::HTTP::Decoders::URL urlDecoder;
                 urlDecoder.transform(&urlData, jsonParameters.get());
 
                 jsonParameters->writeEOF();
@@ -136,7 +136,7 @@ public:
             else
             {
                 // Other methods use the body content.
-                if (content.getContainerType() == HTTP::Content::ContainerType::JSON)
+                if (content.getContainerType() == Mantids30::Protocols::HTTP::Content::ContainerType::JSON)
                 {
                     return content.getJSONVars();
                 }
@@ -147,7 +147,7 @@ public:
 
         std::multimap<std::string, std::string> getAllCookies() const
         {
-            std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
+            std::shared_ptr<Mantids30::Protocols::MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
             {
                 return {};
@@ -195,7 +195,7 @@ public:
          */
         std::string getCookie(const std::string &sCookieName) const
         {
-            std::shared_ptr<MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
+            std::shared_ptr<Mantids30::Protocols::MIME::MIME_HeaderOption> cookiesSubVars = headers.getOptionByName("Cookie");
             if (!cookiesSubVars)
             {
                 return "";
@@ -241,14 +241,14 @@ public:
             }
             void fromJSON(const boost::json::value &sessionInfo)
             {
-                const boost::json::value &remoteAddress = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "remoteAddress");
-                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", std::string(Helpers::JSON::ASSTRING_D(remoteAddress, "")).c_str());
-                const boost::json::value &isSecureConnection = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "isSecureConnection");
-                isSecure = Helpers::JSON::ASBOOL_D(isSecureConnection, false);
-                const boost::json::value &tls = Mantids30::Helpers::JSON::MEMBER_OR_NULL(sessionInfo, "tls");
+                const boost::json::value &remoteAddress = Mantids30::DataFormats::JSON::MEMBER_OR_NULL(sessionInfo, "remoteAddress");
+                snprintf(REMOTE_ADDR, sizeof(REMOTE_ADDR), "%s", std::string(Mantids30::DataFormats::JSON::ASSTRING_D(remoteAddress, "")).c_str());
+                const boost::json::value &isSecureConnection = Mantids30::DataFormats::JSON::MEMBER_OR_NULL(sessionInfo, "isSecureConnection");
+                isSecure = Mantids30::DataFormats::JSON::ASBOOL_D(isSecureConnection, false);
+                const boost::json::value &tls = Mantids30::DataFormats::JSON::MEMBER_OR_NULL(sessionInfo, "tls");
                 if (sessionInfo.is_object() && tls.is_object())
                 {
-                    tlsCommonName = Helpers::JSON::ASSTRING(tls, "commonName", "");
+                    tlsCommonName = Mantids30::DataFormats::JSON::ASSTRING(tls, "commonName", "");
                 }
                 else
                 {
@@ -266,15 +266,15 @@ public:
         /**
          * @brief clientRequest - URL Request (Request type, URL, GET Vars, and HTTP version)
          */
-        Mantids30::Network::Protocol::HTTP::Request::RequestLine requestLine;
+        Mantids30::Protocols::HTTP::Request::RequestLine requestLine;
         /**
          * @brief content - Content Data.
          */
-        HTTP::Content content;
+        Mantids30::Protocols::HTTP::Content content;
         /**
          * @brief headers - Options Values.
          */
-        MIME::MIME_Sub_Header headers;
+        Mantids30::Protocols::MIME::MIME_Sub_Header headers;
         /**
          * @brief basicAuth Authentication Information
          */
@@ -294,7 +294,7 @@ public:
         /**
          * @brief ifNoneMatch ETag for conditional requests (If-None-Match header)
          */
-        Headers::ETag ifNoneMatch;
+        Mantids30::Protocols::HTTP::Headers::ETag ifNoneMatch;
     };
     struct Response
     {
@@ -319,14 +319,14 @@ public:
          * @brief Set the container used for transmitting data.
          * @param dataStream The stream used, or nullptr to use the default empty streamer.
          */
-        void setContentDataStreamer(const std::shared_ptr<Memory::Streams::StreamableObject> &dataStream, bool preserveHeaders = false)
+        void setContentDataStreamer(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &dataStream, bool preserveHeaders = false)
         {
             if (!dataStream && !preserveHeaders)
             {
                 // Set default original headers (lost previous ones):
                 headers.remove("Last-Modified");
                 etag.clear();
-                cacheControl = Headers::CacheControl();
+                cacheControl = Mantids30::Protocols::HTTP::Headers::CacheControl();
                 setContentType("", false);
             }
             content.setStreamableObject(dataStream);
@@ -352,14 +352,14 @@ public:
          */
         void setSecureCookie(const std::string &cookieName, const std::string &cookieValue, const uint32_t &uMaxAge, const std::string &path)
         {
-            Headers::Cookie val;
+            Mantids30::Protocols::HTTP::Headers::Cookie val;
             val.setExpirationFromNow(uMaxAge);
             val.path = path;
             val.value = cookieValue;
             val.secure = true;
             val.httpOnly = true;
             val.maxAge = uMaxAge;
-            val.sameSitePolicy = Headers::Cookie::SameSitePolicy::STRICT;
+            val.sameSitePolicy = Mantids30::Protocols::HTTP::Headers::Cookie::SameSitePolicy::STRICT;
             setCookie(cookieName, val);
         }
 
@@ -379,7 +379,7 @@ public:
          */
         void setInsecureCookie(const std::string &sCookieName, const std::string &sCookieValue)
         {
-            Headers::Cookie val;
+            Mantids30::Protocols::HTTP::Headers::Cookie val;
             val.value = sCookieValue;
             setCookie(sCookieName, val);
         }
@@ -388,7 +388,7 @@ public:
          * @param cookieName name of the cookie variable
          * @param cookieValue value of the cookie.
          */
-        void setCookie(const std::string &sCookieName, const Headers::Cookie &sCookieValue)
+        void setCookie(const std::string &sCookieName, const Mantids30::Protocols::HTTP::Headers::Cookie &sCookieValue)
         {
             // Remove cookie
             cookies.removeCookie(sCookieName);
@@ -398,7 +398,7 @@ public:
          * @brief setRedirectLocation Redirect site to another URL
          * @param location URL string
          */
-        Mantids30::Network::Protocol::HTTP::Status::Code setRedirectLocation(const std::string &location, bool temporary = true)
+        Mantids30::Protocols::HTTP::Status::Code setRedirectLocation(const std::string &location, bool temporary = true)
         {
             headers.replace("Location", location);
 
@@ -407,26 +407,26 @@ public:
 
             if (temporary)
             {
-                return HTTP::Status::Code::S_307_TEMPORARY_REDIRECT;
+                return Mantids30::Protocols::HTTP::Status::Code::S_307_TEMPORARY_REDIRECT;
             }
             else
             {
-                return HTTP::Status::Code::S_308_PERMANENT_REDIRECT;
+                return Mantids30::Protocols::HTTP::Status::Code::S_308_PERMANENT_REDIRECT;
             }
         }
 
         /**
          * @brief code Response - Server code response. (HTTP Version, Response code, message)
          */
-        Mantids30::Network::Protocol::HTTP::Status status;
+        Mantids30::Protocols::HTTP::Status status;
         /**
          * @brief content - Content Data.
          */
-        HTTP::Content content;
+        Mantids30::Protocols::HTTP::Content content;
         /**
          * @brief headers - Options Values.
          */
-        MIME::MIME_Sub_Header headers;
+        Mantids30::Protocols::MIME::MIME_Sub_Header headers;
         /**
          * @brief security Response Security
          */
@@ -434,15 +434,15 @@ public:
         /**
          * @brief cookies Set-Cookies cookies...
          */
-        HTTP::Response::Cookies_ServerSide cookies;
+        Mantids30::Protocols::HTTP::Response::Cookies_ServerSide cookies;
         /**
          * @brief cacheControl Cache Control
          */
-        Headers::CacheControl cacheControl;
+        Mantids30::Protocols::HTTP::Headers::CacheControl cacheControl;
         /**
          * @brief etag Entity Tag for cache validation
          */
-        Headers::ETag etag;
+        Mantids30::Protocols::HTTP::Headers::ETag etag;
         /**
          * @brief sWWWAuthenticateRealm WWW-Authenticate Realm String (if not empty, authentication is requested to the client)
          */
@@ -466,7 +466,7 @@ public:
         bool includeDate = true;
     };
 
-    HTTPv1_Base(bool clientMode, const std::shared_ptr<Memory::Streams::StreamableObject> &sobject);
+    HTTPv1_Base(bool clientMode, const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &sobject);
     ~HTTPv1_Base() override = default;
 
     Request clientRequest;
@@ -484,4 +484,4 @@ private:
                                    const uint32_t &versionMinor = HTTP_PRODUCT_VERSION_MINOR);
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

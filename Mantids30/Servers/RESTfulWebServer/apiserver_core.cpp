@@ -5,18 +5,18 @@
 
 #include <memory>
 
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 
 APIServerCore::APIServerCore()
 {
-    m_multiThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::MultiThreaded>();
-    m_poolThreadedAcceptor = std::make_shared<Network::Sockets::Acceptors::PoolThreaded>();
+    m_multiThreadedAcceptor = std::make_shared<Mantids30::Network::Sockets::Acceptors::MultiThreaded>();
+    m_poolThreadedAcceptor = std::make_shared<Mantids30::Network::Sockets::Acceptors::PoolThreaded>();
 }
 
-void APIServerCore::setAcceptPoolThreaded(const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
+void APIServerCore::setAcceptPoolThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    for (const std::shared_ptr<Sockets::Socket_Stream> &socket : listenerSockets)
+    for (const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &socket : listenerSockets)
     {
         m_poolThreadedAcceptor->addAcceptorSocket(socket);
     }
@@ -33,9 +33,9 @@ void APIServerCore::setAcceptPoolThreaded(const std::list<std::shared_ptr<Socket
     m_acceptorType = AcceptorType::POOL_THREADED;
 }
 
-void APIServerCore::setAcceptMultiThreaded(const std::list<std::shared_ptr<Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
+void APIServerCore::setAcceptMultiThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree)
 {
-    for (const std::shared_ptr<Sockets::Socket_Stream> &socket : listenerSockets)
+    for (const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &socket : listenerSockets)
     {
         m_multiThreadedAcceptor->addAcceptorSocket(socket);
     }
@@ -72,7 +72,7 @@ void APIServerCore::startInBackground()
     }
 }
 
-void APIServerCore::setWebsocketEndpoints(const std::shared_ptr<API::WebSocket::Endpoints> &newWebsocketEndpoints)
+void APIServerCore::setWebsocketEndpoints(const std::shared_ptr<Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoints> &newWebsocketEndpoints)
 {
     m_websocketEndpoints = newWebsocketEndpoints;
     m_websocketEndpoints->config = &(this->config.webSockets);
@@ -83,24 +83,24 @@ std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> APIServer
     return m_listenerSockets;
 }
 
-void APIServerCore::handleVirtualConnection(const std::shared_ptr<Sockets::Socket_Stream_Dummy> &virtualConnection)
+void APIServerCore::handleVirtualConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Dummy> &virtualConnection)
 {
     handleConnect(this, virtualConnection);
 }
 
-void APIServerCore::handleConnect(void *context, const std::shared_ptr<Sockets::Socket_Stream> &sock)
+void APIServerCore::handleConnect(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
 
     std::string tlsCN;
     if (sock->isSecure())
     {
-        std::shared_ptr<Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TLS>(sock);
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> tlsSock = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TLS>(sock);
         tlsCN = tlsSock->getTLSPeerCN();
     }
 
     // Use Nagle:
-    std::shared_ptr<Network::Sockets::Socket_TCP> tcpSock = std::dynamic_pointer_cast<Network::Sockets::Socket_TCP>(sock);
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> tcpSock = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TCP>(sock);
     tcpSock->setTcpNoDelayOption(false);
 
     // Prepare the web services handler.
@@ -116,18 +116,18 @@ void APIServerCore::handleConnect(void *context, const std::shared_ptr<Sockets::
     if (webserver->callbacks.onClientConnected.call(webserver, sock))
     {
         // Handle the Web Server.
-        Memory::Streams::Parser::ParseResult err;
+        Mantids30::Core::Memory::Streams::Parser::ParseResult err;
         apiWebServerClientHandler->parseObject(&err);
     }
 }
 
-void APIServerCore::handleInitFailed(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
+void APIServerCore::handleInitFailed(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     webserver->callbacks.onProtocolInitializationFailure.call(webserver, s);
 }
 
-void APIServerCore::handleTimeOut(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
+void APIServerCore::handleTimeOut(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))
@@ -140,7 +140,7 @@ void APIServerCore::handleTimeOut(void *context, const std::shared_ptr<Sockets::
     }
 }
 
-void APIServerCore::handleConnectionLimit(void *context, const std::shared_ptr<Sockets::Socket_Stream> &s)
+void APIServerCore::handleConnectionLimit(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s)
 {
     APIServerCore *webserver = static_cast<APIServerCore *>(context);
     if (webserver->callbacks.onClientAcceptTimeoutOccurred.call(webserver, s))

@@ -8,7 +8,7 @@
 #include <Mantids30/DataFormats/JSON/json.h>
 #include "atomicexpressionside.h"
 
-namespace Mantids30::Scripts::Expressions {
+namespace Mantids30::Scripting::JSONExprEval {
 
 class AtomicExpression
 {

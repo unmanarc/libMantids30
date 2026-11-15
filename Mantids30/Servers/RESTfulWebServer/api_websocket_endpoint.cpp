@@ -1,10 +1,10 @@
 #include "api_websocket_endpoint.h"
 #include "api_websocket_connection.h"
 
-using namespace Mantids30::API::WebSocket;
+using namespace Mantids30::Servers::RESTfulWebServer::WebSocket;
 
 Endpoint::Endpoint()
-    : connectionsByIdMap(std::make_shared<Threads::Safe::Map<std::string>>())
+    : connectionsByIdMap(std::make_shared<Mantids30::Core::Threads::Safe::Map<std::string>>())
 {}
 
 size_t Endpoint::getActiveUserConnectionsCount(std::string_view userId) const

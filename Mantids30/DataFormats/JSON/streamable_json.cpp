@@ -3,16 +3,17 @@
 #include <Mantids30/Core/Memory/streamable_object.h>
 #include <optional>
 
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Core::Memory::Streams;
+using namespace Mantids30::DataFormats::JSON;
 using namespace Mantids30;
 
-bool StreamableJSON::streamTo(Memory::Streams::StreamableObject *out)
+bool StreamableJSON::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
-    Memory::Streams::WriteStatus cur;
+    Mantids30::Core::Memory::Streams::WriteStatus cur;
 
     if (!m_isFormatted)
     {
-        m_strValue = Helpers::JSON::toString(m_root);
+        m_strValue = Mantids30::DataFormats::JSON::toString(m_root);
     }
     else
     {
@@ -85,7 +86,7 @@ boost::json::value *StreamableJSON::processValue()
         return nullptr;
     }
 
-    Helpers::JSON::Reader reader;
+    Mantids30::DataFormats::JSON::Reader reader;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     if (!parsingSuccessful)
     {
@@ -117,7 +118,7 @@ void StreamableJSON::setValue(const boost::json::value &value)
 
 bool StreamableJSON::setValue(const std::string &value)
 {
-    Helpers::JSON::Reader reader;
+    Mantids30::DataFormats::JSON::Reader reader;
     m_strValue = value;
     bool parsingSuccessful = reader.parse(m_strValue, m_root);
     return parsingSuccessful;

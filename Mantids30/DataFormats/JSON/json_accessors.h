@@ -13,7 +13,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 inline static const char *ASCSTRING(const boost::json::value &j, std::string_view x, const char *def)
 {
@@ -150,4 +150,4 @@ inline static void setMember(boost::json::value &j, std::string_view key, T &&va
     j.as_object()[key] = std::move(v);
 }
 
-} // namespace Mantids30::Helpers::JSON
+} // namespace Mantids30::DataFormats::JSON

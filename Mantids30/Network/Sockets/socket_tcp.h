@@ -12,7 +12,7 @@ namespace Mantids30::Network::Sockets {
 /**
  * TCP Socket Class
  */
-class Socket_TCP : public Sockets::Socket_Stream
+class Socket_TCP : public Mantids30::Network::Sockets::Socket_Stream
 {
 public:
     /**

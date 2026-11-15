@@ -15,8 +15,8 @@
 #include <mutex>
 
 using namespace std;
-using namespace Mantids30::Program::Arguments;
-using namespace Mantids30::Memory::Abstract;
+using namespace Mantids30::Runtime::Service::Arguments;
+using namespace Mantids30::Core::Memory::Abstract;
 
 GlobalArguments::GlobalArguments()
 {
@@ -310,7 +310,7 @@ void GlobalArguments::printProgramHeader()
 {
     cout << "# " << softwareDescription << " (" << softwareName << ") v" << m_version << '\n';
 
-    for (const Program::Values::Author &i : m_authors)
+    for (const Mantids30::Runtime::Service::Values::Author &i : m_authors)
     {
         cout << "# " << "Author:  " << i.name << " (" << i.email << ")\n";
     }

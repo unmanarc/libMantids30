@@ -9,10 +9,11 @@
 #include <functional>
 #include <memory> // std::unique_ptr / std::shared_ptr were used without including this
 #include <optional>
+#include <regex>
 #include <string>
 #include <vector>
 
-namespace Mantids30::Scripts {
+namespace Mantids30::Scripting::MantidsLang {
 
 using ApiCallback_t = std::function<boost::json::value(
     const std::string &baseApiUrl,
@@ -22,7 +23,7 @@ using ApiCallback_t = std::function<boost::json::value(
     const boost::json::value &postParameters)>;
 
 
-class MantidsLang : public Mantids30::Memory::Streams::StreamableObject
+class MantidsLang : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     struct Token
@@ -36,13 +37,13 @@ public:
         std::vector<char> buffer;
     };
 
-    MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source,
+    MantidsLang(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &source,
                 const std::shared_ptr<boost::json::value> &jsonContext = nullptr,
                 MantidsLang *parent = nullptr,
                 ApiCallback_t apiCallback = nullptr);
 
     // You set the lang with the source and then stream this to an object...
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
     // By default, don't write here:
     std::optional<size_t> write(const void *buf, const size_t &count) override;
@@ -54,6 +55,9 @@ public:
     void setDefaultPath(const std::string &newDefaultPath);
 
 private:
+    static const std::regex &tagRegex();
+    static std::string trimCopy(const std::string &in);
+    static std::string extractCommandName(const std::string &tagName);
 
     bool printJSON( const std::string &action , const boost::json::value & value);
     bool iterateJSON(const std::string &foreachParam, const boost::json::value &currentJsonContext, const Token &token, size_t depth);
@@ -81,9 +85,9 @@ private:
     // INSIDE TAG STATUS:
     std::vector<Token> tokens;
 
-    std::shared_ptr<Memory::Streams::StreamableObject> source;
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> source;
     std::shared_ptr<boost::json::value> jsonContext;
-    Memory::Streams::StreamableObject *output = nullptr;
+    Mantids30::Core::Memory::Streams::StreamableObject *output = nullptr;
 
     // Parent pointer for nested context tracking
     MantidsLang *parent = nullptr;
@@ -101,4 +105,4 @@ private:
     bool selfClosing = false;
 };
 
-} // namespace Mantids30::Scripts
+} // namespace Mantids30::Scripting::MantidsLang

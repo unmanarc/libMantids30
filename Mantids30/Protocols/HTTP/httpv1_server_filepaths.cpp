@@ -8,13 +8,13 @@
 using namespace boost;
 using namespace boost::algorithm;
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
 using namespace std;
 
-bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories,
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWithEndingSlash, const std::list<std::pair<std::string, std::string>> &overlappedDirectories,
                                                        LocalRequestedFileInfo *outFileInfo, const std::string &defaultFileToAppend, const bool &preventMappingExecutables)
 {
     if (!outFileInfo)
@@ -219,7 +219,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
         }
         else
         {
-            std::shared_ptr<Mantids30::Memory::Containers::B_MMAP> fileMemoryMap = std::make_shared<Mantids30::Memory::Containers::B_MMAP>();
+            std::shared_ptr<Mantids30::Core::Memory::Containers::B_MMAP> fileMemoryMap = std::make_shared<Mantids30::Core::Memory::Containers::B_MMAP>();
             if (fileMemoryMap->referenceFile(selectedOverlap.fileSystemRealPath, true, false))
             {
                 // File Found / Readable.
@@ -228,7 +228,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
                 serverResponse.setContentDataStreamer(fileMemoryMap);
                 detectContentTypeFromFilePath(outFileInfo->relativePath);
 
-                HTTP::Date fileModificationDate;
+                Mantids30::Protocols::HTTP::Date fileModificationDate;
 #ifdef _WIN32
                 fileModificationDate.setUnixTime(selectedPathInfo.fileStats.st_mtime);
 #else
@@ -266,7 +266,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(string defaultWebRootWith
     }
 }
 
-bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
     {
@@ -329,7 +329,7 @@ bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(const std::string &uri,
     return true;
 }
 
-bool HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(const std::string &uri, std::string sServerDir, LocalRequestedFileInfo *info)
 {
     if (!info)
     {

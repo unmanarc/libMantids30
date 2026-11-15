@@ -1,7 +1,7 @@
 #include "session_vars.h"
 #include <mutex>
 
-using namespace Mantids30::Sessions;
+using namespace Mantids30::Servers::RESTfulWebServer::Sessions;
 
 void Session_Vars::setSessionVariable(const std::string &varName, const boost::json::value &varValue)
 {

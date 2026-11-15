@@ -6,9 +6,9 @@
 #include <cstdint>
 #include <memory>
 
-namespace Mantids30::Network::Protocol::WebSocket {
+namespace Mantids30::Protocols::HTTP::WebSocket {
 
-class FrameContent : public Memory::Streams::SubParser
+class FrameContent : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     enum class ValidationResult : uint8_t
@@ -32,7 +32,7 @@ public:
     std::optional<std::string> getContentAsString();
 
     // Get content as a binary container.
-    std::shared_ptr<Memory::Containers::B_Chunks> getContent() const;
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> getContent() const;
 
     // Validation
     ValidationResult validateContent();
@@ -60,7 +60,7 @@ private:
     bool m_validateUtf8 = false;
 
     // Content storage
-    std::shared_ptr<Memory::Containers::B_Chunks> m_content;
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> m_content;
 
     bool m_isComplete = false;
     bool m_isFirstFrame = false;
@@ -71,4 +71,4 @@ private:
     uint64_t m_maxContentSize = 512 * 1024; // 512Kb default
 };
 
-} // namespace Mantids30::Network::Protocol::WebSocket
+} // namespace Mantids30::Protocols::HTTP::WebSocket

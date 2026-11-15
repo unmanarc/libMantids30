@@ -11,14 +11,14 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Network::Protocol::HTTP::Request;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Protocols::HTTP::Request;
 using namespace Mantids30;
 
 RequestLine::RequestLine()
 {
-    m_getVars = HTTP::URLVars::create();
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
+    m_getVars = Mantids30::Protocols::HTTP::URLVars::create();
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setSecurityMaxURLSize(128 * KB_MULT); // 128K
 
@@ -34,7 +34,7 @@ bool RequestLine::streamToUpstream()
     {
         buffer += "?";
 
-        Memory::Streams::StreamableString getVarsStr;
+        Mantids30::Core::Memory::Streams::StreamableString getVarsStr;
         m_getVars->streamTo(&getVarsStr);
         buffer += getVarsStr.getValue();
     }
@@ -45,7 +45,7 @@ bool RequestLine::streamToUpstream()
     return m_upStream->writeStatus.succeed;
 }
 
-Memory::Streams::SubParser::ParseResult RequestLine::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult RequestLine::parse()
 {
     std::string clientRequest = getParsedBuffer()->toStringEx();
 
@@ -55,7 +55,7 @@ Memory::Streams::SubParser::ParseResult RequestLine::parse()
     // We need almost 2 parameters.
     if (requestParts.size() < 2)
     {
-        return Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
@@ -64,7 +64,7 @@ Memory::Streams::SubParser::ParseResult RequestLine::parse()
 
     parseURI();
 
-    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
 void RequestLine::parseURI()
@@ -84,7 +84,7 @@ void RequestLine::parseURI()
     }
 
     // Decode URI (maybe it's url encoded)...
-    m_requestURI = Memory::Streams::Decoders::URL::decodeURLStr(m_requestURI);
+    m_requestURI = Mantids30::Protocols::HTTP::Decoders::URL::decodeURLStr(m_requestURI);
 }
 
 void RequestLine::parseGETVars()
@@ -104,10 +104,10 @@ bool RequestLine::fromJSON(const boost::json::value &json)
         return false;
     }
 
-    setHTTPMethod(Helpers::JSON::ASSTRING(json, "method", ""));
-    setRequestURI(Helpers::JSON::ASSTRING(json, "uri", ""));
-    m_httpVersion.fromJSON(Helpers::JSON::MEMBER_OR_NULL(json, "httpVersion"));
-    m_getVars->fromJSON(Helpers::JSON::MEMBER_OR_NULL(json, "getVars"));
+    setHTTPMethod(Mantids30::DataFormats::JSON::ASSTRING(json, "method", ""));
+    setRequestURI(Mantids30::DataFormats::JSON::ASSTRING(json, "uri", ""));
+    m_httpVersion.fromJSON(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(json, "httpVersion"));
+    m_getVars->fromJSON(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(json, "getVars"));
 
     return true;
 }
@@ -134,12 +134,12 @@ string RequestLine::toString() const
     }
 }
 
-HTTP::Version *RequestLine::getHTTPVersion()
+Mantids30::Protocols::HTTP::Version *RequestLine::getHTTPVersion()
 {
     return &m_httpVersion;
 }
 
-std::shared_ptr<Memory::Abstract::Vars> RequestLine::urlVars()
+std::shared_ptr<Mantids30::Core::Memory::Abstract::Vars> RequestLine::urlVars()
 {
     return m_getVars;
 }

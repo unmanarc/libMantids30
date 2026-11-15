@@ -1,6 +1,7 @@
 #include "socket_chain.h"
 #include <thread>
 
+using namespace Mantids30::Network::Chains;
 using namespace Mantids30::Network::Sockets;
 
 Socket_Chain::Socket_Chain(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &_baseSocket, bool _deleteBaseSocketOnExit)
@@ -101,7 +102,7 @@ std::pair<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>, std::shar
     return std::make_pair(sockItem->sock[0], sockItem->sock[1]);
 }
 
-bool Socket_Chain::addToChain(ChainProtocols::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit)
+bool Socket_Chain::addToChain(Mantids30::Network::Chains::Socket_Chain_ProtocolBase *chainElement, bool deleteAtExit)
 {
     return addToChain(chainElement->makeSocketChainPair(),
                       deleteAtExit,                 // If it's not a  detached pointer, declare as false, if it's detached true (when Socket_Chain die, then, this chain element will die too)

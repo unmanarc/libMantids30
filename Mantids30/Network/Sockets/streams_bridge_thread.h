@@ -17,7 +17,7 @@ public:
     Bridge_Thread() = default;
     virtual ~Bridge_Thread();
 
-    void setSocketEndpoints(const std::shared_ptr<Sockets::Socket_Stream> &src, const std::shared_ptr<Sockets::Socket_Stream> &dst, bool chunked);
+    void setSocketEndpoints(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &src, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &dst, bool chunked);
 
     bool sendPing();
 
@@ -46,7 +46,7 @@ public:
     void terminate();
 
 protected:
-    std::shared_ptr<Sockets::Socket_Stream> src;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> src;
     char *block_fwd = nullptr;
     uint16_t blockSize{8192};
     // ssize_t partialReadL(void *data, const size_t &datalen, bool fwd = true);
@@ -55,7 +55,7 @@ private:
     std::atomic<bool> m_terminated{false};
     bool m_chunked = false;
 
-    std::shared_ptr<Sockets::Socket_Stream> m_dstSocket;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> m_dstSocket;
     char *m_block_rev = nullptr;
 
     std::mutex mt_fwd, mt_rev;

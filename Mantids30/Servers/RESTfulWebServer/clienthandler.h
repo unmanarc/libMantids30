@@ -8,22 +8,22 @@
 #include <cstdint>
 #include <memory>
 
-namespace Mantids30::Network::Servers::RESTful {
+namespace Mantids30::Servers::RESTfulWebServer {
 
-class ClientHandler : public Servers::Web::APIServer_ClientHandler
+class ClientHandler : public Mantids30::Servers::RESTfulWebServer::APIServer_ClientHandler
 {
 public:
-    ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock);
+    ClientHandler(void *parent, const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &sock);
 
 protected:
-    Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) override;
+    Mantids30::Protocols::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) override;
 
-    void handleWebSocketEvent(Network::Protocol::WebSocket::EventType, const API::WebSocket::Endpoint *) override;
+    void handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType, const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *) override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
-    Protocol::HTTP::Status::Code sessionStart() override;
+    Mantids30::Protocols::HTTP::Status::Code sessionStart() override;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      */
@@ -49,10 +49,10 @@ protected:
      * @brief handleAPIRequest Handle API Request and write the response to the client...
      * @return return code for api request
      */
-    API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &endpointName,
+    Mantids30::Protocols::HTTP::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodMode, const std::string &endpointName,
                                     const boost::json::value &postParameters) override;
 
-    API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) override;
+    Mantids30::Protocols::HTTP::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) override;
 
     /**
      * @brief isSessionActive Check if the session is active (JWT is valid)
@@ -76,7 +76,7 @@ protected:
 
 private:
     // API Version -> Endpoints:
-    std::map<uint32_t, std::shared_ptr<API::RESTful::Endpoints>> m_endpointsHandler;
+    std::map<uint32_t, std::shared_ptr<Mantids30::Servers::RESTfulWebServer::RESTful::Endpoints>> m_endpointsHandler;
     std::string jwtAccessTokenName;
 
     bool m_destroySession = false;
@@ -85,4 +85,4 @@ private:
     friend class Engine;
 };
 
-} // namespace Mantids30::Network::Servers::RESTful
+} // namespace Mantids30::Servers::RESTfulWebServer

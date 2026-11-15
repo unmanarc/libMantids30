@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 enum Mode : uint8_t
 {
@@ -11,4 +11,4 @@ enum Mode : uint8_t
     WINEVENTS = 0x8
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

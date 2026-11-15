@@ -5,32 +5,32 @@
 #ifdef _WIN32
 #include <sstream>
 #endif
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 
 using namespace Mantids30;
 using namespace boost::posix_time;
 
-HTTP::Date::Date()
+Mantids30::Protocols::HTTP::Date::Date()
 {
     setCurrentTime();
 }
 
-HTTP::Date::Date(const time_t &unixTime)
+Mantids30::Protocols::HTTP::Date::Date(const time_t &unixTime)
 {
     setUnixTime(unixTime);
 }
 
-time_t HTTP::Date::getUnixTime() const
+time_t Mantids30::Protocols::HTTP::Date::getUnixTime() const
 {
     return m_unixTime;
 }
 
-void HTTP::Date::setUnixTime(const time_t &value)
+void Mantids30::Protocols::HTTP::Date::setUnixTime(const time_t &value)
 {
     m_unixTime = value;
 }
 
-std::string HTTP::Date::toString() const
+std::string Mantids30::Protocols::HTTP::Date::toString() const
 {
     char buffer[128];
     struct tm timeinfo;
@@ -50,7 +50,7 @@ std::string HTTP::Date::toString() const
     return buffer;
 }
 
-bool HTTP::Date::fromString(const std::string &fTime)
+bool Mantids30::Protocols::HTTP::Date::fromString(const std::string &fTime)
 {
     // Reset the current object to a clean state
     // This ensures that if parsing fails, the object doesn't hold stale data.
@@ -93,12 +93,12 @@ bool HTTP::Date::fromString(const std::string &fTime)
     // TODO: check hour zones changes.
 }
 
-void HTTP::Date::setCurrentTime()
+void Mantids30::Protocols::HTTP::Date::setCurrentTime()
 {
     m_unixTime = time(nullptr);
 }
 
-void HTTP::Date::incTime(const uint32_t &seconds)
+void Mantids30::Protocols::HTTP::Date::incTime(const uint32_t &seconds)
 {
     m_unixTime += seconds;
 }

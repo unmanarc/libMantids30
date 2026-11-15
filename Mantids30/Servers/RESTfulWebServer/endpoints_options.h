@@ -2,7 +2,7 @@
 
 #include "api_options_handler.h"
 
-namespace Mantids30::API {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 class Endpoints_Options
 {
@@ -46,7 +46,7 @@ public:
  * @param requestOrigin The Origin header from the request (optional)
  * @return APIReturn with CORS headers set
  */
-    [[nodiscard]] APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig &config, const std::string &requestOrigin = "");
+    [[nodiscard]] Mantids30::Protocols::HTTP::APIReturn buildCORSOptionsResponse(const OptionsHandlerConfig &config, const std::string &requestOrigin = "");
 
 private:
     OptionsHandlerConfig m_globalOptionsConfig;                             ///< Global CORS/OPTIONS configuration
@@ -54,4 +54,4 @@ private:
     bool m_optionsEnabled = false;                                          ///< Whether OPTIONS/CORS handling is enabled
 };
 
-} // namespace Mantids30::API
+} // namespace Mantids30::Servers::RESTfulWebServer

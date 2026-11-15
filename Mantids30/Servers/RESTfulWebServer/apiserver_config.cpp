@@ -2,7 +2,7 @@
 #include <cstring>
 #include <memory>
 
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Servers::RESTfulWebServer;
 
 APIServerConfig::~APIServerConfig()
 {
@@ -63,7 +63,7 @@ bool APIServerConfig::setDocumentRootPath(const std::string &value)
         if (!access(resourceFilterPath.c_str(), R_OK))
         {
             // Create a new `ResourcesFilter` object and attempt to load filters from the file.
-            std::shared_ptr<API::Web::ResourcesFilter> rf = std::make_shared<API::Web::ResourcesFilter>();
+            std::shared_ptr<Mantids30::Servers::RESTfulWebServer::ResourcesFilter> rf = std::make_shared<Mantids30::Servers::RESTfulWebServer::ResourcesFilter>();
             if (rf->loadFiltersFromFile(resourceFilterPath))
             {
                 // Assign the new resources filter. (if there is another resource filter, the first one is destroyed)
@@ -86,7 +86,7 @@ void APIServerConfig::addStaticContentElement(const std::string &path, const std
         char *xmem = static_cast<char *>(malloc(content.size() + 1));
         xmem[content.size()] = 0;
         memcpy(xmem, content.c_str(), content.size());
-        m_staticContentElements[path] = std::make_shared<Mantids30::Memory::Containers::B_MEM>(xmem, content.size());
+        m_staticContentElements[path] = std::make_shared<Mantids30::Core::Memory::Containers::B_MEM>(xmem, content.size());
         m_memToBeFreed.push_back(xmem);
     }
 }
@@ -128,7 +128,7 @@ const std::list<std::pair<std::string, std::string> > &APIServerConfig::getOverl
     return m_overlappedDirectories;
 }
 
-std::map<std::string, std::shared_ptr<Mantids30::Memory::Containers::B_MEM> > APIServerConfig::getStaticContentElements()
+std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Containers::B_MEM> > APIServerConfig::getStaticContentElements()
 {
     std::lock_guard<std::mutex> lck(m_internalContentMutex);
     return m_staticContentElements;

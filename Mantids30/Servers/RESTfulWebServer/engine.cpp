@@ -11,9 +11,9 @@
 
 using namespace Mantids30;
 using namespace Network::Servers;
-using namespace Network::Protocol;
-using namespace Network::Servers::RESTful;
-using namespace API::RESTful;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Servers::RESTfulWebServer;
+using namespace Mantids30::Servers::RESTfulWebServer::RESTful;
 
 Engine::Engine()
 {
@@ -24,88 +24,88 @@ Engine::Engine()
     jwtRevokeDef.endpointDefinition = &revokeJWT;
     jwtRevokeDef.security.requiredScopes = {"IAM"};
     jwtRevokeDef.context = this;
-    handler->addEndpoint(HTTP::Method::POST, "jwt/revoke", jwtRevokeDef);
-    handler->addEndpoint(HTTP::Method::PUT, "websockets/topics/subscribe", API::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
-    handler->addEndpoint(HTTP::Method::DELETE, "websockets/topics/unsubscribe", API::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
+    handler->addEndpoint(Mantids30::Protocols::HTTP::Method::POST, "jwt/revoke", jwtRevokeDef);
+    handler->addEndpoint(Mantids30::Protocols::HTTP::Method::PUT, "websockets/topics/subscribe", Mantids30::Servers::RESTfulWebServer::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, subscribeToTopic);
+    handler->addEndpoint(Mantids30::Protocols::HTTP::Method::DELETE, "websockets/topics/unsubscribe", Mantids30::Servers::RESTfulWebServer::Security::Requirements::JWT_COOKIE_AUTH, {"WSTOPICS"}, this, unsubscribeFromTopic);
 
     endpointsHandler[0] = handler;
 }
 
-API::APIReturn Engine::revokeJWT(void *context,                                        // Context pointer
-                                 const API::RESTful::RequestContext &request,       // Parameters from the RESTful request
-                                 Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+Mantids30::Protocols::HTTP::APIReturn Engine::revokeJWT(void *context,                                        // Context pointer
+                                 const Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &request,       // Parameters from the RESTful request
+                                 Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails &authClientDetails // Client authentication details
 )
 {
-    std::string jwtSignature = Helpers::Encoders::decodeFromBase64(Helpers::JSON::ASSTRING(*request.inputJSON, "signature", ""), true);
-    time_t expirationTime = Helpers::JSON::ASINT64(*request.inputJSON, "expiration", 0);
+    std::string jwtSignature = Mantids30::Core::Helpers::Encoders::decodeFromBase64(Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "signature", ""), true);
+    time_t expirationTime = Mantids30::DataFormats::JSON::ASINT64(*request.inputJSON, "expiration", 0);
     (static_cast<Engine *>(context))->config.jwtValidator->m_revocation.addToRevocationList(jwtSignature, expirationTime);
 
     return {};
 }
 
-API::APIReturn Engine::subscribeToTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
+Mantids30::Protocols::HTTP::APIReturn Engine::subscribeToTopic(void *context, const Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &request, Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string_view uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
-    const std::string_view webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string_view topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string_view uri = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string_view webSocketSessionId = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string_view topicId = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return {HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
     }
 
     // Obtener el endpoint WebSocket
-    const API::WebSocket::Endpoint *endpoint = (static_cast<Engine *>(context))->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
+    const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *endpoint = (static_cast<Engine *>(context))->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return {HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
     }
 
     // Intentar unirse al tema de suscripción
     if (!endpoint->joinTopicSubscription(webSocketSessionId, topicId))
     {
-        return {HTTP::Status::Code::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_429_TOO_MANY_REQUESTS, "limits_reached", "Connection limit reached for this topic"};
     }
 
     // Suscripción exitosa
     return {};
 }
 
-API::APIReturn Engine::unsubscribeFromTopic(void *context, const API::RESTful::RequestContext &request, Sessions::ClientDetails &authClientDetails)
+Mantids30::Protocols::HTTP::APIReturn Engine::unsubscribeFromTopic(void *context, const Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &request, Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails &authClientDetails)
 {
     // Extraer parámetros de la solicitud
-    const std::string_view uri = Helpers::JSON::ASSTRING(*request.inputJSON, "uri", "");
-    const std::string_view webSocketSessionId = Helpers::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
-    const std::string_view topicId = Helpers::JSON::ASSTRING(*request.inputJSON, "topicId", "");
+    const std::string_view uri = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "uri", "");
+    const std::string_view webSocketSessionId = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "webSocketSessionId", "");
+    const std::string_view topicId = Mantids30::DataFormats::JSON::ASSTRING(*request.inputJSON, "topicId", "");
 
     // Validar que se proporcionaron los parámetros necesarios
     if (uri.empty() || webSocketSessionId.empty() || topicId.empty())
     {
-        return {HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_400_BAD_REQUEST, "missing_parameters", "Required parameters (uri, webSocketSessionId, topicId) are missing"};
     }
 
     // Obtener el endpoint WebSocket
-    const API::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
+    const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
-        return {HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};
     }
 
     // Intentar dejar el tema de suscripción
     if (!endpoint->leaveTopicSubscription(webSocketSessionId, topicId))
     {
-        return {HTTP::Status::Code::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic"};
+        return {Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND, "not_subscribed", "Client is not subscribed to this topic"};
     }
 
     // Desuscripción exitosa
     return {};
 }
 
-std::shared_ptr<Web::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Sockets::Socket_Stream> &s)
+std::shared_ptr<Mantids30::Servers::RESTfulWebServer::APIServer_ClientHandler> Engine::createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s)
 {
-    std::shared_ptr<RESTful::ClientHandler> clientHandler = std::make_shared<RESTful::ClientHandler>(webServer, s);
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::ClientHandler> clientHandler = std::make_shared<Mantids30::Servers::RESTfulWebServer::ClientHandler>(webServer, s);
     clientHandler->m_endpointsHandler = endpointsHandler;
     clientHandler->jwtAccessTokenName = jwtAccessTokenName;
     return clientHandler;

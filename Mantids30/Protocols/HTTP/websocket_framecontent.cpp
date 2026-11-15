@@ -4,12 +4,12 @@
 #include <cstring>
 #include <optional>
 
-using namespace Mantids30::Network::Protocol::WebSocket;
+using namespace Mantids30::Protocols::HTTP::WebSocket;
 
 FrameContent::FrameContent()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
-    m_content = std::make_shared<Memory::Containers::B_Chunks>();
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::SIZE);
+    m_content = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     m_subParserName = "WebSocket_FrameContent";
 }
 
@@ -52,9 +52,9 @@ void FrameContent::setValidateUtf8(bool validate)
     m_validateUtf8 = validate;
 }
 
-Mantids30::Memory::Streams::SubParser::ParseResult FrameContent::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameContent::parse()
 {
-    Mantids30::Memory::Containers::B_Base *buffer = getParsedBuffer();
+    Mantids30::Core::Memory::Containers::B_Base *buffer = getParsedBuffer();
     if (!buffer)
     {
         return ParseResult::ERROR;
@@ -177,7 +177,7 @@ std::optional<std::string> FrameContent::getContentAsString()
     return m_content->toString();
 }
 
-std::shared_ptr<Mantids30::Memory::Containers::B_Chunks> FrameContent::getContent() const
+std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> FrameContent::getContent() const
 {
     return m_content;
 }

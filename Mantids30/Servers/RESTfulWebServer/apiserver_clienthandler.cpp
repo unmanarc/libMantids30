@@ -14,11 +14,11 @@
 #include <regex>
 #include <string>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 using namespace std;
 
@@ -26,9 +26,9 @@ APIServer_ClientHandler::APIServer_ClientHandler(void *parent, const std::shared
     : HTTPv1_Server(sock)
 {}
 
-HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
+Mantids30::Protocols::HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
 {
-    HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
+    Mantids30::Protocols::HTTP::Status::Code ret = Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND;
     std::string requestURI = clientRequest.getURI();
     bool isAPIURI = false;
 
@@ -42,20 +42,20 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
     // effectively blocking older, less secure clients from accessing the web server.
     if (!isSupportedUserAgent(clientRequest.userAgent))
     {
-        HTTP::Status::Code retCode = showBrowserMessage("Browser Upgrade Required",
+        Mantids30::Protocols::HTTP::Status::Code retCode = showBrowserMessage("Browser Upgrade Required",
                                                         R"(
                                 <h1>Browser Upgrade Required</h1>
                                 <p>Your browser does not meet the security requirements to access this site.</p>
                                 <p>To continue, please update your browser to the last version for enhanced security.</p>
                                 )",
-                                                        HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
+                                                        Mantids30::Protocols::HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
         return retCode;
     }
 
     if (config->dynamicInitialChecks)
     {
-        HTTP::Status::Code retCode;
-        if ((retCode = config->dynamicInitialChecks(&clientRequest, &serverResponse)) != HTTP::Status::Code::S_200_OK)
+        Mantids30::Protocols::HTTP::Status::Code retCode;
+        if ((retCode = config->dynamicInitialChecks(&clientRequest, &serverResponse)) != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
         {
             return retCode;
         }
@@ -64,12 +64,12 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
     // Do forced redirections (before session's):
     if (config->redirections.find(requestURI) != config->redirections.end())
     {
-        HTTP::Status::Code retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
+        Mantids30::Protocols::HTTP::Status::Code retCode = serverResponse.setRedirectLocation(config->redirections[requestURI]);
         return retCode;
     }
 
-    HTTP::Status::Code rtmp;
-    if ((rtmp = sessionStart()) != HTTP::Status::Code::S_200_OK)
+    Mantids30::Protocols::HTTP::Status::Code rtmp;
+    if ((rtmp = sessionStart()) != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
     {
         return rtmp;
     }
@@ -116,13 +116,13 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                     // Check Login Origin... ALWAYS.
                     if (!originValidator(requestOrigin, requestXAPIKEY, this->config->permittedLoginOrigins))
                     {
-                        API::APIReturn apiReturn;
+                        Mantids30::Protocols::HTTP::APIReturn apiReturn;
                         apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
                         serverResponse.setContentDataStreamer(apiReturn.getBodyDataStreamer());
                         serverResponse.setContentType("application/json", true);
 
                         log(LogLevel::SECURITY_ALERT, "restAPI", 2048, "Unauthorized Callback API Usage attempt from disallowed origin {origin=%s}", requestOrigin.c_str());
-                        apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                        apiReturn.setError(Mantids30::Protocols::HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                         ret = apiReturn.getHTTPResponseCode();
                         isAPIURI = true;
                         break;
@@ -141,7 +141,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                     {
                         if (!originValidator(requestOrigin, requestXAPIKEY, this->config->permittedAPIOrigins))
                         {
-                            API::APIReturn apiReturn;
+                            Mantids30::Protocols::HTTP::APIReturn apiReturn;
                             apiReturn.getBodyDataStreamer()->setIsFormatted(config->useFormattedJSONOutput);
                             serverResponse.setContentDataStreamer(apiReturn.getBodyDataStreamer());
                             serverResponse.setContentType("application/json", true);
@@ -153,7 +153,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                                 originValidator == defaultOriginValidator ? "default" : "dynamic",
                                 requestOrigin.c_str());
 
-                            apiReturn.setError(HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
+                            apiReturn.setError(Mantids30::Protocols::HTTP::Status::Code::S_401_UNAUTHORIZED, "invalid_security_context", "Disallowed Origin");
                             ret = apiReturn.getHTTPResponseCode();
                             isAPIURI = true;
                             break;
@@ -165,9 +165,9 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
                 /// API CALL:
                 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-                API::APIReturn apiReturn;
+                Mantids30::Protocols::HTTP::APIReturn apiReturn;
 
-                std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
+                std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> jsonStreamable = clientRequest.getJSONStreamerContent();
                 boost::json::value postParameters = !jsonStreamable ? boost::json::value{} : *(jsonStreamable->getValue());
 
                 if (httpMethodMode == "OPTIONS")
@@ -213,10 +213,10 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
             }
             else if (boost::starts_with(apiUrlWithoutBase, "/info"))
             {
-                std::shared_ptr<Memory::Streams::StreamableJSON> jPayloadOutStr = std::make_shared<Memory::Streams::StreamableJSON>();
+                std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> jPayloadOutStr = std::make_shared<Mantids30::DataFormats::JSON::StreamableJSON>();
                 jPayloadOutStr->setIsFormatted(this->config->useFormattedJSONOutput);
                 jPayloadOutStr->setValue(handleAPIInfo(baseApiUrl));
-                ret = HTTP::Status::Code::S_200_OK;
+                ret = Mantids30::Protocols::HTTP::Status::Code::S_200_OK;
                 serverResponse.setContentDataStreamer(jPayloadOutStr);
                 serverResponse.setContentType("application/json", true);
                 isAPIURI = true;
@@ -225,7 +225,7 @@ HTTP::Status::Code APIServer_ClientHandler::onHTTPClientContentReceived()
             else
             {
                 // Invalid Format...
-                ret = HTTP::Status::Code::S_404_NOT_FOUND;
+                ret = Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND;
                 break;
             }
         }

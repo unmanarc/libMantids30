@@ -3,14 +3,14 @@
 #include "json.h"
 #include <Mantids30/Core/Memory/streamable_object.h>
 
-namespace Mantids30::Memory::Streams {
+namespace Mantids30::DataFormats::JSON {
 
-class StreamableJSON : public StreamableObject
+class StreamableJSON : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     StreamableJSON() = default;
 
-    bool streamTo(StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
     std::optional<size_t> write(const void *buf, const size_t &count) override;
     size_t size() override;
 
@@ -47,4 +47,4 @@ private:
     bool m_isFull = false;
 };
 
-} // namespace Mantids30::Memory::Streams
+} // namespace Mantids30::DataFormats::JSON

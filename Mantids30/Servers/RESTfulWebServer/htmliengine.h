@@ -6,12 +6,12 @@
 
 #include "apiserver_clienthandler.h"
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 class HTMLIEngine
 {
 public:
-    static Protocol::HTTP::Status::Code processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
+    static Mantids30::Protocols::HTTP::Status::Code processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath);
 
 private:
     static boost::json::value procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput);
@@ -36,4 +36,4 @@ private:
     static void iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex &exStaticText);
 };
 
-} // namespace Mantids30::Network::Servers::Web
+} // namespace Mantids30::Servers::RESTfulWebServer

@@ -2,20 +2,20 @@
 #include <cstdio>
 #include <cstring>
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30;
 
-HTTP::ContentChunkedTransformer::ContentChunkedTransformer(StreamableObject *upStreamOut)
+Mantids30::Protocols::HTTP::ContentChunkedTransformer::ContentChunkedTransformer(StreamableObject *upStreamOut)
 {
     this->upStreamOut = upStreamOut;
 }
 
-HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
+Mantids30::Protocols::HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
 {
     writeEOF();
 }
 
-std::optional<size_t> HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
+std::optional<size_t> Mantids30::Protocols::HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
 {
     if (count == 0)
     {

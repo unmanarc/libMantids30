@@ -10,12 +10,12 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol::HTTP::Request;
+using namespace Mantids30::Protocols::HTTP::Request;
 using namespace Mantids30;
 
 Cookies_ClientSide::Cookies_ClientSide() = default;
 
-void Cookies_ClientSide::putOnHeaders(MIME::MIME_Sub_Header *headers) const
+void Cookies_ClientSide::putOnHeaders(Mantids30::Protocols::MIME::MIME_Sub_Header *headers) const
 {
     if (!m_cookiesMap.empty())
     {

@@ -17,7 +17,7 @@ public:
         READ_INVALID_ARG = 4
     };
 
-    BufferedReader(const std::shared_ptr<Sockets::Socket_Stream> &stream, const size_t &maxBufferSize);
+    BufferedReader(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const size_t &maxBufferSize);
     ~BufferedReader() = default;
 
     // Delete copy to avoid double stream access
@@ -42,7 +42,7 @@ private:
     ReadResult refillBuffer();
 
     std::vector<char> m_buffer;
-    std::shared_ptr<Sockets::Socket_Stream> m_stream;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> m_stream;
     size_t m_currentBufferSize;
 };
 

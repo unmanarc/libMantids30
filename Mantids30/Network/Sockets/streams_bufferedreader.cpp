@@ -5,7 +5,7 @@
 using namespace Mantids30::Network::Sockets;
 using namespace NetStreams;
 
-BufferedReader::BufferedReader(const std::shared_ptr<Sockets::Socket_Stream> &stream, const size_t &bufferSize)
+BufferedReader::BufferedReader(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const size_t &bufferSize)
     : m_buffer(bufferSize)
     , m_stream(stream)
     , m_currentBufferSize(0)

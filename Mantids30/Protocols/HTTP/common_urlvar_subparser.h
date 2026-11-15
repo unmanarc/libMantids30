@@ -3,9 +3,9 @@
 #include <Mantids30/Core/Memory/subparser.h>
 #include <memory>
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
-class URLVarContent : public Memory::Streams::SubParser
+class URLVarContent : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     URLVarContent();
@@ -13,13 +13,13 @@ public:
 
     void setVarType(bool varName = true);
     void setMaxObjectSize(const size_t &size);
-    std::shared_ptr<Memory::Containers::B_Chunks> getContentAndFlush();
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> getContentAndFlush();
     std::string getContentAsStringAndFlush();
-    std::shared_ptr<Memory::Containers::B_Chunks> getCurrentContentData();
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> getCurrentContentData();
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
-    std::shared_ptr<Memory::Containers::B_Chunks> m_pData;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> m_pData;
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

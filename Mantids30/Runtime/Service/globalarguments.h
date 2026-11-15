@@ -10,7 +10,7 @@
 
 #include "programvalues.h"
 
-namespace Mantids30::Program::Arguments {
+namespace Mantids30::Runtime::Service::Arguments {
 
 /**
  * @brief Options structure for a command line program
@@ -22,23 +22,23 @@ struct CommandLineOption
         defaultValVar = nullptr;
         shortOption = 0;
         isMandatory = true;
-        optionType = Mantids30::Memory::Abstract::Var::Type::BOOL;
+        optionType = Mantids30::Core::Memory::Abstract::Var::Type::BOOL;
     }
 
     std::string defaultValue; /**< The default value for the option. */
     std::string description;  /**< The description of the option. */
     bool isMandatory;         /**< Indicates whether the option is mandatory. */
 
-    Mantids30::Memory::Abstract::Var::Type optionType; /**< The type of the variable for the option. */
+    Mantids30::Core::Memory::Abstract::Var::Type optionType; /**< The type of the variable for the option. */
 
-    std::shared_ptr<Mantids30::Memory::Abstract::Var> defaultValVar;           /**< A pointer to the variable holding the default value. */
-    std::list<std::shared_ptr<Mantids30::Memory::Abstract::Var>> parsedOption; /**< A list of pointers to variables holding the parsed option values. */
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Var> defaultValVar;           /**< A pointer to the variable holding the default value. */
+    std::list<std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> parsedOption; /**< A list of pointers to variables holding the parsed option values. */
 
     std::string name; /**< The name of the option. */
     int shortOption;  /**< The short option character. */
 };
 
-class GlobalArguments : public Values::ProgramValues
+class GlobalArguments : public Mantids30::Runtime::Service::Values::ProgramValues
 {
 public:
     GlobalArguments();
@@ -56,7 +56,7 @@ public:
      * @return true if added, otherwise false.
      */
     bool addCommandLineOption(const std::string &optGroup, char shortOption, const std::string &optName, const std::string &description, const std::string &defaultValue,
-                              const Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
+                              const Mantids30::Core::Memory::Abstract::Var::Type &optionType, bool isMandatory = false);
     /**
      * @brief getCommandLineOptionBooleanValue Get Command Line Boolean User introduced boost::json::value
      * @param optionName Option Name (Full name)
@@ -68,13 +68,13 @@ public:
      * @param optionName Option Name (Full name)
      * @return option value (as an abstract, will match with defined optionType in addCommandLineOption)
      */
-    std::shared_ptr<Mantids30::Memory::Abstract::Var> getCommandLineOptionValue(const std::string &optionName);
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Var> getCommandLineOptionValue(const std::string &optionName);
     /**
      * @brief getCommandLineOptionValues Get Command Line Option Values (As list of abstracts)
      * @param optionName Option Name (Full name)
      * @return option values list
      */
-    std::list<std::shared_ptr<Mantids30::Memory::Abstract::Var>> getCommandLineOptionValues(const std::string &optionName);
+    std::list<std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> getCommandLineOptionValues(const std::string &optionName);
 
     // Program variables.
     /**
@@ -83,13 +83,13 @@ public:
      * @param var Add Variable Pointer (abstract)
      * @return true if added, false if not
      */
-    bool addStaticVariable(const std::string &name, const std::shared_ptr<Memory::Abstract::Var> &var);
+    bool addStaticVariable(const std::string &name, const std::shared_ptr<Mantids30::Core::Memory::Abstract::Var> &var);
     /**
      * @brief getStaticVariable Get static variable
      * @param name Variable Name
      * @return nullptr if not found or pointer to Abstract Variable Pointer (will keep the same introduced pointer)
      */
-    std::shared_ptr<Mantids30::Memory::Abstract::Var> getStaticVariable(const std::string &name);
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Var> getStaticVariable(const std::string &name);
 
     // Print Help options
     /**
@@ -161,8 +161,8 @@ private:
     // TODO: multimap
 
     // Variables:
-    std::map<std::string, std::shared_ptr<Mantids30::Memory::Abstract::Var>> m_variables; // variable name -> variable
+    std::map<std::string, std::shared_ptr<Mantids30::Core::Memory::Abstract::Var>> m_variables; // variable name -> variable
     std::shared_mutex m_variablesMutex;
 };
 
-} // namespace Mantids30::Program::Arguments
+} // namespace Mantids30::Runtime::Service::Arguments

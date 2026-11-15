@@ -6,7 +6,7 @@
 
 #include <memory>
 
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::DataFormats::JWT;
 
 std::string JWT::createHeader()
 {
@@ -37,7 +37,7 @@ std::string JWT::createHeader()
 
     std::string header_str = boost::json::serialize(header);
 
-    return Helpers::Encoders::encodeToBase64(header_str, true);
+    return Mantids30::Core::Helpers::Encoders::encodeToBase64(header_str, true);
 }
 
 bool JWT::isAlgorithmSupported(std::string_view algorithm)
@@ -321,14 +321,14 @@ std::string JWT::sign(const boost::json::value &payload)
     std::string header_str = createHeader();
     std::string signature;
 
-    std::shared_ptr<JWT::RAWSignature> eSignature = createSignature(header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true));
+    std::shared_ptr<JWT::RAWSignature> eSignature = createSignature(header_str + '.' + Mantids30::Core::Helpers::Encoders::encodeToBase64(payload_str, true));
 
     if (eSignature->m_result == RAWSignature::Result::SUCCESS)
     {
-        signature = Helpers::Encoders::encodeToBase64(eSignature->m_digest, eSignature->m_digestSize, true);
+        signature = Mantids30::Core::Helpers::Encoders::encodeToBase64(eSignature->m_digest, eSignature->m_digestSize, true);
     }
 
-    return header_str + '.' + Helpers::Encoders::encodeToBase64(payload_str, true) + '.' + signature;
+    return header_str + '.' + Mantids30::Core::Helpers::Encoders::encodeToBase64(payload_str, true) + '.' + signature;
 }
 
 std::string JWT::signFromToken(Token &token, bool updateDefaultTimeValues)
@@ -434,9 +434,9 @@ bool JWT::verify(std::string_view fullSignedToken, Token *tokenPayloadOutput, Ve
     std::string signature_b64(fullSignedToken.substr(pos_payload + 1));
 
     // Decode the base64-encoded header, payload, and signature strings
-    std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
-    std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
-    std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
+    std::string header_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(header_b64, true);
+    std::string payload_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(payload_b64, true);
+    std::string signature_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(signature_b64, true);
 
     // If any part decoded to an empty string, the token is not usable.
     if (header_str.empty() || payload_str.empty() || signature_str.empty())
@@ -473,7 +473,7 @@ bool JWT::verify(std::string_view fullSignedToken, Token *tokenPayloadOutput, Ve
 
     // Parse the JSON header using the Boost.JSON library
     boost::json::value header_json;
-    Helpers::JSON::Reader charReader;
+    Mantids30::DataFormats::JSON::Reader charReader;
     if (!charReader.parse(header_str, header_json))
     {
         // If the header cannot be parsed, return false
@@ -483,7 +483,7 @@ bool JWT::verify(std::string_view fullSignedToken, Token *tokenPayloadOutput, Ve
     bool isSignatureVerified = false;
 
     // Check that the header algorithm is supported
-    std::string_view incomingAlgorithm = Helpers::JSON::ASSTRING(header_json, "alg", "");
+    std::string_view incomingAlgorithm = Mantids30::DataFormats::JSON::ASSTRING(header_json, "alg", "");
     if (!isAlgorithmSupported(incomingAlgorithm))
     {
         return report(VerifyError::ALG_NOT_SUPPORTED);
@@ -565,9 +565,9 @@ bool JWT::decodeNoVerify(std::string_view fullSignedToken, Token *tokenPayloadOu
     //std::string signature_b64 = fullSignedToken.substr(pos_payload + 1);
 
     // Decode the base64-encoded header, payload, and signature strings
-    //std::string header_str = Helpers::Encoders::decodeFromBase64(header_b64, true);
-    std::string payload_str = Helpers::Encoders::decodeFromBase64(payload_b64, true);
-    //std::string signature_str = Helpers::Encoders::decodeFromBase64(signature_b64, true);
+    //std::string header_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(header_b64, true);
+    std::string payload_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(payload_b64, true);
+    //std::string signature_str = Mantids30::Core::Helpers::Encoders::decodeFromBase64(signature_b64, true);
 
     return tokenPayloadOutput->decodePayload(payload_str);
 }

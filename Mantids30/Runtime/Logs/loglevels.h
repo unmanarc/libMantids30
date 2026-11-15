@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 enum LogLevel : uint8_t
 {
@@ -56,4 +56,4 @@ enum eLogLevel2
     LOG_TYPE_CUSTOM = 0x80000000                 // Placeholder for custom or miscellaneous logs
 };
 */
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

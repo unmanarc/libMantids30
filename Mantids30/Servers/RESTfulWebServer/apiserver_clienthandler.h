@@ -13,14 +13,14 @@
 
 #include <memory>
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 
-class APIServer_ClientHandler : public Protocol::HTTP::HTTPv1_Server
+class APIServer_ClientHandler : public Mantids30::Protocols::HTTP::HTTPv1_Server
 {
 public:
     APIServerConfig *config = nullptr;
 
-    APIServer_ClientHandler(void *parent, const std::shared_ptr<Memory::Streams::StreamableObject> &sock);
+    APIServer_ClientHandler(void *parent, const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &sock);
 
 protected:
     /**
@@ -29,7 +29,7 @@ protected:
      */
     void log(boost::property_tree::ptree &jWebLog) override;
 
-    virtual Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Protocol::HTTP::Status::Code::S_404_NOT_FOUND; }
+    virtual Mantids30::Protocols::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND; }
 
     /**
      * @brief Called when HTTP client headers are received for WebSocket connection
@@ -71,12 +71,12 @@ protected:
      * @brief onHTTPClientContentReceived Process web client request
      * @return http response code.
      */
-    Protocol::HTTP::Status::Code onHTTPClientContentReceived() override;
+    Mantids30::Protocols::HTTP::Status::Code onHTTPClientContentReceived() override;
     /**
      * @brief sessionStart Retrieve/Start the session
      * @return S_200_OK for everything ok, any other value will return with that code immediately.
      */
-    virtual Protocol::HTTP::Status::Code sessionStart() = 0;
+    virtual Mantids30::Protocols::HTTP::Status::Code sessionStart() = 0;
     /**
      * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
      * @return S_200_OK for good cleaning.
@@ -120,26 +120,26 @@ protected:
      *
      * @return Retorn an object where the result of the API request will be stored.
      */
-    virtual API::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodType, const std::string &endpointName,
+    virtual Mantids30::Protocols::HTTP::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodType, const std::string &endpointName,
                                             const boost::json::value &postParameters)
         = 0;
 
-    virtual API::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
+    virtual Mantids30::Protocols::HTTP::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
 
     /**
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
      */
-    virtual void handleWebSocketEvent(Network::Protocol::WebSocket::EventType, const API::WebSocket::Endpoint *) = 0;
+    virtual void handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType, const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *) = 0;
     /**
      * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
      * @return return code for api request
      */
-    virtual Protocol::HTTP::Status::Code handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
+    virtual Mantids30::Protocols::HTTP::Status::Code handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
     {
         // Implement this to handle authorizations from any other IAM's
         // Meanwhile, you may want to use a proxy to a WebSessionAuthHandler or implement your own.
-        return Protocol::HTTP::Status::Code::S_501_NOT_IMPLEMENTED;
+        return Mantids30::Protocols::HTTP::Status::Code::S_501_NOT_IMPLEMENTED;
     }
 
     /**
@@ -155,7 +155,7 @@ protected:
      * @param outSize
      * @param fmtLog
      */
-    void log(Mantids30::Program::Logs::LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
+    void log(Mantids30::Runtime::Logs::LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
     /**
      * @brief Verifies a JWT token and extracts user data if valid.
      *
@@ -171,7 +171,7 @@ protected:
      *   JWT token (`strToken`). The verification result is stored in `result`.
      * - If the token is valid and the `m_JWTToken` object reflects a valid state:
      *   - The `userName` is set from the token's subject.
-     *   - The `domainName` is extracted from the "domain" claim (using a macro `Helpers::JSON::ASSTRING_D`
+     *   - The `domainName` is extracted from the "domain" claim (using a macro `Mantids30::DataFormats::JSON::ASSTRING_D`
      *     to handle default values).
      *   - All claims and scopes from the token are stored in `m_userData`.
      *   - The `sessionId` and `halfSessionId` are set from the token's JWT ID.
@@ -190,31 +190,31 @@ protected:
     [[nodiscard]] bool isURLSafe(const std::string &url);
     [[nodiscard]] bool isRedirectPathSafeForAuth(const std::string &url) const;
 
-    Protocol::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Protocol::HTTP::Status::Code returnCode);
-    std::shared_ptr<Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
+    Mantids30::Protocols::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Mantids30::Protocols::HTTP::Status::Code returnCode);
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
 
-    DataFormat::JWT::Token jwtToken;
+    Mantids30::DataFormats::JWT::JWT::Token jwtToken;
     // This session info is used for the logs and for filling htmli variables.
-    Sessions::SessionInfo currentSessionInfo;
+    Mantids30::Servers::RESTfulWebServer::Sessions::SessionInfo currentSessionInfo;
 
 protected:
-    Protocol::HTTP::Status::Code redirectUsingJS(const std::string &url);
+    Mantids30::Protocols::HTTP::Status::Code redirectUsingJS(const std::string &url);
 
     // Websocket endpoints:
-    std::shared_ptr<API::WebSocket::Endpoints> m_websocketEndpoints;
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoints> m_websocketEndpoints;
     std::string m_webSocketSessionId;
-    const API::WebSocket::Endpoint *m_webSocketCurrentEndpoint = nullptr;
+    const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *m_webSocketCurrentEndpoint = nullptr;
 
 private:
     std::string logUsername;
     void langProcessViaMantidsLang(const LocalRequestedFileInfo & fileInfo);
 
-    Protocol::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
-    Protocol::HTTP::Status::Code handleRegularFileRequest();
+    Mantids30::Protocols::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
+    Mantids30::Protocols::HTTP::Status::Code handleRegularFileRequest();
     bool versionIsSupported(const std::string &versionStr, int minVersion);
     bool isSupportedUserAgent(const std::string &userAgent);
     friend class HTMLIEngine;
     friend class APIServerCore;
 };
 
-} // namespace Mantids30::Network::Servers::Web
+} // namespace Mantids30::Servers::RESTfulWebServer

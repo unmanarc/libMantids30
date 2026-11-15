@@ -120,10 +120,10 @@ bool Socket_UNIX::connectFrom(const char *, const char *path, const uint16_t &, 
     return true;
 }
 
-std::shared_ptr<Sockets::Socket_Stream> Socket_UNIX::acceptConnection()
+std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_UNIX::acceptConnection()
 {
     int sdconn;
-    std::shared_ptr<Sockets::Socket_Stream> cursocket = nullptr;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> cursocket = nullptr;
 
     if ((sdconn = accept(m_sockFD, nullptr, nullptr)) >= 0)
     {

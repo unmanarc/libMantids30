@@ -8,11 +8,11 @@
 #include <Mantids30/DataFormats/JWT/jwt.h>
 #include <Mantids30/Protocols/HTTP/websocket_eventtype.h>
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 class APIServer_ClientHandler;
 }
 
-namespace Mantids30::API::WebSocket {
+namespace Mantids30::Servers::RESTfulWebServer::WebSocket {
 
 // Forward declaration
 class Endpoint;
@@ -20,19 +20,19 @@ class Endpoint;
 // Struct to hold WebSocket request parameters
 struct WebSocketParameters
 {
-    Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
-    DataFormat::JWT::Token emptyToken;                                                 ///< Holds a default empty token
-    DataFormat::JWT::Token *jwtToken = &emptyToken;                                    ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
-    std::shared_ptr<DataFormat::JWT> jwtValidator;                                     ///< Holds the JWT Validator
-    std::shared_ptr<DataFormat::JWT> jwtSigner;                                        ///< Holds the JWT Signer
-    std::shared_ptr<Mantids30::Sessions::Session> session;                             ///< Holds the current session
+    Mantids30::Protocols::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
+    Mantids30::DataFormats::JWT::JWT::Token emptyToken;                                                 ///< Holds a default empty token
+    Mantids30::DataFormats::JWT::JWT::Token *jwtToken = &emptyToken;                                    ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator;                                     ///< Holds the JWT Validator
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtSigner;                                        ///< Holds the JWT Signer
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::Sessions::Session> session;                             ///< Holds the current session
     std::string webSocketSessionId;                                                    ///< Holds the current session id
     const Endpoint *currentWebSocketEndpoint = nullptr;                                ///< Holds the current web socket endpoint
 };
 
 // Callback function types for WebSocket events
-using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Memory::Containers::B_Chunks> &content, const boost::json::value &jsonContent,
-                                            const WebSocket::WebSocketParameters &parameters, Mantids30::Sessions::ClientDetails &authClientDetails);
+using WebSocketEventFunctionType = void (*)(void *context, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &content, const boost::json::value &jsonContent,
+                                            const Mantids30::Servers::RESTfulWebServer::WebSocket::WebSocketParameters &parameters, Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails &authClientDetails);
 
 class Endpoint
 {
@@ -67,12 +67,12 @@ public:
 
 private:
     // Private Members:
-    std::shared_ptr<Threads::Safe::Map<std::string>> connectionsByIdMap;
+    std::shared_ptr<Mantids30::Core::Threads::Safe::Map<std::string>> connectionsByIdMap;
     Security security;
     Config **config = nullptr; // autofilled
     void *context = nullptr;
-    friend class Mantids30::Network::Servers::Web::APIServer_ClientHandler;
+    friend class Mantids30::Servers::RESTfulWebServer::APIServer_ClientHandler;
     friend class Endpoints;
 };
 
-} // namespace Mantids30::API::WebSocket
+} // namespace Mantids30::Servers::RESTfulWebServer::WebSocket

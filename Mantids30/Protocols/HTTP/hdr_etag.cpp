@@ -2,7 +2,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/trim.hpp>
 
-using namespace Mantids30::Network::Protocol::HTTP::Headers;
+using namespace Mantids30::Protocols::HTTP::Headers;
 
 std::string ETag::toString() const
 {

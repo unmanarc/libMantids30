@@ -7,7 +7,7 @@
 #include <string>
 #include <optional>
 
-namespace Mantids30::Network::Protocol::APISync {
+namespace Mantids30::Protocols::APISync {
 
 /**
  * @brief Structure to hold API synchronization parameters.
@@ -51,7 +51,7 @@ struct APISyncParameters
  * @param apiKey Authentication key used for authorization.
  * @return Response from the API as a JSON object.
  */
-boost::json::value performAPISynchronizationRequest(Mantids30::Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const boost::json::value &jsonRequest, const std::string &appName,
+boost::json::value performAPISynchronizationRequest(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &functionName, const boost::json::value &jsonRequest, const std::string &appName,
                                       const std::string &apiKey);
 
 /**
@@ -66,7 +66,7 @@ boost::json::value performAPISynchronizationRequest(Mantids30::Program::Logs::Ap
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT validation key.
  */
-boost::json::value getApplicationJWTValidationKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+boost::json::value getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Retrieves the JWT signing key for an application.
@@ -79,7 +79,7 @@ boost::json::value getApplicationJWTValidationKey(Program::Logs::AppLog *log, AP
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT signing key.
  */
-//json getApplicationJWTSigningKey(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+//json getApplicationJWTSigningKey(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Retrieves the JWT configuration for an application.
@@ -93,7 +93,7 @@ boost::json::value getApplicationJWTValidationKey(Program::Logs::AppLog *log, AP
  * @param apiKey Authentication key used for authorization.
  * @return JSON object containing the JWT configuration.
  */
-boost::json::value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
+boost::json::value getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey);
 
 /**
  * @brief Updates or sets Scopes, Roles and Activities for an application.
@@ -110,12 +110,12 @@ boost::json::value getApplicationJWTConfig(Program::Logs::AppLog *log, APISyncPa
  * @param activities JSON array of activities that can be performed.
  * @return Response from the API after updating SRA settings.
  */
-boost::json::value updateAccessControlContext(Program::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const boost::json::value &scopes, const boost::json::value &roles,
+boost::json::value updateAccessControlContext(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const boost::json::value &scopes, const boost::json::value &roles,
                                 const boost::json::value &activities);
 
-std::optional<boost::json::value> getApplicationJWTConfig(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
+std::optional<boost::json::value> getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocols::APISync::APISyncParameters *proxyParameters,
                                                    const std::map<std::string, std::string> &vars);
-std::optional<std::string> getApplicationJWTValidationKey(Program::Logs::AppLog *log, Mantids30::Network::Protocol::APISync::APISyncParameters *proxyParameters,
+std::optional<std::string> getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocols::APISync::APISyncParameters *proxyParameters,
                                                           const std::map<std::string, std::string> &vars);
 
-} // namespace Mantids30::Network::Protocol::APISync
+} // namespace Mantids30::Protocols::APISync

@@ -11,7 +11,7 @@ using namespace boost;
 using namespace boost::algorithm;
 
 using namespace std;
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
@@ -23,16 +23,16 @@ using namespace Mantids30;
  *
  * @param connectionStream Shared pointer to the streamable object used for communication.
  */
-HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &connectionStream)
+Mantids30::Protocols::HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &connectionStream)
     : HTTPv1_Base(false, connectionStream)
 {
     // Modified now (unless specified)!
-    HTTP::Date fileModificationDate;
+    Mantids30::Protocols::HTTP::Date fileModificationDate;
     fileModificationDate.setUnixTime(time(nullptr));
     serverResponse.headers.replace("Last-Modified", fileModificationDate.toString());
 
     // Start parsing from the request line
-    m_currentSubParser = static_cast<Memory::Streams::SubParser *>(&clientRequest.requestLine);
+    m_currentSubParser = static_cast<Mantids30::Core::Memory::Streams::SubParser *>(&clientRequest.requestLine);
     loadDefaultMIMETypes();
 }
 
@@ -44,7 +44,7 @@ HTTP::HTTPv1_Server::HTTPv1_Server(const std::shared_ptr<StreamableObject> &conn
  *
  * @return True if parsing should continue, false otherwise.
  */
-bool HTTP::HTTPv1_Server::changeToNextParser()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParser()
 {
     // Server mode progresses through request line → headers → body.
     if (m_currentSubParser == &clientRequest.requestLine)
@@ -69,7 +69,7 @@ bool HTTP::HTTPv1_Server::changeToNextParser()
     }
 }
 
-void HTTP::HTTPv1_Server::reset()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::reset()
 {
     // Reset all components except for connection-related information, which should remain static.
     serverResponse = Response();
@@ -86,7 +86,7 @@ void HTTP::HTTPv1_Server::reset()
  *
  * @return True if parsing should continue, false otherwise.
  */
-bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
 {
     // Client headers have been received; parse metadata and decide next step.
 
@@ -193,7 +193,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientHeaders()
  *
  * @return True if parsing should continue, false otherwise.
  */
-bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
 {
     // Request-line parsed; validate URI and HTTP version before reading headers.
     if (!prepareServerVersionOnURI())
@@ -223,7 +223,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientRequestLine()
  *
  * @return Always returns true.
  */
-bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
 {
     // TODO: Streaming body support not yet implemented
     serverResponse.status.setCode(onHTTPClientContentReceived());
@@ -238,12 +238,12 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
             std::string ifNoneMatch = clientRequest.getHeaderOption("If-None-Match");
             if (!ifNoneMatch.empty() && !serverResponse.etag.isEmpty())
             {
-                Headers::ETag clientETag;
+                Mantids30::Protocols::HTTP::Headers::ETag clientETag;
                 clientETag.fromString(ifNoneMatch);
                 if (serverResponse.etag.matches(clientETag))
                 {
                     // 304 Not Modified - no body
-                    serverResponse.status.setCode(HTTP::Status::Code::S_304_NOT_MODIFIED);
+                    serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_304_NOT_MODIFIED);
                     serverResponse.setContentDataStreamer(nullptr);
                 }
             }
@@ -253,14 +253,14 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
                 std::string ifModifiedSince = clientRequest.getHeaderOption("If-Modified-Since");
                 if (!ifModifiedSince.empty())
                 {
-                    std::shared_ptr<MIME::MIME_HeaderOption> lastModifiedHeader = serverResponse.headers.getOptionByName("Last-Modified");
+                    std::shared_ptr<Mantids30::Protocols::MIME::MIME_HeaderOption> lastModifiedHeader = serverResponse.headers.getOptionByName("Last-Modified");
                     if (lastModifiedHeader)
                     {
                         // If the Last-Modified matches or is older than If-Modified-Since, return 304
                         std::string lastModifiedStr = lastModifiedHeader->getValue();
                         if (lastModifiedStr == ifModifiedSince)
                         {
-                            serverResponse.status.setCode(HTTP::Status::Code::S_304_NOT_MODIFIED);
+                            serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_304_NOT_MODIFIED);
                             serverResponse.setContentDataStreamer(nullptr);
                         }
                     }
@@ -282,7 +282,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromClientContentData()
  *
  * Ensures the server responds with a compatible HTTP version.
  */
-bool HTTP::HTTPv1_Server::prepareServerVersionOnURI()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::prepareServerVersionOnURI()
 {
     serverResponse.status.getHTTPVersion()->setMajor(1);
     serverResponse.status.getHTTPVersion()->setMinor(0);
@@ -290,7 +290,7 @@ bool HTTP::HTTPv1_Server::prepareServerVersionOnURI()
     // Validate major version
     if (clientRequest.requestLine.getHTTPVersion()->getMajor() != 1)
     {
-        serverResponse.status.setCode(HTTP::Status::Code::S_505_HTTP_VERSION_NOT_SUPPORTED);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_505_HTTP_VERSION_NOT_SUPPORTED);
         return false;
     }
     else

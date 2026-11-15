@@ -3,11 +3,11 @@
 #include <netinet/in.h>
 #include <optional>
 
-using namespace Mantids30::Network::Protocol::WebSocket;
+using namespace Mantids30::Protocols::HTTP::WebSocket;
 
 FrameHeader::FrameHeader()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::SIZE);
     setParseDataTargetSize(2); // Start with first 2 bytes
     m_subParserName = "WebSocket_FrameHeader";
 }
@@ -194,7 +194,7 @@ void FrameHeader::prepareHeader(bool fin, OpCode opcode, uint64_t payloadLength,
     m_parseState = ParseState::COMPLETE; // Indicate that the header is ready to be written
 }
 
-Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
 {
     switch (m_parseState)
     {
@@ -217,7 +217,7 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         {
             m_parseState = ParseState::EXTENDED_LENGTH_16;
             m_extendedLengthBytes = 2;
-            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
+            setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(2);
             return ParseResult::GET_MORE_DATA;
         }
@@ -225,14 +225,14 @@ Mantids30::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         {
             m_parseState = ParseState::EXTENDED_LENGTH_64;
             m_extendedLengthBytes = 8;
-            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
+            setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(8);
             return ParseResult::GET_MORE_DATA;
         }
         else if (m_masked)
         {
             m_parseState = ParseState::MASKING_KEY;
-            setParseStrategy(Memory::Streams::SubParser::ParseStrategy::SIZE);
+            setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::SIZE);
             setParseDataTargetSize(4);
             return ParseResult::GET_MORE_DATA;
         }

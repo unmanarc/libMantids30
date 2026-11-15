@@ -3,8 +3,8 @@
 #include <cstdarg>
 #include <string>
 
-using namespace Mantids30::Program::Logs;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Runtime::Logs;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace std;
 
 void APIServer_ClientHandler::log(boost::property_tree::ptree &jWebLog)

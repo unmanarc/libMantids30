@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <map>
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
-class Status : public Memory::Streams::SubParser
+class Status : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     enum class Code : uint16_t
@@ -66,7 +66,7 @@ public:
      * @brief getHTTPVersion - Get HTTP Version Object
      * @return Version Object
      */
-    [[nodiscard]] HTTP::Version *getHTTPVersion();
+    [[nodiscard]] Mantids30::Protocols::HTTP::Version *getHTTPVersion();
     /**
      * @brief getResponsStatusCodes - Get HTTP Response Code (Ex. 404=Not found)
      * @return response code number
@@ -97,13 +97,13 @@ public:
     [[nodiscard]] bool streamToUpstream() override;
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
-    HTTP::Version m_httpVersion;
+    Mantids30::Protocols::HTTP::Version m_httpVersion;
     Code m_statusCode = Code::S_999_NOT_SET;
     std::string m_statusMessage;
 
     static std::map<unsigned short, std::string> m_responseStatusCodesTable;
 };
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

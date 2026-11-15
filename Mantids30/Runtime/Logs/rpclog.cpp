@@ -18,7 +18,7 @@
 
 #include <Mantids30/Core/Helpers/encoders.h>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 
 RPCLog::RPCLog(const uint8_t &_logMode)
     : LogBase(_logMode)
@@ -82,9 +82,9 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         }
     }
 
-    user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-    domain = Helpers::Encoders::toURL(domain, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-    sessionId = Helpers::Encoders::toURL(truncateSessionId(sessionId), Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    user = Mantids30::Core::Helpers::Encoders::toURL(user, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    domain = Mantids30::Core::Helpers::Encoders::toURL(domain, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    sessionId = Mantids30::Core::Helpers::Encoders::toURL(truncateSessionId(sessionId), Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
     if (!enableAttributeNameLogging && enableEmptyFieldLogging)
     {
@@ -136,7 +136,7 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "LOGDATA=\"" + Mantids30::Core::Helpers::Encoders::toURL(std::string(buffer), Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
     else
@@ -168,7 +168,7 @@ void RPCLog::printStandardLog(LogLevel logLevel, FILE *fp, std::string ip, std::
 
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "\"" + Mantids30::Core::Helpers::Encoders::toURL(std::string(buffer), Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
 

@@ -9,7 +9,7 @@ using namespace Mantids30::Network::Sockets;
 using namespace Mantids30;
 using namespace std;
 
-void Listener::incomingConnection(void *context, const std::shared_ptr<Sockets::Socket_Stream> &socketStream)
+void Listener::incomingConnection(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &socketStream)
 {
     Listener *threadParams = (Listener *) (context);
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
@@ -20,7 +20,7 @@ void Listener::incomingConnection(void *context, const std::shared_ptr<Sockets::
 bool Listener::startListeningInBackground(const Config &parameters)
 {
     // TODO: this is repeated code... we should pass this to socket_tls? and personalize the socket options...
-    std::shared_ptr<Acceptors::MultiThreaded> multiThreadedAcceptor = std::make_shared<Acceptors::MultiThreaded>();
+    std::shared_ptr<Mantids30::Network::Sockets::Acceptors::MultiThreaded> multiThreadedAcceptor = std::make_shared<Mantids30::Network::Sockets::Acceptors::MultiThreaded>();
 
     std::shared_ptr<Socket_Stream> listenerSocket = parameters.useTLS ? std::make_shared<Socket_TLS>() : std::make_shared<Socket_TCP>();
 

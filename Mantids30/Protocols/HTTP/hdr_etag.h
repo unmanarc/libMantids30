@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-namespace Mantids30::Network::Protocol::HTTP::Headers {
+namespace Mantids30::Protocols::HTTP::Headers {
 
 class ETag
 {
@@ -35,4 +35,4 @@ private:
 
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP::Headers
+} // namespace Mantids30::Protocols::HTTP::Headers

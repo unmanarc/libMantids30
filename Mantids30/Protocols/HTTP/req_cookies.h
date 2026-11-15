@@ -6,14 +6,14 @@
 
 #include <Mantids30/Protocols/MIME/mime_sub_header.h>
 
-namespace Mantids30::Network::Protocol::HTTP::Request {
+namespace Mantids30::Protocols::HTTP::Request {
 
 class Cookies_ClientSide
 {
 public:
     Cookies_ClientSide();
 
-    void putOnHeaders(MIME::MIME_Sub_Header *headers) const;
+    void putOnHeaders(Mantids30::Protocols::MIME::MIME_Sub_Header *headers) const;
     /**
      * @brief parseFromHeaders Parse cookies from string
      * @param cookies_str string to parse
@@ -37,4 +37,4 @@ private:
     std::map<std::string, std::string> m_cookiesMap;
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP::Request
+} // namespace Mantids30::Protocols::HTTP::Request

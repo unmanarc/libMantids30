@@ -13,12 +13,11 @@
 #include <fstream>
 #include <regex>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 using namespace std;
 
@@ -48,7 +47,7 @@ string HTMLIEngine::replaceByJVar(const boost::json::value &value, const std::st
     return str;
 }
 
-HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
+Mantids30::Protocols::HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
 {
     // Drop the MMAP container:
     std::string fileContent;
@@ -61,7 +60,7 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
     if (boost::starts_with(sRealFullPath, "MEM:"))
     {
         // Mem-Static resource.
-        fileContent = (static_cast<Mantids30::Memory::Containers::B_MEM *>(clientHandler->getResponseContentStreamableObject().get()))->toStringEx();
+        fileContent = (static_cast<Mantids30::Core::Memory::Containers::B_MEM *>(clientHandler->getResponseContentStreamableObject().get()))->toStringEx();
     }
     else
     {
@@ -70,7 +69,7 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
         if (!fileStream.is_open())
         {
             clientHandler->log(LogLevel::ERROR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
-            return HTTP::Status::Code::S_404_NOT_FOUND;
+            return Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND;
         }
         // Pass the file to a string.
         fileContent = std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
@@ -93,7 +92,7 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
         if (!fileContent.empty())
         {
             /* Generate ETag: SHA256 of processed content (first 16 hex chars) */
-            std::string sha256Hash = Helpers::Crypto::calcSHA256(fileContent);
+            std::string sha256Hash = Mantids30::Core::Helpers::Crypto::calcSHA256(fileContent);
             clientHandler->serverResponse.etag.setValue(sha256Hash.substr(0, 16));
             clientHandler->serverResponse.etag.setWeak(false);
 
@@ -108,7 +107,7 @@ HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *cli
     // Stream the generated content to the current clean data streamer...
     clientHandler->getResponseContentStreamableObject()->writeString(fileContent);
 
-    return HTTP::Status::Code::S_200_OK;
+    return Mantids30::Protocols::HTTP::Status::Code::S_200_OK;
 }
 
 void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)
@@ -205,14 +204,14 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
                                                       bool useHTMLFrame)
 {
     boost::json::value jVars, jNull;
-    Helpers::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
+    Mantids30::DataFormats::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
 
     // Fill the jVars with session info (common to every API Server) and extra info (specific to the API server implementation)
     clientHandler->fillSessionInfo(jVars);
     clientHandler->fillSessionExtraInfo(jVars);
 
     bool isSessionVar = clientHandler->doesSessionVariableExist(varName);
-    bool isJVar = Helpers::JSON::HAS_MEMBER(jVars, varName);
+    bool isJVar = Mantids30::DataFormats::JSON::HAS_MEMBER(jVars, varName);
 
     // Report as not found.
     if (!isSessionVar && !isJVar)
@@ -226,7 +225,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptV
         // jvar is from a set of constructed variables (remote address, user agent, etc...)
         if (isJVar)
         {
-            return replaceByJVar(Helpers::JSON::MEMBER_OR_NULL(jVars, varName), scriptVarName, useHTMLFrame);
+            return replaceByJVar(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(jVars, varName), scriptVarName, useHTMLFrame);
         }
         // Session vars are set by the application or the JWT token:
         else if (isSessionVar)
@@ -243,9 +242,9 @@ std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scri
                                                          bool useHTMLFrame)
 {
     // Obtain using GET Vars...
-    if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->exist(varName))
+    if (clientHandler->clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::GET)->exist(varName))
     {
-        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(HTTP::Source::GET)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::GET)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
@@ -260,9 +259,9 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
                                                           bool useHTMLFrame)
 {
     // Obtain using POST Vars...
-    if (clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->exist(varName))
+    if (clientHandler->clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::POST)->exist(varName))
     {
-        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(HTTP::Source::POST)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::POST)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
     }
     // Report as not found.
     else
@@ -275,14 +274,14 @@ std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scr
 
 boost::json::value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
 {
-    API::APIReturn apiReturn;
+    Mantids30::Protocols::HTTP::APIReturn apiReturn;
 
     boost::json::value vars;
     // Parse the JSON header using the boost::json library
     boost::json::value header;
     std::string errs;
 
-    if (!Helpers::JSON::parse(functionInput, vars, &errs))
+    if (!Mantids30::DataFormats::JSON::parse(functionInput, vars, &errs))
     {
         clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
     }
@@ -329,7 +328,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
 
         // Third group: function input/parameters (e.g., "param")
         std::string functionInput = whatStaticText[2].str();
-        Helpers::Encoders::replaceHexCodes(functionInput);
+        Mantids30::Core::Helpers::Encoders::replaceHexCodes(functionInput);
 
         return replaceByJVar(procJAPI_Exec(sRealFullPath, clientHandler, functionName, functionInput), scriptVarName, useHTMLFrame);
     }

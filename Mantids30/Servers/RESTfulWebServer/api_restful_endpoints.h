@@ -18,25 +18,25 @@
 #include <memory>
 #include <set>
 
-namespace Mantids30::API::RESTful {
+namespace Mantids30::Servers::RESTfulWebServer::RESTful {
 
 // Struct to hold HTTP request parameters
 struct RequestContext
 {
-    Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
+    Mantids30::Protocols::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
     boost::json::value emptyJSON;
     boost::json::value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
 
-    DataFormat::JWT::Token emptyToken;              ///< Holds a default empty token
-    DataFormat::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.
+    Mantids30::DataFormats::JWT::JWT::Token emptyToken;              ///< Holds a default empty token
+    Mantids30::DataFormats::JWT::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.
 
-    std::shared_ptr<DataFormat::JWT> jwtValidator; ///< Holds the JWT Validator
-    std::shared_ptr<DataFormat::JWT> jwtSigner;    ///< Holds the JWT Signer
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator; ///< Holds the JWT Validator
+    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtSigner;    ///< Holds the JWT Signer
 };
 
-using APIEndpointFunctionType = APIReturn (*)(void *context,                                        // Context pointer
-                                              const RESTful::RequestContext &request,            // Parameters from the RESTful request
-                                              Mantids30::Sessions::ClientDetails &authClientDetails // Client authentication details
+using APIEndpointFunctionType = Mantids30::Protocols::HTTP::APIReturn (*)(void *context,                                        // Context pointer
+                                              const Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &request,            // Parameters from the RESTful request
+                                              Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails &authClientDetails // Client authentication details
 );
 
 /**
@@ -47,7 +47,7 @@ using APIEndpointFunctionType = APIReturn (*)(void *context,                    
 struct RESTfulAPIEndpointFullDefinition
 {
     APIEndpointFunctionType endpointDefinition = nullptr;
-    API::Security::Configuration security;
+    Mantids30::Servers::RESTfulWebServer::Security::Configuration security;
     void *context = nullptr;
 };
 
@@ -91,7 +91,7 @@ public:
      * @param endpointDefinition The function pointer to the endpoint definition.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const API::Security::Requirements &securityRequirements,
+    bool addEndpoint(const Mantids30::Protocols::HTTP::Method &httpMethodType, const std::string &endpointPath, const Mantids30::Servers::RESTfulWebServer::Security::Requirements &securityRequirements,
                      const std::set<std::string> &requiredScopes, void *context, APIEndpointFunctionType endpointDefinition);
 
     /**
@@ -102,7 +102,7 @@ public:
      * @param apiEndpointFullDefinition The RESTfulAPIDefinition struct containing apiEndpointFullDefinition, security, and object pointer.
      * @return Returns true if the resource was added successfully, false otherwise.
      */
-    bool addEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
+    bool addEndpoint(const Mantids30::Protocols::HTTP::Method &httpMethodType, const std::string &endpointPath, const RESTfulAPIEndpointFullDefinition &apiEndpointFullDefinition);
 
     /**
      * @brief Invoke a resource and return the error code.
@@ -115,8 +115,8 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    [[nodiscard]] HandleResult handleEndpoint(const Network::Protocol::HTTP::Method &httpMethodType, const std::string &endpointPath, RESTful::RequestContext &requestContext,
-                                              const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *apiResponse);
+    [[nodiscard]] HandleResult handleEndpoint(const Mantids30::Protocols::HTTP::Method &httpMethodType, const std::string &endpointPath, Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &requestContext,
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const Mantids30::Servers::RESTfulWebServer::Security::ReceivedAuth &securityParameters, Mantids30::Protocols::HTTP::APIReturn *apiResponse);
 
     /**
      * @brief Invoke a resource with a string representation of the method mode and return the error code.
@@ -129,8 +129,8 @@ public:
      * @param[out] payloadOut The output payload after invoking the method.
      * @return The error code indicating the result of the method invocation.
      */
-    [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, RESTful::RequestContext &inputParameters,
-                                              const std::set<std::string> &currentScopes, bool isAdmin, const API::Security::ReceivedAuth &securityParameters, APIReturn *payloadOut);
+    [[nodiscard]] HandleResult handleEndpoint(const std::string &httpMethodType, const std::string &endpointPath, Mantids30::Servers::RESTfulWebServer::RESTful::RequestContext &inputParameters,
+                                              const std::set<std::string> &currentScopes, bool isAdmin, const Mantids30::Servers::RESTfulWebServer::Security::ReceivedAuth &securityParameters, Mantids30::Protocols::HTTP::APIReturn *payloadOut);
 
 private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPATCH;  ///< Map of PATCH endpoints.
@@ -139,7 +139,7 @@ private:
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsPUT;    ///< Map of PUT endpoints.
     std::map<std::string, RESTfulAPIEndpointFullDefinition> m_endpointsDELETE; ///< Map of DELETE endpoints.
 
-    Sessions::ClientDetails extractClientDetails(const RequestContext &requestContext);
+    Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails extractClientDetails(const RequestContext &requestContext);
 };
 
-} // namespace Mantids30::API::RESTful
+} // namespace Mantids30::Servers::RESTfulWebServer::RESTful

@@ -11,7 +11,7 @@
 #include <shared_mutex>
 #include <string_view>
 
-namespace Mantids30::Network::Protocol::FastRPC {
+namespace Mantids30::Protocols::FastRPC1 {
 
 /**
  * @brief The FastRPC class: Bidirectional client-sync/server-async-thread-pooled no-auth RPC Manager
@@ -39,7 +39,7 @@ public:
 
     struct ThreadParameters
     {
-        std::shared_ptr<Sockets::Socket_Stream> streamBack;
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> streamBack;
         uint32_t maxMessageSize;
         void *caller=nullptr;
         std::shared_mutex *done = nullptr;
@@ -54,11 +54,11 @@ public:
         std::string data;
     };
 
-    class Connection : public Mantids30::Threads::Safe::MapItem
+    class Connection : public Mantids30::Core::Threads::Safe::MapItem
     {
     public:
         // Socket
-        std::shared_ptr<Sockets::Socket_Stream> stream;
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> stream;
         std::mutex *mtSocket{nullptr};
         std::string key;
 
@@ -105,7 +105,7 @@ public:
      * @param methodName Method Name
      * @param method Method function and Object
      */
-    bool addMethod(const std::string &methodName, const FastRPC1::Method &method);
+    bool addMethod(const std::string &methodName, const Mantids30::Applications::FastRPC1Client::Method &method);
 
     // Ping functions:
     /**
@@ -141,7 +141,7 @@ public:
      * @param data string to be passsed everywhere in the connection
      * @return 0 if remotely shutted down, or negative if connection error happened.
      */
-    int processConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected = {nullptr, nullptr},
+    int processConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const Mantids30::Applications::FastRPC1Client::CallBackOnConnected &_cb_OnConnected = {nullptr, nullptr},
                           const float &keyDistFactor = 1.0, const std::shared_ptr<void> &context = nullptr, const std::string &data = "");
 
     /**
@@ -152,7 +152,7 @@ public:
      * @param data
      * @return
      */
-    int processConnection2(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const std::shared_ptr<void> &context = nullptr, const std::string &data = "")
+    int processConnection2(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const std::shared_ptr<void> &context = nullptr, const std::string &data = "")
     {
         return processConnection(stream, key, {nullptr, nullptr}, 1.0, context, data);
     }
@@ -239,21 +239,21 @@ public:
 
 protected:
     // TODO pasar a callbacks
-    virtual void eventUnexpectedAnswerReceived(FastRPC1::Connection *connection, const std::string &answer);
-    virtual void eventFullQueueDrop(FastRPC1::ThreadParameters *params);
+    virtual void eventUnexpectedAnswerReceived(Mantids30::Applications::FastRPC1Client::Connection *connection, const std::string &answer);
+    virtual void eventFullQueueDrop(Mantids30::Applications::FastRPC1Client::ThreadParameters *params);
     virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
     virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
 
 private:
     static void executeRPCTask(const std::shared_ptr<void> &taskData);
-    static void sendRPCAnswer(FastRPC1::ThreadParameters *parameters, const std::string &answer, uint8_t executionStatus);
+    static void sendRPCAnswer(Mantids30::Applications::FastRPC1Client::ThreadParameters *parameters, const std::string &answer, uint8_t executionStatus);
 
-    int processAnswer(FastRPC1::Connection *connection);
-    int processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
+    int processAnswer(Mantids30::Applications::FastRPC1Client::Connection *connection);
+    int processQuery(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
                      const std::shared_ptr<void> &context, const std::string &data);
 
     // Stores active connections indexed by a unique key identifier.
-    Mantids30::Threads::Safe::Map<std::string> m_connectionsByKeyId;
+    Mantids30::Core::Threads::Safe::Map<std::string> m_connectionsByKeyId;
 
     // Configuration parameters for RPC behavior.
     // queuePushTimeoutInMS: Timeout (in milliseconds) for queue push operations.
@@ -268,13 +268,13 @@ private:
     // Map storing available RPC methods.
     // Key: Method name (string).
     // boost::json::value: Corresponding method object.
-    std::map<std::string, FastRPC1::Method> m_methods;
+    std::map<std::string, Mantids30::Applications::FastRPC1Client::Method> m_methods;
 
     // Shared mutex for synchronizing access to the methods map.
     std::shared_mutex m_methodsMutex;
 
     // Thread pool for handling RPC method execution.
-    Mantids30::Threads::Pool::ThreadPool *m_threadPool{nullptr};
+    Mantids30::Core::Threads::Pool::ThreadPool *m_threadPool{nullptr};
 
     // Background thread responsible for periodic pinging to maintain connection health.
     std::thread m_pinger;
@@ -298,4 +298,4 @@ private:
     std::condition_variable m_pingCond;
 };
 
-} // namespace Mantids30::Network::Protocol::FastRPC
+} // namespace Mantids30::Protocols::FastRPC1

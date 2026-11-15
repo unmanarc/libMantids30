@@ -2,18 +2,18 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include <cstring>
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
 using namespace std;
 
-void HTTP::HTTPv1_Server::setMimeTypeForFileExtension(const string &ext, const string &type)
+void Mantids30::Protocols::HTTP::HTTPv1_Server::setMimeTypeForFileExtension(const string &ext, const string &type)
 {
     m_mimeTypes[ext] = type;
 }
 
-bool HTTP::HTTPv1_Server::detectContentTypeFromFilePath(const string &sFilePath)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::detectContentTypeFromFilePath(const string &sFilePath)
 {
     const char *cFileExtension = strrchr(sFilePath.c_str(), '.');
 
@@ -33,12 +33,12 @@ bool HTTP::HTTPv1_Server::detectContentTypeFromFilePath(const string &sFilePath)
     return false;
 }
 
-std::string HTTP::HTTPv1_Server::getCurrentFileExtension() const
+std::string Mantids30::Protocols::HTTP::HTTPv1_Server::getCurrentFileExtension() const
 {
     return m_currentFileExtension;
 }
 
-void HTTP::HTTPv1_Server::loadDefaultMIMETypes()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::loadDefaultMIMETypes()
 {
     // Default Mime Types (ref: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types)
     m_mimeTypes[".aac"] = "audio/aac";

@@ -20,14 +20,14 @@ void PoolThreaded::run()
     std::unique_lock<std::mutex> lock(this->m_runMutex);
 
     // Create pool as local variable (lifetime contained within run())
-    std::unique_ptr<Mantids30::Threads::Pool::ThreadPool> pool = std::make_unique<Mantids30::Threads::Pool::ThreadPool>(parameters.threadsCount, parameters.taskQueues);
+    std::unique_ptr<Mantids30::Core::Threads::Pool::ThreadPool> pool = std::make_unique<Mantids30::Core::Threads::Pool::ThreadPool>(parameters.threadsCount, parameters.taskQueues);
     pool->start();
 
     m_running = true;
 
     // Create one thread per acceptor socket using lambda
     // Each thread runs its own blocking acceptConnection() loop
-    for (std::shared_ptr<Sockets::Socket_Stream> &acceptorSocket : m_acceptorSocketList)
+    for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &acceptorSocket : m_acceptorSocketList)
     {
         if (!acceptorSocket)
         {
@@ -43,7 +43,7 @@ void PoolThreaded::run()
 #endif
                 while (this->m_running && acceptorSocket)
                 {
-                    std::shared_ptr<Sockets::Socket_Stream> clientSocket = acceptorSocket->acceptConnection();
+                    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> clientSocket = acceptorSocket->acceptConnection();
                     if (clientSocket)
                     {
                         std::shared_ptr<ConnectionTaskData> taskData = std::make_shared<ConnectionTaskData>();
@@ -105,7 +105,7 @@ void PoolThreaded::_stop()
 {
     m_running = false;
 
-    for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
+    for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
         {
@@ -114,7 +114,7 @@ void PoolThreaded::_stop()
     }
 }
 
-void PoolThreaded::addAcceptorSocket(const std::shared_ptr<Sockets::Socket_Stream> &value)
+void PoolThreaded::addAcceptorSocket(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &value)
 {
     m_acceptorSocketList.push_back(value);
 }

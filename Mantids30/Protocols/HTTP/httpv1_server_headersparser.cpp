@@ -4,11 +4,11 @@
 #include <Mantids30/Core/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-void HTTP::HTTPv1_Server::parseAllClientHeaders()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::parseAllClientHeaders()
 {
     parseHostHeader();
     parseAuthenticationHeaders();
@@ -16,7 +16,7 @@ void HTTP::HTTPv1_Server::parseAllClientHeaders()
 }
 
 // Parse the Host header and extract host and port information
-void HTTP::HTTPv1_Server::parseHostHeader()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::parseHostHeader()
 {
     const string hostValue = clientRequest.headers.getOptionValueStringByName("HOST");
     if (hostValue.empty())
@@ -40,7 +40,7 @@ void HTTP::HTTPv1_Server::parseHostHeader()
     }
 }
 
-void HTTP::HTTPv1_Server::parsePort(std::string_view portStr)
+void Mantids30::Protocols::HTTP::HTTPv1_Server::parsePort(std::string_view portStr)
 {
     uint32_t port = 0;
 
@@ -56,7 +56,7 @@ void HTTP::HTTPv1_Server::parsePort(std::string_view portStr)
     }
 }
 
-void HTTP::HTTPv1_Server::parseAuthenticationHeaders()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::parseAuthenticationHeaders()
 {
     clientRequest.basicAuth.isEnabled = false;
 
@@ -72,7 +72,7 @@ void HTTP::HTTPv1_Server::parseAuthenticationHeaders()
     }
 }
 
-bool HTTP::HTTPv1_Server::parseBasicAuth(std::string_view authHeader)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::parseBasicAuth(std::string_view authHeader)
 {
     // Expected format: "Basic <base64-encoded-credentials>"
     const string BASIC_PREFIX = "Basic ";
@@ -82,7 +82,7 @@ bool HTTP::HTTPv1_Server::parseBasicAuth(std::string_view authHeader)
     }
 
     const string encodedCredentials(authHeader.substr(BASIC_PREFIX.length()));
-    const string decodedCredentials = Helpers::Encoders::decodeFromBase64(encodedCredentials);
+    const string decodedCredentials = Mantids30::Core::Helpers::Encoders::decodeFromBase64(encodedCredentials);
 
     size_t colonPos = decodedCredentials.find(':');
     if (colonPos == string::npos)
@@ -96,7 +96,7 @@ bool HTTP::HTTPv1_Server::parseBasicAuth(std::string_view authHeader)
     return true;
 }
 
-void HTTP::HTTPv1_Server::parseUserAgent()
+void Mantids30::Protocols::HTTP::HTTPv1_Server::parseUserAgent()
 {
     if (clientRequest.headers.exist("User-Agent"))
     {
@@ -105,7 +105,7 @@ void HTTP::HTTPv1_Server::parseUserAgent()
 }
 
 // Parse Content-Length and Content-Type headers
-bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
 {
     // Initialize in zero:
     clientRequest.content.setCurrentSize(0);
@@ -115,41 +115,41 @@ bool HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
     string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
     if (contentLength)
     {
-        clientRequest.content.setTransmissionMode(HTTP::Content::TransmissionMode::CONTENT_LENGTH);
+        clientRequest.content.setTransmissionMode(Mantids30::Protocols::HTTP::Content::TransmissionMode::CONTENT_LENGTH);
         if (!clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.
-            serverResponse.status.setCode(HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
+            serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
             return false;
         }
         if (boost::icontains(contentType, "multipart/form-data"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContainerType::MIME);
+            clientRequest.content.setContainerType(Mantids30::Protocols::HTTP::Content::ContainerType::MIME);
             clientRequest.content.getMultiPartVars()->setMultiPartBoundary(clientRequest.headers.getOptionByName("Content-Type")->getSubVar("boundary"));
         }
         else if (boost::icontains(contentType, "application/x-www-form-urlencoded"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContainerType::URL);
+            clientRequest.content.setContainerType(Mantids30::Protocols::HTTP::Content::ContainerType::URL);
         }
         else if (boost::icontains(contentType, "application/json"))
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContainerType::JSON);
+            clientRequest.content.setContainerType(Mantids30::Protocols::HTTP::Content::ContainerType::JSON);
         }
         else
         {
-            clientRequest.content.setContainerType(HTTP::Content::ContainerType::BIN);
+            clientRequest.content.setContainerType(Mantids30::Protocols::HTTP::Content::ContainerType::BIN);
         }
         /////////////////////////////////////////////////////////////////////////////////////
     }
     return true;
 }
 
-bool HTTP::HTTPv1_Server::validateHTTPv11Requirements()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::validateHTTPv11Requirements()
 {
     // HTTP/1.1+ requires Host header
     if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 && clientRequest.virtualHost.empty())
     {
-        serverResponse.status.setCode(HTTP::Status::Code::S_400_BAD_REQUEST);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_400_BAD_REQUEST);
         return false;
     }
     return true;

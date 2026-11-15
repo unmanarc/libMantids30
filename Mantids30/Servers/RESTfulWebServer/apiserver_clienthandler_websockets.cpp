@@ -3,11 +3,11 @@
 #include <Mantids30/Servers/RESTfulWebServer/api_websocket_connection.h>
 #include <Mantids30/Core/Helpers/random.h>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 using namespace std;
 
@@ -21,8 +21,8 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
         serverResponse.setServerName(config->webServerName);
     }
 
-    HTTP::Status::Code rtmp;
-    if ((rtmp = sessionStart()) != HTTP::Status::Code::S_200_OK)
+    Mantids30::Protocols::HTTP::Status::Code rtmp;
+    if ((rtmp = sessionStart()) != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
     {
         serverResponse.status.setCode(rtmp);
         return false;
@@ -35,7 +35,7 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
     }
 
     // Session started here.
-    if ((rtmp = checkWebSocketRequestURI(requestURI)) != HTTP::Status::Code::S_200_OK)
+    if ((rtmp = checkWebSocketRequestURI(requestURI)) != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
     {
         sessionCleanup();
         serverResponse.status.setCode(rtmp);
@@ -48,7 +48,7 @@ bool APIServer_ClientHandler::onWebSocketHTTPClientHeadersReceived()
     if (userConnectionCount >= config->webSockets.maxConnectionsPerUserPerEndpoint)
     {
         sessionCleanup();
-        serverResponse.status.setCode(HTTP::Status::Code::S_429_TOO_MANY_REQUESTS);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_429_TOO_MANY_REQUESTS);
         return false;
     }
 
@@ -62,9 +62,9 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
         return;
     }
 
-    m_webSocketSessionId = Helpers::Random::createRandomString(16);
+    m_webSocketSessionId = Mantids30::Core::Helpers::Random::createRandomString(16);
 
-    API::WebSocket::WebSocketConnection *connection = new API::WebSocket::WebSocketConnection;
+    Mantids30::Servers::RESTfulWebServer::WebSocket::WebSocketConnection *connection = new Mantids30::Servers::RESTfulWebServer::WebSocket::WebSocketConnection;
     connection->webSocketHTTPServer = this;
     connection->sessionInfo = &currentSessionInfo;
     if (!m_webSocketCurrentEndpoint->connectionsByIdMap->addElement(m_webSocketSessionId, connection))
@@ -78,23 +78,23 @@ void APIServer_ClientHandler::onWebSocketConnectionEstablished()
     {
         boost::json::value jSessionId;
 
-        Helpers::JSON::setMember(jSessionId, "type", "session_id");
-        Helpers::JSON::setMember(jSessionId, "sessionId", m_webSocketSessionId);
+        Mantids30::DataFormats::JSON::setMember(jSessionId, "type", "session_id");
+        Mantids30::DataFormats::JSON::setMember(jSessionId, "sessionId", m_webSocketSessionId);
 
         sendWebSocketText(boost::json::serialize(jSessionId));
     }
 
-    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType::SESSION_START, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketBinaryDataFrameReceived()
 {
-    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType::RECEIVED_MESSAGE_BINARY, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketTextFrameReceived()
 {
-    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType::RECEIVED_MESSAGE_TEXT, m_webSocketCurrentEndpoint);
 }
 
 void APIServer_ClientHandler::onWebSocketPingReceived() {}
@@ -103,7 +103,7 @@ void APIServer_ClientHandler::onWebSocketPongReceived() {}
 
 void APIServer_ClientHandler::onWebSocketConnectionFinished()
 {
-    handleWebSocketEvent(Network::Protocol::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
+    handleWebSocketEvent(Mantids30::Protocols::HTTP::WebSocket::EventType::SESSION_END, m_webSocketCurrentEndpoint);
     if (m_webSocketCurrentEndpoint)
     {
         m_webSocketCurrentEndpoint->connectionsByIdMap->destroyElement(m_webSocketSessionId);

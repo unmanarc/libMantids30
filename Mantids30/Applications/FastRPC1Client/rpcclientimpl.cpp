@@ -15,8 +15,8 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Applications::FastRPC1;
-using namespace Mantids30::Program;
+using namespace Mantids30::Applications::FastRPC1Client;
+using namespace Mantids30;
 
 RPCClientImpl::RPCClientImpl()
 {
@@ -46,29 +46,29 @@ void RPCClientImpl::runRPClient()
 
             if (!sockRPCClient->tlsKeys.loadCAFromPEMFile(caCertPath))
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort,
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Certificate Authority (%s)", remoteAddr.c_str(), remotePort,
                               caCertPath.c_str());
                 _exit(-3);
             }
 
-            std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+            std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
 
             // Check if using passphrase
             if (!Globals::getLC_TLSPhraseFileForPrivateKey().empty())
             {
                 // Load Key
-                std::optional<std::string> keyPassPhrase = Helpers::Crypto::AES256DecryptB64(Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()),
+                std::optional<std::string> keyPassPhrase = Mantids30::Core::Helpers::Crypto::AES256DecryptB64(Mantids30::Core::Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()),
                                                                                                         static_cast<char *>(masterKey->data), masterKey->length);
 
                 if (!keyPassPhrase)
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Invalid Passphrase.");
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Invalid Passphrase.");
                     _exit(-37);
                 }
 
                 if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFileEP(privKeyPath.c_str(), const_cast<char *>(keyPassPhrase->c_str())))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(),
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate / Passphrase (%s)", remoteAddr.c_str(),
                                   remotePort, privKeyPath.c_str());
                     _exit(-35);
                 }
@@ -77,19 +77,19 @@ void RPCClientImpl::runRPClient()
             {
                 if (!sockRPCClient->tlsKeys.loadPrivateKeyFromPEMFile(privKeyPath.c_str()))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort,
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Private Certificate (%s)", remoteAddr.c_str(), remotePort,
                                   privKeyPath.c_str());
                     _exit(-3);
                 }
             }
             if (!sockRPCClient->tlsKeys.loadPublicKeyFromPEMFile(pubCertPath.c_str()))
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort,
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error starting RPC Connector to %s:%" PRIu16 ": Bad/Unaccesible TLS Public Certificate (%s)", remoteAddr.c_str(), remotePort,
                               pubCertPath.c_str());
                 _exit(-3);
             }
 
-            LOG_APP->log0(__func__, Logs::LogLevel::INFO, "PKI X.509 credentials loaded from the internal storage");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "PKI X.509 credentials loaded from the internal storage");
         }
         else
         {
@@ -100,11 +100,11 @@ void RPCClientImpl::runRPClient()
             sockRPCClient->tlsKeys.loadPSKAsClient(idpsk.id, idpsk.psk);
         }
 
-        LOG_APP->log0(__func__, Logs::LogLevel::INFO, "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
+        LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "Connecting to RPC Server %s:%" PRIu16 "...", remoteAddr.c_str(), remotePort);
 
         if (sockRPCClient->connectTo(remoteAddr.c_str(), remotePort))
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::INFO, "RPC Client Connected to server %s:%" PRIu16 " (CN=%s) Using %s", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str(),
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "RPC Client Connected to server %s:%" PRIu16 " (CN=%s) Using %s", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str(),
                           sockRPCClient->getTLSConnectionCipherName().c_str());
 
             if (postConnect(sockRPCClient))
@@ -116,17 +116,17 @@ void RPCClientImpl::runRPClient()
                 }
                 m_fastRPC.processConnection(sockRPCClient, "SERVER");
             }
-            LOG_APP->log0(__func__, Logs::LogLevel::WARNING, "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str());
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::WARNING, "RPC Client disconnected from %s:%" PRIu16 " (CN=%s)", remoteAddr.c_str(), remotePort, sockRPCClient->getTLSPeerCN().c_str());
         }
         else
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient->getLastError().c_str());
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error connecting to remote RPC Server @%s:%" PRIu16 ": %s", remoteAddr.c_str(), remotePort, sockRPCClient->getLastError().c_str());
 
             for (const std::string &i : sockRPCClient->getTLSErrorsAndClear())
             {
                 if (!strstr(i.c_str(), "certificate unknown"))
                 {
-                    LOG_APP->log1(__func__, remoteAddr, Logs::LogLevel::ERROR, ">>> TLS Error: %s", i.c_str());
+                    LOG_APP->log1(__func__, remoteAddr, Mantids30::Runtime::Logs::LogLevel::ERROR, ">>> TLS Error: %s", i.c_str());
                 }
             }
         }
@@ -141,7 +141,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
     //***********CONFIG RETRIEVE FROM FILE**********
     /////////////////////////////////////////////////////////////
     std::string localConfigPath = Globals::getLC_RemoteConfigFilePath();
-    LOG_APP->log0(__func__, Logs::LogLevel::INFO, "Retrieving config from local file: %s", localConfigPath.c_str());
+    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "Retrieving config from local file: %s", localConfigPath.c_str());
 
     std::ifstream infile(localConfigPath);
 
@@ -153,7 +153,7 @@ bool RPCClientImpl::retrieveConfigFromLocalFile()
             std::string sRemoteConfigDecrypted = decryptStr(lineInFile);
 
             boost::json::value jRemoteConfig;
-            Helpers::JSON::Reader reader;
+            Mantids30::DataFormats::JSON::Reader reader;
             bool parsingSuccessful = reader.parse(sRemoteConfigDecrypted, jRemoteConfig);
             if (parsingSuccessful)
             {
@@ -176,11 +176,11 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
     m_failedToRetrieveC2Config = false;
 
-    LOG_APP->log0(__func__, Logs::LogLevel::INFO, "Retrieving config from remote C2.");
+    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "Retrieving config from remote C2.");
 
     // Try to retrieve the configuration from the C&C. (will try several attempts)
     boost::json::value jRemoteConfig = m_fastRPC.runRemoteRPCMethod("SERVER", m_getClientConfigCmd, {}, &rpcError);
-    if (Helpers::JSON::ASBOOL(rpcError, "succeed", false))
+    if (Mantids30::DataFormats::JSON::ASBOOL(rpcError, "succeed", false))
     {
         // Translate this config to the configuration file...
         std::string sRemoteConfig = boost::json::serialize(jRemoteConfig);
@@ -188,7 +188,7 @@ bool RPCClientImpl::retrieveConfigFromC2()
 
         if (sRemoteConfig == sLocalConfig)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::INFO, "C2 remote/local configuration is the same. Not upgrading.");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "C2 remote/local configuration is the same. Not upgrading.");
             return true;
         }
 
@@ -207,36 +207,36 @@ bool RPCClientImpl::retrieveConfigFromC2()
                 m_jRetrievedConfig = jRemoteConfig;
 
                 boost::json::value ans;
-                Helpers::JSON::setMember(ans, "x", m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError));
+                Mantids30::DataFormats::JSON::setMember(ans, "x", m_fastRPC.runRemoteRPCMethod("SERVER", m_updateClientConfigLoadTimeCmd, {}, &rpcError));
 
-                if (!Helpers::JSON::ASBOOL(rpcError, "succeed", false))
+                if (!Mantids30::DataFormats::JSON::ASBOOL(rpcError, "succeed", false))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
-                                  std::string(Helpers::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time... %s",
+                                  std::string(Mantids30::DataFormats::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
                 }
 
-                if (!Helpers::JSON::ASBOOL(ans, "x", false))
+                if (!Mantids30::DataFormats::JSON::ASBOOL(ans, "x", false))
                 {
-                    LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Configuration loaded from the remote server, but failed to update the C2 config access time.");
                 }
 
-                LOG_APP->log0(__func__, Logs::LogLevel::INFO, "C2 configuration written to: %s", localConfigPath.c_str());
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "C2 configuration written to: %s", localConfigPath.c_str());
 
                 return true;
             }
             else
             {
-                LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to write the remote configuration to: %s", localConfigPath.c_str());
             }
         }
         else
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Remote configuration from the C2 is not reliable.");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Remote configuration from the C2 is not reliable.");
         }
     }
     else
     {
-        LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", std::string(Helpers::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
+        LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Can't retrieve configuration from the C2: %s", std::string(Mantids30::DataFormats::JSON::ASSTRING(rpcError, "errorMessage", "")).c_str());
     }
 
     // If the C2 is available in the near future, handle it (recommendation: exit the program).
@@ -254,31 +254,31 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
 {
     bool ok = false;
     PSKIdKey r;
-    std::string encryptedKey = Helpers::File::loadFileIntoString(Globals::getLC_C2PSKSharedKeyFilePath(), &ok);
-    std::shared_ptr<Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+    std::string encryptedKey = Mantids30::Core::Helpers::File::loadFileIntoString(Globals::getLC_C2PSKSharedKeyFilePath(), &ok);
+    std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
     if (!ok || encryptedKey.empty())
     {
         if (!ok)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Failed to read '%s' RPC-PSK Credentials", Globals::getLC_C2PSKSharedKeyFilePath().c_str());
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to read '%s' RPC-PSK Credentials", Globals::getLC_C2PSKSharedKeyFilePath().c_str());
         }
 
         r = defaultPSK();
         if (r.id.empty())
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key content/file not found");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key content/file not found");
             exit(-330);
         }
 
-        LOG_APP->log0(__func__, Logs::LogLevel::WARNING, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
+        LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::WARNING, "Using default RPC-PSK Credentials (id=%s)", r.id.c_str());
     }
     else
     {
-        std::optional<std::string> tokenizedKey = Helpers::Crypto::AES256DecryptB64(encryptedKey, static_cast<char *>(masterKey->data), masterKey->length);
+        std::optional<std::string> tokenizedKey = Mantids30::Core::Helpers::Crypto::AES256DecryptB64(encryptedKey, static_cast<char *>(masterKey->data), masterKey->length);
 
         if (!tokenizedKey)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: Invalid PSK Key");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error in RPC Client: Invalid PSK Key");
             _exit(-336);
         }
 
@@ -286,12 +286,12 @@ RPCClientImpl::PSKIdKey RPCClientImpl::loadPSK()
         split(keyParts, *tokenizedKey, is_any_of(":"), token_compress_on);
         if (!ok || keyParts.size() != 2)
         {
-            LOG_APP->log0(__func__, Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key not in ID:PSK format");
+            LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error in RPC Client: PSK Key not in ID:PSK format");
             _exit(-331);
         }
         r.id = keyParts.at(0);
         r.psk = keyParts.at(1);
-        LOG_APP->log0(__func__, Logs::LogLevel::INFO, "RPC-PSK credentials loaded with id='%s' from the internal storage", r.id.c_str());
+        LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "RPC-PSK credentials loaded with id='%s' from the internal storage", r.id.c_str());
     }
     return r;
 }

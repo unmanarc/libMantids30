@@ -5,7 +5,7 @@
 #include <Mantids30/DataFormats/JSON/json.h>
 #include <Mantids30/DataFormats/JSON/streamable_json.h>
 
-namespace Mantids30::API {
+namespace Mantids30::Protocols::HTTP {
 
 /**
  * @brief Represents the response of an API endpoint.
@@ -18,7 +18,7 @@ public:
      */
     APIReturn() = default;
 
-    APIReturn(Network::Protocol::HTTP::Status::Code code) { this->httpResponseCode = code; }
+    APIReturn(Mantids30::Protocols::HTTP::Status::Code code) { this->httpResponseCode = code; }
 
     /**
      * @brief Parameterized constructor for APIReturn.
@@ -47,19 +47,19 @@ public:
      * @brief Parameterized constructor for APIReturn using error.
      * @param body The body of the response.
      */
-    APIReturn(const Network::Protocol::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
+    APIReturn(const Mantids30::Protocols::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
     {
         // Initialize the body member variable with the provided json object.
         setError(httpResponseCode, error, message);
     }
 
-    void setError(const Network::Protocol::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
+    void setError(const Mantids30::Protocols::HTTP::Status::Code &httpResponseCode, const std::string &error, const std::string &message)
     {
         this->httpResponseCode = httpResponseCode;
         if (body)
         {
-            Mantids30::Helpers::JSON::setMember(*body->getValue(), "error", error);
-            Mantids30::Helpers::JSON::setMember(*body->getValue(), "message", message);
+            Mantids30::DataFormats::JSON::setMember(*body->getValue(), "error", error);
+            Mantids30::DataFormats::JSON::setMember(*body->getValue(), "message", message);
         }
     }
 
@@ -71,9 +71,9 @@ public:
     {
         std::string errorString = std::to_string(static_cast<int>(httpResponseCode)) + " - ";
 
-        if (httpResponseCode != Network::Protocol::HTTP::Status::Code::S_200_OK)
+        if (httpResponseCode != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
         {
-            errorString += Helpers::JSON::ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
+            errorString += Mantids30::DataFormats::JSON::ASSTRING(*body->getValue(), "message", "UNKNOWN ERROR.");
         }
         else
         {
@@ -87,7 +87,7 @@ public:
     {
         if (body)
         {
-            Mantids30::Helpers::JSON::setMember(*body->getValue(), "reasons", reasons);
+            Mantids30::DataFormats::JSON::setMember(*body->getValue(), "reasons", reasons);
         }
     }
 
@@ -141,26 +141,26 @@ public:
      */
     void fromJSON(const boost::json::value &jsonValue)
     {
-        httpResponseCode = static_cast<Network::Protocol::HTTP::Status::Code>(Helpers::JSON::ASUINT(jsonValue, "httpResponseCode", static_cast<unsigned int>(Network::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR)));
-        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "body") && body)
+        httpResponseCode = static_cast<Mantids30::Protocols::HTTP::Status::Code>(Mantids30::DataFormats::JSON::ASUINT(jsonValue, "httpResponseCode", static_cast<unsigned int>(Mantids30::Protocols::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR)));
+        if (Mantids30::DataFormats::JSON::HAS_MEMBER(jsonValue, "body") && body)
         {
-            body->setValue(Mantids30::Helpers::JSON::MEMBER_OR_NULL(jsonValue, "body"));
+            body->setValue(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(jsonValue, "body"));
         }
-        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "extraHeaders"))
+        if (Mantids30::DataFormats::JSON::HAS_MEMBER(jsonValue, "extraHeaders"))
         {
-            const boost::json::value &extraHeaders = Mantids30::Helpers::JSON::MEMBER_OR_NULL(jsonValue, "extraHeaders");
+            const boost::json::value &extraHeaders = Mantids30::DataFormats::JSON::MEMBER_OR_NULL(jsonValue, "extraHeaders");
             for (const auto &kv : extraHeaders.as_object())
             {
-                httpExtraHeaders[kv.key()] = Helpers::JSON::ASSTRING(extraHeaders, kv.key(), "");
+                httpExtraHeaders[kv.key()] = Mantids30::DataFormats::JSON::ASSTRING(extraHeaders, kv.key(), "");
             }
         }
-        if (Mantids30::Helpers::JSON::HAS_MEMBER(jsonValue, "cookies"))
+        if (Mantids30::DataFormats::JSON::HAS_MEMBER(jsonValue, "cookies"))
         {
-            const boost::json::array &cookies = Mantids30::Helpers::JSON::ASARRAY_OR_EMPTY(jsonValue, "cookies");
+            const boost::json::array &cookies = Mantids30::DataFormats::JSON::ASARRAY_OR_EMPTY(jsonValue, "cookies");
             for (const boost::json::value &i : cookies)
             {
-                std::string cookieString(Helpers::JSON::ASSTRING_D(i, ""));
-                Mantids30::Network::Protocol::HTTP::Headers::Cookie cookie;
+                std::string cookieString(Mantids30::DataFormats::JSON::ASSTRING_D(i, ""));
+                Mantids30::Protocols::HTTP::Headers::Cookie cookie;
                 std::string cookieName;
                 cookie.fromSetCookieString(cookieString, &cookieName);
                 cookiesMap[cookieName] = cookie;
@@ -173,20 +173,20 @@ public:
         uint16_t code = static_cast<uint16_t>(httpResponseCode);
         return code < 200 || code > 299;
     }
-    void setStatus(const Network::Protocol::HTTP::Status::Code &httpResponseCode) { this->httpResponseCode = httpResponseCode; }
+    void setStatus(const Mantids30::Protocols::HTTP::Status::Code &httpResponseCode) { this->httpResponseCode = httpResponseCode; }
     void addHeader(const std::string &headerName, const std::string &headerValue) { httpExtraHeaders[headerName] = headerValue; }
 
-    [[nodiscard]] std::shared_ptr<Memory::Streams::StreamableJSON> getBodyDataStreamer() { return body; }
-    [[nodiscard]] Network::Protocol::HTTP::Status::Code getHTTPResponseCode() const { return httpResponseCode; }
+    [[nodiscard]] std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> getBodyDataStreamer() { return body; }
+    [[nodiscard]] Mantids30::Protocols::HTTP::Status::Code getHTTPResponseCode() const { return httpResponseCode; }
 
-    std::map<std::string, Mantids30::Network::Protocol::HTTP::Headers::Cookie> cookiesMap;
+    std::map<std::string, Mantids30::Protocols::HTTP::Headers::Cookie> cookiesMap;
     std::map<std::string, std::string> httpExtraHeaders;
 
     std::string redirectURL;
 
 private:
-    Network::Protocol::HTTP::Status::Code httpResponseCode = Network::Protocol::HTTP::Status::Code::S_200_OK; ///< HTTP status code of the response.
-    std::shared_ptr<Memory::Streams::StreamableJSON> body = std::make_shared<Memory::Streams::StreamableJSON>();
+    Mantids30::Protocols::HTTP::Status::Code httpResponseCode = Mantids30::Protocols::HTTP::Status::Code::S_200_OK; ///< HTTP status code of the response.
+    std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> body = std::make_shared<Mantids30::DataFormats::JSON::StreamableJSON>();
 };
 
-} // namespace Mantids30::API
+} // namespace Mantids30::Protocols::HTTP

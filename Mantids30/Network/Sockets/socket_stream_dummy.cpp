@@ -81,12 +81,12 @@ void Socket_Stream_Dummy::setRemotePairOverride(const char *address)
     setRemotePair(address);
 }
 
-Mantids30::Memory::Containers::B_Chunks *Socket_Stream_Dummy::getReceiver()
+Mantids30::Core::Memory::Containers::B_Chunks *Socket_Stream_Dummy::getReceiver()
 {
     return &receiver;
 }
 
-Mantids30::Memory::Containers::B_Chunks *Socket_Stream_Dummy::getSender()
+Mantids30::Core::Memory::Containers::B_Chunks *Socket_Stream_Dummy::getSender()
 {
     return &sender;
 }

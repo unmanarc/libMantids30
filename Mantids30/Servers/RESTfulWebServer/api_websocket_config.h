@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace Mantids30::API::WebSocket {
+namespace Mantids30::Servers::RESTfulWebServer::WebSocket {
 
 struct Config
 {
@@ -27,4 +27,4 @@ struct Config
     size_t maxConnectionsPerUserPerEndpoint = 16;
 };
 
-} // namespace Mantids30::API::WebSocket
+} // namespace Mantids30::Servers::RESTfulWebServer::WebSocket

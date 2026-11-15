@@ -9,7 +9,7 @@
 #include <utility>
 
 using namespace std;
-using namespace Mantids30::Scripts::Expressions;
+using namespace Mantids30::Scripting::JSONExprEval;
 
 JSONEval::JSONEval(const std::string &expr)
 {

@@ -6,18 +6,16 @@
 #include <regex>
 
 using namespace Mantids30;
-using namespace Mantids30::Scripts;
-
-namespace {
+using namespace Mantids30::Scripting::MantidsLang;
 
 // {{ ... }} non greedy
-const std::regex &tagRegex()
+const std::regex &MantidsLang::tagRegex()
 {
     static const std::regex r(R"(\{\{([^}]*?)\}\})");
     return r;
 }
 
-std::string trimCopy(const std::string &in)
+std::string MantidsLang::trimCopy(const std::string &in)
 {
     std::string out = in;
     boost::trim(out);
@@ -25,7 +23,7 @@ std::string trimCopy(const std::string &in)
 }
 
 // Extract the command name (first word) from a tag content
-std::string extractCommandName(const std::string &tagName)
+std::string MantidsLang::extractCommandName(const std::string &tagName)
 {
     std::string trimmed = trimCopy(tagName);
     const size_t spacePos = trimmed.find_first_of(" \t\r\n");
@@ -36,9 +34,7 @@ std::string extractCommandName(const std::string &tagName)
     return trimmed;
 }
 
-} // namespace
-
-MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject> &source, const std::shared_ptr<boost::json::value> &jsonContext, MantidsLang *parent, ApiCallback_t apiCallback)
+MantidsLang::MantidsLang(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &source, const std::shared_ptr<boost::json::value> &jsonContext, MantidsLang *parent, ApiCallback_t apiCallback)
     : source(source)
     , jsonContext(jsonContext)
     , parent(parent)
@@ -48,7 +44,7 @@ MantidsLang::MantidsLang(const std::shared_ptr<Memory::Streams::StreamableObject
     tokens.emplace_back();
 }
 
-bool MantidsLang::streamTo(Memory::Streams::StreamableObject *out)
+bool MantidsLang::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
     output = out;
 

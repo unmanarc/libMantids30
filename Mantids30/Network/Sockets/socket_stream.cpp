@@ -20,7 +20,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
 
-bool Socket_Stream::streamTo(Memory::Streams::StreamableObject *out)
+bool Socket_Stream::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
     char data[8192];
     memset(data, 0, 8192);
@@ -91,13 +91,13 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
 #else
     // Emulate via TCP. (EXPERIMENTAL)
 
-    std::shared_ptr<Sockets::Socket_TCP> llsock = std::make_shared<Socket_TCP>();
-    std::shared_ptr<Sockets::Socket_TCP> rsock = std::make_shared<Socket_TCP>();
-    std::shared_ptr<Sockets::Socket_TCP> lsock = nullptr;
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> llsock = std::make_shared<Socket_TCP>();
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> rsock = std::make_shared<Socket_TCP>();
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> lsock = nullptr;
 
     llsock->listenOn(0, "127.0.0.1");
     rsock->connectTo("127.0.0.1", lsock->getLocalPort());
-    lsock = std::dynamic_pointer_cast<Sockets::Socket_TCP>(llsock->acceptConnection());
+    lsock = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
 
     //delete llsock;
@@ -231,7 +231,7 @@ void Socket_Stream::deriveConnectionName()
     }
 
     // Multiple client connection using this peer name? give a random suffix...
-    rpcClientKey = peerName + "?" + Helpers::Random::createRandomHexString(8);
+    rpcClientKey = peerName + "?" + Mantids30::Core::Helpers::Random::createRandomHexString(8);
 
     setConnectionName(rpcClientKey);
 }

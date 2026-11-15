@@ -19,7 +19,7 @@
 #include <Mantids30/Core/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 
 AppLog::AppLog(const uint8_t &_logMode)
     : LogBase(_logMode)
@@ -39,7 +39,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string_view _module, 
         }
     }
 
-    user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+    user = Mantids30::Core::Helpers::Encoders::toURL(user, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
     if (!enableAttributeNameLogging)
     {
@@ -75,7 +75,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string_view _module, 
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "LOGDATA=\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "LOGDATA=\"" + Mantids30::Core::Helpers::Encoders::toURL(std::string(buffer), Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
     else
@@ -94,7 +94,7 @@ void AppLog::printStandardLog(LogLevel logLevel, FILE *fp, string_view _module, 
         }
         if ((!buffer[0] && enableEmptyFieldLogging) || buffer[0])
         {
-            logLine += "\"" + Helpers::Encoders::toURL(std::string(buffer), Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
+            logLine += "\"" + Mantids30::Core::Helpers::Encoders::toURL(std::string(buffer), Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING) + "\"";
         }
     }
 

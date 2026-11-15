@@ -6,20 +6,20 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP::Response {
+namespace Mantids30::Protocols::HTTP::Response {
 
 class Cookies_ServerSide
 {
 public:
     Cookies_ServerSide() = default;
 
-    void putOnHeaders(MIME::MIME_Sub_Header *headers) const;
+    void putOnHeaders(Mantids30::Protocols::MIME::MIME_Sub_Header *headers) const;
 
     std::string getCookieValueByName(const std::string &cookieName);
-    std::shared_ptr<Headers::Cookie> getCookieByName(const std::string &cookieName);
+    std::shared_ptr<Mantids30::Protocols::HTTP::Headers::Cookie> getCookieByName(const std::string &cookieName);
 
     bool parseCookie(const std::string &cookie_str);
-    bool addCookieVal(const std::string &cookieName, const Headers::Cookie &cookieValue);
+    bool addCookieVal(const std::string &cookieName, const Mantids30::Protocols::HTTP::Headers::Cookie &cookieValue);
 
     bool removeCookie(const std::string &cookieName);
 
@@ -45,6 +45,6 @@ public:
     void prependPathToAllCookies(const std::string &prefix);
 
 private:
-    std::map<std::string, std::shared_ptr<Headers::Cookie>> m_cookiesMap;
+    std::map<std::string, std::shared_ptr<Mantids30::Protocols::HTTP::Headers::Cookie>> m_cookiesMap;
 };
-} // namespace Mantids30::Network::Protocol::HTTP::Response
+} // namespace Mantids30::Protocols::HTTP::Response

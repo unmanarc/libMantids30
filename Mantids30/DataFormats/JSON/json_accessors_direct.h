@@ -11,7 +11,7 @@
 #include <boost/json.hpp>
 #include <cstdint>
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 inline static const char *ASCSTRING_D(const boost::json::value &j, const char *def)
 {
@@ -63,4 +63,4 @@ inline static uint64_t ASUINT64_D(const boost::json::value &j, uint64_t def)
     return j.is_number() ? ASUINT64_OR_ZERO(j) : def;
 }
 
-} // namespace Mantids30::Helpers::JSON
+} // namespace Mantids30::DataFormats::JSON

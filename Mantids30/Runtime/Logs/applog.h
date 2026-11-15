@@ -4,7 +4,7 @@
 #include "logcolors.h"
 #include "loglevels.h"
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 /**
  * Application Logs Class
@@ -70,4 +70,4 @@ private:
     ////////////////////////////////////////////////////////////////
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

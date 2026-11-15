@@ -5,9 +5,9 @@
 #include <boost/optional.hpp>
 #include <cstdint>
 
-namespace Mantids30::Network::Protocol::WebSocket {
+namespace Mantids30::Protocols::HTTP::WebSocket {
 
-class FrameHeader : public Memory::Streams::SubParser
+class FrameHeader : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     enum OpCode : uint8_t
@@ -113,4 +113,4 @@ private:
     LastError m_lastError = LastError::NONE;
 };
 
-} // namespace Mantids30::Network::Protocol::WebSocket
+} // namespace Mantids30::Protocols::HTTP::WebSocket

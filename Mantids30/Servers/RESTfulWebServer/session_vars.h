@@ -6,7 +6,7 @@
 #include <shared_mutex>
 #include <string>
 
-namespace Mantids30::Sessions {
+namespace Mantids30::Servers::RESTfulWebServer::Sessions {
 
 /**
  * @brief The Session_Vars class manages session variables for an authenticated session in the application.
@@ -53,4 +53,4 @@ private:
     std::shared_mutex m_sessionVarsMutex;
 };
 
-} // namespace Mantids30::Sessions
+} // namespace Mantids30::Servers::RESTfulWebServer::Sessions

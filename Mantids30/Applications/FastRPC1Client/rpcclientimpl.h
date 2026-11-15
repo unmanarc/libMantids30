@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace Mantids30::Applications::FastRPC1 {
+namespace Mantids30::Applications::FastRPC1Client {
 
 class RPCClientImpl
 {
@@ -71,8 +71,8 @@ protected:
 
     std::string m_getClientConfigCmd, m_updateClientConfigLoadTimeCmd;
 
-    Mantids30::Network::Protocol::FastRPC::FastRPC1 m_fastRPC;
+    Mantids30::Protocols::FastRPC1::FastRPC1 m_fastRPC;
     boost::json::value m_jRetrievedConfig;
     std::atomic<bool> m_failedToRetrieveC2Config{false};
 };
-} // namespace Mantids30::Applications::FastRPC1
+} // namespace Mantids30::Applications::FastRPC1Client

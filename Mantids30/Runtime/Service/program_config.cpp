@@ -5,9 +5,9 @@
 #include <boost/property_tree/info_parser.hpp>
 #include <optional>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 
-std::optional<boost::property_tree::ptree> Mantids30::Program::Config::Loader::loadSecureApplicationConfig(Mantids30::Program::Logs::AppLog *log, const std::string &dir, const std::string &filePath)
+std::optional<boost::property_tree::ptree> Mantids30::Runtime::Service::Config::Loader::loadSecureApplicationConfig(Mantids30::Runtime::Logs::AppLog *log, const std::string &dir, const std::string &filePath)
 {
     boost::property_tree::ptree pConfig;
 
@@ -23,7 +23,7 @@ std::optional<boost::property_tree::ptree> Mantids30::Program::Config::Loader::l
 
     //chdir(dir.c_str());
     bool isConfigFileInsecure = true;
-    if (!Helpers::File::isSensitiveConfigPermissionInsecure(configFile, &isConfigFileInsecure))
+    if (!Mantids30::Core::Helpers::File::isSensitiveConfigPermissionInsecure(configFile, &isConfigFileInsecure))
     {
         log->log0(__func__, LogLevel::WARNING, "The configuration '%s' file is inaccessible, loading defaults...", configFile.c_str());
     }
@@ -37,7 +37,7 @@ std::optional<boost::property_tree::ptree> Mantids30::Program::Config::Loader::l
                       "update any affected applications or services as necessary.",
                       configFile.c_str());
 
-            if (Helpers::File::fixSensitiveConfigPermission(configFile))
+            if (Mantids30::Core::Helpers::File::fixSensitiveConfigPermission(configFile))
             {
                 log->log0(__func__, LogLevel::SECURITY_ALERT, "The permissions of the '%s' file has been changed to 0600.", configFile.c_str());
             }

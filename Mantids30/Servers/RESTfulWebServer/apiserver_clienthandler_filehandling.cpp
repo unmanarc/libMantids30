@@ -13,15 +13,15 @@
 #include <string>
 
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
 using namespace std;
 
 void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFileInfo &fileInfo)
 {
-    auto sourceMem = std::dynamic_pointer_cast<Memory::Containers::B_Base>(serverResponse.content.getStreamableObject());
+    auto sourceMem = std::dynamic_pointer_cast<Mantids30::Core::Memory::Containers::B_Base>(serverResponse.content.getStreamableObject());
     // Heuristic for detecting
     if (sourceMem)
     {
@@ -67,8 +67,8 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
         boost::json::object &s = ctx->as_object()["session"].as_object();
         s["user"] = currentSessionInfo.authSession->getUser();
         s["domain"] = currentSessionInfo.authSession->getDomain();
-        s["roles"] = Helpers::JSON::fromSet(getSessionRoles());
-        s["scopes"] = Helpers::JSON::fromSet(getSessionScopes());
+        s["roles"] = Mantids30::DataFormats::JSON::fromSet(getSessionRoles());
+        s["scopes"] = Mantids30::DataFormats::JSON::fromSet(getSessionScopes());
         s["isImpersonation"] = currentSessionInfo.isImpersonation;
         s["halfID"] = currentSessionInfo.halfSessionId;
 
@@ -96,8 +96,8 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
     root["script"] = script;
 
     boost::json::object request;
-    request["get"] = clientRequest.getVarsBySource(HTTP::Source::GET)->toJSON();
-    request["post"] = clientRequest.getVarsBySource(HTTP::Source::POST)->toJSON();
+    request["get"] = clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::GET)->toJSON();
+    request["post"] = clientRequest.getVarsBySource(Mantids30::Protocols::HTTP::Source::POST)->toJSON();
     root["request"] = request;
 
     boost::json::object software;
@@ -106,13 +106,13 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
     software["name"] = config->softwareName;
     root["software"] = software;
 
-    std::shared_ptr<Scripts::MantidsLang> mantidsTemplateLang = std::make_shared<Scripts::MantidsLang>(
+    std::shared_ptr<Mantids30::Scripting::MantidsLang::MantidsLang> mantidsTemplateLang = std::make_shared<Mantids30::Scripting::MantidsLang::MantidsLang>(
         serverResponse.content.getStreamableObject(),
         jsonContext,
         nullptr,
         [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const boost::json::value &postParameters) -> boost::json::value
         {
-            API::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
+            Mantids30::Protocols::HTTP::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
 
             boost::json::value *jsonValue = result.responseJSON();
 
@@ -120,17 +120,17 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
         });
     mantidsTemplateLang->setDefaultPath(config->getDocumentRootPath());
     serverResponse.setContentDataStreamer(mantidsTemplateLang);
-    serverResponse.content.setTransmissionMode(Protocol::HTTP::Content::TransmissionMode::CHUNKS); // Allow connection reusage.
+    serverResponse.content.setTransmissionMode(Mantids30::Protocols::HTTP::Content::TransmissionMode::CHUNKS); // Allow connection reusage.
 }
 
 
-HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t statusCode, API::Web::ResourcesFilter::ProcessingMode processingMode, const LocalRequestedFileInfo &fileInfo)
+Mantids30::Protocols::HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t statusCode, Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode processingMode, const LocalRequestedFileInfo &fileInfo)
 {
-    HTTP::Status::Code acceptedStatus = static_cast<HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
+    Mantids30::Protocols::HTTP::Status::Code acceptedStatus = static_cast<Mantids30::Protocols::HTTP::Status::Code>(statusCode == 0 ? 200 : statusCode);
 
     switch (processingMode)
     {
-    case API::Web::ResourcesFilter::ProcessingMode::HTMLIENGINE:
+    case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode::HTMLIENGINE:
     {
         if (serverResponse.contentType == "text/html" || serverResponse.contentType == "application/javascript")
         {
@@ -140,13 +140,13 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
         break;
     }
 
-    case API::Web::ResourcesFilter::ProcessingMode::MANTIDSLANG:
+    case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode::MANTIDSLANG:
     {
         langProcessViaMantidsLang(fileInfo);
         break;
     }
 
-    case API::Web::ResourcesFilter::ProcessingMode::RAW:
+    case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode::RAW:
     default:
         break;
     }
@@ -154,14 +154,14 @@ HTTP::Status::Code APIServer_ClientHandler::langProcessAcceptedResource(uint16_t
     return acceptedStatus;
 }
 
-HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
+Mantids30::Protocols::HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
 {
-    HTTP::Status::Code ret = HTTP::Status::Code::S_404_NOT_FOUND;
+    Mantids30::Protocols::HTTP::Status::Code ret = Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND;
     LocalRequestedFileInfo fileInfo;
 
     if (config->getDocumentRootPath().empty())
     {
-        return HTTP::Status::Code::S_404_NOT_FOUND;
+        return Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND;
     }
 
     if ((resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ".html")
@@ -169,7 +169,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
          || resolveLocalFilePathFromURI2(config->getDocumentRootPath(), config->getOverlappedDirectories(), &fileInfo, ""))
         && !fileInfo.isDirectory)
     {
-        API::Web::ResourcesFilter::FilterEvaluationResult evaluationResult;
+        Mantids30::Servers::RESTfulWebServer::ResourcesFilter::FilterEvaluationResult evaluationResult;
 
         if (config->resourceFilter)
         {
@@ -177,8 +177,8 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
         }
         else
         {
-            API::Web::ResourcesFilter::Action acceptAction;
-            acceptAction.type = API::Web::ResourcesFilter::ActionType::ACCEPT;
+            Mantids30::Servers::RESTfulWebServer::ResourcesFilter::Action acceptAction;
+            acceptAction.type = Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::ACCEPT;
             acceptAction.statusCode = 200;
 
             evaluationResult.actions.push_back(std::move(acceptAction));
@@ -189,15 +189,15 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
             std::cout << "FilterEvaluationResult: " << fileInfo.relativePath << " - " << boost::json::serialize(evaluationResult.toJSON()) << std::endl;
         }
 
-        API::Web::ResourcesFilter::ProcessingMode processingMode = API::Web::ResourcesFilter::ProcessingMode::RAW;
+        Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode processingMode = Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ProcessingMode::RAW;
 
         bool terminalActionExecuted = false;
 
-        for (const API::Web::ResourcesFilter::Action &action : evaluationResult.actions)
+        for (const Mantids30::Servers::RESTfulWebServer::ResourcesFilter::Action &action : evaluationResult.actions)
         {
             switch (action.type)
             {
-            case API::Web::ResourcesFilter::ActionType::REPLACE_HEADERS:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::REPLACE_HEADERS:
             {
                 for (const auto &header : action.httpHeaders)
                 {
@@ -207,7 +207,7 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
                 break;
             }
 
-            case API::Web::ResourcesFilter::ActionType::ADD_HEADERS:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::ADD_HEADERS:
             {
                 for (const auto &header : action.httpHeaders)
                 {
@@ -217,34 +217,34 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
                 break;
             }
 
-            case API::Web::ResourcesFilter::ActionType::PROCESS_AS:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::PROCESS_AS:
             {
                 processingMode = action.processingMode;
                 break;
             }
 
-            case API::Web::ResourcesFilter::ActionType::REDIRECT:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::REDIRECT:
             {
                 ret = serverResponse.setRedirectLocation(action.redirectLocation);
 
                 if (action.statusCode != 0)
                 {
-                    ret = static_cast<HTTP::Status::Code>(action.statusCode);
+                    ret = static_cast<Mantids30::Protocols::HTTP::Status::Code>(action.statusCode);
                 }
 
                 terminalActionExecuted = true;
                 break;
             }
 
-            case API::Web::ResourcesFilter::ActionType::DENY:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::DENY:
             {
-                ret = static_cast<HTTP::Status::Code>(action.statusCode == 0 ? 403 : action.statusCode);
+                ret = static_cast<Mantids30::Protocols::HTTP::Status::Code>(action.statusCode == 0 ? 403 : action.statusCode);
 
                 terminalActionExecuted = true;
                 break;
             }
 
-            case API::Web::ResourcesFilter::ActionType::ACCEPT:
+            case Mantids30::Servers::RESTfulWebServer::ResourcesFilter::ActionType::ACCEPT:
             {
                 ret = langProcessAcceptedResource(action.statusCode, processingMode, fileInfo);
 
@@ -266,12 +266,12 @@ HTTP::Status::Code APIServer_ClientHandler::handleRegularFileRequest()
         }
     }
 
-    if (ret != HTTP::Status::Code::S_200_OK)
+    if (ret != Mantids30::Protocols::HTTP::Status::Code::S_200_OK)
     {
         serverResponse.setContentDataStreamer(nullptr);
     }
 
-    if (ret == HTTP::Status::Code::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
+    if (ret == Mantids30::Protocols::HTTP::Status::Code::S_404_NOT_FOUND && !config->redirectPathOn404.empty())
     {
         ret = serverResponse.setRedirectLocation(config->redirectPathOn404);
     }

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
 /**
  * @brief The Version class provides functionality for HTTP versions.
@@ -88,8 +88,8 @@ public:
       */
     bool fromJSON(const boost::json::value &root)
     {
-        m_majorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "major", 0));
-        m_minorVersion = static_cast<uint16_t>(Helpers::JSON::ASUINT(root, "minor", 0));
+        m_majorVersion = static_cast<uint16_t>(Mantids30::DataFormats::JSON::ASUINT(root, "major", 0));
+        m_minorVersion = static_cast<uint16_t>(Mantids30::DataFormats::JSON::ASUINT(root, "minor", 0));
         return true;
     }
 
@@ -98,4 +98,4 @@ private:
     uint16_t m_majorVersion = 1; ///< The major version number.
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

@@ -8,10 +8,10 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30;
 
-std::map<unsigned short, std::string> HTTP::Status::m_responseStatusCodesTable = {{100, {"Continue"}},
+std::map<unsigned short, std::string> Mantids30::Protocols::HTTP::Status::m_responseStatusCodesTable = {{100, {"Continue"}},
                                                                                   {101, {"Switching Protocol"}},
                                                                                   {200, {"OK"}},
                                                                                   {201, {"Created"}},
@@ -57,15 +57,15 @@ std::map<unsigned short, std::string> HTTP::Status::m_responseStatusCodesTable =
                                                                                   {505, {"HTTP Version Not Supported"}},
                                                                                   {511, {"Network Authentication Required"}}};
 
-HTTP::Status::Status()
+Mantids30::Protocols::HTTP::Status::Status()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::DELIMITER);
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::DELIMITER);
     setParseDelimiter("\r\n");
     setParseDataTargetSize(128);
     m_subParserName = "Status";
 }
 
-Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocols::HTTP::Status::parse()
 {
     std::string clientRequest = getParsedBuffer()->toStringEx();
 
@@ -75,7 +75,7 @@ Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
     // We need almost 2 parameters.
     if (requestParts.size() < 2)
     {
-        return Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
     }
 
     m_httpVersion.parse(requestParts[0]);
@@ -94,20 +94,20 @@ Memory::Streams::SubParser::ParseResult HTTP::Status::parse()
         }
     }
 
-    return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
 }
 
-std::string HTTP::Status::getMessage() const
+std::string Mantids30::Protocols::HTTP::Status::getMessage() const
 {
     return m_statusMessage;
 }
 
-void HTTP::Status::setResponseMessage(const std::string &value)
+void Mantids30::Protocols::HTTP::Status::setResponseMessage(const std::string &value)
 {
     m_statusMessage = value;
 }
 
-string HTTP::Status::getStringTranslation(unsigned short code)
+string Mantids30::Protocols::HTTP::Status::getStringTranslation(unsigned short code)
 {
     if (m_responseStatusCodesTable.find(code) != m_responseStatusCodesTable.end())
     {
@@ -116,27 +116,27 @@ string HTTP::Status::getStringTranslation(unsigned short code)
     return "";
 }
 
-bool HTTP::Status::streamToUpstream()
+bool Mantids30::Protocols::HTTP::Status::streamToUpstream()
 {
     // Act as a client. Send data from here.
     return m_upStream->writeString(m_httpVersion.toString() + " " + std::to_string(static_cast<uint16_t>(m_statusCode)) + " " + m_statusMessage + "\r\n");
 }
 
-void HTTP::Status::setCode(Status::Code code)
+void Mantids30::Protocols::HTTP::Status::setCode(Status::Code code)
 {
-    if (code != HTTP::Status::Code::S_999_NOT_SET)
+    if (code != Mantids30::Protocols::HTTP::Status::Code::S_999_NOT_SET)
     {
         m_statusCode = code;
         setResponseMessage(getStringTranslation(static_cast<uint16_t>(code)));
     }
 }
 
-HTTP::Status::Code HTTP::Status::getCode() const
+Mantids30::Protocols::HTTP::Status::Code Mantids30::Protocols::HTTP::Status::getCode() const
 {
     return m_statusCode;
 }
 
-HTTP::Version *HTTP::Status::getHTTPVersion()
+Mantids30::Protocols::HTTP::Version *Mantids30::Protocols::HTTP::Status::getHTTPVersion()
 {
     return &m_httpVersion;
 }

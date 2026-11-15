@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 /**
      * @enum Method
      *
@@ -65,4 +65,4 @@ static Method stringToMethod(const std::string &str)
         return Method::UNKNOWN; // default: UNKNOWN
     }
 }
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

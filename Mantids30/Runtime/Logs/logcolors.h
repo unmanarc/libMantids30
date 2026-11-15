@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 enum class LogColor : uint8_t
 {
@@ -14,4 +14,4 @@ enum class LogColor : uint8_t
     ORANGE = 6
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

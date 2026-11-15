@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <set>
 #include <string>
-namespace Mantids30::API::Security {
+namespace Mantids30::Servers::RESTfulWebServer::Security {
 enum Requirements : std::uint8_t
 {
     NONE = 0,
@@ -30,4 +30,4 @@ struct Configuration
     std::set<std::string> requiredScopes;
 };
 
-} // namespace Mantids30::API::Security
+} // namespace Mantids30::Servers::RESTfulWebServer::Security

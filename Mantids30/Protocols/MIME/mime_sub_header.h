@@ -13,7 +13,7 @@
  * TODO: Security: check if other servers can handle the MIME properly...
  */
 
-namespace Mantids30::Network::Protocol::MIME {
+namespace Mantids30::Protocols::MIME {
 // ??
 /**
  * @brief The HeaderOption struct
@@ -83,7 +83,7 @@ private:
     std::multimap<std::string, std::string> m_subVar;
 };
 
-class MIME_Sub_Header : public Memory::Streams::SubParser
+class MIME_Sub_Header : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     MIME_Sub_Header();
@@ -169,7 +169,7 @@ public:
     void setMaxSubOptionSize(const size_t &value);
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     void parseSubValues(const std::shared_ptr<MIME_HeaderOption> &opt, const std::string &strName);
@@ -182,4 +182,4 @@ private:
     size_t m_maxSubOptionCount = 100, m_maxSubOptionSize = 2 * KB_MULT;
 };
 
-} // namespace Mantids30::Network::Protocol::MIME
+} // namespace Mantids30::Protocols::MIME

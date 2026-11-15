@@ -12,7 +12,7 @@
 #include <memory>
 
 using namespace Mantids30;
-using namespace Mantids30::Scripts;
+using namespace Mantids30::Scripting::MantidsLang;
 
 bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const boost::json::value &currentJsonContext, const Token &token, size_t depth)
 {
@@ -26,7 +26,7 @@ bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const b
 
     std::string evaluationExpression = conditional.substr(bracketStart + 1, bracketEnd - bracketStart - 1);
 
-    Expressions::JSONEval eval(evaluationExpression);
+    Mantids30::Scripting::JSONExprEval::JSONEval eval(evaluationExpression);
     if (eval.evaluate(currentJsonContext))
     {
         token.subTag->processTokens(currentJsonContext, depth + 1);
@@ -74,7 +74,7 @@ bool MantidsLang::iterateJSON(const std::string &foreachParam, const boost::json
 
 
     // Resolve JSON path
-    Helpers::JSON::Path path(jsonPathStr);
+    Mantids30::DataFormats::JSON::Path path(jsonPathStr);
     const boost::json::value *collectionPtr = path.resolve(currentJsonContext);
 
     if (collectionPtr == nullptr || collectionPtr->is_null())
@@ -138,7 +138,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
     if (action == "print_json")
     {
         // Output raw JSON representation
-        if (!output->writeString(Helpers::JSON::toString(value)))
+        if (!output->writeString(Mantids30::DataFormats::JSON::toString(value)))
         {
             writeStatus.succeed = false;
             return false;
@@ -150,7 +150,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         // Otherwise -> HTML escape the entire JSON representation
         if (value.is_string())
         {
-            if (!output->writeString(Helpers::Encoders::htmlEscape(Helpers::JSON::ASSTRING_D(value, ""))))
+            if (!output->writeString(Mantids30::Core::Helpers::Encoders::htmlEscape(Mantids30::DataFormats::JSON::ASSTRING_D(value, ""))))
             {
                 writeStatus.succeed = false;
                 return false;
@@ -158,7 +158,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         }
         else if (value.is_int64() || value.is_int64() || value.is_uint64() || value.is_uint64())
         {
-            if (!output->writeString(Helpers::JSON::ASSTRING_D(value, "")))
+            if (!output->writeString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "")))
             {
                 writeStatus.succeed = false;
                 return false;
@@ -166,7 +166,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         }
         else if (value.is_double())
         {
-            if (!output->writeString(std::to_string(Helpers::JSON::ASDOUBLE_D(value, 0.0))))
+            if (!output->writeString(std::to_string(Mantids30::DataFormats::JSON::ASDOUBLE_D(value, 0.0))))
             {
                 writeStatus.succeed = false;
                 return false;
@@ -174,7 +174,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         }
         else if (value.is_bool())
         {
-            if (!output->writeString(Helpers::JSON::ASBOOL_D(value, false) ? "true" : "false"))
+            if (!output->writeString(Mantids30::DataFormats::JSON::ASBOOL_D(value, false) ? "true" : "false"))
             {
                 writeStatus.succeed = false;
                 return false;
@@ -183,7 +183,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         else
         {
             // Complex type (array/object) -> toJSON then HTML escape
-            if (!output->writeString(Helpers::Encoders::htmlEscape(Helpers::JSON::toString(value))))
+            if (!output->writeString(Mantids30::Core::Helpers::Encoders::htmlEscape(Mantids30::DataFormats::JSON::toString(value))))
             {
                 writeStatus.succeed = false;
                 return false;
@@ -193,7 +193,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
     else if (action == "print_raw" && !value.is_null())
     {
         // Output raw string representation of the value
-        if (!output->writeString(Helpers::JSON::ASSTRING_D(value, "")))
+        if (!output->writeString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "")))
         {
             writeStatus.succeed = false;
             return false;
@@ -252,7 +252,7 @@ void MantidsLang::processTokens(const boost::json::value &currentJsonContext, si
                     }
                     parameter = parameter.substr(1);
 
-                    Helpers::JSON::Path path(parameter);
+                    Mantids30::DataFormats::JSON::Path path(parameter);
                     const boost::json::value *valuePtr = path.resolve(currentJsonContext);
                     boost::json::value value = (valuePtr != nullptr) ? *valuePtr : boost::json::value{};
                     if (!printJSON(action, value))
@@ -262,7 +262,7 @@ void MantidsLang::processTokens(const boost::json::value &currentJsonContext, si
                 }
                 else if (action == "include_raw" || action == "render")
                 {
-                    std::shared_ptr<Memory::Streams::StreamableFile> file = std::make_shared<Memory::Streams::StreamableFile>();
+                    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableFile> file = std::make_shared<Mantids30::Core::Memory::Streams::StreamableFile>();
 
                     std::string path =  defaultPath + parameter;
 

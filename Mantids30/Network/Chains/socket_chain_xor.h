@@ -4,7 +4,7 @@
 #include <Mantids30/Network/Sockets/socket_stream.h>
 #include <vector>
 
-namespace Mantids30::Network::Sockets::ChainProtocols {
+namespace Mantids30::Network::Chains {
 
 /**
  * @brief The SocketChainXOR class
@@ -31,4 +31,4 @@ private:
     char m_xorByte;
 };
 
-} // namespace Mantids30::Network::Sockets::ChainProtocols
+} // namespace Mantids30::Network::Chains

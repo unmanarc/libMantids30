@@ -16,12 +16,12 @@ Mantids30 DataFormat JSON is a C++ library that provides helper functions for pa
 
 ## Usage
 
-Include the JSON header in your project and use the provided namespaces `Mantids30::Helpers::JSON` and `Mantids30::Helpers`.
+Include the JSON header in your project and use the provided namespaces `Mantids30::DataFormats::JSON` and `Mantids30::Core::Helpers`.
 
 ```cpp
 #include "json.h"
 
-using namespace Mantids30::Helpers::JSON;
+using namespace Mantids30::DataFormats::JSON;
 ```
 
 ### Parsing a JSON document
@@ -74,12 +74,12 @@ std::map<std::string, std::string> flat = toMap(root);
 
 ### Using StreamableJSON
 
-`StreamableJSON` implements `Mantids30::Memory::Streams::StreamableObject` so JSON payloads can be streamed like any other streamable object.
+`StreamableJSON` implements `Mantids30::Core::Memory::Streams::StreamableObject` so JSON payloads can be streamed like any other streamable object.
 
 ```cpp
 #include "streamable_json.h"
 
-Mantids30::Memory::Streams::StreamableJSON json;
+Mantids30::DataFormats::JSON::StreamableJSON json;
 json.setValue(R"({"message": "hello"})");
 boost::json::value *value = json.processValue();
 ```

@@ -8,10 +8,10 @@
 #include <Mantids30/Core/Memory/streamable_object.h>
 
 using namespace Mantids30;
-using namespace Mantids30::Memory::Streams;
-using namespace Mantids30::Memory::Streams::Decoders;
+using namespace Mantids30::Core::Memory::Streams;
+using namespace Mantids30::Protocols::HTTP::Decoders;
 
-size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
+size_t URL::writeTo(Mantids30::Core::Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
 {
     const unsigned char *data = static_cast<const unsigned char *>(buf);
 
@@ -86,7 +86,7 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
         {
             m_filled = 0;
             unsigned char val;
-            val = Helpers::Encoders::hexPairToByte(reinterpret_cast<char *>(m_bytes) + 1);
+            val = Mantids30::Core::Helpers::Encoders::hexPairToByte(reinterpret_cast<char *>(m_bytes) + 1);
 
             if (!dst->writeFullStream(&val, 1))
             {
@@ -102,7 +102,7 @@ size_t URL::writeTo(Memory::Streams::StreamableObject *dst, const void *buf, con
     return 0;
 }
 
-size_t URL::writeTransformerEOF(Memory::Streams::StreamableObject *dst)
+size_t URL::writeTransformerEOF(Mantids30::Core::Memory::Streams::StreamableObject *dst)
 {
     // flush intermediary bytes...
     return flushBytesAndResetFilledCounter(dst);
@@ -126,7 +126,7 @@ size_t URL::getPlainBytesSize(const unsigned char *buf, size_t count, unsigned c
     return count;
 }
 
-bool URL::flushBytesAndResetFilledCounter(Memory::Streams::StreamableObject *dst)
+bool URL::flushBytesAndResetFilledCounter(Mantids30::Core::Memory::Streams::StreamableObject *dst)
 {
     bool r = dst->writeFullStream(m_bytes, m_filled);
     m_filled = 0;
@@ -135,11 +135,11 @@ bool URL::flushBytesAndResetFilledCounter(Memory::Streams::StreamableObject *dst
 
 std::string URL::decodeURLStr(const std::string &url)
 {
-    Mantids30::Memory::Containers::B_MEM uriEncoded(url.c_str(), url.size());
-    Memory::Containers::B_Chunks uriDecoded;
+    Mantids30::Core::Memory::Containers::B_MEM uriEncoded(url.c_str(), url.size());
+    Mantids30::Core::Memory::Containers::B_Chunks uriDecoded;
 
     // Decode URI (maybe it's url encoded)...
-    Memory::Streams::Decoders::URL uriDecoder;
+    Mantids30::Protocols::HTTP::Decoders::URL uriDecoder;
     uriDecoder.transform(&uriEncoded, &uriDecoded);
 
     if (uriDecoded.writeStatus.succeed)

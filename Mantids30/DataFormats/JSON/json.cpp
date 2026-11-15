@@ -2,14 +2,14 @@
 
 #include <boost/json.hpp>
 
-using namespace Mantids30::Helpers;
+using namespace Mantids30::DataFormats::JSON;
 
-std::string JSON::toString(const boost::json::value &value)
+std::string Mantids30::DataFormats::JSON::toString(const boost::json::value &value)
 {
     return boost::json::serialize(value);
 }
 
-bool JSON::parse(std::string_view document, boost::json::value &root, std::string *parseErrors)
+bool Mantids30::DataFormats::JSON::parse(std::string_view document, boost::json::value &root, std::string *parseErrors)
 {
     try
     {
@@ -35,12 +35,12 @@ bool JSON::parse(std::string_view document, boost::json::value &root, std::strin
     }
 }
 
-bool JSON::Reader::parse(std::string_view document, boost::json::value &root)
+bool Mantids30::DataFormats::JSON::Reader::parse(std::string_view document, boost::json::value &root)
 {
     // Call the free function (namespace scope) explicitly. An unqualified
     // parse() here resolves to this member, which would recurse infinitely.
     std::string err;
-    if (JSON::parse(document, root, &err))
+    if (Mantids30::DataFormats::JSON::parse(document, root, &err))
     {
         m_errors.clear();
         return true;
@@ -49,12 +49,12 @@ bool JSON::Reader::parse(std::string_view document, boost::json::value &root)
     return false;
 }
 
-std::string JSON::Reader::getFormattedErrorMessages()
+std::string Mantids30::DataFormats::JSON::Reader::getFormattedErrorMessages()
 {
     return m_errors;
 }
 
-std::list<std::string> JSON::toStringList(const boost::json::value &value, std::string_view sub)
+std::list<std::string> Mantids30::DataFormats::JSON::toStringList(const boost::json::value &value, std::string_view sub)
 {
     std::list<std::string> r;
 
@@ -73,7 +73,7 @@ std::list<std::string> JSON::toStringList(const boost::json::value &value, std::
     return r;
 }
 
-std::set<std::string> JSON::toStringSet(const boost::json::value &value, std::string_view sub)
+std::set<std::string> Mantids30::DataFormats::JSON::toStringSet(const boost::json::value &value, std::string_view sub)
 {
     std::set<std::string> r;
 
@@ -93,7 +93,7 @@ std::set<std::string> JSON::toStringSet(const boost::json::value &value, std::st
     return r;
 }
 
-std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, std::string_view sub)
+std::set<uint32_t> Mantids30::DataFormats::JSON::toUInt32Set(const boost::json::value &value, std::string_view sub)
 {
     std::set<uint32_t> r;
 
@@ -113,7 +113,7 @@ std::set<uint32_t> JSON::toUInt32Set(const boost::json::value &value, std::strin
     return r;
 }
 
-boost::json::value JSON::fromSet(const std::set<std::string> &t)
+boost::json::value Mantids30::DataFormats::JSON::fromSet(const std::set<std::string> &t)
 {
     boost::json::array x;
     for (const std::string &i : t)
@@ -123,7 +123,7 @@ boost::json::value JSON::fromSet(const std::set<std::string> &t)
     return x;
 }
 
-boost::json::value JSON::fromSet(const std::set<uint32_t> &t)
+boost::json::value Mantids30::DataFormats::JSON::fromSet(const std::set<uint32_t> &t)
 {
     boost::json::array x;
     for (const uint32_t &i : t)
@@ -133,7 +133,7 @@ boost::json::value JSON::fromSet(const std::set<uint32_t> &t)
     return x;
 }
 
-boost::json::value JSON::fromList(const std::list<std::string> &t)
+boost::json::value Mantids30::DataFormats::JSON::fromList(const std::list<std::string> &t)
 {
     boost::json::array x;
     for (const std::string &i : t)
@@ -143,7 +143,7 @@ boost::json::value JSON::fromList(const std::list<std::string> &t)
     return x;
 }
 
-std::map<std::string, std::string> JSON::toMap(const boost::json::value &jValue)
+std::map<std::string, std::string> Mantids30::DataFormats::JSON::toMap(const boost::json::value &jValue)
 {
     std::map<std::string, std::string> r;
     if (jValue.is_object())
@@ -159,7 +159,7 @@ std::map<std::string, std::string> JSON::toMap(const boost::json::value &jValue)
     return r;
 }
 
-boost::json::value JSON::parse(const char *json)
+boost::json::value Mantids30::DataFormats::JSON::parse(const char *json)
 {
     boost::json::value r;
     if (json != nullptr)

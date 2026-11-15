@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 
 struct APIProxyParameters
 {
@@ -29,8 +29,8 @@ struct APIProxyParameters
     bool transformCookiePath = false;
 };
 
-Mantids30::Network::Protocol::HTTP::Status::Code APIProxy(const std::string &internalPath, Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Request *request,
-                                                          Mantids30::Network::Protocol::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> &obj,
-                                                          const Mantids30::Sessions::SessionInfo *sessionInfo);
+Mantids30::Protocols::HTTP::Status::Code APIProxy(const std::string &internalPath, Mantids30::Protocols::HTTP::HTTPv1_Base::Request *request,
+                                                          Mantids30::Protocols::HTTP::HTTPv1_Base::Response *response, const std::shared_ptr<void> &obj,
+                                                          const Mantids30::Servers::RESTfulWebServer::Sessions::SessionInfo *sessionInfo);
 
-} // namespace Mantids30::Network::Servers::Web
+} // namespace Mantids30::Servers::RESTfulWebServer

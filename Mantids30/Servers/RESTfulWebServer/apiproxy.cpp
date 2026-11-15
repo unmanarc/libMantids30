@@ -8,15 +8,16 @@
 #include <memory>
 
 using namespace Mantids30::Network::Sockets;
-using namespace Mantids30::Network::Protocol;
-using namespace Mantids30::Memory::Streams;
+using namespace Mantids30::Protocols;
+using namespace Mantids30::Core::Memory::Streams;
+using namespace Mantids30::DataFormats::JSON;
 
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
-using namespace Mantids30::Sessions;
+using namespace Mantids30::Servers::RESTfulWebServer::Sessions;
 
-HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string &internalPath, HTTP::HTTPv1_Base::Request *request, HTTP::HTTPv1_Base::Response *response,
-                                                              const std::shared_ptr<void> &obj, const Sessions::SessionInfo *sessionInfo)
+Mantids30::Protocols::HTTP::Status::Code Mantids30::Servers::RESTfulWebServer::APIProxy(const std::string &internalPath, Mantids30::Protocols::HTTP::HTTPv1_Base::Request *request, Mantids30::Protocols::HTTP::HTTPv1_Base::Response *response,
+                                                              const std::shared_ptr<void> &obj, const Mantids30::Servers::RESTfulWebServer::Sessions::SessionInfo *sessionInfo)
 {
     // TODO: logs via callback?
     // TODO: how to prevent ../ (escapes)...
@@ -32,7 +33,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
     if (obj == nullptr)
     {
         throw std::runtime_error("Undefined API Proxy Object.");
-        return HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
+        return Mantids30::Protocols::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
     }
 
     APIProxyParameters *proxyParameters = static_cast<APIProxyParameters *>(obj.get());
@@ -73,7 +74,7 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
     // Make the connection
     if (connection->connectTo(proxyParameters->remoteHost.c_str(), proxyParameters->remotePort))
     {
-        HTTP::HTTPv1_Client client(connection);
+        Mantids30::Protocols::HTTP::HTTPv1_Client client(connection);
 
         // Set the same request.
         client.clientRequest = *request;
@@ -127,10 +128,10 @@ HTTP::Status::Code Mantids30::Network::Servers::Web::APIProxy(const std::string 
             return client.serverResponse.status.getCode();
         }
 
-        return HTTP::Status::Code::S_502_BAD_GATEWAY;
+        return Mantids30::Protocols::HTTP::Status::Code::S_502_BAD_GATEWAY;
     }
     else
     {
-        return HTTP::Status::Code::S_502_BAD_GATEWAY;
+        return Mantids30::Protocols::HTTP::Status::Code::S_502_BAD_GATEWAY;
     }
 }

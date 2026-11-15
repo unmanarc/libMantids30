@@ -11,7 +11,7 @@
 #include <thread>
 #include <unordered_map>
 
-namespace Mantids30::DataFormat {
+namespace Mantids30::DataFormats::JWT {
 
 /**
  * @brief Class for creating and verifying JSON Web Tokens (JWT)
@@ -598,4 +598,4 @@ private:
     std::time_t m_defaultMaxTimeBeforeInSeconds = 60;
 };
 
-} // namespace Mantids30::DataFormat
+} // namespace Mantids30::DataFormats::JWT

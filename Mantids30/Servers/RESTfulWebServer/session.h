@@ -8,7 +8,7 @@
 #include <mutex>
 #include <string>
 
-namespace Mantids30::Sessions {
+namespace Mantids30::Servers::RESTfulWebServer::Sessions {
 
 /**
  * @brief The ClientDetails struct contains details about an incoming client connection.
@@ -55,7 +55,7 @@ public:
      *          discard signature validation.
      * @param jwt JWT Token
      */
-    Session(const DataFormat::JWT::Token &jwt);
+    Session(const Mantids30::DataFormats::JWT::JWT::Token &jwt);
 
     /**
      * @brief updateLastActivity Set las activity to current time
@@ -96,7 +96,7 @@ public:
     // TODO: Validate that the session has not been revoked.
     [[nodiscard]] bool isSessionRevoked() { return false; }
 
-    [[nodiscard]] DataFormat::JWT::Token getJWTAuthenticatedInfo();
+    [[nodiscard]] Mantids30::DataFormats::JWT::JWT::Token getJWTAuthenticatedInfo();
 
     [[nodiscard]] std::string getDomain();
 
@@ -105,7 +105,7 @@ public:
 private:
     void iUpdateLastActivity();
 
-    DataFormat::JWT::Token m_jwtAuthenticatedInfo;
+    Mantids30::DataFormats::JWT::JWT::Token m_jwtAuthenticatedInfo;
 
     std::string m_user, m_domain, m_impersonator;
 
@@ -117,9 +117,9 @@ private:
 class SessionInfo
 {
 public:
-    std::shared_ptr<Mantids30::Sessions::Session> authSession;
+    std::shared_ptr<Mantids30::Servers::RESTfulWebServer::Sessions::Session> authSession;
     std::string halfSessionId, sessionId;
     bool isImpersonation = false;
 };
 
-} // namespace Mantids30::Sessions
+} // namespace Mantids30::Servers::RESTfulWebServer::Sessions

@@ -6,11 +6,11 @@
 #include <Mantids30/Core/Helpers/encoders.h>
 
 using namespace std;
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 using namespace Mantids30::Network;
 using namespace Mantids30;
 
-bool HTTP::HTTPv1_Server::isWebSocketConnectionRequest()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::isWebSocketConnectionRequest()
 {
     const string connectionHeader = clientRequest.headers.getOptionValueStringByName("CONNECTION");
     const string upgradeHeader = clientRequest.headers.getOptionValueStringByName("UPGRADE");
@@ -18,7 +18,7 @@ bool HTTP::HTTPv1_Server::isWebSocketConnectionRequest()
     return (boost::iequals(connectionHeader, "upgrade") && boost::iequals(upgradeHeader, "websocket"));
 }
 
-bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
 {
     // WebSocket magic string as per RFC 6455
     const string WEBSOCKET_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
@@ -29,7 +29,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     // Check if key exists and is valid (should be 16 bytes base64 encoded = 24 chars)
     if (clientKey.empty() || clientKey.length() != 24)
     {
-        serverResponse.status.setCode(HTTP::Status::Code::S_400_BAD_REQUEST);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_400_BAD_REQUEST);
         connectionContinue = false;
         sendFullHTTPResponse();
         return false;
@@ -41,7 +41,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     {
         // Optionally send back supported version
         serverResponse.headers.add("Sec-WebSocket-Version", "13");
-        serverResponse.status.setCode(HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
+        serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_426_UPGRADE_REQUIRED);
         connectionContinue = false;
         sendFullHTTPResponse();
         return false;
@@ -49,11 +49,11 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
 
     // Calculate accept key: base64(sha1(key + magic))
     const string concatenated = clientKey + WEBSOCKET_MAGIC_STRING;
-    const string sha1Hash = Helpers::Crypto::calcSHA1(concatenated);
-    const string acceptKey = Helpers::Encoders::encodeToBase64(sha1Hash, false);
+    const string sha1Hash = Mantids30::Core::Helpers::Crypto::calcSHA1(concatenated);
+    const string acceptKey = Mantids30::Core::Helpers::Encoders::encodeToBase64(sha1Hash, false);
 
     // Set response headers for successful WebSocket upgrade
-    serverResponse.status.setCode(HTTP::Status::Code::S_101_SWITCHING_PROTOCOLS);
+    serverResponse.status.setCode(Mantids30::Protocols::HTTP::Status::Code::S_101_SWITCHING_PROTOCOLS);
 
     serverResponse.headers.add("Upgrade", "websocket");
     serverResponse.headers.add("Connection", "Upgrade");
@@ -90,7 +90,7 @@ bool HTTP::HTTPv1_Server::setupAndSendWebSocketHeaderResponse()
     return sendHTTPHeadersResponse();
 }
 
-bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len, WebSocket::FrameHeader::OpCode mode)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len, Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OpCode mode)
 {
     const size_t MAX_FRAME_SIZE = 65535;
     bool isFinal = false;
@@ -105,10 +105,10 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
         isFinal = (bytesSent + frameSize >= len);
 
         // Determine opcode: first frame is TEXT, continuation frames are CONTINUATION
-        WebSocket::FrameHeader::OpCode opcode = (bytesSent == 0) ? mode : WebSocket::FrameHeader::OPCODE_CONTINUATION;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OpCode opcode = (bytesSent == 0) ? mode : Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_CONTINUATION;
 
         // Create and send frame header
-        WebSocket::FrameHeader frmhdr;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader frmhdr;
         frmhdr.initElemParser(m_streamableObject.get(), false);
         frmhdr.prepareHeader(isFinal, opcode, frameSize, false); // not masked (server to client)
         if (!frmhdr.streamToUpstream())
@@ -117,7 +117,7 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
         }
 
         // Send frame content
-        WebSocket::FrameContent frmcontent;
+        Mantids30::Protocols::HTTP::WebSocket::FrameContent frmcontent;
         frmcontent.initElemParser(m_streamableObject.get(), false);
         frmcontent.getContent().get()->append(data + bytesSent, frameSize);
         if (!frmcontent.streamToUpstream())
@@ -132,17 +132,17 @@ bool HTTP::HTTPv1_Server::sendWebSocketData(const char *data, const size_t &len,
     return true;
 }
 
-bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
 {
     if (webSocketCurrentFrame.content.isFirstFrame())
     {
         webSocketCurrentFrame.frameType = webSocketCurrentFrame.header.getOpCode();
         switch (webSocketCurrentFrame.frameType)
         {
-        case WebSocket::FrameHeader::OPCODE_TEXT:
+        case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_TEXT:
             webSocketCurrentFrame.content.setValidateUtf8(true);
             break;
-        case WebSocket::FrameHeader::OPCODE_CONTINUATION:
+        case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_CONTINUATION:
             // First frame can't be continuation... should specify what type of websocket type is. Drop the connection...
             m_currentSubParser = nullptr;
             return false;
@@ -178,7 +178,7 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameHeader()
     return true;
 }
 
-bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameContent()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameContent()
 {
     if (webSocketCurrentFrame.header.isFinalFragment())
     {
@@ -194,23 +194,23 @@ bool HTTP::HTTPv1_Server::changeToNextParserFromWebSocketFrameContent()
     }
 }
 
-bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
 {
     switch (webSocketCurrentFrame.frameType)
     {
-    case WebSocket::FrameHeader::OPCODE_CONTINUATION:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_CONTINUATION:
         throw std::runtime_error("The first frame should be text/binary/close/ping/pong...");
         break;
-    case WebSocket::FrameHeader::OPCODE_TEXT:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_TEXT:
         onWebSocketTextFrameReceived();
         break;
-    case WebSocket::FrameHeader::OPCODE_BINARY:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_BINARY:
         onWebSocketBinaryDataFrameReceived();
         break;
-    case WebSocket::FrameHeader::OPCODE_CLOSE:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_CLOSE:
     {
         onWebSocketConnectionFinished();
-        WebSocket::FrameHeader closeHeader;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader closeHeader;
         closeHeader.initElemParser(m_streamableObject.get(), false);
         closeHeader.prepareCloseFrame(0);
         closeHeader.streamToUpstream();
@@ -220,9 +220,9 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
         return true;
     }
     break;
-    case WebSocket::FrameHeader::OPCODE_PING:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_PING:
     {
-        WebSocket::FrameHeader pongHeader;
+        Mantids30::Protocols::HTTP::WebSocket::FrameHeader pongHeader;
         pongHeader.initElemParser(m_streamableObject.get(), false);
         pongHeader.preparePongFrame(0);
         if (!pongHeader.streamToUpstream())
@@ -236,7 +236,7 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
         onWebSocketPingReceived();
     }
     break;
-    case WebSocket::FrameHeader::OPCODE_PONG:
+    case Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_PONG:
     {
         webSocketCurrentFrame.lastPongReceived = time(nullptr);
         onWebSocketPongReceived();
@@ -251,24 +251,24 @@ bool HTTP::HTTPv1_Server::callOnFinalFragmentReceived()
     return true;
 }
 
-bool HTTP::HTTPv1_Server::sendWebSocketText(const char *data, const size_t &len)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendWebSocketText(const char *data, const size_t &len)
 {
-    return sendWebSocketData(data, len, WebSocket::FrameHeader::OPCODE_TEXT);
+    return sendWebSocketData(data, len, Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_TEXT);
 }
 
-bool HTTP::HTTPv1_Server::sendWebSocketBinaryData(const char *data, const size_t &len)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendWebSocketBinaryData(const char *data, const size_t &len)
 {
-    return sendWebSocketData(data, len, WebSocket::FrameHeader::OPCODE_BINARY);
+    return sendWebSocketData(data, len, Mantids30::Protocols::HTTP::WebSocket::FrameHeader::OPCODE_BINARY);
 }
 
-bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
 {
     if (len > 125)
     {
         len = 125;
     }
 
-    WebSocket::FrameHeader pingHeader;
+    Mantids30::Protocols::HTTP::WebSocket::FrameHeader pingHeader;
     pingHeader.initElemParser(m_streamableObject.get(), false);
     pingHeader.preparePingFrame(len);
     if (!pingHeader.streamToUpstream())
@@ -276,14 +276,14 @@ bool HTTP::HTTPv1_Server::sendWebSocketPing(const char *data, size_t len)
         return false;
     }
 
-    WebSocket::FrameContent frmcontent;
+    Mantids30::Protocols::HTTP::WebSocket::FrameContent frmcontent;
     frmcontent.initElemParser(m_streamableObject.get(), false);
     frmcontent.getContent().get()->append(data, len);
 
     return frmcontent.streamToUpstream();
 }
 
-bool HTTP::HTTPv1_Server::sendWebSocketText(const std::string &data)
+bool Mantids30::Protocols::HTTP::HTTPv1_Server::sendWebSocketText(const std::string &data)
 {
     return sendWebSocketText(data.c_str(), data.size());
 }

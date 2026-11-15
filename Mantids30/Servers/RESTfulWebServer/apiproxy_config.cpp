@@ -7,9 +7,8 @@
 #include <string>
 #include <vector>
 
-using namespace Mantids30::Network::Servers::Web;
-using namespace Mantids30::Program;
-using namespace Mantids30::Program::Config;
+using namespace Mantids30::Servers::RESTfulWebServer;
+using namespace Mantids30;
 
 /*
 Config example:
@@ -35,14 +34,14 @@ TransformCookiePath false   ; When true, prepends the proxy internalPath to cook
 
 PrivateCAPath "/path/to/ca.pem"   ; Path to private CA (if UsePrivateCA were true)
 */
-std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &config,
+std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &config,
                                                                          const std::map<std::string, std::string> &vars)
 {
     std::shared_ptr<APIProxyParameters> params = std::make_shared<APIProxyParameters>();
 
     try
     {
-        //  log->log0(__func__, Logs::LogLevel::DEBUG, "Creating APIProxyParameters.");
+        //  log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Creating APIProxyParameters.");
         params->useTLS = config.get<bool>("UseTLS", true);
 
         if (boost::optional<const boost::property_tree::ptree &> tlsHeaders = config.get_child_optional("TLS"))
@@ -55,7 +54,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
         params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
         params->transformCookiePath = config.get<bool>("TransformCookiePath", false);
-        log->log0(__func__, Logs::LogLevel::DEBUG,
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG,
                   "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, "
                   "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
                   params->useTLS ? "true" : "false", params->checkTLSPeer ? "true" : "false", params->usePrivateCA ? "true" : "false", params->remoteHost.c_str(),
@@ -69,23 +68,23 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
     }
     catch (const boost::property_tree::ptree_error &e)
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "Error parsing APIProxyParameters: %s", e.what());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
     catch (const std::exception &e)
     {
-        log->log0(__func__, Logs::LogLevel::ERROR, "General error parsing APIProxyParameters: %s", e.what());
+        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "General error parsing APIProxyParameters: %s", e.what());
         return nullptr;
     }
 
-    //    log->log0(__func__, Logs::LogLevel::DEBUG, "Successfully created APIProxyParameters.");
+    //    log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Successfully created APIProxyParameters.");
     return params;
 }
 
-void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders,
+void APIProxyConfig::parseExtraHeaders(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &headersTree, std::map<std::string, std::string> &extraHeaders,
                                        const std::map<std::string, std::string> &vars)
 {
-    //   log->log0(__func__, Logs::LogLevel::DEBUG, "Starting to parse extra headers.");
+    //   log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Starting to parse extra headers.");
     for (const auto &pair : headersTree)
     {
         std::string value = pair.second.get_value<std::string>();
@@ -104,9 +103,9 @@ void APIProxyConfig::parseExtraHeaders(Mantids30::Program::Logs::AppLog *log, co
 
         extraHeaders[pair.first] = value;
         // Expose vars:
-        //log->log0(__func__, Logs::LogLevel::DEBUG, "Parsed header: %s=%s", pair.first.c_str(), extraHeaders[pair.first].c_str());
+        //log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Parsed header: %s=%s", pair.first.c_str(), extraHeaders[pair.first].c_str());
         // Don't expose:
-        //        log->log0(__func__, Logs::LogLevel::DEBUG, "Parsed header: %s=%s", pair.first.c_str(), pair.second.get_value<std::string>().c_str());
+        //        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Parsed header: %s=%s", pair.first.c_str(), pair.second.get_value<std::string>().c_str());
     }
-    //    log->log0(__func__, Logs::LogLevel::DEBUG, "Finished parsing extra headers.");
+    //    log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Finished parsing extra headers.");
 }

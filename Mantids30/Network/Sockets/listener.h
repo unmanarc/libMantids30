@@ -65,7 +65,7 @@ public:
     bool startListeningInBackground(const Config &parameters);
 
     // Callbacks from thread:
-    virtual int handleClientConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream) = 0;
+    virtual int handleClientConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream) = 0;
 
     // Parameters:
     Config parameters;

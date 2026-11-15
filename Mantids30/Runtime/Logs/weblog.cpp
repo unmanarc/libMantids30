@@ -21,11 +21,11 @@
 #include <sys/stat.h> // For chmod()
 #endif
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 
 void WebLog::Config::setMaxFileSize(const std::string &maxFileSize)
 {
-    m_maxFileSize = Helpers::StringConversions::getSizeFromString(maxFileSize);
+    m_maxFileSize = Mantids30::Core::Helpers::StringConversions::getSizeFromString(maxFileSize);
 }
 
 size_t WebLog::Config::getMaxFileSize() const
@@ -317,12 +317,12 @@ void WebLog::printLogToFile(const boost::property_tree::ptree *value)
             std::string userAgent = value->get<std::string>("userAgent", "-");
 
             // URL encode (sanitize) string fields for log format
-            referer = Helpers::Encoders::toURL(referer, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-            remoteHost = Helpers::Encoders::toURL(remoteHost, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-            identity = Helpers::Encoders::toURL(identity, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-            user = Helpers::Encoders::toURL(user, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-            userAgent = Helpers::Encoders::toURL(userAgent, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
-            requestLine = Helpers::Encoders::toURL(requestLine, Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            referer = Mantids30::Core::Helpers::Encoders::toURL(referer, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            remoteHost = Mantids30::Core::Helpers::Encoders::toURL(remoteHost, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            identity = Mantids30::Core::Helpers::Encoders::toURL(identity, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            user = Mantids30::Core::Helpers::Encoders::toURL(user, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            userAgent = Mantids30::Core::Helpers::Encoders::toURL(userAgent, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
+            requestLine = Mantids30::Core::Helpers::Encoders::toURL(requestLine, Mantids30::Core::Helpers::Encoders::Type::QUOTEPRINT_ENCODING);
 
             // Convert timestamp to the required format (e.g., "10/Oct/2023:13:55:36")
             struct tm *timeinfo = std::localtime(&timestamp);

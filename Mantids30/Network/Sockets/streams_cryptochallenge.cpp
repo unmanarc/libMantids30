@@ -5,7 +5,7 @@
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets::NetStreams;
 
-CryptoChallenge::CryptoChallenge(const std::shared_ptr<Sockets::Socket_Stream> &socket)
+CryptoChallenge::CryptoChallenge(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &socket)
 {
     this->m_socket = socket;
 }
@@ -13,7 +13,7 @@ CryptoChallenge::CryptoChallenge(const std::shared_ptr<Sockets::Socket_Stream> &
 std::pair<bool, bool> CryptoChallenge::mutualChallengeResponseSHA256Auth(const std::string &sharedKey, bool server)
 {
     bool readOK;
-    std::string sLocalRandomValue = Helpers::Random::createRandomString(64), sRemoteRandomValue;
+    std::string sLocalRandomValue = Mantids30::Core::Helpers::Random::createRandomString(64), sRemoteRandomValue;
 
     // RND strings filled up.
     if (!m_socket->writeStringEx<uint8_t>(sLocalRandomValue))
@@ -38,7 +38,7 @@ std::pair<bool, bool> CryptoChallenge::mutualChallengeResponseSHA256Auth(const s
     if (!server)
     {
         // The client should expose the sharedKey (hashed+randomly salted), so please use a truly random sharedKey to prevent key cracking
-        if (!m_socket->writeStringEx<uint8_t>(Helpers::Crypto::calcSHA256(sharedKey + sRemoteRandomValue + sLocalRandomValue)))
+        if (!m_socket->writeStringEx<uint8_t>(Mantids30::Core::Helpers::Crypto::calcSHA256(sharedKey + sRemoteRandomValue + sLocalRandomValue)))
         {
             return std::make_pair(false, false);
         }
@@ -52,13 +52,13 @@ std::pair<bool, bool> CryptoChallenge::mutualChallengeResponseSHA256Auth(const s
     }
 
     // Evaluate the remote Hash Calculation
-    bool bRemoteChallengeOK = (sRemoteChallenge == Helpers::Crypto::calcSHA256(sharedKey + sLocalRandomValue + sRemoteRandomValue));
+    bool bRemoteChallengeOK = (sRemoteChallenge == Mantids30::Core::Helpers::Crypto::calcSHA256(sharedKey + sLocalRandomValue + sRemoteRandomValue));
 
     // If we are the server and the authentication succeed, send our challenge
     if (server)
     {
         // The server won't expose the sharedKey if the client does not meet the challenge itself.
-        if (!m_socket->writeStringEx<uint8_t>(Helpers::Crypto::calcSHA256((bRemoteChallengeOK ? sharedKey : "") + sRemoteRandomValue + sLocalRandomValue)))
+        if (!m_socket->writeStringEx<uint8_t>(Mantids30::Core::Helpers::Crypto::calcSHA256((bRemoteChallengeOK ? sharedKey : "") + sRemoteRandomValue + sLocalRandomValue)))
         {
             return std::make_pair(false, false);
         }

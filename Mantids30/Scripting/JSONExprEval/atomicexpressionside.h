@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace Mantids30::Scripts::Expressions {
+namespace Mantids30::Scripting::JSONExprEval {
 
 class AtomicExpressionSide
 {
@@ -37,7 +37,7 @@ private:
 
     std::shared_ptr<boost::regex> m_regexp;
     std::shared_ptr<std::vector<std::string>> m_staticTexts;
-    std::shared_ptr<Mantids30::Helpers::JSON::Path> m_jsonPath;
+    std::shared_ptr<Mantids30::DataFormats::JSON::Path> m_jsonPath;
     uint32_t m_staticIndex{0};
     std::string m_expr;
     Type m_type = Type::UNDEFINED;

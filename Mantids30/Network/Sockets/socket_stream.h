@@ -13,12 +13,12 @@ namespace Mantids30::Network::Sockets {
 This is the stream socket public definition for LLM:
 
 namespace Mantids30::Network::Sockets {
-class Socket_Stream : public Memory::Streams::StreamableObject, public Sockets::Socket, public Socket_Stream_Reader, public Socket_Stream_Writer
+class Socket_Stream : public Mantids30::Core::Memory::Streams::StreamableObject, public Mantids30::Network::Sockets::Socket, public Socket_Stream_Reader, public Socket_Stream_Writer
 {
 public:
     Socket_Stream() = default;
     virtual ~Socket_Stream() override = default;
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
     std::optional<size_t> write(const void * buf, const size_t &count) override;
     static std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > GetSocketPair();
     virtual bool isConnected() override;
@@ -59,13 +59,13 @@ public:
 }
 */
 
-class Socket_Stream : public Memory::Streams::StreamableObject, public Sockets::Socket, public Socket_Stream_Reader, public Socket_Stream_Writer
+class Socket_Stream : public Mantids30::Core::Memory::Streams::StreamableObject, public Mantids30::Network::Sockets::Socket, public Socket_Stream_Reader, public Socket_Stream_Writer
 {
 public:
     Socket_Stream() = default;
     ~Socket_Stream() override = default;
 
-    bool streamTo(Memory::Streams::StreamableObject *out) override;
+    bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
     std::optional<size_t> write(const void *buf, const size_t &count) override;
 

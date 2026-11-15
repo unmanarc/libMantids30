@@ -9,17 +9,11 @@
 #include <limits>
 #include <stdexcept>
 
-using namespace Mantids30::API::Web;
-
-namespace {
+using namespace Mantids30::Servers::RESTfulWebServer;
 
 using PTree = boost::property_tree::ptree;
-using Action = ResourcesFilter::Action;
-using ActionType = ResourcesFilter::ActionType;
-using ProcessingMode = ResourcesFilter::ProcessingMode;
-using Filter = ResourcesFilter::Filter;
 
-std::string normalizeIdentifier(std::string value)
+std::string ResourcesFilter::normalizeIdentifier(std::string value)
 {
     boost::algorithm::trim(value);
     boost::algorithm::to_upper(value);
@@ -30,7 +24,7 @@ std::string normalizeIdentifier(std::string value)
     return value;
 }
 
-ProcessingMode parseProcessingMode(const std::string &value)
+ResourcesFilter::ProcessingMode ResourcesFilter::parseProcessingMode(const std::string &value)
 {
     const std::string normalized = normalizeIdentifier(value);
 
@@ -47,7 +41,7 @@ ProcessingMode parseProcessingMode(const std::string &value)
     return ProcessingMode::RAW;
 }
 
-uint16_t parseStatusCode(const PTree &node, uint16_t defaultStatusCode)
+uint16_t ResourcesFilter::parseStatusCode(const PTree &node, uint16_t defaultStatusCode)
 {
     unsigned int statusCode = node.get<unsigned int>("statusCode", node.get<unsigned int>("code", defaultStatusCode));
 
@@ -59,7 +53,7 @@ uint16_t parseStatusCode(const PTree &node, uint16_t defaultStatusCode)
     return static_cast<uint16_t>(statusCode);
 }
 
-void loadStringList(const PTree &node, const std::string &childName, std::list<std::string> &destination)
+void ResourcesFilter::loadStringList(const PTree &node, const std::string &childName, std::list<std::string> &destination)
 {
     const auto child = node.get_child_optional(childName);
 
@@ -74,7 +68,7 @@ void loadStringList(const PTree &node, const std::string &childName, std::list<s
     }
 }
 
-void loadHeaders(const PTree &node, std::vector<std::pair<std::string, std::string>> &headers)
+void ResourcesFilter::loadHeaders(const PTree &node, std::vector<std::pair<std::string, std::string>> &headers)
 {
     for (const auto &header : node)
     {
@@ -82,7 +76,7 @@ void loadHeaders(const PTree &node, std::vector<std::pair<std::string, std::stri
     }
 }
 
-Action parseAction(const PTree &actionNode)
+ResourcesFilter::Action ResourcesFilter::parseAction(const PTree &actionNode)
 {
     std::string actionName = actionNode.get<std::string>("type", actionNode.get<std::string>("action", actionNode.get_value<std::string>("")));
 
@@ -183,7 +177,7 @@ Action parseAction(const PTree &actionNode)
     throw std::runtime_error("Unknown resource-filter action: " + actionName);
 }
 
-bool containsAll(const std::set<std::string> &values, const std::list<std::string> &requiredValues)
+bool ResourcesFilter::containsAll(const std::set<std::string> &values, const std::list<std::string> &requiredValues)
 {
     for (const std::string &requiredValue : requiredValues)
     {
@@ -196,7 +190,7 @@ bool containsAll(const std::set<std::string> &values, const std::list<std::strin
     return true;
 }
 
-bool containsNone(const std::set<std::string> &values, const std::list<std::string> &rejectedValues)
+bool ResourcesFilter::containsNone(const std::set<std::string> &values, const std::list<std::string> &rejectedValues)
 {
     for (const std::string &rejectedValue : rejectedValues)
     {
@@ -209,7 +203,7 @@ bool containsNone(const std::set<std::string> &values, const std::list<std::stri
     return true;
 }
 
-bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin)
+bool ResourcesFilter::filterRequirementsMatch(const Filter &filter, const std::set<std::string> &scopes, const std::set<std::string> &roles, bool isSessionActive, bool isAdmin)
 {
     if (!containsAll(scopes, filter.requiredScopes) && !isAdmin)
     {
@@ -244,12 +238,12 @@ bool filterRequirementsMatch(const Filter &filter, const std::set<std::string> &
     return true;
 }
 
-bool isTerminalAction(ActionType type)
+bool ResourcesFilter::isTerminalAction(ActionType type)
 {
     return type == ActionType::REDIRECT || type == ActionType::ACCEPT || type == ActionType::DENY;
 }
 
-bool filterURIMatches(const Filter &filter, const std::string &uri)
+bool ResourcesFilter::filterURIMatches(const Filter &filter, const std::string &uri)
 {
     boost::cmatch match;
 
@@ -263,8 +257,6 @@ bool filterURIMatches(const Filter &filter, const std::string &uri)
 
     return false;
 }
-
-} // namespace
 
 void ResourcesFilter::Filter::compileRegex()
 {
@@ -373,9 +365,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
     return result;
 }
 
-namespace {
-
-std::string actionTypeToString(ActionType type)
+std::string ResourcesFilter::actionTypeToString(ActionType type)
 {
     switch (type)
     {
@@ -395,7 +385,7 @@ std::string actionTypeToString(ActionType type)
     return "UNKNOWN";
 }
 
-std::string processingModeToString(ProcessingMode mode)
+std::string ResourcesFilter::processingModeToString(ProcessingMode mode)
 {
     switch (mode)
     {
@@ -408,8 +398,6 @@ std::string processingModeToString(ProcessingMode mode)
     }
     return "UNKNOWN";
 }
-
-} // namespace
 
 boost::json::object ResourcesFilter::FilterEvaluationResult::toJSON() const
 {

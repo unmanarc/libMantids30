@@ -164,7 +164,7 @@ MultiThreaded::~MultiThreaded()
     }
 
     // Shutdown all acceptor sockets
-    for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
+    for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
         {
@@ -204,7 +204,7 @@ bool MultiThreaded::acceptClient(size_t socketIndex)
         return false;
     }
 
-    std::shared_ptr<Sockets::Socket_Stream> clientSocket = m_acceptorSocketList[socketIndex]->acceptConnection();
+    std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> clientSocket = m_acceptorSocketList[socketIndex]->acceptConnection();
     if (clientSocket)
     {
         std::shared_ptr<StreamAcceptorThread> clientThread = std::make_shared<StreamAcceptorThread>();
@@ -284,7 +284,7 @@ void MultiThreaded::startInBackground()
 
 void MultiThreaded::stop()
 {
-    for (std::shared_ptr<Sockets::Socket_Stream> &sock : m_acceptorSocketList)
+    for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
         {

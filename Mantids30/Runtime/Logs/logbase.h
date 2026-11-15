@@ -6,7 +6,7 @@
 #include <set>
 #include <string>
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 class LogBase
 {
@@ -69,4 +69,4 @@ private:
     void initialize();
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

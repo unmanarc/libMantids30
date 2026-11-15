@@ -1,7 +1,8 @@
 #include "endpoints_options.h"
 #include <Mantids30/Protocols/HTTP/api_return.h>
 
-using namespace Mantids30::API;
+using namespace Mantids30::Protocols::HTTP;
+using namespace Mantids30::Servers::RESTfulWebServer;
 
 void Endpoints_Options::setEndpointOptions(const std::string &endpointPath, const OptionsHandlerConfig &config)
 {
@@ -34,10 +35,10 @@ const OptionsHandlerConfig *Endpoints_Options::getOptionsConfigOnEndpoint(const 
     return nullptr;
 }
 
-Mantids30::API::APIReturn Endpoints_Options::buildCORSOptionsResponse(const Mantids30::API::OptionsHandlerConfig &config, const std::string &requestOrigin)
+Mantids30::Protocols::HTTP::APIReturn Endpoints_Options::buildCORSOptionsResponse(const Mantids30::Servers::RESTfulWebServer::OptionsHandlerConfig &config, const std::string &requestOrigin)
 {
-    Mantids30::API::APIReturn ret;
-    ret.setStatus(Mantids30::Network::Protocol::HTTP::Status::Code::S_204_NO_CONTENT);
+    Mantids30::Protocols::HTTP::APIReturn ret;
+    ret.setStatus(Mantids30::Protocols::HTTP::Status::Code::S_204_NO_CONTENT);
     config.configureAPIReturnOptionsHeaders(ret, requestOrigin);
     return ret;
 }

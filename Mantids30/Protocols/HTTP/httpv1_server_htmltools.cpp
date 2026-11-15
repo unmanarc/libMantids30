@@ -1,10 +1,10 @@
 #include "httpv1_server.h"
 
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 
 using namespace std;
 
-std::string HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
+std::string Mantids30::Protocols::HTTP::HTTPv1_Server::htmlEncode(const std::string &rawStr)
 {
     std::string output;
     output.reserve(rawStr.size());

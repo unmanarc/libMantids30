@@ -2,26 +2,26 @@
 #include  "apiserver_clienthandler.h"
 
 
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace std;
 
 void APIServer_ClientHandler::fillSessionInfo(boost::json::value &jVars)
 {
     if (currentSessionInfo.authSession)
     {
-        Helpers::JSON::setMember(jVars, "isImpersonation", currentSessionInfo.isImpersonation);
-        Helpers::JSON::setMember(jVars, "impersonator", currentSessionInfo.authSession->getImpersonator());
-        Helpers::JSON::setMember(jVars, "halfSessionID", currentSessionInfo.halfSessionId);
-        Helpers::JSON::setMember(jVars, "user", currentSessionInfo.authSession->getUser());
-        Helpers::JSON::setMember(jVars, "domain", currentSessionInfo.authSession->getDomain());
-        Helpers::JSON::setMember(jVars, "loggedIn", true);
+        Mantids30::DataFormats::JSON::setMember(jVars, "isImpersonation", currentSessionInfo.isImpersonation);
+        Mantids30::DataFormats::JSON::setMember(jVars, "impersonator", currentSessionInfo.authSession->getImpersonator());
+        Mantids30::DataFormats::JSON::setMember(jVars, "halfSessionID", currentSessionInfo.halfSessionId);
+        Mantids30::DataFormats::JSON::setMember(jVars, "user", currentSessionInfo.authSession->getUser());
+        Mantids30::DataFormats::JSON::setMember(jVars, "domain", currentSessionInfo.authSession->getDomain());
+        Mantids30::DataFormats::JSON::setMember(jVars, "loggedIn", true);
     }
     else
     {
-        Helpers::JSON::setMember(jVars, "loggedIn", false);
+        Mantids30::DataFormats::JSON::setMember(jVars, "loggedIn", false);
     }
 
-    Helpers::JSON::setMember(jVars, "userTLSCommonName", clientRequest.networkClientInfo.tlsCommonName);
-    Helpers::JSON::setMember(jVars, "userIP", clientRequest.networkClientInfo.REMOTE_ADDR);
-    Helpers::JSON::setMember(jVars, "userAgent", clientRequest.userAgent);
+    Mantids30::DataFormats::JSON::setMember(jVars, "userTLSCommonName", clientRequest.networkClientInfo.tlsCommonName);
+    Mantids30::DataFormats::JSON::setMember(jVars, "userIP", clientRequest.networkClientInfo.REMOTE_ADDR);
+    Mantids30::DataFormats::JSON::setMember(jVars, "userAgent", clientRequest.userAgent);
 }

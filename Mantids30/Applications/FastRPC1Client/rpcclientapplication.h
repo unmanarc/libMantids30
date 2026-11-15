@@ -7,16 +7,16 @@
 #include <memory>
 //#include "rpcclientimpl.h"
 
-namespace Mantids30::Applications::FastRPC1 {
+namespace Mantids30::Applications::FastRPC1Client {
 
-class RPCClientApplication : public Mantids30::Program::Application
+class RPCClientApplication : public Mantids30::Runtime::Service::Application
 {
 public:
-    RPCClientApplication(const std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> &masterKey) { Globals::m_masterKey = masterKey; }
+    RPCClientApplication(const std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> &masterKey) { Globals::m_masterKey = masterKey; }
     void _shutdown() override;
-    void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
-    bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
-    int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) override;
+    void _initvars(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) override;
+    bool _config(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) override;
+    int _start(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) override;
 
 protected:
     /**
@@ -29,7 +29,7 @@ protected:
      * @param argv
      * @param globalArguments
      */
-    virtual void rpcInitVars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual void rpcInitVars(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
     /**
      * @brief _config Function called for config parsing / program initialization
      * @param argc
@@ -37,7 +37,7 @@ protected:
      * @param globalArguments
      * @return
      */
-    virtual bool rpcConfig(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual bool rpcConfig(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
     /**
      * @brief _start function called for program start
      * @param argc
@@ -45,7 +45,7 @@ protected:
      * @param globalArguments
      * @return
      */
-    virtual int rpcStart(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual int rpcStart(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
 
     virtual void processRetrievedConfig() {};
 
@@ -56,4 +56,4 @@ protected:
     bool m_retrieveConfig = false;
 };
 
-} // namespace Mantids30::Applications::FastRPC1
+} // namespace Mantids30::Applications::FastRPC1Client

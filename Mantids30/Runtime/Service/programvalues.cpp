@@ -2,7 +2,7 @@
 #include <sstream>
 #include <vector>
 
-using namespace Mantids30::Program::Values;
+using namespace Mantids30::Runtime::Service::Values;
 
 void ProgramValues::initProgramName(const std::string &value)
 {

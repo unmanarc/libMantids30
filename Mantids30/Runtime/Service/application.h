@@ -3,8 +3,6 @@
 #include "globalarguments.h"
 #include <unistd.h>
 
-static Mantids30::Program::Arguments::GlobalArguments globalArgs;
-
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
@@ -14,7 +12,9 @@ static Mantids30::Program::Arguments::GlobalArguments globalArgs;
 //               /var/lock/<program_name>/
 //               /var/run/<program_name>/
 
-namespace Mantids30::Program {
+namespace Mantids30::Runtime::Service {
+
+static Arguments::GlobalArguments globalArgs;
 
 class Application
 {
@@ -29,7 +29,7 @@ public:
  * @param argv
  * @param globalArguments
  */
-    virtual void _initvars(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual void _initvars(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
     /**
  * @brief _config Function called for config parsing / program initialization
  * @param argc
@@ -37,7 +37,7 @@ public:
  * @param globalArguments
  * @return
  */
-    virtual bool _config(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual bool _config(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
     /**
  * @brief _start function called for program start
  * @param argc
@@ -45,8 +45,8 @@ public:
  * @param globalArguments
  * @return
  */
-    virtual int _start(int argc, char *argv[], Mantids30::Program::Arguments::GlobalArguments *globalArguments) = 0;
+    virtual int _start(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments) = 0;
 };
-} // namespace Mantids30::Program
+int StartApplication(int argc, char *argv[], Application *_app);
 
-int StartApplication(int argc, char *argv[], Mantids30::Program::Application *_app);
+} // namespace Mantids30::Runtime::Service

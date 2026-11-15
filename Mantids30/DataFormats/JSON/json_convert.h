@@ -12,7 +12,7 @@
 #include <string>
 #include <string_view>
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 boost::json::value parse(const char *json);
 
@@ -126,4 +126,4 @@ private:
     std::string m_errors;
 };
 
-} // namespace Mantids30::Helpers::JSON
+} // namespace Mantids30::DataFormats::JSON

@@ -118,8 +118,8 @@ bool NetworkInterfaceConfiguration::apply()
 #else
     if (changeIPv4Addr)
     {
-        ExecutionResult i = Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
-                                                                                Mantids30::Memory::Abstract::IPV4::_toString(address), Mantids30::Memory::Abstract::IPV4::_toString(netmask)}));
+        ExecutionResult i = Mantids30::Core::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "address", std::string("name=" + std::to_string(m_adapterIndex)), "static",
+                                                                                Mantids30::Core::Memory::Abstract::IPV4::_toString(address), Mantids30::Core::Memory::Abstract::IPV4::_toString(netmask)}));
         if (i.error == 0)
             changeIPv4Addr = false;
         else
@@ -131,7 +131,7 @@ bool NetworkInterfaceConfiguration::apply()
 
     if (changeMTU)
     {
-        ExecutionResult i = Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
+        ExecutionResult i = Mantids30::Core::Helpers::AppExec::blexec(createNetSHCMD({"interface", "ipv4", "set", "interface", std::to_string(m_adapterIndex), std::string("mtu=" + std::to_string(MTU))}));
         if (i.error == 0)
             changeMTU = false;
         else
@@ -187,17 +187,17 @@ NetworkInterfaceConfiguration::NetIfType NetworkInterfaceConfiguration::getNetIf
 
 #ifdef _WIN32
 
-Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
+Mantids30::Core::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createRouteCMD(const std::vector<std::string> &routecmdopts)
 {
-    Helpers::AppExec::ExecutionArgs x;
+    Mantids30::Core::Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getRouteExecPath();
     x.args = routecmdopts;
     return x;
 }
 
-Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
+Mantids30::Core::Helpers::AppExec::ExecutionArgs NetworkInterfaceConfiguration::createNetSHCMD(const std::vector<std::string> &netshcmdopts)
 {
-    Helpers::AppExec::ExecutionArgs x;
+    Mantids30::Core::Helpers::AppExec::ExecutionArgs x;
     x.arg0 = getNetSHExecPath();
     x.args = netshcmdopts;
     return x;

@@ -8,9 +8,9 @@
 #include <Mantids30/Protocols/MIME/mime_message.h>
 #include <memory>
 
-namespace Mantids30::Network::Protocol::HTTP {
+namespace Mantids30::Protocols::HTTP {
 
-class Content : public Memory::Streams::SubParser
+class Content : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     enum class ContainerType : uint8_t
@@ -58,17 +58,17 @@ public:
      * @brief writer Same of getStreamableObject
      * @return current streamable output
      */
-    std::shared_ptr<Memory::Streams::StreamableObject> writer() { return m_contentStreamableObject; }
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> writer() { return m_contentStreamableObject; }
     /**
      * @brief getStreamableObject Get the current streamable output
      * @return current streamable output
      */
-    std::shared_ptr<Memory::Streams::StreamableObject> getStreamableObject();
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> getStreamableObject();
     /**
      * @brief setStreamableObj Set the streamable output (eg. a file?)
      * @param outDataContainer stream that will be used for the content trnasmission
      */
-    void setStreamableObject(const std::shared_ptr<Memory::Streams::StreamableObject> &outDataContainer);
+    void setStreamableObject(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &outDataContainer);
     /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<size_t>::max() if size not defined, or >=0 if size defined.
@@ -78,12 +78,12 @@ public:
      * @brief postVars Get the post vars (read-only)... Useful for decoding received content
      * @return Variable
      */
-    std::shared_ptr<Memory::Abstract::Vars> postVars();
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Vars> postVars();
     /**
      * @brief getMultiPartVars Get the MultiPart POST vars (read/write), call only when the ContainerType is MIME, otherwise, runtime error will be triggered
      * @return full MIME message
      */
-    std::shared_ptr<MIME::MIME_Message> getMultiPartVars();
+    std::shared_ptr<Mantids30::Protocols::MIME::MIME_Message> getMultiPartVars();
     /**
      * @brief getUrlPostVars Get URL formatted POST Vars (read/write), call only when the ContainerType is URL, otherwise, runtime error will be triggered
      * @return URL Var object
@@ -93,7 +93,7 @@ public:
      * @brief getJSONVars Get JSON Stream
      * @return Unparsed JSON Stream
      */
-    std::shared_ptr<Mantids30::Memory::Streams::StreamableJSON> getJSONVars();
+    std::shared_ptr<Mantids30::DataFormats::JSON::StreamableJSON> getJSONVars();
 
     //////////////////////////////////////////////////////////////////
     // ------------------ TRANSMISSION AND CONTENT ------------------
@@ -137,10 +137,10 @@ public:
     void setSecurityMaxHttpChunkSize(const uint32_t &value);
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
-    std::shared_ptr<Memory::Streams::StreamableObject> m_contentStreamableObject = std::make_shared<Memory::Containers::B_Chunks>();
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_contentStreamableObject = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     bool m_usingInternalOutStream = true;
 
     std::optional<uint32_t> parseHttpChunkSize();
@@ -156,4 +156,4 @@ private:
     uint32_t m_securityMaxHttpChunkSize = 16 * MB_MULT; // 16mb.
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP
+} // namespace Mantids30::Protocols::HTTP

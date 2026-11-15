@@ -8,6 +8,8 @@
 
 #include "rpcclientimpl.h"
 
+namespace Mantids30::Applications::FastRPC1Client {
+
 #ifdef _WIN32
 static std::string dirSlash = "\\";
 #else
@@ -15,8 +17,6 @@ static std::string dirSlash = "/";
 #endif
 
 #define LOG_APP Globals::m_appLog
-
-namespace Mantids30::Applications::FastRPC1 {
 
 class Globals
 {
@@ -55,15 +55,15 @@ public:
 
     ///////////////////////////////////////
     // LOGS.
-    static std::shared_ptr<Mantids30::Program::Logs::AppLog> m_appLog;
+    static std::shared_ptr<Mantids30::Runtime::Logs::AppLog> m_appLog;
 
     // RPC Implementation:
-    static Applications::FastRPC1::RPCClientImpl *m_rpcImpl;
+    static Mantids30::Applications::FastRPC1Client::RPCClientImpl *m_rpcImpl;
 
     // Master Key:
-    static std::shared_ptr<Mantids30::Helpers::Mem::BinaryDataContainer> m_masterKey;
+    static std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> m_masterKey;
 
 protected:
     static boost::property_tree::ptree m_ptreeLocalConfig;
 };
-} // namespace Mantids30::Applications::FastRPC1
+} // namespace Mantids30::Applications::FastRPC1Client

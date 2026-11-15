@@ -4,7 +4,7 @@
 #include <cstring>
 #include <vector>
 
-using namespace Mantids30::Network::Sockets::ChainProtocols;
+using namespace Mantids30::Network::Chains;
 
 Socket_Chain_XOR::Socket_Chain_XOR()
 {

@@ -7,7 +7,7 @@
 #include <openssl/evp.h>
 #include <random>
 
-namespace Mantids30::Network::Sockets::ChainProtocols {
+namespace Mantids30::Network::Chains {
 
 /**
  * @brief The Socket_Chain_AES class
@@ -174,4 +174,4 @@ private:
     const static EVP_CIPHER *m_cipher;
 };
 
-} // namespace Mantids30::Network::Sockets::ChainProtocols
+} // namespace Mantids30::Network::Chains

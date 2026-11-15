@@ -10,7 +10,7 @@
 
 
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 // Returns the member value of an object, or a null value if the object does
 // not contain the key (mirrors jsoncpp's non-throwing operator[] behavior).
@@ -69,6 +69,6 @@ inline double ASDOUBLE_OR_ZERO(const boost::json::value &v)
     return 0.0;
 }
 
-} // namespace Mantids30::Helpers::JSON::detail
+} // namespace Mantids30::DataFormats::JSON::detail
 
 

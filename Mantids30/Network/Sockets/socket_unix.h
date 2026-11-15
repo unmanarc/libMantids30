@@ -10,7 +10,7 @@ namespace Mantids30::Network::Sockets {
  *
  * This class provides methods to listen on and connect using UNIX domain sockets.
  */
-class Socket_UNIX : public Sockets::Socket_Stream
+class Socket_UNIX : public Mantids30::Network::Sockets::Socket_Stream
 {
 public:
     /**

@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP::Headers::Security {
+namespace Mantids30::Protocols::HTTP::Headers::Security {
 
 /**
  * @brief The XFrameOptions class provides functionality for the X-Frame-Options header.
@@ -63,4 +63,4 @@ public:
     Option value = Option::DENY; ///< The X-Frame-Options value.
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP::Headers::Security
+} // namespace Mantids30::Protocols::HTTP::Headers::Security

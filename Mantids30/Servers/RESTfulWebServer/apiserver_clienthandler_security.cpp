@@ -7,9 +7,8 @@
 #include <vector>
 
 using namespace Mantids30::Network;
-using namespace Mantids30::Network::Servers::Web;
+using namespace Mantids30::Servers::RESTfulWebServer;
 using namespace Mantids30;
-using namespace Mantids30::Program;
 
 using namespace std;
 
@@ -103,27 +102,27 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     // No token has been configured / for security, the token validation fails.
     if (this->config->jwtValidator == nullptr)
     {
-        log(Logs::LogLevel::SECURITY_ALERT, "restAPI", 2048, "JWT token validation disabled: no JWT validator configured. Access denied for security reasons.");
+        log(Mantids30::Runtime::Logs::LogLevel::SECURITY_ALERT, "restAPI", 2048, "JWT token validation disabled: no JWT validator configured. Access denied for security reasons.");
         return false;
     }
 
     // Attempt to verify the provided token using the JWT validator.
-    DataFormat::JWT::VerifyError verr = DataFormat::JWT::VerifyError::NONE;
+    Mantids30::DataFormats::JWT::JWT::VerifyError verr = Mantids30::DataFormats::JWT::JWT::VerifyError::NONE;
     bool x = this->config->jwtValidator->verify(strToken, &jwtToken, &verr);
 
     if (!x)
     {
-        log(Logs::LogLevel::SECURITY_ALERT, "restAPI", 512, "JWT token rejected: %s", DataFormat::JWT::verifyErrorToString(verr).c_str());
+        log(Mantids30::Runtime::Logs::LogLevel::SECURITY_ALERT, "restAPI", 512, "JWT token rejected: %s", Mantids30::DataFormats::JWT::JWT::verifyErrorToString(verr).c_str());
         return false;
     }
 
     // Check if the current running app matches the JWT spec.
-    if (Helpers::JSON::ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
+    if (Mantids30::DataFormats::JSON::ASSTRING_D(jwtToken.getClaim("app"), "") != config->appName)
     {
         return false;
     }
 
-    if (Helpers::JSON::ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
+    if (Mantids30::DataFormats::JSON::ASSTRING_D(jwtToken.getClaim("type"), "") != "access")
     {
         return false;
     }

@@ -5,7 +5,7 @@
 #include <memory>
 #include <thread>
 
-using namespace Mantids30::Network::Protocol::FastRPC;
+using namespace Mantids30::Protocols::FastRPC1;
 using namespace Mantids30;
 using Ms = std::chrono::milliseconds;
 using S = std::chrono::seconds;
@@ -22,9 +22,9 @@ void fastRPCPingerThread(FastRPC1 *obj)
     }
 }
 
-FastRPC1::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
+Mantids30::Applications::FastRPC1Client::FastRPC1(uint32_t threadsCount, uint32_t taskQueues)
 {
-    m_threadPool = new Mantids30::Threads::Pool::ThreadPool(threadsCount, taskQueues);
+    m_threadPool = new Mantids30::Core::Threads::Pool::ThreadPool(threadsCount, taskQueues);
     m_threadPool->start();
     m_pinger = std::thread(fastRPCPingerThread, this);
 }
@@ -46,17 +46,17 @@ FastRPC1::~FastRPC1()
     delete m_threadPool;
 }
 
-void FastRPC1::stop()
+void Mantids30::Applications::FastRPC1Client::stop()
 {
     m_threadPool->stop();
 }
 
-void FastRPC1::setQueuePushTimeoutInMS(const uint32_t &value)
+void Mantids30::Applications::FastRPC1Client::setQueuePushTimeoutInMS(const uint32_t &value)
 {
     this->m_queuePushTimeoutInMS = value;
 }
 
-bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &method)
+bool Mantids30::Applications::FastRPC1Client::addMethod(const std::string &methodName, const Mantids30::Applications::FastRPC1Client::Method &method)
 {
     std::unique_lock<std::shared_mutex> lock(m_methodsMutex);
     if (m_methods.find(methodName) == m_methods.end())
@@ -68,7 +68,7 @@ bool FastRPC1::addMethod(const std::string &methodName, const FastRPC1::Method &
     return false;
 }
 
-void FastRPC1::sendPings()
+void Mantids30::Applications::FastRPC1Client::sendPings()
 {
     // This will create some traffic:
     std::set<std::string> keys = m_connectionsByKeyId.getKeys();
@@ -84,23 +84,23 @@ void FastRPC1::sendPings()
     }
 }
 
-void FastRPC1::setPingInterval(uint32_t _intvl)
+void Mantids30::Applications::FastRPC1Client::setPingInterval(uint32_t _intvl)
 {
     m_pingIntvl = _intvl;
 }
 
-uint32_t FastRPC1::getPingInterval() const
+uint32_t Mantids30::Applications::FastRPC1Client::getPingInterval() const
 {
     return m_pingIntvl;
 }
 
-bool FastRPC1::waitPingInterval()
+bool Mantids30::Applications::FastRPC1Client::waitPingInterval()
 {
     std::unique_lock<std::mutex> lk(m_pingMutex);
     return m_pingCond.wait_for(lk, S(m_pingIntvl)) == std::cv_status::timeout;
 }
 
-boost::json::value FastRPC1::runLocalRPCMethod(std::string_view methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found)
+boost::json::value Mantids30::Applications::FastRPC1Client::runLocalRPCMethod(std::string_view methodName, const std::string &connectionKey, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found)
 {
     boost::json::value r;
     std::shared_lock<std::shared_mutex> lock(m_methodsMutex);
@@ -117,9 +117,9 @@ boost::json::value FastRPC1::runLocalRPCMethod(std::string_view methodName, cons
     return r;
 }
 
-void FastRPC1::eventUnexpectedAnswerReceived(FastRPC1::Connection *, const std::string &) {}
+void Mantids30::Applications::FastRPC1Client::eventUnexpectedAnswerReceived(Mantids30::Applications::FastRPC1Client::Connection *, const std::string &) {}
 
-int FastRPC1::processAnswer(FastRPC1::Connection *connection)
+int Mantids30::Applications::FastRPC1Client::processAnswer(Mantids30::Applications::FastRPC1Client::Connection *connection)
 {
     uint32_t maxAlloc = m_maxMessageSize;
     uint64_t requestId;
@@ -151,7 +151,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
         {
             connection->executionStatus[requestId] = executionStatus;
 
-            Helpers::JSON::Reader reader;
+            Mantids30::DataFormats::JSON::Reader reader;
             bool parsingSuccessful = reader.parse(payloadBytes, connection->answers[requestId]);
             if (parsingSuccessful)
             {
@@ -177,7 +177,7 @@ int FastRPC1::processAnswer(FastRPC1::Connection *connection)
     return 1;
 }
 
-int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
+int Mantids30::Applications::FastRPC1Client::processQuery(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
                            const std::shared_ptr<void> &context, const std::string &data)
 {
     uint32_t maxAlloc = m_maxMessageSize;
@@ -207,8 +207,8 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
 
     ////////////////////////////////////////////////////////////
     // Process / Inject task:
-    Helpers::JSON::Reader reader;
-    std::shared_ptr<FastRPC1::ThreadParameters> params = std::make_shared<FastRPC1::ThreadParameters>();
+    Mantids30::DataFormats::JSON::Reader reader;
+    std::shared_ptr<Mantids30::Applications::FastRPC1Client::ThreadParameters> params = std::make_shared<Mantids30::Applications::FastRPC1Client::ThreadParameters>();
     params->requestId = requestId;
     params->methodName = methodName;
     params->done = mtDone;
@@ -244,37 +244,37 @@ int FastRPC1::processQuery(const std::shared_ptr<Sockets::Socket_Stream> &stream
     return 1;
 }
 
-std::shared_ptr<void> FastRPC1::getOverwriteObject() const
+std::shared_ptr<void> Mantids30::Applications::FastRPC1Client::getOverwriteObject() const
 {
     return m_overwriteContext;
 }
 
-void FastRPC1::setOverwriteObject(const std::shared_ptr<void> &newOverwriteObject)
+void Mantids30::Applications::FastRPC1Client::setOverwriteObject(const std::shared_ptr<void> &newOverwriteObject)
 {
     m_overwriteContext = newOverwriteObject;
 }
 
-uint32_t FastRPC1::getRWTimeout() const
+uint32_t Mantids30::Applications::FastRPC1Client::getRWTimeout() const
 {
     return m_rwTimeout;
 }
 
-void FastRPC1::setRWTimeout(uint32_t _rwTimeout)
+void Mantids30::Applications::FastRPC1Client::setRWTimeout(uint32_t _rwTimeout)
 {
     m_rwTimeout = _rwTimeout;
 }
 
-void FastRPC1::setRemoteExecutionDisconnectedTries(const uint32_t &value)
+void Mantids30::Applications::FastRPC1Client::setRemoteExecutionDisconnectedTries(const uint32_t &value)
 {
     m_remoteExecutionDisconnectedTries = value;
 }
 
-void FastRPC1::setRemoteExecutionTimeoutInMS(const uint32_t &value)
+void Mantids30::Applications::FastRPC1Client::setRemoteExecutionTimeoutInMS(const uint32_t &value)
 {
     m_remoteExecutionTimeoutInMS = value;
 }
 
-int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &stream, const std::string &key, const FastRPC1::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor,
+int Mantids30::Applications::FastRPC1Client::processConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const Mantids30::Applications::FastRPC1Client::CallBackOnConnected &_cb_OnConnected, const float &keyDistFactor,
                                 const std::shared_ptr<void> &context, const std::string &data)
 {
 #ifndef _WIN32
@@ -286,7 +286,7 @@ int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &s
     std::shared_mutex mtDone;
     std::mutex mtSocket;
 
-    FastRPC1::Connection *connection = new FastRPC1::Connection;
+    Mantids30::Applications::FastRPC1Client::Connection *connection = new Mantids30::Applications::FastRPC1Client::Connection;
     connection->context = context;
     connection->data = data;
     connection->mtSocket = &mtSocket;
@@ -358,9 +358,9 @@ int FastRPC1::processConnection(const std::shared_ptr<Sockets::Socket_Stream> &s
     return ret;
 }
 
-void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
+void Mantids30::Applications::FastRPC1Client::executeRPCTask(const std::shared_ptr<void> &taskData)
 {
-    FastRPC1::ThreadParameters *params = static_cast<FastRPC1::ThreadParameters *>(taskData.get());
+    Mantids30::Applications::FastRPC1Client::ThreadParameters *params = static_cast<Mantids30::Applications::FastRPC1Client::ThreadParameters *>(taskData.get());
 
     bool found = false;
     boost::json::value r = (static_cast<FastRPC1 *>(params->caller))->runLocalRPCMethod(params->methodName, params->key, params->data, params->context, params->payload, &found);
@@ -369,7 +369,7 @@ void FastRPC1::executeRPCTask(const std::shared_ptr<void> &taskData)
     params->done->unlock_shared();
 }
 
-void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::string &answer, uint8_t executionStatus)
+void Mantids30::Applications::FastRPC1Client::sendRPCAnswer(Mantids30::Applications::FastRPC1Client::ThreadParameters *params, const std::string &answer, uint8_t executionStatus)
 {
     // Send a block.
     params->mtSocket->lock();
@@ -381,12 +381,12 @@ void FastRPC1::sendRPCAnswer(FastRPC1::ThreadParameters *params, const std::stri
     params->mtSocket->unlock();
 }
 
-void FastRPC1::setMaxMessageSize(const uint32_t &value)
+void Mantids30::Applications::FastRPC1Client::setMaxMessageSize(const uint32_t &value)
 {
     m_maxMessageSize = value;
 }
 
-boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey, std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected)
+boost::json::value Mantids30::Applications::FastRPC1Client::runRemoteRPCMethod(const std::string &connectionKey, std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected)
 {
     boost::json::value r;
     const std::string mMethodName{methodName};
@@ -397,17 +397,17 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
     {
         if (error)
         {
-            Helpers::JSON::setMember(*error, "succeed", false);
-            Helpers::JSON::setMember(*error, "errorId", 1);
-            Helpers::JSON::setMember(*error, "errorMessage", "Payload exceed the Maximum Message Size.");
+            Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+            Mantids30::DataFormats::JSON::setMember(*error, "errorId", 1);
+            Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Payload exceed the Maximum Message Size.");
         }
         return r;
     }
 
-    FastRPC1::Connection *connection;
+    Mantids30::Applications::FastRPC1Client::Connection *connection;
 
     uint32_t _tries = 0;
-    while ((connection = static_cast<FastRPC1::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) == nullptr)
+    while ((connection = static_cast<Mantids30::Applications::FastRPC1Client::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) == nullptr)
     {
         _tries++;
         if (_tries >= m_remoteExecutionDisconnectedTries || !retryIfDisconnected)
@@ -415,9 +415,9 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
             eventRemotePeerDisconnected(connectionKey, mMethodName, payload);
             if (error)
             {
-                Helpers::JSON::setMember(*error, "succeed", false);
-                Helpers::JSON::setMember(*error, "errorId", 2);
-                Helpers::JSON::setMember(*error, "errorMessage", "Abort after remote peer not found/connected.");
+                Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorId", 2);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Abort after remote peer not found/connected.");
             }
             return r;
         }
@@ -456,9 +456,9 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
             eventRemoteExecutionTimedOut(connectionKey, mMethodName, payload);
             if (error)
             {
-                Helpers::JSON::setMember(*error, "succeed", false);
-                Helpers::JSON::setMember(*error, "errorId", 3);
-                Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Timed Out: No Answer Received.");
+                Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorId", 3);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Remote Execution Timed Out: No Answer Received.");
             }
             break;
         }
@@ -473,22 +473,22 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
                 switch (executionStatus)
                 {
                 case 2:
-                    Helpers::JSON::setMember(*error, "succeed", true);
-                    Helpers::JSON::setMember(*error, "errorId", 0);
-                    Helpers::JSON::setMember(*error, "errorMessage", "Execution OK.");
+                    Mantids30::DataFormats::JSON::setMember(*error, "succeed", true);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorId", 0);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Execution OK.");
                     break;
                 case 3:
-                    Helpers::JSON::setMember(*error, "succeed", false);
-                    Helpers::JSON::setMember(*error, "errorId", 4);
-                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Full Queue.");
+                    Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorId", 4);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Full Queue.");
                     break;
                 case 4:
-                    Helpers::JSON::setMember(*error, "succeed", false);
-                    Helpers::JSON::setMember(*error, "errorId", 5);
-                    Helpers::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Method Not Found.");
+                    Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorId", 5);
+                    Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Remote Execution Failed: Method Not Found.");
                     break;
                 default:
-                    Helpers::JSON::setMember(*error, "succeed", false);
+                    Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
                 }
             }
             break;
@@ -498,9 +498,9 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
         {
             if (error)
             {
-                Helpers::JSON::setMember(*error, "succeed", false);
-                Helpers::JSON::setMember(*error, "errorId", 6);
-                Helpers::JSON::setMember(*error, "errorMessage", "Connection is terminated: No Answer Received.");
+                Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorId", 6);
+                Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Connection is terminated: No Answer Received.");
             }
             break;
         }
@@ -518,23 +518,23 @@ boost::json::value FastRPC1::runRemoteRPCMethod(const std::string &connectionKey
 
     if (error)
     {
-        if (!Helpers::JSON::HAS_MEMBER(*error, "succeed"))
+        if (!Mantids30::DataFormats::JSON::HAS_MEMBER(*error, "succeed"))
         {
-            Helpers::JSON::setMember(*error, "succeed", false);
-            Helpers::JSON::setMember(*error, "errorId", 99);
-            Helpers::JSON::setMember(*error, "errorMessage", "Unknown Error.");
+            Mantids30::DataFormats::JSON::setMember(*error, "succeed", false);
+            Mantids30::DataFormats::JSON::setMember(*error, "errorId", 99);
+            Mantids30::DataFormats::JSON::setMember(*error, "errorMessage", "Unknown Error.");
         }
     }
 
     return r;
 }
 
-bool FastRPC1::runRemoteClose(const std::string &connectionKey)
+bool Mantids30::Applications::FastRPC1Client::runRemoteClose(const std::string &connectionKey)
 {
     bool r = false;
 
-    FastRPC1::Connection *connection;
-    if ((connection = static_cast<FastRPC1::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) != nullptr)
+    Mantids30::Applications::FastRPC1Client::Connection *connection;
+    if ((connection = static_cast<Mantids30::Applications::FastRPC1Client::Connection *>(m_connectionsByKeyId.openElement(connectionKey))) != nullptr)
     {
         connection->mtSocket->lock();
         if (connection->stream->writeU<uint8_t>(0))
@@ -551,18 +551,18 @@ bool FastRPC1::runRemoteClose(const std::string &connectionKey)
     return r;
 }
 
-std::set<std::string> FastRPC1::getConnectionKeys()
+std::set<std::string> Mantids30::Applications::FastRPC1Client::getConnectionKeys()
 {
     return m_connectionsByKeyId.getKeys();
 }
 
-bool FastRPC1::checkConnectionKey(std::string_view connectionKey)
+bool Mantids30::Applications::FastRPC1Client::checkConnectionKey(std::string_view connectionKey)
 {
     return m_connectionsByKeyId.isMember(std::string(connectionKey));
 }
 
-void FastRPC1::eventFullQueueDrop(FastRPC1::ThreadParameters *) {}
+void Mantids30::Applications::FastRPC1Client::eventFullQueueDrop(Mantids30::Applications::FastRPC1Client::ThreadParameters *) {}
 
-void FastRPC1::eventRemotePeerDisconnected(const std::string &, const std::string &, const boost::json::value &) {}
+void Mantids30::Applications::FastRPC1Client::eventRemotePeerDisconnected(const std::string &, const std::string &, const boost::json::value &) {}
 
-void FastRPC1::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const boost::json::value &) {}
+void Mantids30::Applications::FastRPC1Client::eventRemoteExecutionTimedOut(const std::string &, const std::string &, const boost::json::value &) {}

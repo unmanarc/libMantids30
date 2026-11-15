@@ -12,7 +12,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-namespace Mantids30::Program::Logs {
+namespace Mantids30::Runtime::Logs {
 
 class WebLog
 {
@@ -60,7 +60,7 @@ public:
         uint32_t queueMaxInsertWaitTimeInMS = 100;
         bool useThreadedQueue = true;
 
-        std::shared_ptr<Mantids30::Program::Logs::AppLog> appLog;
+        std::shared_ptr<Mantids30::Runtime::Logs::AppLog> appLog;
 
     private:
         LogFormat m_logFormat = JSON;
@@ -89,7 +89,7 @@ private:
     void startLogRotationOnScheduleThread();
 
     // Serialize to an unformatted string using boost::property_tree
-    Threads::Safe::SharedQueue<boost::property_tree::ptree> m_logQueue;
+    Mantids30::Core::Threads::Safe::SharedQueue<boost::property_tree::ptree> m_logQueue;
     std::thread m_rotationThread, m_queueThread;
     std::atomic<bool> m_rotationThreadRunning{false};
     std::ofstream m_logFileHandle;
@@ -99,4 +99,4 @@ private:
     std::mutex m_logPrintMutex;
 };
 
-} // namespace Mantids30::Program::Logs
+} // namespace Mantids30::Runtime::Logs

@@ -1,7 +1,7 @@
 #include "jwt.h"
 #include <boost/thread/pthread/shared_mutex.hpp>
 
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::DataFormats::JWT;
 
 void JWT::Cache::setCacheMaxByteCount(std::size_t maxByteCount)
 {

@@ -2,8 +2,8 @@
 #include <Mantids30/Core/Helpers/random.h>
 #include <mutex>
 
-using namespace Mantids30::Sessions;
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::Servers::RESTfulWebServer::Sessions;
+using namespace Mantids30::DataFormats::JWT;
 
 Session::Session(const JWT::Token &jwt)
     : m_firstActivityTimestamp(time(nullptr))

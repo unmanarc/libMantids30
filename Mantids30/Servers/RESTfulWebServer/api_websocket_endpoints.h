@@ -2,11 +2,11 @@
 
 #include "api_websocket_endpoint.h"
 
-namespace Mantids30::Network::Servers::Web {
+namespace Mantids30::Servers::RESTfulWebServer {
 class APIServerCore;
 }
 
-namespace Mantids30::API::WebSocket {
+namespace Mantids30::Servers::RESTfulWebServer::WebSocket {
 
 /**
 * @class Endpoints
@@ -57,10 +57,10 @@ public:
      * @brief Add a new WebSocket endpoint with full definition struct.
      *
      * @param endpointPath The WebSocket URI path.
-     * @param endpointDefinition The WebSocket::Endpoint struct.
+     * @param endpointDefinition The Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint struct.
      * @return Returns true if the endpoint was added successfully, false otherwise.
      */
-    bool addEndpoint(const std::string &endpointPath, const WebSocket::Endpoint &endpointDefinition);
+    bool addEndpoint(const std::string &endpointPath, const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDefinition);
 
     /**
      * @brief checkEndpoint
@@ -79,27 +79,27 @@ public:
      * @param parameters The WebSocket parameters.
      * @return The error code indicating the result of event handling.
      */
-    HandleResult handleEvent(const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content, WebSocket::WebSocketParameters &parameters);
+    HandleResult handleEvent(const Mantids30::Protocols::HTTP::WebSocket::EventType &eventType, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &content, Mantids30::Servers::RESTfulWebServer::WebSocket::WebSocketParameters &parameters);
 
     /**
      * @brief getWebSocketEndpointByURI
      * @param uri
      * @return
      */
-    [[nodiscard]] const WebSocket::Endpoint *getWebSocketEndpointByURI(std::string_view uri) const;
+    [[nodiscard]] const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint *getWebSocketEndpointByURI(std::string_view uri) const;
 
 private:
     Config *config = nullptr;
 
-    std::map<std::string, WebSocket::Endpoint, std::less<>> m_endpoints; ///< Map of WebSocket endpoints by URI path.
-    std::map<std::string, WebSocket::Endpoint>::iterator it;
+    std::map<std::string, Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint, std::less<>> m_endpoints; ///< Map of WebSocket endpoints by URI path.
+    std::map<std::string, Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint>::iterator it;
 
-    Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);
+    Mantids30::Servers::RESTfulWebServer::Sessions::ClientDetails extractClientDetails(const WebSocketParameters &parameters);
 
-    bool invokeHandler(const WebSocket::Endpoint &endpointDef, const Network::Protocol::WebSocket::EventType &eventType, const std::shared_ptr<Memory::Containers::B_Chunks> &content,
+    bool invokeHandler(const Mantids30::Servers::RESTfulWebServer::WebSocket::Endpoint &endpointDef, const Mantids30::Protocols::HTTP::WebSocket::EventType &eventType, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &content,
                        const WebSocketParameters &parameters);
 
-    friend class Mantids30::Network::Servers::Web::APIServerCore;
+    friend class Mantids30::Servers::RESTfulWebServer::APIServerCore;
 };
 
-} // namespace Mantids30::API::WebSocket
+} // namespace Mantids30::Servers::RESTfulWebServer::WebSocket

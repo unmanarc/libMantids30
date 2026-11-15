@@ -9,7 +9,7 @@
 
 #include <cstring>
 
-using namespace Mantids30::Program::Logs;
+using namespace Mantids30::Runtime::Logs;
 using namespace std;
 
 LogBase::LogBase(const uint8_t &_logMode)

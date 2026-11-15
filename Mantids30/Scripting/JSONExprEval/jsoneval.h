@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace Mantids30::Scripts::Expressions {
+namespace Mantids30::Scripting::JSONExprEval {
 
 class JSONEval
 {

@@ -2,7 +2,7 @@
 #include <openssl/obj_mac.h>
 #include <cstring>
 
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::DataFormats::JWT;
 
 JWT::AlgorithmDetails::AlgorithmDetails(Algorithm algorithm)
 {

@@ -9,11 +9,11 @@
 using namespace std;
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol;
+using namespace Mantids30::Protocols;
 
 using namespace Mantids30;
 
-void HTTP::Version::parse(const std::string &version)
+void Mantids30::Protocols::HTTP::Version::parse(const std::string &version)
 {
     // Reset the current object to a clean state
     // This ensures that if parsing fails, the object doesn't hold stale data.
@@ -45,7 +45,7 @@ void HTTP::Version::parse(const std::string &version)
     }
 }
 
-string HTTP::Version::toString() const
+string Mantids30::Protocols::HTTP::Version::toString() const
 {
     char cHTTPVersion[128];
     snprintf(cHTTPVersion, sizeof(cHTTPVersion), "HTTP/%" PRIu16 ".%" PRIu16, m_majorVersion, m_minorVersion);
@@ -53,17 +53,17 @@ string HTTP::Version::toString() const
     return sHTTPVersion;
 }
 
-uint16_t HTTP::Version::getMinor() const
+uint16_t Mantids30::Protocols::HTTP::Version::getMinor() const
 {
     return m_minorVersion;
 }
 
-void HTTP::Version::setMinor(const uint16_t &value)
+void Mantids30::Protocols::HTTP::Version::setMinor(const uint16_t &value)
 {
     m_minorVersion = value;
 }
 
-void HTTP::Version::upgradeMinor(const uint16_t &value)
+void Mantids30::Protocols::HTTP::Version::upgradeMinor(const uint16_t &value)
 {
     if (value > m_minorVersion)
     {
@@ -71,12 +71,12 @@ void HTTP::Version::upgradeMinor(const uint16_t &value)
     }
 }
 
-uint16_t HTTP::Version::getMajor() const
+uint16_t Mantids30::Protocols::HTTP::Version::getMajor() const
 {
     return m_majorVersion;
 }
 
-void HTTP::Version::setMajor(const uint16_t &value)
+void Mantids30::Protocols::HTTP::Version::setMajor(const uint16_t &value)
 {
     m_majorVersion = value;
 }

@@ -11,7 +11,7 @@
 #include <string_view>
 #include <utility>
 
-namespace Mantids30::Helpers::JSON {
+namespace Mantids30::DataFormats::JSON {
 
 /**
  * Resolves a jsoncpp-style JSON path expression against a JSON value.
@@ -176,4 +176,4 @@ private:
     std::string m_expr;
 };
 
-} // namespace Mantids30::Helpers::JSON
+} // namespace Mantids30::DataFormats::JSON

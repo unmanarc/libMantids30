@@ -7,9 +7,9 @@
 #include "common_version.h"
 #include <string>
 
-namespace Mantids30::Network::Protocol::HTTP::Request {
+namespace Mantids30::Protocols::HTTP::Request {
 
-class RequestLine : public Memory::Streams::SubParser
+class RequestLine : public Mantids30::Core::Memory::Streams::SubParser
 {
 public:
     RequestLine();
@@ -28,12 +28,12 @@ public:
      * @brief getHttpVersion Get HTTP Version requested.
      * @return version object requested.
      */
-    HTTP::Version *getHTTPVersion();
+    Mantids30::Protocols::HTTP::Version *getHTTPVersion();
     /**
      * @brief getGETVars Get object that handles HTTP Vars
      * @return object that handles http vars.
      */
-    std::shared_ptr<Memory::Abstract::Vars> urlVars();
+    std::shared_ptr<Mantids30::Core::Memory::Abstract::Vars> urlVars();
 
     //////////////////////////////////////////////////
     // Local getters/setters.
@@ -59,7 +59,7 @@ public:
     std::string toString() const;
 
 protected:
-    Memory::Streams::SubParser::ParseResult parse() override;
+    Mantids30::Core::Memory::Streams::SubParser::ParseResult parse() override;
 
 private:
     void parseURI();
@@ -78,9 +78,9 @@ private:
      */
     std::string m_requestGETVarsRawString;
 
-    HTTP::Version m_httpVersion;
+    Mantids30::Protocols::HTTP::Version m_httpVersion;
 
-    std::shared_ptr<HTTP::URLVars> m_getVars;
+    std::shared_ptr<Mantids30::Protocols::HTTP::URLVars> m_getVars;
 };
 
-} // namespace Mantids30::Network::Protocol::HTTP::Request
+} // namespace Mantids30::Protocols::HTTP::Request

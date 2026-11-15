@@ -1,7 +1,7 @@
 #include "jwt.h"
 #include <Mantids30/DataFormats/JSON/json.h>
 
-using namespace Mantids30::DataFormat;
+using namespace Mantids30::DataFormats::JWT;
 
 JWT::Token::Token(const std::string &payload)
 {
@@ -60,68 +60,68 @@ std::string JWT::Token::exportPayload() const
 
 bool JWT::Token::decodePayload(const std::string &payload)
 {
-    Helpers::JSON::Reader reader;
+    Mantids30::DataFormats::JSON::Reader reader;
     return reader.parse(payload, m_claims);
 }
 
 std::string_view JWT::Token::getIssuer() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "iss", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "iss", "");
 }
 
 std::string_view JWT::Token::getImpersonator() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "impersonator", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "impersonator", "");
 }
 
 std::string_view JWT::Token::getSubject() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "sub", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "sub", "");
 }
 
 std::string_view JWT::Token::getDomain() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "domain", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "domain", "");
 }
 
 std::string_view JWT::Token::getAudience() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "aud", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "aud", "");
 }
 
 time_t JWT::Token::getExpirationTime() const
 {
     // DEFULT: not expired...
-    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "exp", std::numeric_limits<time_t>::max()));
+    return static_cast<std::time_t>(Mantids30::DataFormats::JSON::ASINT64(m_claims, "exp", std::numeric_limits<time_t>::max()));
 }
 
 time_t JWT::Token::getNotBefore() const
 {
     // DEFAULT: not restriction....
-    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "nbf", 0x0));
+    return static_cast<std::time_t>(Mantids30::DataFormats::JSON::ASINT64(m_claims, "nbf", 0x0));
 }
 
 time_t JWT::Token::getIssuedAt() const
 {
     // DEFAULT: 1969...
-    return static_cast<std::time_t>(Helpers::JSON::ASINT64(m_claims, "iat", 0x0));
+    return static_cast<std::time_t>(Mantids30::DataFormats::JSON::ASINT64(m_claims, "iat", 0x0));
 }
 
 std::string_view JWT::Token::getJwtId() const
 {
-    return Helpers::JSON::ASSTRING(m_claims, "jti", "");
+    return Mantids30::DataFormats::JSON::ASSTRING(m_claims, "jti", "");
 }
 
 std::set<std::string> JWT::Token::getAllRoles()
 {
     std::set<std::string> roles;
 
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "roles"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "roles"))
     {
-        const boost::json::array &rolesClaims = Helpers::JSON::ASARRAY_OR_EMPTY(m_claims, "roles");
+        const boost::json::array &rolesClaims = Mantids30::DataFormats::JSON::ASARRAY_OR_EMPTY(m_claims, "roles");
         for (const boost::json::value &role : rolesClaims)
         {
-            roles.insert(std::string(Helpers::JSON::ASSTRING_D(role, "")));
+            roles.insert(std::string(Mantids30::DataFormats::JSON::ASSTRING_D(role, "")));
         }
     }
 
@@ -130,9 +130,9 @@ std::set<std::string> JWT::Token::getAllRoles()
 
 boost::json::value JWT::Token::getAllRolesAsJSON()
 {
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "roles"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "roles"))
     {
-        return Helpers::JSON::MEMBER_OR_NULL(m_claims, "roles");
+        return Mantids30::DataFormats::JSON::MEMBER_OR_NULL(m_claims, "roles");
     }
 
     return {};
@@ -140,7 +140,7 @@ boost::json::value JWT::Token::getAllRolesAsJSON()
 
 void JWT::Token::addRole(std::string_view roleId)
 {
-    if (!Helpers::JSON::HAS_MEMBER(m_claims, "roles"))
+    if (!Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "roles"))
     {
         m_claims.as_object()["roles"] = boost::json::array{};
     }
@@ -149,12 +149,12 @@ void JWT::Token::addRole(std::string_view roleId)
 
 bool JWT::Token::hasRole(std::string_view roleId) const
 {
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "roles"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "roles"))
     {
-        const boost::json::array &rolesClaims = Helpers::JSON::ASARRAY_OR_EMPTY(m_claims, "roles");
+        const boost::json::array &rolesClaims = Mantids30::DataFormats::JSON::ASARRAY_OR_EMPTY(m_claims, "roles");
         for (const boost::json::value &role : rolesClaims)
         {
-            if (Helpers::JSON::ASSTRING_D(role, "") == roleId)
+            if (Mantids30::DataFormats::JSON::ASSTRING_D(role, "") == roleId)
             {
                 return true;
             }
@@ -167,12 +167,12 @@ std::set<std::string> JWT::Token::getAllScopes()
 {
     std::set<std::string> scopes;
 
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "scopes"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "scopes"))
     {
-        const boost::json::array &scopesClaims = Helpers::JSON::ASARRAY_OR_EMPTY(m_claims, "scopes");
+        const boost::json::array &scopesClaims = Mantids30::DataFormats::JSON::ASARRAY_OR_EMPTY(m_claims, "scopes");
         for (const boost::json::value &scope : scopesClaims)
         {
-            scopes.insert(std::string(Helpers::JSON::ASSTRING_D(scope, "")));
+            scopes.insert(std::string(Mantids30::DataFormats::JSON::ASSTRING_D(scope, "")));
         }
     }
 
@@ -181,9 +181,9 @@ std::set<std::string> JWT::Token::getAllScopes()
 
 boost::json::value JWT::Token::getAllScopesAsJSON()
 {
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "scopes"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "scopes"))
     {
-        return Helpers::JSON::MEMBER_OR_NULL(m_claims, "scopes");
+        return Mantids30::DataFormats::JSON::MEMBER_OR_NULL(m_claims, "scopes");
     }
 
     return {};
@@ -191,7 +191,7 @@ boost::json::value JWT::Token::getAllScopesAsJSON()
 
 void JWT::Token::addScope(std::string_view scopeId)
 {
-    if (!Helpers::JSON::HAS_MEMBER(m_claims, "scopes"))
+    if (!Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "scopes"))
     {
         m_claims.as_object()["scopes"] = boost::json::array{};
     }
@@ -201,12 +201,12 @@ void JWT::Token::addScope(std::string_view scopeId)
 
 bool JWT::Token::hasScope(std::string_view scopeId) const
 {
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "scopes"))
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "scopes"))
     {
-        const boost::json::array &scopesClaims = Helpers::JSON::ASARRAY_OR_EMPTY(m_claims, "scopes");
+        const boost::json::array &scopesClaims = Mantids30::DataFormats::JSON::ASARRAY_OR_EMPTY(m_claims, "scopes");
         for (const boost::json::value &scope : scopesClaims)
         {
-            if (Helpers::JSON::ASSTRING_D(scope, "") == scopeId)
+            if (Mantids30::DataFormats::JSON::ASSTRING_D(scope, "") == scopeId)
             {
                 return true;
             }
@@ -233,29 +233,29 @@ boost::json::value JWT::Token::getAllClaimsAsJSON()
 
 bool JWT::Token::isAdmin() const
 {
-    return Helpers::JSON::HAS_MEMBER(m_claims, "isAdmin") && Helpers::JSON::ASBOOL_D(getClaim("isAdmin"), false);
+    return Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "isAdmin") && Mantids30::DataFormats::JSON::ASBOOL_D(getClaim("isAdmin"), false);
 }
 
 boost::json::value JWT::Token::getClaim(std::string_view name) const
 {
-    return Helpers::JSON::MEMBER_OR_NULL(m_claims, name);
+    return Mantids30::DataFormats::JSON::MEMBER_OR_NULL(m_claims, name);
 }
 
 bool JWT::Token::hasClaim(std::string_view name) const
 {
-    return Helpers::JSON::HAS_MEMBER(m_claims, name);
+    return Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, name);
 }
 
 bool JWT::Token::isValid() const
 {
     std::time_t currentTime = std::time(nullptr);
 
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "exp") && currentTime >= getExpirationTime())
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "exp") && currentTime >= getExpirationTime())
     {
         return false;
     }
 
-    if (Helpers::JSON::HAS_MEMBER(m_claims, "nbf") && currentTime < getNotBefore())
+    if (Mantids30::DataFormats::JSON::HAS_MEMBER(m_claims, "nbf") && currentTime < getNotBefore())
     {
         return false;
     }

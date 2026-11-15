@@ -1,10 +1,10 @@
 #pragma once
 
 #include <cstdint>
-namespace Mantids30::Network::Protocol::WebSocket {
+namespace Mantids30::Protocols::HTTP::WebSocket {
 
 /**
-     * @enum WebSocket::EventType
+     * @enum Mantids30::Protocols::HTTP::WebSocket::EventType
      *
      * @brief Enumeration for different WebSocket event types.
      */
@@ -16,4 +16,4 @@ enum class EventType : uint8_t
     SESSION_END = 3
 };
 
-} // namespace Mantids30::Network::Protocol::WebSocket
+} // namespace Mantids30::Protocols::HTTP::WebSocket

@@ -1,11 +1,11 @@
 #include "mime_sub_endpboundary.h"
 
-using namespace Mantids30::Network::Protocol::MIME;
+using namespace Mantids30::Protocols::MIME;
 using namespace Mantids30;
 
 MIME_Sub_EndPBoundary::MIME_Sub_EndPBoundary()
 {
-    setParseStrategy(Memory::Streams::SubParser::ParseStrategy::MULTIDELIMITER);
+    setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::MULTIDELIMITER);
     reset();
     m_subParserName = "MIME_Sub_EndPBoundary";
 }
@@ -18,7 +18,7 @@ void MIME_Sub_EndPBoundary::reset()
     clear();
 }
 
-Memory::Streams::SubParser::ParseResult MIME_Sub_EndPBoundary::parse()
+Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_EndPBoundary::parse()
 {
 #ifdef DEBUG
     printf("Parsed 2 bytes on MIME EndPBoundary, %lu\n", getParsedBuffer()->size());
@@ -34,7 +34,7 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_EndPBoundary::parse()
 #endif
         // END.
         m_status = ENDP_STAT_END;
-        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
     else if (getFoundDelimiter() == "\r\n")
     {
@@ -43,14 +43,14 @@ Memory::Streams::SubParser::ParseResult MIME_Sub_EndPBoundary::parse()
         fflush(stdout);
 #endif
         m_status = ENDP_STAT_CONTINUE;
-        return Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 #ifdef DEBUG
     printf("MIME EndPBoundary Failed with unexpected content\n");
     fflush(stdout);
 #endif
     m_status = ENDP_STAT_ERROR;
-    return Memory::Streams::SubParser::ParseResult::ERROR;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
 }
 
 int MIME_Sub_EndPBoundary::getStatus() const

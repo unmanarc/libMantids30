@@ -12,16 +12,16 @@
 
 using namespace boost;
 using namespace boost::algorithm;
-using namespace Mantids30::Network::Protocol::MIME;
+using namespace Mantids30::Protocols::MIME;
 using namespace Mantids30;
 
-MIME_Message::MIME_Message(const std::shared_ptr<Memory::Streams::StreamableObject> &value)
-    : Memory::Streams::Parser(value, false)
+MIME_Message::MIME_Message(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &value)
+    : Mantids30::Core::Memory::Streams::Parser(value, false)
 {
     m_currentSubParser = &m_subFirstBoundary;
 
     renewCurrentPart();
-    setMultiPartBoundary(Helpers::Random::createRandomString(64));
+    setMultiPartBoundary(Mantids30::Core::Helpers::Random::createRandomString(64));
 }
 
 std::shared_ptr<MIME_Message> MIME_Message::create(const std::shared_ptr<StreamableObject> &value)
@@ -33,9 +33,9 @@ std::shared_ptr<MIME_Message> MIME_Message::create(const std::shared_ptr<Streama
     return x;
 }
 
-bool MIME_Message::streamTo(Memory::Streams::StreamableObject *out)
+bool MIME_Message::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
-    Memory::Streams::WriteStatus cur;
+    Mantids30::Core::Memory::Streams::WriteStatus cur;
     // first boundary:
     out->writeString("--" + m_multiPartBoundary);
     if (!out->writeStatus.succeed)
@@ -111,7 +111,7 @@ uint32_t MIME_Message::varCount(const std::string &varName)
     return ix;
 }
 
-std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const std::string &varName)
+std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> MIME_Message::getValue(const std::string &varName)
 {
     std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
         boost::to_upper_copy(varName));
@@ -122,9 +122,9 @@ std::shared_ptr<Memory::Streams::StreamableObject> MIME_Message::getValue(const 
     return nullptr;
 }
 
-std::list<std::shared_ptr<Memory::Streams::StreamableObject>> MIME_Message::getValues(const std::string &varName)
+std::list<std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject>> MIME_Message::getValues(const std::string &varName)
 {
-    std::list<std::shared_ptr<Memory::Streams::StreamableObject>> values;
+    std::list<std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject>> values;
     std::pair<std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator, std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator> range = m_partsByName.equal_range(
         boost::to_upper_copy(varName));
     for (std::multimap<std::string, std::shared_ptr<MIME_PartMessage>>::iterator i = range.first; i != range.second; ++i)
@@ -353,7 +353,7 @@ bool MIME_Message::addStringVar(const std::string &key, const std::string &value
     // TODO: check max size?
     if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", key))
     {
-        std::shared_ptr<Memory::Containers::B_Chunks> contentBuffer = std::make_shared<Memory::Containers::B_Chunks>();
+        std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> contentBuffer = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
         contentBuffer->append(value.c_str(), value.size());
         m_currentPart->getContent()->replaceContentContainer(contentBuffer);
 
@@ -370,7 +370,7 @@ bool MIME_Message::addStringVar(const std::string &key, const std::string &value
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
     // TODO: check max size?
-    std::shared_ptr<Memory::Containers::B_MMAP> fContainer = std::make_shared<Memory::Containers::B_MMAP>();
+    std::shared_ptr<Mantids30::Core::Memory::Containers::B_MMAP> fContainer = std::make_shared<Mantids30::Core::Memory::Containers::B_MMAP>();
     if (!fContainer->referenceFile(filePath, true, false))
     {
         return false;
@@ -378,7 +378,7 @@ bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::st
     return addStreamableObjectContainer(varName, fContainer);
 }
 
-bool MIME_Message::addVar(const std::string &varName, const std::shared_ptr<Memory::Containers::B_Chunks> &data)
+bool MIME_Message::addVar(const std::string &varName, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &data)
 {
     return addStreamableObjectContainer(varName, data);
 }
