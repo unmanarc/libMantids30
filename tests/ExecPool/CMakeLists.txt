@@ -1,0 +1,5 @@
+add_executable(execpool_test test_main.cpp)
+target_include_directories(execpool_test PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(execpool_test PRIVATE Mantids30_Runtime_ExecPool)
+add_test(NAME runtime_execpool COMMAND execpool_test)
+set_tests_properties(runtime_execpool PROPERTIES TIMEOUT 40 LABELS "runtime;execpool")
