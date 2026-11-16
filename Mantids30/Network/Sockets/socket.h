@@ -341,9 +341,12 @@ private:
     //void initVars();
 
 protected:
+    static int getLastSocketError();
+    static bool isSocketErrorInterrupted(int error);
+
     uint32_t debugOptions = 0;
     std::string debugDir;
-    FILE *debugFP = nullptr;
+    FILE *debugFP = stderr;
 
     /**
      * Set remote pair address

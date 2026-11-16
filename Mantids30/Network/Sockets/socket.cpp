@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <openssl/bio.h>
 #include <stdexcept>
+#include <system_error>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -32,6 +33,24 @@ bool Socket::m_isWinSockInitialized = Socket::win32Init();
 #endif
 
 bool Socket::m_globalSocketInitialized = false;
+
+int Socket::getLastSocketError()
+{
+#ifdef _WIN32
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
+}
+
+bool Socket::isSocketErrorInterrupted(int error)
+{
+#ifdef _WIN32
+    return error == WSAEINTR;
+#else
+    return error == EINTR;
+#endif
+}
 
 bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
 {
@@ -64,7 +83,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
         if (::bind(m_sockFD, reinterpret_cast<struct sockaddr *>(&m_lastBindIPv4), sizeof(m_lastBindIPv4)) < 0)
         {
             m_lastError = "bind() failed";
-            close(m_sockFD);
+            closeSocket();
             m_lastBindValid = false;
             return false;
         }
@@ -92,7 +111,7 @@ bool Socket::bindTo(const char *bindAddress, const uint16_t &port)
         if (::bind(m_sockFD, reinterpret_cast<struct sockaddr *>(&m_lastBindIPv6), sizeof(m_lastBindIPv6)) < 0)
         {
             m_lastError = "bind() failed";
-            close(m_sockFD);
+            closeSocket();
             m_lastBindValid = false;
             return false;
         }
@@ -113,7 +132,7 @@ bool Socket::getAddrInfo(const char *remoteHost, const uint16_t &remotePort, int
     hints.ai_flags = AI_NUMERICSERV;
 #endif
     hints.ai_socktype = ai_socktype;
-    hints.ai_family = AF_UNSPEC;
+    hints.ai_family = m_useIPv6 ? AF_UNSPEC : AF_INET;
 
     if (m_useIPv6)
     {
@@ -220,7 +239,7 @@ Socket::~Socket()
 {
     closeSocket();
 
-    if (debugFP)
+    if (debugFP && debugFP != stderr)
     {
         fclose(debugFP);
         debugFP = nullptr;
@@ -254,7 +273,7 @@ void Socket::setRecvBuffer(int buffsize)
         return;
     }
 #ifdef _WIN32
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
+    setsockopt(m_sockFD, SOL_SOCKET, SO_RCVBUF, (char *) &buffsize, sizeof(buffsize));
 #else
     setsockopt(m_sockFD, SOL_SOCKET, SO_RCVBUF, &buffsize, sizeof(buffsize));
 #endif
@@ -290,29 +309,22 @@ bool Socket::listenOn(const uint16_t &, const char *, const int32_t &, const int
 
 int Socket::closeSocket()
 {
-    if (!isActive())
+    std::lock_guard<std::mutex> lock(mutexClose);
+    const int descriptor = m_sockFD.exchange(-1);
+    if (descriptor == -1)
     {
         return 0;
     }
-
-    if (debugOptions & Socket::DebugOptions::PRINT_CLOSE)
+    if ((debugOptions & Socket::DebugOptions::PRINT_CLOSE) && debugFP)
     {
         fprintf(debugFP, "+++ [TCP CLOSE] Connection closed by our program\n");
         fflush(debugFP);
     }
-
-    mutexClose.lock();
-    // Prevent socket utilization / race condition.
-    int socktmp = m_sockFD;
-    m_sockFD = -1;
 #ifdef _WIN32
-    int i = closesocket(socktmp);
+    return closesocket(descriptor);
 #else
-    int i = close(socktmp);
+    return close(descriptor);
 #endif
-    mutexClose.unlock();
-
-    return i;
 }
 
 std::string Socket::getLastError() const
@@ -350,6 +362,18 @@ uint16_t Socket::getLocalPort()
     if (!isActive())
     {
         return 0;
+    }
+
+    if (m_useIPv6)
+    {
+        struct sockaddr_in6 sin6{};
+        socklen_t len = sizeof(sin6);
+        if (getsockname(m_sockFD, reinterpret_cast<struct sockaddr *>(&sin6), &len) == -1)
+        {
+            m_lastError = "Error resolving port";
+            return 0;
+        }
+        return ntohs(sin6.sin6_port);
     }
 
     struct sockaddr_in sin{};
@@ -462,14 +486,22 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     }
 
     ssize_t recvLen = 0;
-    if (!m_useWriteInsteadRecv)
+    int readError = 0;
+    do
     {
-        recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
-    }
-    else
-    {
-        recvLen = read(m_sockFD, static_cast<char *>(data), datalen);
-    }
+        if (!m_useWriteInsteadRecv)
+        {
+            recvLen = recv(m_sockFD, static_cast<char *>(data), datalen, 0);
+        }
+        else
+        {
+            recvLen = read(m_sockFD, static_cast<char *>(data), datalen);
+        }
+        if (recvLen < 0)
+        {
+            readError = m_useWriteInsteadRecv ? errno : getLastSocketError();
+        }
+    } while (recvLen < 0 && (m_useWriteInsteadRecv ? readError == EINTR : isSocketErrorInterrupted(readError)));
 
     if (recvLen > 0)
     {
@@ -481,7 +513,7 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
                 fprintf(debugFP, "<<< [TCP READ] Read %zd bytes\n", recvLen);
                 fflush(debugFP);
 
-                // Print hex dump using BIO_dump_fp (simplificado)
+                // Print a hex dump using BIO_dump_fp
                 BIO *bio = BIO_new(BIO_s_mem());
                 if (bio)
                 {
@@ -513,12 +545,10 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
     else
     {
         // recvLen < 0 => error
-        int err = errno;
-        char errorBuffer[256];
-        strerror_r(err, errorBuffer, sizeof(errorBuffer));
+        const std::string errorBuffer = std::system_category().message(readError);
         if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
-            fprintf(debugFP, "--- [TCP ERROR] recv failed: %s\n", errorBuffer);
+            fprintf(debugFP, "--- [TCP ERROR] recv failed: %s\n", errorBuffer.c_str());
             fflush(debugFP);
         }
 
@@ -530,6 +560,11 @@ ssize_t Socket::partialRead(void *data, const size_t &datalen)
 
 void Socket::setDebugOutput(const std::string &newDebugDir)
 {
+    if (debugFP && debugFP != stderr)
+    {
+        fclose(debugFP);
+    }
+    debugFP = nullptr;
     debugDir = newDebugDir;
 
     if (debugDir.empty())
@@ -596,19 +631,27 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
     }
 
     ssize_t sendLen = 0;
+    int writeError = 0;
 
-    if (!m_useWriteInsteadRecv)
+    do
     {
+        if (!m_useWriteInsteadRecv)
+        {
 #ifdef _WIN32
-        sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, 0);
+            sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, 0);
 #else
-        sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, MSG_NOSIGNAL);
+            sendLen = send(m_sockFD, static_cast<const char *>(data), datalen, MSG_NOSIGNAL);
 #endif
-    }
-    else
-    {
-        sendLen = write(m_sockFD, static_cast<const char *>(data), datalen);
-    }
+        }
+        else
+        {
+            sendLen = write(m_sockFD, static_cast<const char *>(data), datalen);
+        }
+        if (sendLen < 0)
+        {
+            writeError = m_useWriteInsteadRecv ? errno : getLastSocketError();
+        }
+    } while (sendLen < 0 && (m_useWriteInsteadRecv ? writeError == EINTR : isSocketErrorInterrupted(writeError)));
 
     if (sendLen > 0)
     {
@@ -641,12 +684,10 @@ ssize_t Socket::partialWrite(const void *data, const size_t &datalen)
     else
     {
         // sendLen <= 0 => error
-        int err = errno;
-        char errorBuffer[256];
-        strerror_r(err, errorBuffer, sizeof(errorBuffer));
+        const std::string errorBuffer = std::system_category().message(writeError);
         if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
-            fprintf(debugFP, "--- [TCP ERROR] send failed: %s\n", errorBuffer);
+            fprintf(debugFP, "--- [TCP ERROR] send failed: %s\n", errorBuffer.c_str());
             fflush(debugFP);
         }
 
@@ -767,7 +808,7 @@ void Socket::setRemotePort(unsigned short value)
 int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *optlen)
 {
 #ifdef _WIN32
-    return getsockopt(sockfd, level, optname, (char *) optval, optlen);
+    return getsockopt(m_sockFD, level, optname, (char *) optval, optlen);
 #else
     return getsockopt(m_sockFD, level, optname, optval, optlen);
 #endif
@@ -776,7 +817,7 @@ int Socket::getSocketOption(int level, int optname, void *optval, socklen_t *opt
 int Socket::setSocketOption(int level, int optname, const void *optval, socklen_t optlen)
 {
 #ifdef _WIN32
-    return setsockopt(sockfd, level, optname, (char *) optval, optlen);
+    return setsockopt(m_sockFD, level, optname, (char *) optval, optlen);
 #else
     return setsockopt(m_sockFD, level, optname, optval, optlen);
 #endif
@@ -804,7 +845,7 @@ bool Socket::setReadTimeout(unsigned int _timeout)
 
 #ifdef _WIN32
     DWORD tout = _timeout * 1000;
-    return ((setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &tout, sizeof(DWORD))) != -1);
+    return ((setsockopt(m_sockFD, SOL_SOCKET, SO_RCVTIMEO, (char *) &tout, sizeof(DWORD))) != -1);
 #else
     struct timeval timeout{};
     timeout.tv_sec = _timeout;
@@ -827,7 +868,7 @@ bool Socket::setWriteTimeout(unsigned int _timeout)
     }
 #ifdef _WIN32
     int tout = _timeout * 1000;
-    return ((setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (char *) &tout, sizeof(int))) != -1);
+    return ((setsockopt(m_sockFD, SOL_SOCKET, SO_SNDTIMEO, (char *) &tout, sizeof(int))) != -1);
 #else
     struct timeval timeout{};
     timeout.tv_sec = _timeout;
@@ -848,13 +889,18 @@ void Socket::setSocketFD(int _sockfd)
         throw std::runtime_error("Assiging a file descriptor to an initialized Socket.");
     }
     m_sockFD = _sockfd;
+    if (_sockfd != -1)
+    {
+        m_isInListenMode = false;
+        m_shutdownProtocolOnRead = false;
+        m_shutdownProtocolOnWrite = false;
+        m_lastBindValid = false;
+    }
 }
 
 int Socket::adquireSocketFD()
 {
-    int sockret = m_sockFD;
-    m_sockFD = -1;
-    return sockret;
+    return m_sockFD.exchange(-1);
 }
 
 void Socket::getRemotePair(char *address) const
@@ -905,7 +951,7 @@ bool Socket::setBlockingMode(bool blocking)
 #ifdef _WIN32
     int iResult;
     unsigned long int iMode = (!blocking) ? 1 : 0;
-    iResult = ioctlsocket(sockfd, FIONBIO, &iMode);
+    iResult = ioctlsocket(m_sockFD, FIONBIO, &iMode);
 
     if (iResult != NO_ERROR)
     {
