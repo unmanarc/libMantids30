@@ -88,7 +88,7 @@ public:
     };
 
     HTTPv1() = default;
-    explicit HTTPv1(const Config &config);
+    explicit HTTPv1(Config config);
 
     /**
      * @brief Receive a complete response before returning. Callbacks run on the calling thread.

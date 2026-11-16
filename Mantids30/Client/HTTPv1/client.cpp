@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <charconv>
 #include <climits>
+#include <utility>
 
 namespace Mantids30::Client {
 using namespace Mantids30::Core::Memory::Streams;
@@ -142,7 +143,7 @@ struct ConnectionGuard
 
 } // namespace Detail
 
-HTTPv1::HTTPv1(const Config &config) : m_config(config)
+HTTPv1::HTTPv1(Config config) : m_config(std::move(config))
 {
 }
 
