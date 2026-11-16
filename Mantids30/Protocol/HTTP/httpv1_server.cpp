@@ -133,7 +133,8 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::changeToNextParserFromClientHeade
             return true;
         }
 
-        if (headerIncommingContentLength == 0)
+        if (headerIncommingContentLength == 0
+            && clientRequest.content.getTransmissionMode() != Content::TransmissionMode::CHUNKS)
         {
             // No body expected, pass to the next phase.
             return changeToNextParserFromClientContentData();
