@@ -1,5 +1,6 @@
 #include <Mantids30/Core/Helpers/mem.h>
 #include <Mantids30/Core/Memory/subparser.h>
+#include "test_support.h"
 
 #include <cstring>
 #include <iostream>
@@ -122,18 +123,15 @@ void testFragmentedDelimiter()
 
 } // namespace
 
-int main()
+TEST("helpers", "exhaustive_ascii_comparisons")
 {
-    try
-    {
-        testComparisons();
-        testCopies();
-        testFragmentedDelimiter();
-    }
-    catch (const std::exception &error)
-    {
-        std::cerr << error.what() << '\n';
-        return 1;
-    }
-    return 0;
+    testComparisons();
+}
+TEST("helpers", "copy_and_overlapping_move_boundaries")
+{
+    testCopies();
+}
+TEST("parsers", "direct_delimiter_every_two_fragment_split")
+{
+    testFragmentedDelimiter();
 }
