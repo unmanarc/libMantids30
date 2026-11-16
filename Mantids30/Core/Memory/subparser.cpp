@@ -257,7 +257,7 @@ std::optional<size_t> SubParser::parseBySize(const void *buf, size_t count)
     {
         // EOF.
         // Abort current subparser because we did not match the requested size.
-        setParseResult(ParseResult::GOTO_NEXT_SUBPARSER);
+        setParseResult(ParseResult::ERROR);
         m_unparsedBuffer.clear(); // Destroy the container data.
         return 0;
     }
