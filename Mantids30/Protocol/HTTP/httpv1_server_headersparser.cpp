@@ -141,15 +141,14 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::setupContentHandling(size_t &cont
         return badRequest();
     }
     string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
+    clientRequest.content.setTransmissionMode(chunked ? Content::TransmissionMode::CHUNKS : Content::TransmissionMode::CONTENT_LENGTH);
+    if (!chunked && !clientRequest.content.setCurrentSize(contentLength))
+    {
+        serverResponse.status.setCode(Mantids30::Protocol::HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
+        return false;
+    }
     if (contentLength || chunked)
     {
-        clientRequest.content.setTransmissionMode(chunked ? Content::TransmissionMode::CHUNKS : Content::TransmissionMode::CONTENT_LENGTH);
-        if (!chunked && !clientRequest.content.setCurrentSize(contentLength))
-        {
-            // Abort: the advertised length cannot be allocated within limits.
-            serverResponse.status.setCode(Mantids30::Protocol::HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
-            return false;
-        }
         if (boost::icontains(contentType, "multipart/form-data"))
         {
             clientRequest.content.setContainerType(Mantids30::Protocol::HTTP::Content::ContainerType::MIME);

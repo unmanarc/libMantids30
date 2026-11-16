@@ -10,7 +10,7 @@ HTTPv1ResponseBody::HTTPv1ResponseBody(const std::shared_ptr<StreamableObject> &
 {
 }
 
-std::optional<size_t> HTTPv1ResponseBody::write(const void *buf, const size_t &count)
+std::optional<size_t> HTTPv1ResponseBody::writeImpl(const void *buf, const size_t &count)
 {
     if (!writeStatus.succeed || writeStatus.finished)
     {
@@ -56,6 +56,10 @@ std::optional<size_t> HTTPv1ResponseBody::write(const void *buf, const size_t &c
 void HTTPv1ResponseBody::setExpectedSize(std::optional<size_t> expectedSize)
 {
     m_expectedSize = expectedSize;
+    if (m_destination)
+    {
+        m_destination->setWriteTargetSize(expectedSize);
+    }
 }
 
 } // namespace Mantids30::Client::Detail

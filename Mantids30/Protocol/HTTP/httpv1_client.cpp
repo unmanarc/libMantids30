@@ -141,6 +141,7 @@ Mantids30::Core::Memory::Streams::SubParser *Mantids30::Protocol::HTTP::HTTPv1_C
     const auto code = static_cast<uint16_t>(serverResponse.status.getCode());
     if (clientRequest.requestLine.getHTTPMethod() == "HEAD" || code == 204 || code == 304 || (code >= 100 && code < 200))
     {
+        serverResponse.content.setCurrentSize(0);
         return nullptr;
     }
     // Transfer-Encoding takes precedence over Content-Length.

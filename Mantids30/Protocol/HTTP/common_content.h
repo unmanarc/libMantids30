@@ -152,6 +152,7 @@ private:
     std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_contentStreamableObject = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_trailerBytesContent;
     bool m_usingInternalOutStream = true;
+    std::optional<size_t> m_expectedContentSize;
 
     std::optional<uint32_t> parseHttpChunkSize();
 

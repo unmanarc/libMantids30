@@ -44,6 +44,22 @@ std::vector<RawCase> clientCases(const std::string &suite)
     {
         const std::string binary("\0\x01\xff\r\nHTTP/1.1\0", 14);
         return {
+            {"client.progress.fixed_and_unknown_size", [](const auto &parts)
+             {
+                 for (bool knownSize : {true, false})
+                 {
+                     Client client;
+                     auto destination = std::make_shared<StreamableString>();
+                     std::vector<Mantids30::Core::Memory::Streams::StreamableObject::WriteProgress> events;
+                     destination->setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); }, 50, 100);
+                     client.serverResponse.content.setStreamableObject(destination);
+                     const std::string raw = knownSize ? response("hello") : "HTTP/1.0 200 OK\r\n\r\nhello";
+                     completed(client, feed(client, raw, parts), raw.size());
+                     require(!events.empty() && events.back().bytesWritten == 5, "Missing final write progress");
+                     require(events.back().totalSize == (knownSize ? std::optional<size_t>(5) : std::nullopt), "Wrong progress total");
+                     require(events.back().percentage == (knownSize ? std::optional<double>(100) : std::nullopt), "Wrong progress percentage");
+                 }
+             }},
             valid("fixed_length", response("hello"), "hello"),
             valid("binary_body", response(binary), binary),
             valid("empty_body", response(""), ""),

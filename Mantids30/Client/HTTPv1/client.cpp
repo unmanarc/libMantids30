@@ -278,12 +278,11 @@ HTTPv1::Response HTTPv1::perform(const Request &request, const Callbacks &callba
     protocol->headersCallback = [&]()
     {
         const auto &metadata = protocol->serverResponse;
-        if (metadata.content.getTransmissionMode() == Content::TransmissionMode::CONTENT_LENGTH &&
-            metadata.headers.exist("Content-Length"))
+        const auto expectedSize = receiver->getWriteTargetSize();
+        receiver->setExpectedSize(expectedSize);
+        if (expectedSize)
         {
-            const size_t length = static_cast<size_t>(metadata.headers.getOptionAsUINT64("Content-Length"));
-            receiver->setExpectedSize(length);
-            if (length > m_config.maxResponseSize)
+            if (*expectedSize > m_config.maxResponseSize)
             {
                 contentLimit = true;
                 return false;

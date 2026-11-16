@@ -278,6 +278,7 @@ void Mantids30::Protocol::HTTP::Content::setContainerType(const Mantids30::Proto
             m_contentStreamableObject = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
             break;
         }
+        m_contentStreamableObject->setWriteTargetSize(m_expectedContentSize);
     }
 }
 
@@ -312,6 +313,8 @@ bool Mantids30::Protocol::HTTP::Content::streamToUpstream()
 void Mantids30::Protocol::HTTP::Content::setTransmissionMode(const TransmissionMode &value)
 {
     m_transmitionMode = value;
+    m_expectedContentSize.reset();
+    m_contentStreamableObject->setWriteTargetSize(std::nullopt);
 
     switch (m_transmitionMode)
     {
@@ -354,6 +357,8 @@ bool Mantids30::Protocol::HTTP::Content::setCurrentSize(const size_t &contentLen
     // The content length specified in the header
     m_currentContentLengthSize = contentLengthSize;
     setParseDataTargetSize(contentLengthSize);
+    m_expectedContentSize = contentLengthSize;
+    m_contentStreamableObject->setWriteTargetSize(m_expectedContentSize);
 
     return true;
 }
@@ -399,6 +404,10 @@ void Mantids30::Protocol::HTTP::Content::setStreamableObject(const std::shared_p
         this->m_usingInternalOutStream = true;
         // Create a new streamable object with the last content type...
         setContainerType(m_containerType);
+    }
+    else
+    {
+        m_contentStreamableObject->setWriteTargetSize(m_expectedContentSize);
     }
 }
 

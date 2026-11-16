@@ -32,6 +32,10 @@ void bodyEquals(Server &server, const std::string &expected)
 {
     const auto body = server.clientRequest.content.getStreamableObject();
     require(body->toString() == expected, "Wrong request body");
+    if (server.clientRequest.headers.exist("Content-Length"))
+    {
+        require(body->getWriteTargetSize() == server.clientRequest.headers.getOptionAsUINT64("Content-Length"), "Lost request content length");
+    }
     if (!expected.empty())
     {
         require(body->writeStatus.finished && body->writeStatus.succeed, "Request body destination did not finish successfully");
@@ -52,6 +56,18 @@ std::vector<RawCase> serverCases(const std::string &suite)
     if (suite == "server_valid")
     {
         std::vector<RawCase> cases = {
+            {"server.progress.custom_destination", [](const auto &parts)
+             {
+                 Server server;
+                 auto destination = std::make_shared<StreamableString>();
+                 std::vector<Mantids30::Core::Memory::Streams::StreamableObject::WriteProgress> events;
+                 destination->setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); }, 50);
+                 server.clientRequest.content.setStreamableObject(destination);
+                 const auto raw = request("hello");
+                 completed(server, feed(server, raw, parts), raw.size());
+                 require(!events.empty() && events.back().bytesWritten == 5, "Missing final request progress");
+                 require(events.back().totalSize == 5 && events.back().percentage == 100, "Wrong request progress");
+             }},
             valid("get.http_1_1", "GET /hello HTTP/1.1\r\nHost: example.test\r\n\r\n", [](Server &server)
             {
                 require(server.clientRequest.getURI() == "/hello", "Wrong URI");

@@ -24,7 +24,7 @@ public:
     explicit Sink(Mode mode = PARTIAL, size_t block = 3) : mode(mode), block(block)
     {
     }
-    std::optional<size_t> write(const void *data, const size_t &count) override
+    std::optional<size_t> writeImpl(const void *data, const size_t &count) override
     {
         ++calls;
         if (!count)
@@ -242,4 +242,106 @@ TEST("streams", "formatted_binary_empty_and_failed_output")
     Sink failed(Sink::ERROR);
     CHECK(failed.strPrintf("%s", "abc") == 0);
     CHECK(!failed.writeStatus.succeed);
+}
+
+TEST("streams", "progress_percentage_byte_intervals_and_completion")
+{
+    StreamableNull sink;
+    std::vector<StreamableObject::WriteProgress> events;
+    sink.setWriteTargetSize(10000);
+    sink.setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); });
+    const std::string data(10, 'x');
+    for (size_t i = 0; i < 10; ++i)
+    {
+        CHECK(sink.write(data.data(), 1) == 1);
+    }
+    CHECK(events.size() == 1);
+    CHECK(events.back().bytesWritten == 10);
+    CHECK(events.back().totalSize == 10000);
+    CHECK(events.back().percentage == 0.1);
+    CHECK(sink.writeFullStream(data.data(), data.size()));
+    CHECK(events.size() == 2);
+    CHECK(events.back().percentage == 0.2);
+    CHECK(sink.writeFullStream(data.data(), data.size()));
+    CHECK(events.size() == 3);
+    CHECK(events.back().percentage == 0.3);
+
+    sink.setWriteTargetSize(250);
+    sink.setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); }, 0, 100);
+    events.clear();
+    const std::string block(99, 'x');
+    CHECK(sink.writeString(block));
+    CHECK(events.empty());
+    CHECK(sink.writeString("x"));
+    CHECK(events.size() == 1 && events.back().bytesWritten == 100);
+    CHECK(sink.writeString(std::string(150, 'x')));
+    CHECK(events.size() == 2 && events.back().percentage == 100);
+    CHECK(sink.writeEOF());
+    CHECK(events.size() == 2);
+}
+
+TEST("streams", "progress_unknown_total_partial_writes_and_eof_flush")
+{
+    Sink sink(Sink::PARTIAL, 3);
+    std::vector<StreamableObject::WriteProgress> events;
+    sink.setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); }, 50, 100);
+    CHECK(sink.writeString("abcdefgh"));
+    CHECK(events.size() == 3);
+    CHECK(events[0].bytesWritten == 3 && events[1].bytesWritten == 6 && events[2].bytesWritten == 8);
+    CHECK(!events.back().totalSize && !events.back().percentage);
+    CHECK(sink.writeEOF());
+    CHECK(events.size() == 3);
+
+    Sink shortSink;
+    shortSink.setWriteTargetSize(100);
+    shortSink.setWriteProgressCallback([&](const auto &progress) { events.push_back(progress); }, 50);
+    events.clear();
+    CHECK(shortSink.writeString("abc"));
+    CHECK(events.empty());
+    CHECK(shortSink.writeEOF());
+    CHECK(events.size() == 1 && events.back().percentage == 3);
+}
+
+TEST("streams", "progress_empty_unknown_reset_disabled_and_invalid_configuration")
+{
+    StreamableNull sink;
+    std::vector<StreamableObject::WriteProgress> events;
+    const auto callback = [&](const auto &progress) { events.push_back(progress); };
+    sink.setWriteProgressCallback(callback);
+    CHECK(sink.writeEOF());
+    CHECK(events.empty());
+    sink.writeStatus.reset();
+    sink.setWriteTargetSize(0);
+    CHECK(sink.writeEOF());
+    CHECK(events.size() == 1 && events.back().percentage == 100);
+    sink.writeStatus.reset();
+    sink.setWriteTargetSize(std::nullopt);
+    CHECK(sink.writeString("x"));
+    CHECK(events.size() == 2 && events.back().bytesWritten == 1 && !events.back().percentage);
+    sink.setWriteProgressCallback({});
+    CHECK(sink.writeString("y"));
+    CHECK(events.size() == 2);
+    for (double interval : {-1.0, 101.0, std::numeric_limits<double>::infinity(), std::numeric_limits<double>::quiet_NaN()})
+    {
+        throws<std::invalid_argument>([&] { sink.setWriteProgressCallback(callback, interval); });
+    }
+}
+
+TEST("streams", "progress_failures_do_not_notify")
+{
+    for (auto mode : {Sink::ERROR, Sink::ZERO, Sink::OVERSIZED, Sink::STATUS_ERROR})
+    {
+        Sink sink(mode);
+        size_t calls = 0;
+        sink.setWriteProgressCallback([&](const auto &) { ++calls; });
+        CHECK(!sink.writeString("abc"));
+        CHECK(calls == 0);
+    }
+    Sink sink(Sink::EOF_ERROR);
+    size_t calls = 0;
+    sink.setWriteTargetSize(10);
+    sink.setWriteProgressCallback([&](const auto &) { ++calls; }, 50);
+    CHECK(sink.writeString("a"));
+    CHECK(!sink.writeEOF());
+    CHECK(calls == 0);
 }
