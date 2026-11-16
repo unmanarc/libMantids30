@@ -25,3 +25,7 @@ ADD_SUBDIRECTORY(Server/WebRESTFul)
 ADD_SUBDIRECTORY(ConfigBuilder/DataFormat_JWT)
 ADD_SUBDIRECTORY(ConfigBuilder/Runtime_Logs)
 ADD_SUBDIRECTORY(ConfigBuilder/Server_WebRESTFul)
+
+if(UNIX)
+    ADD_SUBDIRECTORY(Runtime/ExecPool)
+endif()

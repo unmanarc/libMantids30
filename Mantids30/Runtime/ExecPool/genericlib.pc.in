@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+Name: @LIB_NAME@
+Description: @PROJECT_DESCRIPTION@
+Version: @PROJECT_VERSION@
+Requires: Mantids30_Core_Helpers Mantids30_Core_Threads Mantids30_DataFormat_JSON
+Libs: -L${libdir} -l@LIB_NAME@
+Libs.private: -pthread
+Cflags: -I${includedir} -pthread
