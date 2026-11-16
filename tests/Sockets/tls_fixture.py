@@ -16,4 +16,10 @@ with tempfile.TemporaryDirectory(prefix="mantids30-sockets-tls-") as directory:
         check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         timeout=10,
     )
-    subprocess.run([binary, "tls", case, str(certificate), str(key)], check=True, timeout=12)
+    if case == "tls_pool_reuse":
+        subprocess.run(
+            [binary, case, str(certificate), str(key)],
+            check=True, timeout=12,
+        )
+    else:
+        subprocess.run([binary, "tls", case, str(certificate), str(key)], check=True, timeout=12)

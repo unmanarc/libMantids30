@@ -12,7 +12,7 @@ endforeach()
 find_package(Python3 COMPONENTS Interpreter QUIET)
 find_program(SOCKETS_OPENSSL_EXECUTABLE openssl)
 if(Python3_Interpreter_FOUND AND SOCKETS_OPENSSL_EXECUTABLE)
-    foreach(case exchange shutdown destructor untrusted hostname truncated server_timeout client_timeout default_trust insecure)
+    foreach(case exchange shutdown destructor untrusted hostname truncated server_timeout client_timeout default_trust insecure tls_pool_reuse)
         add_test(NAME sockets_tls_${case}
             COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tls_fixture.py
                     $<TARGET_FILE:sockets_test> ${SOCKETS_OPENSSL_EXECUTABLE} ${case})

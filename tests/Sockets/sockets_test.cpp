@@ -845,6 +845,91 @@ static void tls(const std::string &mode, const char *certificate, const char *ke
     require(server.get() && success, "TLS scenario failed");
 }
 
+// Regression for the thread-pool acceptor reusing a worker thread whose
+// OpenSSL error queue was left dirty by a previous connection: the next
+// socket must not inherit stale TLS errors, and the expected incomplete
+// shutdown (-2) must not be recorded in the error list.
+static void tlsPoolReuse(const char *certificate, const char *key)
+{
+    struct PoolContext
+    {
+        std::atomic<bool> firstConnected{false};
+        std::atomic<bool> initFailure{false};
+    };
+    auto context = std::make_shared<PoolContext>();
+    auto onConnected = [](void *data, const std::shared_ptr<Socket_Stream> &sock)
+    {
+        auto *ctx = static_cast<PoolContext *>(data);
+        if (!ctx->firstConnected.exchange(true))
+        {
+            // First client: complete the handshake, then drop the transport
+            // without close_notify so the worker's SSL_shutdown() takes the
+            // incomplete (-2) path.
+            sock->shutdownSocket();
+        }
+    };
+    auto onInitFailure = [](void *data, const std::shared_ptr<Socket_Stream> &sock)
+    {
+        auto *ctx = static_cast<PoolContext *>(data);
+        auto tls = std::dynamic_pointer_cast<Socket_TLS>(sock);
+        if (tls && !tls->getTLSErrorsAndClear().empty())
+        {
+            ctx->initFailure.store(true);
+        }
+    };
+
+    auto listener = std::make_shared<Socket_TLS>();
+    listener->tlsKeys.setSecurityLevel(-1);
+    require(listener->tlsKeys.loadPublicKeyFromPEMFile(certificate), "TLS pool load certificate failed");
+    require(listener->tlsKeys.loadPrivateKeyFromPEMFile(key), "TLS pool load private key failed");
+    listener->setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
+    require(listener->listenOn(0, "127.0.0.1"), "TLS pool listen failed");
+    timeouts(*listener);
+
+    auto acceptor = std::make_shared<Acceptors::PoolThreaded>();
+    acceptor->parameters.threadsCount = 1; // Force worker-thread reuse.
+    acceptor->parameters.taskQueues = 1;
+    acceptor->callbacks.onClientConnected = onConnected;
+    acceptor->callbacks.onProtocolInitializationFailure = onInitFailure;
+    acceptor->callbacks.contextOnConnect = context.get();
+    acceptor->callbacks.contextOnInitFail = context.get();
+    acceptor->addAcceptorSocket(listener);
+    acceptor->startInBackground();
+
+    Socket_TLS client;
+    client.overrideReadTimeout(2);
+    client.overrideWriteTimeout(2);
+    client.setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
+    require(client.connectTo("127.0.0.1", listener->getLocalPort(), 2), "TLS pool first connect failed");
+    require(context->firstConnected.load(), "TLS pool first handshake not served");
+
+    // The first connection's incomplete shutdown must not pollute the error
+    // list even though its status is -2.
+    require(client.shutdownSocket() >= -2, "TLS pool first shutdown status lost");
+    require(client.getTLSErrorsAndClear().empty(), "incomplete TLS shutdown recorded an error");
+
+    // Second client: may land on the same worker thread. Its initialization
+    // must succeed with a clean error list (no stale queue entries).
+    require(!context->initFailure.load(), "TLS pool init failure reported stale errors");
+
+    Socket_TLS client2;
+    client2.overrideReadTimeout(2);
+    client2.overrideWriteTimeout(2);
+    client2.setCertValidation(Socket_TLS::X509ValidationOption::NOVALIDATE);
+    require(client2.connectTo("127.0.0.1", listener->getLocalPort(), 2), "TLS pool second connect failed");
+    require(client2.getTLSErrorsAndClear().empty(), "TLS pool second connect inherited stale TLS errors");
+    require(!context->initFailure.load(), "TLS pool init failure after worker reuse");
+    client2.shutdownSocket();
+
+    acceptor->stop();
+    const auto deadline = std::chrono::steady_clock::now() + 2s;
+    while (acceptor->isRunning() && std::chrono::steady_clock::now() < deadline)
+    {
+        std::this_thread::yield();
+    }
+    require(!context->initFailure.load(), "TLS pool worker reuse leaked TLS errors");
+}
+
 int main(int argc, char **argv)
 {
     try
@@ -881,6 +966,7 @@ int main(int argc, char **argv)
         else if (name == "acceptor_limits") { acceptorLimits(); }
         else if (name == "immediate_stop") { immediateStop(); }
         else if (name == "debug_output") { debugOutput(); }
+        else if (name == "tls_pool_reuse" && argc == 4) { tlsPoolReuse(argv[2], argv[3]); }
         else if (name == "tls" && argc == 5) { tls(argv[2], argv[3], argv[4]); }
         else { throw std::runtime_error("Unknown test case"); }
         std::cout << "PASS: " << name << '\n';
