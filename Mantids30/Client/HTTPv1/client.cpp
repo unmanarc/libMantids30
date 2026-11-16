@@ -323,10 +323,14 @@ HTTPv1::Response HTTPv1::perform(const Request &request, const Callbacks &callba
     {
         return finish(Error::SEND, "Failed to send the HTTP request.");
     }
+    if (result == Parser::ParseResult::ERR_STREAM_WRITE)
+    {
+        return finish(Error::STREAM_WRITE, "Failed to write response data or EOF to the destination.");
+    }
     if (result != Parser::ParseResult::SUCCEED || !protocol->writeStatus.finished ||
         !protocol->writeStatus.succeed || !receiver->writeStatus.finished || !receiver->writeStatus.succeed)
     {
-        return finish(Error::RECEIVE, "Incomplete or invalid HTTP response, or destination write failed.");
+        return finish(Error::RECEIVE, "Incomplete or invalid HTTP response.");
     }
     return finish(Error::NONE, "");
 }

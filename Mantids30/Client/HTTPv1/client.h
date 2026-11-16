@@ -43,7 +43,8 @@ public:
         SEND,
         RECEIVE,
         CONTENT_LIMIT,
-        CANCELLED
+        CANCELLED,
+        STREAM_WRITE
     };
 
     struct Response
