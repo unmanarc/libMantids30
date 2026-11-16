@@ -32,7 +32,7 @@ bool RequestLine::streamToUpstream()
 
     if (!m_getVars->isEmpty())
     {
-        buffer += "?";
+        buffer += m_requestURI.find('?') == std::string::npos ? "?" : "&";
 
         Mantids30::Core::Memory::Streams::StreamableString getVarsStr;
         m_getVars->streamTo(&getVarsStr);
