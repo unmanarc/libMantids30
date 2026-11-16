@@ -26,6 +26,7 @@ struct RequestContext
     Mantids30::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the client request
     boost::json::value emptyJSON;
     boost::json::value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
+    boost::json::value *explicitInputJSON = nullptr; ///< Embedded call arguments, independent of the HTTP request.
 
     Mantids30::DataFormat::JWT::Token emptyToken;              ///< Holds a default empty token
     Mantids30::DataFormat::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.

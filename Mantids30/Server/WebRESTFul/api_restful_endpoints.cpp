@@ -146,11 +146,15 @@ Endpoints::HandleResult Endpoints::handleEndpoint(const Mantids30::Protocol::HTT
         }
     }
 
-    std::shared_ptr<Mantids30::DataFormat::JSON::StreamableJSON> jsonStreamerContent = requestContext.clientRequest->getJSONStreamerContent();
-
+    const auto jsonStreamerContent = requestContext.explicitInputJSON != nullptr
+                                         ? nullptr : requestContext.clientRequest->getJSONStreamerContent();
     requestContext.inputJSON = &requestContext.emptyJSON;
 
-    if (jsonStreamerContent != nullptr)
+    if (requestContext.explicitInputJSON != nullptr)
+    {
+        requestContext.inputJSON = requestContext.explicitInputJSON;
+    }
+    else if (jsonStreamerContent != nullptr)
     {
         requestContext.inputJSON = jsonStreamerContent->getValue();
     }

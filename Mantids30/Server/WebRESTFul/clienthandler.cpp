@@ -34,6 +34,12 @@ Mantids30::Protocol::HTTP::APIReturn ClientHandler::handleAPIRequest(const strin
     requestContext.jwtSigner = this->config->jwtSigner;
     requestContext.jwtValidator = this->config->jwtValidator;
     requestContext.clientRequest = &clientRequest;
+    boost::json::value embeddedParameters;
+    if (m_isEmbeddedAPICall)
+    {
+        embeddedParameters = postParameters;
+        requestContext.explicitInputJSON = &embeddedParameters;
+    }
 
     if (isSessionActive())
     {
