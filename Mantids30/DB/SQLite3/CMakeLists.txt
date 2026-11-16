@@ -13,7 +13,7 @@ else()
     get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
     SET(RLIB_NAME ${LIB_NAME})
-    SET(LIB_NAME ${LIBPREFIX}_DB_SQLite3)
+    SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
     project(${LIB_NAME})
     project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for SQLite3 Database Connector")
@@ -54,10 +54,10 @@ else()
     endif()
 
     set(Mantids30_LIBRARIES
-        Memory
-        DB
-        Threads
-        Helpers
+        Core_Memory
+        DB_Common
+        Core_Threads
+        Core_Helpers
     )
 
     foreach(LIB ${Mantids30_LIBRARIES})

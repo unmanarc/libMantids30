@@ -5,7 +5,7 @@ get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
 SET(RLIB_NAME ${LIB_NAME})
-SET(LIB_NAME ${LIBPREFIX}_Program_Logs)
+SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Program Logs Library")
@@ -47,7 +47,7 @@ if (EXTRAPREFIX)
 endif()
 
 set(Mantids30_LIBRARIES
-    Helpers
+    Core_Helpers
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

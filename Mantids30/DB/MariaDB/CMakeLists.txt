@@ -15,7 +15,7 @@ else()
     get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
     SET(RLIB_NAME ${LIB_NAME})
-    SET(LIB_NAME ${LIBPREFIX}_DB_MariaDB)
+    SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
     find_path (
             MYSQL_INCLUDE_DIR NAMES mysql.h PATHS /usr/include /usr/include/mysql /usr/include/mariadb
@@ -63,10 +63,10 @@ else()
         endif()
 
         set(Mantids30_LIBRARIES
-            Memory
-            DB
-            Threads
-            Helpers
+            Core_Memory
+            DB_Common
+            Core_Threads
+            Core_Helpers
         )
 
         foreach(LIB ${Mantids30_LIBRARIES})

@@ -6,7 +6,7 @@ get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
 
 SET(RLIB_NAME ${LIB_NAME})
-SET(LIB_NAME ${LIBPREFIX}_Net_Chains)
+SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Network Protocol Chaining Library")
@@ -46,9 +46,9 @@ endif()
 
 
 set(Mantids30_LIBRARIES
-    Memory
-    Helpers
-    Net_Sockets
+    Core_Memory
+    Core_Helpers
+    Network_Sockets
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})
@@ -56,7 +56,7 @@ foreach(LIB ${Mantids30_LIBRARIES})
     target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
 endforeach()
 
-message("Chain found...: ${Mantids30_Net_Sockets_SOURCE_DIR}")
+message("Chain found...: ${Mantids30_Network_Sockets_SOURCE_DIR}")
 
 #option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 find_package(PkgConfig REQUIRED)

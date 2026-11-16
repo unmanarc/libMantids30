@@ -5,7 +5,7 @@ get_filename_component(PARENT_DIRFULL ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 get_filename_component(PARENT_DIR ${PARENT_DIRFULL} NAME)
 
 SET(RLIB_NAME ${LIB_NAME})
-SET(LIB_NAME ${LIBPREFIX}_Scripts_MantidsLang)
+SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
 project(${LIB_NAME})
 project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for Mantids Scripting Language")
@@ -46,11 +46,11 @@ if (EXTRAPREFIX)
 endif()
 
 set(Mantids30_LIBRARIES
-    Helpers
+    Core_Helpers
 #    Protocol_HTTP
-#    Program_Logs
-    Scripts_JSONExprEval
-    Memory
+#    Runtime_Logs
+    Scripting_JSONExprEval
+    Core_Memory
     DataFormat_JSON
 )
 
