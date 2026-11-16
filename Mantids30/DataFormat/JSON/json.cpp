@@ -14,7 +14,7 @@ bool Mantids30::DataFormat::JSON::parse(std::string_view document, boost::json::
     try
     {
         boost::json::parser parser;
-        parser.write_some(document);
+        parser.write_some({document.data(), document.size()});
         root = parser.release();
 
         if (parseErrors)
@@ -66,7 +66,7 @@ std::list<std::string> Mantids30::DataFormat::JSON::toStringList(const boost::js
         {
             if (el.is_string())
             {
-                r.emplace_back(el.as_string());
+                r.emplace_back(el.as_string().data(), el.as_string().size());
             }
         }
     }
@@ -152,7 +152,7 @@ std::map<std::string, std::string> Mantids30::DataFormat::JSON::toMap(const boos
         {
             if (kv.value().is_string())
             {
-                r[kv.key()] = std::string(kv.value().as_string().c_str());
+                r[std::string(kv.key().data(), kv.key().size())] = std::string(kv.value().as_string().c_str());
             }
         }
     }

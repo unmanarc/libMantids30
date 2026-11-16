@@ -17,7 +17,7 @@ namespace Mantids30::DataFormat::JSON {
 inline const boost::json::value &MEMBER_OR_NULL(const boost::json::value &obj, std::string_view key){
     if (obj.is_object())
     {
-        if (auto it = obj.as_object().find(key); it != obj.as_object().end())
+        if (auto it = obj.as_object().find({key.data(), key.size()}); it != obj.as_object().end())
         {
             return it->value();
         }

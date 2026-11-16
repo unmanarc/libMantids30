@@ -22,7 +22,7 @@ inline static void ARRAY_APPEND(boost::json::array &v, const boost::json::value 
 
 inline const static boost::json::array &ASARRAY_OR_EMPTY(const boost::json::value &j, std::string_view key)
 {
-    if (j.is_object() && j.as_object().contains(key))
+    if (j.is_object() && j.as_object().contains({key.data(), key.size()}))
     {
         const auto &arrayElement = MEMBER_OR_NULL(j, key);
         if (arrayElement.is_array())
@@ -52,7 +52,8 @@ inline static std::string_view ARRAY_ASSTRING(const boost::json::value &j, size_
         const boost::json::value &el = j.as_array()[i];
         if (el.is_string())
         {
-            return el.as_string();
+            const auto &s = el.as_string();
+            return {s.data(), s.size()};
         }
     }
     return def;

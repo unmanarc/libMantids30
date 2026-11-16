@@ -116,7 +116,7 @@ inline static uint64_t ASUINT64(const boost::json::value &j, std::string_view x,
 // Returns true if the object contains the given key.
 inline static bool HAS_MEMBER(const boost::json::value &j, std::string_view key)
 {
-    return j.is_object() && j.as_object().contains(key);
+    return j.is_object() && j.as_object().contains({key.data(), key.size()});
 }
 
 // Sets a member on the object `j`, promoting it from null (or any non-object)
@@ -129,7 +129,7 @@ inline static void setMember(boost::json::value &j, std::string_view key, const 
     {
         j = boost::json::object{};
     }
-    j.as_object()[key] = val;
+    j.as_object()[{key.data(), key.size()}] = val;
 }
 
 // Overload for string values (std::string and const char*).
@@ -139,7 +139,7 @@ inline static void setMember(boost::json::value &j, std::string_view key, const 
     {
         j = boost::json::object{};
     }
-    j.as_object()[key] = boost::json::value(boost::json::string_view(val));
+    j.as_object()[{key.data(), key.size()}] = boost::json::value(boost::json::string_view(val.data(), val.size()));
 }
 
 // Overload for any other type convertible to boost::json::value (int, bool,
@@ -152,7 +152,7 @@ inline static void setMember(boost::json::value &j, std::string_view key, T &&va
         j = boost::json::object{};
     }
     boost::json::value v = std::forward<T>(val);
-    j.as_object()[key] = std::move(v);
+    j.as_object()[{key.data(), key.size()}] = std::move(v);
 }
 
 } // namespace Mantids30::DataFormat::JSON
