@@ -1,11 +1,28 @@
 #include "apiserver_clienthandler.h"
 
+#include <boost/algorithm/string/replace.hpp>
 #include <cstdarg>
 #include <string>
 
 using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Server::WebRESTFul;
 using namespace std;
+
+Mantids30::Protocol::HTTP::APIReturn APIServer_ClientHandler::handleAPIRequestFromFile(std::string sourcePath, const std::string &baseApiUrl,
+                                                                                   const uint32_t &apiVersion, const std::string &httpMethodType,
+                                                                                   const std::string &endpointName, const boost::json::value &postParameters)
+{
+    struct RestoreSource
+    {
+        std::string &current;
+        std::string &previous;
+        ~RestoreSource() { current.swap(previous); }
+    };
+
+    m_logSourcePath.swap(sourcePath);
+    const RestoreSource restore{m_logSourcePath, sourcePath};
+    return handleAPIRequest(baseApiUrl, apiVersion, httpMethodType, endpointName, postParameters);
+}
 
 void APIServer_ClientHandler::log(boost::property_tree::ptree &jWebLog)
 {
@@ -40,7 +57,13 @@ void APIServer_ClientHandler::log(LogLevel logLevel, const std::string &module, 
 
     if (config->rpcLog)
     {
-        config->rpcLog->logVA(logLevel, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, fmtLog, args);
+        // Escape percent signs because the source becomes part of a printf format.
+        std::string format = fmtLog;
+        if (!m_logSourcePath.empty())
+        {
+            format = "[source=" + boost::replace_all_copy(m_logSourcePath, "%", "%%") + "] " + format;
+        }
+        config->rpcLog->logVA(logLevel, clientRequest.networkClientInfo.REMOTE_ADDR, currentSessionInfo.halfSessionId, user, domain, module, outSize, format.c_str(), args);
     }
 
     va_end(args);

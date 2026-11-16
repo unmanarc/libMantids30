@@ -109,9 +109,9 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
         serverResponse.content.getStreamableObject(),
         jsonContext,
         nullptr,
-        [this](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const boost::json::value &postParameters) -> boost::json::value
+        [this, sourcePath = fileInfo.fullPath](const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &methodType, const std::string &endpointName, const boost::json::value &postParameters) -> boost::json::value
         {
-            Mantids30::Protocol::HTTP::APIReturn result = handleAPIRequest("/", apiVersion, methodType, endpointName, postParameters);
+            Mantids30::Protocol::HTTP::APIReturn result = handleAPIRequestFromFile(sourcePath, "/", apiVersion, methodType, endpointName, postParameters);
 
             boost::json::value *jsonValue = result.responseJSON();
 

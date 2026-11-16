@@ -126,6 +126,11 @@ protected:
 
     virtual Mantids30::Protocol::HTTP::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
 
+    // Preserve the template source in logs emitted during an embedded API call.
+    Mantids30::Protocol::HTTP::APIReturn handleAPIRequestFromFile(std::string sourcePath, const std::string &baseApiUrl, const uint32_t &apiVersion,
+                                                               const std::string &httpMethodType, const std::string &endpointName,
+                                                               const boost::json::value &postParameters);
+
     /**
      * @brief handleWebSocketEvent Handle Web Socket Event from the client
      * @return return code for api request
@@ -207,6 +212,7 @@ protected:
 
 private:
     std::string logUsername;
+    std::string m_logSourcePath;
     void langProcessViaMantidsLang(const LocalRequestedFileInfo & fileInfo);
 
     Mantids30::Protocol::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, Mantids30::Server::WebRESTFul::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
