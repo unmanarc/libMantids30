@@ -4,6 +4,7 @@
 #include <Mantids30/DataFormat/JSON/streamable_json.h>
 
 #include <memory>
+#include <charconv>
 #include <optional>
 #include <stdexcept>
 
@@ -29,6 +30,16 @@ void Mantids30::Protocol::HTTP::Content::setSecurityMaxPostDataSize(const size_t
 
 Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HTTP::Content::parse()
 {
+    if (isStreamEnded() && m_currentMode != ProcessingMode::CONNECTION_CLOSE)
+    {
+        return ParseResult::ERROR;
+    }
+    // Nested parsers (for example multipart) can finish on the final data byte.
+    const auto finishContent = [this]()
+    {
+        return m_contentStreamableObject->writeStatus.finished
+            ? m_contentStreamableObject->writeStatus.succeed : m_contentStreamableObject->writeEOF();
+    };
     switch (m_currentMode)
     {
     case ProcessingMode::CHUNK_CLOSE:
@@ -44,7 +55,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
         }
         if (!getParsedBuffer()->size())
         {
-            return m_trailerBytesContent->writeEOF() && m_contentStreamableObject->writeEOF()
+            return m_trailerBytesContent->writeEOF() && finishContent()
                        ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
         return ParseResult::GET_MORE_DATA;
@@ -121,7 +132,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
             printf("%p Content ProcessingMode::CONTENT_LENGTH - EOS\n", this);
 #endif
             // End of stream reached...
-            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
+            return finishContent() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
     }
     case ProcessingMode::CONNECTION_CLOSE:
@@ -139,7 +150,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
         else
         {
             // No more data to parse, ending and processing it...
-            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
+            return finishContent() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
     }
     }
@@ -148,7 +159,13 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
 
 std::optional<uint32_t> Mantids30::Protocol::HTTP::Content::parseHttpChunkSize()
 {
-    const std::optional<uint32_t> parsed = getParsedBuffer()->toUInt32(16);
+    const std::string line = getParsedBuffer()->toStringEx();
+    const auto semicolon = line.find(';');
+    const std::string number = line.substr(0, semicolon);
+    uint32_t value = 0;
+    const auto result = std::from_chars(number.data(), number.data() + number.size(), value, 16);
+    const std::optional<uint32_t> parsed = !number.empty() && result.ec == std::errc()
+        && result.ptr == number.data() + number.size() ? std::optional<uint32_t>(value) : std::nullopt;
 
     if (!parsed || isStreamEnded())
     {
