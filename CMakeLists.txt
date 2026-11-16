@@ -24,6 +24,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS YES CACHE BOOL "Export all symbols")
 # CMAKE Options:
 option(SSLRHEL7 "OpenSSL 1.1 For Red Hat 7.x provided by EPEL" OFF)
 option(BUILD_SHARED_LIBS "Enable building the library as a shared library instead of a static one." ON)
+option(MANTIDS30_BUILD_TESTS "Build Mantids30 integration tests." OFF)
 
 ##############################################################################################################################
 
@@ -48,6 +49,10 @@ install(CODE [[
 #############################################################################################################################
 # Subprojects:
 ADD_SUBDIRECTORY(Mantids30)
+if(MANTIDS30_BUILD_TESTS)
+    enable_testing()
+    ADD_SUBDIRECTORY(tests/ClientHTTPv1)
+endif()
 #ADD_SUBDIRECTORY(devel)
 #############################################################################################################################
 
