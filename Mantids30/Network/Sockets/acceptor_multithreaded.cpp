@@ -72,6 +72,7 @@ bool MultiThreaded::processClient(const std::shared_ptr<Socket_Stream> &clientSo
     {
         if (m_condClientsNotFull.wait_for(lock, Ms(parameters.maxWaitMSTime)) == std::cv_status::timeout)
         {
+            lock.unlock();
             if (callbacks.onClientAcceptTimeoutOccurred)
             {
                 callbacks.onClientAcceptTimeoutOccurred(callbacks.contextOnTimedOut, clientSocket);
@@ -87,11 +88,12 @@ bool MultiThreaded::processClient(const std::shared_ptr<Socket_Stream> &clientSo
     // update the counter
     if (incrementIPUsage(clientThread->getRemotePair()) > parameters.maxConnectionsPerIP)
     {
+        decrementIPUsage(clientThread->getRemotePair());
+        lock.unlock();
         if (callbacks.onClientConnectionLimitPerIPReached)
         {
             callbacks.onClientConnectionLimitPerIPReached(callbacks.contextonClientConnectionLimitPerIPReached, clientSocket);
         }
-        decrementIPUsage(clientThread->getRemotePair());
         return true;
     }
 
@@ -284,11 +286,32 @@ void MultiThreaded::startInBackground()
 
 void MultiThreaded::stop()
 {
-    for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock : m_acceptorSocketList)
+    {
+        std::lock_guard<std::mutex> lock(m_mutexClients);
+        m_finalized = true;
+    }
+    m_condClientsNotFull.notify_all();
+    for (auto &sock : m_acceptorSocketList)
     {
         if (sock)
         {
             sock->shutdownSocket(SHUT_RDWR);
+        }
+    }
+    // Release the acceptor threads' shared ownership before the caller drops
+    // its final reference. Otherwise destruction can run on an acceptor thread.
+    for (auto &thread : m_acceptorThreadList)
+    {
+        if (thread.joinable())
+        {
+            if (thread.get_id() == std::this_thread::get_id())
+            {
+                thread.detach();
+            }
+            else
+            {
+                thread.join();
+            }
         }
     }
 }

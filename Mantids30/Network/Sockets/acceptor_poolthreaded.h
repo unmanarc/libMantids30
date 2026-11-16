@@ -120,7 +120,11 @@ public:
        * @brief getAcceptorSocketCount Get the number of acceptor sockets currently registered.
        * @return number of acceptor sockets
        */
-    size_t getAcceptorSocketCount() const { return m_acceptorSocketList.size(); }
+    size_t getAcceptorSocketCount() const
+    {
+        std::lock_guard<std::mutex> lock(m_acceptorSocketsMutex);
+        return m_acceptorSocketList.size();
+    }
 
     ThreadPoolCallbacks callbacks;
 
@@ -162,8 +166,9 @@ private:
 
     std::vector<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> m_acceptorSocketList;
     std::vector<std::thread> m_acceptorThreads;
-    std::atomic<bool> m_running{false};
+    std::atomic<bool> m_running{true};
     std::mutex m_runMutex;
+    mutable std::mutex m_acceptorSocketsMutex;
 };
 
 } // namespace Mantids30::Network::Sockets::Acceptors

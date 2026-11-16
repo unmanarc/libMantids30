@@ -23,10 +23,9 @@ void PoolThreaded::run()
     std::unique_ptr<Mantids30::Core::Threads::Pool::ThreadPool> pool = std::make_unique<Mantids30::Core::Threads::Pool::ThreadPool>(parameters.threadsCount, parameters.taskQueues);
     pool->start();
 
-    m_running = true;
-
     // Create one thread per acceptor socket using lambda
     // Each thread runs its own blocking acceptConnection() loop
+    std::unique_lock<std::mutex> socketsLock(m_acceptorSocketsMutex);
     for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &acceptorSocket : m_acceptorSocketList)
     {
         if (!acceptorSocket)
@@ -85,6 +84,8 @@ void PoolThreaded::run()
             });
     }
 
+    socketsLock.unlock();
+
     // Wait until stop is signaled (m_running set to false), then join all acceptor threads
     for (std::thread &t : m_acceptorThreads)
     {
@@ -95,7 +96,10 @@ void PoolThreaded::run()
     }
 
     m_acceptorThreads.clear();
-    m_acceptorSocketList.clear();
+    {
+        std::lock_guard<std::mutex> socketsLock(m_acceptorSocketsMutex);
+        m_acceptorSocketList.clear();
+    }
 
     // Stop the pool (safe: all threads joined, no one uses poolPtr anymore)
     pool->stop();
@@ -105,6 +109,7 @@ void PoolThreaded::_stop()
 {
     m_running = false;
 
+    std::lock_guard<std::mutex> socketsLock(m_acceptorSocketsMutex);
     for (std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock : m_acceptorSocketList)
     {
         if (sock)
@@ -116,6 +121,7 @@ void PoolThreaded::_stop()
 
 void PoolThreaded::addAcceptorSocket(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &value)
 {
+    std::lock_guard<std::mutex> socketsLock(m_acceptorSocketsMutex);
     m_acceptorSocketList.push_back(value);
 }
 
@@ -126,7 +132,7 @@ void PoolThreaded::runner(void *data)
 
 void PoolThreaded::stopper(void *data)
 {
-    (static_cast<PoolThreaded *>(data))->stop();
+    (static_cast<PoolThreaded *>(data))->_stop();
 }
 
 void PoolThreaded::acceptorTask(const std::shared_ptr<void> &data)
