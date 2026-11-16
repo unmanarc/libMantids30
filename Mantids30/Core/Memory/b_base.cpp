@@ -4,6 +4,7 @@
 #include <Mantids30/Core/Helpers/safeint.h>
 
 #include <cstring>
+#include <cerrno>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -23,6 +24,11 @@ B_Base::~B_Base()
 
 B_Base &B_Base::operator=(B_Base &bc)
 {
+    // Clearing a container before copying from itself would discard its contents.
+    if (&bc == this)
+    {
+        return *this;
+    }
     clear();
     bc.appendTo(*this);
     return *this;
@@ -148,55 +154,41 @@ bool B_Base::clear()
 
 int B_Base::copyUntil(B_Base &destination, const void *needle, const size_t &needleLenght, const size_t &maxCopySize, bool removeNeedle)
 {
-    std::optional<size_t> needlePos = find(needle, needleLenght, false, 0, maxCopySize);
-
+    // Locate the delimiter first so missing delimiters and oversized copies remain distinct errors.
+    auto needlePos = find(needle, needleLenght, false);
     if (!needlePos)
     {
         return -1;
     }
-
-    // will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(*needlePos, needleLenght))
+    const size_t count = *needlePos + (removeNeedle ? 0 : needleLenght);
+    if (count > maxCopySize)
     {
-        return -1;
+        return -2;
     }
-
-    if (removeNeedle)
-    {
-        if ((*needlePos) > maxCopySize)
-        {
-            return -2;
-        }
-        appendTo(destination, *needlePos);
-    }
-    else
-    {
-        if ((*needlePos + needleLenght) > maxCopySize)
-        {
-            return -2;
-        }
-        appendTo(destination, *needlePos + needleLenght);
-    }
-
-    return 0;
+    // A partial destination write cannot satisfy the requested delimiter copy.
+    auto copied = appendTo(destination, count);
+    return copied && *copied == count ? 0 : -1;
 }
 
 int B_Base::displaceUntil(B_Base &destination, const void *needle, const size_t &needleCount, const size_t &maxCopySize, bool removeNeedle)
 {
-    int retr = copyUntil(destination, needle, needleCount, maxCopySize, removeNeedle);
-    if (retr < 0)
+    const size_t previousSize = destination.size();
+    const int result = copyUntil(destination, needle, needleCount, maxCopySize, removeNeedle);
+    if (result < 0)
     {
-        return retr;
+        return result;
     }
-    displace(destination.size() + (removeNeedle ? needleCount : 0));
-    return 0;
+    // Consume only the newly copied bytes, plus the delimiter when it was omitted from the copy.
+    auto displaced = displace(destination.size() - previousSize + (removeNeedle ? needleCount : 0));
+    return displaced ? 0 : -1;
 }
 
 int B_Base::displaceUntil(B_Base &destination, const std::list<std::string> &needles, const size_t &maxCopySize, bool removeNeedle)
 {
-    for (const std::string &needle : needles)
+    for (const auto &needle : needles)
     {
-        if (!displaceUntil(destination, needle.c_str(), needle.size(), maxCopySize, removeNeedle))
+        const int result = displaceUntil(destination, needle.data(), needle.size(), maxCopySize, removeNeedle);
+        if (result == 0)
         {
             return 0;
         }
@@ -551,42 +543,38 @@ std::optional<std::string> B_Base::toString(size_t bytes, const size_t &roOffset
 
 std::optional<uint64_t> B_Base::toUInt64(int base, const size_t &bytes, const size_t &offset)
 {
-    std::optional<std::string> s = toString(bytes, offset);
-    if (!s)
+    // Validate the complete byte range before using the null-terminated numeric parser.
+    auto text = toString(bytes, offset);
+    if (!text || text->empty() || base < 0 || base == 1 || base > 36 || text->find('\0') != std::string::npos)
     {
         return std::nullopt;
     }
-
-    char *endPtr;
-    uint64_t result = strtoull(s->c_str(), &endPtr, base);
-
-    // Check for conversion errors
-    if (*endPtr != '\0' || endPtr == s->c_str())
+    // strtoull accepts negative input by wrapping it; unsigned conversion must reject it.
+    const auto first = text->find_first_not_of(" \t\r\n\f\v");
+    if (first == std::string::npos || (*text)[first] == '-')
     {
         return std::nullopt;
     }
-
+    errno = 0;
+    char *end = nullptr;
+    const auto result = strtoull(text->c_str(), &end, base);
+    // Reject overflow and any bytes left unconsumed by the conversion.
+    if (errno == ERANGE || end == text->c_str() || end != text->c_str() + text->size())
+    {
+        return std::nullopt;
+    }
     return result;
 }
 
 std::optional<uint32_t> B_Base::toUInt32(int base, const size_t &bytes, const size_t &offset)
 {
-    std::optional<std::string> s = toString(bytes, offset);
-    if (!s)
+    // Validate at full width before narrowing to avoid silently truncating large values.
+    const auto result = toUInt64(base, bytes, offset);
+    if (!result || *result > UINT32_MAX)
     {
         return std::nullopt;
     }
-
-    char *endPtr;
-    uint32_t result = strtoul(s->c_str(), &endPtr, base);
-
-    // Check for conversion errors
-    if (*endPtr != '\0' || endPtr == s->c_str())
-    {
-        return std::nullopt;
-    }
-
-    return result;
+    return static_cast<uint32_t>(*result);
 }
 
 bool B_Base::compare(const std::string &cmpString, bool caseSensitive, const size_t &offset)
@@ -625,77 +613,39 @@ bool B_Base::compare(const void *mem, const size_t &len, bool caseSensitive, con
 
 std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len, bool caseSensitive, const size_t &offset, size_t searchSpace)
 {
-    size_t currentSize = size();
-
-    const char *c_needle = static_cast<const char *>(needle);
-
-    // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset, needle_len))
+    // Bound candidate positions so every complete match stays inside the requested search range.
+    const size_t currentSize = size();
+    if (offset > currentSize || CHECK_UINT_OVERFLOW_SUM(offset, searchSpace))
     {
         return std::nullopt;
     }
-
-    // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset, searchSpace))
-    {
-        return std::nullopt;
-    }
-
-    if (offset > currentSize)
-    {
-        return std::nullopt;
-    }
-    if (searchSpace == 0)
-    {
-        searchSpace = currentSize - offset;
-    }
-    if (searchSpace == 0)
-    {
-        return std::nullopt;
-    }
-
-    // not enough search space to found anything...
-    if (searchSpace < needle_len)
-    {
-        return std::nullopt;
-    }
-
-    // nothing to be found... first position
+    const size_t available = currentSize - offset;
+    searchSpace = searchSpace == 0 ? available : std::min(searchSpace, available);
     if (needle_len == 0)
     {
-        return 0;
+        return offset;
     }
-
-    size_t currentOffset = offset;
-
-    std::optional<size_t> pos = findChar(c_needle[0], currentOffset, searchSpace, caseSensitive);
-    while (pos != std::nullopt) // char detected...
+    if (!needle || needle_len > searchSpace)
     {
-        /////////////////////////////////
-        size_t displacement = pos.value() - currentOffset;
-
-        currentOffset += displacement;
-        searchSpace -= displacement;
-
-        if (compare2(needle, needle_len, caseSensitive, currentOffset))
-        {
-            return currentOffset;
-        }
-
-        // no left space to consume.
-        if (searchSpace == 0)
-        {
-            break;
-        }
-
-        // skip char found.
-        currentOffset += 1;
-        searchSpace -= 1;
-
-        pos = findChar(c_needle[0], currentOffset, searchSpace, caseSensitive);
+        return std::nullopt;
     }
-
-    // not found
+    const auto first = static_cast<const unsigned char *>(needle)[0];
+    const size_t last = offset + searchSpace - needle_len;
+    size_t position = offset;
+    while (position <= last)
+    {
+        const auto found = findChar(first, position, last - position + 1, caseSensitive);
+        if (!found)
+        {
+            return std::nullopt;
+        }
+        if (compare(needle, needle_len, caseSensitive, *found))
+        {
+            return found;
+        }
+        // Advance past a failed candidate so repeated prefix characters cannot stall the search.
+        position = *found + 1;
+    }
     return std::nullopt;
 }
 
@@ -852,9 +802,9 @@ std::optional<size_t> B_Base::copyToStreamUsingCleanVector(std::ostream &streamO
     for (auto &copyChunk : copyChunks)
     {
         streamOut.write(copyChunk.rodata, copyChunk.rosize);
-        if (streamOut.bad())
+        if (!streamOut)
         {
-            // Return nullopt if write fails.
+            // Report failbit as well as badbit; either state means the write did not complete.
             return std::nullopt;
         }
         dataCopied += copyChunk.rosize;

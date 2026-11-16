@@ -20,9 +20,15 @@ B_Ref::~B_Ref()
     B_Ref::clear2();
 }
 
+B_Base *B_Ref::getReferencedBC() const
+{
+    return referencedBC;
+}
+
 bool B_Ref::reference(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 {
-    if (offset > bc->size())
+    // Reject invalid sources before storing a reference or accessing their size.
+    if (!bc || bc == this || offset > bc->size())
     {
         return false;
     }
@@ -38,7 +44,8 @@ bool B_Ref::reference(B_Base *bc, const size_t &offset, const size_t &maxBytes)
 
 size_t B_Ref::size()
 {
-    if (!referencedBC)
+    // The source may shrink after the reference is created; avoid unsigned size underflow.
+    if (!referencedBC || referencedOffset >= referencedBC->size())
     {
         return 0;
     }
@@ -56,17 +63,18 @@ size_t B_Ref::size()
 
 std::optional<size_t> B_Ref::findChar(const int &c, const size_t &offset, size_t searchSpace, bool caseSensitive)
 {
-    if (!referencedBC)
+    // Restrict the delegated search to this view and translate its result back to a local offset.
+    const size_t currentSize = size();
+    if (!referencedBC || offset >= currentSize || searchSpace > currentSize - offset)
     {
         return std::nullopt;
     }
-
-    if (caseSensitive && !isalpha(static_cast<unsigned char>(c)))
+    if (searchSpace == 0)
     {
-        caseSensitive = false;
+        searchSpace = currentSize - offset;
     }
-
-    return referencedBC->findChar(c, referencedOffset + offset, searchSpace, caseSensitive);
+    auto position = referencedBC->findChar(c, referencedOffset + offset, searchSpace, caseSensitive);
+    return position ? std::optional<size_t>(*position - referencedOffset) : std::nullopt;
 }
 
 std::optional<size_t> B_Ref::truncate2(const size_t &bytes)

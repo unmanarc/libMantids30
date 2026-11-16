@@ -135,7 +135,13 @@ std::optional<size_t> B_Chunks::append2(const void *buf, const size_t &roLen, bo
         return m_mmapContainer->prepend(buf, len);
     }
 
+    // A zero chunk size would prevent the append loop from consuming any input.
+    if (m_maxChunkSize == 0)
+    {
+        return std::nullopt;
+    }
     std::optional<size_t> appendedBytes = 0;
+    size_t prependedChunks = 0;
 
     // Offset:bytes will overflow...
     if (CHECK_UINT_OVERFLOW_SUM(len, size()))
@@ -169,6 +175,11 @@ std::optional<size_t> B_Chunks::append2(const void *buf, const size_t &roLen, bo
         if (m_chunksVector.size() + 1 > m_maxChunks)
         {
             // we don´t return error, just the appended bytes won't match the roLen.
+            // Partial prepends still shift the offsets of all existing chunks.
+            if (prependMode)
+            {
+                recalcChunkOffsets();
+            }
             return appendedBytes;
         }
 
@@ -202,7 +213,9 @@ std::optional<size_t> B_Chunks::append2(const void *buf, const size_t &roLen, bo
         }
         else
         {
-            m_chunksVector.emplace(m_chunksVector.begin(), bcc);
+            // Insert after earlier prepended chunks to preserve the input byte order.
+            m_chunksVector.emplace(m_chunksVector.begin() + prependedChunks, bcc);
+            ++prependedChunks;
         }
 
         ///////////////////////////////////////////////////////
@@ -596,116 +609,57 @@ bool B_Chunks::compare2(const void *buf, const size_t &len, bool caseSensitive, 
     return dataToCompare == 0;
 }
 
-// TODO: ICASE
+// Search each intersecting chunk while keeping results relative to the whole container.
 std::optional<size_t> B_Chunks::findChar(const int &c, const size_t &roOffset, size_t searchSpace, bool caseSensitive)
 {
-    if (caseSensitive && !isalpha(static_cast<unsigned char>(c)))
-    {
-        caseSensitive = false;
-    }
-
-    size_t offset = roOffset;
     if (m_mmapContainer)
     {
-        return m_mmapContainer->findChar(c, offset);
+        return m_mmapContainer->findChar(c, roOffset, searchSpace, caseSensitive);
     }
-
-    ///////////////////////////
-    size_t currentSize = size();
-    if (CHECK_UINT_OVERFLOW_SUM(offset, searchSpace))
+    const size_t currentSize = size();
+    if (roOffset > currentSize || searchSpace > currentSize - roOffset)
     {
         return std::nullopt;
     }
-    // out of bounds (fail to compare):
-    if (offset > currentSize || offset + searchSpace > currentSize)
+    if (searchSpace == 0)
     {
-        return std::nullopt;
+        searchSpace = currentSize - roOffset;
     }
-
-    size_t retpos = 0;
-    size_t vpos = 0, vsize = m_chunksVector.size();
-    for (; vpos < vsize; vpos++)
+    size_t remaining = searchSpace;
+    const unsigned char needle = static_cast<unsigned char>(c);
+    for (const auto &chunk : m_chunksVector)
     {
-        BinaryContainerChunk *originalChunk = &(m_chunksVector[vpos]);
-        BinaryContainerChunk currentChunk = *originalChunk; // copy the chunk..
-
-        // if offset is >0...
-        if (offset > 0)
+        if (chunk.nextOffset() <= roOffset)
         {
-            if (offset > originalChunk->size)
+            continue;
+        }
+        const size_t begin = roOffset > chunk.offset ? roOffset - chunk.offset : 0;
+        const size_t count = std::min(remaining, chunk.size - begin);
+        for (size_t i = begin; i < begin + count; ++i)
+        {
+            const auto value = static_cast<unsigned char>(chunk.data[i]);
+            if (caseSensitive ? value == needle : Mantids30::Core::Helpers::Mem::icharcmp(value, needle))
             {
-                // pass this chunk...
-                offset -= originalChunk->size;
-                // chunk discarded.
-                retpos += originalChunk->size;
-
-                continue; // chunk consumed.
-            }
-            else
-            {
-                currentChunk.size -= offset;
-                currentChunk.data += offset;
-
-                offset = 0;
+                return chunk.offset + i;
             }
         }
-
-        if (offset == 0)
+        remaining -= count;
+        if (remaining == 0)
         {
-            char *pos = nullptr;
-
-            if (!caseSensitive)
-            {
-                pos = static_cast<char *>(memchr(currentChunk.data, c, std::min(searchSpace, currentChunk.size)));
-            }
-            else
-            {
-                // Case sensitive...
-                size_t currentSearchSpace = std::min(searchSpace, currentChunk.size);
-
-                char *pos_upper = static_cast<char *>(memchr(currentChunk.data, std::toupper(c), currentSearchSpace));
-                char *pos_lower = static_cast<char *>(memchr(currentChunk.data, std::tolower(c), currentSearchSpace));
-
-                if (pos_upper && pos_lower)
-                {
-                    pos = std::min(pos_upper, pos_lower);
-                }
-                else
-                {
-                    pos = pos_upper ? pos_upper : pos_lower;
-                }
-            }
-
-            if (pos)
-            {
-                // report the position.
-                return static_cast<size_t>(pos - (originalChunk->data)) + retpos;
-            }
-
-            if (searchSpace > currentChunk.size)
-            {
-                searchSpace -= currentChunk.size;
-            }
-            else
-            {
-                return std::nullopt;
-            }
+            break;
         }
-
-        // chunk discarded.
-        retpos += originalChunk->size;
     }
     return std::nullopt;
 }
 
 void B_Chunks::recalcChunkOffsets()
 {
+    // Rebuild contiguous offsets after prepending or removing data at the front.
     size_t currentOffset = 0;
-    size_t vpos = 0, vsize = m_chunksVector.size();
-    for (BinaryContainerChunk *i = &(m_chunksVector[vpos]); vpos < vsize; vpos++)
+    for (auto &chunk : m_chunksVector)
     {
-        i->offset = currentOffset;
-        currentOffset = i->nextOffset();
+        chunk.offset = currentOffset;
+        currentOffset = chunk.nextOffset();
     }
 }
 

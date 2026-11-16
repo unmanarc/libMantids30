@@ -7,7 +7,8 @@ namespace Mantids30::Core::Memory::Containers {
 class B_Ref : public B_Base
 {
 public:
-    B_Ref(B_Base *bc = nullptr, const size_t &offset = 0, const size_t &maxBytes = 0);
+    // An omitted bound exposes all remaining bytes; an explicit zero creates an empty view.
+    B_Ref(B_Base *bc = nullptr, const size_t &offset = 0, const size_t &maxBytes = std::numeric_limits<size_t>::max());
     ~B_Ref() override;
     /**
      * @brief reference another binary container into this container.
