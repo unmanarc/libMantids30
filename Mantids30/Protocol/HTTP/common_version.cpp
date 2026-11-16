@@ -1,0 +1,82 @@
+#include "common_version.h"
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+
+#include <cinttypes>
+#include <string>
+#include <vector>
+
+using namespace std;
+using namespace boost;
+using namespace boost::algorithm;
+using namespace Mantids30::Protocol;
+
+using namespace Mantids30;
+
+void Mantids30::Protocol::HTTP::Version::parse(const std::string &version)
+{
+    // Reset the current object to a clean state
+    // This ensures that if parsing fails, the object doesn't hold stale data.
+    *this = Version();
+
+    vector<string> versionParts;
+    split(versionParts, version, is_any_of("/"), token_compress_on);
+
+    if (versionParts.size() != 2)
+    {
+        m_minorVersion = 0;
+        m_majorVersion = 1;
+    }
+    else
+    {
+        vector<string> versionMinorMajor;
+        split(versionMinorMajor, versionParts[1], is_any_of("."), token_compress_on);
+
+        if (versionMinorMajor.size() != 2)
+        {
+            m_majorVersion = 1;
+            m_minorVersion = 0;
+        }
+        else
+        {
+            m_majorVersion = strtoul(versionMinorMajor[0].c_str(), nullptr, 10);
+            m_minorVersion = strtoul(versionMinorMajor[1].c_str(), nullptr, 10);
+        }
+    }
+}
+
+string Mantids30::Protocol::HTTP::Version::toString() const
+{
+    char cHTTPVersion[128];
+    snprintf(cHTTPVersion, sizeof(cHTTPVersion), "HTTP/%" PRIu16 ".%" PRIu16, m_majorVersion, m_minorVersion);
+    std::string sHTTPVersion = cHTTPVersion;
+    return sHTTPVersion;
+}
+
+uint16_t Mantids30::Protocol::HTTP::Version::getMinor() const
+{
+    return m_minorVersion;
+}
+
+void Mantids30::Protocol::HTTP::Version::setMinor(const uint16_t &value)
+{
+    m_minorVersion = value;
+}
+
+void Mantids30::Protocol::HTTP::Version::upgradeMinor(const uint16_t &value)
+{
+    if (value > m_minorVersion)
+    {
+        m_minorVersion = value;
+    }
+}
+
+uint16_t Mantids30::Protocol::HTTP::Version::getMajor() const
+{
+    return m_majorVersion;
+}
+
+void Mantids30::Protocol::HTTP::Version::setMajor(const uint16_t &value)
+{
+    m_majorVersion = value;
+}

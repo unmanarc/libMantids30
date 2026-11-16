@@ -1,0 +1,301 @@
+#pragma once
+
+#include <Mantids30/DataFormat/JSON/json.h>
+
+#include <Mantids30/Network/Sockets/socket_stream.h>
+
+
+#include <Mantids30/Core/Threads/safe_map.h>
+#include <Mantids30/Core/Threads/threadpool.h>
+#include <memory>
+#include <shared_mutex>
+#include <string_view>
+
+namespace Mantids30::Protocol::FastRPC1 {
+
+/**
+ * @brief The FastRPC class: Bidirectional client-sync/server-async-thread-pooled no-auth RPC Manager
+ */
+class FastRPC1
+{
+public:
+    struct CallBackOnConnected
+    {
+        void (*fastRPCCB_OnConnected)(const std::string &, const std::shared_ptr<void> &context);
+        std::shared_ptr<void> context;
+    };
+
+    struct Method
+    {
+        /**
+         * @brief Function pointer.
+         */
+        boost::json::value (*method)(const std::shared_ptr<void> &context, const std::string &key, const boost::json::value &parameters, const std::shared_ptr<void> &cntObj, const std::string &cntData);
+        /**
+         * @brief obj object to pass
+         */
+        std::shared_ptr<void> context = nullptr;
+    };
+
+    struct ThreadParameters
+    {
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> streamBack;
+        uint32_t maxMessageSize;
+        void *caller=nullptr;
+        std::shared_mutex *done = nullptr;
+        std::mutex *mtSocket = nullptr;
+        std::string methodName;
+        boost::json::value payload;
+        uint64_t requestId=0;
+
+        // Accesible objects:
+        std::string key;
+        std::shared_ptr<void> context;
+        std::string data;
+    };
+
+    class Connection : public Mantids30::Core::Threads::Safe::MapItem
+    {
+    public:
+        // Socket
+        std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> stream;
+        std::mutex *mtSocket{nullptr};
+        std::string key;
+
+        // Accesible objects:
+        std::shared_ptr<void> context;
+        std::string data;
+
+        // Request ID counter.
+        uint64_t requestIdCounter{1};
+        std::mutex mtReqIdCt;
+
+        // Answers:
+        std::map<uint64_t, boost::json::value> answers;
+        std::map<uint64_t, uint8_t> executionStatus;
+        std::mutex mtAnswers;
+        std::condition_variable cvAnswers;
+        std::set<uint64_t> pendingRequests;
+
+        // Finalization:
+        std::atomic<bool> terminated{false};
+    };
+
+    enum class TaskExecutionStatus : uint8_t
+    {
+        ERR_GENERIC = 1,
+        SUCCESS = 2,
+        ERR_REMOTE_QUEUE_OVERFLOW = 3,
+        ERR_METHOD_NOT_FOUND = 4
+    };
+
+    /**
+     * @brief FastRPC This class is designed to persist between connections...
+     * @param threadsCount
+     * @param taskQueues
+     */
+    FastRPC1(uint32_t threadsCount = 16, uint32_t taskQueues = 24);
+    ~FastRPC1();
+    /**
+     * @brief stop Stop the thread pool.
+     */
+    void stop();
+    /**
+     * @brief addMethod Add Method
+     * @param methodName Method Name
+     * @param method Method function and Object
+     */
+    bool addMethod(const std::string &methodName, const Mantids30::Protocol::FastRPC1::FastRPC1::Method &method);
+
+    // Ping functions:
+    /**
+     * @brief sendPings Internal function to send pings to every connected peer
+     */
+    void sendPings();
+    /**
+     * @brief waitPingInterval Wait interval for pings
+     * @return true if ping interval completed, false if a signal closed the wait interval (eg. FastRPC destroyed)
+     */
+    bool waitPingInterval();
+    /**
+     * @brief setPingInterval Set Ping interval
+     * @param _intvl ping interval in seconds
+     */
+    void setPingInterval(uint32_t _intvl);
+    /**
+     * @brief getPingInterval Get ping interval
+     * @return ping interval in seconds
+     */
+    [[nodiscard]] uint32_t getPingInterval() const;
+
+    /**
+     * @brief processConnection Process Connection Stream and manage bidirectional events from each side (Q/A).
+     *                          Additional security should be configured at the TLS Connections, like peer validation
+     *                          and you may set up any other authentication mechanisms (like api keys) prior to the socket
+     *                          management delegation or in each RPC function.
+     * @param stream Stream Socket to be handled with this fast rpc protocol.
+     * @param key Connection Name, used for running remote RPC methods.
+     * @param keyDistFactor threadpool distribution usage by the key (0.5 = half, 1.0 = full, 0.NN = NN%)
+     * @param _cb_OnConnected On connect Method to be executed in background (new thread) when connection is accepted/processed.
+     * @param context object memory to be passed everywhere in the connection
+     * @param data string to be passsed everywhere in the connection
+     * @return 0 if remotely shutted down, or negative if connection error happened.
+     */
+    int processConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const Mantids30::Protocol::FastRPC1::FastRPC1::CallBackOnConnected &_cb_OnConnected = {nullptr, nullptr},
+                          const float &keyDistFactor = 1.0, const std::shared_ptr<void> &context = nullptr, const std::string &data = "");
+
+    /**
+     * @brief processConnection2 Same as processConnection with _cb_OnConnected and keyDistFactor as defaults
+     * @param stream
+     * @param key
+     * @param context
+     * @param data
+     * @return
+     */
+    int processConnection2(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const std::shared_ptr<void> &context = nullptr, const std::string &data = "")
+    {
+        return processConnection(stream, key, {nullptr, nullptr}, 1.0, context, data);
+    }
+
+    /**
+     * @brief setTimeout Timeout in milliseconds to desist to put the execution task into the threadpool
+     * @param value milliseconds, default is 2secs (2000).
+     */
+    void setQueuePushTimeoutInMS(const uint32_t &value);
+    /**
+     * @brief setMaxMessageSize Max JSON Size
+     * @param value max bytes for reception/transmition json, default is 10M
+     */
+    void setMaxMessageSize(const uint32_t &value);
+    /**
+     * @brief setRemoteExecutionTimeoutInMS Set the remote Execution Timeout for "runRemoteRPCMethod" function
+     * @param value timeout in milliseconds, default is 5secs (5000).
+     */
+    void setRemoteExecutionTimeoutInMS(const uint32_t &value);
+    /**
+     * @brief runRemoteRPCMethod Run Remote RPC Method
+     * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
+     * @param methodName Method Name
+     * @param payload Function Payload
+     * @param error Error Return
+     * @return Answer, or boost::json::value{} if answer is not received or if timed out.
+     */
+    boost::json::value runRemoteRPCMethod(const std::string &connectionKey, std::string_view methodName, const boost::json::value &payload, boost::json::value *error, bool retryIfDisconnected = true);
+    /**
+     * @brief runRemoteClose Run Remote Close Method
+     * @param connectionKey Connection ID (this class can thread-safe handle multiple connections at time)
+     * @return Answer, or boost::json::value{} if answer is not received or if timed out.
+     */
+    bool runRemoteClose(const std::string &connectionKey);
+
+    /**
+     * @brief getConnectionKeys Get keys from the current connections.
+     * @return set of strings containing the unique keys
+     */
+    std::set<std::string> getConnectionKeys();
+
+    /**
+     * @brief checkConnectionKey Check if the given connection key does exist.
+     * @param connectionKey connection key
+     * @return true if exist, otherwise false.
+     */
+    bool checkConnectionKey(std::string_view connectionKey);
+
+    //////////////////////////////////////////////////////////
+    // For Internal use only:
+    boost::json::value runLocalRPCMethod(std::string_view methodName, const std::string &key, const std::string &data, const std::shared_ptr<void> &context, const boost::json::value &payload, bool *found);
+
+    void setRemoteExecutionDisconnectedTries(const uint32_t &value);
+
+    /**
+     * @brief getReadTimeout Get R/W Timeout
+     * @return W/R timeout in seconds
+     */
+    [[nodiscard]] uint32_t getRWTimeout() const;
+    /**
+     * @brief setRWTimeout   This timeout will be setted on processConnection, call this function before that.
+     *
+     *                       Read timeout defines how long are we going to wait if no-data comes from a RPC connection socket,
+     *                       we also send a periodic ping to avoid the connection to be closed due to RPC per-se inactivity, so
+     *                       basically we are only going to close due to network issues.
+     *
+     *                       Write timeout is also important, since we are using blocking sockets, if the peer is full
+     *                       just before having a network problem, the writes (including the ping one) may block the pinging process forever.
+     *
+     * @param _rwTimeout     W/R timeout in seconds (default: 40)
+     */
+    void setRWTimeout(uint32_t _rwTimeout);
+
+    /**
+     * @brief getOverwriteObject
+     * @return
+     */
+    [[nodiscard]] std::shared_ptr<void> getOverwriteObject() const;
+    /**
+     * @brief setOverwriteObject Set overwrite object for functions
+     * @param newOverwriteObject object.
+     */
+    void setOverwriteObject(const std::shared_ptr<void> &newOverwriteObject);
+
+protected:
+    // TODO pasar a callbacks
+    virtual void eventUnexpectedAnswerReceived(Mantids30::Protocol::FastRPC1::FastRPC1::Connection *connection, const std::string &answer);
+    virtual void eventFullQueueDrop(Mantids30::Protocol::FastRPC1::FastRPC1::ThreadParameters *params);
+    virtual void eventRemotePeerDisconnected(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
+    virtual void eventRemoteExecutionTimedOut(const std::string &connectionKey, const std::string &methodName, const boost::json::value &payload);
+
+private:
+    static void executeRPCTask(const std::shared_ptr<void> &taskData);
+    static void sendRPCAnswer(Mantids30::Protocol::FastRPC1::FastRPC1::ThreadParameters *parameters, const std::string &answer, uint8_t executionStatus);
+
+    int processAnswer(Mantids30::Protocol::FastRPC1::FastRPC1::Connection *connection);
+    int processQuery(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &stream, const std::string &key, const float &priority, std::shared_mutex *mtDone, std::mutex *mtSocket,
+                     const std::shared_ptr<void> &context, const std::string &data);
+
+    // Stores active connections indexed by a unique key identifier.
+    Mantids30::Core::Threads::Safe::Map<std::string> m_connectionsByKeyId;
+
+    // Configuration parameters for RPC behavior.
+    // queuePushTimeoutInMS: Timeout (in milliseconds) for queue push operations.
+    // maxMessageSize: Maximum allowed message size in bytes.
+    // remoteExecutionTimeoutInMS: Timeout (in milliseconds) for remote execution.
+    // remoteExecutionDisconnectedTries: Maximum retry attempts for remote execution when disconnected.
+    std::atomic<uint32_t> m_queuePushTimeoutInMS{2000};
+    std::atomic<uint32_t> m_maxMessageSize{10 * 1024 * 1024};
+    std::atomic<uint32_t> m_remoteExecutionTimeoutInMS{5000};
+    std::atomic<uint32_t> m_remoteExecutionDisconnectedTries{10};
+
+    // Map storing available RPC methods.
+    // Key: Method name (string).
+    // boost::json::value: Corresponding method object.
+    std::map<std::string, Mantids30::Protocol::FastRPC1::FastRPC1::Method> m_methods;
+
+    // Shared mutex for synchronizing access to the methods map.
+    std::shared_mutex m_methodsMutex;
+
+    // Thread pool for handling RPC method execution.
+    Mantids30::Core::Threads::Pool::ThreadPool *m_threadPool{nullptr};
+
+    // Background thread responsible for periodic pinging to maintain connection health.
+    std::thread m_pinger;
+
+    // Optional context for overwriting specific execution behaviors.
+    std::shared_ptr<void> m_overwriteContext;
+
+    // Indicates whether the RPC system is in a finished state.
+    std::atomic<bool> m_finished{false};
+
+    // Ping-related configuration.
+    // pingIntvl: Interval (in milliseconds) between ping attempts.
+    // rwTimeout: Read/write timeout (in milliseconds) for network operations.
+    uint32_t m_pingIntvl{20};
+    uint32_t m_rwTimeout{40};
+
+    // Mutex for synchronizing ping operations.
+    std::mutex m_pingMutex;
+
+    // Condition variable used to signal ping-related events.
+    std::condition_variable m_pingCond;
+};
+
+} // namespace Mantids30::Protocol::FastRPC1

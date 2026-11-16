@@ -1,0 +1,161 @@
+#pragma once
+
+#include "apiserver_clienthandler.h"
+#include "apiserver_config.h"
+#include <Mantids30/Server/WebRESTFul/api_websocket_endpoints.h>
+#include <Mantids30/Core/Memory/b_mem.h>
+#include <Mantids30/Network/Sockets/acceptor_multithreaded.h>
+#include <Mantids30/Network/Sockets/acceptor_poolthreaded.h>
+#include <Mantids30/Network/Sockets/socket_stream.h>
+#include <Mantids30/Network/Sockets/socket_stream_dummy.h>
+#include <Mantids30/Runtime/Logs/rpclog.h>
+#include <list>
+#include <memory>
+
+namespace Mantids30::Server::WebRESTFul {
+
+class APIServerCore
+{
+public:
+    struct Callbacks
+    {
+        /**
+         * @brief NotificationCallback A callback function that is invoked when a new client connection is established.
+         *
+         * This callback allows you to perform actions when a new client successfully connects to the server.
+         *
+         * @param context A user-defined context that can be passed to the callback function.
+         * @param sock The newly established socket connection.
+         * @return True to continue processing the connection, false to cancel it.
+         */
+        struct NotificationCallback
+        {
+            NotificationCallback() = default;
+
+            /**
+             * @brief NotificationCallback Constructor.
+             *
+             * @param callbackFunction The callback function to be invoked.
+             */
+            NotificationCallback(bool (*callbackFunction)(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &)) { this->callbackFunction = callbackFunction; }
+
+            /**
+             * @brief call Invokes the callback function with the provided context and socket.
+             *
+             * @param context A user-defined context that can be passed to the callback function.
+             * @param sock The socket connection to be processed.
+             * @return True if the callback returns true, false otherwise.
+             */
+            bool call(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock) const
+            {
+                if (!callbackFunction)
+                {
+                    return true;
+                }
+                return callbackFunction(context, sock);
+            }
+            /**
+             * @brief The callback function to be invoked when a new client connection is established.
+             *
+             * @param context A user-defined context that can be passed to the callback function.
+             * @param sock The newly established socket connection.
+             * @return True to continue processing the connection, false to cancel it.
+             */
+            bool (*callbackFunction)(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &) = nullptr;
+        };
+
+        NotificationCallback onClientConnected;                   ///< Callback invoked when a new client connects.
+        NotificationCallback onProtocolInitializationFailure;     ///< Callback invoked when protocol initialization fails.
+        NotificationCallback onClientAcceptTimeoutOccurred;       ///< Callback invoked when a client connection times out during acceptance.
+        NotificationCallback onClientConnectionLimitPerIPReached; ///< Callback invoked when the connection limit per IP address is reached.
+    };
+
+    APIServerCore();
+
+    void handleVirtualConnection(const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream_Dummy> &virtualConnection);
+
+    /**
+     * @brief setAcceptMultiThreaded Configures the server to start in multi-threaded mode where the number of threads grows as connections are received.
+     *
+     * In this mode, each incoming connection is handled by a new thread up to the specified maximum number of concurrent connections.
+     *
+     * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
+     */
+    void setAcceptMultiThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
+
+    /**
+     * @brief setAcceptPoolThreaded Configures the server to start in pool-threaded mode with a fixed number of pre-started threads.
+     *
+     * In this mode, incoming connections are queued and handled by a fixed pool of worker threads. Each thread can handle multiple connections up to the specified task queue limit.
+     *
+     * @param listenerSockets A list of prepared listener sockets (e.g., TCP, TLS) that will be used to accept incoming connections.
+     */
+    void setAcceptPoolThreaded(const std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> &listenerSockets, const boost::property_tree::ptree &ptree = {});
+
+    /**
+     * @brief startInBackground Starts the server in the background.
+     *
+     * This method will initiate the server's operation based on the configuration set by either `setAcceptMultiThreaded` or `setAcceptPoolThreaded`.
+     */
+    void startInBackground();
+
+    // Seteables (before starting the acceptor, non-thread safe):
+    Callbacks callbacks;    ///< The callbacks object used by the web server.
+    APIServerConfig config; ///< The api server configuration parameters
+
+    [[nodiscard]] std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> getListenerSockets() const;
+    /**
+     * @brief setWebsocketEndpoints Set websocket endpoints and overwrite configuration parameters.
+     * @param newWebsocketEndpoints
+     */
+    void setWebsocketEndpoints(const std::shared_ptr<Mantids30::Server::WebRESTFul::WebSocket::Endpoints> &newWebsocketEndpoints);
+
+protected:
+    virtual std::shared_ptr<APIServer_ClientHandler> createNewAPIServer_ClientHandler(APIServerCore *webServer, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &s) { return nullptr; }
+
+    /**
+     * @brief checkEngineStatus Check if the engine is properly configured to be started or not.
+     *                          if is not properly configured, you should destroy everything because is a programming error.
+     *                          by example: not initializing some required variable should trigger an uncaught exeption.
+     */
+    virtual void checkEngineStatus() {}
+
+    /**
+     * @brief m_websocketEndpoints WebSocket endpoints shared pointer
+     */
+    std::shared_ptr<Mantids30::Server::WebRESTFul::WebSocket::Endpoints> m_websocketEndpoints;
+
+private:
+    enum class AcceptorType : uint8_t
+    {
+        NONE,
+        POOL_THREADED,
+        MULTI_THREADED,
+    };
+
+    AcceptorType m_acceptorType = AcceptorType::NONE;
+    std::list<std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream>> m_listenerSockets;
+
+    std::shared_ptr<Mantids30::Network::Sockets::Acceptors::MultiThreaded> m_multiThreadedAcceptor;
+    std::shared_ptr<Mantids30::Network::Sockets::Acceptors::PoolThreaded> m_poolThreadedAcceptor;
+
+    /**
+     * callback when connection is fully established (if the callback returns false, connection socket won't be automatically closed/deleted)
+     */
+    static void handleConnect(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
+    /**
+     * callback when protocol initialization failed (like bad X.509 on TLS) (if the callback returns false, connection socket won't be automatically closed/deleted)
+     */
+    static void handleInitFailed(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
+    /**
+     * callback when timed out (all the thread queues are saturated) (this callback is called from acceptor thread, you should use it very quick)
+     */
+    static void handleTimeOut(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
+
+    /**
+     * @brief _onConnectionLimit
+     */
+    static void handleConnectionLimit(void *, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &);
+};
+
+} // namespace Mantids30::Server::WebRESTFul

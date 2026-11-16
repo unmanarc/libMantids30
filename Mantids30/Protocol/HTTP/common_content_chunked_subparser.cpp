@@ -1,0 +1,56 @@
+#include "common_content_chunked_subparser.h"
+#include <cstdio>
+#include <cstring>
+
+using namespace Mantids30::Protocol;
+using namespace Mantids30;
+
+Mantids30::Protocol::HTTP::ContentChunkedTransformer::ContentChunkedTransformer(StreamableObject *upStreamOut)
+{
+    this->upStreamOut = upStreamOut;
+}
+
+Mantids30::Protocol::HTTP::ContentChunkedTransformer::~ContentChunkedTransformer()
+{
+    writeEOF();
+}
+
+std::optional<size_t> Mantids30::Protocol::HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
+{
+    if (count == 0)
+    {
+        // Set finished status (EOF)
+        if (!upStreamOut->writeString(m_pos == 0 ? "0\r\n\r\n" : "\r\n0\r\n\r\n"))
+        {
+            writeStatus += -1;
+            return std::nullopt;
+        }
+        return 0;
+    }
+
+    if (count + 64 < count)
+    {
+        // Error writting on this (source error...).
+        writeStatus += -1;
+        upStreamOut->writeStatus += -1;
+        return std::nullopt;
+    }
+
+    upStreamOut->strPrintf(m_pos == 0 ? "%X\r\n" : "\r\n%X\r\n", static_cast<unsigned int>(count));
+    if (!upStreamOut->writeStatus.succeed)
+    {
+        writeStatus += -1;
+        return std::nullopt;
+    }
+
+    if (!upStreamOut->writeFullStream(buf, count))
+    {
+        return std::nullopt;
+    }
+    else
+    {
+        m_pos += count;
+    }
+
+    return count;
+}

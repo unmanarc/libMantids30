@@ -1,0 +1,398 @@
+#include <Mantids30/DataFormat/JSON/json.h>
+#include  "htmliengine.h"
+#include <Mantids30/Core/Helpers/encoders.h>
+#include <Mantids30/DataFormat/JSON/streamable_json.h>
+#include <Mantids30/Runtime/Logs/rpclog.h>
+#include <Mantids30/Protocol/HTTP/api_return.h>
+#include <Mantids30/Protocol/HTTP/httpv1_base.h>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/replace.hpp>
+#include <Mantids30/Core/Helpers/crypto.h>
+
+#include <boost/regex.hpp>
+#include <fstream>
+#include <regex>
+
+using namespace Mantids30::Runtime::Logs;
+using namespace Mantids30::Protocol;
+using namespace Mantids30::Core::Memory;
+using namespace Mantids30::Server::WebRESTFul;
+using namespace Mantids30;
+using namespace std;
+
+// TODO: documentar los privilegios cargados de un usuario
+// TODO: create a TTL for start =  fileContent.begin(); and end = fileContent.end(); on loops to avoid infinite loops in cross-references...
+
+string HTMLIEngine::replaceByJVar(const boost::json::value &value, const std::string &scriptVarName, bool useHTMLFrame)
+{
+    std::string str = boost::json::serialize(value);
+    str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
+
+    boost::replace_all(str, "<", "\\<");
+    boost::replace_all(str, ">", "\\>");
+
+    if (!scriptVarName.empty())
+    {
+        if (useHTMLFrame)
+        {
+            str = "<script>\nconst " + scriptVarName + " = " + str + ";\n</script>";
+        }
+        else
+        {
+            str = "const " + scriptVarName + " = " + str + ";\n";
+        }
+    }
+
+    return str;
+}
+
+Mantids30::Protocol::HTTP::Status::Code HTMLIEngine::processResourceFile(APIServer_ClientHandler *clientHandler, const std::string &sRealFullPath)
+{
+    // Drop the MMAP container:
+    std::string fileContent;
+    bool usingHTMLiHeuristic;
+
+    // the server response will be the default data chunk (remove the current data streamer and put a default one):
+    clientHandler->serverResponse.setContentDataStreamer(nullptr,true);
+
+    // Load the file content.
+    if (boost::starts_with(sRealFullPath, "MEM:"))
+    {
+        // Mem-Static resource.
+        fileContent = (static_cast<Mantids30::Core::Memory::Containers::B_MEM *>(clientHandler->getResponseContentStreamableObject().get()))->toStringEx();
+    }
+    else
+    {
+        // Local resource.
+        std::ifstream fileStream(sRealFullPath);
+        if (!fileStream.is_open())
+        {
+            clientHandler->log(LogLevel::ERROR, "fileServer", 2048, "file not found: %s", sRealFullPath.c_str());
+            return Mantids30::Protocol::HTTP::Status::Code::S_404_NOT_FOUND;
+        }
+        // Pass the file to a string.
+        fileContent = std::string((std::istreambuf_iterator<char>(fileStream)), std::istreambuf_iterator<char>());
+        fileStream.close();
+    }
+
+    usingHTMLiHeuristic = fileContent.find("//<%")!=std::string::npos || fileContent.find("<!--<%")!=std::string::npos;
+
+    // CINC PROCESSOR (process the file content):
+    procResource_HTMLIEngineInclude(sRealFullPath, clientHandler->serverResponse.contentType, fileContent, clientHandler);
+    procResource_JProcessor(sRealFullPath, fileContent, clientHandler);
+
+    if (!usingHTMLiHeuristic)
+    {
+        // leave the previous loaded etag and last-modified...
+    }
+    else
+    {
+
+        if (!fileContent.empty())
+        {
+            /* Generate ETag: SHA256 of processed content (first 16 hex chars) */
+            std::string sha256Hash = Mantids30::Core::Helpers::Crypto::calcSHA256(fileContent);
+            clientHandler->serverResponse.etag.setValue(sha256Hash.substr(0, 16));
+            clientHandler->serverResponse.etag.setWeak(false);
+
+            /* Enable caching with revalidation */
+            clientHandler->serverResponse.cacheControl.optionNoStore = false;
+            clientHandler->serverResponse.cacheControl.optionNoCache = true;
+            clientHandler->serverResponse.cacheControl.optionMustRevalidate = true;
+            clientHandler->serverResponse.headers.remove("Last-Modified");
+        }
+    }
+
+    // Stream the generated content to the current clean data streamer...
+    clientHandler->getResponseContentStreamableObject()->writeString(fileContent);
+
+    return Mantids30::Protocol::HTTP::Status::Code::S_200_OK;
+}
+
+void HTMLIEngine::iProcResource_JProcessor(string &input, const std::regex &re, const string &sRealFullPath, APIServer_ClientHandler *clientHandler, bool useHTMLFrame)
+{
+    size_t pos = 0;
+
+    // Search every J processor in one big loop and replace in place and continue... so won't be a chance to re-ingest anything...
+    for (;;)
+    {
+        std::smatch match;
+        std::string::const_iterator start_it = input.begin() + pos;
+        std::string::const_iterator end_it = input.end();
+
+        if (!std::regex_search(start_it, end_it, match, re))
+        {
+            break;
+        }
+
+        int absolute_pos = static_cast<int>(std::distance(input.cbegin(), match[0].first));
+        int length = match.length();
+
+        if (match.size() >= 3)
+        {
+            std::string command = match[1];
+            std::string value = match[2];
+            std::string replacedBy = "null";
+            std::string scriptVarName = "varName";
+
+            if (boost::istarts_with(command, "VAR/"))
+            {
+                scriptVarName = command.c_str() + 3 + 1;
+                // %JVAR PROCESSOR:
+                replacedBy = procResource_HTMLIEngineJVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
+            }
+            if (boost::istarts_with(command, "GETVAR/"))
+            {
+                scriptVarName = command.c_str() + 6 + 1;
+                // %JGETVAR PROCESSOR:
+                replacedBy = procResource_HTMLIEngineJGETVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
+            }
+            if (boost::istarts_with(command, "POSTVAR/"))
+            {
+                scriptVarName = command.c_str() + 7 + 1;
+                // %JPOSTVAR PROCESSOR:
+                replacedBy = procResource_HTMLIEngineJPOSTVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
+            }
+            if (boost::istarts_with(command, "FUNC/"))
+            {
+                scriptVarName = command.c_str() + 4 + 1;
+                // %JFUNC PROCESSOR:
+                replacedBy = procResource_HTMLIEngineJFUNC(sRealFullPath, scriptVarName, value, clientHandler, useHTMLFrame);
+            }
+            if (boost::istarts_with(command, "SESS/"))
+            {
+                scriptVarName = command.c_str() + 4 + 1;
+                // %JSESSVAR PROCESSOR:
+                replacedBy = procResource_HTMLIEngineJSESSVAR(scriptVarName, value, sRealFullPath, clientHandler, useHTMLFrame);
+            }
+
+            input.replace(absolute_pos, length, replacedBy);
+            pos = absolute_pos + replacedBy.size();
+        }
+    }
+}
+
+void HTMLIEngine::procResource_JProcessor(const std::string &sRealFullPath, std::string &input, APIServer_ClientHandler *clientHandler)
+{
+    std::regex reHTML("<!--<%[jJ]([a-zA-Z0-9_\\/]+):[ ]*([^%]*)[ ]*%>-->");
+    std::regex reJS(R"(\/\/<%[jJ]([a-zA-Z0-9_\/]+):[ ]*([^%]*)[ ]*%>\/\/)");
+
+    iProcResource_JProcessor(input, reJS, sRealFullPath, clientHandler, false);
+    iProcResource_JProcessor(input, reHTML, sRealFullPath, clientHandler, true);
+}
+
+std::string HTMLIEngine::procResource_HTMLIEngineJSESSVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                          bool useHTMLFrame)
+{
+    // %JSESSVAR PROCESSOR:
+
+    // Report as not found.
+    if (!clientHandler->doesSessionVariableExist(varName))
+    {
+        // look in post/get
+        clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+    }
+    else
+    {
+        return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName, useHTMLFrame);
+    }
+}
+
+std::string HTMLIEngine::procResource_HTMLIEngineJVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                      bool useHTMLFrame)
+{
+    boost::json::value jVars, jNull;
+    Mantids30::DataFormat::JSON::setMember(jVars, "softwareVersion", clientHandler->config->softwareVersion);
+
+    // Fill the jVars with session info (common to every API Server) and extra info (specific to the API server implementation)
+    clientHandler->fillSessionInfo(jVars);
+    clientHandler->fillSessionExtraInfo(jVars);
+
+    bool isSessionVar = clientHandler->doesSessionVariableExist(varName);
+    bool isJVar = Mantids30::DataFormat::JSON::HAS_MEMBER(jVars, varName);
+
+    // Report as not found.
+    if (!isSessionVar && !isJVar)
+    {
+        // look in post/get
+        clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "Main variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+    }
+    else
+    {
+        // jvar is from a set of constructed variables (remote address, user agent, etc...)
+        if (isJVar)
+        {
+            return replaceByJVar(Mantids30::DataFormat::JSON::MEMBER_OR_NULL(jVars, varName), scriptVarName, useHTMLFrame);
+        }
+        // Session vars are set by the application or the JWT token:
+        else if (isSessionVar)
+        {
+            return replaceByJVar(clientHandler->getSessionVariableValue(varName), scriptVarName, useHTMLFrame);
+        }
+
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+    }
+}
+
+// Function to process JGETVAR tags in the file content
+std::string HTMLIEngine::procResource_HTMLIEngineJGETVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                         bool useHTMLFrame)
+{
+    // Obtain using GET Vars...
+    if (clientHandler->clientRequest.getVarsBySource(Mantids30::Protocol::HTTP::Source::GET)->exist(varName))
+    {
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(Mantids30::Protocol::HTTP::Source::GET)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
+    }
+    // Report as not found.
+    else
+    {
+        // look in post/get
+        clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "GET variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+    }
+}
+
+std::string HTMLIEngine::procResource_HTMLIEngineJPOSTVAR(const std::string &scriptVarName, const std::string &varName, const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler,
+                                                          bool useHTMLFrame)
+{
+    // Obtain using POST Vars...
+    if (clientHandler->clientRequest.getVarsBySource(Mantids30::Protocol::HTTP::Source::POST)->exist(varName))
+    {
+        return replaceByJVar(boost::json::value(clientHandler->clientRequest.getVarsBySource(Mantids30::Protocol::HTTP::Source::POST)->getTValue<std::string>(varName)), scriptVarName, useHTMLFrame);
+    }
+    // Report as not found.
+    else
+    {
+        // look in post/get
+        clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "POST variable not found: '%s' on resource '%s'", varName.c_str(), sRealFullPath.c_str());
+        return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+    }
+}
+
+boost::json::value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, APIServer_ClientHandler *clientHandler, const std::string &functionName, const std::string &functionInput)
+{
+    Mantids30::Protocol::HTTP::APIReturn apiReturn;
+
+    boost::json::value vars;
+    // Parse the JSON header using the boost::json library
+    boost::json::value header;
+    std::string errs;
+
+    if (!Mantids30::DataFormat::JSON::parse(functionInput, vars, &errs))
+    {
+        clientHandler->log(LogLevel::ERROR, "fileserver", 4096, "JSON parsing failed for input: '%s' on resource '%s'. Error: %s", functionInput.c_str(), sRealFullPath.c_str(), errs.c_str());
+    }
+
+    // Regular expression to split the components (eg. //<%jfunc/loginMode:GET/v1/getLoginMode({})%>//)
+    std::regex exFunctionNameSplit(R"(^([^/]+)/v([^/]+)/(.+)$)");
+    std::smatch matches;
+    if (std::regex_match(functionName, matches, exFunctionNameSplit))
+    {
+        std::string METHOD_MODE = matches[1];
+        std::string VERSION = matches[2];
+        std::string FUNCTION_NAME = matches[3];
+        uint32_t xversion = static_cast<uint32_t>(strtoul(VERSION.c_str(), nullptr, 10));
+
+        apiReturn = clientHandler->handleAPIRequest("/", xversion, METHOD_MODE, FUNCTION_NAME, vars);
+    }
+    else
+    {
+        apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName, vars);
+    }
+
+    // Eg. Response:     const loginMode = {"body":{"app":{"description":"Test APP","name":"TEST"},"mode":"DOMAIN"},"httpResponseCode":200};
+    return apiReturn.toJSON();
+}
+
+std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealFullPath, const std::string &scriptVarName, const std::string &functionDef, APIServer_ClientHandler *clientHandler,
+                                                       bool useHTMLFrame)
+{
+    // TODO: como revisar que realmente termine en ) y no haya un ) dentro del json
+    std::regex exStaticJsonFunction(R"(([^\(]+)\(([^\)]*)\))");
+
+    std::smatch whatStaticText;
+    std::string::const_iterator start = functionDef.begin();
+    std::string::const_iterator end = functionDef.end();
+
+    // Search for matches in the file content
+    if (std::regex_search(start, end, whatStaticText, exStaticJsonFunction))
+    {
+        // The full tag found in the file content (e.g., <%jfuncVar: Function(param)%>)
+        std::string fulltag = whatStaticText[0].str();
+
+        // Second group: function name (e.g., "Function")
+        std::string functionName = whatStaticText[1].str();
+
+        // Third group: function input/parameters (e.g., "param")
+        std::string functionInput = whatStaticText[2].str();
+        Mantids30::Core::Helpers::Encoders::replaceHexCodes(functionInput);
+
+        return replaceByJVar(procJAPI_Exec(sRealFullPath, clientHandler, functionName, functionInput), scriptVarName, useHTMLFrame);
+    }
+
+    return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
+}
+
+void HTMLIEngine::iProcResource_HTMLIEngineInclude(const std::string &sRealFullPath, std::string &fileContent, APIServer_ClientHandler *clientHandler, const boost::regex &exStaticText)
+{
+    // PRECOMPILE _STATIC_TEXT
+    boost::match_flag_type flags = boost::match_default;
+
+    boost::match_results<string::const_iterator> whatStaticText;
+    for (string::const_iterator start = fileContent.begin(), end = fileContent.end(); //
+         boost::regex_search(start, end, whatStaticText, exStaticText, flags);        // FIND REGEXP
+         start = fileContent.begin(), end = fileContent.end())                        // RESET AND RECHECK EVERYTHING
+    {
+        string fulltag = string(whatStaticText[0].first, whatStaticText[0].second);
+        string tag = string(whatStaticText[1].first, whatStaticText[1].second);
+        string includePath = string(whatStaticText[2].first, whatStaticText[2].second);
+        //      string tagClose     = string(whatStaticText[3].first, whatStaticText[3].second);
+
+        // GET THE TAG DATA HERE...
+        // The path is relative to documentRootPath (beware: admits transversal)
+        std::string streamFilePath = clientHandler->config->getDocumentRootPath() + includePath;
+        std::ifstream fileIncludeStream(streamFilePath);
+
+        if (fileIncludeStream.is_open())
+        {
+            std::string includeFileContent((std::istreambuf_iterator<char>(fileIncludeStream)), std::istreambuf_iterator<char>());
+            if (!tag.empty() && tag.size() > 1 && tag.at(0) == '/')
+            {
+                boost::replace_all(fileContent, fulltag, "<" + tag.substr(1) + ">" + includeFileContent + "</" + tag.substr(1) + ">");
+            }
+            else
+            {
+                boost::replace_all(fileContent, fulltag, includeFileContent);
+            }
+        }
+        else
+        {
+            boost::replace_all(fileContent, fulltag, "<!-- HTMLI ENGINE ERROR (FILE NOT FOUND): " + includePath + " -->");
+
+            clientHandler->log(LogLevel::ERROR, "HTMLI", 2048, "Included file not found: '%s' in resource '%s'", streamFilePath.c_str(), sRealFullPath.c_str());
+        }
+
+        // // Move the start iterator to the beginning (maybe we need to reprocess the whole thing after some modifications)...
+        // start =  fileContent.begin();
+        // end = fileContent.end();
+    }
+}
+
+// Function to process the HTMLI include tags within the file content
+void HTMLIEngine::procResource_HTMLIEngineInclude(const std::string &sRealFullPath, const std::string &contentType, std::string &fileContent, APIServer_ClientHandler *clientHandler)
+{
+    // CINC PROCESSOR:
+    boost::regex reIncludeHTML(R"(<!--<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>-->)", boost::regex::icase);
+    boost::regex reIncludeJS(R"(//<\%?include(?<SCRIPT_TAG_NAME>[^\:]*):[ ]*(?<PATH>[^\%]+)[ ]*\%>//)", boost::regex::icase);
+
+    if (contentType == "application/javacript")
+    {
+        iProcResource_HTMLIEngineInclude(sRealFullPath, fileContent, clientHandler, reIncludeJS);
+    }
+    else
+    {
+        iProcResource_HTMLIEngineInclude(sRealFullPath, fileContent, clientHandler, reIncludeHTML);
+    }
+}

@@ -1,0 +1,220 @@
+#pragma once
+
+#include "apiserver_config.h"
+#include <Mantids30/Server/WebRESTFul/session.h>
+#include <Mantids30/Core/Memory/streamable_string.h>
+#include <Mantids30/Protocol/HTTP/websocket_eventtype.h>
+
+#include <Mantids30/Server/WebRESTFul/api_websocket_endpoints.h>
+#include <Mantids30/DataFormat/JWT/jwt.h>
+#include <Mantids30/DataFormat/JSON/streamable_json.h>
+#include <Mantids30/Protocol/HTTP/api_return.h>
+#include <Mantids30/Protocol/HTTP/httpv1_server.h>
+
+#include <memory>
+
+namespace Mantids30::Server::WebRESTFul {
+
+class APIServer_ClientHandler : public Mantids30::Protocol::HTTP::HTTPv1_Server
+{
+public:
+    APIServerConfig *config = nullptr;
+
+    APIServer_ClientHandler(void *parent, const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &sock);
+
+protected:
+    /**
+     * @brief log Log to weblog
+     * @param jWebLog weblog paramaters
+     */
+    void log(boost::property_tree::ptree &jWebLog) override;
+
+    virtual Mantids30::Protocol::HTTP::Status::Code checkWebSocketRequestURI(const std::string &path) { return Mantids30::Protocol::HTTP::Status::Code::S_404_NOT_FOUND; }
+
+    /**
+     * @brief Called when HTTP client headers are received for WebSocket connection
+     * @return true to continue WebSocket handshake, false to send HTTP error response.
+     *
+     */
+    bool onWebSocketHTTPClientHeadersReceived() override;
+    /**
+     * @brief Called when WebSocket connection is successfully established
+     * Use to start threads, initialize connection-specific resources, or trigger events
+     */
+    void onWebSocketConnectionEstablished() override;
+    /**
+     * @brief Called when a WebSocket binary frame is received
+     * Process incoming frame in this callback
+     */
+    void onWebSocketBinaryDataFrameReceived() override;
+    /**
+     * @brief Called when a WebSocket text frame is received
+     * Process incoming frame in this callback
+     */
+    void onWebSocketTextFrameReceived() override;
+    /**
+     * @brief Called when a WebSocket ping is received
+     * Update keepalive monitors and connection health status here
+     */
+    void onWebSocketPingReceived() override;
+    /**
+     * @brief Called when a WebSocket pong is received
+     * Update keepalive monitors and connection health status here
+     */
+    void onWebSocketPongReceived() override;
+    /**
+     * @brief Called when WebSocket connection is terminated
+     * Clean up resources and perform connection cleanup operations
+     */
+    void onWebSocketConnectionFinished() override;
+    /**
+     * @brief onHTTPClientContentReceived Process web client request
+     * @return http response code.
+     */
+    Mantids30::Protocol::HTTP::Status::Code onHTTPClientContentReceived() override;
+    /**
+     * @brief sessionStart Retrieve/Start the session
+     * @return S_200_OK for everything ok, any other value will return with that code immediately.
+     */
+    virtual Mantids30::Protocol::HTTP::Status::Code sessionStart() = 0;
+    /**
+     * @brief sessionCleanUp Clean up / release the session when finishing all the processing...
+     * @return S_200_OK for good cleaning.
+     */
+    virtual void sessionCleanup() = 0;
+    /**
+     * @brief sessionFillVars Fill vars like csrf token, session max age and other related data to the session...
+     * @param jVars vars to be filled
+     */
+    virtual void fillSessionExtraInfo(boost::json::value &jVars) {}
+    /**
+     * @brief fillSessionInfo Fill user data vars like username, domain, TLS Common Name...
+     * @param jVars vars to be filled into a JSON structure
+     */
+    void fillSessionInfo(boost::json::value &jVars);
+    /**
+     * @brief doesSessionVariableExist check if a sesion variable exist.
+     * @param varName variable name
+     * @return return true if variable exist, else otherwise
+     */
+    virtual bool doesSessionVariableExist(const std::string &varName) = 0;
+    /**
+     * @brief getSessionVariableValue Get the session variable by name
+     * @param varName variable name
+     * @return return the session variable
+     */
+    virtual boost::json::value getSessionVariableValue(const std::string &varName) = 0;
+
+    /**
+     * @brief Handles an API request and writes the response to the client.
+     *
+     * This method processes an API request by interpreting the provided parameters,
+     * executing the appropriate logic for the specified API version, method, and mode,
+     * and preparing a response that is written back to the client.
+     *
+     * @param baseApiUrl The base URL for the API, used to construct resource paths or endpoints.
+     * @param apiVersion The version of the API being requested.
+     * @param httpMethodType The type of the API method, such as GET, POST, PUT, DELETE, etc.
+     * @param endpointName The name of the API method to execute.
+     * @param postParameters A JSON object containing parameters sent in the POST body.
+     *
+     * @return Retorn an object where the result of the API request will be stored.
+     */
+    virtual Mantids30::Protocol::HTTP::APIReturn handleAPIRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &httpMethodType, const std::string &endpointName,
+                                            const boost::json::value &postParameters)
+        = 0;
+
+    virtual Mantids30::Protocol::HTTP::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
+
+    /**
+     * @brief handleWebSocketEvent Handle Web Socket Event from the client
+     * @return return code for api request
+     */
+    virtual void handleWebSocketEvent(Mantids30::Protocol::HTTP::WebSocket::EventType, const Mantids30::Server::WebRESTFul::WebSocket::Endpoint *) = 0;
+    /**
+     * @brief handleAuthFunctions Handle API Authentication Functions (login, logout, etc) and write the response to the client...
+     * @return return code for api request
+     */
+    virtual Mantids30::Protocol::HTTP::Status::Code handleAuthFunctions(const std::string &baseApiUrl, const std::string &authFunctionName)
+    {
+        // Implement this to handle authorizations from any other IAM's
+        // Meanwhile, you may want to use a proxy to a WebSessionAuthHandler or implement your own.
+        return Mantids30::Protocol::HTTP::Status::Code::S_501_NOT_IMPLEMENTED;
+    }
+
+    /**
+     * @brief handleAuthFunctions Handle API Information (Version, endpoints, and so)...
+     * @return return code for api request
+     */
+    virtual boost::json::value handleAPIInfo(const std::string &baseApiUrl) { return boost::json::value{}; }
+
+    /**
+     * @brief log Log to RPC Log
+     * @param logLevel
+     * @param module
+     * @param outSize
+     * @param fmtLog
+     */
+    void log(Mantids30::Runtime::Logs::LogLevel logLevel, const std::string &module, const uint32_t &outSize, const char *fmtLog, ...);
+    /**
+     * @brief Verifies a JWT token and extracts user data if valid.
+     *
+     * This function validates a JWT token provided as a string and, if valid, populates
+     * the user data structure with relevant information extracted from the token's claims.
+     *
+     * @param strToken The JWT token string to be verified.
+     *
+     * @return `true` if the token is valid and verification succeeds, `false` otherwise.
+     *
+     * @details
+     * - The function utilizes `m_APIServerConfig->jwtValidator` to verify the provided
+     *   JWT token (`strToken`). The verification result is stored in `result`.
+     * - If the token is valid and the `m_JWTToken` object reflects a valid state:
+     *   - The `userName` is set from the token's subject.
+     *   - The `domainName` is extracted from the "domain" claim (using a macro `Mantids30::DataFormat::JSON::ASSTRING_D`
+     *     to handle default values).
+     *   - All claims and scopes from the token are stored in `m_userData`.
+     *   - The `sessionId` and `halfSessionId` are set from the token's JWT ID.
+     *   - The `loggedIn` flag is set to `true` if `userName` is not empty.
+     *   - The `sessionActive` flag is set to `true` to indicate an active session.
+     *
+     * The function returns `true` if the token passes verification and the extracted data
+     * is valid, otherwise `false`.
+     */
+    [[nodiscard]] bool verifyToken(const std::string &strToken);
+    [[nodiscard]] virtual bool isSessionActive() = 0;
+    [[nodiscard]] virtual std::set<std::string> getSessionScopes() = 0;
+    [[nodiscard]] virtual std::set<std::string> getSessionRoles() = 0;
+    [[nodiscard]] virtual bool isAdmin() = 0;
+    // Function to check if the URL contains any invalid characters
+    [[nodiscard]] bool isURLSafe(const std::string &url);
+    [[nodiscard]] bool isRedirectPathSafeForAuth(const std::string &url) const;
+
+    Mantids30::Protocol::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Mantids30::Protocol::HTTP::Status::Code returnCode);
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
+
+    Mantids30::DataFormat::JWT::JWT::Token jwtToken;
+    // This session info is used for the logs and for filling htmli variables.
+    Mantids30::Server::WebRESTFul::Sessions::SessionInfo currentSessionInfo;
+
+protected:
+    Mantids30::Protocol::HTTP::Status::Code redirectUsingJS(const std::string &url);
+
+    // Websocket endpoints:
+    std::shared_ptr<Mantids30::Server::WebRESTFul::WebSocket::Endpoints> m_websocketEndpoints;
+    std::string m_webSocketSessionId;
+    const Mantids30::Server::WebRESTFul::WebSocket::Endpoint *m_webSocketCurrentEndpoint = nullptr;
+
+private:
+    std::string logUsername;
+    void langProcessViaMantidsLang(const LocalRequestedFileInfo & fileInfo);
+
+    Mantids30::Protocol::HTTP::Status::Code langProcessAcceptedResource(uint16_t statusCode, Mantids30::Server::WebRESTFul::ResourcesFilter::ProcessingMode processingMode,const LocalRequestedFileInfo & fileInfo);
+    Mantids30::Protocol::HTTP::Status::Code handleRegularFileRequest();
+    bool versionIsSupported(const std::string &versionStr, int minVersion);
+    bool isSupportedUserAgent(const std::string &userAgent);
+    friend class HTMLIEngine;
+    friend class APIServerCore;
+};
+
+} // namespace Mantids30::Server::WebRESTFul

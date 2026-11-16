@@ -1,0 +1,73 @@
+#include "jwt.h"
+
+using namespace Mantids30::DataFormat::JWT;
+
+JWT::Revocation::Revocation()
+{
+    m_garbageCollectorThread = std::thread(&Revocation::garbageCollector, this);
+}
+
+JWT::Revocation::~Revocation()
+{
+    m_stopGarbageCollector = true;
+    m_garbageCollectorCondition.notify_one();
+    if (m_garbageCollectorThread.joinable())
+    {
+        m_garbageCollectorThread.join();
+    }
+}
+
+void JWT::Revocation::addToRevocationList(const std::string &signature, time_t expirationTime)
+{
+    std::unique_lock<std::shared_mutex> writeLock(m_revokedTokensMutex);
+    m_expirationSignatures.insert({expirationTime, signature});
+    m_revokedTokens.insert(signature);
+}
+
+bool JWT::Revocation::isSignatureRevoked(const std::string &signature)
+{
+    std::shared_lock<std::shared_mutex> readLock(m_revokedTokensMutex);
+
+    // TODO: can you modify a signature to ...
+    return m_revokedTokens.find(signature) != m_revokedTokens.end();
+}
+
+void JWT::Revocation::removeExpiredTokensFromRevocationList()
+{
+    std::unique_lock<std::shared_mutex> writeLock(m_revokedTokensMutex);
+
+    time_t now = std::time(nullptr);
+    std::multimap<time_t, std::string>::iterator upperBound = m_expirationSignatures.upper_bound(now);
+    for (std::multimap<time_t, std::string>::iterator it = m_expirationSignatures.begin(); it != upperBound; ++it)
+    {
+        m_revokedTokens.erase(it->second);
+    }
+
+    m_expirationSignatures.erase(m_expirationSignatures.begin(), upperBound);
+}
+
+std::chrono::seconds JWT::Revocation::garbageCollectorInterval() const
+{
+    return m_garbageCollectorInterval;
+}
+
+void JWT::Revocation::setGarbageCollectorInterval(const std::chrono::seconds &newGarbageCollectorInterval)
+{
+    m_garbageCollectorInterval = newGarbageCollectorInterval;
+}
+
+void JWT::Revocation::garbageCollector()
+{
+#ifndef _WIN32
+    pthread_setname_np(pthread_self(), "JWT:Revok:GC");
+#endif
+    std::unique_lock<std::mutex> lock(m_garbageCollectorMutex);
+    while (!m_stopGarbageCollector)
+    {
+        m_garbageCollectorCondition.wait_for(lock, m_garbageCollectorInterval);
+        if (!m_stopGarbageCollector)
+        {
+            removeExpiredTokensFromRevocationList();
+        }
+    }
+}

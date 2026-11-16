@@ -1,0 +1,93 @@
+#include "streamencoder_url.h"
+#include <Mantids30/Core/Memory/streamable_object.h>
+
+#include <cinttypes>
+#include <limits>
+
+#include <Mantids30/Core/Memory/b_chunks.h>
+#include <Mantids30/Core/Memory/b_mem.h>
+
+using namespace Mantids30::Core::Memory::Streams;
+using namespace Mantids30::Protocol::HTTP::Encoders;
+
+size_t URL::writeTo(Mantids30::Core::Memory::Streams::StreamableObject *dst, const void *buf, const size_t &count)
+{
+    size_t readenBytes = 0;
+
+    size_t maxStream = std::numeric_limits<size_t>::max();
+    maxStream /= 3;
+    maxStream -= 3;
+
+    if (count > maxStream)
+    {
+        // FAILED:
+        dst->writeStatus += -1;
+        return -1;
+    }
+
+    ///////////////////////
+    while (readenBytes < count)
+    {
+        size_t bytesToTransmitInPlain = getPlainBytesSize((static_cast<const unsigned char *>(buf)) + readenBytes, count - readenBytes);
+
+        if (bytesToTransmitInPlain > 0)
+        {
+            if (dst->writeFullStream((static_cast<const unsigned char *>(buf)) + readenBytes, bytesToTransmitInPlain))
+            {
+                readenBytes += bytesToTransmitInPlain;
+            }
+        }
+        else
+        {
+            char encodedByte[8];
+            snprintf(encodedByte, sizeof(encodedByte), "%%%02" PRIX8, *((static_cast<const unsigned char *>(buf)) + readenBytes));
+            if (dst->writeFullStream(encodedByte, 3))
+            {
+                readenBytes++;
+            }
+        }
+
+        // Stop reading on bad transmition..
+        if (!dst->writeStatus.succeed)
+        {
+            return readenBytes;
+        }
+    }
+    //m_finalBytesWritten+=cur.bytesWritten;
+    return readenBytes;
+}
+
+size_t URL::getPlainBytesSize(const unsigned char *buf, size_t count)
+{
+    for (size_t i = 0; i < count; i++)
+    {
+        if (shouldEncodeThisByte(buf[i]))
+        {
+            return i;
+        }
+    }
+    return count;
+}
+
+inline bool URL::shouldEncodeThisByte(const unsigned char &byte) const
+{
+    return !isalnum(byte);
+}
+
+std::string URL::encodeURLStr(const std::string &url)
+{
+    Mantids30::Core::Memory::Containers::B_MEM uriDecoded(url.c_str(), url.size());
+    Mantids30::Core::Memory::Containers::B_Chunks uriEncoded;
+
+    // Encode URI...
+    Mantids30::Protocol::HTTP::Encoders::URL uriEncoder;
+
+    uriEncoder.transform(&uriDecoded, &uriEncoded);
+
+    if (uriEncoded.writeStatus.succeed)
+    {
+        return uriEncoded.toStringEx();
+    }
+
+    return url;
+}

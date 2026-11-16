@@ -1,0 +1,267 @@
+#include "rpcclientapplication.h"
+#include "globals.h"
+#include <Mantids30/Core/Helpers/crypto.h>
+//#include <Mantids30/Core/Helpers/encoders.h>
+#include <Mantids30/Network/Sockets/socket_tls.h>
+
+#include <Mantids30/Core/Helpers/file.h>
+
+#include <boost/algorithm/string/replace.hpp>
+#include <optional>
+#include <sys/time.h>
+
+#ifdef _WIN32
+#include <shlobj.h>
+#endif
+
+using namespace std;
+using namespace Mantids30::Application::FastRPC1Client;
+using namespace Mantids30::Runtime::Service;
+
+void RPCClientApplication::_shutdown()
+{
+    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "SIGTERM received.");
+    rpcShutdown();
+}
+
+void RPCClientApplication::_initvars(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments)
+{
+    // init program vars.
+    globalArguments->setInifiniteWaitAtEnd(true);
+
+    /////////////////////////
+    rpcInitVars(argc, argv, globalArguments);
+
+    globalArguments->setVersion(to_string(m_appVersionMajor) + "." + to_string(m_appVersionMinor) + "." + to_string(m_appVersionSubMinor));
+
+#ifdef _WIN32
+    char folderProgramFiles[MAX_PATH];
+    SHGetSpecialFolderPathA(0, folderProgramFiles, CSIDL_PROGRAM_FILES, FALSE);
+
+    //boost::replace_all(defaultConfigDir,"/etc/", "etc/");
+    boost::replace_all(defaultConfigDir, "/", dirSlash);
+
+    defaultConfigDir = std::string(folderProgramFiles) + dirSlash + defaultConfigDir;
+#endif
+
+    globalArguments->addCommandLineOption("Service Options", 'c', "config-dir", "Configuration directory", m_defaultConfigDir, Mantids30::Core::Memory::Abstract::Var::Type::STRING);
+    globalArguments->addCommandLineOption("Encoding", 0, "encode", "Encode Configuration String", "", Mantids30::Core::Memory::Abstract::Var::Type::STRING);
+}
+
+bool RPCClientApplication::_config(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments)
+{
+    if (!globalArguments->getCommandLineOptionValue("encode")->toString().empty())
+    {
+        std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+        sleep(1);
+        std::optional<std::string> r = Mantids30::Core::Helpers::Crypto::AES256EncryptB64(globalArguments->getCommandLineOptionValue("encode")->toString(), static_cast<char *>(masterKey->data), masterKey->length);
+
+        if (r)
+        {
+            printf("%s\n", r->c_str());
+        }
+        else
+        {
+            fprintf(stderr, "Failed to decrypt.\n");
+        }
+
+        fflush(stdout);
+        exit(0);
+    }
+
+    std::string configDir = globalArguments->getCommandLineOptionValue("config-dir")->toString(),
+#ifdef _WIN32
+                configPath = configDir + "\\config.ini";
+#else
+                configPath = configDir + "/config.ini";
+#endif
+    // process config here.
+    uint8_t logMode = static_cast<uint8_t>(Mantids30::Runtime::Logs::Mode::STANDARD);
+
+    Mantids30::Runtime::Logs::AppLog initLog(static_cast<uint8_t>(Mantids30::Runtime::Logs::Mode::STANDARD));
+    initLog.enableEmptyFieldLogging = true;
+    initLog.enableAttributeNameLogging = false;
+    initLog.moduleFieldMinWidth = 36;
+    initLog.userFieldMinWidth = 1;
+
+    if (m_versionCodeName.empty())
+    {
+        initLog.log(__func__, "", "", Mantids30::Runtime::Logs::LogLevel::INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d, PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
+                    m_appVersionSubMinor, getpid());
+    }
+    else
+    {
+        initLog.log(__func__, "", "", Mantids30::Runtime::Logs::LogLevel::INFO, 2048, (globalArguments->softwareDescription + " Starting UP, version %d.%d.%d (%s), PID: %d").c_str(), m_appVersionMajor, m_appVersionMinor,
+                    m_appVersionSubMinor, m_versionCodeName.c_str(), getpid());
+    }
+
+    initLog.log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "Using config dir: %s", configDir.c_str());
+    initLog.log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "Loading configuration: %s", configPath.c_str());
+
+    boost::property_tree::ptree pMainConfig;
+
+    if (access(configDir.c_str(), R_OK))
+    {
+        initLog.log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Missing configuration dir: %s", configDir.c_str());
+        return false;
+    }
+
+    //chdir(configDir.c_str());
+
+    // Set Config:
+    if (!access(configPath.c_str(), R_OK))
+    {
+        boost::property_tree::ini_parser::read_ini(configPath, pMainConfig);
+    }
+    else
+    {
+        initLog.log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Missing configuration file: %s, loading defaults...", configPath.c_str());
+    }
+
+    // Copy Config Main
+    Globals::setLocalInitConfig(pMainConfig);
+
+    /////////////////////////////////////////////////////////////////////////
+    // LOGS OPTIONS
+    // Use syslog option:
+    if (Globals::getLC_LogsUsingSyslog())
+    {
+        logMode |= static_cast<uint8_t>(Mantids30::Runtime::Logs::Mode::SYSLOG);
+    }
+    // Applog instance
+    Globals::m_appLog = std::make_shared<Mantids30::Runtime::Logs::AppLog>(logMode);
+    LOG_APP->enableEmptyFieldLogging = true;
+    LOG_APP->enableAttributeNameLogging = false;
+    LOG_APP->enableColorLogging = Globals::getLC_LogsShowColors();
+    LOG_APP->enableDateLogging = Globals::getLC_LogsShowDate();
+    LOG_APP->userFieldMinWidth = 1;
+    LOG_APP->moduleFieldMinWidth = 36;
+
+    bool cont = true;
+
+    if (!cont)
+    {
+        return false;
+    }
+
+    return rpcConfig(argc, argv, globalArguments);
+}
+
+int RPCClientApplication::_start(int argc, char *argv[], Mantids30::Runtime::Service::Arguments::GlobalArguments *globalArguments)
+{
+    std::shared_ptr<Mantids30::Core::Helpers::Mem::BinaryDataContainer> masterKey = Globals::m_masterKey;
+
+    bool cont = true;
+
+    // Check keys:
+    {
+        Mantids30::Network::Sockets::Socket_TLS sock;
+
+        if (Globals::getLC_C2UsePSK())
+        {
+            // Check the PSK Itself...
+
+            // If failed, the application will end here...
+            Globals::m_rpcImpl->loadPSK();
+
+            // Check CA if present
+            if (!Globals::getLC_TLSCAFilePath().empty() && !sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath()))
+            {
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+            }
+        }
+        else
+        {
+            // Check CA always...
+            if (!sock.tlsKeys.loadCAFromPEMFile(Globals::getLC_TLSCAFilePath()))
+            {
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Unable to read TLS CA File %s", Globals::getLC_TLSCAFilePath().c_str());
+                cont = false;
+            }
+
+            if (!Globals::getLC_TLSCertFilePath().empty() && !sock.tlsKeys.loadPublicKeyFromPEMFile(Globals::getLC_TLSCertFilePath().c_str()))
+            {
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Cert File %s", Globals::getLC_TLSCertFilePath().c_str());
+                cont = false;
+            }
+
+            std::optional<std::string> keyPassPhrase;
+            // CHeck if the using passphrase for key
+            if (!Globals::getLC_TLSPhraseFileForPrivateKey().empty())
+            {
+                bool ok = false;
+                // Load Key
+                keyPassPhrase = Mantids30::Core::Helpers::Crypto::AES256DecryptB64(Mantids30::Core::Helpers::File::loadFileIntoString(Globals::getLC_TLSPhraseFileForPrivateKey()), (char *) masterKey->data,
+                                                                             masterKey->length);
+                if (!keyPassPhrase)
+                {
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Failed to load the passphrase from %s", Globals::getLC_TLSPhraseFileForPrivateKey().c_str());
+                    cont = false;
+                }
+                else
+                {
+                    // Key Passphrase Available...
+                    if (!Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFileEP(Globals::getLC_TLSKeyFilePath().c_str(), (char *) keyPassPhrase->c_str()))
+                    {
+                        LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Key File With PassPhrase %s", Globals::getLC_TLSKeyFilePath().c_str());
+                        cont = false;
+                    }
+                }
+            }
+            else
+            {
+                // No Key Passphrase...
+                if (!Globals::getLC_TLSKeyFilePath().empty() && !sock.tlsKeys.loadPrivateKeyFromPEMFile(Globals::getLC_TLSKeyFilePath().c_str()))
+                {
+                    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::CRITICAL, "Unable to read or invalid TLS Key File %s", Globals::getLC_TLSKeyFilePath().c_str());
+                    cont = false;
+                }
+            }
+
+            if (cont)
+            {
+                LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "PKI X.509 credentials loaded from the internal storage");
+            }
+        }
+    }
+
+    if (!cont)
+    {
+        return false;
+    }
+
+    // Start the client...
+    std::thread(
+        [this]()
+        {
+#ifdef __linux__
+            pthread_setname_np(pthread_self(), "FRPC1:Client");
+#endif
+            Globals::m_rpcImpl->runRPClient();
+        })
+        .detach();
+
+    // If retrieve config is setted up, retrieve it.
+    if (m_retrieveConfig)
+    {
+        // Obtain the config from the disk:
+        Globals::m_rpcImpl->retrieveConfigFromLocalFile();
+
+        // Obtain the config from the c2:
+        if (!Globals::m_rpcImpl->retrieveConfigFromC2())
+        {
+            // Unable to get the new config...
+        }
+
+        // Virtual function to process the jRetrievedConfig...
+        processRetrievedConfig();
+    }
+
+    // Call the start function when everything is done.
+
+    int r = rpcStart(argc, argv, globalArguments);
+
+    // Everything is running ok here...
+    LOG_APP->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, (globalArguments->softwareDescription + " started up, PID: %d").c_str(), getpid());
+    return r;
+}
