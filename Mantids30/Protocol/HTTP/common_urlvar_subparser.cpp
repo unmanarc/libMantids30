@@ -55,7 +55,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     m_pData->clear();
     if (!getParsedBuffer()->size())
     {
-        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
     }
 
     Mantids30::Protocol::HTTP::Decoders::URL urlDecoder;

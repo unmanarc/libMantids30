@@ -146,7 +146,7 @@ bool Mantids30::Protocol::HTTP::URLVars::changeToNextParser()
     case URLVarsParsingStatus::WAITING_FOR_NAME:
     {
         m_currentVarName = m_urlVarParser.getContentAsStringAndFlush();
-        if (m_urlVarParser.getFoundDelimiter() == "&" || m_urlVarParser.isStreamEnded())
+        if (m_urlVarParser.getFoundDelimiter() == "&" || (m_urlVarParser.isStreamEnded() && m_urlVarParser.getFoundDelimiter() != "="))
         {
             // AMP / END:
             return addVar(m_currentVarName, m_urlVarParser.getContentAndFlush());
