@@ -275,6 +275,7 @@ Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::Server_WebRESTF
             {
                 std::shared_ptr<Mantids30::Server::WebRESTFul::APIProxyParameters> param = Mantids30::Server::WebRESTFul::APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
+                param->appLog = appLog.get();
 
                 appLog->log0(__func__, LogLevel::INFO, "[%p] Loading proxy to path '%s' at %s Service", reinterpret_cast<void *>(webServer), param->proxyPath.c_str(), serviceName.c_str());
 

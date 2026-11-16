@@ -2,6 +2,7 @@
 
 #include "session.h"
 #include <Mantids30/Protocol/HTTP/httpv1_base.h>
+#include <Mantids30/Runtime/Logs/applog.h>
 #include <memory>
 #include <set>
 #include <string>
@@ -27,6 +28,10 @@ struct APIProxyParameters
     /// modified with the internalPath of this proxy so that the browser scopes
     /// the cookie to the proxy prefix instead of the root.
     bool transformCookiePath = false;
+
+    /// Optional application log where the proxy details its activity (connection,
+    /// upstream status, errors). When null, no logging is performed.
+    Mantids30::Runtime::Logs::AppLog *appLog = nullptr;
 };
 
 Mantids30::Protocol::HTTP::Status::Code APIProxy(const std::string &internalPath, Mantids30::Protocol::HTTP::HTTPv1_Base::Request *request,
