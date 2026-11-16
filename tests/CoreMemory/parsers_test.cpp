@@ -245,6 +245,28 @@ TEST("parsers", "protocol_pre_stream_and_recursion_budget")
     CHECK(!limited.write("header\r\nabc", 11));
 }
 
+TEST("parsers", "destination_write_errors_propagate_from_subparsers")
+{
+    auto source = std::make_shared<StreamableString>();
+    *source = "header\r\nabc";
+    for (const bool failInHeader : {true, false})
+    {
+        Protocol parser(source);
+        (failInHeader ? parser.header : parser.body).result = SubParser::ParseResult::ERROR_STREAM_WRITE;
+        Parser::ParseResult result;
+        parser.parseObject(&result);
+        CHECK(result == Parser::ParseResult::ERR_STREAM_WRITE);
+        CHECK(parser.getParseResult() == result);
+        CHECK(parser.ended);
+    }
+
+    Protocol direct;
+    CHECK(direct.initProtocol());
+    direct.header.result = SubParser::ParseResult::ERROR_STREAM_WRITE;
+    CHECK(!direct.write("header\r\n", 8));
+    CHECK(direct.getParseResult() == Parser::ParseResult::ERR_STREAM_WRITE);
+}
+
 TEST("parsers", "direct_delimiter_eof_flushes_partial_delimiter_as_payload")
 {
     Probe parser(SubParser::ParseStrategy::DIRECT_DELIMITER, 1024, "END");

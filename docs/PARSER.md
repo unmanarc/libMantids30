@@ -52,6 +52,11 @@ The parsing system is the core engine that enables all protocol implementations 
 | **SubParser** | `Core/Memory/subparser.h` | Atomic parsing engine. Handles buffer management, strategy selection, and data extraction |
 | **Parser** | `Core/Memory/parser.h` | High-level protocol orchestrator. Manages SubParser chaining, protocol lifecycle, and TTL protection |
 
+Subparsers return `ParseResult::ERROR_STREAM_WRITE` when a destination cannot accept data or EOF.
+The parent parser reports `Parser::ParseResult::ERR_STREAM_WRITE` through `parseObject()` and
+`getParseResult()`. Invalid input continues to use `ERROR` / `ERR_PARSING`.
+The HTTP client exposes destination failures as `HTTPv1::Error::STREAM_WRITE`.
+
 ## Parsing Strategies
 
 The `SubParser` class supports multiple parsing strategies via `ParseStrategy` enum, allowing the same engine to handle vastly different protocol formats:

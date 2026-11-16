@@ -4,6 +4,7 @@ target_include_directories(client_httpv1_test PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(client_httpv1_test PRIVATE Mantids30_Client_HTTPv1 Threads::Threads)
 add_test(NAME client_httpv1 COMMAND client_httpv1_test)
 add_test(NAME http_content_trailers COMMAND client_httpv1_test --trailers)
+add_test(NAME http_destination_write_errors COMMAND client_httpv1_test --write-errors)
 set_tests_properties(client_httpv1 PROPERTIES TIMEOUT 60)
 
 find_package(Python3 COMPONENTS Interpreter QUIET)

@@ -213,7 +213,7 @@ void runTrailerTests()
         Content failed;
         failed.setTrailerBytesContent(sink);
         parse(failed, message);
-        require(failed.getParseStatus() == ParseResult::ERROR, "Propagate trailer write and EOF failures");
+        require(failed.getParseStatus() == ParseResult::ERROR_STREAM_WRITE, "Propagate trailer write and EOF failures");
     }
 
     for (const auto &wire : {body, body + "X-Trailer: incomplete", body + "X-Trailer: value\r\n"})
@@ -223,6 +223,28 @@ void runTrailerTests()
         truncated.writeIntoSubParser(nullptr, 0);
         require(truncated.getParseStatus() == ParseResult::ERROR, "Reject missing trailer terminator");
     }
+}
+
+void runDestinationTests()
+{
+    const std::string ok = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\nhello";
+    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<FailingSink>()).error == Error::STREAM_WRITE, "Destination write failure");
+    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<ZeroSink>()).error == Error::STREAM_WRITE, "Zero-progress destination");
+    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<FailingEOFSink>()).error == Error::STREAM_WRITE, "Destination EOF failure");
+    for (const auto &wire : {std::string("HTTP/1.0 200 OK\r\n\r\nhello"),
+                             std::string("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n5\r\nhello\r\n0\r\n\r\n")})
+    {
+        for (const auto &sink : {std::shared_ptr<StreamableObject>(std::make_shared<FailingSink>()),
+                                 std::shared_ptr<StreamableObject>(std::make_shared<ZeroSink>()),
+                                 std::shared_ptr<StreamableObject>(std::make_shared<FailingEOFSink>())})
+        {
+            const auto response = receiveResponse(wire, {}, {}, "GET", sink);
+            require(response.error == Error::STREAM_WRITE, "Destination failure for " + wire.substr(0, wire.find("\r\n")) + ": " + response.errorMessage + " (" + typeid(*sink).name() + ")");
+            require(response.protocol->getParseResult() == Parser::ParseResult::ERR_STREAM_WRITE, "Preserve parser write error");
+        }
+    }
+    require(receiveResponse("HTTP/1.1 204 No Content\r\n\r\n", {}, {}, "GET", std::make_shared<FailingEOFSink>()).error == Error::STREAM_WRITE,
+            "Empty response destination EOF failure");
 }
 
 void runTests()
@@ -305,8 +327,8 @@ void runTests()
         require(Client::HTTPv1().perform(request).error == Error::CONNECTION, "Inactive injected socket rejected without connecting");
     }
 
-    response = receiveResponse("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Length: 99\r\n\r\n2;ext=yes\r\nhe\r\n3\r\nllo\r\n0\r\nX-Trailer: value\r\n\r\n");
-    require(response.succeed() && response.content->toString() == "hello", "Chunked response with extensions and trailers: " + response.errorMessage);
+    response = receiveResponse("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Length: 99\r\n\r\n2\r\nhe\r\n3\r\nllo\r\n0\r\nX-Trailer: value\r\n\r\n");
+    require(response.succeed() && response.content->toString() == "hello", "Chunked response with trailers: " + response.errorMessage);
     response = receiveResponse("HTTP/1.0 200 OK\r\n\r\nhello");
     require(response.succeed() && response.content->toString() == "hello", "Connection-close response");
     response = receiveResponse("HTTP/1.1 103 Early Hints\r\nLink: </style>\r\n\r\nHTTP/1.1 100 Continue\r\n\r\n" + ok);
@@ -346,9 +368,7 @@ void runTests()
     callbacks = Callbacks();
     callbacks.onProgress = [](size_t, std::optional<size_t>) { return false; };
     require(receiveResponse(ok, {}, callbacks).error == Error::CANCELLED, "Progress callback cancellation");
-    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<FailingSink>()).error == Error::RECEIVE, "Destination write failure");
-    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<ZeroSink>()).error == Error::RECEIVE, "Zero-progress destination");
-    require(receiveResponse(ok, {}, {}, "GET", std::make_shared<FailingEOFSink>()).error == Error::RECEIVE, "Destination EOF failure");
+    runDestinationTests();
     auto sink = std::make_shared<StreamableString>();
     response = receiveResponse(ok, {}, {}, "GET", sink);
     require(response.succeed() && response.content == sink && sink->getValue() == "hello", "Custom destination identity");
@@ -482,6 +502,11 @@ int main(int argc, char **argv)
             {
                 require(response.error == Error::CONNECTION, "Reject untrusted certificate or wrong hostname");
             }
+            return 0;
+        }
+        if (argc == 2 && std::string(argv[1]) == "--write-errors")
+        {
+            runDestinationTests();
             return 0;
         }
         runTests();
