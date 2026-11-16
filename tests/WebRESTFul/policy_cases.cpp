@@ -1,8 +1,12 @@
 #include "test_support.h"
+#include <Mantids30/Server/WebRESTFul/clienthandler.h>
+#include <Mantids30/Server/WebRESTFul/htmliengine.h>
 
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <chrono>
+#include <unistd.h>
 
 namespace WebRESTFulTests {
 namespace {
@@ -32,6 +36,66 @@ public:
 using Filter = Web::ResourcesFilter;
 using Action = Filter::Action;
 using ActionType = Filter::ActionType;
+
+class LoggingHandler : public Web::ClientHandler
+{
+public:
+    using Web::ClientHandler::ClientHandler;
+    using Web::APIServer_ClientHandler::handleAPIRequestFromFile;
+    using Web::APIServer_ClientHandler::log;
+    APIReturn handleAPIRequest(const std::string &base, const uint32_t &version, const std::string &method,
+                               const std::string &endpoint, const boost::json::value &parameters) override
+    {
+        if (endpoint == "throw")
+        {
+            log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "inner failure");
+            throw std::runtime_error("API failure");
+        }
+        if (endpoint == "nested")
+        {
+            try
+            {
+                handleAPIRequestFromFile("/inner.html", base, version, method, "throw", parameters);
+            }
+            catch (const std::runtime_error &)
+            {
+                log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "outer restored");
+            }
+        }
+        return Web::ClientHandler::handleAPIRequest(base, version, method, endpoint, parameters);
+    }
+};
+
+std::string captureWarnings(const std::function<void()> &action)
+{
+    const auto closeFile = [](FILE *file) { std::fclose(file); };
+    std::unique_ptr<FILE, decltype(closeFile)> output(std::tmpfile(), closeFile);
+    require(bool(output), "Cannot create log capture");
+    std::fflush(stdout);
+    const int saved = ::dup(STDOUT_FILENO);
+    require(saved >= 0, "Cannot save stdout");
+    struct RestoreOutput
+    {
+        int saved;
+        ~RestoreOutput()
+        {
+            std::fflush(stdout);
+            ::dup2(saved, STDOUT_FILENO);
+            ::close(saved);
+        }
+    } restore{saved};
+    require(::dup2(::fileno(output.get()), STDOUT_FILENO) >= 0, "Cannot redirect stdout");
+    action();
+    std::fflush(stdout);
+    std::rewind(output.get());
+    std::string result;
+    char buffer[1024];
+    while (const auto count = std::fread(buffer, 1, sizeof(buffer), output.get()))
+    {
+        result.append(buffer, count);
+    }
+    return result;
+}
 
 Filter::Filter denyFilter()
 {
@@ -131,6 +195,49 @@ std::vector<Case> policyCases(const std::string &suite)
     }
     else if (suite == "filters")
     {
+        cases.push_back({"embedded_api_logs_source_file", []
+        {
+            FilterFile file("<!--<%jfunc/a:GET/v9/missing({})%>-->\n<!--<%jfunc/b:missing({})%>-->");
+            Engine engine;
+            engine.config.rpcLog = std::make_shared<Mantids30::Runtime::Logs::RPCLog>();
+            engine.config.rpcLog->enableColorLogging = false;
+            auto socket = std::make_shared<Mantids30::Network::Sockets::Socket_Stream_Dummy>();
+            LoggingHandler handler(&engine, socket);
+            handler.config = &engine.config;
+            const auto output = captureWarnings([&]
+            {
+                require(Web::HTMLIEngine::processResourceFile(&handler, file.path.string()) == Code::S_200_OK, "Template processing failed");
+                handler.handleAPIRequest("/", 1, "POST", "plain", {});
+            });
+            const std::string marker = "[source=" + file.path.string() + "]";
+            const auto first = output.find(marker);
+            require(first != std::string::npos && output.find(marker, first + marker.size()) != std::string::npos,
+                    "Explicit/default JFUNC calls lost their source file");
+            const auto message = output.find("endpoint=plain");
+            const auto plain = output.rfind('\n', message);
+            require(message != std::string::npos && plain != std::string::npos && output.substr(plain).find("[source=") == std::string::npos,
+                    "Template source leaked into a normal API call");
+        }});
+        cases.push_back({"embedded_api_log_context_restored_after_exception", []
+        {
+            Engine engine;
+            engine.config.rpcLog = std::make_shared<Mantids30::Runtime::Logs::RPCLog>();
+            engine.config.rpcLog->enableColorLogging = false;
+            auto socket = std::make_shared<Mantids30::Network::Sockets::Socket_Stream_Dummy>();
+            LoggingHandler handler(&engine, socket);
+            handler.config = &engine.config;
+            const auto output = captureWarnings([&]
+            {
+                handler.handleAPIRequestFromFile("/outer%s.html", "/", 1, "POST", "nested", {});
+                handler.log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "plain %s", "message");
+            });
+            require(output.find("[source=/inner.html] inner failure") != std::string::npos, "Nested source missing");
+            require(output.find("[source=/outer%s.html] outer restored") != std::string::npos, "Outer source not restored or percent interpreted");
+            const auto message = output.find("plain message");
+            const auto plain = output.rfind('\n', message);
+            require(message != std::string::npos && plain != std::string::npos && output.substr(plain).find("[source=") == std::string::npos,
+                    "Source context survived the embedded API call");
+        }});
         cases.push_back({"default_accept_and_clear", []
         {
             Filter filter;
