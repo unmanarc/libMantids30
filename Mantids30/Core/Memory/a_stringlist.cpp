@@ -37,8 +37,8 @@ std::string STRINGLIST::toString()
 
     for (const std::string &element : values)
     {
-        // Check if double quotes are needed
-        bool needsQuotes = (element.find(',') != std::string::npos || element.find('"') != std::string::npos);
+        // Quote empty fields so a single empty element remains distinct from an empty list.
+        bool needsQuotes = (element.empty() || element.find(',') != std::string::npos || element.find('"') != std::string::npos);
 
         // If it's not the first element, add comma
         if (!isFirst)
@@ -81,107 +81,64 @@ std::string STRINGLIST::toString()
 
 bool STRINGLIST::fromString(std::string_view inputStringList)
 {
-    std::list<std::string> finalValues;
-    std::string::size_type currentPosition = 0, startOfCurrentField = 0;
-    bool inQuotes = false, processWithoutQuotes = false;
-    std::string currentFieldValue;
-
-    while (currentPosition < inputStringList.size())
+    // Parse into temporary storage so malformed input leaves the current list unchanged.
+    std::list<std::string> fields;
+    if (inputStringList.empty())
     {
-        currentFieldValue.clear();
-
-        if (!inQuotes)
+        return setValue(fields);
+    }
+    size_t position = 0;
+    for (;;)
+    {
+        std::string field;
+        if (position < inputStringList.size() && inputStringList[position] == '"')
         {
-            if (!processWithoutQuotes && inputStringList.at(currentPosition) == '"')
+            ++position;
+            bool closed = false;
+            while (position < inputStringList.size())
             {
-                // Inside Quotes begin...
-                inQuotes = true;
-                startOfCurrentField = currentPosition;
-                currentPosition++;
-            }
-            else
-            {
-                // if processWithoutQuotes is true, change to false.
-                processWithoutQuotes = false;
-
-                // Not Inside Quotes... find the coma value and put the current value...
-                std::string::size_type commaPosition = inputStringList.find_first_of(',', currentPosition);
-                // Last word....
-                if (commaPosition != std::string::npos)
+                const char c = inputStringList[position++];
+                if (c != '"')
                 {
-                    // Others fields left...
-                    currentFieldValue = inputStringList.substr(currentPosition, commaPosition - currentPosition);
-                    finalValues.push_back(currentFieldValue);
-                    currentPosition = commaPosition + 1;
+                    field += c;
+                }
+                else if (position < inputStringList.size() && inputStringList[position] == '"')
+                {
+                    // A doubled quote represents a literal quote inside a quoted field.
+                    field += '"';
+                    ++position;
                 }
                 else
                 {
-                    // End of string Field (not any other comma)...
-                    currentFieldValue = inputStringList.substr(currentPosition, std::string::npos);
-                    finalValues.push_back(currentFieldValue);
-                    //currentPosition+=currentFieldValue.size();
+                    closed = true;
                     break;
                 }
+            }
+            if (!closed)
+            {
+                return false;
             }
         }
         else
         {
-            // In Quotes...
-            while (currentPosition < inputStringList.size())
+            while (position < inputStringList.size() && inputStringList[position] != ',')
             {
-                char currentChar = inputStringList.at(currentPosition);
-                if (currentChar == '\"')
-                {
-                    if (currentPosition + 1 == inputStringList.size())
-                    {
-                        // End of String (not any other comma)...
-                        finalValues.push_back(currentFieldValue);
-                        currentPosition++;
-                        currentFieldValue.clear();
-                        inQuotes = false;
-                        break;
-                    }
-                    else if (inputStringList.at(currentPosition + 1) == ',')
-                    {
-                        // Field completed on ", now take the field and push into the values.
-                        // Process this field...
-                        finalValues.push_back(currentFieldValue);
-                        currentFieldValue.clear();
-                        inQuotes = false;
-                        currentPosition += 2;
-                        startOfCurrentField = currentPosition;
-                    }
-                    else if (inputStringList.at(currentPosition + 1) == '\"' && currentPosition + 2 != inputStringList.size())
-                    {
-                        // Double Quote... take only one..
-                        currentFieldValue += currentChar;
-                        currentPosition += 2;
-                    }
-                    else
-                    {
-                        // 1. the " is followed by unknown bytes... revert the escaping?
-                        // 2. the "" is followed by the end of the string... revert the escaping?
-                        currentFieldValue = "IGN";
-                        break;
-                    }
-                }
-                else
-                {
-                    currentFieldValue += currentChar;
-                    currentPosition++;
-                }
-            }
-
-            if (!currentFieldValue.empty())
-            {
-                // the processing var was not completed. Revert the current Position...
-                currentPosition = startOfCurrentField;
-                processWithoutQuotes = true;
-                inQuotes = false;
+                field += inputStringList[position++];
             }
         }
+        fields.push_back(std::move(field));
+        if (position == inputStringList.size())
+        {
+            break;
+        }
+        // A closed quoted field must be followed by a comma or the end of input.
+        // Continue after a trailing comma to preserve its final empty field.
+        if (inputStringList[position++] != ',')
+        {
+            return false;
+        }
     }
-    return setValue(finalValues);
+    return setValue(fields);
 }
 
 std::shared_ptr<Var> STRINGLIST::protectedCopy()

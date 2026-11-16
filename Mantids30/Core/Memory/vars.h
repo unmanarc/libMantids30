@@ -84,9 +84,9 @@ public:
             T valueResult;
             iss >> valueResult;
 
-            if (!iss.fail() || !iss.eof())
+            if (!iss.fail() && iss.eof())
             {
-                // Only add to the list if the conversion succeeded
+                // Accept only complete conversions; trailing bytes make the value invalid.
                 resultList.push_back(valueResult);
             }
             else
