@@ -28,6 +28,7 @@ public:
     BufferedReader(BufferedReader &&) = default;
     BufferedReader &operator=(BufferedReader &&) = default;
 
+    // len is the destination capacity on entry and the required/copied size on return.
     ReadResult bufferedReadUntil(void *data, size_t *len, const char &delimiter);
     ReadResult bufferedReadUntil(std::string &str, const char &delimiter);
 

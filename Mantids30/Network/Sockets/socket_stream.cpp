@@ -95,10 +95,20 @@ std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream>> Socket
     std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> rsock = std::make_shared<Socket_TCP>();
     std::shared_ptr<Mantids30::Network::Sockets::Socket_TCP> lsock = nullptr;
 
-    llsock->listenOn(0, "127.0.0.1");
-    rsock->connectTo("127.0.0.1", lsock->getLocalPort());
+    if (!llsock->listenOn(0, "127.0.0.1"))
+    {
+        return p;
+    }
+    if (!rsock->connectTo("127.0.0.1", llsock->getLocalPort()))
+    {
+        return p;
+    }
     lsock = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TCP>(llsock->acceptConnection());
     llsock->closeSocket();
+    if (!lsock)
+    {
+        return p;
+    }
 
     //delete llsock;
 
@@ -115,7 +125,7 @@ bool Socket_Stream::writeFull(const char *data)
 
 bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
 {
-    if (datalen > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
+    if ((data == nullptr && datalen != 0) || datalen > static_cast<size_t>(std::numeric_limits<ssize_t>::max()))
     {
         writeStatus += -1;
         return false;
@@ -125,30 +135,30 @@ bool Socket_Stream::writeFull(const void *data, const size_t &datalen)
     size_t remaining = datalen;                            // data left to send
     const char *dataPtr = static_cast<const char *>(data); // data pointer.
 
-    // Bucle para enviar datos en fragmentos hasta que se envíe todo
+    // Send chunks until all data has been written.
     while (remaining > 0)
     {
-        // Determina el tamaño del fragmento
+        // Determine the next chunk size.
         size_t chunkSize = std::min(remaining, mChunkSize);
 
-        // Envía el fragmento actual
-        ssize_t sentBytes = partialWrite(dataPtr, static_cast<uint32_t>(chunkSize));
+        // Send the current chunk.
+        ssize_t sentBytes = partialWrite(dataPtr, chunkSize);
 
-        // Manejo de errores
+        // Handle write failures.
         if (sentBytes <= 0)
         {
-            // Error al enviar los datos
+            // Stop the connection after a write failure.
             shutdownSocket();
             writeStatus += -1;
             return false;
         }
 
-        // Actualiza el puntero y el conteo de datos pendientes
+        // Advance the data pointer and remaining byte count.
         dataPtr += sentBytes;
         remaining -= static_cast<size_t>(sentBytes);
     }
 
-    // Todos los datos fueron enviados correctamente
+    // All data was sent successfully.
     return true;
 }
 
@@ -164,12 +174,11 @@ bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, s
         *receivedDataBytesCount = 0;
     }
 
-    // Validate input
+    // Validate the buffer even for an empty read, as in the original contract.
     if (data == nullptr)
     {
         return false;
     }
-
     if (expectedDataBytesCount == 0)
     {
         return true;
@@ -179,14 +188,17 @@ bool Socket_Stream::readFull(void *data, const size_t &expectedDataBytesCount, s
 
     while (curReceivedBytesCount < expectedDataBytesCount)
     {
-        // Calcular el tamaño máximo a leer en esta iteración
+        // Limit this read to the remaining byte count.
         size_t bytesToRead = std::min<size_t>(mChunkSize, expectedDataBytesCount - curReceivedBytesCount);
 
-        ssize_t partialReceivedBytesCount = partialRead(static_cast<char *>(data) + curReceivedBytesCount, static_cast<uint32_t>(bytesToRead));
+        ssize_t partialReceivedBytesCount = partialRead(static_cast<char *>(data) + curReceivedBytesCount, bytesToRead);
 
         if (partialReceivedBytesCount < 0)
         {
-            // Read Error.
+            if (receivedDataBytesCount)
+            {
+                *receivedDataBytesCount = curReceivedBytesCount;
+            }
             return false;
         }
         else if (partialReceivedBytesCount == 0)

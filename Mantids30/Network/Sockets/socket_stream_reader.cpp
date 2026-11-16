@@ -101,7 +101,7 @@ int32_t Socket_Stream_Reader::read64KBlockDelim(char *block, const char *delim, 
 
 char *Socket_Stream_Reader::readBlock32WAllocAndDelim(unsigned int *datalen, const char *delim, uint16_t delimBytes)
 {
-    if (*datalen <= 65535)
+    if (!datalen || !delim || delimBytes == 0 || *datalen <= 65535)
     {
         return nullptr; // It should at least have 65k of buffer.
     }
@@ -121,7 +121,7 @@ char *Socket_Stream_Reader::readBlock32WAllocAndDelim(unsigned int *datalen, con
         }
         else if (bytesRecv == -1)
         {
-            if (currentBlockSize + 65536 > *datalen)
+            if (*datalen - currentBlockSize < 65536)
             {
                 // Can't request more memory. erase current...
                 delete[] currentBlock;

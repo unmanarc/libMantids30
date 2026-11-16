@@ -123,7 +123,7 @@ public:
         expectedBytesCount = readU<T>(&readOK);
         if (readOK)
         {
-            if (expectedBytesCount > *datalen) // len received exceeded the max datalen permited.
+            if (expectedBytesCount > *datalen || expectedBytesCount == std::numeric_limits<size_t>::max()) // Reserve space for the terminator.
             {
                 *datalen = 0;
                 readDeSync();

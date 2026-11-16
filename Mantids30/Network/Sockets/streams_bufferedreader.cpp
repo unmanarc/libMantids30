@@ -99,6 +99,11 @@ size_t BufferedReader::getBufferSize() const
 
 BufferedReader::ReadResult BufferedReader::displaceAndCopy(void *data, size_t *len, const size_t &dlen)
 {
+    if (*len < dlen)
+    {
+        *len = dlen;
+        return ReadResult::READ_FULL;
+    }
     // Null terminate it (overwrite the delimiter position with null)
     m_buffer[dlen - 1] = '\0';
 
