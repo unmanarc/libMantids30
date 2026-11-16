@@ -21,6 +21,11 @@ std::optional<size_t> SubParser::writeIntoSubParser(const void *buf, size_t coun
     switch (m_parseMode)
     {
     case ParseStrategy::DELIMITER:
+        // Delimiter modes require at least one delimiter to define a stopping point.
+        if (m_parseDelimiter.empty())
+        {
+            return std::nullopt;
+        }
 
 #ifdef DEBUG_PARSER
         printf("Parse by delimiter %p\n", this);
@@ -43,6 +48,11 @@ std::optional<size_t> SubParser::writeIntoSubParser(const void *buf, size_t coun
 #endif
         return parseByValidator(buf, count);
     case ParseStrategy::DIRECT_DELIMITER:
+        // Delimiter modes require at least one delimiter to define a stopping point.
+        if (m_parseDelimiter.empty())
+        {
+            return std::nullopt;
+        }
 #ifdef DEBUG_PARSER
         printf("Parse by direct delimiter %p\n", this);
         fflush(stdout);
@@ -394,6 +404,15 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
     }
 
     bytesToDisplace = bytesAppended.value();
+
+    if (m_streamEnded)
+    {
+        // A pending delimiter prefix becomes ordinary payload at EOF.
+        m_parsedBuffer.reference(&m_unparsedBuffer);
+        setParseResult(parse());
+        m_unparsedBuffer.clear();
+        return bytesToDisplace;
+    }
 
     // Find the delimiter pos.
     delimPos = m_unparsedBuffer.find(m_parseDelimiter.c_str(), m_parseDelimiter.size());

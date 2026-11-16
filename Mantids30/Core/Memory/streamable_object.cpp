@@ -86,7 +86,8 @@ size_t StreamableObject::strPrintf(const char *format, ...)
 
     if (retval != -1)
     {
-        writtenBytes = writeString(var);
+        // Use the formatted byte count so embedded null characters are written as payload.
+        writtenBytes = writeFullStream(var, static_cast<size_t>(retval)) ? static_cast<size_t>(retval) : 0;
     }
     else
     {
