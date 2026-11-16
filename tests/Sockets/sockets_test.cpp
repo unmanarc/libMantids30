@@ -760,6 +760,13 @@ static void tls(const std::string &mode, const char *certificate, const char *ke
                 return false;
             }
             accepted->shutdownSocket(SHUT_WR);
+            char byte;
+            // Keep the transport alive until the client sends close_notify.
+            // Otherwise its clean-shutdown assertion races with server teardown.
+            if (accepted->partialRead(&byte, 1) != 0)
+            {
+                return false;
+            }
         }
         else if (mode == "truncated")
         {
@@ -808,12 +815,12 @@ static void tls(const std::string &mode, const char *certificate, const char *ke
         {
             char data[5];
             ERR_put_error(ERR_LIB_USER, 0, 123, __FILE__, __LINE__);
-            success = client.partialRead(nullptr, 0) == 0 && client.partialWrite(nullptr, 0) == 0;
-            success = success && client.writeFull("hello");
-            success = success && !client.getTLSErrorsAndClear().empty();
-            success = success && client.readFull(data, sizeof(data)) && std::memcmp(data, "world", 5) == 0;
-            success = success && client.partialRead(data, 1) == 0;
-            success = success && client.shutdownSocket() == 0;
+            require(client.partialRead(nullptr, 0) == 0 && client.partialWrite(nullptr, 0) == 0, "empty TLS operation failed");
+            require(client.writeFull("hello"), "TLS exchange write failed");
+            require(!client.getTLSErrorsAndClear().empty(), "pending OpenSSL diagnostic was discarded");
+            require(client.readFull(data, sizeof(data)) && std::memcmp(data, "world", 5) == 0, "TLS exchange reply mismatch");
+            require(client.partialRead(data, 1) == 0, "TLS exchange did not receive close_notify");
+            require(client.shutdownSocket() == 0, "TLS exchange clean shutdown failed");
         }
         else if (mode == "truncated")
         {
