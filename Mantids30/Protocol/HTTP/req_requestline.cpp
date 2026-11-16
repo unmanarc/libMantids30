@@ -160,7 +160,7 @@ std::string RequestLine::getHTTPMethod() const
     return m_requestMethod;
 }
 
-void RequestLine::setHTTPMethod(string_view value)
+void RequestLine::setHTTPMethod(std::string_view value)
 {
     m_requestMethod = value;
 }
