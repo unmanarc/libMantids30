@@ -20,6 +20,11 @@
 #include <csignal>
 #include <fcntl.h>
 #include <unistd.h>
+#ifndef _WIN32
+#include <arpa/inet.h>
+#else
+#include <ws2tcpip.h>
+#endif
 
 #ifdef _WIN32
 #include <Mantids30/Core/Memory/w32compat.h>
@@ -128,6 +133,21 @@ bool Socket_TLS::postConnectSubInitialization()
         if (!SSL_set_tlsext_host_name(m_sslHandler, m_remoteServerHostname.c_str()))
         {
             m_sslErrorList.emplace_back("Unable to set TLS extension host name.");
+            return false;
+        }
+    }
+
+    if (!usingPSK && tlsKeys.getValidateServerHostname())
+    {
+        unsigned char address[sizeof(in6_addr)];
+        X509_VERIFY_PARAM *parameters = SSL_get0_param(m_sslHandler);
+        const bool isAddress = inet_pton(AF_INET, m_remoteServerHostname.c_str(), address) == 1 ||
+                               inet_pton(AF_INET6, m_remoteServerHostname.c_str(), address) == 1;
+        const int configured = isAddress ? X509_VERIFY_PARAM_set1_ip_asc(parameters, m_remoteServerHostname.c_str()) :
+                                          X509_VERIFY_PARAM_set1_host(parameters, m_remoteServerHostname.c_str(), 0);
+        if (m_remoteServerHostname.empty() || configured != 1)
+        {
+            m_sslErrorList.emplace_back("Unable to configure TLS hostname verification.");
             return false;
         }
     }
