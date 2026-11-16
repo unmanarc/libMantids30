@@ -10,6 +10,12 @@ using namespace std;
 
 Mantids30::Protocol::HTTP::Status::Code ClientHandler::sessionStart()
 {
+    // Authentication belongs to the current request, including on keep-alive connections.
+    m_isAuthorizationHeaderJWTVerified = false;
+    m_isAccessTokenCookieJWTVerified = false;
+    jwtToken = JWT::Token{};
+    currentSessionInfo = Sessions::SessionInfo{};
+
     // Check for the authorization bearer token...
     string headerBearerToken = clientRequest.getAuthorizationBearer();
 
