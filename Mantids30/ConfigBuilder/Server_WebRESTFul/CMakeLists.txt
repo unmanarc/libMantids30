@@ -47,7 +47,7 @@ set(Mantids30_LIBRARIES
     Runtime_Logs
     Server_WebRESTFul
     DataFormat_JWT
-    Protocol_APISync
+    Client_APISync
     ConfigBuilder_Runtime_Logs
     ConfigBuilder_DataFormat_JWT
 )

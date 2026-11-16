@@ -8,11 +8,11 @@
 
 using namespace Mantids30;
 using namespace Mantids30::Network::Sockets;
-using namespace Mantids30::Protocol;
+using namespace Mantids30::Client;
 
 
 /*
-std::optional<std::string> getApplicationJWTSigningKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> getApplicationJWTSigningKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Client::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -28,7 +28,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Mantids30::Runtime::Logs:
         return std::nullopt;
     }
 
-    boost::json::value response = Mantids30::Protocol::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    boost::json::value response = Mantids30::Client::APISync::getApplicationJWTSigningKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.is_null() || !response.is_string())
     {
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to get JWT signing key from API.");
@@ -43,7 +43,7 @@ std::optional<std::string> getApplicationJWTSigningKey(Mantids30::Runtime::Logs:
 
 // ==================== MAIN FACTORY FUNCTIONS ====================
 
-std::optional<boost::json::value> Mantids30::Protocol::APISync::getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<boost::json::value> Mantids30::Client::APISync::getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Client::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -59,7 +59,7 @@ std::optional<boost::json::value> Mantids30::Protocol::APISync::getApplicationJW
         return std::nullopt;
     }
 
-    boost::json::value response = Mantids30::Protocol::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
+    boost::json::value response = Mantids30::Client::APISync::getApplicationJWTConfig(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.is_null())
     {
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to get JWT configuration from API.");
@@ -69,7 +69,7 @@ std::optional<boost::json::value> Mantids30::Protocol::APISync::getApplicationJW
     return response;
 }
 
-std::optional<std::string> Mantids30::Protocol::APISync::getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocol::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
+std::optional<std::string> Mantids30::Client::APISync::getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Client::APISync::APISyncParameters *proxyParameters, const std::map<std::string, std::string> &vars)
 {
     const std::map<std::string, std::string>::const_iterator itAppName = vars.find("APP");
     if (itAppName == vars.end())
@@ -85,7 +85,7 @@ std::optional<std::string> Mantids30::Protocol::APISync::getApplicationJWTValida
         return std::nullopt;
     }
 
-    boost::json::value response = Mantids30::Protocol::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
+    boost::json::value response = Mantids30::Client::APISync::getApplicationJWTValidationKey(log, proxyParameters, itAppName->second, itApiKey->second);
     if (response.is_null() || !response.is_string())
     {
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Failed to get JWT validation key from API.");
@@ -213,7 +213,7 @@ boost::json::value APISync::getApplicationJWTValidationKey(Mantids30::Runtime::L
     return performAPISynchronizationRequest(_log, proxyParameters, "getApplicationJWTValidationKey", boost::json::value{}, appName, apiKey);
 }
 
-void Mantids30::Protocol::APISync::APISyncParameters::loadFromInfoTree(const boost::property_tree::ptree &ptr)
+void Mantids30::Client::APISync::APISyncParameters::loadFromInfoTree(const boost::property_tree::ptree &ptr)
 {
     apiSyncHost = ptr.get<std::string>("APISyncHost", "");
 

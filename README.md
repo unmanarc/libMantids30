@@ -43,7 +43,9 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 - **Network programming** - TCP/UDP/UNIX/TLS sockets, acceptors (thread, pool,
   multi-threaded), chained protocols (TLS over TLS, AES, XOR) and interface management.
 - **Protocol engines** - HTTP/1.1 client and server, WebSocket, MIME, FastRPC1,
-  LineRecv and APISync, all built on the shared parsing engine.
+  and LineRecv, all built on the shared parsing engine.
+- **API synchronization client** - APISync requests over HTTP/HTTPS for JWT configuration
+  and access control synchronization.
 - **Web API server** - RESTful JSON API server with JWT authentication, sessions, endpoint requirement maps and WebSocket endpoints.
 - **Database abstraction** - unified `SQLConnector` / `Query` / `Transaction` API with
   SQLite3, MariaDB and PostgreSQL backends (each backend is optional at build time).

@@ -15,7 +15,8 @@ such as `Core::Memory::Streams` or `Protocol::HTTP::Headers`.
 | `DB/MariaDB`, `DB/PostgreSQL`, `DB/SQLite3` | `Mantids30::DB::{MariaDB,PostgreSQL,SQLite3}` |
 | `Network/Interfaces`, `Network/Sockets`, `Network/Chains` | `Mantids30::Network::{Interfaces,Sockets,Chains}` |
 | `Protocol/HTTP` | `Mantids30::Protocol::HTTP`, including framing under `WebSocket` and URL codecs under `Encoders` / `Decoders` |
-| `Protocol/MIME`, `Protocol/LineRecv`, `Protocol/FastRPC1`, `Protocol/APISync` | `Mantids30::Protocol::{MIME,LineRecv,FastRPC1,APISync}` |
+| `Client/APISync` | `Mantids30::Client::APISync` |
+| `Protocol/MIME`, `Protocol/LineRecv`, `Protocol/FastRPC1` | `Mantids30::Protocol::{MIME,LineRecv,FastRPC1}` |
 | `Runtime/Logs`, `Runtime/Service` | `Mantids30::Runtime::{Logs,Service}` |
 | `Scripting/JSONExprEval`, `Scripting/MantidsLang` | `Mantids30::Scripting::{JSONExprEval,MantidsLang}` |
 | `Application/FastRPC1Client` | `Mantids30::Application::FastRPC1Client` |

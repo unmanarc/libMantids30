@@ -7,7 +7,7 @@
 #include <string>
 #include <optional>
 
-namespace Mantids30::Protocol::APISync {
+namespace Mantids30::Client::APISync {
 
 /**
  * @brief Structure to hold API synchronization parameters.
@@ -113,9 +113,9 @@ boost::json::value getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log
 boost::json::value updateAccessControlContext(Mantids30::Runtime::Logs::AppLog *log, APISyncParameters *proxyParameters, const std::string &appName, const std::string &apiKey, const boost::json::value &scopes, const boost::json::value &roles,
                                 const boost::json::value &activities);
 
-std::optional<boost::json::value> getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocol::APISync::APISyncParameters *proxyParameters,
+std::optional<boost::json::value> getApplicationJWTConfig(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Client::APISync::APISyncParameters *proxyParameters,
                                                    const std::map<std::string, std::string> &vars);
-std::optional<std::string> getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Protocol::APISync::APISyncParameters *proxyParameters,
+std::optional<std::string> getApplicationJWTValidationKey(Mantids30::Runtime::Logs::AppLog *log, Mantids30::Client::APISync::APISyncParameters *proxyParameters,
                                                           const std::map<std::string, std::string> &vars);
 
-} // namespace Mantids30::Protocol::APISync
+} // namespace Mantids30::Client::APISync

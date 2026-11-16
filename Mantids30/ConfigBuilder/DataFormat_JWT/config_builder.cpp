@@ -4,7 +4,7 @@
 
 #include <Mantids30/DataFormat/JWT/jwt.h>
 
-#include <Mantids30/Protocol/APISync/apisync.h>
+#include <Mantids30/Client/APISync/apisync.h>
 #include <Mantids30/Core/Helpers/file.h>
 #include <Mantids30/Core/Helpers/random.h>
 #include <Mantids30/Runtime/Logs/loglevels.h>
@@ -26,7 +26,7 @@ using namespace Mantids30::ConfigBuilder::DataFormat_JWT;
 
 std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
-    Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Client::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -120,7 +120,7 @@ std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataF
 std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                            const std::map<std::string, std::string> &vars)
 {
-    Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Client::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {

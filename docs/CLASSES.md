@@ -36,12 +36,12 @@ column unless fully qualified. A dash marks macros; `::` marks the global namesp
   - [Network/Interfaces](#networkinterfaces)
   - [Network/Sockets](#networksockets)
 - [Protocol](#protocol)
-  - [Protocol/APISync](#protocolapisync)
   - [Protocol/FastRPC1](#protocolfastrpc1)
   - [Protocol/HTTP](#protocolhttp)
   - [Protocol/LineRecv](#protocollinerecv)
   - [Protocol/MIME](#protocolmime)
 - [Client](#client)
+  - [Client/APISync](#clientapisync)
   - [Client/HTTPv1](#clienthttpv1)
 - [Server](#server)
   - [Server/WebRESTFul](#serverwebrestful)
@@ -74,11 +74,11 @@ column unless fully qualified. A dash marks macros; `::` marks the global namesp
 | `Network/Chains` | `Mantids30_Network_Chains` | Layered protocol chains (TLS, AES, XOR) |
 | `Network/Interfaces` | `Mantids30_Network_Interfaces` | Interface discovery and TAP configuration |
 | `Network/Sockets` | `Mantids30_Network_Sockets` | Socket, acceptor and stream building blocks |
-| `Protocol/APISync` | `Mantids30_Protocol_APISync` | Synchronous API protocol parameters |
 | `Protocol/FastRPC1` | `Mantids30_Protocol_FastRPC1` | RPC protocol server |
 | `Protocol/HTTP` | `Mantids30_Protocol_HTTP` | HTTP/1.1 client/server and WebSocket framing |
 | `Protocol/LineRecv` | `Mantids30_Protocol_LineRecv` | Line oriented protocol |
 | `Protocol/MIME` | `Mantids30_Protocol_MIME` | MIME multipart parsing |
+| `Client/APISync` | `Mantids30_Client_APISync` | API synchronization client over HTTP/HTTPS |
 | `Client/HTTPv1` | `Mantids30_Client_HTTPv1` | Synchronous HTTP client: streams, uploads, callbacks, TLS and persistent connections |
 | `Server/WebRESTFul` | `Mantids30_Server_WebRESTFul` | RESTful web server, proxy, sessions, endpoints and WebSockets |
 | `Scripting/JSONExprEval` | `Mantids30_Scripting_JSONExprEval` | JSON expression evaluator |
@@ -257,12 +257,6 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 
 ## Protocol
 
-### Protocol/APISync
-
-| Class / API | Namespace | Header | Description |
-|-------------|-----------|--------|-------------|
-| `APISyncParameters` | `Mantids30::Protocol::APISync` | `Protocol/APISync/apisync.h` | APISync protocol parameters |
-
 ### Protocol/FastRPC1
 
 | Class / API | Namespace | Header | Description |
@@ -306,6 +300,12 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 | `MIME_Sub_Content`, `MIME_Sub_FirstBoundary`, `MIME_Sub_EndPBoundary`, `MIME_Sub_Header`, `MIME_HeaderOption` | `Mantids30::Protocol::MIME` | `Protocol/MIME/mime_sub_*.h` | MIME sub-parsers |
 
 ## Client
+
+### Client/APISync
+
+| Class / API | Namespace | Header | Description |
+|-------------|-----------|--------|-------------|
+| `APISyncParameters` | `Mantids30::Client::APISync` | `Client/APISync/apisync.h` | APISync client connection parameters |
 
 ### Client/HTTPv1
 

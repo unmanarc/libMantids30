@@ -45,7 +45,7 @@ endif()
 
 set(Mantids30_LIBRARIES
     Runtime_Logs
-    Protocol_APISync
+    Client_APISync
     DataFormat_JWT
     DataFormat_JSON
 )

@@ -8,7 +8,7 @@ SET(RLIB_NAME ${LIB_NAME})
 SET(LIB_NAME ${LIBPREFIX}_${PARENT_DIR}_${RLIB_NAME})
 
 project(${LIB_NAME})
-project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 Library for implementing APISync via HTTP")
+project(${LIB_NAME} VERSION ${SVERSION} DESCRIPTION "Mantids30 APISync client library over HTTP/HTTPS")
 
 file(GLOB_RECURSE EDV_INCLUDE_FILES "./*.h*")
 file(GLOB_RECURSE EDV_SOURCE_FILES "./*.c*")
