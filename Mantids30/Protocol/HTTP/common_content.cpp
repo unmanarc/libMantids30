@@ -33,16 +33,19 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     {
     case ProcessingMode::CHUNK_CLOSE:
     {
-        if (isStreamEnded()
-            || getParsedBuffer()->appendTo(*m_trailerBytesContent) != getParsedBuffer()->size()
-            || !m_trailerBytesContent->writeString("\r\n"))
+        if (isStreamEnded())
         {
             return ParseResult::ERROR;
+        }
+        if (getParsedBuffer()->appendTo(*m_trailerBytesContent) != getParsedBuffer()->size()
+            || !m_trailerBytesContent->writeString("\r\n"))
+        {
+            return ParseResult::ERROR_STREAM_WRITE;
         }
         if (!getParsedBuffer()->size())
         {
             return m_trailerBytesContent->writeEOF() && m_contentStreamableObject->writeEOF()
-                       ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR;
+                       ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
         return ParseResult::GET_MORE_DATA;
     }
@@ -79,7 +82,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
         // Proccess chunk into mem...
         if (getParsedBuffer()->appendTo(*m_contentStreamableObject) != getParsedBuffer()->size())
         {
-            return ParseResult::ERROR;
+            return ParseResult::ERROR_STREAM_WRITE;
         }
         return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
     }
@@ -99,7 +102,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     {
         if (getParsedBuffer()->appendTo(*m_contentStreamableObject) != getParsedBuffer()->size())
         {
-            return ParseResult::ERROR;
+            return ParseResult::ERROR_STREAM_WRITE;
         }
         if (getUnparsedDataSize() > 0)
         {
@@ -118,7 +121,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
             printf("%p Content ProcessingMode::CONTENT_LENGTH - EOS\n", this);
 #endif
             // End of stream reached...
-            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR;
+            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
     }
     case ProcessingMode::CONNECTION_CLOSE:
@@ -129,14 +132,14 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
             // Parsing data...
             if (getParsedBuffer()->appendTo(*m_contentStreamableObject) != getParsedBuffer()->size())
             {
-                return ParseResult::ERROR;
+                return ParseResult::ERROR_STREAM_WRITE;
             }
             return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
         }
         else
         {
             // No more data to parse, ending and processing it...
-            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR;
+            return m_contentStreamableObject->writeEOF() ? ParseResult::GOTO_NEXT_SUBPARSER : ParseResult::ERROR_STREAM_WRITE;
         }
     }
     }

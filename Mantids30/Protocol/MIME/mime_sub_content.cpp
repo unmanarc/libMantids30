@@ -72,7 +72,10 @@ void MIME_Sub_Content::setFsTmpFolder(const std::string &value)
 Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Content::parse()
 {
     // TODO: interpret content encoding...
-    getParsedBuffer()->appendTo(*m_contentContainer);
+    if (getParsedBuffer()->appendTo(*m_contentContainer) != getParsedBuffer()->size())
+    {
+        return ParseResult::ERROR_STREAM_WRITE;
+    }
     if (!getFoundDelimiter().empty())
     {
         // finished (delimiter found).

@@ -23,7 +23,8 @@ public:
     {
         ERROR,
         GET_MORE_DATA,
-        GOTO_NEXT_SUBPARSER
+        GOTO_NEXT_SUBPARSER,
+        ERROR_STREAM_WRITE // The destination could not accept data or EOF.
         // TODO: ParseResult::STAT_NEXT_MAINPARSER
     };
 

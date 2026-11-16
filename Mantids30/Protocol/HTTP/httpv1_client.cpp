@@ -115,6 +115,7 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::changeToNextParser()
         }
         if (!m_currentSubParser && !serverResponse.content.getStreamableObject()->writeEOF())
         {
+            m_parseResult = ParseResult::ERR_STREAM_WRITE;
             return false;
         }
     }

@@ -12,6 +12,7 @@ Parser::Parser(const std::shared_ptr<StreamableObject> &value, bool clientMode) 
 void Parser::parseObject(Parser::ParseResult *result)
 {
     *result = ParseResult::SUCCEED;
+    m_parseResult = ParseResult::SUCCEED;
 
     this->writeStatus.finished = false;
 
@@ -46,7 +47,7 @@ void Parser::parseObject(Parser::ParseResult *result)
         // Protocol Failed Somewhere...
         if (!succeed)
         {
-            *result = ParseResult::ERR_PARSING;
+            *result = m_parseResult == ParseResult::ERR_STREAM_WRITE ? m_parseResult : ParseResult::ERR_PARSING;
         }
 
         // Call: Finish the protocol (either failed or not).
@@ -54,6 +55,10 @@ void Parser::parseObject(Parser::ParseResult *result)
         pthread_setname_np(pthread_self(), "Parser:Ending");
 #endif
         endProtocol();
+        if (m_parseResult == ParseResult::ERR_STREAM_WRITE)
+        {
+            *result = m_parseResult;
+        }
 #ifndef WIN32
         pthread_setname_np(pthread_self(), "Parser:End");
 #endif
@@ -63,6 +68,7 @@ void Parser::parseObject(Parser::ParseResult *result)
         // status: failed.
         *result = ParseResult::ERR_INIT;
     }
+    m_parseResult = *result;
 }
 
 std::optional<size_t> Parser::write(const void *buf, const size_t &count)
@@ -75,6 +81,10 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
         // EOF:
         size_t ttl = 0;
         std::optional<size_t> r = parseData("", 0, &ttl);
+        if (!r && m_parseResult != ParseResult::ERR_STREAM_WRITE)
+        {
+            m_parseResult = ParseResult::ERR_PARSING;
+        }
 
         if (r == std::nullopt && (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS))
         {
@@ -96,6 +106,10 @@ std::optional<size_t> Parser::write(const void *buf, const size_t &count)
 
     // The content streamed is parsed here:
     std::optional<size_t> r = parseData(buf, count, &ttl);
+    if (!r && m_parseResult != ParseResult::ERR_STREAM_WRITE)
+    {
+        m_parseResult = ParseResult::ERR_PARSING;
+    }
 
     if (parsingDebugOptions & Parser::DebugOptions::PRINT_DATA_PARSED)
     {
@@ -144,6 +158,10 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
 
         // Here, the parser should call the sub stream parser parse function and set the new status.
         writtenBytes = m_currentSubParser->writeIntoSubParser(buf, count);
+        if (m_currentSubParser->getParseStatus() == SubParser::ParseResult::ERROR_STREAM_WRITE)
+        {
+            m_parseResult = ParseResult::ERR_STREAM_WRITE;
+        }
 
         // Failed to write this into the parser...
         if (writtenBytes == std::nullopt)
@@ -224,6 +242,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         }
         break;
             // Bad parsing... end here.
+        case SubParser::ParseResult::ERROR_STREAM_WRITE:
         case SubParser::ParseResult::ERROR:
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {

@@ -41,13 +41,16 @@ public:
         SUCCEED = 0,
         ERR_INIT = -1,
         ERR_PARSING = -2,
+        ERR_STREAM_WRITE = -3,
     };
 
     /**
      * @brief parseObject Parse streamable object (init/parse/end)
-     * @param result: (0:succeed, -1:failed to initialize, -2:failed to read, -3:failed to parse/write)
+     * @param result Receives success, initialization, parsing or destination write failure.
      */
     void parseObject(ParseResult *result);
+
+    ParseResult getParseResult() const { return m_parseResult; }
 
     //////////////////////////////////////////
     std::optional<size_t> write(const void *buf, const size_t &count) override;
@@ -91,6 +94,7 @@ protected:
     size_t m_maxTTL = 4096;
     bool m_initialized = false;
     bool m_clientMode = false;
+    ParseResult m_parseResult = ParseResult::SUCCEED;
 
 private:
     /**
