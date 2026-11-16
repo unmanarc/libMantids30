@@ -49,7 +49,7 @@ bool Socket_Stream::streamTo(Mantids30::Core::Memory::Streams::StreamableObject 
     }
 }
 
-std::optional<size_t> Socket_Stream::write(const void *buf, const size_t &count)
+std::optional<size_t> Socket_Stream::writeImpl(const void *buf, const size_t &count)
 {
     // EOF:
     if (count == 0)

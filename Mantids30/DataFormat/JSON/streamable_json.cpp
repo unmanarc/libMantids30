@@ -24,7 +24,7 @@ bool StreamableJSON::streamTo(Mantids30::Core::Memory::Streams::StreamableObject
     return out->writeFullStream(m_strValue.c_str(), m_strValue.size());
 }
 
-std::optional<size_t> StreamableJSON::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableJSON::writeImpl(const void *buf, const size_t &count)
 {
     ssize_t writtenBytes;
 

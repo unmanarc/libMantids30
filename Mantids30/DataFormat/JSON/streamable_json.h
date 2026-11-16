@@ -11,7 +11,7 @@ public:
     StreamableJSON() = default;
 
     bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
     size_t size() override;
 
     void clear();

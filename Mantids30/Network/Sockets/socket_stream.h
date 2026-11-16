@@ -19,7 +19,7 @@ public:
     Socket_Stream() = default;
     virtual ~Socket_Stream() override = default;
     bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
-    std::optional<size_t> write(const void * buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void * buf, const size_t &count) override;
     static std::pair<std::shared_ptr<Socket_Stream>, std::shared_ptr<Socket_Stream> > GetSocketPair();
     virtual bool isConnected() override;
     virtual bool listenOn(const uint16_t & port, const char * listenOnAddr = "*", const int32_t & recvbuffer = 0, const int32_t &backlog = 10) override;
@@ -67,7 +67,7 @@ public:
 
     bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
     /**
      * @brief GetSocketPair Create a Pair of interconnected sockets

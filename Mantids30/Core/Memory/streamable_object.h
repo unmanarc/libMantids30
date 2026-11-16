@@ -2,6 +2,7 @@
 
 #include <Mantids30/Core/Helpers/safeint.h>
 #include <cstdlib>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -112,7 +113,28 @@ public:
     virtual ~StreamableObject() = default;
 
     // TODO: what if the protocol reached std::numeric_limits<size_t>::max() ? enforce 64bit max. (on streamTo)
-    // TODO: report percentage completed
+
+    struct WriteProgress
+    {
+        size_t bytesWritten;
+        std::optional<size_t> totalSize;
+        // Percentage in [0, 100], absent when the total is unknown.
+        std::optional<double> percentage;
+    };
+    using WriteProgressCallback = std::function<void(const WriteProgress &)>;
+
+    /**
+     * Report accepted bytes synchronously after successful writes. With a known total,
+     * notify when either enabled interval is reached (percentage points or bytes),
+     * and on completion/EOF. Zero disables an interval; both zero reports every write.
+     * Without a total, report every nonempty write. Large writes produce one notification.
+     * An empty callback disables notifications. Exceptions propagate to the caller.
+     * Configure and write from the same thread; callbacks must not write to this object.
+     */
+    void setWriteProgressCallback(WriteProgressCallback callback, double percentageInterval = 0.1, size_t byteInterval = 0);
+    /** Set the expected incoming size and start a new progress count, independent of size()/writeStatus. */
+    void setWriteTargetSize(std::optional<size_t> totalSize);
+    std::optional<size_t> getWriteTargetSize() const { return m_writeTargetSize; }
 
     virtual std::string getPeerName() const { return ""; }
     virtual std::string toString();
@@ -138,7 +160,7 @@ public:
     bool writeFullStream(const void *buf, const size_t &count);
 
     // Partial Write...
-    virtual std::optional<size_t> write(const void *buf, const size_t &count) = 0;
+    std::optional<size_t> write(const void *buf, const size_t &count);
     /**
      * @brief writeStream Write into stream using std::strings
      * @param buf data to be streamed.
@@ -151,6 +173,19 @@ public:
     WriteStatus writeStatus;
 
 protected:
+    // Implement partial writes here; keep updating writeStatus as usual.
+    virtual std::optional<size_t> writeImpl(const void *buf, const size_t &count) = 0;
+
+private:
+    WriteProgressCallback m_writeProgressCallback;
+    std::optional<size_t> m_writeTargetSize;
+    size_t m_progressBytes = 0;
+    size_t m_lastProgressBytes = 0;
+    double m_percentageInterval = 0.1;
+    size_t m_byteInterval = 0;
+    double m_lastProgressPercentage = 0;
+    bool m_completionReported = false;
+
 #ifdef _WIN32
 private:
     static int vasprintf(char **strp, const char *fmt, va_list ap);

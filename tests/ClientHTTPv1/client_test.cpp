@@ -107,21 +107,21 @@ private:
 class FailingSink : public StreamableObject
 {
 public:
-    std::optional<size_t> write(const void *, const size_t &) override { return std::nullopt; }
+    std::optional<size_t> writeImpl(const void *, const size_t &) override { return std::nullopt; }
 };
 
 class ZeroSink : public StreamableObject
 {
 public:
-    std::optional<size_t> write(const void *, const size_t &) override { return 0; }
+    std::optional<size_t> writeImpl(const void *, const size_t &) override { return 0; }
 };
 
 class FailingEOFSink : public StreamableString
 {
 public:
-    std::optional<size_t> write(const void *data, const size_t &count) override
+    std::optional<size_t> writeImpl(const void *data, const size_t &count) override
     {
-        return count ? StreamableString::write(data, count) : std::nullopt;
+        return count ? StreamableString::writeImpl(data, count) : std::nullopt;
     }
 };
 
@@ -370,8 +370,15 @@ void runTests()
     require(receiveResponse(ok, {}, callbacks).error == Error::CANCELLED, "Progress callback cancellation");
     runDestinationTests();
     auto sink = std::make_shared<StreamableString>();
+    size_t destinationProgress = 0;
+    sink->setWriteProgressCallback([&](const auto &progress)
+    {
+        require(progress.totalSize == 5 && progress.percentage, "Forward expected size to custom destination");
+        destinationProgress = progress.bytesWritten;
+    }, 50);
     response = receiveResponse(ok, {}, {}, "GET", sink);
     require(response.succeed() && response.content == sink && sink->getValue() == "hello", "Custom destination identity");
+    require(destinationProgress == 5, "Custom destination completion callback");
 
     auto liveContent = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
     callbacks = Callbacks();

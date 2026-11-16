@@ -103,7 +103,7 @@ class FailingSink : public Mantids30::Core::Memory::Streams::StreamableObject
 {
 public:
     explicit FailingSink(bool failOnEOF) : m_failOnEOF(failOnEOF) {}
-    std::optional<size_t> write(const void *, const size_t &count) override
+    std::optional<size_t> writeImpl(const void *, const size_t &count) override
     {
         return (count == 0) == m_failOnEOF ? std::nullopt : std::optional<size_t>(count);
     }

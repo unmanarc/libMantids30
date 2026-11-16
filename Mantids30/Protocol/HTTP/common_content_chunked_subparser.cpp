@@ -15,7 +15,7 @@ Mantids30::Protocol::HTTP::ContentChunkedTransformer::~ContentChunkedTransformer
     writeEOF();
 }
 
-std::optional<size_t> Mantids30::Protocol::HTTP::ContentChunkedTransformer::write(const void *buf, const size_t &count)
+std::optional<size_t> Mantids30::Protocol::HTTP::ContentChunkedTransformer::writeImpl(const void *buf, const size_t &count)
 {
     if (count == 0)
     {

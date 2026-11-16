@@ -10,7 +10,7 @@ public:
     ContentChunkedTransformer(Mantids30::Core::Memory::Streams::StreamableObject *upStreamOut);
     ~ContentChunkedTransformer() override;
 
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
 private:
     size_t m_pos = 0;

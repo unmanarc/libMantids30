@@ -711,7 +711,7 @@ bool B_Base::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
     return x != std::nullopt && out->writeStatus.succeed;
 }
 
-std::optional<size_t> B_Base::write(const void *buf, const size_t &count)
+std::optional<size_t> B_Base::writeImpl(const void *buf, const size_t &count)
 {
     if (!count)
     {

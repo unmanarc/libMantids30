@@ -15,7 +15,7 @@ public:
     HTTPv1ResponseBody(const std::shared_ptr<StreamableObject> &destination, size_t maxSize,
                  DataCallback onData = {}, ProgressCallback onProgress = {});
 
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
     void setExpectedSize(std::optional<size_t> expectedSize);
     bool isCancelled() const { return m_cancelled; }

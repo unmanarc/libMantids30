@@ -71,7 +71,7 @@ void Parser::parseObject(Parser::ParseResult *result)
     m_parseResult = *result;
 }
 
-std::optional<size_t> Parser::write(const void *buf, const size_t &count)
+std::optional<size_t> Parser::writeImpl(const void *buf, const size_t &count)
 {
     // Parse this data...
     size_t ttl = 0;
