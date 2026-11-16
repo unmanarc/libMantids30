@@ -76,6 +76,6 @@ private:
     addrinfo *m_addressInfoResolution;
 };
 
-typedef std::shared_ptr<Socket_UDP> Socket_UDP_SP;
+using Socket_UDP_SP = std::shared_ptr<Socket_UDP>;
 
 } // namespace Mantids30::Network::Sockets

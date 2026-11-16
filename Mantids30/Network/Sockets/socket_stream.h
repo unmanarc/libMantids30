@@ -142,5 +142,5 @@ private:
     size_t mChunkSize = 8192;
 };
 
-typedef std::shared_ptr<Socket_Stream> Socket_Stream_SP;
+using Socket_Stream_SP = std::shared_ptr<Socket_Stream>;
 } // namespace Mantids30::Network::Sockets

@@ -43,7 +43,7 @@ private:
 
     std::vector<char> m_buffer;
     std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> m_stream;
-    size_t m_currentBufferSize;
+    size_t m_currentBufferSize{0};
 };
 
 using Stream_Buffer_SP = std::shared_ptr<BufferedReader>;

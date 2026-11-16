@@ -73,7 +73,7 @@ public:
  *
  * This typedef simplifies the usage of shared pointers with Socket_UNIX objects.
  */
-typedef std::shared_ptr<Socket_UNIX> Socket_UNIX_SP;
+using Socket_UNIX_SP = std::shared_ptr<Socket_UNIX>;
 
 } // namespace Mantids30::Network::Sockets
 #endif

@@ -18,7 +18,6 @@ Socket_TLS::TLSKeyParameters::PSKStaticHdlr::PSKStaticHdlr(PSKClientValue *pskCl
 
 Socket_TLS::TLSKeyParameters::PSKStaticHdlr::~PSKStaticHdlr()
 {
-    if (1)
     {
         std::unique_lock<std::mutex> lock(m_serverPSKBySSLHandlerMapMutex);
         if (m_sslHandlerForPSK)
@@ -30,7 +29,6 @@ Socket_TLS::TLSKeyParameters::PSKStaticHdlr::~PSKStaticHdlr()
         }
     }
 
-    if (1)
     {
         std::unique_lock<std::mutex> lock(m_clientPSKBySSLHandlerMapMutex);
         if (m_sslHandlerForPSK)
