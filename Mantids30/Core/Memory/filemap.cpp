@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <fcntl.h>
-#include <limits.h>
+#include <climits>
 #include <limits>
 #include <sys/stat.h>
 #include <sys/types.h>
