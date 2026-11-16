@@ -50,7 +50,7 @@ void JWT::Token::setJwtId(const std::string &jti)
 
 void JWT::Token::setClaim(std::string_view name, const boost::json::value &value)
 {
-    m_claims.as_object()[name] = value;
+    m_claims.as_object()[{name.data(), name.size()}] = value;
 }
 
 std::string JWT::Token::exportPayload() const
@@ -144,7 +144,7 @@ void JWT::Token::addRole(std::string_view roleId)
     {
         m_claims.as_object()["roles"] = boost::json::array{};
     }
-    m_claims.as_object()["roles"].as_array().emplace_back(roleId);
+    m_claims.as_object()["roles"].as_array().emplace_back(boost::json::string_view(roleId.data(), roleId.size()));
 }
 
 bool JWT::Token::hasRole(std::string_view roleId) const
@@ -196,7 +196,7 @@ void JWT::Token::addScope(std::string_view scopeId)
         m_claims.as_object()["scopes"] = boost::json::array{};
     }
 
-    m_claims.as_object()["scopes"].as_array().emplace_back(scopeId);
+    m_claims.as_object()["scopes"].as_array().emplace_back(boost::json::string_view(scopeId.data(), scopeId.size()));
 }
 
 bool JWT::Token::hasScope(std::string_view scopeId) const
@@ -221,7 +221,7 @@ std::map<std::string, boost::json::value> JWT::Token::getAllClaims()
     std::map<std::string, boost::json::value> claimsMap;
     for (const auto &kv : m_claims.as_object())
     {
-        claimsMap[kv.key()] = kv.value();
+        claimsMap[std::string(kv.key().data(), kv.key().size())] = kv.value();
     }
     return claimsMap;
 }

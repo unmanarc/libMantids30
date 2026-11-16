@@ -151,7 +151,8 @@ public:
             const boost::json::value &extraHeaders = Mantids30::DataFormat::JSON::MEMBER_OR_NULL(jsonValue, "extraHeaders");
             for (const auto &kv : extraHeaders.as_object())
             {
-                httpExtraHeaders[kv.key()] = Mantids30::DataFormat::JSON::ASSTRING(extraHeaders, kv.key(), "");
+                const std::string key(kv.key().data(), kv.key().size());
+                httpExtraHeaders[key] = Mantids30::DataFormat::JSON::ASSTRING(extraHeaders, key, "");
             }
         }
         if (Mantids30::DataFormat::JSON::HAS_MEMBER(jsonValue, "cookies"))

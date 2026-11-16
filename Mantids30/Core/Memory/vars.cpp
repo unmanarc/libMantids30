@@ -51,7 +51,7 @@ bool Vars::fromJSON(const boost::json::value &json)
 
     for (const auto &kv : json.as_object())
     {
-        const std::string &key = kv.key();
+        const std::string key(kv.key().data(), kv.key().size());
         const boost::json::value &value = kv.value();
         if (value.is_array())
         {

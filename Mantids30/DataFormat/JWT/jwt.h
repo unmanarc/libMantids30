@@ -88,7 +88,7 @@ public:
 
         void setClaim(std::string_view name, std::string_view value)
         {
-            setClaim( name, boost::json::value{value} );
+            setClaim(name, boost::json::value(boost::json::string_view(value.data(), value.size())));
         }
 
         void setClaim(std::string_view name, const char * value)
