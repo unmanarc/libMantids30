@@ -455,18 +455,18 @@ std::optional<size_t> SubParser::parseDirectDelimiter(const void *buf, size_t co
 
 size_t SubParser::getLastBytesInCommon(const std::string &boundary)
 {
+    if (boundary.size() <= 1)
+    {
+        return 0;
+    }
     size_t maxBoundary = std::min(m_unparsedBuffer.size(), boundary.size() - 1);
     for (size_t v = maxBoundary; v != 0; v--)
     {
-        Mantids30::Core::Memory::Containers::B_Ref ref = referenceLastBytes(v);
-        char *toCmp = (static_cast<char *>(malloc(ref.size())));
-        ref.copyOut(toCmp, ref.size());
-        if (!memcmp(toCmp, boundary.c_str(), ref.size()))
+        auto ref = referenceLastBytes(v);
+        if (ref.compare(boundary.data(), v))
         {
-            free(toCmp);
             return v;
         }
-        free(toCmp);
     }
     return 0;
 }
