@@ -48,7 +48,7 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
         {
             params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
             params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
-            params->privateCAPath = config.get<std::string>("PrivateCAPath", "");
+            params->privateCAPath = tlsHeaders->get<std::string>("PrivateCAPath", "");
         }
 
         params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
