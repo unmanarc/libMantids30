@@ -177,6 +177,10 @@ void MIME_Sub_Header::setMaxOptions(const size_t &value)
 
 Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse()
 {
+    if (isStreamEnded())
+    {
+        return ParseResult::ERROR;
+    }
     if (!getParsedBuffer()->size())
     {
 #ifdef DEBUG
@@ -189,7 +193,10 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse(
     printf("Parsing MIME header (line).\n");
     fflush(stdout);
 #endif
-    parseOptionValue(getParsedBuffer()->toStringEx());
+    if (!parseOptionValue(getParsedBuffer()->toStringEx()))
+    {
+        return ParseResult::ERROR;
+    }
     return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }
 
@@ -297,29 +304,27 @@ void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &o
     }
 }
 
-void MIME_Sub_Header::parseOptionValue(std::string optionValue)
+bool MIME_Sub_Header::parseOptionValue(std::string line)
 {
-    if (*(optionValue.c_str()) == ' ' || *(optionValue.c_str()) == '\t')
+    const auto colon = line.find(':');
+    if (colon == std::string::npos || colon == 0)
     {
-        // Continue on the last option...
-        add("", optionValue, 1);
+        return false;
     }
-    else
+    const std::string name = line.substr(0, colon);
+    static const boost::regex fieldNamePattern(R"([!#$%&'*+.^_`|~0-9A-Za-z-]+)");
+    if (!boost::regex_match(name, fieldNamePattern))
     {
-        size_t found = optionValue.find(": ");
-
-        if (found != std::string::npos)
-        {
-            // We have parameters..
-            std::string optionValue2 = optionValue.c_str() + found + 2;
-            optionValue.resize(found);
-            add(optionValue, optionValue2, 0);
-        }
-        else
-        {
-            // bad option!
-        }
+        return false;
     }
+    std::string value = line.substr(colon + 1);
+    static const boost::regex invalidValuePattern("[\\x00-\\x08\\x0a-\\x1f\\x7f]");
+    if (boost::regex_search(value, invalidValuePattern))
+    {
+        return false;
+    }
+    boost::trim(value);
+    return add(name, value);
 }
 
 size_t MIME_Sub_Header::getMaxSubOptionSize() const
