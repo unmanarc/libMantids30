@@ -18,7 +18,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 | Language standard | C++17 |
 | Build system | CMake >= 3.10 |
 | License | LGPLv3 (`Network/Interfaces` on WIN32 is GPLv2) |
-| Platforms | Linux (RHEL/Alma/Rocky 8-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora), Windows (MSYS2/MinGW64) |
+| Platforms | Linux (RHEL 8-10, Ubuntu 24.04/26.04, Debian 12/13, Fedora), Windows (MSYS2/MinGW64) |
 
 ---
 
@@ -65,7 +65,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 |----------|---------|
 | Ubuntu 24.04 / 26.04 LTS | CI-tested |
 | Debian 12 / 13 | CI-tested |
-| RHEL / AlmaLinux / Rocky Linux 8, 9, 10 | CI-tested |
+| RHEL 8, 9, 10 | CI-tested |
 | RHEL / CentOS 7 (`devtoolset-9`, `cmake3`, `openssl11`) | Deprecated (EOL November 2024), manual build only |
 | Fedora 40+ | Packages in COPR |
 | Windows 10/11 (MSYS2 / MinGW64) | Supported, documented |
@@ -81,7 +81,7 @@ memory model, thread-safe containers, JWT/TOTP security helpers and structured l
 | C++ compiler | GCC >= 9 / Clang >= 10 | |
 | CMake | >= 3.10 | |
 | pkg-config | any | used to locate OpenSSL |
-| Boost | >= 1.71 | `regex`, `thread` and `json` components; RHEL 8 uses EPEL `boost1.78-devel`, RHEL 9/10 `boost-devel` |
+| Boost | >= 1.71 | `regex`, `thread` and `json` components; RHEL 8/9 CI uses EPEL `boost1.78-devel`, RHEL 10 `boost-devel` |
 | OpenSSL | >= 1.1.1 | `libssl`, `libcrypto` (`libssl11` with `-DSSLRHEL7=ON`) |
 
 ### Optional (database backends)
@@ -137,7 +137,7 @@ sudo cmake --install build-static
 Distribution specific instructions:
 
 - [Debian / Ubuntu](docs/build/BUILD-UBUNTU.md)
-- [RHEL / AlmaLinux / Rocky Linux](docs/build/BUILD-RHEL.md)
+- [RHEL / RHEL Compatible](docs/build/BUILD-RHEL.md)
 - [Fedora](docs/build/BUILD-FEDORA.md)
 - [Windows (MSYS2 / MinGW64)](docs/build/BUILD-WIN32.md)
 

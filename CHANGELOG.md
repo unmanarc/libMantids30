@@ -13,12 +13,12 @@ The current development series is `3.0.0`, defined by `SVERSION` in
 ### Added
 
 - GitHub Actions CI covering Ubuntu 24.04/26.04, Debian 12/13 and
-  AlmaLinux 8/9/10, building both shared and static libraries.
+  RHEL 8/9/10, building both shared and static libraries.
 - Issue templates, pull request template and Dependabot configuration for
   GitHub Actions.
 - `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md` and this changelog.
 - Documentation index and rewritten build guides for Debian/Ubuntu,
-  RHEL/AlmaLinux/Rocky 7-10, Fedora and MSYS2/MinGW64.
+  RHEL 7-10, Fedora and MSYS2/MinGW64.
 - `docs/CLASSES.md` regenerated from the current source tree.
 
 ### Changed
