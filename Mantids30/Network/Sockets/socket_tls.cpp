@@ -163,7 +163,6 @@ bool Socket_TLS::postConnectSubInitialization()
         return false;
     }
 
-    parseErrors();
     if (SSL_get_error(m_sslHandler, SSL_connect(m_sslHandler)) != SSL_ERROR_NONE)
     {
         parseErrors();
@@ -239,7 +238,6 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
 
     int err;
-    parseErrors();
     if ((err = SSL_accept(m_sslHandler)) != 1)
     {
         parseErrors();
@@ -505,11 +503,21 @@ int Socket_TLS::_shutdown(int mode)
                 // shutdown step when peer confirmation is already available.
                 result = SSL_shutdown(m_sslHandler);
             }
+            // Always drain the thread's OpenSSL error queue so a stale entry
+            // never leaks into the next connection handled on this thread.
+            parseErrors();
             const int systemError = getLastSocketError();
             if (result == 0)
             {
+                // Expected for short-lived peers that do not complete the
+                // bidirectional close. Keep the -2 status and the legacy
+                // lastError diagnostic, but do not record it in the TLS error
+                // list so it does not surface on the next connection.
                 tlsStatus = -2;
-                recordFailure("SSL_shutdown() incomplete: close_notify sent; peer confirmation is not yet available.");
+                if (m_lastError.empty())
+                {
+                    m_lastError = "SSL_shutdown() incomplete: close_notify sent; peer confirmation is not yet available.";
+                }
             }
             else if (result < 0)
             {
@@ -517,12 +525,15 @@ int Socket_TLS::_shutdown(int mode)
                 if (sslError == SSL_ERROR_WANT_READ || sslError == SSL_ERROR_WANT_WRITE)
                 {
                     tlsStatus = -2;
-                    recordFailure("SSL_shutdown() incomplete: SSL error #" + std::to_string(sslError) + "; additional I/O would be required.");
+                    if (m_lastError.empty())
+                    {
+                        m_lastError = "SSL_shutdown() incomplete: SSL error #" + std::to_string(sslError) +
+                                      "; additional I/O would be required.";
+                    }
                 }
                 else
                 {
                     tlsStatus = -3;
-                    parseErrors();
                     recordFailure("SSL_shutdown() failed: SSL error #" + std::to_string(sslError) + ", system error #" +
                                   std::to_string(systemError) + ": " + std::system_category().message(systemError));
                 }
