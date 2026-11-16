@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Server/WebRESTFul/session.h>
+#include "session.h"
 #include <Mantids30/Protocol/HTTP/httpv1_base.h>
 #include <memory>
 #include <set>

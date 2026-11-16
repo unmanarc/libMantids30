@@ -1,7 +1,7 @@
 #include "clienthandler.h"
-#include <Mantids30/Server/WebRESTFul/security.h>
+#include "security.h"
 
-#include <Mantids30/Server/WebRESTFul/api_restful_endpoints.h>
+#include "api_restful_endpoints.h"
 #include <Mantids30/Core/Helpers/encoders.h>
 #include <Mantids30/Runtime/Logs/loglevels.h>
 #include <Mantids30/Protocol/HTTP/rsp_cookies.h>

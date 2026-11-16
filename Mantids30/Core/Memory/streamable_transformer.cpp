@@ -1,5 +1,5 @@
 #include "streamable_transformer.h"
-#include <Mantids30/Core/Memory/streamable_null.h>
+#include "streamable_null.h"
 
 void Mantids30::Core::Memory::Streams::StreamableTransformer::transform(StreamableObject *in, StreamableObject *out)
 {

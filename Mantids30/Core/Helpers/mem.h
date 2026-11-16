@@ -5,7 +5,6 @@
 
 #ifdef _WIN32
 #include <WinBase.h>
-#include <cstring>
 #endif
 
 namespace Mantids30::Core::Helpers {

@@ -16,7 +16,6 @@
 #include <sys/socket.h>
 #else
 #include "tap-windows.h"
-#include <Mantids30/Core/Helpers/appexec.h>
 #include <Mantids30/Core/Memory/w32compat.h>
 #include <Shlobj.h>
 #endif

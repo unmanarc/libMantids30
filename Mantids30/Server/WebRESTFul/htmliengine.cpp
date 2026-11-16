@@ -1,5 +1,5 @@
 #include <Mantids30/DataFormat/JSON/json.h>
-#include  "htmliengine.h"
+#include "htmliengine.h"
 #include <Mantids30/Core/Helpers/encoders.h>
 #include <Mantids30/DataFormat/JSON/streamable_json.h>
 #include <Mantids30/Runtime/Logs/rpclog.h>

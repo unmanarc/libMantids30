@@ -1,12 +1,12 @@
 #include "engine.h"
-#include <Mantids30/Server/WebRESTFul/api_restful_endpoints.h>
-#include <Mantids30/Server/WebRESTFul/api_websocket_endpoint.h>
+#include "api_restful_endpoints.h"
+#include "api_websocket_endpoint.h"
 
 #include <Mantids30/Core/Helpers/encoders.h>
 #include <Mantids30/DataFormat/JSON/json.h>
 #include <memory>
 
-#include <Mantids30/Server/WebRESTFul/security.h>
+#include "security.h"
 #include "clienthandler.h"
 
 using namespace Mantids30;

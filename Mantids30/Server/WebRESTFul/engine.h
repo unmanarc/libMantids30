@@ -1,9 +1,9 @@
 #pragma once
 
-#include <Mantids30/Server/WebRESTFul/api_restful_endpoints.h>
-#include <Mantids30/Server/WebRESTFul/api_websocket_endpoints.h>
+#include "api_restful_endpoints.h"
+#include "api_websocket_endpoints.h"
 #include <Mantids30/DataFormat/JWT/jwt.h>
-#include <Mantids30/Server/WebRESTFul/apiserver_core.h>
+#include "apiserver_core.h"
 #include <memory>
 
 namespace Mantids30::Server::WebRESTFul {

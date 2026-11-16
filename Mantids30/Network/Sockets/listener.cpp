@@ -2,7 +2,7 @@
 #include "socket_stream.h"
 
 #include <Mantids30/Core/Helpers/callbacks.h>
-#include <Mantids30/Network/Sockets/acceptor_multithreaded.h>
+#include "acceptor_multithreaded.h"
 #include <memory>
 
 using namespace Mantids30::Network::Sockets;

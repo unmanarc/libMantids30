@@ -1,5 +1,5 @@
 #include <Mantids30/DataFormat/JSON/json.h>
-#include  "config_builder.h"
+#include "config_builder.h"
 #include "Mantids30/DataFormat/JSON/json_detail.h"
 
 #include <Mantids30/DataFormat/JWT/jwt.h>

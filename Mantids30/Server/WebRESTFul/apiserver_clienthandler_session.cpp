@@ -1,5 +1,5 @@
 #include <Mantids30/DataFormat/JSON/json.h>
-#include  "apiserver_clienthandler.h"
+#include "apiserver_clienthandler.h"
 
 
 using namespace Mantids30::Server::WebRESTFul;

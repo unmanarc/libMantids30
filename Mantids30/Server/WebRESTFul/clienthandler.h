@@ -1,10 +1,10 @@
 #pragma once
 
 #include "engine.h"
-#include <Mantids30/Server/WebRESTFul/api_restful_endpoints.h>
-#include <Mantids30/Server/WebRESTFul/api_websocket_endpoints.h>
+#include "api_restful_endpoints.h"
+#include "api_websocket_endpoints.h"
 #include <Mantids30/DataFormat/JWT/jwt.h>
-#include <Mantids30/Server/WebRESTFul/apiserver_clienthandler.h>
+#include "apiserver_clienthandler.h"
 #include <cstdint>
 #include <memory>
 
