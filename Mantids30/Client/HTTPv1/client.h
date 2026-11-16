@@ -57,10 +57,10 @@ public:
         std::shared_ptr<Mantids30::Protocol::HTTP::HTTPv1_Client> protocol;
 
         /** @brief Transport success; HTTP errors such as 404 still count as received responses. */
-        bool succeed() const { return error == Error::NONE; }
-        uint16_t getStatusCode() const;
-        bool isHTTPSuccess() const;
-        std::string getHeader(const std::string &name) const;
+        [[nodiscard]] bool succeed() const { return error == Error::NONE; }
+        [[nodiscard]] uint16_t getStatusCode() const;
+        [[nodiscard]] bool isHTTPSuccess() const;
+        [[nodiscard]] std::string getHeader(const std::string &name) const;
     };
 
     struct Callbacks
@@ -97,7 +97,7 @@ public:
      * Injected connections remain caller-owned, including on cancellation or failure.
      * Use fresh writable streams for each call. Custom sinks determine whether content can be replayed.
      */
-    Response perform(const Request &request, const Callbacks &callbacks = {}) const;
+    [[nodiscard]] Response perform(const Request &request, const Callbacks &callbacks = {}) const;
 
 private:
     Config m_config;

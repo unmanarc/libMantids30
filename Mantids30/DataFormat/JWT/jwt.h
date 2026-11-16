@@ -264,7 +264,7 @@ public:
                 m_expirationSignatures = other.m_expirationSignatures;
                 m_revokedTokens = other.m_revokedTokens;
                 m_garbageCollectorInterval = other.m_garbageCollectorInterval;
-                m_stopGarbageCollector = (bool) other.m_stopGarbageCollector;
+                m_stopGarbageCollector = other.m_stopGarbageCollector.load();
             }
             return *this;
         }
