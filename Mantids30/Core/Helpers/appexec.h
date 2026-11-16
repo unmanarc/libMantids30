@@ -145,9 +145,10 @@ public:
      * @brief Schedules a file to be opened as a child file descriptor.
      * @param outFile Path to the output file.
      * @param fd Child descriptor to redirect; defaults to standard output.
+     * @param append Append instead of truncating the destination.
      * @return true if the action is recorded; otherwise false with errno set.
      *
-     * The file is opened during spawning with O_WRONLY | O_CREAT | O_TRUNC.
+     * The file is opened during spawning with O_WRONLY | O_CREAT and either O_TRUNC or O_APPEND.
      * Newly created files request mode 0644, subject to the process umask.
      * File actions are applied in registration order, before pipe redirections
      * and the optional stderr-to-stdout redirection.
@@ -155,7 +156,7 @@ public:
      * @note Successful registration does not guarantee that opening will succeed.
      * @pre No successful spawn has occurred since construction or the last reset().
      */
-    bool addOpenFDToFile(const std::string &outFile, int fd = 1);
+    bool addOpenFDToFile(const std::string &outFile, int fd = 1, bool append = false);
 
     /**
      * @brief Schedules standard error to duplicate the final standard output.
@@ -193,6 +194,7 @@ public:
      * @brief Spawns the configured executable.
      * @param pipeStdout Capture standard output through a pipe.
      * @param pipeStderr Capture standard error through a separate pipe.
+     * @param pipeStdin Connect standard input to a writable socket pair.
      * @return true if spawning succeeds; otherwise false with errno set.
      *
      * On success, arguments and environment overrides are cleared. On failure,
@@ -207,7 +209,19 @@ public:
      * @pre An executable has been configured with setExec().
      * @pre No successful spawn has occurred since construction or the last reset().
      */
-    bool spawnProcess(bool pipeStdout = false, bool pipeStderr = false);
+    bool spawnProcess(bool pipeStdout = false, bool pipeStderr = false, bool pipeStdin = false);
+
+    /** Writes to captured stdin without raising SIGPIPE. May return a partial write. */
+    ssize_t write(const void *buf, size_t count);
+
+    /** Borrowed parent descriptor for stdin/stdout/stderr, or -1. Do not close it. */
+    int getStreamFD(int fd) const noexcept;
+
+    /** Sends SIGKILL to the direct child and reaps it. Does not terminate descendants. */
+    void terminate() noexcept;
+
+    /** Queries and reaps an exited direct child without blocking. */
+    bool isRunning() noexcept;
 
     /**
      * @brief Blocks until the child is reaped.
@@ -279,6 +293,7 @@ private:
     {
         std::string path; ///< File path to open during spawning.
         int fd;           ///< Target child descriptor.
+        bool append;      ///< Preserve existing contents.
     };
 
     std::string m_execPath;                 ///< Configured executable path.
@@ -287,6 +302,7 @@ private:
     std::vector<OpenFD> m_openFiles;        ///< Ordered file-opening actions.
 
     pid_t m_childPid{0};         ///< Child PID, or zero when unset/reaped.
+    int m_piStdIn[2]{-1, -1};    ///< Stdin socket pair: parent and child ends.
     int m_piStdOut[2]{-1, -1};   ///< Stdout pipe: read and write ends.
     int m_piStdErr[2]{-1, -1};   ///< Stderr pipe: read and write ends.
     std::vector<pollfd> m_plist; ///< Open captured read descriptors.

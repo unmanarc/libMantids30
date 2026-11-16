@@ -7,6 +7,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 #else
 #include <sys/stat.h>
+#include <sys/socket.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -213,7 +215,7 @@ bool Mantids30::Core::Helpers::AppSpawn::setExec(const std::string &path)
     return true;
 }
 
-bool Mantids30::Core::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd)
+bool Mantids30::Core::Helpers::AppSpawn::addOpenFDToFile(const std::string &outFile, int fd, bool append)
 {
     if (m_spawned)
     {
@@ -227,7 +229,7 @@ bool Mantids30::Core::Helpers::AppSpawn::addOpenFDToFile(const std::string &outF
         return false;
     }
 
-    m_openFiles.push_back({outFile, fd});
+    m_openFiles.push_back({outFile, fd, append});
     return true;
 }
 
@@ -274,7 +276,7 @@ void Mantids30::Core::Helpers::AppSpawn::addEnvironment(const std::string &env)
     m_environment.push_back(env);
 }
 
-bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr)
+bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipeStderr, bool pipeStdin)
 {
     if (m_spawned)
     {
@@ -379,21 +381,35 @@ bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipe
         }
     }
 
-    const auto createPipe = [&](int (&ends)[2]) -> bool
+    const auto createPipe = [&](int (&ends)[2], bool socket = false) -> bool
     {
+        if (socket)
+        {
 #ifdef __linux__
-        if (::pipe2(ends, O_CLOEXEC) == -1)
-        {
-            return false;
-        }
+            if (::socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, ends) == -1)
 #else
-        // On platforms without pipe2(), creation and CLOEXEC setup are
-        // not atomic relative to concurrent fork/exec.
-        if (::pipe(ends) == -1)
-        {
-            return false;
-        }
+            if (::socketpair(AF_UNIX, SOCK_STREAM, 0, ends) == -1)
 #endif
+            {
+                return false;
+            }
+        }
+        else
+        {
+#ifdef __linux__
+            if (::pipe2(ends, O_CLOEXEC) == -1)
+            {
+                return false;
+            }
+#else
+            // On platforms without pipe2(), creation and CLOEXEC setup are
+            // not atomic relative to concurrent fork/exec.
+            if (::pipe(ends) == -1)
+            {
+                return false;
+            }
+#endif
+        }
 
         for (int &fd : ends)
         {
@@ -423,7 +439,7 @@ bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipe
 
     for (const auto &file : m_openFiles)
     {
-        error = posix_spawn_file_actions_addopen(&actions.value, file.fd, file.path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        error = posix_spawn_file_actions_addopen(&actions.value, file.fd, file.path.c_str(), O_WRONLY | O_CREAT | (file.append ? O_APPEND : O_TRUNC), 0644);
 
         if (error != 0)
         {
@@ -447,6 +463,19 @@ bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipe
 
         return posix_spawn_file_actions_addclose(&actions.value, ends[1]);
     };
+
+    if (pipeStdin)
+    {
+        if (!createPipe(m_piStdIn, true))
+        {
+            return fail(errno);
+        }
+        error = addPipeActions(m_piStdIn, STDIN_FILENO);
+        if (error != 0)
+        {
+            return fail(error);
+        }
+    }
 
     if (pipeStdout)
     {
@@ -513,6 +542,12 @@ bool Mantids30::Core::Helpers::AppSpawn::spawnProcess(bool pipeStdout, bool pipe
         m_plist.push_back({m_piStdErr[0], POLLIN, 0});
     }
 
+    if (pipeStdin)
+    {
+        ::close(m_piStdIn[1]);
+        m_piStdIn[1] = -1;
+    }
+
     m_arguments.clear();
     m_environment.clear();
     return true;
@@ -564,6 +599,14 @@ void Mantids30::Core::Helpers::AppSpawn::closeStream(int fd) noexcept
 void Mantids30::Core::Helpers::AppSpawn::closePipes() noexcept
 {
     const int savedErrno = errno;
+    for (int &fd : m_piStdIn)
+    {
+        if (fd != -1)
+        {
+            ::close(fd);
+            fd = -1;
+        }
+    }
     closeStream(STDOUT_FILENO);
     closeStream(STDERR_FILENO);
     m_plist.clear();
@@ -708,6 +751,74 @@ ssize_t Mantids30::Core::Helpers::AppSpawn::read(int fd, void *buf, size_t count
     }
 
     return result;
+}
+
+ssize_t Mantids30::Core::Helpers::AppSpawn::write(const void *buf, size_t count)
+{
+    if (m_piStdIn[0] == -1)
+    {
+        errno = EBADF;
+        return -1;
+    }
+    ssize_t result;
+    do
+    {
+#ifdef MSG_NOSIGNAL
+        result = ::send(m_piStdIn[0], buf, count, MSG_NOSIGNAL);
+#else
+        const int enabled = 1;
+        if (::setsockopt(m_piStdIn[0], SOL_SOCKET, SO_NOSIGPIPE, &enabled, sizeof(enabled)) == -1)
+        {
+            return -1;
+        }
+        result = ::send(m_piStdIn[0], buf, count, 0);
+#endif
+    }
+    while (result == -1 && errno == EINTR);
+    return result;
+}
+
+int Mantids30::Core::Helpers::AppSpawn::getStreamFD(int fd) const noexcept
+{
+    switch (fd)
+    {
+    case STDIN_FILENO: return m_piStdIn[0];
+    case STDOUT_FILENO: return m_piStdOut[0];
+    case STDERR_FILENO: return m_piStdErr[0];
+    default: return -1;
+    }
+}
+
+void Mantids30::Core::Helpers::AppSpawn::terminate() noexcept
+{
+    if (m_childPid > 0 && !m_childExited)
+    {
+        ::kill(m_childPid, SIGKILL);
+        reapChild();
+    }
+    closePipes();
+}
+
+bool Mantids30::Core::Helpers::AppSpawn::isRunning() noexcept
+{
+    if (m_childPid <= 0 || m_childExited)
+    {
+        return false;
+    }
+    int status;
+    pid_t result;
+    do
+    {
+        result = ::waitpid(m_childPid, &status, WNOHANG);
+    }
+    while (result == -1 && errno == EINTR);
+    if (result == m_childPid || (result == -1 && errno == ECHILD))
+    {
+        m_childExited = true;
+        m_childPid = 0;
+        return false;
+    }
+    return result == 0;
 }
 
 #endif
