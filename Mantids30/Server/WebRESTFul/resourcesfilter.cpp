@@ -347,7 +347,7 @@ ResourcesFilter::FilterEvaluationResult ResourcesFilter::evaluateURI(const std::
             }
         }
 
-        if (isTerminalAction(result.actions.back().type))
+        if (!result.actions.empty() && isTerminalAction(result.actions.back().type))
         {
             break;
         }
