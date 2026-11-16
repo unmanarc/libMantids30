@@ -30,9 +30,9 @@ jobs:
           - { name: "Ubuntu 26.04", image: "ubuntu:26.04", family: "debian" }
           - { name: "Debian 12", image: "debian:12", family: "debian" }
           - { name: "Debian 13", image: "debian:13", family: "debian" }
-          - { name: "AlmaLinux 8 (RHEL 8)", image: "almalinux:8", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
-          - { name: "AlmaLinux 9 (RHEL 9)", image: "almalinux:9", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
-          - { name: "AlmaLinux 10 (RHEL 10)", image: "almalinux:10", family: "rhel" }
+          - { name: "RHEL 8", image: "almalinux:8", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
+          - { name: "RHEL 9", image: "almalinux:9", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
+          - { name: "RHEL 10", image: "almalinux:10", family: "rhel" }
     steps:
       - name: Bootstrap git
         run: |
@@ -72,7 +72,7 @@ jobs:
         run: |
           set -eux
           dnf install -y dnf-plugins-core
-          if [ "${{ matrix.name }}" = "AlmaLinux 8 (RHEL 8)" ]; then
+          if [ "${{ matrix.name }}" = "RHEL 8" ]; then
             dnf config-manager --set-enabled powertools
           else
             dnf config-manager --set-enabled crb
@@ -82,14 +82,14 @@ jobs:
           dnf repolist --enabled
           dnf install -y gcc-c++ make cmake pkgconf-pkg-config \
             openssl-devel
-          # AlmaLinux 8/9 use EPEL's versioned Boost package and its CMake config.
-          # AlmaLinux 10 uses the native development and JSON runtime packages.
-          if [ "${{ matrix.name }}" = "AlmaLinux 8 (RHEL 8)" ]; then
+          # RHEL 8/9 use EPEL's versioned Boost package and its CMake config.
+          # RHEL 10 uses the native development and JSON runtime packages.
+          if [ "${{ matrix.name }}" = "RHEL 8" ]; then
             dnf --enablerepo=epel,powertools install -y boost1.78-devel
             rpm -q boost1.78-devel
             test -f /usr/include/boost1.78/boost/json.hpp
             test -f /usr/lib64/cmake/Boost-1.78.0/BoostConfig.cmake
-          elif [ "${{ matrix.name }}" = "AlmaLinux 9 (RHEL 9)" ]; then
+          elif [ "${{ matrix.name }}" = "RHEL 9" ]; then
             dnf --enablerepo=epel,crb install -y boost1.78-devel
             rpm -q boost1.78-devel
             test -f /usr/include/boost1.78/boost/json.hpp

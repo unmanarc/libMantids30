@@ -1,13 +1,13 @@
-# Building on RHEL, AlmaLinux and Rocky Linux
+# Building on RHEL
 
-Applies to RHEL/AlmaLinux/Rocky Linux 8, 9 and 10. Versions 8, 9 and 10 are exercised
+Applies to RHEL 8, 9 and 10. Versions 8, 9 and 10 are exercised
 by CI; RHEL 7 is deprecated (EOL November 2024) and remains buildable via the manual
 path below for in-tree builds only.
 
 > **RHEL 7 is deprecated.** It ships no new packages; the `SSLRHEL7` / devtoolset-9
 > path is kept for existing in-tree builds only.
 
-## RHEL / AlmaLinux / Rocky 8, 9, 10
+## RHEL 8, 9, 10
 
 ```bash
 sudo dnf install -y dnf-plugins-core
@@ -20,9 +20,9 @@ sudo dnf install -y epel-release
 sudo dnf install -y gcc-c++ make cmake pkgconf-pkg-config git \
     openssl-devel
 # Boost.JSON headers:
-#   RHEL 8: base boost-devel is 1.66 (no JSON); EPEL provides boost 1.78.
-#   RHEL 9 and 10: AppStream boost-devel ships JSON.
-if [ "$(rpm --eval '%{rhel}')" = "8" ]; then
+#   Versions 8/9: use EPEL Boost 1.78 for a consistent JSON API.
+#   Version 10: use the native Boost packages.
+if [ "$(rpm --eval '%{rhel}')" = "8" ] || [ "$(rpm --eval '%{rhel}')" = "9" ]; then
     sudo dnf install -y boost1.78-devel
 else
     sudo dnf install -y boost-devel
@@ -34,6 +34,10 @@ Optional database backends:
 ```bash
 sudo dnf install -y sqlite-devel libpq-devel mariadb-connector-c-devel
 ```
+
+For versions 8/9, append `-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0` to the
+CMake configure command (shared or static). This selects the versioned EPEL
+package, including its `/usr/include/boost1.78` headers.
 
 Build and install:
 
@@ -92,9 +96,11 @@ too old for the JWT and TLS code.
 ## Runtime packages
 
 ```bash
-# libboost_json.so ships with the boost runtime on RHEL 8/9/10;
-# on Fedora it is the separate boost-json subpackage.
-sudo dnf install -y boost openssl boost-regex boost-thread
+if [ "$(rpm --eval '%{rhel}')" = "8" ] || [ "$(rpm --eval '%{rhel}')" = "9" ]; then
+    sudo dnf install -y boost1.78 openssl
+else
+    sudo dnf install -y boost openssl boost-json boost-regex boost-thread
+fi
 # optional
 sudo dnf install -y sqlite-libs libpq mariadb-connector-c
 ```
@@ -106,7 +112,7 @@ On RHEL 7 use `yum` and add `openssl11-libs` when the library was built with
 
 | Symptom | Fix |
 |---------|-----|
-| `boost-json` not found | install `boost1.78-devel` (EPEL) on RHEL 8, or `boost-devel` on RHEL 9/10 |
+| `boost-json` not found | install `boost1.78-devel` (EPEL) on versions 8/9, or `boost-devel` on version 10 |
 | `libcrypto` not found on RHEL 7 | install `openssl11-devel` and configure with `-DSSLRHEL7=ON` |
 | `pkg-config` not found | install `pkgconf-pkg-config` (RHEL 8+) |
 | `cmake: command not found` on RHEL 7 | use `cmake3` from EPEL |
