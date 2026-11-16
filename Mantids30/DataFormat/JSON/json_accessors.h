@@ -98,12 +98,17 @@ inline static unsigned int ASUINT(const boost::json::value &j, std::string_view 
     return def;
 }
 
+// Returns def unless the member is an integer representable as uint64_t.
 inline static uint64_t ASUINT64(const boost::json::value &j, std::string_view x, uint64_t def)
 {
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
-    if (v.is_number())
+    if (v.is_uint64())
     {
-        return ASUINT64_OR_ZERO(v);
+        return v.as_uint64();
+    }
+    if (v.is_int64() && v.as_int64() >= 0)
+    {
+        return static_cast<uint64_t>(v.as_int64());
     }
     return def;
 }
