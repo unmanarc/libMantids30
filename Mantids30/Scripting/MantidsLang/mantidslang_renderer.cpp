@@ -140,7 +140,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         // Output raw JSON representation
         if (!output->writeString(Mantids30::DataFormat::JSON::toString(value)))
         {
-            writeStatus.succeed = false;
+            writeStatus += -1;
             return false;
         }
     }
@@ -152,7 +152,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         {
             if (!output->writeString(Mantids30::Core::Helpers::Encoders::htmlEscape(Mantids30::DataFormat::JSON::ASSTRING_D(value, ""))))
             {
-                writeStatus.succeed = false;
+                writeStatus += -1;
                 return false;
             }
         }
@@ -160,7 +160,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         {
             if (!output->writeString(Mantids30::DataFormat::JSON::ASSTRING_D(value, "")))
             {
-                writeStatus.succeed = false;
+                writeStatus += -1;
                 return false;
             }
         }
@@ -168,7 +168,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         {
             if (!output->writeString(std::to_string(Mantids30::DataFormat::JSON::ASDOUBLE_D(value, 0.0))))
             {
-                writeStatus.succeed = false;
+                writeStatus += -1;
                 return false;
             }
         }
@@ -176,7 +176,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         {
             if (!output->writeString(Mantids30::DataFormat::JSON::ASBOOL_D(value, false) ? "true" : "false"))
             {
-                writeStatus.succeed = false;
+                writeStatus += -1;
                 return false;
             }
         }
@@ -185,7 +185,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
             // Complex type (array/object) -> toJSON then HTML escape
             if (!output->writeString(Mantids30::Core::Helpers::Encoders::htmlEscape(Mantids30::DataFormat::JSON::toString(value))))
             {
-                writeStatus.succeed = false;
+                writeStatus += -1;
                 return false;
             }
         }
@@ -195,7 +195,7 @@ bool MantidsLang::printJSON(const std::string &action, const boost::json::value 
         // Output raw string representation of the value
         if (!output->writeString(Mantids30::DataFormat::JSON::ASSTRING_D(value, "")))
         {
-            writeStatus.succeed = false;
+            writeStatus += -1;
             return false;
         }
     }
@@ -332,7 +332,7 @@ void MantidsLang::processTokens(const boost::json::value &currentJsonContext, si
             {
                 if (!output->writeFullStream(token.buffer.data(), token.buffer.size()))
                 {
-                    writeStatus.succeed = false;
+                    writeStatus += -1;
                     return;
                 }
             }
