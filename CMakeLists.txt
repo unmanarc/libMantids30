@@ -53,6 +53,7 @@ if(MANTIDS30_BUILD_TESTS)
     enable_testing()
     ADD_SUBDIRECTORY(tests/CoreMemory)
     ADD_SUBDIRECTORY(tests/ClientHTTPv1)
+    ADD_SUBDIRECTORY(tests/HTTPParser)
 endif()
 #ADD_SUBDIRECTORY(devel)
 #############################################################################################################################
