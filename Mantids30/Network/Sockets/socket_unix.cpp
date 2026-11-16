@@ -1,5 +1,6 @@
 #include "socket_unix.h"
 #include <memory>
+#include <system_error>
 
 #ifndef _WIN32
 
@@ -9,6 +10,11 @@
 
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/stat.h>
+#include <chrono>
+#include <poll.h>
+#include <algorithm>
+#include <climits>
 
 #include <Mantids30/Core/Helpers/mem.h>
 
@@ -26,9 +32,22 @@ bool Socket_UNIX::listenOn(const uint16_t &, const char *path, const int32_t &re
     sockaddr_un server_address{};
     int server_len = sizeof(server_address);
 
-    unlink(path);
+    if (!path || strlen(path) >= sizeof(server_address.sun_path))
+    {
+        m_lastError = "Invalid UNIX socket path";
+        return false;
+    }
+    struct stat existing{};
+    if (lstat(path, &existing) == 0)
+    {
+        if (!S_ISSOCK(existing.st_mode) || unlink(path) != 0)
+        {
+            m_lastError = "UNIX socket path already exists and cannot be replaced";
+            return false;
+        }
+    }
 
-    m_sockFD = socket(AF_UNIX, SOCK_STREAM, 0);
+    setSocketFD(socket(AF_UNIX, SOCK_STREAM, 0));
     if (!isActive())
     {
         m_lastError = "socket() failed";
@@ -76,9 +95,14 @@ bool Socket_UNIX::connectFrom(const char *, const char *path, const uint16_t &, 
     int len;
     sockaddr_un address{};
 
+    if (!path || strlen(path) >= sizeof(address.sun_path))
+    {
+        m_lastError = "Invalid UNIX socket path";
+        return false;
+    }
     m_remoteServerHostname = path;
 
-    m_sockFD = socket(AF_UNIX, SOCK_STREAM, 0);
+    setSocketFD(socket(AF_UNIX, SOCK_STREAM, 0));
     if (!isActive())
     {
         m_lastError = "socket() failed";
@@ -89,31 +113,82 @@ bool Socket_UNIX::connectFrom(const char *, const char *path, const uint16_t &, 
     strncpy(address.sun_path, path, sizeof(address.sun_path));
     len = sizeof(address);
 
-    // Set the timeout here.
     setReadTimeout(timeout);
-
-    if (connect(m_sockFD, reinterpret_cast<sockaddr *>(&address), len) == -1)
+    if (!setBlockingMode(false))
     {
-        int valopt = 0;
-        // Socket selected for write
-        socklen_t lon;
-        lon = sizeof(int);
-        if (getSocketOption(SOL_SOCKET, SO_ERROR, reinterpret_cast<void *>(&valopt), &lon) < 0)
+        closeSocket();
+        return false;
+    }
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout);
+    int result;
+    // Unlike TCP, Linux AF_UNIX reports EAGAIN when the listen backlog is full;
+    // that means retry connect(), rather than wait for a pending connection.
+    for (;;)
+    {
+        result = connect(m_sockFD, reinterpret_cast<sockaddr *>(&address), len);
+        if (result == 0 || (errno != EAGAIN && errno != EINTR))
         {
-            m_lastError = "Error in getsockopt(SOL_SOCKET)";
+            break;
+        }
+        if (timeout && std::chrono::steady_clock::now() >= deadline)
+        {
+            m_lastError = "UNIX connection timed out";
+            closeSocket();
             return false;
         }
-
-        // Check the value returned...
-        if (valopt)
+        poll(nullptr, 0, 1);
+    }
+    if (result < 0 && errno == EINPROGRESS)
+    {
+        int ready;
+        do
         {
-            char cError[1024] = "Unknown Error";
-
-            m_lastError = std::string("Connection to AF_UNIX Socket failed with error #") + std::to_string(valopt) + ": " + strerror_r(valopt, cError, sizeof(cError));
+            const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now()).count();
+            const int waitMS = timeout ? static_cast<int>(std::min<int64_t>(std::max<int64_t>(remaining, 0), INT_MAX)) : -1;
+            pollfd descriptor{m_sockFD, POLLOUT, 0};
+            ready = poll(&descriptor, 1, waitMS);
+        } while (ready < 0 && errno == EINTR && (timeout == 0 || std::chrono::steady_clock::now() < deadline));
+        if (ready <= 0)
+        {
+            if (ready == 0)
+            {
+                m_lastError = "UNIX connection timed out: " + std::string(path);
+            }
+            else
+            {
+                const int error = errno;
+                m_lastError = "poll(AF_UNIX) failed with error #" + std::to_string(error) + ": " + std::system_category().message(error);
+            }
+            closeSocket();
             return false;
         }
-
-        m_lastError = "Connect(AF_UNIX) failed";
+        int connectionError = 0;
+        socklen_t length = sizeof(connectionError);
+        if (getSocketOption(SOL_SOCKET, SO_ERROR, &connectionError, &length) < 0)
+        {
+            const int error = errno;
+            m_lastError = "Error in getsockopt(SOL_SOCKET, SO_ERROR): #" + std::to_string(error) + ": " + std::system_category().message(error);
+            closeSocket();
+            return false;
+        }
+        if (connectionError != 0)
+        {
+            m_lastError = "Connection to AF_UNIX Socket " + std::string(path) + " failed with error #" + std::to_string(connectionError) + ": " + std::system_category().message(connectionError);
+            closeSocket();
+            return false;
+        }
+        result = 0;
+    }
+    if (result < 0)
+    {
+        const int error = errno;
+        m_lastError = "Connection to AF_UNIX Socket " + std::string(path) + " failed with error #" + std::to_string(error) + ": " + std::system_category().message(error);
+        closeSocket();
+        return false;
+    }
+    if (!setBlockingMode(true))
+    {
+        closeSocket();
         return false;
     }
 
@@ -125,11 +200,17 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_UNIX::acceptC
     int sdconn;
     std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> cursocket = nullptr;
 
-    if ((sdconn = accept(m_sockFD, nullptr, nullptr)) >= 0)
+    do
     {
-        cursocket = std::make_shared<Socket_Stream>();
+        sdconn = accept(m_sockFD, nullptr, nullptr);
+    } while (sdconn < 0 && errno == EINTR);
+    if (sdconn >= 0)
+    {
+        cursocket = std::make_shared<Socket_UNIX>();
         // Set the proper socket-
         cursocket->setSocketFD(sdconn);
+        cursocket->setReadTimeout(m_readTimeout);
+        cursocket->setWriteTimeout(m_writeTimeout);
     }
     else
     {
