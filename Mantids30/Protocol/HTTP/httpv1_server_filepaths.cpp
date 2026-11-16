@@ -55,9 +55,7 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI2(stri
     {
         [[nodiscard]] bool detectPathTraversal() const
         {
-            return (fileSystemRealPath.size() < serverWebRootWithEndingSlash.size()                                                       // outside dir?
-                    || memcmp(serverWebRootWithEndingSlash.c_str(), fileSystemRealPath.c_str(), serverWebRootWithEndingSlash.size()) != 0 // not matching?
-            );
+            return !boost::starts_with(fileSystemRealPath, serverWebRootWithEndingSlash);
         }
 
         [[nodiscard]] std::string getRelativePath() const
@@ -314,7 +312,7 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0NE(co
     }
 
     // Check for transversal access hacking attempts...
-    if (sFullComputedRealPath.size() < sServerDir.size() || memcmp(sServerDir.c_str(), sFullComputedRealPath.c_str(), sServerDir.size()) != 0)
+    if (!boost::starts_with(sFullComputedRealPath, sServerDir))
     {
         // File does not exist, but transversal path was detected.
         info->isTransversal = true;
@@ -383,7 +381,7 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::resolveLocalFilePathFromURI0E(con
     }
 
     // Check for transversal access hacking attempts...
-    if (sFullComputedRealPath.size() < sServerDir.size() || memcmp(sServerDir.c_str(), sFullComputedRealPath.c_str(), sServerDir.size()) != 0)
+    if (!boost::starts_with(sFullComputedRealPath, sServerDir))
     {
         info->isTransversal = true;
         return false;

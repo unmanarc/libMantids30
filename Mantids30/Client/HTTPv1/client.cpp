@@ -3,6 +3,7 @@
 
 #include <Mantids30/Core/Memory/b_chunks.h>
 #include <boost/algorithm/string.hpp>
+#include <algorithm>
 #include <charconv>
 #include <climits>
 
@@ -27,41 +28,23 @@ struct Endpoint
 
 bool isToken(const std::string &value)
 {
-    if (value.empty())
-    {
-        return false;
-    }
-    for (unsigned char c : value)
-    {
-        if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') ||
-              std::string("!#$%&'*+-.^_`|~").find(c) != std::string::npos))
-        {
-            return false;
-        }
-    }
-    return true;
+    return !value.empty() && value.find_first_not_of(
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!#$%&'*+-.^_`|~") == std::string::npos;
 }
 
 bool validFieldValue(const std::string &value)
 {
-    for (unsigned char c : value)
+    return std::none_of(value.begin(), value.end(), [](unsigned char c)
     {
-        if ((c < 32 && c != '\t') || c == 127)
-        {
-            return false;
-        }
-    }
-    return true;
+        return (c < 32 && c != '\t') || c == 127;
+    });
 }
 
 bool parseURL(const std::string &url, Endpoint *endpoint)
 {
-    for (unsigned char c : url)
+    if (std::any_of(url.begin(), url.end(), [](unsigned char c) { return c <= 32 || c == 127 || c == '\\'; }))
     {
-        if (c <= 32 || c == 127 || c == '\\')
-        {
-            return false;
-        }
+        return false;
     }
     const size_t schemeEnd = url.find("://");
     if (schemeEnd == std::string::npos)
