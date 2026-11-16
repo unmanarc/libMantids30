@@ -2,6 +2,7 @@
 
 #ifndef _WIN32
 #include <Mantids30/Core/Helpers/appexec.h>
+#include <Mantids30/Runtime/Logs/applog.h>
 #include <Mantids30/Core/Threads/safe_queue.h>
 #include <Mantids30/DataFormat/JSON/json.h>
 #include <atomic>
@@ -66,6 +67,15 @@ public:
      */
     struct Config
     {
+        /**
+         * @brief Optional application logger for pool diagnostics.
+         *
+         * Null disables logging. The pool retains shared ownership until destruction.
+         * Configure the logger before starting the pool; worker threads log concurrently.
+         * Request and response payloads are never included in diagnostics.
+         */
+        std::shared_ptr<Logs::AppLog> appLog;
+
         /**
          * @brief Executable path and arguments; executed directly without a shell or PATH lookup.
          */
@@ -341,6 +351,17 @@ private:
      * @note May run on a worker thread; does not join threads or acquire m_lifecycle.
      */
     void failPool();
+
+    /**
+     * @brief Emits a diagnostic without allowing logging failures to affect execution.
+     * @param error Outcome to describe; SUCCESS and normal STOPPED cancellation are ignored.
+     * @param context Operation that failed, using a fixed internal description.
+     * @param detail Optional diagnostic text, never interpreted as a format string.
+     * @param worker One-based worker number, or zero for a pool/request event.
+     * @param systemError Saved errno value, or zero when no system error applies.
+     * @note Uses WARNING for admission, input and timeout errors; ERROR for other failures.
+     */
+    void logProblem(Error error, const char *context, const char *detail = "", size_t worker = 0, int systemError = 0) const noexcept;
 
     /**
      * @brief Removes queued wrappers and publishes STOPPED for unfinished requests.

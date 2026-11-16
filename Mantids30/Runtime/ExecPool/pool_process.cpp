@@ -2,6 +2,7 @@
 
 #ifndef _WIN32
 #include <fcntl.h>
+#include <cerrno>
 
 using namespace Mantids30::Runtime;
 
@@ -12,6 +13,9 @@ std::unique_ptr<ExecPool::App> ExecPool::spawn(size_t index, bool restart)
     auto app = std::make_unique<App>();
     if (!app->setExec(m_config.command.arg0))
     {
+        const int savedError = errno;
+        logProblem(Error::SPAWN_FAILED, "Executable validation failed", "", index + 1, savedError);
+        errno = savedError;
         return {};
     }
     for (const auto &arg : m_config.command.args)
@@ -28,11 +32,17 @@ std::unique_ptr<ExecPool::App> ExecPool::spawn(size_t index, bool restart)
         !app->addOpenFDToFile(m_config.stderrFilePrefix + "-" + std::to_string(index + 1) + m_config.stderrFileSuffix,
                               STDERR_FILENO, true))
     {
+        const int savedError = errno;
+        logProblem(Error::SPAWN_FAILED, "Stderr redirection setup failed", "", index + 1, savedError);
+        errno = savedError;
         return {};
     }
     // Capture stdout and stdin only; stderr is inherited or redirected to its file.
     if (!app->spawnProcess(true, false, true))
     {
+        const int savedError = errno;
+        logProblem(Error::SPAWN_FAILED, "Child creation failed", "", index + 1, savedError);
+        errno = savedError;
         return {};
     }
     // Nonblocking pipes let exchange() enforce deadlines even when the child stalls.
@@ -42,8 +52,11 @@ std::unique_ptr<ExecPool::App> ExecPool::spawn(size_t index, bool restart)
         const int flags = ::fcntl(fd, F_GETFL);
         if (flags == -1 || ::fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
         {
+            const int savedError = errno;
+            logProblem(Error::IO_ERROR, "Nonblocking pipe setup failed", "", index + 1, savedError);
             // A live child must be reaped if pipe setup fails after spawning.
             app->terminate();
+            errno = savedError;
             return {};
         }
     }

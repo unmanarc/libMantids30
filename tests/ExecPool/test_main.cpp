@@ -130,6 +130,58 @@ static void waitActive(ExecPool &pool, size_t count)
     require(pool.statistics().active >= count, "workers did not become active");
 }
 
+// Capture real AppLog output to verify worker diagnostics and payload privacy.
+static void loggingTests(const char *executable)
+{
+    FILE *capture = std::tmpfile();
+    require(capture != nullptr, "create application log capture");
+    const int savedStderr = ::dup(STDERR_FILENO);
+    require(savedStderr >= 0, "save stderr");
+    require(::dup2(::fileno(capture), STDERR_FILENO) >= 0, "redirect stderr");
+    try
+    {
+        auto cfg = config(executable);
+        cfg.workers = 1;
+        cfg.appLog = std::make_shared<Mantids30::Runtime::Logs::AppLog>();
+        cfg.appLog->enableColorLogging = false;
+        cfg.appLog->enableDateLogging = false;
+        ExecPool pool(cfg);
+        require(pool.start(), "application logged pool start");
+        Request bad(boost::json::object{{"action", "bad"}, {"secret", "private-payload-marker"}});
+        require(bad.exec(pool) == Error::INVALID_JSON, "application logged protocol failure");
+        require(run(pool, "echo") == Error::SUCCESS, "application logged recovery");
+        pool.stop();
+        cfg.command.arg0 = "/nonexistent/mantids30-worker";
+        ExecPool missing(cfg);
+        require(!missing.start(), "application logged startup failure");
+    }
+    catch (...)
+    {
+        std::fflush(stderr);
+        ::dup2(savedStderr, STDERR_FILENO);
+        ::close(savedStderr);
+        std::fclose(capture);
+        throw;
+    }
+    std::fflush(stderr);
+    ::dup2(savedStderr, STDERR_FILENO);
+    ::close(savedStderr);
+    std::rewind(capture);
+    std::string logs;
+    char buffer[4096];
+    while (const auto count = std::fread(buffer, 1, sizeof(buffer), capture))
+    {
+        logs.append(buffer, count);
+    }
+    std::fclose(capture);
+    require(logs.find("ExecPool") != std::string::npos, "application log module");
+    require(logs.find("INVALID_JSON") != std::string::npos, "application log protocol status");
+    require(logs.find("worker=1") != std::string::npos, "application log worker context");
+    require(logs.find("Pool startup failed") != std::string::npos, "application log startup failure");
+    require(logs.find("private-payload-marker") == std::string::npos, "application log payload privacy");
+    require(logs.find("STOPPED") == std::string::npos, "normal shutdown is silent");
+}
+
 static void tests(const char *executable)
 {
     namespace JSON = Mantids30::DataFormat::JSON;
@@ -338,6 +390,7 @@ int main(int argc, char **argv)
     try
     {
         tests(argv[0]);
+        loggingTests(argv[0]);
         std::cout << "Execution pool integration tests passed\n";
         return 0;
     }

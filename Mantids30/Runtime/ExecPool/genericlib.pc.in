@@ -4,7 +4,7 @@ includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
 Name: @LIB_NAME@
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-Requires: Mantids30_Core_Helpers Mantids30_Core_Threads Mantids30_DataFormat_JSON
+Requires: Mantids30_Core_Helpers Mantids30_Core_Threads Mantids30_DataFormat_JSON Mantids30_Runtime_Logs
 Libs: -L${libdir} -l@LIB_NAME@
 Libs.private: -pthread
 Cflags: -I${includedir} -pthread

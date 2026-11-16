@@ -12,6 +12,7 @@ using Mantids30::Runtime::ExecPool;
 ExecPool::Config config;
 config.command = {"/usr/bin/php", {"/path/to/worker.php"}};
 config.workers = 4;
+config.appLog = std::make_shared<Mantids30::Runtime::Logs::AppLog>(); // Optional diagnostics
 config.requestTimeout = std::chrono::milliseconds(5000);
 config.failureBehavior = ExecPool::FailureBehavior::RESTART_WORKER;
 config.stderrFilePrefix = "/var/log/myapp/worker";
@@ -96,3 +97,12 @@ An empty stderr prefix inherits the parent's stderr. Otherwise each child opens
 restarts and subsequent pool starts. The caller creates the parent directory;
 file-open errors make spawning fail. Environment overrides use `NAME=VALUE`.
 Executable paths are passed directly to AppSpawn, without a shell or PATH lookup.
+
+Set `Config::appLog` to an existing shared `Runtime::Logs::AppLog` to receive
+pool diagnostics under the `ExecPool` module. Null (the default) disables logging.
+The pool retains shared ownership; configure the logger before starting workers.
+Admission, input and timeout issues use WARNING; process, protocol and internal
+failures use ERROR. Startup and worker failures include operation context and
+worker numbers where applicable (zero denotes a pool/request event). Normal
+shutdown cancellation is silent. Request/response payloads are never logged.
+Logging is best effort and does not change request results.

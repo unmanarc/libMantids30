@@ -50,6 +50,7 @@ set(Mantids30_LIBRARIES
     Core_Threads
     Core_Helpers
     DataFormat_JSON
+    Runtime_Logs
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

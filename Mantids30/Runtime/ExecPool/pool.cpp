@@ -14,6 +14,7 @@ ExecPool::ExecPool(Config config) : m_config(std::move(config))
     if (m_config.workers == 0 || m_config.maxQueuedRequests == 0 || m_config.maxLineBytes == 0 ||
         m_config.requestTimeout.count() <= 0 || m_config.restartDelay.count() < 0 || m_config.command.arg0.empty())
     {
+        logProblem(Error::INVALID_INPUT, "Invalid pool configuration");
         throw std::invalid_argument("ExecPool: invalid configuration");
     }
     m_queue.setMaxItems(m_config.maxQueuedRequests);
@@ -93,6 +94,7 @@ bool ExecPool::start(std::string *error)
             }
         }
         m_workers.clear();
+        logProblem(Error::SPAWN_FAILED, "Pool startup failed", exception.what());
         if (error)
         {
             *error = exception.what();
@@ -150,5 +152,71 @@ ExecPool::Statistics ExecPool::statistics() const
     auto result = m_statistics;
     result.queued = m_queue.size();
     return result;
+}
+
+void ExecPool::logProblem(Error error, const char *context, const char *detail, size_t worker, int systemError) const noexcept
+{
+    if (!m_config.appLog || error == Error::SUCCESS || error == Error::STOPPED)
+    {
+        return;
+    }
+    const char *name = "INTERNAL_ERROR";
+    switch (error)
+    {
+    case Error::NOT_RUNNING:
+        name = "NOT_RUNNING";
+        break;
+    case Error::QUEUE_FULL:
+        name = "QUEUE_FULL";
+        break;
+    case Error::TIMEOUT:
+        name = "TIMEOUT";
+        break;
+    case Error::SPAWN_FAILED:
+        name = "SPAWN_FAILED";
+        break;
+    case Error::PROCESS_EXITED:
+        name = "PROCESS_EXITED";
+        break;
+    case Error::IO_ERROR:
+        name = "IO_ERROR";
+        break;
+    case Error::INVALID_JSON:
+        name = "INVALID_JSON";
+        break;
+    case Error::DESYNCHRONIZED:
+        name = "DESYNCHRONIZED";
+        break;
+    case Error::LINE_TOO_LONG:
+        name = "LINE_TOO_LONG";
+        break;
+    case Error::INVALID_INPUT:
+        name = "INVALID_INPUT";
+        break;
+    case Error::INPUT_TOO_LONG:
+        name = "INPUT_TOO_LONG";
+        break;
+    case Error::ALREADY_EXECUTED:
+        name = "ALREADY_EXECUTED";
+        break;
+    case Error::INTERNAL_ERROR:
+        name = "INTERNAL_ERROR";
+        break;
+    default:
+        break;
+    }
+    const auto level = error == Error::NOT_RUNNING || error == Error::QUEUE_FULL || error == Error::TIMEOUT ||
+        error == Error::INVALID_INPUT || error == Error::INPUT_TOO_LONG || error == Error::ALREADY_EXECUTED
+        ? Logs::WARNING : Logs::ERROR;
+    try
+    {
+        // AppLog serializes concurrent writers. Fixed format strings keep diagnostic
+        // details literal, and no JSON input/output is exposed through this path.
+        m_config.appLog->log0("ExecPool", level, "%s: %s (worker=%zu, errno=%d). %s", context, name, worker, systemError, detail);
+    }
+    catch (...)
+    {
+        // Diagnostics are best effort, including from noexcept worker cleanup paths.
+    }
 }
 #endif

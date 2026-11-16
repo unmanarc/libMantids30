@@ -12,6 +12,7 @@ ExecPool::Error ExecPool::execute(const std::shared_ptr<State> &state)
     std::unique_lock<std::mutex> lock(state->mutex);
     if (state->used)
     {
+        logProblem(Error::ALREADY_EXECUTED, "Request reuse rejected");
         return Error::ALREADY_EXECUTED;
     }
     state->used = true;
@@ -47,6 +48,7 @@ ExecPool::Error ExecPool::execute(const std::shared_ptr<State> &state)
             ++m_statistics.rejected;
             state->error = rejected;
             state->done = true;
+            logProblem(rejected, "Request admission rejected");
             return rejected;
         }
         ++m_statistics.submitted;
@@ -65,7 +67,7 @@ ExecPool::Error ExecPool::execute(const std::shared_ptr<State> &state)
 
 void ExecPool::finish(const std::shared_ptr<State> &state, Error error, boost::json::value output)
 {
-    std::scoped_lock lock(state->mutex);
+    std::unique_lock<std::mutex> lock(state->mutex);
     // Timeout, shutdown and worker completion may race; only the first result counts.
     if (state->done)
     {
@@ -96,5 +98,7 @@ void ExecPool::finish(const std::shared_ptr<State> &state, Error error, boost::j
     }
     // Notify all waiters sharing this state; their predicate observes done under mutex.
     state->completed.notify_all();
+    lock.unlock();
+    logProblem(error, "Request failed");
 }
 #endif

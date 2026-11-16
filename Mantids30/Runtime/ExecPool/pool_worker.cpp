@@ -22,6 +22,8 @@ void ExecPool::consume(Worker &worker, size_t index) noexcept
                 const int ready = ::poll(&idle, 1, 0);
                 if (exited || (ready > 0 && idle.revents != 0))
                 {
+                    logProblem(exited ? Error::PROCESS_EXITED : Error::DESYNCHRONIZED,
+                               "Idle worker failed", "", index + 1);
                     worker.app->terminate();
                     worker.app.reset();
                     worker.nextSpawn = Clock::now() + m_config.restartDelay;
@@ -99,6 +101,7 @@ void ExecPool::consume(Worker &worker, size_t index) noexcept
             // The failed request is completed below and is never re-enqueued.
             if (processFailure)
             {
+                logProblem(error, "Worker exchange failed; applying failure policy", "", index + 1);
                 worker.nextSpawn = Clock::now() + m_config.restartDelay;
                 if (worker.app)
                 {
@@ -128,6 +131,7 @@ void ExecPool::consume(Worker &worker, size_t index) noexcept
     // Never let an exception escape the thread; complete work and stop further admission.
     catch (...)
     {
+        logProblem(Error::INTERNAL_ERROR, "Worker exception; stopping pool", "", index + 1);
         if (current)
         {
             finish(current, Error::INTERNAL_ERROR);
