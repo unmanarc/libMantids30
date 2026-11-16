@@ -23,7 +23,7 @@ protected:
     virtual size_t writeTransformerEOF(Mantids30::Core::Memory::Streams::StreamableObject *dst) { return 0; }
 
 private:
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
     Mantids30::Core::Memory::Streams::StreamableObject *destObj = nullptr;
 };

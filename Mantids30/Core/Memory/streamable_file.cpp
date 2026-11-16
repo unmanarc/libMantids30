@@ -67,7 +67,7 @@ bool StreamableFile::streamTo(Mantids30::Core::Memory::Streams::StreamableObject
     }
 }
 
-std::optional<size_t> StreamableFile::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableFile::writeImpl(const void *buf, const size_t &count)
 {
     ssize_t x = 0;
 

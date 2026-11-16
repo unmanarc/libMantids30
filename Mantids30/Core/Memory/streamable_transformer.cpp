@@ -12,7 +12,7 @@ void Mantids30::Core::Memory::Streams::StreamableTransformer::transform(Streamab
     this->destObj = nullptr;
 }
 
-std::optional<size_t> Mantids30::Core::Memory::Streams::StreamableTransformer::write(const void *buf, const size_t &count)
+std::optional<size_t> Mantids30::Core::Memory::Streams::StreamableTransformer::writeImpl(const void *buf, const size_t &count)
 {
     size_t r;
 

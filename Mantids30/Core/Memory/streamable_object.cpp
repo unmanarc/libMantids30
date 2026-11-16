@@ -2,13 +2,77 @@
 #include "streamable_string.h"
 #include <cstdarg>
 #include <cstdio>
+#include <algorithm>
+#include <cmath>
 #include <optional>
+#include <utility>
 
 #ifdef _WIN32
 #include <cstdlib>
 #endif
 
 using namespace Mantids30::Core::Memory::Streams;
+
+void StreamableObject::setWriteProgressCallback(WriteProgressCallback callback, double percentageInterval, size_t byteInterval)
+{
+    if (!std::isfinite(percentageInterval) || percentageInterval < 0 || percentageInterval > 100)
+    {
+        throw std::invalid_argument("Progress percentage interval must be between 0 and 100.");
+    }
+    m_writeProgressCallback = std::move(callback);
+    m_percentageInterval = percentageInterval;
+    m_byteInterval = byteInterval;
+    m_lastProgressBytes = m_progressBytes;
+    m_lastProgressPercentage = m_writeTargetSize && *m_writeTargetSize
+        ? std::min(100.0, 100.0 * static_cast<double>(m_progressBytes) / static_cast<double>(*m_writeTargetSize)) : 0;
+    m_completionReported = false;
+}
+
+void StreamableObject::setWriteTargetSize(std::optional<size_t> totalSize)
+{
+    m_writeTargetSize = totalSize;
+    m_progressBytes = 0;
+    m_lastProgressBytes = 0;
+    m_lastProgressPercentage = 0;
+    m_completionReported = false;
+}
+
+std::optional<size_t> StreamableObject::write(const void *buf, const size_t &count)
+{
+    const auto written = writeImpl(buf, count);
+    if (!written || *written > count || !writeStatus.succeed || (count && !*written))
+    {
+        return written;
+    }
+    m_progressBytes = safe_add(m_progressBytes, *written);
+    if (!m_writeProgressCallback)
+    {
+        return written;
+    }
+    std::optional<double> percentage;
+    if (m_writeTargetSize)
+    {
+        percentage = *m_writeTargetSize
+            ? std::min(100.0, 100.0 * static_cast<double>(m_progressBytes) / static_cast<double>(*m_writeTargetSize)) : 100.0;
+    }
+    const bool atTarget = m_writeTargetSize && m_progressBytes >= *m_writeTargetSize;
+    const bool completed = atTarget && !m_completionReported;
+    const bool pending = m_progressBytes != m_lastProgressBytes;
+    const bool intervalReached = !m_writeTargetSize || (!m_percentageInterval && !m_byteInterval)
+        || (m_byteInterval && m_progressBytes - m_lastProgressBytes >= m_byteInterval)
+        || (percentage && m_percentageInterval && *percentage > m_lastProgressPercentage
+            && *percentage - m_lastProgressPercentage >= m_percentageInterval - 100 * std::numeric_limits<double>::epsilon());
+    if (completed || (pending && (!count || intervalReached)))
+    {
+        m_lastProgressBytes = m_progressBytes;
+        m_lastProgressPercentage = percentage.value_or(0);
+        m_completionReported = atTarget;
+        // Copy so a callback can safely replace or clear itself.
+        const auto callback = m_writeProgressCallback;
+        callback({m_progressBytes, m_writeTargetSize, percentage});
+    }
+    return written;
+}
 
 std::string StreamableObject::toString()
 {

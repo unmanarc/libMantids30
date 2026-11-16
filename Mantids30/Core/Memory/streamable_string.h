@@ -15,7 +15,7 @@ public:
 
     bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
 
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
     StreamableString &operator=(const std::string &str);
 

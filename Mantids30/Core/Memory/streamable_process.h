@@ -18,7 +18,7 @@ public:
      * @return false if failed, true otherwise.
      */
     bool streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out) override;
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
 private:
     bool m_streamStdOut, m_streamStdErr;

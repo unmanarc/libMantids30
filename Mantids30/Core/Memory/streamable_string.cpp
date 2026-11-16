@@ -9,7 +9,7 @@ bool StreamableString::streamTo(Mantids30::Core::Memory::Streams::StreamableObje
     return out->writeFullStream(m_value.c_str(), m_value.size());
 }
 
-std::optional<size_t> StreamableString::write(const void *buf, const size_t &count)
+std::optional<size_t> StreamableString::writeImpl(const void *buf, const size_t &count)
 {
     try
     {

@@ -73,7 +73,7 @@ bool Mantids30::Core::Memory::Streams::StreamableProcess::streamTo(StreamableObj
     return true;
 }
 
-std::optional<size_t> Mantids30::Core::Memory::Streams::StreamableProcess::write(const void *buf, const size_t &count)
+std::optional<size_t> Mantids30::Core::Memory::Streams::StreamableProcess::writeImpl(const void *buf, const size_t &count)
 {
     // TODO: how to write into the process??
     writeStatus += -1;

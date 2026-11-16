@@ -34,7 +34,7 @@ public:
      * @param count size of the buffed to be written
      * @return Write Status from the operation
      */
-    std::optional<size_t> write(const void *buf, const size_t &count) override;
+    std::optional<size_t> writeImpl(const void *buf, const size_t &count) override;
 
 private:
     void closeAll();
