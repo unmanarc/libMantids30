@@ -14,7 +14,17 @@ Threaded::~Threaded()
 
 void Threaded::startInBackground()
 {
-    m_threadObj = std::thread(Threaded::bgRunner, shared_from_this());
+    auto self = shared_from_this();
+    m_isRunning = true;
+    try
+    {
+        m_threadObj = std::thread(Threaded::bgRunner, self);
+    }
+    catch (...)
+    {
+        m_isRunning = false;
+        throw;
+    }
 }
 
 void Threaded::stop()
@@ -24,7 +34,17 @@ void Threaded::stop()
 
 void Threaded::join()
 {
-    m_threadObj.join();
+    if (m_threadObj.joinable())
+    {
+        if (m_threadObj.get_id() == std::this_thread::get_id())
+        {
+            m_threadObj.detach();
+        }
+        else
+        {
+            m_threadObj.join();
+        }
+    }
 }
 
 void Threaded::detach()

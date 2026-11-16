@@ -25,7 +25,10 @@ ThreadPool::~ThreadPool()
     stop();
     for (uint32_t i = 0; i < m_threadCount; i++)
     {
-        m_threads[i].join();
+        if (m_threads[i].joinable())
+        {
+            m_threads[i].join();
+        }
     }
 }
 
@@ -43,6 +46,10 @@ void ThreadPool::stop()
     m_terminate = true;
     lk.unlock();
     m_insertedElementCond.notify_all();
+    for (auto &queue : m_queues)
+    {
+        queue.second.cond_removedElement.notify_all();
+    }
 }
 
 bool ThreadPool::pushTask(void (*task)(const std::shared_ptr<void> &), const std::shared_ptr<void> &taskData, uint32_t timeoutMS, const float &priority, const std::string &key)
@@ -59,7 +66,7 @@ bool ThreadPool::pushTask(void (*task)(const std::shared_ptr<void> &), const std
     }
 
     // Check if the queue is up the limit
-    while (m_queues[currentQueue].tasks.size() > m_maxTasksPerQueue)
+    while (!m_terminate && m_queues[currentQueue].tasks.size() >= m_maxTasksPerQueue)
     {
         if (timeoutMS == static_cast<uint32_t>(-1))
         {
@@ -74,6 +81,10 @@ bool ThreadPool::pushTask(void (*task)(const std::shared_ptr<void> &), const std
         }
     }
 
+    if (m_terminate)
+    {
+        return false;
+    }
     // Now is not full, insert it.
     Task toInsert;
     toInsert.data = taskData;
@@ -98,6 +109,12 @@ ThreadPool::Task ThreadPool::popTask()
     TasksQueue *tq = getRandomTaskQueueWithElements();
     while (tq == nullptr)
     {
+        // stop() can precede this call; do not wait for another notification.
+        if (m_terminate)
+        {
+            Task r;
+            return r;
+        }
         // No available elements...
         m_insertedElementCond.wait(lk);
 
