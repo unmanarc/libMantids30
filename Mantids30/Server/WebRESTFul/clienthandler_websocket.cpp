@@ -5,7 +5,7 @@
 using namespace Mantids30::Server::WebRESTFul;
 using namespace Mantids30::Runtime::Logs;
 using namespace Mantids30::Protocol;
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 using namespace Mantids30::Core::Memory;
 using namespace Mantids30;
 using namespace std;

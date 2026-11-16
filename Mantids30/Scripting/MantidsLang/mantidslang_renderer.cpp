@@ -12,7 +12,7 @@
 #include <memory>
 
 using namespace Mantids30;
-using namespace Mantids30::Scripting::MantidsLang;
+using namespace Mantids30::Scripting;
 
 bool MantidsLang::checkConditionalOnJSON(const std::string &conditional, const boost::json::value &currentJsonContext, const Token &token, size_t depth)
 {

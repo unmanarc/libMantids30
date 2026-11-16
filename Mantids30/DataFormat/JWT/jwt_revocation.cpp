@@ -1,6 +1,6 @@
 #include "jwt.h"
 
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 
 JWT::Revocation::Revocation()
 {

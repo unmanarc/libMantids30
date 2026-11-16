@@ -1,7 +1,7 @@
 #include "jwt.h"
 #include <Mantids30/DataFormat/JSON/json.h>
 
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 
 JWT::Token::Token(const std::string &payload)
 {

@@ -55,7 +55,7 @@ public:
      *          discard signature validation.
      * @param jwt JWT Token
      */
-    Session(const Mantids30::DataFormat::JWT::JWT::Token &jwt);
+    Session(const Mantids30::DataFormat::JWT::Token &jwt);
 
     /**
      * @brief updateLastActivity Set las activity to current time
@@ -96,7 +96,7 @@ public:
     // TODO: Validate that the session has not been revoked.
     [[nodiscard]] bool isSessionRevoked() { return false; }
 
-    [[nodiscard]] Mantids30::DataFormat::JWT::JWT::Token getJWTAuthenticatedInfo();
+    [[nodiscard]] Mantids30::DataFormat::JWT::Token getJWTAuthenticatedInfo();
 
     [[nodiscard]] std::string getDomain();
 
@@ -105,7 +105,7 @@ public:
 private:
     void iUpdateLastActivity();
 
-    Mantids30::DataFormat::JWT::JWT::Token m_jwtAuthenticatedInfo;
+    Mantids30::DataFormat::JWT::Token m_jwtAuthenticatedInfo;
 
     std::string m_user, m_domain, m_impersonator;
 

@@ -106,12 +106,12 @@ bool APIServer_ClientHandler::verifyToken(const std::string &strToken)
     }
 
     // Attempt to verify the provided token using the JWT validator.
-    Mantids30::DataFormat::JWT::JWT::VerifyError verr = Mantids30::DataFormat::JWT::JWT::VerifyError::NONE;
+    Mantids30::DataFormat::JWT::VerifyError verr = Mantids30::DataFormat::JWT::VerifyError::NONE;
     bool x = this->config->jwtValidator->verify(strToken, &jwtToken, &verr);
 
     if (!x)
     {
-        log(Mantids30::Runtime::Logs::LogLevel::SECURITY_ALERT, "restAPI", 512, "JWT token rejected: %s", Mantids30::DataFormat::JWT::JWT::verifyErrorToString(verr).c_str());
+        log(Mantids30::Runtime::Logs::LogLevel::SECURITY_ALERT, "restAPI", 512, "JWT token rejected: %s", Mantids30::DataFormat::JWT::verifyErrorToString(verr).c_str());
         return false;
     }
 

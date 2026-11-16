@@ -173,9 +173,9 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 
 | Class / API | Namespace | Header | Description |
 |-------------|-----------|--------|-------------|
-| `JWT` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Token creation, validation and revocation |
-| `JWT::Token` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Decoded token claims |
-| `JWT::Cache` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Revocation cache |
+| `JWT` | `Mantids30::DataFormat` | `DataFormat/JWT/jwt.h` | Token creation, validation and revocation |
+| `JWT::Token` | `Mantids30::DataFormat` | `DataFormat/JWT/jwt.h` | Decoded token claims |
+| `JWT::Cache` | `Mantids30::DataFormat` | `DataFormat/JWT/jwt.h` | Revocation cache |
 
 ## DB
 
@@ -261,7 +261,7 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 
 | Class / API | Namespace | Header | Description |
 |-------------|-----------|--------|-------------|
-| `FastRPC1` | `Mantids30::Protocol::FastRPC1` | `Protocol/FastRPC1/fastrpc.h` | FastRPC1 server |
+| `FastRPC1` | `Mantids30::Protocol` | `Protocol/FastRPC1/fastrpc.h` | FastRPC1 server |
 
 ### Protocol/HTTP
 
@@ -359,7 +359,7 @@ uploads, callbacks, TLS and persistent connections.
 
 | Class / API | Namespace | Header | Description |
 |-------------|-----------|--------|-------------|
-| `MantidsLang` | `Mantids30::Scripting::MantidsLang` | `Scripting/MantidsLang/mantidslang.h` | MantidsLang interpreter (streamable) |
+| `MantidsLang` | `Mantids30::Scripting` | `Scripting/MantidsLang/mantidslang.h` | MantidsLang interpreter (streamable) |
 
 ## Runtime
 

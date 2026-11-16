@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-namespace Mantids30::Scripting::MantidsLang {
+namespace Mantids30::Scripting {
 
 using ApiCallback_t = std::function<boost::json::value(
     const std::string &baseApiUrl,
@@ -105,4 +105,4 @@ private:
     bool selfClosing = false;
 };
 
-} // namespace Mantids30::Scripting::MantidsLang
+} // namespace Mantids30::Scripting

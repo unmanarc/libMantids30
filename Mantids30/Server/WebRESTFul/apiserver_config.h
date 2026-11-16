@@ -41,7 +41,7 @@ public:
      * @param accessToken A reference to the parsed JWT token, if valid.
      * @return true if the token is valid for the given API key, false otherwise.
      */
-    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, std::string_view apikey, Mantids30::DataFormat::JWT::JWT::Token *accessToken);
+    using DynamicTokenValidatorFunction = bool (*)(const std::string &token, std::string_view apikey, Mantids30::DataFormat::JWT::Token *accessToken);
 
     /**
      * @brief The dynamic validator callback function.
@@ -74,8 +74,8 @@ public:
     DynamicOriginValidatorFunction dynamicLoginCallbackOriginValidator = nullptr;
 
     // JWT Validator and signer...
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtValidator;
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtSigner;
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator;
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtSigner;
 
     std::shared_ptr<Mantids30::Runtime::Logs::AppLog> appLog = nullptr;
     std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> rpcLog = nullptr;

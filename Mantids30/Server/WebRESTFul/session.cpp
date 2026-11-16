@@ -3,7 +3,7 @@
 #include <mutex>
 
 using namespace Mantids30::Server::WebRESTFul::Sessions;
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 
 Session::Session(const JWT::Token &jwt)
     : m_firstActivityTimestamp(time(nullptr))

@@ -6,7 +6,7 @@
 #include <regex>
 
 using namespace Mantids30;
-using namespace Mantids30::Scripting::MantidsLang;
+using namespace Mantids30::Scripting;
 
 // {{ ... }} non greedy
 const std::regex &MantidsLang::tagRegex()

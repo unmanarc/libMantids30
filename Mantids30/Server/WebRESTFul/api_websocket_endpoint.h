@@ -21,10 +21,10 @@ class Endpoint;
 struct WebSocketParameters
 {
     Mantids30::Protocol::HTTP::HTTPv1_Base::Request *clientRequest = nullptr; ///< Holds all the information from the initial client request
-    Mantids30::DataFormat::JWT::JWT::Token emptyToken;                                                 ///< Holds a default empty token
-    Mantids30::DataFormat::JWT::JWT::Token *jwtToken = &emptyToken;                                    ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtValidator;                                     ///< Holds the JWT Validator
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtSigner;                                        ///< Holds the JWT Signer
+    Mantids30::DataFormat::JWT::Token emptyToken;                                                 ///< Holds a default empty token
+    Mantids30::DataFormat::JWT::Token *jwtToken = &emptyToken;                                    ///< Holds JWT token data, if present and validated the pointer will be changed. (for restful servers only)
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator;                                     ///< Holds the JWT Validator
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtSigner;                                        ///< Holds the JWT Signer
     std::shared_ptr<Mantids30::Server::WebRESTFul::Sessions::Session> session;                             ///< Holds the current session
     std::string webSocketSessionId;                                                    ///< Holds the current session id
     const Endpoint *currentWebSocketEndpoint = nullptr;                                ///< Holds the current web socket endpoint

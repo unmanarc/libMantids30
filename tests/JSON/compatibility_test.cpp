@@ -44,7 +44,7 @@ int main()
         std::string errors;
         require(parse(std::string_view(document.data() + 2, 7), parsed, &errors), "bounded JSON document parse failed");
         require(ASINT(parsed, "k", 0) == 1 && errors.empty(), "parsed document mismatch");
-        Mantids30::DataFormat::JWT::JWT::Token token;
+        Mantids30::DataFormat::JWT::Token token;
         token.setClaim(key, std::string_view(binary));
         require(ASSTRING_D(token.getClaim(key)) == std::string_view(binary), "JWT string-view claim mismatch");
         require(token.getAllClaims().at(std::string(key)).is_string(), "JWT claim map conversion failed");

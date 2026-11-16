@@ -71,7 +71,7 @@ protected:
 
     std::string m_getClientConfigCmd, m_updateClientConfigLoadTimeCmd;
 
-    Mantids30::Protocol::FastRPC1::FastRPC1 m_fastRPC;
+    Mantids30::Protocol::FastRPC1 m_fastRPC;
     boost::json::value m_jRetrievedConfig;
     std::atomic<bool> m_failedToRetrieveC2Config{false};
 };

@@ -15,12 +15,12 @@ Mantids30 DataFormat JWT is a C++ library for creating, signing, and verifying J
 
 ## Usage
 
-Include the JWT header in your project and use the provided namespace Mantids30::DataFormat::JWT.
+Include the JWT header in your project and use the provided namespace Mantids30::DataFormat.
 
 ```cpp
 #include "jwt.h"
 
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 ```
 
 ### Creating and signing an HS-256 token  

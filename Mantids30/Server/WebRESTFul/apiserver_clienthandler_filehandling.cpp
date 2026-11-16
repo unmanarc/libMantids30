@@ -105,7 +105,7 @@ void APIServer_ClientHandler::langProcessViaMantidsLang(const LocalRequestedFile
     software["name"] = config->softwareName;
     root["software"] = software;
 
-    std::shared_ptr<Mantids30::Scripting::MantidsLang::MantidsLang> mantidsTemplateLang = std::make_shared<Mantids30::Scripting::MantidsLang::MantidsLang>(
+    std::shared_ptr<Mantids30::Scripting::MantidsLang> mantidsTemplateLang = std::make_shared<Mantids30::Scripting::MantidsLang>(
         serverResponse.content.getStreamableObject(),
         jsonContext,
         nullptr,

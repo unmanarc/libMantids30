@@ -27,11 +27,11 @@ struct RequestContext
     boost::json::value emptyJSON;
     boost::json::value *inputJSON = &emptyJSON; ///< Holds the input JSON that came from the request body.
 
-    Mantids30::DataFormat::JWT::JWT::Token emptyToken;              ///< Holds a default empty token
-    Mantids30::DataFormat::JWT::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.
+    Mantids30::DataFormat::JWT::Token emptyToken;              ///< Holds a default empty token
+    Mantids30::DataFormat::JWT::Token *jwtToken = &emptyToken; ///< Holds JWT token data, if present and validated the pointer will be changed.
 
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtValidator; ///< Holds the JWT Validator
-    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtSigner;    ///< Holds the JWT Signer
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtValidator; ///< Holds the JWT Validator
+    std::shared_ptr<Mantids30::DataFormat::JWT> jwtSigner;    ///< Holds the JWT Signer
 };
 
 using APIEndpointFunctionType = Mantids30::Protocol::HTTP::APIReturn (*)(void *context,                                        // Context pointer

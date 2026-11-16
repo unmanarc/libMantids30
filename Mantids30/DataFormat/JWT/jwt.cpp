@@ -6,7 +6,7 @@
 
 #include <memory>
 
-using namespace Mantids30::DataFormat::JWT;
+using namespace Mantids30::DataFormat;
 
 std::string JWT::createHeader()
 {

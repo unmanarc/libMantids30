@@ -193,7 +193,7 @@ protected:
     Mantids30::Protocol::HTTP::Status::Code showBrowserMessage(const std::string &title, const std::string &message, Mantids30::Protocol::HTTP::Status::Code returnCode);
     std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableString> createHTMLAlertMessage(const std::string &title, const std::string &message);
 
-    Mantids30::DataFormat::JWT::JWT::Token jwtToken;
+    Mantids30::DataFormat::JWT::Token jwtToken;
     // This session info is used for the logs and for filling htmli variables.
     Mantids30::Server::WebRESTFul::Sessions::SessionInfo currentSessionInfo;
 
