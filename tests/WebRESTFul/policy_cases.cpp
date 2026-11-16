@@ -43,11 +43,13 @@ public:
     using Web::ClientHandler::ClientHandler;
     using Web::APIServer_ClientHandler::handleAPIRequestFromFile;
     using Web::APIServer_ClientHandler::log;
+    bool isEmbeddedAPICall() const { return m_isEmbeddedAPICall; }
     APIReturn handleAPIRequest(const std::string &base, const uint32_t &version, const std::string &method,
                                const std::string &endpoint, const boost::json::value &parameters) override
     {
         if (endpoint == "throw")
         {
+            require(m_isEmbeddedAPICall, "Embedded call state was not set before dispatch");
             log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "inner failure");
             throw std::runtime_error("API failure");
         }
@@ -59,6 +61,7 @@ public:
             }
             catch (const std::runtime_error &)
             {
+                require(m_isEmbeddedAPICall, "Nested exception lost the outer embedded call state");
                 log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "outer restored");
             }
         }
@@ -195,6 +198,45 @@ std::vector<Case> policyCases(const std::string &suite)
     }
     else if (suite == "filters")
     {
+        for (const std::string query : {"", "?", "?name=alice&submit=1", "?tag=url&tag=other&empty=",
+                                       "?name=a%2Bb+space&redirect=%2Fnext", "?%7B%22url%22%3Atrue%7D", "?%7B", "?%5B1%2C%5D"})
+        {
+            for (const std::string arguments : {"{}", "{\"tag\":42}", "null", "[]", "true", "42", "\"hello\"",
+                                               "{\"nested\":[1,{\"unicode\":\"ñ\",\"text\":\"a+b & =\"}]}"})
+            {
+                cases.push_back({"embedded_api_uses_tag_arguments." + query + "." + arguments, [query, arguments]
+                {
+                    Engine engine;
+                    Probe probe;
+                    auto endpoints = std::make_shared<Endpoints>();
+                    for (const auto method : {Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE})
+                    {
+                        require(endpoints->addEndpoint(method, "echo", Web::Security::NONE, {}, &probe, Probe::invoke),
+                                "Cannot register embedded endpoint");
+                    }
+                    engine.endpointsHandler[1] = endpoints;
+                    auto socket = std::make_shared<Mantids30::Network::Sockets::Socket_Stream_Dummy>();
+                    auto handler = engine.createNewAPIServer_ClientHandler(&engine, socket);
+                    handler->config = &engine.config;
+                    const std::string line = "GET /page.html" + query + " HTTP/1.1\r\n";
+                    require(handler->clientRequest.requestLine.writeIntoSubParser(line.data(), line.size()) == line.size(),
+                            "Cannot parse page URL");
+                    for (const std::string endpoint : {"GET/v1/echo", "POST/v1/echo", "PUT/v1/echo", "PATCH/v1/echo", "DELETE/v1/echo", "echo"})
+                    {
+                        FilterFile file("<!--<%jfunc/a:" + endpoint + "(" + arguments + ")%>-->");
+                        probe.calls = 0;
+                        require(Web::HTMLIEngine::processResourceFile(handler.get(), file.path.string()) == Code::S_200_OK,
+                                "Template processing failed");
+                        require(probe.calls == 1 && probe.input == boost::json::parse(arguments),
+                                "Embedded endpoint did not receive tag arguments");
+                        const auto rendered = handler->getResponseContentStreamableObject()->toString();
+                        require(rendered.find("\"httpResponseCode\":200") != std::string::npos
+                                    && rendered.find("invalid_invokation") == std::string::npos,
+                                "Embedded API failed in rendered page");
+                    }
+                }});
+            }
+        }
         cases.push_back({"embedded_api_logs_source_file", []
         {
             FilterFile file("<!--<%jfunc/a:GET/v9/missing({})%>-->\n<!--<%jfunc/b:missing({})%>-->");
@@ -218,6 +260,27 @@ std::vector<Case> policyCases(const std::string &suite)
             require(message != std::string::npos && plain != std::string::npos && output.substr(plain).find("[source=") == std::string::npos,
                     "Template source leaked into a normal API call");
         }});
+        cases.push_back({"embedded_api_context_restored_after_uncaught_exception", []
+        {
+            Engine engine;
+            auto socket = std::make_shared<Mantids30::Network::Sockets::Socket_Stream_Dummy>();
+            LoggingHandler handler(&engine, socket);
+            handler.config = &engine.config;
+            for (const std::string source : {"", "/page.html"})
+            {
+                bool caught = false;
+                try
+                {
+                    handler.handleAPIRequestFromFile(source, "/", 1, "GET", "throw", boost::json::object{});
+                }
+                catch (const std::runtime_error &error)
+                {
+                    caught = true;
+                    require(std::string(error.what()) == "API failure", "Unexpected embedded exception");
+                }
+                require(caught && !handler.isEmbeddedAPICall(), "Uncaught exception leaked embedded call state");
+            }
+        }});
         cases.push_back({"embedded_api_log_context_restored_after_exception", []
         {
             Engine engine;
@@ -229,6 +292,7 @@ std::vector<Case> policyCases(const std::string &suite)
             const auto output = captureWarnings([&]
             {
                 handler.handleAPIRequestFromFile("/outer%s.html", "/", 1, "POST", "nested", {});
+                require(!handler.isEmbeddedAPICall(), "Embedded call state was not restored after an exception");
                 handler.log(Mantids30::Runtime::Logs::LogLevel::WARNING, "test", 2048, "plain %s", "message");
             });
             require(output.find("[source=/inner.html] inner failure") != std::string::npos, "Nested source missing");

@@ -126,7 +126,7 @@ protected:
 
     virtual Mantids30::Protocol::HTTP::APIReturn handleOptionsRequest(const std::string &baseApiUrl, const uint32_t &apiVersion, const std::string &endpointName) = 0;
 
-    // Preserve the template source in logs emitted during an embedded API call.
+    // Use explicit template arguments and preserve the source in embedded API logs.
     Mantids30::Protocol::HTTP::APIReturn handleAPIRequestFromFile(std::string sourcePath, const std::string &baseApiUrl, const uint32_t &apiVersion,
                                                                const std::string &httpMethodType, const std::string &endpointName,
                                                                const boost::json::value &postParameters);
@@ -204,6 +204,8 @@ protected:
 
 protected:
     Mantids30::Protocol::HTTP::Status::Code redirectUsingJS(const std::string &url);
+
+    bool m_isEmbeddedAPICall = false;
 
     // Websocket endpoints:
     std::shared_ptr<Mantids30::Server::WebRESTFul::WebSocket::Endpoints> m_websocketEndpoints;

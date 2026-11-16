@@ -12,15 +12,22 @@ Mantids30::Protocol::HTTP::APIReturn APIServer_ClientHandler::handleAPIRequestFr
                                                                                    const uint32_t &apiVersion, const std::string &httpMethodType,
                                                                                    const std::string &endpointName, const boost::json::value &postParameters)
 {
-    struct RestoreSource
+    struct RestoreCallContext
     {
         std::string &current;
         std::string &previous;
-        ~RestoreSource() { current.swap(previous); }
+        bool &embedded;
+        bool previousEmbedded;
+        ~RestoreCallContext()
+        {
+            current.swap(previous);
+            embedded = previousEmbedded;
+        }
     };
 
     m_logSourcePath.swap(sourcePath);
-    const RestoreSource restore{m_logSourcePath, sourcePath};
+    const RestoreCallContext restore{m_logSourcePath, sourcePath, m_isEmbeddedAPICall, m_isEmbeddedAPICall};
+    m_isEmbeddedAPICall = true;
     return handleAPIRequest(baseApiUrl, apiVersion, httpMethodType, endpointName, postParameters);
 }
 
