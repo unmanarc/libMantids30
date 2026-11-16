@@ -2,7 +2,7 @@
 
 #include <Mantids30/ConfigBuilder/Logs/config_builder.h>
 #include <Mantids30/ConfigBuilder/JWT/config_builder.h>
-#include <Mantids30/Servers/RESTfulWebServer/apiproxy_config.h>
+#include <Mantids30/Server/WebRESTFul/apiproxy_config.h>
 
 #include <Mantids30/Network/Sockets/socket_tcp.h>
 #include <Mantids30/Network/Sockets/socket_tls.h>
@@ -77,7 +77,7 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
     return sock;
 }
 
-Mantids30::Servers::RESTfulWebServer::Engine *Mantids30::ConfigBuilder::REST::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
+Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::REST::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> &rpcLog,
                                                                                                                const std::string &serviceName, const std::string &defaultResourcePath, uint64_t options,
@@ -128,7 +128,7 @@ Mantids30::Servers::RESTfulWebServer::Engine *Mantids30::ConfigBuilder::REST::Bu
 
     // Create and configure the web server instance
     {
-        Mantids30::Servers::RESTfulWebServer::Engine *webServer = new Mantids30::Servers::RESTfulWebServer::Engine();
+        Mantids30::Server::WebRESTFul::Engine *webServer = new Mantids30::Server::WebRESTFul::Engine();
         // Setup the App Log
         webServer->config.appLog = appLog;
         // Setup the RPC Log:
@@ -273,14 +273,14 @@ Mantids30::Servers::RESTfulWebServer::Engine *Mantids30::ConfigBuilder::REST::Bu
 
             for (const auto &proxy : config.get_child("Proxies"))
             {
-                std::shared_ptr<Mantids30::Servers::RESTfulWebServer::APIProxyParameters> param = APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
+                std::shared_ptr<Mantids30::Server::WebRESTFul::APIProxyParameters> param = Mantids30::Server::WebRESTFul::APIProxyConfig::createAPIProxyParams(appLog.get(), proxy.second, vars);
                 param->proxyPath = proxy.first;
 
                 appLog->log0(__func__, LogLevel::INFO, "[%p] Loading proxy to path '%s' at %s Service", reinterpret_cast<void *>(webServer), param->proxyPath.c_str(), serviceName.c_str());
 
                 if (param != nullptr)
                 {
-                    webServer->config.dynamicRequestHandlersByRoute[param->proxyPath] = {&Mantids30::Servers::RESTfulWebServer::APIProxy, param};
+                    webServer->config.dynamicRequestHandlersByRoute[param->proxyPath] = {&Mantids30::Server::WebRESTFul::APIProxy, param};
                 }
             }
         }
@@ -312,7 +312,7 @@ bool Mantids30::ConfigBuilder::REST::Builder::handleProtocolInitializationFailur
         return true;
     }
 
-    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
+    Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 
     std::shared_ptr<Mantids30::Network::Sockets::Socket_TLS> secSocket = std::dynamic_pointer_cast<Mantids30::Network::Sockets::Socket_TLS>(sock);
 
@@ -328,7 +328,7 @@ bool Mantids30::ConfigBuilder::REST::Builder::handleProtocolInitializationFailur
 
 bool Mantids30::ConfigBuilder::REST::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
-    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
+    Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), LogLevel::ERROR, "RESTful Service Timed Out.");
     return true;
@@ -336,7 +336,7 @@ bool Mantids30::ConfigBuilder::REST::Builder::handleClientAcceptTimeoutOccurred(
 
 bool Mantids30::ConfigBuilder::REST::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
-    Mantids30::Servers::RESTfulWebServer::APIServerCore *core = static_cast<Mantids30::Servers::RESTfulWebServer::APIServerCore *>(data);
+    Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 
     core->config.appLog->log1(__func__, sock->getRemotePairStr(), LogLevel::DEBUG, "Client Connection Limit Per IP Reached...");
     return true;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/Servers/RESTfulWebServer/engine.h>
+#include <Mantids30/Server/WebRESTFul/engine.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <Mantids30/Runtime/Logs/rpclog.h>
 #include <boost/property_tree/ptree.hpp>
@@ -17,7 +17,7 @@ class Builder
 {
 public:
     Builder() = default;
-    static Mantids30::Servers::RESTfulWebServer::Engine *createRESTfulEngine(const boost::property_tree::ptree &ptr, const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &log,
+    static Mantids30::Server::WebRESTFul::Engine *createRESTfulEngine(const boost::property_tree::ptree &ptr, const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &log,
                                                                   const std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> &rpcLog, const std::string &serviceName,
                                                                   const std::string &defaultResourcePath, uint64_t options = 0, const std::map<std::string, std::string> &vars = {});
 

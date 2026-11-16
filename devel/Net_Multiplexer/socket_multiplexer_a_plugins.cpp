@@ -13,7 +13,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Plugin_JSON16()
     if (!readen)
         return false;
 
-    bool parseOk = Mantids30::DataFormats::JSON::parse(sMsg, jMsg);
+    bool parseOk = Mantids30::DataFormat::JSON::parse(sMsg, jMsg);
 
     if (parseOk && plugins.find(pluginId) != plugins.end())
     {

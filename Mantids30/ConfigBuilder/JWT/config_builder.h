@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/DataFormats/JWT/jwt.h>
+#include <Mantids30/DataFormat/JWT/jwt.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <boost/property_tree/ptree.hpp>
 
@@ -20,7 +20,7 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT signer instance or nullptr on failure
      */
-    static std::shared_ptr<Mantids30::DataFormats::JWT::JWT> createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+    static std::shared_ptr<Mantids30::DataFormat::JWT::JWT> createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                             const std::map<std::string, std::string> &vars = {});
 
     /**
@@ -30,7 +30,7 @@ public:
      * @param configClassName Configuration class name prefix
      * @return JWT validator instance or nullptr on failure
      */
-    static std::shared_ptr<Mantids30::DataFormats::JWT::JWT> createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+    static std::shared_ptr<Mantids30::DataFormat::JWT::JWT> createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                const std::map<std::string, std::string> &vars = {});
 
     /**
@@ -40,7 +40,7 @@ public:
      * @param key Secret key (HMAC) or public key (RSA)
      * @return JWT validator instance or nullptr on failure
      */
-    static std::shared_ptr<Mantids30::DataFormats::JWT::JWT> createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key);
+    static std::shared_ptr<Mantids30::DataFormat::JWT::JWT> createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key);
 
 private:
     static bool createHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath);
@@ -65,7 +65,7 @@ private:
      * @param purpose "signing" or "validation" for logging
      * @return Configured JWT object or nullptr on failure
      */
-    static std::shared_ptr<Mantids30::DataFormats::JWT::JWT> createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormats::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret,
+    static std::shared_ptr<Mantids30::DataFormat::JWT::JWT> createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormat::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret,
                                                           const std::string &purpose);
 
     // ==================== RSA FUNCTIONS ====================

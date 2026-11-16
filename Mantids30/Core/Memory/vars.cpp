@@ -59,7 +59,7 @@ bool Vars::fromJSON(const boost::json::value &json)
             for (size_t i = 0; i < value.as_array().size(); ++i)
             {
                 std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> bChunk = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
-                bChunk->writeString(Mantids30::DataFormats::JSON::ARRAY_ASSTRING(value, i, ""));
+                bChunk->writeString(Mantids30::DataFormat::JSON::ARRAY_ASSTRING(value, i, ""));
                 if (!addVar(key, bChunk))
                 {
                     return false;
@@ -70,7 +70,7 @@ bool Vars::fromJSON(const boost::json::value &json)
         {
             // If the value is a single element, add it as a variable
             std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> bChunk = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
-            bChunk->writeString(Mantids30::DataFormats::JSON::ASSTRING_D(value, ""));
+            bChunk->writeString(Mantids30::DataFormat::JSON::ASSTRING_D(value, ""));
             if (!addVar(key, bChunk))
             {
                 return false;

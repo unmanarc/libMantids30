@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <stdint.h>
 
 namespace Mantids {

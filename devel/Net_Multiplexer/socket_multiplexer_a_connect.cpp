@@ -76,7 +76,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_ConnectionAnswer()
 
     if (readen)
     {
-        Mantids30::DataFormats::JSON::parse(sJMessage, jAcceptMsg);
+        Mantids30::DataFormat::JSON::parse(sJMessage, jAcceptMsg);
 
         std::shared_ptr<Socket_Multiplexed_Line> chSock = findLine(lineId.localLineId);
 

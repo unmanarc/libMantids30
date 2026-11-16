@@ -111,7 +111,7 @@ bool Socket_Multiplexer::processMultiplexedSocketCommand_Line_Connect(bool autho
     {
         if (authorized)
         {
-            bool parsingSuccessful = Mantids30::DataFormats::JSON::parse(connectionParamsStr, thrParams->jConnectionParams);
+            bool parsingSuccessful = Mantids30::DataFormat::JSON::parse(connectionParamsStr, thrParams->jConnectionParams);
 
             if (parsingSuccessful)
             {

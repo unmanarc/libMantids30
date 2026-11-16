@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <condition_variable>
 #include <mutex>
 #include <queue>

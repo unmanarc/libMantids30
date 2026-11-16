@@ -56,7 +56,7 @@ boost::json::value BOOL::toJSON()
 bool BOOL::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Mantids30::DataFormats::JSON::ASBOOL_D(value, false);
+    m_value = Mantids30::DataFormat::JSON::ASBOOL_D(value, false);
     return true;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <boost/regex.hpp>
 #include <cstdint>
 #include <memory>
@@ -37,7 +37,7 @@ private:
 
     std::shared_ptr<boost::regex> m_regexp;
     std::shared_ptr<std::vector<std::string>> m_staticTexts;
-    std::shared_ptr<Mantids30::DataFormats::JSON::Path> m_jsonPath;
+    std::shared_ptr<Mantids30::DataFormat::JSON::Path> m_jsonPath;
     uint32_t m_staticIndex{0};
     std::string m_expr;
     Type m_type = Type::UNDEFINED;

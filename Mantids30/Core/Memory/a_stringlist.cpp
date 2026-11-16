@@ -1,5 +1,5 @@
 #include "a_stringlist.h"
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <mutex>
 #include <string>
 
@@ -223,7 +223,7 @@ bool STRINGLIST::fromJSON(const boost::json::value &value)
     {
         if (item.is_string())
         {
-            m_value.emplace_back(Mantids30::DataFormats::JSON::ASSTRING_D(item, ""));
+            m_value.emplace_back(Mantids30::DataFormat::JSON::ASSTRING_D(item, ""));
         }
         else
         {

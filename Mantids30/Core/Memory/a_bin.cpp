@@ -71,7 +71,7 @@ boost::json::value BINARY::toJSON()
 bool BINARY::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(this->m_value.mutex);
-    return fromString(Mantids30::Core::Helpers::Encoders::decodeFromBase64( Mantids30::DataFormats::JSON::ASSTRING_D(value, "") ));
+    return fromString(Mantids30::Core::Helpers::Encoders::decodeFromBase64( Mantids30::DataFormat::JSON::ASSTRING_D(value, "") ));
 }
 
 std::shared_ptr<Var> BINARY::protectedCopy()

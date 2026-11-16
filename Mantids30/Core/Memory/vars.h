@@ -2,7 +2,7 @@
 
 #include "b_chunks.h"
 #include "streamable_object.h"
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <list>
 #include <set>
 #include <sstream>

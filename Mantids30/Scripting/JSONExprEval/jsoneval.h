@@ -1,7 +1,7 @@
 #pragma once
 
 #include "atomicexpression.h"
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include <cstdint>
 #include <memory>
 #include <string>

@@ -93,5 +93,5 @@ boost::json::value PTR::toJSON()
 
 bool PTR::fromJSON(const boost::json::value &value)
 {
-    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "00000000"));
+    return fromString(Mantids30::DataFormat::JSON::ASSTRING_D(value, "00000000"));
 }

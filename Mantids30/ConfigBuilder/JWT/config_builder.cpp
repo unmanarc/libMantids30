@@ -1,10 +1,10 @@
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include  "config_builder.h"
-#include "Mantids30/DataFormats/JSON/json_detail.h"
+#include "Mantids30/DataFormat/JSON/json_detail.h"
 
-#include <Mantids30/DataFormats/JWT/jwt.h>
+#include <Mantids30/DataFormat/JWT/jwt.h>
 
-#include <Mantids30/Protocols/APISync/apisync.h>
+#include <Mantids30/Protocol/APISync/apisync.h>
 #include <Mantids30/Core/Helpers/file.h>
 #include <Mantids30/Core/Helpers/random.h>
 #include <Mantids30/Runtime/Logs/loglevels.h>
@@ -24,9 +24,9 @@
 using namespace Mantids30;
 using namespace Mantids30::ConfigBuilder::JWT;
 
-std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
-    Mantids30::Protocols::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -50,7 +50,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Mantids30::DataFormats::JSON::ASSTRING( Mantids30::DataFormats::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Mantids30::DataFormat::JSON::ASSTRING( Mantids30::DataFormat::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -64,7 +64,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
         return nullptr;
     }
 
-    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    Mantids30::DataFormat::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -111,16 +111,16 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
             return nullptr;
         }
 
-        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtSigner = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtSigner = std::make_shared<Mantids30::DataFormat::JWT::JWT>(algorithmDetails.algorithm);
         jwtSigner->setPrivateSecret(privateKey);
         return jwtSigner;
     }
 }
 
-std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                            const std::map<std::string, std::string> &vars)
 {
-    Mantids30::Protocols::APISync::APISyncParameters apiSyncParameters;
+    Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
 
     if (ptr.get<bool>(configClassName + ".UseAPISync", false))
     {
@@ -144,7 +144,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
         std::optional<boost::json::value> jwtconfig = getApplicationJWTConfig(log, &apiSyncParameters, vars);
         if (jwtconfig)
         {
-            algorithmName = Mantids30::DataFormats::JSON::ASSTRING(Mantids30::DataFormats::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
+            algorithmName = Mantids30::DataFormat::JSON::ASSTRING(Mantids30::DataFormat::JSON::MEMBER_OR_NULL(*jwtconfig, "tokensConfiguration"), "signAlgorithm", "");
         }
         else
         {
@@ -158,7 +158,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
         return nullptr;
     }
 
-    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
+    Mantids30::DataFormat::JWT::JWT::AlgorithmDetails algorithmDetails(algorithmName.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -217,13 +217,13 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
             return nullptr;
         }
 
-        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormat::JWT::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(publicKey);
         return jwtValidator;
     }
 }
 
-std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
 {
     // Validate algorithm
     if (!validateAlgorithm(log, algorithm))
@@ -231,7 +231,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
         return nullptr;
     }
 
-    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails algorithmDetails(algorithm.c_str());
+    Mantids30::DataFormat::JWT::JWT::AlgorithmDetails algorithmDetails(algorithm.c_str());
 
     if (algorithmDetails.isUsingHMAC)
     {
@@ -249,7 +249,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
             return nullptr;
         }
 
-        std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
+        std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwtValidator = std::make_shared<Mantids30::DataFormat::JWT::JWT>(algorithmDetails.algorithm);
         jwtValidator->setPublicSecret(key);
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT Public Validation Key Loaded.");
         return jwtValidator;
@@ -260,7 +260,7 @@ std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT:
 
 bool Mantids30::ConfigBuilder::JWT::Builder::validateAlgorithm(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithmName)
 {
-    if (!Mantids30::DataFormats::JWT::JWT::isAlgorithmSupported(algorithmName))
+    if (!Mantids30::DataFormat::JWT::JWT::isAlgorithmSupported(algorithmName))
     {
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "JWT algorithm '%s' not supported.", algorithmName.c_str());
         return false;
@@ -343,17 +343,17 @@ std::string Mantids30::ConfigBuilder::JWT::Builder::loadHMACSecret(Mantids30::Ru
     return hmacSecret;
 }
 
-std::shared_ptr<Mantids30::DataFormats::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormats::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormat::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
 {
     if (hmacSecret.empty())
     {
         return nullptr;
     }
 
-    std::shared_ptr<Mantids30::DataFormats::JWT::JWT> jwt = std::make_shared<Mantids30::DataFormats::JWT::JWT>(algorithmDetails.algorithm);
+    std::shared_ptr<Mantids30::DataFormat::JWT::JWT> jwt = std::make_shared<Mantids30::DataFormat::JWT::JWT>(algorithmDetails.algorithm);
     jwt->setSharedSecret(hmacSecret);
 
-    Mantids30::DataFormats::JWT::JWT::AlgorithmDetails adt = Mantids30::DataFormats::JWT::JWT::AlgorithmDetails(algorithmDetails.algorithm);
+    Mantids30::DataFormat::JWT::JWT::AlgorithmDetails adt = Mantids30::DataFormat::JWT::JWT::AlgorithmDetails(algorithmDetails.algorithm);
     log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::INFO, "JWT HMAC %s key successfully loaded with algorithm: '%s'.", purpose.c_str(), adt.algorithmStr);
 
     return jwt;

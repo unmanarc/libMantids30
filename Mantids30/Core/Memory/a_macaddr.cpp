@@ -218,5 +218,5 @@ boost::json::value MACADDR::toJSON()
 
 bool MACADDR::fromJSON(const boost::json::value &value)
 {
-    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, "0.0.0.0"));
+    return fromString(Mantids30::DataFormat::JSON::ASSTRING_D(value, "0.0.0.0"));
 }

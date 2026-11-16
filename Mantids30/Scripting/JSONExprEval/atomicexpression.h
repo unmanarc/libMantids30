@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <Mantids30/DataFormats/JSON/json.h>
+#include <Mantids30/DataFormat/JSON/json.h>
 #include "atomicexpressionside.h"
 
 namespace Mantids30::Scripting::JSONExprEval {

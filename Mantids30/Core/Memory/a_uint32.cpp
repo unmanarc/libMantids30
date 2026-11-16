@@ -81,6 +81,6 @@ boost::json::value UINT32::toJSON()
 bool UINT32::fromJSON(const boost::json::value &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-    m_value = Mantids30::DataFormats::JSON::ASUINT_D(value, 0);
+    m_value = Mantids30::DataFormat::JSON::ASUINT_D(value, 0);
     return true;
 }

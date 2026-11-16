@@ -84,5 +84,5 @@ boost::json::value STRING::toJSON()
 
 bool STRING::fromJSON(const boost::json::value &value)
 {
-    return fromString(Mantids30::DataFormats::JSON::ASSTRING_D(value, ""));
+    return fromString(Mantids30::DataFormat::JSON::ASSTRING_D(value, ""));
 }
