@@ -35,61 +35,21 @@ std::shared_ptr<MIME_Message> MIME_Message::create(const std::shared_ptr<Streama
 
 bool MIME_Message::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 {
-    Mantids30::Core::Memory::Streams::WriteStatus cur;
-    // first boundary:
-    out->writeString("--" + m_multiPartBoundary);
-    if (!out->writeStatus.succeed)
+    for (const auto &part : m_allParts)
     {
-        return false;
-    }
-
-    for (const std::shared_ptr<MIME_PartMessage> &i : m_allParts)
-    {
-        out->writeString("\r\n");
-
-        // CHECK
-        if (!out->writeStatus.succeed)
+        if (!out->writeString("--" + m_multiPartBoundary + "\r\n"))
         {
             return false;
         }
-
-        i->getContent()->initElemParser(out, true);
-
-        // CHECK
-        if (!out->writeStatus.succeed)
-        {
-            return false;
-        }
-
-        i->getHeader()->initElemParser(out, true);
-
-        // CHECK
-        if (!out->writeStatus.succeed)
-        {
-            return false;
-        }
-
-        if (!i->streamToSubParsers())
-        {
-            return false;
-        }
-
-        // Reset init element parsers...
-        i->getContent()->initElemParser(nullptr, true);
-        i->getHeader()->initElemParser(nullptr, true);
-
-        out->writeString("--" + m_multiPartBoundary);
-
-        // CHECK
-        if (!out->writeStatus.succeed)
+        part->getHeader()->initElemParser(out, true);
+        const bool headersSent = part->getHeader()->streamToUpstream();
+        part->getHeader()->initElemParser(nullptr, true);
+        if (!headersSent || !part->getContent()->getContentContainer()->streamTo(out) || !out->writeString("\r\n"))
         {
             return false;
         }
     }
-
-    out->writeString("--\r\n");
-    // CHECK
-    return out->writeStatus.succeed;
+    return out->writeString("--" + m_multiPartBoundary + "--\r\n");
 }
 
 void MIME_Message::clear()
@@ -350,32 +310,30 @@ std::shared_ptr<MIME_PartMessage> MIME_Message::getFirstMessageByName(std::strin
 
 bool MIME_Message::addStringVar(const std::string &key, const std::string &value)
 {
-    // TODO: check max size?
-    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", key))
-    {
-        std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> contentBuffer = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
-        contentBuffer->append(value.c_str(), value.size());
-        m_currentPart->getContent()->replaceContentContainer(contentBuffer);
-
-        bool r = addMultiPartMessage(m_currentPart);
-        renewCurrentPart();
-        return r;
-    }
-    else
-    {
-        return false;
-    }
+    return addStreamableObjectContainer(key, std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>(value));
 }
 
 bool MIME_Message::addReferecedFileVar(const std::string &varName, const std::string &filePath)
 {
-    // TODO: check max size?
+    const size_t separator = filePath.find_last_of("/\\");
+    const std::string fileName = filePath.substr(separator == std::string::npos ? 0 : separator + 1);
+    if (fileName.empty() || fileName.find_first_of("\"\\\r\n") != std::string::npos)
+    {
+        return false;
+    }
     std::shared_ptr<Mantids30::Core::Memory::Containers::B_MMAP> fContainer = std::make_shared<Mantids30::Core::Memory::Containers::B_MMAP>();
     if (!fContainer->referenceFile(filePath, true, false))
     {
         return false;
     }
-    return addStreamableObjectContainer(varName, fContainer);
+    if (!addStreamableObjectContainer(varName, fContainer))
+    {
+        return false;
+    }
+    auto header = m_allParts.back()->getHeader();
+    header->replace("Content-Disposition", "form-data; name=\"" + varName + "\"; filename=\"" + fileName + "\"");
+    header->replace("Content-Type", "application/octet-stream");
+    return true;
 }
 
 bool MIME_Message::addVar(const std::string &varName, const std::shared_ptr<Mantids30::Core::Memory::Containers::B_Chunks> &data)
@@ -385,7 +343,11 @@ bool MIME_Message::addVar(const std::string &varName, const std::shared_ptr<Mant
 
 bool MIME_Message::addStreamableObjectContainer(const std::string &varName, const std::shared_ptr<StreamableObject> &obj)
 {
-    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data") && m_currentPart->getHeader()->add("name", varName))
+    if (!obj || varName.empty() || varName.find_first_of("\"\\\r\n") != std::string::npos)
+    {
+        return false;
+    }
+    if (m_currentPart->getHeader()->add("Content-Disposition", "form-data; name=\"" + varName + "\""))
     {
         m_currentPart->getContent()->replaceContentContainer(obj);
         bool r = addMultiPartMessage(m_currentPart);
