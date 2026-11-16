@@ -30,8 +30,8 @@ jobs:
           - { name: "Ubuntu 26.04", image: "ubuntu:26.04", family: "debian" }
           - { name: "Debian 12", image: "debian:12", family: "debian" }
           - { name: "Debian 13", image: "debian:13", family: "debian" }
-          - { name: "AlmaLinux 8 (RHEL 8)", image: "almalinux:8", family: "rhel" }
-          - { name: "AlmaLinux 9 (RHEL 9)", image: "almalinux:9", family: "rhel" }
+          - { name: "AlmaLinux 8 (RHEL 8)", image: "almalinux:8", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
+          - { name: "AlmaLinux 9 (RHEL 9)", image: "almalinux:9", family: "rhel", cmake_args: "-DBoost_DIR=/usr/lib64/cmake/Boost-1.78.0" }
           - { name: "AlmaLinux 10 (RHEL 10)", image: "almalinux:10", family: "rhel" }
     steps:
       - name: Bootstrap git
@@ -51,10 +51,18 @@ jobs:
         run: |
           set -eux
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-            build-essential cmake pkg-config \
-            libboost-dev libboost-regex-dev libboost-thread-dev libboost-system-dev \
-            libssl-dev libboost-json-dev
+          if [ "${{ matrix.image }}" = "debian:12" ]; then
+            # Bookworm provides Boost.JSON through the versioned Boost 1.81 packages.
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential cmake pkg-config libssl-dev \
+              libboost1.81-dev libboost-regex1.81-dev libboost-thread1.81-dev \
+              libboost-system1.81-dev libboost-json1.81-dev
+          else
+            DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential cmake pkg-config \
+              libboost-dev libboost-regex-dev libboost-thread-dev libboost-system-dev \
+              libssl-dev libboost-json-dev
+          fi
           # Optional database backends: their modules are skipped when absent.
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             libsqlite3-dev libpq-dev libmariadb-dev || true
@@ -63,22 +71,33 @@ jobs:
         if: matrix.family == 'rhel'
         run: |
           set -eux
-          dnf install -y dnf-plugins-core || true
+          dnf install -y dnf-plugins-core
           if [ "${{ matrix.name }}" = "AlmaLinux 8 (RHEL 8)" ]; then
-            dnf config-manager --set-enabled powertools || true
+            dnf config-manager --set-enabled powertools
           else
-            dnf config-manager --set-enabled crb || true
+            dnf config-manager --set-enabled crb
           fi
-          dnf install -y epel-release || true
+          dnf install -y epel-release
+          dnf makecache --refresh
+          dnf repolist --enabled
           dnf install -y gcc-c++ make cmake pkgconf-pkg-config \
             openssl-devel
-          # Boost.JSON headers:
-          #   RHEL 8: base boost is 1.66 (no JSON); EPEL provides boost 1.78.
-          #   RHEL 9/10: AppStream boost-devel ships JSON.
+          # AlmaLinux 8/9 use EPEL's versioned Boost package and its CMake config.
+          # AlmaLinux 10 uses the native development and JSON runtime packages.
           if [ "${{ matrix.name }}" = "AlmaLinux 8 (RHEL 8)" ]; then
-            dnf install -y boost1.78-devel
+            dnf --enablerepo=epel,powertools install -y boost1.78-devel
+            rpm -q boost1.78-devel
+            test -f /usr/include/boost1.78/boost/json.hpp
+            test -f /usr/lib64/cmake/Boost-1.78.0/BoostConfig.cmake
+          elif [ "${{ matrix.name }}" = "AlmaLinux 9 (RHEL 9)" ]; then
+            dnf --enablerepo=epel,crb install -y boost1.78-devel
+            rpm -q boost1.78-devel
+            test -f /usr/include/boost1.78/boost/json.hpp
+            test -f /usr/lib64/cmake/Boost-1.78.0/BoostConfig.cmake
           else
-            dnf install -y boost-devel
+            dnf --enablerepo=crb install -y boost-devel boost-json
+            rpm -q boost-devel boost-json
+            test -f /usr/include/boost/json.hpp
           fi
           dnf install -y sqlite-devel libpq-devel mariadb-connector-c-devel || true
 
@@ -88,6 +107,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DBUILD_SHARED_LIBS=ON
           -DCMAKE_INSTALL_PREFIX="$PWD/stage"
+          ${{ matrix.cmake_args }}
 
       - name: Build
         run: cmake --build build-shared --parallel "$(nproc)"
