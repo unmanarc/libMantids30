@@ -295,11 +295,11 @@ boost::json::value HTMLIEngine::procJAPI_Exec(const std::string &sRealFullPath, 
         std::string FUNCTION_NAME = matches[3];
         uint32_t xversion = static_cast<uint32_t>(strtoul(VERSION.c_str(), nullptr, 10));
 
-        apiReturn = clientHandler->handleAPIRequest("/", xversion, METHOD_MODE, FUNCTION_NAME, vars);
+        apiReturn = clientHandler->handleAPIRequestFromFile(sRealFullPath, "/", xversion, METHOD_MODE, FUNCTION_NAME, vars);
     }
     else
     {
-        apiReturn = clientHandler->handleAPIRequest("/", 1, "POST", functionName, vars);
+        apiReturn = clientHandler->handleAPIRequestFromFile(sRealFullPath, "/", 1, "POST", functionName, vars);
     }
 
     // Eg. Response:     const loginMode = {"body":{"app":{"description":"Test APP","name":"TEST"},"mode":"DOMAIN"},"httpResponseCode":200};
@@ -332,6 +332,7 @@ std::string HTMLIEngine::procResource_HTMLIEngineJFUNC(const std::string &sRealF
         return replaceByJVar(procJAPI_Exec(sRealFullPath, clientHandler, functionName, functionInput), scriptVarName, useHTMLFrame);
     }
 
+    clientHandler->log(LogLevel::ERROR, "fileserver", 2048, "Invalid JFUNC definition: '%s' on resource '%s'", functionDef.c_str(), sRealFullPath.c_str());
     return replaceByJVar(boost::json::value{}, scriptVarName, useHTMLFrame);
 }
 
