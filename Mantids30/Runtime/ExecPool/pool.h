@@ -34,7 +34,7 @@ public:
     /**
      * @brief Admission, execution and protocol outcomes for a request.
      */
-    enum class Error
+    enum class Error : std::uint8_t
     {
         SUCCESS, ///< Response validated before the deadline.
         NOT_RUNNING, ///< Pool was stopped when admission was attempted.
@@ -56,7 +56,7 @@ public:
     /**
      * @brief Recovery policy after a worker process or exchange failure.
      */
-    enum class FailureBehavior
+    enum class FailureBehavior : std::uint8_t
     {
         RESTART_WORKER, ///< Replace the failed child after restartDelay; do not replay its request.
         STOP_POOL       ///< Stop admission and cancel queued work across all workers.
@@ -104,7 +104,7 @@ public:
         /**
          * @brief Excludes the terminating newline.
          */
-        size_t maxLineBytes{1024 * 1024};
+        size_t maxLineBytes{size_t{1024} * 1024};
 
         /**
          * @brief Backoff between process restarts.
@@ -185,14 +185,14 @@ public:
          * @return Response JSON after success; initially null and null on failure.
          * @note This accessor does not wait for completion.
          */
-        boost::json::value output() const;
+        [[nodiscard]] boost::json::value output() const;
 
         /**
          * @brief Reads the last published request status.
          * @return NOT_RUNNING initially, then the rejection or completion status.
          * @note This accessor does not wait; a pending request retains its initial status.
          */
-        Error error() const;
+        [[nodiscard]] Error error() const;
 
     private:
         /**
@@ -287,7 +287,7 @@ private:
     {
         std::unique_ptr<App> app;
         std::thread thread;
-        std::chrono::steady_clock::time_point nextSpawn{};
+        std::chrono::steady_clock::time_point nextSpawn;
     };
     const Config m_config;
     // Lifecycle protects the worker vector; submission gates admission and draining.
