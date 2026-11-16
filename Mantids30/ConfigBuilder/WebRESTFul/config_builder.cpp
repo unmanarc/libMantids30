@@ -40,12 +40,12 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 
     bool isTLS = (protocol == "TLS");
 
-    if (!isTLS && (options & Mantids30::ConfigBuilder::REST::REST_ENGINE_MANDATORY_SSL))
+    if (!isTLS && (options & Mantids30::ConfigBuilder::WebRESTFul::REST_ENGINE_MANDATORY_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is required/mandatory for this service.");
         return nullptr;
     }
-    if (isTLS && (options & Mantids30::ConfigBuilder::REST::REST_ENGINE_NO_SSL))
+    if (isTLS && (options & Mantids30::ConfigBuilder::WebRESTFul::REST_ENGINE_NO_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is not available on this service.");
         return nullptr;
@@ -77,7 +77,7 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
     return sock;
 }
 
-Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::REST::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
+Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::WebRESTFul::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> &rpcLog,
                                                                                                                const std::string &serviceName, const std::string &defaultResourcePath, uint64_t options,
@@ -305,7 +305,7 @@ Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::REST::Builder::
     }
 }
 
-bool Mantids30::ConfigBuilder::REST::Builder::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     if (!sock->isSecure())
     {
@@ -326,7 +326,7 @@ bool Mantids30::ConfigBuilder::REST::Builder::handleProtocolInitializationFailur
     return true;
 }
 
-bool Mantids30::ConfigBuilder::REST::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 
@@ -334,7 +334,7 @@ bool Mantids30::ConfigBuilder::REST::Builder::handleClientAcceptTimeoutOccurred(
     return true;
 }
 
-bool Mantids30::ConfigBuilder::REST::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 

@@ -5,7 +5,7 @@
 #include <Mantids30/Runtime/Logs/rpclog.h>
 #include <boost/property_tree/ptree.hpp>
 
-namespace Mantids30::ConfigBuilder::REST {
+namespace Mantids30::ConfigBuilder::WebRESTFul {
 
 // Define options as bit flags
 constexpr uint64_t REST_ENGINE_NOCONFIG_JWT = 1ULL << 0;      // Bit 0: Do not configure JWT
@@ -27,4 +27,4 @@ private:
     static bool handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock);
 };
 
-} // namespace Mantids30::ConfigBuilder::REST
+} // namespace Mantids30::ConfigBuilder::WebRESTFul
