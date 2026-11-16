@@ -1,6 +1,11 @@
 #include "socket_tcp.h"
 
 #include <memory>
+#include <chrono>
+#include <system_error>
+#ifndef _WIN32
+#include <poll.h>
+#endif
 #include <sys/types.h>
 
 #ifdef _WIN32
@@ -17,6 +22,8 @@
 #endif
 
 #include <cerrno>
+#include <climits>
+#include <algorithm>
 #include <cstring>
 #include <unistd.h>
 
@@ -24,8 +31,98 @@ using namespace Mantids30::Network;
 using namespace Mantids30::Network::Sockets;
 
 
+std::string Socket_TCP::describeTCPError(const std::string &operation, int error)
+{
+#ifdef _WIN32
+    if (operation == "connect()")
+    {
+        switch (error)
+        {
+        case WSANOTINITIALISED:
+            return "connect() - A successful WSAStartup call must occur before using this function.";
+        case WSAENETDOWN:
+            return "connect() - The network subsystem has failed.";
+        case WSAEADDRINUSE:
+            return "connect() - The socket's local address is already in use and the socket was not marked to allow address reuse with SO_REUSEADDR.";
+        case WSAEINTR:
+            return "connect() - The blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
+        case WSAEINPROGRESS:
+            return "connect() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
+        case WSAEALREADY:
+            return "connect() - A nonblocking connect call is in progress on the specified socket.";
+        case WSAEADDRNOTAVAIL:
+            return "connect() - The remote address is not a valid address (such as INADDR_ANY or in6addr_any)";
+        case WSAEAFNOSUPPORT:
+            return "connect() - Addresses in the specified family cannot be used with this socket.";
+        case WSAECONNREFUSED:
+            return "connect() - The attempt to connect was forcefully rejected.";
+        case WSAEFAULT:
+            return "connect() - The sockaddr structure pointed to by the name contains incorrect address format for the associated address family or the namelen parameter is too small.";
+        case WSAEINVAL:
+            return "connect() - The parameter is a listening socket.";
+        case WSAEISCONN:
+            return "connect() - The socket is already connected (connection-oriented sockets only).";
+        case WSAENETUNREACH:
+            return "connect() - The network cannot be reached from this host at this time.";
+        case WSAEHOSTUNREACH:
+            return "connect() - A socket operation was attempted to an unreachable host.";
+        case WSAENOBUFS:
+            return "connect() - Note  No buffer space is available. The socket cannot be connected.";
+        case WSAENOTSOCK:
+            return "connect() - The descriptor specified in the s parameter is not a socket.";
+        case WSAETIMEDOUT:
+            return "connect() - An attempt to connect timed out without establishing a connection.";
+        case WSAEWOULDBLOCK:
+            return "connect() - The socket is marked as nonblocking and the connection cannot be completed immediately.";
+        case WSAEACCES:
+            return "connect() - An attempt to connect a datagram socket to broadcast address failed because setsockopt option SO_BROADCAST is not enabled.";
+        default:
+            break;
+        }
+    }
+    if (operation == "select()")
+    {
+        switch (error)
+        {
+        case WSANOTINITIALISED:
+            return "select() - A successful WSAStartup call must occur before using select().";
+        case WSAEFAULT:
+            return "select() - The Windows Sockets implementation was unable to allocate needed resources for its internal operations";
+        case WSAENETDOWN:
+            return "select() - The network subsystem has failed.";
+        case WSAEINVAL:
+            return "select() - The time-out value is not valid, or all three descriptor parameters were null.";
+        case WSAEINTR:
+            return "select() - A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
+        case WSAEINPROGRESS:
+            return "select() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
+        case WSAENOTSOCK:
+            return "select() - One of the descriptor sets contains an entry that is not a socket.";
+        default:
+            break;
+        }
+    }
+#endif
+    return operation + " - " + std::system_category().message(error);
+}
+
+std::string Socket_TCP::connectionError(const std::string &operation, int error) const
+{
+    return "Connection using TCP Socket to " + std::string(m_remotePair) + ":" + std::to_string(m_remotePort) +
+           " Failed with error #" + std::to_string(error) + ": " + describeTCPError(operation, error);
+}
+
 bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, const uint16_t &port, const uint32_t &timeout)
 {
+    if (isActive())
+    {
+        closeSocket();
+    }
+    if (!remoteHost || !*remoteHost)
+    {
+        m_lastError = "Remote host is empty";
+        return false;
+    }
     addrinfo *res = nullptr;
     m_lastError.clear();
     if (!getAddrInfo(remoteHost, port, SOCK_STREAM, reinterpret_cast<void **>(&res)))
@@ -46,26 +143,28 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         {
             closeSocket();
         }
-        m_sockFD = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+        const int descriptor = socket(resiter->ai_family, resiter->ai_socktype, resiter->ai_protocol);
+        setSocketFD(descriptor);
+        m_useIPv6 = resiter->ai_family == AF_INET6;
         if (!isActive())
         {
-            m_lastError = "socket() failed, " + std::string(strerror(errno));
-            break;
+            m_lastError = connectionError("socket()", getLastSocketError());
+            continue;
         }
 
         if (!bindTo(bindAddress))
         {
-            break;
+            continue;
         }
 
+
+        // Preserve the original client default: no read timeout unless overridden.
         setReadTimeout(0);
 
         sockaddr *curAddr = resiter->ai_addr;
         struct sockaddr_in *curAddrIn = (reinterpret_cast<sockaddr_in *>(curAddr));
 
-        if ((resiter->ai_addr->sa_family == AF_INET) ||            // IPv4 always have the permission to go.
-            (resiter->ai_addr->sa_family == AF_INET6 && m_useIPv6) // Check if ipv6 have our permission to go.
-        )
+        if (curAddr->sa_family == AF_INET || curAddr->sa_family == AF_INET6)
         {
             // Set remote pairs...
             switch (curAddr->sa_family)
@@ -73,7 +172,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
             case AF_INET6:
             {
                 char ipAddr6[INET6_ADDRSTRLEN] = "";
-                inet_ntop(AF_INET6, &(curAddrIn->sin_addr), ipAddr6, INET6_ADDRSTRLEN);
+                inet_ntop(AF_INET6, &reinterpret_cast<sockaddr_in6 *>(curAddr)->sin6_addr, ipAddr6, INET6_ADDRSTRLEN);
                 setRemotePair(ipAddr6);
             }
             break;
@@ -127,6 +226,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
 
     if (!connected)
     {
+        closeSocket();
         if (m_lastError.empty())
         {
             m_lastError = std::string("Protocol Initialization Error.");
@@ -134,6 +234,7 @@ bool Socket_TCP::connectFrom(const char *bindAddress, const char *remoteHost, co
         return false;
     }
 
+    m_lastError.clear();
     return true;
 }
 
@@ -148,11 +249,19 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TCP::acceptCo
 
     std::shared_ptr<Socket_Stream> cursocket;
 
-    int32_t clilen;
-    struct sockaddr_in cli_addr{};
-    clilen = sizeof(cli_addr);
+    sockaddr_storage cli_addr{};
+    socklen_t clilen = sizeof(cli_addr);
 
-    if ((sdconn = accept(m_sockFD, reinterpret_cast<struct sockaddr *>(&cli_addr), reinterpret_cast<socklen_t *>(&clilen))) >= 0)
+    int acceptError = 0;
+    do
+    {
+        sdconn = accept(m_sockFD, reinterpret_cast<sockaddr *>(&cli_addr), &clilen);
+        if (sdconn < 0)
+        {
+            acceptError = getLastSocketError();
+        }
+    } while (sdconn < 0 && isSocketErrorInterrupted(acceptError));
+    if (sdconn >= 0)
     {
         if (m_useTCPForceKeepAlive)
         {
@@ -169,10 +278,21 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TCP::acceptCo
 
         cursocket = std::make_shared<Socket_TCP>();
         // Set the proper socket-
+        cursocket->setUseIPv6(cli_addr.ss_family == AF_INET6);
         cursocket->setSocketFD(sdconn);
-        char ipAddr[INET6_ADDRSTRLEN];
-        inet_ntop(AF_INET, &cli_addr.sin_addr, ipAddr, sizeof(ipAddr) - 1);
-        cursocket->setRemotePort(ntohs(cli_addr.sin_port));
+        char ipAddr[INET6_ADDRSTRLEN]{};
+        if (cli_addr.ss_family == AF_INET6)
+        {
+            const auto *address = reinterpret_cast<const sockaddr_in6 *>(&cli_addr);
+            inet_ntop(AF_INET6, &address->sin6_addr, ipAddr, sizeof(ipAddr));
+            cursocket->setRemotePort(ntohs(address->sin6_port));
+        }
+        else
+        {
+            const auto *address = reinterpret_cast<const sockaddr_in *>(&cli_addr);
+            inet_ntop(AF_INET, &address->sin_addr, ipAddr, sizeof(ipAddr));
+            cursocket->setRemotePort(ntohs(address->sin_port));
+        }
         cursocket->setRemotePair(ipAddr);
 
         std::dynamic_pointer_cast<Socket_TCP>(cursocket)->setTcpNoDelayOption(m_useTcpNoDelayOption);
@@ -193,7 +313,7 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TCP::acceptCo
     // Establish the error.
     else
     {
-        m_lastError = "accept() failed";
+        m_lastError = "accept() failed: " + std::system_category().message(acceptError);
         return nullptr;
     }
 
@@ -201,239 +321,112 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TCP::acceptCo
     return cursocket;
 }
 
-bool Socket_TCP::tcpConnect(const unsigned short &addrFamily, const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
+bool Socket_TCP::tcpConnect(const unsigned short &, const sockaddr *addr, socklen_t addrlen, uint32_t timeout)
 {
-    int res2, valopt;
-
-    // Non-blocking connect with timeout...
     if (!setBlockingMode(false))
     {
         return false;
     }
-
+    int result = connect(m_sockFD, addr, addrlen);
+    if (result < 0)
+    {
+        const int connectError = getLastSocketError();
 #ifdef _WIN32
-    if (timeout == 0)
-    {
-        // in windows, if the timeval is 0,0, then it will return immediately.
-        // however, our lib state that 0 represent that we sleep for ever.
-        timeout = 365 * 24 * 3600; // how about 1 year.
-    }
-#endif
-
-    if (m_useTCPForceKeepAlive)
-    {
-        // From: https://bz.apache.org/bugzilla/show_bug.cgi?id=57955#c2
-        // https://linux.die.net/man/7/tcp
-#ifdef TCP_KEEPIDLE
-        //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        if (setTCPOptionBool(TCP_KEEPIDLE, m_tcpKeepIdle))
-        {
-        }
-#endif
-
-#ifdef TCP_KEEPCNT
-        //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setTCPOptionBool(TCP_KEEPCNT, m_tcpKeepCnt))
-        {
-        }
-#endif
-
-#ifdef TCP_KEEPINTVL
-        //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setTCPOptionBool(TCP_KEEPINTVL, m_tcpKeepInterval))
-        {
-        }
-#endif
-    }
-
-    // Trying to connect with timeout.
-    res2 = connect(m_sockFD, addr, addrlen);
-    if (res2 < 0)
-    {
-#ifdef _WIN32
-        int werr = WSAGetLastError();
-        if (werr == WSAEWOULDBLOCK)
+        if (connectError != WSAEWOULDBLOCK)
 #else
-        if (errno == EINPROGRESS || !errno)
+        if (connectError != EINPROGRESS && connectError != EINTR)
 #endif
         {
-            fd_set myset;
-
-            struct timeval tv{};
-            tv.tv_sec = timeout;
-            tv.tv_usec = 0;
-            FD_ZERO(&myset);
-            FD_SET(m_sockFD, &myset);
-
-            res2 = select(m_sockFD + 1, nullptr, &myset, nullptr, timeout ? &tv : nullptr);
+            m_lastError = connectionError("connect()", connectError);
+            return false;
+        }
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout);
+        int waitError = 0;
+        do
+        {
+            const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - std::chrono::steady_clock::now()).count();
 #ifdef _WIN32
-            if (res2 < 0 && WSAGetLastError() != WSAEINTR)
+            fd_set writable;
+            FD_ZERO(&writable);
+            FD_SET(m_sockFD, &writable);
+            fd_set exceptional = writable;
+            timeval waitTime{};
+            waitTime.tv_sec = static_cast<long>(std::max<int64_t>(remaining, 0) / 1000);
+            waitTime.tv_usec = static_cast<long>(std::max<int64_t>(remaining, 0) % 1000) * 1000;
+            result = select(0, nullptr, &writable, &exceptional, timeout ? &waitTime : nullptr);
 #else
-            if (res2 < 0 && errno != EINTR)
+            pollfd descriptor{m_sockFD, POLLOUT, 0};
+            const int waitMS = timeout ? static_cast<int>(std::min<int64_t>(std::max<int64_t>(remaining, 0), INT_MAX)) : -1;
+            result = poll(&descriptor, 1, waitMS);
 #endif
+            if (result < 0)
             {
-#ifdef _WIN32
-                switch (WSAGetLastError())
-                {
-                case WSANOTINITIALISED:
-                    lastError = "select() - A successful WSAStartup call must occur before using select().";
-                    break;
-                case WSAEFAULT:
-                    lastError = "select() - The Windows Sockets implementation was unable to allocate needed resources for its internal operations";
-                    break;
-                case WSAENETDOWN:
-                    lastError = "select() - The network subsystem has failed.";
-                    break;
-                case WSAEINVAL:
-                    lastError = "select() - The time-out value is not valid, or all three descriptor parameters were null.";
-                    break;
-                case WSAEINTR:
-                    lastError = "select() - A blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
-                    break;
-                case WSAEINPROGRESS:
-                    lastError = "select() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
-                    break;
-                case WSAENOTSOCK:
-                    lastError = "select() - One of the descriptor sets contains an entry that is not a socket.";
-                    break;
-                default:
-                    lastError = "select() - unknown error (" + std::to_string(WSAGetLastError()) + ")";
-                    break;
-                }
-#else
-                // TODO: specific message.
-                m_lastError = "select() - error (" + std::to_string(errno) + ")";
-#endif
-                return false;
+                waitError = getLastSocketError();
             }
-            else if (res2 > 0)
+            if (result >= 0 || !isSocketErrorInterrupted(waitError))
             {
-                // Socket selected for write
-                socklen_t lon;
-                lon = sizeof(int);
-                if (getSocketOption(SOL_SOCKET, SO_ERROR, reinterpret_cast<void *>(&valopt), &lon) < 0)
-                {
-                    m_lastError = "Error in getsockopt(SOL_SOCKET)";
-                    return false;
-                }
-                // Check the value returned...
-                if (valopt)
-                {
-                    char cError[1024] = "Unknown Error";
-                    m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with error #") + std::to_string(valopt) + ": "
-                                  + strerror_r(valopt, cError, sizeof(cError));
-                    return false;
-                }
-
-                // Pass to blocking mode socket instead select it.
-                // And.. Even if we are connected, if we can't go back to blocking, disconnect.
-                if (!setBlockingMode(true))
-                {
-                    return false;
-                }
-
-                if (m_useTCPForceKeepAlive)
-                {
-                    if (setSocketOptionBool(SOL_SOCKET, SO_KEEPALIVE, true))
-                    {
-                        m_lastError = "setsocketopt(SO_KEEPALIVE)";
-                        return false;
-                    }
-                }
-
-                if (setTCPOptionBool(TCP_NODELAY, m_useTcpNoDelayOption))
-                {
-                    m_lastError = "setsocketopt(TCP_NODELAY)";
-                    return false;
-                }
-
-                // Connected!!!
-                return true;
+                break;
+            }
+        } while (timeout == 0 || std::chrono::steady_clock::now() < deadline);
+        if (result <= 0)
+        {
+            if (result == 0)
+            {
+                m_lastError = "Connection using TCP Socket to " + std::string(m_remotePair) + ":" + std::to_string(m_remotePort) +
+                              " Failed with SELTMOUT: Timeout while connecting...";
             }
             else
             {
-                m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with SELTMOUT: Timeout while connecting...");
-                return false;
-            }
-        }
-        else
-        {
 #ifdef _WIN32
-            switch (werr)
-            {
-            case WSANOTINITIALISED:
-                lastError = "connect() - A successful WSAStartup call must occur before using this function.";
-                break;
-            case WSAENETDOWN:
-                lastError = "connect() - The network subsystem has failed.";
-                break;
-            case WSAEADDRINUSE:
-                lastError = "connect() - The socket's local address is already in use and the socket was not marked to allow address reuse with SO_REUSEADDR.";
-                break;
-            case WSAEINTR:
-                lastError = "connect() - The blocking Windows Socket 1.1 call was canceled through WSACancelBlockingCall.";
-                break;
-            case WSAEINPROGRESS:
-                lastError = "connect() - A blocking Windows Sockets 1.1 call is in progress, or the service provider is still processing a callback function.";
-                break;
-            case WSAEALREADY:
-                lastError = "connect() - A nonblocking connect call is in progress on the specified socket.";
-                break;
-            case WSAEADDRNOTAVAIL:
-                lastError = "connect() - The remote address is not a valid address (such as INADDR_ANY or in6addr_any)";
-                break;
-            case WSAEAFNOSUPPORT:
-                lastError = "connect() - Addresses in the specified family cannot be used with this socket.";
-                break;
-            case WSAECONNREFUSED:
-                lastError = "connect() - The attempt to connect was forcefully rejected.";
-                break;
-            case WSAEFAULT:
-                lastError = "connect() - The sockaddr structure pointed to by the name contains incorrect address format for the associated address family or the namelen parameter is too small.";
-                break;
-            case WSAEINVAL:
-                lastError = "connect() - The parameter is a listening socket.";
-                break;
-            case WSAEISCONN:
-                lastError = "connect() - The socket is already connected (connection-oriented sockets only).";
-                break;
-            case WSAENETUNREACH:
-                lastError = "connect() - The network cannot be reached from this host at this time.";
-                break;
-            case WSAEHOSTUNREACH:
-                lastError = "connect() - A socket operation was attempted to an unreachable host.";
-                break;
-            case WSAENOBUFS:
-                lastError = "connect() - Note  No buffer space is available. The socket cannot be connected.";
-                break;
-            case WSAENOTSOCK:
-                lastError = "connect() - The descriptor specified in the s parameter is not a socket.";
-                break;
-            case WSAETIMEDOUT:
-                lastError = "connect() - An attempt to connect timed out without establishing a connection.";
-                break;
-            case WSAEWOULDBLOCK:
-                lastError = "connect() - The socket is marked as nonblocking and the connection cannot be completed immediately.";
-                break;
-            case WSAEACCES:
-                lastError = "connect() - An attempt to connect a datagram socket to broadcast address failed because setsockopt option SO_BROADCAST is not enabled.";
-            default:
-                lastError = "connect() - unknown error (" + std::to_string(WSAGetLastError()) + ")";
-                break;
-            }
+                m_lastError = connectionError("select()", waitError);
 #else
-
-            char cError[1024] = "Unknown Error";
-
-            m_lastError = std::string("Connection using TCP Socket to ") + m_remotePair + (":") + std::to_string(m_remotePort) + (" Failed with error #") + std::to_string(errno) + ": "
-                          + strerror_r(errno, cError, sizeof(cError));
+                m_lastError = connectionError("poll()", waitError);
 #endif
+            }
+            return false;
+        }
+        int error = 0;
+        socklen_t length = sizeof(error);
+        const int optionResult = getSocketOption(SOL_SOCKET, SO_ERROR, &error, &length);
+        if (optionResult < 0)
+        {
+            const int optionError = getLastSocketError();
+            m_lastError = connectionError("getsockopt(SO_ERROR)", optionError);
+            return false;
+        }
+        if (error != 0)
+        {
+            m_lastError = connectionError("connect()", error);
             return false;
         }
     }
-    // What we are doing here?
-    setBlockingMode(true);
-    return false;
+    if (!setBlockingMode(true))
+    {
+        return false;
+    }
+    if (m_useTCPForceKeepAlive)
+    {
+        if (setSocketOptionBool(SOL_SOCKET, SO_KEEPALIVE, true) != 0)
+        {
+            m_lastError = "setsockopt(SO_KEEPALIVE) failed";
+            return false;
+        }
+#ifdef TCP_KEEPIDLE
+        setTCPOption(TCP_KEEPIDLE, &m_tcpKeepIdle, sizeof(m_tcpKeepIdle));
+#endif
+#ifdef TCP_KEEPCNT
+        setTCPOption(TCP_KEEPCNT, &m_tcpKeepCnt, sizeof(m_tcpKeepCnt));
+#endif
+#ifdef TCP_KEEPINTVL
+        setTCPOption(TCP_KEEPINTVL, &m_tcpKeepInterval, sizeof(m_tcpKeepInterval));
+#endif
+    }
+    if (setTCPOptionBool(TCP_NODELAY, m_useTcpNoDelayOption) != 0)
+    {
+        m_lastError = "setsockopt(TCP_NODELAY) failed";
+        return false;
+    }
+    return true;
 }
 
 bool Socket_TCP::getTcpNoDelayOption() const
@@ -489,7 +482,8 @@ void Socket_TCP::setTcpKeepIdle(int newTcpKeepIdle)
 
 bool Socket_TCP::listenOn(const uint16_t &port, const char *listenOnAddr, const int32_t &recvbuffer, const int32_t &backlog)
 {
-    m_sockFD = socket(m_useIPv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0);
+    closeSocket();
+    setSocketFD(socket(m_useIPv6 ? AF_INET6 : AF_INET, SOCK_STREAM, 0));
     if (!isActive())
     {
         m_lastError = "socket() failed";
@@ -514,21 +508,21 @@ bool Socket_TCP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
         // https://linux.die.net/man/7/tcp
 #ifdef TCP_KEEPIDLE
         //- the idle time (TCP_KEEPIDLE): time the connection needs to be idle to start sending keep-alive probes, 2 hours by default
-        if (setTCPOptionBool(TCP_KEEPIDLE, m_tcpKeepIdle))
+        if (setTCPOption(TCP_KEEPIDLE, &m_tcpKeepIdle, sizeof(m_tcpKeepIdle)))
         {
         }
 #endif
 
 #ifdef TCP_KEEPCNT
         //- the count (TCP_KEEPCNT): the number of probes to send before concluding the connection is down, default is 9
-        if (setTCPOptionBool(TCP_KEEPCNT, m_tcpKeepCnt))
+        if (setTCPOption(TCP_KEEPCNT, &m_tcpKeepCnt, sizeof(m_tcpKeepCnt)))
         {
         }
 #endif
 
 #ifdef TCP_KEEPINTVL
         //- the time interval (TCP_KEEPINTVL): the interval between successive probes after the idle time, default is 75 seconds
-        if (setTCPOptionBool(TCP_KEEPINTVL, m_tcpKeepInterval))
+        if (setTCPOption(TCP_KEEPINTVL, &m_tcpKeepInterval, sizeof(m_tcpKeepInterval)))
         {
         }
 #endif
@@ -536,6 +530,7 @@ bool Socket_TCP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
 
     if (!bindTo(listenOnAddr, port))
     {
+        closeSocket();
         return false;
     }
 

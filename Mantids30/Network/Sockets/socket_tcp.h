@@ -67,6 +67,8 @@ public:
 
 protected:
 private:
+    static std::string describeTCPError(const std::string &operation, int error);
+    std::string connectionError(const std::string &operation, int error) const;
     bool tcpConnect(const unsigned short &addrFamily, const struct sockaddr *addr, socklen_t addrlen, uint32_t timeout);
 
     bool m_useTcpNoDelayOption{true};
