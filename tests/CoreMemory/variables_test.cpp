@@ -151,12 +151,34 @@ TEST("variables", "double_strict_parsing_and_json")
         CHECK(copy.fromJSON(variable.toJSON()));
         CHECK(copy.getValue() == variable.getValue());
     }
-    for (const std::string invalid : {"", " 1", "1 ", "1x", "1e9999"})
+    for (const std::string invalid : {"", " 1", "\t1", "1 ", "+1", "1x", "0x1p2", "-0X1p2", "1e9999", "-1e9999", "1e-9999"})
     {
         variable.setValue(7.5);
         CHECK(!variable.fromString(invalid));
         CHECK(variable.getValue() == 7.5);
     }
+}
+
+TEST("variables", "double_subnormal_special_values_and_bounded_views")
+{
+    DOUBLE variable;
+    CHECK(variable.fromString("4.9406564584124654e-324"));
+    CHECK(variable.getValue() == std::numeric_limits<double>::denorm_min());
+    CHECK(variable.fromString("-0"));
+    CHECK(variable.getValue() == 0.0 && std::signbit(variable.getValue()));
+    CHECK(variable.fromString("inf"));
+    CHECK(variable.getValue() == std::numeric_limits<double>::infinity());
+    CHECK(variable.fromString("-INFINITY"));
+    CHECK(variable.getValue() == -std::numeric_limits<double>::infinity());
+    CHECK(variable.fromString("nan(payload)"));
+    CHECK(std::isnan(variable.getValue()));
+
+    const std::string text = "!1.25?";
+    CHECK(variable.fromString(std::string_view(text.data() + 1, 4)));
+    CHECK(variable.getValue() == 1.25);
+    CHECK(!variable.fromString(std::string_view{}));
+    CHECK(!variable.fromString(std::string("1\0x", 3)));
+    CHECK(variable.getValue() == 1.25);
 }
 
 TEST("variables", "boolean_supported_literals_and_copy")

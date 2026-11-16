@@ -10,6 +10,11 @@ The current development series is `3.0.0`, defined by `SVERSION` in
 
 ## [Unreleased]
 
+### Fixed
+
+- Restore GCC 8 / RHEL 8 compatibility for `DOUBLE::fromString` using
+  locale-independent floating-point parsing without `std::from_chars`.
+
 ### Added
 
 - GitHub Actions CI covering Ubuntu 24.04/26.04, Debian 12/13 and
@@ -23,6 +28,9 @@ The current development series is `3.0.0`, defined by `SVERSION` in
 
 ### Changed
 
+- Removed redundant single-class namespaces: `JWT` now belongs to
+  `Mantids30::DataFormat`, `FastRPC1` to `Mantids30::Protocol`, and `MantidsLang`
+  to `Mantids30::Scripting`. Header paths and library target names are unchanged.
 - `README.md` restructured: platform matrix, requirements, CMake options,
   installed layout and integration examples.
 

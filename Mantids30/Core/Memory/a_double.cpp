@@ -1,7 +1,12 @@
 #include "a_double.h"
+#include <cerrno>
+#include <cmath>
+#include <cstdlib>
+#include <locale>
+#include <locale.h>
+#include <memory>
 #include <mutex>
-
-#include <stdexcept> // std::invalid_argument
+#include <type_traits>
 
 using namespace Mantids30::Core::Memory::Abstract;
 
@@ -37,11 +42,42 @@ std::string DOUBLE::toString()
 
 bool DOUBLE::fromString(std::string_view value)
 {
-    double parsed;
+    if (value.empty() || value.front() == '+' || std::isspace(value.front(), std::locale::classic()))
+    {
+        return false;
+    }
 
-    const auto [ptr, ec] = std::from_chars(value.data(), value.data() + value.size(), parsed);
+    const auto magnitude = value.substr(value.front() == '-' ? 1 : 0);
+    if (magnitude.substr(0, 2) == "0x" || magnitude.substr(0, 2) == "0X")
+    {
+        return false;
+    }
 
-    if (ec != std::errc{} || ptr != value.data() + value.size())
+    // GCC 8 lacks floating-point from_chars. Use a private C locale without
+    // changing the process locale, and own a terminated copy of the view.
+#ifdef _WIN32
+    static const std::unique_ptr<std::remove_pointer_t<_locale_t>, decltype(&_free_locale)>
+        numericLocale(_create_locale(LC_NUMERIC, "C"), &_free_locale);
+#else
+    static const std::unique_ptr<std::remove_pointer_t<locale_t>, decltype(&freelocale)>
+        numericLocale(newlocale(LC_NUMERIC_MASK, "C", nullptr), &freelocale);
+#endif
+    if (!numericLocale)
+    {
+        return false;
+    }
+
+    const std::string text(value);
+    char *end = nullptr;
+    errno = 0;
+#ifdef _WIN32
+    const double parsed = _strtod_l(text.c_str(), &end, numericLocale.get());
+#else
+    const double parsed = strtod_l(text.c_str(), &end, numericLocale.get());
+#endif
+    // Representable subnormals may set ERANGE; underflow to zero must fail.
+    if (end == text.c_str() || end != text.c_str() + text.size() ||
+        (errno == ERANGE && (parsed == 0.0 || std::isinf(parsed))))
     {
         return false;
     }
