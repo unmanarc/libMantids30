@@ -65,10 +65,10 @@ private:
     void join();
 
     // Member variables:
-    void (*m_threadRunner)(void *runnerArg);   // The function executed in the thread.
-    void *m_contextRunner;                     // The object passed to the threadRunner function.
-    void (*m_threadStopper)(void *stopperArg); // The function called when stopping the thread.
-    void *m_contextStopper;                    // The object passed to the threadStopper function.
+    void (*m_threadRunner)(void *runnerArg){nullptr};   // The function executed in the thread.
+    void *m_contextRunner{nullptr};                     // The object passed to the threadRunner function.
+    void (*m_threadStopper)(void *stopperArg){nullptr}; // The function called when stopping the thread.
+    void *m_contextStopper{nullptr};                    // The object passed to the threadStopper function.
     std::atomic<bool> m_isRunning;             // Whether the thread is currently running.
     std::thread m_threadObj;                   // The thread object.
 };
