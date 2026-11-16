@@ -98,9 +98,6 @@ public:
     static int memicmp2(const void *s1, const void *s2, const size_t &numBytes, const bool &caseSensitive);
     static void *memcpy64(void *dest, const void *src, size_t numBytes);
     static void *memmove64(void *dest, const void *src, size_t numBytes);
-
-private:
-    static unsigned char m_cmpMatrix[];
 };
 
 } // namespace Mantids30::Core::Helpers

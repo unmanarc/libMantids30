@@ -1,0 +1,5 @@
+find_package(Boost REQUIRED COMPONENTS json)
+add_executable(core_memory_test memory_test.cpp)
+target_include_directories(core_memory_test PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(core_memory_test PRIVATE Mantids30_Core_Memory Boost::json)
+add_test(NAME core_memory COMMAND core_memory_test)
