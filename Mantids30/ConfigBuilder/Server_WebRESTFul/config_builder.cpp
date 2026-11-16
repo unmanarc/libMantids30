@@ -320,7 +320,12 @@ bool Mantids30::ConfigBuilder::Server_WebRESTFul::Builder::handleProtocolInitial
     {
         if (!strstr(i.c_str(), "certificate unknown"))
         {
-            core->config.appLog->log1(__func__, sock->getRemotePairStr(), LogLevel::ERROR, "TLS: %s", i.c_str());
+            // A peer that drops the connection during the handshake (health
+            // checks, keep-alive probes, abrupt client aborts) produces an
+            // "unexpected eof" / zero-return error. Log those at DEBUG level
+            // instead of ERROR.
+            const bool isPeerAbort = strstr(i.c_str(), "unexpected eof") != nullptr || strstr(i.c_str(), "zero return") != nullptr;
+            core->config.appLog->log1(__func__, sock->getRemotePairStr(), isPeerAbort ? LogLevel::DEBUG : LogLevel::ERROR, "TLS: %s", i.c_str());
         }
     }
     return true;
