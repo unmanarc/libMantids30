@@ -66,3 +66,7 @@ foreach(LIB ${Mantids30_LIBRARIES})
     target_link_libraries(${LIB_NAME} ${LIBPREFIX}_${LIB})
 endforeach()
 
+
+# Streamable JSON containers require Boost.JSON in consumers as well.
+find_package(Boost REQUIRED COMPONENTS json)
+target_link_libraries(${LIB_NAME} Boost::json)

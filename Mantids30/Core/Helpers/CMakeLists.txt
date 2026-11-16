@@ -26,6 +26,9 @@ configure_file( "genericlib.pc.in" "${LIB_NAME}.pc" @ONLY )
 
 target_include_directories(${LIB_NAME} PRIVATE .)
 
+find_package(Boost REQUIRED)
+target_link_libraries(${LIB_NAME} Boost::boost)
+
 install(
         TARGETS ${LIB_NAME}
 		RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin
