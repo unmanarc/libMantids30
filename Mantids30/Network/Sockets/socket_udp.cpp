@@ -29,7 +29,7 @@ Socket_UDP::~Socket_UDP()
 
 bool Socket_UDP::isConnected()
 {
-    return true;
+    return isActive();
 }
 
 bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const int32_t &recvbuffer, const int32_t &backlog)
@@ -41,7 +41,7 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
         closeSocket(); // close and release first
     }
     // Socket initialization.
-    m_sockFD = socket(m_useIPv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0);
+    setSocketFD(socket(m_useIPv6 ? AF_INET6 : AF_INET, SOCK_DGRAM, 0));
     if (!isActive())
     {
         m_lastError = "socket() failed";
@@ -58,10 +58,16 @@ bool Socket_UDP::listenOn(const uint16_t &port, const char *listenOnAddr, const 
 
     if (!bindTo(listenOnAddr, port))
     {
+        closeSocket();
         return false;
     }
 
-    m_isInListenMode = true;
+    if (recvbuffer)
+    {
+        setRecvBuffer(recvbuffer);
+    }
+    // UDP listeners use read/write timeouts just like UDP senders.
+    m_isInListenMode = false;
 
     // Done!
     return true;
@@ -74,6 +80,11 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
         closeSocket(); // close and release first
     }
 
+    if (!remoteHost || !*remoteHost)
+    {
+        m_lastError = "Remote host is empty";
+        return false;
+    }
     m_remoteServerHostname = remoteHost;
 
     // Clean up any previously resolved addrinfo.
@@ -86,7 +97,8 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
     }
 
     // Initialize the socket...
-    m_sockFD = socket(m_addressInfoResolution->ai_family, m_addressInfoResolution->ai_socktype, m_addressInfoResolution->ai_protocol);
+    m_useIPv6 = m_addressInfoResolution->ai_family == AF_INET6;
+    setSocketFD(socket(m_addressInfoResolution->ai_family, m_addressInfoResolution->ai_socktype, m_addressInfoResolution->ai_protocol));
     if (!isActive())
     {
         m_lastError = "socket() failed";
@@ -95,6 +107,7 @@ bool Socket_UDP::connectFrom(const char *bindAddress, const char *remoteHost, co
 
     if (!bindTo(bindAddress))
     {
+        closeSocket();
         return false;
     }
 
@@ -126,7 +139,7 @@ bool Socket_UDP::writeBlock(const void *data, const size_t &datalen)
         return false;
     }
 #ifdef _WIN32
-    if (sendto(sockfd, (char *) data, datalen, 0, res->ai_addr, res->ai_addrlen) == -1)
+    if (sendto(m_sockFD, static_cast<const char *>(data), datalen, 0, m_addressInfoResolution->ai_addr, m_addressInfoResolution->ai_addrlen) == -1)
 #else
     if (sendto(m_sockFD, data, datalen, 0, m_addressInfoResolution->ai_addr, m_addressInfoResolution->ai_addrlen) == -1)
 #endif
@@ -136,7 +149,7 @@ bool Socket_UDP::writeBlock(const void *data, const size_t &datalen)
     return true;
 }
 
-#define SOCKADDR_IN_SIZE sizeof(struct sockaddr)
+#define SOCKADDR_IN_SIZE sizeof(struct sockaddr_storage)
 
 uint32_t Socket_UDP::getMinReadSize()
 {
@@ -168,13 +181,13 @@ std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
         return datagramBlock;
     }
 
-    socklen_t fromlen = SOCKADDR_IN_SIZE;
+    socklen_t fromlen = sizeof(datagramBlock->socketAddress);
 
     char bigBlock[65536];
 #ifdef _WIN32
-    (*datagramBlock).datalen = recvfrom(sockfd, bigBlock, 65536, 0, &((*datagramBlock).addr), &fromlen);
+    (*datagramBlock).dataLength = recvfrom(m_sockFD, bigBlock, 65536, 0, reinterpret_cast<sockaddr *>(&datagramBlock->socketAddress), &fromlen);
 #else
-    (*datagramBlock).dataLength = recvfrom(m_sockFD, bigBlock, 65536, 0, &((*datagramBlock).socketAddress), &fromlen);
+    (*datagramBlock).dataLength = recvfrom(m_sockFD, bigBlock, 65536, 0, reinterpret_cast<sockaddr *>(&datagramBlock->socketAddress), &fromlen);
 #endif
 
     (*datagramBlock).copy(bigBlock, (*datagramBlock).dataLength);
