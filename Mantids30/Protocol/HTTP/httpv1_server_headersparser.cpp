@@ -26,15 +26,23 @@ void Mantids30::Protocol::HTTP::HTTPv1_Server::parseHostHeader()
     // Default port for HTTP
     clientRequest.virtualPort = 80;
 
-    // Split host:port
     size_t colonPos = hostValue.find(':');
-    if (colonPos == std::string_view::npos)
+    if (hostValue.front() == '[')
     {
-        clientRequest.virtualHost = hostValue;
+        const auto close = hostValue.find(']');
+        if (close == string::npos)
+        {
+            return;
+        }
+        colonPos = close + 1 < hostValue.size() ? close + 1 : string::npos;
+        if (colonPos != string::npos && hostValue[colonPos] != ':')
+        {
+            return;
+        }
     }
-    else
+    clientRequest.virtualHost = hostValue.substr(0, colonPos);
+    if (colonPos != string::npos)
     {
-        clientRequest.virtualHost = hostValue.substr(0, colonPos);
         parsePort(hostValue.substr(colonPos + 1));
     }
 }
@@ -51,7 +59,7 @@ void Mantids30::Protocol::HTTP::HTTPv1_Server::parsePort(std::string_view portSt
     }
     else
     {
-        clientRequest.virtualPort = 80;
+        clientRequest.virtualHost.clear();
     }
 }
 
@@ -106,16 +114,37 @@ void Mantids30::Protocol::HTTP::HTTPv1_Server::parseUserAgent()
 // Parse Content-Length and Content-Type headers
 bool Mantids30::Protocol::HTTP::HTTPv1_Server::setupContentHandling(size_t &contentLength)
 {
-    // Initialize in zero:
-    clientRequest.content.setCurrentSize(0);
-
-    // Extract payload size and content type hints from headers.
-    contentLength = clientRequest.headers.getOptionAsUINT64("Content-Length");
-    string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
-    if (contentLength)
+    contentLength = 0;
+    const auto lengths = clientRequest.headers.getOptionsByName("Content-Length");
+    const auto codings = clientRequest.headers.getOptionsByName("Transfer-Encoding");
+    const auto badRequest = [&]()
     {
-        clientRequest.content.setTransmissionMode(Mantids30::Protocol::HTTP::Content::TransmissionMode::CONTENT_LENGTH);
-        if (!clientRequest.content.setCurrentSize(contentLength))
+        serverResponse.status.setCode(Status::Code::S_400_BAD_REQUEST);
+        return false;
+    };
+    if (lengths.size() > 1 || codings.size() > 1 || (!lengths.empty() && !codings.empty()))
+    {
+        return badRequest();
+    }
+    if (!lengths.empty())
+    {
+        const string value = clientRequest.headers.getOptionRawStringByName("Content-Length");
+        const auto result = std::from_chars(value.data(), value.data() + value.size(), contentLength);
+        if (value.empty() || result.ec != std::errc() || result.ptr != value.data() + value.size())
+        {
+            return badRequest();
+        }
+    }
+    const bool chunked = !codings.empty();
+    if (chunked && !boost::iequals(clientRequest.headers.getOptionRawStringByName("Transfer-Encoding"), "chunked"))
+    {
+        return badRequest();
+    }
+    string contentType = clientRequest.headers.getOptionValueStringByName("Content-Type");
+    if (contentLength || chunked)
+    {
+        clientRequest.content.setTransmissionMode(chunked ? Content::TransmissionMode::CHUNKS : Content::TransmissionMode::CONTENT_LENGTH);
+        if (!chunked && !clientRequest.content.setCurrentSize(contentLength))
         {
             // Abort: the advertised length cannot be allocated within limits.
             serverResponse.status.setCode(Mantids30::Protocol::HTTP::Status::Code::S_413_PAYLOAD_TOO_LARGE);
@@ -146,7 +175,9 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Server::setupContentHandling(size_t &cont
 bool Mantids30::Protocol::HTTP::HTTPv1_Server::validateHTTPv11Requirements()
 {
     // HTTP/1.1+ requires Host header
-    if (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 && clientRequest.virtualHost.empty())
+    if (clientRequest.headers.getOptionsByName("Host").size() > 1
+        || (clientRequest.headers.exist("Host") && clientRequest.virtualHost.empty())
+        || (clientRequest.requestLine.getHTTPVersion()->getMinor() >= 1 && clientRequest.virtualHost.empty()))
     {
         serverResponse.status.setCode(Mantids30::Protocol::HTTP::Status::Code::S_400_BAD_REQUEST);
         return false;
