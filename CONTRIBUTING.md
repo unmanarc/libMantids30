@@ -69,5 +69,5 @@ merged.
 ## Reporting bugs
 
 Use the GitHub issue templates. Include the version
-(`pkg-config --modversion Mantids30_Helpers`), distribution, compiler, CMake version, the
+(`pkg-config --modversion Mantids30_Core_Helpers`), distribution, compiler, CMake version, the
 exact commands you ran and the full error output.

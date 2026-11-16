@@ -9,7 +9,7 @@ The parsing system is the core engine that enables all protocol implementations 
 - [Parsing Strategies](#parsing-strategies)
 - [Key Advantages](#key-advantages)
 - [Implementing a Custom Protocol](#implementing-a-custom-protocol)
-- [How Protocols Use the Parser](#how-protocols-use-the-parser)
+- [How Protocol Use the Parser](#how-protocols-use-the-parser)
 
 ## Architecture Overview
 
@@ -122,15 +122,15 @@ private:
 };
 ```
 
-## How Protocols Use the Parser
+## How Protocol Use the Parser
 
 Each protocol implementation follows the same pattern:
 
-1. **HTTP** (`Protocols/HTTP/`): Uses chained SubParsers for request line → headers → body (with chunked encoding support via `common_content_chunked_subparser`)
-2. **MIME** (`Protocols/MIME/`): Uses `MULTIDELIMITER` strategy to parse multipart boundaries
-3. **LineRecv** (`Protocols/LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
-4. **FastRPC** (`Protocols/FastRPC1/`): Uses `SIZE` strategy for length-prefixed message frames
-5. **WebSocket** (`Protocols/HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
+1. **HTTP** (`Protocol/HTTP/`): Uses chained SubParsers for request line → headers → body (with chunked encoding support via `common_content_chunked_subparser`)
+2. **MIME** (`Protocol/MIME/`): Uses `MULTIDELIMITER` strategy to parse multipart boundaries
+3. **LineRecv** (`Protocol/LineRecv/`): Uses `DELIMITER` strategy with configurable line terminators
+4. **FastRPC** (`Protocol/FastRPC1/`): Uses `SIZE` strategy for length-prefixed message frames
+5. **WebSocket** (`Protocol/HTTP/websocket_*.h`): Uses `SIZE` strategy for frame payload lengths after HTTP upgrade
 ---
 
 ## Related documentation

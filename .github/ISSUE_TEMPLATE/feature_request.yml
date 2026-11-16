@@ -32,8 +32,8 @@ body:
       multiple: true
       options:
         - Network (sockets, chains, interfaces)
-        - Protocols (HTTP, MIME, WebSocket, FastRPC, LineRecv)
-        - Servers (RESTful, Monolith, WebCore)
+        - Protocol (HTTP, MIME, WebSocket, FastRPC, LineRecv)
+        - Server (RESTful, Monolith, WebCore)
         - Database layer
         - Memory and parsing engine
         - Threads and containers

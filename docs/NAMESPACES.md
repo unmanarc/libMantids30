@@ -2,27 +2,32 @@
 
 Public namespaces begin with `Mantids30::<Group>::<Module>`, matching the
 installed header directory. Nested namespaces describe APIs within a module,
-such as `Core::Memory::Streams` or `Protocols::HTTP::Headers`.
+such as `Core::Memory::Streams` or `Protocol::HTTP::Headers`.
 
 | Header directory | Namespace |
 | --- | --- |
 | `Core/Helpers` | `Mantids30::Core::Helpers` |
 | `Core/Memory` | `Mantids30::Core::Memory::{Abstract,Containers,Streams}` |
 | `Core/Threads` | `Mantids30::Core::Threads`, with `Safe` and `Pool` |
-| `DataFormats/JSON` | `Mantids30::DataFormats::JSON` |
-| `DataFormats/JWT` | `Mantids30::DataFormats::JWT` |
+| `DataFormat/JSON` | `Mantids30::DataFormat::JSON` |
+| `DataFormat/JWT` | `Mantids30::DataFormat::JWT` |
 | `DB/Common` | `Mantids30::DB::Common` |
 | `DB/MariaDB`, `DB/PostgreSQL`, `DB/SQLite3` | `Mantids30::DB::{MariaDB,PostgreSQL,SQLite3}` |
 | `Network/Interfaces`, `Network/Sockets`, `Network/Chains` | `Mantids30::Network::{Interfaces,Sockets,Chains}` |
-| `Protocols/HTTP` | `Mantids30::Protocols::HTTP`, including framing under `WebSocket` and URL codecs under `Encoders` / `Decoders` |
-| `Protocols/MIME`, `Protocols/LineRecv`, `Protocols/FastRPC1`, `Protocols/APISync` | `Mantids30::Protocols::{MIME,LineRecv,FastRPC1,APISync}` |
+| `Protocol/HTTP` | `Mantids30::Protocol::HTTP`, including framing under `WebSocket` and URL codecs under `Encoders` / `Decoders` |
+| `Protocol/MIME`, `Protocol/LineRecv`, `Protocol/FastRPC1`, `Protocol/APISync` | `Mantids30::Protocol::{MIME,LineRecv,FastRPC1,APISync}` |
 | `Runtime/Logs`, `Runtime/Service` | `Mantids30::Runtime::{Logs,Service}` |
 | `Scripting/JSONExprEval`, `Scripting/MantidsLang` | `Mantids30::Scripting::{JSONExprEval,MantidsLang}` |
-| `Applications/FastRPC1Client` | `Mantids30::Applications::FastRPC1Client` |
-| `Servers/RESTfulWebServer` | `Mantids30::Servers::RESTfulWebServer`, with `RESTful`, `WebSocket`, `Sessions` and `Security` |
+| `Application/FastRPC1Client` | `Mantids30::Application::FastRPC1Client` |
+| `Server/WebRESTFul` | `Mantids30::Server::WebRESTFul`, with `RESTful`, `WebSocket`, `Sessions` and `Security` |
 | `ConfigBuilder/JWT`, `ConfigBuilder/Logs`, `ConfigBuilder/REST` | `Mantids30::ConfigBuilder::{JWT,Logs,REST}` |
 
 ## Usage
+
+Library targets and pkg-config packages use `Mantids30_<Group>_<Module>`,
+matching the header directory with `/` replaced by `_`. For example,
+`Core/Memory` provides `Mantids30_Core_Memory`, and `Scripting/MantidsLang`
+provides `Mantids30_Scripting_MantidsLang`.
 
 Configuration factories use the class name `Builder` within each
 `ConfigBuilder` module. Their library and pkg-config names are
@@ -30,16 +35,16 @@ Configuration factories use the class name `Builder` within each
 `Mantids30_ConfigBuilder_REST`.
 
 Shared database interfaces live in `DB/Common` and are provided by
-`Mantids30_DB`. Each backend has its own namespace and library.
+`Mantids30_DB_Common`. Each backend has its own namespace and library.
 
 Service startup (`StartApplication`, `globalArgs`) belongs to
 `Runtime::Service`; the configuration loader belongs to
 `Runtime::Service::Config`. Proxy configuration belongs to the server module.
 
-JSON helpers, `DataTables` and `StreamableJSON` belong to `DataFormats::JSON`.
-`APIReturn` belongs to `Protocols::HTTP`. WebSocket frames belong to
-`Protocols::HTTP::WebSocket`, while server endpoints and connections belong
-to `Servers::RESTfulWebServer::WebSocket`.
+JSON helpers, `DataTables` and `StreamableJSON` belong to `DataFormat::JSON`.
+`APIReturn` belongs to `Protocol::HTTP`. WebSocket frames belong to
+`Protocol::HTTP::WebSocket`, while server endpoints and connections belong
+to `Server::WebRESTFul::WebSocket`.
 
 Use local namespace aliases to keep application code concise:
 

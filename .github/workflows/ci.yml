@@ -97,11 +97,11 @@ jobs:
           set -eux
           cmake --install build-shared
           test -f stage/include/Mantids30/Core/Helpers/random.h
-          test -f stage/include/Mantids30/Protocols/HTTP/httpv1_server.h
+          test -f stage/include/Mantids30/Protocol/HTTP/httpv1_server.h
           export PKG_CONFIG_PATH="$PWD/stage/share/pkgconfig"
-          pkg-config --exists Mantids30_Helpers
+          pkg-config --exists Mantids30_Core_Helpers
           pkg-config --exists Mantids30_Protocol_HTTP
-          pkg-config --modversion Mantids30_Helpers
+          pkg-config --modversion Mantids30_Core_Helpers
 
   build-static:
     name: Build (static, Ubuntu 24.04)
@@ -124,4 +124,4 @@ jobs:
                 -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX="$PWD/stage-static"
           cmake --build build-static --parallel "$(nproc)"
           cmake --install build-static
-          test -f stage-static/lib/libMantids30_Helpers.a
+          test -f stage-static/lib/libMantids30_Core_Helpers.a

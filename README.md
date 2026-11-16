@@ -152,11 +152,11 @@ Distribution specific instructions:
 <prefix>/share/pkgconfig/Mantids30_<Component>.pc pkg-config metadata
 ```
 
-Each component is a standalone library (`Mantids30_Helpers`, `Mantids30_Memory`,
-`Mantids30_Net_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_RESTfulWebServer`, ...).
+Each component is a standalone library (`Mantids30_Core_Helpers`, `Mantids30_Core_Memory`,
+`Mantids30_Network_Sockets`, `Mantids30_Protocol_HTTP`, `Mantids30_Server_WebRESTFul`, ...).
 Public namespaces and source directories follow the same `Mantids30/<Group>/<Module>` layout. Groups are
-`Core`, `ConfigBuilder`, `DB`, `Network`, `Protocols`, `DataFormats`, `Runtime`,
-`Applications`, `Servers` and `Scripting`; see the
+`Core`, `ConfigBuilder`, `DB`, `Network`, `Protocol`, `DataFormat`, `Runtime`,
+`Application`, `Server` and `Scripting`; see the
 [library map](docs/CLASSES.md#library-map) for every module.
 
 See the [namespace guide](docs/NAMESPACES.md) for the public API layout and usage examples.
@@ -165,26 +165,26 @@ Include headers using their grouped paths, for example `Mantids30/ConfigBuilder/
 `Mantids30/DB/Common/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
 
 The RESTful web server, proxy, endpoints, sessions and WebSockets are provided by
-`Mantids30_Server_RESTfulWebServer`. Its public headers are installed under
-`Mantids30/Servers/RESTfulWebServer/`:
+`Mantids30_Server_WebRESTFul`. Its public headers are installed under
+`Mantids30/Server/WebRESTFul/`:
 
 ```cpp
-#include <Mantids30/Servers/RESTfulWebServer/engine.h>
-#include <Mantids30/Servers/RESTfulWebServer/api_restful_endpoints.h>
+#include <Mantids30/Server/WebRESTFul/engine.h>
+#include <Mantids30/Server/WebRESTFul/api_restful_endpoints.h>
 ```
 
 Link an application to the installed library using pkg-config:
 
 ```cmake
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(MANTIDS30_REST REQUIRED IMPORTED_TARGET Mantids30_Server_RESTfulWebServer)
+pkg_check_modules(MANTIDS30_REST REQUIRED IMPORTED_TARGET Mantids30_Server_WebRESTFul)
 target_link_libraries(myapp PRIVATE PkgConfig::MANTIDS30_REST)
 ```
 
 Include headers using the installed prefix:
 
 ```cpp
-#include <Mantids30/Protocols/HTTP/httpv1_server.h>
+#include <Mantids30/Protocol/HTTP/httpv1_server.h>
 #include <Mantids30/Network/Sockets/socket_tcp.h>
 #include <Mantids30/Core/Helpers/random.h>
 ```
@@ -215,8 +215,8 @@ target_link_libraries(my_service PRIVATE
 ### With a plain Makefile
 
 ```bash
-pkg-config --cflags --libs Mantids30_Protocol_HTTP Mantids30_Net_Sockets \
-                           Mantids30_Helpers Mantids30_Threads Mantids30_Memory \
+pkg-config --cflags --libs Mantids30_Protocol_HTTP Mantids30_Network_Sockets \
+                           Mantids30_Core_Helpers Mantids30_Core_Threads Mantids30_Core_Memory \
                            boost_json libssl libcrypto
 ```
 

@@ -48,7 +48,7 @@ prefix. For a self contained deployment prefix use `-DCMAKE_INSTALL_PREFIX=/opt/
 ## Verify the installation
 
 ```bash
-pkg-config --modversion Mantids30_Helpers
+pkg-config --modversion Mantids30_Core_Helpers
 pkg-config --cflags --libs Mantids30_Protocol_HTTP
 ls /usr/local/include/Mantids30
 ```
