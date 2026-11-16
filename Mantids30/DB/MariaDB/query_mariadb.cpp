@@ -272,7 +272,7 @@ bool Query_MariaDB::step0()
                 break;
                 case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
                 {
-                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue((void *) createDestroyableStringForResults(sBin->ptr)->c_str());
+                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue(createDestroyableStringForResults(sBin->ptr)->data());
                 }
                 break;
                 default:

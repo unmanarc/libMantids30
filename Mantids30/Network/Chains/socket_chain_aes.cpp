@@ -219,7 +219,7 @@ bool Socket_Chain_AES::appendNewAESBlock(SideParams *params, const char *key, co
         return false;
     }
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, (unsigned char *) key, (unsigned char *) iv))
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_256_gcm(), nullptr, reinterpret_cast<const unsigned char *>(key), reinterpret_cast<const unsigned char *>(iv)))
     {
         EVP_CIPHER_CTX_free(ctx);
         delete[] cipherText;

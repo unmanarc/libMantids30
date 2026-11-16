@@ -174,7 +174,7 @@ std::shared_ptr<Socket_UDP::Block> Socket_UDP::readBlock()
 #ifdef _WIN32
     (*datagramBlock).datalen = recvfrom(sockfd, bigBlock, 65536, 0, &((*datagramBlock).addr), &fromlen);
 #else
-    (*datagramBlock).dataLength = recvfrom(m_sockFD, (void *) bigBlock, 65536, 0, &((*datagramBlock).socketAddress), &fromlen);
+    (*datagramBlock).dataLength = recvfrom(m_sockFD, bigBlock, 65536, 0, &((*datagramBlock).socketAddress), &fromlen);
 #endif
 
     (*datagramBlock).copy(bigBlock, (*datagramBlock).dataLength);

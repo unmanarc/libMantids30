@@ -337,7 +337,7 @@ bool Query_PostgreSQL::exec0(const ExecType &execType, bool recursion)
     }
 
     // Prepare the query (will lock the db while using ppDb):
-    ((SQLConnector_PostgreSQL *) m_pSQLConnector)->getDatabaseConnector(this);
+    static_cast<SQLConnector_PostgreSQL *>(m_pSQLConnector)->getDatabaseConnector(this);
 
     if (!m_databaseConnectionHandler)
     {

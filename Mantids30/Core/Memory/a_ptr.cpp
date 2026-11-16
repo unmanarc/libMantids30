@@ -36,7 +36,7 @@ std::string PTR::toString()
 
     char ovalue[256];
     const void *ptr = m_value;
-    snprintf(ovalue, sizeof(ovalue), "%.8lX", (uintptr_t) ptr);
+    snprintf(ovalue, sizeof(ovalue), "%.8lX", reinterpret_cast<uintptr_t>(ptr));
     return ovalue;
 }
 

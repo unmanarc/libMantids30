@@ -86,7 +86,7 @@ Mantids30::Protocol::HTTP::APIReturn Engine::unsubscribeFromTopic(void *context,
     }
 
     // Obtener el endpoint WebSocket
-    const Mantids30::Server::WebRESTFul::WebSocket::Endpoint *endpoint = ((Engine *) context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
+    const Mantids30::Server::WebRESTFul::WebSocket::Endpoint *endpoint = static_cast<Engine *>(context)->m_websocketEndpoints->getWebSocketEndpointByURI(uri);
     if (!endpoint)
     {
         return {Mantids30::Protocol::HTTP::Status::Code::S_404_NOT_FOUND, "invalid_uri", "WebSocket endpoint not found"};

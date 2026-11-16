@@ -285,7 +285,7 @@ bool Query_SQLite3::step0()
                 case Mantids30::Core::Memory::Abstract::Var::Type::BIN:
                 {
                     Mantids30::Core::Memory::Abstract::BINARY::ByteArray binContainer;
-                    binContainer.ptr = (char *)(sqlite3_column_blob(m_stmt, columnpos));
+                    binContainer.ptr = const_cast<char *>(static_cast<const char *>(sqlite3_column_blob(m_stmt, columnpos)));
                     // TODO: should bytes need to be 64-bit for blob64?
                     binContainer.dataSize = sqlite3_column_bytes(m_stmt, columnpos);
                     ABSTRACT_PTR_AS(BINARY, outputVar)->setValue(&binContainer);
@@ -331,7 +331,7 @@ bool Query_SQLite3::step0()
                 case Mantids30::Core::Memory::Abstract::Var::Type::PTR:
                 {
                     // This will reference the memory, but will disappear on the next step
-                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue((void *)(sqlite3_column_text(m_stmt, columnpos)));
+                    ABSTRACT_PTR_AS(PTR, outputVar)->setValue(const_cast<unsigned char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
                 case Mantids30::Core::Memory::Abstract::Var::Type::VOID:

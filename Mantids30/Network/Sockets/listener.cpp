@@ -11,7 +11,7 @@ using namespace std;
 
 void Listener::incomingConnection(void *context, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &socketStream)
 {
-    Listener *threadParams = (Listener *) (context);
+    Listener *threadParams = static_cast<Listener *>(context);
     CALLBACK(threadParams->tcpCallbacks.onClientConnected)(threadParams->listenerContext, socketStream);
     int connectionStatus = threadParams->handleClientConnection(socketStream);
     CALLBACK(threadParams->tcpCallbacks.onClientDisconnected)(threadParams->listenerContext, socketStream, connectionStatus);
