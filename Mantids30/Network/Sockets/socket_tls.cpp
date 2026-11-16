@@ -10,6 +10,7 @@
 #include <openssl/rand.h>
 
 #include <stdexcept>
+#include <system_error>
 #include <string>
 
 #include <openssl/dh.h>
@@ -120,10 +121,14 @@ bool Socket_TLS::postConnectSubInitialization()
     {
         SSL_set_verify(m_sslHandler, m_certValidationOptions == X509ValidationOption::NOVALIDATE ? SSL_VERIFY_NONE : SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT , nullptr);
     }
+    else if (!usingPSK && m_certValidationOptions != X509ValidationOption::NOVALIDATE)
+    {
+        m_sslErrorList.emplace_back("TLS certificate validation requires a CA or system trust.");
+        return false;
+    }
     else
     {
-        // If there is no CA...
-        m_certValidationOptions = X509ValidationOption::NOVALIDATE;
+        SSL_set_verify(m_sslHandler, SSL_VERIFY_NONE, nullptr);
     }
 
     // Set hostname for SNI extension
@@ -158,6 +163,7 @@ bool Socket_TLS::postConnectSubInitialization()
         return false;
     }
 
+    parseErrors();
     if (SSL_get_error(m_sslHandler, SSL_connect(m_sslHandler)) != SSL_ERROR_NONE)
     {
         parseErrors();
@@ -233,6 +239,7 @@ bool Socket_TLS::postAcceptSubInitialization()
     }
 
     int err;
+    parseErrors();
     if ((err = SSL_accept(m_sslHandler)) != 1)
     {
         parseErrors();
@@ -453,69 +460,111 @@ string Socket_TLS::getTLSPeerCN() const
 
 int Socket_TLS::_shutdown(int mode)
 {
-    if (!m_sslHandler && isServer())
+    if (!isActive())
     {
-        // Then is a listening socket... (shutdown like a normal tcp/ip connection)
-        return Socket::iShutdown(mode);
-    }
-    else if (!m_sslHandler)
-    {
-        return -4;
-    }
-    else if (m_shutdownProtocolOnWrite || (SSL_get_shutdown(m_sslHandler) & SSL_SENT_SHUTDOWN))
-    {
-        // Already shutted down.
         return -1;
     }
-    else
+    if (mode != SHUT_RD && mode != SHUT_WR && mode != SHUT_RDWR)
     {
-        // Perform TLS shutdown per OpenSSL documentation:
-        // https://www.openssl.org/docs/manmaster/man3/SSL_shutdown.html
-        //
-        // SSL_shutdown() returns:
-        //   0 = close_notify sent, but peer's close_notify not yet received
-        //   1 = bidirectional shutdown completed successfully
-        //  -1 = error
-        //
-        // When it returns 0, we must call SSL_shutdown() again to complete
-        // the bidirectional shutdown (receive peer's close_notify).
-
-        int ret = SSL_shutdown(m_sslHandler);
-
-        if (ret == 0)
+        return -1;
+    }
+    if (!m_sslHandler)
+    {
+        const int transportStatus = Socket::iShutdown(mode);
+        if (isServer() || m_isInListenMode)
         {
-            // close_notify was sent; perform bidirectional shutdown
-            // by calling SSL_shutdown() again to receive peer's close_notify
-            ret = SSL_shutdown(m_sslHandler);
-
-            if (ret == 1)
-            {
-                // Bidirectional shutdown completed successfully
-                m_shutdownProtocolOnWrite = true;
-                return 0;
-            }
-            // If second call also returns 0 or -1, the peer may have
-            // already closed the TCP connection. Mark as shutdown anyway
-            // to allow the TCP layer to close cleanly.
-            m_shutdownProtocolOnWrite = true;
-            return -2;
+            return transportStatus;
         }
-        else if (ret == 1)
+        if (m_lastError.empty())
         {
-            // The write shutdown was successfully completed in one call.
-            // The close_notify alert was sent and the peer's close_notify
-            // alert was received.
-            m_shutdownProtocolOnWrite = true;
-            return 0;
+            m_lastError = "TLS shutdown requested before SSL handle initialization.";
+        }
+        return -4;
+    }
+    int tlsStatus = 0;
+    auto recordFailure = [this](const std::string &message)
+    {
+        m_sslErrorList.emplace_back(message);
+        if (m_lastError.empty())
+        {
+            m_lastError = message;
+        }
+    };
+    if (mode != SHUT_RD && !m_shutdownProtocolOnWrite && m_sslHandler && SSL_is_init_finished(m_sslHandler) &&
+        !(SSL_get_shutdown(m_sslHandler) & SSL_SENT_SHUTDOWN))
+    {
+        // Send close_notify without waiting for the peer. Preserve diagnostics
+        // and the incomplete (-2) versus failed (-3) TLS shutdown distinction.
+        auto sendCloseNotify = [&]
+        {
+            parseErrors();
+            int result = SSL_shutdown(m_sslHandler);
+            if (result == 0)
+            {
+                // The descriptor is nonblocking: retain the original second
+                // shutdown step when peer confirmation is already available.
+                result = SSL_shutdown(m_sslHandler);
+            }
+            const int systemError = getLastSocketError();
+            if (result == 0)
+            {
+                tlsStatus = -2;
+                recordFailure("SSL_shutdown() incomplete: close_notify sent; peer confirmation is not yet available.");
+            }
+            else if (result < 0)
+            {
+                const int sslError = SSL_get_error(m_sslHandler, result);
+                if (sslError == SSL_ERROR_WANT_READ || sslError == SSL_ERROR_WANT_WRITE)
+                {
+                    tlsStatus = -2;
+                    recordFailure("SSL_shutdown() incomplete: SSL error #" + std::to_string(sslError) + "; additional I/O would be required.");
+                }
+                else
+                {
+                    tlsStatus = -3;
+                    parseErrors();
+                    recordFailure("SSL_shutdown() failed: SSL error #" + std::to_string(sslError) + ", system error #" +
+                                  std::to_string(systemError) + ": " + std::system_category().message(systemError));
+                }
+            }
+        };
+#ifndef _WIN32
+        const int flags = fcntl(m_sockFD, F_GETFL, 0);
+        if (flags >= 0 && fcntl(m_sockFD, F_SETFL, flags | O_NONBLOCK) == 0)
+        {
+            sendCloseNotify();
+            if (fcntl(m_sockFD, F_SETFL, flags) < 0)
+            {
+                const int error = errno;
+                tlsStatus = -3;
+                recordFailure("TLS shutdown: restoring descriptor flags failed with error #" + std::to_string(error) + ": " + std::system_category().message(error));
+            }
         }
         else
         {
-            // The shutdown was not successful (error).
-            // Mark as shutdown to prevent infinite retry loops.
-            m_shutdownProtocolOnWrite = true;
-            return -3;
+            const int error = errno;
+            tlsStatus = -3;
+            recordFailure("TLS shutdown: setting nonblocking mode failed with error #" + std::to_string(error) + ": " + std::system_category().message(error));
         }
+#else
+        if (setBlockingMode(false))
+        {
+            sendCloseNotify();
+            if (!setBlockingMode(true))
+            {
+                tlsStatus = -3;
+                recordFailure(m_lastError);
+            }
+        }
+        else
+        {
+            tlsStatus = -3;
+            recordFailure(m_lastError);
+        }
+#endif
     }
+    const int transportStatus = Socket::iShutdown(mode);
+    return transportStatus != 0 ? transportStatus : tlsStatus;
 }
 
 int Socket_TLS::iShutdown(int mode)
@@ -580,7 +629,10 @@ std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> Socket_TLS::acceptCo
     acceptedTLSSock->setServerMode(m_isServer);
 
     // now we should copy the file descriptor:
+    acceptedTLSSock->setUseIPv6(acceptedTCPSock->getUseIPv6());
     acceptedTLSSock->setSocketFD(acceptedTCPSock->adquireSocketFD());
+    acceptedTLSSock->setReadTimeout(m_readTimeout);
+    acceptedTLSSock->setWriteTimeout(m_writeTimeout);
 
     // After this, the postInitialization will be called by the acceptor thread.
     return acceptedTLSSock;
@@ -613,6 +665,15 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
         return -1;
     }
 
+    if (datalen == 0)
+    {
+        return 0;
+    }
+    if (!data || datalen > static_cast<size_t>(std::numeric_limits<int>::max()))
+    {
+        return -1;
+    }
+    parseErrors();
     int readBytes = SSL_read(m_sslHandler, data, static_cast<int>(datalen));
 
     if (readBytes > 0)
@@ -645,7 +706,7 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
         m_lastError.clear();
         return readBytes;
     }
-    else if (readBytes == 0)
+    else if (SSL_get_error(m_sslHandler, readBytes) == SSL_ERROR_ZERO_RETURN)
     {
         // The connection has been closed.
         if (debugOptions & Socket::DebugOptions::PRINT_CLOSE)
@@ -676,14 +737,13 @@ ssize_t Socket_TLS::iPartialRead(void *data, const size_t &datalen, int ttl)
         return iPartialRead(data, datalen, ttl - 1);
     case SSL_ERROR_SYSCALL:
     {
-        int errnoCopy = errno;
-        char errorBuffer[256];
-        strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
+        const int systemError = getLastSocketError();
+        const std::string errorBuffer = std::system_category().message(systemError);
         m_lastError = std::string("System call error: ") + errorBuffer;
 
         if (debugOptions & Socket::DebugOptions::PRINT_ERRORS)
         {
-            fprintf(debugFP, "--- [TLS ERROR] System call error during read: %s\n", errorBuffer);
+            fprintf(debugFP, "--- [TLS ERROR] System call error during read: %s\n", errorBuffer.c_str());
             fflush(debugFP);
         }
 
@@ -745,7 +805,15 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
         fflush(debugFP);
     }
 
-    // TODO: sigpipe here?
+    if (datalen == 0)
+    {
+        return 0;
+    }
+    if (!data)
+    {
+        return -1;
+    }
+    parseErrors();
     int sentBytes = SSL_write(m_sslHandler, data, chunkSize);
 
     if (sentBytes > 0)
@@ -804,9 +872,8 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             return iPartialWrite(data, datalen, ttl - 1);
         case SSL_ERROR_SYSCALL:
         {
-            int errnoCopy = errno;
-            char errorBuffer[256];
-            strerror_r(errnoCopy, errorBuffer, sizeof(errorBuffer));
+            const int systemError = getLastSocketError();
+            const std::string errorBuffer = std::system_category().message(systemError);
             m_lastError = std::string("System call error: ") + errorBuffer;
             parseErrors();
             Socket_TCP::iShutdown();
@@ -814,7 +881,7 @@ ssize_t Socket_TLS::iPartialWrite(const void *data, const size_t &datalen, int t
             // Debug: Print syscall error if enabled
             if (debugOptions & Socket::DebugOptions::PRINT_WRITE_HEX)
             {
-                fprintf(debugFP, "--- [TLS_WRITE_ERROR] System call error: %s\n", errorBuffer);
+                fprintf(debugFP, "--- [TLS_WRITE_ERROR] System call error: %s\n", errorBuffer.c_str());
                 fflush(debugFP);
             }
 
