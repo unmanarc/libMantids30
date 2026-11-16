@@ -35,7 +35,7 @@ Include:
 The following areas are considered security relevant:
 
 - TLS handling in `Network/Sockets`, `Network/Chains` and the HTTP server.
-- JWT generation, validation and revocation in `DataFormat/JWT` and `ConfigBuilder/JWT`.
+- JWT generation, validation and revocation in `DataFormat/JWT` and `ConfigBuilder/DataFormat_JWT`.
 - Session and authentication handling in `Server/WebRESTFul` and the web servers.
 - Parsing code reachable from untrusted network input.
 - Cryptographic helpers (`Mantids30::Core::Helpers::Crypto`, `Mantids30::Core::Helpers::OTP`, `Mantids30::Core::Helpers::Random`).

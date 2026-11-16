@@ -4,7 +4,7 @@
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <boost/property_tree/ptree.hpp>
 
-namespace Mantids30::ConfigBuilder::JWT {
+namespace Mantids30::ConfigBuilder::DataFormat_JWT {
 
 class Builder
 {
@@ -127,4 +127,4 @@ private:
     static std::ifstream openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc);
 };
 
-} // namespace Mantids30::ConfigBuilder::JWT
+} // namespace Mantids30::ConfigBuilder::DataFormat_JWT

@@ -1,7 +1,7 @@
 #include "config_builder.h"
 
-#include <Mantids30/ConfigBuilder/Logs/config_builder.h>
-#include <Mantids30/ConfigBuilder/JWT/config_builder.h>
+#include <Mantids30/ConfigBuilder/Runtime_Logs/config_builder.h>
+#include <Mantids30/ConfigBuilder/DataFormat_JWT/config_builder.h>
 #include <Mantids30/Server/WebRESTFul/apiproxy_config.h>
 
 #include <Mantids30/Network/Sockets/socket_tcp.h>
@@ -40,12 +40,12 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
 
     bool isTLS = (protocol == "TLS");
 
-    if (!isTLS && (options & Mantids30::ConfigBuilder::WebRESTFul::REST_ENGINE_MANDATORY_SSL))
+    if (!isTLS && (options & Mantids30::ConfigBuilder::Server_WebRESTFul::REST_ENGINE_MANDATORY_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is required/mandatory for this service.");
         return nullptr;
     }
-    if (isTLS && (options & Mantids30::ConfigBuilder::WebRESTFul::REST_ENGINE_NO_SSL))
+    if (isTLS && (options & Mantids30::ConfigBuilder::Server_WebRESTFul::REST_ENGINE_NO_SSL))
     {
         appLog->log0(__func__, LogLevel::CRITICAL, "Error creating listener %s: %s", listenerName.c_str(), "TLS is not available on this service.");
         return nullptr;
@@ -77,7 +77,7 @@ static std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> createListene
     return sock;
 }
 
-Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::WebRESTFul::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
+Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::Server_WebRESTFul::Builder::createRESTfulEngine(const boost::property_tree::ptree &config,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog,
                                                                                                                const std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> &rpcLog,
                                                                                                                const std::string &serviceName, const std::string &defaultResourcePath, uint64_t options,
@@ -134,7 +134,7 @@ Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::WebRESTFul::Bui
         // Setup the RPC Log:
         webServer->config.rpcLog = rpcLog;
         // Setup the WEB Log:
-        webServer->config.webLog = Mantids30::ConfigBuilder::Logs::Builder::createWebLog(appLog, config);
+        webServer->config.webLog = Mantids30::ConfigBuilder::Runtime_Logs::Builder::createWebLog(appLog, config);
 
         appLog->log0(__func__, LogLevel::DEBUG, "[%p] %s service listeners configured", reinterpret_cast<void *>(webServer), serviceName.c_str());
 
@@ -224,8 +224,8 @@ Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::WebRESTFul::Bui
         if ((options & REST_ENGINE_NOCONFIG_JWT) == 0)
         {
             // JWT
-            webServer->config.jwtSigner = Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(appLog.get(), config, "JWT", vars);
-            webServer->config.jwtValidator = Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(appLog.get(), config, "JWT", vars);
+            webServer->config.jwtSigner = Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTSigner(appLog.get(), config, "JWT", vars);
+            webServer->config.jwtValidator = Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTValidator(appLog.get(), config, "JWT", vars);
 
             if (!webServer->config.jwtValidator)
             {
@@ -305,7 +305,7 @@ Mantids30::Server::WebRESTFul::Engine *Mantids30::ConfigBuilder::WebRESTFul::Bui
     }
 }
 
-bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::Server_WebRESTFul::Builder::handleProtocolInitializationFailure(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     if (!sock->isSecure())
     {
@@ -326,7 +326,7 @@ bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleProtocolInitialization
     return true;
 }
 
-bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::Server_WebRESTFul::Builder::handleClientAcceptTimeoutOccurred(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 
@@ -334,7 +334,7 @@ bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleClientAcceptTimeoutOcc
     return true;
 }
 
-bool Mantids30::ConfigBuilder::WebRESTFul::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
+bool Mantids30::ConfigBuilder::Server_WebRESTFul::Builder::handleClientConnectionLimitPerIPReached(void *data, const std::shared_ptr<Mantids30::Network::Sockets::Socket_Stream> &sock)
 {
     Mantids30::Server::WebRESTFul::APIServerCore *core = static_cast<Mantids30::Server::WebRESTFul::APIServerCore *>(data);
 

@@ -58,7 +58,7 @@ named `libMantids30_<Component>`. The header column below is relative to
 | `Scripting/MantidsLang` | `Mantids30_Scripting_MantidsLang` | MantidsLang interpreter |
 | `Runtime/Logs` | `Mantids30_Runtime_Logs` | Application, web and RPC logs |
 | `Runtime/Service` | `Mantids30_Runtime_Service` | Application lifecycle, arguments and config loader |
-| `ConfigBuilder/JWT` / `ConfigBuilder/Logs` / `ConfigBuilder/WebRESTFul` | `Mantids30_ConfigBuilder_*` | Configuration builders |
+| `ConfigBuilder/DataFormat_JWT` / `ConfigBuilder/Runtime_Logs` / `ConfigBuilder/Server_WebRESTFul` | `Mantids30_ConfigBuilder_*` | Configuration builders |
 | `Application/FastRPC1Client` | `Mantids30_Application_FastRPC1Client` | FastRPC1 client application framework |
 
 ## Database
@@ -275,7 +275,7 @@ Namespace: `Mantids30::Protocol::HTTP` (and sub-namespaces)
 | `JWT` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Token creation, validation and revocation |
 | `JWT::Token` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Decoded token claims |
 | `JWT::Cache` | `Mantids30::DataFormat::JWT` | `DataFormat/JWT/jwt.h` | Revocation cache |
-| `Builder` | `Mantids30::ConfigBuilder::JWT` | `ConfigBuilder/JWT/config_builder.h` | JWT configuration builder |
+| `Builder` | `Mantids30::ConfigBuilder::DataFormat_JWT` | `ConfigBuilder/DataFormat_JWT/config_builder.h` | JWT configuration builder |
 
 ## Scripting
 
@@ -294,8 +294,8 @@ Namespace: `Mantids30::Protocol::HTTP` (and sub-namespaces)
 | `Loader` | `Mantids30::Runtime::Service::Config` | `Runtime/Service/program_config.h` | Configuration file loader |
 | `ProgramValues`, `Author` | `Mantids30::Runtime::Service::Values` | `Runtime/Service/programvalues.h` | Program metadata |
 | `AppLog`, `LogBase`, `WebLog`, `RPCLog` | `Mantids30::Runtime::Logs` | `Runtime/Logs/*.h` | Logging backends with rotation |
-| `Builder` | `Mantids30::ConfigBuilder::Logs` | `ConfigBuilder/Logs/config_builder.h` | Logging configuration builder |
-| `Builder` | `Mantids30::ConfigBuilder::WebRESTFul` | `ConfigBuilder/WebRESTFul/config_builder.h` | REST server configuration builder |
+| `Builder` | `Mantids30::ConfigBuilder::Runtime_Logs` | `ConfigBuilder/Runtime_Logs/config_builder.h` | Logging configuration builder |
+| `Builder` | `Mantids30::ConfigBuilder::Server_WebRESTFul` | `ConfigBuilder/Server_WebRESTFul/config_builder.h` | REST server configuration builder |
 | `APIProxyConfig` | `Mantids30::Server::WebRESTFul` | `Server/WebRESTFul/apiproxy_config.h` | Proxy configuration builder |
 
 ## Helpers

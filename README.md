@@ -161,7 +161,7 @@ Public namespaces and source directories follow the same `Mantids30/<Group>/<Mod
 
 See the [namespace guide](docs/NAMESPACES.md) for the public API layout and usage examples.
 
-Include headers using their grouped paths, for example `Mantids30/ConfigBuilder/JWT/config_builder.h`,
+Include headers using their grouped paths, for example `Mantids30/ConfigBuilder/DataFormat_JWT/config_builder.h`,
 `Mantids30/DB/Common/sqlconnector.h` and `Mantids30/Core/Memory/a_var.h`.
 
 The RESTful web server, proxy, endpoints, sessions and WebSockets are provided by

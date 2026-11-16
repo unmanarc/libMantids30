@@ -48,8 +48,8 @@ set(Mantids30_LIBRARIES
     Server_WebRESTFul
     DataFormat_JWT
     Protocol_APISync
-    ConfigBuilder_Logs
-    ConfigBuilder_JWT
+    ConfigBuilder_Runtime_Logs
+    ConfigBuilder_DataFormat_JWT
 )
 
 foreach(LIB ${Mantids30_LIBRARIES})

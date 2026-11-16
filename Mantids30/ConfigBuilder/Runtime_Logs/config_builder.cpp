@@ -3,7 +3,7 @@
 #include <memory>
 
 using namespace Mantids30;
-std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs::Builder::createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
+std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Runtime_Logs::Builder::createAppLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
@@ -22,7 +22,7 @@ std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs
     return log;
 }
 
-std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> Mantids30::ConfigBuilder::Logs::Builder::createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
+std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> Mantids30::ConfigBuilder::Runtime_Logs::Builder::createRPCLog(const boost::property_tree::ptree &ptr, uint8_t logMode)
 {
     if (ptr.get<bool>("Logs.ToSyslog", true))
     {
@@ -43,7 +43,7 @@ std::shared_ptr<Mantids30::Runtime::Logs::RPCLog> Mantids30::ConfigBuilder::Logs
     return log;
 }
 
-std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs::Builder::createInitLog(uint8_t logMode)
+std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Runtime_Logs::Builder::createInitLog(uint8_t logMode)
 {
     std::shared_ptr<Mantids30::Runtime::Logs::AppLog> initLog = std::make_shared<Mantids30::Runtime::Logs::AppLog>(logMode);
     initLog->enableAttributeNameLogging = false;
@@ -55,7 +55,7 @@ std::shared_ptr<Mantids30::Runtime::Logs::AppLog> Mantids30::ConfigBuilder::Logs
     return initLog;
 }
 
-std::shared_ptr<Mantids30::Runtime::Logs::WebLog> Mantids30::ConfigBuilder::Logs::Builder::createWebLog(const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog, const boost::property_tree::ptree &config)
+std::shared_ptr<Mantids30::Runtime::Logs::WebLog> Mantids30::ConfigBuilder::Runtime_Logs::Builder::createWebLog(const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog, const boost::property_tree::ptree &config)
 {
     std::shared_ptr<Mantids30::Runtime::Logs::WebLog> log = std::make_shared<Mantids30::Runtime::Logs::WebLog>();
     log->config.appLog = appLog;

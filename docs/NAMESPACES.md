@@ -20,7 +20,7 @@ such as `Core::Memory::Streams` or `Protocol::HTTP::Headers`.
 | `Scripting/JSONExprEval`, `Scripting/MantidsLang` | `Mantids30::Scripting::{JSONExprEval,MantidsLang}` |
 | `Application/FastRPC1Client` | `Mantids30::Application::FastRPC1Client` |
 | `Server/WebRESTFul` | `Mantids30::Server::WebRESTFul`, with `RESTful`, `WebSocket`, `Sessions` and `Security` |
-| `ConfigBuilder/JWT`, `ConfigBuilder/Logs`, `ConfigBuilder/WebRESTFul` | `Mantids30::ConfigBuilder::{JWT,Logs,WebRESTFul}` |
+| `ConfigBuilder/DataFormat_JWT`, `ConfigBuilder/Runtime_Logs`, `ConfigBuilder/Server_WebRESTFul` | `Mantids30::ConfigBuilder::{DataFormat_JWT,Runtime_Logs,Server_WebRESTFul}` |
 
 ## Usage
 
@@ -31,8 +31,8 @@ provides `Mantids30_Scripting_MantidsLang`.
 
 Configuration factories use the class name `Builder` within each
 `ConfigBuilder` module. Their library and pkg-config names are
-`Mantids30_ConfigBuilder_JWT`, `Mantids30_ConfigBuilder_Logs` and
-`Mantids30_ConfigBuilder_WebRESTFul`.
+`Mantids30_ConfigBuilder_DataFormat_JWT`, `Mantids30_ConfigBuilder_Runtime_Logs` and
+`Mantids30_ConfigBuilder_Server_WebRESTFul`.
 
 Shared database interfaces live in `DB/Common` and are provided by
 `Mantids30_DB_Common`. Each backend has its own namespace and library.
@@ -49,12 +49,12 @@ to `Server::WebRESTFul::WebSocket`.
 Use local namespace aliases to keep application code concise:
 
 ```cpp
-#include <Mantids30/ConfigBuilder/Logs/config_builder.h>
-#include <Mantids30/ConfigBuilder/WebRESTFul/config_builder.h>
+#include <Mantids30/ConfigBuilder/Runtime_Logs/config_builder.h>
+#include <Mantids30/ConfigBuilder/Server_WebRESTFul/config_builder.h>
 #include <Mantids30/DB/SQLite3/sqlconnector_sqlite3.h>
 
-namespace Logging = Mantids30::ConfigBuilder::Logs;
-namespace REST = Mantids30::ConfigBuilder::WebRESTFul;
+namespace Logging = Mantids30::ConfigBuilder::Runtime_Logs;
+namespace REST = Mantids30::ConfigBuilder::Server_WebRESTFul;
 namespace SQLite = Mantids30::DB::SQLite3;
 
 auto log = Logging::Builder::createInitLog();

@@ -22,9 +22,9 @@
 #include <optional>
 
 using namespace Mantids30;
-using namespace Mantids30::ConfigBuilder::JWT;
+using namespace Mantids30::ConfigBuilder::DataFormat_JWT;
 
-std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTSigner(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName, const std::map<std::string, std::string> &vars)
 {
     Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
 
@@ -117,7 +117,7 @@ std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::
     }
 }
 
-std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const boost::property_tree::ptree &ptr, const std::string &configClassName,
                                                                                            const std::map<std::string, std::string> &vars)
 {
     Mantids30::Protocol::APISync::APISyncParameters apiSyncParameters;
@@ -223,7 +223,7 @@ std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::
     }
 }
 
-std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createJWTValidator(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithm, const std::string &key)
 {
     // Validate algorithm
     if (!validateAlgorithm(log, algorithm))
@@ -258,7 +258,7 @@ std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::
 
 // ==================== HELPER FUNCTIONS ====================
 
-bool Mantids30::ConfigBuilder::JWT::Builder::validateAlgorithm(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithmName)
+bool Mantids30::ConfigBuilder::DataFormat_JWT::Builder::validateAlgorithm(Mantids30::Runtime::Logs::AppLog *log, const std::string &algorithmName)
 {
     if (!Mantids30::DataFormat::JWT::JWT::isAlgorithmSupported(algorithmName))
     {
@@ -268,7 +268,7 @@ bool Mantids30::ConfigBuilder::JWT::Builder::validateAlgorithm(Mantids30::Runtim
     return true;
 }
 
-void Mantids30::ConfigBuilder::JWT::Builder::removeTrailingNewline(std::string &str)
+void Mantids30::ConfigBuilder::DataFormat_JWT::Builder::removeTrailingNewline(std::string &str)
 {
     if (!str.empty() && str.back() == '\n')
     {
@@ -276,7 +276,7 @@ void Mantids30::ConfigBuilder::JWT::Builder::removeTrailingNewline(std::string &
     }
 }
 
-bool Mantids30::ConfigBuilder::JWT::Builder::validateFilePermissions(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath, const std::string &fileType)
+bool Mantids30::ConfigBuilder::DataFormat_JWT::Builder::validateFilePermissions(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath, const std::string &fileType)
 {
     bool insecureFile;
 
@@ -298,7 +298,7 @@ bool Mantids30::ConfigBuilder::JWT::Builder::validateFilePermissions(Mantids30::
     return true;
 }
 
-std::ifstream Mantids30::ConfigBuilder::JWT::Builder::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc)
+std::ifstream Mantids30::ConfigBuilder::DataFormat_JWT::Builder::openFileWithCreation(const std::string &filePath, bool createIfNotPresent, const std::function<bool()>& createFunc)
 {
     std::ifstream file(filePath.c_str());
 
@@ -312,7 +312,7 @@ std::ifstream Mantids30::ConfigBuilder::JWT::Builder::openFileWithCreation(const
 
 // ==================== HMAC FUNCTIONS ====================
 
-std::string Mantids30::ConfigBuilder::JWT::Builder::loadHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent)
+std::string Mantids30::ConfigBuilder::DataFormat_JWT::Builder::loadHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &hmacFilePath, bool createIfNotPresent)
 {
     // Open file with optional creation
     std::ifstream hmacFile = openFileWithCreation(hmacFilePath, createIfNotPresent, [&]() { return createHMACSecret(log, hmacFilePath); });
@@ -343,7 +343,7 @@ std::string Mantids30::ConfigBuilder::JWT::Builder::loadHMACSecret(Mantids30::Ru
     return hmacSecret;
 }
 
-std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::Builder::createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormat::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
+std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createHMACJWT(Mantids30::Runtime::Logs::AppLog *log, const Mantids30::DataFormat::JWT::JWT::AlgorithmDetails &algorithmDetails, const std::string &hmacSecret, const std::string &purpose)
 {
     if (hmacSecret.empty())
     {
@@ -359,7 +359,7 @@ std::shared_ptr<Mantids30::DataFormat::JWT::JWT> Mantids30::ConfigBuilder::JWT::
     return jwt;
 }
 
-bool Mantids30::ConfigBuilder::JWT::Builder::createHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath)
+bool Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createHMACSecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &filePath)
 {
     bool r = false;
     int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR); // 0600 permissions
@@ -398,7 +398,7 @@ bool Mantids30::ConfigBuilder::JWT::Builder::createHMACSecret(Mantids30::Runtime
 
 // ==================== RSA FUNCTIONS ====================
 
-std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPrivateKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
+std::string Mantids30::ConfigBuilder::DataFormat_JWT::Builder::loadRSAPrivateKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &privateKeyFilePath, const std::string &publicKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
 {
     if (privateKeyFilePath.empty())
     {
@@ -453,7 +453,7 @@ std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPrivateKey(Mantids30:
     return fileContent;
 }
 
-std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPublicKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
+std::string Mantids30::ConfigBuilder::DataFormat_JWT::Builder::loadRSAPublicKey(Mantids30::Runtime::Logs::AppLog *log, const std::string &publicKeyFilePath, const std::string &privateKeyFilePath, bool createIfNotPresent, uint16_t createRSASize)
 {
     if (publicKeyFilePath.empty())
     {
@@ -501,7 +501,7 @@ std::string Mantids30::ConfigBuilder::JWT::Builder::loadRSAPublicKey(Mantids30::
     return fileContent;
 }
 
-bool Mantids30::ConfigBuilder::JWT::Builder::createRSASecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
+bool Mantids30::ConfigBuilder::DataFormat_JWT::Builder::createRSASecret(Mantids30::Runtime::Logs::AppLog *log, const std::string &keyPath, const std::string &crtPath, uint16_t keySize)
 {
     EVP_PKEY *pkey = nullptr;
     EVP_PKEY_CTX *ctx = nullptr;

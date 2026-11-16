@@ -6,7 +6,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 
-namespace Mantids30::ConfigBuilder::Logs {
+namespace Mantids30::ConfigBuilder::Runtime_Logs {
 class Builder
 {
 public:
@@ -17,4 +17,4 @@ public:
     static std::shared_ptr<Mantids30::Runtime::Logs::WebLog> createWebLog(const std::shared_ptr<Mantids30::Runtime::Logs::AppLog> &appLog, const boost::property_tree::ptree &config);
 };
 
-} // namespace Mantids30::ConfigBuilder::Logs
+} // namespace Mantids30::ConfigBuilder::Runtime_Logs
