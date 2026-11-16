@@ -1,9 +1,32 @@
 #include "test_support.h"
 
 #include <ctime>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 
 namespace WebRESTFulTests {
 namespace {
+
+class TemplatePage
+{
+public:
+    explicit TemplatePage(const std::string &content)
+    {
+        const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+        directory = std::filesystem::temp_directory_path() / ("mantids-jfunc-" + std::to_string(stamp));
+        require(std::filesystem::create_directory(directory), "Cannot create template directory");
+        std::ofstream output(directory / "page.html");
+        output << content;
+        require(bool(output), "Cannot write template page");
+    }
+    ~TemplatePage()
+    {
+        std::error_code error;
+        std::filesystem::remove_all(directory, error);
+    }
+    std::filesystem::path directory;
+};
 
 struct Application
 {
@@ -72,6 +95,64 @@ struct Application
 std::vector<Case> integrationCases()
 {
     std::vector<Case> cases;
+    for (const std::string pageMethod : {"GET", "POST"})
+    {
+        for (const std::string query : {"", "?name=alice&submit=1", "?%7B%22url%22%3Atrue%7D", "?%7B"})
+        {
+            for (size_t fragment : {size_t(0), size_t(1), size_t(7)})
+            {
+                cases.push_back({"embedded_jfunc_http." + pageMethod + query + ".fragment=" + std::to_string(fragment),
+                                 [pageMethod, query, fragment]
+                {
+                    Application app;
+                    TemplatePage page(
+                        "<!--<%jfunc/empty:GET/v1/echo({})%>-->\n"
+                        "<!--<%jfunc/value:GET/v1/echo({\"tag\":42})%>-->\n"
+                        "<!--<%jfunc/last:GET/v1/echo(null)%>-->");
+                    require(app.engine.config.setDocumentRootPath(page.directory.string()), "Cannot set template document root");
+                    using Filter = Web::ResourcesFilter;
+                    app.engine.config.resourceFilter = std::make_shared<Filter>();
+                    Filter::Filter rule;
+                    rule.uriRegexs = {"/page.html"};
+                    Filter::Action process;
+                    process.type = Filter::ActionType::PROCESS_AS;
+                    process.processingMode = Filter::ProcessingMode::HTMLIENGINE;
+                    Filter::Action accept;
+                    accept.type = Filter::ActionType::ACCEPT;
+                    rule.actions = {process, accept};
+                    app.engine.config.resourceFilter->addFilter(rule);
+                    struct Inputs
+                    {
+                        std::vector<boost::json::value> values;
+                        static APIReturn invoke(void *context, const RequestContext &request, Web::Sessions::ClientDetails &)
+                        {
+                            auto &inputs = *static_cast<Inputs *>(context);
+                            inputs.values.push_back(*request.inputJSON);
+                            return APIReturn(*request.inputJSON);
+                        }
+                    } inputs;
+                    require(app.endpoints->addEndpoint(Method::GET, "echo", Web::Security::NONE, {}, &inputs, Inputs::invoke),
+                            "Cannot register embedded echo");
+                    const std::string body = pageMethod == "POST" ? "tag=body&submit=1" : "";
+                    const auto reply = sendRequest(app.engine, rawRequest(pageMethod, "/page.html" + query, body, "",
+                                                   "application/x-www-form-urlencoded"), fragment);
+                    require(reply.status == 200, "Page request failed with status " + std::to_string(reply.status));
+                    require(inputs.values == std::vector<boost::json::value>{boost::json::object{}, boost::json::object{{"tag", 42}}, nullptr},
+                            "Sequential JFUNC calls inherited URL, body, or previous tag input");
+                    require(reply.body.find("const empty = ") != std::string::npos
+                                && reply.body.find("const value = ") != std::string::npos
+                                && reply.body.find("const last = ") != std::string::npos
+                                && reply.body.find("invalid_invokation") == std::string::npos,
+                            "Rendered HTTP response lost JFUNC results");
+                    const auto direct = sendRequest(app.engine, rawRequest("GET", "/api/v1/echo?tag=form"), fragment);
+                    require(direct.status == 400 && inputs.values.size() == 3, "Direct HTTP GET accepted form parameters");
+                    const auto valid = sendRequest(app.engine, rawRequest("GET", "/api/v1/echo?%7B%22direct%22%3Atrue%7D"), fragment);
+                    require(valid.status == 200 && inputs.values.size() == 4
+                                && inputs.values.back() == boost::json::object{{"direct", true}}, "Direct HTTP GET lost JSON input");
+                }});
+            }
+        }
+    }
     for (size_t fragment : {size_t(0), size_t(1), size_t(7)})
     {
         for (const std::string method : {"POST", "PUT", "PATCH", "DELETE", "GET"})

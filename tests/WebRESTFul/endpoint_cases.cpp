@@ -241,6 +241,59 @@ std::vector<Case> endpointCases(const std::string &suite)
             f.context.inputJSON = &stale;
             require(f.call() == Result::SUCCESS && f.probe.input.is_null(), "Non-JSON request retained stale input");
         }});
+        for (const auto method : {Method::GET, Method::POST, Method::PUT, Method::PATCH, Method::DELETE})
+        {
+            cases.push_back({"explicit_input_override_and_reset." + std::to_string(static_cast<int>(method)), [method]
+            {
+                Fixture f;
+                f.add(method);
+                const std::string line = "GET /resource?name=alice HTTP/1.1\r\n";
+                require(f.request.requestLine.writeIntoSubParser(line.data(), line.size()) == line.size(), "Cannot parse request line");
+                boost::json::value arguments = boost::json::object{};
+                f.context.explicitInputJSON = &arguments;
+                require(f.call(method) == Result::SUCCESS && f.probe.input == arguments, "Explicit empty object rejected");
+                arguments = nullptr;
+                require(f.call(method) == Result::SUCCESS && f.probe.input.is_null(), "Explicit null fell back to URL input");
+                f.context.explicitInputJSON = nullptr;
+                f.probe.calls = 0;
+                f.error(f.call(method), Result::INTERNAL_ERROR, Code::S_400_BAD_REQUEST, "Bad Input JSON Parsing during GET");
+            }});
+        }
+        for (const std::string body : {"{\"body\":true}", ""})
+        {
+            cases.push_back({"explicit_input_overrides_post_body." + body, [body]
+            {
+                Fixture f;
+                f.add();
+                f.request.content.setContainerType(HTTP::Content::ContainerType::JSON);
+                const auto stream = f.request.content.getJSONVars();
+                require(stream != nullptr, "JSON content container missing");
+                if (!body.empty())
+                {
+                    require(stream->writeString(body) && stream->writeEOF(), "Cannot write JSON body");
+                }
+                const auto originalInput = *stream->getValue();
+                boost::json::value arguments = boost::json::object{{"tag", 42}};
+                f.context.explicitInputJSON = &arguments;
+                require(f.call() == Result::SUCCESS && f.probe.input == arguments, "HTTP body replaced explicit arguments");
+                f.context.explicitInputJSON = nullptr;
+                f.probe.calls = 0;
+                require(f.call() == Result::SUCCESS && f.probe.input == originalInput
+                            && f.context.inputJSON == stream->getValue(), "HTTP body input was not restored");
+            }});
+        }
+        cases.push_back({"explicit_input_preserves_security_checks", []
+        {
+            Fixture f;
+            f.add(Method::GET, Web::Security::JWT_HEADER_AUTH, {"READ"});
+            boost::json::value arguments = boost::json::object{};
+            f.context.explicitInputJSON = &arguments;
+            f.error(f.call(Method::GET), Result::AUTHENTICATION_REQUIRED, Code::S_403_FORBIDDEN, "JWT Authentication Header Required");
+            const Web::Security::ReceivedAuth auth{true, false};
+            f.error(f.call(Method::GET, "resource", {}, false, auth), Result::INVALID_SCOPE, Code::S_401_UNAUTHORIZED, "Invalid Scope");
+            require(f.call(Method::GET, "resource", {"READ"}, false, auth) == Result::SUCCESS
+                        && f.probe.calls == 1 && f.probe.input == arguments, "Authorized embedded call failed");
+        }});
     }
     return cases;
 }
