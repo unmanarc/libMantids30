@@ -1,0 +1,5 @@
+add_executable(json_compatibility_test compatibility_test.cpp)
+target_include_directories(json_compatibility_test PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(json_compatibility_test PRIVATE Mantids30_DataFormat_JSON Mantids30_DataFormat_JWT)
+add_test(NAME json_compatibility COMMAND json_compatibility_test)
+set_tests_properties(json_compatibility PROPERTIES TIMEOUT 20 LABELS "json;compatibility")
