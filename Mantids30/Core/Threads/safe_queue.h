@@ -1,6 +1,9 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
+#include <cstdint>
+#include <limits>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
