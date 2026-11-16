@@ -3,6 +3,7 @@
 #include <cstring>
 #include <fcntl.h>
 #include <limits.h>
+#include <limits>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -44,7 +45,12 @@ FileMap::~FileMap()
 
 FileMap &FileMap::operator=(FileMap &bc)
 {
-    cleanVars();
+    // Preserve self-assignment and release the previous mapping before taking ownership.
+    if (&bc == this)
+    {
+        return *this;
+    }
+    closeFile();
 
     currentFileName = bc.currentFileName;
     deleteFileOnDestruction = bc.deleteFileOnDestruction;
@@ -166,6 +172,11 @@ std::string FileMap::getCurrentFileName() const
 
 bool FileMap::mmapDisplace(const size_t &offsetBytes)
 {
+    // Validate before moving bytes because a read-only mapping cannot be written safely.
+    if (fd == -1 || readOnly || offsetBytes > fileOpenSize)
+    {
+        return false;
+    }
     Mantids30::Core::Helpers::Mem::memmove64(mmapAddr, mmapAddr + offsetBytes, fileOpenSize - offsetBytes);
     return mmapTruncate(fileOpenSize - offsetBytes);
 }
@@ -178,6 +189,11 @@ std::optional<size_t> FileMap::mmapAppend(const void *buf, const size_t &count)
     }
     /////////////////////////////
 
+    // Reject invalid access and size overflow before resizing the file.
+    if (fd == -1 || readOnly || count > std::numeric_limits<size_t>::max() - fileOpenSize)
+    {
+        return std::nullopt;
+    }
     size_t curOpenSize = fileOpenSize;
     if (!mmapTruncate(fileOpenSize + count))
     {
@@ -196,13 +212,19 @@ std::optional<size_t> FileMap::mmapPrepend(const void *buf, const size_t &count)
     }
 
     /////////////////////////////
+    // Reject invalid access and size overflow before resizing the file.
+    if (fd == -1 || readOnly || count > std::numeric_limits<size_t>::max() - fileOpenSize)
+    {
+        return std::nullopt;
+    }
     size_t curOpenSize = fileOpenSize;
     if (!mmapTruncate(fileOpenSize + count))
     {
         return std::nullopt;
     }
 
-    Mantids30::Core::Helpers::Mem::memmove64(mmapAddr, mmapAddr + count, curOpenSize);
+    // Move existing bytes to the right before filling the newly opened prefix.
+    Mantids30::Core::Helpers::Mem::memmove64(mmapAddr + count, mmapAddr, curOpenSize);
     Mantids30::Core::Helpers::Mem::memcpy64(mmapAddr, buf, count);
 
     return count;
@@ -233,8 +255,8 @@ bool FileMap::closeFile(bool respectDeleteFileOnDestruction)
 
 bool FileMap::mmapTruncate(const size_t &nSize)
 {
-    // Check if file descriptor is invalid (not file opened)
-    if (fd == -1 || readOnly)
+    // Require writable access and a size representable by the file API before truncating.
+    if (fd == -1 || readOnly || nSize > static_cast<size_t>(std::numeric_limits<off_t>::max()))
     {
         return false;
     }

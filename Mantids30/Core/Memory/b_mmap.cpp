@@ -41,6 +41,8 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
 
     // Copy file descriptor and other things.
     fileReference = bcr;
+    // Keep the container mutation checks consistent with the mapped file access mode.
+    m_readOnly = readOnly;
 
     return true;
 }
@@ -59,24 +61,19 @@ size_t B_MMAP::size()
 
 std::optional<size_t> B_MMAP::findChar(const int &c, const size_t &offset, size_t searchSpace, bool caseSensitive)
 {
-    if (caseSensitive && !std::isalpha(c))
-    {
-        caseSensitive = false;
-    }
     return mem.findChar(c, offset, searchSpace, caseSensitive);
 }
 
 std::optional<size_t> B_MMAP::truncate2(const size_t &bytes)
 {
+    // A rejected resize must preserve the current mapping and its readable contents.
     if (!fileReference.mmapTruncate(bytes))
     {
-        clear();
         return std::nullopt;
     }
-
+    // Refresh the memory view because resizing can move the mapping.
     reMapMemoryContainer();
-    throw std::runtime_error("Please, don't truncate MMAP Files!");
-    return std::nullopt;
+    return size();
 }
 
 std::string B_MMAP::getCurrentFileName() const
@@ -130,6 +127,9 @@ std::optional<size_t> B_MMAP::displace2(const size_t &roBytesToDisplace)
 
 bool B_MMAP::clear2()
 {
+    // Release the memory view before closing the mapping it references.
+    mem.clear();
+    setContainerBytes(0);
     return fileReference.closeFile();
 }
 
