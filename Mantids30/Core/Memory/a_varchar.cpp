@@ -9,7 +9,8 @@ VARCHAR::VARCHAR(const size_t &varSize)
     setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = static_cast<char *>(malloc(varSize + 1));
+    // Start with an empty string, including when no initial value is supplied.
+    this->m_value = static_cast<char *>(calloc(varSize + 1, 1));
     this->m_value[varSize] = 0;
 }
 
@@ -18,7 +19,8 @@ VARCHAR::VARCHAR(const size_t &varSize, char *value)
     setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = varSize;
-    this->m_value = static_cast<char *>(malloc(varSize + 1));
+    // Start with an empty string, including when no initial value is supplied.
+    this->m_value = static_cast<char *>(calloc(varSize + 1, 1));
     this->m_value[varSize] = 0;
     setValue(value);
 }
@@ -28,7 +30,8 @@ VARCHAR::VARCHAR(VARCHAR &var)
     setVarType(Type::VARCHAR);
     m_wasTruncated = false;
     this->m_varSize = var.getVarSize();
-    this->m_value = static_cast<char *>(malloc(m_varSize + 1));
+    // Start with an empty string, including when no initial value is supplied.
+    this->m_value = static_cast<char *>(calloc(m_varSize + 1, 1));
     this->m_value[m_varSize] = 0;
     setValue(var.getValue());
 }
@@ -56,6 +59,8 @@ bool VARCHAR::fromString(std::string_view value)
     // Copy the string and append the null terminator
     std::memmove(m_value, value.data(), size);
     m_value[size] = '\0';
+    // Record the stored length after applying the capacity limit.
+    m_fillSize = size;
 
     return !m_wasTruncated;
 }
@@ -92,6 +97,8 @@ bool VARCHAR::setValue(const char *value)
     {
         this->m_value[0] = 0;
     }
+    // Record the stored length, including replacement with an empty string.
+    m_fillSize = szVar;
     return r;
 }
 

@@ -13,7 +13,7 @@ INT8::INT8(const int8_t &value)
 {
     this->m_value = value;
 
-    setVarType(Type::INT64);
+    setVarType(Type::INT8);
 }
 
 int8_t INT8::getValue()

@@ -54,7 +54,9 @@ bool IPV4::setValue(const in_addr &value, const uint8_t &cidrMask)
 
 std::string IPV4::toString()
 {
-    return _toString(getValue());
+    std::shared_lock<std::shared_mutex> lock(m_mutex);
+    // Read the address and CIDR mask under the same lock to serialize one consistent value.
+    return _toString(m_value, m_cidrMask);
 }
 
 bool IPV4::fromString(const std::string_view value)

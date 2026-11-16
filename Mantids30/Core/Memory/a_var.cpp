@@ -33,6 +33,8 @@ std::shared_ptr<Var> Var::copy()
     if (var)
     {
         var->setVarType(this->getVarType());
+        // Null state belongs to the value and must survive a polymorphic copy.
+        var->setIsNull(this->isNull());
     }
     return var;
 }

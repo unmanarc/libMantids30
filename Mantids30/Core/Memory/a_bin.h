@@ -50,8 +50,9 @@ public:
             dataSize = len;
             memcpy(ptr, value, len);
         }
-        char *ptr;
-        size_t dataSize;
+        // Zero-length constructors leave a valid empty buffer without allocating memory.
+        char *ptr = nullptr;
+        size_t dataSize = 0;
         std::shared_mutex mutex;
     };
 
