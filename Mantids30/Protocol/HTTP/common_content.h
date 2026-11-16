@@ -70,6 +70,15 @@ public:
      */
     void setStreamableObject(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &outDataContainer);
     /**
+     * @brief Get the destination for received chunked trailer bytes.
+     */
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> getTrailerBytesContent() const;
+    /**
+     * @brief Set the destination for raw trailers, including CRLF and the final empty line, followed by EOF.
+     * @param outDataContainer Destination stream, or nullptr to discard trailer bytes (the default).
+     */
+    void setTrailerBytesContent(const std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> &outDataContainer);
+    /**
      * @brief getStreamSize Get stream full size ()
      * @return std::numeric_limits<size_t>::max() if size not defined, or >=0 if size defined.
      */
@@ -141,6 +150,7 @@ protected:
 
 private:
     std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_contentStreamableObject = std::make_shared<Mantids30::Core::Memory::Containers::B_Chunks>();
+    std::shared_ptr<Mantids30::Core::Memory::Streams::StreamableObject> m_trailerBytesContent;
     bool m_usingInternalOutStream = true;
 
     std::optional<uint32_t> parseHttpChunkSize();
