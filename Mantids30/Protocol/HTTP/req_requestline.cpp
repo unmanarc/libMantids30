@@ -3,6 +3,7 @@
 #include "Mantids30/Core/Memory/streamable_string.h"
 #include "streamdecoder_url.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 #include <string>
@@ -53,9 +54,19 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult RequestLine::parse()
     split(requestParts, clientRequest, is_any_of("\t "), token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size() < 2)
+    if (isStreamEnded() || requestParts.size() < 2)
     {
         return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+    }
+
+    if (requestParts.size() != 3)
+    {
+        return ParseResult::ERROR;
+    }
+    static const boost::regex versionPattern(R"(HTTP/[0-9]\.[0-9])");
+    if (!boost::regex_match(requestParts[2], versionPattern))
+    {
+        return ParseResult::ERROR;
     }
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);

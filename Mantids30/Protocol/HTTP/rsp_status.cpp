@@ -1,5 +1,6 @@
 #include "rsp_status.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 #include <string>
@@ -73,9 +74,20 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     split(requestParts, clientRequest, is_any_of("\t "), token_compress_on);
 
     // We need almost 2 parameters.
-    if (requestParts.size() < 2)
+    if (isStreamEnded() || requestParts.size() < 2)
     {
         return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+    }
+
+    static const boost::regex versionPattern(R"(HTTP/[0-9]\.[0-9])");
+    if (!boost::regex_match(requestParts[0], versionPattern))
+    {
+        return ParseResult::ERROR;
+    }
+    static const boost::regex statusPattern("[1-5][0-9]{2}");
+    if (!boost::regex_match(requestParts[1], statusPattern))
+    {
+        return ParseResult::ERROR;
     }
 
     m_httpVersion.parse(requestParts[0]);
