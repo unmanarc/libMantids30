@@ -6,6 +6,7 @@
 #include <boost/regex.hpp>
 #include <memory>
 #include <string>
+#include <charconv>
 
 using namespace boost;
 using namespace boost::algorithm;
@@ -50,6 +51,13 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::changeToNextParser()
     }
     else if (m_currentSubParser == &serverResponse.headers)
     {
+        const auto code = static_cast<uint16_t>(serverResponse.status.getCode());
+        if (code >= 100 && code < 200 && code != 101)
+        {
+            serverResponse.headers.clear();
+            m_currentSubParser = &serverResponse.status;
+            return true;
+        }
         // Process incoming server headers here:
         /////////////////////////////////////////////////////////////////////////
 
@@ -91,11 +99,24 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::changeToNextParser()
 
         // Parse content-type...
         m_serverContentType = serverResponse.headers.getOptionRawStringByName("Content-Type");
+        serverResponse.contentType = m_serverContentType;
 
         // Parse server cookies...
         parseHeaders2ServerCookies();
         // Parse the transmition mode requested and act according it.
         m_currentSubParser = parseHeaders2TransmissionMode();
+        if (m_responseFramingError)
+        {
+            return false;
+        }
+        if (!onResponseHeaders())
+        {
+            return false;
+        }
+        if (!m_currentSubParser && !serverResponse.content.getStreamableObject()->writeEOF())
+        {
+            return false;
+        }
     }
     else // END.
     {
@@ -106,7 +127,7 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::changeToNextParser()
 
 void Mantids30::Protocol::HTTP::HTTPv1_Client::parseHeaders2ServerCookies()
 {
-    std::list<std::shared_ptr<Mantids30::Protocol::MIME::MIME_HeaderOption>> setCookies = serverResponse.headers.getOptionsByName("");
+    std::list<std::shared_ptr<Mantids30::Protocol::MIME::MIME_HeaderOption>> setCookies = serverResponse.headers.getOptionsByName("Set-Cookie");
     for (const std::shared_ptr<Mantids30::Protocol::MIME::MIME_HeaderOption> &serverCookie : setCookies)
     {
         serverResponse.cookies.parseCookie(serverCookie->getOrigValue());
@@ -116,21 +137,47 @@ void Mantids30::Protocol::HTTP::HTTPv1_Client::parseHeaders2ServerCookies()
 Mantids30::Core::Memory::Streams::SubParser *Mantids30::Protocol::HTTP::HTTPv1_Client::parseHeaders2TransmissionMode()
 {
     serverResponse.content.setTransmissionMode(Mantids30::Protocol::HTTP::Content::TransmissionMode::CONNECTION_CLOSE);
+    const auto code = static_cast<uint16_t>(serverResponse.status.getCode());
+    if (clientRequest.requestLine.getHTTPMethod() == "HEAD" || code == 204 || code == 304 || (code >= 100 && code < 200))
+    {
+        return nullptr;
+    }
+    // Transfer-Encoding takes precedence over Content-Length.
+    if (serverResponse.headers.exist("Transfer-Encoding"))
+    {
+        if (serverResponse.headers.getOptionsByName("Transfer-Encoding").size() != 1 ||
+            !iequals(serverResponse.headers.getOptionRawStringByName("Transfer-Encoding"), "chunked"))
+        {
+            m_responseFramingError = true;
+            return nullptr;
+        }
+        serverResponse.content.setTransmissionMode(Content::TransmissionMode::CHUNKS);
+        return &serverResponse.content;
+    }
     // Set Content Data Reception Mode.
     if (serverResponse.headers.exist("Content-Length"))
     {
-        uint64_t len = serverResponse.headers.getOptionAsUINT64("Content-Length");
+        const auto values = serverResponse.headers.getOptionsByName("Content-Length");
+        const std::string value = serverResponse.headers.getOptionRawStringByName("Content-Length");
+        size_t len = 0;
+        const auto parsed = std::from_chars(value.data(), value.data() + value.size(), len);
+        if (values.size() != 1 || parsed.ec != std::errc() || parsed.ptr != value.data() + value.size())
+        {
+            m_responseFramingError = true;
+            return nullptr;
+        }
         serverResponse.content.setTransmissionMode(Mantids30::Protocol::HTTP::Content::TransmissionMode::CONTENT_LENGTH);
 
         // Error setting up that size or no data... (don't continue)
-        if (!len || !serverResponse.content.setCurrentSize(len))
+        if (!serverResponse.content.setCurrentSize(len))
+        {
+            m_responseFramingError = true;
+            return nullptr;
+        }
+        if (!len)
         {
             return nullptr;
         }
-    }
-    else if (icontains(serverResponse.headers.getOptionValueStringByName("Transfer-Encoding"), "CHUNKED"))
-    {
-        serverResponse.content.setTransmissionMode(Mantids30::Protocol::HTTP::Content::TransmissionMode::CHUNKS);
     }
 
     return &serverResponse.content;
@@ -141,19 +188,45 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::streamClientHeaders()
     // Act as a server. Send data from here.
     size_t strsize;
 
-    // Can't use chunked mode on client.
     if ((strsize = clientRequest.content.getStreamSize()) == std::numeric_limits<size_t>::max())
     {
-        return false;
+        clientRequest.headers.remove("Content-Length");
+        clientRequest.headers.replace("Transfer-Encoding", "chunked");
+        clientRequest.content.setTransmissionMode(Content::TransmissionMode::CHUNKS);
     }
     else
     {
+        clientRequest.headers.remove("Transfer-Encoding");
+        clientRequest.content.setTransmissionMode(Content::TransmissionMode::CONTENT_LENGTH);
         //        clientRequest.headers.remove("Connection");
         clientRequest.headers.replace("Content-Length", std::to_string(strsize));
 
-        if (strsize == 0)
+        if (strsize == 0 && clientRequest.requestLine.getHTTPMethod() != "POST" && clientRequest.requestLine.getHTTPMethod() != "PUT" &&
+            clientRequest.requestLine.getHTTPMethod() != "PATCH")
         {
             clientRequest.headers.remove("Content-Length");
+        }
+    }
+
+    if (!clientRequest.headers.exist("Content-Type"))
+    {
+        switch (clientRequest.content.getContainerType())
+        {
+        case Content::ContainerType::JSON:
+            clientRequest.headers.replace("Content-Type", "application/json");
+            break;
+        case Content::ContainerType::URL:
+            clientRequest.headers.replace("Content-Type", "application/x-www-form-urlencoded");
+            break;
+        case Content::ContainerType::MIME:
+            if (clientRequest.content.isDefaultStreamableObj())
+            {
+                const auto mime = clientRequest.content.getMultiPartVars();
+                clientRequest.headers.replace("Content-Type", mime->getMultiPartType() + "; boundary=" + mime->getMultiPartBoundary());
+            }
+            break;
+        default:
+            break;
         }
     }
 
@@ -169,18 +242,35 @@ bool Mantids30::Protocol::HTTP::HTTPv1_Client::streamClientHeaders()
     // Put basic authentication on headers:
     if (clientRequest.basicAuth.isEnabled)
     {
-        clientRequest.headers.replace("Authentication", "Basic " + Mantids30::Core::Helpers::Encoders::encodeToBase64(clientRequest.basicAuth.username + ":" + clientRequest.basicAuth.password));
+        clientRequest.headers.replace("Authorization", "Basic " + Mantids30::Core::Helpers::Encoders::encodeToBase64(clientRequest.basicAuth.username + ":" + clientRequest.basicAuth.password));
     }
 
-    clientRequest.headers.replace("User-Agent", clientRequest.userAgent);
+    if (!clientRequest.headers.exist("User-Agent"))
+    {
+        clientRequest.headers.replace("User-Agent", clientRequest.userAgent);
+    }
 
     // Put Virtual Host And Port (if exist)
-    if (!clientRequest.virtualHost.empty())
+    if (!clientRequest.virtualHost.empty() && !clientRequest.headers.exist("Host"))
     {
         clientRequest.headers.replace("Host", clientRequest.virtualHost + (clientRequest.virtualPort == 80 ? "" : ":" + std::to_string(clientRequest.virtualPort)));
     }
     // Stream it..
     return clientRequest.headers.streamToUpstream();
+}
+
+void Mantids30::Protocol::HTTP::HTTPv1_Client::endProtocol()
+{
+    if (!writeStatus.finished && m_currentSubParser == &serverResponse.content &&
+        serverResponse.content.getTransmissionMode() == Content::TransmissionMode::CONNECTION_CLOSE)
+    {
+        writeEOF();
+    }
+}
+
+void Mantids30::Protocol::HTTP::HTTPv1_Client::setBasicAuthentication(const std::string &user, const std::string &pass)
+{
+    clientRequest.basicAuth.setAuthentication(user, pass);
 }
 
 std::string Mantids30::Protocol::HTTP::HTTPv1_Client::getServerContentType() const
@@ -255,4 +345,9 @@ void Mantids30::Protocol::HTTP::HTTPv1_Client::setIfNoneMatch(const std::string 
 void Mantids30::Protocol::HTTP::HTTPv1_Client::setIfNoneMatch(const Mantids30::Protocol::HTTP::Headers::ETag &etag)
 {
     clientRequest.ifNoneMatch = etag;
+}
+
+Mantids30::Protocol::HTTP::Headers::ETag Mantids30::Protocol::HTTP::HTTPv1_Client::getResponseETag() const
+{
+    return serverResponse.etag;
 }

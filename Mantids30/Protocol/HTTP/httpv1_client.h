@@ -3,12 +3,6 @@
 #include "httpv1_base.h"
 #include "req_cookies.h"
 
-// TODO: https://en.wikipedia.org/wiki/Media_type
-// TODO: cuando el request para doh5 este listo, pre-procesar primero el request y luego recibir los datos.
-// TODO: post data? <<< IMPORTANT.
-// TODO: reuse the connection?...
-// TODO: header: :scheme:https (begins with :)
-
 namespace Mantids30::Protocol::HTTP {
 
 class HTTPv1_Client : public HTTPv1_Base
@@ -97,6 +91,10 @@ public:
 
 protected:
     bool initProtocol() override;
+    void endProtocol() override;
+
+    /** @brief Called after final response headers are parsed. Return false to abort. */
+    virtual bool onResponseHeaders() { return true; }
 
     void *getThis() override { return this; }
     bool changeToNextParser() override;
@@ -127,6 +125,7 @@ private:
     Mantids30::Protocol::HTTP::Request::Cookies_ClientSide m_clientCookies;
 
     std::string m_serverContentType;
+    bool m_responseFramingError = false;
 };
 
 } // namespace Mantids30::Protocol::HTTP
