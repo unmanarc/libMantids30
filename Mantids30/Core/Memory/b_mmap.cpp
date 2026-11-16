@@ -33,15 +33,6 @@ bool B_MMAP::referenceFile(const std::string &filePath, bool readOnly, bool crea
     if (!bcr.openFile(!filePath.empty() ? filePath : getRandomFileName(), readOnly, createFile))
     {
         // Failed to open the referenced file.
-
-        /*        if () O_CREAT should do the job for us.
-        // Create one.
-        if (!createEmptyFile(bcr.currentFileName)) 
-        return false;
-
-        // Open it again.
-        if (!bcr.openFile(bcr.currentFileName)) 
-        return false;*/
         return false;
     }
 
@@ -165,7 +156,7 @@ bool B_MMAP::compare2(const void *buf, const size_t &count, bool caseSensitive, 
 void B_MMAP::reMapMemoryContainer()
 {
     setContainerBytes(fileReference.getFileOpenSize());
-    mem.reference(fileReference.getMmapAddr(), size());
+    mem.reference(fileReference.getMmapAddr(), fileReference.getFileOpenSize());
 }
 
 std::string B_MMAP::getRandomFileName()
@@ -183,27 +174,4 @@ std::string B_MMAP::getRandomFileName()
     }
 
     return m_fsDirectoryPath + FS_DIRSLASH + m_fsBaseFileName + "." + randomStr;
-}
-
-bool B_MMAP::createEmptyFile(const std::string &)
-{
-    // Creates file here.
-    //    FileMap bcr;
-    // TODO:
-    /*
-    if (!access(fileName.c_str(), F_OK)) 
-        return false;
-
-    // Open the file:
-    if (!bcr.openFile(fileName))
-    {
-        // Failed to open the referenced file.
-        return false;
-    }
-
-    // Don't remove/close on destroy... ;)...
-    bcr.fd = -1;
-
-    return true;*/
-    return false;
 }

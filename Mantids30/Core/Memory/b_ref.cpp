@@ -148,14 +148,14 @@ std::optional<size_t> B_Ref::copyToStreamableObject2(StreamableObject &bc, const
 {
     if (!referencedBC)
     {
-        bc.writeStatus.succeed = false;
+        bc.writeStatus += -1;
         return std::nullopt;
     }
 
     // CAN'T COPY BEYOND OFFSET.
     if (offset > size())
     {
-        bc.writeStatus.succeed = false;
+        bc.writeStatus += -1;
         return std::nullopt;
     }
 

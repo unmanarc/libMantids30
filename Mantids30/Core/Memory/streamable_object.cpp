@@ -26,7 +26,7 @@ bool StreamableObject::writeEOF()
     }
     else
     {
-        writeStatus.succeed += -1;
+        writeStatus += -1;
         return false;
     }
 }
@@ -41,7 +41,7 @@ bool StreamableObject::writeFullStreamWithEOF(const void *buf, const size_t &cou
     // Here everything is written OK.
     if (!writeEOF())
     {
-        writeStatus.succeed += -1;
+        writeStatus += -1;
         return false;
     }
 
@@ -55,9 +55,9 @@ bool StreamableObject::writeFullStream(const void *buf, const size_t &count)
     while (writtenBytes < count)
     {
         std::optional<size_t> cur = write(static_cast<const char *>(buf) + writtenBytes, count - writtenBytes);
-        if (cur == std::nullopt || !writeStatus.succeed)
+        if (cur == std::nullopt || !writeStatus.succeed || *cur == 0 || *cur > count - writtenBytes)
         {
-            writeStatus.succeed += -1;
+            writeStatus += -1;
             return false;
         }
         writtenBytes += cur.value();

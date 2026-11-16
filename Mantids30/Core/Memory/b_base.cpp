@@ -606,9 +606,6 @@ bool B_Base::compare(const void *mem, const size_t &len, bool caseSensitive, con
         return false;
     }
 
-    // No bytes to copy:
-    //if (!len || offset+len==size())
-    return true;
     // No data to compare...
     if (!len)
     {
@@ -700,55 +697,6 @@ std::optional<size_t> B_Base::find(const void *needle, const size_t &needle_len,
 
     // not found
     return std::nullopt;
-
-    /*
-    if (searchSpace == 0) searchSpace = currentSize;
-
-    //std::cout << "B_Base::find  Getting size() " << containerBytes << '\n' << std::flush;
-
-    // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,needle_len)) 
-        return std::numeric_limits<size_t>::max();
-
-    // Offset:bytes will overflow...
-    if (CHECK_UINT_OVERFLOW_SUM(offset,searchSpace)) 
-        return std::numeric_limits<size_t>::max();
-
-    // not enough search space to found anything...
-    if (searchSpace<needle_len) 
-        return std::numeric_limits<size_t>::max();
-
-    // nothing to found... first position
-    if (needle_len == 0) 
-        return 0;
-
-    // Reduce the needle size from the search space (optimization)
-    searchSpace=searchSpace-needle_len+1;
-
-    // calc search space available
-    size_t availableSearchSpace= (currentSize-needle_len+1);
-
-    // Verify if offset is appliable (bad offset)
-    if (availableSearchSpace<offset) 
-        return std::numeric_limits<size_t>::max();
-
-    // Apply offset:
-    availableSearchSpace-=offset;
-
-    // If searchSpace is lesser than available bytes... use searchSpace size instead.
-    if (searchSpace<availableSearchSpace) availableSearchSpace=searchSpace;
-
-    // start comparing at offset...
-    for (size_t currentOffset=offset; currentOffset<availableSearchSpace; currentOffset++)
-    {
-        if (CHECK_UINT_OVERFLOW_SUM(currentOffset,needle_len)) std::numeric_limits<size_t>::max(); // ERROR...
-        if (compare2(needle,needle_len,caseSensitive,currentOffset)) 
-        return currentOffset;
-    }
-
-    // TODO: found boolean flag instead.
-
-    return std::numeric_limits<size_t>::max(); // not found.*/
 }
 
 std::optional<size_t> B_Base::find(const std::list<std::string> &needles, std::string &needleFound, bool caseSensitive, const size_t &offset, const size_t &searchSpace)
@@ -815,6 +763,11 @@ bool B_Base::streamTo(Mantids30::Core::Memory::Streams::StreamableObject *out)
 
 std::optional<size_t> B_Base::write(const void *buf, const size_t &count)
 {
+    if (!count)
+    {
+        writeStatus += 0;
+        return 0;
+    }
     std::optional<size_t> bytesAppended = append(buf, count);
 
     if (bytesAppended != std::nullopt)

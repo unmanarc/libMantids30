@@ -107,11 +107,7 @@ private:
      * @return random filename with path
      */
     std::string getRandomFileName();
-    /**
-     * @brief Creates empty file on the filesystem to use it in future.
-     * @return true if the file was successfully created at the specified fileName (or produced one)
-     */
-    bool createEmptyFile(const std::string &fileName);
+
 
     // File:
     FileMap fileReference;
