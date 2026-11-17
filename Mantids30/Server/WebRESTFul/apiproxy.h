@@ -1,6 +1,7 @@
 #pragma once
 
 #include "session.h"
+#include "request_match_expression.h"
 #include <Mantids30/Protocol/HTTP/httpv1_base.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <memory>
@@ -21,6 +22,9 @@ struct APIProxyParameters
     std::string privateCAPath;
 
     std::string proxyPath;
+
+    /// Optional condition evaluated against the authenticated request context.
+    std::shared_ptr<RequestMatchExpression> matchExpression;
 
     std::map<std::string, std::string> extraHeaders;
 

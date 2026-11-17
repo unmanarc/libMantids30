@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <type_traits>
 
 using namespace Mantids30::Server::WebRESTFul;
 using namespace Mantids30;
@@ -39,45 +40,72 @@ std::shared_ptr<APIProxyParameters> APIProxyConfig::createAPIProxyParams(Mantids
 {
     std::shared_ptr<APIProxyParameters> params = std::make_shared<APIProxyParameters>();
 
-    try
+    // Typed reads distinguish missing options from invalid configured values.
+    const auto readOption = [log](const boost::property_tree::ptree &tree, const std::string &name, auto &destination)
     {
-        //  log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Creating APIProxyParameters.");
-        params->useTLS = config.get<bool>("UseTLS", true);
-
-        if (boost::optional<const boost::property_tree::ptree &> tlsHeaders = config.get_child_optional("TLS"))
+        const auto node = tree.get_child_optional(name);
+        if (!node)
         {
-            params->checkTLSPeer = tlsHeaders->get<bool>("CheckTLSPeer", true);
-            params->usePrivateCA = tlsHeaders->get<bool>("UsePrivateCA", false);
-            params->privateCAPath = tlsHeaders->get<std::string>("PrivateCAPath", "");
+            return true;
         }
+        using Value = std::decay_t<decltype(destination)>;
+        const auto value = node->get_value_optional<Value>();
+        if (!value)
+        {
+            if (log)
+            {
+                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Invalid proxy configuration value for '%s'", name.c_str());
+            }
+            return false;
+        }
+        destination = *value;
+        return true;
+    };
 
-        params->remoteHost = config.get<std::string>("RemoteHost", "localhost");
-        params->remotePort = static_cast<uint16_t>(config.get<int>("RemotePort", 8443));
-        params->transformCookiePath = config.get<bool>("TransformCookiePath", false);
+    if (const auto expression = config.get_child_optional("MatchExpression"))
+    {
+        params->matchExpression = std::make_shared<RequestMatchExpression>(expression->data());
+        if (!params->matchExpression->isCompiled())
+        {
+            if (log)
+            {
+                log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Invalid proxy MatchExpression: %s",
+                          params->matchExpression->getLastCompilerError().c_str());
+            }
+            return nullptr;
+        }
+    }
+    if (!readOption(config, "UseTLS", params->useTLS)
+        || !readOption(config, "RemoteHost", params->remoteHost)
+        || !readOption(config, "RemotePort", params->remotePort)
+        || !readOption(config, "TransformCookiePath", params->transformCookiePath))
+    {
+        return nullptr;
+    }
+
+    if (const auto tls = config.get_child_optional("TLS"))
+    {
+        params->checkTLSPeer = true;
+        if (!readOption(*tls, "CheckTLSPeer", params->checkTLSPeer)
+            || !readOption(*tls, "UsePrivateCA", params->usePrivateCA)
+            || !readOption(*tls, "PrivateCAPath", params->privateCAPath))
+        {
+            return nullptr;
+        }
+    }
+    if (log)
+    {
         log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG,
                   "Parsed Proxy configuration: UseTLS=%s, CheckTLSPeer=%s, "
                   "UsePrivateCA=%s, RemoteHost=%s, RemotePort=%u, PrivateCAPath=%s",
                   params->useTLS ? "true" : "false", params->checkTLSPeer ? "true" : "false", params->usePrivateCA ? "true" : "false", params->remoteHost.c_str(),
                   static_cast<unsigned int>(params->remotePort), params->privateCAPath.c_str());
-
-        // Parse extra headers
-        if (boost::optional<const boost::property_tree::ptree &> extraHeaders = config.get_child_optional("ExtraHeaders"))
-        {
-            parseExtraHeaders(log, *extraHeaders, params->extraHeaders, vars);
-        }
-    }
-    catch (const boost::property_tree::ptree_error &e)
-    {
-        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "Error parsing APIProxyParameters: %s", e.what());
-        return nullptr;
-    }
-    catch (const std::exception &e)
-    {
-        log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::ERROR, "General error parsing APIProxyParameters: %s", e.what());
-        return nullptr;
     }
 
-    //    log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Successfully created APIProxyParameters.");
+    if (const auto headers = config.get_child_optional("ExtraHeaders"))
+    {
+        parseExtraHeaders(log, *headers, params->extraHeaders, vars);
+    }
     return params;
 }
 
@@ -87,7 +115,7 @@ void APIProxyConfig::parseExtraHeaders(Mantids30::Runtime::Logs::AppLog *log, co
     //   log->log0(__func__, Mantids30::Runtime::Logs::LogLevel::DEBUG, "Starting to parse extra headers.");
     for (const auto &pair : headersTree)
     {
-        std::string value = pair.second.get_value<std::string>();
+        std::string value = pair.second.data();
 
         // Replace %VARIABLE% with the corresponding value from vars
         for (const auto &varPair : vars)

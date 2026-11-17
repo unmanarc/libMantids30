@@ -23,15 +23,6 @@ Mantids30::Protocol::HTTP::Status::Code Mantids30::Server::WebRESTFul::APIProxy(
                                                               const std::shared_ptr<void> &obj, const Mantids30::Server::WebRESTFul::Sessions::SessionInfo *sessionInfo)
 {
     // TODO: how to prevent ../ (escapes)...
-
-    // Define auth header names
-    static const std::string hdrAuthUser = "X-Auth-User";
-    static const std::string hdrAuthDomain = "X-Auth-Domain";
-    static const std::string hdrAuthHalfSessionId = "X-Auth-Half-Session-Id";
-    static const std::string hdrAuthImpersonation = "X-Auth-Impersonation";
-    static const std::string hdrAuthImpersonator = "X-Auth-Impersonator";
-    static const std::vector<std::string> authHeaders = {hdrAuthUser, hdrAuthDomain, hdrAuthHalfSessionId, hdrAuthImpersonation, hdrAuthImpersonator};
-
     APIProxyParameters *proxyParameters = (obj != nullptr) ? static_cast<APIProxyParameters *>(obj.get()) : nullptr;
 
     // Logging helper: uses the proxy's configured application log (proxyParameters->appLog)
@@ -139,6 +130,14 @@ Mantids30::Protocol::HTTP::Status::Code Mantids30::Server::WebRESTFul::APIProxy(
         {
             client.clientRequest.headers.replace(header.first, header.second);
         }
+
+        // Define auth header names
+        static const std::string hdrAuthUser = "X-Auth-User";
+        static const std::string hdrAuthDomain = "X-Auth-Domain";
+        static const std::string hdrAuthHalfSessionId = "X-Auth-Half-Session-Id";
+        static const std::string hdrAuthImpersonation = "X-Auth-Impersonation";
+        static const std::string hdrAuthImpersonator = "X-Auth-Impersonator";
+        static const std::vector<std::string> authHeaders = {hdrAuthUser, hdrAuthDomain, hdrAuthHalfSessionId, hdrAuthImpersonation, hdrAuthImpersonator};
 
         // Inject authentication context headers if there's an active session,
         // otherwise remove them to prevent header injection attacks.

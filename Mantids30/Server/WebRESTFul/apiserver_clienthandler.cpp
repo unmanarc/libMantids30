@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
 #include <memory>
+#include <optional>
 #include <regex>
 #include <string>
 
@@ -236,14 +237,42 @@ Mantids30::Protocol::HTTP::Status::Code APIServer_ClientHandler::onHTTPClientCon
         // Flag to check if a matching dynamic content handler was found.
         bool isDynamicContent = false;
 
-        // Iterate through all registered dynamic request handlers in the map.
+        // Evaluate dynamic routes in configuration order. Build context only when needed.
+        std::optional<boost::json::value> routingContext;
         for (const auto &route : config->dynamicRequestHandlersByRoute)
         {
-            // Check if the request URI starts with the route's path, indicating a match.
-            if (boost::starts_with(requestURI, route.first + "/"))
+            // A root mount retains the full URI; other mounts require a path boundary.
+            const std::string routePath = route.first == "/" ? "" : route.first;
+            if (route.second.handler && (requestURI == routePath || boost::starts_with(requestURI, routePath + "/")))
             {
+                if (route.second.matchExpression)
+                {
+                    if (!routingContext)
+                    {
+                        routingContext = buildDynamicRequestContext();
+                    }
+                    bool matched = false;
+                    std::string error;
+                    if (!route.second.matchExpression->evaluate(*routingContext, matched, &error))
+                    {
+                        log(LogLevel::ERROR, "proxyRouting", 512, "Dynamic route evaluation failed for path '%s': %s", route.first.c_str(), error.c_str());
+                        // Evaluation errors must never fall through to a broader rule.
+                        ret = Mantids30::Protocol::HTTP::Status::Code::S_500_INTERNAL_SERVER_ERROR;
+                        isDynamicContent = true;
+                        break;
+                    }
+                    if (!matched)
+                    {
+                        continue;
+                    }
+                }
+
                 // Extract the portion of the request URI that follows the matching route path.
-                std::string dynUrlWithoutBase = requestURI.substr(route.first.size());
+                std::string dynUrlWithoutBase = requestURI.substr(routePath.size());
+                if (dynUrlWithoutBase.empty())
+                {
+                    dynUrlWithoutBase = "/";
+                }
 
                 // Invoke the corresponding handler function with the extracted path and request/response objects.
                 ret = route.second.handler(dynUrlWithoutBase, &clientRequest, &serverResponse, route.second.obj, &currentSessionInfo);

@@ -92,6 +92,12 @@ protected:
      * @param jVars vars to be filled into a JSON structure
      */
     void fillSessionInfo(boost::json::value &jVars);
+
+    /**
+     * @brief Builds the context for conditional routes after session validation.
+     * @return JSON containing session, client and request data.
+     */
+    boost::json::value buildDynamicRequestContext();
     /**
      * @brief doesSessionVariableExist check if a sesion variable exist.
      * @param varName variable name

@@ -3,6 +3,7 @@
 #include "api_restful_endpoints.h"
 #include "api_websocket_endpoints.h"
 #include "session.h"
+#include "request_match_expression.h"
 #include <Mantids30/DataFormat/JWT/jwt.h>
 #include <Mantids30/Runtime/Logs/applog.h>
 #include <Mantids30/Runtime/Logs/rpclog.h>
@@ -14,6 +15,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
+#include <vector>
 
 namespace Mantids30::Server::WebRESTFul {
 
@@ -250,37 +253,17 @@ public:
 
     struct DynamicRequestHandlerDef
     {
-        DynamicRequestHandler handler;
+        DynamicRequestHandler handler = nullptr;
         std::shared_ptr<void> obj = nullptr;
+        std::shared_ptr<RequestMatchExpression> matchExpression;
     };
 
     /**
-     * @brief Map for associating URL paths with dynamic request handler functions.
-     *
-     * The `m_dynamicRequestHandlers` is a `std::map` that associates a string representing
-     * a URL path with a `DynamicRequestHandler` function pointer. This allows dynamic HTTP
-     * requests to be routed and handled based on the specific URL path requested by the client.
-     *
-     * - **Key (`std::string`)**: Represents the URL path segment. When an HTTP request's path
-     *   matches one of the keys in the map, the corresponding handler function is invoked.
-     *
-     * - **boost::json::value (`DynamicRequestHandler`)**: A function pointer that points to the handler
-     *   function responsible for processing the request and writing the response. The function
-     *   must match the `DynamicRequestHandler` signature:
-     *   - `const std::string& internalPath`: The internal path within the server that matches
-     *     the key in the map.
-     *   - `HTTPv1_Base::Request* request`: Pointer to the HTTP request object, containing
-     *     information about the client request.
-     *   - `HTTPv1_Base::Response* response`: Pointer to the HTTP response object, used to
-     *     generate the response to the client.
-     *   - **Return**: A `Mantids30::Protocol::HTTP::Status::Codes` representing the status of the
-     *     response, such as success or error codes.
-     *
-     * This map enables efficient routing by allowing the server to quickly look up and execute
-     * the appropriate handler for any given path. If a request's path matches an entry in the
-     * map, the corresponding handler function is called to process the request.
+     * @brief Dynamic routes in insertion order, including repeated paths.
+     * The first matching path and optional expression handles the request.
+     * Register routes with emplace_back(path, DynamicRequestHandlerDef{...}).
      */
-    std::map<std::string, DynamicRequestHandlerDef> dynamicRequestHandlersByRoute;
+    std::vector<std::pair<std::string, DynamicRequestHandlerDef>> dynamicRequestHandlersByRoute;
 
     /**
      * @brief Sets the document root path for serving web resources.
