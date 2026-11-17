@@ -443,3 +443,25 @@ void MIME_HeaderOption::setMaxSubOptions(const uint64_t &value)
 {
     m_maxSubOptionsCount = value;
 }
+
+boost::json::object MIME_Sub_Header::toJSON() const
+{
+    boost::json::object result;
+    for (const auto &entry : m_headers)
+    {
+        auto *existing = result.if_contains(entry.first);
+        if (!existing)
+        {
+            result[entry.first] = entry.second->getOrigValue();
+        }
+        else
+        {
+            if (!existing->is_array())
+            {
+                *existing = boost::json::array{*existing};
+            }
+            existing->as_array().emplace_back(entry.second->getOrigValue());
+        }
+    }
+    return result;
+}

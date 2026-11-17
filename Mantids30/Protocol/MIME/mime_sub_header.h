@@ -121,6 +121,12 @@ public:
      * @return number of options/headers
      */
     size_t getOptionsSize();
+
+    /**
+     * @brief Converts headers to JSON using uppercase names.
+     * @return Header values by name, with arrays for repeated headers.
+     */
+    [[nodiscard]] boost::json::object toJSON() const;
     /**
      * @brief getOptionsByName Get option list by name (multiple options with the same name (eg. set-cookie)
      * @param varName value name.
