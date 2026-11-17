@@ -27,6 +27,14 @@ public:
 
     bool parseExpression(std::string_view expr);
     bool evaluate(const boost::json::value &values);
+    /**
+     * @brief Evaluates an expression and reports errors separately from a non-match.
+     * @param values JSON context used to resolve operands.
+     * @param result Evaluation result; false on failure.
+     * @param error Optional output for the compilation or evaluation error.
+     * @return true on successful evaluation, false on error.
+     */
+    bool evaluate(const boost::json::value &values, bool &result, std::string *error = nullptr);
     [[nodiscard]] std::string getLastCompilerError() const;
     [[nodiscard]] bool isCompiled() const;
 

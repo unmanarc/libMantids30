@@ -28,6 +28,14 @@ public:
 
     bool compile(std::string_view expr);
     [[nodiscard]] bool evaluate(const boost::json::value &values);
+    /**
+     * @brief Evaluates an atomic expression with explicit error reporting.
+     * @param values JSON context used to resolve operands.
+     * @param result Evaluation result; false on failure.
+     * @param error Optional error description.
+     * @return true on success, false if a regular expression is invalid.
+     */
+    bool evaluate(const boost::json::value &values, bool &result, std::string *error = nullptr);
     void setStaticTexts(const std::shared_ptr<std::vector<std::string>> &value);
 
 private:

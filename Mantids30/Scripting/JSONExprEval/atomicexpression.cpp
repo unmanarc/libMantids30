@@ -45,6 +45,30 @@ bool AtomicExpression::compile(std::string_view expr)
     return true;
 }
 
+bool AtomicExpression::evaluate(const boost::json::value &values, bool &result, std::string *error)
+{
+    result = false;
+    if (error)
+    {
+        error->clear();
+    }
+    if (m_evalOperator == Operator::REGEXMATCH)
+    {
+        m_right.resolveValueSet(values, true, m_ignoreCase);
+        const auto regex = m_right.getCompiledRegex();
+        if (!regex || regex->status() != 0)
+        {
+            if (error)
+            {
+                *error = "Invalid regular expression operand";
+            }
+            return false;
+        }
+    }
+    result = evaluate(values);
+    return true;
+}
+
 bool AtomicExpression::evaluate(const boost::json::value &values)
 {
     // The left side always provides the values to be compared. Only the right
@@ -129,7 +153,7 @@ bool AtomicExpression::evaluate(const boost::json::value &values)
     {
         boost::cmatch what;
         const std::shared_ptr<boost::regex> compiledRegex = m_right.getCompiledRegex();
-        if (compiledRegex)
+        if (compiledRegex && compiledRegex->status() == 0)
         {
             for (const std::string &lvalue : lvalues)
             {

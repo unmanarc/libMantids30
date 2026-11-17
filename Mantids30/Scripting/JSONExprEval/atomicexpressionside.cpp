@@ -71,19 +71,30 @@ set<string> AtomicExpressionSide::resolveValueSet(const boost::json::value &v, b
         }
         const boost::json::value *result = m_jsonPath->resolve(v);
         set<string> res;
+        const auto insertScalar = [&res](const boost::json::value &value)
+        {
+            if (value.is_string())
+            {
+                res.emplace(value.as_string().data(), value.as_string().size());
+            }
+            else if (value.is_bool() || value.is_number())
+            {
+                res.insert(boost::json::serialize(value));
+            }
+        };
         if (result != nullptr)
         {
             if (result->is_array())
             {
                 for (const boost::json::value &el : result->as_array())
                 {
-                    res.insert(string(Mantids30::DataFormat::JSON::ASSTRING_D(el, "")));
+                    insertScalar(el);
                 }
             }
             else if (!result->is_null() && !result->is_object())
             {
                 // Scalar value (string, number or boolean):
-                res.insert(string(Mantids30::DataFormat::JSON::ASSTRING_D(*result, "")));
+                insertScalar(*result);
             }
         }
         return res;
@@ -134,6 +145,6 @@ void AtomicExpressionSide::compileRegexPattern(const string &r, bool ignoreCase)
 {
     if (!m_regexp)
     {
-        m_regexp = std::make_shared<boost::regex>(r.c_str(), ignoreCase ? (boost::regex::extended | boost::regex::icase) : (boost::regex::extended));
+        m_regexp = std::make_shared<boost::regex>(r.c_str(), boost::regex::no_except | boost::regex::extended | (ignoreCase ? boost::regex::icase : boost::regex::flag_type{}));
     }
 }

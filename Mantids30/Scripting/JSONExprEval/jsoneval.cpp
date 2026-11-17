@@ -151,40 +151,44 @@ bool JSONEval::parseExpression(std::string_view exprIn)
 
 bool JSONEval::evaluate(const boost::json::value &values)
 {
-    if (!m_isCompiled)
+    bool result = false;
+    return evaluate(values, result) && result;
+}
+
+bool JSONEval::evaluate(const boost::json::value &values, bool &result, std::string *error)
+{
+    result = false;
+    if (error)
     {
+        error->clear();
+    }
+    if (!m_isCompiled || m_evaluationMode == EvaluationMode::UNDEFINED)
+    {
+        if (error)
+        {
+            *error = m_lastError.empty() ? "Expression is not compiled" : m_lastError;
+        }
         return false;
     }
 
-    switch (m_evaluationMode)
+    const bool isAnd = m_evaluationMode == EvaluationMode::AND;
+    for (const auto &entry : m_atomExpressions)
     {
-    case EvaluationMode::AND:
-    {
-        for (const auto &i : m_atomExpressions)
+        bool matched = false;
+        const bool success = entry.first ? entry.first->evaluate(values, matched, error)
+                                         : m_subExpressions[entry.second]->evaluate(values, matched, error);
+        if (!success)
         {
-            const bool evalResult = i.first ? i.first->evaluate(values) : m_subExpressions[i.second]->evaluate(values);
-            if (!evalResult)
-            {
-                return applyNegation(false);
-            }
+            return false;
         }
-        return applyNegation(true);
-    }
-    case EvaluationMode::OR:
-    {
-        for (const auto &i : m_atomExpressions)
+        if (matched != isAnd)
         {
-            const bool evalResult = i.first ? i.first->evaluate(values) : m_subExpressions[i.second]->evaluate(values);
-            if (evalResult)
-            {
-                return applyNegation(true);
-            }
+            result = applyNegation(matched);
+            return true;
         }
-        return applyNegation(false);
     }
-    default:
-        return false;
-    }
+    result = applyNegation(isAnd);
+    return true;
 }
 
 size_t JSONEval::extractSubExpressions(string &expr, size_t start)
