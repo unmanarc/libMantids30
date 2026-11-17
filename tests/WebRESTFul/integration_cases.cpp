@@ -1,5 +1,9 @@
 #include "test_support.h"
 
+#include <Mantids30/Server/WebRESTFul/apiproxy_config.h>
+#include <boost/property_tree/info_parser.hpp>
+#include <sstream>
+#include <future>
 #include <ctime>
 #include <chrono>
 #include <filesystem>
@@ -95,6 +99,144 @@ struct Application
 std::vector<Case> integrationCases()
 {
     std::vector<Case> cases;
+    const auto routeHandler = +[](const std::string &path, HTTP::HTTPv1_Base::Request *, HTTP::HTTPv1_Base::Response *response,
+                                  const std::shared_ptr<void> &object, const Web::Sessions::SessionInfo *) -> Code
+    {
+        auto body = std::make_shared<StreamableString>();
+        body->setValue(*std::static_pointer_cast<std::string>(object) + path);
+        response->setContentDataStreamer(body);
+        return Code::S_200_OK;
+    };
+    cases.push_back({"dynamic_routes.config_order_and_duplicate_paths", [routeHandler]
+    {
+        Application app;
+        std::istringstream input(R"CONFIG(Proxies
+{
+    /z { RemoteHost first MatchExpression "IS_EQUAL($request.get.target,\"first\")" }
+    /z { RemoteHost fallback }
+    /a { RemoteHost last }
+}
+)CONFIG");
+        boost::property_tree::ptree configuration;
+        boost::property_tree::read_info(input, configuration);
+        Mantids30::Runtime::Logs::AppLog log;
+        for (const auto &entry : configuration.get_child("Proxies"))
+        {
+            auto params = Web::APIProxyConfig::createAPIProxyParams(&log, entry.second);
+            require(bool(params), "Cannot parse configured proxy");
+            app.engine.config.dynamicRequestHandlersByRoute.emplace_back(entry.first,
+                Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>(params->remoteHost), params->matchExpression});
+        }
+        require(app.engine.config.dynamicRequestHandlersByRoute[0].first == "/z", "Configuration order lost");
+        require(app.request("/z/page?target=first").body == "first/page", "First duplicate rule not selected");
+        require(app.request("/z/page?target=other").body == "fallback/page", "Duplicate fallback not selected");
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/z/nested",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("nested")});
+        require(app.request("/z/nested/page").body == "fallback/nested/page", "Overlapping routes ignored insertion priority");
+        require(app.request("/z").body == "fallback/", "Exact mount did not map to upstream root");
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("root")});
+        require(app.request("/zebra").body == "root/zebra", "Route matched without a path boundary");
+        require(app.request("/").body == "root/", "Root mount did not match");
+    }});
+    for (const std::string expression : {
+             R"(IS_EQUAL($session.user,"account-123"))",
+             R"(IS_EQUAL($session.roles,"operator"))",
+             R"(IS_EQUAL($session.scopes,"READ"))",
+             R"(IS_EQUAL($session.isActive,"true") && IS_EQUAL($session.claims.app,"test-app"))"})
+    {
+        cases.push_back({"dynamic_routes.validated_identity." + expression, [routeHandler, expression]
+        {
+            Application app;
+            auto condition = std::make_shared<Web::RequestMatchExpression>(expression);
+            app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+                Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("private"), condition});
+            app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+                Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("public")});
+            JWT::Token token;
+            token.setSubject("account-123");
+            token.setClaim("app", "test-app");
+            token.setClaim("type", "access");
+            token.setExpirationTime(std::time(nullptr) + 3600);
+            token.addRole("operator");
+            token.addScope("READ");
+            const auto signedToken = app.engine.config.jwtSigner->signFromToken(token, false);
+            require(app.request("/site/page", "Authorization: Bearer " + signedToken + "\r\n").body == "private/page", "Verified identity did not match");
+            require(app.request("/site/page", "Cookie: AccessToken=" + signedToken + "\r\n").body == "private/page", "Cookie identity did not match");
+            require(app.request("/site/page").body == "public/page", "Anonymous request matched authenticated rule");
+            require(app.request("/site/page", "Authorization: Bearer invalid\r\n").body == "public/page", "Invalid token matched authenticated rule");
+        }});
+    }
+    cases.push_back({"dynamic_routes.request_context_and_no_match", [routeHandler]
+    {
+        Application app;
+        auto condition = std::make_shared<Web::RequestMatchExpression>(
+            R"(IS_EQUAL($client.ip,"192.0.2.4") && IS_EQUAL($request.method,"POST") && IS_EQUAL($request.uri,"/site/page") && IS_EQUAL($request.get.tag,"two") && IS_EQUAL($request.headers.X-TARGET,"blue") && IS_EQUAL($request.headers.X-MULTI,"second"))");
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("selected"), condition});
+        require(app.request("/site/page?tag=one&tag=two", "X-Target: blue\r\nX-Multi: first\r\nX-Multi: second\r\n").body == "selected/page", "Request context lost fields or repeated values");
+        require(app.request("/site/page?tag=two", "X-Target: red\r\n").status == 404, "No match did not fall through to files");
+    }});
+    cases.push_back({"dynamic_routes.json_and_form_body", [routeHandler]
+    {
+        Application app;
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("json"),
+                std::make_shared<Web::RequestMatchExpression>(R"(IS_EQUAL($request.json.target,"blue") && IS_EQUAL($request.json.version,2) && IS_EQUAL($request.json.flags,"true"))")});
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("form"),
+                std::make_shared<Web::RequestMatchExpression>(R"(IS_EQUAL($request.post.target,"blue"))")});
+        require(app.request("/site/page", "", R"({"target":"blue","version":2,"flags":[false,true]})").body == "json/page", "JSON body not available");
+        require(sendRequest(app.engine, rawRequest("POST", "/site/page", "target=blue", "", "application/x-www-form-urlencoded")).body == "form/page", "Form body not available");
+    }});
+    cases.push_back({"dynamic_routes.evaluation_error_does_not_fall_through", [routeHandler]
+    {
+        Application app;
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("private"),
+                std::make_shared<Web::RequestMatchExpression>(R"(IS_EQUAL($request.method,"POST") && REGEX_MATCH($client.ip,"["))")});
+        app.engine.config.dynamicRequestHandlersByRoute.emplace_back("/site",
+            Web::APIServerConfig::DynamicRequestHandlerDef{routeHandler, std::make_shared<std::string>("fallback")});
+        require(app.request("/site/page").status == 500, "Evaluation error selected a broader rule");
+    }});
+    cases.push_back({"dynamic_routes.invalid_configuration_and_concurrent_evaluation", []
+    {
+        Mantids30::Runtime::Logs::AppLog log;
+        boost::property_tree::ptree configuration;
+        configuration.put("MatchExpression", "invalid expression");
+        require(!Web::APIProxyConfig::createAPIProxyParams(&log, configuration), "Invalid expression accepted");
+        Web::RequestMatchExpression invalid("invalid expression");
+        bool matched = true;
+        std::string error;
+        require(!invalid.isCompiled() && !invalid.getLastCompilerError().empty(), "Compilation failure was not reported");
+        require(!invalid.evaluate(boost::json::object{}, matched, &error) && !matched && !error.empty(), "Evaluation failure was not reported");
+        configuration.put("MatchExpression", "");
+        require(!Web::APIProxyConfig::createAPIProxyParams(&log, configuration), "Explicit empty expression accepted");
+        configuration.erase("MatchExpression");
+        configuration.put("UseTLS", "invalid");
+        require(!Web::APIProxyConfig::createAPIProxyParams(&log, configuration), "Invalid boolean accepted");
+        configuration.put("UseTLS", "true");
+        configuration.put("RemotePort", "invalid");
+        require(!Web::APIProxyConfig::createAPIProxyParams(&log, configuration), "Invalid port accepted");
+        auto condition = std::make_shared<Web::RequestMatchExpression>(R"(REGEX_MATCH($client.ip,"192[.]0[.]2[.][0-9]+"))");
+        std::vector<std::future<void>> workers;
+        for (size_t index = 0; index < 8; ++index)
+        {
+            workers.emplace_back(std::async(std::launch::async, [condition]
+            {
+                for (size_t iteration = 0; iteration < 100; ++iteration)
+                {
+                    bool matched = false;
+                    require(condition->evaluate(boost::json::object{{"client", boost::json::object{{"ip", "192.0.2.4"}}}}, matched) && matched,
+                            "Concurrent evaluation failed");
+                }
+            }));
+        }
+        for (auto &worker : workers)
+        {
+            worker.get();
+        }
+    }});
     for (const std::string pageMethod : {"GET", "POST"})
     {
         for (const std::string query : {"", "?name=alice&submit=1", "?%7B%22url%22%3Atrue%7D", "?%7B"})
