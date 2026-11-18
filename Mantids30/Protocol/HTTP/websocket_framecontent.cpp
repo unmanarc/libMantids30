@@ -57,7 +57,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameContent::parse()
     Mantids30::Core::Memory::Containers::B_Base *buffer = getParsedBuffer();
     if (!buffer)
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
 
     std::vector<char> currentPayload = buffer->copyToBuffer();
@@ -71,14 +71,14 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameContent::parse()
     std::optional<size_t> x = m_content->append(currentPayload.data(), currentPayload.size());
     if (x == std::nullopt)
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
 
     // Validate UTF-8 if needed
     if (m_isComplete && m_validateUtf8 && !validateUtf8Payload())
     {
         m_lastValidationResult = ValidationResult::INVALID_UTF8;
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
 
     return ParseResult::GOTO_NEXT_SUBPARSER;

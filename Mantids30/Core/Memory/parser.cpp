@@ -88,7 +88,7 @@ std::optional<size_t> Parser::writeImpl(const void *buf, const size_t &count)
 
         if (r == std::nullopt && (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS))
         {
-            fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p -  During protocol finalization (Write EOF) for parser\033[0m\n", this);
+            fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p -  During protocol finalization (Write EOF) for parser\033[0m\n", this);
             fflush(stderr);
         }
 
@@ -123,7 +123,7 @@ std::optional<size_t> Parser::writeImpl(const void *buf, const size_t &count)
 
     if (r == std::nullopt && (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS))
     {
-        fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p -  During protocol data streaming\033[0m\n", this);
+        fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p -  During protocol data streaming\033[0m\n", this);
         fflush(stderr);
     }
 
@@ -137,7 +137,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         // TODO: reset TTL?
         if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
         {
-            fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Parser reaching TTL %zu\033[0m\n", this, *ttl);
+            fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p - Parser reaching TTL %zu\033[0m\n", this, *ttl);
             fflush(stderr);
         }
 
@@ -168,7 +168,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         {
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Failed to write data into parser %s\033[0m\n", this,
+                fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p - Failed to write data into parser %s\033[0m\n", this,
                         (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
 
@@ -199,7 +199,7 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
             {
                 if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
                 {
-                    fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - Subprotocol %s failed to change to the next subparser\033[0m\n", this,
+                    fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p - Subprotocol %s failed to change to the next subparser\033[0m\n", this,
                             (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                     fflush(stderr);
                 }
@@ -243,10 +243,10 @@ std::optional<size_t> Parser::parseData(const void *buf, size_t count, size_t *t
         break;
             // Bad parsing... end here.
         case SubParser::ParseResult::ERROR_STREAM_WRITE:
-        case SubParser::ParseResult::ERROR:
+        case SubParser::ParseResult::PARSE_ERROR:
             if (parsingDebugOptions & Parser::DebugOptions::PRINT_FAILED_STATUS)
             {
-                fprintf(stderr, "\033[31m[ParseResult::ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this,
+                fprintf(stderr, "\033[31m[ParseResult::PARSE_ERROR] - %p - ParseResult::STAT_ERROR executed from %s\033[0m\n", this,
                         (!m_currentSubParser ? "nullptr" : m_currentSubParser->getSubParserName().c_str()));
                 fflush(stderr);
             }

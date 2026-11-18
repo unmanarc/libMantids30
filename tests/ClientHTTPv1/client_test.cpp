@@ -221,7 +221,7 @@ void runTrailerTests()
         Content truncated;
         parse(truncated, wire);
         truncated.writeIntoSubParser(nullptr, 0);
-        require(truncated.getParseStatus() == ParseResult::ERROR, "Reject missing trailer terminator");
+        require(truncated.getParseStatus() == ParseResult::PARSE_ERROR, "Reject missing trailer terminator");
     }
 }
 

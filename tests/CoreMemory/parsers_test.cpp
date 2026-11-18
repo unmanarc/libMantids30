@@ -216,7 +216,7 @@ TEST("parsers", "protocol_initialization_errors_parse_errors_and_completion")
     CHECK(result == Parser::ParseResult::ERR_INIT);
     CHECK(!failed.ended);
     Protocol invalid(source);
-    invalid.header.result = SubParser::ParseResult::ERROR;
+    invalid.header.result = SubParser::ParseResult::PARSE_ERROR;
     invalid.parseObject(&result);
     CHECK(result == Parser::ParseResult::ERR_PARSING);
     CHECK(invalid.ended);

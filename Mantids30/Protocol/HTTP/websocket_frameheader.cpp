@@ -206,11 +206,11 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         if (x == std::nullopt || *x != 2)
         {
             // Error, parsed buffer is not delivered as expected.
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         if (!parseFirstByte(data[0]) || !parseSecondByte(data[1]))
         {
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         // Determine next state based on payload length
         if (m_payloadLength == 126)
@@ -247,7 +247,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
     case ParseState::EXTENDED_LENGTH_64:
         if (!parseExtendedLength())
         {
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         if (m_masked)
         {
@@ -264,7 +264,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
     case ParseState::MASKING_KEY:
         if (!parseMaskingKey())
         {
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         m_parseState = ParseState::COMPLETE;
         return ParseResult::GOTO_NEXT_SUBPARSER;
@@ -273,7 +273,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult FrameHeader::parse()
         return ParseResult::GOTO_NEXT_SUBPARSER;
     }
 
-    return ParseResult::ERROR;
+    return ParseResult::PARSE_ERROR;
 }
 
 bool FrameHeader::parseFirstByte(uint8_t byte)

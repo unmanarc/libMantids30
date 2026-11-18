@@ -50,7 +50,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_EndPBoundary::
     fflush(stdout);
 #endif
     m_status = ENDP_STAT_ERROR;
-    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::PARSE_ERROR;
 }
 
 int MIME_Sub_EndPBoundary::getStatus() const

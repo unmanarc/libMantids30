@@ -32,7 +32,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
 {
     if (isStreamEnded() && m_currentMode != ProcessingMode::CONNECTION_CLOSE)
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
     // Nested parsers (for example multipart) can finish on the final data byte.
     const auto finishContent = [this]()
@@ -46,7 +46,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     {
         if (isStreamEnded())
         {
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         if (getParsedBuffer()->appendTo(*m_trailerBytesContent) != getParsedBuffer()->size()
             || !m_trailerBytesContent->writeString("\r\n"))
@@ -82,7 +82,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
                 return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
             }
         }
-        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::PARSE_ERROR;
     }
     case ProcessingMode::CHUNK_DATA:
     {
@@ -101,7 +101,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     {
         if (getParsedBuffer()->size() != 2 || !getParsedBuffer()->compare("\r\n", 2))
         {
-            return ParseResult::ERROR;
+            return ParseResult::PARSE_ERROR;
         }
         setParseStrategy(Mantids30::Core::Memory::Streams::SubParser::ParseStrategy::DELIMITER);
         setParseDelimiter("\r\n");
@@ -119,7 +119,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
         {
             if (isStreamEnded())
             {
-                return ParseResult::ERROR;
+                return ParseResult::PARSE_ERROR;
             }
 #ifdef DEBUG
             printf("%p Content ProcessingMode::CONTENT_LENGTH - left to parse: %lu\n", this, getUnparsedDataSize());
@@ -154,7 +154,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
         }
     }
     }
-    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+    return Mantids30::Core::Memory::Streams::SubParser::ParseResult::PARSE_ERROR;
 }
 
 std::optional<uint32_t> Mantids30::Protocol::HTTP::Content::parseHttpChunkSize()

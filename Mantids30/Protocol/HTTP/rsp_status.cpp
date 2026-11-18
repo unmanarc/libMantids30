@@ -76,18 +76,18 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     // We need almost 2 parameters.
     if (isStreamEnded() || requestParts.size() < 2)
     {
-        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::PARSE_ERROR;
     }
 
     static const boost::regex versionPattern(R"(HTTP/[0-9]\.[0-9])");
     if (!boost::regex_match(requestParts[0], versionPattern))
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
     static const boost::regex statusPattern("[1-5][0-9]{2}");
     if (!boost::regex_match(requestParts[1], statusPattern))
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
 
     m_httpVersion.parse(requestParts[0]);

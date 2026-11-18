@@ -179,7 +179,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse(
 {
     if (isStreamEnded())
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
     if (!getParsedBuffer()->size())
     {
@@ -195,7 +195,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult MIME_Sub_Header::parse(
 #endif
     if (!parseOptionValue(getParsedBuffer()->toStringEx()))
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
     return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GET_MORE_DATA;
 }

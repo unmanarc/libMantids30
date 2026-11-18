@@ -56,17 +56,17 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult RequestLine::parse()
     // We need almost 2 parameters.
     if (isStreamEnded() || requestParts.size() < 2)
     {
-        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::PARSE_ERROR;
     }
 
     if (requestParts.size() != 3)
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
     static const boost::regex versionPattern(R"(HTTP/[0-9]\.[0-9])");
     if (!boost::regex_match(requestParts[2], versionPattern))
     {
-        return ParseResult::ERROR;
+        return ParseResult::PARSE_ERROR;
     }
 
     m_requestMethod = boost::to_upper_copy(requestParts[0]);
