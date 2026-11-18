@@ -67,7 +67,7 @@ Mantids30::Core::Memory::Streams::SubParser::ParseResult Mantids30::Protocol::HT
     {
         // Error parsing the URLVar...
         m_pData->clear();
-        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR;
+        return Mantids30::Core::Memory::Streams::SubParser::ParseResult::ERROR_STREAM_WRITE;
     }
 
     return Mantids30::Core::Memory::Streams::SubParser::ParseResult::GOTO_NEXT_SUBPARSER;
