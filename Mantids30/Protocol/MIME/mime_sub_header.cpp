@@ -304,7 +304,7 @@ void MIME_Sub_Header::parseSubValues(const std::shared_ptr<MIME_HeaderOption> &o
     }
 }
 
-bool MIME_Sub_Header::parseOptionValue(std::string line)
+bool MIME_Sub_Header::parseOptionValue(const std::string& line)
 {
     const auto colon = line.find(':');
     if (colon == std::string::npos || colon == 0)
@@ -318,7 +318,7 @@ bool MIME_Sub_Header::parseOptionValue(std::string line)
         return false;
     }
     std::string value = line.substr(colon + 1);
-    static const boost::regex invalidValuePattern("[\\x00-\\x08\\x0a-\\x1f\\x7f]");
+    static const boost::regex invalidValuePattern(R"([\x00-\x08\x0a-\x1f\x7f])");
     if (boost::regex_search(value, invalidValuePattern))
     {
         return false;
