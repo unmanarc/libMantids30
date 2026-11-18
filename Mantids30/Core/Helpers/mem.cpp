@@ -6,8 +6,19 @@
 #include <cstring>
 #include <stdexcept>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 using namespace std;
 using namespace Mantids30::Core::Helpers;
+
+#ifdef _WIN32
+void Mem::secureZeroMemory(void *data, size_t length)
+{
+    SecureZeroMemory(data, length);
+}
+#endif
 
 Mem::BinaryDataContainer::BinaryDataContainer(const char *_data, const size_t &len)
 {

@@ -3,10 +3,6 @@
 #include <cstring>
 #include <string>
 
-#ifdef _WIN32
-#include <WinBase.h>
-#endif
-
 namespace Mantids30::Core::Helpers {
 
 #define MAX_SIZE_T std::numeric_limits<std::size_t>::max()
@@ -26,7 +22,7 @@ namespace Mantids30::Core::Helpers {
     strncpy(dst, src, sizeof(dst) - 1)
 #elif _WIN32
 #define SecBACopy(dst, src) \
-    SecureZeroMemory(&dst, sizeof(dst)); \
+    ::Mantids30::Core::Helpers::Mem::secureZeroMemory(&dst, sizeof(dst)); \
     strncpy(dst, src, sizeof(dst) - 1)
 #else
 #define SecBACopy(dst, src) \
@@ -37,6 +33,10 @@ namespace Mantids30::Core::Helpers {
 class Mem
 {
 public:
+#ifdef _WIN32
+    static void secureZeroMemory(void *data, size_t length);
+#endif
+
     struct BinaryDataContainer
     {
         /**
