@@ -40,27 +40,27 @@ inline static double ASDOUBLE_D(const boost::json::value &j, double def)
 
 inline static float ASFLOAT_D(const boost::json::value &j, float def)
 {
-    return j.is_number() ? static_cast<float>(ASDOUBLE_OR_ZERO(j)) : def;
+    return j.is_number() ? ASFLOAT_OR_DEFAULT(j, def) : def;
 }
 
 inline static int ASINT_D(const boost::json::value &j, int def)
 {
-    return j.is_number() ? static_cast<int>(ASINT64_OR_ZERO(j)) : def;
+    return j.is_number() ? ASINTEGER_OR_DEFAULT<int>(j, def) : def;
 }
 
 inline static int64_t ASINT64_D(const boost::json::value &j, int64_t def)
 {
-    return j.is_number() ? ASINT64_OR_ZERO(j) : def;
+    return j.is_number() ? ASINTEGER_OR_DEFAULT<int64_t>(j, def) : def;
 }
 
 inline static unsigned int ASUINT_D(const boost::json::value &j, unsigned int def)
 {
-    return j.is_number() ? static_cast<unsigned int>(ASUINT64_OR_ZERO(j)) : def;
+    return j.is_number() ? ASINTEGER_OR_DEFAULT<unsigned int>(j, def) : def;
 }
 
 inline static uint64_t ASUINT64_D(const boost::json::value &j, uint64_t def)
 {
-    return j.is_number() ? ASUINT64_OR_ZERO(j) : def;
+    return j.is_number() ? ASINTEGER_OR_DEFAULT<uint64_t>(j, def) : def;
 }
 
 } // namespace Mantids30::DataFormat::JSON

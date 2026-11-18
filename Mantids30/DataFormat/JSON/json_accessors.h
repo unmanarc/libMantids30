@@ -63,7 +63,7 @@ inline static float ASFLOAT(const boost::json::value &j, std::string_view x, flo
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
     if (v.is_number())
     {
-        return static_cast<float>(ASDOUBLE_OR_ZERO(v));
+        return ASFLOAT_OR_DEFAULT(v, def);
     }
     return def;
 }
@@ -73,7 +73,7 @@ inline static int ASINT(const boost::json::value &j, std::string_view x, int def
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
     if (v.is_number())
     {
-        return static_cast<int>(ASINT64_OR_ZERO(v));
+        return ASINTEGER_OR_DEFAULT<int>(v, def);
     }
     return def;
 }
@@ -83,7 +83,7 @@ inline static int64_t ASINT64(const boost::json::value &j, std::string_view x, i
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
     if (v.is_number())
     {
-        return ASINT64_OR_ZERO(v);
+        return ASINTEGER_OR_DEFAULT<int64_t>(v, def);
     }
     return def;
 }
@@ -93,7 +93,7 @@ inline static unsigned int ASUINT(const boost::json::value &j, std::string_view 
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
     if (v.is_number())
     {
-        return static_cast<unsigned int>(ASUINT64_OR_ZERO(v));
+        return ASINTEGER_OR_DEFAULT<unsigned int>(v, def);
     }
     return def;
 }
@@ -102,15 +102,7 @@ inline static unsigned int ASUINT(const boost::json::value &j, std::string_view 
 inline static uint64_t ASUINT64(const boost::json::value &j, std::string_view x, uint64_t def)
 {
     const boost::json::value &v = MEMBER_OR_NULL(j, x);
-    if (v.is_uint64())
-    {
-        return v.as_uint64();
-    }
-    if (v.is_int64() && v.as_int64() >= 0)
-    {
-        return static_cast<uint64_t>(v.as_int64());
-    }
-    return def;
+    return ASINTEGER_OR_DEFAULT<uint64_t>(v, def);
 }
 
 // Returns true if the object contains the given key.

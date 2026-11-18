@@ -92,7 +92,7 @@ inline static float ARRAY_ASFLOAT(const boost::json::value &j, size_t i, float d
         const boost::json::value &el = j.as_array()[i];
         if (el.is_number())
         {
-            return static_cast<float>(ASDOUBLE_OR_ZERO(el));
+            return ASFLOAT_OR_DEFAULT(el, def);
         }
     }
     return def;
@@ -105,7 +105,7 @@ inline static int ARRAY_ASINT(const boost::json::value &j, size_t i, int def)
         const boost::json::value &el = j.as_array()[i];
         if (el.is_number())
         {
-            return static_cast<int>(ASINT64_OR_ZERO(el));
+            return ASINTEGER_OR_DEFAULT<int>(el, def);
         }
     }
     return def;
@@ -118,7 +118,7 @@ inline static int64_t ARRAY_ASINT64(const boost::json::value &j, size_t i, int64
         const boost::json::value &el = j.as_array()[i];
         if (el.is_number())
         {
-            return ASINT64_OR_ZERO(el);
+            return ASINTEGER_OR_DEFAULT<int64_t>(el, def);
         }
     }
     return def;
@@ -131,7 +131,7 @@ inline static unsigned int ARRAY_ASUINT(const boost::json::value &j, size_t i, u
         const boost::json::value &el = j.as_array()[i];
         if (el.is_number())
         {
-            return static_cast<unsigned int>(ASUINT64_OR_ZERO(el));
+            return ASINTEGER_OR_DEFAULT<unsigned int>(el, def);
         }
     }
     return def;
@@ -144,7 +144,7 @@ inline static uint64_t ARRAY_ASUINT64(const boost::json::value &j, size_t i, uin
         const boost::json::value &el = j.as_array()[i];
         if (el.is_number())
         {
-            return ASUINT64_OR_ZERO(el);
+            return ASINTEGER_OR_DEFAULT<uint64_t>(el, def);
         }
     }
     return def;
