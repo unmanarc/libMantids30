@@ -19,9 +19,15 @@ StreamableFile::~StreamableFile()
 int StreamableFile::open(const char *path, int oflag, mode_t __mode)
 {
     closeAll();
+#ifdef _WIN32
+    if ((oflag & O_TEXT) == 0)
+    {
+        oflag |= O_BINARY;
+    }
+#endif
     int fd = ::open(path, oflag, __mode);
 
-    if (oflag == 0) // RDONLY...
+    if ((oflag & O_ACCMODE) == O_RDONLY)
     {
         rd_fd = fd;
         wr_fd = -1;
