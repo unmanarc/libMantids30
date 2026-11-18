@@ -211,7 +211,7 @@ bool Query_MariaDB::step0()
             }
         }
         break;
-        case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+        case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
             // Don't copy the value (not needed).
             outputVar->setIsNull(true);
             break;
@@ -499,7 +499,7 @@ bool Query_MariaDB::postBindInputVars()
             }
         }
         break;
-        case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+        case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
             m_bindedInputParams[pos].is_null_value = 1;
             break;
         }

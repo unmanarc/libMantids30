@@ -37,7 +37,7 @@ public:
         MACADDR,
         PTR,
         DATETIME,
-        VOID
+        VOID_VALUE
     };
 
     Var();

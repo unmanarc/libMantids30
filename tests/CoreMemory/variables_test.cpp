@@ -345,7 +345,7 @@ TEST("variables", "factory_type_and_copy_for_supported_types")
     for (auto type : {Var::Type::BOOL, Var::Type::INT8, Var::Type::INT16, Var::Type::INT32, Var::Type::INT64,
                       Var::Type::UINT8, Var::Type::UINT16, Var::Type::UINT32, Var::Type::UINT64, Var::Type::DOUBLE,
                       Var::Type::BIN, Var::Type::STRING, Var::Type::VARCHAR, Var::Type::STRINGLIST,
-                      Var::Type::IPV4, Var::Type::IPV6, Var::Type::MACADDR, Var::Type::DATETIME, Var::Type::VOID})
+                      Var::Type::IPV4, Var::Type::IPV6, Var::Type::MACADDR, Var::Type::DATETIME, Var::Type::VOID_VALUE})
     {
         auto value = Var::makeAbstract(type);
         CHECK(value);

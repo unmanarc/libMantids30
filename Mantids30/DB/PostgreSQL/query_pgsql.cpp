@@ -153,7 +153,7 @@ bool Query_PostgreSQL::step0()
                 ABSTRACT_PTR_AS(PTR, outputVar)->setValue(PQgetvalue(m_results, i, columnpos));
             }
             break;
-            case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
                 // Don't copy the value (not needed).
                 outputVar->setIsNull(true);
                 break;
@@ -313,7 +313,7 @@ bool Query_PostgreSQL::postBindInputVars()
         case Mantids30::Core::Memory::Abstract::Var::Type::IPV6:
             str = createDestroyableStringForInput(ABSTRACT_SPTR_AS(IPV6, m_inputVars[key])->toString());
             break;
-        case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+        case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
             m_paramValues[pos] = nullptr;
             m_paramLengths[pos] = 0;
             break;

@@ -162,7 +162,7 @@ bool Query_SQLite3::exec0(const ExecType &execType, bool recursion)
                 sqlite3_bind_text(m_stmt, idx, static_cast<const char *>(ptr), ptrSize, SQLITE_STATIC);
             }
             break;
-            case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+            case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
                 sqlite3_bind_null(m_stmt, idx);
                 break;
             }
@@ -334,7 +334,7 @@ bool Query_SQLite3::step0()
                     ABSTRACT_PTR_AS(PTR, outputVar)->setValue(const_cast<unsigned char *>(sqlite3_column_text(m_stmt, columnpos)));
                 }
                 break;
-                case Mantids30::Core::Memory::Abstract::Var::Type::VOID:
+                case Mantids30::Core::Memory::Abstract::Var::Type::VOID_VALUE:
                     // Don't copy the value (not needed).
                     outputVar->setIsNull(true);
                     break;

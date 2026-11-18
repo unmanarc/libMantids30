@@ -24,7 +24,7 @@ using namespace Mantids30::Core::Memory::Abstract;
 
 Var::Var()
 {
-    m_varType = Type::VOID;
+    m_varType = Type::VOID_VALUE;
 }
 
 std::shared_ptr<Var> Var::copy()
@@ -49,7 +49,7 @@ std::shared_ptr<Var> Var::makeAbstract(Var::Type type, const std::string &defVal
     std::shared_ptr<Var> v = nullptr;
     switch (type)
     {
-    case Var::Type::VOID:
+    case Var::Type::VOID_VALUE:
         v = std::make_shared<Var>();
         break;
     case Var::Type::BOOL:
