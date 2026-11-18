@@ -2,6 +2,9 @@
 
 /**
  * Utility functions for working with JSON data using Boost.JSON.
+ * Integer accessors return the supplied default unless the value is an integer
+ * representable in the destination type. Float accessors return the default
+ * for non-finite values and values outside the finite float range.
  *
  * This is the public entry point for the JSON helpers. It is kept as a thin
  * shim that pulls in the individual, single-purpose headers so existing
