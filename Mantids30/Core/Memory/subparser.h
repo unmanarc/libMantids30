@@ -21,7 +21,7 @@ class SubParser
 public:
     enum class ParseResult : uint8_t
     {
-        ERROR,
+        PARSE_ERROR,
         GET_MORE_DATA,
         GOTO_NEXT_SUBPARSER,
         ERROR_STREAM_WRITE // The destination could not accept data or EOF.
