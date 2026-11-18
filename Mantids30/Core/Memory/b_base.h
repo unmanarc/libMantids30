@@ -20,7 +20,7 @@ enum class StorageMethod : uint8_t
     MEM,
     BCREF,
     FILEMMAP,
-    VOID
+    UNSET
 };
 
 class B_Base : public Mantids30::Core::Memory::Streams::StreamableObject
@@ -413,7 +413,7 @@ protected:
     /**
      * @brief storeMethod Storage Mechanism used (read only memory reference, chunks, file)
      */
-    StorageMethod m_storageMethod = StorageMethod::VOID;
+    StorageMethod m_storageMethod = StorageMethod::UNSET;
 
     /**
      * @brief readOnly defined if it's in read-only mode or not.
