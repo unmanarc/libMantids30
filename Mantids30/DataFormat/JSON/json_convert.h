@@ -48,7 +48,8 @@ std::list<std::string> toStringList(const boost::json::value &value, std::string
 std::set<std::string> toStringSet(const boost::json::value &value, std::string_view sub = "");
 
 /**
- * Converts a JSON array to a set of uint32_t values.
+ * Converts a JSON array to a set of uint32_t values, skipping elements
+ * that are not integers representable as uint32_t.
  *
  * @param value The JSON array to convert.
  * @param sub The name of the sub-element to extract from each array element (optional).

@@ -103,9 +103,10 @@ std::set<uint32_t> Mantids30::DataFormat::JSON::toUInt32Set(const boost::json::v
     {
         for (const boost::json::value &el : arr.as_array())
         {
-            if (el.is_number())
+            const auto value = ASINTEGER_OR_DEFAULT<uint64_t>(el, std::numeric_limits<uint64_t>::max());
+            if (value <= std::numeric_limits<uint32_t>::max())
             {
-                r.insert(static_cast<uint32_t>(ASUINT64_OR_ZERO(el)));
+                r.insert(static_cast<uint32_t>(value));
             }
         }
     }
