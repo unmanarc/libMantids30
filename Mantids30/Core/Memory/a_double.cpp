@@ -1,5 +1,6 @@
 #include "a_double.h"
 #include <cerrno>
+#include <charconv>
 #include <cmath>
 #include <cstdlib>
 #include <locale>
@@ -53,15 +54,18 @@ bool DOUBLE::fromString(std::string_view value)
         return false;
     }
 
-    // GCC 8 lacks floating-point from_chars. Use a private C locale without
-    // changing the process locale, and own a terminated copy of the view.
 #ifdef _WIN32
-    static const std::unique_ptr<std::remove_pointer_t<_locale_t>, decltype(&_free_locale)>
-        numericLocale(_create_locale(LC_NUMERIC, "C"), &_free_locale);
+    double parsed = 0;
+    const char *const end = value.data() + value.size();
+    const auto [ptr, error] = std::from_chars(value.data(), end, parsed);
+    if (error != std::errc{} || ptr != end)
+    {
+        return false;
+    }
 #else
+    // GCC 8 lacks floating-point from_chars. Parse a terminated copy in a private C locale.
     static const std::unique_ptr<std::remove_pointer_t<locale_t>, decltype(&freelocale)>
         numericLocale(newlocale(LC_NUMERIC_MASK, "C", nullptr), &freelocale);
-#endif
     if (!numericLocale)
     {
         return false;
@@ -70,17 +74,14 @@ bool DOUBLE::fromString(std::string_view value)
     const std::string text(value);
     char *end = nullptr;
     errno = 0;
-#ifdef _WIN32
-    const double parsed = _strtod_l(text.c_str(), &end, numericLocale.get());
-#else
     const double parsed = strtod_l(text.c_str(), &end, numericLocale.get());
-#endif
     // Representable subnormals may set ERANGE; underflow to zero must fail.
     if (end == text.c_str() || end != text.c_str() + text.size() ||
         (errno == ERANGE && (parsed == 0.0 || std::isinf(parsed))))
     {
         return false;
     }
+#endif
 
     std::unique_lock<std::shared_mutex> lock(m_mutex);
     m_value = parsed;

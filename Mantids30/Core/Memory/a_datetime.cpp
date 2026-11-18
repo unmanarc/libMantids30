@@ -117,7 +117,7 @@ string DATETIME::getPlainLclTimeStr(time_t v)
 #else
     gmtime_r(&v, &tmTime);
 #endif
-    strftime(sTime, 63, "%F %T", &tmTime);
+    strftime(sTime, 63, "%Y-%m-%d %H:%M:%S", &tmTime);
 
     return sTime;
 }
@@ -133,9 +133,9 @@ string DATETIME::getISOTimeStr(const time_t &v)
 #else
     gmtime_r(&v, &tmTime);
 #endif
-    strftime(sTime, 63, "%FT%TZ", &tmTime);
+    strftime(sTime, 63, "%Y-%m-%dT%H:%M:%SZ", &tmTime);
 
-    //    std::strftime(sTime, 63, "%FT%TZ", std::gmtime(&v));
+    //    std::strftime(sTime, 63, "%Y-%m-%dT%H:%M:%SZ", std::gmtime(&v));
     return sTime;
 }
 
@@ -189,9 +189,17 @@ time_t DATETIME::fromISOTimeStr(const std::string_view v)
     t.tm_min = minute;
     t.tm_sec = static_cast<int>(seconds);
 
+#ifdef _WIN32
+    const time_t result = _mkgmtime(&t);
+    if (result == static_cast<time_t>(-1))
+    {
+        return 0;
+    }
+#else
     const time_t result = timegm(&t);
+#endif
 
-    // Reject invalid dates normalized by timegm(), e.g. February 31.
+    // Reject invalid dates normalized during conversion, e.g. February 31.
     if (t.tm_year != year - 1900 || t.tm_mon != month - 1 || t.tm_mday != day)
     {
         return 0;

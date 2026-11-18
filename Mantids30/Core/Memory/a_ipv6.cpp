@@ -38,11 +38,7 @@ in6_addr IPV6::getValue()
 bool IPV6::setValue(const in6_addr &value)
 {
     std::unique_lock<std::shared_mutex> lock(m_mutex);
-#ifndef _WIN32
-    this->m_value.__in6_u = value.__in6_u;
-#else
-    this->value.u = value.u;
-#endif
+    m_value = value;
     return true;
 }
 
