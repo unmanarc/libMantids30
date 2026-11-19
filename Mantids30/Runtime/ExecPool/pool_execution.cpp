@@ -30,16 +30,9 @@ ExecPool::Error ExecPool::execute(const std::shared_ptr<State> &state)
             // Queue insertion is nonblocking so overload becomes an explicit rejection.
             state->submitted = Clock::now();
             state->deadline = state->submitted + m_config.requestTimeout;
-            auto item = std::make_unique<std::shared_ptr<State>>(state);
-            if (!m_queue.push(item.get(), 0))
+            if (!m_queue.push(state, 0))
             {
                 rejected = Error::QUEUE_FULL;
-            }
-            else
-            {
-                // Queue now owns the wrapper; the shared state also remains owned by
-                // this caller until completion, even if a worker removes the wrapper.
-                item.release();
             }
         }
         std::scoped_lock stats(m_statisticsMutex);

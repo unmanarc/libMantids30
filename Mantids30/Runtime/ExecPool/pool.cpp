@@ -131,11 +131,10 @@ void ExecPool::failPool()
 
 void ExecPool::drain()
 {
-    // Reclaim queue wrappers; shared state survives while callers or workers hold it.
-    while (auto *item = m_queue.pop(0))
+    // Shared state survives while callers or workers hold it.
+    while (auto state = m_queue.pop(0))
     {
-        std::unique_ptr<std::shared_ptr<State>> owned(item);
-        finish(*owned, Error::STOPPED);
+        finish(state, Error::STOPPED);
     }
 }
 

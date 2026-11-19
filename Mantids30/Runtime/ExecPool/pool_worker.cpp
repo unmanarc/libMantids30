@@ -55,13 +55,11 @@ void ExecPool::consume(Worker &worker, size_t index) noexcept
                 }
             }
             // A short queue wait bounds shutdown latency when no requests arrive.
-            // Taking ownership immediately also reclaims the wrapper on exceptions.
-            std::unique_ptr<std::shared_ptr<State>> item(m_queue.pop(25));
-            if (!item)
+            current = m_queue.pop(25);
+            if (!current)
             {
                 continue;
             }
-            current = *item;
             {
                 std::scoped_lock lock(current->mutex);
                 // A queued request may already have timed out in its caller.

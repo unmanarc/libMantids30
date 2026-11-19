@@ -295,8 +295,8 @@ private:
     mutable std::mutex m_lifecycle, m_submission, m_statisticsMutex;
     std::atomic<bool> m_running{false};
     std::atomic<uint64_t> m_nextId{1};
-    // Queue owns heap wrappers; each wrapper shares request state with its caller.
-    mutable Core::Threads::Safe::Queue<std::shared_ptr<State>> m_queue;
+    // Queue shares request state with callers and workers.
+    mutable Core::Threads::Safe::Queue<State> m_queue;
     std::vector<std::unique_ptr<Worker>> m_workers;
     Statistics m_statistics;
 

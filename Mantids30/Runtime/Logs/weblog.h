@@ -8,7 +8,7 @@
 #include <string>
 #include <thread>
 
-#include <Mantids30/Core/Threads/safe_sharedqueue.h>
+#include <Mantids30/Core/Threads/safe_queue.h>
 
 #include <boost/property_tree/ptree.hpp>
 
@@ -89,7 +89,7 @@ private:
     void startLogRotationOnScheduleThread();
 
     // Serialize to an unformatted string using boost::property_tree
-    Mantids30::Core::Threads::Safe::SharedQueue<boost::property_tree::ptree> m_logQueue;
+    Mantids30::Core::Threads::Safe::Queue<boost::property_tree::ptree> m_logQueue;
     std::thread m_rotationThread, m_queueThread;
     std::atomic<bool> m_rotationThreadRunning{false};
     std::ofstream m_logFileHandle;
