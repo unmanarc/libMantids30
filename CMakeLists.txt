@@ -51,6 +51,7 @@ install(CODE [[
 ADD_SUBDIRECTORY(Mantids30)
 if(MANTIDS30_BUILD_TESTS)
     enable_testing()
+    ADD_SUBDIRECTORY(tests/CoreThreads)
     ADD_SUBDIRECTORY(tests/CoreMemory)
     ADD_SUBDIRECTORY(tests/JSON)
     ADD_SUBDIRECTORY(tests/ClientHTTPv1)

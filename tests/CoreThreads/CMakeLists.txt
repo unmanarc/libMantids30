@@ -1,0 +1,5 @@
+add_executable(safe_map2_test safe_map_test.cpp)
+target_include_directories(safe_map2_test PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(safe_map2_test PRIVATE Mantids30_Core_Threads)
+add_test(NAME core_threads_safe_map2 COMMAND safe_map2_test)
+set_tests_properties(core_threads_safe_map2 PROPERTIES TIMEOUT 15 LABELS "threads;map")

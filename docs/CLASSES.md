@@ -154,9 +154,18 @@ See [PARSER.md](PARSER.md) for the parsing architecture.
 | `GarbageCollector` | `Mantids30::Core::Threads` | `Core/Threads/garbagecollector.h` | Deferred deletion helper |
 | `ThreadPool` | `Mantids30::Core::Threads::Pool` | `Core/Threads/threadpool.h` | Fixed size worker pool |
 | `Map` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_map.h` | Mutex protected map |
+| `Map2` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_map2.h` | Mutex protected shared pointer registry |
 | `MapItem` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_mapitem.h` | Value wrapper used by `Mantids30::Core::Threads::Safe::Map` |
-| `Queue` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_queue.h` | Mutex protected queue |
-| `SharedQueue` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_sharedqueue.h` | Shared pointer queue |
+| `Queue` | `Mantids30::Core::Threads::Safe` | `Core/Threads/safe_queue.h` | Mutex protected shared pointer queue |
+
+`Map2<Key>` accepts `std::shared_ptr<MapItem>` and returns shared ownership from
+`openElement()`. Readers release ownership through RAII; `Map2` does not expose
+`releaseElement()`. `destroyElement()` removes the key and calls `stopReaders()` outside
+the map lock. Existing readers keep the object alive until their last shared
+pointer is released. `waitForEmptyMap()` waits for empty membership, not for
+reader completion or stop callbacks. Item data and borrowed resources require
+their own synchronization. Destroying the registry releases its ownership without
+calling stop callbacks; use `destroyElement()` when shutdown signaling is needed.
 
 ## DataFormat
 
