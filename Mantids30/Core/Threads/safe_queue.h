@@ -1,18 +1,18 @@
 #pragma once
-
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <cstdint>
 #include <limits>
-#include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <queue>
 
 namespace Mantids30::Core::Threads::Safe {
 
 /**
- * @brief The Thread Safe Queue class
- */
+* @brief The Thread Safe Queue class with shared_ptr
+*/
 template<class T>
 class Queue
 {
@@ -21,55 +21,68 @@ public:
     {
         m_maxItems = &m_localMaxItems;
     }
+
     ~Queue()
     {
+        // No need for manual cleanup with shared_ptr
         std::unique_lock<std::mutex> lock(m_mQueue);
-        while (m_queue.size())
+        while (!m_queue.empty())
         {
-            delete m_queue.front();
             m_queue.pop();
         }
     }
+
     /**
      * @brief setMaxItemsAsExternalPointer Set Max Queue Items as External Pointer
      * @param maxItems Max Queue Items Pointer.
      */
     void setMaxItemsAsExternalPointer(std::atomic<size_t> *maxItems);
+
     /**
      * @brief setMaxItems Set the value of the current max items object
      * @param maxItems value
      */
     void setMaxItems(const size_t &maxItems);
+
     /**
      * @brief getMaxItems Get max items allowed
      * @return integer with max items allowed.
      */
-    size_t getMaxItems();
+    [[nodiscard]] size_t getMaxItems();
+
     /**
      * @brief push Push a new item
-     * @param item item to be pushed to the queue
+     * @param item shared_ptr to item to be pushed to the queue
      * @param tmout_msecs Timeout in milliseconds if the queue is full (default: 100 seconds), or zero if you don't want to wait
-     * @return
+     * @return true if pushed successfully, false if timeout or no wait
      */
-    bool push(T *item, const uint32_t &tmout_msecs = 100000);
+    bool push(const std::shared_ptr<T> &item, const uint32_t &tmout_msecs = 100000);
+
     /**
-     * @brief pop Pop the item, you should delete/remove it after using "destroyItem" function
+     * @brief pop Pop the item (automatically managed by shared_ptr)
      * @param tmout_msecs Timeout in milliseconds if the queue is empty (default: 100 seconds), or zero if you don't want to wait
-     * @return the first item in the queue
+     * @return shared_ptr to the first item in the queue or nullptr if timeout/empty
      */
-    T *pop(const uint32_t &tmout_msecs = 100000);
+    [[nodiscard]] std::shared_ptr<T> pop(const uint32_t &tmout_msecs = 100000);
+
     /**
      * @brief size Current Queue Size
-     * @return size in size_t format...
+     * @return size in size_t format
      */
-    size_t size();
+    [[nodiscard]] size_t size();
+
+    /**
+     * @brief empty Check if queue is empty
+     * @return true if empty, false otherwise
+     */
+    [[nodiscard]] bool empty();
 
 private:
-    std::atomic<size_t> *m_maxItems;
-    std::atomic<size_t> m_localMaxItems{std::numeric_limits<size_t>::max()};
+    std::atomic<size_t> *m_maxItems = nullptr;
+    std::atomic<size_t> m_localMaxItems{std::numeric_limits<std::size_t>::max()};
     std::mutex m_mQueue;
     std::condition_variable m_notEmptyCond, m_notFullCond;
-    std::queue<T *> m_queue;
+    std::queue<std::shared_ptr<T>> m_queue;
 };
 
 template<class T>
@@ -91,20 +104,28 @@ size_t Queue<T>::getMaxItems()
 }
 
 template<class T>
-bool Queue<T>::push(T *item, const uint32_t &tmout_msecs)
+bool Queue<T>::push(const std::shared_ptr<T> &item, const uint32_t &tmout_msecs)
 {
+    if (!item)
+    { // Don't allow null shared_ptr
+        return false;
+    }
+
     std::unique_lock<std::mutex> lock(m_mQueue);
+
     while (m_queue.size() >= *m_maxItems)
     {
         if (tmout_msecs == 0)
         {
             return false;
         }
+
         if (m_notFullCond.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
         {
             return false;
         }
     }
+
     m_queue.push(item);
     lock.unlock();
     m_notEmptyCond.notify_one();
@@ -112,25 +133,28 @@ bool Queue<T>::push(T *item, const uint32_t &tmout_msecs)
 }
 
 template<class T>
-T *Queue<T>::pop(const uint32_t &tmout_msecs)
+std::shared_ptr<T> Queue<T>::pop(const uint32_t &tmout_msecs)
 {
     std::unique_lock<std::mutex> lock(m_mQueue);
+
     while (m_queue.empty())
     {
         if (tmout_msecs == 0)
         {
             return nullptr;
         }
+
         if (m_notEmptyCond.wait_for(lock, std::chrono::milliseconds(tmout_msecs)) == std::cv_status::timeout)
         {
             return nullptr;
         }
     }
-    T *r = m_queue.front();
+
+    std::shared_ptr<T> result = m_queue.front();
     m_queue.pop();
     lock.unlock();
     m_notFullCond.notify_one();
-    return r;
+    return result;
 }
 
 template<class T>
@@ -138,6 +162,13 @@ size_t Queue<T>::size()
 {
     std::unique_lock<std::mutex> lock(m_mQueue);
     return m_queue.size();
+}
+
+template<class T>
+bool Queue<T>::empty()
+{
+    std::unique_lock<std::mutex> lock(m_mQueue);
+    return m_queue.empty();
 }
 
 } // namespace Mantids30::Core::Threads::Safe
